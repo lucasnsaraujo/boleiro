@@ -42,3 +42,14 @@ Notes:
 - Dates are local Brazil dates (America/Sao_Paulo). Scores leave out shootout goals; the shootout winner is a separate column.
 - Teams are joined across sources by `team_key` (`pipeline/team_key.py`): lowercase ASCII words without club-type abbreviations. It is approximate; names that differ beyond that do not match.
 - The 2026 season was still running when fetched, so it only has the matches finished by then.
+
+## Season calendar and league formats (`src/sim/`)
+
+| Value | Source |
+|---|---|
+| Date-bases: state championships 11 Jan–8 Mar (11 dates), Série A 28 Jan–2 Dec, B 21 Mar–28 Nov, C 5 Apr–25 Oct, D 5 Apr–13 Sep | [Trivela, CBF 2026 calendar](https://trivela.com.br/brasil/calendario-do-futebol-brasileiro-2026/) |
+| Copa do Brasil 2026: phases 1–4 single leg, phase 5 to semi-finals two legs, single-leg final on 6 Dec; phase dates | [Band](https://www.band.com.br/esportes/conheca-o-novo-formato-da-copa-do-brasil-a-partir-de-2026-202510011208), [BNews](https://www.bnewssaopaulo.com.br/amp/noticias/esportes/nova-copa-do-brasil-cbf-divulga-datas-e-mudancas-no-formato-confira.html), [Netflu](https://www.netflu.com.br/veja-o-calendario-fase-por-fase-da-copa-do-brasil-de-2026/). Phase 2, phase 5 and semi-final dates are `guess`. |
+| Série A and B: 20 clubs, 38 rounds; A relegates 4, B promotes 4 and relegates 4 | [Band](https://www.band.com.br/nacional/brasil/ponte-preta-e-guarani-entenda-os-regulamentos-das-series-b-e-c-de-2026) |
+| Série C 2026: 19-round single round robin, quadrangulars of 1/4/5/8 and 2/3/6/7, top 2 promoted, two-leg final, bottom 2 relegated; 24 clubs and 6 relegated from 2027 | [NSC Total](https://www.nsctotal.com.br/?p=7670657), [Diario de Pernambuco](https://www.diariodepernambuco.com.br/esportes-dp/santa-cruz/2025/10/11698141-santa-cruz-na-disputa-entenda-as-mudancas-no-regulamento-da-serie-c.html). The 24-club format (23-round first phase, same quadrangulars) is a `guess`. |
+| Série D 2026: 96 clubs, 16 groups of 6, top 4 to two-leg knockouts, semi-finalists plus two playoff winners among quarter-final losers promoted, last 32 stay in Série D | [CBF](https://www.cbf.com.br/futebol-brasileiro/noticias/campeonato-brasileiro-serie-d/a/cbf-publica-documentos-tecnicos-da-nova-serie-d), [Diario de Pernambuco](https://www.diariodepernambuco.com.br/esportes-dp/nacional/2025/10/11697172-com-as-mudancas-da-cbf-entenda-como-vai-ficar-a-serie-d.html). Regional groups (clubs sorted by state, north to south), knockout seeding (best vs worst) and playoffs on semi-final dates are `guess`. |
+| Tie-break order: points, wins, goal difference, goals scored, head-to-head (two clubs only), red cards, yellow cards, draw | [Band](https://www.band.com.br/esportes/brasileirao-criterios-desempate), [TecMundo](https://www.tecmundo.com.br/apostas/409831-brasileirao-2026-formato-datas-vagas-para-libertadores-e-sul-americana.htm). Cards are skipped until they are tracked. |
