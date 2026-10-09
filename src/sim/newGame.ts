@@ -2,6 +2,7 @@ import type { Club } from "../data/clubs.js";
 import type { CompetitionMoney } from "../data/competition-money.js";
 import type { SquadPlayer } from "../data/players.js";
 import { randomStream } from "../engine/random.js";
+import { openingCoach } from "./coach/openingCoach.js";
 import { NEUTRAL_MOOD } from "./morale/clubMood.js";
 import { openingFinances, type FinanceData } from "./finances/openingFinances.js";
 import type { GameState, SimPlayer } from "./gameState.js";
@@ -15,19 +16,22 @@ export type NewGameOptions = {
   finances: FinanceData;
   competitionMoney: CompetitionMoney;
   coachClubId: string | null;
+  /** Career mode: the coach starts unknown and unemployed, with offers from small clubs. */
+  careerMode?: boolean;
   season?: number;
 };
 
 const FIRST_SEASON = 2026;
 // Traits draw from their own stream so they don't reshuffle the fixtures a seed has always given.
 const TRAIT_STREAM_SALT = 0x7a175;
+const COACH_STREAM_SALT = 0xc0ac4;
 // guess: with no earlier estaduais played, the first season seeds them and fills the Copa do Brasil
 // from the national ranking stand-in (division, then fanbase).
 const FIRST_QUALIFICATION: Qualification = { statePlacings: {}, phase3Ids: [] };
 
 export function newGame(
   seed: number,
-  { clubs, players, finances: financeData, competitionMoney, coachClubId, season = FIRST_SEASON }: NewGameOptions,
+  { clubs, players, finances: financeData, competitionMoney, coachClubId, careerMode = false, season = FIRST_SEASON }: NewGameOptions,
 ): GameState {
   const random = randomStream(seed);
   const traitRandom = randomStream(seed ^ TRAIT_STREAM_SALT);
@@ -40,7 +44,7 @@ export function newGame(
     });
   const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION);
   const { economy, finances, wages } = openingFinances(clubsById, squadPlayers, fixtures, cupEntriesOf(competitions), financeData, competitionMoney);
-  return {
+  return openingCoach({
     version: 1,
     seed,
     rngState: random.state(),
@@ -55,5 +59,5 @@ export function newGame(
     economy,
     finances,
     mood: Object.fromEntries(clubs.map((club) => [club.id, NEUTRAL_MOOD])),
-  };
+  }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
 }
