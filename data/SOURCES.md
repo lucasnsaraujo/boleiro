@@ -24,3 +24,18 @@ One row per club: the 156 clubs of Série A–D 2026 plus the 125 clubs that onl
 ## players.csv
 
 `club_id` links each player to `clubs.csv`. Strength starts from a division baseline (A 72, B 63, C 56, D 49). State-only clubs start at 42, one step below Série D (`guess`, keeping the roughly 7-point gap between divisions). They have no Sofascore stats, so their strength moves only with market value and age.
+
+## Historical results
+
+| File | Source | Rebuilt by |
+|---|---|---|
+| `history/copa-do-brasil.csv` | Sofascore unique-tournament 373, `/api/v1/unique-tournament/373/season/{id}/events/last/{page}`; odds from `/api/v1/event/{id}/odds/1/all`, market "Full time", closing `fractionalValue` converted to decimal | `pipeline/fetch_history.py` |
+| `history/brasileirao-serie-b.csv`, `-serie-c.csv`, `-serie-d.csv` | Sofascore unique-tournaments 390, 1281 and 10326, events endpoint only; no odds (see notes) | `pipeline/fetch_history.py` |
+| `history/divisions.csv` | Sofascore standings of Série A–D (unique-tournaments 325, 390, 1281, 10326), `/api/v1/unique-tournament/{t}/season/{id}/standings/total`, every team in any group of that season | `pipeline/fetch_history.py` |
+
+Notes:
+
+- Dates are local Brazil dates (America/Sao_Paulo) from the event start time.
+- Scores are Sofascore's `display` score, which leaves out shootout goals. The shootout winner comes from the `penalties` score.
+- Série B–D have no odds. Sofascore serves odds one request per match and shows a Cloudflare captcha when asked too fast, and calibrating home advantage and goals per game in those divisions only needs results. Série A odds come from football-data.co.uk.
+- The 2026 season was still running when fetched, so it only has the matches finished by then.
