@@ -5,6 +5,8 @@
   "packageManager": "pnpm@10.12.2",
   "scripts": {
     "test": "vitest run",
+    "test:long": "LONG_RUN=1 vitest run src/cli",
+    "finances:report": "tsx src/cli/financeReport.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "calibrate": "tsx src/engine/calibrate.ts"
