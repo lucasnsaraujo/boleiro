@@ -106,13 +106,15 @@ export type ClubFinance = {
   membership: number;
   /** Membership the club settles back to; membership drifts around it with results. */
   membershipAnchor: number;
-  /** State championship, continental and commercial income the game does not simulate, net of `expectedPrizes`. */
+  /** State championship, continental and commercial income the game does not simulate, net of `prizesOutOfOtherIncome`. */
   otherIncome: number;
   infrastructure: number;
   /** Ticket money the board expects over a season, for its budget. */
   expectedTickets: number;
-  /** Copa do Brasil prize money the board expects over a season, for its budget. */
+  /** Copa do Brasil and continental prize money the board expects over a season, for its budget. */
   expectedPrizes: number;
+  /** The part of `expectedPrizes` taken out of `otherIncome` (it can't go below zero); the next renewal adds it back. */
+  prizesOutOfOtherIncome: number;
   transferBudget: number;
   wageCap: number;
   /** Points of the last five matches in any competition, newest last. */

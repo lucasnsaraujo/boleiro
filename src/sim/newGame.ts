@@ -13,7 +13,7 @@ import { openingProfile } from "./players/openingProfile.js";
 import { tierOf } from "./finances/tierOf.js";
 import { openingContractUntil } from "./transfers/openingContractUntil.js";
 import { openingMarket } from "./transfers/openingMarket.js";
-import { cupEntriesOf, startSeason } from "./startSeason.js";
+import { startSeason } from "./startSeason.js";
 
 export type NewGameOptions = {
   clubs: readonly Club[];
@@ -67,7 +67,7 @@ export function newGame(
     });
   const squadPlayers = [...dataPlayers, ...academyTopUp(clubs, dataPlayers, `${season}-01-01`, randomStream(seed ^ ACADEMY_STREAM_SALT).next)];
   const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION);
-  const { economy, finances, wages } = openingFinances(clubsById, squadPlayers, fixtures, cupEntriesOf(competitions), financeData, competitionMoney);
+  const { economy, finances, wages } = openingFinances(clubsById, squadPlayers, competitions, fixtures, financeData, competitionMoney);
   return openingCoach({
     version: 1,
     seed,

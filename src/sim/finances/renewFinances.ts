@@ -1,9 +1,11 @@
 import type { Club } from "../../data/clubs.js";
 import type { Division } from "../../data/players.js";
-import type { ClubFinance, Fixture, GameState } from "../gameState.js";
+import type { ClubFinance, Competition, Fixture, GameState } from "../gameState.js";
 import type { LeagueOutcome } from "../leagueFormats.js";
 import { standings } from "../standings.js";
+import { cupEntriesOf } from "../startSeason.js";
 import { expectedCopaPrize } from "./expectedCopaPrize.js";
+import { expectedHomeGames } from "./expectedHomeGames.js";
 import { emptyLedger } from "./ledger.js";
 import { serieATv } from "./serieATv.js";
 import { setBoardBudget } from "./setBoardBudget.js";
@@ -26,8 +28,8 @@ const CEILING_PULL = 0.25;
 export function renewFinances(
   ended: GameState,
   clubs: Record<string, Club>,
+  competitions: Record<string, Competition>,
   fixtures: readonly Fixture[],
-  cupEntries: readonly (readonly string[])[],
   outcomes: Record<Division, LeagueOutcome>,
 ): Record<string, ClubFinance> {
   const { economy } = ended;
@@ -39,9 +41,8 @@ export function renewFinances(
   const ranked = [...lastTable.filter((id) => newSerieA.has(id)), ...[...newSerieA].filter((id) => !lastTable.includes(id))];
   const serieATvs = serieATv(economy, ranked, (id) => clubs[id]?.fanbase ?? 0);
   const rewarded = new Set(Object.values(outcomes).flatMap((o) => [o.championId, ...o.promotedIds]));
-  const homeGames = new Map<string, number>();
-  for (const f of fixtures) homeGames.set(f.homeId, (homeGames.get(f.homeId) ?? 0) + 1);
-  const cupEntryStage = new Map(cupEntries.flatMap((ids, stage) => ids.map((id) => [id, stage])));
+  const homeGames = expectedHomeGames(Object.values(competitions), fixtures);
+  const cupEntryStage = new Map(cupEntriesOf(competitions).flatMap((ids, stage) => ids.map((id) => [id, stage])));
   const wages = wageBillsOf(ended);
 
   return Object.fromEntries(Object.entries(ended.finances).map(([id, finance]) => {
@@ -59,21 +60,24 @@ export function renewFinances(
     const expectedTickets = Math.round(baseCrowd * ticketPrice * (homeGames.get(id) ?? 0));
     const entryStage = cupEntryStage.get(id);
     const expectedPrizes = entryStage === undefined ? 0 : Math.round(expectedCopaPrize(economy.copaDoBrasil, entryStage, to !== "A" && to !== "B"));
-    // The Copa prizes a club expects come out of its other income, so last season's expectation goes
-    // back in before this season's comes out; together they stay the club's unsimulated income.
-    const unsimulated = finance.otherIncome + finance.expectedPrizes;
+    // The prizes a club expects come out of its other income, so what last season took out goes back
+    // in before this season's comes out; together they stay the club's unsimulated income.
+    const unsimulated = finance.otherIncome + finance.prizesOutOfOtherIncome;
     const commercial = (finance.sponsorship + finance.membership + unsimulated) * step;
     const excess = (tv + expectedTickets + commercial) / economy.revenueCeiling[to];
     const pull = step * (excess > 1 ? excess ** -CEILING_PULL : 1);
     // The season turns on 1 January after December's closing, so `month` already holds January's
     // first day (coach salary, forced-sale fees); it carries over with the bonus added.
     const month = { ...finance.month, revenue: { ...finance.month.revenue, sponsorship: finance.month.revenue.sponsorship + bonus } };
+    const otherIncomeBeforePrizes = Math.round(unsimulated * pull);
+    const prizesOutOfOtherIncome = Math.min(otherIncomeBeforePrizes, expectedPrizes);
     const renewed: ClubFinance = {
       ...finance,
       cash: finance.cash + bonus,
       tv,
       sponsorship: Math.round(finance.sponsorship * pull),
-      otherIncome: Math.round(Math.max(0, unsimulated * pull - expectedPrizes)),
+      otherIncome: otherIncomeBeforePrizes - prizesOutOfOtherIncome,
+      prizesOutOfOtherIncome,
       membership: Math.round(finance.membership * pull),
       membershipAnchor: Math.round(finance.membershipAnchor * pull),
       infrastructure: Math.round(finance.infrastructure * step),

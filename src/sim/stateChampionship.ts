@@ -43,6 +43,12 @@ export const STATE_CHAMPIONSHIP = {
     return [dates.slice(0, GROUP_DATES), ...Array.from({ length: rounds }, (_, r) => knockout.slice(LEGS * r, LEGS * (r + 1)))];
   },
 
+  /** Clubs playing each stage: everyone in the groups, then the knockout halving to the final. */
+  stageSizes(clubCount: number): number[] {
+    const rounds = Math.log2(knockoutSize(clubCount));
+    return [clubCount, ...Array.from({ length: rounds }, (_, r) => knockoutSize(clubCount) / 2 ** r)];
+  },
+
   nextStage(competition: StateCompetition, fixtures: readonly Fixture[]): StageShape {
     const index = competition.stages.length;
     if (index === 0) return { kind: "groups", groups: snakeGroups(competition.clubIds), legs: 1 };

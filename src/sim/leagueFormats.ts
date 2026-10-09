@@ -15,6 +15,8 @@ export type StageShape = Omit<GroupStage, "dates"> | Omit<KnockoutStage, "dates"
 
 export type LeagueFormat = {
   stageDateCounts: (clubCount: number) => number[];
+  /** Clubs playing each stage. */
+  stageSizes: (clubCount: number) => number[];
   nextStage: (competition: LeagueCompetition, fixtures: readonly Fixture[], clubStates: Record<string, State>) => StageShape;
   outcome: (competition: LeagueCompetition, fixtures: readonly Fixture[]) => LeagueOutcome;
 };
@@ -36,6 +38,7 @@ const knockoutWinner = (competition: LeagueCompetition, fixtures: readonly Fixtu
 function singleTable(relegated: number, promoted: number): LeagueFormat {
   return {
     stageDateCounts: (clubCount) => [(clubCount - 1) * 2],
+    stageSizes: (clubCount) => [clubCount],
     nextStage: (competition) => ({ kind: "groups", groups: [competition.clubIds], legs: 2 }),
     outcome: (competition, fixtures) => {
       const order = table(competition, competition.clubIds, fixtures);
@@ -58,6 +61,7 @@ const serieCRelegated = (season: number) => (season <= 2026 ? 2 : 6);
 
 const serieC: LeagueFormat = {
   stageDateCounts: (clubCount) => [clubCount - 1, 6, 2],
+  stageSizes: (clubCount) => [clubCount, 8, 2],
   nextStage: (competition, fixtures) => {
     if (competition.stages.length === 0) return { kind: "groups", groups: [competition.clubIds], legs: 1 };
     if (competition.stages.length === 1) {
@@ -123,6 +127,11 @@ function crossGroupTies(rankedIds: readonly string[], groups: readonly string[][
 
 const serieD: LeagueFormat = {
   stageDateCounts: () => [10, 2, 2, 2, 2, 2, 2],
+  // Semi-finals and the quarter-final losers' playoffs share a stage.
+  stageSizes: (clubCount) => {
+    const lastSixtyFour = (clubCount / D_GROUP_SIZE) * D_QUALIFIERS_PER_GROUP;
+    return [clubCount, lastSixtyFour, lastSixtyFour / 2, lastSixtyFour / 4, lastSixtyFour / 8, lastSixtyFour / 8, 2];
+  },
   nextStage: (competition, fixtures, clubStates) => {
     const index = competition.stages.length;
     if (index === 0) {
