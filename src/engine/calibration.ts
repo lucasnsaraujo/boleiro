@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { parseCsv } from "../data/csv.js";
+import { loadResults } from "../data/history.js";
 import { CALIBRATED, matchOdds, type EngineParams, type Team } from "./match.js";
 
 export type LeagueRates = {
@@ -36,6 +37,23 @@ export function realSerieARates(): LeagueRates {
     goalsPerGame: games.reduce((sum, g) => sum + Number(g.HG) + Number(g.AG), 0) / games.length,
     homeWinP10: quantile(homeWinChances, 0.1),
     homeWinP90: quantile(homeWinChances, 0.9),
+  };
+}
+
+export type ResultRates = Pick<LeagueRates, "home" | "draw" | "away" | "goalsPerGame"> & { matches: number };
+
+const DIVISION_COMPETITION = { B: "serie-b", C: "serie-c", D: "serie-d" } as const;
+
+/** Every finished game from FIRST_CURRENT_SEASON on (Série D has only 2024); no odds exist for B–D. */
+export function realDivisionRates(division: keyof typeof DIVISION_COMPETITION): ResultRates {
+  const games = loadResults(DIVISION_COMPETITION[division]).filter((g) => g.season >= FIRST_CURRENT_SEASON);
+  const share = (won: (g: (typeof games)[number]) => boolean) => games.filter(won).length / games.length;
+  return {
+    matches: games.length,
+    home: share((g) => g.homeGoals > g.awayGoals),
+    draw: share((g) => g.homeGoals === g.awayGoals),
+    away: share((g) => g.homeGoals < g.awayGoals),
+    goalsPerGame: games.reduce((sum, g) => sum + g.homeGoals + g.awayGoals, 0) / games.length,
   };
 }
 
