@@ -9,6 +9,7 @@ import { recordMatchFinances } from "./finances/recordMatchFinances.js";
 import type { Competition, Fixture, GameState, SimPlayer } from "./gameState.js";
 import type { LeagueOutcome } from "./leagueFormats.js";
 import { openNextStage } from "./openNextStage.js";
+import { developPlayers, type PlayerRetired, type YouthPromoted } from "./players/developPlayers.js";
 import { isInjured } from "./players/isInjured.js";
 import { matchSetup } from "./players/matchSetup.js";
 import { recordMatchLoad, type PlayerInjured } from "./players/recordMatchLoad.js";
@@ -23,7 +24,9 @@ export type DayEvent =
   | { type: "stageOpened"; competitionId: string; stage: number }
   | { type: "seasonEnded"; season: number; outcomes: Record<string, LeagueOutcome> }
   | FinanceEvent
-  | PlayerInjured;
+  | PlayerInjured
+  | PlayerRetired
+  | YouthPromoted;
 
 const PENALTY_SHOOTOUT_HOME_WIN = 0.5; // guess: shootouts treated as a coin flip until a source on shootout odds is used
 
@@ -103,7 +106,8 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   }
   next = { ...next, rngState: random.state() };
   if (next.date.slice(0, 4) === String(state.season)) return { state: next, events };
-  const ended = endSeason(next);
-  events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes });
+  const developed = developPlayers(next);
+  const ended = endSeason(developed.state);
+  events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...developed.events);
   return { state: ended.state, events };
 }

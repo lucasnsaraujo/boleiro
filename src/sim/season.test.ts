@@ -115,6 +115,15 @@ describe("a full season", () => {
     expect(outcomes?.type === "seasonEnded" && Object.values(outcomes.outcomes).map((o) => o.relegatedIds.length)).toEqual([4, 4, 2, 64]);
   });
 
+  it("ages players, retires veterans and brings in youth players for the next season", () => {
+    const flamengo = (state: GameState) => Object.values(state.players).filter((p) => p.clubId === "flamengo-rj");
+    const stayed = flamengo(before).filter((p) => next.players[p.id]);
+    expect(stayed.every((p) => next.players[p.id]?.age === p.age + 1)).toBe(true);
+    expect(events.filter((e) => e.type === "playerRetired").length).toBeGreaterThan(100);
+    expect(events.filter((e) => e.type === "youthPromoted").length).toBeGreaterThan(100);
+    expect(flamengo(before).some((p) => p.condition.seasonMinutes > 0)).toBe(true);
+  });
+
   it("starts the next season with a fresh calendar", () => {
     expect(next.season).toBe(2027);
     expect(next.fixtures.every((f) => f.date.startsWith("2027-") && !f.result)).toBe(true);
