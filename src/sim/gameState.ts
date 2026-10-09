@@ -1,11 +1,12 @@
 import type { Club } from "../data/clubs.js";
 import type { Division } from "../data/players.js";
 import type { Player } from "../engine/match.js";
+import type { PlayerProfile } from "./players/playerProfile.js";
 
 export type IsoDate = string;
 
 /** `wage` is the monthly wage in BRL. */
-export type SimPlayer = Player & { id: string; clubId: string; wage: number };
+export type SimPlayer = Player & { id: string; clubId: string; wage: number } & PlayerProfile;
 
 export type MatchResult = {
   homeGoals: number;
