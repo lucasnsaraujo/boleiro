@@ -46,9 +46,12 @@ Sofascore shows a Cloudflare captcha if it gets requests too fast, so `fetch_his
 pnpm install
 pnpm test && pnpm typecheck && pnpm lint
 pnpm calibrate   # refits the engine, prints real-vs-Boleiro tables per division and for cup ties
-pnpm test:long   # plays ten seasons and checks club revenue and player strength stay in their division's band
+pnpm test:long   # plays ten seasons, saving and loading each one, and checks revenue, strength and transfers stay in their bands
 pnpm finances:report [seasons] [seed]   # prints revenue bands per division from a long run
 pnpm strength:report [seasons] [seed]   # prints player strength bands and mean age per division each season
 pnpm career [--seasons N] [--seed S]    # career mode with an auto-coach: clubs, targets, results, firings per division
 pnpm history [--seasons N] [--seed S] [--club ID]   # same career run, then a club's titles, finishes, records, idols and the coach's record
+pnpm season [--seasons N] [--seed S] [--club ID] [--report]   # whole seasons with no coach, then the realism report
 ```
+
+`pnpm season` prints, for each season, the final tables (Série A and B with points, the top of C and D), the Copa do Brasil and estadual winners, promotions and relegations, the five biggest transfer fees, revenue bands per division and the clubs with the most and least cash. Then it prints one club's history (`--club`, by default the last Série A champion) and a realism report: markdown tables that compare results, Copa do Brasil upsets by division gap, cards, revenue, foreign players and injuries with the real data the sim is built on. `--report` prints only the realism report. The default test suite plays two seasons of it, saving and loading the game at each season start.

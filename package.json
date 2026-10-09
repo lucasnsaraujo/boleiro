@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "career": "tsx src/cli/career.ts",
     "history": "tsx src/cli/history.ts",
+    "season": "tsx src/cli/season.ts",
     "calibrate": "tsx src/engine/calibrate.ts"
   },
   "devDependencies": {

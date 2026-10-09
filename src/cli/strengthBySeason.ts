@@ -8,7 +8,8 @@ export type StrengthBand = { season: number; tier: Tier; players: number; mean: 
 const quantile = (sorted: readonly number[], q: number) => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] ?? 0;
 const mean = (values: readonly number[]) => values.reduce((sum, v) => sum + v, 0) / Math.max(values.length, 1);
 
-function bands(state: GameState): StrengthBand[] {
+/** Each tier's strength and age band in a state. */
+export function strengthBands(state: GameState): StrengthBand[] {
   const byTier = new Map<Tier, { strength: number[]; age: number[] }>();
   for (const p of Object.values(state.players)) {
     const club = state.clubs[p.clubId];
@@ -27,7 +28,7 @@ function bands(state: GameState): StrengthBand[] {
 /** Plays `seasons` whole seasons with no coach and returns each division's strength band at the start of every season, plus the one after. */
 export function strengthBySeason(seed: number, seasons: number): { bands: StrengthBand[]; retired: number; youth: number; injuries: number } {
   let state = loadNewGame(seed, { coachClubId: null });
-  const result = { bands: bands(state), retired: 0, youth: 0, injuries: 0 };
+  const result = { bands: strengthBands(state), retired: 0, youth: 0, injuries: 0 };
   const lastSeason = state.season + seasons - 1;
   while (state.season <= lastSeason) {
     const day = advanceDay(state, {});
@@ -37,7 +38,7 @@ export function strengthBySeason(seed: number, seasons: number): { bands: Streng
       if (event.type === "youthPromoted") result.youth++;
       if (event.type === "playerInjured") result.injuries++;
     }
-    if (day.events.some((e) => e.type === "seasonEnded")) result.bands.push(...bands(state));
+    if (day.events.some((e) => e.type === "seasonEnded")) result.bands.push(...strengthBands(state));
   }
   return result;
 }

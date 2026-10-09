@@ -16,6 +16,25 @@ export type ClubSeason = {
   lateWageMonths: number;
 };
 
+/** Each club's books for the season that ended between `before` (its last day) and `after`. */
+export function clubSeasonsOf(before: GameState, after: GameState): ClubSeason[] {
+  return Object.entries(after.finances).flatMap(([clubId, finance]) => {
+    const club = before.clubs[clubId];
+    if (!club || !finance.lastSeason) return [];
+    const playerSales = finance.lastSeason.revenue.playerSales;
+    return [{
+      season: before.season,
+      clubId,
+      tier: tierOf(club),
+      revenue: totalRevenue(finance.lastSeason) - playerSales,
+      playerSales,
+      cash: finance.cash,
+      loans: finance.loans,
+      lateWageMonths: finance.lateWageMonths,
+    }];
+  });
+}
+
 /** Plays `seasons` whole seasons with no coach and returns each club's books for every season. */
 export function seasonRevenues(seed: number, seasons: number): { clubSeasons: ClubSeason[]; forcedSales: number; lateWageClosings: number; state: GameState } {
   let state = loadNewGame(seed, { coachClubId: null });
@@ -29,22 +48,7 @@ export function seasonRevenues(seed: number, seasons: number): { clubSeasons: Cl
     state = day.state;
     forcedSales += day.events.filter((e) => e.type === "forcedSale").length;
     lateWageClosings += day.events.filter((e) => e.type === "wagesLate").length;
-    if (!day.events.some((e) => e.type === "seasonEnded")) continue;
-    for (const [clubId, finance] of Object.entries(state.finances)) {
-      const club = before.clubs[clubId];
-      if (!club || !finance.lastSeason) continue;
-      const playerSales = finance.lastSeason.revenue.playerSales;
-      clubSeasons.push({
-        season: before.season,
-        clubId,
-        tier: tierOf(club),
-        revenue: totalRevenue(finance.lastSeason) - playerSales,
-        playerSales,
-        cash: finance.cash,
-        loans: finance.loans,
-        lateWageMonths: finance.lateWageMonths,
-      });
-    }
+    if (day.events.some((e) => e.type === "seasonEnded")) clubSeasons.push(...clubSeasonsOf(before, state));
   }
   return { clubSeasons, forcedSales, lateWageClosings, state };
 }
