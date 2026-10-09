@@ -57,6 +57,19 @@ describe("advanceDay", () => {
     expect(played?.result).toEqual(expected);
   });
 
+  it.each([
+    ["fewer than eleven players", (ids: string[]) => ids.slice(0, 1)],
+    ["the same player twice", (ids: string[]) => [...ids.slice(0, 10), ids[1] ?? ""]],
+    ["no goalkeeper", (ids: string[]) => ids.slice(1, 12)],
+  ])("refuses a coach lineup with %s", (_, shape) => {
+    const before = advanceTo(start, start.calendar.leagueDates.A[0] ?? "");
+    const squad = Object.values(before.players).filter((p) => p.clubId === "flamengo-rj");
+    const keeper = squad.filter((p) => p.group === "GK").slice(0, 1);
+    const ordered = [...keeper, ...squad.filter((p) => p.group !== "GK")].map((p) => p.id);
+    expect(() => advanceDay(before, { lineup: ordered.slice(0, 11) })).not.toThrow();
+    expect(() => advanceDay(before, { lineup: shape(ordered) })).toThrow();
+  });
+
   it("refuses a coach lineup with players from another club", () => {
     const before = advanceTo(start, start.calendar.leagueDates.A[0] ?? "");
     const outsider = Object.values(before.players).find((p) => p.clubId !== "flamengo-rj");
@@ -67,7 +80,9 @@ describe("advanceDay", () => {
     const firstDate = start.calendar.leagueDates.A[0] ?? "";
     const before = advanceTo(start, firstDate);
     const squad = Object.values(before.players).filter((p) => p.clubId === "flamengo-rj");
-    const weakest = [...squad].sort((a, b) => a.strength - b.strength).slice(0, 11).map((p) => p.id);
+    const byStrength = [...squad].sort((a, b) => a.strength - b.strength);
+    const weakestKeeper = byStrength.filter((p) => p.group === "GK").slice(0, 1);
+    const weakest = [...weakestKeeper, ...byStrength.filter((p) => p.group !== "GK").slice(0, 10)].map((p) => p.id);
     const goalDifference = (lineup: string[] | undefined) =>
       Array.from({ length: 40 }, (_, seed) => {
         const { state } = advanceDay({ ...before, rngState: seed }, lineup ? { lineup } : {});

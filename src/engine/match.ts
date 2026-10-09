@@ -98,10 +98,18 @@ function lowScoreAdjustment(h: number, a: number, lh: number, la: number, rho: n
   return 1;
 }
 
+const STARTERS = 11;
+
+/** A side that can't field eleven plays short from kick-off, exactly as if the missing men were sent off at minute 0. */
+function withMissingPlayers(home: Team, away: Team, sendOffs: SendOffs): SendOffs {
+  const kickOff = (team: Team) => Array.from({ length: Math.max(0, STARTERS - team.players.length) }, () => 0);
+  return { home: [...kickOff(home), ...sendOffs.home], away: [...kickOff(away), ...sendOffs.away] };
+}
+
 function scoreGrid(home: Team, away: Team, params: EngineParams, sendOffs: SendOffs): { grid: number[][]; lh: number; la: number } {
   const h = teamRatings(home);
   const a = teamRatings(away);
-  const rates = sendOffRates(sendOffs);
+  const rates = sendOffRates(withMissingPlayers(home, away, sendOffs));
   const lh = rates.home * params.baseGoals * Math.exp(params.homeAdvantage + params.strengthImpact * saturate(h.attack - a.defense, params.gapSaturation));
   const la = rates.away * params.baseGoals * Math.exp(params.strengthImpact * saturate(a.attack - h.defense, params.gapSaturation));
   const grid: number[][] = [];

@@ -58,6 +58,7 @@ export type DayEvent =
   | CoachEvent
   | TransferEvent;
 
+const LINEUP_SIZE = 11;
 const PENALTY_SHOOTOUT_HOME_WIN = 0.5; // guess: shootouts treated as a coin flip until a source on shootout odds is used
 
 /** Club squads, indexed on first use: most days have no match and need none. */
@@ -86,6 +87,8 @@ function coachLineupOf(state: GameState, decisions: DayDecisions): SimPlayer[] |
   if (chosen.length !== lineup.length) throw new Error(`lineup has players who are not at ${state.coachClubId}`);
   const injured = chosen.filter((player) => isInjured(player, state.date));
   if (injured.length) throw new Error(`lineup has injured players: ${injured.map((p) => p.name).join(", ")}`);
+  if (chosen.length !== LINEUP_SIZE || new Set(chosen).size !== LINEUP_SIZE) throw new Error(`lineup needs ${LINEUP_SIZE} different players`);
+  if (chosen.filter((player) => player.group === "GK").length !== 1) throw new Error("lineup needs exactly one goalkeeper");
   return chosen;
 }
 
