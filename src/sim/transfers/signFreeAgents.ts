@@ -44,9 +44,12 @@ export function signFreeAgents(state: GameState, random: () => number): { state:
       const signing = candidates.find((p: SimPlayer) => {
         const wage = Math.max(1, rate(p.strength));
         // guess: the board lets a short squad sign a free agent paid no more than its median wage, and
-        // a squad too thin to name a matchday squad sign anyone, whatever its limits.
+        // a squad too thin to name a matchday squad sign anyone, whatever its budget and wage cap. Even
+        // then it must have its wages paid and the cash for the signing costs.
+        const current = next.finances[clubId] ?? finance;
         const filler = squad.length < MIN_SQUAD || wage <= medianWage;
-        const refused = filler ? null : boardRefusal(next.finances[clubId] ?? finance, view.bill(clubId), { upFront: 3 * wage, wageChange: wage });
+        const canAfford = current.wagesOwed === 0 && current.cash >= 3 * wage;
+        const refused = filler ? (canAfford ? null : "cannotPay") : boardRefusal(current, view.bill(clubId), { upFront: 3 * wage, wageChange: wage });
         const from = view.tier(p.clubId);
         return !refused && random() < willingToJoin({ player: p, from, to: { tier: view.tier(clubId), fanbase: club.fanbase }, wage, unemployed: true });
       });
