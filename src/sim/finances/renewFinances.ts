@@ -7,6 +7,7 @@ import { expectedCopaPrize } from "./expectedCopaPrize.js";
 import { emptyLedger } from "./ledger.js";
 import { serieATv } from "./serieATv.js";
 import { setBoardBudget } from "./setBoardBudget.js";
+import { wageBillsOf } from "../transfers/wageBillsOf.js";
 import { tierOf } from "./tierOf.js";
 
 // guess: sponsors pay a tenth of the yearly deal as a bonus for a title or a promotion.
@@ -41,8 +42,7 @@ export function renewFinances(
   const homeGames = new Map<string, number>();
   for (const f of fixtures) homeGames.set(f.homeId, (homeGames.get(f.homeId) ?? 0) + 1);
   const cupEntryStage = new Map(cupEntries.flatMap((ids, stage) => ids.map((id) => [id, stage])));
-  const wages = new Map<string, number>();
-  for (const p of Object.values(ended.players)) wages.set(p.clubId, (wages.get(p.clubId) ?? 0) + p.wage);
+  const wages = wageBillsOf(ended);
 
   return Object.fromEntries(Object.entries(ended.finances).map(([id, finance]) => {
     const before = ended.clubs[id];

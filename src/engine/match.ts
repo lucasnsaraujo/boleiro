@@ -45,9 +45,9 @@ export const CALIBRATED: EngineParams = {
 export const FORMATION: Record<PositionGroup, number> = { GK: 1, DEF: 4, MID: 4, ATT: 2 };
 const MAX_GOALS = 10;
 
-export function pickLineup(players: Player[]): Player[] {
+export function pickLineup<P extends Player>(players: readonly P[]): P[] {
   const byStrength = [...players].sort((a, b) => b.strength - a.strength);
-  const lineup: Player[] = [];
+  const lineup: P[] = [];
   for (const [group, count] of Object.entries(FORMATION) as [PositionGroup, number][]) {
     lineup.push(...byStrength.filter((p) => p.group === group).slice(0, count));
   }

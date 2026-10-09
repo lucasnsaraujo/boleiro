@@ -1,0 +1,12 @@
+/**
+ * What the coach can ask the board. `sign` buys a player from another club, signs a free agent,
+ * signs a pre-contract with a player in his last six months, or triggers a loanee's purchase clause.
+ * `sell` puts one of his players up for the best Brazilian offer. `renew` extends a contract by `years`.
+ * `loanIn` borrows a player from a bigger club; `loanOut` lends a young player to a lower division.
+ */
+export type CoachRequest =
+  | { kind: "sign"; playerId: string }
+  | { kind: "sell"; playerId: string }
+  | { kind: "renew"; playerId: string; years: number }
+  | { kind: "loanIn"; playerId: string }
+  | { kind: "loanOut"; playerId: string };

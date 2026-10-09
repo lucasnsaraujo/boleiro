@@ -87,7 +87,8 @@ describe("club history over several seasons", () => {
   it("counts appearances and goals per club and names idols who accumulate them", () => {
     const first = clubHistory(run.states[0] ?? run.final, "flamengo-rj");
     const last = clubHistory(run.final, "flamengo-rj");
-    const apps = Object.values(run.states[0]?.history.players["flamengo-rj"] ?? {}).reduce((sum, p) => sum + p.apps, 0);
+    // Counted on the season's last day: the close forgets players who left with few games, as sales do.
+    const apps = Object.values(run.lastDays[0]?.history.players["flamengo-rj"] ?? {}).reduce((sum, p) => sum + p.apps, 0);
     const games = (run.lastDays[0]?.fixtures ?? []).filter((f) => f.homeId === "flamengo-rj" || f.awayId === "flamengo-rj").length;
     expect(apps).toBe(11 * games);
     expect(last.idols.length).toBeGreaterThan(first.idols.length);
@@ -119,9 +120,16 @@ describe("club history over several seasons", () => {
     }
   });
 
-  it("keeps each club's record sale and signing from forced sales", () => {
-    const sales = run.events.flatMap((e) => (e.type === "forcedSale" ? [e] : []));
+  it("keeps each club's record sale and signing from forced sales and market transfers", () => {
+    const sales = run.events.flatMap((e) =>
+      e.type === "forcedSale"
+        ? [e]
+        : e.type === "playerMoved" && e.fee > 0 && e.fromClubId
+          ? [{ clubId: e.fromClubId, buyerId: e.toClubId, playerId: e.playerId, fee: e.fee }]
+          : [],
+    );
     expect(sales.length).toBeGreaterThan(0);
+    expect(run.events.some((e) => e.type === "playerMoved" && e.fee > 0)).toBe(true);
     for (const sale of sales) {
       expect(history.clubs[sale.clubId]?.recordSale?.fee).toBeGreaterThanOrEqual(sale.fee);
       if (sale.buyerId) expect(history.clubs[sale.buyerId]?.recordSigning?.fee).toBeGreaterThanOrEqual(sale.fee);

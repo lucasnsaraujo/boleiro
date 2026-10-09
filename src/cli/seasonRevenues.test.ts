@@ -7,13 +7,13 @@ const TIERS: readonly Tier[] = ["A", "B", "C", "D", "state"];
 const ABOVE: Record<Tier, Tier> = { A: "A", B: "A", C: "B", D: "C", state: "D" };
 const operating = (f: Finances) => f.revenue.total - f.revenue.playerSales;
 
-// About 6 seconds, so it only runs with LONG_RUN=1 (`pnpm test:long`).
+// About a minute with the transfer market, so it only runs with LONG_RUN=1 (`pnpm test:long`).
 describe.skipIf(!process.env.LONG_RUN)("ten seasons of club money", () => {
   let clubSeasons: ClubSeason[] = [];
   let state: GameState | undefined;
   beforeAll(() => {
     ({ clubSeasons, state } = seasonRevenues(1, 10));
-  }, 60_000);
+  }, 300_000);
   const ended = (): GameState => {
     if (!state) throw new Error("the ten seasons did not run");
     return state;

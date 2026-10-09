@@ -46,7 +46,13 @@ describe("club finances across a season change", () => {
   it("pays the Série A champion a sponsor bonus", () => {
     const champion = outcome("a").championId;
     expect(financeOf(after, champion).month.revenue.sponsorship).toBeGreaterThan(0);
-    expect(financeOf(after, champion).cash).toBeGreaterThan(financeOf(before, champion).cash);
+    // The December closing (which may repay old debt) and pre-contract arrivals land the same day:
+    // the bonus is what is left of the day's cash change once both are taken out.
+    const closing = events.find((e) => e.type === "monthClosed" && e.clubId === champion);
+    if (closing?.type !== "monthClosed") throw new Error("no closing");
+    const { costs, revenue } = financeOf(after, champion).month;
+    const transferMoney = revenue.playerSales - costs.transferFees - costs.signingFees - costs.agentFees;
+    expect(financeOf(after, champion).cash - closing.cash - transferMoney).toBe(revenue.sponsorship);
   });
 
   it("files the finished season's books and opens empty ones", () => {
@@ -64,13 +70,14 @@ describe("club finances across a season change", () => {
     let rises = 0;
     let cuts = 0;
     for (const clubId of Object.keys(after.clubs)) {
-      const stayers = Object.values(before.players).filter((p) => p.clubId === clubId && after.players[p.id]?.clubId === clubId);
-      const top = stayers.sort((a, b) => b.wage - a.wage)[0];
+      // The drift runs on everyone who did not retire; contracts that ended are settled after it, the same day.
+      const drifted = Object.values(before.players).filter((p) => p.clubId === clubId && (after.players[p.id] || after.market.freeAgents[p.id]));
+      const top = drifted.filter((p) => after.players[p.id]?.clubId === clubId).sort((a, b) => b.wage - a.wage)[0];
       if (!top) continue;
       const ratio = (after.players[top.id]?.wage ?? 0) / top.wage;
       // Youth players join before the drift, so their wage before it is today's divided by the club's factor.
-      const newcomers = Object.values(after.players).filter((p) => p.clubId === clubId && !before.players[p.id]);
-      const bill = stayers.reduce((sum, p) => sum + p.wage, 0) + newcomers.reduce((sum, p) => sum + p.wage / ratio, 0);
+      const youth = events.flatMap((e) => (e.type === "youthPromoted" && e.clubId === clubId ? [after.players[e.playerId]] : []));
+      const bill = drifted.reduce((sum, p) => sum + p.wage, 0) + youth.reduce((sum, p) => sum + (p?.wage ?? 0) / ratio, 0);
       const cap = financeOf(after, clubId).wageCap;
       if (Math.abs(cap / bill - 1) < 0.05) continue;
       expect(ratio).toBeGreaterThanOrEqual(0.49);
@@ -86,7 +93,7 @@ describe("club finances across a season change", () => {
     const loaded = loadGame(saveGame(after));
     expect(loaded).toEqual(after);
     expect(playUntil(loaded, "2027-02-02").events).toEqual(playUntil(after, "2027-02-02").events);
-  });
+  }, 20_000); // the January window's market days make this month twice the work of a quiet one
 
   it("refuses a save without finances", () => {
     const withoutFinances = Object.fromEntries(Object.entries(after).filter(([key]) => key !== "finances"));

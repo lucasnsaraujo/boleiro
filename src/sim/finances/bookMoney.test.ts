@@ -25,12 +25,15 @@ describe("money booked between closings", () => {
   });
 
   it("moves a sold player and his fee between the two clubs", () => {
-    const player = Object.values(start.players).find((p) => p.clubId === "fortaleza-ce");
+    // May has no transfer window, so no other deal lands in the month's closing.
+    let may = start;
+    while (may.date < "2026-05-01") may = advanceDay(may, {}).state;
+    const player = Object.values(may.players).find((p) => p.clubId === "fortaleza-ce");
     if (!player) throw new Error("no player");
-    const sold = sellPlayer(start, { playerId: player.id, buyerId: "palmeiras-sp", fee: 10_000_000 });
+    const sold = sellPlayer(may, { playerId: player.id, buyerId: "palmeiras-sp", fee: 10_000_000 });
     expect(sold.players[player.id]?.clubId).toBe("palmeiras-sp");
-    expect(cashOf(sold, "fortaleza-ce") - cashOf(start, "fortaleza-ce")).toBe(10_000_000);
-    expect(cashOf(start, "palmeiras-sp") - cashOf(sold, "palmeiras-sp")).toBe(10_000_000);
+    expect(cashOf(sold, "fortaleza-ce") - cashOf(may, "fortaleza-ce")).toBe(10_000_000);
+    expect(cashOf(may, "palmeiras-sp") - cashOf(sold, "palmeiras-sp")).toBe(10_000_000);
     expect(closingOf(sold, "palmeiras-sp").ledger.costs.transferFees).toBe(10_000_000);
     expect(closingOf(sold, "fortaleza-ce").ledger.revenue.playerSales).toBe(10_000_000);
   });

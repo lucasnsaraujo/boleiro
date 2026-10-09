@@ -82,6 +82,17 @@ Notes:
 
 Mood swings, escalation thresholds, the strength effect of morale (at most one point either way) and the crowd effect of fan mood (at most 10%) are all `guess`, marked in the code.
 
+## Transfer market (`src/sim/transfers/`)
+
+| Value | Source |
+|---|---|
+| Windows: 5 Jan–3 Mar and 20 Jul–11 Sep, the same days every season; the restricted March window is left out | CBF 2026 registration windows via [Band](https://www.band.com.br/esportes/janela-internacional-de-transferencias-abre-hoje-veja-detalhes-202607191440) and [Itatiaia](https://www.itatiaia.com.br/esportes/futebol/futebol-nacional/veja-todas-as-datas-do-novo-calendario-do-futebol-brasileiro-em-2026/). AI clubs trading once a week inside a window is `guess`. |
+| Pre-contracts only in the last six months of a contract; the player leaves for free when it ends | FIFA Regulations on the Status and Transfer of Players, art. 18(3); Lei 14.597/2023 (Lei Geral do Esporte) ends the sporting bond when the contract ends. |
+| Valuation: €1.26M at strength 70, ×1.20 per strength point; ×1.07 a year younger than 27, ×0.947 a year older | Least squares of log Transfermarkt value in `players.csv` (1,170 players with value and age). Division discount and contract-length factor are `guess`. |
+| EUR/BRL opens at 6.31 and moves about 2.5% a month | 2025 average and monthly range of the BCB PTAX (series 21619), via [numerando.com.br](https://www.numerando.com.br/cambio/euro/2025). The pull back to 6.31 is `guess`. |
+| Agent commission: 3% of the player's pay over the contract | FIFA Football Agent Regulations (2023), art. 15 cap for the player's side. |
+| Opening contracts (one to four years in A/B, one or two below), willingness weights, Europe bid chances, AI renewal rule, signings from abroad, loan wage split (50%), signing bonuses | `guess`, each marked next to its constant. |
+
 ## Finances
 
 All money is in BRL (whole reais) unless a column says USD. `basis` is `published` (from the club's accounts or an official table), `estimate` (derived from press reports) or `guess` (no source found). Fetched 2026-10-09.

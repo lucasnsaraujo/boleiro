@@ -30,11 +30,16 @@ import { matchSetup } from "./players/matchSetup.js";
 import { recordMatchLoad, type PlayerInjured } from "./players/recordMatchLoad.js";
 import { paramsForCompetition } from "./paramsForCompetition.js";
 import { aggregate } from "./tieResults.js";
+import type { CoachRequest } from "./transfers/coachRequest.js";
+import { runTransferDay } from "./transfers/runTransferDay.js";
+import type { TransferEvent } from "./transfers/transferEvents.js";
 
 export type DayDecisions = {
   lineup?: readonly string[];
   /** The club whose open job offer the coach accepts today. */
   acceptOffer?: string;
+  /** Transfer requests to the board, decided at the start of the next day. */
+  requests?: readonly CoachRequest[];
 };
 
 export type DayEvent =
@@ -48,7 +53,8 @@ export type DayEvent =
   | YouthPromoted
   | PrizePaid
   | SupporterEvent
-  | CoachEvent;
+  | CoachEvent
+  | TransferEvent;
 
 const PENALTY_SHOOTOUT_HOME_WIN = 0.5; // guess: shootouts treated as a coin flip until a source on shootout odds is used
 
@@ -146,13 +152,17 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   next = career.state;
   events.push(...career.events);
   next = { ...next, rngState: random.state() };
-  if (next.date.slice(0, 4) === String(state.season)) return { state: recordDayEvents(next, events, state), events };
-  const developed = developPlayers(closeSeasonHistory(next));
-  const ended = endSeason(developed.state);
-  const coachRandom = randomStream(ended.state.rngState);
-  const started = startCoachSeason(ended.state, Object.values(ended.outcomes), coachRandom.next);
-  events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...developed.events, ...started.events);
-  // Bans still pending when a competition ends lapse with it.
-  const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
-  return { state: recordDayEvents({ ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() }, events, state), events };
+  if (next.date.slice(0, 4) !== String(state.season)) {
+    const developed = developPlayers(closeSeasonHistory(next));
+    const ended = endSeason(developed.state);
+    const coachRandom = randomStream(ended.state.rngState);
+    const started = startCoachSeason(ended.state, Object.values(ended.outcomes), coachRandom.next);
+    events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...developed.events, ...started.events);
+    // Bans still pending when a competition ends lapse with it.
+    const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
+    next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };
+  }
+  const market = runTransferDay(next, decisions.requests ?? []);
+  events.push(...market.events);
+  return { state: recordDayEvents(market.state, events, state), events };
 }

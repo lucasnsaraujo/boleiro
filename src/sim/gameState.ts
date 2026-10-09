@@ -7,11 +7,12 @@ import type { Discipline, MatchCards } from "./discipline/discipline.js";
 import type { History } from "./history/history.js";
 import type { ClubMood } from "./morale/clubMood.js";
 import type { PlayerProfile } from "./players/playerProfile.js";
+import type { TransferMarket } from "./transfers/transferMarket.js";
 
 export type IsoDate = string;
 
-/** `wage` is the monthly wage in BRL. */
-export type SimPlayer = Player & { id: string; clubId: string; wage: number } & PlayerProfile;
+/** `wage` is the monthly wage in BRL; the contract runs to the end of `contractUntil`. */
+export type SimPlayer = Player & { id: string; clubId: string; wage: number; contractUntil: IsoDate } & PlayerProfile;
 
 export type MatchResult = {
   homeGoals: number;
@@ -156,4 +157,5 @@ export type GameState = {
   discipline: Discipline;
   /** Champions, records, idols and the coach's career, kept across seasons. */
   history: History;
+  market: TransferMarket;
 };

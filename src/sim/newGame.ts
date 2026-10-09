@@ -9,6 +9,9 @@ import { openingFinances, type FinanceData } from "./finances/openingFinances.js
 import type { GameState, SimPlayer } from "./gameState.js";
 import type { Qualification } from "./copaDoBrasilEntrants.js";
 import { openingProfile } from "./players/openingProfile.js";
+import { tierOf } from "./finances/tierOf.js";
+import { openingContractUntil } from "./transfers/openingContractUntil.js";
+import { openingMarket } from "./transfers/openingMarket.js";
 import { cupEntriesOf, startSeason } from "./startSeason.js";
 
 export type NewGameOptions = {
@@ -26,6 +29,7 @@ const FIRST_SEASON = 2026;
 // Traits draw from their own stream so they don't reshuffle the fixtures a seed has always given.
 const TRAIT_STREAM_SALT = 0x7a175;
 const COACH_STREAM_SALT = 0xc0ac4;
+const CONTRACT_STREAM_SALT = 0xc0417;
 // guess: with no earlier estaduais played, the first season seeds them and fills the Copa do Brasil
 // from the national ranking stand-in (division, then fanbase).
 const FIRST_QUALIFICATION: Qualification = { statePlacings: {}, phase3Ids: [] };
@@ -36,12 +40,15 @@ export function newGame(
 ): GameState {
   const random = randomStream(seed);
   const traitRandom = randomStream(seed ^ TRAIT_STREAM_SALT);
+  const contractRandom = randomStream(seed ^ CONTRACT_STREAM_SALT);
   const clubsById = Object.fromEntries(clubs.map((club) => [club.id, club]));
   const squadPlayers = players
     .filter((player) => clubsById[player.clubId])
     .map((player, index): Omit<SimPlayer, "wage"> => {
       const { clubId, name, group, strength } = player;
-      return { id: `p${index}`, clubId, name, group, strength, ...openingProfile(player, `${season}-01-01`, traitRandom.next) };
+      const tier = tierOf(clubsById[clubId] ?? { division: null });
+      const contractUntil = openingContractUntil(tier, season, contractRandom.next);
+      return { id: `p${index}`, clubId, name, group, strength, contractUntil, ...openingProfile(player, `${season}-01-01`, traitRandom.next) };
     });
   const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION);
   const { economy, finances, wages } = openingFinances(clubsById, squadPlayers, fixtures, cupEntriesOf(competitions), financeData, competitionMoney);
@@ -62,5 +69,6 @@ export function newGame(
     mood: Object.fromEntries(clubs.map((club) => [club.id, NEUTRAL_MOOD])),
     discipline: {},
     history: newHistory(season, `${season}-01-01`, careerMode ? null : coachClubId),
+    market: openingMarket(seed),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
 }

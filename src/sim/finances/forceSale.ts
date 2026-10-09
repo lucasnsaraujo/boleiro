@@ -1,13 +1,14 @@
 import { pickLineup } from "../../engine/match.js";
 import type { GameState, Tier } from "../gameState.js";
-import { sellPlayer } from "./sellPlayer.js";
+import { movePlayer, openDraft } from "../transfers/movePlayer.js";
+import { valuePlayer } from "../transfers/valuePlayer.js";
 import { projectedRevenue } from "./setBoardBudget.js";
 import { tierOf } from "./tierOf.js";
 
 export type ForcedSale = { type: "forcedSale"; clubId: string; playerId: string; buyerId: string | null; fee: number };
 
-// guess: placeholder valuation until #11 — a fire sale fetches a year and a half of the player's wages.
-const FEE_IN_YEARS_OF_WAGES = 1.5;
+// guess: a fire sale fetches three quarters of the player's market value.
+const FIRE_SALE_SHARE_OF_VALUE = 0.75;
 // guess: the board keeps at least 18 players so the coach can still name a matchday squad.
 const MIN_SQUAD = 18;
 const TIER_RANK: Record<Tier, number> = { A: 0, B: 1, C: 2, D: 3, state: 4 };
@@ -24,7 +25,7 @@ export function forceSale(state: GameState, clubId: string, random: () => number
   const key = new Set(pickLineup(squad));
   const player = squad.filter((p) => !key.has(p)).sort((a, b) => b.wage - a.wage || a.id.localeCompare(b.id))[0];
   if (!player) return null;
-  const fee = Math.round(FEE_IN_YEARS_OF_WAGES * 12 * player.wage);
+  const fee = Math.round(FIRE_SALE_SHARE_OF_VALUE * valuePlayer(player, tierOf(seller), state.date) * state.market.eurBrl);
   const sellerRevenue = projectedRevenue(sellerFinance);
   const buyers = Object.values(state.clubs)
     .filter((club) => {
@@ -37,7 +38,7 @@ export function forceSale(state: GameState, clubId: string, random: () => number
     .sort();
   const buyerId = buyers.length ? (buyers[Math.floor(random() * buyers.length)] ?? null) : null;
   return {
-    state: sellPlayer(state, { playerId: player.id, buyerId, fee }),
+    state: movePlayer(openDraft(state), { playerId: player.id, kind: buyerId ? "transfer" : "abroad", toClubId: buyerId, fee }).state,
     sale: { type: "forcedSale", clubId, playerId: player.id, buyerId, fee },
   };
 }
