@@ -60,7 +60,7 @@ function pickDates(division: Division, count: number, season: number, reserved: 
     while (next < candidates.length) {
       const date = candidates[next] as IsoDate;
       const offset = daysBetween(start, date);
-      if (offset >= target || i === count - 1 || candidates.length - next <= count - i) {
+      if (offset >= target || candidates.length - next <= count - i) {
         if (!last || daysBetween(last, date) >= MIN_DAYS_BETWEEN_GAMES) break;
       }
       next++;

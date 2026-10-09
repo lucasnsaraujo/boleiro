@@ -121,6 +121,21 @@ function serieDSeeds(competition: LeagueCompetition, fixtures: readonly Fixture[
     .map((p) => p.row.clubId);
 }
 
+// guess: best remaining seed meets the worst remaining seed from another group; CBF's real pairings are regional.
+function crossGroupTies(rankedIds: readonly string[], groups: readonly string[][]): [string, string][] {
+  const groupOf = new Map(groups.flatMap((group, g) => group.map((id) => [id, g])));
+  const remaining = [...rankedIds];
+  const ties: [string, string][] = [];
+  while (remaining.length > 0) {
+    const best = remaining.shift() ?? "";
+    const reversed = [...remaining].reverse();
+    const opponent = reversed.find((id) => groupOf.get(id) !== groupOf.get(best)) ?? reversed[0] ?? "";
+    remaining.splice(remaining.indexOf(opponent), 1);
+    ties.push([best, opponent]);
+  }
+  return ties;
+}
+
 const serieD: LeagueFormat = {
   stageDateCounts: () => [10, 2, 2, 2, 2, 2, 2],
   nextStage: (competition, fixtures, clubStates) => {
@@ -134,7 +149,7 @@ const serieD: LeagueFormat = {
     }
     const seeds = serieDSeeds(competition, fixtures);
     const bySeed = (ids: string[]) => ids.sort((a, b) => seeds.indexOf(a) - seeds.indexOf(b));
-    if (index === 1) return { kind: "knockout", ties: seededTies(seeds) };
+    if (index === 1) return { kind: "knockout", ties: crossGroupTies(seeds, groupStage(competition, 0).groups) };
     const previous = tieResults(knockoutStage(competition, index - 1), stageOf(fixtures, index - 1));
     if (index === D_STAGES.semiFinals) {
       const semiFinals = seededTies(bySeed(previous.map((r) => r.winnerId)));

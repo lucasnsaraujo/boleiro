@@ -25,7 +25,7 @@ const squadStrength = (squad: readonly SimPlayer[]) => {
 };
 
 // Placeholder until #8: the state championships should decide who fills Série D. For now the
-// strongest squads outside Série A–C take the free places.
+// strongest squads outside Série A–D, other than the clubs Série D just dropped, take the free places.
 function serieDNewcomers(state: GameState, taken: ReadonlySet<string>, count: number): string[] {
   const squads = new Map<string, SimPlayer[]>();
   for (const player of Object.values(state.players)) squads.set(player.clubId, [...(squads.get(player.clubId) ?? []), player]);
@@ -53,7 +53,7 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
 
   const divisionOf = (club: Club) => (moves.has(club.id) ? (moves.get(club.id) ?? null) : club.division);
   const nextDivision = new Map(Object.values(state.clubs).map((club) => [club.id, divisionOf(club)]));
-  const taken = new Set([...nextDivision].filter(([, division]) => division !== null).map(([id]) => id));
+  const taken = new Set([...nextDivision].filter(([, division]) => division !== null).map(([id]) => id).concat(d.relegatedIds));
   const stayingInD = [...nextDivision.values()].filter((division) => division === "D").length;
   for (const id of serieDNewcomers(state, taken, SERIE_D_SIZE - stayingInD)) nextDivision.set(id, "D");
 

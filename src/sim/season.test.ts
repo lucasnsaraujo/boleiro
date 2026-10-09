@@ -93,6 +93,24 @@ describe("a full season", () => {
     expect(membersOf(next, "D")).toHaveLength(96);
   });
 
+  it("drops Série D clubs knocked out before the last 32 out of the national leagues", () => {
+    const league = leagueOf(before, "D");
+    const lastThirtyTwo = league.stages[2];
+    const survivors = new Set(lastThirtyTwo?.kind === "knockout" ? lastThirtyTwo.ties.flat() : []);
+    const eliminated = league.clubIds.filter((id) => !survivors.has(id));
+    expect(eliminated).toHaveLength(64);
+    expect(eliminated.filter((id) => next.clubs[id]?.division !== null)).toEqual([]);
+  });
+
+  it("never pairs two clubs from the same Série D group in the first knockout round", () => {
+    const league = leagueOf(before, "D");
+    const [groupStage, firstKnockout] = league.stages;
+    const groupOf = new Map(groupStage?.kind === "groups" ? groupStage.groups.flatMap((g, i) => g.map((id) => [id, i])) : []);
+    const ties = firstKnockout?.kind === "knockout" ? firstKnockout.ties : [];
+    expect(ties).toHaveLength(32);
+    expect(ties.filter(([a, b]) => groupOf.get(a) === groupOf.get(b))).toEqual([]);
+  });
+
   it("reports each league's champion, promotions and relegations", () => {
     expect(outcomes?.type === "seasonEnded" && Object.values(outcomes.outcomes).map((o) => o.relegatedIds.length)).toEqual([4, 4, 2, 64]);
   });
