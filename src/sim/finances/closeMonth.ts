@@ -1,4 +1,6 @@
 import type { ClubFinance, GameState, Ledger } from "../gameState.js";
+import { marketView, type MarketView } from "../transfers/marketView.js";
+import { openDraft } from "../transfers/movePlayer.js";
 import { wageBillsOf } from "../transfers/wageBillsOf.js";
 import { forceSale, type ForcedSale } from "./forceSale.js";
 import { addLedgers, emptyLedger } from "./ledger.js";
@@ -120,6 +122,8 @@ export function closeMonth(state: GameState, random: () => number): { state: Gam
   const month = previousMonth(state.date);
   const events: FinanceEvent[] = [];
   let current = state;
+  // Opened at the first forced sale, then shared by the rest of the closing's sales.
+  let view: MarketView | null = null;
   for (const clubId of Object.keys(state.finances).sort()) {
     const opening = current.finances[clubId];
     if (!opening) continue;
@@ -131,7 +135,11 @@ export function closeMonth(state: GameState, random: () => number): { state: Gam
     current = { ...current, finances: { ...current.finances, [clubId]: finance } };
     if (late) events.push({ type: "wagesLate", clubId, owed: finance.wagesOwed, months: finance.lateWageMonths });
     if (late && finance.lateWageMonths >= FORCED_SALE_AFTER_LATE_MONTHS) {
-      const sold = forceSale(current, clubId, random);
+      if (!view) {
+        current = openDraft(current);
+        view = marketView(current);
+      }
+      const sold = forceSale(current, clubId, random, view);
       if (sold) {
         events.push(sold.sale);
         current = sold.state;

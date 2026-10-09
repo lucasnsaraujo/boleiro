@@ -1,6 +1,7 @@
 import type { State } from "../data/clubs.js";
 import { simulateMatch } from "../engine/match.js";
 import { randomStream } from "../engine/random.js";
+import { copyRecord } from "./copyRecord.js";
 import { addDays } from "./dates.js";
 import { coachCareerDay } from "./coach/coachCareerDay.js";
 import type { CoachEvent } from "./coach/coachEvent.js";
@@ -8,8 +9,8 @@ import { startCoachSeason } from "./coach/startCoachSeason.js";
 import { CARD_RATES, cardCompetitionOf } from "./discipline/cardRates.js";
 import type { DisciplineEvent } from "./discipline/discipline.js";
 import { countCards, drawCards, sendOffMinutes } from "./discipline/drawCards.js";
-import { recordCards } from "./discipline/recordCards.js";
-import { refuseSuspended, suspendedPlayers } from "./discipline/suspendedPlayers.js";
+import { openDisciplineDay } from "./discipline/recordCards.js";
+import { refuseSuspended } from "./discipline/suspendedPlayers.js";
 import { endSeason } from "./endSeason.js";
 import { closeSeasonHistory } from "./history/closeSeasonHistory.js";
 import { recordDayEvents } from "./history/recordDayEvents.js";
@@ -27,6 +28,7 @@ import { reactToDay } from "./morale/reactToDay.js";
 import { withoutCrowd } from "./morale/withoutCrowd.js";
 import { isInjured } from "./players/isInjured.js";
 import { matchSetup } from "./players/matchSetup.js";
+import { squadsByClub } from "./players/squadsByClub.js";
 import { recordMatchLoad, type PlayerInjured } from "./players/recordMatchLoad.js";
 import { paramsForCompetition } from "./paramsForCompetition.js";
 import { aggregate } from "./tieResults.js";
@@ -58,14 +60,23 @@ export type DayEvent =
 
 const PENALTY_SHOOTOUT_HOME_WIN = 0.5; // guess: shootouts treated as a coin flip until a source on shootout odds is used
 
+/** Club squads, indexed on first use: most days have no match and need none. */
 function squadsOf(state: GameState): (clubId: string) => SimPlayer[] {
-  const squads = new Map<string, SimPlayer[]>();
-  for (const player of Object.values(state.players)) {
-    const squad = squads.get(player.clubId) ?? [];
-    squad.push(player);
-    squads.set(player.clubId, squad);
+  let squads: Map<string, SimPlayer[]> | null = null;
+  return (clubId) => {
+    squads ??= squadsByClub(state.players);
+    return squads.get(clubId) ?? [];
+  };
+}
+
+function fixturesByCompetition(fixtures: readonly Fixture[]): Map<string, Fixture[]> {
+  const byCompetition = new Map<string, Fixture[]>();
+  for (const fixture of fixtures) {
+    const own = byCompetition.get(fixture.competitionId);
+    if (own) own.push(fixture);
+    else byCompetition.set(fixture.competitionId, [fixture]);
   }
-  return (clubId) => squads.get(clubId) ?? [];
+  return byCompetition;
 }
 
 function coachLineupOf(state: GameState, decisions: DayDecisions): SimPlayer[] | null {
@@ -89,14 +100,14 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   const squad = squadsOf(state);
   const coachLineup = coachLineupOf(state, decisions);
   const playedToday: SimPlayer[] = [];
-  let discipline = state.discipline;
+  const cards = openDisciplineDay(state.discipline);
   const lineups: MatchLineups = {};
 
   let fixtures = state.fixtures.map((fixture) => {
     if (fixture.date !== state.date || fixture.result) return fixture;
     const competition = state.competitions[fixture.competitionId];
     if (!competition) throw new Error(`fixture ${fixture.id} has no competition ${fixture.competitionId}`);
-    const suspended = suspendedPlayers(discipline, fixture.competitionId);
+    const suspended = cards.suspended(fixture.competitionId);
     if (state.coachClubId && [fixture.homeId, fixture.awayId].includes(state.coachClubId)) refuseSuspended(coachLineup ?? [], suspended);
     const setup = matchSetup(state, fixture, (clubId) => squad(clubId).filter((p) => !suspended.has(p.id)), coachLineup);
     const bookings = drawCards(setup.homeLineup, setup.awayLineup, CARD_RATES[cardCompetitionOf(competition)], random.next);
@@ -116,16 +127,15 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
     const load = recordMatchLoad({ ...setup, result: score }, random.next);
     playedToday.push(...load.players);
     events.push(...load.events);
-    const carded = recordCards(discipline, competition, played, bookings, (id) => state.players[id]?.clubId, random.next);
-    discipline = carded.discipline;
-    events.push(...carded.events);
+    events.push(...cards.record(competition, played, bookings, (id) => state.players[id]?.clubId, random.next));
     return played;
   });
 
   const clubStates: Record<string, State> = Object.fromEntries(Object.values(state.clubs).map((club) => [club.id, club.state]));
   const competitions = { ...state.competitions };
+  const byCompetition = fixturesByCompetition(fixtures);
   for (const competition of Object.values(state.competitions)) {
-    const own = fixtures.filter((f) => f.competitionId === competition.id);
+    const own = byCompetition.get(competition.id) ?? [];
     const current = competition.stages.length - 1;
     const stageDone = own.filter((f) => f.stage === current).every((f) => f.result !== null);
     if (!stageDone || competition.stages.length >= competition.stageDates.length) continue;
@@ -135,8 +145,9 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
     events.push({ type: "stageOpened", competitionId: competition.id, stage: current + 1 });
   }
 
-  const players = playedToday.length ? { ...state.players, ...Object.fromEntries(playedToday.map((p) => [p.id, p])) } : state.players;
-  let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline };
+  const players = playedToday.length ? copyRecord(state.players) : state.players;
+  for (const player of playedToday) players[player.id] = player;
+  let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: cards.discipline() };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
   next = recordMatches(next, played, lineups);
   for (const fixture of played) next = recordMatchFinances(next, fixture);
