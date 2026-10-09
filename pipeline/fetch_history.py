@@ -51,7 +51,23 @@ PICK_ODDS = """j=>{const m=j.markets.find(m=>m.marketId===1);return m?m.choices.
 PICK_STANDINGS = """j=>j.standings.flatMap(s=>s.rows.map(r=>[r.team.id,r.team.name]))"""
 
 
+_browser_open = False
+
+
+def open_sofascore() -> None:
+    """Opens the page on first use, so a rebuild from a full cache needs no browser."""
+    global _browser_open
+    if _browser_open:
+        return
+    subprocess.run(["agent-browser", "open", "https://www.sofascore.com/"], check=True, capture_output=True)
+    _browser_open = True
+    url = subprocess.run(["agent-browser", "get", "url"], check=True, capture_output=True, text=True).stdout
+    if "captcha" in url:
+        raise RuntimeError("Sofascore answered with a Cloudflare captcha; wait a while (it took over 35 minutes once) and rerun")
+
+
 def browser_fetch(paths: list[str], pick: str) -> list[tuple[int, object]]:
+    open_sofascore()
     results: list[tuple[int, object]] = []
     for start in range(0, len(paths), BATCH):
         if start:
@@ -167,11 +183,7 @@ def main() -> None:
     args = parser.parse_args()
     CACHE.mkdir(exist_ok=True)
     years = range(args.first, args.last + 1)
-    subprocess.run(["agent-browser", "open", "https://www.sofascore.com/"], check=True, capture_output=True)
     try:
-        url = subprocess.run(["agent-browser", "get", "url"], check=True, capture_output=True, text=True).stdout
-        if "captcha" in url:
-            raise RuntimeError("Sofascore answered with a Cloudflare captcha; wait a few minutes and rerun")
         seasons = {key: season_ids(t) for key, t in TOURNAMENTS.items()}
         divisions = []
         for year in years:
@@ -193,7 +205,8 @@ def main() -> None:
                 print(f"{key} {year}: {sum(r['season'] == year for r in rows)} matches", flush=True)
             write_csv(OUT / filename, RESULT_COLUMNS, rows)
     finally:
-        subprocess.run(["agent-browser", "close"], capture_output=True)
+        if _browser_open:
+            subprocess.run(["agent-browser", "close"], capture_output=True)
 
 
 if __name__ == "__main__":
