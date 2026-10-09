@@ -114,6 +114,8 @@ export type Economy = {
   matchday: Record<Tier, { attendance: number; price: number }>;
   /** Typical yearly revenue without player sales, used to rescale a club that changes division. */
   typicalRevenue: Record<Tier, number>;
+  /** Highest yearly revenue without player sales in the division's data; richer clubs drift back. */
+  revenueCeiling: Record<Tier, number>;
 };
 
 export type GameState = {

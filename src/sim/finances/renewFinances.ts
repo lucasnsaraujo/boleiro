@@ -11,11 +11,15 @@ import { tierOf } from "./tierOf.js";
 // guess: sponsors pay a tenth of the yearly deal as a bonus for a title or a promotion.
 const SPONSOR_BONUS_SHARE = 0.1;
 
+// guess: a club earning more than anyone in its division's data loses a quarter of the excess (in
+// log terms) from sponsorship, membership and other income each season.
+const CEILING_PULL = 0.25;
+
 /**
- * Season-start money: clubs that changed division get that division's TV money, and their
- * sponsorship and other income scale with the division's typical revenue. Fans are loyal, so
- * crowds and membership move only by the square root of the gap (guess). Running costs follow
- * the same square root (guess: a stadium does not shrink with the division).
+ * Season-start money: clubs that changed division get that division's TV money and ticket price.
+ * Sponsorship, membership, other income, crowds and running costs move by the square root of the
+ * gap between the divisions' typical revenues (guess: fans and sponsors stay partly loyal, and a
+ * stadium does not shrink with the division).
  */
 export function renewFinances(
   ended: GameState,
@@ -43,26 +47,30 @@ export function renewFinances(
     if (!before || !club) return [id, finance];
     const from = tierOf(before);
     const to = tierOf(club);
-    const revenueRatio = economy.typicalRevenue[to] / economy.typicalRevenue[from];
-    const fanRatio = Math.sqrt(revenueRatio);
+    const step = Math.sqrt(economy.typicalRevenue[to] / economy.typicalRevenue[from]);
     const crowdRatio = Math.sqrt(economy.matchday[to].attendance / economy.matchday[from].attendance);
     const bonus = rewarded.has(id) ? Math.round(SPONSOR_BONUS_SHARE * finance.sponsorship) : 0;
     const ticketPrice = economy.matchday[to].price;
     const baseCrowd = Math.round(finance.baseCrowd * crowdRatio);
+    const tv = to === "A" ? (serieATvs[id] ?? 0) : economy.tvPerClub[to];
+    const expectedTickets = Math.round(baseCrowd * ticketPrice * (homeGames.get(id) ?? 0));
+    const commercial = (finance.sponsorship + finance.membership + finance.otherIncome) * step;
+    const excess = (tv + expectedTickets + commercial) / economy.revenueCeiling[to];
+    const pull = step * (excess > 1 ? excess ** -CEILING_PULL : 1);
     const month = emptyLedger();
     month.revenue.sponsorship = bonus;
     const renewed: ClubFinance = {
       ...finance,
       cash: finance.cash + bonus,
-      tv: to === "A" ? (serieATvs[id] ?? 0) : economy.tvPerClub[to],
-      sponsorship: Math.round(finance.sponsorship * revenueRatio),
-      otherIncome: Math.round(finance.otherIncome * revenueRatio),
-      membership: Math.round(finance.membership * fanRatio),
-      membershipAnchor: Math.round(finance.membershipAnchor * fanRatio),
-      infrastructure: Math.round(finance.infrastructure * fanRatio),
+      tv,
+      sponsorship: Math.round(finance.sponsorship * pull),
+      otherIncome: Math.round(finance.otherIncome * pull),
+      membership: Math.round(finance.membership * pull),
+      membershipAnchor: Math.round(finance.membershipAnchor * pull),
+      infrastructure: Math.round(finance.infrastructure * step),
       ticketPrice,
       baseCrowd,
-      expectedTickets: Math.round(baseCrowd * ticketPrice * (homeGames.get(id) ?? 0)),
+      expectedTickets,
       month: { ...month, points: 0, games: 0 },
       season: emptyLedger(),
       lastSeason: finance.season,

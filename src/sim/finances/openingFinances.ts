@@ -4,7 +4,7 @@ import type { ClubFinances, DivisionFinances, Finances } from "../../data/financ
 import type { ClubFinance, Economy, Fixture, SimPlayer, Tier } from "../gameState.js";
 import { emptyLedger } from "./ledger.js";
 import { serieATv } from "./serieATv.js";
-import { setBoardBudget } from "./setBoardBudget.js";
+import { setBoardBudget, TRANSFER_SHARE_OF_REVENUE } from "./setBoardBudget.js";
 import { squadStrength } from "./squadStrength.js";
 import { tierOf } from "./tierOf.js";
 
@@ -18,8 +18,9 @@ const STATE_ONLY_SHARE_OF_SMALL_SERIE_D = 0.5;
 const STATE_ONLY_MATCHDAY = { attendance: 1000, price: 15 };
 // guess: stadiums rarely sell the last tenth of seats (away sections, safety gaps).
 export const SELLABLE_SHARE_OF_CAPACITY = 0.9;
-// guess: stadium, training ground, staff and travel, as a share of revenue without player sales.
-const INFRASTRUCTURE_SHARE_OF_REVENUE = 0.1;
+// guess: stadium, training ground, staff and travel take at least a tenth of revenue without player sales.
+// Above that floor they absorb whatever wages and the transfer reserve leave, so clubs open near break-even.
+const MIN_INFRASTRUCTURE_SHARE_OF_REVENUE = 0.1;
 // guess: clubs start with one month of revenue in the bank unless their accounts show net cash.
 const OPENING_CASH_MONTHS_OF_REVENUE = 1;
 // guess: wages rise about 10% per strength point, so a 70 earns about 20 times a 40 at the same club.
@@ -39,6 +40,9 @@ const scale = (a: Money, factor: number): Money => ({
   total: a.total * factor, membership: a.membership * factor, sponsorship: a.sponsorship * factor,
   playerSales: a.playerSales * factor, wageBill: a.wageBill * factor, netDebt: a.netDebt * factor,
 });
+
+const quantile = (values: readonly number[], q: number): number =>
+  [...values].sort((a, b) => a - b)[Math.floor(q * (values.length - 1))] ?? 0;
 
 const median = (values: readonly number[]): number => {
   const sorted = [...values].sort((a, b) => a - b);
@@ -68,11 +72,20 @@ function economyOf(data: FinanceData, competitionMoney: CompetitionMoney): Econo
       state: STATE_ONLY_MATCHDAY,
     },
     typicalRevenue: {
-      A: median(data.clubs.map((row) => operatingRevenue(moneyOf(row)))),
+      // guess: clubs that move between Série A and B are the smaller ones, so Série A is typified by its lower quartile.
+      A: quantile(data.clubs.map((row) => operatingRevenue(moneyOf(row))), 0.25),
       B: operatingRevenue(estimateOf(data, "B", "median")),
       C: operatingRevenue(estimateOf(data, "C", "median")),
       D: operatingRevenue(estimateOf(data, "D", "median")),
       state: operatingRevenue(stateOnly),
+    },
+    revenueCeiling: {
+      A: Math.max(...data.clubs.map((row) => operatingRevenue(moneyOf(row)))),
+      B: operatingRevenue(estimateOf(data, "B", "large")),
+      C: operatingRevenue(estimateOf(data, "C", "large")),
+      D: operatingRevenue(estimateOf(data, "D", "large")),
+      // guess: no state-only club earns more than a large Série D club.
+      state: operatingRevenue(estimateOf(data, "D", "large")),
     },
   };
 }
@@ -129,6 +142,7 @@ export function openingFinances(
       const tv = tier === "A" ? (serieA[club.id] ?? 0) : economy.tvPerClub[tier];
       const revenue = operatingRevenue(base);
       const otherIncome = Math.max(0, Math.round(revenue - tv - expectedTickets - base.membership - base.sponsorship));
+      const projected = tv + expectedTickets + base.membership + base.sponsorship + otherIncome;
       for (const [id, wage] of wagesOf(squads.get(club.id) ?? [], base.wageBill / 12)) wages[id] = wage;
       const opening: ClubFinance = {
         cash: Math.round(Math.max(-base.netDebt, (OPENING_CASH_MONTHS_OF_REVENUE * revenue) / 12)),
@@ -143,7 +157,7 @@ export function openingFinances(
         membership: Math.round(base.membership),
         membershipAnchor: Math.round(base.membership),
         otherIncome,
-        infrastructure: Math.round(INFRASTRUCTURE_SHARE_OF_REVENUE * revenue),
+        infrastructure: Math.round(Math.max(MIN_INFRASTRUCTURE_SHARE_OF_REVENUE * projected, (1 - TRANSFER_SHARE_OF_REVENUE) * projected - base.wageBill)),
         expectedTickets,
         transferBudget: 0,
         wageCap: 0,

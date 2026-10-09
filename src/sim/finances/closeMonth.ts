@@ -1,7 +1,7 @@
 import type { ClubFinance, GameState, Ledger } from "../gameState.js";
 import { forceSale, type ForcedSale } from "./forceSale.js";
 import { addLedgers, emptyLedger } from "./ledger.js";
-import { projectedRevenue, setBoardBudget } from "./setBoardBudget.js";
+import { CUSHION_MONTHS_OF_WAGES, projectedRevenue, setBoardBudget, TRANSFER_SHARE_OF_REVENUE } from "./setBoardBudget.js";
 
 export type MonthClosed = {
   type: "monthClosed";
@@ -14,6 +14,8 @@ export type MonthClosed = {
   wagesOwed: number;
   /** Loan the board took at this closing. */
   borrowed: number;
+  /** Loans and old debt the board paid back at this closing. */
+  debtRepaid: number;
 };
 export type WagesLate = { type: "wagesLate"; clubId: string; owed: number; months: number };
 export type FinanceEvent = MonthClosed | WagesLate | ForcedSale;
@@ -24,8 +26,6 @@ const LOAN_CAP_SHARE_OF_REVENUE = 0.25;
 const LOAN_RATE_PER_MONTH = 1.2 ** (1 / 12) - 1;
 // guess: the board sells without asking from the second month in a row of late wages.
 const FORCED_SALE_AFTER_LATE_MONTHS = 2;
-// guess: the board repays loans with cash above three months of wages.
-const CASH_CUSHION_MONTHS_OF_WAGES = 3;
 // guess: members join after a good month and leave after a bad one or when wages go unpaid.
 const MEMBERSHIP_DRIFT = { goodMonth: 1.01, badMonth: 0.99, lateWages: 0.98, floor: 0.5, ceiling: 1.5 };
 // guess: the mid-year window of the spec (#2) opens in July, as it usually does in Brazil; the board resets the budget then.
@@ -91,12 +91,25 @@ function settle(finance: ClubFinance, wages: number): { finance: ClubFinance; bo
   };
 }
 
-/** Uses spare cash to pay wage arrears first, then loans above a cushion. */
+/**
+ * Uses spare cash to pay wage arrears first, then loans above a cushion of wages, then the old
+ * debt above that cushion plus the season's transfer reserve.
+ */
 function payDown(finance: ClubFinance, wages: number): ClubFinance {
   const arrears = Math.min(finance.cash, finance.wagesOwed);
-  const afterArrears = finance.cash - arrears;
-  const repaid = Math.max(0, Math.min(finance.loans, afterArrears - CASH_CUSHION_MONTHS_OF_WAGES * wages));
-  return { ...finance, wagesOwed: finance.wagesOwed - arrears, cash: afterArrears - repaid, loans: finance.loans - repaid };
+  let cash = finance.cash - arrears;
+  const cushion = CUSHION_MONTHS_OF_WAGES * wages;
+  const repaid = Math.max(0, Math.min(finance.loans, cash - cushion));
+  cash -= repaid;
+  const reserve = cushion + TRANSFER_SHARE_OF_REVENUE * projectedRevenue(finance);
+  const settled = Math.round(Math.max(0, Math.min(finance.legacyDebt, cash - reserve)));
+  return {
+    ...finance,
+    wagesOwed: finance.wagesOwed - arrears,
+    cash: cash - settled,
+    loans: finance.loans - repaid,
+    legacyDebt: finance.legacyDebt - settled,
+  };
 }
 
 /** The board's monthly closing for every club, run on the first day of a month for the month before. */
@@ -134,7 +147,10 @@ export function closeMonth(state: GameState, random: () => number): { state: Gam
         [clubId]: { ...budgeted, season: addLedgers(paid.season, ledger), month: { ...emptyLedger(), points: 0, games: 0 } },
       },
     };
-    events.push({ type: "monthClosed", clubId, month, ledger, cash: paid.cash, loans: paid.loans, wagesOwed: paid.wagesOwed, borrowed: settled.borrowed });
+    events.push({
+      type: "monthClosed", clubId, month, ledger, cash: paid.cash, loans: paid.loans, wagesOwed: paid.wagesOwed, borrowed: settled.borrowed,
+      debtRepaid: opening.loans + settled.borrowed - paid.loans + opening.legacyDebt - paid.legacyDebt,
+    });
   }
   return { state: current, events };
 }

@@ -60,6 +60,25 @@ describe("club finances across a season change", () => {
     expect(changed.length).toBeGreaterThan(0);
   });
 
+  it("moves each wage bill part of the way toward the board's new wage cap", () => {
+    let rises = 0;
+    let cuts = 0;
+    for (const clubId of Object.keys(after.clubs)) {
+      const stayers = Object.values(before.players).filter((p) => p.clubId === clubId && after.players[p.id]?.clubId === clubId);
+      const bill = stayers.reduce((sum, p) => sum + p.wage, 0);
+      const cap = financeOf(after, clubId).wageCap;
+      const top = stayers.sort((a, b) => b.wage - a.wage)[0];
+      if (!top || Math.abs(cap / bill - 1) < 0.05) continue;
+      const ratio = (after.players[top.id]?.wage ?? 0) / top.wage;
+      expect(ratio).toBeGreaterThanOrEqual(0.49);
+      expect(ratio).toBeLessThanOrEqual(1.51);
+      expect(ratio > 1).toBe(cap > bill);
+      if (ratio > 1) rises++;
+      else cuts++;
+    }
+    expect(rises + cuts).toBeGreaterThan(0);
+  });
+
   it("survives a save and load and plays on identically", () => {
     const loaded = loadGame(saveGame(after));
     expect(loaded).toEqual(after);

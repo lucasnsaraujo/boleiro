@@ -1,6 +1,7 @@
 import type { Club } from "../data/clubs.js";
 import type { Division } from "../data/players.js";
 import { randomStream } from "../engine/random.js";
+import { driftWagesToCap } from "./finances/driftWagesToCap.js";
 import { renewFinances } from "./finances/renewFinances.js";
 import { squadStrength } from "./finances/squadStrength.js";
 import type { GameState, SimPlayer } from "./gameState.js";
@@ -63,8 +64,9 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
     Object.values(state.competitions).map((competition) => [competition.id, { A: a, B: b, C: c, D: d }[competition.division]]),
   );
   const finances = renewFinances(state, clubs, fixtures, { A: a, B: b, C: c, D: d });
+  const players = driftWagesToCap(state.players, finances);
   return {
-    state: { ...state, season, clubs, calendar, competitions, fixtures, finances, rngState: random.state() },
+    state: { ...state, season, clubs, players, calendar, competitions, fixtures, finances, rngState: random.state() },
     outcomes,
   };
 }

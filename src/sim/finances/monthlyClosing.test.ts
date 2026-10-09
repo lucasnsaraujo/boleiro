@@ -57,14 +57,13 @@ describe("the monthly closing", () => {
     expect(closing?.ledger.costs.infrastructure).toBe(Math.round(before.infrastructure / 12));
   });
 
-  it("moves cash by revenue minus costs", () => {
+  it("moves cash by revenue minus costs, plus loans taken, minus debt repaid", () => {
     for (const clubId of ["palmeiras-sp", "mirassol-sp"]) {
       const before = financeOf(start, clubId);
       const after = financeOf(february.state, clubId);
       const [closing] = closingsOf(february.events, clubId);
       if (!closing) throw new Error("no closing");
-      expect(closing.borrowed).toBe(0);
-      expect(after.cash - before.cash).toBe(totalRevenue(closing.ledger) - totalCosts(closing.ledger));
+      expect(after.cash - before.cash).toBe(totalRevenue(closing.ledger) - totalCosts(closing.ledger) + closing.borrowed - closing.debtRepaid);
       expect(after.season.revenue.tv).toBe(closing.ledger.revenue.tv);
     }
   });
