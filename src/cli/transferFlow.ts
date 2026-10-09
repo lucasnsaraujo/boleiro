@@ -1,9 +1,8 @@
 import { advanceDay } from "../sim/advanceDay.js";
-import { tierOf } from "../sim/finances/tierOf.js";
-import type { GameState, Tier } from "../sim/gameState.js";
+import type { Tier } from "../sim/gameState.js";
 import { loadNewGame } from "../sim/loadNewGame.js";
-import type { MoveKind } from "../sim/transfers/transferEvents.js";
-import { isBrazilian } from "../sim/transfers/willingToJoin.js";
+import type { MoveKind, PlayerMoved } from "../sim/transfers/transferEvents.js";
+import { foreignShare } from "./foreignShare.js";
 
 export type SeasonFlow = {
   season: number;
@@ -18,17 +17,23 @@ export type SeasonFlow = {
 };
 export type TopTransfer = { season: number; name: string; kind: MoveKind; from: string | null; to: string | null; fee: number };
 
-function foreignShare(state: GameState): Record<Tier, number> {
-  const counts: Record<Tier, [foreign: number, all: number]> = { A: [0, 0], B: [0, 0], C: [0, 0], D: [0, 0], state: [0, 0] };
-  for (const p of Object.values(state.players)) {
-    const club = state.clubs[p.clubId];
-    if (!club) continue;
-    const count = counts[tierOf(club)];
-    count[1]++;
-    if (!isBrazilian(p.nationalities)) count[0]++;
-  }
-  const share = ([foreign, all]: [number, number]) => (all ? foreign / all : 0);
-  return { A: share(counts.A), B: share(counts.B), C: share(counts.C), D: share(counts.D), state: share(counts.state) };
+export type MoveCounts = Omit<SeasonFlow, "foreignShare">;
+
+export const emptyFlow = (season: number): MoveCounts => ({ season, toEurope: 0, fromAbroad: 0, domestic: 0, freeAgents: 0, preContracts: 0, loans: 0 });
+
+const COUNTED: Partial<Record<MoveKind, keyof Omit<MoveCounts, "season">>> = {
+  abroad: "toEurope",
+  fromAbroad: "fromAbroad",
+  transfer: "domestic",
+  freeAgent: "freeAgents",
+  preContract: "preContracts",
+  loan: "loans",
+};
+
+/** Adds one move to a season's counts by kind. */
+export function tallyMove(flow: MoveCounts, move: PlayerMoved): MoveCounts {
+  const key = COUNTED[move.kind];
+  return key ? { ...flow, [key]: flow[key] + 1 } : flow;
 }
 
 /** Plays `seasons` whole seasons with no coach and counts each season's transfers by kind, plus the biggest fees. */
@@ -37,24 +42,19 @@ export function transferFlow(seed: number, seasons: number): { flows: SeasonFlow
   const flows: SeasonFlow[] = [];
   const top: TopTransfer[] = [];
   const lastSeason = state.season + seasons - 1;
-  let flow: Omit<SeasonFlow, "foreignShare"> = { season: state.season, toEurope: 0, fromAbroad: 0, domestic: 0, freeAgents: 0, preContracts: 0, loans: 0 };
+  let flow = emptyFlow(state.season);
   while (state.season <= lastSeason) {
     const before = state;
     const day = advanceDay(state, {});
     state = day.state;
     for (const event of day.events) {
       if (event.type !== "playerMoved") continue;
-      if (event.kind === "abroad") flow.toEurope++;
-      if (event.kind === "fromAbroad") flow.fromAbroad++;
-      if (event.kind === "transfer") flow.domestic++;
-      if (event.kind === "freeAgent") flow.freeAgents++;
-      if (event.kind === "preContract") flow.preContracts++;
-      if (event.kind === "loan") flow.loans++;
+      flow = tallyMove(flow, event);
       if (event.fee > 0) top.push({ season: flow.season, name: event.name, kind: event.kind, from: event.fromClubId, to: event.toClubId, fee: event.fee });
     }
     if (!day.events.some((e) => e.type === "seasonEnded")) continue;
     flows.push({ ...flow, foreignShare: foreignShare(before) });
-    flow = { season: state.season, toEurope: 0, fromAbroad: 0, domestic: 0, freeAgents: 0, preContracts: 0, loans: 0 };
+    flow = emptyFlow(state.season);
   }
   return { flows, top: top.sort((a, b) => b.fee - a.fee).slice(0, 15) };
 }

@@ -1,8 +1,6 @@
-import { beforeAll, describe, expect, it } from "vitest";
-import type { Tier } from "../sim/gameState.js";
+import { beforeAll, describe, it } from "vitest";
+import { expectDivisionsApart, expectMeanAgeSteady, expectMeanStrengthSteady, expectSerieDStrengthSteady, expectSpreadSettles } from "./strengthBandChecks.js";
 import { strengthBySeason, type StrengthBand } from "./strengthBySeason.js";
-
-const TIERS: readonly Tier[] = ["A", "B", "C", "D"];
 
 // About a minute with the transfer market, so it only runs with LONG_RUN=1 (`pnpm test:long`).
 describe.skipIf(!process.env.LONG_RUN)("ten seasons of player strength", () => {
@@ -10,42 +8,24 @@ describe.skipIf(!process.env.LONG_RUN)("ten seasons of player strength", () => {
   beforeAll(() => {
     ({ bands } = strengthBySeason(1, 10));
   }, 300_000);
-  const band = (season: number, tier: Tier) => {
-    const found = bands.find((b) => b.season === season && b.tier === tier);
-    if (!found) throw new Error(`no ${tier} band in ${season}`);
-    return found;
-  };
-  const first = () => Math.min(...bands.map((b) => b.season));
-  const last = () => Math.max(...bands.map((b) => b.season));
 
   it("keeps each division's mean strength within 3 points of where it started", () => {
-    for (const tier of ["A", "B", "C"] as const) expect(Math.abs(band(last(), tier).mean - band(first(), tier).mean), tier).toBeLessThan(3);
+    expectMeanStrengthSteady(bands);
   });
 
-  // Each year about two thirds of Série D are replaced by estadual qualifiers (serieDQualifiers.ts),
-  // many of them state-only clubs whose players start near 42.
   it("keeps Série D's mean strength within 4 points while its clubs churn", () => {
-    expect(Math.abs(band(last(), "D").mean - band(first(), "D").mean)).toBeLessThan(4);
+    expectSerieDStrengthSteady(bands);
   });
 
   it("keeps the divisions in order, at least 5 points apart", () => {
-    for (let season = first(); season <= last(); season++) {
-      const means = TIERS.map((tier) => band(season, tier).mean);
-      means.slice(1).forEach((mean, i) => expect((means[i] ?? 0) - mean, `${season}`).toBeGreaterThan(5));
-    }
+    expectDivisionsApart(bands);
   });
 
   it("stops the spread from growing once the squads have mixed", () => {
-    for (const tier of TIERS) {
-      const spread = (season: number) => band(season, tier).p90 - band(season, tier).p10;
-      // Estadual qualification swaps weaker state-only clubs into Série D a few at a time, so D settles by season 3.
-      const settled = first() + (tier === "D" ? 3 : 1);
-      expect(spread(last()), tier).toBeLessThan(spread(settled) + 2);
-      expect(spread(last()), tier).toBeGreaterThan(spread(first()) - 2);
-    }
+    expectSpreadSettles(bands);
   });
 
   it("keeps the mean age steady", () => {
-    for (const tier of TIERS) expect(Math.abs(band(last(), tier).meanAge - band(first(), tier).meanAge), tier).toBeLessThan(1.5);
+    expectMeanAgeSteady(bands);
   });
 });

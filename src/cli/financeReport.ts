@@ -1,11 +1,11 @@
 import type { Tier } from "../sim/gameState.js";
+import { millions } from "./millions.js";
 import { seasonRevenues } from "./seasonRevenues.js";
 
 const SEASONS = Number(process.argv[2] ?? 10);
 const SEED = Number(process.argv[3] ?? 1);
 const TIERS: readonly Tier[] = ["A", "B", "C", "D", "state"];
 
-const millions = (value: number) => `${(value / 1e6).toFixed(1)}M`;
 const quantile = (sorted: readonly number[], q: number) => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] ?? 0;
 
 const started = performance.now();

@@ -5,8 +5,8 @@ import { fatigueOn } from "./fatigueOn.js";
 // 27.5 time-loss injuries per 1000 match hours in 23 top European clubs, 2001–2008
 // (Ekstrand, Hägglund & Waldén 2011, "Injury incidence and injury patterns in professional
 // football: the UEFA injury study", BJSM 45(7):553–558).
-const MATCH_INJURIES_PER_HOUR = 27.5 / 1000;
-const MATCH_HOURS = 1.5;
+export const MATCH_INJURIES_PER_HOUR = 27.5 / 1000;
+export const MATCH_HOURS = 1.5;
 // Previous injury roughly doubles to triples the risk of a new one (Hägglund, Waldén & Ekstrand
 // 2006, BJSM 40(9):767–772). guess: injury-prone players get the low end, twice the risk.
 const INJURY_PRONE_RISK = 2;
