@@ -78,6 +78,25 @@ describe("developPlayers at the end of a season", () => {
     expect(Math.max(...thinYouth.map((p) => p.wage))).toBeLessThanOrEqual(Math.max(...otherDYouth.map((p) => p.wage)));
   });
 
+  it("drops the pre-contracts and loans of players who retire", () => {
+    const veterans = Object.values(playedSeason.players).filter((p) => p.age >= 38);
+    const loan = { fromClubId: "flamengo-rj", until: "2026-12-31", lenderWageShare: 0.5, buyOption: null };
+    const agreed: GameState = {
+      ...playedSeason,
+      market: {
+        ...playedSeason.market,
+        preContracts: Object.fromEntries(veterans.map((p) => [p.id, "flamengo-rj"])),
+        loans: Object.fromEntries(veterans.map((p) => [p.id, loan])),
+      },
+    };
+    const after = developPlayers(agreed).state;
+    const retired = veterans.filter((p) => !after.players[p.id]);
+    expect(retired.length).toBeGreaterThan(0);
+    for (const p of retired) expect([after.market.preContracts[p.id], after.market.loans[p.id]], p.id).toEqual([undefined, undefined]);
+    const stayed = veterans.find((p) => after.players[p.id]);
+    expect(after.market.preContracts[stayed?.id ?? ""]).toBe("flamengo-rj");
+  });
+
   it("draws from the game's random stream", () => {
     expect(next.rngState).not.toBe(playedSeason.rngState);
     expect(developPlayers(playedSeason).state).toEqual(next);

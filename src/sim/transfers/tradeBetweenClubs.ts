@@ -78,7 +78,8 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
     if (found) scouted.add(found);
   }
   const rate = wageRateOf(squad);
-  const inGroup = squad.filter((p) => p.group === group);
+  // A player with a pre-contract elsewhere or on loan here isn't the club's to release.
+  const inGroup = squad.filter((p) => p.group === group && !state.market.preContracts[p.id] && !state.market.loans[p.id]);
   const releasable = !replacing && inGroup.length ? inGroup.reduce((a, b) => (b.strength < a.strength ? b : a)) : null;
   for (const player of [...scouted].sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id))) {
     // The pools are built once a market day, so skip anyone who has moved since.

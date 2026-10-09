@@ -200,5 +200,8 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
       events.push({ type: "youthPromoted", playerId: youth.id, clubId: club.id });
     });
   }
-  return { state: { ...state, players, rngState: random.state() }, events };
+  // A retired player's pre-contract and loan go with him.
+  const stillPlaying = <T>(byPlayer: Record<string, T>) => Object.fromEntries(Object.entries(byPlayer).filter(([id]) => players[id]));
+  const market = { ...state.market, preContracts: stillPlaying(state.market.preContracts), loans: stillPlaying(state.market.loans) };
+  return { state: { ...state, players, market, rngState: random.state() }, events };
 }
