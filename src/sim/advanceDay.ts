@@ -10,6 +10,10 @@ import type { Competition, Fixture, GameState, SimPlayer } from "./gameState.js"
 import type { LeagueOutcome } from "./leagueFormats.js";
 import { openNextStage } from "./openNextStage.js";
 import { developPlayers, type PlayerRetired, type YouthPromoted } from "./players/developPlayers.js";
+import type { SupporterEvent } from "./morale/escalateSupporters.js";
+import { clubMood } from "./morale/clubMood.js";
+import { reactToDay } from "./morale/reactToDay.js";
+import { withoutCrowd } from "./morale/withoutCrowd.js";
 import { isInjured } from "./players/isInjured.js";
 import { matchSetup } from "./players/matchSetup.js";
 import { recordMatchLoad, type PlayerInjured } from "./players/recordMatchLoad.js";
@@ -28,7 +32,8 @@ export type DayEvent =
   | PlayerInjured
   | PlayerRetired
   | YouthPromoted
-  | PrizePaid;
+  | PrizePaid
+  | SupporterEvent;
 
 const PENALTY_SHOOTOUT_HOME_WIN = 0.5; // guess: shootouts treated as a coin flip until a source on shootout odds is used
 
@@ -69,7 +74,7 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
     const competition = state.competitions[fixture.competitionId];
     if (!competition) throw new Error(`fixture ${fixture.id} has no competition ${fixture.competitionId}`);
     const setup = matchSetup(state, fixture, squad, coachLineup);
-    const score = simulateMatch(setup.home, setup.away, random.next, paramsForCompetition(competition));
+    const score = simulateMatch(setup.home, setup.away, random.next, withoutCrowd(paramsForCompetition(competition), clubMood(state, fixture.homeId)));
     let played: Fixture = { ...fixture, result: score };
     if (isDecidingLeg(fixture, state.competitions)) {
       const legs = [...state.fixtures.filter((f) => f.competitionId === fixture.competitionId && f.stage === fixture.stage && f.tie === fixture.tie && f.id !== fixture.id), played];
@@ -105,11 +110,11 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   const prizes = payCopaPrizes(next, played);
   next = prizes.state;
   events.push(...prizes.events);
-  if (next.date.endsWith("-01")) {
-    const closed = closeMonth(next, random.next);
-    next = closed.state;
-    events.push(...closed.events);
-  }
+  const closed = next.date.endsWith("-01") ? closeMonth(next, random.next) : { state: next, events: [] };
+  events.push(...closed.events);
+  const reacted = reactToDay(closed.state, played, closed.events, random.next);
+  next = reacted.state;
+  events.push(...reacted.events);
   next = { ...next, rngState: random.state() };
   if (next.date.slice(0, 4) === String(state.season)) return { state: next, events };
   const developed = developPlayers(next);

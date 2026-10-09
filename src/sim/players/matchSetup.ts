@@ -1,5 +1,7 @@
 import type { Team } from "../../engine/match.js";
 import type { Fixture, GameState, SimPlayer } from "../gameState.js";
+import { clubMood } from "../morale/clubMood.js";
+import { moraleStrength } from "../morale/moraleStrength.js";
 import { effectiveStrength, type MatchContext } from "./effectiveStrength.js";
 import { pickMatchLineup } from "./pickMatchLineup.js";
 import { travelKm } from "./travelKm.js";
@@ -9,7 +11,7 @@ export type MatchSetup = {
   homeLineup: SimPlayer[];
   awayLineup: SimPlayer[];
   awayTravelKm: number;
-  /** The lineups as the engine sees them, at today's effective strength. */
+  /** The lineups as the engine sees them, at today's effective strength and morale. */
   home: Team;
   away: Team;
 };
@@ -30,10 +32,12 @@ export function matchSetup(
   const context: MatchContext = { date: fixture.date, pitch: homeClub.pitch };
   const lineupOf = (clubId: string) =>
     coachLineup && clubId === state.coachClubId ? [...coachLineup] : pickMatchLineup(squadOf(clubId), context);
-  const team = (name: string, lineup: readonly SimPlayer[]): Team => ({
-    name,
-    players: lineup.map((p) => ({ name: p.name, group: p.group, strength: effectiveStrength(p, context) })),
-  });
+  const team = (clubId: string, name: string, lineup: readonly SimPlayer[]): Team => {
+    const morale = clubMood(state, clubId).squad;
+    const mostMinutes = Math.max(0, ...squadOf(clubId).map((p) => p.condition.seasonMinutes));
+    const strength = (p: SimPlayer) => Math.max(1, effectiveStrength(p, context) + moraleStrength(p, morale, mostMinutes, context.date));
+    return { name, players: lineup.map((p) => ({ name: p.name, group: p.group, strength: strength(p) })) };
+  };
   const homeLineup = lineupOf(homeClub.id);
   const awayLineup = lineupOf(awayClub.id);
   return {
@@ -41,7 +45,7 @@ export function matchSetup(
     homeLineup,
     awayLineup,
     awayTravelKm: travelKm(awayClub.state, homeClub.state),
-    home: team(homeClub.shortName, homeLineup),
-    away: team(awayClub.shortName, awayLineup),
+    home: team(homeClub.id, homeClub.shortName, homeLineup),
+    away: team(awayClub.id, awayClub.shortName, awayLineup),
   };
 }

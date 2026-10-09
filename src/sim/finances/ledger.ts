@@ -17,6 +17,7 @@ const costsBy = (value: (line: CostLine) => number): Record<CostLine, number> =>
   agentFees: value("agentFees"),
   infrastructure: value("infrastructure"),
   interest: value("interest"),
+  fines: value("fines"),
 });
 
 export function emptyLedger(): Ledger {

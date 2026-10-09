@@ -71,6 +71,16 @@ Notes:
 | State championships: one format for all 27 states, groups of up to six (one round each), top 8 (states with 12+ clubs) or top 4 to two-leg knockouts | Spec #2 settles one standard format; group size, qualifiers and legs are `guess`. State games use `CUP_PARAMS` (`guess`: mixed divisions, rested players). The first season seeds estaduais and the Copa from the ranking stand-in (`guess`). |
 | Tie-break order: points, wins, goal difference, goals scored, head-to-head (two clubs only), red cards, yellow cards, draw | [Band](https://www.band.com.br/esportes/brasileirao-criterios-desempate), [TecMundo](https://www.tecmundo.com.br/apostas/409831-brasileirao-2026-formato-datas-vagas-para-libertadores-e-sul-americana.htm). Cards are skipped until they are tracked. |
 
+## Morale and organised supporters (`src/sim/morale/`)
+
+| Value | Source |
+|---|---|
+| Disorder at a home game (CBJD art. 213): a fine of R$100–100,000, or for serious cases one to ten home games lost, not both | [ABC do ABC](https://abcdoabc.com.br/santos-pode-ser-punido-com-10-jogos/) quoting the article, [Migalhas](https://www.migalhas.com.br/depeso/101156/a-cronica-de-uma-violencia-anunciada---iv) on the one-or-the-other rule. The game plays those home games behind closed doors (no ticket money). How often disorder happens, the share that costs home games and the one-to-three-game range are `guess`. |
+| Closed doors halve home advantage | Home sides' goal edge fell from 0.29 to 0.15 a game without fans ([McCarrick et al. 2021](https://northumbria.ac.uk/about-us/news-events/news/football-without-the-fans-new-study-reveals-effect-of-empty-stadiums-during-pandemic), Psychology of Sport and Exercise 56:101969). A larger 10-season study found a smaller, non-significant drop, so this may overstate it. |
+| Rivals | `guess`: each state's four biggest fanbases are each other's rivals. |
+
+Mood swings, escalation thresholds, the strength effect of morale (at most one point either way) and the crowd effect of fan mood (at most 10%) are all `guess`, marked in the code.
+
 ## Finances
 
 All money is in BRL (whole reais) unless a column says USD. `basis` is `published` (from the club's accounts or an official table), `estimate` (derived from press reports) or `guess` (no source found). Fetched 2026-10-09.
