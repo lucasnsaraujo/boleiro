@@ -1,8 +1,10 @@
 import type { ClubFinance, SimPlayer } from "../gameState.js";
 
-// guess: until #11 brings contracts, renewals and squad turnover close half of a gap below the
-// board's cap each season (in log terms), at most 50% up. Cuts go straight to the cap, at most
-// halving the bill: lower-division contracts are short, often just the state championship.
+// guess: renewals and squad turnover close half of a gap below the board's cap each season (in log
+// terms), at most 50% up. Cuts go straight to the cap, at most halving the bill: lower-division
+// contracts are short, often just the state championship. Contracts (src/sim/transfers/) set the
+// wage of each move, but the opening wages are spread from each club's published wage bill rather
+// than real contracts, so this keeps every bill tied to what its board can pay.
 const DRIFT = { riseExponent: 0.5, maxRise: 1.5, maxCut: 0.5 };
 
 /** Moves every club's wages toward its board's wage cap. */

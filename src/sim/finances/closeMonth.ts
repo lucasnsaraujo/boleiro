@@ -29,7 +29,8 @@ const LOAN_RATE_PER_MONTH = 1.2 ** (1 / 12) - 1;
 const FORCED_SALE_AFTER_LATE_MONTHS = 2;
 // guess: members join after a good month and leave after a bad one or when wages go unpaid.
 const MEMBERSHIP_DRIFT = { goodMonth: 1.01, badMonth: 0.99, lateWages: 0.98, floor: 0.5, ceiling: 1.5 };
-// guess: the mid-year window of the spec (#2) opens in July, as it usually does in Brazil; the board resets the budget then.
+// The mid-year window opens on 20 July (CBF 2026, transfers/transferWindows.ts); the board resets the
+// budget at the July closing, before it.
 const MID_YEAR_WINDOW_MONTH = "07";
 
 const previousMonth = (date: string): string => {

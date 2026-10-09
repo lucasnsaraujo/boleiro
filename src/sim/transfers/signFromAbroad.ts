@@ -13,7 +13,7 @@ import { willingToJoin } from "./willingToJoin.js";
 
 // guess: chance a club looks abroad on a market day; Série A clubs sign a few foreigners and
 // returning Brazilians a year, lower divisions almost never.
-const LOOKS_ABROAD: Record<Tier, number> = { A: 0.5, B: 0.15, C: 0.03, D: 0.02, state: 0.01 };
+const LOOKS_ABROAD: Record<Tier, number> = { A: 0.8, B: 0.25, C: 0.03, D: 0.02, state: 0.01 };
 // guess: who is offered from abroad: half returning Brazilians, a third other South Americans, the rest Europeans.
 const ORIGINS: readonly [nationality: string, share: number][] = [["Brazil", 0.5], ["Argentina", 0.12], ["Uruguay", 0.08], ["Colombia", 0.08], ["Paraguay", 0.05], ["Portugal", 0.09], ["Spain", 0.08]];
 const AGES = { min: 22, spread: 13 }; // guess: offers from abroad span 22 to 34

@@ -46,7 +46,10 @@ describe("club finances across a season change", () => {
   it("pays the Série A champion a sponsor bonus", () => {
     const champion = outcome("a").championId;
     expect(financeOf(after, champion).month.revenue.sponsorship).toBeGreaterThan(0);
-    expect(financeOf(after, champion).cash).toBeGreaterThan(financeOf(before, champion).cash);
+    // Players joining on pre-contracts on 1 January cost signing money the same day; leave it out.
+    const { costs, revenue } = financeOf(after, champion).month;
+    const transferMoney = revenue.playerSales - costs.transferFees - costs.signingFees - costs.agentFees;
+    expect(financeOf(after, champion).cash - transferMoney).toBeGreaterThan(financeOf(before, champion).cash);
   });
 
   it("files the finished season's books and opens empty ones", () => {

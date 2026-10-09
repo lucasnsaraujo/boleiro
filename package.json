@@ -8,6 +8,7 @@
     "test:long": "LONG_RUN=1 vitest run src/cli",
     "finances:report": "tsx src/cli/financeReport.ts",
     "strength:report": "tsx src/cli/strengthReport.ts",
+    "transfers:report": "tsx src/cli/transferReport.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "career": "tsx src/cli/career.ts",

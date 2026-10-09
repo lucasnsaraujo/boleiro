@@ -12,7 +12,7 @@ import { valuePlayer } from "./valuePlayer.js";
 const MAX_AGE = 26;
 const MIN_STRENGTH = 70;
 // guess: chance of a bid over a whole window for a 72-strength 22-year-old, ×1.35 a strength point.
-const BID_CHANCE_AT_72 = 0.08;
+const BID_CHANCE_AT_72 = 0.15;
 const PER_STRENGTH_POINT = 1.35;
 const MAX_BID_CHANCE = 0.6;
 // guess: each year under 22 makes a bid a tenth likelier; Europe buys potential.
