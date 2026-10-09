@@ -8,6 +8,8 @@ export type Move = {
   to: { tier: Tier; fanbase: number };
   /** Monthly wage offered, BRL. */
   wage: number;
+  /** He has no club and no wage now. */
+  unemployed?: boolean;
 };
 
 // No public data measures how willing players are to move, so every weight below is a guess,
@@ -29,6 +31,9 @@ const HOMECOMING = 2.5;
 const EUROPEAN_IN_PRIME = -5;
 // guess: a foreigner who would play outside Série A or B misses home more than the money is worth.
 const FOREIGNER_IN_LOWER_DIVISION = -3;
+// guess: a player without a club takes most decent offers, and cares a third as much about his old wage.
+const UNEMPLOYED = 2;
+const UNEMPLOYED_WAGE_WEIGHT = 1 / 3;
 // guess: ambition spreads ±1 rung of reluctance to step down across players, fixed per player.
 const AMBITION_SPREAD = 1;
 const SOUTH_AMERICA = new Set(["Argentina", "Uruguay", "Colombia", "Paraguay", "Ecuador", "Venezuela", "Chile", "Peru", "Bolivia"]);
@@ -43,17 +48,18 @@ export function ambitionOf(playerId: string): number {
 export const isBrazilian = (nationalities: readonly string[]): boolean => nationalities.length === 0 || nationalities.includes("Brazil");
 
 /** Chance the player agrees to join. */
-export function willingToJoin({ player, from, to, wage }: Move): number {
+export function willingToJoin({ player, from, to, wage, unemployed = false }: Move): number {
   const veteran = player.age >= VETERAN_AGE;
   const ambition = (ambitionOf(player.id) - 0.5) * 2 * AMBITION_SPREAD;
   const rungs = RANK[to.tier] - RANK[from];
   const step = rungs >= 0 ? rungs * PER_RUNG : rungs * (PER_RUNG + ambition) * (veteran ? VETERAN_DROP_DISCOUNT : 1);
-  const money = PER_LOG_WAGE * Math.log(Math.max(1, wage) / Math.max(1, player.wage));
+  const money = PER_LOG_WAGE * (unemployed ? UNEMPLOYED_WAGE_WEIGHT : 1) * Math.log(Math.max(1, wage) / Math.max(1, player.wage));
   const fame = PER_LOG10_FANBASE * Math.log10(Math.max(1, to.fanbase) / MEDIAN_FANBASE);
   const brazilian = isBrazilian(player.nationalities);
   const european = !brazilian && !player.nationalities.some((n) => SOUTH_AMERICA.has(n));
   const home = from === "abroad" && brazilian ? HOMECOMING : 0;
   const prime = from === "abroad" && european && !veteran ? EUROPEAN_IN_PRIME : 0;
   const lower = !brazilian && to.tier !== "A" && to.tier !== "B" ? FOREIGNER_IN_LOWER_DIVISION : 0;
-  return 1 / (1 + Math.exp(-(BASE + step + money + fame + home + prime + lower)));
+  const jobless = unemployed ? UNEMPLOYED : 0;
+  return 1 / (1 + Math.exp(-(BASE + step + money + fame + home + prime + lower + jobless)));
 }

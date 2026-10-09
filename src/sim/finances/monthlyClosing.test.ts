@@ -3,6 +3,7 @@ import { pickLineup } from "../../engine/match.js";
 import { advanceDay, type DayEvent } from "../advanceDay.js";
 import type { ClubFinance, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { wageBillsOf } from "../transfers/wageBillsOf.js";
 import { totalCosts, totalRevenue } from "./ledger.js";
 
 const start = loadNewGame(5, { coachClubId: null });
@@ -29,8 +30,8 @@ const withFinance = (state: GameState, clubId: string, patch: Partial<ClubFinanc
   finances: { ...state.finances, [clubId]: { ...financeOf(state, clubId), ...patch } },
 });
 
-const monthlyWages = (state: GameState, clubId: string) =>
-  Object.values(state.players).filter((p) => p.clubId === clubId).reduce((sum, p) => sum + p.wage, 0);
+/** The club's wage bill, with its share of the wages of players it has lent out. */
+const monthlyWages = (state: GameState, clubId: string) => wageBillsOf(state).get(clubId) ?? 0;
 
 const closingsOf = (events: DayEvent[], clubId: string) =>
   events.flatMap((e) => (e.type === "monthClosed" && e.clubId === clubId ? [e] : []));
@@ -123,7 +124,7 @@ describe("a club that runs out of cash", () => {
     expect(sale.playerId).toBe(expected?.id);
     expect(sale.fee).toBeGreaterThan(0);
     expect(state.players[sale.playerId]?.clubId).not.toBe(clubId);
-    expect(financeOf(state, clubId).season.revenue.playerSales).toBe(sale.fee);
+    expect(financeOf(state, clubId).season.revenue.playerSales - financeOf(broke, clubId).season.revenue.playerSales - financeOf(broke, clubId).month.revenue.playerSales).toBe(sale.fee);
     if (sale.buyerId) expect(state.players[sale.playerId]?.clubId).toBe(sale.buyerId);
     else expect(state.players[sale.playerId]).toBeUndefined();
   });

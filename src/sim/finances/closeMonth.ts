@@ -1,4 +1,5 @@
 import type { ClubFinance, GameState, Ledger } from "../gameState.js";
+import { wageBillsOf } from "../transfers/wageBillsOf.js";
 import { forceSale, type ForcedSale } from "./forceSale.js";
 import { addLedgers, emptyLedger } from "./ledger.js";
 import { CUSHION_MONTHS_OF_WAGES, projectedRevenue, setBoardBudget, TRANSFER_SHARE_OF_REVENUE } from "./setBoardBudget.js";
@@ -114,8 +115,7 @@ function payDown(finance: ClubFinance, wages: number): ClubFinance {
 
 /** The board's monthly closing for every club, run on the first day of a month for the month before. */
 export function closeMonth(state: GameState, random: () => number): { state: GameState; events: FinanceEvent[] } {
-  const wagesOf = new Map<string, number>();
-  for (const player of Object.values(state.players)) wagesOf.set(player.clubId, (wagesOf.get(player.clubId) ?? 0) + player.wage);
+  const wagesOf = wageBillsOf(state);
   const month = previousMonth(state.date);
   const events: FinanceEvent[] = [];
   let current = state;
