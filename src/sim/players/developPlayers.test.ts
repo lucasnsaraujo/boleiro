@@ -40,10 +40,10 @@ describe("developPlayers at the end of a season", () => {
     expect(playing - benched).toBeGreaterThan(0.5);
   });
 
-  it("retires nobody under 33 and most players over 39", () => {
+  it("retires nobody under 29 and most players over 39", () => {
     const retired = new Set(events.filter((e) => e.type === "playerRetired").map((e) => e.playerId));
     const all = Object.values(playedSeason.players);
-    expect(all.filter((p) => p.age < 33 && retired.has(p.id))).toEqual([]);
+    expect(all.filter((p) => p.age < 29 && retired.has(p.id))).toEqual([]);
     const old = all.filter((p) => p.age >= 39);
     expect(old.filter((p) => retired.has(p.id)).length / old.length).toBeGreaterThan(0.4);
     expect(retired.size).toBeGreaterThan(200);

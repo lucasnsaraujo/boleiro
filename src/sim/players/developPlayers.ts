@@ -49,12 +49,13 @@ const AVERAGE_POINTS_PER_GAME = 1.35;
 const FORM_MIN_MINUTES = 450;
 
 /**
- * Chance of retiring at the end of a season by age. Smoothed from how much smaller each age group
- * is than the one a year younger in the 2026 squads (data/players.csv: 247 aged 33, 226 at 34,
- * 149 at 35, 136, 113, 79, 41 at 39, 41, 12 at 41), which is about 8% at 33 rising to 70% past 40.
+ * Chance of leaving the game at the end of a season by age. Smoothed from how much smaller each
+ * age group is than the one a year younger in the 2026 squads (data/players.csv: 350 aged 28,
+ * 345, 312, 295, 216, 247 at 33, 226, 149 at 35, 136, 113, 79, 41 at 39, 41, 12 at 41): about 6%
+ * a year from 29 (players dropping out of professional squads), rising to 70% past 40.
  */
 const RETIREMENT: readonly [minAge: number, chance: number][] = [
-  [40, 0.7], [39, 0.55], [38, 0.45], [37, 0.3], [36, 0.25], [35, 0.2], [34, 0.15], [33, 0.08],
+  [40, 0.7], [39, 0.55], [38, 0.45], [37, 0.3], [36, 0.25], [35, 0.2], [34, 0.15], [33, 0.08], [29, 0.06],
 ];
 
 // The 2026 squads have 24 players a club on average (data/players.csv). guess: no club drops
