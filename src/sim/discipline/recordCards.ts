@@ -12,24 +12,33 @@ const STRAIGHT_RED_EXTRA_BAN_CHANCE = 0.5;
 
 const EMPTY: PlayerDiscipline = { yellows: 0, phase: 0, bans: 0 };
 
+type Records = Record<string, PlayerDiscipline>;
+type Draft = { records: Records; banned: Set<string> };
+
 /**
  * One played match's effect on card records in its competition: the two clubs' banned players
  * serve a match, then this match's cards add yellows and bans. Yellows from a match that ended
- * in a red do not count toward the three (RGC CBF art. 97).
+ * in a red do not count toward the three (RGC CBF art. 97). `records` is edited in place and
+ * `banned` (players with bans to serve) kept in step with it.
  */
-export function recordCards(
-  discipline: Discipline,
+function recordCards(
+  { records, banned }: Draft,
   competition: Competition,
   fixture: Fixture,
   bookings: readonly Booking[],
   clubOf: (playerId: string) => string | undefined,
   random: () => number,
-): { discipline: Discipline; events: DisciplineEvent[] } {
-  const records = { ...discipline[competition.id] };
+): DisciplineEvent[] {
   const playing = [fixture.homeId, fixture.awayId];
-  for (const [id, record] of Object.entries(records)) {
+  const setRecord = (id: string, record: PlayerDiscipline) => {
+    records[id] = record;
+    if (record.bans > 0) banned.add(id);
+    else banned.delete(id);
+  };
+  for (const id of [...banned]) {
+    const record = records[id];
     const clubId = clubOf(id);
-    if (record.bans > 0 && clubId && playing.includes(clubId)) records[id] = { ...record, bans: record.bans - 1 };
+    if (record && clubId && playing.includes(clubId)) setRecord(id, { ...record, bans: record.bans - 1 });
   }
 
   const events: DisciplineEvent[] = [];
@@ -45,16 +54,58 @@ export function recordCards(
       events.push({ type: "playerBooked", ...about(booking), minute: booking.minute });
       if (sentOff.has(booking.playerId)) continue;
       const yellows = record.yellows + 1;
-      const banned = yellows === YELLOWS_PER_BAN;
-      records[booking.playerId] = { ...record, yellows: banned ? 0 : yellows, bans: record.bans + (banned ? 1 : 0) };
-      if (banned) events.push({ type: "playerSuspended", ...about(booking), matches: 1 });
+      const isBanned = yellows === YELLOWS_PER_BAN;
+      setRecord(booking.playerId, { ...record, yellows: isBanned ? 0 : yellows, bans: record.bans + (isBanned ? 1 : 0) });
+      if (isBanned) events.push({ type: "playerSuspended", ...about(booking), matches: 1 });
       continue;
     }
     const secondYellow = booking.card === "secondYellow";
     const matches = secondYellow || random() >= STRAIGHT_RED_EXTRA_BAN_CHANCE ? 1 : 2;
     events.push({ type: "playerSentOff", ...about(booking), minute: booking.minute, secondYellow });
     events.push({ type: "playerSuspended", ...about(booking), matches });
-    records[booking.playerId] = { ...record, bans: record.bans + matches };
+    setRecord(booking.playerId, { ...record, bans: record.bans + matches });
   }
-  return { discipline: { ...discipline, [competition.id]: records }, events };
+  return events;
+}
+
+export type DisciplineDay = {
+  /** Players who must sit out their club's next match in this competition. */
+  suspended: (competitionId: string) => ReadonlySet<string>;
+  /** Records one played match's cards; see recordCards. */
+  record: (
+    competition: Competition,
+    fixture: Fixture,
+    bookings: readonly Booking[],
+    clubOf: (playerId: string) => string | undefined,
+    random: () => number,
+  ) => DisciplineEvent[];
+  /** The card records after the day's matches; the `discipline` it was opened on is left unchanged. */
+  discipline: () => Discipline;
+};
+
+/** A day of card records: each competition's records are copied once, at its first match of the day. */
+export function openDisciplineDay(discipline: Discipline): DisciplineDay {
+  const drafts = new Map<string, Draft>();
+  const recorded: string[] = [];
+  const draftOf = (competitionId: string): Draft => {
+    const known = drafts.get(competitionId);
+    if (known) return known;
+    const records: Records = { ...discipline[competitionId] };
+    const draft = { records, banned: new Set(Object.keys(records).filter((id) => (records[id]?.bans ?? 0) > 0)) };
+    drafts.set(competitionId, draft);
+    return draft;
+  };
+  return {
+    suspended: (competitionId) => new Set(draftOf(competitionId).banned),
+    record: (competition, fixture, bookings, clubOf, random) => {
+      if (!recorded.includes(competition.id)) recorded.push(competition.id);
+      return recordCards(draftOf(competition.id), competition, fixture, bookings, clubOf, random);
+    },
+    discipline: () => {
+      if (!recorded.length) return discipline;
+      const next = { ...discipline };
+      for (const id of recorded) next[id] = draftOf(id).records;
+      return next;
+    },
+  };
 }

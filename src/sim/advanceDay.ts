@@ -8,8 +8,8 @@ import { startCoachSeason } from "./coach/startCoachSeason.js";
 import { CARD_RATES, cardCompetitionOf } from "./discipline/cardRates.js";
 import type { DisciplineEvent } from "./discipline/discipline.js";
 import { countCards, drawCards, sendOffMinutes } from "./discipline/drawCards.js";
-import { recordCards } from "./discipline/recordCards.js";
-import { refuseSuspended, suspendedPlayers } from "./discipline/suspendedPlayers.js";
+import { openDisciplineDay } from "./discipline/recordCards.js";
+import { refuseSuspended } from "./discipline/suspendedPlayers.js";
 import { endSeason } from "./endSeason.js";
 import { closeSeasonHistory } from "./history/closeSeasonHistory.js";
 import { recordDayEvents } from "./history/recordDayEvents.js";
@@ -105,14 +105,14 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   const squad = squadsOf(state);
   const coachLineup = coachLineupOf(state, decisions);
   const playedToday: SimPlayer[] = [];
-  let discipline = state.discipline;
+  const cards = openDisciplineDay(state.discipline);
   const lineups: MatchLineups = {};
 
   let fixtures = state.fixtures.map((fixture) => {
     if (fixture.date !== state.date || fixture.result) return fixture;
     const competition = state.competitions[fixture.competitionId];
     if (!competition) throw new Error(`fixture ${fixture.id} has no competition ${fixture.competitionId}`);
-    const suspended = suspendedPlayers(discipline, fixture.competitionId);
+    const suspended = cards.suspended(fixture.competitionId);
     if (state.coachClubId && [fixture.homeId, fixture.awayId].includes(state.coachClubId)) refuseSuspended(coachLineup ?? [], suspended);
     const setup = matchSetup(state, fixture, (clubId) => squad(clubId).filter((p) => !suspended.has(p.id)), coachLineup);
     const bookings = drawCards(setup.homeLineup, setup.awayLineup, CARD_RATES[cardCompetitionOf(competition)], random.next);
@@ -132,9 +132,7 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
     const load = recordMatchLoad({ ...setup, result: score }, random.next);
     playedToday.push(...load.players);
     events.push(...load.events);
-    const carded = recordCards(discipline, competition, played, bookings, (id) => state.players[id]?.clubId, random.next);
-    discipline = carded.discipline;
-    events.push(...carded.events);
+    events.push(...cards.record(competition, played, bookings, (id) => state.players[id]?.clubId, random.next));
     return played;
   });
 
@@ -153,7 +151,7 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   }
 
   const players = playedToday.length ? { ...state.players, ...Object.fromEntries(playedToday.map((p) => [p.id, p])) } : state.players;
-  let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline };
+  let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: cards.discipline() };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
   next = recordMatches(next, played, lineups);
   for (const fixture of played) next = recordMatchFinances(next, fixture);
