@@ -44,8 +44,13 @@ export function openDraft(state: GameState): GameState {
 /**
  * Moves a player, books the fee and signing costs, and sets his new contract and arrival day.
  * `state` must be a draft (openDraft): its players and market maps are changed in place.
+ * `squadOf`, when given, returns a club's current squad (see reactToIdolSale).
  */
-export function movePlayer(state: GameState, transfer: Transfer): { state: GameState; event: PlayerMoved } {
+export function movePlayer(
+  state: GameState,
+  transfer: Transfer,
+  squadOf?: (clubId: string) => readonly SimPlayer[],
+): { state: GameState; event: PlayerMoved } {
   const { playerId, kind, toClubId, fee, contract, loan } = transfer;
   const atClub = state.players[playerId];
   const player = atClub ?? state.market.freeAgents[playerId] ?? transfer.incoming;
@@ -53,7 +58,7 @@ export function movePlayer(state: GameState, transfer: Transfer): { state: GameS
   const fromClubId = atClub ? atClub.clubId : null;
   const isSale = fromClubId !== null && fee > 0 && (kind === "transfer" || kind === "abroad");
   // Fans react while the player is still in the squad, so they can tell an idol from a reserve.
-  let next = isSale ? reactToIdolSale(state, playerId) : state;
+  let next = isSale ? reactToIdolSale(state, playerId, squadOf) : state;
   if (fee > 0 && fromClubId) next = bookMoney(next, fromClubId, { revenue: "playerSales", amount: fee });
   if (fee > 0 && toClubId) next = bookMoney(next, toClubId, { cost: "transferFees", amount: fee });
   const bonusMonths = SIGNING_BONUS_MONTHS[kind];

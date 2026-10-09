@@ -58,14 +58,30 @@ export type DayEvent =
 
 const PENALTY_SHOOTOUT_HOME_WIN = 0.5; // guess: shootouts treated as a coin flip until a source on shootout odds is used
 
+/** Club squads, indexed on first use: most days have no match and need none. */
 function squadsOf(state: GameState): (clubId: string) => SimPlayer[] {
-  const squads = new Map<string, SimPlayer[]>();
-  for (const player of Object.values(state.players)) {
-    const squad = squads.get(player.clubId) ?? [];
-    squad.push(player);
-    squads.set(player.clubId, squad);
+  let squads: Map<string, SimPlayer[]> | null = null;
+  return (clubId) => {
+    if (!squads) {
+      squads = new Map();
+      for (const player of Object.values(state.players)) {
+        const squad = squads.get(player.clubId);
+        if (squad) squad.push(player);
+        else squads.set(player.clubId, [player]);
+      }
+    }
+    return squads.get(clubId) ?? [];
+  };
+}
+
+function fixturesByCompetition(fixtures: readonly Fixture[]): Map<string, Fixture[]> {
+  const byCompetition = new Map<string, Fixture[]>();
+  for (const fixture of fixtures) {
+    const own = byCompetition.get(fixture.competitionId);
+    if (own) own.push(fixture);
+    else byCompetition.set(fixture.competitionId, [fixture]);
   }
-  return (clubId) => squads.get(clubId) ?? [];
+  return byCompetition;
 }
 
 function coachLineupOf(state: GameState, decisions: DayDecisions): SimPlayer[] | null {
@@ -124,8 +140,9 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
 
   const clubStates: Record<string, State> = Object.fromEntries(Object.values(state.clubs).map((club) => [club.id, club.state]));
   const competitions = { ...state.competitions };
+  const byCompetition = fixturesByCompetition(fixtures);
   for (const competition of Object.values(state.competitions)) {
-    const own = fixtures.filter((f) => f.competitionId === competition.id);
+    const own = byCompetition.get(competition.id) ?? [];
     const current = competition.stages.length - 1;
     const stageDone = own.filter((f) => f.stage === current).every((f) => f.result !== null);
     if (!stageDone || competition.stages.length >= competition.stageDates.length) continue;

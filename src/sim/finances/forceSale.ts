@@ -1,6 +1,7 @@
 import { pickLineup } from "../../engine/match.js";
 import type { GameState, Tier } from "../gameState.js";
-import { movePlayer, openDraft } from "../transfers/movePlayer.js";
+import type { MarketView } from "../transfers/marketView.js";
+import { movePlayer } from "../transfers/movePlayer.js";
 import { valuePlayer } from "../transfers/valuePlayer.js";
 import { projectedRevenue } from "./setBoardBudget.js";
 import { tierOf } from "./tierOf.js";
@@ -16,11 +17,12 @@ const TIER_RANK: Record<Tier, number> = { A: 0, B: 1, C: 2, D: 3, state: 4 };
 /**
  * The board sells the club's best-paid player outside the automatic best eleven to a richer club
  * that can pay, or abroad when none can. Returns null when the squad is too thin to sell.
+ * `state` must be a draft (openDraft) and `view` built from it; the sale is recorded in both.
  */
-export function forceSale(state: GameState, clubId: string, random: () => number): { state: GameState; sale: ForcedSale } | null {
+export function forceSale(state: GameState, clubId: string, random: () => number, view: MarketView): { state: GameState; sale: ForcedSale } | null {
   const seller = state.clubs[clubId];
   const sellerFinance = state.finances[clubId];
-  const squad = Object.values(state.players).filter((p) => p.clubId === clubId);
+  const squad = view.squad(clubId);
   if (!seller || !sellerFinance || squad.length <= MIN_SQUAD) return null;
   const key = new Set(pickLineup(squad));
   const player = squad.filter((p) => !key.has(p)).sort((a, b) => b.wage - a.wage || a.id.localeCompare(b.id))[0];
@@ -37,8 +39,7 @@ export function forceSale(state: GameState, clubId: string, random: () => number
     .map((club) => club.id)
     .sort();
   const buyerId = buyers.length ? (buyers[Math.floor(random() * buyers.length)] ?? null) : null;
-  return {
-    state: movePlayer(openDraft(state), { playerId: player.id, kind: buyerId ? "transfer" : "abroad", toClubId: buyerId, fee }).state,
-    sale: { type: "forcedSale", clubId, playerId: player.id, buyerId, fee },
-  };
+  const moved = movePlayer(state, { playerId: player.id, kind: buyerId ? "transfer" : "abroad", toClubId: buyerId, fee }, view.squad);
+  view.record(player, moved.state.players[player.id] ?? null);
+  return { state: moved.state, sale: { type: "forcedSale", clubId, playerId: player.id, buyerId, fee } };
 }

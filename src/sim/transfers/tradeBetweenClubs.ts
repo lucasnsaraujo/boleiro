@@ -132,7 +132,7 @@ export function tradeBetweenClubs(state: GameState, random: () => number): { sta
         events.push({ type: "preContractSigned", playerId: deal.player.id, fromClubId: deal.player.clubId, toClubId: buyerId });
       } else {
         const contract = { wage: deal.wage, until: contractEnd(year + 1, random) };
-        const moved = movePlayer(market.state, { playerId: deal.player.id, kind: "transfer", toClubId: buyerId, fee: deal.fee, contract });
+        const moved = movePlayer(market.state, { playerId: deal.player.id, kind: "transfer", toClubId: buyerId, fee: deal.fee, contract }, view.squad);
         market.state = moved.state;
         events.push(moved.event);
         view.record(deal.player, market.state.players[deal.player.id] ?? null);

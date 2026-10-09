@@ -37,7 +37,6 @@ export function europeBids(state: GameState, random: () => number): { state: Gam
     .filter((p) => p.age <= MAX_AGE && p.strength >= MIN_STRENGTH && !state.market.loans[p.id])
     .filter((p) => p.condition.arrivedOn === null || p.condition.arrivedOn < settledBefore)
     .sort((a, b) => a.id.localeCompare(b.id));
-  const sold = new Map<string, number>();
   for (const player of targets) {
     const youth = 1 + YOUTH_BONUS.perYear * Math.max(0, YOUTH_BONUS.belowAge - player.age);
     const windowChance = Math.min(MAX_BID_CHANCE, BID_CHANCE_AT_72 * PER_STRENGTH_POINT ** (player.strength - 72) * youth);
@@ -46,13 +45,12 @@ export function europeBids(state: GameState, random: () => number): { state: Gam
     const value = valuePlayer(player, tier, state.date);
     const feeEur = Math.round(value * (BID_PREMIUM.min + BID_PREMIUM.spread * random()));
     const fee = Math.round(feeEur * state.market.eurBrl);
-    const left = view.squad(player.clubId).length - (sold.get(player.clubId) ?? 0);
-    const accepted = left > MIN_SQUAD && random() < ACCEPT_CHANCE;
+    const accepted = view.squad(player.clubId).length > MIN_SQUAD && random() < ACCEPT_CHANCE;
     events.push({ type: "europeBid", playerId: player.id, clubId: player.clubId, feeEur, fee, accepted });
     if (!accepted) continue;
-    sold.set(player.clubId, (sold.get(player.clubId) ?? 0) + 1);
-    const moved = movePlayer(next, { playerId: player.id, kind: "abroad", toClubId: null, fee });
+    const moved = movePlayer(next, { playerId: player.id, kind: "abroad", toClubId: null, fee }, view.squad);
     next = moved.state;
+    view.record(player, null);
     events.push(moved.event);
   }
   return { state: next, events };

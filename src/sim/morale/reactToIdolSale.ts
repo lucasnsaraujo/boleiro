@@ -1,4 +1,4 @@
-import type { GameState } from "../gameState.js";
+import type { GameState, SimPlayer } from "../gameState.js";
 import { clubMood } from "./clubMood.js";
 
 // guess: fan mood lost when the club sells one of its three strongest players (an idol) or
@@ -10,12 +10,14 @@ const STARTERS = 11;
 
 /**
  * Fans' reaction to the sale of `playerId`. Call it before the player leaves, while he is still
- * in his club's squad; the transfer market calls it for every sale.
+ * in his club's squad; the transfer market calls it for every sale. `squadOf`, when given, must
+ * return the club's current squad, so a busy market day need not scan every player per sale.
  */
-export function reactToIdolSale(state: GameState, playerId: string): GameState {
+export function reactToIdolSale(state: GameState, playerId: string, squadOf?: (clubId: string) => readonly SimPlayer[]): GameState {
   const player = state.players[playerId];
   if (!player) throw new Error(`no player ${playerId}`);
-  const stronger = Object.values(state.players).filter((p) => p.clubId === player.clubId && p.strength > player.strength).length;
+  const squad = squadOf ? squadOf(player.clubId) : Object.values(state.players).filter((p) => p.clubId === player.clubId);
+  const stronger = squad.filter((p) => p.strength > player.strength).length;
   const lost = stronger < IDOLS_PER_SQUAD ? IDOL_SALE_FANS : stronger < STARTERS ? STARTER_SALE_FANS : 0;
   if (!lost) return state;
   const mood = clubMood(state, player.clubId);
