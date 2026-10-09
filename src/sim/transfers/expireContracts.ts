@@ -20,12 +20,28 @@ export function contractEnd(year: number, random: () => number): string {
   return `${year + Math.floor(random() * NEW_CONTRACT_YEARS)}-12-31`;
 }
 
-/** Whether any contract ran out before today or any free agent has waited a year: a loop, no copies. */
+// Most days reuse yesterday's player maps, so each map's earliest contract end is found once. Safe
+// because a map is only edited in place as a fresh draft (openDraft), before any state holds it.
+const earliestEnds = new WeakMap<Record<string, SimPlayer>, string | null>();
+
+function earliestEnd(players: Record<string, SimPlayer>): string | null {
+  const known = earliestEnds.get(players);
+  if (known !== undefined) return known;
+  let earliest: string | null = null;
+  for (const id in players) {
+    const until = players[id]?.contractUntil ?? "";
+    if (earliest === null || until < earliest) earliest = until;
+  }
+  earliestEnds.set(players, earliest);
+  return earliest;
+}
+
+/** Whether any contract ran out before today or any free agent has waited a year. */
 export function hasExpiries(state: GameState): boolean {
-  for (const id in state.players) if ((state.players[id]?.contractUntil ?? "") < state.date) return true;
-  const staleBefore = addDays(state.date, -FREE_AGENT_DAYS);
-  for (const id in state.market.freeAgents) if ((state.market.freeAgents[id]?.contractUntil ?? "") < staleBefore) return true;
-  return false;
+  const players = earliestEnd(state.players);
+  if (players !== null && players < state.date) return true;
+  const freeAgents = earliestEnd(state.market.freeAgents);
+  return freeAgents !== null && freeAgents < addDays(state.date, -FREE_AGENT_DAYS);
 }
 
 /**
