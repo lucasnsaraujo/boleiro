@@ -66,6 +66,8 @@ const YOUTH_MIN_AGE = 17;
 // national minimum wage, R$1,621 a month.
 const NO_SQUAD_WAGE = 1621;
 const YOUTH_AGES = 3;
+// guess: a first professional contract runs three seasons (Lei 14.597/2023 allows up to five).
+const YOUTH_CONTRACT_YEARS = 3;
 // guess: spread of a new youth player's strength around his club's level for his age, a little
 // above the 2026 squads' 18–19 year-olds (about 3 points within a division).
 const YOUTH_SD = 3;
@@ -149,6 +151,7 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
         nationalities: ["Brazil"],
         trait: rollTrait(random.next),
         wage: Number.isFinite(wage) ? wage : NO_SQUAD_WAGE,
+        contractUntil: `${Number(intake) + YOUTH_CONTRACT_YEARS - 1}-12-31`,
         condition: freshCondition(date),
       };
       events.push({ type: "youthPromoted", playerId: id, clubId });
