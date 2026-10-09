@@ -39,6 +39,10 @@ export function recordDayEvents(state: GameState, events: readonly DayEvent[], b
       const name = before.players[event.playerId]?.name ?? event.playerId;
       history = recordTransfer(history, { season: before.season, date: before.date, playerId: event.playerId, name, fromId: event.clubId, toId: event.buyerId, fee: event.fee });
     }
+    // Paid moves out of a Brazilian club; signings from abroad have no seller to credit.
+    if (event.type === "playerMoved" && event.fee > 0 && event.fromClubId && event.kind !== "loan") {
+      history = recordTransfer(history, { season: before.season, date: before.date, playerId: event.playerId, name: event.name, fromId: event.fromClubId, toId: event.toClubId, fee: event.fee });
+    }
     const coach = recordCoach(history.coach, event, before.date);
     if (coach !== history.coach) history = { ...history, coach };
   }
