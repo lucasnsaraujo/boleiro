@@ -36,12 +36,12 @@ const fittedA = fitParams(CALIBRATED, ["baseGoals", "homeAdvantage", "strengthIm
 const simA = simulatedSeasonRates(squads.A, fittedA);
 console.log(`\nSérie A ${FIRST_CURRENT_SEASON}+ (real, closing odds)   vs   Boleiro (${squads.A.length} real squads)`);
 console.table({
-  "home win": [pct(realA.home), pct(simA.home)],
-  draw: [pct(realA.draw), pct(simA.draw)],
-  "away win": [pct(realA.away), pct(simA.away)],
-  "goals per game": [realA.goalsPerGame.toFixed(2), simA.goalsPerGame.toFixed(2)],
-  "home win chance p10": [pct(realA.homeWinP10), pct(simA.homeWinP10)],
-  "home win chance p90": [pct(realA.homeWinP90), pct(simA.homeWinP90)],
+  "home win": { real: pct(realA.home), Boleiro: pct(simA.home) },
+  draw: { real: pct(realA.draw), Boleiro: pct(simA.draw) },
+  "away win": { real: pct(realA.away), Boleiro: pct(simA.away) },
+  "goals per game": { real: realA.goalsPerGame.toFixed(2), Boleiro: simA.goalsPerGame.toFixed(2) },
+  "home win chance p10": { real: pct(realA.homeWinP10), Boleiro: pct(simA.homeWinP10) },
+  "home win chance p90": { real: pct(realA.homeWinP90), Boleiro: pct(simA.homeWinP90) },
 });
 console.log("Fitted A:", rounded(fittedA), "\nIn use A:", rounded(DIVISION_PARAMS.A));
 
@@ -51,10 +51,10 @@ for (const division of ["B", "C", "D"] as const) {
   const sim = simulatedSeasonRates(squads[division], DIVISION_PARAMS[division]);
   console.log(`\nSérie ${division} ${division === "D" ? "2024" : `${FIRST_CURRENT_SEASON}+`} (real, ${real.matches} games)   vs   Boleiro (${squads[division].length} real squads, params in use)`);
   console.table({
-    "home win": [pct(real.home), pct(sim.home)],
-    draw: [pct(real.draw), pct(sim.draw)],
-    "away win": [pct(real.away), pct(sim.away)],
-    "goals per game": [real.goalsPerGame.toFixed(2), sim.goalsPerGame.toFixed(2)],
+    "home win": { real: pct(real.home), Boleiro: pct(sim.home) },
+    draw: { real: pct(real.draw), Boleiro: pct(sim.draw) },
+    "away win": { real: pct(real.away), Boleiro: pct(sim.away) },
+    "goals per game": { real: real.goalsPerGame.toFixed(2), Boleiro: sim.goalsPerGame.toFixed(2) },
   });
   console.log(`Fitted ${division}:`, rounded(fitted), `\nIn use ${division}:`, rounded(DIVISION_PARAMS[division]));
 }
