@@ -1,3 +1,5 @@
+<img src="assets/logo.svg" width="96" alt="Boleiro logo">
+
 # Boleiro
 
 A Brazilian football manager game in the spirit of Brasfoot: simple to pick up, with real players, realistic money and match odds that behave like real football. You play as the coach.
