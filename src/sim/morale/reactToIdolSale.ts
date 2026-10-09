@@ -10,7 +10,7 @@ const STARTERS = 11;
 
 /**
  * Fans' reaction to the sale of `playerId`. Call it before the player leaves, while he is still
- * in his club's squad; the transfer market (#11) calls it for every sale.
+ * in his club's squad; the transfer market calls it for every sale.
  */
 export function reactToIdolSale(state: GameState, playerId: string): GameState {
   const player = state.players[playerId];

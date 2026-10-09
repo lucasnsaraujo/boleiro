@@ -17,7 +17,7 @@ export type ClubMood = {
 
 export const NEUTRAL_MOOD: ClubMood = { squad: 50, fans: 50, supporters: "calm", closedDoorGames: 0 };
 
-/** A club's mood as the board, the coach career (#13) and the UI read it. */
+/** A club's mood as the board, the coach career and the UI read it. */
 export function clubMood(state: Pick<GameState, "mood">, clubId: string): ClubMood {
   return state.mood[clubId] ?? NEUTRAL_MOOD;
 }
