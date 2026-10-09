@@ -29,13 +29,16 @@ One row per club: the 156 clubs of Série A–D 2026 plus the 125 clubs that onl
 
 | File | Source | Rebuilt by |
 |---|---|---|
-| `history/copa-do-brasil.csv` | Sofascore unique-tournament 373, `/api/v1/unique-tournament/373/season/{id}/events/last/{page}`; odds from `/api/v1/event/{id}/odds/1/all`, market "Full time", closing `fractionalValue` converted to decimal | `pipeline/fetch_history.py` |
-| `history/brasileirao-serie-b.csv`, `-serie-c.csv`, `-serie-d.csv` | Sofascore unique-tournaments 390, 1281 and 10326, events endpoint only; no odds (see notes) | `pipeline/fetch_history.py` |
-| `history/divisions.csv` | Sofascore standings of Série A–D (unique-tournaments 325, 390, 1281, 10326), `/api/v1/unique-tournament/{t}/season/{id}/standings/total`, every team in any group of that season | `pipeline/fetch_history.py` |
+| `history/sofascore/copa-do-brasil.csv` (2024) | Sofascore unique-tournament 373, `/api/v1/unique-tournament/373/season/{id}/events/last/{page}`; odds from `/api/v1/event/{id}/odds/1/all`, market "Full time", closing `fractionalValue` converted to decimal | `pipeline/fetch_history.py` |
+| `history/sofascore/brasileirao-serie-b.csv`, `-serie-c.csv`, `-serie-d.csv` (2024) | Sofascore unique-tournaments 390, 1281 and 10326, events endpoint only; no odds | `pipeline/fetch_history.py` |
+| `history/sofascore/divisions.csv` (2024) | Sofascore standings of Série A–D (unique-tournaments 325, 390, 1281, 10326), `/api/v1/unique-tournament/{t}/season/{id}/standings/total` | `pipeline/fetch_history.py` |
+| `history/espn/copa-do-brasil.csv`, `brasileirao-serie-b.csv`, `brasileirao-serie-c.csv` | ESPN `site.api.espn.com/apis/site/v2/sports/soccer/{league}/scoreboard?dates={year}`, leagues `bra.copa_do_brazil`, `bra.2`, `bra.3`; no odds | `pipeline/fetch_espn.py` |
+| `history/espn/divisions.csv` | ESPN standings `apis/v2/sports/soccer/{league}/standings?season={year}` for `bra.1`–`bra.3` | `pipeline/fetch_espn.py` |
 
 Notes:
 
-- Dates are local Brazil dates (America/Sao_Paulo) from the event start time.
-- Scores are Sofascore's `display` score, which leaves out shootout goals. The shootout winner comes from the `penalties` score.
-- Série B–D have no odds. Sofascore serves odds one request per match and shows a Cloudflare captcha when asked too fast, and calibrating home advantage and goals per game in those divisions only needs results. Série A odds come from football-data.co.uk.
+- Sofascore covers only 2024: on 2026-10-09 it put every further request behind a Cloudflare captcha. ESPN fills the other seasons; the loader prefers Sofascore when both have a season.
+- ESPN has no Série D and no Série C before 2017.
+- Dates are local Brazil dates (America/Sao_Paulo). Scores leave out shootout goals; the shootout winner is a separate column.
+- Teams are joined across sources by `team_key` (`pipeline/team_key.py`): lowercase ASCII words without club-type abbreviations. It is approximate; names that differ beyond that do not match.
 - The 2026 season was still running when fetched, so it only has the matches finished by then.
