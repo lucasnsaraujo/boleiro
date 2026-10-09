@@ -125,6 +125,15 @@ describe("a full season", () => {
     expect(flamengo(before).some((p) => p.condition.seasonMinutes > 0)).toBe(true);
   });
 
+  it("has organised supporters press often, protest less and turn violent rarely", () => {
+    const count = (type: DayEvent["type"]) => lastDay.events.filter((e) => e.type === type).length;
+    const clubs = Object.keys(before.clubs).length;
+    expect(count("fansPressure")).toBeGreaterThan(count("fansProtest"));
+    expect(count("fansProtest")).toBeGreaterThan(count("fansViolence"));
+    expect(count("fansProtest")).toBeGreaterThan(0);
+    expect(count("fansViolence")).toBeLessThan(clubs / 20);
+  });
+
   it("starts the next season with a fresh calendar", () => {
     expect(next.season).toBe(2027);
     expect(next.fixtures.every((f) => f.date.startsWith("2027-") && !f.result)).toBe(true);
