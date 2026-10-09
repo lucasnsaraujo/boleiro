@@ -14,7 +14,7 @@ const ARTIFICIAL_TURF_COST = 3;
 // guess: a foreign player starts this many points below his strength and closes the gap in a
 // straight line over his first half-season at the club.
 const ADAPTATION_COST = 5;
-const ADAPTATION_DAYS = 180;
+export const ADAPTATION_DAYS = 180;
 
 function isForeign(player: Pick<SimPlayer, "nationalities">): boolean {
   return player.nationalities.length > 0 && !player.nationalities.includes("Brazil");
