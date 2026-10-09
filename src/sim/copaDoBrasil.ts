@@ -31,6 +31,7 @@ function pottedTies(competition: CupCompetition, clubIds: readonly string[], ind
   return top.map((id, i): [string, string] => (index <= LAST_SINGLE_LEG_PHASE ? [bottom[i] ?? "", id] : [id, bottom[i] ?? ""]));
 }
 
+// guess: the final is played at the ground of the finalist drawn first instead of a neutral venue.
 function openTies(competition: CupCompetition, clubIds: readonly string[]): [string, string][] {
   const drawn = [...clubIds].sort((a, b) => competition.drawOrder.indexOf(a) - competition.drawOrder.indexOf(b));
   return Array.from({ length: drawn.length / 2 }, (_, i): [string, string] => [drawn[2 * i] ?? "", drawn[2 * i + 1] ?? ""]);

@@ -99,7 +99,7 @@ export type ClubFinance = {
   membership: number;
   /** Membership the club settles back to; membership drifts around it with results. */
   membershipAnchor: number;
-  /** State championship, cup, continental and commercial income the game does not simulate yet. */
+  /** State championship, continental and commercial income the game does not simulate, net of `expectedPrizes`. */
   otherIncome: number;
   infrastructure: number;
   /** Ticket money the board expects over a season, for its budget. */
@@ -108,7 +108,7 @@ export type ClubFinance = {
   expectedPrizes: number;
   transferBudget: number;
   wageCap: number;
-  /** League points of the last five matches, newest last. */
+  /** Points of the last five matches in any competition, newest last. */
   recentPoints: number[];
   month: Ledger & { points: number; games: number };
   season: Ledger;
