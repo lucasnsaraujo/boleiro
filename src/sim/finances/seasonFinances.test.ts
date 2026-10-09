@@ -1,0 +1,73 @@
+import { describe, expect, it } from "vitest";
+import { advanceDay, type DayEvent } from "../advanceDay.js";
+import type { ClubFinance, GameState } from "../gameState.js";
+import { loadNewGame } from "../loadNewGame.js";
+import { loadGame, saveGame } from "../saveGame.js";
+
+function playUntil(state: GameState, date: string): { state: GameState; events: DayEvent[] } {
+  let current = state;
+  const events: DayEvent[] = [];
+  while (current.date < date) {
+    const day = advanceDay(current, {});
+    current = day.state;
+    events.push(...day.events);
+  }
+  return { state: current, events };
+}
+
+const financeOf = (state: GameState, clubId: string): ClubFinance => {
+  const finance = state.finances[clubId];
+  if (!finance) throw new Error(`no finances for ${clubId}`);
+  return finance;
+};
+
+describe("club finances across a season change", () => {
+  const { state: before } = playUntil(loadNewGame(3, { coachClubId: null }), "2026-12-31");
+  const { state: after, events } = playUntil(before, "2027-01-01");
+  const ended = events.find((e) => e.type === "seasonEnded");
+  const outcome = (division: string) => {
+    if (ended?.type !== "seasonEnded") throw new Error("season did not end");
+    const found = Object.entries(ended.outcomes).find(([id]) => id.startsWith(`serie-${division}`));
+    if (!found) throw new Error(`no Série ${division} outcome`);
+    return found[1];
+  };
+
+  it("pays promoted clubs Série A TV money and relegated clubs Série B's", () => {
+    const { min, perClubB } = { min: after.economy.serieATv.perClubMin, perClubB: after.economy.tvPerClub.B };
+    for (const id of outcome("b").promotedIds) expect(financeOf(after, id).tv).toBeGreaterThanOrEqual(min);
+    for (const id of outcome("a").relegatedIds) expect(financeOf(after, id).tv).toBe(perClubB);
+  });
+
+  it("shrinks sponsorship on relegation and grows it on promotion", () => {
+    for (const id of outcome("a").relegatedIds) expect(financeOf(after, id).sponsorship).toBeLessThan(financeOf(before, id).sponsorship);
+    for (const id of outcome("b").promotedIds) expect(financeOf(after, id).sponsorship).toBeGreaterThan(financeOf(before, id).sponsorship);
+  });
+
+  it("pays the Série A champion a sponsor bonus", () => {
+    const champion = outcome("a").championId;
+    expect(financeOf(after, champion).month.revenue.sponsorship).toBeGreaterThan(0);
+    expect(financeOf(after, champion).cash).toBeGreaterThan(financeOf(before, champion).cash);
+  });
+
+  it("files the finished season's books and opens empty ones", () => {
+    const flamengo = financeOf(after, "flamengo-rj");
+    expect(flamengo.lastSeason?.revenue.tv).toBeGreaterThan(0);
+    expect(flamengo.season.revenue.tv).toBe(0);
+  });
+
+  it("sets a new budget for the season", () => {
+    const changed = Object.keys(after.finances).filter((id) => financeOf(after, id).wageCap !== financeOf(before, id).wageCap);
+    expect(changed.length).toBeGreaterThan(0);
+  });
+
+  it("survives a save and load and plays on identically", () => {
+    const loaded = loadGame(saveGame(after));
+    expect(loaded).toEqual(after);
+    expect(playUntil(loaded, "2027-02-02").events).toEqual(playUntil(after, "2027-02-02").events);
+  });
+
+  it("refuses a save without finances", () => {
+    const withoutFinances = Object.fromEntries(Object.entries(after).filter(([key]) => key !== "finances"));
+    expect(() => loadGame(JSON.stringify(withoutFinances))).toThrow();
+  });
+});
