@@ -1,3 +1,4 @@
+import { copyRecord } from "../copyRecord.js";
 import { bookMoney } from "../finances/bookMoney.js";
 import { paySigningCosts } from "../finances/paySigningCosts.js";
 import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
@@ -36,7 +37,7 @@ export function openDraft(state: GameState): GameState {
   const { market } = state;
   return {
     ...state,
-    players: { ...state.players },
+    players: copyRecord(state.players),
     market: { ...market, freeAgents: { ...market.freeAgents }, preContracts: { ...market.preContracts }, loans: { ...market.loans } },
   };
 }

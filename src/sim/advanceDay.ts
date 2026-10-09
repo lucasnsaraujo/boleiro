@@ -1,6 +1,7 @@
 import type { State } from "../data/clubs.js";
 import { simulateMatch } from "../engine/match.js";
 import { randomStream } from "../engine/random.js";
+import { copyRecord } from "./copyRecord.js";
 import { addDays } from "./dates.js";
 import { coachCareerDay } from "./coach/coachCareerDay.js";
 import type { CoachEvent } from "./coach/coachEvent.js";
@@ -27,6 +28,7 @@ import { reactToDay } from "./morale/reactToDay.js";
 import { withoutCrowd } from "./morale/withoutCrowd.js";
 import { isInjured } from "./players/isInjured.js";
 import { matchSetup } from "./players/matchSetup.js";
+import { squadsByClub } from "./players/squadsByClub.js";
 import { recordMatchLoad, type PlayerInjured } from "./players/recordMatchLoad.js";
 import { paramsForCompetition } from "./paramsForCompetition.js";
 import { aggregate } from "./tieResults.js";
@@ -62,14 +64,7 @@ const PENALTY_SHOOTOUT_HOME_WIN = 0.5; // guess: shootouts treated as a coin fli
 function squadsOf(state: GameState): (clubId: string) => SimPlayer[] {
   let squads: Map<string, SimPlayer[]> | null = null;
   return (clubId) => {
-    if (!squads) {
-      squads = new Map();
-      for (const player of Object.values(state.players)) {
-        const squad = squads.get(player.clubId);
-        if (squad) squad.push(player);
-        else squads.set(player.clubId, [player]);
-      }
-    }
+    squads ??= squadsByClub(state.players);
     return squads.get(clubId) ?? [];
   };
 }
@@ -150,7 +145,8 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
     events.push({ type: "stageOpened", competitionId: competition.id, stage: current + 1 });
   }
 
-  const players = playedToday.length ? { ...state.players, ...Object.fromEntries(playedToday.map((p) => [p.id, p])) } : state.players;
+  const players = playedToday.length ? copyRecord(state.players) : state.players;
+  for (const player of playedToday) players[player.id] = player;
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: cards.discipline() };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
   next = recordMatches(next, played, lineups);
