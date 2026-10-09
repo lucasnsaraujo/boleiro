@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "career": "tsx src/cli/career.ts",
+    "history": "tsx src/cli/history.ts",
     "calibrate": "tsx src/engine/calibrate.ts"
   },
   "devDependencies": {
