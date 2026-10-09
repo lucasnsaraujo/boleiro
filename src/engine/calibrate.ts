@@ -4,6 +4,7 @@ import { CUP_SEASONS, realCupUpsets, simulatedCupUpsets, type CupUpsetGroup, typ
 import { fitParams } from "./fitParams.js";
 import { CALIBRATED, type EngineParams } from "./match.js";
 import { CUP_PARAMS, DIVISION_PARAMS } from "./paramsForDivision.js";
+import { realTwoLegTies, simulatedTwoLegTies } from "./twoLegTies.js";
 
 const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
 const rounded = (params: EngineParams) => JSON.stringify(Object.fromEntries(Object.entries(params).map(([k, v]) => [k, Number(v.toFixed(4))])));
@@ -81,3 +82,11 @@ console.table(
   ),
 );
 console.log("Fitted cup:", rounded(fittedCup), "\nIn use cup:", rounded(CUP_PARAMS));
+
+const simTies = simulatedTwoLegTies(squads, CUP_PARAMS);
+console.log(`\nCopa do Brasil ${CUP_SEASONS.first}–${CUP_SEASONS.last} two-leg ties: higher-division club knocked out (real vs Boleiro, not a fit target)`);
+console.table(
+  Object.fromEntries(
+    realTwoLegTies().map((real, i) => [real.gap, { ties: real.ties, "favourite out": `${pct(real.favouriteOut)} / ${pct(simTies[i]?.favouriteOut ?? Number.NaN)}` }]),
+  ),
+);
