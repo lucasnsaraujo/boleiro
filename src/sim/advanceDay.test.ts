@@ -21,7 +21,8 @@ describe("advanceDay", () => {
     const { state, events } = advanceDay(before, {});
     const today = before.fixtures.filter((f) => f.date === firstDate);
     expect(events.filter((e) => e.type === "matchPlayed")).toHaveLength(today.length);
-    expect(state.fixtures.filter((f) => f.result).map((f) => f.id)).toEqual(today.map((f) => f.id));
+    const playedBefore = new Set(before.fixtures.filter((f) => f.result).map((f) => f.id));
+    expect(state.fixtures.filter((f) => f.result && !playedBefore.has(f.id)).map((f) => f.id)).toEqual(today.map((f) => f.id));
     expect(state.date > before.date).toBe(true);
   });
 
@@ -34,8 +35,11 @@ describe("advanceDay", () => {
 
   it.each(["B", "D"] as const)("plays Série %s games with that division's engine params", (division) => {
     const reached = advanceTo(start, start.calendar.leagueDates[division][0] ?? "");
-    const isOtherLeagueToday = (f: Fixture) => f.date === reached.date && reached.competitions[f.competitionId]?.division !== division;
-    const before = { ...reached, fixtures: reached.fixtures.filter((f) => !isOtherLeagueToday(f)) };
+    const isOtherLeagueToday = (f: Fixture) => {
+      const competition = reached.competitions[f.competitionId];
+      return f.date === reached.date && !(competition?.kind === "league" && competition.division === division);
+    };
+    const before = { ...reached, players: start.players, fixtures: reached.fixtures.filter((f) => !isOtherLeagueToday(f)) };
     const first = before.fixtures.find((f) => f.date === before.date);
     const team = (clubId: string) => ({ name: clubId, players: Object.values(before.players).filter((p) => p.clubId === clubId) });
     const expected = simulateMatch(team(first?.homeId ?? ""), team(first?.awayId ?? ""), randomStream(before.rngState).next, paramsForDivision(division));

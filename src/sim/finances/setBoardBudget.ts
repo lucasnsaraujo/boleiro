@@ -13,7 +13,7 @@ const SPARE_CASH_WAGE_YEARS = 3;
 
 /** Yearly revenue the board expects without player sales. */
 export function projectedRevenue(finance: ClubFinance): number {
-  return finance.tv + finance.sponsorship + finance.membership + finance.otherIncome + finance.expectedTickets;
+  return finance.tv + finance.sponsorship + finance.membership + finance.otherIncome + finance.expectedTickets + finance.expectedPrizes;
 }
 
 /**

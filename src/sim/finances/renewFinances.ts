@@ -3,6 +3,7 @@ import type { Division } from "../../data/players.js";
 import type { ClubFinance, Fixture, GameState } from "../gameState.js";
 import type { LeagueOutcome } from "../leagueFormats.js";
 import { standings } from "../standings.js";
+import { expectedCopaPrize } from "./expectedCopaPrize.js";
 import { emptyLedger } from "./ledger.js";
 import { serieATv } from "./serieATv.js";
 import { setBoardBudget } from "./setBoardBudget.js";
@@ -25,10 +26,11 @@ export function renewFinances(
   ended: GameState,
   clubs: Record<string, Club>,
   fixtures: readonly Fixture[],
+  cupEntries: readonly (readonly string[])[],
   outcomes: Record<Division, LeagueOutcome>,
 ): Record<string, ClubFinance> {
   const { economy } = ended;
-  const serieA = Object.values(ended.competitions).find((c) => c.division === "A" && c.season === ended.season);
+  const serieA = Object.values(ended.competitions).find((c) => c.kind === "league" && c.division === "A" && c.season === ended.season);
   const lastTable = serieA
     ? standings(serieA.clubIds, ended.fixtures.filter((f) => f.competitionId === serieA.id), serieA.drawOrder).map((row) => row.clubId)
     : [];
@@ -38,6 +40,7 @@ export function renewFinances(
   const rewarded = new Set(Object.values(outcomes).flatMap((o) => [o.championId, ...o.promotedIds]));
   const homeGames = new Map<string, number>();
   for (const f of fixtures) homeGames.set(f.homeId, (homeGames.get(f.homeId) ?? 0) + 1);
+  const cupEntryStage = new Map(cupEntries.flatMap((ids, stage) => ids.map((id) => [id, stage])));
   const wages = new Map<string, number>();
   for (const p of Object.values(ended.players)) wages.set(p.clubId, (wages.get(p.clubId) ?? 0) + p.wage);
 
@@ -54,7 +57,12 @@ export function renewFinances(
     const baseCrowd = Math.round(finance.baseCrowd * crowdRatio);
     const tv = to === "A" ? (serieATvs[id] ?? 0) : economy.tvPerClub[to];
     const expectedTickets = Math.round(baseCrowd * ticketPrice * (homeGames.get(id) ?? 0));
-    const commercial = (finance.sponsorship + finance.membership + finance.otherIncome) * step;
+    const entryStage = cupEntryStage.get(id);
+    const expectedPrizes = entryStage === undefined ? 0 : Math.round(expectedCopaPrize(economy.copaDoBrasil, entryStage, to !== "A" && to !== "B"));
+    // The Copa prizes a club expects come out of its other income, so last season's expectation goes
+    // back in before this season's comes out; together they stay the club's unsimulated income.
+    const unsimulated = finance.otherIncome + finance.expectedPrizes;
+    const commercial = (finance.sponsorship + finance.membership + unsimulated) * step;
     const excess = (tv + expectedTickets + commercial) / economy.revenueCeiling[to];
     const pull = step * (excess > 1 ? excess ** -CEILING_PULL : 1);
     const month = emptyLedger();
@@ -64,13 +72,14 @@ export function renewFinances(
       cash: finance.cash + bonus,
       tv,
       sponsorship: Math.round(finance.sponsorship * pull),
-      otherIncome: Math.round(finance.otherIncome * pull),
+      otherIncome: Math.round(Math.max(0, unsimulated * pull - expectedPrizes)),
       membership: Math.round(finance.membership * pull),
       membershipAnchor: Math.round(finance.membershipAnchor * pull),
       infrastructure: Math.round(finance.infrastructure * step),
       ticketPrice,
       baseCrowd,
       expectedTickets,
+      expectedPrizes,
       month: { ...month, points: 0, games: 0 },
       season: emptyLedger(),
       lastSeason: finance.season,

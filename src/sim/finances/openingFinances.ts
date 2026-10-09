@@ -2,6 +2,7 @@ import type { Club } from "../../data/clubs.js";
 import type { CompetitionMoney } from "../../data/competition-money.js";
 import type { ClubFinances, DivisionFinances, Finances } from "../../data/finances.js";
 import type { ClubFinance, Economy, Fixture, SimPlayer, Tier } from "../gameState.js";
+import { expectedCopaPrize } from "./expectedCopaPrize.js";
 import { emptyLedger } from "./ledger.js";
 import { serieATv } from "./serieATv.js";
 import { setBoardBudget, TRANSFER_SHARE_OF_REVENUE } from "./setBoardBudget.js";
@@ -60,7 +61,8 @@ function estimateOf(data: FinanceData, division: Tier, size: DivisionFinances["s
 
 function economyOf(data: FinanceData, competitionMoney: CompetitionMoney): Economy {
   const stateOnly = scale(estimateOf(data, "D", "small"), STATE_ONLY_SHARE_OF_SMALL_SERIE_D);
-  const { tv, matchday } = competitionMoney;
+  const { tv, matchday, copaDoBrasil } = competitionMoney;
+  const prizeOf = (round: string) => copaDoBrasil.rounds.find((r) => r.round === round)?.prize ?? 0;
   return {
     serieATv: { pool: tv.A.totalPool, shares: tv.A.shares, perClubMin: tv.A.perClubMin, perClubMax: tv.A.perClubMax },
     tvPerClub: { A: tv.A.totalPool / 20, B: tv.B.perClub, C: tv.C.perClub, D: tv.D.perClub, state: 0 },
@@ -87,6 +89,13 @@ function economyOf(data: FinanceData, competitionMoney: CompetitionMoney): Econo
       // guess: no state-only club earns more than a large Série D club.
       state: operatingRevenue(estimateOf(data, "D", "large")),
     },
+    copaDoBrasil: {
+      stagePrizes: copaDoBrasil.rounds
+        .filter((r) => r.round !== "runner-up" && r.round !== "champion")
+        .map(({ prize, prizeLowerDivisions }) => ({ prize, prizeLowerDivisions })),
+      runnerUp: prizeOf("runner-up"),
+      champion: prizeOf("champion"),
+    },
   };
 }
 
@@ -106,11 +115,17 @@ function wagesOf(squad: readonly Omit<SimPlayer, "wage">[], monthlyBill: number)
   return squad.map((p, i) => [p.id, Math.max(1, Math.round((monthlyBill * (weights[i] ?? 0)) / total))]);
 }
 
-/** Opening money for every club, the division rules, and each player's monthly wage. */
+/**
+ * Opening money for every club, the division rules, and each player's monthly wage. `fixtures` are the
+ * season's opening fixtures and `cupEntries[stage]` the clubs joining the Copa do Brasil at that stage:
+ * the gate of those home games and the Copa prizes a club can expect come out of its other income,
+ * which the accounts' revenue would otherwise count twice.
+ */
 export function openingFinances(
   clubs: Record<string, Club>,
   players: readonly Omit<SimPlayer, "wage">[],
   fixtures: readonly Fixture[],
+  cupEntries: readonly (readonly string[])[],
   data: FinanceData,
   competitionMoney: CompetitionMoney,
 ): { economy: Economy; finances: Record<string, ClubFinance>; wages: Record<string, number> } {
@@ -126,6 +141,7 @@ export function openingFinances(
   const smallestSerieA = [...data.clubs].sort((a, b) => a.revenue.total - b.revenue.total)[0];
   const homeGames = new Map<string, number>();
   for (const f of fixtures) homeGames.set(f.homeId, (homeGames.get(f.homeId) ?? 0) + 1);
+  const cupEntryStage = new Map(cupEntries.flatMap((ids, stage) => ids.map((id) => [id, stage])));
 
   const finances: Record<string, ClubFinance> = {};
   const wages: Record<string, number> = {};
@@ -141,8 +157,10 @@ export function openingFinances(
       const expectedTickets = Math.round(baseCrowd * price * (homeGames.get(club.id) ?? 0));
       const tv = tier === "A" ? (serieA[club.id] ?? 0) : economy.tvPerClub[tier];
       const revenue = operatingRevenue(base);
-      const otherIncome = Math.max(0, Math.round(revenue - tv - expectedTickets - base.membership - base.sponsorship));
-      const projected = tv + expectedTickets + base.membership + base.sponsorship + otherIncome;
+      const entryStage = cupEntryStage.get(club.id);
+      const cupPrizes = entryStage === undefined ? 0 : expectedCopaPrize(economy.copaDoBrasil, entryStage, tier !== "A" && tier !== "B");
+      const otherIncome = Math.max(0, Math.round(revenue - tv - expectedTickets - base.membership - base.sponsorship - cupPrizes));
+      const projected = tv + expectedTickets + base.membership + base.sponsorship + otherIncome + cupPrizes;
       for (const [id, wage] of wagesOf(squads.get(club.id) ?? [], base.wageBill / 12)) wages[id] = wage;
       const opening: ClubFinance = {
         cash: Math.round(Math.max(-base.netDebt, (OPENING_CASH_MONTHS_OF_REVENUE * revenue) / 12)),
@@ -159,6 +177,7 @@ export function openingFinances(
         otherIncome,
         infrastructure: Math.round(Math.max(MIN_INFRASTRUCTURE_SHARE_OF_REVENUE * projected, (1 - TRANSFER_SHARE_OF_REVENUE) * projected - base.wageBill)),
         expectedTickets,
+        expectedPrizes: Math.round(cupPrizes),
         transferBudget: 0,
         wageCap: 0,
         recentPoints: [],

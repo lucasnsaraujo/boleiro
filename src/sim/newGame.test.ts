@@ -4,7 +4,7 @@ import { loadPlayers } from "../data/players.js";
 import { loadNewGame } from "./loadNewGame.js";
 
 const league = (state: GameState, division: string) => {
-  const competition = Object.values(state.competitions).find((c) => c.division === division);
+  const competition = Object.values(state.competitions).find((c) => c.kind === "league" && c.division === division);
   if (!competition) throw new Error(`no Série ${division}`);
   return { competition, fixtures: state.fixtures.filter((f) => f.competitionId === competition.id) };
 };
@@ -20,7 +20,7 @@ describe("newGame", () => {
 
   it("starts on 1 January of the first season with a Série A–D league each", () => {
     expect(state.date).toBe("2026-01-01");
-    expect(Object.values(state.competitions).map((c) => [c.division, c.clubIds.length])).toEqual([
+    expect(Object.values(state.competitions).flatMap((c) => (c.kind === "league" ? [[c.division, c.clubIds.length]] : []))).toEqual([
       ["A", 20], ["B", 20], ["C", 20], ["D", 96],
     ]);
   });

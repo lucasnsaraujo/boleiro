@@ -1,4 +1,4 @@
-import type { Club } from "../data/clubs.js";
+import type { Club, State } from "../data/clubs.js";
 import type { Division } from "../data/players.js";
 import type { Player } from "../engine/match.js";
 import type { PlayerProfile } from "./players/playerProfile.js";
@@ -43,11 +43,8 @@ export type Stage = GroupStage | KnockoutStage;
 
 export type LeagueFormatId = `serie-${Lowercase<Division>}`;
 
-export type LeagueCompetition = {
+type CompetitionBase = {
   id: string;
-  kind: "league";
-  format: LeagueFormatId;
-  division: Division;
   season: number;
   clubIds: string[];
   stages: Stage[];
@@ -55,7 +52,15 @@ export type LeagueCompetition = {
   drawOrder: string[];
 };
 
-export type Competition = LeagueCompetition;
+export type LeagueCompetition = CompetitionBase & { kind: "league"; format: LeagueFormatId; division: Division };
+
+/** `clubIds` is the seeding order, best first. */
+export type StateCompetition = CompetitionBase & { kind: "state"; state: State };
+
+/** `clubIds` is the ranking order, best first; `entries[stage]` are the clubs that join at that stage. */
+export type CupCompetition = CompetitionBase & { kind: "cup"; entries: string[][] };
+
+export type Competition = LeagueCompetition | StateCompetition | CupCompetition;
 
 export type SeasonCalendar = {
   season: number;
@@ -94,14 +99,16 @@ export type ClubFinance = {
   membership: number;
   /** Membership the club settles back to; membership drifts around it with results. */
   membershipAnchor: number;
-  /** State championship, cup, continental and commercial income the game does not simulate yet. */
+  /** State championship, continental and commercial income the game does not simulate, net of `expectedPrizes`. */
   otherIncome: number;
   infrastructure: number;
   /** Ticket money the board expects over a season, for its budget. */
   expectedTickets: number;
+  /** Copa do Brasil prize money the board expects over a season, for its budget. */
+  expectedPrizes: number;
   transferBudget: number;
   wageCap: number;
-  /** League points of the last five matches, newest last. */
+  /** Points of the last five matches in any competition, newest last. */
   recentPoints: number[];
   month: Ledger & { points: number; games: number };
   season: Ledger;
@@ -117,6 +124,8 @@ export type Economy = {
   typicalRevenue: Record<Tier, number>;
   /** Highest yearly revenue without player sales in the division's data; richer clubs drift back. */
   revenueCeiling: Record<Tier, number>;
+  /** Copa do Brasil prize per club for playing each stage before the final, then the final's two prizes. */
+  copaDoBrasil: { stagePrizes: { prize: number; prizeLowerDivisions: number | null }[]; runnerUp: number; champion: number };
 };
 
 export type GameState = {
