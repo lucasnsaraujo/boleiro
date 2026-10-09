@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { simulateMatch } from "../engine/match.js";
+import { paramsForDivision } from "../engine/paramsForDivision.js";
+import { randomStream } from "../engine/random.js";
 import { advanceDay } from "./advanceDay.js";
-import type { GameState } from "./gameState.js";
+import type { Fixture, GameState } from "./gameState.js";
 import { loadNewGame } from "./loadNewGame.js";
 
 const start = loadNewGame(11, { coachClubId: "flamengo-rj" });
@@ -27,6 +30,17 @@ describe("advanceDay", () => {
     const snapshot = JSON.stringify(before);
     advanceDay(before, {});
     expect(JSON.stringify(before)).toBe(snapshot);
+  });
+
+  it.each(["B", "D"] as const)("plays Série %s games with that division's engine params", (division) => {
+    const reached = advanceTo(start, start.calendar.leagueDates[division][0] ?? "");
+    const isOtherLeagueToday = (f: Fixture) => f.date === reached.date && reached.competitions[f.competitionId]?.division !== division;
+    const before = { ...reached, fixtures: reached.fixtures.filter((f) => !isOtherLeagueToday(f)) };
+    const first = before.fixtures.find((f) => f.date === before.date);
+    const team = (clubId: string) => ({ name: clubId, players: Object.values(before.players).filter((p) => p.clubId === clubId) });
+    const expected = simulateMatch(team(first?.homeId ?? ""), team(first?.awayId ?? ""), randomStream(before.rngState).next, paramsForDivision(division));
+    const played = advanceDay(before, {}).state.fixtures.find((f) => f.id === first?.id);
+    expect(played?.result).toEqual(expected);
   });
 
   it("refuses a coach lineup with players from another club", () => {

@@ -21,7 +21,7 @@ pipeline/fetch_sofascore.sh data/sofascore-stats.json                     # seas
 
 Strength starts from a division baseline and moves with each player's own evidence: market value, share of minutes, Sofascore rating and, for forwards, goals and assists per 90. Players with little data stay near the baseline.
 
-`data/history/brasileirao-serie-a-odds.csv` has Série A results since 2012 with closing betting odds, from football-data.co.uk. The match engine is calibrated against it.
+`data/history/brasileirao-serie-a-odds.csv` has Série A results since 2012 with closing betting odds, from football-data.co.uk. The match engine is calibrated against it, against the Série B–D results below, and against Copa do Brasil matches between divisions.
 
 The rest of `data/history/` holds Copa do Brasil and Série B–D results from two sources, one folder each with the same columns:
 
@@ -45,5 +45,5 @@ Sofascore shows a Cloudflare captcha if it gets requests too fast, so `fetch_his
 ```sh
 pnpm install
 pnpm test && pnpm typecheck && pnpm lint
-pnpm calibrate   # compares simulated seasons with real Série A rates
+pnpm calibrate   # refits the engine, prints real-vs-Boleiro tables per division and for cup ties
 ```

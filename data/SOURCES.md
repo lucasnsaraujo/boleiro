@@ -25,6 +25,8 @@ One row per club: the 156 clubs of Série A–D 2026 plus the 125 clubs that onl
 
 `club_id` links each player to `clubs.csv`. Strength starts from a division baseline (A 72, B 63, C 56, D 49). State-only clubs start at 42, one step below Série D (`guess`, keeping the roughly 7-point gap between divisions). They have no Sofascore stats, so their strength moves only with market value and age.
 
+The baselines were checked against Copa do Brasil 2017–2025 matches between divisions (`pnpm calibrate`) and left unchanged. With Série A's strength-to-goals curve, these gaps make cup favourites win far too often (Série A away at Série D or below: 89% simulated, 61% real). Squeezing the baselines to about a third of their gaps would fit the cup, but the cup is a biased witness: big clubs rest players, first-round favourites go through on a draw, and the small clubs that reach later rounds are the best of their division. So the cup gets its own flatter strength curve (`CUP_PARAMS` in `src/engine/paramsForDivision.ts`) and the league gaps stay. No league data compares divisions directly, because every 2026 squad is rated within its own 2026 division.
+
 ## Historical results
 
 | File | Source | Rebuilt by |
@@ -42,6 +44,15 @@ Notes:
 - Dates are local Brazil dates (America/Sao_Paulo). Scores leave out shootout goals; the shootout winner is a separate column.
 - Teams are joined across sources by `team_key` (`pipeline/team_key.py`): lowercase ASCII words without club-type abbreviations. It is approximate; names that differ beyond that do not match.
 - The 2026 season was still running when fetched, so it only has the matches finished by then.
+
+## Engine parameters (`src/engine/paramsForDivision.ts`)
+
+| Params | Fitted by `pnpm calibrate` to |
+|---|---|
+| Série A (`CALIBRATED`) | Série A 2022+ results and closing odds (`brasileirao-serie-a-odds.csv`) |
+| Série B, C | Home, draw and away shares and goals per game from 2022 on (Série B includes the finished 2026 games). Strength spread is Série A's, since B and C have no odds. |
+| Série D | Same, from the 2024 season only (510 games, so its test tolerance is twice as wide) |
+| Copa do Brasil (`CUP_PARAMS`) | Win, draw and loss shares and goals per game of the higher-division club, by division gap and venue, 2017–2025. In ESPN seasons a club with no A–C standing counts as "D or below". Two-leg knockout rates are checked, not fitted. |
 
 ## Season calendar and league formats (`src/sim/`)
 
