@@ -2,6 +2,9 @@ import type { State } from "../data/clubs.js";
 import { simulateMatch } from "../engine/match.js";
 import { randomStream } from "../engine/random.js";
 import { addDays } from "./dates.js";
+import { coachCareerDay } from "./coach/coachCareerDay.js";
+import type { CoachEvent } from "./coach/coachEvent.js";
+import { startCoachSeason } from "./coach/startCoachSeason.js";
 import { endSeason } from "./endSeason.js";
 import { closeMonth, type FinanceEvent } from "./finances/closeMonth.js";
 import { payCopaPrizes, type PrizePaid } from "./finances/payCopaPrizes.js";
@@ -22,6 +25,8 @@ import { aggregate } from "./tieResults.js";
 
 export type DayDecisions = {
   lineup?: readonly string[];
+  /** The club whose open job offer the coach accepts today. */
+  acceptOffer?: string;
 };
 
 export type DayEvent =
@@ -33,7 +38,8 @@ export type DayEvent =
   | PlayerRetired
   | YouthPromoted
   | PrizePaid
-  | SupporterEvent;
+  | SupporterEvent
+  | CoachEvent;
 
 const PENALTY_SHOOTOUT_HOME_WIN = 0.5; // guess: shootouts treated as a coin flip until a source on shootout odds is used
 
@@ -115,10 +121,15 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   const reacted = reactToDay(closed.state, played, closed.events, random.next);
   next = reacted.state;
   events.push(...reacted.events);
+  const career = coachCareerDay(next, played, decisions.acceptOffer, random.next);
+  next = career.state;
+  events.push(...career.events);
   next = { ...next, rngState: random.state() };
   if (next.date.slice(0, 4) === String(state.season)) return { state: next, events };
   const developed = developPlayers(next);
   const ended = endSeason(developed.state);
-  events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...developed.events);
-  return { state: ended.state, events };
+  const coachRandom = randomStream(ended.state.rngState);
+  const started = startCoachSeason(ended.state, Object.values(ended.outcomes), coachRandom.next);
+  events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...developed.events, ...started.events);
+  return { state: { ...started.state, rngState: coachRandom.state() }, events };
 }

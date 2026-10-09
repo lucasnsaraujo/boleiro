@@ -49,4 +49,5 @@ pnpm calibrate   # refits the engine, prints real-vs-Boleiro tables per division
 pnpm test:long   # plays ten seasons and checks club revenue and player strength stay in their division's band
 pnpm finances:report [seasons] [seed]   # prints revenue bands per division from a long run
 pnpm strength:report [seasons] [seed]   # prints player strength bands and mean age per division each season
+pnpm career [--seasons N] [--seed S]    # career mode with an auto-coach: clubs, targets, results, firings per division
 ```

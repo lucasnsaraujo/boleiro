@@ -3,7 +3,7 @@ import type { GameState } from "./gameState.js";
 const SAVE_VERSION: GameState["version"] = 1;
 const REQUIRED_KEYS: readonly (keyof GameState)[] = [
   "seed", "rngState", "date", "season", "coachClubId", "clubs", "players", "calendar", "competitions", "fixtures",
-  "economy", "finances", "mood",
+  "economy", "finances", "mood", "coach", "boards",
 ];
 
 function isGameState(value: unknown): value is GameState {
