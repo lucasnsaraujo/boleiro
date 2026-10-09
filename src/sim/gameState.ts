@@ -4,7 +4,8 @@ import type { Player } from "../engine/match.js";
 
 export type IsoDate = string;
 
-export type SimPlayer = Player & { id: string; clubId: string };
+/** `wage` is the monthly wage in BRL. */
+export type SimPlayer = Player & { id: string; clubId: string; wage: number };
 
 export type MatchResult = {
   homeGoals: number;
@@ -62,6 +63,59 @@ export type SeasonCalendar = {
   leagueDates: Record<Division, IsoDate[]>;
 };
 
+/** Where a club plays: its national division, or only its state championship. */
+export type Tier = Division | "state";
+
+export const REVENUE_LINES = ["tickets", "tv", "membership", "sponsorship", "otherIncome", "prizes", "playerSales"] as const;
+export const COST_LINES = ["wages", "transferFees", "agentFees", "infrastructure", "interest"] as const;
+export type RevenueLine = (typeof REVENUE_LINES)[number];
+export type CostLine = (typeof COST_LINES)[number];
+
+/** Money in and out over a period, in BRL. */
+export type Ledger = { revenue: Record<RevenueLine, number>; costs: Record<CostLine, number> };
+
+/** One club's money in BRL. Yearly lines are per year; `wageCap` is per month. */
+export type ClubFinance = {
+  cash: number;
+  /** Board loans taken in the game; they accrue interest. */
+  loans: number;
+  /** Net debt from the 2025 accounts. Not serviced in the game; kept for the board's judgement. */
+  legacyDebt: number;
+  /** Wages the club failed to pay; paid back first when cash comes in. */
+  wagesOwed: number;
+  /** Monthly closings in a row that ended with wages owed. Morale (#12) reads it. */
+  lateWageMonths: number;
+  ticketPrice: number;
+  /** Crowd the club draws at its division's average ticket price, before form and opponent. */
+  baseCrowd: number;
+  tv: number;
+  sponsorship: number;
+  membership: number;
+  /** Membership the club settles back to; membership drifts around it with results. */
+  membershipAnchor: number;
+  /** State championship, cup, continental and commercial income the game does not simulate yet. */
+  otherIncome: number;
+  infrastructure: number;
+  /** Ticket money the board expects over a season, for its budget. */
+  expectedTickets: number;
+  transferBudget: number;
+  wageCap: number;
+  /** League points of the last five matches, newest last. */
+  recentPoints: number[];
+  month: Ledger & { points: number; games: number };
+  season: Ledger;
+  lastSeason: Ledger | null;
+};
+
+/** Division-level money rules, copied into the save so a data rebuild does not change a running game. */
+export type Economy = {
+  serieATv: { pool: number; shares: { equal: number; performance: number; audience: number }; perClubMin: number; perClubMax: number };
+  tvPerClub: Record<Tier, number>;
+  matchday: Record<Tier, { attendance: number; price: number }>;
+  /** Typical yearly revenue without player sales, used to rescale a club that changes division. */
+  typicalRevenue: Record<Tier, number>;
+};
+
 export type GameState = {
   version: 1;
   seed: number;
@@ -74,4 +128,6 @@ export type GameState = {
   calendar: SeasonCalendar;
   competitions: Record<string, Competition>;
   fixtures: Fixture[];
+  economy: Economy;
+  finances: Record<string, ClubFinance>;
 };
