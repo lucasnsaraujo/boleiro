@@ -17,8 +17,8 @@ function playUntil(state: GameState, date: string): { state: GameState; events: 
 }
 
 const leagueOf = (state: GameState, division: Division): LeagueCompetition => {
-  const competition = Object.values(state.competitions).find((c) => c.division === division);
-  if (!competition) throw new Error(`no Série ${division}`);
+  const competition = Object.values(state.competitions).find((c) => c.kind === "league" && c.division === division);
+  if (competition?.kind !== "league") throw new Error(`no Série ${division}`);
   return competition;
 };
 
@@ -93,13 +93,14 @@ describe("a full season", () => {
     expect(membersOf(next, "D")).toHaveLength(96);
   });
 
-  it("drops Série D clubs knocked out before the last 32 out of the national leagues", () => {
+  it("drops Série D clubs knocked out before the last 32 out of the national leagues, unless their estadual sends them back", () => {
     const league = leagueOf(before, "D");
     const lastThirtyTwo = league.stages[2];
     const survivors = new Set(lastThirtyTwo?.kind === "knockout" ? lastThirtyTwo.ties.flat() : []);
     const eliminated = league.clubIds.filter((id) => !survivors.has(id));
     expect(eliminated).toHaveLength(64);
-    expect(eliminated.filter((id) => next.clubs[id]?.division !== null)).toEqual([]);
+    expect(eliminated.filter((id) => next.clubs[id]?.division !== null && next.clubs[id]?.division !== "D")).toEqual([]);
+    expect(eliminated.filter((id) => next.clubs[id]?.division === null).length).toBeGreaterThan(0);
   });
 
   it("never pairs two clubs from the same Série D group in the first knockout round", () => {

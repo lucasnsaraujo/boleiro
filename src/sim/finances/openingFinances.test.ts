@@ -56,7 +56,7 @@ describe("a new game's club finances", () => {
     for (const row of data.clubs) {
       const finance = state.finances[row.clubId];
       if (!finance) throw new Error(`no finances for ${row.clubId}`);
-      const projected = finance.tv + finance.sponsorship + finance.membership + finance.otherIncome + finance.expectedTickets;
+      const projected = finance.tv + finance.sponsorship + finance.membership + finance.otherIncome + finance.expectedTickets + finance.expectedPrizes;
       expect(projected).toBeGreaterThanOrEqual((row.revenue.total - row.revenue.playerSales) * 0.99);
     }
   });

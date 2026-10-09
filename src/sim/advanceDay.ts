@@ -1,10 +1,10 @@
 import type { State } from "../data/clubs.js";
 import { simulateMatch } from "../engine/match.js";
-import { paramsForDivision } from "../engine/paramsForDivision.js";
 import { randomStream } from "../engine/random.js";
 import { addDays } from "./dates.js";
 import { endSeason } from "./endSeason.js";
 import { closeMonth, type FinanceEvent } from "./finances/closeMonth.js";
+import { payCopaPrizes, type PrizePaid } from "./finances/payCopaPrizes.js";
 import { recordMatchFinances } from "./finances/recordMatchFinances.js";
 import type { Competition, Fixture, GameState, SimPlayer } from "./gameState.js";
 import type { LeagueOutcome } from "./leagueFormats.js";
@@ -13,6 +13,7 @@ import { developPlayers, type PlayerRetired, type YouthPromoted } from "./player
 import { isInjured } from "./players/isInjured.js";
 import { matchSetup } from "./players/matchSetup.js";
 import { recordMatchLoad, type PlayerInjured } from "./players/recordMatchLoad.js";
+import { paramsForCompetition } from "./paramsForCompetition.js";
 import { aggregate } from "./tieResults.js";
 
 export type DayDecisions = {
@@ -26,7 +27,8 @@ export type DayEvent =
   | FinanceEvent
   | PlayerInjured
   | PlayerRetired
-  | YouthPromoted;
+  | YouthPromoted
+  | PrizePaid;
 
 const PENALTY_SHOOTOUT_HOME_WIN = 0.5; // guess: shootouts treated as a coin flip until a source on shootout odds is used
 
@@ -67,7 +69,7 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
     const competition = state.competitions[fixture.competitionId];
     if (!competition) throw new Error(`fixture ${fixture.id} has no competition ${fixture.competitionId}`);
     const setup = matchSetup(state, fixture, squad, coachLineup);
-    const score = simulateMatch(setup.home, setup.away, random.next, paramsForDivision(competition.division));
+    const score = simulateMatch(setup.home, setup.away, random.next, paramsForCompetition(competition));
     let played: Fixture = { ...fixture, result: score };
     if (isDecidingLeg(fixture, state.competitions)) {
       const legs = [...state.fixtures.filter((f) => f.competitionId === fixture.competitionId && f.stage === fixture.stage && f.tie === fixture.tie && f.id !== fixture.id), played];
@@ -98,7 +100,11 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
 
   const players = playedToday.length ? { ...state.players, ...Object.fromEntries(playedToday.map((p) => [p.id, p])) } : state.players;
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players };
-  for (const event of events) if (event.type === "matchPlayed") next = recordMatchFinances(next, event.fixture);
+  const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
+  for (const fixture of played) next = recordMatchFinances(next, fixture);
+  const prizes = payCopaPrizes(next, played);
+  next = prizes.state;
+  events.push(...prizes.events);
   if (next.date.endsWith("-01")) {
     const closed = closeMonth(next, random.next);
     next = closed.state;

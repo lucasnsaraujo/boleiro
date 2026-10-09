@@ -1,37 +1,48 @@
-import type { Club } from "../data/clubs.js";
+import type { Club, State } from "../data/clubs.js";
 import type { Division } from "../data/players.js";
 import { randomStream } from "../engine/random.js";
 import { driftWagesToCap } from "./finances/driftWagesToCap.js";
 import { renewFinances } from "./finances/renewFinances.js";
-import { squadStrength } from "./finances/squadStrength.js";
-import type { GameState, SimPlayer } from "./gameState.js";
+import type { Qualification } from "./copaDoBrasilEntrants.js";
+import type { GameState, LeagueCompetition } from "./gameState.js";
 import { LEAGUE_FORMATS, type LeagueOutcome } from "./leagueFormats.js";
-import { startSeason } from "./startSeason.js";
+import { serieDQualifiers } from "./serieDQualifiers.js";
+import { standings } from "./standings.js";
+import { cupEntriesOf, startSeason } from "./startSeason.js";
+import { STATE_CHAMPIONSHIP } from "./stateChampionship.js";
 
 // Série D 2026 has 96 clubs (CBF, https://www.cbf.com.br/futebol-brasileiro/noticias/campeonato-brasileiro-serie-d/a/cbf-publica-documentos-tecnicos-da-nova-serie-d).
 const SERIE_D_SIZE = 96;
 
+function leagueOf(state: GameState, division: Division): LeagueCompetition {
+  const competition = Object.values(state.competitions).find((c) => c.kind === "league" && c.division === division && c.season === state.season);
+  if (competition?.kind !== "league") throw new Error(`no Série ${division} ${state.season}`);
+  return competition;
+}
+
+const fixturesOf = (state: GameState, competitionId: string) => state.fixtures.filter((f) => f.competitionId === competitionId);
+
+/** Each state's final placings; with the Série C and D champions and two Série B clubs, they qualify clubs for next season. */
+function qualificationOf(state: GameState, b: LeagueOutcome, c: LeagueOutcome, d: LeagueOutcome): Qualification {
+  const statePlacings: Partial<Record<State, string[]>> = {};
+  for (const competition of Object.values(state.competitions)) {
+    if (competition.kind === "state") statePlacings[competition.state] = STATE_CHAMPIONSHIP.placings(competition, fixturesOf(state, competition.id));
+  }
+  const serieB = leagueOf(state, "B");
+  const bTable = standings(serieB.clubIds, fixturesOf(state, serieB.id), serieB.drawOrder).map((row) => row.clubId);
+  // guess: the Copa do Nordeste and Copa Verde are not played, so their phase-3 places go to the best
+  // Série B clubs that missed promotion.
+  const bestUnpromoted = bTable.filter((id) => !b.promotedIds.includes(id)).slice(0, 2);
+  return { statePlacings, phase3Ids: [c.championId, d.championId, ...bestUnpromoted] };
+}
+
 function outcomeOf(state: GameState, division: Division): LeagueOutcome {
-  const competition = Object.values(state.competitions).find((c) => c.division === division && c.season === state.season);
-  if (!competition) throw new Error(`no Série ${division} ${state.season}`);
-  const fixtures = state.fixtures.filter((f) => f.competitionId === competition.id);
+  const competition = leagueOf(state, division);
+  const fixtures = fixturesOf(state, competition.id);
   if (competition.stages.length < competition.stageDates.length || fixtures.some((f) => !f.result)) {
     throw new Error(`${competition.id} is not finished on ${state.date}`);
   }
   return LEAGUE_FORMATS[competition.format].outcome(competition, fixtures);
-}
-
-// Placeholder until #8: the state championships should decide who fills Série D. For now the
-// strongest squads outside Série A–D, other than the clubs Série D just dropped, take the free places.
-function serieDNewcomers(state: GameState, taken: ReadonlySet<string>, count: number): string[] {
-  const squads = new Map<string, SimPlayer[]>();
-  for (const player of Object.values(state.players)) squads.set(player.clubId, [...(squads.get(player.clubId) ?? []), player]);
-  return Object.keys(state.clubs)
-    .filter((id) => !taken.has(id))
-    .map((id) => ({ id, strength: squadStrength(squads.get(id) ?? []) }))
-    .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id))
-    .slice(0, count)
-    .map(({ id }) => id);
 }
 
 export function endSeason(state: GameState): { state: GameState; outcomes: Record<string, LeagueOutcome> } {
@@ -50,20 +61,23 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
 
   const divisionOf = (club: Club) => (moves.has(club.id) ? (moves.get(club.id) ?? null) : club.division);
   const nextDivision = new Map(Object.values(state.clubs).map((club) => [club.id, divisionOf(club)]));
-  const taken = new Set([...nextDivision].filter(([, division]) => division !== null).map(([id]) => id).concat(d.relegatedIds));
   const stayingInD = [...nextDivision.values()].filter((division) => division === "D").length;
-  for (const id of serieDNewcomers(state, taken, SERIE_D_SIZE - stayingInD)) nextDivision.set(id, "D");
+  const qualification = qualificationOf(state, b, c, d);
+  const outsideNationalLeagues = (id: string) => nextDivision.get(id) === null;
+  for (const id of serieDQualifiers(qualification.statePlacings, outsideNationalLeagues, SERIE_D_SIZE - stayingInD)) nextDivision.set(id, "D");
 
   const clubs: Record<string, Club> = Object.fromEntries(
     Object.values(state.clubs).map((club) => [club.id, { ...club, division: nextDivision.get(club.id) ?? null }]),
   );
   const season = state.season + 1;
   const random = randomStream(state.rngState);
-  const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next);
+  const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification);
   const outcomes = Object.fromEntries(
-    Object.values(state.competitions).map((competition) => [competition.id, { A: a, B: b, C: c, D: d }[competition.division]]),
+    Object.values(state.competitions).flatMap((competition) =>
+      competition.kind === "league" ? [[competition.id, { A: a, B: b, C: c, D: d }[competition.division]]] : [],
+    ),
   );
-  const finances = renewFinances(state, clubs, fixtures, { A: a, B: b, C: c, D: d });
+  const finances = renewFinances(state, clubs, fixtures, cupEntriesOf(competitions), { A: a, B: b, C: c, D: d });
   const players = driftWagesToCap(state.players, finances);
   return {
     state: { ...state, season, clubs, players, calendar, competitions, fixtures, finances, rngState: random.state() },

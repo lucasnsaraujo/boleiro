@@ -1,5 +1,7 @@
 import type { State } from "../data/clubs.js";
 import type { Fixture, GroupStage, KnockoutStage, LeagueCompetition, LeagueFormatId } from "./gameState.js";
+import { seededTies } from "./seededTies.js";
+import { groupStageAt, knockoutStageAt } from "./stageAt.js";
 import { standings, type StandingRow } from "./standings.js";
 import { tieResults } from "./tieResults.js";
 
@@ -22,18 +24,6 @@ const stageOf = (fixtures: readonly Fixture[], index: number) => fixtures.filter
 const table = (competition: LeagueCompetition, clubIds: readonly string[], fixtures: readonly Fixture[]) =>
   standings(clubIds, fixtures, competition.drawOrder).map((row) => row.clubId);
 
-function groupStage(competition: LeagueCompetition, index: number): GroupStage {
-  const stage = competition.stages[index];
-  if (stage?.kind !== "groups") throw new Error(`${competition.id}: stage ${index} is not a group stage`);
-  return stage;
-}
-
-function knockoutStage(competition: LeagueCompetition, index: number): KnockoutStage {
-  const stage = competition.stages[index];
-  if (stage?.kind !== "knockout") throw new Error(`${competition.id}: stage ${index} is not a knockout stage`);
-  return stage;
-}
-
 function only<T>(values: readonly T[], what: string): T {
   const [value] = values;
   if (value === undefined || values.length !== 1) throw new Error(`expected exactly one ${what}`);
@@ -41,12 +31,7 @@ function only<T>(values: readonly T[], what: string): T {
 }
 
 const knockoutWinner = (competition: LeagueCompetition, fixtures: readonly Fixture[], index: number) =>
-  only(tieResults(knockoutStage(competition, index), stageOf(fixtures, index)), "final").winnerId;
-
-function seededTies(rankedIds: readonly string[]): [string, string][] {
-  const half = rankedIds.length / 2;
-  return rankedIds.slice(0, half).map((id, i): [string, string] => [id, rankedIds[rankedIds.length - 1 - i] ?? ""]);
-}
+  only(tieResults(knockoutStageAt(competition, index), stageOf(fixtures, index)), "final").winnerId;
 
 function singleTable(relegated: number, promoted: number): LeagueFormat {
   return {
@@ -80,7 +65,7 @@ const serieC: LeagueFormat = {
       return { kind: "groups", groups: QUADRANGULAR_SEEDS.map((seeds) => seeds.map((seed) => order[seed] ?? "")), legs: 2 };
     }
     const quadrangulars = stageOf(fixtures, 1);
-    const winners = groupStage(competition, 1).groups.map((group) => table(competition, group, quadrangulars)[0] ?? "");
+    const winners = groupStageAt(competition, 1).groups.map((group) => table(competition, group, quadrangulars)[0] ?? "");
     const [best = "", other = ""] = table(competition, winners, quadrangulars);
     return { kind: "knockout", ties: [[best, other]] };
   },
@@ -89,7 +74,7 @@ const serieC: LeagueFormat = {
     const quadrangulars = stageOf(fixtures, 1);
     return {
       championId: knockoutWinner(competition, fixtures, 2),
-      promotedIds: groupStage(competition, 1).groups.flatMap((group) => table(competition, group, quadrangulars).slice(0, 2)),
+      promotedIds: groupStageAt(competition, 1).groups.flatMap((group) => table(competition, group, quadrangulars).slice(0, 2)),
       relegatedIds: firstPhase.slice(-serieCRelegated(competition.season)),
     };
   },
@@ -110,7 +95,7 @@ const D_STAGES = { groups: 0, lastThirtyTwo: 2, semiFinals: 5, final: 6 } as con
 
 function serieDSeeds(competition: LeagueCompetition, fixtures: readonly Fixture[]): string[] {
   const groupFixtures = stageOf(fixtures, 0);
-  const placed: { row: StandingRow; position: number }[] = groupStage(competition, 0).groups.flatMap((group) =>
+  const placed: { row: StandingRow; position: number }[] = groupStageAt(competition, 0).groups.flatMap((group) =>
     standings(group, groupFixtures, competition.drawOrder)
       .slice(0, D_QUALIFIERS_PER_GROUP)
       .map((row, position) => ({ row, position })),
@@ -149,8 +134,8 @@ const serieD: LeagueFormat = {
     }
     const seeds = serieDSeeds(competition, fixtures);
     const bySeed = (ids: string[]) => ids.sort((a, b) => seeds.indexOf(a) - seeds.indexOf(b));
-    if (index === 1) return { kind: "knockout", ties: crossGroupTies(seeds, groupStage(competition, 0).groups) };
-    const previous = tieResults(knockoutStage(competition, index - 1), stageOf(fixtures, index - 1));
+    if (index === 1) return { kind: "knockout", ties: crossGroupTies(seeds, groupStageAt(competition, 0).groups) };
+    const previous = tieResults(knockoutStageAt(competition, index - 1), stageOf(fixtures, index - 1));
     if (index === D_STAGES.semiFinals) {
       const semiFinals = seededTies(bySeed(previous.map((r) => r.winnerId)));
       const playoffs = seededTies(bySeed(previous.map((r) => r.loserId)));
@@ -160,10 +145,10 @@ const serieD: LeagueFormat = {
     return { kind: "knockout", ties: seededTies(bySeed(previous.map((r) => r.winnerId))) };
   },
   outcome: (competition, fixtures) => {
-    const semiStage = knockoutStage(competition, D_STAGES.semiFinals);
+    const semiStage = knockoutStageAt(competition, D_STAGES.semiFinals);
     const semiResults = tieResults(semiStage, stageOf(fixtures, D_STAGES.semiFinals));
     const promotedIds = [...semiStage.ties.slice(0, 2).flat(), ...semiResults.slice(2).map((r) => r.winnerId)];
-    const survivors = new Set(knockoutStage(competition, D_STAGES.lastThirtyTwo).ties.flat());
+    const survivors = new Set(knockoutStageAt(competition, D_STAGES.lastThirtyTwo).ties.flat());
     return {
       championId: knockoutWinner(competition, fixtures, D_STAGES.final),
       promotedIds,
