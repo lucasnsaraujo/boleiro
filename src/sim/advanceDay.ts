@@ -1,5 +1,6 @@
 import type { State } from "../data/clubs.js";
-import { CALIBRATED, simulateMatch, type Team } from "../engine/match.js";
+import { simulateMatch, type Team } from "../engine/match.js";
+import { paramsForDivision } from "../engine/paramsForDivision.js";
 import { randomStream } from "../engine/random.js";
 import { addDays } from "./dates.js";
 import { endSeason } from "./endSeason.js";
@@ -48,7 +49,9 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
 
   let fixtures = state.fixtures.map((fixture) => {
     if (fixture.date !== state.date || fixture.result) return fixture;
-    const score = simulateMatch(team(fixture.homeId), team(fixture.awayId), random.next, CALIBRATED);
+    const competition = state.competitions[fixture.competitionId];
+    if (!competition) throw new Error(`fixture ${fixture.id} has no competition ${fixture.competitionId}`);
+    const score = simulateMatch(team(fixture.homeId), team(fixture.awayId), random.next, paramsForDivision(competition.division));
     let played: Fixture = { ...fixture, result: score };
     if (isDecidingLeg(fixture, state.competitions)) {
       const legs = [...state.fixtures.filter((f) => f.competitionId === fixture.competitionId && f.stage === fixture.stage && f.tie === fixture.tie && f.id !== fixture.id), played];
