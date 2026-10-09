@@ -4,6 +4,9 @@
  */
 export function copyRecord<T>(record: Readonly<Record<string, T>>): Record<string, T> {
   const copy: Record<string, T> = {};
-  for (const key in record) copy[key] = record[key] as T;
+  for (const key in record) {
+    const value = record[key];
+    if (value !== undefined) copy[key] = value;
+  }
   return copy;
 }
