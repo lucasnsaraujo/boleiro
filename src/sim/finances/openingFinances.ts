@@ -1,8 +1,10 @@
 import type { Club } from "../../data/clubs.js";
-import type { CompetitionMoney } from "../../data/competition-money.js";
+import type { CompetitionMoney, ContinentalStage } from "../../data/competition-money.js";
 import type { ClubFinances, DivisionFinances, Finances } from "../../data/finances.js";
-import type { ClubFinance, Economy, Fixture, SimPlayer, Tier } from "../gameState.js";
+import type { ClubFinance, Competition, Economy, Fixture, SimPlayer, Tier } from "../gameState.js";
+import { cupEntriesOf } from "../startSeason.js";
 import { expectedCopaPrize } from "./expectedCopaPrize.js";
+import { expectedHomeGames } from "./expectedHomeGames.js";
 import { emptyLedger } from "./ledger.js";
 import { serieATv } from "./serieATv.js";
 import { setBoardBudget, TRANSFER_SHARE_OF_REVENUE } from "./setBoardBudget.js";
@@ -63,6 +65,11 @@ function economyOf(data: FinanceData, competitionMoney: CompetitionMoney): Econo
   const stateOnly = scale(estimateOf(data, "D", "small"), STATE_ONLY_SHARE_OF_SMALL_SERIE_D);
   const { tv, matchday, copaDoBrasil } = competitionMoney;
   const prizeOf = (round: string) => copaDoBrasil.rounds.find((r) => r.round === round)?.prize ?? 0;
+  const usdOf = ({ stages }: { stages: readonly ContinentalStage[] }, stage: string) => {
+    const found = stages.find((s) => s.stage === stage);
+    if (!found) throw new Error(`competition money: no continental stage ${stage}`);
+    return found.prizeUsd;
+  };
   return {
     serieATv: { pool: tv.A.totalPool, shares: tv.A.shares, perClubMin: tv.A.perClubMin, perClubMax: tv.A.perClubMax },
     tvPerClub: { A: tv.A.totalPool / 20, B: tv.B.perClub, C: tv.C.perClub, D: tv.D.perClub, state: 0 },
@@ -96,6 +103,14 @@ function economyOf(data: FinanceData, competitionMoney: CompetitionMoney): Econo
       runnerUp: prizeOf("runner-up"),
       champion: prizeOf("champion"),
     },
+    // guess: Brazil's preliminary-phase clubs enter in the second round, as they have in recent
+    // editions, and earn its prize; the game does not play them through to the group stage.
+    continental: {
+      usdBrl: competitionMoney.usdToBrl.rate,
+      libertadoresGroups: usdOf(competitionMoney.libertadores, "group-stage"),
+      libertadoresPreliminary: usdOf(competitionMoney.libertadores, "preliminary-2"),
+      sulAmericanaGroups: usdOf(competitionMoney.sulAmericana, "group-stage"),
+    },
   };
 }
 
@@ -116,16 +131,16 @@ function wagesOf(squad: readonly Omit<SimPlayer, "wage">[], monthlyBill: number)
 }
 
 /**
- * Opening money for every club, the division rules, and each player's monthly wage. `fixtures` are the
- * season's opening fixtures and `cupEntries[stage]` the clubs joining the Copa do Brasil at that stage:
- * the gate of those home games and the Copa prizes a club can expect come out of its other income,
- * which the accounts' revenue would otherwise count twice.
+ * Opening money for every club, the division rules, and each player's monthly wage. `competitions`
+ * and their opening `fixtures` give the home games a club can expect over the season: their gate and
+ * the Copa prizes a club can expect come out of its other income, which the accounts' revenue would
+ * otherwise count twice.
  */
 export function openingFinances(
   clubs: Record<string, Club>,
   players: readonly Omit<SimPlayer, "wage">[],
+  competitions: Record<string, Competition>,
   fixtures: readonly Fixture[],
-  cupEntries: readonly (readonly string[])[],
   data: FinanceData,
   competitionMoney: CompetitionMoney,
 ): { economy: Economy; finances: Record<string, ClubFinance>; wages: Record<string, number> } {
@@ -139,9 +154,8 @@ export function openingFinances(
     (byTier.get(tier) ?? []).map((c) => c.id).sort((a, b) => (strength.get(a) ?? 0) - (strength.get(b) ?? 0) || a.localeCompare(b));
   const serieA = serieATv(economy, ascending("A").reverse(), (id) => clubs[id]?.fanbase ?? 0);
   const smallestSerieA = [...data.clubs].sort((a, b) => a.revenue.total - b.revenue.total)[0];
-  const homeGames = new Map<string, number>();
-  for (const f of fixtures) homeGames.set(f.homeId, (homeGames.get(f.homeId) ?? 0) + 1);
-  const cupEntryStage = new Map(cupEntries.flatMap((ids, stage) => ids.map((id) => [id, stage])));
+  const homeGames = expectedHomeGames(Object.values(competitions), fixtures);
+  const cupEntryStage = new Map(cupEntriesOf(competitions).flatMap((ids, stage) => ids.map((id) => [id, stage])));
 
   const finances: Record<string, ClubFinance> = {};
   const wages: Record<string, number> = {};
@@ -159,7 +173,9 @@ export function openingFinances(
       const revenue = operatingRevenue(base);
       const entryStage = cupEntryStage.get(club.id);
       const cupPrizes = entryStage === undefined ? 0 : expectedCopaPrize(economy.copaDoBrasil, entryStage, tier !== "A" && tier !== "B");
-      const otherIncome = Math.max(0, Math.round(revenue - tv - expectedTickets - base.membership - base.sponsorship - cupPrizes));
+      const beforePrizes = Math.max(0, Math.round(revenue - tv - expectedTickets - base.membership - base.sponsorship));
+      const prizesOutOfOtherIncome = Math.min(beforePrizes, Math.round(cupPrizes));
+      const otherIncome = beforePrizes - prizesOutOfOtherIncome;
       const projected = tv + expectedTickets + base.membership + base.sponsorship + otherIncome + cupPrizes;
       for (const [id, wage] of wagesOf(squads.get(club.id) ?? [], base.wageBill / 12)) wages[id] = wage;
       const opening: ClubFinance = {
@@ -178,6 +194,7 @@ export function openingFinances(
         infrastructure: Math.round(Math.max(MIN_INFRASTRUCTURE_SHARE_OF_REVENUE * projected, (1 - TRANSFER_SHARE_OF_REVENUE) * projected - base.wageBill)),
         expectedTickets,
         expectedPrizes: Math.round(cupPrizes),
+        prizesOutOfOtherIncome,
         transferBudget: 0,
         wageCap: 0,
         recentPoints: [],

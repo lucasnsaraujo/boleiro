@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { advanceDay, type DayEvent } from "./advanceDay.js";
+import { COPA_DO_BRASIL } from "./copaDoBrasil.js";
 import { COPA_STATE_PLACES } from "./copaDoBrasilEntrants.js";
 import type { Competition, CupCompetition, Fixture, GameState, StateCompetition } from "./gameState.js";
 import { loadNewGame } from "./loadNewGame.js";
+import { standings } from "./standings.js";
 import { STATE_CHAMPIONSHIP } from "./stateChampionship.js";
 import { aggregate, tieResults } from "./tieResults.js";
 
@@ -113,7 +115,54 @@ describe("other income across a season change", () => {
     for (const id of checked) {
       const before = ended.finances[id];
       const after = next.finances[id];
-      expect((after?.otherIncome ?? 0) + (after?.expectedPrizes ?? 0), id).toBeCloseTo((before?.otherIncome ?? 0) + (before?.expectedPrizes ?? 0), -1);
+      expect((after?.otherIncome ?? 0) + (after?.prizesOutOfOtherIncome ?? 0), id).toBeCloseTo((before?.otherIncome ?? 0) + (before?.prizesOutOfOtherIncome ?? 0), -1);
+    }
+  });
+
+  it("gives back only the prize money it took out, so a club whose other income ran out gains less than its expected prizes by missing the cup", () => {
+    const floored = Object.keys(ended.finances).filter((id) => {
+      const before = ended.finances[id];
+      return ended.clubs[id]?.division === null && next.clubs[id]?.division === null && before?.otherIncome === 0 && before.expectedPrizes > 0
+        && next.finances[id]?.expectedPrizes === 0;
+    });
+    expect(floored.length).toBeGreaterThan(0);
+    for (const id of floored) expect(next.finances[id]?.otherIncome, id).toBeLessThan(ended.finances[id]?.expectedPrizes ?? 0);
+  });
+});
+
+describe("continental prize money", () => {
+  const serieA = Object.values(ended.competitions).find((c) => c.kind === "league" && c.division === "A");
+  if (!serieA) throw new Error("no Série A");
+  const table = standings(serieA.clubIds, fixturesOf(ended, serieA), serieA.drawOrder).map((row) => row.clubId);
+  const cup = cupOf(ended);
+  const final = COPA_DO_BRASIL.finalists(cup, fixturesOf(ended, cup));
+  const finalists = new Set(final ? [final.championId, final.runnerUpId] : []);
+  const paid = (id: string) => next.finances[id]?.month.revenue.prizes ?? 0;
+
+  it("pays the Libertadores and Sul-Americana qualifiers at the season turn, Libertadores more", () => {
+    const paidClubs = Object.keys(next.finances).filter((id) => paid(id) > 0);
+    expect(paidClubs).toHaveLength(13);
+    for (const id of finalists) expect(paidClubs, id).toContain(id);
+    const leagueOnly = table.filter((id) => !finalists.has(id));
+    expect(paid(leagueOnly[0] ?? "")).toBeGreaterThan(paid(leagueOnly[7] ?? ""));
+    expect(paid(leagueOnly[7] ?? "")).toBeGreaterThan(0);
+    expect(paid(leagueOnly.at(-1) ?? "")).toBe(0);
+  });
+
+  it("counts the money in the board's expected prizes, out of other income, so it is not counted twice", () => {
+    const top = table.find((id) => !finalists.has(id)) ?? "";
+    expect(next.finances[top]?.expectedPrizes ?? 0).toBeGreaterThanOrEqual(paid(top));
+  });
+});
+
+describe("ticket money the board expects", () => {
+  it("covers the whole season's home games, later stages included, within a tenth of the gate taken", () => {
+    for (const division of ["A", "C", "D"] as const) {
+      const ids = Object.keys(start.clubs).filter((id) => start.clubs[id]?.division === division);
+      const expected = ids.reduce((sum, id) => sum + (start.finances[id]?.expectedTickets ?? 0), 0);
+      const taken = ids.reduce((sum, id) => sum + (ended.finances[id]?.season.revenue.tickets ?? 0) + (ended.finances[id]?.month.revenue.tickets ?? 0), 0);
+      expect(expected / taken, division).toBeGreaterThan(0.9);
+      expect(expected / taken, division).toBeLessThan(1.1);
     }
   });
 });

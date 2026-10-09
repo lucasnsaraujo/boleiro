@@ -32,16 +32,23 @@ function withStrength(state: GameState, clubId: string, strength: number): GameS
 }
 
 /**
- * The test day with the host certain to lose at home. The day's other games are left out, so its
- * rivals' results (which move fan mood too) cannot push the host across a threshold either way.
+ * The test day with the host all but certain to lose at home. The day's other games are left out, so
+ * its rivals' results (which move fan mood too) cannot push the host across a threshold either way.
  */
 const onlyHostGame = (state: GameState): GameState => ({
   ...state,
   fixtures: state.fixtures.filter((f) => f.date !== state.date || f.result || f.id === game.id),
 });
+const weakHost = withStrength(onlyHostGame(leagueDay), host, 1);
+const hostLosesWith = (rngState: number) => {
+  const result = advanceDay({ ...weakHost, rngState }, {}).state.fixtures.find((f) => f.id === game.id)?.result;
+  return (result?.homeGoals ?? 0) < (result?.awayGoals ?? 0);
+};
+// Even a side of 1s draws now and then, so the default draw is the first one where the host loses.
+const losingDraw = [leagueDay.rngState, ...Array.from({ length: 20 }, (_, seed) => seed)].find(hostLosesWith) ?? leagueDay.rngState;
 // The host starts from a neutral mood, so January's sales (which upset fans) don't decide the test.
-const losing = (mood: Partial<ClubMood>, rngState = leagueDay.rngState) =>
-  withMood({ ...withStrength(onlyHostGame(leagueDay), host, 1), rngState }, host, { ...NEUTRAL_MOOD, ...mood });
+const losing = (mood: Partial<ClubMood>, rngState = losingDraw) =>
+  withMood({ ...weakHost, rngState }, host, { ...NEUTRAL_MOOD, ...mood });
 
 const ofType = <T extends DayEvent["type"]>(events: DayEvent[], type: T) =>
   events.filter((e): e is Extract<DayEvent, { type: T }> => e.type === type);

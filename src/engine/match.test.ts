@@ -21,6 +21,20 @@ describe("matchOdds", () => {
   });
 });
 
+describe("short-handed sides", () => {
+  it("plays a side with fewer than eleven players as if the missing men were sent off at kick-off", () => {
+    const full = squad("Away", 70);
+    const two: Team = { name: "Two", players: full.players.slice(0, 2) };
+    const nineOff: SendOffs = { home: [], away: Array.from({ length: 9 }, () => 0) };
+    expect(matchOdds(squad("Home", 70), two)).toEqual(matchOdds(squad("Home", 70), full, CALIBRATED, nineOff));
+  });
+
+  it("gives a lone strong player no edge over a full side", () => {
+    const lone: Team = { name: "Lone", players: [{ name: "Lone A", group: "ATT", strength: 90 }] };
+    expect(matchOdds(squad("Home", 70), lone).away).toBeLessThan(matchOdds(squad("Home", 70), squad("Away", 70)).away / 2);
+  });
+});
+
 describe("simulateMatch", () => {
   it("lands on each outcome about as often as the odds say", () => {
     const home = squad("Home", 74);

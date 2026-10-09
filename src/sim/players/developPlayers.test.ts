@@ -66,6 +66,37 @@ describe("developPlayers at the end of a season", () => {
     expect(youth.every((p) => p.wage > 0 && p.trait !== undefined)).toBe(true);
   });
 
+  it("pays a thin club's academy players the division's going rate, not its lowest wage", () => {
+    const thinId = Object.values(start.clubs).find((c) => c.division === "D")?.id ?? "";
+    const kept = Object.values(playedSeason.players).filter((p) => p.clubId === thinId && p.age < 29).slice(0, 2);
+    const others = Object.values(playedSeason.players).filter((p) => p.clubId !== thinId);
+    const thin: GameState = { ...playedSeason, players: Object.fromEntries([...others, ...kept.map((p) => ({ ...p, wage: 50_000 }))].map((p) => [p.id, p])) };
+    const after = Object.values(developPlayers(thin).state.players).filter((p) => !thin.players[p.id]);
+    const thinYouth = after.filter((p) => p.clubId === thinId);
+    const otherDYouth = after.filter((p) => p.clubId !== thinId && thin.clubs[p.clubId]?.division === "D");
+    expect(thinYouth.length).toBeGreaterThanOrEqual(16);
+    expect(Math.max(...thinYouth.map((p) => p.wage))).toBeLessThanOrEqual(Math.max(...otherDYouth.map((p) => p.wage)));
+  });
+
+  it("drops the pre-contracts and loans of players who retire", () => {
+    const veterans = Object.values(playedSeason.players).filter((p) => p.age >= 38);
+    const loan = { fromClubId: "flamengo-rj", until: "2026-12-31", lenderWageShare: 0.5, buyOption: null };
+    const agreed: GameState = {
+      ...playedSeason,
+      market: {
+        ...playedSeason.market,
+        preContracts: Object.fromEntries(veterans.map((p) => [p.id, "flamengo-rj"])),
+        loans: Object.fromEntries(veterans.map((p) => [p.id, loan])),
+      },
+    };
+    const after = developPlayers(agreed).state;
+    const retired = veterans.filter((p) => !after.players[p.id]);
+    expect(retired.length).toBeGreaterThan(0);
+    for (const p of retired) expect([after.market.preContracts[p.id], after.market.loans[p.id]], p.id).toEqual([undefined, undefined]);
+    const stayed = veterans.find((p) => after.players[p.id]);
+    expect(after.market.preContracts[stayed?.id ?? ""]).toBe("flamengo-rj");
+  });
+
   it("draws from the game's random stream", () => {
     expect(next.rngState).not.toBe(playedSeason.rngState);
     expect(developPlayers(playedSeason).state).toEqual(next);

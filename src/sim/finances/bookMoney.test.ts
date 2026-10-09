@@ -25,9 +25,11 @@ describe("money booked between closings", () => {
   });
 
   it("moves a sold player and his fee between the two clubs", () => {
-    // May has no transfer window, so no other deal lands in the month's closing.
+    // May has no transfer window, and with nobody's wages late no board sells at the closing, so no
+    // other deal lands in the month's closing.
     let may = start;
     while (may.date < "2026-05-01") may = advanceDay(may, {}).state;
+    may = { ...may, finances: Object.fromEntries(Object.entries(may.finances).map(([id, f]) => [id, { ...f, lateWageMonths: 0 }])) };
     const player = Object.values(may.players).find((p) => p.clubId === "fortaleza-ce");
     if (!player) throw new Error("no player");
     const sold = sellPlayer(may, { playerId: player.id, buyerId: "palmeiras-sp", fee: 10_000_000 });

@@ -58,6 +58,8 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
         return approve(lent, request, { playerId: player.id, kind: "loanBuy", toClubId: coachClubId, fee: loan.buyOption, contract: { wage: player.wage, until: player.contractUntil } });
       }
       if (own) return refuse(state, request, "alreadyAtClub");
+      // The borrower can't sell what it doesn't own, and the owner can't sell a player it lent out.
+      if (loan) return refuse(state, request, "onLoan");
       const free = !state.players[player.id];
       const preContract = !free && isInPreContractWindow(player, state.date);
       if (!free && !preContract && !isWindowOpen(state.date)) return refuse(state, request, "windowClosed");

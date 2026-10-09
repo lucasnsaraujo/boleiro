@@ -8,7 +8,7 @@ import type { GameState, LeagueCompetition } from "./gameState.js";
 import { LEAGUE_FORMATS, type LeagueOutcome } from "./leagueFormats.js";
 import { serieDQualifiers } from "./serieDQualifiers.js";
 import { standings } from "./standings.js";
-import { cupEntriesOf, startSeason } from "./startSeason.js";
+import { startSeason } from "./startSeason.js";
 import { STATE_CHAMPIONSHIP } from "./stateChampionship.js";
 
 // Série D 2026 has 96 clubs (CBF, https://www.cbf.com.br/futebol-brasileiro/noticias/campeonato-brasileiro-serie-d/a/cbf-publica-documentos-tecnicos-da-nova-serie-d).
@@ -77,7 +77,7 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
       competition.kind === "league" ? [[competition.id, { A: a, B: b, C: c, D: d }[competition.division]]] : [],
     ),
   );
-  const finances = renewFinances(state, clubs, fixtures, cupEntriesOf(competitions), { A: a, B: b, C: c, D: d });
+  const finances = renewFinances(state, clubs, competitions, fixtures, { A: a, B: b, C: c, D: d });
   const players = driftWagesToCap(state.players, finances);
   return {
     state: { ...state, season, clubs, players, calendar, competitions, fixtures, finances, rngState: random.state() },

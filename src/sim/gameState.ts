@@ -106,13 +106,15 @@ export type ClubFinance = {
   membership: number;
   /** Membership the club settles back to; membership drifts around it with results. */
   membershipAnchor: number;
-  /** State championship, continental and commercial income the game does not simulate, net of `expectedPrizes`. */
+  /** State championship, continental and commercial income the game does not simulate, net of `prizesOutOfOtherIncome`. */
   otherIncome: number;
   infrastructure: number;
   /** Ticket money the board expects over a season, for its budget. */
   expectedTickets: number;
-  /** Copa do Brasil prize money the board expects over a season, for its budget. */
+  /** Copa do Brasil and continental prize money the board expects over a season, for its budget. */
   expectedPrizes: number;
+  /** The part of `expectedPrizes` taken out of `otherIncome` (it can't go below zero); the next renewal adds it back. */
+  prizesOutOfOtherIncome: number;
   transferBudget: number;
   wageCap: number;
   /** Points of the last five matches in any competition, newest last. */
@@ -133,6 +135,11 @@ export type Economy = {
   revenueCeiling: Record<Tier, number>;
   /** Copa do Brasil prize per club for playing each stage before the final, then the final's two prizes. */
   copaDoBrasil: { stagePrizes: { prize: number; prizeLowerDivisions: number | null }[]; runnerUp: number; champion: number };
+  /**
+   * CONMEBOL money for taking part, in USD: the Libertadores group stage or preliminary phase and the
+   * Sul-Americana group stage. `usdBrl` is the dollar rate when the market's euro rate was its opening one.
+   */
+  continental: { usdBrl: number; libertadoresGroups: number; libertadoresPreliminary: number; sulAmericanaGroups: number };
 };
 
 export type GameState = {
