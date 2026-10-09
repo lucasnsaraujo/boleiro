@@ -5,6 +5,11 @@ import type { Division } from "./players.js";
 export const BASES = ["published", "estimate", "guess"] as const;
 const DIVISIONS = ["A", "B", "C", "D"] as const satisfies readonly Division[];
 const SIZES = ["small", "median", "large"] as const;
+const FIELDS = [
+  "revenue_total", "broadcasting", "matchday", "membership", "sponsorship", "player_sales", "wage_bill", "net_debt",
+] as const;
+
+export type FinanceField = (typeof FIELDS)[number];
 
 /** `published`: from the club's accounts; `estimate`: derived from press reports; `guess`: no source found. */
 export type Basis = (typeof BASES)[number];
@@ -25,6 +30,8 @@ export type Finances = {
   /** Negative means the club holds more cash than debt. */
   netDebt: number;
   basis: Basis;
+  /** CSV columns whose value is a guess even though the row as a whole has a source. */
+  guessedFields: FinanceField[];
   source: string;
 };
 
@@ -64,6 +71,10 @@ function toFinances(row: Record<string, string>, label: string): Finances {
     wageBill: money(row.wage_bill, "wage_bill", label),
     netDebt: money(row.net_debt, "net_debt", label, { signed: true }),
     basis: oneOf(BASES, row.basis, "basis", label),
+    guessedFields: (row.guessed_fields ?? "")
+      .split(";")
+      .filter((name) => name !== "")
+      .map((name) => oneOf(FIELDS, name, "guessed_fields", label)),
     source,
   };
 }

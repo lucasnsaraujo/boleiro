@@ -22,8 +22,9 @@ describe("loadFinances", () => {
     expect(clubs.map((row) => row.clubId).sort()).toEqual(serieA);
   });
 
-  it("keeps Série A revenue between R$100M and R$2B", () => {
-    const outside = clubs.filter((row) => row.revenue.total < 100 * MILLION || row.revenue.total > 2_000 * MILLION);
+  // Flamengo passed R$2B in 2025, and Remo and Chapecoense earned under R$100M in Série B that year.
+  it("keeps Série A revenue between R$40M and R$2.5B", () => {
+    const outside = clubs.filter((row) => row.revenue.total < 40 * MILLION || row.revenue.total > 2_500 * MILLION);
     expect(outside).toEqual([]);
   });
 
