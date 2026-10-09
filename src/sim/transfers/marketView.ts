@@ -1,6 +1,6 @@
 import { tierOf } from "../finances/tierOf.js";
 import type { GameState, SimPlayer, Tier } from "../gameState.js";
-import { wageBillsOf } from "./wageBillsOf.js";
+import { splitLoanWages } from "./wageBillsOf.js";
 
 /** Lookups the market needs many times a day, built once: squads, tiers, wage bills. */
 export type MarketView = {
@@ -18,7 +18,9 @@ export function marketView(state: GameState): MarketView {
     if (squad) squad.push(p);
     else squads.set(p.clubId, [p]);
   }
-  const bills = wageBillsOf(state);
+  const bills = new Map<string, number>();
+  for (const [clubId, squad] of squads) bills.set(clubId, squad.reduce((sum, p) => sum + p.wage, 0));
+  splitLoanWages(state, bills);
   return {
     squad: (clubId) => squads.get(clubId) ?? [],
     tier: (clubId) => tierOf(state.clubs[clubId] ?? { division: null }),
