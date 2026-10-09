@@ -2,6 +2,7 @@ import type { Club } from "../data/clubs.js";
 import type { CompetitionMoney } from "../data/competition-money.js";
 import type { SquadPlayer } from "../data/players.js";
 import { randomStream } from "../engine/random.js";
+import { NEUTRAL_MOOD } from "./morale/clubMood.js";
 import { openingFinances, type FinanceData } from "./finances/openingFinances.js";
 import type { GameState, SimPlayer } from "./gameState.js";
 import type { Qualification } from "./copaDoBrasilEntrants.js";
@@ -53,5 +54,6 @@ export function newGame(
     fixtures,
     economy,
     finances,
+    mood: Object.fromEntries(clubs.map((club) => [club.id, NEUTRAL_MOOD])),
   };
 }

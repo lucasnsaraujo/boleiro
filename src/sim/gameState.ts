@@ -1,6 +1,7 @@
 import type { Club, State } from "../data/clubs.js";
 import type { Division } from "../data/players.js";
 import type { Player } from "../engine/match.js";
+import type { ClubMood } from "./morale/clubMood.js";
 import type { PlayerProfile } from "./players/playerProfile.js";
 
 export type IsoDate = string;
@@ -73,7 +74,7 @@ export type SeasonCalendar = {
 export type Tier = Division | "state";
 
 export const REVENUE_LINES = ["tickets", "tv", "membership", "sponsorship", "otherIncome", "prizes", "playerSales"] as const;
-export const COST_LINES = ["wages", "transferFees", "signingFees", "agentFees", "infrastructure", "interest"] as const;
+export const COST_LINES = ["wages", "transferFees", "signingFees", "agentFees", "infrastructure", "interest", "fines"] as const;
 export type RevenueLine = (typeof REVENUE_LINES)[number];
 export type CostLine = (typeof COST_LINES)[number];
 
@@ -142,4 +143,5 @@ export type GameState = {
   fixtures: Fixture[];
   economy: Economy;
   finances: Record<string, ClubFinance>;
+  mood: Record<string, ClubMood>;
 };

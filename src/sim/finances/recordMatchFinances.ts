@@ -1,4 +1,6 @@
 import type { ClubFinance, Fixture, GameState } from "../gameState.js";
+import { clubMood } from "../morale/clubMood.js";
+import { crowdTurnout } from "../morale/crowdTurnout.js";
 import { bookMoney } from "./bookMoney.js";
 import { SELLABLE_SHARE_OF_CAPACITY } from "./openingFinances.js";
 import { tierOf } from "./tierOf.js";
@@ -22,7 +24,7 @@ function withResult(finance: ClubFinance, points: number): ClubFinance {
   };
 }
 
-/** Paying crowd for a home match, from the club's usual crowd, form, opponent and ticket price. */
+/** Paying crowd for a home match, from the club's usual crowd, form, opponent, ticket price and fan mood. */
 function attendance(state: GameState, home: ClubFinance, homeId: string, awayId: string): number {
   const club = state.clubs[homeId];
   const visitor = state.clubs[awayId];
@@ -33,7 +35,7 @@ function attendance(state: GameState, home: ClubFinance, homeId: string, awayId:
   const pull = visitor && club.fanbase > 0 ? (visitor.fanbase / club.fanbase) ** OPPONENT_PULL.exponent : 1;
   const opponent = Math.min(OPPONENT_PULL.max, Math.max(OPPONENT_PULL.min, pull));
   const price = (home.ticketPrice / state.economy.matchday[tierOf(club)].price) ** PRICE_ELASTICITY;
-  return Math.round(Math.min(SELLABLE_SHARE_OF_CAPACITY * club.capacity, home.baseCrowd * form * opponent * price));
+  return Math.round(Math.min(SELLABLE_SHARE_OF_CAPACITY * club.capacity, home.baseCrowd * form * opponent * price * crowdTurnout(clubMood(state, homeId))));
 }
 
 /** Books the home club's gate and both clubs' form for a played fixture. */
