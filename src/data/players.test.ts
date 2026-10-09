@@ -9,6 +9,13 @@ describe("loadPlayers", () => {
     expect(players.length).toBeGreaterThan(0);
     expect(players.filter((player) => !clubIds.has(player.clubId))).toEqual([]);
   });
+
+  it("reads each player's age and nationalities", () => {
+    const rossi = loadPlayers().find((player) => player.name === "Agustín Rossi");
+    expect(rossi).toMatchObject({ nationalities: ["Argentina", "Italy"] });
+    expect(rossi?.age).toBeGreaterThan(25);
+    expect(loadPlayers().filter((player) => player.age === null).length).toBeLessThan(20);
+  });
 });
 
 describe("loadTeams", () => {

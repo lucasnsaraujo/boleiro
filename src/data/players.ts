@@ -8,6 +8,9 @@ export type SquadPlayer = Player & {
   clubId: string;
   club: string;
   division: Division | null;
+  /** null when Transfermarkt has no birth date. */
+  age: number | null;
+  nationalities: string[];
 };
 
 const PLAYERS_CSV = new URL("../../data/players.csv", import.meta.url);
@@ -32,6 +35,8 @@ export function loadPlayers(): SquadPlayer[] {
           name: row.name ?? "",
           group: row.group,
           strength: Number(row.strength),
+          age: row.age ? Number(row.age) : null,
+          nationalities: (row.nationality ?? "").split("/").filter(Boolean),
         }]
       : [],
   );
