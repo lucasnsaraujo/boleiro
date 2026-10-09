@@ -50,4 +50,5 @@ pnpm test:long   # plays ten seasons and checks club revenue and player strength
 pnpm finances:report [seasons] [seed]   # prints revenue bands per division from a long run
 pnpm strength:report [seasons] [seed]   # prints player strength bands and mean age per division each season
 pnpm career [--seasons N] [--seed S]    # career mode with an auto-coach: clubs, targets, results, firings per division
+pnpm history [--seasons N] [--seed S] [--club ID]   # same career run, then a club's titles, finishes, records, idols and the coach's record
 ```
