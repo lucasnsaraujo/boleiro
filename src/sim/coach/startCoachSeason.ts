@@ -20,12 +20,12 @@ export type ContractRenewed = { type: "contractRenewed"; clubId: string; untilSe
 export type ContractEnded = { type: "contractEnded"; clubId: string; season: number };
 export type CoachSeasonEvent = CoachSeasonReviewed | ContractRenewed | ContractEnded | BoardExpectationsSet | JobOffered;
 
-// guess: a season's verdict moves reputation 40% of the way to what the season was worth.
-const REPUTATION_STEP = 0.4;
 // guess: reputation points per quarter of the table above (or below) the target.
-const REPUTATION_PER_GAP = 10;
-// guess: a league title or a promotion adds this much to what the season was worth.
-const TROPHY_WORTH = 10;
+const REPUTATION_PER_GAP = 5;
+// guess: reputation points for a league title or a promotion.
+const TROPHY_REPUTATION = 8;
+// guess: a season at a club bigger than his name closes a fifth of the gap, whatever the result.
+const STATURE_PULL = 0.2;
 // 30% of Série A clubs changed coach between the end of the 2024 season and the start of 2025
 // (Jornal de Brasília, https://jornaldebrasilia.com.br/torcida/30-dos-clubes-da-serie-a-trocaram-de-tecnico-para-2025/).
 const PRESEASON_CHANGE_CHANCE = 0.3;
@@ -43,8 +43,9 @@ function reviewCoach(state: GameState, outcomes: readonly LeagueOutcome[]): { st
     const won = outcomes.some((o) => o.championId === clubId);
     const promoted = outcomes.some((o) => o.promotedIds.includes(clubId));
     const gap = (GAP_SCALE * (board.targetPosition - board.position)) / board.tableSize;
-    const worth = (clubStatures(state).get(clubId) ?? 0) + REPUTATION_PER_GAP * gap + (won || promoted ? TROPHY_WORTH : 0);
-    const reputation = Math.round(Math.min(100, Math.max(0, coach.reputation + REPUTATION_STEP * (worth - coach.reputation))));
+    const pull = STATURE_PULL * Math.max(0, (clubStatures(state).get(clubId) ?? 0) - coach.reputation);
+    const change = REPUTATION_PER_GAP * gap + (won || promoted ? TROPHY_REPUTATION : 0) + pull;
+    const reputation = Math.round(Math.min(100, Math.max(0, coach.reputation + change)));
     coach = { ...coach, reputation };
     const { expectation, targetPosition, position } = board;
     events.push({ type: "coachSeasonReviewed", clubId, season: state.season - 1, expectation, targetPosition, position, won, promoted, reputation });

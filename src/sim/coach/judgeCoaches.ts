@@ -28,7 +28,7 @@ const SUPPORTER_PRESSURE: Record<SupporterStep, number> = { calm: 0, pressure: 0
 // 2025 Brasileirão with two rounds left and 17 in 2024
 // (https://www.band.com.br/esportes/veja-os-tecnicos-que-nao-foram-mandados-embora-no-brasileirao-202512021424).
 const FIRING_LINE = 0.8;
-const FIRING_CHANCE_PER_GAME = 0.25;
+const FIRING_CHANCE_PER_GAME = 0.15;
 
 const clamp = (value: number) => Math.min(GAP_RANGE.max, Math.max(GAP_RANGE.min, value));
 

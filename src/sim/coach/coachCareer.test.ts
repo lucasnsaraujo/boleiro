@@ -140,3 +140,25 @@ describe("a career save", () => {
     expect(() => loadGame(JSON.stringify(save))).toThrow();
   });
 });
+
+describe("the turn of the year", () => {
+  const opening = loadNewGame(23, { coachClubId: "flamengo-rj" });
+  const start = { ...opening, coach: { ...opening.coach, reputation: 60 } };
+  const { state, events } = playUntil(withSquadStrength(start, "flamengo-rj", 99), "2027-01-01");
+
+  it("reviews the coach's season and renews his contract when he met the target", () => {
+    const review = events.find((e) => e.type === "coachSeasonReviewed");
+    expect(review).toMatchObject({ clubId: "flamengo-rj", season: 2026, expectation: "title", position: 1 });
+    expect(events).toContainEqual({ type: "contractRenewed", clubId: "flamengo-rj", untilSeason: 2027 });
+    expect(state.coach.contract?.untilSeason).toBe(2027);
+  });
+
+  it("raises the reputation of a coach who wins the title", () => {
+    expect(state.coach.reputation).toBeGreaterThan(start.coach.reputation);
+  });
+
+  it("announces the new season's target for every national club", () => {
+    const announced = events.flatMap((e) => (e.type === "boardExpectationsSet" && e.season === 2027 ? [e.clubId] : []));
+    expect(announced.sort()).toEqual(nationalClubs(state).map((c) => c.id).sort());
+  });
+});

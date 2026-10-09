@@ -10,6 +10,7 @@
     "strength:report": "tsx src/cli/strengthReport.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "career": "tsx src/cli/career.ts",
     "calibrate": "tsx src/engine/calibrate.ts"
   },
   "devDependencies": {
