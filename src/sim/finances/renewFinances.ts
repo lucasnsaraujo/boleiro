@@ -4,6 +4,9 @@ import type { ClubFinance, Competition, Fixture, GameState } from "../gameState.
 import type { LeagueOutcome } from "../leagueFormats.js";
 import { standings } from "../standings.js";
 import { cupEntriesOf } from "../startSeason.js";
+import { COPA_DO_BRASIL } from "../copaDoBrasil.js";
+import { OPENING_EUR_BRL } from "../transfers/openingMarket.js";
+import { continentalQualifiers } from "./continentalQualifiers.js";
 import { expectedCopaPrize } from "./expectedCopaPrize.js";
 import { expectedHomeGames } from "./expectedHomeGames.js";
 import { emptyLedger } from "./ledger.js";
@@ -18,6 +21,24 @@ const SPONSOR_BONUS_SHARE = 0.1;
 // guess: a club earning more than anyone in its division's data loses a quarter of the excess (in
 // log terms) from sponsorship, membership and other income each season.
 const CEILING_PULL = 0.25;
+
+/**
+ * CONMEBOL's money for next season's continental entrants, in BRL at today's rate (the dollar moves
+ * with the market's euro). guess: paid in full when the season turns, as the place is settled then,
+ * though CONMEBOL pays during the group stage; the matches themselves are not played (spec #2).
+ */
+function continentalPrizes(ended: GameState, serieATable: readonly string[]): Map<string, number> {
+  const cup = Object.values(ended.competitions).find((c) => c.kind === "cup" && c.season === ended.season);
+  const copa = cup?.kind === "cup" ? COPA_DO_BRASIL.finalists(cup, ended.fixtures.filter((f) => f.competitionId === cup.id)) : null;
+  const { usdBrl, libertadoresGroups, libertadoresPreliminary, sulAmericanaGroups } = ended.economy.continental;
+  const brl = (usd: number) => Math.round(usd * usdBrl * (ended.market.eurBrl / OPENING_EUR_BRL));
+  const qualifiers = continentalQualifiers(serieATable, copa);
+  return new Map([
+    ...qualifiers.libertadoresGroups.map((id): [string, number] => [id, brl(libertadoresGroups)]),
+    ...qualifiers.libertadoresPreliminary.map((id): [string, number] => [id, brl(libertadoresPreliminary)]),
+    ...qualifiers.sulAmericana.map((id): [string, number] => [id, brl(sulAmericanaGroups)]),
+  ]);
+}
 
 /**
  * Season-start money: clubs that changed division get that division's TV money and ticket price.
@@ -44,6 +65,7 @@ export function renewFinances(
   const homeGames = expectedHomeGames(Object.values(competitions), fixtures);
   const cupEntryStage = new Map(cupEntriesOf(competitions).flatMap((ids, stage) => ids.map((id) => [id, stage])));
   const wages = wageBillsOf(ended);
+  const continentalPrize = continentalPrizes(ended, lastTable);
 
   return Object.fromEntries(Object.entries(ended.finances).map(([id, finance]) => {
     const before = ended.clubs[id];
@@ -59,7 +81,9 @@ export function renewFinances(
     const tv = to === "A" ? (serieATvs[id] ?? 0) : economy.tvPerClub[to];
     const expectedTickets = Math.round(baseCrowd * ticketPrice * (homeGames.get(id) ?? 0));
     const entryStage = cupEntryStage.get(id);
-    const expectedPrizes = entryStage === undefined ? 0 : Math.round(expectedCopaPrize(economy.copaDoBrasil, entryStage, to !== "A" && to !== "B"));
+    const copaPrizes = entryStage === undefined ? 0 : Math.round(expectedCopaPrize(economy.copaDoBrasil, entryStage, to !== "A" && to !== "B"));
+    const continental = continentalPrize.get(id) ?? 0;
+    const expectedPrizes = copaPrizes + continental;
     // The prizes a club expects come out of its other income, so what last season took out goes back
     // in before this season's comes out; together they stay the club's unsimulated income.
     const unsimulated = finance.otherIncome + finance.prizesOutOfOtherIncome;
@@ -67,13 +91,14 @@ export function renewFinances(
     const excess = (tv + expectedTickets + commercial) / economy.revenueCeiling[to];
     const pull = step * (excess > 1 ? excess ** -CEILING_PULL : 1);
     // The season turns on 1 January after December's closing, so `month` already holds January's
-    // first day (coach salary, forced-sale fees); it carries over with the bonus added.
-    const month = { ...finance.month, revenue: { ...finance.month.revenue, sponsorship: finance.month.revenue.sponsorship + bonus } };
+    // first day (coach salary, forced-sale fees); it carries over with the bonus and continental money added.
+    const { revenue } = finance.month;
+    const month = { ...finance.month, revenue: { ...revenue, sponsorship: revenue.sponsorship + bonus, prizes: revenue.prizes + continental } };
     const otherIncomeBeforePrizes = Math.round(unsimulated * pull);
     const prizesOutOfOtherIncome = Math.min(otherIncomeBeforePrizes, expectedPrizes);
     const renewed: ClubFinance = {
       ...finance,
-      cash: finance.cash + bonus,
+      cash: finance.cash + bonus + continental,
       tv,
       sponsorship: Math.round(finance.sponsorship * pull),
       otherIncome: otherIncomeBeforePrizes - prizesOutOfOtherIncome,

@@ -1,5 +1,5 @@
 import type { Club } from "../../data/clubs.js";
-import type { CompetitionMoney } from "../../data/competition-money.js";
+import type { CompetitionMoney, ContinentalStage } from "../../data/competition-money.js";
 import type { ClubFinances, DivisionFinances, Finances } from "../../data/finances.js";
 import type { ClubFinance, Competition, Economy, Fixture, SimPlayer, Tier } from "../gameState.js";
 import { cupEntriesOf } from "../startSeason.js";
@@ -65,6 +65,11 @@ function economyOf(data: FinanceData, competitionMoney: CompetitionMoney): Econo
   const stateOnly = scale(estimateOf(data, "D", "small"), STATE_ONLY_SHARE_OF_SMALL_SERIE_D);
   const { tv, matchday, copaDoBrasil } = competitionMoney;
   const prizeOf = (round: string) => copaDoBrasil.rounds.find((r) => r.round === round)?.prize ?? 0;
+  const usdOf = ({ stages }: { stages: readonly ContinentalStage[] }, stage: string) => {
+    const found = stages.find((s) => s.stage === stage);
+    if (!found) throw new Error(`competition money: no continental stage ${stage}`);
+    return found.prizeUsd;
+  };
   return {
     serieATv: { pool: tv.A.totalPool, shares: tv.A.shares, perClubMin: tv.A.perClubMin, perClubMax: tv.A.perClubMax },
     tvPerClub: { A: tv.A.totalPool / 20, B: tv.B.perClub, C: tv.C.perClub, D: tv.D.perClub, state: 0 },
@@ -97,6 +102,14 @@ function economyOf(data: FinanceData, competitionMoney: CompetitionMoney): Econo
         .map(({ prize, prizeLowerDivisions }) => ({ prize, prizeLowerDivisions })),
       runnerUp: prizeOf("runner-up"),
       champion: prizeOf("champion"),
+    },
+    // guess: Brazil's preliminary-phase clubs enter in the second round, as they have in recent
+    // editions, and earn its prize; the game does not play them through to the group stage.
+    continental: {
+      usdBrl: competitionMoney.usdToBrl.rate,
+      libertadoresGroups: usdOf(competitionMoney.libertadores, "group-stage"),
+      libertadoresPreliminary: usdOf(competitionMoney.libertadores, "preliminary-2"),
+      sulAmericanaGroups: usdOf(competitionMoney.sulAmericana, "group-stage"),
     },
   };
 }

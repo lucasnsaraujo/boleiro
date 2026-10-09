@@ -135,6 +135,11 @@ export type Economy = {
   revenueCeiling: Record<Tier, number>;
   /** Copa do Brasil prize per club for playing each stage before the final, then the final's two prizes. */
   copaDoBrasil: { stagePrizes: { prize: number; prizeLowerDivisions: number | null }[]; runnerUp: number; champion: number };
+  /**
+   * CONMEBOL money for taking part, in USD: the Libertadores group stage or preliminary phase and the
+   * Sul-Americana group stage. `usdBrl` is the dollar rate when the market's euro rate was its opening one.
+   */
+  continental: { usdBrl: number; libertadoresGroups: number; libertadoresPreliminary: number; sulAmericanaGroups: number };
 };
 
 export type GameState = {

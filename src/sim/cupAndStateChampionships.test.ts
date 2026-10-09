@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { advanceDay, type DayEvent } from "./advanceDay.js";
+import { COPA_DO_BRASIL } from "./copaDoBrasil.js";
 import { COPA_STATE_PLACES } from "./copaDoBrasilEntrants.js";
 import type { Competition, CupCompetition, Fixture, GameState, StateCompetition } from "./gameState.js";
 import { loadNewGame } from "./loadNewGame.js";
+import { standings } from "./standings.js";
 import { STATE_CHAMPIONSHIP } from "./stateChampionship.js";
 import { aggregate, tieResults } from "./tieResults.js";
 
@@ -125,6 +127,31 @@ describe("other income across a season change", () => {
     });
     expect(floored.length).toBeGreaterThan(0);
     for (const id of floored) expect(next.finances[id]?.otherIncome, id).toBeLessThan(ended.finances[id]?.expectedPrizes ?? 0);
+  });
+});
+
+describe("continental prize money", () => {
+  const serieA = Object.values(ended.competitions).find((c) => c.kind === "league" && c.division === "A");
+  if (!serieA) throw new Error("no Série A");
+  const table = standings(serieA.clubIds, fixturesOf(ended, serieA), serieA.drawOrder).map((row) => row.clubId);
+  const cup = cupOf(ended);
+  const final = COPA_DO_BRASIL.finalists(cup, fixturesOf(ended, cup));
+  const finalists = new Set(final ? [final.championId, final.runnerUpId] : []);
+  const paid = (id: string) => next.finances[id]?.month.revenue.prizes ?? 0;
+
+  it("pays the Libertadores and Sul-Americana qualifiers at the season turn, Libertadores more", () => {
+    const paidClubs = Object.keys(next.finances).filter((id) => paid(id) > 0);
+    expect(paidClubs).toHaveLength(13);
+    for (const id of finalists) expect(paidClubs, id).toContain(id);
+    const leagueOnly = table.filter((id) => !finalists.has(id));
+    expect(paid(leagueOnly[0] ?? "")).toBeGreaterThan(paid(leagueOnly[7] ?? ""));
+    expect(paid(leagueOnly[7] ?? "")).toBeGreaterThan(0);
+    expect(paid(leagueOnly.at(-1) ?? "")).toBe(0);
+  });
+
+  it("counts the money in the board's expected prizes, out of other income, so it is not counted twice", () => {
+    const top = table.find((id) => !finalists.has(id)) ?? "";
+    expect(next.finances[top]?.expectedPrizes ?? 0).toBeGreaterThanOrEqual(paid(top));
   });
 });
 
