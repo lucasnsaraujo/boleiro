@@ -1,7 +1,7 @@
 import { addDays } from "../dates.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { movePlayer } from "./movePlayer.js";
-import type { ContractRenewed, PlayerMoved } from "./transferEvents.js";
+import type { PlayerContractRenewed, PlayerMoved } from "./transferEvents.js";
 import { wageDemand } from "./wageDemand.js";
 
 // guess: an AI club offers a new deal to the players in its 22 strongest who are under 34, and four
@@ -24,12 +24,12 @@ export function contractEnd(year: number, random: () => number): string {
  * free; an AI club renews its key players and releases the rest; the coach's club keeps only those
  * it renewed through the board. Free agents left unsigned for a year leave the game.
  */
-export function expireContracts(state: GameState, random: () => number): { state: GameState; events: (PlayerMoved | ContractRenewed)[] } {
+export function expireContracts(state: GameState, random: () => number): { state: GameState; events: (PlayerMoved | PlayerContractRenewed)[] } {
   const expired = Object.values(state.players).filter((p) => p.contractUntil < state.date);
   const staleBefore = addDays(state.date, -FREE_AGENT_DAYS);
   const stale = Object.values(state.market.freeAgents).filter((p) => p.contractUntil < staleBefore);
   if (!expired.length && !stale.length) return { state, events: [] };
-  const events: (PlayerMoved | ContractRenewed)[] = [];
+  const events: (PlayerMoved | PlayerContractRenewed)[] = [];
   const freeAgents = { ...state.market.freeAgents };
   for (const p of stale) Reflect.deleteProperty(freeAgents, p.id);
   let next: GameState = { ...state, market: { ...state.market, freeAgents } };
@@ -61,7 +61,7 @@ export function expireContracts(state: GameState, random: () => number): { state
     if (keeps) {
       const until = contractEnd(year, random);
       players[player.id] = { ...player, contractUntil: until };
-      events.push({ type: "contractRenewed", playerId: player.id, clubId: player.clubId, until, wage: player.wage });
+      events.push({ type: "playerContractRenewed", playerId: player.id, clubId: player.clubId, until, wage: player.wage });
       continue;
     }
     Reflect.deleteProperty(players, player.id);

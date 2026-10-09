@@ -19,10 +19,10 @@ export type PlayerMoved = {
   /** Transfer fee in BRL. */
   fee: number;
 };
-export type ContractRenewed = { type: "contractRenewed"; playerId: string; clubId: string; until: IsoDate; wage: number };
+export type PlayerContractRenewed = { type: "playerContractRenewed"; playerId: string; clubId: string; until: IsoDate; wage: number };
 export type PreContractSigned = { type: "preContractSigned"; playerId: string; fromClubId: string; toClubId: string };
 export type EuropeBid = { type: "europeBid"; playerId: string; clubId: string; feeEur: number; fee: number; accepted: boolean };
 /** The board's answer to one coach request; `reason` says why it refused. */
 export type RequestDecided = { type: "requestDecided"; request: CoachRequest; approved: boolean; reason: string | null };
 
-export type TransferEvent = PlayerMoved | ContractRenewed | PreContractSigned | EuropeBid | RequestDecided;
+export type TransferEvent = PlayerMoved | PlayerContractRenewed | PreContractSigned | EuropeBid | RequestDecided;

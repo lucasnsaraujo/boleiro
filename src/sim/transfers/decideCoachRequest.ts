@@ -101,7 +101,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (!isWilling(view, state, player, coachClubId, wage, random)) return refuse(state, request, "playerUnwilling");
       const until = `${Math.max(year, Number(player.contractUntil.slice(0, 4))) + years}-12-31`;
       const renewed = { ...state, players: { ...state.players, [player.id]: { ...player, wage, contractUntil: until } } };
-      return approve(renewed, request, null, [{ type: "contractRenewed", playerId: player.id, clubId: coachClubId, until, wage }]);
+      return approve(renewed, request, null, [{ type: "playerContractRenewed", playerId: player.id, clubId: coachClubId, until, wage }]);
     }
     case "loanIn": {
       if (own || !state.players[player.id] || loan) return refuse(state, request, "notAvailable");
