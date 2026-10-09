@@ -65,8 +65,9 @@ export function renewFinances(
     const commercial = (finance.sponsorship + finance.membership + unsimulated) * step;
     const excess = (tv + expectedTickets + commercial) / economy.revenueCeiling[to];
     const pull = step * (excess > 1 ? excess ** -CEILING_PULL : 1);
-    const month = emptyLedger();
-    month.revenue.sponsorship = bonus;
+    // The season turns on 1 January after December's closing, so `month` already holds January's
+    // first day (coach salary, forced-sale fees); it carries over with the bonus added.
+    const month = { ...finance.month, revenue: { ...finance.month.revenue, sponsorship: finance.month.revenue.sponsorship + bonus } };
     const renewed: ClubFinance = {
       ...finance,
       cash: finance.cash + bonus,
@@ -80,7 +81,7 @@ export function renewFinances(
       baseCrowd,
       expectedTickets,
       expectedPrizes,
-      month: { ...month, points: 0, games: 0 },
+      month,
       season: emptyLedger(),
       lastSeason: finance.season,
     };

@@ -55,6 +55,13 @@ describe("club finances across a season change", () => {
     expect(financeOf(after, champion).cash - closing.cash - transferMoney).toBe(revenue.sponsorship);
   });
 
+  it("keeps money booked on 1 January before the season turns in January's books", () => {
+    const salary = 123_456;
+    const coached: GameState = { ...before, coachClubId: "flamengo-rj", coach: { ...before.coach, contract: { salary, untilSeason: 2030 } } };
+    const turned = advanceDay(coached, {}).state;
+    expect(financeOf(turned, "flamengo-rj").month.costs.wages).toBe(salary);
+  });
+
   it("files the finished season's books and opens empty ones", () => {
     const flamengo = financeOf(after, "flamengo-rj");
     expect(flamengo.lastSeason?.revenue.tv).toBeGreaterThan(0);
