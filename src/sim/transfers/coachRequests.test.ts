@@ -66,6 +66,17 @@ describe("the board's answer to a signing request", () => {
     expect(financeOf(state, target.clubId).month.revenue.playerSales - financeOf(before, target.clubId).month.revenue.playerSales).toBe(fee);
   });
 
+  it("refuses a player on loan at another club, leaving the loan and both clubs' money alone", () => {
+    const borrowerId = Object.values(windowEve.clubs).find((c) => c.division === "C")?.id ?? "";
+    const loan = { fromClubId: target.clubId, until: "2026-06-30", lenderWageShare: 0.5, buyOption: null };
+    const lent = rich(withPlayer(windowEve, { ...target, clubId: borrowerId }));
+    const before = { ...lent, market: { ...lent.market, loans: { ...lent.market.loans, [target.id]: loan } } };
+    const { state, decision } = ask(before, { kind: "sign", playerId: target.id });
+    expect(decision).toMatchObject({ approved: false, reason: "onLoan" });
+    expect(state.players[target.id]?.clubId).toBe(borrowerId);
+    expect(state.market.loans[target.id]).toEqual(loan);
+  });
+
   it("refuses a transfer outside the windows", () => {
     let april = rich(withPlayer(windowEve, target));
     april = { ...april, date: "2026-04-10" };
