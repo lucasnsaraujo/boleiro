@@ -40,7 +40,7 @@ export const CALIBRATED: EngineParams = {
   lowScoreCorrelation: -0.0855,
 };
 
-const FORMATION: Record<PositionGroup, number> = { GK: 1, DEF: 4, MID: 4, ATT: 2 };
+export const FORMATION: Record<PositionGroup, number> = { GK: 1, DEF: 4, MID: 4, ATT: 2 };
 const MAX_GOALS = 10;
 
 export function pickLineup(players: Player[]): Player[] {

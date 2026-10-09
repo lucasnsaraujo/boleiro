@@ -1,5 +1,5 @@
 import type { State } from "../data/clubs.js";
-import { simulateMatch, type Team } from "../engine/match.js";
+import { simulateMatch } from "../engine/match.js";
 import { paramsForDivision } from "../engine/paramsForDivision.js";
 import { randomStream } from "../engine/random.js";
 import { addDays } from "./dates.js";
@@ -9,6 +9,10 @@ import { recordMatchFinances } from "./finances/recordMatchFinances.js";
 import type { Competition, Fixture, GameState, SimPlayer } from "./gameState.js";
 import type { LeagueOutcome } from "./leagueFormats.js";
 import { openNextStage } from "./openNextStage.js";
+import { developPlayers, type PlayerRetired, type YouthPromoted } from "./players/developPlayers.js";
+import { isInjured } from "./players/isInjured.js";
+import { matchSetup } from "./players/matchSetup.js";
+import { recordMatchLoad, type PlayerInjured } from "./players/recordMatchLoad.js";
 import { aggregate } from "./tieResults.js";
 
 export type DayDecisions = {
@@ -19,24 +23,31 @@ export type DayEvent =
   | { type: "matchPlayed"; fixture: Fixture }
   | { type: "stageOpened"; competitionId: string; stage: number }
   | { type: "seasonEnded"; season: number; outcomes: Record<string, LeagueOutcome> }
-  | FinanceEvent;
+  | FinanceEvent
+  | PlayerInjured
+  | PlayerRetired
+  | YouthPromoted;
 
 const PENALTY_SHOOTOUT_HOME_WIN = 0.5; // guess: shootouts treated as a coin flip until a source on shootout odds is used
 
-function squadsOf(state: GameState, decisions: DayDecisions): (clubId: string) => SimPlayer[] {
+function squadsOf(state: GameState): (clubId: string) => SimPlayer[] {
   const squads = new Map<string, SimPlayer[]>();
   for (const player of Object.values(state.players)) {
     const squad = squads.get(player.clubId) ?? [];
     squad.push(player);
     squads.set(player.clubId, squad);
   }
-  if (decisions.lineup && state.coachClubId) {
-    const lineup = decisions.lineup.map((id) => state.players[id]);
-    const chosen = lineup.filter((player): player is SimPlayer => player?.clubId === state.coachClubId);
-    if (chosen.length !== lineup.length) throw new Error(`lineup has players who are not at ${state.coachClubId}`);
-    squads.set(state.coachClubId, chosen);
-  }
   return (clubId) => squads.get(clubId) ?? [];
+}
+
+function coachLineupOf(state: GameState, decisions: DayDecisions): SimPlayer[] | null {
+  if (!decisions.lineup || !state.coachClubId) return null;
+  const lineup = decisions.lineup.map((id) => state.players[id]);
+  const chosen = lineup.filter((player): player is SimPlayer => player?.clubId === state.coachClubId);
+  if (chosen.length !== lineup.length) throw new Error(`lineup has players who are not at ${state.coachClubId}`);
+  const injured = chosen.filter((player) => isInjured(player, state.date));
+  if (injured.length) throw new Error(`lineup has injured players: ${injured.map((p) => p.name).join(", ")}`);
+  return chosen;
 }
 
 function isDecidingLeg(fixture: Fixture, competitions: Record<string, Competition>): boolean {
@@ -47,14 +58,16 @@ function isDecidingLeg(fixture: Fixture, competitions: Record<string, Competitio
 export function advanceDay(state: GameState, decisions: DayDecisions): { state: GameState; events: DayEvent[] } {
   const random = randomStream(state.rngState);
   const events: DayEvent[] = [];
-  const squad = squadsOf(state, decisions);
-  const team = (clubId: string): Team => ({ name: state.clubs[clubId]?.shortName ?? clubId, players: squad(clubId) });
+  const squad = squadsOf(state);
+  const coachLineup = coachLineupOf(state, decisions);
+  const playedToday: SimPlayer[] = [];
 
   let fixtures = state.fixtures.map((fixture) => {
     if (fixture.date !== state.date || fixture.result) return fixture;
     const competition = state.competitions[fixture.competitionId];
     if (!competition) throw new Error(`fixture ${fixture.id} has no competition ${fixture.competitionId}`);
-    const score = simulateMatch(team(fixture.homeId), team(fixture.awayId), random.next, paramsForDivision(competition.division));
+    const setup = matchSetup(state, fixture, squad, coachLineup);
+    const score = simulateMatch(setup.home, setup.away, random.next, paramsForDivision(competition.division));
     let played: Fixture = { ...fixture, result: score };
     if (isDecidingLeg(fixture, state.competitions)) {
       const legs = [...state.fixtures.filter((f) => f.competitionId === fixture.competitionId && f.stage === fixture.stage && f.tie === fixture.tie && f.id !== fixture.id), played];
@@ -64,6 +77,9 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
       }
     }
     events.push({ type: "matchPlayed", fixture: played });
+    const load = recordMatchLoad({ ...setup, result: score }, random.next);
+    playedToday.push(...load.players);
+    events.push(...load.events);
     return played;
   });
 
@@ -80,7 +96,8 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
     events.push({ type: "stageOpened", competitionId: competition.id, stage: current + 1 });
   }
 
-  let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions };
+  const players = playedToday.length ? { ...state.players, ...Object.fromEntries(playedToday.map((p) => [p.id, p])) } : state.players;
+  let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players };
   for (const event of events) if (event.type === "matchPlayed") next = recordMatchFinances(next, event.fixture);
   if (next.date.endsWith("-01")) {
     const closed = closeMonth(next, random.next);
@@ -89,7 +106,8 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   }
   next = { ...next, rngState: random.state() };
   if (next.date.slice(0, 4) === String(state.season)) return { state: next, events };
-  const ended = endSeason(next);
-  events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes });
+  const developed = developPlayers(next);
+  const ended = endSeason(developed.state);
+  events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...developed.events);
   return { state: ended.state, events };
 }

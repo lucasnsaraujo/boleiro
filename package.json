@@ -7,6 +7,7 @@
     "test": "vitest run",
     "test:long": "LONG_RUN=1 vitest run src/cli",
     "finances:report": "tsx src/cli/financeReport.ts",
+    "strength:report": "tsx src/cli/strengthReport.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "calibrate": "tsx src/engine/calibrate.ts"

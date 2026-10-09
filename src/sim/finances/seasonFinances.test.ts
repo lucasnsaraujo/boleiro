@@ -65,11 +65,14 @@ describe("club finances across a season change", () => {
     let cuts = 0;
     for (const clubId of Object.keys(after.clubs)) {
       const stayers = Object.values(before.players).filter((p) => p.clubId === clubId && after.players[p.id]?.clubId === clubId);
-      const bill = stayers.reduce((sum, p) => sum + p.wage, 0);
-      const cap = financeOf(after, clubId).wageCap;
       const top = stayers.sort((a, b) => b.wage - a.wage)[0];
-      if (!top || Math.abs(cap / bill - 1) < 0.05) continue;
+      if (!top) continue;
       const ratio = (after.players[top.id]?.wage ?? 0) / top.wage;
+      // Youth players join before the drift, so their wage before it is today's divided by the club's factor.
+      const newcomers = Object.values(after.players).filter((p) => p.clubId === clubId && !before.players[p.id]);
+      const bill = stayers.reduce((sum, p) => sum + p.wage, 0) + newcomers.reduce((sum, p) => sum + p.wage / ratio, 0);
+      const cap = financeOf(after, clubId).wageCap;
+      if (Math.abs(cap / bill - 1) < 0.05) continue;
       expect(ratio).toBeGreaterThanOrEqual(0.49);
       expect(ratio).toBeLessThanOrEqual(1.51);
       expect(ratio > 1).toBe(cap > bill);
