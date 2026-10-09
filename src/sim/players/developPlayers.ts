@@ -1,7 +1,9 @@
 import type { Division } from "../../data/players.js";
 import type { PositionGroup } from "../../engine/match.js";
 import { randomStream } from "../../engine/random.js";
-import type { GameState, SimPlayer } from "../gameState.js";
+import { tierOf } from "../finances/tierOf.js";
+import type { GameState, IsoDate, SimPlayer, Tier } from "../gameState.js";
+import { wageRateOf, type WageRate } from "../transfers/wageDemand.js";
 import { inventName } from "./inventName.js";
 import { freshCondition, rollTrait } from "./openingProfile.js";
 
@@ -62,7 +64,7 @@ const RETIREMENT: readonly [minAge: number, chance: number][] = [
 // below 18, enough for an eleven plus injuries and rotation.
 const MIN_SQUAD = 18;
 const YOUTH_MIN_AGE = 17;
-// guess: a youth player at a club with nobody left to compare wages with earns about the 2026
+// guess: a youth player in a division with nobody to compare wages with earns about the 2026
 // national minimum wage, R$1,621 a month.
 const NO_SQUAD_WAGE = 1621;
 const YOUTH_AGES = 3;
@@ -83,6 +85,65 @@ const clamp = (strength: number) => Math.min(99, Math.max(1, strength));
 
 function retirementChance(age: number): number {
   return RETIREMENT.find(([minAge]) => age >= minAge)?.[1] ?? 0;
+}
+
+/**
+ * The position groups a squad adds from its academy: `leaving` replaced one for one, then the
+ * thinnest groups (against a 24-man squad's shape) until it has 18 players. A squad left without a
+ * keeper always promotes one, since nobody else may play in goal.
+ */
+export function groupsToFill(staying: readonly Pick<SimPlayer, "group">[], leaving: readonly PositionGroup[]): PositionGroup[] {
+  const counts = new Map<PositionGroup, number>();
+  for (const p of [...staying, ...leaving.map((group) => ({ group }))]) counts.set(p.group, (counts.get(p.group) ?? 0) + 1);
+  const neediest = (): PositionGroup =>
+    GROUPS.reduce((a, b) =>
+      (counts.get(a) ?? 0) / SQUAD_SHAPE[a] <= (counts.get(b) ?? 0) / SQUAD_SHAPE[b] ? a : b);
+  const groups = [...leaving];
+  if (!counts.get("GK")) {
+    groups.push("GK");
+    counts.set("GK", 1);
+  }
+  while (staying.length + groups.length < MIN_SQUAD) {
+    const group = neediest();
+    groups.push(group);
+    counts.set(group, (counts.get(group) ?? 0) + 1);
+  }
+  return groups;
+}
+
+/** A Brazilian teenager with an invented name from the club's academy, rated for its division; the caller sets his wage. */
+export function academyPlayer(
+  id: string,
+  clubId: string,
+  division: Division | null,
+  group: PositionGroup,
+  date: IsoDate,
+  random: () => number,
+): Omit<SimPlayer, "wage"> {
+  const age = YOUTH_MIN_AGE + Math.floor(random() * YOUTH_AGES);
+  const strength = clamp(CLUB_LEVEL[division ?? "none"] + ageOffset(age) + YOUTH_SD * normal(random));
+  return {
+    id, clubId, group, age, name: inventName(random),
+    strength: Math.round(strength * 10) / 10,
+    nationalities: ["Brazil"],
+    trait: rollTrait(random),
+    contractUntil: `${Number(date.slice(0, 4)) + YOUTH_CONTRACT_YEARS - 1}-12-31`,
+    condition: freshCondition(date),
+  };
+}
+
+/** What each tier pays for a given strength, from the wages of everyone playing in it. */
+function tierWageRates(clubs: GameState["clubs"], players: readonly SimPlayer[]): (tier: Tier) => WageRate {
+  const byTier = new Map<Tier, SimPlayer[]>();
+  for (const p of players) {
+    const club = clubs[p.clubId];
+    if (!club) continue;
+    const squad = byTier.get(tierOf(club)) ?? [];
+    squad.push(p);
+    byTier.set(tierOf(club), squad);
+  }
+  const rates = new Map([...byTier].map(([tier, squad]) => [tier, wageRateOf(squad)]));
+  return (tier) => rates.get(tier) ?? (() => NO_SQUAD_WAGE);
 }
 
 /**
@@ -125,37 +186,18 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
 
   const { date } = state;
   const intake = date.slice(0, 4);
-  for (const clubId of Object.keys(state.clubs)) {
-    const squad = squads.get(clubId) ?? [];
+  // guess: a first contract pays the division's going rate for the youngster's strength, so a thin
+  // club's few remaining big earners don't set every newcomer's wage.
+  const wageRate = tierWageRates(state.clubs, Object.values(players));
+  for (const club of Object.values(state.clubs)) {
+    const squad = squads.get(club.id) ?? [];
     const staying = squad.filter((p) => players[p.id]);
     const retiredGroups = squad.filter((p) => !players[p.id]).map((p) => p.group);
-    // guess: a youth contract pays what the club's lowest-paid player earns.
-    const wage = Math.min(...squad.map((p) => p.wage));
-    const counts = new Map<PositionGroup, number>();
-    for (const p of staying) counts.set(p.group, (counts.get(p.group) ?? 0) + 1);
-    const neediest = (): PositionGroup =>
-      GROUPS.reduce((a, b) =>
-        (counts.get(a) ?? 0) / SQUAD_SHAPE[a] <= (counts.get(b) ?? 0) / SQUAD_SHAPE[b] ? a : b);
-    const groups = [...retiredGroups];
-    while (staying.length + groups.length < MIN_SQUAD) {
-      const group = neediest();
-      groups.push(group);
-      counts.set(group, (counts.get(group) ?? 0) + 1);
-    }
-    groups.forEach((group, i) => {
-      const age = YOUTH_MIN_AGE + Math.floor(random.next() * YOUTH_AGES);
-      const id = `y${intake}-${clubId}-${i}`;
-      const strength = clamp(levelOf(clubId) + ageOffset(age) + YOUTH_SD * normal(random.next));
-      players[id] = {
-        id, clubId, group, age, name: inventName(random.next),
-        strength: Math.round(strength * 10) / 10,
-        nationalities: ["Brazil"],
-        trait: rollTrait(random.next),
-        wage: Number.isFinite(wage) ? wage : NO_SQUAD_WAGE,
-        contractUntil: `${Number(intake) + YOUTH_CONTRACT_YEARS - 1}-12-31`,
-        condition: freshCondition(date),
-      };
-      events.push({ type: "youthPromoted", playerId: id, clubId });
+    const rate = wageRate(tierOf(club));
+    groupsToFill(staying, retiredGroups).forEach((group, i) => {
+      const youth = academyPlayer(`y${intake}-${club.id}-${i}`, club.id, club.division, group, date, random.next);
+      players[youth.id] = { ...youth, wage: Math.max(1, rate(youth.strength)) };
+      events.push({ type: "youthPromoted", playerId: youth.id, clubId: club.id });
     });
   }
   return { state: { ...state, players, rngState: random.state() }, events };

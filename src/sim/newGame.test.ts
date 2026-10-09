@@ -63,8 +63,23 @@ describe("newGame", () => {
 
   it("keeps every player from the data with a unique id and a known club", () => {
     const players = Object.values(state.players);
-    expect(players).toHaveLength(loadPlayers().length);
+    expect(players.filter((p) => !p.id.startsWith("a"))).toHaveLength(loadPlayers().length);
     expect(players.every((p) => state.players[p.id] === p && state.clubs[p.clubId])).toBe(true);
+  });
+
+  it("tops every squad up to 18 with paid academy teenagers, a keeper among them", () => {
+    const players = Object.values(state.players);
+    const squads = new Map<string, typeof players>();
+    for (const p of players) squads.set(p.clubId, [...(squads.get(p.clubId) ?? []), p]);
+    for (const clubId of Object.keys(state.clubs)) {
+      const squad = squads.get(clubId) ?? [];
+      expect(squad.length, clubId).toBeGreaterThanOrEqual(18);
+      expect(squad.some((p) => p.group === "GK"), clubId).toBe(true);
+    }
+    const alvorada = squads.get("unidos-do-alvorada-am") ?? [];
+    const youth = alvorada.filter((p) => p.id.startsWith("a"));
+    expect(youth).toHaveLength(16);
+    expect(youth.every((p) => p.age >= 17 && p.age <= 19 && p.wage > 0 && p.nationalities.join() === "Brazil")).toBe(true);
   });
 
   it("depends only on the seed", () => {

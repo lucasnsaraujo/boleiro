@@ -66,6 +66,18 @@ describe("developPlayers at the end of a season", () => {
     expect(youth.every((p) => p.wage > 0 && p.trait !== undefined)).toBe(true);
   });
 
+  it("pays a thin club's academy players the division's going rate, not its lowest wage", () => {
+    const thinId = Object.values(start.clubs).find((c) => c.division === "D")?.id ?? "";
+    const kept = Object.values(playedSeason.players).filter((p) => p.clubId === thinId && p.age < 29).slice(0, 2);
+    const others = Object.values(playedSeason.players).filter((p) => p.clubId !== thinId);
+    const thin: GameState = { ...playedSeason, players: Object.fromEntries([...others, ...kept.map((p) => ({ ...p, wage: 50_000 }))].map((p) => [p.id, p])) };
+    const after = Object.values(developPlayers(thin).state.players).filter((p) => !thin.players[p.id]);
+    const thinYouth = after.filter((p) => p.clubId === thinId);
+    const otherDYouth = after.filter((p) => p.clubId !== thinId && thin.clubs[p.clubId]?.division === "D");
+    expect(thinYouth.length).toBeGreaterThanOrEqual(16);
+    expect(Math.max(...thinYouth.map((p) => p.wage))).toBeLessThanOrEqual(Math.max(...otherDYouth.map((p) => p.wage)));
+  });
+
   it("draws from the game's random stream", () => {
     expect(next.rngState).not.toBe(playedSeason.rngState);
     expect(developPlayers(playedSeason).state).toEqual(next);

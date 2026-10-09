@@ -7,6 +7,7 @@ import { CARD_RATES } from "./discipline/cardRates.js";
 import { countCards, drawCards, sendOffMinutes } from "./discipline/drawCards.js";
 import type { Fixture, GameState } from "./gameState.js";
 import { loadNewGame } from "./loadNewGame.js";
+import { isInjured } from "./players/isInjured.js";
 import { pickMatchLineup } from "./players/pickMatchLineup.js";
 
 const start = loadNewGame(11, { coachClubId: "flamengo-rj" });
@@ -63,7 +64,7 @@ describe("advanceDay", () => {
     ["no goalkeeper", (ids: string[]) => ids.slice(1, 12)],
   ])("refuses a coach lineup with %s", (_, shape) => {
     const before = advanceTo(start, start.calendar.leagueDates.A[0] ?? "");
-    const squad = Object.values(before.players).filter((p) => p.clubId === "flamengo-rj");
+    const squad = Object.values(before.players).filter((p) => p.clubId === "flamengo-rj" && !isInjured(p, before.date));
     const keeper = squad.filter((p) => p.group === "GK").slice(0, 1);
     const ordered = [...keeper, ...squad.filter((p) => p.group !== "GK")].map((p) => p.id);
     expect(() => advanceDay(before, { lineup: ordered.slice(0, 11) })).not.toThrow();
