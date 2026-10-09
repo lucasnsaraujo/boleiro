@@ -1,0 +1,67 @@
+tm_id,field,value,source
+199,short_name,Corinthians,curated
+210,short_name,Grêmio,curated
+6600,short_name,Internacional,curated
+776,short_name,Coritiba,curated
+8793,short_name,Bragantino,curated
+679,short_name,Athletico-PR,curated
+330,short_name,Atlético-MG,curated
+978,short_name,Vasco,curated
+15172,short_name,Atlético-GO,curated
+2646,short_name,Náutico,curated
+11449,short_name,CRB,curated
+8718,short_name,Sport,curated
+27214,short_name,Operário-PR,curated
+8547,short_name,Itabaiana,curated
+9141,short_name,Caxias,curated
+308,short_name,Inter de Limeira,curated
+2863,short_name,América-MG,curated
+9030,short_name,Botafogo-SP,curated
+17964,short_name,Botafogo-PB,curated
+3197,short_name,Goiás,curated
+1785,short_name,Santa Cruz,curated
+3280,short_name,Confiança,curated
+10560,short_name,Brasil de Pelotas,curated
+32991,short_name,Juazeirense,curated
+23778,short_name,Imperatriz,curated
+27837,short_name,Atlético Cearense,curated
+9138,short_name,America-RJ,curated
+1751,short_name,América-RN,curated
+40120,short_name,Sampaio Corrêa-RJ,curated
+3319,short_name,Sampaio Corrêa,curated
+20092,short_name,ASA,curated
+18545,short_name,CSA,curated
+52513,short_name,CSE,curated
+12602,short_name,CRAC,curated
+15882,state,SP,"transfermarkt: club based in Araraquara, plays Paulista Série A2 in 2026"
+308,state,SP,"transfermarkt: club based in Limeira, plays Paulista Série A2 in 2026"
+55335,state,SP,"transfermarkt: club based in Piracicaba, plays Paulista Série A2 in 2026"
+21409,state,PE,"transfermarkt: club based in Caruaru"
+27837,state,CE,"transfermarkt: club based in Fortaleza"
+616,short_name,Inter de Santa Maria,curated
+12914,short_name,Murici FC,curated
+1023,pitch,artificial,"band.com.br and itatiaia.com.br Série A 2026 synthetic-pitch lists (Dec 2025)"
+537,pitch,artificial,"band.com.br and itatiaia.com.br Série A 2026 synthetic-pitch lists (Dec 2025)"
+330,pitch,artificial,"band.com.br and itatiaia.com.br Série A 2026 synthetic-pitch lists (Dec 2025)"
+679,pitch,artificial,"band.com.br and itatiaia.com.br Série A 2026 synthetic-pitch lists (Dec 2025)"
+17776,pitch,artificial,"band.com.br and itatiaia.com.br Série A 2026 synthetic-pitch lists (Dec 2025)"
+614,fanbase_share,21.2,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 21.2% of Brazilians"
+199,fanbase_share,11.9,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 11.9% of Brazilians"
+1023,fanbase_share,6.5,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 6.5% of Brazilians"
+585,fanbase_share,6.4,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 6.4% of Brazilians"
+978,fanbase_share,3.4,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 3.4% of Brazilians"
+210,fanbase_share,3.0,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 3.0% of Brazilians"
+609,fanbase_share,2.3,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 2.3% of Brazilians"
+330,fanbase_share,2.3,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 2.3% of Brazilians"
+10010,fanbase_share,2.2,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 2.2% of Brazilians"
+221,fanbase_share,2.0,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 2.0% of Brazilians"
+6600,fanbase_share,1.7,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 1.7% of Brazilians"
+537,fanbase_share,1.5,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 1.5% of Brazilians"
+8718,fanbase_share,1.3,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 1.3% of Brazilians"
+2462,fanbase_share,0.9,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 0.9% of Brazilians"
+2125,fanbase_share,0.8,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 0.8% of Brazilians"
+10870,fanbase_share,0.7,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 0.7% of Brazilians"
+2029,fanbase_share,0.7,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 0.7% of Brazilians"
+1785,fanbase_share,0.6,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 0.6% of Brazilians"
+679,fanbase_share,0.5,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 0.5% of Brazilians"
+10997,fanbase_share,0.5,"Ipsos-Ipec/O Globo fan survey 5-9 Jun 2025: 0.5% of Brazilians"

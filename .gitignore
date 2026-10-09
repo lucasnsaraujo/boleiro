@@ -1,5 +1,5 @@
 node_modules/
 .venv/
-data/tm_cache/
+data/tm_cache
 dist/
 coverage/

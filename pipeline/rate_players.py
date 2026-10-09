@@ -7,7 +7,7 @@ import sys
 import unicodedata
 from collections import defaultdict
 
-DIVISION_PRIOR = {"A": 72.0, "B": 63.0, "C": 56.0, "D": 49.0}
+DIVISION_PRIOR = {"A": 72.0, "B": 63.0, "C": 56.0, "D": 49.0, "": 42.0}
 SPREAD = 7.0
 POSITION_GROUP = {
     "Goalkeeper": "GK",
@@ -51,8 +51,11 @@ def zscores(values: list[float]) -> list[float]:
 
 
 def main() -> None:
-    tm_path, sofa_path, out_path = sys.argv[1:4]
+    tm_path, sofa_path, clubs_path, out_path = sys.argv[1:5]
     players = [p for p in csv.DictReader(open(tm_path)) if p["name"]]
+    club_ids = {club["tm_id"]: club["id"] for club in csv.DictReader(open(clubs_path))}
+    for p in players:
+        p["club_id"] = club_ids[p["club_tm_id"]]
     sofa = json.load(open(sofa_path))
     by_name: dict[str, list[dict]] = defaultdict(list)
     by_last: dict[str, list[dict]] = defaultdict(list)
@@ -100,7 +103,7 @@ def main() -> None:
         p["strength"] = max(30, min(95, round(strength)))
         p["confidence"] = round(confidence, 2)
 
-    fields = ["division", "club", "name", "position", "group", "age", "nationality", "market_value_eur",
+    fields = ["division", "club_id", "club", "name", "position", "group", "age", "nationality", "market_value_eur",
               "sofa_minutes", "sofa_rating", "sofa_goals_assists", "matched", "confidence", "strength"]
     with open(out_path, "w", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore")
