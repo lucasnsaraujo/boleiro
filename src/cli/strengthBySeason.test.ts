@@ -22,8 +22,8 @@ describe.skipIf(!process.env.LONG_RUN)("ten seasons of player strength", () => {
     for (const tier of ["A", "B", "C"] as const) expect(Math.abs(band(last(), tier).mean - band(first(), tier).mean), tier).toBeLessThan(3);
   });
 
-  // Until #8, two thirds of Série D are replaced each year by the strongest clubs outside Série A–D
-  // (endSeason.ts serieDNewcomers), whose players drift up from 42 over several seasons.
+  // Each year about two thirds of Série D are replaced by estadual qualifiers (serieDQualifiers.ts),
+  // many of them state-only clubs whose players start near 42.
   it("keeps Série D's mean strength within 4 points while its clubs churn", () => {
     expect(Math.abs(band(last(), "D").mean - band(first(), "D").mean)).toBeLessThan(4);
   });

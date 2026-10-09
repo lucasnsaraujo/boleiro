@@ -19,7 +19,8 @@ function advanceTo(state: GameState, date: string): GameState {
   return current;
 }
 
-const matchDay = advanceTo(start, firstDate);
+// Estadual games come before the first league date; the tests start from players fresh on that day.
+const matchDay = { ...advanceTo(start, firstDate), players: start.players };
 const squadOf = (state: GameState, clubId: string) => Object.values(state.players).filter((p) => p.clubId === clubId);
 const withPlayers = (state: GameState, change: (p: SimPlayer) => Partial<PlayerProfile>): GameState => ({
   ...state,

@@ -39,7 +39,7 @@ describe("advanceDay", () => {
       const competition = reached.competitions[f.competitionId];
       return f.date === reached.date && !(competition?.kind === "league" && competition.division === division);
     };
-    const before = { ...reached, fixtures: reached.fixtures.filter((f) => !isOtherLeagueToday(f)) };
+    const before = { ...reached, players: start.players, fixtures: reached.fixtures.filter((f) => !isOtherLeagueToday(f)) };
     const first = before.fixtures.find((f) => f.date === before.date);
     const team = (clubId: string) => ({ name: clubId, players: Object.values(before.players).filter((p) => p.clubId === clubId) });
     const expected = simulateMatch(team(first?.homeId ?? ""), team(first?.awayId ?? ""), randomStream(before.rngState).next, paramsForDivision(division));
