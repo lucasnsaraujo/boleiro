@@ -17,6 +17,12 @@ COMPETITIONS = {
     "C": "/x/teilnehmer/pokalwettbewerb/BRA3/saison_id/2025",
     "D": "/x/teilnehmer/pokalwettbewerb/BRA4/saison_id/2025",
 }
+STATE_CHAMPIONSHIPS = {
+    "AC": "BRAC", "AL": "BRAL", "AP": "BRAP", "AM": "BRAM", "BA": "BRCB", "CE": "BRCE", "DF": "BRDF",
+    "ES": "BRES", "GO": "BRGO", "MA": "BRMA", "MT": "BRMS", "MS": "BRMT", "MG": "BRCM", "PA": "BRPA",
+    "PB": "BRPB", "PR": "BRPR", "PE": "BRPE", "PI": "BRPI", "RJ": "BRCG", "RN": "BRRN", "RS": "BRRS",
+    "RO": "BRRD", "RR": "BRRR", "SC": "BRSC", "SP": "BCP1", "SE": "BRSE", "TO": "BRTO",
+}
 CLUB_LINK = re.compile(r"/([a-z0-9-]+)/startseite/verein/(\d+)")
 
 session = requests.Session()
@@ -59,6 +65,22 @@ def club_ids(path: str) -> dict[str, str]:
     return {club_id: slug for slug, club_id in CLUB_LINK.findall(html)}
 
 
+def state_championship_clubs(code: str) -> dict[str, str]:
+    # Transfermarkt files the 2026 editions under season 2025, except Amazonense, which only has the current page.
+    for path in (f"/x/startseite/wettbewerb/{code}/saison_id/2025",
+                 f"/x/teilnehmer/pokalwettbewerb/{code}/saison_id/2025",
+                 f"/x/teilnehmer/pokalwettbewerb/{code}"):
+        clubs = club_ids(path)
+        if clubs:
+            return clubs
+    raise RuntimeError(f"no clubs for {code}")
+
+
+def competitions() -> list[tuple[str, dict[str, str]]]:
+    national = [(division, club_ids(path)) for division, path in COMPETITIONS.items()]
+    return national + [("", state_championship_clubs(code)) for code in STATE_CHAMPIONSHIPS.values()]
+
+
 def squad(slug: str, club_id: str) -> tuple[str, list[dict[str, object]]]:
     soup = fetch(f"/{slug}/kader/verein/{club_id}/plus/1")
     club_name = soup.select_one("h1").get_text(strip=True)
@@ -72,6 +94,7 @@ def squad(slug: str, club_id: str) -> tuple[str, list[dict[str, object]]]:
         age = re.search(r"\((\d+)\)", cells[2].get_text())
         players.append({
             "club": club_name,
+            "club_tm_id": club_id,
             "name": name_link.get_text(strip=True) if name_link else "",
             "tm_id": re.search(r"/spieler/(\d+)", name_link["href"]).group(1) if name_link else "",
             "position": position_rows[-1].get_text(strip=True) if len(position_rows) > 1 else "",
@@ -89,9 +112,8 @@ def main() -> None:
     seen: set[str] = set()
     with out.open("w", newline="") as handle:
         writer = None
-        for division, path in COMPETITIONS.items():
-            clubs = club_ids(path)
-            print(f"Série {division}: {len(clubs)} clubs", flush=True)
+        for division, clubs in competitions():
+            print(f"{'Série ' + division if division else 'state championship'}: {len(clubs)} clubs", flush=True)
             for club_id, slug in clubs.items():
                 if club_id in seen:
                     continue
