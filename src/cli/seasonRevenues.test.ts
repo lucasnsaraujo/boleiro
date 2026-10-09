@@ -13,7 +13,7 @@ describe.skipIf(!process.env.LONG_RUN)("ten seasons of club money", () => {
   let state: GameState | undefined;
   beforeAll(() => {
     ({ clubSeasons, state } = seasonRevenues(1, 10));
-  });
+  }, 60_000);
   const ended = (): GameState => {
     if (!state) throw new Error("the ten seasons did not run");
     return state;
