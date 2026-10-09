@@ -87,7 +87,7 @@ describe("club finances across a season change", () => {
     const loaded = loadGame(saveGame(after));
     expect(loaded).toEqual(after);
     expect(playUntil(loaded, "2027-02-02").events).toEqual(playUntil(after, "2027-02-02").events);
-  });
+  }, 20_000); // the January window's market days make this month twice the work of a quiet one
 
   it("refuses a save without finances", () => {
     const withoutFinances = Object.fromEntries(Object.entries(after).filter(([key]) => key !== "finances"));

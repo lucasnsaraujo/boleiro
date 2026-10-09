@@ -31,9 +31,16 @@ function withStrength(state: GameState, clubId: string, strength: number): GameS
   return { ...state, players };
 }
 
-/** The test day with the host certain to lose at home. */
+/**
+ * The test day with the host certain to lose at home. The day's other games are left out, so its
+ * rivals' results (which move fan mood too) cannot push the host across a threshold either way.
+ */
+const onlyHostGame = (state: GameState): GameState => ({
+  ...state,
+  fixtures: state.fixtures.filter((f) => f.date !== state.date || f.result || f.id === game.id),
+});
 const losing = (mood: Partial<ClubMood>, rngState = leagueDay.rngState) =>
-  withMood({ ...withStrength(leagueDay, host, 1), rngState }, host, mood);
+  withMood({ ...withStrength(onlyHostGame(leagueDay), host, 1), rngState }, host, mood);
 
 const ofType = <T extends DayEvent["type"]>(events: DayEvent[], type: T) =>
   events.filter((e): e is Extract<DayEvent, { type: T }> => e.type === type);

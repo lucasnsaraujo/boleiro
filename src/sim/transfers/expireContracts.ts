@@ -30,8 +30,8 @@ export function expireContracts(state: GameState, random: () => number): { state
   const stale = Object.values(state.market.freeAgents).filter((p) => p.contractUntil < staleBefore);
   if (!expired.length && !stale.length) return { state, events: [] };
   const events: (PlayerMoved | ContractRenewed)[] = [];
-  const gone = new Set(stale.map((p) => p.id));
-  const freeAgents = Object.fromEntries(Object.entries(state.market.freeAgents).filter(([id]) => !gone.has(id)));
+  const freeAgents = { ...state.market.freeAgents };
+  for (const p of stale) Reflect.deleteProperty(freeAgents, p.id);
   let next: GameState = { ...state, market: { ...state.market, freeAgents } };
   const squads = new Map<string, SimPlayer[]>();
   for (const p of Object.values(state.players)) squads.set(p.clubId, [...(squads.get(p.clubId) ?? []), p]);
@@ -64,10 +64,9 @@ export function expireContracts(state: GameState, random: () => number): { state
       events.push({ type: "contractRenewed", playerId: player.id, clubId: player.clubId, until, wage: player.wage });
       continue;
     }
-    gone.add(player.id);
+    Reflect.deleteProperty(players, player.id);
     released[player.id] = player;
     events.push({ type: "playerMoved", kind: "released", playerId: player.id, name: player.name, fromClubId: player.clubId, toClubId: null, fee: 0 });
   }
-  const kept = Object.fromEntries(Object.entries(players).filter(([id]) => !gone.has(id)));
-  return { state: { ...next, players: kept, market: { ...next.market, freeAgents: released } }, events };
+  return { state: { ...next, players, market: { ...next.market, freeAgents: released } }, events };
 }

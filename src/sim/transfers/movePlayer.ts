@@ -1,6 +1,7 @@
 import { bookMoney } from "../finances/bookMoney.js";
 import { paySigningCosts } from "../finances/paySigningCosts.js";
 import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
+import { reactToIdolSale } from "../morale/reactToIdolSale.js";
 import { withoutKey } from "./withoutKey.js";
 import type { MoveKind, PlayerMoved } from "./transferEvents.js";
 import type { Loan } from "./transferMarket.js";
@@ -35,7 +36,9 @@ export function movePlayer(state: GameState, transfer: Transfer): { state: GameS
   const player = atClub ?? state.market.freeAgents[playerId] ?? transfer.incoming;
   if (!player) throw new Error(`no player ${playerId}`);
   const fromClubId = atClub ? atClub.clubId : null;
-  let next = state;
+  const isSale = fromClubId !== null && fee > 0 && (kind === "transfer" || kind === "abroad");
+  // Fans react while the player is still in the squad, so they can tell an idol from a reserve.
+  let next = isSale ? reactToIdolSale(state, playerId) : state;
   if (fee > 0 && fromClubId) next = bookMoney(next, fromClubId, { revenue: "playerSales", amount: fee });
   if (fee > 0 && toClubId) next = bookMoney(next, toClubId, { cost: "transferFees", amount: fee });
   const bonusMonths = SIGNING_BONUS_MONTHS[kind];
