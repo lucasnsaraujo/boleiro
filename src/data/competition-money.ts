@@ -14,8 +14,11 @@ export type SerieATv = Sourced & {
 
 export type DivisionTv = Sourced & { perClub: number };
 
-/** `prize` is what a club earns for playing that round, in BRL. */
-export type CupRound = { round: string; prize: number };
+/**
+ * `prize` is what a club earns for playing that round, in BRL. In the early rounds Série C, D and
+ * state-only clubs earn the smaller `prizeLowerDivisions`; when it is null everyone earns `prize`.
+ */
+export type CupRound = { round: string; prize: number; prizeLowerDivisions: number | null };
 
 /** CONMEBOL pays in US dollars; `prize` is `prizeUsd` converted at `usdToBrl.rate`. */
 export type ContinentalStage = { stage: string; prizeUsd: number; prize: number };
@@ -122,6 +125,10 @@ function toCompetitionMoney(json: unknown): CompetitionMoney {
       rounds: list(cup, "rounds", "copaDoBrasil").map((round, i) => ({
         round: text(round, "round", `copaDoBrasil.rounds[${i}]`),
         prize: amount(round, "prize", `copaDoBrasil.rounds[${i}]`),
+        prizeLowerDivisions:
+          field(round, "prizeLowerDivisions", `copaDoBrasil.rounds[${i}]`) === undefined
+            ? null
+            : amount(round, "prizeLowerDivisions", `copaDoBrasil.rounds[${i}]`),
       })),
     },
     libertadores: continental(field(json, "libertadores", ""), "libertadores", usdToBrl.rate),
