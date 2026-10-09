@@ -5,10 +5,12 @@ import type { Condition, PlayerProfile, Trait } from "./playerProfile.js";
 // guess: Transfermarkt has no birth date for 8 of 6,764 players; 26 is the squad median age.
 const UNKNOWN_AGE = 26;
 
-// guess: no public data rates these traits; about one player in five has one, so most have none.
+// guess: no public data rates these traits; about three players in ten have one, so most have none.
+export const AGGRESSIVE_SHARE = 0.1;
 const TRAIT_SHARES: readonly [Trait, number][] = [
   ["injuryProne", 0.08],
   ["poorOnArtificialTurf", 0.1],
+  ["aggressive", AGGRESSIVE_SHARE],
 ];
 
 export function rollTrait(random: () => number): Trait | null {

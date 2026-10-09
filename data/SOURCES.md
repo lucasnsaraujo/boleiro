@@ -38,6 +38,7 @@ How the game uses `age` and `nationality` (`src/sim/players/`): each season a pl
 | `history/sofascore/divisions.csv` (2024) | Sofascore standings of Série A–D (unique-tournaments 325, 390, 1281, 10326), `/api/v1/unique-tournament/{t}/season/{id}/standings/total` | `pipeline/fetch_history.py` |
 | `history/espn/copa-do-brasil.csv`, `brasileirao-serie-b.csv`, `brasileirao-serie-c.csv` | ESPN `site.api.espn.com/apis/site/v2/sports/soccer/{league}/scoreboard?dates={year}`, leagues `bra.copa_do_brazil`, `bra.2`, `bra.3`; no odds | `pipeline/fetch_espn.py` |
 | `history/espn/divisions.csv` | ESPN standings `apis/v2/sports/soccer/{league}/standings?season={year}` for `bra.1`–`bra.3` | `pipeline/fetch_espn.py` |
+| `history/espn/cards.csv` (2024–2025) | ESPN match summaries `site.api.espn.com/apis/site/v2/sports/soccer/{league}/summary?event={id}`, `keyEvents` "Yellow Card" and "Red Card" with their minute, for `bra.1`, `bra.2` and `bra.copa_do_brazil`. ESPN lists no cards for Série C and has no Série D. | `pipeline/fetch_espn_cards.py` |
 
 Notes:
 
@@ -69,7 +70,7 @@ Notes:
 | Copa do Brasil places per state: SP and RJ 6; MG, RS, PR 5; CE, PE, AL, MT, AM, GO, SC, BA, PA 4; others 3 | [Lance](https://www.lance.com.br/futebol-nacional/copa-do-brasil-2026-confira-classificados-formato-e-quando-estreiam-os-times.html). Places go to the best-placed estadual clubs outside Série A. |
 | Série D places from estaduais: two or three per state plus 14 national places by ranking | [Banda B](https://www.bandab.com.br/esporte/futebol/vagas-na-copa-do-brasil-serie-d-o-que-esta-em-jogo-mata-mata-paranaense/amp/), [Bahia Notícias](https://www.bahianoticias.com.br/esportes/noticia/79538-mudanca-na-serie-d-gera-duvida-sobre-vagas-do-baianao-2027-entenda-cenario). Simplified: two per state, leftovers one at a time to each state's next finisher in Copa-places order, so clubs outside the national leagues return only through their estadual. |
 | State championships: one format for all 27 states, groups of up to six (one round each), top 8 (states with 12+ clubs) or top 4 to two-leg knockouts | Spec #2 settles one standard format; group size, qualifiers and legs are `guess`. State games use `CUP_PARAMS` (`guess`: mixed divisions, rested players). The first season seeds estaduais and the Copa from the ranking stand-in (`guess`). |
-| Tie-break order: points, wins, goal difference, goals scored, head-to-head (two clubs only), red cards, yellow cards, draw | [Band](https://www.band.com.br/esportes/brasileirao-criterios-desempate), [TecMundo](https://www.tecmundo.com.br/apostas/409831-brasileirao-2026-formato-datas-vagas-para-libertadores-e-sul-americana.htm). Cards are skipped until they are tracked. |
+| Tie-break order: points, wins, goal difference, goals scored, head-to-head (two clubs only), red cards, yellow cards, draw | [Band](https://www.band.com.br/esportes/brasileirao-criterios-desempate), [TecMundo](https://www.tecmundo.com.br/apostas/409831-brasileirao-2026-formato-datas-vagas-para-libertadores-e-sul-americana.htm). Every competition uses this order. |
 
 ## Morale and organised supporters (`src/sim/morale/`)
 
@@ -117,3 +118,16 @@ How the game uses these files (`src/sim/finances/openingFinances.ts`): each club
 | `matchday.B` | 2025 average crowd about 6,672; tickets R$25–43, stored as R$34 ([Mkt Esportivo](https://www.mktesportivo.com/2025/11/coritiba-tem-a-maior-presenca-nos-estadios-e-remo-registra-a-maior-receita-da-serie-b-2025/)). |
 | `matchday.C` | 2025 crowds about 2,700–2,950 (A União); ticket price derived from reported takings. |
 | `matchday.D` | `guess`: no league-wide figure; 2,000 crowd and R$20 ticket. |
+
+## Cards and suspensions (`src/sim/discipline/`, `src/engine/sendOffRates.ts`)
+
+| Value | Source |
+|---|---|
+| Yellows and reds per side per match, home and away, and the share of reds that are a second yellow: Série A, Série B, Copa do Brasil | `history/espn/cards.csv`, 2024–2025 (760, 760 and 141 matches). Série C and D take Série B's rates and estaduais take the cup's (`guess`). |
+| Red-card minute (mean 68) | Same file: mean minute 68.6 (A), 68.2 (B), 66.6 (cup). |
+| Ten men score at 2/3 of their rate and the opponent at 5/4 for the rest of the match | Vecer, Kopriva & Ichiba (2009), J Quant Anal Sports 5(1), from live odds at the 2006 World Cup and Euro 2008, quoted by [Greenberg (2015)](https://www.nottingham.ac.uk/economics/documents/news/greenberg-2015-significance.pdf), Significance 12(4). A second red on one side applies the factors again (`guess`). |
+| Three yellows in a competition ban the next match; yellows in a match that ends in a red don't count | RGC CBF art. 97, quoted by [Diário do Pará](https://diariodopara.com.br/bola/artilheiro-do-remo-nao-vai-enfrentar-o-coritiba-no-sabado/). |
+| A red card bans the next match of that competition | RGC CBF art. 60, quoted by [FPF-PE](https://www.fpf-pe.com.br/assets/uploads/170837049013.pdf). A second match for half of straight reds stands in for the sports court (`guess`). |
+| Copa do Brasil yellows are cleared once, when the Série A clubs join | [Lance](https://www.lance.com.br/flamengo/flamengo-tera-cartoes-zerados-para-a-final-saiba-o-que-diz-o-regulamento-da-copa-do-brasil.html) (2022: cleared after the second phase, the round before Série A entered). |
+| Estaduais: three yellows per ban, cleared at the knockout stage | `guess`: state federations differ. |
+| Aggressive trait: 10% of players, carded twice as often | `guess`: no public rate. |

@@ -3,6 +3,7 @@ import type { Division } from "../data/players.js";
 import type { Player } from "../engine/match.js";
 import type { Board } from "./coach/boardExpectations.js";
 import type { Coach } from "./coach/coach.js";
+import type { Discipline, MatchCards } from "./discipline/discipline.js";
 import type { ClubMood } from "./morale/clubMood.js";
 import type { PlayerProfile } from "./players/playerProfile.js";
 
@@ -15,6 +16,7 @@ export type MatchResult = {
   homeGoals: number;
   awayGoals: number;
   penaltyWinnerId?: string;
+  cards?: MatchCards;
 };
 
 export type Fixture = {
@@ -149,4 +151,6 @@ export type GameState = {
   coach: Coach;
   /** Each national club's board for the season; state-only clubs have none. */
   boards: Record<string, Board>;
+  /** Yellows and bans per competition; standings read each match's cards from its result. */
+  discipline: Discipline;
 };

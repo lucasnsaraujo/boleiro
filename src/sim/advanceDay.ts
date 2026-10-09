@@ -5,6 +5,11 @@ import { addDays } from "./dates.js";
 import { coachCareerDay } from "./coach/coachCareerDay.js";
 import type { CoachEvent } from "./coach/coachEvent.js";
 import { startCoachSeason } from "./coach/startCoachSeason.js";
+import { CARD_RATES, cardCompetitionOf } from "./discipline/cardRates.js";
+import type { DisciplineEvent } from "./discipline/discipline.js";
+import { countCards, drawCards, sendOffMinutes } from "./discipline/drawCards.js";
+import { recordCards } from "./discipline/recordCards.js";
+import { refuseSuspended, suspendedPlayers } from "./discipline/suspendedPlayers.js";
 import { endSeason } from "./endSeason.js";
 import { closeMonth, type FinanceEvent } from "./finances/closeMonth.js";
 import { payCopaPrizes, type PrizePaid } from "./finances/payCopaPrizes.js";
@@ -35,6 +40,7 @@ export type DayEvent =
   | { type: "seasonEnded"; season: number; outcomes: Record<string, LeagueOutcome> }
   | FinanceEvent
   | PlayerInjured
+  | DisciplineEvent
   | PlayerRetired
   | YouthPromoted
   | PrizePaid
@@ -74,13 +80,19 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   const squad = squadsOf(state);
   const coachLineup = coachLineupOf(state, decisions);
   const playedToday: SimPlayer[] = [];
+  let discipline = state.discipline;
 
   let fixtures = state.fixtures.map((fixture) => {
     if (fixture.date !== state.date || fixture.result) return fixture;
     const competition = state.competitions[fixture.competitionId];
     if (!competition) throw new Error(`fixture ${fixture.id} has no competition ${fixture.competitionId}`);
-    const setup = matchSetup(state, fixture, squad, coachLineup);
-    const score = simulateMatch(setup.home, setup.away, random.next, withoutCrowd(paramsForCompetition(competition), clubMood(state, fixture.homeId)));
+    const suspended = suspendedPlayers(discipline, fixture.competitionId);
+    if (state.coachClubId && [fixture.homeId, fixture.awayId].includes(state.coachClubId)) refuseSuspended(coachLineup ?? [], suspended);
+    const setup = matchSetup(state, fixture, (clubId) => squad(clubId).filter((p) => !suspended.has(p.id)), coachLineup);
+    const bookings = drawCards(setup.homeLineup, setup.awayLineup, CARD_RATES[cardCompetitionOf(competition)], random.next);
+    const params = withoutCrowd(paramsForCompetition(competition), clubMood(state, fixture.homeId));
+    const goals = simulateMatch(setup.home, setup.away, random.next, params, sendOffMinutes(bookings, fixture.homeId));
+    const score = { ...goals, cards: countCards(bookings, fixture.homeId) };
     let played: Fixture = { ...fixture, result: score };
     if (isDecidingLeg(fixture, state.competitions)) {
       const legs = [...state.fixtures.filter((f) => f.competitionId === fixture.competitionId && f.stage === fixture.stage && f.tie === fixture.tie && f.id !== fixture.id), played];
@@ -93,6 +105,9 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
     const load = recordMatchLoad({ ...setup, result: score }, random.next);
     playedToday.push(...load.players);
     events.push(...load.events);
+    const carded = recordCards(discipline, competition, played, bookings, (id) => state.players[id]?.clubId, random.next);
+    discipline = carded.discipline;
+    events.push(...carded.events);
     return played;
   });
 
@@ -110,7 +125,7 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   }
 
   const players = playedToday.length ? { ...state.players, ...Object.fromEntries(playedToday.map((p) => [p.id, p])) } : state.players;
-  let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players };
+  let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
   for (const fixture of played) next = recordMatchFinances(next, fixture);
   const prizes = payCopaPrizes(next, played);
@@ -131,5 +146,7 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   const coachRandom = randomStream(ended.state.rngState);
   const started = startCoachSeason(ended.state, Object.values(ended.outcomes), coachRandom.next);
   events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...developed.events, ...started.events);
-  return { state: { ...started.state, rngState: coachRandom.state() }, events };
+  // Bans still pending when a competition ends lapse with it.
+  const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
+  return { state: { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() }, events };
 }

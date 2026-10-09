@@ -59,7 +59,7 @@ describe("organised supporters", () => {
     expect(clubMood(state, host).squad).toBeLessThan(clubMood(calmLoss, host).squad - 5);
   });
 
-  const violentDays = Array.from({ length: 80 }, (_, seed) => {
+  const violentDays = Array.from({ length: 160 }, (_, seed) => {
     const before = losing({ fans: 10, supporters: "protest" }, seed);
     return { before, ...advanceDay(before, {}) };
   });

@@ -1,3 +1,4 @@
+import type { CardCount } from "./discipline/discipline.js";
 import type { Fixture } from "./gameState.js";
 
 export type StandingRow = {
@@ -10,14 +11,18 @@ export type StandingRow = {
   goalsAgainst: number;
   goalDifference: number;
   points: number;
+  redCards: number;
+  yellowCards: number;
 };
 
 const emptyRow = (clubId: string): StandingRow => ({
-  clubId, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0,
+  clubId, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0, redCards: 0, yellowCards: 0,
 });
 
-function record(row: StandingRow, scored: number, conceded: number): void {
+function record(row: StandingRow, scored: number, conceded: number, cards: CardCount | undefined): void {
   row.played++;
+  row.redCards += cards?.reds ?? 0;
+  row.yellowCards += cards?.yellows ?? 0;
   row.goalsFor += scored;
   row.goalsAgainst += conceded;
   row.goalDifference = row.goalsFor - row.goalsAgainst;
@@ -33,8 +38,8 @@ function table(clubIds: readonly string[], fixtures: readonly Fixture[]): Map<st
     if (!result) continue;
     const home = rows.get(homeId);
     const away = rows.get(awayId);
-    if (home) record(home, result.homeGoals, result.awayGoals);
-    if (away) record(away, result.awayGoals, result.homeGoals);
+    if (home) record(home, result.homeGoals, result.awayGoals, result.cards?.home);
+    if (away) record(away, result.awayGoals, result.homeGoals, result.cards?.away);
   }
   return rows;
 }
@@ -54,12 +59,13 @@ function headToHead(a: string, b: string, fixtures: readonly Fixture[]): number 
 // (https://www.band.com.br/esportes/brasileirao-criterios-desempate) and TecMundo
 // (https://www.tecmundo.com.br/apostas/409831-brasileirao-2026-formato-datas-vagas-para-libertadores-e-sul-americana.htm):
 // points, wins, goal difference, goals scored, head-to-head (only between two clubs),
-// fewest red cards, fewest yellow cards, draw. Cards are not tracked yet (#15), so the
-// draw (`drawOrder`, a seeded shuffle made when the competition starts) follows head-to-head.
+// fewest red cards, fewest yellow cards, draw (`drawOrder`, a seeded shuffle made when the
+// competition starts). A second yellow counts as a red only.
 export function standings(clubIds: readonly string[], fixtures: readonly Fixture[], drawOrder: readonly string[]): StandingRow[] {
   const draw = new Map(drawOrder.map((id, index) => [id, index]));
   const byDraw = (a: StandingRow, b: StandingRow) => (draw.get(a.clubId) ?? 0) - (draw.get(b.clubId) ?? 0);
-  const sorted = [...table(clubIds, fixtures).values()].sort((a, b) => byOverall(a, b) || byDraw(a, b));
+  const byCards = (a: StandingRow, b: StandingRow) => a.redCards - b.redCards || a.yellowCards - b.yellowCards;
+  const sorted = [...table(clubIds, fixtures).values()].sort((a, b) => byOverall(a, b) || byCards(a, b) || byDraw(a, b));
   const ranked: StandingRow[] = [];
   for (let start = 0; start < sorted.length; ) {
     let end = start + 1;
@@ -67,7 +73,7 @@ export function standings(clubIds: readonly string[], fixtures: readonly Fixture
     const level = sorted.slice(start, end);
     const [first, second] = level;
     if (level.length === 2 && first && second) {
-      level.sort((a, b) => headToHead(a.clubId, b.clubId, fixtures) || byDraw(a, b));
+      level.sort((a, b) => headToHead(a.clubId, b.clubId, fixtures) || byCards(a, b) || byDraw(a, b));
     }
     ranked.push(...level);
     start = end;

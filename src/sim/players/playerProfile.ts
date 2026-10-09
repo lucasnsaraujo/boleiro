@@ -1,6 +1,6 @@
 import type { IsoDate } from "../gameState.js";
 
-export type Trait = "injuryProne" | "poorOnArtificialTurf";
+export type Trait = "injuryProne" | "poorOnArtificialTurf" | "aggressive";
 
 /** What changes from match to match. Fatigue is on a 0–100+ scale where one full match adds 100. */
 export type Condition = {
