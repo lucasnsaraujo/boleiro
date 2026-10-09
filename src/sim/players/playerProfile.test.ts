@@ -19,6 +19,6 @@ describe("a new game's players", () => {
     const withTrait = players.filter((p) => p.trait !== null).length / players.length;
     expect(withTrait).toBeGreaterThan(0.05);
     expect(withTrait).toBeLessThan(0.35);
-    expect(new Set(players.map((p) => p.trait))).toEqual(new Set([null, "injuryProne", "poorOnArtificialTurf"]));
+    expect(new Set(players.map((p) => p.trait))).toEqual(new Set([null, "injuryProne", "poorOnArtificialTurf", "aggressive"]));
   });
 });

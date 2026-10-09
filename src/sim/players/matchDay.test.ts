@@ -39,7 +39,8 @@ function injuriesOver(state: GameState, seeds: number): { starts: number; injuri
 }
 
 const fresh = withPlayers(matchDay, () => ({ trait: null }));
-const baseline = injuriesOver(fresh, 30);
+// 60 match days (about 13,000 starts) put the band's edges about three standard errors from the study's rate.
+const baseline = injuriesOver(fresh, 60);
 
 describe("injuries", () => {
   it("happen at the UEFA injury study's match rate of 27.5 per 1000 hours", () => {

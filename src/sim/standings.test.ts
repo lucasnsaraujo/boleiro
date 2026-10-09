@@ -46,6 +46,19 @@ describe("standings", () => {
     expect(order(fixtures, ["a", "b"], ["a", "b"])).toEqual(["b", "a"]);
   });
 
+  it("ranks fewer red cards, then fewer yellows, above the draw when clubs are still level", () => {
+    const carded = (fixture: Fixture, home: [number, number], away: [number, number]): Fixture => ({
+      ...fixture,
+      result: fixture.result && { ...fixture.result, cards: { home: { yellows: home[0], reds: home[1] }, away: { yellows: away[0], reds: away[1] } } },
+    });
+    const level = [game("a", "b", 1, 0), game("b", "c", 1, 0), game("c", "a", 1, 0)];
+    const [ab, bc, ca] = level;
+    if (!ab || !bc || !ca) throw new Error("missing game");
+    expect(order([carded(ab, [5, 0], [0, 0]), carded(bc, [0, 1], [0, 0]), ca], ["a", "b", "c"], ["b", "a", "c"])).toEqual(["c", "a", "b"]);
+    const pair = [carded(game("a", "b", 1, 1), [3, 0], [1, 0])];
+    expect(order(pair, ["a", "b"], ["a", "b"])).toEqual(["b", "a"]);
+  });
+
   it("skips head-to-head and falls back to the draw when three clubs are level", () => {
     const fixtures = [game("a", "b", 1, 0), game("b", "c", 1, 0), game("c", "a", 1, 0)];
     expect(order(fixtures, ["a", "b", "c"], ["c", "a", "b"])).toEqual(["c", "a", "b"]);

@@ -3,8 +3,11 @@ import { simulateMatch } from "../engine/match.js";
 import { paramsForDivision } from "../engine/paramsForDivision.js";
 import { randomStream } from "../engine/random.js";
 import { advanceDay } from "./advanceDay.js";
+import { CARD_RATES } from "./discipline/cardRates.js";
+import { countCards, drawCards, sendOffMinutes } from "./discipline/drawCards.js";
 import type { Fixture, GameState } from "./gameState.js";
 import { loadNewGame } from "./loadNewGame.js";
+import { pickMatchLineup } from "./players/pickMatchLineup.js";
 
 const start = loadNewGame(11, { coachClubId: "flamengo-rj" });
 
@@ -39,11 +42,18 @@ describe("advanceDay", () => {
       const competition = reached.competitions[f.competitionId];
       return f.date === reached.date && !(competition?.kind === "league" && competition.division === division);
     };
-    const before = { ...reached, players: start.players, fixtures: reached.fixtures.filter((f) => !isOtherLeagueToday(f)) };
+    // Fresh players and moods, so the engine sees each player's plain strength.
+    const before = { ...reached, players: start.players, mood: start.mood, fixtures: reached.fixtures.filter((f) => !isOtherLeagueToday(f)) };
     const first = before.fixtures.find((f) => f.date === before.date);
-    const team = (clubId: string) => ({ name: clubId, players: Object.values(before.players).filter((p) => p.clubId === clubId) });
-    const expected = simulateMatch(team(first?.homeId ?? ""), team(first?.awayId ?? ""), randomStream(before.rngState).next, paramsForDivision(division));
-    const played = advanceDay(before, {}).state.fixtures.find((f) => f.id === first?.id);
+    if (!first) throw new Error(`no Série ${division} game today`);
+    const squad = (clubId: string) => Object.values(before.players).filter((p) => p.clubId === clubId);
+    const team = (clubId: string) => ({ name: clubId, players: squad(clubId) });
+    const context = { date: before.date, pitch: before.clubs[first.homeId]?.pitch ?? "natural" };
+    const random = randomStream(before.rngState).next;
+    const bookings = drawCards(pickMatchLineup(squad(first.homeId), context), pickMatchLineup(squad(first.awayId), context), CARD_RATES[division], random);
+    const goals = simulateMatch(team(first.homeId), team(first.awayId), random, paramsForDivision(division), sendOffMinutes(bookings, first.homeId));
+    const expected = { ...goals, cards: countCards(bookings, first.homeId) };
+    const played = advanceDay(before, {}).state.fixtures.find((f) => f.id === first.id);
     expect(played?.result).toEqual(expected);
   });
 

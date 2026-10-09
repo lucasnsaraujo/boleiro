@@ -14,6 +14,7 @@ describe("saveGame and loadGame", () => {
   const midSeason = playDays(loadNewGame(3, { coachClubId: "flamengo-rj" }), 200);
 
   it("round-trips the state exactly", () => {
+    expect(Object.values(midSeason.discipline).some((records) => Object.values(records).some((r) => r.bans > 0 || r.yellows > 0))).toBe(true);
     expect(loadGame(saveGame(midSeason))).toStrictEqual(midSeason);
   });
 

@@ -1,3 +1,5 @@
+import { NO_SEND_OFFS, sendOffRates, type SendOffs } from "./sendOffRates.js";
+
 export type PositionGroup = "GK" | "DEF" | "MID" | "ATT";
 
 export type Player = {
@@ -96,11 +98,12 @@ function lowScoreAdjustment(h: number, a: number, lh: number, la: number, rho: n
   return 1;
 }
 
-function scoreGrid(home: Team, away: Team, params: EngineParams): { grid: number[][]; lh: number; la: number } {
+function scoreGrid(home: Team, away: Team, params: EngineParams, sendOffs: SendOffs): { grid: number[][]; lh: number; la: number } {
   const h = teamRatings(home);
   const a = teamRatings(away);
-  const lh = params.baseGoals * Math.exp(params.homeAdvantage + params.strengthImpact * saturate(h.attack - a.defense, params.gapSaturation));
-  const la = params.baseGoals * Math.exp(params.strengthImpact * saturate(a.attack - h.defense, params.gapSaturation));
+  const rates = sendOffRates(sendOffs);
+  const lh = rates.home * params.baseGoals * Math.exp(params.homeAdvantage + params.strengthImpact * saturate(h.attack - a.defense, params.gapSaturation));
+  const la = rates.away * params.baseGoals * Math.exp(params.strengthImpact * saturate(a.attack - h.defense, params.gapSaturation));
   const grid: number[][] = [];
   let total = 0;
   for (let hg = 0; hg <= MAX_GOALS; hg++) {
@@ -116,12 +119,12 @@ function scoreGrid(home: Team, away: Team, params: EngineParams): { grid: number
 }
 
 /** Probability of each final score: [home goals][away goals], up to MAX_GOALS (10) each. */
-export function scoreDistribution(home: Team, away: Team, params: EngineParams = CALIBRATED): number[][] {
-  return scoreGrid(home, away, params).grid;
+export function scoreDistribution(home: Team, away: Team, params: EngineParams = CALIBRATED, sendOffs: SendOffs = NO_SEND_OFFS): number[][] {
+  return scoreGrid(home, away, params, sendOffs).grid;
 }
 
-export function matchOdds(home: Team, away: Team, params: EngineParams = CALIBRATED): MatchOdds {
-  const { grid, lh, la } = scoreGrid(home, away, params);
+export function matchOdds(home: Team, away: Team, params: EngineParams = CALIBRATED, sendOffs: SendOffs = NO_SEND_OFFS): MatchOdds {
+  const { grid, lh, la } = scoreGrid(home, away, params, sendOffs);
   const odds = { home: 0, draw: 0, away: 0, expectedHomeGoals: lh, expectedAwayGoals: la };
   grid.forEach((row, hg) =>
     row.forEach((p, ag) => {
@@ -133,8 +136,15 @@ export function matchOdds(home: Team, away: Team, params: EngineParams = CALIBRA
   return odds;
 }
 
-export function simulateMatch(home: Team, away: Team, random: () => number, params: EngineParams = CALIBRATED): Score {
-  const { grid } = scoreGrid(home, away, params);
+/** One final score drawn from the score distribution; `sendOffs` are drawn by the caller before kick-off. */
+export function simulateMatch(
+  home: Team,
+  away: Team,
+  random: () => number,
+  params: EngineParams = CALIBRATED,
+  sendOffs: SendOffs = NO_SEND_OFFS,
+): Score {
+  const { grid } = scoreGrid(home, away, params, sendOffs);
   let roll = random();
   for (let hg = 0; hg <= MAX_GOALS; hg++) {
     for (let ag = 0; ag <= MAX_GOALS; ag++) {

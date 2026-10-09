@@ -59,5 +59,6 @@ export function newGame(
     economy,
     finances,
     mood: Object.fromEntries(clubs.map((club) => [club.id, NEUTRAL_MOOD])),
+    discipline: {},
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
 }
