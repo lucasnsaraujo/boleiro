@@ -1,0 +1,52 @@
+import { describe, expect, it } from "vitest";
+import { advanceDay } from "./advanceDay.js";
+import type { GameState } from "./gameState.js";
+import { loadNewGame } from "./loadNewGame.js";
+
+const start = loadNewGame(11, { coachClubId: "flamengo-rj" });
+
+function advanceTo(state: GameState, date: string): GameState {
+  let current = state;
+  while (current.date < date) current = advanceDay(current, {}).state;
+  return current;
+}
+
+describe("advanceDay", () => {
+  it("plays only the fixtures dated today and moves to the next day", () => {
+    const firstDate = start.calendar.leagueDates.A[0] ?? "";
+    const before = advanceTo(start, firstDate);
+    const { state, events } = advanceDay(before, {});
+    const today = before.fixtures.filter((f) => f.date === firstDate);
+    expect(events.filter((e) => e.type === "matchPlayed")).toHaveLength(today.length);
+    expect(state.fixtures.filter((f) => f.result).map((f) => f.id)).toEqual(today.map((f) => f.id));
+    expect(state.date > before.date).toBe(true);
+  });
+
+  it("does not change the state it is given", () => {
+    const before = advanceTo(start, start.calendar.leagueDates.A[0] ?? "");
+    const snapshot = JSON.stringify(before);
+    advanceDay(before, {});
+    expect(JSON.stringify(before)).toBe(snapshot);
+  });
+
+  it("refuses a coach lineup with players from another club", () => {
+    const before = advanceTo(start, start.calendar.leagueDates.A[0] ?? "");
+    const outsider = Object.values(before.players).find((p) => p.clubId !== "flamengo-rj");
+    expect(() => advanceDay(before, { lineup: [outsider?.id ?? ""] })).toThrow();
+  });
+
+  it("plays the coach's chosen lineup instead of the automatic one", () => {
+    const firstDate = start.calendar.leagueDates.A[0] ?? "";
+    const before = advanceTo(start, firstDate);
+    const squad = Object.values(before.players).filter((p) => p.clubId === "flamengo-rj");
+    const weakest = [...squad].sort((a, b) => a.strength - b.strength).slice(0, 11).map((p) => p.id);
+    const goalDifference = (lineup: string[] | undefined) =>
+      Array.from({ length: 40 }, (_, seed) => {
+        const { state } = advanceDay({ ...before, rngState: seed }, lineup ? { lineup } : {});
+        const game = state.fixtures.find((f) => f.date === firstDate && [f.homeId, f.awayId].includes("flamengo-rj"));
+        const diff = (game?.result?.homeGoals ?? 0) - (game?.result?.awayGoals ?? 0);
+        return game?.homeId === "flamengo-rj" ? diff : -diff;
+      }).reduce((sum, d) => sum + d, 0);
+    expect(goalDifference(weakest)).toBeLessThan(goalDifference(undefined));
+  });
+});
