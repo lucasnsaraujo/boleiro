@@ -4,11 +4,14 @@ import type { GameState } from "../gameState.js";
 export function wageBillsOf(state: Pick<GameState, "players" | "market">): Map<string, number> {
   const bills = new Map<string, number>();
   const add = (clubId: string, amount: number) => bills.set(clubId, (bills.get(clubId) ?? 0) + amount);
-  for (const player of Object.values(state.players)) {
-    const loan = state.market.loans[player.id];
-    const lenderShare = loan ? Math.round(player.wage * loan.lenderWageShare) : 0;
-    add(player.clubId, player.wage - lenderShare);
-    if (loan && lenderShare) add(loan.fromClubId, lenderShare);
+  for (const player of Object.values(state.players)) add(player.clubId, player.wage);
+  // Loans are few, so they are settled after the full pass instead of looked up for every player.
+  for (const [id, loan] of Object.entries(state.market.loans)) {
+    const player = state.players[id];
+    const lenderShare = player ? Math.round(player.wage * loan.lenderWageShare) : 0;
+    if (!player || !lenderShare) continue;
+    add(player.clubId, -lenderShare);
+    add(loan.fromClubId, lenderShare);
   }
   return bills;
 }
