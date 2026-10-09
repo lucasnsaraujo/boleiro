@@ -110,7 +110,8 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
       const { seasonMinutes, seasonPoints } = p.condition;
       const minutes = MINUTES_EFFECT * (seasonMinutes / mostMinutes - averageShare);
       const form = seasonMinutes >= FORM_MIN_MINUTES ? FORM_EFFECT * ((seasonPoints * 90) / seasonMinutes - AVERAGE_POINTS_PER_GAME) : 0;
-      const target = levelOf(clubId) + ageOffset(p.age);
+      // A loaned player goes for minutes, not to settle at the borrower's level: he drifts toward his own club's.
+      const target = levelOf(state.market.loans[p.id]?.fromClubId ?? clubId) + ageOffset(p.age);
       const drift = ageOffset(p.age + 1) - ageOffset(p.age) + PULL_TO_CLUB_LEVEL * (target - p.strength);
       const strength = clamp(p.strength + drift + minutes + form + SEASON_NOISE_SD * normal(random.next));
       if (random.next() < retirementChance(p.age)) {

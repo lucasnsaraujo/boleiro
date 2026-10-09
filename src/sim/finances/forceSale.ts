@@ -1,6 +1,6 @@
 import { pickLineup } from "../../engine/match.js";
 import type { GameState, Tier } from "../gameState.js";
-import { movePlayer } from "../transfers/movePlayer.js";
+import { movePlayer, openDraft } from "../transfers/movePlayer.js";
 import { valuePlayer } from "../transfers/valuePlayer.js";
 import { projectedRevenue } from "./setBoardBudget.js";
 import { tierOf } from "./tierOf.js";
@@ -38,7 +38,7 @@ export function forceSale(state: GameState, clubId: string, random: () => number
     .sort();
   const buyerId = buyers.length ? (buyers[Math.floor(random() * buyers.length)] ?? null) : null;
   return {
-    state: movePlayer(state, { playerId: player.id, kind: buyerId ? "transfer" : "abroad", toClubId: buyerId, fee }).state,
+    state: movePlayer(openDraft(state), { playerId: player.id, kind: buyerId ? "transfer" : "abroad", toClubId: buyerId, fee }).state,
     sale: { type: "forcedSale", clubId, playerId: player.id, buyerId, fee },
   };
 }

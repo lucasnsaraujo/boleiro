@@ -58,7 +58,7 @@ export function lendYoungPlayers(state: GameState, random: () => number): { stat
   for (const lenderId of Object.keys(state.finances).sort()) {
     if (lenderId === state.coachClubId || RANK[view.tier(lenderId)] < RANK.B || random() >= LENDS_CHANCE) continue;
     const squad = view.squad(lenderId);
-    const young = squad.filter((p) => isLoanable(p, squad) && !next.market.loans[p.id] && !next.market.preContracts[p.id]);
+    const young = squad.filter((p) => p.age <= LOAN_MAX_AGE && !next.market.loans[p.id] && !next.market.preContracts[p.id] && isLoanable(p, squad));
     const player = young[Math.floor(random() * young.length)];
     if (!player) continue;
     const start = Math.floor(random() * borrowers.length);

@@ -2,7 +2,6 @@ import { bookMoney } from "../finances/bookMoney.js";
 import { paySigningCosts } from "../finances/paySigningCosts.js";
 import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
 import { reactToIdolSale } from "../morale/reactToIdolSale.js";
-import { withoutKey } from "./withoutKey.js";
 import type { MoveKind, PlayerMoved } from "./transferEvents.js";
 import type { Loan } from "./transferMarket.js";
 
@@ -29,7 +28,23 @@ const AGENT_SHARE_OF_PAY = 0.03;
 
 const monthsOf = (from: IsoDate, until: IsoDate) => Math.max(1, Math.round((Date.parse(until) - Date.parse(from)) / (30.4 * 86_400_000)));
 
-/** Moves a player, books the fee and signing costs, and sets his new contract and arrival day. */
+/**
+ * A copy of the state whose players and market maps can be edited in place. Copying them once per
+ * market day instead of once per move keeps a busy window day cheap.
+ */
+export function openDraft(state: GameState): GameState {
+  const { market } = state;
+  return {
+    ...state,
+    players: { ...state.players },
+    market: { ...market, freeAgents: { ...market.freeAgents }, preContracts: { ...market.preContracts }, loans: { ...market.loans } },
+  };
+}
+
+/**
+ * Moves a player, books the fee and signing costs, and sets his new contract and arrival day.
+ * `state` must be a draft (openDraft): its players and market maps are changed in place.
+ */
 export function movePlayer(state: GameState, transfer: Transfer): { state: GameState; event: PlayerMoved } {
   const { playerId, kind, toClubId, fee, contract, loan } = transfer;
   const atClub = state.players[playerId];
@@ -53,11 +68,13 @@ export function movePlayer(state: GameState, transfer: Transfer): { state: GameS
     }
   }
 
-  const players = withoutKey(next.players, playerId);
-  const freeAgents = withoutKey(next.market.freeAgents, playerId);
-  const preContracts = withoutKey(next.market.preContracts, playerId);
-  const loans = withoutKey(next.market.loans, playerId);
-  if (kind === "released") freeAgents[playerId] = player;
+  // The draft's own maps are edited in place; see openDraft.
+  const { players, market } = next;
+  Reflect.deleteProperty(players, playerId);
+  Reflect.deleteProperty(market.freeAgents, playerId);
+  Reflect.deleteProperty(market.preContracts, playerId);
+  Reflect.deleteProperty(market.loans, playerId);
+  if (kind === "released") market.freeAgents[playerId] = player;
   else if (toClubId) {
     players[playerId] = {
       ...player,
@@ -67,7 +84,6 @@ export function movePlayer(state: GameState, transfer: Transfer): { state: GameS
       condition: { ...player.condition, arrivedOn: state.date },
     };
   }
-  if (loan) loans[playerId] = loan;
-  next = { ...next, players, market: { ...next.market, freeAgents, preContracts, loans } };
+  if (loan) market.loans[playerId] = loan;
   return { state: next, event: { type: "playerMoved", kind, playerId, name: player.name, fromClubId, toClubId, fee } };
 }

@@ -4,8 +4,9 @@ import type { CoachRequest } from "./coachRequest.js";
 import { decideCoachRequest } from "./decideCoachRequest.js";
 import { driftExchangeRate } from "./driftExchangeRate.js";
 import { europeBids } from "./europeBids.js";
-import { expireContracts } from "./expireContracts.js";
+import { expireContracts, hasExpiries } from "./expireContracts.js";
 import { lendYoungPlayers, returnLoans } from "./loans.js";
+import { openDraft } from "./movePlayer.js";
 import { signFreeAgents } from "./signFreeAgents.js";
 import { signFromAbroad } from "./signFromAbroad.js";
 import { tradeBetweenClubs } from "./tradeBetweenClubs.js";
@@ -23,10 +24,13 @@ export function runTransferDay(state: GameState, requests: readonly CoachRequest
   const random = randomStream(state.market.rngState);
   let serial = 0;
   const nextId = () => `t${state.date}-${serial++}`;
-  const steps: Step[] = [(s) => returnLoans(s), expireContracts];
+  const steps: Step[] = [];
+  if (Object.values(state.market.loans).some((loan) => loan.until < state.date)) steps.push((s) => returnLoans(s));
+  if (hasExpiries(state)) steps.push(expireContracts);
   for (const request of requests) steps.push((s, r) => decideCoachRequest(s, request, r));
   if (isMarketDay(state.date)) steps.push(europeBids, tradeBetweenClubs, (s, r) => signFromAbroad(s, r, nextId), lendYoungPlayers, signFreeAgents);
-  let next = state;
+  // Most days nothing moves; the draft (a copy of every player) is only made when something can.
+  let next = steps.length ? openDraft(state) : state;
   const events: TransferEvent[] = [];
   for (const step of steps) {
     const done = step(next, random.next);

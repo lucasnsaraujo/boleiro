@@ -3,7 +3,7 @@ import { advanceDay, type DayEvent } from "../advanceDay.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
-import { clubMood, type ClubMood } from "./clubMood.js";
+import { clubMood, NEUTRAL_MOOD, type ClubMood } from "./clubMood.js";
 
 const start = loadNewGame(7, { coachClubId: null });
 
@@ -39,8 +39,9 @@ const onlyHostGame = (state: GameState): GameState => ({
   ...state,
   fixtures: state.fixtures.filter((f) => f.date !== state.date || f.result || f.id === game.id),
 });
+// The host starts from a neutral mood, so January's sales (which upset fans) don't decide the test.
 const losing = (mood: Partial<ClubMood>, rngState = leagueDay.rngState) =>
-  withMood({ ...withStrength(onlyHostGame(leagueDay), host, 1), rngState }, host, mood);
+  withMood({ ...withStrength(onlyHostGame(leagueDay), host, 1), rngState }, host, { ...NEUTRAL_MOOD, ...mood });
 
 const ofType = <T extends DayEvent["type"]>(events: DayEvent[], type: T) =>
   events.filter((e): e is Extract<DayEvent, { type: T }> => e.type === type);

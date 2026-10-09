@@ -1,24 +1,21 @@
-import { pickLineup, type PositionGroup } from "../../engine/match.js";
+import type { PositionGroup } from "../../engine/match.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { boardRefusal } from "./boardRefusal.js";
 import { contractEnd } from "./expireContracts.js";
 import { marketView } from "./marketView.js";
 import { movePlayer } from "./movePlayer.js";
+import { REPLACEMENT_BAND, SQUAD_TARGET, squadNeeds } from "./squadNeeds.js";
 import { MIN_SQUAD } from "./tradeBetweenClubs.js";
 import type { PlayerMoved } from "./transferEvents.js";
-import { goingRate } from "./wageDemand.js";
+import { wageRateOf } from "./wageDemand.js";
 import { willingToJoin } from "./willingToJoin.js";
 
-// guess: AI clubs top their squads up to 23 with free agents, close to the 2026 average of 24.
-const TARGET_SQUAD = 23;
-// guess: a club tries up to fifteen free agents a market day, from 3 above to 8 below its average starter.
+// guess: a club tries up to fifteen free agents a market day.
 const TRIES = 15;
-const LEVEL_RANGE = { above: 3, below: 8 };
-const SHAPE: Record<PositionGroup, number> = { GK: 3, DEF: 8, MID: 8, ATT: 5 };
 const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
 
 /**
- * One market day of AI clubs below their target squad signing free agents at the club's going rate,
+ * One market day of AI clubs below their usual squad size signing free agents near their level at the club's going rate,
  * no fee, within board limits.
  */
 export function signFreeAgents(state: GameState, random: () => number): { state: GameState; events: PlayerMoved[] } {
@@ -35,17 +32,17 @@ export function signFreeAgents(state: GameState, random: () => number): { state:
     const club = next.clubs[clubId];
     const finance = next.finances[clubId];
     if (!club || !finance) continue;
-    for (let size = view.squad(clubId).length; size < TARGET_SQUAD; size++) {
+    for (let size = view.squad(clubId).length; size < SQUAD_TARGET[view.tier(clubId)]; size++) {
       const squad = view.squad(clubId);
-      const count = (g: PositionGroup) => squad.filter((p) => p.group === g).length / SHAPE[g];
-      const group = GROUPS.reduce((a, b) => (count(b) < count(a) ? b : a));
+      const { level, thinnest } = squadNeeds(squad, view.tier(clubId));
+      const rate = wageRateOf(squad);
       const medianWage = [...squad.map((p) => p.wage)].sort((a, b) => a - b)[squad.length >> 1] ?? 0;
-      const level = pickLineup([...squad]).reduce((sum, p) => sum + p.strength, 0) / 11 || 0;
-      const candidates = (byGroup.get(group) ?? [])
-        .filter((p) => !signed.has(p.id) && p.strength <= level + LEVEL_RANGE.above && p.strength >= level - LEVEL_RANGE.below)
+      // Only free agents near the club's level; below that it waits for its own youth.
+      const candidates = (byGroup.get(thinnest) ?? [])
+        .filter((p) => !signed.has(p.id) && p.strength <= level + REPLACEMENT_BAND.above && p.strength >= level - REPLACEMENT_BAND.below)
         .slice(0, TRIES);
       const signing = candidates.find((p: SimPlayer) => {
-        const wage = Math.max(1, goingRate(p.strength, squad));
+        const wage = Math.max(1, rate(p.strength));
         // guess: the board lets a short squad sign a free agent paid no more than its median wage, and
         // a squad too thin to name a matchday squad sign anyone, whatever its limits.
         const filler = squad.length < MIN_SQUAD || wage <= medianWage;
@@ -55,7 +52,7 @@ export function signFreeAgents(state: GameState, random: () => number): { state:
       });
       if (!signing) break;
       signed.add(signing.id);
-      const wage = Math.max(1, goingRate(signing.strength, squad));
+      const wage = Math.max(1, rate(signing.strength));
       const moved = movePlayer(next, { playerId: signing.id, kind: "freeAgent", toClubId: clubId, fee: 0, contract: { wage, until: contractEnd(year, random) } });
       next = moved.state;
       events.push(moved.event);

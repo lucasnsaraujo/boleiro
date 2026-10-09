@@ -151,7 +151,7 @@ describe("loans", () => {
     const isSerieB = coachRich.clubs["sport-pe"]?.division === "B";
     expect(isSerieB).toBe(true);
     const loaned = ask(coachRich, { kind: "loanIn", playerId: reserve.id });
-    expect(loaned.decision.approved).toBe(true);
+    expect(loaned.decision).toMatchObject({ approved: true, reason: null });
     expect(loaned.state.market.loans[reserve.id]?.buyOption).toBeGreaterThan(0);
     const bought = ask(loaned.state, { kind: "sign", playerId: reserve.id });
     expect(bought.decision.approved).toBe(true);

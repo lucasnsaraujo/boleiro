@@ -33,6 +33,10 @@ describe("willingToJoin", () => {
     expect(willingToJoin({ player: { ...brazilian, age: 31 }, from: "abroad", to: big, wage: 100_000 })).toBeGreaterThan(0.4);
   });
 
+  it("makes a player readier to drop a division on loan than for good", () => {
+    expect(willingToJoin(move({ from: "A", to: midB, loan: true }))).toBeGreaterThan(willingToJoin(move({ from: "A", to: midB })) + 0.2);
+  });
+
   it("keeps foreigners away from the lower divisions", () => {
     const argentine = { id: "a1", age: 28, nationalities: ["Argentina"], wage: 50_000 };
     expect(willingToJoin({ player: argentine, from: "abroad", to: small, wage: 50_000 })).toBeLessThan(0.05);

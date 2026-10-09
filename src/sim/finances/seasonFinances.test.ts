@@ -46,10 +46,13 @@ describe("club finances across a season change", () => {
   it("pays the Série A champion a sponsor bonus", () => {
     const champion = outcome("a").championId;
     expect(financeOf(after, champion).month.revenue.sponsorship).toBeGreaterThan(0);
-    // Players joining on pre-contracts on 1 January cost signing money the same day; leave it out.
+    // The December closing (which may repay old debt) and pre-contract arrivals land the same day:
+    // the bonus is what is left of the day's cash change once both are taken out.
+    const closing = events.find((e) => e.type === "monthClosed" && e.clubId === champion);
+    if (closing?.type !== "monthClosed") throw new Error("no closing");
     const { costs, revenue } = financeOf(after, champion).month;
     const transferMoney = revenue.playerSales - costs.transferFees - costs.signingFees - costs.agentFees;
-    expect(financeOf(after, champion).cash - transferMoney).toBeGreaterThan(financeOf(before, champion).cash);
+    expect(financeOf(after, champion).cash - closing.cash - transferMoney).toBe(revenue.sponsorship);
   });
 
   it("files the finished season's books and opens empty ones", () => {

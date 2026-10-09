@@ -10,6 +10,8 @@ export type Move = {
   wage: number;
   /** He has no club and no wage now. */
   unemployed?: boolean;
+  /** A loan: he comes back, so a step down does not count against it. */
+  loan?: boolean;
 };
 
 // No public data measures how willing players are to move, so every weight below is a guess,
@@ -48,11 +50,12 @@ export function ambitionOf(playerId: string): number {
 export const isBrazilian = (nationalities: readonly string[]): boolean => nationalities.length === 0 || nationalities.includes("Brazil");
 
 /** Chance the player agrees to join. */
-export function willingToJoin({ player, from, to, wage, unemployed = false }: Move): number {
+export function willingToJoin({ player, from, to, wage, unemployed = false, loan = false }: Move): number {
   const veteran = player.age >= VETERAN_AGE;
   const ambition = (ambitionOf(player.id) - 0.5) * 2 * AMBITION_SPREAD;
   const rungs = RANK[to.tier] - RANK[from];
-  const step = rungs >= 0 ? rungs * PER_RUNG : rungs * (PER_RUNG + ambition) * (veteran ? VETERAN_DROP_DISCOUNT : 1);
+  // guess: a reserve going on loan for minutes does not weigh the step down; it is temporary.
+  const step = rungs >= 0 || loan ? Math.max(0, rungs) * PER_RUNG : rungs * (PER_RUNG + ambition) * (veteran ? VETERAN_DROP_DISCOUNT : 1);
   const money = PER_LOG_WAGE * (unemployed ? UNEMPLOYED_WAGE_WEIGHT : 1) * Math.log(Math.max(1, wage) / Math.max(1, player.wage));
   const fame = PER_LOG10_FANBASE * Math.log10(Math.max(1, to.fanbase) / MEDIAN_FANBASE);
   const brazilian = isBrazilian(player.nationalities);

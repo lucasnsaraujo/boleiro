@@ -29,10 +29,10 @@ function approve(state: GameState, request: CoachRequest, transfer: Transfer | n
   return { state: moved.state, events: [decided, moved.event, ...extra] };
 }
 
-function isWilling(view: MarketView, state: GameState, player: SimPlayer, clubId: string, wage: number, random: () => number): boolean {
+function isWilling(view: MarketView, state: GameState, player: SimPlayer, clubId: string, wage: number, random: () => number, loan = false): boolean {
   const club = state.clubs[clubId];
   const unemployed = !state.players[player.id];
-  return !!club && random() < willingToJoin({ player, from: view.tier(player.clubId), to: { tier: view.tier(clubId), fanbase: club.fanbase }, wage, unemployed });
+  return !!club && random() < willingToJoin({ player, from: view.tier(player.clubId), to: { tier: view.tier(clubId), fanbase: club.fanbase }, wage, unemployed, loan });
 }
 
 /** The board's answer to one coach request, and the move it makes when it says yes and the player agrees. */
@@ -111,7 +111,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       const share = Math.round(player.wage * (1 - LENDER_WAGE_SHARE));
       const refused = boardRefusal(finance, bill, { upFront: 0, wageChange: share });
       if (refused) return refuse(state, request, refused);
-      if (!isWilling(view, state, player, coachClubId, player.wage, random)) return refuse(state, request, "playerUnwilling");
+      if (!isWilling(view, state, player, coachClubId, player.wage, random, true)) return refuse(state, request, "playerUnwilling");
       const buyOption = Math.round(valuePlayer(player, view.tier(player.clubId), state.date) * state.market.eurBrl * ASKING_PREMIUM);
       const until = loanUntil(state.date);
       return approve(state, request, { playerId: player.id, kind: "loan", toClubId: coachClubId, fee: 0, loan: { fromClubId: player.clubId, until, lenderWageShare: LENDER_WAGE_SHARE, buyOption } });
