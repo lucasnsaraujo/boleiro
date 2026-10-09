@@ -61,6 +61,16 @@ describe("a new game's club finances", () => {
     }
   });
 
+  it("counts the Copa do Brasil prizes a Série A club expects once, inside its 2025 revenue", () => {
+    for (const row of data.clubs) {
+      const finance = state.finances[row.clubId];
+      if (!finance || finance.otherIncome === 0) continue;
+      expect(finance.expectedPrizes, row.clubId).toBeGreaterThan(0);
+      const projected = finance.tv + finance.sponsorship + finance.membership + finance.otherIncome + finance.expectedTickets + finance.expectedPrizes;
+      expect(projected, row.clubId).toBeLessThanOrEqual((row.revenue.total - row.revenue.playerSales) * 1.01);
+    }
+  });
+
   it("sets a transfer budget and a wage cap that grow with revenue", () => {
     const flamengo = state.finances["flamengo-rj"];
     const mirassol = state.finances["mirassol-sp"];

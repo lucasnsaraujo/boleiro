@@ -103,6 +103,21 @@ describe("the Copa do Brasil", () => {
   });
 });
 
+describe("other income across a season change", () => {
+  it("swaps last season's expected Copa prizes for this season's, so a club that misses the cup gets that income back", () => {
+    const stayedStateOnly = Object.keys(ended.finances).filter((id) => ended.clubs[id]?.division === null && next.clubs[id]?.division === null);
+    const changedCupStatus = stayedStateOnly.filter((id) => (ended.finances[id]?.expectedPrizes ?? 0) !== (next.finances[id]?.expectedPrizes ?? 0));
+    expect(changedCupStatus.length).toBeGreaterThan(0);
+    const checked = changedCupStatus.filter((id) => (next.finances[id]?.otherIncome ?? 0) > 0);
+    expect(checked.length).toBeGreaterThan(0);
+    for (const id of checked) {
+      const before = ended.finances[id];
+      const after = next.finances[id];
+      expect((after?.otherIncome ?? 0) + (after?.expectedPrizes ?? 0), id).toBeCloseTo((before?.otherIncome ?? 0) + (before?.expectedPrizes ?? 0), -1);
+    }
+  });
+});
+
 describe("the state championships", () => {
   const championships = statesOf(ended);
 
