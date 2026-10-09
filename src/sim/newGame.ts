@@ -3,6 +3,7 @@ import type { CompetitionMoney } from "../data/competition-money.js";
 import type { SquadPlayer } from "../data/players.js";
 import { randomStream } from "../engine/random.js";
 import { openingCoach } from "./coach/openingCoach.js";
+import { newHistory } from "./history/history.js";
 import { NEUTRAL_MOOD } from "./morale/clubMood.js";
 import { openingFinances, type FinanceData } from "./finances/openingFinances.js";
 import type { GameState, SimPlayer } from "./gameState.js";
@@ -60,5 +61,6 @@ export function newGame(
     finances,
     mood: Object.fromEntries(clubs.map((club) => [club.id, NEUTRAL_MOOD])),
     discipline: {},
+    history: newHistory(season, `${season}-01-01`, careerMode ? null : coachClubId),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
 }

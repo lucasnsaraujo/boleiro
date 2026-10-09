@@ -25,7 +25,7 @@ function withResult(finance: ClubFinance, points: number): ClubFinance {
 }
 
 /** Paying crowd for a home match, from the club's usual crowd, form, opponent, ticket price and fan mood. */
-function attendance(state: GameState, home: ClubFinance, homeId: string, awayId: string): number {
+export function attendance(state: GameState, home: ClubFinance, homeId: string, awayId: string): number {
   const club = state.clubs[homeId];
   const visitor = state.clubs[awayId];
   if (!club) return 0;

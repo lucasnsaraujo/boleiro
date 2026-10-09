@@ -11,6 +11,9 @@ import { countCards, drawCards, sendOffMinutes } from "./discipline/drawCards.js
 import { recordCards } from "./discipline/recordCards.js";
 import { refuseSuspended, suspendedPlayers } from "./discipline/suspendedPlayers.js";
 import { endSeason } from "./endSeason.js";
+import { closeSeasonHistory } from "./history/closeSeasonHistory.js";
+import { recordDayEvents } from "./history/recordDayEvents.js";
+import { recordMatches, type MatchLineups } from "./history/recordMatches.js";
 import { closeMonth, type FinanceEvent } from "./finances/closeMonth.js";
 import { payCopaPrizes, type PrizePaid } from "./finances/payCopaPrizes.js";
 import { recordMatchFinances } from "./finances/recordMatchFinances.js";
@@ -81,6 +84,7 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   const coachLineup = coachLineupOf(state, decisions);
   const playedToday: SimPlayer[] = [];
   let discipline = state.discipline;
+  const lineups: MatchLineups = {};
 
   let fixtures = state.fixtures.map((fixture) => {
     if (fixture.date !== state.date || fixture.result) return fixture;
@@ -102,6 +106,7 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
       }
     }
     events.push({ type: "matchPlayed", fixture: played });
+    lineups[played.id] = { home: setup.homeLineup, away: setup.awayLineup };
     const load = recordMatchLoad({ ...setup, result: score }, random.next);
     playedToday.push(...load.players);
     events.push(...load.events);
@@ -127,6 +132,7 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   const players = playedToday.length ? { ...state.players, ...Object.fromEntries(playedToday.map((p) => [p.id, p])) } : state.players;
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
+  next = recordMatches(next, played, lineups);
   for (const fixture of played) next = recordMatchFinances(next, fixture);
   const prizes = payCopaPrizes(next, played);
   next = prizes.state;
@@ -140,13 +146,13 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
   next = career.state;
   events.push(...career.events);
   next = { ...next, rngState: random.state() };
-  if (next.date.slice(0, 4) === String(state.season)) return { state: next, events };
-  const developed = developPlayers(next);
+  if (next.date.slice(0, 4) === String(state.season)) return { state: recordDayEvents(next, events, state), events };
+  const developed = developPlayers(closeSeasonHistory(next));
   const ended = endSeason(developed.state);
   const coachRandom = randomStream(ended.state.rngState);
   const started = startCoachSeason(ended.state, Object.values(ended.outcomes), coachRandom.next);
   events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...developed.events, ...started.events);
   // Bans still pending when a competition ends lapse with it.
   const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
-  return { state: { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() }, events };
+  return { state: recordDayEvents({ ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() }, events, state), events };
 }

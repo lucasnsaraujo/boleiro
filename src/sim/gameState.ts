@@ -4,6 +4,7 @@ import type { Player } from "../engine/match.js";
 import type { Board } from "./coach/boardExpectations.js";
 import type { Coach } from "./coach/coach.js";
 import type { Discipline, MatchCards } from "./discipline/discipline.js";
+import type { History } from "./history/history.js";
 import type { ClubMood } from "./morale/clubMood.js";
 import type { PlayerProfile } from "./players/playerProfile.js";
 
@@ -153,4 +154,6 @@ export type GameState = {
   boards: Record<string, Board>;
   /** Yellows and bans per competition; standings read each match's cards from its result. */
   discipline: Discipline;
+  /** Champions, records, idols and the coach's career, kept across seasons. */
+  history: History;
 };
