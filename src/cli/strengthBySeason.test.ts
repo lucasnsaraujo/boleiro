@@ -4,12 +4,12 @@ import { strengthBySeason, type StrengthBand } from "./strengthBySeason.js";
 
 const TIERS: readonly Tier[] = ["A", "B", "C", "D"];
 
-// About 9 seconds, so it only runs with LONG_RUN=1 (`pnpm test:long`).
+// About a minute with the transfer market, so it only runs with LONG_RUN=1 (`pnpm test:long`).
 describe.skipIf(!process.env.LONG_RUN)("ten seasons of player strength", () => {
   let bands: StrengthBand[] = [];
   beforeAll(() => {
     ({ bands } = strengthBySeason(1, 10));
-  }, 60_000);
+  }, 300_000);
   const band = (season: number, tier: Tier) => {
     const found = bands.find((b) => b.season === season && b.tier === tier);
     if (!found) throw new Error(`no ${tier} band in ${season}`);

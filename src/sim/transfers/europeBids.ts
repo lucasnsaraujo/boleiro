@@ -1,3 +1,4 @@
+import { addDays } from "../dates.js";
 import type { GameState } from "../gameState.js";
 import { marketView } from "./marketView.js";
 import { movePlayer } from "./movePlayer.js";
@@ -21,6 +22,8 @@ const YOUTH_BONUS = { belowAge: 22, perYear: 0.1 };
 const MARKET_DAYS_PER_WINDOW = 8;
 // guess: European bids land between market value and 60% above it.
 const BID_PREMIUM = { min: 1, spread: 0.6 };
+// guess: Europe does not buy a player in his first year at a Brazilian club.
+const SETTLING_DAYS = 365;
 // guess: Brazilian boards take nine European bids in ten at or above market value.
 const ACCEPT_CHANCE = 0.9;
 
@@ -28,9 +31,11 @@ const ACCEPT_CHANCE = 0.9;
 export function europeBids(state: GameState, random: () => number): { state: GameState; events: (EuropeBid | PlayerMoved)[] } {
   const events: (EuropeBid | PlayerMoved)[] = [];
   const view = marketView(state);
+  const settledBefore = addDays(state.date, -SETTLING_DAYS);
   let next = state;
   const targets = Object.values(state.players)
     .filter((p) => p.age <= MAX_AGE && p.strength >= MIN_STRENGTH && !state.market.loans[p.id])
+    .filter((p) => p.condition.arrivedOn === null || p.condition.arrivedOn < settledBefore)
     .sort((a, b) => a.id.localeCompare(b.id));
   const sold = new Map<string, number>();
   for (const player of targets) {
