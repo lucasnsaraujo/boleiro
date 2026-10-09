@@ -29,10 +29,12 @@ const membersOf = (state: GameState, division: Division) =>
   Object.values(state.clubs).filter((club) => club.division === division).map((club) => club.id);
 
 describe("a full season", () => {
-  const started = performance.now();
+  // CPU time, not wall time: other test files run in parallel processes and would inflate a wall clock.
+  const started = process.cpuUsage();
   const lastDay = playUntil(loadNewGame(2026, { coachClubId: null }), "2026-12-31");
   const { state: next, events } = playUntil(lastDay.state, "2027-01-01");
-  const elapsed = performance.now() - started;
+  const used = process.cpuUsage(started);
+  const elapsed = (used.user + used.system) / 1000;
   const before = lastDay.state;
   const outcomes = events.find((e) => e.type === "seasonEnded");
 
