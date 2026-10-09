@@ -53,3 +53,38 @@ Notes:
 | Série C 2026: 19-round single round robin, quadrangulars of 1/4/5/8 and 2/3/6/7, top 2 promoted, two-leg final, bottom 2 relegated; 24 clubs and 6 relegated from 2027 | [NSC Total](https://www.nsctotal.com.br/?p=7670657), [Diario de Pernambuco](https://www.diariodepernambuco.com.br/esportes-dp/santa-cruz/2025/10/11698141-santa-cruz-na-disputa-entenda-as-mudancas-no-regulamento-da-serie-c.html). The 24-club format (23-round first phase, same quadrangulars) is a `guess`. |
 | Série D 2026: 96 clubs, 16 groups of 6, top 4 to two-leg knockouts, semi-finalists plus two playoff winners among quarter-final losers promoted, last 32 stay in Série D | [CBF](https://www.cbf.com.br/futebol-brasileiro/noticias/campeonato-brasileiro-serie-d/a/cbf-publica-documentos-tecnicos-da-nova-serie-d), [Diario de Pernambuco](https://www.diariodepernambuco.com.br/esportes-dp/nacional/2025/10/11697172-com-as-mudancas-da-cbf-entenda-como-vai-ficar-a-serie-d.html). Regional groups (clubs sorted by state, north to south), knockout seeding (best vs worst) and playoffs on semi-final dates are `guess`. |
 | Tie-break order: points, wins, goal difference, goals scored, head-to-head (two clubs only), red cards, yellow cards, draw | [Band](https://www.band.com.br/esportes/brasileirao-criterios-desempate), [TecMundo](https://www.tecmundo.com.br/apostas/409831-brasileirao-2026-formato-datas-vagas-para-libertadores-e-sul-americana.htm). Cards are skipped until they are tracked. |
+
+## Finances
+
+All money is in BRL (whole reais) unless a column says USD. `basis` is `published` (from the club's accounts or an official table), `estimate` (derived from press reports) or `guess` (no source found). Fetched 2026-10-09.
+
+### finances.csv
+
+One row per Série A 2026 club (`club_id` links to `clubs.csv`), plus `small` / `median` / `large` rows for Série B, C and D (`club_id` empty, `size` set). Each row has its own `source`; `guessed_fields` lists the columns that are guesses inside an otherwise sourced row.
+
+| Column | Source |
+|---|---|
+| Série A, 16 clubs | [EY, Levantamento Financeiro dos Clubes 2025](https://www.ey.com/content/dam/ey-unified-site/ey-com/pt-br/insights/media-entertainment/documents/ey-brasil-relatorio-financeiro-clubes-2025.pdf) (2025 accounts). `broadcasting` is EY's "Direitos de Transmissão e Premiação", so it includes prize money. `sponsorship` is "Receitas Comerciais". `wage_bill` is EY's men's professional payroll share of revenue times revenue. `net_debt` is "Endividamento Líquido"; Corinthians and Grêmio leave out their arena debt. Bahia's net debt is from [Seu Dinheiro](https://www.seudinheiro.com/2026/empresas/quem-sao-os-clubes-mais-quebrados-e-os-com-maior-receita-do-brasil-em-2025-rnda/). |
+| `membership` | Not split out by EY: a guess for every club except Athletico-PR and Coritiba. Where EY's matchday line already held membership (the lines added up to more than the total), matchday and membership were shrunk in proportion to fit the total, and `matchday` is marked as a guess too. |
+| Athletico-PR, Coritiba | 2025 accounts as reported by Banda B and Economic News Brasil, cross-checked with the [Um Dois Esportes revenue ranking](https://www.umdoisesportes.com.br/futebol-brasileiro/ranking-receitas-futebol-brasileiro-posicoes-athletico-coritiba/). Matchday and net debt are guesses; Athletico's sponsorship and wages too. `estimate`. |
+| Remo | 2025 accounts as reported by O Liberal and Diário do Pará: revenue R$82.9M and tickets R$28.2M. Everything else is a guess. `estimate`. |
+| Chapecoense | `guess`. The only figure found is R$42.5M in the Um Dois Esportes ranking, the same number it gives Remo, so it is suspect. |
+| Série B–D rows | `estimate`. TV money from `competition-money.json`. Payrolls from press reports: Série B about R$2.5M a month for a small club (Athletic-MG, Itatiaia) to R$3–3.5M for a large one (Ceará, Sport's 2026 cap); Série C R$1.0–2.5M a month (Retrô, Santa Cruz, Náutico); Série D R$100–400k a month, with the [Joinville 2026 budget](https://jec.com.br/wp-content/uploads/2025/12/20261231-Orcamento_Jec_Campo.pdf-26.pdf) as the large-club reference. Revenue totals and the other lines are scaled from those, listed in `guessed_fields`. |
+
+Remo and Chapecoense played Série B in 2025, so their revenue is below the rest of Série A; Flamengo's passed R$2B. The finance model should add the Série A TV money for the promoted clubs.
+
+### competition-money.json
+
+| Key | Source |
+|---|---|
+| `tv.A` | Libra pool about R$1.17B a year, split 40% equal / 30% performance / 30% audience ([Itatiaia](https://www.itatiaia.com.br/esportes/tv-e-streaming/como-sera-a-divisao-de-cotas-no-acordo-bilionario-entre-libra-e-globo/)). LFU pool about R$1.7B, split 45/30/25 ([Máquina do Esporte](https://maquinadoesporte.com.br/?p=216530)). `shares` is the pool-weighted average of the two. `perClubMin` and `perClubMax` are guesses: per-club amounts are not published. |
+| `tv.B` | R$14.9M per club in 2026 ([Band](https://www.band.com.br/esportes/serie-b-2026-veja-quanto-cada-clube-vai-receber-de-cota-de-tv-202603201612), read from a search summary). CBF also pays travel and referees, not included. |
+| `tv.C` | R$1.55M per club in 2025 (Diário de Pernambuco); 2026 assumed unchanged. |
+| `tv.D` | R$500k per club in 2026 from CBF ([Band](https://www.band.com.br/esportes/cbf-divulga-cotas-financeiras-da-serie-d-de-2026-veja-valores-202603052047)). Later phases add R$100–300k each, not included. |
+| `copaDoBrasil` | CBF 2026 table ([O Povo](https://www.opovo.com.br/esportes/futebol/times/cearenses/2026/02/05/cbf-divulga-cotas-de-premiacao-da-copa-do-brasil-2026-confira.html), Poder360). Phases 1–4 pay Série B clubs `prize` and Série C, D and state clubs `prizeLowerDivisions`. Série A clubs enter at the fifth phase; from there everyone earns the same. |
+| `libertadores`, `sulAmericana` | CONMEBOL 2026 prizes in USD ([Trivela](https://trivela.com.br/america-do-sul/premiacao-libertadores-sul-americana-2026-valores-fases-campeao/); Libertadores preliminary phases via Lance!). `group-win` is per win. |
+| `usdToBrl` | `guess`: 5.5, a round figure near the 2025 average; no 2026 average was fetched. |
+| `matchday.A` | 2025 average paying crowd 25,531 (Flashscore); ticket average R$51.35–53.20 ([Máquina do Esporte](https://maquinadoesporte.com.br/futebol/apesar-de-leve-recuo-no-publico-brasileirao-2025-registra-maior-arrecadacao-do-ultimo-trienio/)). |
+| `matchday.B` | 2025 average crowd about 6,672; tickets R$25–43, stored as R$34 ([Mkt Esportivo](https://www.mktesportivo.com/2025/11/coritiba-tem-a-maior-presenca-nos-estadios-e-remo-registra-a-maior-receita-da-serie-b-2025/)). |
+| `matchday.C` | 2025 crowds about 2,700–2,950 (A União); ticket price derived from reported takings. |
+| `matchday.D` | `guess`: no league-wide figure; 2,000 crowd and R$20 ticket. |

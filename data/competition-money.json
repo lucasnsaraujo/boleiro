@@ -1,0 +1,105 @@
+{
+  "season": 2026,
+  "usdToBrl": {
+    "rate": 5.5,
+    "basis": "guess",
+    "source": "guess: round figure near the 2025 average dollar rate; no 2026 average was fetched"
+  },
+  "tv": {
+    "A": {
+      "totalPool": 2870000000,
+      "shares": { "equal": 0.43, "performance": 0.3, "audience": 0.27 },
+      "perClubMin": 60000000,
+      "perClubMax": 250000000,
+      "basis": "estimate",
+      "source": "Libra pool ~R$1.17B, 40/30/30 (https://www.itatiaia.com.br/esportes/tv-e-streaming/como-sera-a-divisao-de-cotas-no-acordo-bilionario-entre-libra-e-globo/); LFU pool ~R$1.7B, 45/30/25 (https://maquinadoesporte.com.br/?p=216530); shares are the pool-weighted average; per-club min and max are guesses"
+    },
+    "B": {
+      "perClub": 14900000,
+      "basis": "estimate",
+      "source": "Band, Série B 2026 TV money per club (https://www.band.com.br/esportes/serie-b-2026-veja-quanto-cada-clube-vai-receber-de-cota-de-tv-202603201612), read from a search summary"
+    },
+    "C": {
+      "perClub": 1550000,
+      "basis": "estimate",
+      "source": "Diário de Pernambuco, Série C 2025 per-club money (R$1.55M); 2026 assumed unchanged"
+    },
+    "D": {
+      "perClub": 500000,
+      "basis": "published",
+      "source": "CBF Série D 2026 participation money, via Band (https://www.band.com.br/esportes/cbf-divulga-cotas-financeiras-da-serie-d-de-2026-veja-valores-202603052047)"
+    }
+  },
+  "copaDoBrasil": {
+    "basis": "published",
+    "source": "CBF Copa do Brasil 2026 prize table, via O Povo (https://www.opovo.com.br/esportes/futebol/times/cearenses/2026/02/05/cbf-divulga-cotas-de-premiacao-da-copa-do-brasil-2026-confira.html) and Poder360",
+    "rounds": [
+      { "round": "first", "prize": 400000, "prizeLowerDivisions": 400000 },
+      { "round": "second", "prize": 1380000, "prizeLowerDivisions": 830000 },
+      { "round": "third", "prize": 1530000, "prizeLowerDivisions": 950000 },
+      { "round": "fourth", "prize": 1680000, "prizeLowerDivisions": 1070000 },
+      { "round": "fifth", "prize": 2000000 },
+      { "round": "round-of-16", "prize": 3000000 },
+      { "round": "quarter-final", "prize": 4000000 },
+      { "round": "semi-final", "prize": 9000000 },
+      { "round": "runner-up", "prize": 34000000 },
+      { "round": "champion", "prize": 78000000 }
+    ]
+  },
+  "libertadores": {
+    "basis": "published",
+    "source": "CONMEBOL 2026 prize table, via Trivela (https://trivela.com.br/america-do-sul/premiacao-libertadores-sul-americana-2026-valores-fases-campeao/); preliminary phases via Lance!",
+    "stages": [
+      { "stage": "preliminary-1", "prizeUsd": 400000 },
+      { "stage": "preliminary-2", "prizeUsd": 500000 },
+      { "stage": "preliminary-3", "prizeUsd": 600000 },
+      { "stage": "group-stage", "prizeUsd": 1000000 },
+      { "stage": "group-win", "prizeUsd": 340000 },
+      { "stage": "round-of-16", "prizeUsd": 1250000 },
+      { "stage": "quarter-final", "prizeUsd": 1700000 },
+      { "stage": "semi-final", "prizeUsd": 2300000 },
+      { "stage": "runner-up", "prizeUsd": 7000000 },
+      { "stage": "champion", "prizeUsd": 25000000 }
+    ]
+  },
+  "sulAmericana": {
+    "basis": "published",
+    "source": "CONMEBOL 2026 prize table, via Trivela (https://trivela.com.br/america-do-sul/premiacao-libertadores-sul-americana-2026-valores-fases-campeao/)",
+    "stages": [
+      { "stage": "group-stage", "prizeUsd": 300000 },
+      { "stage": "group-win", "prizeUsd": 125000 },
+      { "stage": "knockout-playoff", "prizeUsd": 500000 },
+      { "stage": "round-of-16", "prizeUsd": 600000 },
+      { "stage": "quarter-final", "prizeUsd": 700000 },
+      { "stage": "semi-final", "prizeUsd": 800000 },
+      { "stage": "runner-up", "prizeUsd": 2500000 },
+      { "stage": "champion", "prizeUsd": 10000000 }
+    ]
+  },
+  "matchday": {
+    "A": {
+      "averageAttendance": 25531,
+      "averageTicketPrice": 52,
+      "basis": "published",
+      "source": "2025 paying crowd average from Flashscore; ticket average R$51.35-53.20 from Máquina do Esporte (https://maquinadoesporte.com.br/futebol/apesar-de-leve-recuo-no-publico-brasileirao-2025-registra-maior-arrecadacao-do-ultimo-trienio/)"
+    },
+    "B": {
+      "averageAttendance": 6672,
+      "averageTicketPrice": 34,
+      "basis": "estimate",
+      "source": "2025 crowds and ticket range R$25-43 from Mkt Esportivo (https://www.mktesportivo.com/2025/11/coritiba-tem-a-maior-presenca-nos-estadios-e-remo-registra-a-maior-receita-da-serie-b-2025/); price is the middle of the range"
+    },
+    "C": {
+      "averageAttendance": 2800,
+      "averageTicketPrice": 18,
+      "basis": "estimate",
+      "source": "A União, 2025 Série C crowds of about 2,700-2,950; ticket price derived from reported takings"
+    },
+    "D": {
+      "averageAttendance": 2000,
+      "averageTicketPrice": 20,
+      "basis": "guess",
+      "source": "guess: no league-wide 2025 Série D figure found; middle of 1,500-2,500 crowds and R$15-35 tickets seen for single clubs"
+    }
+  }
+}
