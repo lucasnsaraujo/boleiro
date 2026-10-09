@@ -115,6 +115,11 @@ function scoreGrid(home: Team, away: Team, params: EngineParams): { grid: number
   return { grid: grid.map((row) => row.map((p) => p / total)), lh, la };
 }
 
+/** Probability of each final score: [home goals][away goals], up to MAX_GOALS (10) each. */
+export function scoreDistribution(home: Team, away: Team, params: EngineParams = CALIBRATED): number[][] {
+  return scoreGrid(home, away, params).grid;
+}
+
 export function matchOdds(home: Team, away: Team, params: EngineParams = CALIBRATED): MatchOdds {
   const { grid, lh, la } = scoreGrid(home, away, params);
   const odds = { home: 0, draw: 0, away: 0, expectedHomeGoals: lh, expectedAwayGoals: la };
