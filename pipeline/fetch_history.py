@@ -1,4 +1,4 @@
-"""Rebuild data/history/ from Sofascore: Copa do Brasil and Série B–D results, closing 1X2 odds,
+"""Rebuild data/history/sofascore/ from Sofascore: Copa do Brasil and Série B–D results, closing 1X2 odds,
 and the division (A–D) every team played each year.
 
 Sofascore blocks plain HTTP clients, so every request runs as fetch() inside a headless
@@ -8,7 +8,10 @@ only fetches what is missing; delete a cache file to refresh it.
 Odds are one request per match, and Sofascore's rate limit makes that too slow for ~1,100 league
 matches a year, so only the cup gets odds; the odds columns of Série B–D stay empty.
 
-Usage: fetch_history.py [--first 2015] [--last 2026]
+Sofascore's rate limit blocked this machine for over an hour after the 2024 fetch, so the committed
+files hold 2024 only and the other seasons come from ESPN (pipeline/fetch_espn.py).
+
+Usage: fetch_history.py [--first 2024] [--last 2024]
 """
 from __future__ import annotations
 
@@ -22,13 +25,15 @@ from fractions import Fraction
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from team_key import team_key
+
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "data" / "history"
+OUT = ROOT / "data" / "history" / "sofascore"
 CACHE = ROOT / "data" / "history_cache"
 TOURNAMENTS = {"copa-do-brasil": 373, "A": 325, "B": 390, "C": 1281, "D": 10326}
 RESULT_FILES = {"copa-do-brasil": "copa-do-brasil.csv", "B": "brasileirao-serie-b.csv", "C": "brasileirao-serie-c.csv", "D": "brasileirao-serie-d.csv"}
-RESULT_COLUMNS = ["season", "date", "round", "event_id", "home_id", "home", "away_id", "away", "home_goals", "away_goals",
-                  "penalty_winner", "odds_home", "odds_draw", "odds_away"]
+RESULT_COLUMNS = ["season", "date", "round", "event_id", "home_id", "home", "home_key", "away_id", "away", "away_key",
+                  "home_goals", "away_goals", "penalty_winner", "odds_home", "odds_draw", "odds_away"]
 BRAZIL = ZoneInfo("America/Sao_Paulo")
 BATCH = 60
 
@@ -160,8 +165,8 @@ def result_rows(year: int, events: list[dict], odds: dict[str, list[str] | None]
             "date": datetime.fromtimestamp(e["t"], BRAZIL).strftime("%Y-%m-%d"),
             "round": e["round"],
             "event_id": e["id"],
-            "home_id": e["home"][0], "home": e["home"][1],
-            "away_id": e["away"][0], "away": e["away"][1],
+            "home_id": e["home"][0], "home": e["home"][1], "home_key": team_key(e["home"][1]),
+            "away_id": e["away"][0], "away": e["away"][1], "away_key": team_key(e["away"][1]),
             "home_goals": hs["display"], "away_goals": aw["display"],
             "penalty_winner": ("home" if hs["penalties"] > aw["penalties"] else "away") if shootout else "",
             "odds_home": prices[0], "odds_draw": prices[1], "odds_away": prices[2],
@@ -178,10 +183,11 @@ def write_csv(path: Path, columns: list[str], rows: list[dict]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--first", type=int, default=2015)
-    parser.add_argument("--last", type=int, default=2026)
+    parser.add_argument("--first", type=int, default=2024)
+    parser.add_argument("--last", type=int, default=2024)
     args = parser.parse_args()
     CACHE.mkdir(exist_ok=True)
+    OUT.mkdir(exist_ok=True)
     years = range(args.first, args.last + 1)
     try:
         seasons = {key: season_ids(t) for key, t in TOURNAMENTS.items()}
@@ -190,9 +196,9 @@ def main() -> None:
             for division in "ABCD":
                 sid = seasons[division][year]
                 teams = cached(f"standings-{division}-{year}", lambda: standings(TOURNAMENTS[division], sid))
-                divisions += [{"season": year, "team_id": tid, "team": name, "division": division}
+                divisions += [{"season": year, "team_id": tid, "team": name, "team_key": team_key(name), "division": division}
                               for tid, name in dict(map(tuple, teams)).items()]
-        write_csv(OUT / "divisions.csv", ["season", "team_id", "team", "division"], divisions)
+        write_csv(OUT / "divisions.csv", ["season", "team_id", "team", "team_key", "division"], divisions)
 
         for key, filename in RESULT_FILES.items():
             rows = []

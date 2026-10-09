@@ -1,0 +1,125 @@
+season,team_id,team,team_key,division
+2024,1958,Botafogo,botafogo,A
+2024,1963,Palmeiras,palmeiras,A
+2024,5981,Flamengo,flamengo,A
+2024,2020,Fortaleza,fortaleza,A
+2024,1966,Internacional,internacional,A
+2024,1981,São Paulo,sao-paulo,A
+2024,1957,Corinthians,corinthians,A
+2024,1955,Bahia,bahia,A
+2024,1954,Cruzeiro,cruzeiro,A
+2024,1974,Vasco da Gama,vasco-da-gama,A
+2024,1962,Vitória,vitoria,A
+2024,1977,Atlético Mineiro,atletico-mineiro,A
+2024,1961,Fluminense,fluminense,A
+2024,5926,Grêmio,gremio,A
+2024,1980,Juventude,juventude,A
+2024,1999,Red Bull Bragantino,red-bull-bragantino,A
+2024,1967,Athletico,athletico,A
+2024,1984,Criciúma,criciuma,A
+2024,7314,Atlético Goianiense,atletico-goianiense,A
+2024,49202,Cuiabá,cuiaba,A
+2024,1968,Santos,santos,B
+2024,21982,Mirassol,mirassol,B
+2024,1959,Sport Recife,sport-recife,B
+2024,2001,Ceará,ceara,B
+2024,135514,Grêmio Novorizontino,gremio-novorizontino,B
+2024,1960,Goiás,goias,B
+2024,39634,Operário-PR,operario-pr,B
+2024,1973,América Mineiro,america-mineiro,B
+2024,2021,Vila Nova FC,vila-nova,B
+2024,7315,Avaí,avai,B
+2024,336664,Amazonas FC,amazonas,B
+2024,1982,Coritiba,coritiba,B
+2024,1997,Paysandu SC,paysandu,B
+2024,1979,Botafogo-SP,botafogo-sp,B
+2024,21845,Chapecoense,chapecoense,B
+2024,22032,CRB,crb,B
+2024,1969,Ponte Preta,ponte-preta,B
+2024,2025,Ituano,ituano,B
+2024,21884,Brusque,brusque,B
+2024,1972,Guarani,guarani,B
+2024,49196,Botafogo-PB,botafogo-pb,C
+2024,342775,Athletic Club,athletic-club,C
+2024,35285,Ferroviária,ferroviaria,C
+2024,47504,São Bernardo,sao-bernardo,C
+2024,6982,Volta Redonda,volta-redonda,C
+2024,32766,Ypiranga FC,ypiranga,C
+2024,2022,Londrina,londrina,C
+2024,2012,Remo,remo,C
+2024,2011,Náutico,nautico,C
+2024,2010,CSA,csa,C
+2024,1985,Figueirense,figueirense,C
+2024,87202,Tombense,tombense,C
+2024,2017,Confiança,confianca,C
+2024,21838,ABC,abc,C
+2024,2000,Caxias,caxias,C
+2024,274286,Floresta,floresta,C
+2024,2005,Sampaio Corrêa,sampaio-correa,C
+2024,32794,AA Aparecidense,aparecidense,C
+2024,32672,Ferroviário,ferroviario,C
+2024,480379,EC São José,sao-jose,C
+2024,393104,Manauara EC,manauara,D
+2024,339705,Gazin Porto Velho,gazin-porto-velho,D
+2024,144854,Princesa do Solimões,princesa-do-solimoes,D
+2024,283918,Manaus,manaus,D
+2024,21865,Trem,trem,D
+2024,90278,São Raimundo-RR,sao-raimundo-rr,D
+2024,21862,Rio Branco-AC,rio-branco,D
+2024,293460,Humaitá,humaita,D
+2024,21858,Maranhão AC,maranhao,D
+2024,228199,AA Altos,altos,D
+2024,188849,Ríver AC,river,D
+2024,215371,Tocantinópolis,tocantinopolis,D
+2024,90272,Cametá SC,cameta,D
+2024,375317,Fluminense-PI,fluminense-pi,D
+2024,2009,Moto Club,moto-club,D
+2024,33998,Águia de Marabá FC,aguia-de-maraba,D
+2024,2018,Treze,treze,D
+2024,274287,AD Iguatu,iguatu,D
+2024,2023,América-RN,america-rn,D
+2024,212493,Atlético Cearense,atletico-cearense,D
+2024,21864,Sousa EC,sousa,D
+2024,65506,Santa Cruz-RN,santa-cruz-rn,D
+2024,87156,Maracanã,maracana,D
+2024,34006,ACD Potiguar,acd-potiguar,D
+2024,21853,AO Itabaiana,ao-itabaiana,D
+2024,324839,Retrô,retro,D
+2024,87166,Jacuipense,jacuipense,D
+2024,2019,ASA,asa,D
+2024,336565,CSE,cse,D
+2024,61724,Juazeirense,juazeirense,D
+2024,21985,Petrolina SFC,petrolina-sfc,D
+2024,2016,Sergipe,sergipe,D
+2024,2024,Brasiliense,brasiliense,D
+2024,21872,Anápolis FC,anapolis,D
+2024,34005,Mixto,mixto,D
+2024,21893,CRAC,crac,D
+2024,243793,Iporá,ipora,D
+2024,34007,União Rondonópolis,uniao-rondonopolis,D
+2024,308206,Real Brasília FC,real-brasilia,D
+2024,339670,Capital FC,capital,D
+2024,6981,Nova Iguaçu,nova-iguacu,D
+2024,208067,Portuguesa-RJ,portuguesa-rj,D
+2024,21973,Itabuna EC,itabuna,D
+2024,65494,Real Noroeste,real-noroeste,D
+2024,34013,Serra FC,serra,D
+2024,7297,Ipatinga,ipatinga,D
+2024,343628,Democrata FC,democrata,D
+2024,85341,Audax Rio,audax-rio,D
+2024,135324,Maringá FC,maringa,D
+2024,135526,Inter de Limeira,inter-de-limeira,D
+2024,135510,Água Santa,agua-santa,D
+2024,308001,Costa Rica-MS,costa-rica-ms,D
+2024,6966,EC Santo André,santo-andre,D
+2024,343540,Pouso Alegre FC,pouso-alegre,D
+2024,88744,São José EC,sao-jose,D
+2024,274036,Patrocinense,patrocinense,D
+2024,21892,Cianorte,cianorte,D
+2024,1986,Grêmio Esportivo Brasil,gremio-esportivo-brasil,D
+2024,32765,EC Avenida,avenida,D
+2024,480376,Novo Hamburgo,novo-hamburgo,D
+2024,234222,Hercílio Luz FC,hercilio-luz,D
+2024,257674,Concórdia AC,concordia,D
+2024,257673,Barra FC,barra,D
+2024,21891,Cascavel,cascavel,D
