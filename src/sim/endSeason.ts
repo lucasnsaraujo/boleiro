@@ -1,7 +1,9 @@
 import type { Club } from "../data/clubs.js";
 import type { Division } from "../data/players.js";
-import { pickLineup } from "../engine/match.js";
 import { randomStream } from "../engine/random.js";
+import { driftWagesToCap } from "./finances/driftWagesToCap.js";
+import { renewFinances } from "./finances/renewFinances.js";
+import { squadStrength } from "./finances/squadStrength.js";
 import type { GameState, SimPlayer } from "./gameState.js";
 import { LEAGUE_FORMATS, type LeagueOutcome } from "./leagueFormats.js";
 import { startSeason } from "./startSeason.js";
@@ -18,11 +20,6 @@ function outcomeOf(state: GameState, division: Division): LeagueOutcome {
   }
   return LEAGUE_FORMATS[competition.format].outcome(competition, fixtures);
 }
-
-const squadStrength = (squad: readonly SimPlayer[]) => {
-  const lineup = pickLineup([...squad]);
-  return lineup.reduce((sum, p) => sum + p.strength, 0) / Math.max(lineup.length, 1);
-};
 
 // Placeholder until #8: the state championships should decide who fills Série D. For now the
 // strongest squads outside Série A–D, other than the clubs Série D just dropped, take the free places.
@@ -66,8 +63,10 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
   const outcomes = Object.fromEntries(
     Object.values(state.competitions).map((competition) => [competition.id, { A: a, B: b, C: c, D: d }[competition.division]]),
   );
+  const finances = renewFinances(state, clubs, fixtures, { A: a, B: b, C: c, D: d });
+  const players = driftWagesToCap(state.players, finances);
   return {
-    state: { ...state, season, clubs, calendar, competitions, fixtures, rngState: random.state() },
+    state: { ...state, season, clubs, players, calendar, competitions, fixtures, finances, rngState: random.state() },
     outcomes,
   };
 }

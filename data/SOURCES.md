@@ -82,7 +82,9 @@ One row per Série A 2026 club (`club_id` links to `clubs.csv`), plus `small` / 
 | Chapecoense | `guess`. The only figure found is R$42.5M in the Um Dois Esportes ranking, the same number it gives Remo, so it is suspect. |
 | Série B–D rows | `estimate`. TV money from `competition-money.json`. Payrolls from press reports: Série B about R$2.5M a month for a small club (Athletic-MG, Itatiaia) to R$3–3.5M for a large one (Ceará, Sport's 2026 cap); Série C R$1.0–2.5M a month (Retrô, Santa Cruz, Náutico); Série D R$100–400k a month, with the [Joinville 2026 budget](https://jec.com.br/wp-content/uploads/2025/12/20261231-Orcamento_Jec_Campo.pdf-26.pdf) as the large-club reference. Revenue totals and the other lines are scaled from those, listed in `guessed_fields`. |
 
-Remo and Chapecoense played Série B in 2025, so their revenue is below the rest of Série A; Flamengo's passed R$2B. The finance model should add the Série A TV money for the promoted clubs.
+Remo and Chapecoense played Série B in 2025, so their revenue is below the rest of Série A; Flamengo's passed R$2B. The game pays them 2026 Série A TV money, so they start above their 2025 accounts.
+
+How the game uses these files (`src/sim/finances/openingFinances.ts`): each club's wage bill comes from its row (Série A) or from the small/median/large rows by squad strength rank in its division (Série B–D); state-only clubs are half a small Série D club (guess). TV money and crowds come from `competition-money.json`, not from the `broadcasting` and `matchday` columns. Sponsorship and membership come from the row. Whatever the row's revenue without player sales holds beyond those lines becomes `otherIncome`, which stands for the state championship, Copa do Brasil, continental and other money the game does not simulate yet. When those competitions start paying prizes, `otherIncome` must shrink by the same amount or the money counts twice. Every rate in `src/sim/finances/` names its source or is marked `guess` in the code.
 
 ### competition-money.json
 

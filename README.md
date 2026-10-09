@@ -46,4 +46,6 @@ Sofascore shows a Cloudflare captcha if it gets requests too fast, so `fetch_his
 pnpm install
 pnpm test && pnpm typecheck && pnpm lint
 pnpm calibrate   # refits the engine, prints real-vs-Boleiro tables per division and for cup ties
+pnpm test:long   # plays ten seasons and checks club revenue stays in its division's band
+pnpm finances:report [seasons] [seed]   # prints revenue bands per division from a long run
 ```
