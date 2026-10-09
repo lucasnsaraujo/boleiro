@@ -67,7 +67,7 @@ export type SeasonCalendar = {
 export type Tier = Division | "state";
 
 export const REVENUE_LINES = ["tickets", "tv", "membership", "sponsorship", "otherIncome", "prizes", "playerSales"] as const;
-export const COST_LINES = ["wages", "transferFees", "agentFees", "infrastructure", "interest"] as const;
+export const COST_LINES = ["wages", "transferFees", "signingFees", "agentFees", "infrastructure", "interest"] as const;
 export type RevenueLine = (typeof REVENUE_LINES)[number];
 export type CostLine = (typeof COST_LINES)[number];
 

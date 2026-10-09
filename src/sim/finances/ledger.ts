@@ -13,6 +13,7 @@ const revenueBy = (value: (line: RevenueLine) => number): Record<RevenueLine, nu
 const costsBy = (value: (line: CostLine) => number): Record<CostLine, number> => ({
   wages: value("wages"),
   transferFees: value("transferFees"),
+  signingFees: value("signingFees"),
   agentFees: value("agentFees"),
   infrastructure: value("infrastructure"),
   interest: value("interest"),

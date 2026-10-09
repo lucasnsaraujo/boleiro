@@ -3,6 +3,8 @@ import { CALIBRATED, simulateMatch, type Team } from "../engine/match.js";
 import { randomStream } from "../engine/random.js";
 import { addDays } from "./dates.js";
 import { endSeason } from "./endSeason.js";
+import { closeMonth, type FinanceEvent } from "./finances/closeMonth.js";
+import { recordMatchFinances } from "./finances/recordMatchFinances.js";
 import type { Competition, Fixture, GameState, SimPlayer } from "./gameState.js";
 import type { LeagueOutcome } from "./leagueFormats.js";
 import { openNextStage } from "./openNextStage.js";
@@ -15,7 +17,8 @@ export type DayDecisions = {
 export type DayEvent =
   | { type: "matchPlayed"; fixture: Fixture }
   | { type: "stageOpened"; competitionId: string; stage: number }
-  | { type: "seasonEnded"; season: number; outcomes: Record<string, LeagueOutcome> };
+  | { type: "seasonEnded"; season: number; outcomes: Record<string, LeagueOutcome> }
+  | FinanceEvent;
 
 const PENALTY_SHOOTOUT_HOME_WIN = 0.5; // guess: shootouts treated as a coin flip until a source on shootout odds is used
 
@@ -74,7 +77,14 @@ export function advanceDay(state: GameState, decisions: DayDecisions): { state: 
     events.push({ type: "stageOpened", competitionId: competition.id, stage: current + 1 });
   }
 
-  const next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, rngState: random.state() };
+  let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions };
+  for (const event of events) if (event.type === "matchPlayed") next = recordMatchFinances(next, event.fixture);
+  if (next.date.endsWith("-01")) {
+    const closed = closeMonth(next, random.next);
+    next = closed.state;
+    events.push(...closed.events);
+  }
+  next = { ...next, rngState: random.state() };
   if (next.date.slice(0, 4) === String(state.season)) return { state: next, events };
   const ended = endSeason(next);
   events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes });
