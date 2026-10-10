@@ -1,0 +1,706 @@
+/* Live round, direction F: the coach's match in a scoreboard band, every game as a row, the live table beside. */
+.round-screen {
+  --expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  height: calc(100vh - 44px);
+  margin: -32px -28px;
+}
+
+.band {
+  position: relative;
+  overflow: hidden;
+  padding: 14px 28px 0;
+  background: linear-gradient(180deg, var(--lawn-2), var(--lawn-1));
+  border-bottom: var(--hairline);
+}
+
+.band-top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.crumb {
+  font: 500 15px var(--cond);
+  color: var(--chalk-2);
+}
+
+.crumb b {
+  font-weight: 600;
+  color: var(--chalk);
+}
+
+.speed {
+  display: flex;
+  margin-left: auto;
+  border: var(--hairline);
+}
+
+.speed button {
+  width: 46px;
+  height: 30px;
+  border-left: var(--hairline);
+  font: 600 14px var(--cond);
+  color: var(--chalk-2);
+}
+
+.speed button:first-child {
+  border-left: 0;
+}
+
+.speed button[aria-pressed="true"] {
+  background: var(--chalk);
+  color: var(--lawn-0);
+}
+
+.speed button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.speed svg {
+  display: block;
+  width: 10px;
+  height: 12px;
+  margin: auto;
+  fill: currentColor;
+}
+
+.band-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 28px;
+  margin-top: 10px;
+}
+
+.band .side {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.band .side.home {
+  justify-content: flex-end;
+}
+
+.band .side.away {
+  padding-right: 120px;
+}
+
+.score {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font: 900 112px/0.86 var(--num);
+}
+
+.score .x {
+  font: 600 40px var(--num);
+  color: var(--chalk-3);
+}
+
+.digit,
+.box {
+  display: inline-block;
+  overflow: hidden;
+  text-align: center;
+}
+
+.digit {
+  height: 0.86em;
+  min-width: 0.52em;
+}
+
+.digit > span,
+.box > span {
+  display: block;
+}
+
+.roll {
+  animation: digit-roll 560ms var(--expo-out) both;
+}
+
+@keyframes digit-roll {
+  from {
+    transform: translateY(105%);
+  }
+}
+
+.clock {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  display: grid;
+  justify-items: end;
+  transform: translateY(-50%);
+}
+
+.clock b {
+  font: 800 44px/1 var(--num);
+  font-variant-numeric: tabular-nums;
+}
+
+.clock span {
+  margin-top: 2px;
+  font: 500 14px var(--cond);
+  color: var(--chalk-3);
+}
+
+.band-foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: end;
+  gap: 28px;
+  margin-top: 12px;
+  padding-bottom: 14px;
+}
+
+.venue {
+  font: 500 14px var(--cond);
+  color: var(--chalk-3);
+}
+
+.lastev {
+  min-height: 22px;
+  font: 500 16px var(--cond);
+  color: var(--chalk-2);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.actions .btn-main small {
+  margin-left: 10px;
+  font: 600 13px var(--cond);
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.7;
+}
+
+.progress {
+  position: relative;
+  height: 4px;
+  margin: 0 -28px;
+  background: var(--lawn-0);
+}
+
+.progress i {
+  position: absolute;
+  inset: 0;
+  background: var(--yellow);
+  transform-origin: left center;
+  transition: transform 300ms linear;
+}
+
+.progress::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  background: var(--chalk-3);
+}
+
+/* The coach's goal: an outlined GOL slides across the band behind the score, holds, and leaves. */
+.gol-sweep {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  font: 900 260px/1 var(--num);
+  letter-spacing: 0.02em;
+  color: transparent;
+  -webkit-text-stroke: 2px rgba(242, 208, 59, 0.6);
+  opacity: 0;
+  animation: gol-sweep 1600ms var(--expo-out) both;
+}
+
+@keyframes gol-sweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-28%) skewX(-12deg);
+  }
+  28% {
+    opacity: 1;
+    transform: translateX(0) skewX(-12deg);
+  }
+  72% {
+    opacity: 1;
+    transform: translateX(2%) skewX(-12deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(22%) skewX(-12deg);
+  }
+}
+
+.round-error {
+  margin: 0;
+  padding: 8px 28px;
+}
+
+.round-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  min-height: 0;
+}
+
+.round-body.no-table {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.round-list {
+  min-height: 0;
+  overflow: auto;
+  border-right: var(--hairline);
+}
+
+.group {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 28px 8px;
+}
+
+.group h2 {
+  font: 600 14px var(--cond);
+  color: var(--chalk-3);
+}
+
+.group .goals {
+  margin-left: auto;
+  font: 500 14px var(--cond);
+  color: var(--chalk-3);
+}
+
+/* The other competitions playing today, one pick away, dressed as the section's own heading. */
+.others {
+  appearance: none;
+  padding: 2px 22px 2px 0;
+  background: transparent
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0h10L5 6z' fill='%238aa287'/%3E%3C/svg%3E") no-repeat right 4px center / 9px 6px;
+  border: 0;
+  border-bottom: 1px dashed var(--line);
+  border-radius: 0;
+  color: var(--chalk-2);
+  font: 600 14px var(--cond);
+  cursor: pointer;
+}
+
+.others:hover {
+  color: var(--chalk);
+}
+
+.others option {
+  background: var(--lawn-1);
+  color: var(--chalk);
+}
+
+.rows {
+  list-style: none;
+}
+
+.row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 34px 34px minmax(0, 1fr) minmax(0, 1.25fr);
+  align-items: center;
+  column-gap: 6px;
+  height: 50px;
+  padding: 0 28px 0 24px;
+  border-top: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.row:last-child {
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.row.mine {
+  background: var(--lawn-3);
+}
+
+.row .t {
+  font: 700 15px var(--cond);
+  color: var(--chalk-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.row.mine .t {
+  color: var(--yellow);
+}
+
+.row .h,
+.row .a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.row .h {
+  justify-self: end;
+}
+
+.row .a {
+  justify-self: start;
+}
+
+.redc {
+  flex: none;
+  display: inline-block;
+  width: 9px;
+  height: 13px;
+  background: var(--red);
+}
+
+.box {
+  position: relative;
+  height: 34px;
+  background: #030805;
+  box-shadow: inset 0 0 0 1px var(--line);
+  font: 800 24px/34px var(--num);
+}
+
+.box .roll {
+  animation:
+    digit-roll 520ms var(--expo-out) 80ms both,
+    box-flash 1300ms ease-out both;
+}
+
+@keyframes box-flash {
+  from {
+    background: var(--flash, transparent);
+  }
+  to {
+    background: transparent;
+  }
+}
+
+.ev {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  padding-left: 16px;
+  font: 400 14px var(--cond);
+  color: var(--chalk-2);
+  white-space: nowrap;
+}
+
+.ev .min {
+  font-weight: 700;
+  color: var(--chalk);
+}
+
+.ev .who {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A goal floods its row in the scoring club's colour from the left, then drains. */
+.flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform-origin: left center;
+  opacity: 0;
+  animation: row-flood var(--flood, 1500ms) var(--expo-out) both;
+}
+
+@keyframes row-flood {
+  0% {
+    opacity: 0.6;
+    transform: scaleX(0);
+  }
+  22% {
+    opacity: 0.55;
+    transform: scaleX(1);
+  }
+  55% {
+    opacity: 0.32;
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+.mk {
+  flex: none;
+  display: inline-block;
+}
+
+.mk.yellow,
+.mk.red {
+  width: 9px;
+  height: 13px;
+}
+
+.mk.yellow {
+  background: var(--yellow);
+}
+
+.mk.red {
+  background: var(--red);
+}
+
+.mk.goal {
+  width: 13px;
+  height: 13px;
+}
+
+.mk.injury {
+  position: relative;
+  width: 12px;
+  height: 12px;
+}
+
+.mk.injury::before,
+.mk.injury::after {
+  content: "";
+  position: absolute;
+  background: var(--red);
+}
+
+.mk.injury::before {
+  left: 4px;
+  top: 0;
+  width: 4px;
+  height: 12px;
+}
+
+.mk.injury::after {
+  top: 4px;
+  left: 0;
+  width: 12px;
+  height: 4px;
+}
+
+.mk.substitution {
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(135deg, var(--promotion) 50%, var(--red) 50%);
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding-bottom: 16px;
+}
+
+.table .group {
+  justify-content: space-between;
+}
+
+.link {
+  font: 500 14px var(--cond);
+  color: var(--yellow);
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.trows {
+  list-style: none;
+}
+
+.trow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 40px 34px 42px;
+  align-items: center;
+  height: 40px;
+  padding: 0 22px 0 20px;
+  border-top: 1px solid rgba(42, 82, 54, 0.55);
+  font: 500 15px var(--cond);
+  background: var(--lawn-0);
+}
+
+.trows.full .trow {
+  grid-template-columns: 34px minmax(0, 1fr) 30px 30px 40px 42px;
+}
+
+.trow .p {
+  font: 800 18px var(--num);
+  color: var(--chalk-2);
+}
+
+.trow .n {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.trow .g {
+  font-size: 14px;
+  color: var(--chalk-3);
+  text-align: right;
+}
+
+.trow .mv {
+  font: 700 12px var(--cond);
+  text-align: right;
+}
+
+.trow .mv.up {
+  color: #6fd38a;
+}
+
+.trow .mv.down {
+  color: #f08a7a;
+}
+
+.trow .pts {
+  font: 800 20px var(--num);
+  text-align: right;
+}
+
+.trow.mine {
+  background: var(--lawn-3);
+}
+
+.trow.mine .n {
+  font-weight: 700;
+  color: var(--yellow);
+}
+
+.tsheet {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  width: 520px;
+  background: var(--lawn-1);
+  border-left: var(--hairline);
+  animation: tsheet-in 260ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+@keyframes tsheet-in {
+  from {
+    transform: translateX(32px);
+    opacity: 0;
+  }
+}
+
+.tsheet-head {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  padding: 18px 20px 14px 20px;
+  border-bottom: var(--hairline);
+}
+
+.tsheet-head h2 {
+  font: 800 30px/1 var(--num);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.tsheet-head span {
+  font: 500 15px var(--cond);
+  color: var(--chalk-2);
+}
+
+.tsheet-head .ghost {
+  margin-left: auto;
+}
+
+.tsheet .trow-head {
+  grid-template-columns: 34px minmax(0, 1fr) 30px 30px 40px 42px;
+  height: 30px;
+  border-top: 0;
+  background: none;
+  font-size: 13px;
+  color: var(--chalk-3);
+}
+
+.trow-head .g:last-child {
+  text-align: right;
+}
+
+.tsheet .trows {
+  overflow: auto;
+}
+
+.tsheet .trow {
+  background: var(--lawn-1);
+}
+
+.tsheet .trow.mine {
+  background: var(--lawn-3);
+}
+
+@media (max-width: 1180px) {
+  .round-body {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+
+  .row {
+    grid-template-columns: 40px minmax(0, 1fr) 32px 32px minmax(0, 1fr);
+  }
+
+  .row .ev {
+    display: none;
+  }
+
+  .band .plate {
+    font-size: 24px;
+  }
+
+  .score {
+    font-size: 92px;
+  }
+
+  .band .side.away {
+    padding-right: 90px;
+  }
+}
+
+@media (max-height: 720px) {
+  .score {
+    font-size: 84px;
+  }
+
+  .row {
+    height: 44px;
+  }
+
+  .trow {
+    height: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roll,
+  .box .roll,
+  .flash,
+  .gol-sweep,
+  .tsheet {
+    animation: none;
+  }
+
+  .gol-sweep,
+  .flash {
+    display: none;
+  }
+
+  .progress i {
+    transition: none;
+  }
+}

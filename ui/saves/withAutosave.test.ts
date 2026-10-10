@@ -61,6 +61,15 @@ test("playing on through days with no match anywhere still autosaves", async () 
   expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID, date }]);
 });
 
+test("the final whistle of a live round is autosaved on the day after the match", async () => {
+  const { engine, slots } = await startGame();
+  await engine.playToMatchDay();
+  await slots.remove(AUTOSAVE_SLOT_ID);
+  await engine.startRound({});
+  const { date } = await engine.finishRound();
+  expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID, date }]);
+});
+
 test("playing on when already on the match day plays nothing and saves nothing", async () => {
   const { engine, slots } = await startGame();
   await engine.playToMatchDay();

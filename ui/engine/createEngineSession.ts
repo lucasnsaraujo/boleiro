@@ -1,15 +1,23 @@
 import { advanceDay, type DayDecisions, type DayEvent } from "../../src/sim/advanceDay.js";
 import type { GameState, IsoDate } from "../../src/sim/gameState.js";
+import { applyLiveChange, type LiveChange } from "../../src/sim/live/applyLiveChange.js";
+import { finishMatchDay } from "../../src/sim/live/finishMatchDay.js";
+import type { LiveDay } from "../../src/sim/live/liveDay.js";
+import { startMatchDay } from "../../src/sim/live/startMatchDay.js";
 import { newGameFromFiles, type GameFiles } from "../../src/sim/loadNewGame.js";
 import type { NewGameOptions } from "../../src/sim/newGame.js";
 import { loadGame, saveGame } from "../../src/sim/saveGame.js";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { playToMatchDay, type StopReason } from "../hub/playToMatchDay.js";
+import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
+import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
 
 export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode">;
 export type GameSummary = Pick<GameState, "date" | "season" | "coachClubId">;
 export type AdvanceResult = { date: IsoDate; events: DayEvent[] };
 export type PlayResult = { date: IsoDate; stop: StopReason; daysPlayed: number };
+/** The coach's eleven and tactics for kick-off; left out, the assistant's pick and his last tactics. */
+export type KickOff = Pick<DayDecisions, "lineup" | "tactics">;
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
 const INBOX_SIZE = 40;
@@ -29,6 +37,13 @@ export function createEngineSession(files: GameFiles) {
   let state: GameState | null = null;
   /** What happened to the coach since he last played on, oldest first. */
   let news: InboxLine[] = [];
+  /** The coach's match day between kick-off and the final whistle, and the furthest minute the screen has shown of it. */
+  let live: { day: LiveDay; seenMinute: number } | null = null;
+
+  function underWay() {
+    if (!live) throw new Error("no match day is under way");
+    return live;
+  }
 
   function current(): GameState {
     if (!state) throw new Error("no game is loaded");
@@ -38,6 +53,7 @@ export function createEngineSession(files: GameFiles) {
   function begin(next: GameState): GameSummary {
     state = next;
     news = [];
+    live = null;
     return summaryOf(next);
   }
 
@@ -61,6 +77,7 @@ export function createEngineSession(files: GameFiles) {
         events.push(...day.events);
       }
       state = next;
+      live = null;
       addNews(lines);
       return { date: next.date, events };
     },
@@ -74,6 +91,41 @@ export function createEngineSession(files: GameFiles) {
       state = played.state;
       if (played.daysPlayed > 0) news = played.news.slice(-INBOX_SIZE);
       return { date: played.state.date, stop: played.stop, daysPlayed: played.daysPlayed };
+    },
+    /** The lineup sheet before kick-off on the coach's match day. */
+    matchDayPlan(): MatchDayPlan {
+      return matchDayPlan(current());
+    },
+    /** Kicks off the coach's match day. Every match is drawn now; the screen plays the timelines back. */
+    startRound(kickOff: KickOff): LiveRound {
+      live = { day: startMatchDay(current(), kickOff), seenMinute: 0 };
+      return liveRoundOf(live.day, live.seenMinute);
+    },
+    /** The match day kicked off and not yet finished, if any. */
+    liveRound(): LiveRound | null {
+      return live && liveRoundOf(live.day, live.seenMinute);
+    },
+    /** The screen has shown the round up to `minute`; the coach can't change his match before it any more. */
+    seeMinute(minute: number): void {
+      const round = underWay();
+      round.seenMinute = Math.max(round.seenMinute, minute);
+    },
+    /** The coach's change at `minute` of his match; the rest of his match is drawn again. */
+    changeLive(minute: number, change: LiveChange): LiveRound {
+      const round = underWay();
+      if (minute < round.seenMinute) throw new Error(`a change can't come before minute ${round.seenMinute}`);
+      live = { day: applyLiveChange(round.day, minute, change), seenMinute: minute };
+      return liveRoundOf(live.day, live.seenMinute);
+    },
+    /** The final whistle: records the day and adds the coach's results to the inbox. */
+    finishRound(): AdvanceResult {
+      const round = underWay();
+      const before = current();
+      const day = finishMatchDay(round.day);
+      state = day.state;
+      live = null;
+      addNews(inboxLines(before, day.state, day.events));
+      return { date: day.state.date, events: day.events };
     },
     inbox(): InboxLine[] {
       return news;
