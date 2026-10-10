@@ -8,6 +8,10 @@ import type { EngineClient } from "../engine/connectEngine.js";
 import { inMemoryEngine } from "../engine/inMemoryEngine.js";
 import type { TurningPoint } from "../hub/turningPoints.js";
 import { indexedDbSlots } from "../saves/indexedDbSlots.js";
+import { unlockedFakeSound } from "../sound/fakeAudioContext.js";
+import { CUES } from "../sound/soundCatalog.js";
+import type { SoundEngine } from "../sound/soundEngine.js";
+import { SoundProvider } from "../sound/SoundProvider.js";
 import type { SeasonReview } from "../seasonEnd/seasonReview.js";
 import { SeasonEnd } from "./SeasonEnd.js";
 
@@ -57,7 +61,7 @@ async function services(points: TurningPoint[]): Promise<{ given: Services; clos
   return { given: { engine: faked, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } }, closed: () => closedCount };
 }
 
-function openSeasonEnd(given: Services) {
+function openSeasonEnd(given: Services, sound?: SoundEngine) {
   const router = createMemoryRouter(
     [
       { path: "/season-end", element: <SeasonEnd /> },
@@ -65,11 +69,8 @@ function openSeasonEnd(given: Services) {
     ],
     { initialEntries: ["/season-end"] },
   );
-  render(
-    <ServicesContext value={given}>
-      <RouterProvider router={router} />
-    </ServicesContext>,
-  );
+  const screenTree = <RouterProvider router={router} />;
+  render(<ServicesContext value={given}>{sound ? <SoundProvider engine={sound} store={localStorage}>{screenTree}</SoundProvider> : screenTree}</ServicesContext>);
 }
 
 test("the season's result comes first, then the board's verdict, then the next season starts", async () => {
@@ -111,4 +112,19 @@ test("with no season end waiting the screen sends the coach to his club", async 
   const { given } = await services([]);
   openSeasonEnd(given);
   expect(await screen.findByText("Clube aberto")).toBeTruthy();
+});
+
+test("a promotion plays its stinger, and a season seen without a club plays none", async () => {
+  const promotion = unlockedFakeSound();
+  const { given } = await services([{ kind: "seasonEnd", review: promoted }]);
+  openSeasonEnd(given, promotion.engine);
+  await screen.findByText("Acesso");
+  expect(promotion.ctx.notes()).toBe(CUES.promotion.tones.length);
+  cleanup();
+
+  const champions = unlockedFakeSound();
+  const other = await services([{ kind: "seasonEnd", review: withoutClub }]);
+  openSeasonEnd(other.given, champions.engine);
+  await screen.findByText("Flamengo");
+  expect(champions.ctx.notes()).toBe(0);
 });

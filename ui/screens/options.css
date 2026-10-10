@@ -1,0 +1,135 @@
+.options {
+  max-width: 1100px;
+}
+
+.options-body {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 48px;
+  margin-top: 24px;
+  border-top: var(--hairline);
+  padding-top: 20px;
+}
+
+.options-heading {
+  font: 800 24px/1 var(--num);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 14px;
+}
+
+.options-volume {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) 64px;
+  align-items: center;
+  column-gap: 16px;
+  min-height: 64px;
+  border-bottom: var(--hairline);
+}
+
+.options-volume-label {
+  font: 600 17px var(--cond);
+}
+
+.options-volume-value {
+  justify-self: end;
+  font: 800 30px/1 var(--num);
+  font-variant-numeric: tabular-nums;
+}
+
+.options-slider {
+  appearance: none;
+  width: 100%;
+  height: 24px;
+  background: linear-gradient(var(--yellow), var(--yellow)) left center / var(--fill, 0%) 4px no-repeat, linear-gradient(var(--line), var(--line)) center / 100% 4px no-repeat;
+  cursor: pointer;
+}
+
+.options-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 24px;
+  background: var(--chalk);
+  border: 0;
+}
+
+.options-slider::-moz-range-thumb {
+  width: 14px;
+  height: 24px;
+  background: var(--chalk);
+  border: 0;
+  border-radius: 0;
+}
+
+.options-slider:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.options-volume:has(.options-slider:disabled) .options-volume-value {
+  color: var(--chalk-3);
+}
+
+.options-mute {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  font: 600 17px var(--cond);
+  cursor: pointer;
+}
+
+.options-mute input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--yellow);
+}
+
+.credits-list {
+  list-style: none;
+}
+
+.credits-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: 16px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.credits-sound {
+  font: 500 15px var(--cond);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.credits-sound:hover {
+  color: var(--yellow);
+  text-decoration: underline;
+}
+
+.credits-who {
+  font: 500 14px var(--cond);
+  color: var(--chalk-2);
+  white-space: nowrap;
+}
+
+.credits-note {
+  margin-top: 12px;
+  font: 400 14px var(--cond);
+  color: var(--chalk-2);
+}
+
+.options-actions {
+  margin-top: 28px;
+}
+
+@media (max-width: 900px) {
+  .options-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+}
