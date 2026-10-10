@@ -176,6 +176,30 @@ test("a request made on the match day goes with the round and is answered after 
   expect(desk.answers.map((answer) => answer.request)).toEqual([request]);
 });
 
+test("a request withdrawn during the round is not decided at the final whistle", async () => {
+  const engine = await onMatchDay();
+  const { coachClubId } = await engine.read(["coachClubId"]);
+  const playerId = await ownPlayerOf(engine, coachClubId ?? "");
+  await engine.ask({ kind: "renew", playerId, years: 2 });
+  await engine.startRound({});
+  await engine.withdraw(playerId);
+  await engine.finishRound();
+  expect(await engine.desk()).toMatchObject({ pending: [], answers: [] });
+});
+
+test("a request changed during the round is decided once, as changed", async () => {
+  const engine = await onMatchDay();
+  const { coachClubId } = await engine.read(["coachClubId"]);
+  const playerId = await ownPlayerOf(engine, coachClubId ?? "");
+  await engine.ask({ kind: "renew", playerId, years: 2 });
+  await engine.startRound({});
+  await engine.ask({ kind: "renew", playerId, years: 4 });
+  await engine.finishRound();
+  const desk = await engine.desk();
+  expect(desk.pending).toEqual([]);
+  expect(desk.answers.map((answer) => answer.request)).toEqual([{ kind: "renew", playerId, years: 4 }]);
+});
+
 test("a round kicked off and finished with no changes ends as playing the day on", async () => {
   const engine = await onMatchDay();
   const twin = await onMatchDay();

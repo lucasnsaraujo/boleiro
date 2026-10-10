@@ -69,6 +69,18 @@ export function createEngineSession(files: GameFiles) {
     news = [...news, ...lines].slice(-INBOX_SIZE);
   }
 
+  /** Whether a request for this player went with the match day under way. */
+  function isInRound(playerId: string): boolean {
+    return !!live?.day.decisions.requests?.some((request) => request.playerId === playerId);
+  }
+
+  /** Changes the requests the match day under way hands the board at the final whistle. */
+  function changeRoundRequests(change: (requests: readonly CoachRequest[]) => CoachRequest[]) {
+    if (!live) return;
+    const { decisions } = live.day;
+    live = { ...live, day: { ...live.day, decisions: { ...decisions, requests: change(decisions.requests ?? []) } } };
+  }
+
   function noted(on: BoardDesk, before: GameState, day: { state: GameState; events: DayEvent[] }): BoardDesk {
     const notes = boardNotes(before, day.state, day.events);
     if (!notes.answers.length && !notes.forcedSales.length) return on;
@@ -155,10 +167,10 @@ export function createEngineSession(files: GameFiles) {
       const round = underWay();
       const before = current();
       const day = finishMatchDay(round.day);
-      const sent = new Set(round.day.decisions.requests ?? []);
+      const sent = new Set((round.day.decisions.requests ?? []).map((request) => request.playerId));
       state = day.state;
       live = null;
-      desk = noted({ ...desk, pending: desk.pending.filter((request) => !sent.has(request)) }, before, day);
+      desk = noted({ ...desk, pending: desk.pending.filter((request) => !sent.has(request.playerId)) }, before, day);
       addNews(inboxLines(before, day.state, day.events));
       return { date: day.state.date, events: day.events };
     },
@@ -169,11 +181,13 @@ export function createEngineSession(files: GameFiles) {
     ask(request: CoachRequest): BoardDesk {
       current();
       desk = { ...desk, pending: withRequest(desk.pending, request) };
+      if (isInRound(request.playerId)) changeRoundRequests((requests) => withRequest(requests, request));
       return desk;
     },
     /** Takes the pending request for this player off the desk. */
     withdraw(playerId: string): BoardDesk {
       desk = { ...desk, pending: desk.pending.filter((r) => r.playerId !== playerId) };
+      if (isInRound(playerId)) changeRoundRequests((requests) => requests.filter((r) => r.playerId !== playerId));
       return desk;
     },
     desk(): BoardDesk {
