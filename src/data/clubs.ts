@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readDataFile } from "./readDataFile.js";
 import { parseCsv } from "./csv.js";
 import type { Division } from "./players.js";
 
@@ -36,8 +36,6 @@ export type Club = {
     fanbase: string;
   };
 };
-
-const CLUBS_CSV = new URL("../../data/clubs.csv", import.meta.url);
 
 function oneOf<T extends string>(options: readonly T[], value: string | undefined, field: string, id: string): T {
   const match = options.find((option) => option === value);
@@ -79,6 +77,10 @@ function toClub(row: Record<string, string>): Club {
   };
 }
 
+export function parseClubs(csv: string): Club[] {
+  return parseCsv(csv).map(toClub);
+}
+
 export function loadClubs(): Club[] {
-  return parseCsv(readFileSync(CLUBS_CSV, "utf8")).map(toClub);
+  return parseClubs(readDataFile("clubs.csv"));
 }
