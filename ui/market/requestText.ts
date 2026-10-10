@@ -1,3 +1,4 @@
+import { addDays } from "../../src/sim/dates.js";
 import type { GameState } from "../../src/sim/gameState.js";
 import type { CoachRequest } from "../../src/sim/transfers/coachRequest.js";
 import { formatDayMonth } from "../format/formatGameDate.js";
@@ -20,7 +21,8 @@ export const requestTitle = (request: CoachRequest, name: string): string => `${
 /** When the board will answer a request on its desk. */
 export function pendingText(state: Pick<GameState, "date" | "coachClubId" | "players" | "market">, request: CoachRequest): string {
   if (dueRequests(state, [request]).due.length) return "A diretoria responde amanhã.";
-  return `Fica na mesa até a janela abrir, em ${formatDayMonth(windowStatus(state.date).date)}.`;
+  // Tomorrow is outside the window, so the window that matters is the next one after tomorrow.
+  return `Fica na mesa até a janela abrir, em ${formatDayMonth(windowStatus(addDays(state.date, 1)).date)}.`;
 }
 
 /** "Contratação de Zé: recusada, sem verba" */

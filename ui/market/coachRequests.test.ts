@@ -62,6 +62,21 @@ describe("the requests the coach can make for a player", () => {
     expect(labels(withPlayer(game, veteran), veteran.id)).toEqual(["Renovar", "Vender"]);
   });
 
+  test("a player on loan here with a purchase clause can be bought", () => {
+    const loanee = { ...firstOf("vitoria-ba"), clubId: COACH };
+    const clause = { fromClubId: "vitoria-ba", until: "2026-06-30", lenderWageShare: 0.5, buyOption: 2_000_000 };
+    const loans = { [loanee.id]: clause };
+    const state = { ...withPlayer(game, loanee), market: { ...game.market, loans } };
+    expect(requestOptions(state, loanee.id)).toEqual([{ label: "Comprar", request: { kind: "sign", playerId: loanee.id } }]);
+    expect(requestOptions({ ...state, market: { ...state.market, loans: { [loanee.id]: { ...clause, buyOption: null } } } }, loanee.id)).toEqual([]);
+  });
+
+  test("an own player who signed a pre-contract elsewhere can't be renewed", () => {
+    const leaving = { ...firstOf(COACH), age: 30 };
+    const state = { ...withPlayer(game, leaving), market: { ...game.market, preContracts: { [leaving.id]: "palmeiras-sp" } } };
+    expect(labels(state, leaving.id)).toEqual(["Vender"]);
+  });
+
   test("nothing can be asked for a player on loan or one who already signed elsewhere", () => {
     const lent = firstOf("vitoria-ba");
     const loans = { [lent.id]: { fromClubId: "palmeiras-sp", until: "2026-06-30", lenderWageShare: 0.5, buyOption: null } };

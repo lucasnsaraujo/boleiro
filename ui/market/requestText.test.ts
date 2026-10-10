@@ -12,6 +12,7 @@ test("a pending request says when the board answers: tomorrow, or the day the wi
   expect(pendingText({ ...game, date: "2026-01-01" }, { kind: "sell", playerId: own.id })).toBe("Fica na mesa até a janela abrir, em 5 jan.");
   expect(pendingText({ ...game, date: "2026-01-04" }, { kind: "sell", playerId: own.id })).toBe("A diretoria responde amanhã.");
   expect(pendingText({ ...game, date: "2026-10-01" }, { kind: "loanOut", playerId: own.id })).toBe("Fica na mesa até a janela abrir, em 5 jan.");
+  expect(pendingText({ ...game, date: "2026-03-03" }, { kind: "sell", playerId: own.id })).toBe("Fica na mesa até a janela abrir, em 20 jul.");
 });
 
 test("an answer reads as a yes, or a no with the board's reason", () => {
