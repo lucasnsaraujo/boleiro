@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import type { Club } from "../../src/data/clubs.js";
+import { COPA_DO_BRASIL } from "../../src/sim/copaDoBrasil.js";
 import type { Competition, GameState } from "../../src/sim/gameState.js";
 import { useServices } from "../app/ServicesContext.js";
 import { Crest } from "../clubs/Crest.js";
@@ -20,6 +21,11 @@ import {
   type ZoneKey,
 } from "../tables/competitionTables.js";
 import "./tables.css";
+
+const copaFinalists = (competitions: readonly Competition[], fixtures: GameState["fixtures"]) => {
+  const copa = competitions.find((c) => c.kind === "cup");
+  return copa?.kind === "cup" ? COPA_DO_BRASIL.finalists(copa, fixtures) : null;
+};
 
 const TABLES_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions", "calendar", "history", "players"] as const;
 type TablesState = Pick<GameState, (typeof TABLES_KEYS)[number]>;
@@ -99,7 +105,7 @@ function CompetitionPanel({ competition, state }: { competition: Competition; st
         {competition.stages[stage]?.kind === "knockout" ? (
           <TieList name={name} ties={knockoutTies(competition, stage, state.fixtures)} clubs={state.clubs} coachClubId={state.coachClubId} />
         ) : (
-          <GroupStage key={stage} name={competitionName(competition)} {...groupTables(competition, stage, state.fixtures)} clubs={state.clubs} coachClubId={state.coachClubId} />
+          <GroupStage key={stage} name={competitionName(competition)} {...groupTables(competition, stage, state.fixtures, copaFinalists(Object.values(state.competitions), state.fixtures))} clubs={state.clubs} coachClubId={state.coachClubId} />
         )}
       </section>
       <aside className="scorers" aria-labelledby="scorers-title">
@@ -266,6 +272,7 @@ function TieList({ name, ties, clubs, coachClubId }: { name: string; ties: TieVi
             </span>
             {side(second, tie, false)}
             <span className="tie-legs">
+              {tie.isPlayoff && "Repescagem · "}
               {legLine(tie)}
               {tie.onPenalties && " · pên."}
             </span>

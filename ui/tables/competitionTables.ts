@@ -13,8 +13,17 @@ export type TableRow = StandingRow & { position: number; zone: ZoneKind | null }
 export type GroupTable = { label: string | null; rows: TableRow[] };
 
 export type Leg = { fixtureId: string; date: string; homeId: string; awayId: string; homeGoals: number | null; awayGoals: number | null };
-/** `aggregate` follows `clubIds`; the first club hosts the last leg. */
-export type TieView = { clubIds: [string, string]; legs: Leg[]; aggregate: [number, number] | null; winnerId: string | null; onPenalties: boolean };
+/** `aggregate` follows `clubIds`; the first club hosts the last leg. `isPlayoff` marks a tie for a place, not a step toward the final. */
+export type TieView = {
+  clubIds: [string, string];
+  legs: Leg[];
+  aggregate: [number, number] | null;
+  winnerId: string | null;
+  onPenalties: boolean;
+  isPlayoff: boolean;
+};
+/** The Copa do Brasil's finalists once its final is played; they take the first continental places. */
+export type CopaFinalists = { championId: string; runnerUpId: string } | null;
 export type StageTab = { index: number; name: string; isDrawn: boolean };
 export type Scorer = { playerId: string; name: string; clubId: string; goals: number };
 
@@ -108,7 +117,7 @@ function stateRanking(competition: StateCompetition, groups: readonly string[][]
     .map(({ id }) => id);
 }
 
-function zoning(competition: Competition, stage: number, groups: readonly string[][], stageFixtures: readonly Fixture[]): Zoning {
+function zoning(competition: Competition, stage: number, groups: readonly string[][], stageFixtures: readonly Fixture[], copa: CopaFinalists): Zoning {
   if (competition.kind === "cup") return NO_ZONES;
   if (competition.kind === "state") {
     if (stage !== 0) return NO_ZONES;
@@ -121,7 +130,7 @@ function zoning(competition: Competition, stage: number, groups: readonly string
   if (sizes.length === 1) {
     const { promotedIds, relegatedIds } = format.outcome(competition, stageFixtures);
     const order = standings(competition.clubIds, stageFixtures, competition.drawOrder).map((row) => row.clubId);
-    const continental = competition.division === "A" ? continentalQualifiers(order, null) : null;
+    const continental = competition.division === "A" ? continentalQualifiers(order, copa) : null;
     return {
       zoneOf: memberZones([
         ["libertadores", continental?.libertadoresGroups ?? []],
@@ -155,11 +164,16 @@ const stageFixturesOf = (competition: Competition, stage: number, fixtures: read
 const groupLetter = (index: number) => String.fromCharCode(65 + index);
 
 /** A group stage's tables as they stand, each row in its zone if the stage ended now. */
-export function groupTables(competition: Competition, stage: number, fixtures: readonly Fixture[]): { groups: GroupTable[]; zones: ZoneKey[] } {
+export function groupTables(
+  competition: Competition,
+  stage: number,
+  fixtures: readonly Fixture[],
+  copa: CopaFinalists = null,
+): { groups: GroupTable[]; zones: ZoneKey[] } {
   const shape = competition.stages[stage];
   if (shape?.kind !== "groups") return { groups: [], zones: [] };
   const stageFixtures = stageFixturesOf(competition, stage, fixtures);
-  const { zoneOf, advanceLabel } = zoning(competition, stage, shape.groups, stageFixtures);
+  const { zoneOf, advanceLabel } = zoning(competition, stage, shape.groups, stageFixtures, copa);
   const groups = shape.groups.map((group, g) => ({
     label: shape.groups.length > 1 ? `Grupo ${groupLetter(g)}` : null,
     rows: standings(group, stageFixtures, competition.drawOrder).map((row, i) => ({ ...row, position: i + 1, zone: zoneOf(row.clubId, i + 1, group.length) })),
@@ -174,7 +188,14 @@ export function groupTables(competition: Competition, stage: number, fixtures: r
   return { groups, zones: zones.sort((a, b) => ZONE_ORDER.indexOf(a.zone) - ZONE_ORDER.indexOf(b.zone)) };
 }
 
-function tieView(stage: KnockoutStage, tie: number, clubIds: [string, string], stageFixtures: readonly Fixture[]): TieView {
+// Série D's semi-final stage lists the two semi-finals first, then the quarter-final losers' playoffs (src/sim/leagueFormats.ts).
+const SERIE_D_PLAYOFF_STAGE = 5;
+const SERIE_D_SEMI_FINALS = 2;
+
+const isPlayoff = (competition: Competition, stage: number, tie: number) =>
+  competition.kind === "league" && competition.format === "serie-d" && stage === SERIE_D_PLAYOFF_STAGE && tie >= SERIE_D_SEMI_FINALS;
+
+function tieView(stage: KnockoutStage, tie: number, clubIds: [string, string], stageFixtures: readonly Fixture[]): Omit<TieView, "isPlayoff"> {
   const legFixtures = stageFixtures.filter((f) => f.tie === tie).sort((a, b) => a.date.localeCompare(b.date));
   const played = legFixtures.filter((f) => f.result);
   const isOver = legFixtures.length > 0 && played.length === legFixtures.length;
@@ -200,7 +221,7 @@ export function knockoutTies(competition: Competition, stage: number, fixtures: 
   const shape = competition.stages[stage];
   if (shape?.kind !== "knockout") return [];
   const stageFixtures = stageFixturesOf(competition, stage, fixtures);
-  return shape.ties.map((clubIds, tie) => tieView(shape, tie, clubIds, stageFixtures));
+  return shape.ties.map((clubIds, tie) => ({ ...tieView(shape, tie, clubIds, stageFixtures), isPlayoff: isPlayoff(competition, stage, tie) }));
 }
 
 /** The competition's top scorers this season, most goals first. */

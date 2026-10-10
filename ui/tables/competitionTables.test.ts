@@ -39,6 +39,20 @@ describe("groupTables zones", () => {
     expect(zones.map((z) => z.label)).toEqual(["Libertadores", "Pré-Libertadores", "Sul-Americana", "Rebaixamento"]);
   });
 
+  test("Série A: once the Copa do Brasil final is played, its champion and runner-up take the first places", () => {
+    const league = competition("serie-a-2026");
+    const order = groupTables(league, 0, game.fixtures).groups[0]?.rows.map((row) => row.clubId) ?? [];
+    const [champion, runnerUp] = [order[6] ?? "", order[7] ?? ""];
+    const rows = groupTables(league, 0, game.fixtures, { championId: champion, runnerUpId: runnerUp }).groups[0]?.rows ?? [];
+    const zoneOf = (clubId: string) => rows.find((row) => row.clubId === clubId)?.zone;
+    expect(zoneOf(champion)).toBe("libertadores");
+    expect(zoneOf(runnerUp)).toBe("preLibertadores");
+    expect(zoneOf(order[3] ?? "")).toBe("libertadores");
+    expect(zoneOf(order[4] ?? "")).toBe("preLibertadores");
+    expect(zoneOf(order[5] ?? "")).toBe("sulAmericana");
+    expect(rows.filter((row) => row.zone === "sulAmericana")).toHaveLength(6);
+  });
+
   test("Série B: four promoted and four relegated", () => {
     const { groups } = groupTables(competition("serie-b-2026"), 0, game.fixtures);
     expect(zonesByPosition(groups[0]?.rows ?? [])).toEqual([...repeat("promotion", 4), ...repeat(null, 12), ...repeat("relegation", 4)]);
@@ -123,6 +137,15 @@ describe("knockout ties and the cup bracket", () => {
     expect(rounds.map((r) => r.isDrawn)).toEqual([true, ...repeat(false, 8)]);
     expect(knockoutTies(copa, 0, game.fixtures)).toHaveLength(14);
     expect(knockoutTies(copa, 1, game.fixtures)).toEqual([]);
+  });
+
+  test("Série D's semi-final stage marks the quarter-final losers' ties as playoffs", () => {
+    const league = competition("serie-d-2026");
+    if (league.kind !== "league") throw new Error("Série D is a league");
+    const knockout = (ties: [string, string][]) => ({ kind: "knockout" as const, ties, dates: [] });
+    const stages = [...league.stages, ...Array.from({ length: 4 }, () => knockout([])), knockout([["a", "b"], ["c", "d"], ["e", "f"], ["g", "h"]])];
+    expect(knockoutTies({ ...league, stages }, 5, []).map((t) => t.isPlayoff)).toEqual([false, false, true, true]);
+    expect(knockoutTies(cup, 0, fixtures).map((t) => t.isPlayoff)).toEqual([false, false]);
   });
 
   test("a state championship names its knockout rounds by the clubs left", () => {
