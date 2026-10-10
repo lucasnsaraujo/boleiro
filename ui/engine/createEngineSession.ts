@@ -1,4 +1,5 @@
 import { advanceDay, type DayDecisions, type DayEvent } from "../../src/sim/advanceDay.js";
+import { declineOffer } from "../../src/sim/coach/declineOffer.js";
 import type { GameState, IsoDate } from "../../src/sim/gameState.js";
 import { applyLiveChange, type LiveChange } from "../../src/sim/live/applyLiveChange.js";
 import { finishMatchDay } from "../../src/sim/live/finishMatchDay.js";
@@ -9,6 +10,7 @@ import type { NewGameOptions } from "../../src/sim/newGame.js";
 import { loadGame, saveGame } from "../../src/sim/saveGame.js";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { playToMatchDay, type StopReason } from "../hub/playToMatchDay.js";
+import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
 import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
 import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
 
@@ -39,6 +41,8 @@ export function createEngineSession(files: GameFiles) {
   let news: InboxLine[] = [];
   /** The coach's match day between kick-off and the final whistle, and the furthest minute the screen has shown of it. */
   let live: { day: LiveDay; seenMinute: number } | null = null;
+  /** Firings and season ends the coach has not closed the screen on yet, oldest first. */
+  let turningPoints: TurningPoint[] = [];
 
   function underWay() {
     if (!live) throw new Error("no match day is under way");
@@ -54,6 +58,7 @@ export function createEngineSession(files: GameFiles) {
     state = next;
     news = [];
     live = null;
+    turningPoints = [];
     return summaryOf(next);
   }
 
@@ -70,15 +75,18 @@ export function createEngineSession(files: GameFiles) {
       let next = current();
       const events: DayEvent[] = [];
       const lines: InboxLine[] = [];
+      const points: TurningPoint[] = [];
       for (const decisions of days) {
         const day = advanceDay(next, decisions);
         lines.push(...inboxLines(next, day.state, day.events));
+        points.push(...turningPointsOf(next, day.state, day.events));
         next = day.state;
         events.push(...day.events);
       }
       state = next;
       live = null;
       addNews(lines);
+      turningPoints = [...turningPoints, ...points];
       return { date: next.date, events };
     },
     /**
@@ -87,8 +95,14 @@ export function createEngineSession(files: GameFiles) {
      * day it plays nothing and the inbox stays. If any day throws, the game stays where it was.
      */
     playToMatchDay(): PlayResult {
-      const played = playToMatchDay(current(), (day) => advanceDay(day, {}));
+      const points: TurningPoint[] = [];
+      const played = playToMatchDay(current(), (before) => {
+        const day = advanceDay(before, {});
+        points.push(...turningPointsOf(before, day.state, day.events));
+        return day;
+      });
       state = played.state;
+      turningPoints = [...turningPoints, ...points];
       if (played.daysPlayed > 0) news = played.news.slice(-INBOX_SIZE);
       return { date: played.state.date, stop: played.stop, daysPlayed: played.daysPlayed };
     },
@@ -125,7 +139,19 @@ export function createEngineSession(files: GameFiles) {
       state = day.state;
       live = null;
       addNews(inboxLines(before, day.state, day.events));
+      turningPoints = [...turningPoints, ...turningPointsOf(before, day.state, day.events)];
       return { date: day.state.date, events: day.events };
+    },
+    /** The oldest firing or season end the coach has not seen through yet. */
+    turningPoint(): TurningPoint | null {
+      return turningPoints[0] ?? null;
+    },
+    closeTurningPoint(): void {
+      turningPoints = turningPoints.slice(1);
+    },
+    /** The coach turns an open offer down; accepting one is a day's decision (`acceptOffer`). */
+    declineOffer(clubId: string): void {
+      state = declineOffer(current(), clubId);
     },
     inbox(): InboxLine[] {
       return news;

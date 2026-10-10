@@ -170,3 +170,36 @@ test("kicking off on a day the coach has no match fails", async () => {
   await engine.newGame(7, { coachClubId: "bahia-ba" });
   await expect(engine.matchDayPlan()).rejects.toThrow("the coach has no match today");
 });
+
+test("playing past the last day of the season leaves its review waiting until the coach closes it", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: "flamengo-rj" });
+  expect(await engine.turningPoint()).toBeNull();
+  const { date } = await engine.advance(Array.from({ length: 364 }, () => ({})));
+  expect(date).toBe("2026-12-31");
+  await engine.playToMatchDay();
+  const seen = [];
+  for (let point = await engine.turningPoint(); point; point = await engine.turningPoint()) {
+    seen.push(point);
+    await engine.closeTurningPoint();
+  }
+  expect(seen.at(-1)).toMatchObject({ kind: "seasonEnd", review: { season: 2026 } });
+  expect(await engine.read(["season"])).toEqual({ season: 2027 });
+});
+
+test("a new game starts with no turning point waiting", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: "flamengo-rj" });
+  await engine.advance(Array.from({ length: 364 }, () => ({})));
+  await engine.playToMatchDay();
+  await engine.newGame(7, { coachClubId: "flamengo-rj" });
+  expect(await engine.turningPoint()).toBeNull();
+});
+
+test("declining an offer takes it off the table and keeps the others", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: null, careerMode: true });
+  const [declined, ...kept] = (await engine.read(["coach"])).coach.offers;
+  await engine.declineOffer(declined?.clubId ?? "");
+  expect((await engine.read(["coach"])).coach.offers).toEqual(kept);
+});
