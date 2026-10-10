@@ -7,7 +7,7 @@ export type ClubChoice = { club: NationalClub; goal: string | null };
 export type ClubFilter = { query: string; division: Division | null; state: State | null };
 
 /** The board's goal for the season in a few words, as a sports page would put it. */
-export function boardGoal({ expectation, targetPosition }: Board, division: Division): string {
+export function boardGoal({ expectation, targetPosition }: Pick<Board, "expectation" | "targetPosition">, division: Division): string {
   const upTo = `(até ${targetPosition}º)`;
   switch (expectation) {
     case "title":

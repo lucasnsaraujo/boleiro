@@ -1,34 +1,52 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
+import type { Club } from "../../src/data/clubs.js";
+import type { GameState } from "../../src/sim/gameState.js";
 import { useServices } from "../app/ServicesContext.js";
-import { SCREENS } from "../app/screens.js";
-import { formatGameDate } from "../format/formatGameDate.js";
+import { ClubPlate } from "../clubs/ClubPlate.js";
+import { Crest } from "../clubs/Crest.js";
+import { formatDayMonth, formatGameDate, formatMatchDate } from "../format/formatGameDate.js";
+import { jobSecurity, nextMatch, type NextMatch } from "../hub/hubSelectors.js";
+import type { InboxLine } from "../hub/inboxLines.js";
+import { usePlayRound } from "../hub/usePlayRound.js";
 import type { CurrentGame } from "../saves/currentGame.js";
 import { saveToSlot } from "../saves/saveToSlot.js";
 import { slotLabel } from "../saves/slotMeta.js";
+import { boardGoal } from "./clubChoices.js";
 import "./hub.css";
 
-type Game = { date: string; season: number; clubName: string | null };
+const HUB_KEYS = ["date", "coachClubId", "clubs", "fixtures", "competitions", "boards", "coach"] as const;
+type HubState = Pick<GameState, (typeof HUB_KEYS)[number]>;
+type Loaded = { state: HubState; inbox: InboxLine[] };
 type Saving = "idle" | "saving" | "saved" | "failed";
+
+// The inbox stays short: the newest lines only, everything else is on the other screens.
+const INBOX_LINES = 7;
 
 export function Hub() {
   const { engine, slots, game: open } = useServices();
-  const [game, setGame] = useState<Game | null>(null);
+  const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [missing, setMissing] = useState(false);
   const [saving, setSaving] = useState<Saving>("idle");
 
+  const load = useCallback(
+    (isCurrent: () => boolean) =>
+      Promise.all([engine.read(HUB_KEYS), engine.inbox()]).then(
+        ([state, inbox]) => isCurrent() && setLoaded({ state, inbox }),
+        () => isCurrent() && setMissing(true),
+      ),
+    [engine],
+  );
+
   useEffect(() => {
     let current = true;
-    engine.read(["date", "season", "coachClubId", "clubs"]).then(
-      ({ date, season, coachClubId, clubs }) => {
-        if (current) setGame({ date, season, clubName: coachClubId ? (clubs[coachClubId]?.shortName ?? null) : null });
-      },
-      () => current && setMissing(true),
-    );
+    void load(() => current);
     return () => {
       current = false;
     };
-  }, [engine]);
+  }, [load]);
+
+  const round = usePlayRound(() => void load(() => true));
 
   async function save(opened: CurrentGame) {
     setSaving("saving");
@@ -53,26 +71,109 @@ export function Hub() {
       </>
     );
   }
-  if (!game) return <p className="status">Abrindo o jogo…</p>;
+  if (!loaded) return <p className="status">Abrindo o jogo…</p>;
+
+  const { state, inbox } = loaded;
+  const club = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
+  const next = nextMatch({ ...state });
+  const board = club ? state.boards[club.id] : undefined;
+  const offers = state.coach.offers.length;
 
   return (
     <div className="hub">
-      <h1 className="screen-title">{game.clubName ?? "Sem clube"}</h1>
-      <p className="screen-sub">{formatGameDate(game.date)}</p>
-      <p className="status">
-        <button className="btn-main" onClick={() => void save(current)} disabled={saving === "saving"}>
-          Salvar jogo
-        </button>
-      </p>
-      {saving === "saved" && <p className="status">Salvo em {slotLabel(current.slotId)}.</p>}
-      {saving === "failed" && <p className="status error">Não deu para salvar.</p>}
-      <nav className="hub-nav" aria-label="Telas">
-        {SCREENS.filter((screen) => screen.inHub).map((screen) => (
-          <Link key={screen.path} to={screen.path} className="btn-quiet">
-            {screen.title}
-          </Link>
-        ))}
-      </nav>
+      <section className="hub-band">
+        <div className="hub-club">
+          {club && <Crest club={club} size={64} />}
+          <div>
+            <h1 className="screen-title">{club?.shortName ?? "Sem clube"}</h1>
+            <p className="screen-sub">
+              {formatGameDate(state.date)}
+              {current.coachName && ` · ${current.coachName}`}
+            </p>
+          </div>
+        </div>
+        {club ? (
+          next ? (
+            <NextMatchPlates next={next} clubs={state.clubs} />
+          ) : (
+            <p className="hub-next-none">Nenhum jogo marcado.</p>
+          )
+        ) : (
+          <p className="hub-next-none">{offers === 0 ? "Nenhuma proposta na mesa." : `${offers} ${offers === 1 ? "proposta" : "propostas"} na mesa.`}</p>
+        )}
+        <div className="hub-foot">
+          {club && club.division && (
+            <dl className="hub-facts">
+              <div>
+                <dt>Cargo</dt>
+                <dd>{jobSecurity(board)}</dd>
+              </div>
+              {board && (
+                <div>
+                  <dt>Meta</dt>
+                  <dd>{boardGoal(board, club.division)}</dd>
+                </div>
+              )}
+            </dl>
+          )}
+          <div className="hub-actions">
+            <button className="btn-quiet" onClick={() => void save(current)} disabled={saving === "saving"}>
+              Salvar jogo
+            </button>
+            <button className="btn-main" onClick={() => void round.play()} disabled={round.isPlaying}>
+              {round.isPlaying ? "Jogando…" : club ? "Jogar rodada" : "Esperar propostas"}
+            </button>
+          </div>
+        </div>
+        {saving === "saved" && <p className="status">Salvo em {slotLabel(current.slotId)}.</p>}
+        {saving === "failed" && <p className="status error">Não deu para salvar.</p>}
+        {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
+      </section>
+      <section className="hub-inbox" aria-labelledby="inbox-title">
+        <h2 id="inbox-title" className="hub-section-title">
+          Notícias
+        </h2>
+        {inbox.length === 0 ? (
+          <p className="status">Nada de novo por enquanto.</p>
+        ) : (
+          <ul className="inbox" aria-labelledby="inbox-title">
+            {inbox
+              .slice(-INBOX_LINES)
+              .toReversed()
+              .map((line, index) => (
+                <li key={`${line.date}-${index}`} className={`inbox-row ${line.tone}`}>
+                  <span className="inbox-date">{formatDayMonth(line.date)}</span>
+                  <span className="inbox-text">{line.text}</span>
+                </li>
+              ))}
+          </ul>
+        )}
+      </section>
     </div>
+  );
+}
+
+function NextMatchPlates({ next, clubs }: { next: NextMatch; clubs: Readonly<Record<string, Club>> }) {
+  const home = clubs[next.fixture.homeId];
+  const away = clubs[next.fixture.awayId];
+  if (!home || !away) return null;
+  return (
+    <section className="hub-next" aria-label="Próximo jogo">
+      <p className={next.isToday ? "hub-next-when today" : "hub-next-when"}>{next.isToday ? "Hoje" : formatMatchDate(next.fixture.date)}</p>
+      <div className="hub-next-teams">
+        <span className="hub-side home">
+          <ClubPlate club={home} />
+          <Crest club={home} size={46} />
+        </span>
+        <span className="hub-x">x</span>
+        <span className="hub-side">
+          <Crest club={away} size={46} />
+          <ClubPlate club={away} />
+        </span>
+      </div>
+      <p className="hub-next-what">
+        <span>{next.label}</span> · {next.isHome ? "em casa" : "fora"}
+      </p>
+    </section>
   );
 }

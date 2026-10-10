@@ -3,7 +3,8 @@ import { useNavigate } from "react-router";
 import type { Division } from "../../src/data/players.js";
 import type { Board } from "../../src/sim/coach/boardExpectations.js";
 import { useServices } from "../app/ServicesContext.js";
-import { CLUBS, clubById, plateColours } from "../clubs/clubCatalog.js";
+import { CLUBS, clubById } from "../clubs/clubCatalog.js";
+import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
 import { formatGameDate } from "../format/formatGameDate.js";
 import { saveToSlot } from "../saves/saveToSlot.js";
@@ -168,15 +169,6 @@ function ClubPicker({ boards, onPick }: { boards: Readonly<Record<string, Board>
         )}
       </aside>
     </div>
-  );
-}
-
-function ClubPlate({ club }: { club: ClubChoice["club"] }) {
-  const { background, text } = plateColours(club.colours);
-  return (
-    <p className="plate" style={{ background, color: text }}>
-      {club.shortName}
-    </p>
   );
 }
 

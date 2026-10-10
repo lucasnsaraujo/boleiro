@@ -1,17 +1,19 @@
-/** The 12 screens of v1. `inHub` screens are reached from the hub between rounds. */
+/** The 12 screens of v1. `inBar` screens are in the navigation bar, which shows on those screens only. */
 export const SCREENS = [
-  { path: "/", title: "Início", inHub: false },
-  { path: "/new-game", title: "Novo jogo", inHub: false },
-  { path: "/hub", title: "Clube", inHub: false },
-  { path: "/round", title: "Rodada", inHub: true },
-  { path: "/lineup", title: "Escalação", inHub: true },
-  { path: "/tables", title: "Tabelas", inHub: true },
-  { path: "/squad", title: "Elenco", inHub: true },
-  { path: "/market", title: "Mercado", inHub: true },
-  { path: "/finances", title: "Finanças", inHub: true },
-  { path: "/calendar", title: "Calendário", inHub: true },
-  { path: "/history", title: "História", inHub: true },
-  { path: "/season-end", title: "Fim de temporada", inHub: true },
+  { path: "/", title: "Início", inBar: false },
+  { path: "/new-game", title: "Novo jogo", inBar: false },
+  { path: "/hub", title: "Clube", inBar: true },
+  { path: "/round", title: "Rodada", inBar: false },
+  { path: "/lineup", title: "Escalação", inBar: true },
+  { path: "/tables", title: "Tabelas", inBar: true },
+  { path: "/squad", title: "Elenco", inBar: true },
+  { path: "/market", title: "Mercado", inBar: true },
+  { path: "/finances", title: "Finanças", inBar: true },
+  { path: "/calendar", title: "Calendário", inBar: true },
+  { path: "/history", title: "História", inBar: true },
+  { path: "/season-end", title: "Fim de temporada", inBar: false },
 ] as const;
 
 export type ScreenPath = (typeof SCREENS)[number]["path"];
+
+export const BAR_SCREENS = SCREENS.filter((screen) => screen.inBar);

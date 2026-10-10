@@ -36,6 +36,39 @@ test("a played round is autosaved with the coach's name and the game's date", as
   expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID, gameSlotId: "slot-1", coachName: "Tite", date, coachClubId: "bahia-ba", division: "A" }]);
 });
 
+test("playing on to the match day autosaves the rounds other clubs played on the way", async () => {
+  const { engine, slots } = await startGame();
+  await engine.advance([{}]);
+  const { fixtures } = await engine.read(["fixtures"]);
+  const othersFirst = fixtures.map((f) => f.date).sort()[0] ?? "";
+  const ownFirst = fixtures.filter((f) => f.homeId === "bahia-ba" || f.awayId === "bahia-ba").map((f) => f.date).sort()[0] ?? "";
+  expect(othersFirst < ownFirst).toBe(true);
+  const { date } = await engine.playToMatchDay();
+  expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID, date }]);
+});
+
+test("playing on through days with no match anywhere still autosaves", async () => {
+  const { engine: raw, close } = inMemoryEngine();
+  closers.push(close);
+  const slots = indexedDbSlots(new IDBFactory());
+  const stoppedByAnOffer = {
+    ...raw,
+    playToMatchDay: async () => ({ date: (await raw.advance([{}])).date, stop: "jobOffer" as const, daysPlayed: 1 }),
+  };
+  const engine = withAutosave(stoppedByAnOffer, slots, { current: { slotId: "slot-1", coachName: "Tite" } });
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  const { date } = await engine.playToMatchDay();
+  expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID, date }]);
+});
+
+test("playing on when already on the match day plays nothing and saves nothing", async () => {
+  const { engine, slots } = await startGame();
+  await engine.playToMatchDay();
+  await slots.remove(AUTOSAVE_SLOT_ID);
+  await engine.playToMatchDay();
+  expect(await slots.list()).toEqual([]);
+});
+
 test("a failed autosave still returns the round that was played", async () => {
   const { engine: raw, close } = inMemoryEngine();
   closers.push(close);

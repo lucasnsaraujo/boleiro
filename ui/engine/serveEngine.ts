@@ -7,6 +7,10 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.newGame(...request.args);
     case "advance":
       return session.advance(...request.args);
+    case "playToMatchDay":
+      return session.playToMatchDay();
+    case "inbox":
+      return session.inbox();
     case "save":
       return session.save();
     case "load":
