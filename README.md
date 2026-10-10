@@ -14,6 +14,7 @@ python3 -m venv .venv && .venv/bin/pip install -r pipeline/requirements.txt
 pipeline/fetch_sofascore.sh data/sofascore-stats.json                     # season stats (Sofascore), needs agent-browser
 .venv/bin/python pipeline/fetch_wiki_colours.py data/transfermarkt-players.csv data/wiki-colours.csv   # kit colours (Wikidata + pt.wikipedia)
 .venv/bin/python pipeline/build_clubs.py data/club-facts.csv data/wiki-colours.csv data/clubs.csv
+.venv/bin/python pipeline/fetch_crests.py   # crests into assets/crests/ and data/crests.csv (Transfermarkt + ESPN), needs oxipng
 .venv/bin/python pipeline/rate_players.py data/transfermarkt-players.csv data/sofascore-stats.json data/clubs.csv data/players.csv
 ```
 

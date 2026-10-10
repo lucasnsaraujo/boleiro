@@ -21,6 +21,19 @@ One row per club: the 156 clubs of Série A–D 2026 plus the 125 clubs that onl
 
 `club-facts.csv` holds hand-checked values that override or fill the scraped ones: one row per club and field, with its source.
 
+## crests.csv and assets/crests/
+
+One row per club, built by `pipeline/fetch_crests.py`. The images ship inside the app so they work offline. They are not licensed: Boleiro is a personal game that is never sold.
+
+| Column | Source |
+|---|---|
+| `crest` | Transfermarkt crest, `https://tmssl.akamaized.net/images/wappen/head/{tm_id}.png` (139×181 PNG, transparent), saved as `assets/crests/{tm_id}.png`. All 281 clubs had one on 2026-10-10. |
+| `scoreboard_crest` | ESPN's 500×500 logo for the big scoreboard, saved as `assets/crests/scoreboard/{tm_id}.png`. Only for clubs that match an ESPN team with certainty: ESPN teams come from `site.api.espn.com/apis/site/v2/sports/soccer/{bra.1,bra.2,bra.copa_do_brazil}/teams`, and a match needs the same `team_key` name and the same division (`bra.1` is Série A, `bra.2` is Série B), with one candidate on each side, or a row in `espn-crest-matches.csv`. Cup-only ESPN teams have no division, so Série C, D and state-only clubs get none. Empty means no certain match. |
+
+`espn-crest-matches.csv` holds hand-checked ESPN matches the name rule misses, each with how it was checked.
+
+All files are recompressed losslessly with `oxipng`, which keeps the folder at about 8.5 MB.
+
 ## players.csv
 
 `club_id` links each player to `clubs.csv`. Strength starts from a division baseline (A 72, B 63, C 56, D 49). State-only clubs start at 42, one step below Série D (`guess`, keeping the roughly 7-point gap between divisions). They have no Sofascore stats, so their strength moves only with market value and age.
