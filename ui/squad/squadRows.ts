@@ -26,16 +26,17 @@ export type SquadSortKey = "name" | "strength" | "age" | "fatigue" | "contractUn
 export type SquadSort = { key: SquadSortKey; descending: boolean };
 export type SquadGroup = { group: PositionGroup; rows: SquadRow[] };
 
-export const POSITION_ORDER: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
+const POSITION_ORDER: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
 
 type StatusState = Pick<GameState, "date" | "discipline" | "competitions">;
 
 /**
- * Card records of the competitions still being played. A competition opens its next stage the day
- * the last one ends, so one with no game left to play is over, and its yellows and bans with it.
+ * Card records of the competitions the club still has a game in. A competition opens its next stage
+ * the day the last one ends, so a club with no game left in it is out or done, and the yellows and
+ * bans it carries there no longer matter.
  */
-export function liveDiscipline({ discipline, fixtures }: Pick<GameState, "discipline" | "fixtures">): GameState["discipline"] {
-  const live = new Set(fixtures.filter((f) => !f.result).map((f) => f.competitionId));
+export function liveDiscipline({ discipline, fixtures }: Pick<GameState, "discipline" | "fixtures">, clubId: string): GameState["discipline"] {
+  const live = new Set(fixtures.filter((f) => !f.result && (f.homeId === clubId || f.awayId === clubId)).map((f) => f.competitionId));
   return Object.fromEntries(Object.entries(discipline).filter(([competitionId]) => live.has(competitionId)));
 }
 
@@ -60,7 +61,7 @@ export function statusText(status: PlayerStatus): string {
 export function squadRows(state: Pick<GameState, "date" | "coachClubId" | "players" | "discipline" | "competitions" | "fixtures">): SquadRow[] {
   const { coachClubId, date } = state;
   if (!coachClubId) return [];
-  const statusState = { ...state, discipline: liveDiscipline(state) };
+  const statusState = { ...state, discipline: liveDiscipline(state, coachClubId) };
   return Object.values(state.players)
     .filter((p) => p.clubId === coachClubId)
     .map((p) => ({

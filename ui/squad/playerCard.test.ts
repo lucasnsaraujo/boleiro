@@ -44,6 +44,11 @@ describe("playerCard", () => {
     expect(playerCard({ ...game, discipline, fixtures }, player.id)?.season.yellows).toEqual([]);
   });
 
+  test("yellows from a competition his club is out of are gone", () => {
+    const discipline = { "copa-do-brasil-2026": { [player.id]: { yellows: 1, phase: 0, bans: 0 } } };
+    expect(playerCard({ ...game, discipline }, player.id)?.season.yellows).toEqual([]);
+  });
+
   test("the contract shows a loan and a signed pre-contract", () => {
     const market: GameState["market"] = {
       ...game.market,

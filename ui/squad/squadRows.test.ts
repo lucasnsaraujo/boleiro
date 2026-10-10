@@ -33,6 +33,12 @@ describe("squadRows", () => {
     expect(rowOf(squadRows({ ...game, discipline }), someone.id)?.status).toEqual({ kind: "suspended", competitions: ["Baiano"] });
   });
 
+  test("a ban in a competition the club has no game left in no longer counts", () => {
+    const discipline = { "copa-do-brasil-2026": { [someone.id]: { yellows: 0, phase: 0, bans: 1 } } };
+    expect(game.fixtures.some((f) => f.competitionId === "copa-do-brasil-2026" && !f.result)).toBe(true);
+    expect(rowOf(squadRows({ ...game, discipline }), someone.id)?.status).toBeNull();
+  });
+
   test("a ban left over from a competition that is over no longer counts", () => {
     const discipline = { "state-ba-2026": { [someone.id]: { yellows: 0, phase: 0, bans: 1 } } };
     const fixtures = game.fixtures.map((f) => (f.competitionId === "state-ba-2026" ? { ...f, result: { homeGoals: 1, awayGoals: 0 } } : f));

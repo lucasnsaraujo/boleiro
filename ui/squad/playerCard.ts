@@ -14,7 +14,7 @@ export type PlayerCard = {
   strength: number;
   clubId: string;
   status: PlayerStatus;
-  /** Goals and pending yellows by competition this season; minutes in every competition. */
+  /** Goals and the yellows counting toward a ban, by competition this season; minutes in every competition. */
   season: { goals: { competition: string; goals: number }[]; minutes: number; yellows: { competition: string; yellows: number }[] };
   /** Games and goals for his current club since the save began. */
   atClub: { apps: number; goals: number };
@@ -39,7 +39,7 @@ export function playerCard(state: CardState, playerId: string): PlayerCard | nul
       return count > 0 && competition ? [{ competition, goals: count }] : [];
     })
     .sort((a, b) => b.goals - a.goals);
-  const discipline = liveDiscipline(state);
+  const discipline = liveDiscipline(state, player.clubId);
   const yellows = Object.entries(discipline).flatMap(([competitionId, records]) => {
     const count = records[playerId]?.yellows ?? 0;
     const competition = state.competitions[competitionId];
