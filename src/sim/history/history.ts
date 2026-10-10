@@ -42,6 +42,9 @@ export type SeasonRecord = {
   tables: Record<Division, string[]>;
 };
 
+/** A player's strength as it stood through one season; it only changes at the yearly turnover. */
+export type StrengthMark = { season: number; strength: number };
+
 export type CoachStint = { clubId: string; from: IsoDate; until: IsoDate | null; left: "fired" | "contractEnded" | "moved" | null };
 
 export type CoachRecord = {
@@ -59,6 +62,8 @@ export type History = {
   clubs: Record<string, ClubRecords>;
   /** Per club, then per player. */
   players: Record<string, Record<string, PlayerAtClub>>;
+  /** Per player, one mark per season since the save began or he arrived, oldest first. */
+  strength: Record<string, StrengthMark[]>;
   coach: CoachRecord;
 };
 
@@ -72,6 +77,7 @@ export function newHistory(season: number, date: IsoDate, coachClubId: string | 
     current: { season, champions: {}, goals: {} },
     clubs: {},
     players: {},
+    strength: {},
     coach: { stints: coachClubId ? [{ clubId: coachClubId, from: date, until: null, left: null }] : [], trophies: [], firings: [], seasons: [] },
   };
 }

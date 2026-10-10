@@ -82,6 +82,13 @@ describe("newGame", () => {
     expect(youth.every((p) => p.age >= 17 && p.age <= 19 && p.wage > 0 && p.nationalities.join() === "Brazil")).toBe(true);
   });
 
+  it("remembers every player's opening strength as the first season's", () => {
+    const players = Object.values(state.players);
+    expect(Object.keys(state.history.strength)).toHaveLength(players.length);
+    expect(players.every((p) => state.history.strength[p.id]?.length === 1 && state.history.strength[p.id]?.[0]?.strength === p.strength)).toBe(true);
+    expect(state.history.strength[players[0]?.id ?? ""]).toEqual([{ season: 2026, strength: players[0]?.strength }]);
+  });
+
   it("depends only on the seed", () => {
     expect(loadNewGame(2026, { coachClubId: "flamengo-rj" })).toEqual(state);
     expect(loadNewGame(7, { coachClubId: "flamengo-rj" }).fixtures).not.toEqual(state.fixtures);
