@@ -129,6 +129,31 @@ test("a pending request can be withdrawn, and a new game clears the desk", async
   expect(await engine.desk()).toEqual({ pending: [], answers: [], forcedSales: [] });
 });
 
+test("a save keeps the desk: a request still pending and the board's answers come back on load", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  await engine.ask({ kind: "renew", playerId: await ownPlayerOf(engine, "bahia-ba"), years: 2 });
+  await engine.playToMatchDay();
+  await engine.ask({ kind: "sign", playerId: await ownPlayerOf(engine, "palmeiras-sp") });
+  const desk = await engine.desk();
+  const save = await engine.save();
+  await engine.newGame(8, { coachClubId: "bahia-ba" });
+  await engine.load(save);
+  expect(await engine.desk()).toEqual(desk);
+  expect(desk.pending).toHaveLength(1);
+  expect(desk.answers).toHaveLength(1);
+});
+
+test("a save from before the desk was saved loads with an empty desk", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  await engine.advance([{}]);
+  const save: { game: unknown } = JSON.parse(await engine.save());
+  await engine.ask({ kind: "sign", playerId: await ownPlayerOf(engine, "palmeiras-sp") });
+  expect(await engine.load(JSON.stringify(save.game))).toEqual({ date: "2026-01-02", season: 2026, coachClubId: "bahia-ba" });
+  expect(await engine.desk()).toEqual({ pending: [], answers: [], forcedSales: [] });
+});
+
 test("pressing on when already on the match day keeps the inbox", async () => {
   const engine = startEngine();
   await engine.newGame(7, { coachClubId: "bahia-ba" });

@@ -20,8 +20,12 @@ export function saveGame(state: GameState): string {
   return JSON.stringify(state);
 }
 
-export function loadGame(json: string): GameState {
-  const parsed: unknown = JSON.parse(json);
+/** A parsed save checked as a game of this version; throws otherwise. */
+export function toGameState(parsed: unknown): GameState {
   if (!isGameState(parsed)) throw new Error(`not a version ${SAVE_VERSION} Boleiro save`);
   return parsed;
+}
+
+export function loadGame(json: string): GameState {
+  return toGameState(JSON.parse(json));
 }

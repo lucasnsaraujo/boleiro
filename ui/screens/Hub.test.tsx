@@ -107,8 +107,8 @@ test("a coach without a club opens the offers on the table from the hub", async 
 
 test("a coach with a club sees an offer on the table without leaving his round", async () => {
   const given = await services("bahia-ba");
-  const save: { coach: { offers: JobOffer[] } } = JSON.parse(await given.engine.save());
-  save.coach.offers.push({ clubId: "vitoria-ba", salary: 90_000, untilSeason: 2026, expiresOn: "2026-01-14" });
+  const save: { game: { coach: { offers: JobOffer[] } } } = JSON.parse(await given.engine.save());
+  save.game.coach.offers.push({ clubId: "vitoria-ba", salary: 90_000, untilSeason: 2026, expiresOn: "2026-01-14" });
   await given.engine.load(JSON.stringify(save));
   openHub(given);
   expect(await screen.findByRole("link", { name: "1 proposta" })).toBeTruthy();

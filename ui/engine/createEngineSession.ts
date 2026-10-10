@@ -7,7 +7,6 @@ import type { LiveDay } from "../../src/sim/live/liveDay.js";
 import { startMatchDay } from "../../src/sim/live/startMatchDay.js";
 import { newGameFromFiles, type GameFiles } from "../../src/sim/loadNewGame.js";
 import type { NewGameOptions } from "../../src/sim/newGame.js";
-import { loadGame, saveGame } from "../../src/sim/saveGame.js";
 import type { CoachRequest } from "../../src/sim/transfers/coachRequest.js";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { playToMatchDay, type StopReason } from "../hub/playToMatchDay.js";
@@ -15,6 +14,7 @@ import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
 import { boardNotes, dueRequests, EMPTY_DESK, withRequest, type BoardDesk } from "../market/boardDesk.js";
 import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
 import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
+import { readSessionSave, writeSessionSave } from "./sessionSave.js";
 
 export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode">;
 export type GameSummary = Pick<GameState, "date" | "season" | "coachClubId">;
@@ -44,7 +44,7 @@ export function createEngineSession(files: GameFiles) {
   let state: GameState | null = null;
   /** What happened to the coach since he last played on, oldest first. */
   let news: InboxLine[] = [];
-  /** The coach's requests waiting for the board, and what the board did, since the game was opened. */
+  /** The coach's requests waiting for the board, and what the board did; saved with the game. */
   let desk: BoardDesk = EMPTY_DESK;
   /** The coach's match day between kick-off and the final whistle, and the furthest minute the screen has shown of it. */
   let live: { day: LiveDay; seenMinute: number } | null = null;
@@ -217,10 +217,13 @@ export function createEngineSession(files: GameFiles) {
       return desk;
     },
     save(): string {
-      return saveGame(current());
+      return writeSessionSave({ game: current(), desk });
     },
     load(save: string): GameSummary {
-      return begin(loadGame(save));
+      const loaded = readSessionSave(save);
+      const summary = begin(loaded.game);
+      desk = loaded.desk;
+      return summary;
     },
     read<K extends keyof GameState>(keys: readonly K[]): Pick<GameState, K> {
       return pick(current(), keys);
