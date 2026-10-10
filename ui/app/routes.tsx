@@ -1,7 +1,9 @@
 import type { ReactElement } from "react";
 import type { RouteObject } from "react-router";
 import { Calendar } from "../screens/Calendar.js";
+import { Finances } from "../screens/Finances.js";
 import { Hub } from "../screens/Hub.js";
+import { Market } from "../screens/Market.js";
 import { NewGame } from "../screens/NewGame.js";
 import { Placeholder } from "../screens/Placeholder.js";
 import { Player } from "../screens/Player.js";
@@ -17,6 +19,8 @@ const BUILT: Partial<Record<ScreenPath, ReactElement>> = {
   "/hub": <Hub />,
   "/tables": <Tables />,
   "/squad": <Squad />,
+  "/market": <Market />,
+  "/finances": <Finances />,
   "/calendar": <Calendar />,
 };
 
