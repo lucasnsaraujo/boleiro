@@ -22,36 +22,43 @@ export function Options() {
     <div className="options">
       <h1 className="screen-title">Opções</h1>
       <div className="options-body">
-        <section className="options-sound" aria-labelledby="options-sound-title">
-          <h2 id="options-sound-title" className="options-heading">
-            Som
-          </h2>
-          {VOLUMES.map(({ key, label }) => {
-            const percent = Math.round(settings[key] * 100);
-            return (
-              <label key={key} className="options-volume">
-                <span className="options-volume-label">{label}</span>
-                <input
-                  type="range"
-                  className="options-slider"
-                  min={0}
-                  max={100}
-                  step={5}
-                  value={percent}
-                  disabled={settings.isMuted}
-                  aria-label={label}
-                  style={{ ["--fill" as string]: `${percent}%` }}
-                  onChange={(event) => change({ [key]: Number(event.target.value) / 100 })}
-                />
-                <span className="options-volume-value">{percent}%</span>
-              </label>
-            );
-          })}
-          <label className="options-mute">
-            <input type="checkbox" checked={settings.isMuted} onChange={(event) => change({ isMuted: event.target.checked })} />
-            <span>Sem som</span>
-          </label>
-        </section>
+        <div className="options-main">
+          <section className="options-sound" aria-labelledby="options-sound-title">
+            <h2 id="options-sound-title" className="options-heading">
+              Som
+            </h2>
+            {VOLUMES.map(({ key, label }) => {
+              const percent = Math.round(settings[key] * 100);
+              return (
+                <label key={key} className="options-volume">
+                  <span className="options-volume-label">{label}</span>
+                  <input
+                    type="range"
+                    className="options-slider"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={percent}
+                    disabled={settings.isMuted}
+                    aria-label={label}
+                    style={{ ["--fill" as string]: `${percent}%` }}
+                    onChange={(event) => change({ [key]: Number(event.target.value) / 100 })}
+                  />
+                  <span className="options-volume-value">{percent}%</span>
+                </label>
+              );
+            })}
+            <label className="options-mute">
+              <input type="checkbox" checked={settings.isMuted} onChange={(event) => change({ isMuted: event.target.checked })} />
+              <span>Sem som</span>
+            </label>
+          </section>
+          <footer className="options-actions">
+            <Link to="/" className="btn-main">
+              Voltar ao início
+            </Link>
+          </footer>
+        </div>
 
         <section className="credits" aria-labelledby="credits-title">
           <h2 id="credits-title" className="options-heading">
@@ -60,7 +67,7 @@ export function Options() {
           <ul className="credits-list" aria-label="Créditos">
             {CREDITS.map((row) => (
               <li key={row.file} className="credits-row">
-                <a className="credits-sound" href={row.source} target="_blank" rel="noreferrer">
+                <a className="credits-sound" href={row.source} title={row.sound} target="_blank" rel="noreferrer">
                   {row.sound}
                 </a>
                 <span className="credits-who">
@@ -72,11 +79,6 @@ export function Options() {
           <p className="credits-note">Cliques e vinhetas de título, acesso, rebaixamento e demissão são sintetizados no próprio jogo.</p>
         </section>
       </div>
-      <footer className="options-actions">
-        <Link to="/" className="btn-main">
-          Voltar ao início
-        </Link>
-      </footer>
     </div>
   );
 }
