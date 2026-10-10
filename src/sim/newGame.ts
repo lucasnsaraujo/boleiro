@@ -4,6 +4,7 @@ import type { SquadPlayer } from "../data/players.js";
 import { randomStream } from "../engine/random.js";
 import { openingCoach } from "./coach/openingCoach.js";
 import { newHistory } from "./history/history.js";
+import { recordStrengths } from "./history/recordStrengths.js";
 import { NEUTRAL_MOOD } from "./morale/clubMood.js";
 import { openingFinances, type FinanceData } from "./finances/openingFinances.js";
 import type { GameState, IsoDate, SimPlayer } from "./gameState.js";
@@ -68,15 +69,17 @@ export function newGame(
   const squadPlayers = [...dataPlayers, ...academyTopUp(clubs, dataPlayers, `${season}-01-01`, randomStream(seed ^ ACADEMY_STREAM_SALT).next)];
   const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION);
   const { economy, finances, wages } = openingFinances(clubsById, squadPlayers, competitions, fixtures, financeData, competitionMoney);
+  const simPlayers = Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }]));
+  const market = openingMarket(seed);
   return openingCoach({
-    version: 2,
+    version: 3,
     seed,
     rngState: random.state(),
     date: `${season}-01-01`,
     season,
     coachClubId,
     clubs: clubsById,
-    players: Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }])),
+    players: simPlayers,
     calendar,
     competitions,
     fixtures,
@@ -84,7 +87,7 @@ export function newGame(
     finances,
     mood: Object.fromEntries(clubs.map((club) => [club.id, NEUTRAL_MOOD])),
     discipline: {},
-    history: newHistory(season, `${season}-01-01`, careerMode ? null : coachClubId),
-    market: openingMarket(seed),
+    history: recordStrengths({ season, players: simPlayers, market, history: newHistory(season, `${season}-01-01`, careerMode ? null : coachClubId) }),
+    market,
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
 }

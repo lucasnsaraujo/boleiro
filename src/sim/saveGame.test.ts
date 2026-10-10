@@ -34,4 +34,10 @@ describe("saveGame and loadGame", () => {
     delete coachWithoutTactics.tactics;
     expect(() => loadGame(JSON.stringify({ ...midSeason, version: 1, coach: coachWithoutTactics }))).toThrow();
   });
+
+  it("rejects a save from before strength history existed", () => {
+    const historyWithoutStrength: Partial<typeof midSeason.history> = { ...midSeason.history };
+    delete historyWithoutStrength.strength;
+    expect(() => loadGame(JSON.stringify({ ...midSeason, version: 2, history: historyWithoutStrength }))).toThrow();
+  });
 });

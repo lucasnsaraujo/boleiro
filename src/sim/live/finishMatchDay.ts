@@ -12,6 +12,7 @@ import { payCopaPrizes } from "../finances/payCopaPrizes.js";
 import { recordMatchFinances } from "../finances/recordMatchFinances.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { closeSeasonHistory } from "../history/closeSeasonHistory.js";
+import { recordStrengths } from "../history/recordStrengths.js";
 import { recordDayEvents } from "../history/recordDayEvents.js";
 import { recordMatches } from "../history/recordMatches.js";
 import { reactToDay } from "../morale/reactToDay.js";
@@ -134,8 +135,9 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   if (next.date.slice(0, 4) !== String(state.season)) {
     const developed = developPlayers(closeSeasonHistory(next));
     const ended = endSeason(developed.state);
-    const coachRandom = randomStream(ended.state.rngState);
-    const started = startCoachSeason(ended.state, Object.values(ended.outcomes), coachRandom.next);
+    const marked = { ...ended.state, history: recordStrengths(ended.state) };
+    const coachRandom = randomStream(marked.rngState);
+    const started = startCoachSeason(marked, Object.values(ended.outcomes), coachRandom.next);
     events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...developed.events, ...started.events);
     // Bans still pending when a competition ends lapse with it.
     const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));

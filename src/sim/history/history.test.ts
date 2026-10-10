@@ -158,6 +158,28 @@ describe("club history over several seasons", () => {
     }
   });
 
+  it("marks each player's strength once per season, after his yearly development", () => {
+    for (const [i, after] of run.states.entries()) {
+      const before = run.lastDays[i];
+      if (!before) throw new Error("missing season");
+      const stayed = Object.values(after.players).filter((p) => before.players[p.id]);
+      expect(stayed.length).toBeGreaterThan(0);
+      for (const p of stayed) expect(after.history.strength[p.id]?.at(-1)).toEqual({ season: after.season, strength: p.strength });
+    }
+    const veteran = Object.values(run.final.players).find((p) => p.id.startsWith("p"));
+    if (!veteran) throw new Error("no player from the data left");
+    expect(history.strength[veteran.id]?.map((mark) => mark.season)).toEqual([2026, 2027, 2028, 2029]);
+  });
+
+  it("forgets the strength of players who left Brazilian football unless a club remembers them", () => {
+    const { players, market } = run.final;
+    const remembered = new Set(Object.values(history.players).flatMap((atClub) => Object.keys(atClub)));
+    const retired = run.events.flatMap((e) => (e.type === "playerRetired" ? [e.playerId] : []));
+    expect(retired.some((id) => remembered.has(id) && history.strength[id])).toBe(true);
+    expect(retired.some((id) => !remembered.has(id))).toBe(true);
+    for (const id of Object.keys(history.strength)) expect(Boolean(players[id] ?? market.freeAgents[id]) || remembered.has(id), id).toBe(true);
+  });
+
   it("survives save and load", () => {
     expect(loadGame(saveGame(run.final))).toStrictEqual(run.final);
     const withoutHistory = Object.fromEntries(Object.entries(run.final).filter(([key]) => key !== "history"));

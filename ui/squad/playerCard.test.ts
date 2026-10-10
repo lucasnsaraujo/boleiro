@@ -63,6 +63,18 @@ describe("playerCard", () => {
     });
   });
 
+  test("a new game's player has one strength mark, this season's", () => {
+    expect(playerCard(game, player.id)?.strengthBySeason).toEqual([{ season: 2026, strength: player.strength }]);
+  });
+
+  test("strength history runs oldest first and ends with this season's, even for a player who arrived mid-season", () => {
+    const strength = { [player.id]: [{ season: 2025, strength: 61.2 }] };
+    expect(playerCard({ ...game, history: { ...game.history, strength } }, player.id)?.strengthBySeason).toEqual([
+      { season: 2025, strength: 61.2 },
+      { season: 2026, strength: player.strength },
+    ]);
+  });
+
   test("a player from another club is not the coach's to sell or renew", () => {
     expect(playerCard(game, stranger.id)?.isCoachsPlayer).toBe(false);
   });
