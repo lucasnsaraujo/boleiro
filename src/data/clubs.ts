@@ -23,7 +23,6 @@ export type Club = {
   capacity: number;
   pitch: Pitch;
   colours: { primary: string; secondary: string };
-  crestUrl: string | null;
   fanbase: number;
   sources: {
     names: string;
@@ -32,7 +31,6 @@ export type Club = {
     stadium: string;
     pitch: string;
     colours: string;
-    crest: string;
     fanbase: string;
   };
 };
@@ -62,7 +60,6 @@ function toClub(row: Record<string, string>): Club {
     capacity: count(row.capacity, "capacity", id),
     pitch: oneOf(PITCHES, row.pitch, "pitch", id),
     colours: { primary: row.primary_colour ?? "", secondary: row.secondary_colour ?? "" },
-    crestUrl: row.crest_url || null,
     fanbase: count(row.fanbase, "fanbase", id),
     sources: {
       names: row.names_source ?? "",
@@ -71,7 +68,6 @@ function toClub(row: Record<string, string>): Club {
       stadium: row.stadium_source ?? "",
       pitch: row.pitch_source ?? "",
       colours: row.colours_source ?? "",
-      crest: row.crest_source ?? "",
       fanbase: row.fanbase_source ?? "",
     },
   };
