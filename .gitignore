@@ -5,3 +5,7 @@ data/history_cache/
 dist/
 coverage/
 .claude/
+test-results/
+playwright-report/
+src-tauri/target/
+src-tauri/gen/
