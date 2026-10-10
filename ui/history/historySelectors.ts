@@ -65,11 +65,13 @@ export function coachCareer(coach: CoachRecord): CareerStint[] {
   return coach.stints
     .map((stint) => {
       const isDuring = (date: string) => date >= stint.from && (stint.until === null || date <= stint.until);
+      // Trophies carry no date: a title counts for the club in any season the stint overlaps.
+      const overlaps = (season: number) => stint.from <= `${season}-12-31` && (stint.until === null || stint.until >= `${season}-01-01`);
       const firing = stint.left === "fired" ? coach.firings.find((f) => f.clubId === stint.clubId && isDuring(f.date)) : undefined;
       return {
         ...stint,
         seasons: coach.seasons.filter((s) => s.clubId === stint.clubId && isDuring(`${s.season}-12-31`)).length,
-        titles: coach.trophies.filter((t) => t.clubId === stint.clubId && isDuring(`${t.season}-12-31`)).map((t) => t.competition).toReversed(),
+        titles: coach.trophies.filter((t) => t.clubId === stint.clubId && overlaps(t.season)).map((t) => t.competition).toReversed(),
         firedAt: firing ? { position: firing.position, targetPosition: firing.targetPosition } : null,
       };
     })

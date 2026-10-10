@@ -98,6 +98,22 @@ describe("the coach's career", () => {
     expect(stints[0]).toMatchObject({ until: null, left: null, seasons: 2, titles: ["serie-a", "copa-do-brasil"] });
   });
 
+  it("keeps a title won at a club he left during that season under that club", () => {
+    const moved = coachCareer({
+      stints: [
+        { clubId: "bahia-ba", from: "2026-01-01", until: "2026-07-10", left: "moved" },
+        { clubId: "flamengo-rj", from: "2026-07-10", until: null, left: null },
+      ],
+      trophies: [{ season: 2026, competition: "state-ba", clubId: "bahia-ba" }],
+      firings: [],
+      seasons: [{ season: 2026, clubId: "flamengo-rj", position: 3, targetPosition: 1 }],
+    });
+    expect(moved.map((s) => [s.clubId, s.titles, s.seasons])).toEqual([
+      ["flamengo-rj", [], 1],
+      ["bahia-ba", ["state-ba"], 0],
+    ]);
+  });
+
   it("marks the club that fired him and where he left it", () => {
     expect(stints[1]).toMatchObject({ left: "fired", titles: [], seasons: 0, firedAt: { position: 18, targetPosition: 10 } });
   });
