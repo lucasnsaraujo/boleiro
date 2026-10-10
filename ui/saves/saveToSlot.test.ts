@@ -17,14 +17,14 @@ afterEach(() => {
   for (const close of closers.splice(0)) close();
 });
 
-test("saving lists the slot under its name with the game's date and club", async () => {
+test("saving lists the slot with the coach's name and the game's date, club and division", async () => {
   const engine = startEngine();
   const slots = indexedDbSlots(new IDBFactory());
   await engine.newGame(7, { coachClubId: "bahia-ba" });
   await engine.advance([{}, {}]);
-  await saveToSlot(engine, slots, { id: "slot-1", name: "Bahia 2026" }, new Date("2026-10-10T12:00:00Z"));
+  await saveToSlot(engine, slots, "slot-1", { slotId: "slot-1", coachName: "Tite" }, new Date("2026-10-10T12:00:00Z"));
   expect(await slots.list()).toEqual([
-    { id: "slot-1", name: "Bahia 2026", savedAt: "2026-10-10T12:00:00.000Z", date: "2026-01-03", season: 2026, coachClubId: "bahia-ba" },
+    { id: "slot-1", gameSlotId: "slot-1", coachName: "Tite", savedAt: "2026-10-10T12:00:00.000Z", date: "2026-01-03", season: 2026, coachClubId: "bahia-ba", division: "A" },
   ]);
 });
 
@@ -32,7 +32,7 @@ test("loading a slot puts its game back in the engine", async () => {
   const engine = startEngine();
   const slots = indexedDbSlots(new IDBFactory());
   await engine.newGame(7, { coachClubId: "bahia-ba" });
-  await saveToSlot(engine, slots, { id: "slot-1", name: "Bahia 2026" }, new Date("2026-10-10T12:00:00Z"));
+  await saveToSlot(engine, slots, "slot-1", { slotId: "slot-1", coachName: "Tite" }, new Date("2026-10-10T12:00:00Z"));
   await engine.advance([{}, {}, {}]);
   expect(await loadFromSlot(engine, slots, "slot-1")).toEqual({ date: "2026-01-01", season: 2026, coachClubId: "bahia-ba" });
   expect(await engine.read(["date"])).toEqual({ date: "2026-01-01" });

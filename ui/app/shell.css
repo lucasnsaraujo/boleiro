@@ -66,6 +66,18 @@
   cursor: progress;
 }
 
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 18px;
+  background: var(--red);
+  color: #fff;
+  font: 700 16px var(--cond);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .btn-quiet {
   font: 600 15px var(--cond);
   color: var(--chalk-2);
