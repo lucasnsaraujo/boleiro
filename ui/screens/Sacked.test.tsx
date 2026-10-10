@@ -8,6 +8,10 @@ import type { EngineClient } from "../engine/connectEngine.js";
 import { inMemoryEngine } from "../engine/inMemoryEngine.js";
 import type { TurningPoint } from "../hub/turningPoints.js";
 import { indexedDbSlots } from "../saves/indexedDbSlots.js";
+import { unlockedFakeSound } from "../sound/fakeAudioContext.js";
+import { CUES } from "../sound/soundCatalog.js";
+import type { SoundEngine } from "../sound/soundEngine.js";
+import { SoundProvider } from "../sound/SoundProvider.js";
 import { Sacked } from "./Sacked.js";
 
 const closers: (() => void)[] = [];
@@ -39,7 +43,7 @@ async function services(points: TurningPoint[]): Promise<{ given: Services; clos
   return { given: { engine: faked, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } }, closed: () => closedCount };
 }
 
-function openSacked(given: Services) {
+function openSacked(given: Services, sound?: SoundEngine) {
   const router = createMemoryRouter(
     [
       { path: "/sacked", element: <Sacked /> },
@@ -48,11 +52,8 @@ function openSacked(given: Services) {
     ],
     { initialEntries: ["/sacked"] },
   );
-  render(
-    <ServicesContext value={given}>
-      <RouterProvider router={router} />
-    </ServicesContext>,
-  );
+  const screenTree = <RouterProvider router={router} />;
+  render(<ServicesContext value={given}>{sound ? <SoundProvider engine={sound} store={localStorage}>{screenTree}</SoundProvider> : screenTree}</ServicesContext>);
 }
 
 test("the sacking shows where the club stood against the board's target, then opens the offers", async () => {
@@ -70,4 +71,12 @@ test("with no sacking waiting the screen sends the coach to his club", async () 
   const { given } = await services([]);
   openSacked(given);
   expect(await screen.findByText("Clube aberto")).toBeTruthy();
+});
+
+test("the sacking plays its stinger", async () => {
+  const sound = unlockedFakeSound();
+  const { given } = await services([firing]);
+  openSacked(given, sound.engine);
+  await screen.findByRole("heading", { name: "Demitido" });
+  expect(sound.ctx.notes()).toBe(CUES.sacked.tones.length);
 });

@@ -1,4 +1,4 @@
-import type { AudioBufferLike, AudioContextLike, AudioNodeLike, AudioParamLike } from "./soundEngine.js";
+import { createSoundEngine, type AudioBufferLike, type AudioContextLike, type AudioNodeLike, type AudioParamLike } from "./soundEngine.js";
 
 type Step = { time: number; value: number };
 
@@ -135,3 +135,11 @@ export class FakeAudioContext implements AudioContextLike {
 
 /** What the engine fetches: the URL itself, which the fake context "decodes" back. */
 export const fetchUrlBytes = (url: string): Promise<ArrayBuffer> => Promise.resolve(new TextEncoder().encode(url).buffer);
+
+/** A sound engine over a fake context, unlocked as if the player had already clicked. */
+export function unlockedFakeSound(durations: Readonly<Record<string, number>> = {}) {
+  const ctx = new FakeAudioContext(durations);
+  const engine = createSoundEngine({ createContext: () => ctx, fetchBytes: fetchUrlBytes });
+  engine.unlock();
+  return { engine, ctx };
+}

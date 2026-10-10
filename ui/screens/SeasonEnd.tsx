@@ -9,6 +9,8 @@ import { competitionKeyName } from "../format/competitionName.js";
 import { formatMoney } from "../format/formatMoney.js";
 import { seasonHeadline, type Stamp } from "../seasonEnd/seasonHeadline.js";
 import type { BoardVerdict, ContinentalPlace, ContractVerdict, Placing, SeasonReview } from "../seasonEnd/seasonReview.js";
+import type { Cue } from "../sound/soundCatalog.js";
+import { useSound } from "../sound/SoundProvider.js";
 import { boardGoal } from "./clubChoices.js";
 import "./seasonEnd.css";
 
@@ -16,6 +18,7 @@ type Clubs = Readonly<Record<string, Club>>;
 type Loaded = { review: SeasonReview; clubs: Clubs } | "none";
 
 const STAMPS: Record<Stamp, string> = { title: "Campeão", promoted: "Acesso", relegated: "Rebaixado" };
+const STINGERS: Record<Stamp, Cue> = { title: "title", promoted: "promotion", relegated: "relegation" };
 const CONTINENTAL: Record<ContinentalPlace, string> = {
   libertadores: "Libertadores",
   preLibertadores: "Pré-Libertadores",
@@ -37,6 +40,7 @@ function contractText(contract: ContractVerdict): string {
 /** The season's end: the club's result, then the board's verdict, then on to the next season. */
 export function SeasonEnd() {
   const { engine } = useServices();
+  const { engine: sound } = useSound();
   const navigate = useNavigate();
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [failed, setFailed] = useState(false);
@@ -53,6 +57,12 @@ export function SeasonEnd() {
       current = false;
     };
   }, [engine]);
+
+  useEffect(() => {
+    if (!loaded || loaded === "none" || !loaded.review.clubId || !loaded.review.placing) return;
+    const { stamp } = seasonHeadline(loaded.review.placing, loaded.review.titles);
+    if (stamp) sound.play(STINGERS[stamp]);
+  }, [loaded, sound]);
 
   if (failed) return <p className="status error">Nenhum jogo aberto.</p>;
   if (!loaded) return <p className="status">Fechando a temporada…</p>;

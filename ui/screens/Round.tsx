@@ -14,6 +14,8 @@ import type { LiveRound, RoundClub, Side } from "../round/liveRoundOf.js";
 import { liveTable, shortTable, type LiveTableRow } from "../round/liveTable.js";
 import type { MatchDayPlan } from "../round/matchDayPlan.js";
 import { goalsBetween, pauseReason, roundAt, type EventKind, type MatchAt } from "../round/roundAt.js";
+import { crowdLevel, roundCues, thinCues } from "../sound/roundCues.js";
+import { useSound } from "../sound/SoundProvider.js";
 import "./round.css";
 
 type Speed = 0 | 1 | 2 | 4;
@@ -25,6 +27,8 @@ const MS_PER_MINUTE: Record<Running, number> = { 1: 660, 2: 330, 4: 110 };
 const FLOOD_MS: Record<Running, number> = { 1: 1500, 2: 1150, 4: 800 };
 const EXPO_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 const NO_COLOURS = { primary: "#eef3e8", secondary: "#0a1a10" };
+/** The crowd quietens while the clock stands still: half-time, a pause, a sheet open. */
+const PAUSED_CROWD = 0.6;
 
 type PreMatch = { plan: MatchDayPlan; clubs: Readonly<Record<string, Club>>; date: string };
 /** A goal being celebrated on a row: the scoring club's colour, its side, and a count so each goal replays the animation. */
@@ -36,6 +40,7 @@ function canAnimate(element: Element): boolean {
 
 export function Round() {
   const { engine } = useServices();
+  const { engine: sound } = useSound();
   const navigate = useNavigate();
   const [preMatch, setPreMatch] = useState<PreMatch | null>(null);
   const [round, setRound] = useState<LiveRound | null>(null);
@@ -119,6 +124,7 @@ export function Round() {
     if (!live || minute <= from) return;
     shownMinute.current = minute;
     engine.seeMinute(minute).catch(() => undefined);
+    for (const cue of thinCues(roundCues(live, from, minute), resumeSpeed.current)) sound.play(cue);
     const goals = goalsBetween(live, from, minute);
     if (goals.length) {
       setFlashes((current) => {
@@ -196,6 +202,10 @@ export function Round() {
     if (next !== 0) resumeSpeed.current = next;
     setSpeed(next);
   }
+
+  const crowd = round && result === null && minute < FULL_TIME ? crowdLevel(round, minute) * (isRunning ? 1 : PAUSED_CROWD) : null;
+  useEffect(() => sound.setCrowd(crowd), [sound, crowd]);
+  useEffect(() => () => sound.setCrowd(null), [sound]);
 
   useEffect(() => {
     if (!isTableOpen) return;

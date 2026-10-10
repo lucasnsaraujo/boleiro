@@ -6,6 +6,7 @@ import { useServices } from "../app/ServicesContext.js";
 import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
 import { formatGameDate } from "../format/formatGameDate.js";
+import { useSound } from "../sound/SoundProvider.js";
 import "./career.css";
 
 type Loaded = { firing: CoachFired; club: Club | undefined; offers: number } | "none";
@@ -13,6 +14,7 @@ type Loaded = { firing: CoachFired; club: Club | undefined; offers: number } | "
 /** The board's sacking, before the coach looks at what else is on the table. */
 export function Sacked() {
   const { engine } = useServices();
+  const { engine: sound } = useSound();
   const navigate = useNavigate();
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [failed, setFailed] = useState(false);
@@ -31,6 +33,11 @@ export function Sacked() {
       current = false;
     };
   }, [engine]);
+
+  const isSacked = loaded !== null && loaded !== "none";
+  useEffect(() => {
+    if (isSacked) sound.play("sacked");
+  }, [isSacked, sound]);
 
   if (failed) return <p className="status error">Nenhum jogo aberto.</p>;
   if (!loaded) return <p className="status">Abrindo…</p>;
