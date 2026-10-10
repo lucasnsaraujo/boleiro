@@ -11,7 +11,6 @@ from scrape_tm import COMPETITIONS, STATE_CHAMPIONSHIPS, club_ids, fetch, state_
 BRAZIL_POPULATION = 213_421_037
 FANBASE_GUESS = {"A": 800_000, "B": 500_000, "C": 200_000, "D": 80_000, "": 20_000}
 CAPACITY_GUESS = {"A": 30_000, "B": 15_000, "C": 8_000, "D": 5_000, "": 3_000}
-CREST_URL = "https://api.sofascore.app/api/v1/team/{}/image"
 EDGE_WORDS = {
     "aa", "ac", "ad", "ae", "ca", "ce", "cr", "ec", "fc", "sc", "se", "ser", "aad", "acd", "ga", "ltda", "cf", "fr",
     "associacao", "associação", "asociação", "atletica", "atlética", "atletico", "atlético", "clube", "club", "de", "do", "da", "dos",
@@ -112,7 +111,6 @@ def build(facts: dict[str, dict[str, tuple[str, str]]], wiki_colours: dict[str, 
             pitch, pitch_source = "natural", "not on the Série A 2026 synthetic-pitch lists (band.com.br, itatiaia.com.br)"
         else:
             pitch, pitch_source = "natural", "guess"
-        sofascore_id = fact.get("sofascore_id", ("", ""))
         short = fact.get("short_name", (short_name(name), ""))[0]
         clubs.append({
             "id": f"{slugify(short)}-{state.lower()}",
@@ -126,7 +124,6 @@ def build(facts: dict[str, dict[str, tuple[str, str]]], wiki_colours: dict[str, 
             "pitch": pitch,
             "primary_colour": primary,
             "secondary_colour": secondary,
-            "crest_url": CREST_URL.format(sofascore_id[0]) if sofascore_id[0] else "",
             "fanbase": fanbase,
             "names_source": "transfermarkt" + ("; short name: curated" if "short_name" in fact else ""),
             "state_source": state_source,
@@ -134,7 +131,6 @@ def build(facts: dict[str, dict[str, tuple[str, str]]], wiki_colours: dict[str, 
             "stadium_source": stadium_source,
             "pitch_source": pitch_source,
             "colours_source": colours_source,
-            "crest_source": sofascore_id[1] if sofascore_id[0] else "missing: Sofascore team id not found",
             "fanbase_source": fanbase_source,
         })
     ids = [club["id"] for club in clubs]
