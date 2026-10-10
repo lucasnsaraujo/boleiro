@@ -1,7 +1,6 @@
 import type { PositionGroup } from "../../src/engine/match.js";
 import type { GameState, IsoDate } from "../../src/sim/gameState.js";
 import { competitionKey } from "../../src/sim/history/history.js";
-import { fatigueOn } from "../../src/sim/players/fatigueOn.js";
 import type { Trait } from "../../src/sim/players/playerProfile.js";
 import { competitionName } from "../format/competitionName.js";
 import { playerStatus, type PlayerStatus } from "./squadRows.js";
@@ -11,11 +10,9 @@ export type PlayerCard = {
   name: string;
   group: PositionGroup;
   age: number;
-  nationalities: string[];
   trait: Trait | null;
   strength: number;
   clubId: string;
-  fatigue: number;
   status: PlayerStatus;
   /** Goals and pending yellows by competition this season; minutes in every competition. */
   season: { goals: { competition: string; goals: number }[]; minutes: number; yellows: { competition: string; yellows: number }[] };
@@ -54,11 +51,9 @@ export function playerCard(state: CardState, playerId: string): PlayerCard | nul
     name: player.name,
     group: player.group,
     age: player.age,
-    nationalities: player.nationalities,
     trait: player.trait,
     strength: player.strength,
     clubId: player.clubId,
-    fatigue: Math.round(fatigueOn(player, state.date)),
     status: playerStatus(player, state),
     season: { goals, minutes: player.condition.seasonMinutes, yellows },
     atClub: { apps: atClub?.apps ?? 0, goals: atClub?.goals ?? 0 },

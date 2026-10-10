@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { GameState, SimPlayer } from "../../src/sim/gameState.js";
 import { newGameFromFiles } from "../../src/sim/loadNewGame.js";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
-import { nextSort, sortedSquad, squadRows, type SquadRow } from "./squadRows.js";
+import { nextSort, sortedSquad, squadRows, statusText, type SquadRow } from "./squadRows.js";
 
 const game = newGameFromFiles(7, { coachClubId: "bahia-ba" }, bundledGameFiles);
 const squad = Object.values(game.players).filter((p) => p.clubId === "bahia-ba");
@@ -76,5 +76,13 @@ describe("nextSort", () => {
     expect(nextSort({ key: "strength", descending: true }, "age")).toEqual({ key: "age", descending: false });
     expect(nextSort({ key: "age", descending: false }, "wage")).toEqual({ key: "wage", descending: true });
     expect(nextSort({ key: "age", descending: false }, "age")).toEqual({ key: "age", descending: true });
+  });
+});
+
+describe("statusText", () => {
+  test("says until when a player is out injured, or where he is banned", () => {
+    expect(statusText({ kind: "injured", until: "2026-03-12" })).toBe("Lesionado até 12 mar");
+    expect(statusText({ kind: "suspended", competitions: ["Baiano", "Copa do Brasil"] })).toBe("Suspenso: Baiano, Copa do Brasil");
+    expect(statusText(null)).toBe("");
   });
 });

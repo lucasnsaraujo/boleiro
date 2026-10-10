@@ -4,6 +4,7 @@ import { fatigueOn } from "../../src/sim/players/fatigueOn.js";
 import { isInjured } from "../../src/sim/players/isInjured.js";
 import type { Trait } from "../../src/sim/players/playerProfile.js";
 import { competitionName } from "../format/competitionName.js";
+import { formatDayMonth } from "../format/formatGameDate.js";
 
 export type PlayerStatus = { kind: "injured"; until: IsoDate } | { kind: "suspended"; competitions: string[] } | null;
 
@@ -37,6 +38,13 @@ export function playerStatus(player: SimPlayer, { date, discipline, competitions
     return (records[player.id]?.bans ?? 0) > 0 && competition ? [competitionName(competition)] : [];
   });
   return banned.length > 0 ? { kind: "suspended", competitions: banned } : null;
+}
+
+/** "Lesionado até 12 mar", "Suspenso: Baiano"; empty when he can play. */
+export function statusText(status: PlayerStatus): string {
+  if (!status) return "";
+  if (status.kind === "injured") return `Lesionado até ${formatDayMonth(status.until)}`;
+  return `Suspenso: ${status.competitions.join(", ")}`;
 }
 
 /** The coach's squad, one row per player. */
