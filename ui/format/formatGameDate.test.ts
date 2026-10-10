@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { formatGameDate, formatMatchDate, formatRowDate, monthName } from "./formatGameDate.js";
+import { formatDayMonth, formatGameDate, formatMatchDate, formatRowDate, monthName } from "./formatGameDate.js";
 
 test("a game date reads as day, month and year in Portuguese", () => {
   expect(formatGameDate("2026-01-01")).toBe("1 de janeiro de 2026");
@@ -15,6 +15,10 @@ test("a match date reads as weekday, day and month", () => {
 
 test("a row date is the short weekday and the day", () => {
   expect(formatRowDate("2026-03-01")).toBe("dom 1");
+});
+
+test("a news date is the day and the month's first three letters", () => {
+  expect(formatDayMonth("2026-03-01")).toBe("1 mar");
 });
 
 test("a month name comes from its number", () => {
