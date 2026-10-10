@@ -111,7 +111,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, colours, doneLa
             <i className="mark box-r" />
             {starters.map((p) => {
               const spot = spots.get(p.id) ?? { x: 50, y: 50 };
-              const classes = ["player", sheet.picked === p.id && "sel", hurt.has(p.id) && "hurt", sentOff.has(p.id) && "off"].filter(Boolean).join(" ");
+              const classes = ["pitch-player", sheet.picked === p.id && "sel", hurt.has(p.id) && "hurt", sentOff.has(p.id) && "off"].filter(Boolean).join(" ");
               return (
                 <button
                   key={p.id}
