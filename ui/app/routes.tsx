@@ -7,6 +7,7 @@ import { Hub } from "../screens/Hub.js";
 import { Market } from "../screens/Market.js";
 import { NewGame } from "../screens/NewGame.js";
 import { Offers } from "../screens/Offers.js";
+import { Options } from "../screens/Options.js";
 import { Round } from "../screens/Round.js";
 import { Sacked } from "../screens/Sacked.js";
 import { SeasonEnd } from "../screens/SeasonEnd.js";
@@ -40,7 +41,7 @@ export const routes: RouteObject[] = [
       { path: "/squad/:playerId", element: <Player /> },
       { path: "/offers", element: <Offers /> },
       { path: "/sacked", element: <Sacked /> },
-      { path: "/options", element: <Placeholder title="Opções" back={{ to: "/", label: "Voltar ao início" }} /> },
+      { path: "/options", element: <Options /> },
     ],
   },
 ];
