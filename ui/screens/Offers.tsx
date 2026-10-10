@@ -42,7 +42,7 @@ export function Offers() {
     };
   }, [load]);
 
-  const wait = usePlayRound(() => void load());
+  const wait = usePlayRound(() => navigate("/hub"));
 
   if (failed) return <p className="status error">Nenhum jogo aberto.</p>;
   if (!state) return <p className="status">Abrindo as propostas…</p>;
