@@ -33,7 +33,17 @@ test("days without matches leave the autosave slot empty", async () => {
 test("a played round is autosaved with the coach's name and the game's date", async () => {
   const { engine, slots, daysToFirstMatch } = await startGame();
   const { date } = await engine.advance(Array.from({ length: daysToFirstMatch + 1 }, () => ({})));
-  expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID, coachName: "Tite", date, coachClubId: "bahia-ba", division: "A" }]);
+  expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID, gameSlotId: "slot-1", coachName: "Tite", date, coachClubId: "bahia-ba", division: "A" }]);
+});
+
+test("a failed autosave still returns the round that was played", async () => {
+  const { engine: raw, close } = inMemoryEngine();
+  closers.push(close);
+  const broken = { ...indexedDbSlots(new IDBFactory()), write: () => Promise.reject(new Error("disk full")) };
+  const engine = withAutosave(raw, broken, { current: { slotId: "slot-1", coachName: "Tite" } });
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  const { events } = await engine.advance(Array.from({ length: 40 }, () => ({})));
+  expect(events.some((event) => event.type === "matchPlayed")).toBe(true);
 });
 
 test("with no game open on the screens nothing is autosaved", async () => {

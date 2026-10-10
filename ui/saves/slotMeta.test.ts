@@ -3,6 +3,7 @@ import { gameSlots, slotLabel, toSlotMeta, type SlotMeta } from "./slotMeta.js";
 
 const saved: SlotMeta = {
   id: "slot-2",
+  gameSlotId: "slot-2",
   savedAt: "2026-10-10T12:00:00.000Z",
   coachName: "Tite",
   date: "2026-03-01",

@@ -22,3 +22,10 @@ test("a crest image that fails to load falls back to the initials", () => {
   fireEvent.error(screen.getByRole("img", { name: "Bahia" }));
   expect(screen.getByRole("img", { name: "Bahia" }).textContent).toBe("BAH");
 });
+
+test("after one club's crest fails, the next club still shows its own crest image", () => {
+  const { rerender } = render(<Crest club={bahia} />);
+  fireEvent.error(screen.getByRole("img", { name: "Bahia" }));
+  rerender(<Crest club={{ id: "vitoria-ba", shortName: "Vitória", colours: { primary: "#CC1010", secondary: "#080808" } }} />);
+  expect(screen.getByRole("img", { name: "Vitória" }).tagName).toBe("IMG");
+});

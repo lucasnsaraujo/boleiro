@@ -222,8 +222,9 @@ function CoachAndSlot({ seed, picked, onBack }: { seed: number; picked: Choice; 
     try {
       const coachClubId = picked.mode === "club" ? picked.choice.club.id : null;
       await engine.newGame(seed, { coachClubId, careerMode: picked.mode === "career" });
-      await saveToSlot(engine, slots, { id: slot.id, coachName: name });
-      game.current = { slotId: slot.id, coachName: name };
+      const opened = { slotId: slot.id, coachName: name };
+      await saveToSlot(engine, slots, slot.id, opened);
+      game.current = opened;
       navigate("/hub");
     } catch {
       setFailed(true);

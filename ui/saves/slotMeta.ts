@@ -1,8 +1,11 @@
 import type { Division } from "../../src/data/players.js";
 import type { GameSummary } from "../engine/createEngineSession.js";
 
-/** What the slot list shows without opening the save itself. `division` is the coach's club's when saved. */
-export type SlotMeta = GameSummary & { id: string; savedAt: string; coachName: string; division: Division | null };
+/**
+ * What the slot list shows without opening the save itself. `division` is the coach's club's when saved;
+ * `gameSlotId` is the slot the game was started in, which differs from `id` in the autosave.
+ */
+export type SlotMeta = GameSummary & { id: string; gameSlotId: string; savedAt: string; coachName: string; division: Division | null };
 
 export const AUTOSAVE_SLOT_ID = "autosave";
 
@@ -41,12 +44,13 @@ function isDivision(value: unknown): value is Division {
 /** Slot metadata read back from disk; anything malformed is dropped rather than shown. */
 export function toSlotMeta(value: unknown): SlotMeta | null {
   if (!isRecord(value)) return null;
-  const { id, savedAt, coachName, date, season, coachClubId, division } = value;
+  const { id, gameSlotId, savedAt, coachName, date, season, coachClubId, division } = value;
   if (typeof id !== "string" || !SLOT_ID.test(id)) return null;
+  if (typeof gameSlotId !== "string" || !SLOT_ID.test(gameSlotId)) return null;
   if (typeof coachName !== "string" || typeof savedAt !== "string" || typeof date !== "string") return null;
   if (typeof season !== "number" || (coachClubId !== null && typeof coachClubId !== "string")) return null;
   if (division !== null && !isDivision(division)) return null;
-  return { id, savedAt, coachName, date, season, coachClubId, division };
+  return { id, gameSlotId, savedAt, coachName, date, season, coachClubId, division };
 }
 
 export function newestFirst(slots: SlotMeta[]): SlotMeta[] {

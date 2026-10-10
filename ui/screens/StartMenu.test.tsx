@@ -24,7 +24,7 @@ function services(): Services {
 
 async function saveGame({ engine, slots }: Services, id: string, coachClubId: string, coachName: string, savedAt: string) {
   await engine.newGame(1, { coachClubId });
-  await saveToSlot(engine, slots, { id, coachName }, new Date(savedAt));
+  await saveToSlot(engine, slots, id, { slotId: id, coachName }, new Date(savedAt));
 }
 
 function openStartMenu(given: Services) {
@@ -58,6 +58,16 @@ test("continue opens the most recently saved game", async () => {
   await userEvent.click(await screen.findByRole("button", { name: "Continuar" }));
   await screen.findByText("Clube aberto");
   expect(await given.engine.read(["coachClubId"])).toEqual({ coachClubId: "vitoria-ba" });
+  expect(given.game.current).toEqual({ slotId: "slot-2", coachName: "Tite" });
+});
+
+test("continuing from the autosave keeps saving into the game's own slot", async () => {
+  const given = services();
+  await saveGame(given, "slot-2", "bahia-ba", "Tite", "2026-10-01T12:00:00Z");
+  await saveToSlot(given.engine, given.slots, "autosave", { slotId: "slot-2", coachName: "Tite" }, new Date("2026-10-09T12:00:00Z"));
+  openStartMenu(given);
+  await userEvent.click(await screen.findByRole("button", { name: "Continuar" }));
+  await screen.findByText("Clube aberto");
   expect(given.game.current).toEqual({ slotId: "slot-2", coachName: "Tite" });
 });
 

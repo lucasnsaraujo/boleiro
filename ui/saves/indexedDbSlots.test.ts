@@ -4,7 +4,7 @@ import { indexedDbSlots } from "./indexedDbSlots.js";
 import type { SlotMeta } from "./slotMeta.js";
 
 function meta(id: string, coachName: string, savedAt: string): SlotMeta {
-  return { id, coachName, savedAt, date: "2026-03-01", season: 2026, coachClubId: "bahia-ba", division: "A" };
+  return { id, gameSlotId: id, coachName, savedAt, date: "2026-03-01", season: 2026, coachClubId: "bahia-ba", division: "A" };
 }
 
 test("a written slot is listed and its save reads back", async () => {

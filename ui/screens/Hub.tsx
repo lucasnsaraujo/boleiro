@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { useServices } from "../app/ServicesContext.js";
 import { SCREENS } from "../app/screens.js";
 import { formatGameDate } from "../format/formatGameDate.js";
+import type { CurrentGame } from "../saves/currentGame.js";
 import { saveToSlot } from "../saves/saveToSlot.js";
 import { slotLabel } from "../saves/slotMeta.js";
 import "./hub.css";
@@ -29,10 +30,10 @@ export function Hub() {
     };
   }, [engine]);
 
-  async function save(slot: { id: string; coachName: string }) {
+  async function save(opened: CurrentGame) {
     setSaving("saving");
     try {
-      await saveToSlot(engine, slots, slot);
+      await saveToSlot(engine, slots, opened.slotId, opened);
       setSaving("saved");
     } catch {
       setSaving("failed");
@@ -59,7 +60,7 @@ export function Hub() {
       <h1 className="screen-title">{game.clubName ?? "Sem clube"}</h1>
       <p className="screen-sub">{formatGameDate(game.date)}</p>
       <p className="status">
-        <button className="btn-main" onClick={() => void save({ id: current.slotId, coachName: current.coachName })} disabled={saving === "saving"}>
+        <button className="btn-main" onClick={() => void save(current)} disabled={saving === "saving"}>
           Salvar jogo
         </button>
       </p>

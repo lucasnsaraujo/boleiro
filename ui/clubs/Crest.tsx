@@ -8,9 +8,9 @@ type Props = { club: Pick<Club, "id" | "shortName" | "colours">; size?: number }
 /** The club's real crest, or a shield in its colours with its initials when there is none. */
 export function Crest({ club, size = 32 }: Props) {
   const url = crestUrlOf(club.id);
-  const [failed, setFailed] = useState(false);
-  if (url && !failed) {
-    return <img className="crest" src={url} alt={club.shortName} width={size} height={size} onError={() => setFailed(true)} />;
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  if (url && url !== failedUrl) {
+    return <img className="crest" src={url} alt={club.shortName} width={size} height={size} onError={() => setFailedUrl(url)} />;
   }
   const { primary, secondary } = club.colours;
   const { text } = plateColours(club.colours);

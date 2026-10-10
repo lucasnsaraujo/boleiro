@@ -58,7 +58,7 @@ export function StartMenu() {
     setOpenFailed(false);
     try {
       await loadFromSlot(engine, slots, meta.id);
-      game.current = { slotId: meta.id, coachName: meta.coachName };
+      game.current = { slotId: meta.gameSlotId, coachName: meta.coachName };
       navigate("/hub");
     } catch {
       setOpenFailed(true);

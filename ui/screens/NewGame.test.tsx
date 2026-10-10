@@ -86,7 +86,7 @@ test("career mode starts with no club and offers from small clubs", async () => 
 
 test("choosing a slot that holds a game asks before replacing it", async () => {
   const { slots } = openNewGame();
-  const old = { id: "slot-1", coachName: "Antigo", savedAt: "2026-10-01T12:00:00.000Z", date: "2026-05-01", season: 2026, coachClubId: "vitoria-ba", division: "A" as const };
+  const old = { id: "slot-1", gameSlotId: "slot-1", coachName: "Antigo", savedAt: "2026-10-01T12:00:00.000Z", date: "2026-05-01", season: 2026, coachClubId: "vitoria-ba", division: "A" as const };
   await slots.write(old, "old save");
   await userEvent.click(screen.getByRole("tab", { name: "Modo carreira" }));
   await userEvent.click(screen.getByRole("button", { name: "Começar carreira" }));
@@ -107,7 +107,7 @@ test("choosing a slot that holds a game asks before replacing it", async () => {
 
 test("an empty slot is picked by default so a fresh game never asks to replace", async () => {
   const { slots } = openNewGame();
-  await slots.write({ id: "slot-1", coachName: "Antigo", savedAt: "2026-10-01T12:00:00.000Z", date: "2026-05-01", season: 2026, coachClubId: null, division: null }, "old");
+  await slots.write({ id: "slot-1", gameSlotId: "slot-1", coachName: "Antigo", savedAt: "2026-10-01T12:00:00.000Z", date: "2026-05-01", season: 2026, coachClubId: null, division: null }, "old");
   await userEvent.click(screen.getByRole("tab", { name: "Modo carreira" }));
   await userEvent.click(screen.getByRole("button", { name: "Começar carreira" }));
   expect(await screen.findByRole("radio", { name: /Jogo 2/ })).toHaveProperty("checked", true);

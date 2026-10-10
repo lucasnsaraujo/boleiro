@@ -12,7 +12,8 @@ export function withAutosave(engine: EngineClient, slots: SlotStore, game: Curre
       const result = await engine.advance(days);
       const open = game.current;
       if (open && result.events.some((event) => event.type === "matchPlayed")) {
-        await saveToSlot(engine, slots, { id: AUTOSAVE_SLOT_ID, coachName: open.coachName });
+        // The round is already played in the worker; failing here would make callers retry and play it twice.
+        await saveToSlot(engine, slots, AUTOSAVE_SLOT_ID, open).catch(() => undefined);
       }
       return result;
     },
