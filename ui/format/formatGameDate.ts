@@ -26,6 +26,11 @@ export function formatDayMonth(date: IsoDate): string {
   return `${Number(date.slice(8, 10))} ${monthName(Number(date.slice(5, 7))).slice(0, 3)}`;
 }
 
+/** "dez 2027", for a contract's end. */
+export function formatMonthYear(date: IsoDate): string {
+  return `${monthName(Number(date.slice(5, 7))).slice(0, 3)} ${date.slice(0, 4)}`;
+}
+
 /** The month's name, from 1 (janeiro) to 12. */
 export function monthName(month: number): string {
   return MONTH.format(new Date(Date.UTC(2026, month - 1, 1)));

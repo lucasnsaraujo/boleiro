@@ -1,0 +1,363 @@
+.tables {
+  --zone-libertadores: var(--promotion);
+  --zone-pre-libertadores: #2f7d47;
+  --zone-sul-americana: #4f8fa8;
+  --zone-promotion: var(--promotion);
+  --zone-advance: var(--promotion);
+  --zone-relegation: var(--red);
+  max-width: 1180px;
+}
+
+.tables-head {
+  display: flex;
+  align-items: flex-end;
+  gap: 40px;
+  border-bottom: var(--hairline);
+}
+
+.tables-head .screen-title {
+  padding-bottom: 12px;
+}
+
+.tables-head .btn-main {
+  margin: 0 0 10px auto;
+}
+
+.tables-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 40px;
+  padding-top: 22px;
+}
+
+.tables-main {
+  min-width: 0;
+}
+
+.stages,
+.group-picker {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  border: var(--hairline);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.stages button,
+.group-picker button {
+  height: 34px;
+  padding: 0 14px;
+  font: 600 14px var(--cond);
+  color: var(--chalk-2);
+  border-left: var(--hairline);
+  margin-left: -1px;
+}
+
+.group-picker button {
+  min-width: 34px;
+  padding: 0 8px;
+  font: 800 17px var(--num);
+}
+
+.stages button:hover:not(:disabled, [aria-pressed="true"]),
+.group-picker button:hover:not([aria-pressed="true"]) {
+  background: var(--lawn-2);
+}
+
+.stages button[aria-pressed="true"],
+.group-picker button[aria-pressed="true"] {
+  background: var(--chalk);
+  color: var(--lawn-0);
+}
+
+.stages button:disabled {
+  color: var(--line);
+  cursor: default;
+}
+
+.standings {
+  width: 100%;
+  border-collapse: collapse;
+  font: 500 15px var(--cond);
+  font-variant-numeric: tabular-nums;
+}
+
+.standings + .standings {
+  margin-top: 22px;
+}
+
+.standings caption {
+  text-align: left;
+  padding-bottom: 6px;
+  font: 600 15px var(--cond);
+  color: var(--chalk-3);
+}
+
+.standings th {
+  height: 30px;
+  font: 600 13px var(--cond);
+  color: var(--chalk-3);
+  text-align: right;
+  border-bottom: var(--hairline);
+}
+
+.standings td {
+  height: 38px;
+  text-align: right;
+  color: var(--chalk-2);
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.standings th,
+.standings td {
+  width: 44px;
+  padding: 0 4px;
+}
+
+.standings .st-pos {
+  width: 42px;
+  padding-left: 14px;
+  text-align: left;
+}
+
+td.st-pos {
+  font: 800 18px var(--num);
+  box-shadow: inset 4px 0 0 transparent;
+}
+
+.standings .st-club {
+  width: auto;
+  text-align: left;
+}
+
+.st-club-in {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: var(--chalk);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.standings .st-pts {
+  width: 56px;
+  padding-right: 14px;
+}
+
+td.st-pts {
+  font: 800 20px var(--num);
+  color: var(--chalk);
+}
+
+.standings tr.mine td {
+  background: var(--lawn-3);
+}
+
+.standings tr.mine .st-club-in {
+  color: var(--yellow);
+  font-weight: 700;
+}
+
+td.zone-libertadores {
+  box-shadow: inset 4px 0 0 var(--zone-libertadores);
+}
+
+td.zone-preLibertadores {
+  box-shadow: inset 4px 0 0 var(--zone-pre-libertadores);
+}
+
+td.zone-sulAmericana {
+  box-shadow: inset 4px 0 0 var(--zone-sul-americana);
+}
+
+td.zone-promotion {
+  box-shadow: inset 4px 0 0 var(--zone-promotion);
+}
+
+td.zone-advance {
+  box-shadow: inset 4px 0 0 var(--zone-advance);
+}
+
+td.zone-relegation {
+  box-shadow: inset 4px 0 0 var(--zone-relegation);
+}
+
+.zone-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin-top: 12px;
+  font: 400 13px var(--cond);
+  color: var(--chalk-3);
+}
+
+.zone-key span::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 12px;
+  margin-right: 8px;
+  vertical-align: -1px;
+  background: var(--zone);
+}
+
+.zone-key .zone-libertadores {
+  --zone: var(--zone-libertadores);
+}
+
+.zone-key .zone-preLibertadores {
+  --zone: var(--zone-pre-libertadores);
+}
+
+.zone-key .zone-sulAmericana {
+  --zone: var(--zone-sul-americana);
+}
+
+.zone-key .zone-promotion {
+  --zone: var(--zone-promotion);
+}
+
+.zone-key .zone-advance {
+  --zone: var(--zone-advance);
+}
+
+.zone-key .zone-relegation {
+  --zone: var(--zone-relegation);
+}
+
+.ties {
+  list-style: none;
+}
+
+.tie {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 170px;
+  align-items: center;
+  column-gap: 14px;
+  height: 46px;
+  padding: 0 14px;
+  border-top: 1px solid rgba(42, 82, 54, 0.55);
+  font: 500 15px var(--cond);
+}
+
+.tie:last-child {
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.tie.mine {
+  background: var(--lawn-3);
+}
+
+.tie-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tie-side.home {
+  justify-content: flex-end;
+}
+
+.tie-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tie-side.lost {
+  color: var(--chalk-3);
+  font-weight: 500;
+}
+
+.tie-side.own .tie-name {
+  color: var(--yellow);
+}
+
+.tie-score {
+  display: flex;
+  gap: 4px;
+}
+
+.tie-score .box {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  background: #030805;
+  box-shadow: inset 0 0 0 1px var(--line);
+  font: 800 20px/1 var(--num);
+}
+
+.tie-legs {
+  font-size: 13px;
+  color: var(--chalk-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tables-section-title {
+  font: 600 15px var(--cond);
+  color: var(--chalk-3);
+  padding-bottom: 8px;
+}
+
+.scorer-list {
+  list-style: none;
+}
+
+.scorer {
+  display: grid;
+  grid-template-columns: 22px 18px minmax(0, 1fr) 30px;
+  align-items: center;
+  column-gap: 10px;
+  height: 36px;
+  border-top: 1px solid rgba(42, 82, 54, 0.55);
+  font: 500 15px var(--cond);
+}
+
+.scorer:last-child {
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.scorer-rank {
+  font: 800 16px var(--num);
+  color: var(--chalk-3);
+}
+
+.scorer-name {
+  color: var(--chalk);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scorer-name:hover {
+  color: var(--yellow);
+}
+
+.scorer.mine .scorer-name {
+  font-weight: 700;
+}
+
+.scorer-goals {
+  text-align: right;
+  font: 800 20px var(--num);
+}
+
+@media (max-width: 1100px) {
+  .tables-body {
+    grid-template-columns: minmax(0, 1fr) 240px;
+    gap: 28px;
+  }
+
+  .tie {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 150px;
+    column-gap: 10px;
+  }
+}
