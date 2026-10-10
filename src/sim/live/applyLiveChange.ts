@@ -50,10 +50,12 @@ function checkSubstitutions(coachMatch: CoachMatch, kept: readonly MatchEvent[],
   }
   const played = new Set([...coachMatch.starters.home, ...coachMatch.starters.away].map((p) => p.id));
   for (const e of made) if (e.type === "substitution") played.add(e.playerId);
+  const offIds = new Set<string>();
   const onIds = new Set<string>();
   for (const { offId, onId } of subs) {
-    if (!eleven.some((p) => p.id === offId) || sentOffMinute(kept, offId) !== undefined) throw new Error(`${offId} is not on the pitch`);
+    if (!eleven.some((p) => p.id === offId) || sentOffMinute(kept, offId) !== undefined || offIds.has(offId)) throw new Error(`${offId} is not on the pitch`);
     if (!coachMatch.bench.some((p) => p.id === onId) || played.has(onId) || onIds.has(onId)) throw new Error(`${onId} cannot come on`);
+    offIds.add(offId);
     onIds.add(onId);
   }
 }
@@ -84,7 +86,12 @@ function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEv
   const playing = (side: Side) => elevens[side].filter((p) => sentOffMinute(kept, p.id) === undefined);
 
   const booked = new Set(kept.flatMap((e) => (e.type === "card" && e.card === "yellow" ? [e.playerId] : [])));
-  const cards: MatchEvent[] = drawCardsAfter(minute, playing("home"), playing("away"), coachMatch.cardRates, booked, random).map((b) => ({ type: "card", ...b }));
+  // A redrawn card comes after the change, never at its minute, so it can't book a player before he comes on.
+  const cards: MatchEvent[] = drawCardsAfter(minute, playing("home"), playing("away"), coachMatch.cardRates, booked, random).map((b) => ({
+    type: "card",
+    ...b,
+    minute: Math.max(b.minute, minute + 1),
+  }));
   const sofar = [...kept, ...cards];
 
   const share = (FULL_TIME - minute) / FULL_TIME;
@@ -98,8 +105,11 @@ function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEv
   });
 
   const aiSide: Side = coachSide === "home" ? "away" : "home";
+  const { penaltyTakerId } = coachMatch.tactics;
+  const takerOnPitch = playing(coachSide).some((p) => p.id === penaltyTakerId);
+  const coachTactics = { ...coachMatch.tactics, penaltyTakerId: takerOnPitch ? penaltyTakerId : null };
   const team = (side: Side, posture: Posture): Team =>
-    side === coachSide ? engineTeam(clubIds[side], elevens[side], strength, coachMatch.tactics) : { ...engineTeam(clubIds[side], elevens[side], strength), posture };
+    side === coachSide ? engineTeam(clubIds[side], elevens[side], strength, coachTactics) : { ...engineTeam(clubIds[side], elevens[side], strength), posture };
   const expected = new Map<Posture, { home: number; away: number }>();
   const expectedGoals = (aiPostureNow: Posture) => {
     const known = expected.get(aiPostureNow);

@@ -124,6 +124,10 @@ describe("substitutions", () => {
     expect(() => applyLiveChange(threeWindows, 45, { substitutions: [sub(3)] })).not.toThrow();
   });
 
+  it("take each player off only once", () => {
+    expect(() => applyLiveChange(live, 60, { substitutions: [sub(0), { offId: sub(0).offId, onId: sub(1).onId }] })).toThrow(/is not on the pitch/);
+  });
+
   it("never bring a player back once he is off", () => {
     const changed = applyLiveChange(live, 30, { substitutions: [sub(0)] });
     expect(() => applyLiveChange(changed, 60, { substitutions: [{ offId: sub(0).onId, onId: sub(0).offId }] })).toThrow(/cannot come on/);
