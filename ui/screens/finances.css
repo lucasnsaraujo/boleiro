@@ -15,7 +15,7 @@
 }
 
 .fin-cash-n {
-  margin-top: 6px;
+  margin-top: 16px;
   font: 900 104px/0.86 var(--num);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
