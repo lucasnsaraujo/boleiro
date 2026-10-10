@@ -130,3 +130,34 @@ test("stingers and clicks are synthesised, with no file", async () => {
   expect(ctx().notes()).toBeGreaterThan(3);
   expect(ctx().playing()).toEqual([]);
 });
+
+test("asking for a track again while it loads starts it once, and a crowd called off while loading never starts", async () => {
+  const { engine, ctx } = setUp();
+  engine.unlock();
+  engine.playMusic("menu");
+  engine.playMusic("menu");
+  engine.setCrowd(1);
+  engine.setCrowd(null);
+  await settle();
+  expect(ctx().sources.filter((s) => s.url === MUSIC.menu)).toHaveLength(1);
+  expect(ctx().sources.filter((s) => s.url === CROWD_BED)).toHaveLength(0);
+});
+
+test("no more than three cues ring at once: a more important one cuts the least important short", async () => {
+  const { engine, ctx } = setUp();
+  engine.unlock();
+  await settle();
+  engine.play("card");
+  engine.play("injury");
+  engine.play("otherGoal");
+  engine.play("conceded");
+  const cut = ctx().playing(0.2);
+  expect(cut).toHaveLength(3);
+  expect(cut).toContain(SAMPLES.boo);
+  expect(cut).not.toContain(SAMPLES.goalDistant);
+  ctx().currentTime = 0.2;
+  engine.play("halfTime");
+  expect(ctx().playing(0.4)).toHaveLength(3);
+  engine.play("otherGoal");
+  expect(ctx().playing(0.4)).toHaveLength(3);
+});

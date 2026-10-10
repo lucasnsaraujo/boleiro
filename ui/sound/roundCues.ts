@@ -2,7 +2,7 @@ import { FULL_TIME, HALF_TIME } from "../../src/sim/live/matchTimeline.js";
 import type { LiveRound } from "../round/liveRoundOf.js";
 import { CUES, type Cue } from "./soundCatalog.js";
 
-/** The sounds of the minutes after `from` up to `to`: whistles, every goal of the round, and the coach's cards and injuries. */
+/** The sounds of the minutes after `from` up to `to`: whistles, every goal of the round, and the cards and injuries of the coach's match. */
 export function roundCues(round: LiveRound, from: number, to: number): Cue[] {
   const cues: Cue[] = [];
   const isNew = (minute: number) => minute > from && minute <= to;

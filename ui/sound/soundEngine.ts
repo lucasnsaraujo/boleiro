@@ -66,6 +66,8 @@ type Deps = {
 
 type Graph = { ctx: AudioContextLike; master: GainLike; music: GainLike; sfx: GainLike; musicDuck: GainLike; crowdDuck: GainLike };
 type Loop = { source: BufferSourceLike; gain: GainLike };
+type Voice = { source: ScheduledLike; gain: GainLike };
+type Ringing = { until: number; voices: Voice[] };
 
 const MUSIC_FADE = 0.3;
 const CROWD_FADE = 0.6;
@@ -73,6 +75,7 @@ const CROWD_MAX = 0.7;
 const DUCKED = 0.3;
 const MAX_RINGING = 3;
 const FADE_STOP_SECONDS = 1.5;
+const CUT_SECONDS = 0.1;
 
 /** Sliders are linear; the ear is not. Squaring makes the middle of a slider sound like the middle. */
 const loudnessOf = (volume: number) => volume * volume;
@@ -85,9 +88,10 @@ export function createSoundEngine({ createContext, fetchBytes }: Deps): SoundEng
   let wantedCrowd: number | null = null;
   let music: (Loop & { track: MusicTrack }) | null = null;
   let crowd: Loop | null = null;
+  let loadingTrack: MusicTrack | null = null;
   const loads = new Map<string, Promise<AudioBufferLike>>();
   const buffers = new Map<string, AudioBufferLike>();
-  const ringing = new Map<Cue, number>();
+  const ringing = new Map<Cue, Ringing>();
 
   function load(ctx: AudioContextLike, url: string): Promise<AudioBufferLike> {
     let loading = loads.get(url);
@@ -111,16 +115,21 @@ export function createSoundEngine({ createContext, fetchBytes }: Deps): SoundEng
     return node;
   }
 
-  function fadeOut({ source, gain }: Loop, ctx: AudioContextLike) {
-    gain.gain.cancelScheduledValues(ctx.currentTime);
-    gain.gain.setTargetAtTime(0, ctx.currentTime, MUSIC_FADE);
-    source.stop(ctx.currentTime + FADE_STOP_SECONDS);
+  /** Fades from wherever the gain is now, so cancelling a fade-in that hasn't begun can't jump to full volume first. */
+  function fadeOut({ source, gain }: Voice, ctx: AudioContextLike, timeConstant = MUSIC_FADE, stopAfter = FADE_STOP_SECONDS) {
+    const now = ctx.currentTime;
+    gain.gain.cancelScheduledValues(now);
+    gain.gain.setValueAtTime(gain.gain.value, now);
+    gain.gain.setTargetAtTime(0, now, timeConstant);
+    source.stop(now + stopAfter);
   }
 
-  function startLoop(g: Graph, url: string, level: number, to: AudioNodeLike, fade: number): Promise<Loop> {
+  /** Starts a loop once its file is loaded, unless by then it is no longer wanted. */
+  function startLoop(g: Graph, url: string, level: () => number, to: AudioNodeLike, fade: number, isWanted: () => boolean): Promise<Loop | null> {
     return load(g.ctx, url).then((buffer) => {
+      if (!isWanted()) return null;
       const gain = gainNode(g.ctx, 0, to);
-      gain.gain.setTargetAtTime(level, g.ctx.currentTime, fade);
+      gain.gain.setTargetAtTime(level(), g.ctx.currentTime, fade);
       const source = g.ctx.createBufferSource();
       source.buffer = buffer;
       source.loop = true;
@@ -135,14 +144,14 @@ export function createSoundEngine({ createContext, fetchBytes }: Deps): SoundEng
     if (music) fadeOut(music, g.ctx);
     music = null;
     const track = wantedMusic;
-    if (!track) return;
-    startLoop(g, MUSIC[track], 1, g.musicDuck, MUSIC_FADE).then(
-      (loop) => {
-        if (wantedMusic === track && !music) music = { ...loop, track };
-        else fadeOut(loop, g.ctx);
-      },
-      () => undefined,
-    );
+    if (!track || loadingTrack === track) return;
+    loadingTrack = track;
+    const isWanted = () => wantedMusic === track && music?.track !== track;
+    const settle = (loop: Loop | null) => {
+      if (loadingTrack === track) loadingTrack = null;
+      if (loop) music = { ...loop, track };
+    };
+    startLoop(g, MUSIC[track], () => 1, g.musicDuck, MUSIC_FADE, isWanted).then(settle, () => settle(null));
   }
 
   let isCrowdStarting = false;
@@ -158,7 +167,7 @@ export function createSoundEngine({ createContext, fetchBytes }: Deps): SoundEng
     }
     if (isCrowdStarting) return;
     isCrowdStarting = true;
-    startLoop(g, CROWD_BED, wantedCrowd * CROWD_MAX, g.crowdDuck, CROWD_FADE).then(
+    startLoop(g, CROWD_BED, () => (wantedCrowd ?? 0) * CROWD_MAX, g.crowdDuck, CROWD_FADE, () => wantedCrowd !== null).then(
       (loop) => {
         isCrowdStarting = false;
         crowd = loop;
@@ -186,7 +195,7 @@ export function createSoundEngine({ createContext, fetchBytes }: Deps): SoundEng
     }
   }
 
-  function playTone(g: Graph, tone: Tone, to: AudioNodeLike) {
+  function playTone(g: Graph, tone: Tone, to: AudioNodeLike): Voice {
     const { ctx } = g;
     const start = ctx.currentTime + tone.at;
     const envelope = gainNode(ctx, 0, to);
@@ -207,31 +216,39 @@ export function createSoundEngine({ createContext, fetchBytes }: Deps): SoundEng
     }
     oscillator.start(start);
     oscillator.stop(start + tone.length * 2 + 0.1);
+    return { source: oscillator, gain: envelope };
   }
 
   function playCue(g: Graph, cue: Cue) {
     const { ctx } = g;
     const now = ctx.currentTime;
-    if ((ringing.get(cue) ?? -1) > now) return;
+    if ((ringing.get(cue)?.until ?? -1) > now) return;
     const sound = CUES[cue];
     const layers = sound.layers.map((layer) => ({ ...layer, buffer: buffers.get(SAMPLES[layer.sample]) }));
     if (layers.some((layer) => !layer.buffer)) {
       for (const layer of sound.layers) void load(ctx, SAMPLES[layer.sample]).catch(() => undefined);
       return;
     }
-    const others = [...ringing].filter(([other, until]) => other !== cue && until > now);
-    if (others.length >= MAX_RINGING && others.every(([other]) => CUES[other].priority >= sound.priority)) return;
+    const others = [...ringing].filter(([other, { until }]) => other !== cue && until > now);
+    if (others.length >= MAX_RINGING) {
+      const [quietest] = others.sort(([a], [b]) => CUES[a].priority - CUES[b].priority);
+      if (!quietest || CUES[quietest[0]].priority >= sound.priority) return;
+      for (const voice of quietest[1].voices) fadeOut(voice, ctx, CUT_SECONDS / 4, CUT_SECONDS);
+      ringing.delete(quietest[0]);
+    }
 
     const length = Math.max(0, ...layers.map((layer) => layer.at + (layer.buffer?.duration ?? 0)), ...sound.tones.map((tone) => tone.at + tone.length));
-    ringing.set(cue, now + length);
     const bus = sound.bus === "music" ? g.music : g.sfx;
-    for (const layer of layers) {
+    const voices = layers.map((layer): Voice => {
       const source = ctx.createBufferSource();
+      const gain = gainNode(ctx, layer.gain, bus);
       source.buffer = layer.buffer ?? null;
-      source.connect(gainNode(ctx, layer.gain, bus));
+      source.connect(gain);
       source.start(now + layer.at);
-    }
-    for (const tone of sound.tones) playTone(g, tone, bus);
+      return { source, gain };
+    });
+    voices.push(...sound.tones.map((tone) => playTone(g, tone, bus)));
+    ringing.set(cue, { until: now + length, voices });
     if (sound.ducks) duck(g, length);
   }
 
