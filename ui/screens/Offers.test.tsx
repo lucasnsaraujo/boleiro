@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, expect, test } from "vitest";
+import type { JobOffer } from "../../src/sim/coach/coach.js";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
 import { inMemoryEngine } from "../engine/inMemoryEngine.js";
 import { indexedDbSlots } from "../saves/indexedDbSlots.js";
@@ -66,6 +67,20 @@ test("turning an offer down takes it off the list and leaves the coach without a
   await screen.findByRole("button", { name: `Assinar com ${rest[0]}` });
   expect(within(list).queryByRole("button", { name: new RegExp(first ?? "") })).toBeNull();
   expect((await given.engine.read(["coachClubId"])).coachClubId).toBeNull();
+});
+
+test("on his match day a coach with a club can only sign after the game", async () => {
+  const given = await careerGame();
+  await given.engine.newGame(7, { coachClubId: "bahia-ba" });
+  await given.engine.playToMatchDay();
+  const save: { coach: { offers: JobOffer[] } } = JSON.parse(await given.engine.save());
+  save.coach.offers.push({ clubId: "vitoria-ba", salary: 90_000, untilSeason: 2026, expiresOn: "2026-12-31" });
+  await given.engine.load(JSON.stringify(save));
+  await given.engine.startRound({});
+  openOffers(given);
+  expect(await screen.findByText("Assine depois do jogo.")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Assinar com Vitória" })).toHaveProperty("disabled", true);
+  expect(await given.engine.liveRound()).not.toBeNull();
 });
 
 test("with every offer turned down the coach can only wait for new ones", async () => {

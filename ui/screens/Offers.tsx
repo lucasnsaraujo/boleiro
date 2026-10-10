@@ -7,11 +7,13 @@ import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
 import { formatGameDate } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
+import { isCoachMatchDay } from "../hub/playToMatchDay.js";
 import { usePlayRound } from "../hub/usePlayRound.js";
 import "./career.css";
 
-const OFFERS_KEYS = ["date", "coachClubId", "coach", "clubs"] as const;
+const OFFERS_KEYS = ["date", "coachClubId", "coach", "clubs", "fixtures"] as const;
 type OffersState = Pick<GameState, (typeof OFFERS_KEYS)[number]>;
+type Loaded = { state: OffersState; isRoundUnderWay: boolean };
 
 const daysLeftText = (days: number) => (days <= 1 ? "responder hoje" : `${days} dias para responder`);
 
@@ -19,7 +21,7 @@ const daysLeftText = (days: number) => (days <= 1 ? "responder hoje" : `${days} 
 export function Offers() {
   const { engine } = useServices();
   const navigate = useNavigate();
-  const [state, setState] = useState<OffersState | null>(null);
+  const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [failed, setFailed] = useState(false);
   const [pickedId, setPickedId] = useState<string | null>(null);
   const [isAnswering, setAnswering] = useState(false);
@@ -27,8 +29,8 @@ export function Offers() {
 
   const load = useCallback(
     (isCurrent: () => boolean = () => true) =>
-      engine.read(OFFERS_KEYS).then(
-        (read) => isCurrent() && setState(read),
+      Promise.all([engine.read(OFFERS_KEYS), engine.liveRound()]).then(
+        ([state, live]) => isCurrent() && setLoaded({ state, isRoundUnderWay: live !== null }),
         () => isCurrent() && setFailed(true),
       ),
     [engine],
@@ -45,7 +47,11 @@ export function Offers() {
   const wait = usePlayRound(() => navigate("/hub"));
 
   if (failed) return <p className="status error">Nenhum jogo aberto.</p>;
-  if (!state) return <p className="status">Abrindo as propostas…</p>;
+  if (!loaded) return <p className="status">Abrindo as propostas…</p>;
+
+  const { state } = loaded;
+  // Signing is a day's decision: on his match day it would play his game without him.
+  const mustPlayFirst = loaded.isRoundUnderWay || isCoachMatchDay(state);
 
   const club = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
   const rows = offerRows(state);
@@ -112,11 +118,12 @@ export function Offers() {
           waitButton(picked ? "btn-quiet" : "btn-main")
         )}
         {picked && pickedClub && (
-          <button className="btn-main" onClick={() => void sign(picked.clubId)} disabled={isAnswering || wait.isPlaying}>
+          <button className="btn-main" onClick={() => void sign(picked.clubId)} disabled={isAnswering || wait.isPlaying || mustPlayFirst}>
             Assinar com {pickedClub.shortName}
           </button>
         )}
       </footer>
+      {picked && mustPlayFirst && <p className="career-note">Assine depois do jogo.</p>}
       {hasAnswerFailed && <p className="status error">A resposta não chegou ao clube. Tente de novo.</p>}
       {wait.hasFailed && <p className="status error">Os dias não andaram. Tente de novo.</p>}
     </div>

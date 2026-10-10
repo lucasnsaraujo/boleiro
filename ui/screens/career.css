@@ -91,6 +91,13 @@
   padding-top: 20px;
 }
 
+.career-note {
+  margin-top: 10px;
+  font: 500 14px var(--cond);
+  color: var(--chalk-2);
+  text-align: right;
+}
+
 .career-sacked-band {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
