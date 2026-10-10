@@ -180,7 +180,32 @@
   margin-top: 32px;
 }
 
-.player-actions button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.player-renew {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-renew label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 500 15px var(--cond);
+  color: var(--chalk-2);
+}
+
+.player-renew select {
+  height: 34px;
+  padding: 0 6px;
+  background: var(--lawn-1);
+  border: var(--hairline);
+  border-radius: 0;
+  color: var(--chalk);
+  font: 600 15px var(--cond);
+}
+
+.player-pending {
+  margin-top: 32px;
+  font: 500 15px var(--cond);
+  color: var(--chalk-2);
 }
