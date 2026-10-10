@@ -101,3 +101,62 @@ test("pressing on when already on the match day keeps the inbox", async () => {
   expect(await engine.playToMatchDay()).toMatchObject({ stop: "matchDay", daysPlayed: 0 });
   expect(await engine.inbox()).toEqual(before);
 });
+
+async function onMatchDay(): Promise<EngineClient> {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  await engine.playToMatchDay();
+  return engine;
+}
+
+test("on the match day the lineup plan offers eleven of the coach's players, one in goal, in his last formation", async () => {
+  const engine = await onMatchDay();
+  const plan = await engine.matchDayPlan();
+  const { coach } = await engine.read(["coach"]);
+  expect(plan.tactics).toEqual(coach.tactics);
+  expect(plan.lineup).toHaveLength(11);
+  const starters = plan.squad.filter((p) => plan.lineup.includes(p.id));
+  expect(starters).toHaveLength(11);
+  expect(starters.filter((p) => p.group === "GK")).toHaveLength(1);
+  expect(starters.every((p) => p.status === null)).toBe(true);
+});
+
+test("a round kicked off and finished with no changes ends as playing the day on", async () => {
+  const engine = await onMatchDay();
+  const twin = await onMatchDay();
+  await engine.startRound({});
+  const finished = await engine.finishRound();
+  const advanced = await twin.advance([{}]);
+  expect(finished).toEqual(advanced);
+  expect(await engine.save()).toBe(await twin.save());
+});
+
+test("a live substitution shows on the coach's timeline at the minute it was made", async () => {
+  const engine = await onMatchDay();
+  const round = await engine.startRound({});
+  const coach = round.coach;
+  if (!coach) throw new Error("the coach has a match today");
+  const [offId] = coach.starters.slice(-1);
+  const [onId] = coach.benchIds;
+  const changed = await engine.changeLive(30, { substitutions: [{ offId: offId ?? "", onId: onId ?? "" }] });
+  const events = changed.matches.find((m) => m.fixtureId === coach.fixtureId)?.events ?? [];
+  expect(events).toContainEqual({ type: "substitution", minute: 30, clubId: "bahia-ba", playerId: onId, offId });
+  expect(changed.coach?.lastChangeMinute).toBe(30);
+});
+
+test("the final whistle puts the coach's score in the inbox and ends the live round", async () => {
+  const engine = await onMatchDay();
+  await engine.startRound({});
+  const { events } = await engine.finishRound();
+  const played = events.find((e) => e.type === "matchPlayed" && (e.fixture.homeId === "bahia-ba" || e.fixture.awayId === "bahia-ba"));
+  if (played?.type !== "matchPlayed") throw new Error("the coach's match was played");
+  const { result } = played.fixture;
+  expect((await engine.inbox()).map((line) => line.text)).toContainEqual(expect.stringContaining(`${result?.homeGoals} x ${result?.awayGoals}`));
+  expect(await engine.liveRound()).toBeNull();
+});
+
+test("kicking off on a day the coach has no match fails", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  await expect(engine.matchDayPlan()).rejects.toThrow("the coach has no match today");
+});

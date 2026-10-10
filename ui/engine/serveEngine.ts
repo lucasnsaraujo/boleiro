@@ -9,6 +9,16 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.advance(...request.args);
     case "playToMatchDay":
       return session.playToMatchDay();
+    case "matchDayPlan":
+      return session.matchDayPlan();
+    case "startRound":
+      return session.startRound(...request.args);
+    case "liveRound":
+      return session.liveRound();
+    case "changeLive":
+      return session.changeLive(...request.args);
+    case "finishRound":
+      return session.finishRound();
     case "inbox":
       return session.inbox();
     case "save":
