@@ -1,0 +1,153 @@
+.season-end {
+  max-width: 900px;
+}
+
+.season-end-band {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 26px;
+  margin-top: 22px;
+  padding: 26px 28px;
+  background: linear-gradient(180deg, var(--lawn-2), var(--lawn-1));
+  border: var(--hairline);
+}
+
+.season-end-who {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.season-end-line {
+  font: 600 18px var(--cond);
+  color: var(--chalk-2);
+}
+
+.season-end-place {
+  display: grid;
+  justify-items: end;
+}
+
+.season-end-place-n {
+  font: 900 112px/0.86 var(--num);
+}
+
+.season-end-place-l {
+  margin-top: 4px;
+  font: 600 15px var(--cond);
+  color: var(--chalk-3);
+}
+
+.season-end-stamp {
+  position: absolute;
+  top: -15px;
+  right: 24px;
+  padding: 6px 12px 5px;
+  font: 800 22px/1 var(--num);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  animation: season-end-stamp-in 200ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+.season-end-stamp.is-title {
+  background: var(--yellow);
+  color: var(--on-yellow);
+}
+
+.season-end-stamp.is-promoted {
+  background: var(--promotion);
+  color: var(--lawn-0);
+}
+
+.season-end-stamp.is-relegated {
+  background: var(--red);
+  color: #fff;
+}
+
+@keyframes season-end-stamp-in {
+  from {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .season-end-stamp {
+    animation: none;
+  }
+}
+
+.season-end-verdict {
+  font: 800 44px/1 var(--num);
+  text-transform: uppercase;
+  color: var(--red);
+}
+
+.season-end-verdict.is-met {
+  color: var(--promotion);
+}
+
+.season-end-facts {
+  margin-top: 8px;
+}
+
+.season-end-facts div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 46px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.season-end-facts dt {
+  font: 500 15px var(--cond);
+  color: var(--chalk-2);
+}
+
+.season-end-facts dd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 700 17px var(--cond);
+}
+
+.season-end-titles span + span::before {
+  content: "·";
+  margin-right: 10px;
+  color: var(--chalk-3);
+}
+
+.season-end-up,
+.season-end-down {
+  font: 700 14px var(--cond);
+}
+
+.season-end-up {
+  color: var(--promotion);
+}
+
+.season-end-down {
+  color: var(--red);
+}
+
+.season-end-champions {
+  margin-top: 22px;
+  border-top: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.season-end-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 22px;
+}
+
+@media (max-width: 1100px) {
+  .season-end-place-n {
+    font-size: 88px;
+  }
+}
