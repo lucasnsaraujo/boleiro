@@ -131,7 +131,7 @@ export function Market() {
       </header>
 
       <form className="market-filters" role="search" aria-label="Buscar jogadores" onSubmit={(event) => event.preventDefault()}>
-        <input type="search" className="mf-name" aria-label="Nome" placeholder="Nome" value={filters.name} onChange={(e) => filter({ name: e.target.value })} />
+        <input type="search" className="market-f-name" aria-label="Nome" placeholder="Nome" value={filters.name} onChange={(e) => filter({ name: e.target.value })} />
         <select aria-label="Posição" value={filters.group ?? ""} onChange={(e) => filter({ group: GROUPS.find((g) => g === e.target.value) ?? null })}>
           <option value="">Posição</option>
           {GROUPS.map((group) => (
@@ -140,7 +140,7 @@ export function Market() {
             </option>
           ))}
         </select>
-        <span className="mf-range">
+        <span className="market-f-range">
           <input type="number" min={1} max={99} aria-label="Força mínima" placeholder="Força" value={filters.minStrength ?? ""} onChange={(e) => filter({ minStrength: asNumber(e.target.value) })} />
           <span aria-hidden="true">–</span>
           <input type="number" min={1} max={99} aria-label="Força máxima" placeholder="máx" value={filters.maxStrength ?? ""} onChange={(e) => filter({ maxStrength: asNumber(e.target.value) })} />
@@ -179,18 +179,18 @@ export function Market() {
             <table className="market-table" aria-label="Jogadores">
               <thead>
                 <tr>
-                  <th scope="col" className="mt-name">
+                  <th scope="col" className="market-t-name">
                     Jogador
                   </th>
                   <th scope="col">Pos</th>
-                  <th scope="col" className="mt-num">
+                  <th scope="col" className="market-t-num">
                     Idade
                   </th>
-                  <th scope="col" className="mt-num">
+                  <th scope="col" className="market-t-num">
                     Força
                   </th>
                   <th scope="col">Clube</th>
-                  <th scope="col" className="mt-num">
+                  <th scope="col" className="market-t-num">
                     Preço
                   </th>
                   <th scope="col">Interesse</th>
@@ -200,18 +200,18 @@ export function Market() {
                 {found.rows.map((row) => {
                   const owner = row.clubId ? state.clubs[row.clubId] : undefined;
                   return (
-                    <tr key={row.id} className={chosen?.id === row.id ? "mt-row on" : "mt-row"}>
-                      <td className="mt-name">
+                    <tr key={row.id} className={chosen?.id === row.id ? "market-t-row on" : "market-t-row"}>
+                      <td className="market-t-name">
                         <button aria-pressed={chosen?.id === row.id} onClick={() => setChosen(row)}>
                           {row.name}
                         </button>
                       </td>
                       <td>{POSITION_SHORT[row.group]}</td>
-                      <td className="mt-num">{row.age}</td>
-                      <td className="mt-num mt-strength">{Math.round(row.strength)}</td>
-                      <td>{owner ? <ClubPlate club={owner} size="row" /> : <span className="mt-free">Sem clube</span>}</td>
-                      <td className="mt-num">{priceText(row)}</td>
-                      <td className={`mt-willing ${row.willing}`}>{WILLING[row.willing]}</td>
+                      <td className="market-t-num">{row.age}</td>
+                      <td className="market-t-num market-t-strength">{Math.round(row.strength)}</td>
+                      <td>{owner ? <ClubPlate club={owner} size="row" /> : <span className="market-t-free">Sem clube</span>}</td>
+                      <td className="market-t-num">{priceText(row)}</td>
+                      <td className={`market-t-willing ${row.willing}`}>{WILLING[row.willing]}</td>
                     </tr>
                   );
                 })}
@@ -249,20 +249,20 @@ function Chosen({ row, state, desk, onAsk, onWithdraw }: ChosenProps) {
   const options = requestOptions(state, row.id);
   const pending = desk.pending.find((request) => request.playerId === row.id);
   return (
-    <section className="chosen" aria-label={row.name}>
-      <div className="chosen-top">
-        <p className="chosen-strength" aria-label={`Força ${Math.round(row.strength)}`}>
+    <section className="market-chosen" aria-label={row.name}>
+      <div className="market-chosen-top">
+        <p className="market-chosen-strength" aria-label={`Força ${Math.round(row.strength)}`}>
           {Math.round(row.strength)}
         </p>
-        <div className="chosen-who">
-          <h2 className="chosen-name">{row.name}</h2>
-          <p className="chosen-sub">
+        <div className="market-chosen-who">
+          <h2 className="market-chosen-name">{row.name}</h2>
+          <p className="market-chosen-sub">
             {POSITION_NAMES[row.group]} · {row.age} anos
           </p>
         </div>
       </div>
-      <p className="chosen-club">{owner ? <ClubPlate club={owner} size="row" /> : <span className="mt-free">Sem clube</span>}</p>
-      <dl className="chosen-facts">
+      <p className="market-chosen-club">{owner ? <ClubPlate club={owner} size="row" /> : <span className="market-t-free">Sem clube</span>}</p>
+      <dl className="market-chosen-facts">
         <div>
           <dt>Preço</dt>
           <dd>{priceText(row)}</dd>
@@ -273,18 +273,18 @@ function Chosen({ row, state, desk, onAsk, onWithdraw }: ChosenProps) {
         </div>
         <div>
           <dt>Interesse</dt>
-          <dd className={`mt-willing ${row.willing}`}>{WILLING[row.willing]}</dd>
+          <dd className={`market-t-willing ${row.willing}`}>{WILLING[row.willing]}</dd>
         </div>
       </dl>
       {pending ? (
-        <p className="chosen-pending">
+        <p className="market-chosen-pending">
           {requestTitle(pending, row.name)} na mesa. {pendingText(state, pending)}{" "}
           <button className="btn-quiet" onClick={() => onWithdraw(row.id)}>
             Retirar
           </button>
         </p>
       ) : options.length > 0 ? (
-        <div className="chosen-actions">
+        <div className="market-chosen-actions">
           {options.map((option, index) => (
             <button key={option.label} className={index === 0 ? "btn-main" : "btn-quiet"} onClick={() => onAsk(option.request)}>
               {option.label}
@@ -292,10 +292,10 @@ function Chosen({ row, state, desk, onAsk, onWithdraw }: ChosenProps) {
           ))}
         </div>
       ) : (
-        <p className="chosen-pending">{row.status === "onLoan" ? "Está emprestado; não dá para negociar agora." : "Já assinou com outro clube."}</p>
+        <p className="market-chosen-pending">{row.status === "onLoan" ? "Está emprestado; não dá para negociar agora." : "Já assinou com outro clube."}</p>
       )}
       {row.clubId && (
-        <Link className="btn-quiet chosen-card" to={`/squad/${row.id}`}>
+        <Link className="btn-quiet market-chosen-card" to={`/squad/${row.id}`}>
           Ver ficha
         </Link>
       )}

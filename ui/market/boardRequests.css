@@ -1,8 +1,8 @@
-.desk {
+.board-desk {
   list-style: none;
 }
 
-.desk-row {
+.board-desk-row {
   display: grid;
   grid-template-columns: 4px 56px minmax(0, 1fr) auto;
   align-items: center;
@@ -12,48 +12,48 @@
   font: 500 15px var(--cond);
 }
 
-.desk-row:last-child {
+.board-desk-row:last-child {
   border-bottom: 1px solid rgba(42, 82, 54, 0.55);
 }
 
-.desk-row::before {
+.board-desk-row::before {
   content: "";
   height: 18px;
 }
 
-.desk-row.good::before {
+.board-desk-row.good::before {
   background: var(--promotion);
 }
 
-.desk-row.bad::before {
+.board-desk-row.bad::before {
   background: var(--red);
 }
 
-.desk-row.pending::before {
+.board-desk-row.pending::before {
   background: var(--yellow);
 }
 
-.desk-when {
+.board-desk-when {
   font-size: 14px;
   color: var(--chalk-3);
 }
 
-.desk-row.pending .desk-when {
+.board-desk-row.pending .board-desk-when {
   color: var(--yellow);
   font-weight: 600;
 }
 
-.desk-text {
+.board-desk-text {
   padding: 9px 0;
   min-width: 0;
 }
 
-.desk-text small {
+.board-desk-text small {
   display: block;
   font-size: 13px;
   color: var(--chalk-3);
 }
 
-.desk-withdraw {
+.board-desk-withdraw {
   font-size: 14px;
 }
