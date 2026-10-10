@@ -215,7 +215,7 @@
 
 .picked-goal {
   margin: 2px 0 28px;
-  font: 800 34px/1.05 var(--num);
+  font: 800 28px/1.05 var(--num);
   text-transform: uppercase;
 }
 

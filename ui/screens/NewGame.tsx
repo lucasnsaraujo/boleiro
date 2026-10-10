@@ -71,7 +71,7 @@ export function NewGame() {
       ) : (
         <section className="career" role="tabpanel" aria-label="Modo carreira">
           <h2 className="career-title">Você começa sem clube</h2>
-          <p className="career-text">Ninguém conhece seu nome. No primeiro dia, três times pequenos fazem proposta. Daí em diante, quem decide são os resultados.</p>
+          <p className="career-text">Ninguém conhece seu nome. No primeiro dia, três times pequenos fazem proposta.</p>
           <button className="btn-main" onClick={() => setPicked({ mode: "career" })}>
             Começar carreira
           </button>

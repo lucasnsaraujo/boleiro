@@ -16,8 +16,13 @@ function clubOf(meta: SlotMeta) {
   return meta.coachClubId ? clubById(meta.coachClubId) : null;
 }
 
-function standing(meta: SlotMeta): string {
-  return meta.division ? `Série ${meta.division}` : "Sem clube";
+/** A game without a club already says so where the club name goes, so its details skip the series. */
+function details(...parts: (string | null)[]): string {
+  return parts.filter((part) => part !== null).join(" · ");
+}
+
+function seriesOf(meta: SlotMeta): string | null {
+  return meta.division ? `Série ${meta.division}` : null;
 }
 
 export function StartMenu() {
@@ -87,7 +92,7 @@ export function StartMenu() {
               <div>
                 <h1 className="screen-title">{latestClub?.shortName ?? "Sem clube"}</h1>
                 <p className="screen-sub">
-                  {latest.coachName} · {standing(latest)} · {formatGameDate(latest.date)}
+                  {details(latest.coachName, seriesOf(latest), formatGameDate(latest.date))}
                 </p>
               </div>
             </div>
@@ -136,7 +141,7 @@ export function StartMenu() {
                     <span className="slot-main">
                       <span className="slot-name">{club?.shortName ?? "Sem clube"}</span>
                       <span className="slot-sub">
-                        {label} · {meta.coachName} · {standing(meta)}
+                        {details(label, meta.coachName, seriesOf(meta))}
                       </span>
                     </span>
                     <span className="slot-when">
