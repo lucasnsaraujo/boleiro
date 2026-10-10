@@ -15,7 +15,7 @@ function kindOf(event: PlayerEvent): EventKind {
   return event.type;
 }
 
-export function eventText(event: PlayerEvent, names: Readonly<Record<string, string>>): string {
+function eventText(event: PlayerEvent, names: Readonly<Record<string, string>>): string {
   const name = names[event.playerId] ?? "Um jogador";
   switch (event.type) {
     case "goal":
@@ -31,7 +31,7 @@ export function eventText(event: PlayerEvent, names: Readonly<Record<string, str
 
 const isPlayerEvent = (event: MatchEvent): event is PlayerEvent => event.type !== "halfTime" && event.type !== "fullTime";
 
-export function matchAt(round: LiveRound, match: RoundMatch, minute: number): MatchAt {
+function matchAt(round: LiveRound, match: RoundMatch, minute: number): MatchAt {
   const score = { home: 0, away: 0 };
   const reds = { home: 0, away: 0 };
   let last: ShownEvent | null = null;

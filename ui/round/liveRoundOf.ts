@@ -9,7 +9,7 @@ import { squadOf, type SquadPlayer } from "./matchDayPlan.js";
 export type Side = "home" | "away";
 export type RoundClub = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
 export type RoundMatch = { fixtureId: string; competitionId: string; homeId: string; awayId: string; events: MatchEvent[] };
-export type RoundCompetition = { id: string; label: string };
+type RoundCompetition = { id: string; label: string };
 /** The coach's group of his competition: its clubs and every fixture of the stage, today's still unplayed. */
 export type RoundTable = { clubIds: string[]; fixtures: Fixture[]; drawOrder: string[] };
 
@@ -35,6 +35,8 @@ export type LiveRound = {
   names: Record<string, string>;
   table: RoundTable | null;
   coach: CoachSide | null;
+  /** The furthest minute of the round the screen has shown; changes can only come from it on. */
+  seenMinute: number;
 };
 
 function tableOf(live: LiveDay, fixture: Fixture | undefined): RoundTable | null {
@@ -65,7 +67,7 @@ function coachSideOf(live: LiveDay, fixture: Fixture | undefined): CoachSide | n
 }
 
 /** The live round screen's view of a live day. */
-export function liveRoundOf(live: LiveDay): LiveRound {
+export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
   const { state } = live;
   const today = new Map(state.fixtures.filter((f) => f.date === state.date).map((f) => [f.id, f]));
   const coachFixture = live.coachMatch ? today.get(live.coachMatch.fixtureId) : undefined;
@@ -109,5 +111,5 @@ export function liveRoundOf(live: LiveDay): LiveRound {
   const coach = coachSideOf(live, coachFixture);
   for (const p of coach?.squad ?? []) names[p.id] = p.name;
 
-  return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach };
+  return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach, seenMinute };
 }

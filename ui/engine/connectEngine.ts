@@ -40,6 +40,7 @@ export function connectEngine(port: EnginePort): EngineClient {
     matchDayPlan: () => send({ method: "matchDayPlan", args: [] }),
     startRound: (...args) => send({ method: "startRound", args }),
     liveRound: () => send({ method: "liveRound", args: [] }),
+    seeMinute: (...args) => send({ method: "seeMinute", args }),
     changeLive: (...args) => send({ method: "changeLive", args }),
     finishRound: () => send({ method: "finishRound", args: [] }),
     inbox: () => send({ method: "inbox", args: [] }),

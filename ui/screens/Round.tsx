@@ -39,10 +39,11 @@ export function Round() {
   const navigate = useNavigate();
   const [preMatch, setPreMatch] = useState<PreMatch | null>(null);
   const [round, setRound] = useState<LiveRound | null>(null);
-  const [isMissing, setMissing] = useState(false);
+  const [failure, setFailure] = useState<"noMatch" | "unreachable" | null>(null);
   const [minute, setMinute] = useState(0);
   const [speed, setSpeed] = useState<Speed>(0);
   const resumeSpeed = useRef<Running>(1);
+  const wasRunning = useRef(false);
   const [isLineupOpen, setLineupOpen] = useState(false);
   const [isTableOpen, setTableOpen] = useState(false);
   const [isBusy, setBusy] = useState(false);
@@ -64,7 +65,7 @@ export function Round() {
     async function open() {
       const live = await engine.liveRound();
       if (live) {
-        const at = live.coach?.lastChangeMinute ?? 0;
+        const at = Math.max(live.seenMinute, live.coach?.lastChangeMinute ?? 0);
         if (!isCurrent) return;
         shownMinute.current = at;
         roundRef.current = live;
@@ -75,7 +76,10 @@ export function Round() {
       const [plan, { clubs, date }] = await Promise.all([engine.matchDayPlan(), engine.read(["clubs", "date"])]);
       if (isCurrent) setPreMatch({ plan, clubs, date });
     }
-    open().catch(() => isCurrent && setMissing(true));
+    open().catch((error: unknown) => {
+      const hasNoMatch = error instanceof Error && error.message.includes("no match today");
+      if (isCurrent) setFailure(hasNoMatch ? "noMatch" : "unreachable");
+    });
     return () => {
       isCurrent = false;
     };
@@ -114,13 +118,14 @@ export function Round() {
     const from = shownMinute.current;
     if (!live || minute <= from) return;
     shownMinute.current = minute;
+    engine.seeMinute(minute).catch(() => undefined);
     const goals = goalsBetween(live, from, minute);
     if (goals.length) {
       setFlashes((current) => {
         const next = { ...current };
         for (const goal of goals) {
           const colour = live.clubs[goal.clubId]?.colours.primary ?? NO_COLOURS.primary;
-          next[goal.fixtureId] = { colour, side: goal.side, count: (current[goal.fixtureId]?.count ?? 0) + 1 };
+          next[goal.fixtureId] = { colour, side: goal.side, count: (next[goal.fixtureId]?.count ?? 0) + 1 };
         }
         return next;
       });
@@ -150,15 +155,21 @@ export function Round() {
     }
   }
 
+  /** Opening a sheet stops the clock; closing it starts the clock again only if it was running. */
   function openSheet(open: (isOpen: boolean) => void) {
+    wasRunning.current = speed !== 0;
     pause();
     setError(null);
     open(true);
   }
 
+  function resumeIfRunning() {
+    if (wasRunning.current) setSpeed(resumeSpeed.current);
+  }
+
   function closeTable() {
     setTableOpen(false);
-    setSpeed(resumeSpeed.current);
+    resumeIfRunning();
   }
 
   async function backToMatch(sheet: Sheet) {
@@ -178,7 +189,7 @@ export function Round() {
       }
     }
     setLineupOpen(false);
-    setSpeed(resumeSpeed.current);
+    resumeIfRunning();
   }
 
   function chooseSpeed(next: Speed) {
@@ -193,10 +204,11 @@ export function Round() {
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  if (isMissing) {
+  if (failure) {
     return (
       <>
-        <h1 className="screen-title">Nenhum jogo hoje</h1>
+        <h1 className="screen-title">{failure === "noMatch" ? "Nenhum jogo hoje" : "Rodada"}</h1>
+        {failure === "unreachable" && <p className="status error">Não deu para abrir a rodada.</p>}
         <p className="status">
           <Link to="/hub" className="btn-main">
             Voltar ao clube
@@ -238,7 +250,7 @@ export function Round() {
   const table = round.table && liveTable(round.table, scores);
   const coach = round.coach;
   const coachMatch = round.matches.find((m) => m.fixtureId === coach?.fixtureId);
-  const limits = coach && coachMatch && round.coachClubId ? liveLimits(coach, coachMatch.events, round.coachClubId, Math.min(minute, FULL_TIME)) : null;
+  const limits = coach && coachMatch && round.coachClubId ? liveLimits(coach, coachMatch.events, round.coachClubId, minute) : null;
   const ownColours = round.coachClubId ? round.clubs[round.coachClubId]?.colours : undefined;
   const isFinished = result !== null;
 
@@ -524,7 +536,7 @@ function TableRows({ rows, clubs, coachClubId, isFull = false }: { rows: readonl
     for (const row of Array.from(element.children)) {
       if (!(row instanceof HTMLElement)) continue;
       const key = row.dataset.club ?? "";
-      const top = row.getBoundingClientRect().top;
+      const top = row.offsetTop;
       next.set(key, top);
       const was = tops.current.get(key);
       if (!moved || was === undefined || Math.abs(was - top) < 1 || !canAnimate(row)) continue;

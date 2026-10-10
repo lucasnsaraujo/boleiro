@@ -144,6 +144,16 @@ test("a live substitution shows on the coach's timeline at the minute it was mad
   expect(changed.coach?.lastChangeMinute).toBe(30);
 });
 
+test("a round left mid-match comes back at the furthest minute shown, and no change can go back before it", async () => {
+  const engine = await onMatchDay();
+  await engine.startRound({});
+  await engine.seeMinute(89);
+  await engine.seeMinute(40);
+  expect((await engine.liveRound())?.seenMinute).toBe(89);
+  await expect(engine.changeLive(10, { posture: "attacking" })).rejects.toThrow("a change can't come before minute 89");
+  await expect(engine.changeLive(89, { posture: "attacking" })).resolves.toMatchObject({ seenMinute: 89 });
+});
+
 test("the final whistle puts the coach's score in the inbox and ends the live round", async () => {
   const engine = await onMatchDay();
   await engine.startRound({});

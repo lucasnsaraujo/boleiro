@@ -37,8 +37,13 @@ export function createEngineSession(files: GameFiles) {
   let state: GameState | null = null;
   /** What happened to the coach since he last played on, oldest first. */
   let news: InboxLine[] = [];
-  /** The coach's match day between kick-off and the final whistle. */
-  let live: LiveDay | null = null;
+  /** The coach's match day between kick-off and the final whistle, and the furthest minute the screen has shown of it. */
+  let live: { day: LiveDay; seenMinute: number } | null = null;
+
+  function underWay() {
+    if (!live) throw new Error("no match day is under way");
+    return live;
+  }
 
   function current(): GameState {
     if (!state) throw new Error("no game is loaded");
@@ -93,24 +98,30 @@ export function createEngineSession(files: GameFiles) {
     },
     /** Kicks off the coach's match day. Every match is drawn now; the screen plays the timelines back. */
     startRound(kickOff: KickOff): LiveRound {
-      live = startMatchDay(current(), kickOff);
-      return liveRoundOf(live);
+      live = { day: startMatchDay(current(), kickOff), seenMinute: 0 };
+      return liveRoundOf(live.day, live.seenMinute);
     },
     /** The match day kicked off and not yet finished, if any. */
     liveRound(): LiveRound | null {
-      return live && liveRoundOf(live);
+      return live && liveRoundOf(live.day, live.seenMinute);
+    },
+    /** The screen has shown the round up to `minute`; the coach can't change his match before it any more. */
+    seeMinute(minute: number): void {
+      const round = underWay();
+      round.seenMinute = Math.max(round.seenMinute, minute);
     },
     /** The coach's change at `minute` of his match; the rest of his match is drawn again. */
     changeLive(minute: number, change: LiveChange): LiveRound {
-      if (!live) throw new Error("no match day is under way");
-      live = applyLiveChange(live, minute, change);
-      return liveRoundOf(live);
+      const round = underWay();
+      if (minute < round.seenMinute) throw new Error(`a change can't come before minute ${round.seenMinute}`);
+      live = { day: applyLiveChange(round.day, minute, change), seenMinute: minute };
+      return liveRoundOf(live.day, live.seenMinute);
     },
     /** The final whistle: records the day and adds the coach's results to the inbox. */
     finishRound(): AdvanceResult {
-      if (!live) throw new Error("no match day is under way");
+      const round = underWay();
       const before = current();
-      const day = finishMatchDay(live);
+      const day = finishMatchDay(round.day);
       state = day.state;
       live = null;
       addNews(inboxLines(before, day.state, day.events));

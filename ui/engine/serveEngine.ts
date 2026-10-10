@@ -15,6 +15,8 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.startRound(...request.args);
     case "liveRound":
       return session.liveRound();
+    case "seeMinute":
+      return session.seeMinute(...request.args);
     case "changeLive":
       return session.changeLive(...request.args);
     case "finishRound":

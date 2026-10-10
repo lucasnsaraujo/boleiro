@@ -120,6 +120,40 @@ test("opening the lineup pauses the round, and going back resumes it", async () 
   expect(shownMinute()).toBeGreaterThan(before);
 });
 
+test("closing the full table of a paused round leaves it paused", async () => {
+  const given = await onMatchDay();
+  await kickOff(given);
+  play(3);
+  await user().click(screen.getByRole("button", { name: "Pausar" }));
+  const paused = shownMinute();
+  await user().click(screen.getByRole("button", { name: "Tabela completa" }));
+  await user().click(await screen.findByRole("button", { name: "Fechar" }));
+  play(10);
+  expect(shownMinute()).toBe(paused);
+});
+
+test("a round left mid-match comes back paused at the furthest minute shown", async () => {
+  const given = await onMatchDay();
+  await kickOff(given);
+  play(12);
+  const left = shownMinute();
+  await vi.waitFor(async () => expect((await given.engine.liveRound())?.seenMinute).toBe(left));
+  cleanup();
+
+  openRound(given);
+  await screen.findByRole("region", { name: "Seu jogo" });
+  expect(shownMinute()).toBe(left);
+  play(10);
+  expect(shownMinute()).toBe(left);
+});
+
+test("when the engine can't be reached the round says so instead of claiming there is no match", async () => {
+  const given = await onMatchDay((engine) => ({ ...engine, liveRound: () => Promise.reject(new Error("worker crashed")) }));
+  openRound(given);
+  expect(await screen.findByText("Não deu para abrir a rodada.")).toBeTruthy();
+  expect(screen.queryByText("Nenhum jogo hoje")).toBeNull();
+});
+
 test("a substitution is made at the minute on the clock", async () => {
   const given = await onMatchDay();
   const changeLive = vi.spyOn(given.engine, "changeLive");

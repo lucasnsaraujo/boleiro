@@ -39,6 +39,7 @@ const round: LiveRound = {
   clubs: { fla: club("fla", "Flamengo"), rem: club("rem", "Remo"), vit: club("vit", "Vitória"), bahia: club("bahia", "Bahia") },
   names: { p1: "Arrascaeta", b9: "Everaldo", v4: "Wagner Leonardo", v9: "Renato Kayzer", b2: "Gilberto" },
   table: null,
+  seenMinute: 0,
   coach: { fixtureId: "ours", side: "away", starters: [], benchIds: [], squad: [], tactics: { formation: "4-4-2", posture: "balanced", penaltyTakerId: null }, lastChangeMinute: 0 },
 };
 
