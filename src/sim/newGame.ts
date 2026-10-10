@@ -72,7 +72,7 @@ export function newGame(
   const simPlayers = Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }]));
   const market = openingMarket(seed);
   return openingCoach({
-    version: 2,
+    version: 3,
     seed,
     rngState: random.state(),
     date: `${season}-01-01`,
