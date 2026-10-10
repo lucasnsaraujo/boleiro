@@ -89,17 +89,18 @@ export function liveRoundOf(live: LiveDay): LiveRound {
       return competition && fixture ? [{ id, label: fixtureLabel(competition, fixture) }] : [];
     });
 
+  const table = tableOf(live, coachFixture);
   const clubs: Record<string, RoundClub> = {};
+  for (const id of [...matches.flatMap((m) => [m.homeId, m.awayId]), ...(table?.clubIds ?? [])]) {
+    const club = state.clubs[id];
+    if (club) clubs[id] = { id, shortName: club.shortName, colours: club.colours, stadium: club.stadium };
+  }
   const names: Record<string, string> = {};
   const nameOf = (id: string) => {
     const player = state.players[id];
     if (player) names[id] = player.name;
   };
   for (const m of matches) {
-    for (const id of [m.homeId, m.awayId]) {
-      const club = state.clubs[id];
-      if (club) clubs[id] = { id, shortName: club.shortName, colours: club.colours, stadium: club.stadium };
-    }
     for (const e of m.events) {
       if ("playerId" in e) nameOf(e.playerId);
       if (e.type === "substitution") nameOf(e.offId);
@@ -108,5 +109,5 @@ export function liveRoundOf(live: LiveDay): LiveRound {
   const coach = coachSideOf(live, coachFixture);
   for (const p of coach?.squad ?? []) names[p.id] = p.name;
 
-  return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table: tableOf(live, coachFixture), coach };
+  return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach };
 }

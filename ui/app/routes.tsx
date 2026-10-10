@@ -3,6 +3,7 @@ import type { RouteObject } from "react-router";
 import { Calendar } from "../screens/Calendar.js";
 import { Hub } from "../screens/Hub.js";
 import { NewGame } from "../screens/NewGame.js";
+import { Round } from "../screens/Round.js";
 import { Placeholder } from "../screens/Placeholder.js";
 import { StartMenu } from "../screens/StartMenu.js";
 import { SCREENS, type ScreenPath } from "./screens.js";
@@ -13,6 +14,7 @@ const BUILT: Partial<Record<ScreenPath, ReactElement>> = {
   "/new-game": <NewGame />,
   "/hub": <Hub />,
   "/calendar": <Calendar />,
+  "/round": <Round />,
 };
 
 export const routes: RouteObject[] = [
