@@ -4,6 +4,7 @@ import { clubStatures } from "./clubStatures.js";
 import { CAREER_START_REPUTATION, OFFER_REACH } from "./coach.js";
 import { coachSalary } from "./coachSalary.js";
 import { offerJobs } from "./offerJobs.js";
+import { DEFAULT_TACTICS } from "./tactics.js";
 
 // guess: a career starts with three small clubs to choose from.
 const CAREER_OPENING_OFFERS = 3;
@@ -17,7 +18,7 @@ export function openingCoach(state: Omit<GameState, "coach" | "boards">, careerM
   const statures = clubStatures(state);
   const reputation = coachClubId ? (statures.get(coachClubId) ?? CAREER_START_REPUTATION) : CAREER_START_REPUTATION;
   const contract = coachClubId ? { salary: coachSalary(state, coachClubId), untilSeason: state.season } : null;
-  const unset: GameState = { ...state, coachClubId, coach: { reputation, careerMode, contract, offers: [] }, boards: {} };
+  const unset: GameState = { ...state, coachClubId, coach: { reputation, careerMode, contract, offers: [], tactics: DEFAULT_TACTICS }, boards: {} };
   const { boards } = boardExpectations(unset);
   const opened = { ...unset, boards };
   if (!careerMode) return opened;

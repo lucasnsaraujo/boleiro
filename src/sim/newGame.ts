@@ -69,7 +69,7 @@ export function newGame(
   const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION);
   const { economy, finances, wages } = openingFinances(clubsById, squadPlayers, competitions, fixtures, financeData, competitionMoney);
   return openingCoach({
-    version: 1,
+    version: 2,
     seed,
     rngState: random.state(),
     date: `${season}-01-01`,

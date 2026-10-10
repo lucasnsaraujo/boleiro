@@ -12,18 +12,19 @@ const ROTATION_COST = 6;
 const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
 
 /**
- * The AI coach's starting eleven: the engine's 4-4-2, filled by fit players in order of the
- * strength they would play at today, less a cost for fatigue they carry. Injured players never
- * start. A squad short in one position borrows the best remaining players from the others.
+ * The AI coach's starting eleven: the engine's 4-4-2, or the `shape` asked for, filled by fit
+ * players in order of the strength they would play at today, less a cost for fatigue they carry.
+ * Injured players never start. A squad short in one position borrows the best remaining players
+ * from the others.
  */
-export function pickMatchLineup(squad: readonly SimPlayer[], context: MatchContext): SimPlayer[] {
+export function pickMatchLineup(squad: readonly SimPlayer[], context: MatchContext, shape: Record<PositionGroup, number> = FORMATION): SimPlayer[] {
   const score = (p: SimPlayer) => effectiveStrength(p, context) - (ROTATION_COST * fatigueOn(p, context.date)) / 100;
   const ranked = squad
     .filter((p) => !isInjured(p, context.date))
     .map((player) => ({ player, score: score(player) }))
     .sort((a, b) => b.score - a.score)
     .map(({ player }) => player);
-  const lineup = GROUPS.flatMap((group) => ranked.filter((p) => p.group === group).slice(0, FORMATION[group]));
+  const lineup = GROUPS.flatMap((group) => ranked.filter((p) => p.group === group).slice(0, shape[group]));
   const chosen = new Set(lineup);
   return [...lineup, ...ranked.filter((p) => !chosen.has(p)).slice(0, 11 - lineup.length)];
 }

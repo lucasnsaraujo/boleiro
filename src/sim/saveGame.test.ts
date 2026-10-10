@@ -28,4 +28,10 @@ describe("saveGame and loadGame", () => {
   it("rejects a save from another version", () => {
     expect(() => loadGame(JSON.stringify({ ...midSeason, version: 99 }))).toThrow();
   });
+
+  it("rejects a save from before coach tactics existed", () => {
+    const coachWithoutTactics: Partial<typeof midSeason.coach> = { ...midSeason.coach };
+    delete coachWithoutTactics.tactics;
+    expect(() => loadGame(JSON.stringify({ ...midSeason, version: 1, coach: coachWithoutTactics }))).toThrow();
+  });
 });

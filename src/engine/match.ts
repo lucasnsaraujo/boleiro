@@ -6,11 +6,18 @@ export type Player = {
   name: string;
   group: PositionGroup;
   strength: number;
+  /** The position he plays in the formation, when it is not his own group. */
+  slot?: PositionGroup;
 };
 
+export type Posture = "defensive" | "balanced" | "attacking";
+
+/** `posture` and `penaltyTaker` left out play as a balanced side whose best forward takes penalties. */
 export type Team = {
   name: string;
   players: Player[];
+  posture?: Posture;
+  penaltyTaker?: Player;
 };
 
 export type MatchOdds = {
@@ -62,12 +69,23 @@ function average(values: number[]): number {
   return values.reduce((sum, v) => sum + v, 0) / values.length;
 }
 
+// guess: no study rates players away from their position. An outfielder plays another outfield
+// position at 85% of his strength; a keeper outfield, or an outfielder in goal, at half.
+const OUT_OF_POSITION = 0.85;
+const KEEPER_SWAP = 0.5;
+
+function slotStrength(player: Player, slot: PositionGroup): number {
+  if (slot === player.group) return player.strength;
+  return player.strength * (slot === "GK" || player.group === "GK" ? KEEPER_SWAP : OUT_OF_POSITION);
+}
+
 function weightedRating(lineup: Player[], weights: Record<PositionGroup, number>): number {
   let total = 0;
   let weightSum = 0;
   for (const player of lineup) {
-    total += player.strength * weights[player.group];
-    weightSum += weights[player.group];
+    const slot = player.slot ?? player.group;
+    total += slotStrength(player, slot) * weights[slot];
+    weightSum += weights[slot];
   }
   return weightSum ? total / weightSum : average(lineup.map((p) => p.strength));
 }
@@ -106,12 +124,54 @@ function withMissingPlayers(home: Team, away: Team, sendOffs: SendOffs): SendOff
   return { home: [...kickOff(home), ...sendOffs.home], away: [...kickOff(away), ...sendOffs.away] };
 }
 
+// guess: no study puts a number on a coach's posture. An attacking side creates 15% more and
+// allows 20% more, a defensive one creates 20% less and allows 15% less: each trades goal
+// difference for a different spread of results.
+const POSTURE: Record<Posture, { scoring: number; conceding: number }> = {
+  defensive: { scoring: 0.8, conceding: 0.85 },
+  balanced: { scoring: 1, conceding: 1 },
+  attacking: { scoring: 1.15, conceding: 1.2 },
+};
+
+// 212 penalties in the 760 Série A matches of 2024 and 2025, 166 of them scored: ESPN's public
+// match summaries (keyEvents "Penalty - Scored", "Saved", "Missed" and "Hit Woodwork").
+const PENALTIES_PER_SIDE = 212 / 760 / 2;
+const PENALTY_CONVERSION = 166 / 212;
+// guess: each strength point a taker has over the side's best forward adds a point of conversion,
+// kept between 60% and 95%.
+const CONVERSION_PER_POINT = 0.01;
+const MIN_CONVERSION = 0.6;
+const MAX_CONVERSION = 0.95;
+
+/** The usual taker: the strongest forward, else the strongest outfielder. */
+function usualTaker(players: readonly Player[]): Player | undefined {
+  const byStrength = [...players].sort((a, b) => b.strength - a.strength);
+  return byStrength.find((p) => p.group === "ATT") ?? byStrength.find((p) => p.group !== "GK") ?? byStrength[0];
+}
+
+/** Goals per match a chosen penalty taker adds, or costs, over the usual one. */
+function penaltyTakerGoals(team: Team): number {
+  const usual = team.penaltyTaker && usualTaker(team.players);
+  if (!team.penaltyTaker || !usual) return 0;
+  const conversion = (strength: number) =>
+    Math.min(MAX_CONVERSION, Math.max(MIN_CONVERSION, PENALTY_CONVERSION + CONVERSION_PER_POINT * (strength - usual.strength)));
+  return PENALTIES_PER_SIDE * (conversion(team.penaltyTaker.strength) - conversion(usual.strength));
+}
+
 function scoreGrid(home: Team, away: Team, params: EngineParams, sendOffs: SendOffs): { grid: number[][]; lh: number; la: number } {
   const h = teamRatings(home);
   const a = teamRatings(away);
   const rates = sendOffRates(withMissingPlayers(home, away, sendOffs));
-  const lh = rates.home * params.baseGoals * Math.exp(params.homeAdvantage + params.strengthImpact * saturate(h.attack - a.defense, params.gapSaturation));
-  const la = rates.away * params.baseGoals * Math.exp(params.strengthImpact * saturate(a.attack - h.defense, params.gapSaturation));
+  const homePosture = POSTURE[home.posture ?? "balanced"];
+  const awayPosture = POSTURE[away.posture ?? "balanced"];
+  const lh =
+    rates.home * params.baseGoals * Math.exp(params.homeAdvantage + params.strengthImpact * saturate(h.attack - a.defense, params.gapSaturation)) *
+      homePosture.scoring * awayPosture.conceding +
+    rates.home * penaltyTakerGoals(home);
+  const la =
+    rates.away * params.baseGoals * Math.exp(params.strengthImpact * saturate(a.attack - h.defense, params.gapSaturation)) *
+      awayPosture.scoring * homePosture.conceding +
+    rates.away * penaltyTakerGoals(away);
   const grid: number[][] = [];
   let total = 0;
   for (let hg = 0; hg <= MAX_GOALS; hg++) {

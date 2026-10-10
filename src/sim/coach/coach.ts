@@ -1,4 +1,5 @@
 import type { IsoDate } from "../gameState.js";
+import type { Tactics } from "./tactics.js";
 
 /** `salary` is monthly, in BRL; the contract runs to the end of `untilSeason`. */
 export type CoachContract = { salary: number; untilSeason: number };
@@ -11,6 +12,8 @@ export type Coach = {
   careerMode: boolean;
   contract: CoachContract | null;
   offers: JobOffer[];
+  /** Kept from match to match until the coach changes them. */
+  tactics: Tactics;
 };
 
 // guess: an unknown coach starts at the reputation of the smallest national clubs.

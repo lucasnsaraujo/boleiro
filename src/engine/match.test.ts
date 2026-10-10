@@ -96,3 +96,36 @@ describe("a sending-off", () => {
     expect(homeWins({ home: [10], away: [] })).toBe(tenMen);
   });
 });
+
+describe("tactics", () => {
+  const home = squad("Home", 70);
+  const away = squad("Away", 70);
+  const balanced = matchOdds(home, away);
+
+  it("makes an attacking side score and concede more, and a defensive one score and concede less", () => {
+    const attacking = matchOdds({ ...home, posture: "attacking" }, away);
+    const defensive = matchOdds({ ...home, posture: "defensive" }, away);
+    expect(attacking.expectedHomeGoals).toBeGreaterThan(balanced.expectedHomeGoals);
+    expect(attacking.expectedAwayGoals).toBeGreaterThan(balanced.expectedAwayGoals);
+    expect(defensive.expectedHomeGoals).toBeLessThan(balanced.expectedHomeGoals);
+    expect(defensive.expectedAwayGoals).toBeLessThan(balanced.expectedAwayGoals);
+  });
+
+  it("leaves balanced sides exactly as sides with no posture", () => {
+    expect(matchOdds({ ...home, posture: "balanced" }, { ...away, posture: "balanced" })).toEqual(balanced);
+  });
+
+  it("counts a player out of position for less", () => {
+    const inPosition: Team = { ...home, players: home.players.map((p) => ({ ...p, slot: p.group })) };
+    const defenderUpFront: Team = { ...home, players: home.players.map((p) => ({ ...p, slot: p.name === "Home D0" ? "ATT" : p.group })) };
+    expect(matchOdds(inPosition, away)).toEqual(balanced);
+    expect(matchOdds(defenderUpFront, away).expectedHomeGoals).toBeLessThan(balanced.expectedHomeGoals);
+  });
+
+  it("scores more with a stronger penalty taker", () => {
+    const taker = (strength: number): Team => ({ ...home, penaltyTaker: { name: "Taker", group: "ATT", strength } });
+    expect(matchOdds(taker(70), away).expectedHomeGoals).toBeCloseTo(balanced.expectedHomeGoals, 12);
+    expect(matchOdds(taker(85), away).expectedHomeGoals).toBeGreaterThan(balanced.expectedHomeGoals);
+    expect(matchOdds(taker(55), away).expectedHomeGoals).toBeLessThan(balanced.expectedHomeGoals);
+  });
+});
