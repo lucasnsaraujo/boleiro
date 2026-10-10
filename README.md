@@ -50,6 +50,7 @@ pnpm dev         # the game in the browser at http://localhost:5173 (saves go to
 pnpm tauri dev   # the desktop app (needs Rust); saves go to <app data dir>/saves
 pnpm e2e         # Playwright tests on the web build at port 4173 (first run: pnpm exec playwright install chromium)
                  # it reuses a server already on that port; set E2E_PORT when another checkout has one running
+                 # the build runs with VITE_E2E=1, which exposes the engine on window so a test can skip days
 pnpm calibrate   # refits the engine, prints real-vs-Boleiro tables per division and for cup ties
 pnpm test:long   # plays ten seasons, saving and loading each one, and checks revenue, strength and transfers stay in their bands
 pnpm finances:report [seasons] [seed]   # prints revenue bands per division from a long run
