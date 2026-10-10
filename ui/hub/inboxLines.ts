@@ -33,7 +33,14 @@ const REFUSALS: Record<string, string> = {
   lenderNeedsHim: "o clube dele não libera",
   tooOld: "velho demais para empréstimo",
   preContractSigned: "ele já assinou pré-contrato",
+  alreadyAtClub: "ele já joga aqui",
+  onLoan: "ele está emprestado",
+  notAtClub: "ele não é mais do clube",
+  notAvailable: "ele não está disponível",
 };
+
+/** Why the board said no, in a few words. */
+export const refusalText = (reason: string | null): string => (reason && REFUSALS[reason]) ?? "pedido negado";
 
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
@@ -165,7 +172,7 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         const noun = REQUEST_NOUNS[event.request.kind];
         const player = playerName(event.request.playerId);
         if (event.approved) return [`Diretoria aprova ${noun} de ${player}`, "good"];
-        return [`Diretoria recusa ${noun} de ${player}: ${(event.reason && REFUSALS[event.reason]) ?? "pedido negado"}`, "bad"];
+        return [`Diretoria recusa ${noun} de ${player}: ${refusalText(event.reason)}`, "bad"];
       }
     }
   }

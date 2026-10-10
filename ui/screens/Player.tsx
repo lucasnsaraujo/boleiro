@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import type { GameState } from "../../src/sim/gameState.js";
+import type { CoachRequest } from "../../src/sim/transfers/coachRequest.js";
 import { useServices } from "../app/ServicesContext.js";
 import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
 import { formatGameDate } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
 import { POSITION_NAMES, TRAIT_LONG } from "../format/playerLabels.js";
+import type { BoardDesk } from "../market/boardDesk.js";
+import { DEFAULT_RENEWAL_YEARS, requestOptions } from "../market/coachRequests.js";
+import { pendingText, requestTitle } from "../market/requestText.js";
 import { playerCard, type PlayerCard } from "../squad/playerCard.js";
 import { statusText } from "../squad/squadRows.js";
 import "./player.css";
@@ -16,6 +20,9 @@ type PlayerState = Pick<GameState, (typeof PLAYER_KEYS)[number]>;
 
 /** "Série A 3 · Baiano 2" */
 const byCompetition = (counts: readonly { competition: string; count: number }[]) => counts.map((c) => `${c.competition} ${c.count}`).join(" · ");
+
+// A renewal runs one to five more seasons (the board caps contracts at five years).
+const RENEWAL_YEARS = [1, 2, 3, 4, 5] as const;
 
 const SPARK_WIDTH = 160;
 const SPARK_HEIGHT = 44;
@@ -65,12 +72,17 @@ export function Player() {
   const { playerId = "" } = useParams();
   const { engine } = useServices();
   const [state, setState] = useState<PlayerState | null>(null);
+  const [desk, setDesk] = useState<BoardDesk | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let current = true;
-    engine.read(PLAYER_KEYS).then(
-      (read) => current && setState(read),
+    Promise.all([engine.read(PLAYER_KEYS), engine.desk()]).then(
+      ([read, onDesk]) => {
+        if (!current) return;
+        setState(read);
+        setDesk(onDesk);
+      },
       () => current && setFailed(true),
     );
     return () => {
@@ -84,7 +96,7 @@ export function Player() {
     </Link>
   );
   if (failed) return <p className="status error">Nenhum jogo aberto.</p>;
-  if (!state) return <p className="status">Abrindo o jogador…</p>;
+  if (!state || !desk) return <p className="status">Abrindo o jogador…</p>;
   const card = playerCard(state, playerId);
   if (!card) {
     return (
@@ -199,17 +211,69 @@ export function Player() {
       </div>
       <StrengthHistory marks={card.strengthBySeason} />
       {card.isCoachsPlayer && (
-        <div className="player-actions">
-          <button className="btn-main" disabled>
-            Renovar
+        <ContractActions
+          state={state}
+          playerId={card.id}
+          name={card.name}
+          desk={desk}
+          onAsk={(request) => void engine.ask(request).then(setDesk)}
+          onWithdraw={() => void engine.withdraw(card.id).then(setDesk)}
+        />
+      )}
+    </div>
+  );
+}
+
+type ActionsProps = {
+  state: PlayerState;
+  playerId: string;
+  name: string;
+  desk: BoardDesk;
+  onAsk: (request: CoachRequest) => void;
+  onWithdraw: () => void;
+};
+
+/** Renovar, Vender and Emprestar go to the board's desk; a request already there can be withdrawn. */
+function ContractActions({ state, playerId, name, desk, onAsk, onWithdraw }: ActionsProps) {
+  const [years, setYears] = useState<number>(DEFAULT_RENEWAL_YEARS);
+  const pending = desk.pending.find((request) => request.playerId === playerId);
+  if (pending) {
+    return (
+      <p className="player-pending">
+        {requestTitle(pending, name)} na mesa. {pendingText(state, pending)}{" "}
+        <button className="btn-quiet" onClick={onWithdraw}>
+          Retirar
+        </button>
+      </p>
+    );
+  }
+  const options = requestOptions(state, playerId, years);
+  if (!options.length) return null;
+  return (
+    <div className="player-actions">
+      {options.map((option) =>
+        option.request.kind === "renew" ? (
+          <span key={option.label} className="player-renew">
+            <button className="btn-main" onClick={() => onAsk(option.request)}>
+              {option.label}
+            </button>
+            <label>
+              por
+              <select aria-label="Anos" value={years} onChange={(e) => setYears(Number(e.target.value))}>
+                {RENEWAL_YEARS.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+              {years === 1 ? "ano" : "anos"}
+            </label>
+          </span>
+        ) : (
+          <button key={option.label} className="btn-quiet" onClick={() => onAsk(option.request)}>
+            {option.label}
           </button>
-          <button className="btn-quiet" disabled>
-            Vender
-          </button>
-          <button className="btn-quiet" disabled>
-            Emprestar
-          </button>
-        </div>
+        ),
       )}
     </div>
   );
