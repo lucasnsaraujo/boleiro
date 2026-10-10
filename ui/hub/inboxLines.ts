@@ -38,12 +38,13 @@ const REFUSALS: Record<string, string> = {
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
 /**
- * The inbox lines one day's events give the coach of `before.coachClubId`: his matches, his club's
+ * The inbox lines one day's events give the player's coach: his matches, his club's
  * money, squad and supporters, the board's answers and his own career. Other clubs' news is left out.
  */
 export function inboxLines(before: NewsState, after: NewsState, events: readonly DayEvent[]): InboxLine[] {
   const coachClubId = before.coachClubId;
-  const isOurs = (clubId: string | null) => clubId !== null && clubId === coachClubId;
+  // On the day he changes clubs, both the club he left and the one he joined are his news.
+  const isOurs = (clubId: string | null) => clubId !== null && (clubId === coachClubId || clubId === after.coachClubId);
   const clubName = (clubId: string) => after.clubs[clubId]?.shortName ?? before.clubs[clubId]?.shortName ?? clubId;
   const playerName = (playerId: string) =>
     after.players[playerId]?.name ?? before.players[playerId]?.name ?? after.market.freeAgents[playerId]?.name ?? "Um jogador";
@@ -129,7 +130,7 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         return [`Fim do contrato com ${clubName(event.clubId)}`, "bad"];
       case "boardExpectationsSet": {
         const division = after.clubs[event.clubId]?.division;
-        if (!isOurs(event.clubId) && event.clubId !== after.coachClubId) return null;
+        if (!isOurs(event.clubId)) return null;
         return division ? [`Meta da diretoria para ${event.season}: ${boardGoal(event, division)}`, "neutral"] : null;
       }
       case "playerMoved": {

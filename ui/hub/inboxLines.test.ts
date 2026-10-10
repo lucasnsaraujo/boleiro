@@ -170,6 +170,11 @@ describe("the coach's career", () => {
     expect(line({ type: "contractEnded", clubId: "bahia-ba", season: 2026 })).toMatchObject({ text: "Fim do contrato com Bahia", tone: "bad" });
   });
 
+  test("on the day he takes a new job, the new club's news is his too", () => {
+    const hired = { ...game, coachClubId: "vitoria-ba" };
+    expect(inboxLines(game, hired, [{ type: "fansProtest", clubId: "vitoria-ba", fans: 20, moraleLost: 5 }])).toHaveLength(1);
+  });
+
   test("other coaches' firings stay out", () => {
     expect(lines({ type: "coachFired", clubId: "vitoria-ba", date: game.date, isYou: false, position: 18, targetPosition: 10 })).toEqual([]);
   });
