@@ -243,9 +243,9 @@ function legLine(tie: TieView): string {
 function TieList({ name, ties, clubs, coachClubId }: { name: string; ties: TieView[]; clubs: Clubs; coachClubId: string | null }) {
   const side = (clubId: string, tie: TieView, home: boolean) => {
     const club = clubs[clubId];
-    const state = tie.winnerId === null ? "" : tie.winnerId === clubId ? " won" : " lost";
+    const outcome = tie.winnerId === null ? "" : tie.winnerId === clubId ? " won" : " lost";
     return (
-      <span className={`tie-side${home ? " home" : ""}${state}`}>
+      <span className={`tie-side${home ? " home" : ""}${clubId === coachClubId ? " own" : ""}${outcome}`}>
         {home && <span className="tie-name">{club?.shortName ?? clubId}</span>}
         {club && <Crest club={club} size={22} />}
         {!home && <span className="tie-name">{club?.shortName ?? clubId}</span>}

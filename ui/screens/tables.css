@@ -60,8 +60,8 @@
   font: 800 17px var(--num);
 }
 
-.stages button:hover:not(:disabled),
-.group-picker button:hover {
+.stages button:hover:not(:disabled, [aria-pressed="true"]),
+.group-picker button:hover:not([aria-pressed="true"]) {
   background: var(--lawn-2);
 }
 
@@ -273,7 +273,7 @@ td.zone-relegation {
   font-weight: 500;
 }
 
-.tie.mine .tie-side:not(.lost) .tie-name {
+.tie-side.own .tie-name {
   color: var(--yellow);
 }
 
@@ -357,6 +357,7 @@ td.zone-relegation {
   }
 
   .tie {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 120px;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 150px;
+    column-gap: 10px;
   }
 }
