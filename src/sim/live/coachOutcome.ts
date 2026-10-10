@@ -5,7 +5,7 @@ import type { MatchContext } from "../players/effectiveStrength.js";
 import { recordMatchLoad } from "../players/recordMatchLoad.js";
 import type { MatchOutcome } from "./liveDay.js";
 
-export type PlayedCoachMatch = {
+type PlayedCoachMatch = {
   played: Fixture;
   context: MatchContext;
   awayTravelKm: number;

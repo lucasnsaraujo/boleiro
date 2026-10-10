@@ -49,7 +49,7 @@ export function goalMinuteWeights(ownReds: readonly number[], opponentReds: read
 }
 
 /** A minute drawn by `weights`, no later than `latest`. */
-export function drawMinute(weights: readonly number[], random: () => number, latest: number = FULL_TIME): number {
+function drawMinute(weights: readonly number[], random: () => number, latest: number = FULL_TIME): number {
   const usable = weights.slice(0, Math.max(1, latest));
   const total = usable.reduce((sum, w) => sum + w, 0);
   if (total <= 0) return Math.max(1, Math.min(latest, FULL_TIME));
@@ -68,7 +68,7 @@ export function inMatchOrder(events: readonly MatchEvent[]): MatchEvent[] {
 export const sentOffMinute = (events: readonly MatchEvent[], playerId: string): number | undefined =>
   events.find((e) => e.type === "card" && e.card !== "yellow" && e.playerId === playerId)?.minute;
 
-export type KickOffMatch = {
+type KickOffMatch = {
   homeId: string;
   awayId: string;
   homeLineup: readonly SimPlayer[];
