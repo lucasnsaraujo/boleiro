@@ -7,15 +7,59 @@ import { Crest } from "../clubs/Crest.js";
 import { formatGameDate } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
 import { POSITION_NAMES, TRAIT_LONG } from "../format/playerLabels.js";
-import { playerCard } from "../squad/playerCard.js";
+import { playerCard, type PlayerCard } from "../squad/playerCard.js";
 import { statusText } from "../squad/squadRows.js";
 import "./player.css";
 
-const PLAYER_KEYS = ["date", "coachClubId", "clubs", "players", "discipline", "competitions", "fixtures", "history", "market"] as const;
+const PLAYER_KEYS = ["date", "season", "coachClubId", "clubs", "players", "discipline", "competitions", "fixtures", "history", "market"] as const;
 type PlayerState = Pick<GameState, (typeof PLAYER_KEYS)[number]>;
 
 /** "Série A 3 · Baiano 2" */
 const byCompetition = (counts: readonly { competition: string; count: number }[]) => counts.map((c) => `${c.competition} ${c.count}`).join(" · ");
+
+const SPARK_WIDTH = 160;
+const SPARK_HEIGHT = 44;
+
+/** The strength line, scaled to its own range so a two-point drift still reads as a slope. */
+function Sparkline({ values }: { values: readonly number[] }) {
+  const low = Math.min(...values);
+  const range = Math.max(...values) - low || 1;
+  const points = values.map((v, i) => [(i / (values.length - 1)) * (SPARK_WIDTH - 8) + 4, SPARK_HEIGHT - 4 - ((v - low) / range) * (SPARK_HEIGHT - 8)] as const);
+  const [lastX, lastY] = points.at(-1) ?? [0, 0];
+  return (
+    <svg className="player-spark" viewBox={`0 0 ${SPARK_WIDTH} ${SPARK_HEIGHT}`} width={SPARK_WIDTH} height={SPARK_HEIGHT} aria-hidden="true">
+      <polyline points={points.map(([x, y]) => `${x},${y}`).join(" ")} />
+      <circle cx={lastX} cy={lastY} r={3.5} />
+    </svg>
+  );
+}
+
+function StrengthHistory({ marks }: { marks: PlayerCard["strengthBySeason"] }) {
+  const values = marks.map((mark) => Math.round(mark.strength));
+  return (
+    <section className="player-history" aria-labelledby="history-title">
+      <h2 id="history-title" className="player-facts-title">
+        Força por temporada
+      </h2>
+      <div className="player-history-row">
+        {values.length > 1 && <Sparkline values={values} />}
+        <ol>
+          {marks.map((mark, i) => {
+            const value = values[i] ?? 0;
+            const change = i > 0 ? value - (values[i - 1] ?? value) : 0;
+            return (
+              <li key={mark.season}>
+                <span className="player-history-season">{mark.season}</span>
+                <span className="player-history-n">{value}</span>
+                {change !== 0 && <span className={`player-history-change ${change > 0 ? "up" : "down"}`}>{change > 0 ? `+${change}` : `−${-change}`}</span>}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </section>
+  );
+}
 
 export function Player() {
   const { playerId = "" } = useParams();
@@ -153,6 +197,7 @@ export function Player() {
           </dl>
         </section>
       </div>
+      <StrengthHistory marks={card.strengthBySeason} />
       {card.isCoachsPlayer && (
         <div className="player-actions">
           <button className="btn-main" disabled>

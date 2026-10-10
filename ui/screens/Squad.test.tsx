@@ -81,6 +81,18 @@ test("a player's name opens his screen, where the market actions wait for the ma
   expect(await screen.findByRole("heading", { name: "Elenco" })).toBeTruthy();
 });
 
+test("a new game's player screen lists his strength for this season", async () => {
+  open(await services());
+  await screen.findByRole("heading", { name: "Elenco" });
+  const [first] = screen.getAllByRole("link").filter((link) => link.getAttribute("href")?.startsWith("/squad/"));
+  if (!first) throw new Error("no player link");
+  await userEvent.click(first);
+  const history = (await screen.findByRole("heading", { name: "Força por temporada" })).closest("section");
+  if (!history) throw new Error("no strength history");
+  const strength = screen.getByLabelText(/^Força \d+$/).getAttribute("aria-label")?.replace("Força ", "");
+  expect(within(history).getAllByRole("listitem").map((item) => item.textContent)).toEqual([`2026${strength}`]);
+});
+
 test("a coach without a club has no squad", async () => {
   open(await services(null));
   expect(await screen.findByText("Sem clube, sem elenco.")).toBeTruthy();

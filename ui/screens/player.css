@@ -108,6 +108,71 @@
   color: var(--chalk-3);
 }
 
+.player-history {
+  padding-top: 32px;
+}
+
+.player-history-row {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(42, 82, 54, 0.55);
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.player-spark {
+  flex: none;
+}
+
+.player-spark polyline {
+  fill: none;
+  stroke: var(--chalk-3);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.player-spark circle {
+  fill: var(--yellow);
+}
+
+.player-history ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  list-style: none;
+}
+
+.player-history li {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  column-gap: 6px;
+}
+
+.player-history-season {
+  grid-column: 1 / -1;
+  font: 500 13px var(--cond);
+  color: var(--chalk-3);
+}
+
+.player-history-n {
+  font: 800 28px/1 var(--num);
+}
+
+.player-history-change {
+  font: 600 13px var(--cond);
+}
+
+.player-history-change.up {
+  color: var(--promotion);
+}
+
+.player-history-change.down {
+  color: var(--red);
+}
+
 .player-actions {
   display: flex;
   align-items: center;

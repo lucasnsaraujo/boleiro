@@ -1,6 +1,6 @@
 import type { PositionGroup } from "../../src/engine/match.js";
 import type { GameState, IsoDate } from "../../src/sim/gameState.js";
-import { competitionKey } from "../../src/sim/history/history.js";
+import { competitionKey, type StrengthMark } from "../../src/sim/history/history.js";
 import type { Trait } from "../../src/sim/players/playerProfile.js";
 import { competitionName } from "../format/competitionName.js";
 import { liveDiscipline, playerStatus, type PlayerStatus } from "./squadRows.js";
@@ -12,6 +12,8 @@ export type PlayerCard = {
   age: number;
   trait: Trait | null;
   strength: number;
+  /** One mark per season, oldest first, ending with this season's. */
+  strengthBySeason: StrengthMark[];
   clubId: string;
   status: PlayerStatus;
   /** Goals and the yellows counting toward a ban, by competition this season; minutes in every competition. */
@@ -22,7 +24,7 @@ export type PlayerCard = {
   isCoachsPlayer: boolean;
 };
 
-type CardState = Pick<GameState, "date" | "coachClubId" | "players" | "discipline" | "competitions" | "fixtures" | "history" | "market">;
+type CardState = Pick<GameState, "date" | "season" | "coachClubId" | "players" | "discipline" | "competitions" | "fixtures" | "history" | "market">;
 
 export function playerCard(state: CardState, playerId: string): PlayerCard | null {
   const player = state.players[playerId];
@@ -47,6 +49,7 @@ export function playerCard(state: CardState, playerId: string): PlayerCard | nul
   });
   const atClub = state.history.players[player.clubId]?.[playerId];
   const loan = state.market.loans[playerId];
+  const pastStrength = (state.history.strength[playerId] ?? []).filter((mark) => mark.season < state.season);
   return {
     id: player.id,
     name: player.name,
@@ -54,6 +57,7 @@ export function playerCard(state: CardState, playerId: string): PlayerCard | nul
     age: player.age,
     trait: player.trait,
     strength: player.strength,
+    strengthBySeason: [...pastStrength, { season: state.season, strength: player.strength }],
     clubId: player.clubId,
     status: playerStatus(player, { ...state, discipline }),
     season: { goals, minutes: player.condition.seasonMinutes, yellows },
