@@ -47,6 +47,20 @@ test("playing on to the match day autosaves the rounds other clubs played on the
   expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID, date }]);
 });
 
+test("playing on through days with no match anywhere still autosaves", async () => {
+  const { engine: raw, close } = inMemoryEngine();
+  closers.push(close);
+  const slots = indexedDbSlots(new IDBFactory());
+  const stoppedByAnOffer = {
+    ...raw,
+    playToMatchDay: async () => ({ date: (await raw.advance([{}])).date, stop: "jobOffer" as const, daysPlayed: 1 }),
+  };
+  const engine = withAutosave(stoppedByAnOffer, slots, { current: { slotId: "slot-1", coachName: "Tite" } });
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  const { date } = await engine.playToMatchDay();
+  expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID, date }]);
+});
+
 test("playing on when already on the match day plays nothing and saves nothing", async () => {
   const { engine, slots } = await startGame();
   await engine.playToMatchDay();

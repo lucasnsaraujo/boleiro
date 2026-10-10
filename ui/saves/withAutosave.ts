@@ -4,7 +4,7 @@ import { saveToSlot } from "./saveToSlot.js";
 import { AUTOSAVE_SLOT_ID } from "./slotMeta.js";
 import type { SlotStore } from "./slotStore.js";
 
-/** The engine, writing the autosave slot after every call that played a round of matches. */
+/** The engine, writing the autosave slot after every advance that played a round of matches and every play-on that moved the game. */
 export function withAutosave(engine: EngineClient, slots: SlotStore, game: CurrentGameRef): EngineClient {
   async function autosave() {
     const open = game.current;
@@ -21,7 +21,8 @@ export function withAutosave(engine: EngineClient, slots: SlotStore, game: Curre
     },
     async playToMatchDay() {
       const result = await engine.playToMatchDay();
-      if (result.matchesPlayed > 0) await autosave();
+      // Days that stop for a job offer or the window may have no match anywhere; they still move the game on.
+      if (result.daysPlayed > 0) await autosave();
       return result;
     },
   };

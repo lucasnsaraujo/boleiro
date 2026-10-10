@@ -9,7 +9,7 @@ import { playToMatchDay, type StopReason } from "../hub/playToMatchDay.js";
 export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode">;
 export type GameSummary = Pick<GameState, "date" | "season" | "coachClubId">;
 export type AdvanceResult = { date: IsoDate; events: DayEvent[] };
-export type PlayResult = { date: IsoDate; stop: StopReason; matchesPlayed: number };
+export type PlayResult = { date: IsoDate; stop: StopReason; daysPlayed: number };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
 const INBOX_SIZE = 40;
@@ -65,15 +65,15 @@ export function createEngineSession(files: GameFiles) {
       return { date: next.date, events };
     },
     /**
-     * The hub's "Jogar rodada": empties the inbox, then plays days with no decisions until the
-     * coach's next match day or until something needs him. If any day throws, the game stays where it was.
+     * The hub's "Jogar rodada": plays days with no decisions until the coach's next match day or
+     * until something needs him, and starts the inbox over with what those days brought. On a match
+     * day it plays nothing and the inbox stays. If any day throws, the game stays where it was.
      */
     playToMatchDay(): PlayResult {
       const played = playToMatchDay(current(), (day) => advanceDay(day, {}));
       state = played.state;
-      news = [];
-      addNews(played.news);
-      return { date: played.state.date, stop: played.stop, matchesPlayed: played.matchesPlayed };
+      if (played.daysPlayed > 0) news = played.news.slice(-INBOX_SIZE);
+      return { date: played.state.date, stop: played.stop, daysPlayed: played.daysPlayed };
     },
     inbox(): InboxLine[] {
       return news;

@@ -86,3 +86,18 @@ test("the inbox keeps what happened since the coach last played on, and a new ga
   await engine.newGame(8, { coachClubId: "bahia-ba" });
   expect(await engine.inbox()).toEqual([]);
 });
+
+test("pressing on when already on the match day keeps the inbox", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  await engine.playToMatchDay();
+  const { date } = await engine.advance([{}]);
+  const { fixtures } = await engine.read(["fixtures"]);
+  const ownDates = fixtures.filter((f) => f.homeId === "bahia-ba" || f.awayId === "bahia-ba").map((f) => f.date);
+  const secondMatch = ownDates.filter((d) => d >= date).sort()[0] ?? date;
+  await engine.advance(Array.from({ length: Number(secondMatch.slice(8, 10)) - Number(date.slice(8, 10)) }, () => ({})));
+  const before = await engine.inbox();
+  expect(before.length).toBeGreaterThan(0);
+  expect(await engine.playToMatchDay()).toMatchObject({ stop: "matchDay", daysPlayed: 0 });
+  expect(await engine.inbox()).toEqual(before);
+});

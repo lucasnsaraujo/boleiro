@@ -7,7 +7,9 @@ import { inboxLines, type DayEvent, type InboxLine } from "./inboxLines.js";
 export type StopReason = "matchDay" | "jobOffer" | "fired" | "boardDecision" | "windowClosing" | "seasonEnd" | "idle";
 
 export type PlayDay = (state: GameState) => { state: GameState; events: DayEvent[] };
-export type PlayedDays = { state: GameState; news: InboxLine[]; stop: StopReason; matchesPlayed: number };
+export type PlayedDays = { state: GameState; news: InboxLine[]; stop: StopReason; daysPlayed: number };
+
+const WINDOW_WARNING = "Último dia para pedir reforços: a janela fecha amanhã";
 
 // guess: about four months, longer than any gap between a club's games inside a season, so only a
 // coach without a club waiting for offers reaches it.
@@ -42,18 +44,17 @@ export function stopReason(before: GameState, after: GameState, events: readonly
  * must see. On a match day it plays nothing; otherwise it always plays at least one day.
  */
 export function playToMatchDay(start: GameState, playDay: PlayDay, maxDays = MAX_DAYS): PlayedDays {
-  if (isCoachMatchDay(start)) return { state: start, news: [], stop: "matchDay", matchesPlayed: 0 };
+  if (isCoachMatchDay(start)) return { state: start, news: [], stop: "matchDay", daysPlayed: 0 };
   let state = start;
   const news: InboxLine[] = [];
-  let matchesPlayed = 0;
-  for (let day = 0; day < maxDays; day++) {
+  for (let day = 1; day <= maxDays; day++) {
     const played = playDay(state);
     news.push(...inboxLines(state, played.state, played.events));
-    matchesPlayed += played.events.filter((e) => e.type === "matchPlayed").length;
     const stop = stopReason(state, played.state, played.events);
     state = played.state;
-    if (stop === "windowClosing") news.push({ date: state.date, text: "A janela de transferências fecha amanhã", tone: "neutral" });
-    if (stop) return { state, news, stop, matchesPlayed };
+    // The warning also goes out when another reason stops the days on the last day to ask.
+    if (state.coachClubId && isLastDayToAsk(state.date)) news.push({ date: state.date, text: WINDOW_WARNING, tone: "neutral" });
+    if (stop) return { state, news, stop, daysPlayed: day };
   }
-  return { state, news, stop: "idle", matchesPlayed };
+  return { state, news, stop: "idle", daysPlayed: maxDays };
 }

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { addDays } from "../../src/sim/dates.js";
+import { addDays, daysBetween } from "../../src/sim/dates.js";
 import type { GameState } from "../../src/sim/gameState.js";
 import { newGameFromFiles } from "../../src/sim/loadNewGame.js";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
@@ -13,6 +13,7 @@ const firstMatch = game.fixtures
   .sort()[0];
 if (!firstMatch) throw new Error("Bahia has no fixture");
 
+const WINDOW_WARNING = "Último dia para pedir reforços: a janela fecha amanhã";
 const on = (date: string, state: GameState = game): GameState => ({ ...state, date });
 const quietDay = (state: GameState) => ({ state: on(addDays(state.date, 1), state), events: [] });
 
@@ -84,7 +85,7 @@ describe("playToMatchDay", () => {
   test("stopping for the window adds a line saying it closes tomorrow", () => {
     const closing = playToMatchDay(on("2026-03-01", { ...game, fixtures: [] }), quietDay);
     expect(closing.stop).toBe("windowClosing");
-    expect(closing.news).toEqual([{ date: "2026-03-02", text: "A janela de transferências fecha amanhã", tone: "neutral" }]);
+    expect(closing.news).toEqual([{ date: "2026-03-02", text: WINDOW_WARNING, tone: "neutral" }]);
   });
 
   test("with no match ahead it gives up after the day limit", () => {
@@ -93,10 +94,17 @@ describe("playToMatchDay", () => {
     expect(played.stop).toBe("idle");
   });
 
-  test("counts the matches played on the way, for the autosave", () => {
-    const fixture = game.fixtures[0];
-    if (!fixture) throw new Error("no fixture");
-    const busyDay = (state: GameState) => ({ state: on(addDays(state.date, 1), state), events: [{ type: "matchPlayed", fixture } as const] });
-    expect(playToMatchDay(game, busyDay).matchesPlayed).toBeGreaterThan(0);
+  test("counts the days played on the way, for the autosave", () => {
+    expect(playToMatchDay(game, quietDay).daysPlayed).toBe(daysBetween(game.date, firstMatch));
+    expect(playToMatchDay(on(firstMatch), quietDay).daysPlayed).toBe(0);
+  });
+
+  test("a match day that is also the last day to ask still warns about the window", () => {
+    const home = game.fixtures.find((f) => f.homeId === "bahia-ba");
+    if (!home) throw new Error("Bahia has no home fixture");
+    const fixtures = [{ ...home, date: "2026-03-02" }];
+    const played = playToMatchDay(on("2026-03-01", { ...game, fixtures }), quietDay);
+    expect(played.stop).toBe("matchDay");
+    expect(played.news.map((line) => line.text)).toEqual([WINDOW_WARNING]);
   });
 });

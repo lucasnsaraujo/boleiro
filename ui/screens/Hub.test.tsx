@@ -67,7 +67,7 @@ test("when a day stops the coach early, the hub stays and shows the news that st
     ...engine,
     playToMatchDay: async () => {
       const played = await engine.advance([{}]);
-      return { date: played.date, stop: "jobOffer", matchesPlayed: 0 };
+      return { date: played.date, stop: "jobOffer", daysPlayed: 1 };
     },
     inbox: async () => [{ date: "2026-01-01", text: "Vitória faz proposta: R$ 250 mil por mês até 2026", tone: "good" }],
   }));
