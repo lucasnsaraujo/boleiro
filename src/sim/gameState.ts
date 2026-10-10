@@ -143,7 +143,7 @@ export type Economy = {
 };
 
 export type GameState = {
-  version: 1;
+  version: 2;
   seed: number;
   rngState: number;
   date: IsoDate;
