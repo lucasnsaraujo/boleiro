@@ -5,6 +5,7 @@ import { Finances } from "../screens/Finances.js";
 import { Hub } from "../screens/Hub.js";
 import { Market } from "../screens/Market.js";
 import { NewGame } from "../screens/NewGame.js";
+import { Round } from "../screens/Round.js";
 import { Placeholder } from "../screens/Placeholder.js";
 import { Player } from "../screens/Player.js";
 import { Squad } from "../screens/Squad.js";
@@ -22,6 +23,7 @@ const BUILT: Partial<Record<ScreenPath, ReactElement>> = {
   "/market": <Market />,
   "/finances": <Finances />,
   "/calendar": <Calendar />,
+  "/round": <Round />,
 };
 
 export const routes: RouteObject[] = [
