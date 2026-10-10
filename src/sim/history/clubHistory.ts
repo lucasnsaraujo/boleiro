@@ -18,7 +18,7 @@ export type ClubHistory = {
 const DIVISIONS: readonly Division[] = ["A", "B", "C", "D"];
 
 /** One club's past as the history kept it: titles, league finishes, records and idols. */
-export function clubHistory(state: GameState, clubId: string): ClubHistory {
+export function clubHistory(state: Pick<GameState, "history">, clubId: string): ClubHistory {
   const { history } = state;
   const titles = history.seasons.flatMap((s) =>
     Object.entries(s.champions).flatMap(([competition, championId]) => (championId === clubId ? [{ season: s.season, competition }] : [])),

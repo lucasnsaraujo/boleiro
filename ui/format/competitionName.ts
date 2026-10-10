@@ -1,5 +1,6 @@
 import type { State } from "../../src/data/clubs.js";
 import type { Competition, Fixture } from "../../src/sim/gameState.js";
+import type { CompetitionKey } from "../../src/sim/history/history.js";
 
 const STATE_CHAMPIONSHIPS: Record<State, string> = {
   AC: "Acreano",
@@ -41,6 +42,19 @@ export function competitionName(competition: Competition): string {
     case "cup":
       return "Copa do Brasil";
   }
+}
+
+function isState(code: string): code is State {
+  return code in STATE_CHAMPIONSHIPS;
+}
+
+/** A competition as the history keeps it, without the season: "serie-a", "copa-do-brasil", "state-sp". */
+export function competitionKeyName(key: CompetitionKey): string {
+  if (key === "copa-do-brasil") return "Copa do Brasil";
+  const league = /^serie-([a-d])$/.exec(key)?.[1];
+  if (league) return `Série ${league.toUpperCase()}`;
+  const state = /^state-([a-z]{2})$/.exec(key)?.[1]?.toUpperCase();
+  return state && isState(state) ? STATE_CHAMPIONSHIPS[state] : key;
 }
 
 /** The competition, plus the round when the game is part of a round robin. */
