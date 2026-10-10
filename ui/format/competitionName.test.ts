@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import type { Competition, Fixture } from "../../src/sim/gameState.js";
-import { competitionName, fixtureLabel } from "./competitionName.js";
+import { competitionKeyName, competitionName, fixtureLabel } from "./competitionName.js";
 
 const base = { season: 2026, clubIds: [], stageDates: [], drawOrder: [] };
 
@@ -38,4 +38,8 @@ test("a round-robin game says which round it is", () => {
 
 test("a knockout game only names the competition", () => {
   expect(fixtureLabel(copa, fixture(copa, "2026-02-18"))).toBe("Copa do Brasil");
+});
+
+test("a competition kept in the history is named the way the fan says it", () => {
+  expect(["serie-a", "serie-d", "copa-do-brasil", "state-sp", "state-rs"].map(competitionKeyName)).toEqual(["Série A", "Série D", "Copa do Brasil", "Paulista", "Gaúcho"]);
 });

@@ -9,7 +9,7 @@ export default defineConfig({
   use: { baseURL: `http://localhost:${PORT}`, trace: "retain-on-failure" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } } }],
   webServer: {
-    command: `pnpm build && pnpm preview --port ${PORT} --strictPort`,
+    command: `VITE_E2E=1 pnpm build && pnpm preview --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
   },

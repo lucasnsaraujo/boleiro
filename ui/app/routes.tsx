@@ -2,10 +2,14 @@ import type { ReactElement } from "react";
 import type { RouteObject } from "react-router";
 import { Calendar } from "../screens/Calendar.js";
 import { Finances } from "../screens/Finances.js";
+import { History } from "../screens/History.js";
 import { Hub } from "../screens/Hub.js";
 import { Market } from "../screens/Market.js";
 import { NewGame } from "../screens/NewGame.js";
+import { Offers } from "../screens/Offers.js";
 import { Round } from "../screens/Round.js";
+import { Sacked } from "../screens/Sacked.js";
+import { SeasonEnd } from "../screens/SeasonEnd.js";
 import { Placeholder } from "../screens/Placeholder.js";
 import { Player } from "../screens/Player.js";
 import { Squad } from "../screens/Squad.js";
@@ -24,6 +28,8 @@ const BUILT: Partial<Record<ScreenPath, ReactElement>> = {
   "/finances": <Finances />,
   "/calendar": <Calendar />,
   "/round": <Round />,
+  "/history": <History />,
+  "/season-end": <SeasonEnd />,
 };
 
 export const routes: RouteObject[] = [
@@ -32,6 +38,8 @@ export const routes: RouteObject[] = [
     children: [
       ...SCREENS.map(({ path, title }) => ({ path, element: BUILT[path] ?? <Placeholder title={title} /> })),
       { path: "/squad/:playerId", element: <Player /> },
+      { path: "/offers", element: <Offers /> },
+      { path: "/sacked", element: <Sacked /> },
       { path: "/options", element: <Placeholder title="Opções" back={{ to: "/", label: "Voltar ao início" }} /> },
     ],
   },

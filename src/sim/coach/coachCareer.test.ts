@@ -5,6 +5,7 @@ import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { CAREER_START_REPUTATION, OFFER_REACH } from "./coach.js";
 import { clubStatures } from "./clubStatures.js";
+import { declineOffer } from "./declineOffer.js";
 
 function playUntil(state: GameState, date: string, decide: (state: GameState) => DayDecisions = () => ({})): { state: GameState; events: DayEvent[] } {
   let current = state;
@@ -121,6 +122,22 @@ describe("accepting an offer", () => {
 
   it("refuses a club that made no offer", () => {
     expect(() => advanceDay(career, { acceptOffer: "flamengo-rj" })).toThrow();
+  });
+});
+
+describe("declining an offer", () => {
+  const career = loadNewGame(17, { coachClubId: null, careerMode: true });
+  const [declined, ...kept] = career.coach.offers;
+  if (!declined) throw new Error("career mode starts without offers");
+
+  it("takes the offer off the table and leaves the others", () => {
+    expect(declineOffer(career, declined.clubId).coach.offers).toEqual(kept);
+  });
+  it("leaves the club unable to be accepted the next day", () => {
+    expect(() => advanceDay(declineOffer(career, declined.clubId), { acceptOffer: declined.clubId })).toThrow();
+  });
+  it("refuses a club that made no offer", () => {
+    expect(() => declineOffer(career, "flamengo-rj")).toThrow();
   });
 });
 

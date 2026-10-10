@@ -21,6 +21,12 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.changeLive(...request.args);
     case "finishRound":
       return session.finishRound();
+    case "turningPoint":
+      return session.turningPoint();
+    case "closeTurningPoint":
+      return session.closeTurningPoint();
+    case "declineOffer":
+      return session.declineOffer(...request.args);
     case "inbox":
       return session.inbox();
     case "ask":

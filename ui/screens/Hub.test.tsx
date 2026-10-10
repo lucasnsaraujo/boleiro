@@ -6,6 +6,8 @@ import { afterEach, expect, test } from "vitest";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
 import type { EngineClient } from "../engine/connectEngine.js";
 import { inMemoryEngine } from "../engine/inMemoryEngine.js";
+import type { JobOffer } from "../../src/sim/coach/coach.js";
+import type { TurningPoint } from "../hub/turningPoints.js";
 import { indexedDbSlots } from "../saves/indexedDbSlots.js";
 import { Hub } from "./Hub.js";
 
@@ -28,6 +30,9 @@ function openHub(given: Services) {
     [
       { path: "/hub", element: <Hub /> },
       { path: "/round", element: <p>Rodada aberta</p> },
+      { path: "/offers", element: <p>Propostas abertas</p> },
+      { path: "/sacked", element: <p>Demissão aberta</p> },
+      { path: "/season-end", element: <p>Fim de temporada aberto</p> },
       { path: "/", element: <p>Início</p> },
     ],
     { initialEntries: ["/hub"] },
@@ -92,4 +97,32 @@ test("with no game open the hub sends the coach back to the start", async () => 
   given.game.current = null;
   openHub(given);
   expect(await screen.findByRole("heading", { name: "Nenhum jogo aberto" })).toBeTruthy();
+});
+
+test("a coach without a club opens the offers on the table from the hub", async () => {
+  openHub(await services(null));
+  await userEvent.click(await screen.findByRole("link", { name: "Ver propostas" }));
+  expect(await screen.findByText("Propostas abertas")).toBeTruthy();
+});
+
+test("a coach with a club sees an offer on the table without leaving his round", async () => {
+  const given = await services("bahia-ba");
+  const save: { coach: { offers: JobOffer[] } } = JSON.parse(await given.engine.save());
+  save.coach.offers.push({ clubId: "vitoria-ba", salary: 90_000, untilSeason: 2026, expiresOn: "2026-01-14" });
+  await given.engine.load(JSON.stringify(save));
+  openHub(given);
+  expect(await screen.findByRole("link", { name: "1 proposta" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Jogar rodada" })).toBeTruthy();
+});
+
+test.each<[TurningPoint["kind"], string]>([
+  ["fired", "Demissão aberta"],
+  ["seasonEnd", "Fim de temporada aberto"],
+])("a %s waiting sends the hub to its own screen", async (kind, opened) => {
+  const point: TurningPoint =
+    kind === "fired"
+      ? { kind, firing: { type: "coachFired", clubId: "bahia-ba", date: "2026-06-10", isYou: true, position: 18, targetPosition: 10 } }
+      : { kind, review: { season: 2026, clubId: null, placing: null, titles: [], continental: null, prizeMoney: 0, verdict: null, champions: {}, hasLostJob: false } };
+  openHub(await services("bahia-ba", (engine) => ({ ...engine, turningPoint: async () => point })));
+  expect(await screen.findByText(opened)).toBeTruthy();
 });
