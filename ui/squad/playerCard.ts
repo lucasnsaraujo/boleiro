@@ -3,7 +3,7 @@ import type { GameState, IsoDate } from "../../src/sim/gameState.js";
 import { competitionKey } from "../../src/sim/history/history.js";
 import type { Trait } from "../../src/sim/players/playerProfile.js";
 import { competitionName } from "../format/competitionName.js";
-import { playerStatus, type PlayerStatus } from "./squadRows.js";
+import { liveDiscipline, playerStatus, type PlayerStatus } from "./squadRows.js";
 
 export type PlayerCard = {
   id: string;
@@ -22,7 +22,7 @@ export type PlayerCard = {
   isCoachsPlayer: boolean;
 };
 
-type CardState = Pick<GameState, "date" | "coachClubId" | "players" | "discipline" | "competitions" | "history" | "market">;
+type CardState = Pick<GameState, "date" | "coachClubId" | "players" | "discipline" | "competitions" | "fixtures" | "history" | "market">;
 
 export function playerCard(state: CardState, playerId: string): PlayerCard | null {
   const player = state.players[playerId];
@@ -39,7 +39,8 @@ export function playerCard(state: CardState, playerId: string): PlayerCard | nul
       return count > 0 && competition ? [{ competition, goals: count }] : [];
     })
     .sort((a, b) => b.goals - a.goals);
-  const yellows = Object.entries(state.discipline).flatMap(([competitionId, records]) => {
+  const discipline = liveDiscipline(state);
+  const yellows = Object.entries(discipline).flatMap(([competitionId, records]) => {
     const count = records[playerId]?.yellows ?? 0;
     const competition = state.competitions[competitionId];
     return count > 0 && competition ? [{ competition: competitionName(competition), yellows: count }] : [];
@@ -54,7 +55,7 @@ export function playerCard(state: CardState, playerId: string): PlayerCard | nul
     trait: player.trait,
     strength: player.strength,
     clubId: player.clubId,
-    status: playerStatus(player, state),
+    status: playerStatus(player, { ...state, discipline }),
     season: { goals, minutes: player.condition.seasonMinutes, yellows },
     atClub: { apps: atClub?.apps ?? 0, goals: atClub?.goals ?? 0 },
     contract: {

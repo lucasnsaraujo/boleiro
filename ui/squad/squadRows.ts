@@ -30,7 +30,16 @@ export const POSITION_ORDER: readonly PositionGroup[] = ["GK", "DEF", "MID", "AT
 
 type StatusState = Pick<GameState, "date" | "discipline" | "competitions">;
 
-/** Injured beats suspended: an injured player is out of every competition. */
+/**
+ * Card records of the competitions still being played. A competition opens its next stage the day
+ * the last one ends, so one with no game left to play is over, and its yellows and bans with it.
+ */
+export function liveDiscipline({ discipline, fixtures }: Pick<GameState, "discipline" | "fixtures">): GameState["discipline"] {
+  const live = new Set(fixtures.filter((f) => !f.result).map((f) => f.competitionId));
+  return Object.fromEntries(Object.entries(discipline).filter(([competitionId]) => live.has(competitionId)));
+}
+
+/** Injured beats suspended: an injured player is out of every competition. Pass the live discipline only. */
 export function playerStatus(player: SimPlayer, { date, discipline, competitions }: StatusState): PlayerStatus {
   if (isInjured(player, date) && player.condition.injuredUntil) return { kind: "injured", until: player.condition.injuredUntil };
   const banned = Object.entries(discipline).flatMap(([competitionId, records]) => {
@@ -48,9 +57,10 @@ export function statusText(status: PlayerStatus): string {
 }
 
 /** The coach's squad, one row per player. */
-export function squadRows(state: Pick<GameState, "date" | "coachClubId" | "players" | "discipline" | "competitions">): SquadRow[] {
+export function squadRows(state: Pick<GameState, "date" | "coachClubId" | "players" | "discipline" | "competitions" | "fixtures">): SquadRow[] {
   const { coachClubId, date } = state;
   if (!coachClubId) return [];
+  const statusState = { ...state, discipline: liveDiscipline(state) };
   return Object.values(state.players)
     .filter((p) => p.clubId === coachClubId)
     .map((p) => ({
@@ -61,7 +71,7 @@ export function squadRows(state: Pick<GameState, "date" | "coachClubId" | "playe
       age: p.age,
       trait: p.trait,
       fatigue: Math.round(fatigueOn(p, date)),
-      status: playerStatus(p, state),
+      status: playerStatus(p, statusState),
       contractUntil: p.contractUntil,
       wage: p.wage,
     }));

@@ -11,7 +11,7 @@ import { playerCard } from "../squad/playerCard.js";
 import { statusText } from "../squad/squadRows.js";
 import "./player.css";
 
-const PLAYER_KEYS = ["date", "coachClubId", "clubs", "players", "discipline", "competitions", "history", "market"] as const;
+const PLAYER_KEYS = ["date", "coachClubId", "clubs", "players", "discipline", "competitions", "fixtures", "history", "market"] as const;
 type PlayerState = Pick<GameState, (typeof PLAYER_KEYS)[number]>;
 
 /** "Série A 3 · Baiano 2" */

@@ -33,6 +33,12 @@ describe("squadRows", () => {
     expect(rowOf(squadRows({ ...game, discipline }), someone.id)?.status).toEqual({ kind: "suspended", competitions: ["Baiano"] });
   });
 
+  test("a ban left over from a competition that is over no longer counts", () => {
+    const discipline = { "state-ba-2026": { [someone.id]: { yellows: 0, phase: 0, bans: 1 } } };
+    const fixtures = game.fixtures.map((f) => (f.competitionId === "state-ba-2026" ? { ...f, result: { homeGoals: 1, awayGoals: 0 } } : f));
+    expect(rowOf(squadRows({ ...game, discipline, fixtures }), someone.id)?.status).toBeNull();
+  });
+
   test("fatigue is today's, after the rest since the last match", () => {
     const tired = { ...someone, condition: { ...someone.condition, fatigue: 100, fatigueOn: "2026-01-01" } };
     const rows = (date: string) => squadRows({ ...game, date, players: withPlayer(tired) });

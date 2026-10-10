@@ -8,7 +8,7 @@ import { POSITION_GROUP_NAMES, TRAIT_SHORT } from "../format/playerLabels.js";
 import { nextSort, sortedSquad, squadRows, statusText, type SquadSort, type SquadSortKey } from "../squad/squadRows.js";
 import "./squad.css";
 
-const SQUAD_KEYS = ["date", "coachClubId", "clubs", "players", "discipline", "competitions"] as const;
+const SQUAD_KEYS = ["date", "coachClubId", "clubs", "players", "discipline", "competitions", "fixtures"] as const;
 type SquadState = Pick<GameState, (typeof SQUAD_KEYS)[number]>;
 
 type Column = { title: string; sortKey: SquadSortKey | null; className: string };

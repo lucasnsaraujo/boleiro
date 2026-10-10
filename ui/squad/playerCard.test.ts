@@ -37,6 +37,13 @@ describe("playerCard", () => {
     expect(card?.atClub).toEqual({ apps: 9, goals: 5 });
   });
 
+  test("yellows from a competition that is over are gone", () => {
+    const discipline = { "state-ba-2026": { [player.id]: { yellows: 2, phase: 0, bans: 0 } } };
+    const fixtures = game.fixtures.map((f) => (f.competitionId === "state-ba-2026" ? { ...f, result: { homeGoals: 1, awayGoals: 0 } } : f));
+    expect(playerCard({ ...game, discipline }, player.id)?.season.yellows).toEqual([{ competition: "Baiano", yellows: 2 }]);
+    expect(playerCard({ ...game, discipline, fixtures }, player.id)?.season.yellows).toEqual([]);
+  });
+
   test("the contract shows a loan and a signed pre-contract", () => {
     const market: GameState["market"] = {
       ...game.market,
