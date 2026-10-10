@@ -94,3 +94,16 @@ test("with no game open on the screens nothing is autosaved", async () => {
   await engine.advance(Array.from({ length: daysToFirstMatch + 1 }, () => ({})));
   expect(await slots.list()).toEqual([]);
 });
+
+test("turning an offer down is autosaved, so it stays declined after a reload", async () => {
+  const { engine } = await startGame();
+  const { engine: raw, close } = inMemoryEngine();
+  closers.push(close);
+  const slots = indexedDbSlots(new IDBFactory());
+  const career = withAutosave(raw, slots, { current: { slotId: "slot-1", coachName: "Tite" } });
+  await career.newGame(7, { coachClubId: null, careerMode: true });
+  const [declined, ...kept] = (await career.read(["coach"])).coach.offers;
+  await career.declineOffer(declined?.clubId ?? "");
+  await engine.load(await slots.read(AUTOSAVE_SLOT_ID));
+  expect((await engine.read(["coach"])).coach.offers).toEqual(kept);
+});
