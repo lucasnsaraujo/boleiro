@@ -68,7 +68,7 @@ test("clicking a column sorts each group by it, and clicking again flips it", as
   expect(ages(defenders)).toEqual(ages(defenders).toSorted((a, b) => b - a));
 });
 
-test("a player's name opens his screen, where the market actions wait for the market", async () => {
+test("a player's name opens his screen, where the coach can ask to renew or sell him", async () => {
   open(await services());
   await screen.findByRole("heading", { name: "Elenco" });
   const [first] = screen.getAllByRole("link").filter((link) => link.getAttribute("href")?.startsWith("/squad/"));
@@ -76,7 +76,7 @@ test("a player's name opens his screen, where the market actions wait for the ma
   const name = first.textContent ?? "";
   await userEvent.click(first);
   expect(await screen.findByRole("heading", { name })).toBeTruthy();
-  for (const action of ["Renovar", "Vender", "Emprestar"]) expect(screen.getByRole("button", { name: action })).toHaveProperty("disabled", true);
+  for (const action of ["Renovar", "Vender"]) expect(screen.getByRole("button", { name: action })).toHaveProperty("disabled", false);
   await userEvent.click(screen.getByRole("link", { name: "Voltar ao elenco" }));
   expect(await screen.findByRole("heading", { name: "Elenco" })).toBeTruthy();
 });

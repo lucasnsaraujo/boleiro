@@ -153,7 +153,12 @@ export function closeMonth(state: GameState, random: () => number): { state: Gam
       ...current,
       finances: {
         ...current.finances,
-        [clubId]: { ...budgeted, season: addLedgers(paid.season, ledger), month: { ...emptyLedger(), points: 0, games: 0 } },
+        [clubId]: {
+          ...budgeted,
+          season: addLedgers(paid.season, ledger),
+          month: { ...emptyLedger(), points: 0, games: 0 },
+          lastClosing: { month, ledger, cash: paid.cash },
+        },
       },
     };
     events.push({

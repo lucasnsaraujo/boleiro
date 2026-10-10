@@ -23,6 +23,12 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.finishRound();
     case "inbox":
       return session.inbox();
+    case "ask":
+      return session.ask(...request.args);
+    case "withdraw":
+      return session.withdraw(...request.args);
+    case "desk":
+      return session.desk();
     case "save":
       return session.save();
     case "load":

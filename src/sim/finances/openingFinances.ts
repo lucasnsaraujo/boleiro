@@ -201,6 +201,7 @@ export function openingFinances(
         month: { ...emptyLedger(), points: 0, games: 0 },
         season: emptyLedger(),
         lastSeason: null,
+        lastClosing: null,
       };
       finances[club.id] = setBoardBudget(opening, base.wageBill / 12);
     }

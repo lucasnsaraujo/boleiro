@@ -40,4 +40,13 @@ describe("saveGame and loadGame", () => {
     delete historyWithoutStrength.strength;
     expect(() => loadGame(JSON.stringify({ ...midSeason, version: 2, history: historyWithoutStrength }))).toThrow();
   });
+
+  it("rejects a save from before clubs kept their last monthly closing", () => {
+    const finances = Object.fromEntries(Object.entries(midSeason.finances).map(([id, finance]) => {
+      const old: Partial<typeof finance> = { ...finance };
+      delete old.lastClosing;
+      return [id, old];
+    }));
+    expect(() => loadGame(JSON.stringify({ ...midSeason, version: 3, finances }))).toThrow();
+  });
 });

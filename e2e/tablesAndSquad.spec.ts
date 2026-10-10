@@ -38,7 +38,7 @@ test("from a new game, the bar opens the tables, the squad and a player", async 
   const name = (await player.textContent()) ?? "";
   await player.click();
   await expect(page.getByRole("heading", { name })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Renovar" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Renovar" })).toBeEnabled();
   await page.getByRole("link", { name: "Voltar ao elenco" }).click();
   await expect(page.getByRole("heading", { name: "Elenco" })).toBeVisible();
 });
