@@ -122,6 +122,8 @@ export type ClubFinance = {
   month: Ledger & { points: number; games: number };
   season: Ledger;
   lastSeason: Ledger | null;
+  /** The last monthly closing: the month as `YYYY-MM`, its ledger and the cash it ended with. */
+  lastClosing: { month: string; ledger: Ledger; cash: number } | null;
 };
 
 /** Division-level money rules, copied into the save so a data rebuild does not change a running game. */
@@ -143,7 +145,7 @@ export type Economy = {
 };
 
 export type GameState = {
-  version: 3;
+  version: 4;
   seed: number;
   rngState: number;
   date: IsoDate;

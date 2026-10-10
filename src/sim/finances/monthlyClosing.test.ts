@@ -69,6 +69,15 @@ describe("the monthly closing", () => {
     }
   });
 
+  it("keeps each club's last closing in its finances until the next one", () => {
+    expect(financeOf(start, "palmeiras-sp").lastClosing).toBeNull();
+    const [closing] = closingsOf(february.events, "palmeiras-sp");
+    if (!closing) throw new Error("no closing");
+    const kept = { month: closing.month, ledger: closing.ledger, cash: closing.cash };
+    expect(financeOf(february.state, "palmeiras-sp").lastClosing).toEqual(kept);
+    expect(financeOf(advanceDay(february.state, {}).state, "palmeiras-sp").lastClosing).toEqual(kept);
+  });
+
   it("sells tickets only for home matches and never past the stadium's capacity", () => {
     const { state, events } = playUntil(february.state, "2026-07-01");
     for (const clubId of ["flamengo-rj", "mirassol-sp", "remo-pa"]) {
