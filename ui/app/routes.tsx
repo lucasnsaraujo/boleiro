@@ -5,6 +5,7 @@ import { Hub } from "../screens/Hub.js";
 import { NewGame } from "../screens/NewGame.js";
 import { Placeholder } from "../screens/Placeholder.js";
 import { StartMenu } from "../screens/StartMenu.js";
+import { Tables } from "../screens/Tables.js";
 import { SCREENS, type ScreenPath } from "./screens.js";
 import { Shell } from "./Shell.js";
 
@@ -12,6 +13,7 @@ const BUILT: Partial<Record<ScreenPath, ReactElement>> = {
   "/": <StartMenu />,
   "/new-game": <NewGame />,
   "/hub": <Hub />,
+  "/tables": <Tables />,
   "/calendar": <Calendar />,
 };
 

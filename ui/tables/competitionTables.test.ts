@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { Competition, CupCompetition, Fixture, GameState, LeagueCompetition, MatchResult } from "../../src/sim/gameState.js";
 import { newGameFromFiles } from "../../src/sim/loadNewGame.js";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
-import { bracketRounds, coachCompetitions, defaultStage, groupTables, knockoutTies, topScorers, type TableRow } from "./competitionTables.js";
+import { coachCompetitions, competitionStages, defaultStage, groupTables, knockoutTies, topScorers, type TableRow } from "./competitionTables.js";
 
 const game = newGameFromFiles(7, { coachClubId: "bahia-ba" }, bundledGameFiles);
 
@@ -116,11 +116,17 @@ describe("knockout ties and the cup bracket", () => {
     expect(knockoutTies(cup, 0, fixtures.map((f) => ({ ...f, result: null })))[0]).toMatchObject({ aggregate: null, winnerId: null });
   });
 
-  test("the Copa do Brasil bracket lists all nine rounds by name, with ties only where drawn", () => {
-    const rounds = bracketRounds(competition("copa-do-brasil-2026"), game.calendar, game.fixtures);
+  test("the Copa do Brasil bracket names all nine rounds and has ties only where drawn", () => {
+    const copa = competition("copa-do-brasil-2026");
+    const rounds = competitionStages(copa, game.calendar);
     expect(rounds.map((r) => r.name)).toEqual(["1ª fase", "2ª fase", "3ª fase", "4ª fase", "5ª fase", "Oitavas", "Quartas", "Semifinal", "Final"]);
-    expect(rounds[0]?.ties).toHaveLength(14);
-    expect(rounds.slice(1).every((r) => r.ties === null)).toBe(true);
+    expect(rounds.map((r) => r.isDrawn)).toEqual([true, ...repeat(false, 8)]);
+    expect(knockoutTies(copa, 0, game.fixtures)).toHaveLength(14);
+    expect(knockoutTies(copa, 1, game.fixtures)).toEqual([]);
+  });
+
+  test("a state championship names its knockout rounds by the clubs left", () => {
+    expect(competitionStages(competition("state-ba-2026"), game.calendar).map((s) => s.name)).toEqual(["Grupos", "Semifinal", "Final"]);
   });
 });
 

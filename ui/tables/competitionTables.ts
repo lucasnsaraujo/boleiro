@@ -16,7 +16,6 @@ export type Leg = { fixtureId: string; date: string; homeId: string; awayId: str
 /** `aggregate` follows `clubIds`; the first club hosts the last leg. */
 export type TieView = { clubIds: [string, string]; legs: Leg[]; aggregate: [number, number] | null; winnerId: string | null; onPenalties: boolean };
 export type StageTab = { index: number; name: string; isDrawn: boolean };
-export type BracketRound = StageTab & { ties: TieView[] | null };
 export type Scorer = { playerId: string; name: string; clubId: string; goals: number };
 
 const KIND_ORDER: Record<Competition["kind"], number> = { state: 0, league: 1, cup: 2 };
@@ -202,11 +201,6 @@ export function knockoutTies(competition: Competition, stage: number, fixtures: 
   if (shape?.kind !== "knockout") return [];
   const stageFixtures = stageFixturesOf(competition, stage, fixtures);
   return shape.ties.map((clubIds, tie) => tieView(shape, tie, clubIds, stageFixtures));
-}
-
-/** Every round of a knockout competition by name, with its ties once drawn. */
-export function bracketRounds(competition: Competition, calendar: SeasonCalendar, fixtures: readonly Fixture[]): BracketRound[] {
-  return competitionStages(competition, calendar).map((tab) => ({ ...tab, ties: tab.isDrawn ? knockoutTies(competition, tab.index, fixtures) : null }));
 }
 
 /** The competition's top scorers this season, most goals first. */
