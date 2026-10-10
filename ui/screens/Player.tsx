@@ -4,7 +4,7 @@ import type { GameState } from "../../src/sim/gameState.js";
 import { useServices } from "../app/ServicesContext.js";
 import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
-import { formatDayMonth, formatGameDate } from "../format/formatGameDate.js";
+import { formatGameDate } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
 import { POSITION_NAMES, TRAIT_LONG } from "../format/playerLabels.js";
 import { playerCard } from "../squad/playerCard.js";
@@ -99,7 +99,7 @@ export function Player() {
               <dd>{card.season.minutes}</dd>
             </div>
             <div>
-              <dt>Amarelos</dt>
+              <dt>Amarelos acumulados</dt>
               <dd>
                 {card.season.yellows.length === 0 ? "0" : byCompetition(card.season.yellows.map((y) => ({ competition: y.competition, count: y.yellows })))}
               </dd>
@@ -140,7 +140,7 @@ export function Player() {
               <div>
                 <dt>Emprestado</dt>
                 <dd>
-                  pelo {lender?.shortName ?? card.contract.loan.fromClubId} até {formatDayMonth(card.contract.loan.until)}
+                  pelo {lender?.shortName ?? card.contract.loan.fromClubId} até {formatGameDate(card.contract.loan.until)}
                 </dd>
               </div>
             )}
