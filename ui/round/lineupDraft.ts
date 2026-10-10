@@ -74,7 +74,7 @@ export function canPick(sheet: Sheet, mode: SheetMode, id: string): boolean {
 export function canBringOn(sheet: Sheet, mode: SheetMode, player: SquadPlayer): boolean {
   if (!sheet.picked || sheet.lineup.includes(player.id)) return false;
   if (mode.kind === "preMatch") return player.status === null;
-  return subsLeft(sheet, mode) > 0 && mode.benchIds.has(player.id) && !sheet.subs.some((s) => s.offId === player.id);
+  return subsLeft(sheet, mode) > 0 && mode.benchIds.has(player.id);
 }
 
 export function pick(sheet: Sheet, mode: SheetMode, id: string): Sheet {
@@ -112,11 +112,15 @@ export function lineupProblem(lineup: readonly string[], squad: readonly SquadPl
   return null;
 }
 
-/** The kick-off choice: the eleven and tactics only when the coach changed them, so an untouched sheet plays the day as the sim would. */
+/**
+ * The kick-off choice. An untouched sheet sends nothing, so the day plays as the sim would; any change
+ * sends the eleven shown, since without it the sim picks a new eleven for a new formation.
+ */
 export function kickOffOf(sheet: Sheet, planned: readonly string[], tactics: Tactics): KickOff {
   const isSameEleven = sheet.lineup.length === planned.length && sheet.lineup.every((id) => planned.includes(id));
   const isSameTactics = (Object.keys(tactics) as (keyof Tactics)[]).every((key) => sheet.tactics[key] === tactics[key]);
-  return { ...(isSameEleven ? {} : { lineup: sheet.lineup }), ...(isSameTactics ? {} : { tactics: sheet.tactics }) };
+  if (isSameEleven && isSameTactics) return {};
+  return { lineup: sheet.lineup, ...(isSameTactics ? {} : { tactics: sheet.tactics }) };
 }
 
 /** The live change the sheet makes, or null when the coach changed nothing. */

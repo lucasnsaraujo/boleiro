@@ -73,6 +73,11 @@ describe("before kick-off", () => {
     expect(swapped.tactics.penaltyTakerId).toBeNull();
   });
 
+  test("changing only the formation kicks off with the eleven shown, not a new pick for the new shape", () => {
+    const reshaped = changeTactics(openSheet(eleven, tactics), { formation: "3-5-2" });
+    expect(kickOffOf(reshaped, eleven, tactics)).toEqual({ lineup: eleven, tactics: { ...tactics, formation: "3-5-2" } });
+  });
+
   test("an untouched sheet kicks off with no choices, so the day plays as the sim would", () => {
     expect(kickOffOf(openSheet(eleven, tactics), eleven, tactics)).toEqual({});
     const changed = changeTactics(swap(openSheet(eleven, tactics), preMatch, "s9", bench[3] as SquadPlayer), { posture: "attacking" });

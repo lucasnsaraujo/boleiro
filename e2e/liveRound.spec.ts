@@ -26,6 +26,8 @@ test("from the hub, set the lineup, play the round live with a substitution, and
   await lineup.getByRole("button", { name: "4-3-3" }).click();
   await lineup.getByRole("button", { name: "Ofensiva" }).click();
   await expect(lineup).toContainText("4-3-3 · ofensiva");
+  const starters = lineup.getByRole("group", { name: "Titulares" }).getByRole("button");
+  const eleven = (await starters.evaluateAll((buttons) => buttons.map((b) => b.getAttribute("aria-label")))).sort();
   await lineup.getByRole("button", { name: "Começar a rodada" }).click();
 
   const band = page.getByRole("region", { name: "Seu jogo" });
@@ -39,7 +41,9 @@ test("from the hub, set the lineup, play the round live with a substitution, and
     if (await back.isVisible()) break;
     if (!hasSubbed) {
       await page.getByRole("button", { name: /^Escalação/ }).click();
-      await lineup.getByRole("group", { name: "Titulares" }).getByRole("button").last().click();
+      await expect(lineup).toContainText("4-3-3 · ofensiva");
+      expect((await starters.evaluateAll((buttons) => buttons.map((b) => b.getAttribute("aria-label")))).sort()).toEqual(eleven);
+      await starters.last().click();
       await lineup.getByRole("list", { name: "Banco" }).locator("button:enabled").first().click();
       await expect(lineup).toContainText("Trocas 4");
       await lineup.getByRole("button", { name: "Voltar ao jogo" }).click();
