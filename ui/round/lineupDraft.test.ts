@@ -15,7 +15,7 @@ import {
   subsLeft,
   undo,
   type SheetMode,
-} from "./lineupSheet.js";
+} from "./lineupDraft.js";
 import type { CoachSide } from "./liveRoundOf.js";
 import type { PlayerStatus, SquadPlayer } from "./matchDayPlan.js";
 
