@@ -54,3 +54,35 @@ test("a lineup the sim rejects fails the call and leaves the game where it was",
   await expect(engine.advance([{}, { lineup: ["nobody"] }])).rejects.toThrow();
   expect(await engine.read(["date"])).toEqual({ date: "2026-01-01" });
 });
+
+async function firstMatchOf(engine: EngineClient, clubId: string): Promise<string> {
+  const { fixtures } = await engine.read(["fixtures"]);
+  const dates = fixtures.filter((f) => f.homeId === clubId || f.awayId === clubId).map((f) => f.date);
+  return dates.sort()[0] ?? "";
+}
+
+test("playing to the match day stops on the coach's first fixture, before kick-off", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  const firstMatch = await firstMatchOf(engine, "bahia-ba");
+  const played = await engine.playToMatchDay();
+  expect(played).toMatchObject({ date: firstMatch, stop: "matchDay" });
+  const { fixtures } = await engine.read(["fixtures"]);
+  expect(fixtures.filter((f) => f.date === played.date && f.result)).toEqual([]);
+});
+
+test("the inbox keeps what happened since the coach last played on, and a new game empties it", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  expect(await engine.inbox()).toEqual([]);
+  const daysToFirstMatch = Number((await firstMatchOf(engine, "bahia-ba")).slice(8, 10)) - 1;
+  await engine.advance(Array.from({ length: daysToFirstMatch + 1 }, () => ({})));
+  const firstMatch = (await engine.inbox()).find((line) => line.text.startsWith("Baiano: "));
+  expect(firstMatch).toBeDefined();
+
+  await engine.playToMatchDay();
+  expect(await engine.inbox()).not.toContainEqual(firstMatch);
+
+  await engine.newGame(8, { coachClubId: "bahia-ba" });
+  expect(await engine.inbox()).toEqual([]);
+});

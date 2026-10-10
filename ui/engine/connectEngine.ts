@@ -36,6 +36,8 @@ export function connectEngine(port: EnginePort): EngineClient {
   return {
     newGame: (...args) => send({ method: "newGame", args }),
     advance: (...args) => send({ method: "advance", args }),
+    playToMatchDay: () => send({ method: "playToMatchDay", args: [] }),
+    inbox: () => send({ method: "inbox", args: [] }),
     save: () => send({ method: "save", args: [] }),
     load: (...args) => send({ method: "load", args }),
     read: (keys) => send({ method: "read", args: [keys] }),
