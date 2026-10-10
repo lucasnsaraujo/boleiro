@@ -1,0 +1,137 @@
+.career-offers,
+.career-sacked {
+  max-width: 900px;
+}
+
+.career-head {
+  padding-bottom: 18px;
+  border-bottom: var(--hairline);
+}
+
+.career-empty {
+  padding: 28px 0;
+  font: 600 20px var(--cond);
+  color: var(--chalk-2);
+  border-bottom: var(--hairline);
+}
+
+.career-offer-list {
+  list-style: none;
+}
+
+.career-offer {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto 150px;
+  align-items: center;
+  column-gap: 16px;
+  width: 100%;
+  min-height: 72px;
+  padding: 0 18px 0 14px;
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+  text-align: left;
+}
+
+.career-offer:hover {
+  background: var(--lawn-2);
+}
+
+.career-offer[aria-pressed="true"] {
+  background: var(--lawn-3);
+}
+
+.career-offer[aria-pressed="true"] .career-offer-salary {
+  color: var(--yellow);
+}
+
+.career-offer .crest {
+  justify-self: center;
+}
+
+.career-offer-club {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.career-offer-division {
+  font: 600 15px var(--cond);
+  color: var(--chalk-2);
+  white-space: nowrap;
+}
+
+.career-offer-salary {
+  display: grid;
+  justify-items: end;
+  font: 800 26px/1 var(--num);
+}
+
+.career-offer-salary small {
+  margin-top: 3px;
+  font: 500 13px var(--cond);
+  color: var(--chalk-3);
+}
+
+.career-offer-days {
+  justify-self: end;
+  font: 500 14px var(--cond);
+  color: var(--chalk-3);
+}
+
+.career-offer-days.is-urgent {
+  font-weight: 700;
+  color: var(--yellow);
+}
+
+.career-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 24px;
+  padding-top: 20px;
+}
+
+.career-sacked-band {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  padding-bottom: 26px;
+  border-bottom: var(--hairline);
+}
+
+.career-sacked-title {
+  font: 900 88px/0.86 var(--num);
+  text-transform: uppercase;
+  color: var(--red);
+}
+
+.career-sacked-who {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.career-sacked-facts {
+  margin-top: 6px;
+}
+
+.career-sacked-facts div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 42px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.career-sacked-facts dt {
+  font: 500 15px var(--cond);
+  color: var(--chalk-2);
+}
+
+.career-sacked-facts dd {
+  font: 700 16px var(--cond);
+}

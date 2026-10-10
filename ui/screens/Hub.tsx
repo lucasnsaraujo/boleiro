@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, Navigate } from "react-router";
 import type { Club } from "../../src/data/clubs.js";
 import type { GameState } from "../../src/sim/gameState.js";
 import { useServices } from "../app/ServicesContext.js";
@@ -8,6 +8,7 @@ import { Crest } from "../clubs/Crest.js";
 import { formatDayMonth, formatGameDate, formatMatchDate } from "../format/formatGameDate.js";
 import { jobSecurity, nextMatch, type NextMatch } from "../hub/hubSelectors.js";
 import type { InboxLine } from "../hub/inboxLines.js";
+import type { TurningPoint } from "../hub/turningPoints.js";
 import { usePlayRound } from "../hub/usePlayRound.js";
 import type { CurrentGame } from "../saves/currentGame.js";
 import { saveToSlot } from "../saves/saveToSlot.js";
@@ -17,8 +18,11 @@ import "./hub.css";
 
 const HUB_KEYS = ["date", "coachClubId", "clubs", "fixtures", "competitions", "boards", "coach"] as const;
 type HubState = Pick<GameState, (typeof HUB_KEYS)[number]>;
-type Loaded = { state: HubState; inbox: InboxLine[] };
+type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null };
 type Saving = "idle" | "saving" | "saved" | "failed";
+
+const TURNING_POINT_SCREENS: Record<TurningPoint["kind"], string> = { fired: "/sacked", seasonEnd: "/season-end" };
+const offersText = (count: number) => `${count} ${count === 1 ? "proposta" : "propostas"}`;
 
 // The inbox stays short: the newest lines only, everything else is on the other screens.
 const INBOX_LINES = 7;
@@ -31,8 +35,8 @@ export function Hub() {
 
   const load = useCallback(
     (isCurrent: () => boolean) =>
-      Promise.all([engine.read(HUB_KEYS), engine.inbox()]).then(
-        ([state, inbox]) => isCurrent() && setLoaded({ state, inbox }),
+      Promise.all([engine.read(HUB_KEYS), engine.inbox(), engine.turningPoint()]).then(
+        ([state, inbox, turningPoint]) => isCurrent() && setLoaded({ state, inbox, turningPoint }),
         () => isCurrent() && setMissing(true),
       ),
     [engine],
@@ -72,6 +76,7 @@ export function Hub() {
     );
   }
   if (!loaded) return <p className="status">Abrindo o jogo…</p>;
+  if (loaded.turningPoint) return <Navigate to={TURNING_POINT_SCREENS[loaded.turningPoint.kind]} replace />;
 
   const { state, inbox } = loaded;
   const club = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
@@ -99,7 +104,7 @@ export function Hub() {
             <p className="hub-next-none">Nenhum jogo marcado.</p>
           )
         ) : (
-          <p className="hub-next-none">{offers === 0 ? "Nenhuma proposta na mesa." : `${offers} ${offers === 1 ? "proposta" : "propostas"} na mesa.`}</p>
+          <p className="hub-next-none">{offers === 0 ? "Nenhuma proposta na mesa." : `${offersText(offers)} na mesa.`}</p>
         )}
         <div className="hub-foot">
           {club && club.division && (
@@ -117,12 +122,22 @@ export function Hub() {
             </dl>
           )}
           <div className="hub-actions">
+            {club && offers > 0 && (
+              <Link className="btn-quiet" to="/offers">
+                {offersText(offers)}
+              </Link>
+            )}
             <button className="btn-quiet" onClick={() => void save(current)} disabled={saving === "saving"}>
               Salvar jogo
             </button>
-            <button className="btn-main" onClick={() => void round.play()} disabled={round.isPlaying}>
+            <button className={club || offers === 0 ? "btn-main" : "btn-quiet"} onClick={() => void round.play()} disabled={round.isPlaying}>
               {round.isPlaying ? "Jogando…" : club ? "Jogar rodada" : "Esperar propostas"}
             </button>
+            {!club && offers > 0 && (
+              <Link className="btn-main" to="/offers">
+                Ver propostas
+              </Link>
+            )}
           </div>
         </div>
         {saving === "saved" && <p className="status">Salvo em {slotLabel(current.slotId)}.</p>}
