@@ -35,6 +35,7 @@ const promoted: SeasonReview = {
     reputationAfter: 41,
   },
   champions: { "serie-a": "flamengo-rj", "copa-do-brasil": "palmeiras-sp", "state-ba": "bahia-ba" },
+  hasLostJob: false,
 };
 
 const withoutClub: SeasonReview = { ...promoted, clubId: null, placing: null, titles: [], prizeMoney: 0, verdict: null };
@@ -97,6 +98,13 @@ test("a coach without a club sees the season's champions and starts the next one
   await userEvent.click(screen.getByRole("button", { name: "Começar 2027" }));
   await screen.findByText("Clube aberto");
   expect(closed()).toBe(1);
+});
+
+test("a coach whose contract ended without a board review is told he has no club", async () => {
+  const { given } = await services([{ kind: "seasonEnd", review: { ...promoted, verdict: null, hasLostJob: true } }]);
+  openSeasonEnd(given);
+  expect(await screen.findByText("Encerrado, você está sem clube")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Começar 2027" })).toBeTruthy();
 });
 
 test("with no season end waiting the screen sends the coach to his club", async () => {

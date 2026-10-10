@@ -122,7 +122,7 @@ test.each<[TurningPoint["kind"], string]>([
   const point: TurningPoint =
     kind === "fired"
       ? { kind, firing: { type: "coachFired", clubId: "bahia-ba", date: "2026-06-10", isYou: true, position: 18, targetPosition: 10 } }
-      : { kind, review: { season: 2026, clubId: null, placing: null, titles: [], continental: null, prizeMoney: 0, verdict: null, champions: {} } };
+      : { kind, review: { season: 2026, clubId: null, placing: null, titles: [], continental: null, prizeMoney: 0, verdict: null, champions: {}, hasLostJob: false } };
   openHub(await services("bahia-ba", (engine) => ({ ...engine, turningPoint: async () => point })));
   expect(await screen.findByText(opened)).toBeTruthy();
 });

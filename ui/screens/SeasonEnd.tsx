@@ -82,7 +82,7 @@ export function SeasonEnd() {
     <div className="season-end">
       <h1 className="screen-title">Fim da temporada {review.season}</h1>
       {!club || !review.placing ? (
-        <Champions champions={review.champions} clubs={clubs} />
+        <Champions champions={review.champions} clubs={clubs} hasLostJob={review.hasLostJob} />
       ) : step === "season" || !review.verdict ? (
         <SeasonResult review={review} placing={review.placing} club={club} />
       ) : (
@@ -132,6 +132,7 @@ function SeasonResult({ review, placing, club }: { review: SeasonReview; placing
           <dt>Premiação</dt>
           <dd>{formatMoney(review.prizeMoney)}</dd>
         </div>
+        {!review.verdict && review.hasLostJob && <LostJob />}
       </dl>
     </>
   );
@@ -173,9 +174,19 @@ function Verdict({ verdict, division, club }: { verdict: BoardVerdict; division:
   );
 }
 
-function Champions({ champions, clubs }: { champions: Record<CompetitionKey, string>; clubs: Clubs }) {
+function LostJob() {
+  return (
+    <div>
+      <dt>Contrato</dt>
+      <dd>{contractText({ kind: "ended" })}</dd>
+    </div>
+  );
+}
+
+function Champions({ champions, clubs, hasLostJob }: { champions: Record<CompetitionKey, string>; clubs: Clubs; hasLostJob: boolean }) {
   return (
     <dl className="season-end-facts season-end-champions" aria-label="Campeões">
+      {hasLostJob && <LostJob />}
       {CHAMPION_KEYS.map((key) => {
         const champion = clubs[champions[key] ?? ""];
         if (!champion) return null;

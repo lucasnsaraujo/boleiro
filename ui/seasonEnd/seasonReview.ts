@@ -1,19 +1,19 @@
 import type { Division } from "../../src/data/players.js";
 import type { DayEvent } from "../hub/inboxLines.js";
 import type { Expectation } from "../../src/sim/coach/boardExpectations.js";
-import type { Coach } from "../../src/sim/coach/coach.js";
 import { COPA_DO_BRASIL } from "../../src/sim/copaDoBrasil.js";
 import { continentalQualifiers } from "../../src/sim/finances/continentalQualifiers.js";
+import { payCopaPrizes } from "../../src/sim/finances/payCopaPrizes.js";
 import type { ClubFinance, GameState } from "../../src/sim/gameState.js";
 import type { CompetitionKey, History } from "../../src/sim/history/history.js";
 
-/** The last day of the season, before the turn: it still holds the season's competitions. */
-export type SeasonEnded = Pick<GameState, "coachClubId" | "competitions" | "fixtures"> & { coach: Pick<Coach, "reputation"> };
+/** The last day of the season, before the turn: it still holds the season's competitions and fixtures. */
+export type SeasonEnded = GameState;
 /** The first day of the next season: the season is filed in the history and the money renewed. */
 export type SeasonStarted = {
   history: Pick<History, "seasons">;
-  coach: Pick<Coach, "reputation" | "contract">;
-  finances: Readonly<Record<string, Pick<ClubFinance, "lastSeason" | "month">>>;
+  coach: Pick<GameState["coach"], "reputation" | "contract">;
+  finances: Readonly<Record<string, Pick<ClubFinance, "month">>>;
 };
 
 export type Placing = { division: Division; position: number; tableSize: number; move: "promoted" | "relegated" | null };
@@ -41,6 +41,8 @@ export type SeasonReview = {
   prizeMoney: number;
   verdict: BoardVerdict | null;
   champions: Record<CompetitionKey, string>;
+  /** The board let his contract end at the turn: he starts the new season without a club. */
+  hasLostJob: boolean;
 };
 
 const DIVISIONS: readonly Division[] = ["A", "B", "C", "D"];
@@ -64,6 +66,15 @@ function continentalOf(ended: SeasonEnded, serieATable: readonly string[], clubI
   if (places.libertadoresPreliminary.includes(clubId)) return "preLibertadores";
   if (places.sulAmericana.includes(clubId)) return "sulAmericana";
   return null;
+}
+
+/**
+ * The Copa do Brasil prizes the club earned over the season, paid again on a copy of the last day. The
+ * season's ledger can't tell them apart: it also holds the continental money paid on the 1 January it began.
+ */
+function copaPrizesOf(ended: SeasonEnded, clubId: string): number {
+  const cupFixtures = ended.fixtures.filter((f) => f.result && ended.competitions[f.competitionId]?.kind === "cup" && (f.homeId === clubId || f.awayId === clubId));
+  return payCopaPrizes(ended, cupFixtures).events.reduce((sum, e) => sum + (e.clubId === clubId ? e.amount : 0), 0);
 }
 
 function verdictOf(events: readonly DayEvent[], ended: SeasonEnded, started: SeasonStarted, clubId: string): BoardVerdict | null {
@@ -93,10 +104,10 @@ export function seasonReview(ended: SeasonEnded, started: SeasonStarted, events:
   if (!record) throw new Error("no season has been filed yet");
   const clubId = ended.coachClubId;
   const champions = record.champions;
-  if (!clubId) return { season: record.season, clubId, placing: null, titles: [], continental: null, prizeMoney: 0, verdict: null, champions };
-  const finance = started.finances[clubId];
-  // On the turn day the month holds only what the turn paid: the continental money.
-  const prizeMoney = (finance?.lastSeason?.revenue.prizes ?? 0) + (finance?.month.revenue.prizes ?? 0);
+  if (!clubId) return { season: record.season, clubId, placing: null, titles: [], continental: null, prizeMoney: 0, verdict: null, champions, hasLostJob: false };
+  // December closed on the turn day and the month started over, so its prizes are the continental money the turn paid.
+  const continentalMoney = started.finances[clubId]?.month.revenue.prizes ?? 0;
+  const prizeMoney = copaPrizesOf(ended, clubId) + continentalMoney;
   return {
     season: record.season,
     clubId,
@@ -106,5 +117,6 @@ export function seasonReview(ended: SeasonEnded, started: SeasonStarted, events:
     prizeMoney,
     verdict: verdictOf(events, ended, started, clubId),
     champions,
+    hasLostJob: events.some((e) => e.type === "contractEnded" && e.clubId === clubId),
   };
 }
