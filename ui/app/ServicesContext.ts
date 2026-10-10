@@ -1,8 +1,9 @@
 import { createContext, useContext } from "react";
 import type { EngineClient } from "../engine/connectEngine.js";
+import type { CurrentGameRef } from "../saves/currentGame.js";
 import type { SlotStore } from "../saves/slotStore.js";
 
-export type Services = { engine: EngineClient; slots: SlotStore };
+export type Services = { engine: EngineClient; slots: SlotStore; game: CurrentGameRef };
 
 export const ServicesContext = createContext<Services | null>(null);
 
