@@ -16,6 +16,9 @@ const BUILT: Partial<Record<ScreenPath, ReactElement>> = {
 export const routes: RouteObject[] = [
   {
     element: <Shell />,
-    children: SCREENS.map(({ path, title }) => ({ path, element: BUILT[path] ?? <Placeholder title={title} /> })),
+    children: [
+      ...SCREENS.map(({ path, title }) => ({ path, element: BUILT[path] ?? <Placeholder title={title} /> })),
+      { path: "/options", element: <Placeholder title="Opções" back={{ to: "/", label: "Voltar ao início" }} /> },
+    ],
   },
 ];
