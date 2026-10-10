@@ -87,6 +87,48 @@ test("the inbox keeps what happened since the coach last played on, and a new ga
   expect(await engine.inbox()).toEqual([]);
 });
 
+async function ownPlayerOf(engine: EngineClient, clubId: string): Promise<string> {
+  const { players } = await engine.read(["players"]);
+  // A contract past this season, so a signing is a transfer and not a pre-contract.
+  const found = Object.values(players).find((p) => p.clubId === clubId && p.contractUntil > "2026-12-31");
+  if (!found) throw new Error(`no player at ${clubId}`);
+  return found.id;
+}
+
+test("a request goes to the board when the coach plays on, and its answer lands on the desk and in the inbox", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  const playerId = await ownPlayerOf(engine, "bahia-ba");
+  const request = { kind: "renew", playerId, years: 2 } as const;
+  expect((await engine.ask(request)).pending).toEqual([request]);
+
+  expect(await engine.playToMatchDay()).toMatchObject({ date: "2026-01-02", stop: "boardDecision", daysPlayed: 1 });
+  const desk = await engine.desk();
+  expect(desk.pending).toEqual([]);
+  expect(desk.answers).toEqual([expect.objectContaining({ date: "2026-01-01", request })]);
+  expect((await engine.inbox()).some((line) => line.text.includes("a renovação de"))).toBe(true);
+});
+
+test("a signing asked for before the window waits on the desk and is answered the day the window opens", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  const playerId = await ownPlayerOf(engine, "palmeiras-sp");
+  await engine.ask({ kind: "sign", playerId });
+  expect(await engine.playToMatchDay()).toMatchObject({ date: "2026-01-05", stop: "boardDecision" });
+  expect((await engine.desk()).answers.map((a) => a.request)).toEqual([{ kind: "sign", playerId }]);
+});
+
+test("a pending request can be withdrawn, and a new game clears the desk", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  const playerId = await ownPlayerOf(engine, "palmeiras-sp");
+  await engine.ask({ kind: "sign", playerId });
+  expect((await engine.withdraw(playerId)).pending).toEqual([]);
+  await engine.ask({ kind: "sign", playerId });
+  await engine.newGame(8, { coachClubId: "bahia-ba" });
+  expect(await engine.desk()).toEqual({ pending: [], answers: [], forcedSales: [] });
+});
+
 test("pressing on when already on the match day keeps the inbox", async () => {
   const engine = startEngine();
   await engine.newGame(7, { coachClubId: "bahia-ba" });
