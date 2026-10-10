@@ -26,6 +26,13 @@ test("from a new game, a signing asked in the market is answered when the window
   await expect(desk).toContainText(`Contratação de ${name}`);
   await expect(desk).toContainText("Fica na mesa até a janela abrir, em 5 jan.");
 
+  await page.reload();
+  await page.goto("/");
+  await page.getByRole("button", { name: "Continuar" }).click();
+  await expect(page.getByRole("heading", { name: "Bahia" })).toBeVisible();
+  await bar.getByRole("link", { name: "Mercado" }).click();
+  await expect(desk).toContainText(`Contratação de ${name}`);
+
   await bar.getByRole("link", { name: "Finanças" }).click();
   await expect(page.getByText("O primeiro fechamento sai em 1 fev.")).toBeVisible();
   await expect(desk).toContainText(`Contratação de ${name}`);

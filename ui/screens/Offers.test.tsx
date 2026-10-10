@@ -73,8 +73,8 @@ test("on his match day a coach with a club can only sign after the game", async 
   const given = await careerGame();
   await given.engine.newGame(7, { coachClubId: "bahia-ba" });
   await given.engine.playToMatchDay();
-  const save: { coach: { offers: JobOffer[] } } = JSON.parse(await given.engine.save());
-  save.coach.offers.push({ clubId: "vitoria-ba", salary: 90_000, untilSeason: 2026, expiresOn: "2026-12-31" });
+  const save: { game: { coach: { offers: JobOffer[] } } } = JSON.parse(await given.engine.save());
+  save.game.coach.offers.push({ clubId: "vitoria-ba", salary: 90_000, untilSeason: 2026, expiresOn: "2026-12-31" });
   await given.engine.load(JSON.stringify(save));
   await given.engine.startRound({});
   openOffers(given);

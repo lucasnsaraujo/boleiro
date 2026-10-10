@@ -4,7 +4,11 @@ import { saveToSlot } from "./saveToSlot.js";
 import { AUTOSAVE_SLOT_ID } from "./slotMeta.js";
 import type { SlotStore } from "./slotStore.js";
 
-/** The engine, writing the autosave slot after every advance that played a round of matches, every play-on that moved the game, every live round's final whistle and every offer turned down. */
+/**
+ * The engine, writing the autosave slot after every advance that played a round of matches, every play-on that moved
+ * the game, every live round's final whistle, every offer turned down, every request asked or withdrawn, and every
+ * turning point closed.
+ */
 export function withAutosave(engine: EngineClient, slots: SlotStore, game: CurrentGameRef): EngineClient {
   async function autosave() {
     const open = game.current;
@@ -27,6 +31,20 @@ export function withAutosave(engine: EngineClient, slots: SlotStore, game: Curre
     },
     async declineOffer(clubId) {
       await engine.declineOffer(clubId);
+      await autosave();
+    },
+    async ask(request) {
+      const desk = await engine.ask(request);
+      await autosave();
+      return desk;
+    },
+    async withdraw(playerId) {
+      const desk = await engine.withdraw(playerId);
+      await autosave();
+      return desk;
+    },
+    async closeTurningPoint() {
+      await engine.closeTurningPoint();
       await autosave();
     },
     async finishRound() {

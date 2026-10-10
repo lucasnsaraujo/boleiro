@@ -1,5 +1,6 @@
 import { IDBFactory } from "fake-indexeddb";
 import { afterEach, expect, test } from "vitest";
+import type { EngineClient } from "../engine/connectEngine.js";
 import { inMemoryEngine } from "../engine/inMemoryEngine.js";
 import type { CurrentGameRef } from "./currentGame.js";
 import { indexedDbSlots } from "./indexedDbSlots.js";
@@ -106,4 +107,39 @@ test("turning an offer down is autosaved, so it stays declined after a reload", 
   await career.declineOffer(declined?.clubId ?? "");
   await engine.load(await slots.read(AUTOSAVE_SLOT_ID));
   expect((await engine.read(["coach"])).coach.offers).toEqual(kept);
+});
+
+async function rivalPlayerOf(engine: EngineClient, clubId: string): Promise<string> {
+  const { players } = await engine.read(["players"]);
+  const found = Object.values(players).find((p) => p.clubId === clubId);
+  if (!found) throw new Error(`no player at ${clubId}`);
+  return found.id;
+}
+
+test("a request put on the desk is autosaved, so it is still pending after a reload", async () => {
+  const { engine, slots } = await startGame();
+  const playerId = await rivalPlayerOf(engine, "palmeiras-sp");
+  await engine.ask({ kind: "sign", playerId });
+  await engine.newGame(8, { coachClubId: "bahia-ba" });
+  await engine.load(await slots.read(AUTOSAVE_SLOT_ID));
+  expect((await engine.desk()).pending).toEqual([{ kind: "sign", playerId }]);
+});
+
+test("withdrawing a request is autosaved, so it stays off the desk after a reload", async () => {
+  const { engine, slots } = await startGame();
+  const playerId = await rivalPlayerOf(engine, "palmeiras-sp");
+  await engine.ask({ kind: "sign", playerId });
+  await engine.withdraw(playerId);
+  await engine.load(await slots.read(AUTOSAVE_SLOT_ID));
+  expect((await engine.desk()).pending).toEqual([]);
+});
+
+test("closing a turning point is autosaved, so its screen does not come back after a reload", async () => {
+  const { engine, slots } = await startGame();
+  await engine.advance(Array.from({ length: 365 }, () => ({})));
+  expect(await engine.turningPoint()).toMatchObject({ kind: "seasonEnd" });
+  await engine.closeTurningPoint();
+  await engine.newGame(8, { coachClubId: "bahia-ba" });
+  await engine.load(await slots.read(AUTOSAVE_SLOT_ID));
+  expect(await engine.turningPoint()).toBeNull();
 });
