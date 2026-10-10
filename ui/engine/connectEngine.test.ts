@@ -144,7 +144,7 @@ test("a save keeps the desk: a request still pending and the board's answers com
   expect(desk.answers).toHaveLength(1);
 });
 
-test("a save from before the desk was saved loads with an empty desk", async () => {
+test("a save from before the desk was saved loads with an empty desk and no turning point waiting", async () => {
   const engine = startEngine();
   await engine.newGame(7, { coachClubId: "bahia-ba" });
   await engine.advance([{}]);
@@ -152,6 +152,7 @@ test("a save from before the desk was saved loads with an empty desk", async () 
   await engine.ask({ kind: "sign", playerId: await ownPlayerOf(engine, "palmeiras-sp") });
   expect(await engine.load(JSON.stringify(save.game))).toEqual({ date: "2026-01-02", season: 2026, coachClubId: "bahia-ba" });
   expect(await engine.desk()).toEqual({ pending: [], answers: [], forcedSales: [] });
+  expect(await engine.turningPoint()).toBeNull();
 });
 
 test("pressing on when already on the match day keeps the inbox", async () => {
@@ -289,6 +290,18 @@ test("playing past the last day of the season leaves its review waiting until th
   }
   expect(seen.at(-1)).toMatchObject({ kind: "seasonEnd", review: { season: 2026 } });
   expect(await engine.read(["season"])).toEqual({ season: 2027 });
+});
+
+test("a save keeps the turning point the coach has not closed yet", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: "flamengo-rj" });
+  await engine.advance(Array.from({ length: 365 }, () => ({})));
+  const point = await engine.turningPoint();
+  expect(point).toMatchObject({ kind: "seasonEnd", review: { season: 2026 } });
+  const save = await engine.save();
+  await engine.newGame(8, { coachClubId: "flamengo-rj" });
+  await engine.load(save);
+  expect(await engine.turningPoint()).toEqual(point);
 });
 
 test("a new game starts with no turning point waiting", async () => {

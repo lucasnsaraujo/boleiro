@@ -48,7 +48,7 @@ export function createEngineSession(files: GameFiles) {
   let desk: BoardDesk = EMPTY_DESK;
   /** The coach's match day between kick-off and the final whistle, and the furthest minute the screen has shown of it. */
   let live: { day: LiveDay; seenMinute: number } | null = null;
-  /** Firings and season ends the coach has not closed the screen on yet, oldest first. */
+  /** Firings and season ends the coach has not closed the screen on yet, oldest first; saved with the game. */
   let turningPoints: TurningPoint[] = [];
 
   function underWay() {
@@ -217,12 +217,13 @@ export function createEngineSession(files: GameFiles) {
       return desk;
     },
     save(): string {
-      return writeSessionSave({ game: current(), desk });
+      return writeSessionSave({ game: current(), desk, turningPoints });
     },
     load(save: string): GameSummary {
       const loaded = readSessionSave(save);
       const summary = begin(loaded.game);
       desk = loaded.desk;
+      turningPoints = loaded.turningPoints;
       return summary;
     },
     read<K extends keyof GameState>(keys: readonly K[]): Pick<GameState, K> {
