@@ -1,0 +1,79 @@
+@import "@fontsource/big-shoulders-display/600";
+@import "@fontsource/big-shoulders-display/800";
+@import "@fontsource/big-shoulders-display/900";
+@import "@fontsource/ibm-plex-sans/400";
+@import "@fontsource/ibm-plex-sans/500";
+@import "@fontsource/ibm-plex-sans/600";
+@import "@fontsource/ibm-plex-sans-condensed/400";
+@import "@fontsource/ibm-plex-sans-condensed/500";
+@import "@fontsource/ibm-plex-sans-condensed/600";
+@import "@fontsource/ibm-plex-sans-condensed/700";
+
+/* Direction F: lawn greens, chalk text, square corners, 1px hairlines. */
+:root {
+  --lawn-0: #0a1a10;
+  --lawn-1: #0f2416;
+  --lawn-2: #14301d;
+  --lawn-3: #1b3d26;
+  --line: #2a5236;
+  --chalk: #eef3e8;
+  --chalk-2: #b9c9b5;
+  --chalk-3: #8aa287;
+  --yellow: #f2d03b;
+  --yellow-hover: #ffe066;
+  --on-yellow: #1a1600;
+  --red: #e0442f;
+  --promotion: #4fb06a;
+
+  --num: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --cond: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+  --text: "IBM Plex Sans", system-ui, sans-serif;
+
+  --hairline: 1px solid var(--line);
+  --screen-transition: 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --screen-transition: 0ms;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--lawn-0);
+  color: var(--chalk);
+  font: 15px/1.35 var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}

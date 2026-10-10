@@ -4,12 +4,17 @@
   "type": "module",
   "packageManager": "pnpm@10.12.2",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "e2e": "playwright test",
     "test": "vitest run",
     "test:long": "LONG_RUN=1 vitest run src/cli",
     "finances:report": "tsx src/cli/financeReport.ts",
     "strength:report": "tsx src/cli/strengthReport.ts",
     "transfers:report": "tsx src/cli/transferReport.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p ui",
     "lint": "eslint .",
     "career": "tsx src/cli/career.ts",
     "history": "tsx src/cli/history.ts",
@@ -18,11 +23,28 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.0",
+    "@tauri-apps/cli": "^2.12.1",
     "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
     "eslint": "^10.12.0",
+    "fake-indexeddb": "^6.2.5",
+    "jsdom": "^30.1.2",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.1",
+    "vite": "^8.3.4",
     "vitest": "^5.0.3"
+  },
+  "dependencies": {
+    "@fontsource/big-shoulders-display": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "@fontsource/ibm-plex-sans-condensed": "^5.3.0",
+    "@tauri-apps/api": "^2.12.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router": "^8.4.0"
   }
 }

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readDataFile } from "./readDataFile.js";
 import type { Player, PositionGroup, Team } from "../engine/match.js";
 import { parseCsv } from "./csv.js";
 
@@ -13,7 +13,6 @@ export type SquadPlayer = Player & {
   nationalities: string[];
 };
 
-const PLAYERS_CSV = new URL("../../data/players.csv", import.meta.url);
 const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
 const DIVISIONS: readonly Division[] = ["A", "B", "C", "D"];
 
@@ -53,7 +52,7 @@ export function parsePlayers(csv: string): SquadPlayer[] {
 }
 
 export function loadPlayers(): SquadPlayer[] {
-  return parsePlayers(readFileSync(PLAYERS_CSV, "utf8"));
+  return parsePlayers(readDataFile("players.csv"));
 }
 
 export function loadTeams(division: Division): Team[] {

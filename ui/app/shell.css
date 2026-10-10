@@ -1,0 +1,87 @@
+.shell {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: 44px 1fr;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 28px;
+  border-bottom: var(--hairline);
+}
+
+.brand {
+  font: 800 21px/1 var(--num);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--yellow);
+  text-decoration: none;
+}
+
+.screen {
+  padding: 32px 28px;
+  animation: screen-in var(--screen-transition) both;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.screen-title {
+  font: 800 44px/1 var(--num);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.screen-sub {
+  margin-top: 6px;
+  font: 500 16px var(--cond);
+  color: var(--chalk-2);
+}
+
+.btn-main {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 18px;
+  background: var(--yellow);
+  color: var(--on-yellow);
+  font: 700 16px var(--cond);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+}
+
+.btn-main:hover {
+  background: var(--yellow-hover);
+}
+
+.btn-main:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.btn-quiet {
+  font: 600 15px var(--cond);
+  color: var(--chalk-2);
+  text-decoration: none;
+}
+
+.btn-quiet:hover {
+  color: var(--chalk);
+}
+
+.status {
+  margin-top: 12px;
+  font: 500 15px var(--cond);
+  color: var(--chalk-2);
+}
+
+.status.error {
+  color: var(--red);
+}

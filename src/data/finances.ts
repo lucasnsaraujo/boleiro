@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readDataFile } from "./readDataFile.js";
 import { parseCsv } from "./csv.js";
 import type { Division } from "./players.js";
 
@@ -37,8 +37,6 @@ export type Finances = {
 
 export type ClubFinances = Finances & { clubId: string; division: Division };
 export type DivisionFinances = Finances & { division: Division; size: ClubSize };
-
-const FINANCES_CSV = new URL("../../data/finances.csv", import.meta.url);
 
 function oneOf<T extends string>(options: readonly T[], value: string | undefined, field: string, row: string): T {
   const match = options.find((option) => option === value);
@@ -80,10 +78,10 @@ function toFinances(row: Record<string, string>, label: string): Finances {
 }
 
 /** Série A clubs from their accounts, plus small/median/large estimates for Série B–D. Values in BRL. */
-export function loadFinances(): { clubs: ClubFinances[]; divisionEstimates: DivisionFinances[] } {
+export function parseFinances(csv: string): { clubs: ClubFinances[]; divisionEstimates: DivisionFinances[] } {
   const clubs: ClubFinances[] = [];
   const divisionEstimates: DivisionFinances[] = [];
-  for (const row of parseCsv(readFileSync(FINANCES_CSV, "utf8"))) {
+  for (const row of parseCsv(csv)) {
     const label = row.club_id || `${row.division ?? ""}/${row.size ?? ""}`;
     const division = oneOf(DIVISIONS, row.division, "division", label);
     const finances = toFinances(row, label);
@@ -91,4 +89,8 @@ export function loadFinances(): { clubs: ClubFinances[]; divisionEstimates: Divi
     else divisionEstimates.push({ ...finances, division, size: oneOf(SIZES, row.size, "size", label) });
   }
   return { clubs, divisionEstimates };
+}
+
+export function loadFinances(): { clubs: ClubFinances[]; divisionEstimates: DivisionFinances[] } {
+  return parseFinances(readDataFile("finances.csv"));
 }

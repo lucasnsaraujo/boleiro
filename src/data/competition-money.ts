@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readDataFile } from "./readDataFile.js";
 import { BASES, type Basis } from "./finances.js";
 
 type Sourced = { basis: Basis; source: string };
@@ -34,8 +34,6 @@ export type CompetitionMoney = {
   sulAmericana: Sourced & { stages: ContinentalStage[] };
   matchday: { A: Matchday; B: Matchday; C: Matchday; D: Matchday };
 };
-
-const COMPETITION_MONEY_JSON = new URL("../../data/competition-money.json", import.meta.url);
 
 function fail(path: string, expected: string): never {
   throw new Error(`competition-money ${path}: expected ${expected}`);
@@ -143,7 +141,11 @@ function toCompetitionMoney(json: unknown): CompetitionMoney {
 }
 
 /** 2026 TV money, cup and continental prizes, and 2025 ticket prices and crowds by division. */
+export function parseCompetitionMoney(json: string): CompetitionMoney {
+  const parsed: unknown = JSON.parse(json);
+  return toCompetitionMoney(parsed);
+}
+
 export function loadCompetitionMoney(): CompetitionMoney {
-  const json: unknown = JSON.parse(readFileSync(COMPETITION_MONEY_JSON, "utf8"));
-  return toCompetitionMoney(json);
+  return parseCompetitionMoney(readDataFile("competition-money.json"));
 }
