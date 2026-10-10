@@ -12,6 +12,11 @@ const TEN_MEN_SCORING = 2 / 3;
 const AGAINST_TEN_MEN_SCORING = 5 / 4;
 const MATCH_MINUTES = 90;
 
+/** How much a side's scoring rate scales while it is `ownDown` men short and its opponent `opponentDown`. */
+export function scoringFactor(ownDown: number, opponentDown: number): number {
+  return TEN_MEN_SCORING ** ownDown * AGAINST_TEN_MEN_SCORING ** opponentDown;
+}
+
 /**
  * How much each side's expected goals scale over the whole match, given who was sent off when.
  * Goals in disjoint spells are independent Poisson counts, so the match total stays Poisson with

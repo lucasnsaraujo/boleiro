@@ -27,15 +27,33 @@ function pointsFor(result: MatchResult, home: boolean): number {
   return diff > 0 ? 3 : diff === 0 ? 1 : 0;
 }
 
-/** Fatigue, minutes, points and injuries for everyone who played a match. Returns only the players that changed. */
-export function recordMatchLoad(match: MatchLoad, random: () => number): { players: SimPlayer[]; events: PlayerInjured[] } {
+/** Who gets injured in a match, drawn for each player in order: player id to days out. */
+export function drawMatchInjuries(players: readonly SimPlayer[], context: MatchContext, random: () => number): Map<string, number> {
+  const injuries = new Map<string, number>();
+  for (const player of players) {
+    if (random() < matchInjuryChance(player, context)) injuries.set(player.id, injuryLayoffDays(random));
+  }
+  return injuries;
+}
+
+/**
+ * Fatigue, minutes, points and injuries (drawn by drawMatchInjuries) for everyone who played a match.
+ * `minutes` gives the minutes of players who did not play the whole match; their fatigue grows in
+ * proportion. Returns only the players that changed.
+ */
+export function recordMatchLoad(
+  match: MatchLoad,
+  injuries: ReadonlyMap<string, number>,
+  minutes: ReadonlyMap<string, number> = new Map(),
+): { players: SimPlayer[]; events: PlayerInjured[] } {
   const events: PlayerInjured[] = [];
   const { date } = match.context;
   const update = (player: SimPlayer, home: boolean): SimPlayer => {
     const travel = home ? 0 : (TRAVEL_LOAD_PER_1000_KM * match.awayTravelKm) / 1000;
+    const played = minutes.get(player.id) ?? MATCH_MINUTES;
     let injuredUntil = player.condition.injuredUntil;
-    if (random() < matchInjuryChance(player, match.context)) {
-      const days = injuryLayoffDays(random);
+    const days = injuries.get(player.id);
+    if (days !== undefined) {
       injuredUntil = addDays(date, days);
       events.push({ type: "playerInjured", playerId: player.id, clubId: player.clubId, days, fitOn: injuredUntil });
     }
@@ -43,10 +61,10 @@ export function recordMatchLoad(match: MatchLoad, random: () => number): { playe
       ...player,
       condition: {
         ...player.condition,
-        fatigue: fatigueOn(player, date) + MATCH_LOAD + travel,
+        fatigue: fatigueOn(player, date) + (MATCH_LOAD * played) / MATCH_MINUTES + travel,
         fatigueOn: date,
         injuredUntil,
-        seasonMinutes: player.condition.seasonMinutes + MATCH_MINUTES,
+        seasonMinutes: player.condition.seasonMinutes + played,
         seasonPoints: player.condition.seasonPoints + pointsFor(match.result, home),
       },
     };

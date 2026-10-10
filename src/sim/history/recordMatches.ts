@@ -1,30 +1,20 @@
-import { randomStream } from "../../engine/random.js";
 import { attendance } from "../finances/recordMatchFinances.js";
 import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import { championOf } from "./championOf.js";
 import { competitionKey, type CompetitionKey, type PlayerAtClub } from "./history.js";
-import { scorersOf } from "./scorersOf.js";
 import { updateClubRecords } from "./updateClubRecords.js";
 
-/** Who started each fixture played today, by fixture id. */
-export type MatchLineups = Record<string, { home: readonly SimPlayer[]; away: readonly SimPlayer[] }>;
+type Sides<T> = { home: T; away: T };
 
-/**
- * Scorers draw from a stream of their own, seeded by the save's seed and the fixture, so recording
- * them leaves every other draw of the day (and so every result) as it was.
- */
-function scorerStream(seed: number, fixtureId: string): () => number {
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < fixtureId.length; i++) hash = Math.imul(hash ^ fixtureId.charCodeAt(i), 0x01000193);
-  return randomStream(seed ^ hash).next;
-}
+/** Who played each fixture today and who scored its goals (one id per goal), by fixture id. */
+export type MatchSheets = Record<string, Sides<readonly SimPlayer[]> & { scorers: Sides<readonly string[]> }>;
 
 /**
  * Writes today's matches into the history: appearances and goals per club, each club's match and
  * crowd records, and the champion of any competition that finished today. Run it before the gate is
  * booked, so the crowd is the one that came to the game.
  */
-export function recordMatches(state: GameState, played: readonly Fixture[], lineups: MatchLineups): GameState {
+export function recordMatches(state: GameState, played: readonly Fixture[], sheets: MatchSheets): GameState {
   if (!played.length) return state;
   const { history } = state;
   const clubs = { ...history.clubs };
@@ -44,23 +34,22 @@ export function recordMatches(state: GameState, played: readonly Fixture[], line
   };
 
   for (const fixture of played) {
-    const lineup = lineups[fixture.id];
-    if (!fixture.result || !lineup) continue;
+    const sheet = sheets[fixture.id];
+    if (!fixture.result || !sheet) continue;
     const competition = competitionKey(fixture.competitionId);
-    const random = scorerStream(state.seed, fixture.id);
     const { homeGoals, awayGoals } = fixture.result;
     const sides = [
-      { clubId: fixture.homeId, opponentId: fixture.awayId, home: true, lineup: lineup.home, goalsFor: homeGoals, goalsAgainst: awayGoals },
-      { clubId: fixture.awayId, opponentId: fixture.homeId, home: false, lineup: lineup.away, goalsFor: awayGoals, goalsAgainst: homeGoals },
+      { clubId: fixture.homeId, opponentId: fixture.awayId, home: true, lineup: sheet.home, scorers: sheet.scorers.home, goalsFor: homeGoals, goalsAgainst: awayGoals },
+      { clubId: fixture.awayId, opponentId: fixture.homeId, home: false, lineup: sheet.away, scorers: sheet.scorers.away, goalsFor: awayGoals, goalsAgainst: homeGoals },
     ];
-    for (const { clubId, opponentId, home, lineup: eleven, goalsFor, goalsAgainst } of sides) {
+    for (const { clubId, opponentId, home, lineup: eleven, scorers, goalsFor, goalsAgainst } of sides) {
       const atClub = playersAt(clubId);
       for (const player of eleven) {
         const before = atClub[player.id];
         atClub[player.id] = { name: player.name, apps: (before?.apps ?? 0) + 1, goals: before?.goals ?? 0 };
       }
       const scored = goalsIn(competition);
-      for (const id of scorersOf(eleven, goalsFor, random)) {
+      for (const id of scorers) {
         const scorer = atClub[id];
         if (scorer) atClub[id] = { ...scorer, goals: scorer.goals + 1 };
         scored[id] = (scored[id] ?? 0) + 1;
