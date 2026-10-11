@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 import type { GameState } from "../../src/sim/gameState.js";
 import { useServices } from "../app/ServicesContext.js";
 import { formatMonthYear } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
 import { POSITION_GROUP_NAMES, TRAIT_SHORT } from "../format/playerLabels.js";
+import { prefersReducedMotion } from "../motion/reducedMotion.js";
+import { springTiming } from "../motion/springEasing.js";
+import { useFlip } from "../motion/useFlip.js";
 import { nextSort, sortedSquad, squadRows, statusText, type SquadSort, type SquadSortKey } from "../squad/squadRows.js";
 import "./squad.css";
 
@@ -25,6 +28,31 @@ const COLUMNS: readonly Column[] = [
 ];
 
 const BY_STRENGTH: SquadSort = { key: "strength", descending: true };
+// Damping ratio 0.94: the rows settle with weight and no visible overshoot.
+const ROW_SLIDE = springTiming({ stiffness: 500, damping: 42 });
+// A moving row rides one layer higher for each row it travels, up to 9: the sticky header (squad.css) sits at 10.
+const ROW_HEIGHT = 36;
+const ROW_LAYERS = 9;
+
+/**
+ * A re-sorted row slides from where it was on a spring, lifted with a shadow; the farther it travels the
+ * higher it rides over the others. With reduced motion it only fades back in.
+ */
+function slideSquadRow(row: HTMLElement, offset: number) {
+  if (typeof row.animate !== "function") return;
+  if (prefersReducedMotion()) {
+    row.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
+    return;
+  }
+  const zIndex = String(Math.min(ROW_LAYERS, 1 + Math.round(Math.abs(offset) / ROW_HEIGHT)));
+  row.animate(
+    [
+      { transform: `translateY(${offset}px)`, boxShadow: "0 10px 22px rgba(3, 8, 5, 0.55)", zIndex },
+      { transform: "none", boxShadow: "0 0 0 rgba(3, 8, 5, 0)", zIndex },
+    ],
+    ROW_SLIDE,
+  );
+}
 
 export function Squad() {
   const { engine } = useServices();
@@ -44,6 +72,9 @@ export function Squad() {
   }, [engine]);
 
   const rows = useMemo(() => (state ? squadRows(state) : []), [state]);
+  const groups = useMemo(() => sortedSquad(rows, sort), [rows, sort]);
+  const table = useRef<HTMLTableElement>(null);
+  useFlip(table, groups.flatMap((group) => group.rows.map((p) => p.id)).join(), slideSquadRow);
 
   if (failed) return <p className="status error">Nenhum jogo aberto.</p>;
   if (!state) return <p className="status">Abrindo o elenco…</p>;
@@ -66,7 +97,7 @@ export function Squad() {
       {!club ? (
         <p className="status">Sem clube, sem elenco.</p>
       ) : (
-        <table className="squad-table" aria-label={`Elenco do ${club.shortName}`}>
+        <table ref={table} className="squad-table" aria-label={`Elenco do ${club.shortName}`}>
           <thead>
             <tr>
               {COLUMNS.map((column) => {
@@ -90,7 +121,7 @@ export function Squad() {
               })}
             </tr>
           </thead>
-          {sortedSquad(rows, sort).map(({ group, rows: players }) => (
+          {groups.map(({ group, rows: players }) => (
             <tbody key={group}>
               <tr className="sq-group">
                 <th scope="rowgroup" colSpan={COLUMNS.length}>
@@ -98,7 +129,7 @@ export function Squad() {
                 </th>
               </tr>
               {players.map((p) => (
-                <tr key={p.id} className={p.status ? `sq-row ${p.status.kind}` : "sq-row"}>
+                <tr key={p.id} data-flip={p.id} className={p.status ? `sq-row ${p.status.kind}` : "sq-row"}>
                   <td className="sq-name">
                     <Link to={`/squad/${p.id}`}>{p.name}</Link>
                   </td>

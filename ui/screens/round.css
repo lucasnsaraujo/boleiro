@@ -578,6 +578,7 @@
   color: var(--yellow);
 }
 
+/* The full table slides in from the right edge; its rows settle in a beat behind the panel. */
 .tsheet {
   position: absolute;
   top: 44px;
@@ -588,13 +589,25 @@
   width: 520px;
   background: var(--lawn-1);
   border-left: var(--hairline);
-  animation: tsheet-in 260ms var(--expo-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
+  box-shadow: -24px 0 48px rgba(3, 8, 5, 0.45);
+  animation: round-sheet-in 340ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
-@keyframes tsheet-in {
+.tsheet .trows {
+  animation: round-sheet-rows-in 260ms cubic-bezier(0.16, 1, 0.3, 1) 70ms backwards;
+}
+
+@keyframes round-sheet-in {
   from {
-    transform: translateX(32px);
+    transform: translateX(100%);
+    box-shadow: 0 0 0 rgba(3, 8, 5, 0);
+  }
+}
+
+@keyframes round-sheet-rows-in {
+  from {
     opacity: 0;
+    transform: translateX(28px);
   }
 }
 
@@ -686,21 +699,119 @@
   }
 }
 
+/*
+ * Kick-off: the band builds itself like a stadium scoreboard switching on. The halfway line draws
+ * out from the centre, the two clubs slide in from their own touchlines, the 0 x 0 rolls up into
+ * place like a goal does, then the clock and the other games come up. Nothing that takes a click moves.
+ */
+.round-kickoff .progress {
+  animation: round-kickoff-line 640ms var(--expo-out) backwards;
+}
+
+.round-kickoff .side.home {
+  animation: round-kickoff-home 620ms var(--expo-out) 60ms backwards;
+}
+
+.round-kickoff .side.away {
+  animation: round-kickoff-away 620ms var(--expo-out) 100ms backwards;
+}
+
+.round-kickoff .digit > span:not(.roll) {
+  animation: digit-roll 560ms var(--expo-out) 180ms backwards;
+}
+
+.round-kickoff .digit + .x + .digit > span:not(.roll) {
+  animation-delay: 230ms;
+}
+
+.round-kickoff .x,
+.round-kickoff .clock,
+.round-kickoff .venue,
+.round-kickoff .lastev {
+  animation: round-fade-in 320ms ease-out 280ms backwards;
+}
+
+.round-kickoff ~ .round-body {
+  animation: round-fade-in 360ms ease-out 200ms backwards;
+}
+
+@keyframes round-kickoff-line {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes round-kickoff-home {
+  from {
+    opacity: 0;
+    transform: translateX(-56px);
+  }
+}
+
+@keyframes round-kickoff-away {
+  from {
+    opacity: 0;
+    transform: translateX(56px);
+  }
+}
+
+@keyframes round-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion: every moving part becomes a plain fade, and the goal still reads at a glance. */
 @media (prefers-reduced-motion: reduce) {
   .roll,
-  .box .roll,
-  .flash,
-  .gol-sweep,
-  .tsheet {
-    animation: none;
+  .round-kickoff .digit > span:not(.roll) {
+    animation: round-fade-in 240ms ease-out both;
   }
 
-  .gol-sweep,
+  .box .roll {
+    animation:
+      round-fade-in 240ms ease-out both,
+      box-flash 1300ms ease-out both;
+  }
+
   .flash {
-    display: none;
+    animation: round-flood-fade var(--flood, 1500ms) ease-out both;
+  }
+
+  .gol-sweep {
+    transform: skewX(-12deg);
+    animation: round-gol-fade 1600ms ease-out both;
+  }
+
+  .round-kickoff .progress,
+  .round-kickoff .side.home,
+  .round-kickoff .side.away,
+  .tsheet,
+  .tsheet .trows {
+    animation: round-fade-in 240ms ease-out backwards;
   }
 
   .progress i {
     transition: none;
+  }
+}
+
+@keyframes round-flood-fade {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes round-gol-fade {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  25%,
+  70% {
+    opacity: 1;
   }
 }

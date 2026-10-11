@@ -6,9 +6,10 @@
   animation: sheet-fade 160ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
+/* Only the dimming fades: the sheet inside stays opaque, so the round never shows through it. */
 @keyframes sheet-fade {
   from {
-    opacity: 0;
+    background-color: transparent;
   }
 }
 
@@ -20,12 +21,51 @@
   grid-template-rows: auto minmax(0, 1fr) auto;
   background: var(--lawn-1);
   border-top: var(--hairline);
-  animation: sheet-rise 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation:
+    sheet-rise 340ms cubic-bezier(0.16, 1, 0.3, 1) backwards,
+    lineup-fade-in 90ms linear backwards;
 }
 
+/*
+ * The sheet slides up over the dimmed round. Before kick-off it comes in three layers: the panel, then
+ * the bench a beat later from the side, then the shirts landing on the pitch from the keeper outwards.
+ * Mid-match, when the coach opens it again and again, only the panel rises.
+ */
 @keyframes sheet-rise {
   from {
-    transform: translateY(14px);
+    transform: translateY(40px);
+  }
+}
+
+.lineup-prematch .bench {
+  animation: lineup-bench-in 320ms cubic-bezier(0.16, 1, 0.3, 1) 70ms backwards;
+}
+
+@keyframes lineup-bench-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+.lineup-prematch .pitch-player .shirt {
+  animation: lineup-shirt-in 380ms cubic-bezier(0.16, 1, 0.3, 1) calc(90ms + var(--lineup-order, 0) * 16ms) backwards;
+}
+
+.lineup-prematch .pitch-player .nm {
+  animation: lineup-fade-in 240ms ease-out calc(150ms + var(--lineup-order, 0) * 16ms) backwards;
+}
+
+@keyframes lineup-shirt-in {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.9);
+  }
+}
+
+@keyframes lineup-fade-in {
+  from {
+    opacity: 0;
   }
 }
 
@@ -378,9 +418,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sheet-wrap,
-  .lineup {
-    animation: none;
+  .lineup,
+  .lineup-prematch .bench,
+  .lineup-prematch .pitch-player .shirt {
+    animation-name: lineup-fade-in;
+    animation-timing-function: ease-out;
   }
 
   .pitch-player,
