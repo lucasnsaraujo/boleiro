@@ -113,6 +113,63 @@
   color: var(--red);
 }
 
+/*
+ * The sacking lands on the stinger's low hit (--career-sacked-beat): the word drops onto the page
+ * with no bounce, the band takes the knock, and the club's crest drains of colour under the drone.
+ */
+.career-sacked-title {
+  animation: career-sacked-drop 200ms cubic-bezier(0.55, 0, 1, 0.45) calc(var(--career-sacked-beat, 0ms) - 120ms) backwards;
+}
+
+.career-sacked-band {
+  animation: career-sacked-knock 260ms cubic-bezier(0.2, 0, 0, 1) calc(var(--career-sacked-beat, 0ms) + 80ms) backwards;
+}
+
+.career-sacked-band .crest {
+  filter: grayscale(1);
+  opacity: 0.6;
+  animation: career-sacked-drain 1600ms cubic-bezier(0.4, 0, 0.2, 1) calc(var(--career-sacked-beat, 0ms) + 200ms) backwards;
+}
+
+@keyframes career-sacked-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-28px) scale(1.06);
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+@keyframes career-sacked-knock {
+  from {
+    transform: translateY(4px);
+  }
+}
+
+@keyframes career-sacked-drain {
+  from {
+    filter: grayscale(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .career-sacked-title {
+    animation-name: career-sacked-fade-in;
+  }
+
+  .career-sacked-band {
+    animation: none;
+  }
+}
+
+@keyframes career-sacked-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
 .career-sacked-who {
   display: flex;
   align-items: center;

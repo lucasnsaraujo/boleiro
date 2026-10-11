@@ -45,11 +45,11 @@
   position: absolute;
   top: -15px;
   right: 24px;
+  z-index: 1;
   padding: 6px 12px 5px;
   font: 800 22px/1 var(--num);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  animation: season-end-stamp-in 200ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
 .season-end-stamp.is-title {
@@ -67,16 +67,141 @@
   color: #fff;
 }
 
-@keyframes season-end-stamp-in {
+/*
+ * The stinger. The finishing place rises out of its slot while the chords climb; the stamp falls
+ * from above the page, accelerating, and hits on the stinger's last chord (--season-end-beat, from
+ * the cue itself); on impact the band takes the knock and a wash of the stamp's colour runs back
+ * from it across the band. Relegation falls slower and lands heavier.
+ */
+.season-end-band[data-stamp] {
+  --season-end-fall: 260ms;
+  --season-end-impact: 182ms;
+  animation: season-end-knock 220ms cubic-bezier(0.2, 0, 0, 1) var(--season-end-beat, 0ms) backwards;
+}
+
+.season-end-band[data-stamp="title"] {
+  --season-end-wash: rgba(242, 208, 59, 0.3);
+}
+
+.season-end-band[data-stamp="promoted"] {
+  --season-end-wash: rgba(79, 176, 106, 0.3);
+}
+
+.season-end-band[data-stamp="relegated"] {
+  --season-end-wash: rgba(224, 68, 47, 0.22);
+  --season-end-fall: 380ms;
+  --season-end-impact: 266ms;
+}
+
+.season-end-band[data-stamp]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--season-end-wash);
+  transform-origin: right center;
+  opacity: 0;
+  pointer-events: none;
+  animation: season-end-wash 1100ms cubic-bezier(0.16, 1, 0.3, 1) var(--season-end-beat, 0ms) backwards;
+}
+
+.season-end-band[data-stamp] .season-end-stamp {
+  animation: season-end-stamp-fall var(--season-end-fall) linear calc(var(--season-end-beat, 0ms) - var(--season-end-impact)) backwards;
+}
+
+.season-end-band[data-stamp] .season-end-place-n {
+  animation: season-end-place-rise 620ms cubic-bezier(0.16, 1, 0.3, 1) 60ms backwards;
+}
+
+@keyframes season-end-stamp-fall {
   from {
     opacity: 0;
-    transform: scale(1.35);
+    transform: translateY(-10px) scale(1.9);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.95);
+    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes season-end-knock {
+  from {
+    transform: translateY(3px);
+  }
+}
+
+@keyframes season-end-wash {
+  0% {
+    opacity: 1;
+    transform: scaleX(0);
+  }
+  30% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes season-end-place-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em);
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+@keyframes season-end-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The board's word wipes in from the left, the way a headline is set. */
+.season-end-verdict {
+  animation: season-end-wipe 520ms cubic-bezier(0.16, 1, 0.3, 1) 80ms backwards;
+}
+
+@keyframes season-end-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+    transform: translateX(-12px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .season-end-stamp {
+  .season-end-band[data-stamp] {
     animation: none;
+  }
+
+  .season-end-band[data-stamp]::after {
+    transform: none;
+    animation-name: season-end-wash-fade;
+  }
+
+  .season-end-band[data-stamp] .season-end-stamp {
+    animation: season-end-fade-in 200ms ease-out var(--season-end-beat, 0ms) backwards;
+  }
+
+  .season-end-band[data-stamp] .season-end-place-n,
+  .season-end-verdict {
+    animation: season-end-fade-in 320ms ease-out backwards;
+  }
+}
+
+@keyframes season-end-wash-fade {
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 0;
   }
 }
 
