@@ -29,6 +29,7 @@
 }
 
 .bar-link {
+  position: relative;
   display: flex;
   align-items: center;
   font: 600 15px var(--cond);
@@ -45,18 +46,99 @@
 
 .bar-link[aria-current="page"] {
   color: var(--chalk);
-  border-bottom-color: var(--yellow);
+}
+
+/* The active screen's underline. Its own transition name lets it glide to the next tab on a screen change. */
+.shell-bar-mark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 3px;
+  background: var(--yellow);
+  view-transition-name: shell-bar-mark;
 }
 
 .screen {
   padding: 32px 28px;
-  animation: screen-in var(--screen-transition) both;
+  view-transition-name: shell-screen;
+  animation: shell-arrive var(--shell-arrive) backwards;
 }
 
-@keyframes screen-in {
+/*
+ * Screen changes. The router starts a View Transition on every route change (withScreenTransitions),
+ * but only the old screen and the bar's underline are captured: the new screen is live from its
+ * first frame, so a click on it lands at once. The old screen leaves fast and accelerating, on top;
+ * the new one arrives a beat later and settles with expo-out. Along the bar the screens slide in the
+ * bar's order; off the bar they stack in depth. The new screen takes its transition name only after
+ * it has arrived, ready to be the old one next time.
+ */
+:root {
+  --shell-leave: 110ms cubic-bezier(0.4, 0, 1, 1);
+  --shell-arrive: 180ms cubic-bezier(0.16, 1, 0.3, 1) 20ms;
+  view-transition-name: none;
+}
+
+:root[data-screen-direction="next"] {
+  --shell-from: translateX(24px);
+  --shell-to: translateX(-14px);
+}
+
+:root[data-screen-direction="previous"] {
+  --shell-from: translateX(-24px);
+  --shell-to: translateX(14px);
+}
+
+:root[data-screen-direction="deeper"] {
+  --shell-from: translateY(16px);
+  --shell-to: scale(0.985);
+}
+
+:root[data-screen-direction="back"] {
+  --shell-from: scale(0.985);
+  --shell-to: translateY(12px);
+}
+
+@keyframes shell-arrive {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: var(--shell-from, none);
+    view-transition-name: none;
+  }
+}
+
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-group(shell-screen) {
+  animation: none;
+}
+
+::view-transition-old(shell-screen) {
+  animation: shell-leave var(--shell-leave) both;
+}
+
+@keyframes shell-leave {
+  to {
+    opacity: 0;
+    transform: var(--shell-to, none);
+  }
+}
+
+::view-transition-group(shell-bar-mark) {
+  animation-duration: 240ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-screen-direction] {
+    --shell-from: none;
+    --shell-to: none;
+  }
+
+  ::view-transition-group(shell-bar-mark) {
+    animation-duration: 0s;
   }
 }
 

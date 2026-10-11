@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router";
 import { routes } from "./app/routes.js";
 import { ServicesContext, type Services } from "./app/ServicesContext.js";
+import { withScreenTransitions } from "./app/withScreenTransitions.js";
 import { connectEngine, type EngineClient } from "./engine/connectEngine.js";
 import type { CurrentGameRef } from "./saves/currentGame.js";
 import { slotStore } from "./saves/slotStore.js";
@@ -40,7 +41,7 @@ createRoot(root).render(
   <StrictMode>
     <ServicesContext value={services}>
       <SoundProvider engine={sound} store={localStorage}>
-        <RouterProvider router={createHashRouter(routes)} />
+        <RouterProvider router={withScreenTransitions(createHashRouter(routes))} />
       </SoundProvider>
     </ServicesContext>
   </StrictMode>,
