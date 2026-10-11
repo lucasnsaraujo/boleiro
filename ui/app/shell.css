@@ -68,14 +68,14 @@
 /*
  * Screen changes. The router starts a View Transition on every route change (withScreenTransitions),
  * but only the old screen and the bar's underline are captured: the new screen is live from its
- * first frame, so a click on it lands at once. The old screen leaves fast and accelerating, on top;
+ * first frame, so a click on it lands at once. The old screen, on top, is pushed out and gone in 80ms;
  * the new one arrives a beat later and settles with expo-out. Along the bar the screens slide in the
  * bar's order; off the bar they stack in depth. The new screen takes its transition name only after
  * it has arrived, ready to be the old one next time.
  */
 :root {
-  --shell-leave: 110ms cubic-bezier(0.4, 0, 1, 1);
-  --shell-arrive: 180ms cubic-bezier(0.16, 1, 0.3, 1) 20ms;
+  --shell-leave: 80ms cubic-bezier(0.2, 0, 0, 1);
+  --shell-arrive: 170ms cubic-bezier(0.16, 1, 0.3, 1) 30ms;
   view-transition-name: none;
 }
 
