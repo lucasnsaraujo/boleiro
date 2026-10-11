@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "vitest";
-import type { EngineClient } from "./connectEngine.js";
+import { connectEngine, type EngineClient, type EngineWorker } from "./connectEngine.js";
 import { inMemoryEngine } from "./inMemoryEngine.js";
 
 const closers: (() => void)[] = [];
@@ -12,6 +12,24 @@ function startEngine(): EngineClient {
 
 afterEach(() => {
   for (const close of closers.splice(0)) close();
+});
+
+test("calls waiting on a worker that fails are rejected instead of hanging", async () => {
+  const worker: EngineWorker = { postMessage: () => undefined, onmessage: null, onerror: null, onmessageerror: null };
+  const engine = connectEngine(worker);
+  const saving = engine.save();
+  const reading = engine.read(["date"]);
+  worker.onerror?.(new ErrorEvent("error", { message: "engine.worker.ts failed to load" }));
+  await expect(saving).rejects.toThrow("the engine stopped: engine.worker.ts failed to load");
+  await expect(reading).rejects.toThrow("the engine stopped");
+});
+
+test("a reply the worker could not send fails the calls waiting on it", async () => {
+  const worker: EngineWorker = { postMessage: () => undefined, onmessage: null, onerror: null, onmessageerror: null };
+  const engine = connectEngine(worker);
+  const saving = engine.save();
+  worker.onmessageerror?.(new MessageEvent("messageerror"));
+  await expect(saving).rejects.toThrow("the engine stopped");
 });
 
 test("a new game starts on 1 january at the chosen club", async () => {
