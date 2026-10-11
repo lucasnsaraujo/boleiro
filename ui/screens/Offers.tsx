@@ -50,7 +50,8 @@ export function Offers() {
   if (!loaded) return <p className="status">Abrindo as propostas…</p>;
 
   const { state } = loaded;
-  // Signing is a day's decision: on his match day it would play his game without him.
+  // Answering is a day's decision: on his match day signing would play his game without him,
+  // and during a live round the full-time result would overwrite a decline.
   const mustPlayFirst = loaded.isRoundUnderWay || isCoachMatchDay(state);
 
   const club = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
@@ -106,7 +107,7 @@ export function Offers() {
       )}
       <footer className="career-actions">
         {picked && pickedClub && (
-          <button className="btn-quiet" onClick={() => void decline(picked.clubId)} disabled={isAnswering || wait.isPlaying}>
+          <button className="btn-quiet" onClick={() => void decline(picked.clubId)} disabled={isAnswering || wait.isPlaying || mustPlayFirst}>
             Recusar {pickedClub.shortName}
           </button>
         )}
