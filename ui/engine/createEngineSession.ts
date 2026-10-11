@@ -195,8 +195,12 @@ export function createEngineSession(files: GameFiles) {
     closeTurningPoint(): void {
       turningPoints = turningPoints.slice(1);
     },
-    /** The coach turns an open offer down; accepting one is a day's decision (`acceptOffer`). */
+    /**
+     * The coach turns an open offer down; accepting one is a day's decision (`acceptOffer`). Refused
+     * during a round, whose final whistle rebuilds the game from the kick-off copy and would undo it.
+     */
     declineOffer(clubId: string): void {
+      if (live) throw new Error("an offer can't be declined while a match day is under way");
       state = declineOffer(current(), clubId);
     },
     inbox(): InboxLine[] {

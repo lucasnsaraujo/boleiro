@@ -321,6 +321,12 @@ test("declining an offer takes it off the table and keeps the others", async () 
   expect((await engine.read(["coach"])).coach.offers).toEqual(kept);
 });
 
+test("an offer can't be declined while a round is under way, since the final whistle would undo it", async () => {
+  const engine = await onMatchDay();
+  await engine.startRound({});
+  await expect(engine.declineOffer("flamengo-rj")).rejects.toThrow("an offer can't be declined while a match day is under way");
+});
+
 test("requests waiting on the desk are dropped when the coach changes club, so the new board never decides them", async () => {
   const engine = startEngine();
   await engine.newGame(7, { coachClubId: null, careerMode: true });
