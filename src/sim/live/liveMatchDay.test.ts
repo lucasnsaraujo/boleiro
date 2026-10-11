@@ -86,6 +86,23 @@ describe("a live change", () => {
     expect(others(changed)).toEqual(others(live));
   });
 
+  it("never lets a player score or get a card after he was injured, once the coach makes a change", () => {
+    const coachOnly = { ...matchDay, fixtures: matchDay.fixtures.filter((f) => f.date !== matchDay.date || f.homeId === COACH_CLUB || f.awayId === COACH_CLUB) };
+    const lateActs: string[] = [];
+    for (let seed = 0; seed < 200; seed++) {
+      const kickedOff = startMatchDay({ ...coachOnly, rngState: seed }, {});
+      for (const minute of [0, 45]) {
+        const events = coachEvents(applyLiveChange(kickedOff, minute, { posture: "attacking" }));
+        const injuredAt = new Map(events.flatMap((e) => (e.type === "injury" ? [[e.playerId, e.minute] as const] : [])));
+        for (const e of events) {
+          const isRedrawn = e.minute > minute && (e.type === "goal" || e.type === "card");
+          if (isRedrawn && e.minute > (injuredAt.get(e.playerId) ?? FULL_TIME)) lateActs.push(`seed ${seed}, change at ${minute}: ${e.type} at ${e.minute}`);
+        }
+      }
+    }
+    expect(lateActs).toEqual([]);
+  });
+
   it("gives the same match for the same seed and the same changes at the same minutes", () => {
     const play = () => finishMatchDay(applyLiveChange(applyLiveChange(live, 30, { formation: "4-3-3" }), 70, { posture: "defensive" }));
     expect(play()).toEqual(play());

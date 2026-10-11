@@ -86,11 +86,13 @@ export function createEngineSession(files: GameFiles) {
     live = { ...live, day: { ...live.day, decisions: { ...decisions, requests: change(decisions.requests ?? []) } } };
   }
 
+  /** The desk after a day: the board's notes added, and the pending requests dropped if the coach changed club, since they were for the old board. */
   function noted(on: BoardDesk, before: GameState, day: { state: GameState; events: DayEvent[] }): BoardDesk {
     const notes = boardNotes(before, day.state, day.events);
-    if (!notes.answers.length && !notes.forcedSales.length) return on;
+    const pending = day.state.coachClubId === before.coachClubId ? on.pending : [];
+    if (!notes.answers.length && !notes.forcedSales.length) return pending === on.pending ? on : { ...on, pending };
     return {
-      pending: on.pending,
+      pending,
       answers: [...on.answers, ...notes.answers].slice(-DESK_ANSWERS),
       forcedSales: [...on.forcedSales, ...notes.forcedSales].slice(-DESK_FORCED_SALES),
     };
@@ -193,8 +195,12 @@ export function createEngineSession(files: GameFiles) {
     closeTurningPoint(): void {
       turningPoints = turningPoints.slice(1);
     },
-    /** The coach turns an open offer down; accepting one is a day's decision (`acceptOffer`). */
+    /**
+     * The coach turns an open offer down; accepting one is a day's decision (`acceptOffer`). Refused
+     * during a round, whose final whistle rebuilds the game from the kick-off copy and would undo it.
+     */
     declineOffer(clubId: string): void {
+      if (live) throw new Error("an offer can't be declined while a match day is under way");
       state = declineOffer(current(), clubId);
     },
     inbox(): InboxLine[] {
@@ -217,13 +223,14 @@ export function createEngineSession(files: GameFiles) {
       return desk;
     },
     save(): string {
-      return writeSessionSave({ game: current(), desk, turningPoints });
+      return writeSessionSave({ game: current(), desk, turningPoints, live });
     },
     load(save: string): GameSummary {
       const loaded = readSessionSave(save);
       const summary = begin(loaded.game);
       desk = loaded.desk;
       turningPoints = loaded.turningPoints;
+      live = loaded.live;
       return summary;
     },
     read<K extends keyof GameState>(keys: readonly K[]): Pick<GameState, K> {

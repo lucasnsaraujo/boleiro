@@ -83,7 +83,9 @@ function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEv
   const clubIds = { home: match.homeId, away: match.awayId };
   const elevens = { home: onPitch(coachMatch, kept, "home", clubIds.home), away: onPitch(coachMatch, kept, "away", clubIds.away) };
   const strength = (p: SimPlayer) => coachMatch.strengths[p.id] ?? p.strength;
-  const playing = (side: Side) => elevens[side].filter((p) => sentOffMinute(kept, p.id) === undefined);
+  const hurt = new Set(kept.flatMap((e) => (e.type === "injury" ? [e.playerId] : [])));
+  // As at kick-off, an injured player does nothing more in the match: no card, no goal.
+  const playing = (side: Side) => elevens[side].filter((p) => sentOffMinute(kept, p.id) === undefined && !hurt.has(p.id));
 
   const booked = new Set(kept.flatMap((e) => (e.type === "card" && e.card === "yellow" ? [e.playerId] : [])));
   // A redrawn card comes after the change, never at its minute, so it can't book a player before he comes on.
@@ -95,14 +97,15 @@ function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEv
   const sofar = [...kept, ...cards];
 
   const share = (FULL_TIME - minute) / FULL_TIME;
-  const hurt = new Set(kept.flatMap((e) => (e.type === "injury" ? [e.playerId] : [])));
   const injuries: MatchEvent[] = [...playing("home"), ...playing("away")].flatMap((player): MatchEvent[] => {
-    if (hurt.has(player.id) || random() >= 1 - (1 - matchInjuryChance(player, coachMatch.context)) ** share) return [];
+    if (random() >= 1 - (1 - matchInjuryChance(player, coachMatch.context)) ** share) return [];
     const days = injuryLayoffDays(random);
+    const earliest = Math.max(minute + 1, ...cards.flatMap((e) => (e.type === "card" && e.playerId === player.id ? [e.minute] : [])));
     const latest = sentOffMinute(sofar, player.id) ?? FULL_TIME;
-    const at = Math.min(latest, minute + 1 + Math.floor(random() * (FULL_TIME - minute)));
+    const at = earliest + Math.floor(random() * (latest - earliest + 1));
     return [{ type: "injury", minute: at, clubId: player.clubId, playerId: player.id, days }];
   });
+  const injuredMinute = new Map([...kept, ...injuries].flatMap((e) => (e.type === "injury" ? [[e.playerId, e.minute] as const] : [])));
 
   const aiSide: Side = coachSide === "home" ? "away" : "home";
   const { penaltyTakerId } = coachMatch.tactics;
@@ -129,7 +132,7 @@ function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEv
     const rates = expectedGoals(aiPosture(lead, at));
     for (const side of ["home", "away"] as const) {
       const count = poissonCount(rates[side] * (weights[side][at - 1] ?? 0), random);
-      const scorers = elevens[side].filter((p) => (sentOffMinute(sofar, p.id) ?? Infinity) >= at);
+      const scorers = elevens[side].filter((p) => (sentOffMinute(sofar, p.id) ?? Infinity) >= at && (injuredMinute.get(p.id) ?? Infinity) >= at);
       for (const playerId of scorersOf(scorers, count, random)) goals.push({ type: "goal", minute: at, clubId: clubIds[side], playerId });
       score[side] += count;
     }

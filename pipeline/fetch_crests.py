@@ -60,7 +60,11 @@ def get(url: str) -> bytes | None:
 
 
 def download(url: str, path: Path) -> bool:
-    """Saves url to path unless it is already there. False when the source has no such file."""
+    """Saves url to path unless it is already there. False when the source has no such file.
+
+    The file is written and optimised as <path>.part and only then renamed, so a run cut short
+    never leaves a half-written crest that later runs would take as done.
+    """
     if path.exists():
         return True
     body = get(url)
@@ -68,8 +72,10 @@ def download(url: str, path: Path) -> bool:
     if body is None or not body.startswith(b"\x89PNG"):
         return False
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(body)
-    subprocess.run(["oxipng", "--quiet", "--opt", "4", "--strip", "safe", str(path)], check=True)
+    part = path.with_name(path.name + ".part")
+    part.write_bytes(body)
+    subprocess.run(["oxipng", "--quiet", "--opt", "4", "--strip", "safe", str(part)], check=True)
+    part.replace(path)
     return True
 
 

@@ -1,13 +1,22 @@
 import { invoke } from "@tauri-apps/api/core";
-import { assertSlotId, newestFirst, toSlotMeta } from "./slotMeta.js";
+import { assertSlotId, newestFirst, toSlotMeta, type SlotMeta } from "./slotMeta.js";
 import type { SlotStore } from "./slotStore.js";
+
+/** One meta file read back; a file that is not JSON is dropped like any other malformed meta. */
+function parseMeta(meta: string): SlotMeta | null {
+  try {
+    return toSlotMeta(JSON.parse(meta));
+  } catch {
+    return null;
+  }
+}
 
 /** Saves as files under the app data folder, through the commands in `src-tauri/src/slots.rs`. */
 export function tauriSlots(): SlotStore {
   return {
     async list() {
       const metas = await invoke<string[]>("list_slots");
-      return newestFirst(metas.map((meta): unknown => JSON.parse(meta)).map(toSlotMeta).filter((meta) => meta !== null));
+      return newestFirst(metas.map(parseMeta).filter((meta) => meta !== null));
     },
     async write(meta, save) {
       assertSlotId(meta.id);

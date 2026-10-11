@@ -5,22 +5,34 @@ import { AUTOSAVE_SLOT_ID } from "./slotMeta.js";
 import type { SlotStore } from "./slotStore.js";
 
 /**
- * The engine, writing the autosave slot after every advance that played a round of matches, every play-on that moved
- * the game, every live round's final whistle, every offer turned down, every request asked or withdrawn, and every
- * turning point closed.
+ * The engine, writing the autosave slot after every advance that played a round of matches or signed an offer, every
+ * play-on that moved the game, every kick-off, live change and minute shown of a live round, every live round's final
+ * whistle, every offer turned down, every request asked or withdrawn, and every turning point closed. Autosaves go one
+ * at a time; those asked for while one is under way become a single save of the latest game.
  */
 export function withAutosave(engine: EngineClient, slots: SlotStore, game: CurrentGameRef): EngineClient {
-  async function autosave() {
+  let lastSave: Promise<void> = Promise.resolve();
+  let nextSave: Promise<void> | null = null;
+
+  async function saveNow() {
+    nextSave = null;
     const open = game.current;
     // The round is already played in the worker; failing here would make callers retry and play it twice.
     if (open) await saveToSlot(engine, slots, AUTOSAVE_SLOT_ID, open).catch(() => undefined);
+  }
+
+  function autosave(): Promise<void> {
+    nextSave ??= lastSave.then(saveNow);
+    lastSave = nextSave;
+    return nextSave;
   }
 
   return {
     ...engine,
     async advance(days) {
       const result = await engine.advance(days);
-      if (result.events.some((event) => event.type === "matchPlayed")) await autosave();
+      const hasSigned = days.some((day) => day.acceptOffer !== undefined);
+      if (hasSigned || result.events.some((event) => event.type === "matchPlayed")) await autosave();
       return result;
     },
     async playToMatchDay() {
@@ -46,6 +58,20 @@ export function withAutosave(engine: EngineClient, slots: SlotStore, game: Curre
     async closeTurningPoint() {
       await engine.closeTurningPoint();
       await autosave();
+    },
+    async startRound(kickOff) {
+      const round = await engine.startRound(kickOff);
+      await autosave();
+      return round;
+    },
+    async seeMinute(minute) {
+      await engine.seeMinute(minute);
+      await autosave();
+    },
+    async changeLive(minute, change) {
+      const round = await engine.changeLive(minute, change);
+      await autosave();
+      return round;
     },
     async finishRound() {
       const result = await engine.finishRound();

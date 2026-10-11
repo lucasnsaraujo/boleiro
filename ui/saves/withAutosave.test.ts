@@ -71,6 +71,44 @@ test("the final whistle of a live round is autosaved on the day after the match"
   expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID, date }]);
 });
 
+test("a round left mid-match is autosaved at the furthest minute shown, so a reload can't replay it", async () => {
+  const { engine, slots } = await startGame();
+  await engine.playToMatchDay();
+  await engine.startRound({});
+  await engine.seeMinute(60);
+  const { engine: reloaded, close } = inMemoryEngine();
+  closers.push(close);
+  await reloaded.load(await slots.read(AUTOSAVE_SLOT_ID));
+  expect((await reloaded.liveRound())?.seenMinute).toBe(60);
+  await expect(reloaded.changeLive(30, { posture: "attacking" })).rejects.toThrow("a change can't come before minute 60");
+});
+
+test("autosaves asked for while one is being written are written one at a time, the latest last", async () => {
+  const { engine: raw, close } = inMemoryEngine();
+  closers.push(close);
+  const store = indexedDbSlots(new IDBFactory());
+  let writing = 0;
+  let mostAtOnce = 0;
+  const slots = {
+    ...store,
+    async write(...args: Parameters<typeof store.write>) {
+      mostAtOnce = Math.max(mostAtOnce, ++writing);
+      await store.write(...args);
+      writing--;
+    },
+  };
+  const engine = withAutosave(raw, slots, { current: { slotId: "slot-1", coachName: "Tite" } });
+  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  await engine.playToMatchDay();
+  await engine.startRound({});
+  await Promise.all([10, 20, 30, 40].map((minute) => engine.seeMinute(minute)));
+  expect(mostAtOnce).toBe(1);
+  const { engine: reloaded, close: closeReloaded } = inMemoryEngine();
+  closers.push(closeReloaded);
+  await reloaded.load(await store.read(AUTOSAVE_SLOT_ID));
+  expect((await reloaded.liveRound())?.seenMinute).toBe(40);
+});
+
 test("playing on when already on the match day plays nothing and saves nothing", async () => {
   const { engine, slots } = await startGame();
   await engine.playToMatchDay();
@@ -142,4 +180,17 @@ test("closing a turning point is autosaved, so its screen does not come back aft
   await engine.newGame(8, { coachClubId: "bahia-ba" });
   await engine.load(await slots.read(AUTOSAVE_SLOT_ID));
   expect(await engine.turningPoint()).toBeNull();
+});
+
+test("signing an offer on a day with no match is autosaved, so the coach keeps his new club after a reload", async () => {
+  const { engine: raw, close } = inMemoryEngine();
+  closers.push(close);
+  const slots = indexedDbSlots(new IDBFactory());
+  const career = withAutosave(raw, slots, { current: { slotId: "slot-1", coachName: "Tite" } });
+  await career.newGame(7, { coachClubId: null, careerMode: true });
+  const [offer] = (await career.read(["coach"])).coach.offers;
+  if (!offer) throw new Error("a career game starts with offers");
+  const { events } = await career.advance([{ acceptOffer: offer.clubId }]);
+  expect(events.some((event) => event.type === "matchPlayed")).toBe(false);
+  expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID, coachClubId: offer.clubId }]);
 });

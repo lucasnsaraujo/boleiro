@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "vitest";
-import type { EngineClient } from "./connectEngine.js";
+import { connectEngine, type EngineClient, type EngineWorker } from "./connectEngine.js";
 import { inMemoryEngine } from "./inMemoryEngine.js";
 
 const closers: (() => void)[] = [];
@@ -12,6 +12,24 @@ function startEngine(): EngineClient {
 
 afterEach(() => {
   for (const close of closers.splice(0)) close();
+});
+
+test("calls waiting on a worker that fails are rejected instead of hanging", async () => {
+  const worker: EngineWorker = { postMessage: () => undefined, onmessage: null, onerror: null, onmessageerror: null };
+  const engine = connectEngine(worker);
+  const saving = engine.save();
+  const reading = engine.read(["date"]);
+  worker.onerror?.(new ErrorEvent("error", { message: "engine.worker.ts failed to load" }));
+  await expect(saving).rejects.toThrow("the engine stopped: engine.worker.ts failed to load");
+  await expect(reading).rejects.toThrow("the engine stopped");
+});
+
+test("a reply the worker could not send fails the calls waiting on it", async () => {
+  const worker: EngineWorker = { postMessage: () => undefined, onmessage: null, onerror: null, onmessageerror: null };
+  const engine = connectEngine(worker);
+  const saving = engine.save();
+  worker.onmessageerror?.(new MessageEvent("messageerror"));
+  await expect(saving).rejects.toThrow("the engine stopped");
 });
 
 test("a new game starts on 1 january at the chosen club", async () => {
@@ -259,6 +277,31 @@ test("a round left mid-match comes back at the furthest minute shown, and no cha
   await expect(engine.changeLive(89, { posture: "attacking" })).resolves.toMatchObject({ seenMinute: 89 });
 });
 
+test("a save made mid-match brings the round back at the furthest minute shown, and no change can go back before it", async () => {
+  const engine = await onMatchDay();
+  await engine.startRound({});
+  await engine.seeMinute(60);
+  const round = await engine.liveRound();
+  const save = await engine.save();
+  await engine.newGame(8, { coachClubId: "bahia-ba" });
+  await engine.load(save);
+  expect(await engine.liveRound()).toEqual(round);
+  await expect(engine.changeLive(30, { posture: "attacking" })).rejects.toThrow("a change can't come before minute 60");
+  const reloaded = await engine.finishRound();
+  const twin = await onMatchDay();
+  await twin.startRound({});
+  expect(reloaded).toEqual(await twin.finishRound());
+});
+
+test("a save from before the live round was saved loads with no round under way", async () => {
+  const engine = await onMatchDay();
+  await engine.startRound({});
+  const older: Record<string, unknown> = JSON.parse(await engine.save());
+  delete older.live;
+  await engine.load(JSON.stringify(older));
+  expect(await engine.liveRound()).toBeNull();
+});
+
 test("the final whistle puts the coach's score in the inbox and ends the live round", async () => {
   const engine = await onMatchDay();
   await engine.startRound({});
@@ -319,4 +362,23 @@ test("declining an offer takes it off the table and keeps the others", async () 
   const [declined, ...kept] = (await engine.read(["coach"])).coach.offers;
   await engine.declineOffer(declined?.clubId ?? "");
   expect((await engine.read(["coach"])).coach.offers).toEqual(kept);
+});
+
+test("an offer can't be declined while a round is under way, since the final whistle would undo it", async () => {
+  const engine = await onMatchDay();
+  await engine.startRound({});
+  await expect(engine.declineOffer("flamengo-rj")).rejects.toThrow("an offer can't be declined while a match day is under way");
+});
+
+test("requests waiting on the desk are dropped when the coach changes club, so the new board never decides them", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: null, careerMode: true });
+  const [offer] = (await engine.read(["coach"])).coach.offers;
+  if (!offer) throw new Error("a career game starts with offers");
+  await engine.ask({ kind: "sign", playerId: await ownPlayerOf(engine, "palmeiras-sp") });
+  await engine.advance([{ acceptOffer: offer.clubId }]);
+  expect((await engine.read(["coachClubId"])).coachClubId).toBe(offer.clubId);
+  expect((await engine.desk()).pending).toEqual([]);
+  await engine.playToMatchDay();
+  expect((await engine.desk()).answers).toEqual([]);
 });

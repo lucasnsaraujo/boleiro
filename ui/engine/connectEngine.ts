@@ -11,9 +11,24 @@ export type EngineClient = { [M in Exclude<EngineMethod, "read">]: Async<EngineS
 
 type Pending = { resolve: (result: unknown) => void; reject: (error: Error) => void };
 
-export function connectEngine(port: EnginePort): EngineClient {
+/** The engine's end as the main thread holds it: a Worker, or a MessagePort in tests. */
+export type EngineWorker = EnginePort & {
+  onerror?: ((event: ErrorEvent) => void) | null;
+  onmessageerror?: ((event: MessageEvent) => void) | null;
+};
+
+export function connectEngine(port: EngineWorker): EngineClient {
   const pending = new Map<number, Pending>();
   let nextId = 0;
+
+  // A worker that fails to load or throws outside a call never answers; fail what waits on it rather than hang.
+  function failAll(reason: string) {
+    const error = new Error(`the engine stopped: ${reason}`);
+    for (const waiting of pending.values()) waiting.reject(error);
+    pending.clear();
+  }
+  port.onerror = (event) => failAll(event.message || "the worker failed");
+  port.onmessageerror = () => failAll("a reply could not be read");
 
   port.onmessage = (event: MessageEvent<EngineResponse>) => {
     const response = event.data;
