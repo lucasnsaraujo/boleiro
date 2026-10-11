@@ -5,7 +5,7 @@ import { AUTOSAVE_SLOT_ID } from "./slotMeta.js";
 import type { SlotStore } from "./slotStore.js";
 
 /**
- * The engine, writing the autosave slot after every advance that played a round of matches, every play-on that moved
+ * The engine, writing the autosave slot after every advance that played a round of matches or signed an offer, every play-on that moved
  * the game, every live round's final whistle, every offer turned down, every request asked or withdrawn, and every
  * turning point closed.
  */
@@ -20,7 +20,8 @@ export function withAutosave(engine: EngineClient, slots: SlotStore, game: Curre
     ...engine,
     async advance(days) {
       const result = await engine.advance(days);
-      if (result.events.some((event) => event.type === "matchPlayed")) await autosave();
+      const hasSigned = days.some((day) => day.acceptOffer !== undefined);
+      if (hasSigned || result.events.some((event) => event.type === "matchPlayed")) await autosave();
       return result;
     },
     async playToMatchDay() {
