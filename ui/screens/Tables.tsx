@@ -8,7 +8,7 @@ import { Crest } from "../clubs/Crest.js";
 import { competitionName } from "../format/competitionName.js";
 import { formatDayMonth } from "../format/formatGameDate.js";
 import { nextMatch } from "../hub/hubSelectors.js";
-import { usePlayRound } from "../hub/usePlayRound.js";
+import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import {
   coachCompetitions,
   competitionStages,
@@ -74,7 +74,7 @@ export function Tables() {
           ))}
         </div>
         <button className="btn-main" onClick={() => void round.play()} disabled={round.isPlaying}>
-          {round.isPlaying ? "Jogando…" : "Jogar rodada"}
+          {playRoundLabel(round.isPlaying, state.coachClubId !== null)}
         </button>
       </header>
       {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}

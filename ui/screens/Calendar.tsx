@@ -5,7 +5,7 @@ import { useServices } from "../app/ServicesContext.js";
 import { calendarMonths, type CalendarEntry, type Outcome } from "../calendar/calendarMonths.js";
 import { Crest } from "../clubs/Crest.js";
 import { formatRowDate, monthName } from "../format/formatGameDate.js";
-import { usePlayRound } from "../hub/usePlayRound.js";
+import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import "./calendar.css";
 
 const CALENDAR_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions"] as const;
@@ -52,7 +52,7 @@ export function Calendar() {
           <p className="screen-sub">{club ? club.shortName : "Sem clube"}</p>
         </div>
         <button className="btn-main" onClick={() => void round.play()} disabled={round.isPlaying}>
-          {round.isPlaying ? "Jogando…" : "Jogar rodada"}
+          {playRoundLabel(round.isPlaying, club !== undefined)}
         </button>
       </header>
       {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}

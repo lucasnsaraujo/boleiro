@@ -15,10 +15,10 @@ afterEach(() => {
   for (const close of closers.splice(0)) close();
 });
 
-async function services(): Promise<Services> {
+async function services(coachClubId: string | null = "bahia-ba"): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  await engine.newGame(7, { coachClubId, careerMode: coachClubId === null });
   return { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
 }
 
@@ -70,4 +70,10 @@ test("a state championship's knockout round is one click away", async () => {
   expect(within(rounds).getByRole("button", { name: "Semifinal" })).toHaveProperty("disabled", true);
   await userEvent.click(within(rounds).getByRole("button", { name: "Grupos" }));
   expect(screen.getAllByRole("table").map((t) => t.getAttribute("aria-label"))).toEqual(["Grupo A", "Grupo B"]);
+});
+
+test("a coach without a club waits for offers from the tables instead of playing a round", async () => {
+  openTables(await services(null));
+  expect(await screen.findByRole("button", { name: "Esperar propostas" })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Jogar rodada" })).toBeNull();
 });

@@ -9,7 +9,7 @@ import { competitionKeyName } from "../format/competitionName.js";
 import { formatMonthYear } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
 import { championRoll, clubPast, coachCareer, rollKeys, scorerRoll, type CareerStint } from "../history/historySelectors.js";
-import { usePlayRound } from "../hub/usePlayRound.js";
+import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import "./history.css";
 
 const HISTORY_KEYS = ["season", "coachClubId", "clubs", "history", "coach"] as const;
@@ -79,7 +79,7 @@ export function History() {
           ))}
         </div>
         <button className="btn-main" onClick={() => void round.play()} disabled={round.isPlaying}>
-          {round.isPlaying ? "Jogando…" : state.coachClubId ? "Jogar rodada" : "Esperar propostas"}
+          {playRoundLabel(round.isPlaying, state.coachClubId !== null)}
         </button>
       </header>
       {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}

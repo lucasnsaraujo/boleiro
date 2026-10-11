@@ -9,7 +9,7 @@ import { formatDayMonth, formatGameDate, formatMatchDate } from "../format/forma
 import { jobSecurity, nextMatch, type NextMatch } from "../hub/hubSelectors.js";
 import type { InboxLine } from "../hub/inboxLines.js";
 import type { TurningPoint } from "../hub/turningPoints.js";
-import { usePlayRound } from "../hub/usePlayRound.js";
+import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import type { CurrentGame } from "../saves/currentGame.js";
 import { saveToSlot } from "../saves/saveToSlot.js";
 import { slotLabel } from "../saves/slotMeta.js";
@@ -131,7 +131,7 @@ export function Hub() {
               Salvar jogo
             </button>
             <button className={club || offers === 0 ? "btn-main" : "btn-quiet"} onClick={() => void round.play()} disabled={round.isPlaying}>
-              {round.isPlaying ? "Jogando…" : club ? "Jogar rodada" : "Esperar propostas"}
+              {playRoundLabel(round.isPlaying, club !== undefined)}
             </button>
             {!club && offers > 0 && (
               <Link className="btn-main" to="/offers">
