@@ -90,7 +90,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, colours, doneLa
 
   return createPortal(
     <div className="sheet-wrap">
-      <section className="lineup" role="dialog" aria-modal="true" aria-labelledby="lineup-title">
+      <section className={isLive ? "lineup" : "lineup lineup-prematch"} role="dialog" aria-modal="true" aria-labelledby="lineup-title">
         <header className="lineup-head">
           <h2 id="lineup-title">Escalação</h2>
           <span className="lineup-sub">

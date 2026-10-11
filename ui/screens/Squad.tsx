@@ -30,6 +30,9 @@ const COLUMNS: readonly Column[] = [
 const BY_STRENGTH: SquadSort = { key: "strength", descending: true };
 // Damping ratio 0.94: the rows settle with weight and no visible overshoot.
 const ROW_SLIDE = springTiming({ stiffness: 500, damping: 42 });
+// A moving row rides one layer higher for each row it travels, up to 9: the sticky header (squad.css) sits at 10.
+const ROW_HEIGHT = 36;
+const ROW_LAYERS = 9;
 
 /**
  * A re-sorted row slides from where it was on a spring, lifted with a shadow; the farther it travels the
@@ -41,7 +44,7 @@ function slideSquadRow(row: HTMLElement, offset: number) {
     row.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
     return;
   }
-  const zIndex = String(1 + Math.round(Math.abs(offset)));
+  const zIndex = String(Math.min(ROW_LAYERS, 1 + Math.round(Math.abs(offset) / ROW_HEIGHT)));
   row.animate(
     [
       { transform: `translateY(${offset}px)`, boxShadow: "0 10px 22px rgba(3, 8, 5, 0.55)", zIndex },
