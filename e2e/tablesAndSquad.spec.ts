@@ -14,6 +14,7 @@ test("from a new game, the bar opens the tables, the squad and a player", async 
   await expect(page.getByRole("heading", { name: "Bahia" })).toBeVisible();
 
   const bar = page.getByRole("navigation", { name: "Telas" });
+  await expect(bar.getByRole("link")).toHaveText(["Clube", "Tabelas", "Elenco", "Mercado", "Finanças", "Calendário", "História"]);
   await bar.getByRole("link", { name: "Tabelas" }).click();
   await expect(page.getByRole("heading", { name: "Tabelas" })).toBeVisible();
   await expect(page.getByRole("tab", { name: "Baiano" })).toHaveAttribute("aria-selected", "true");

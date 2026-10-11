@@ -28,6 +28,7 @@ function open(given: Services) {
     [
       { path: "/squad", element: <Squad /> },
       { path: "/squad/:playerId", element: <Player /> },
+      { path: "/hub", element: <p>Clube aberto</p> },
     ],
     { initialEntries: ["/squad"] },
   );
@@ -91,6 +92,13 @@ test("a new game's player screen lists his strength for this season", async () =
   if (!history) throw new Error("no strength history");
   const strength = screen.getByLabelText(/^Força \d+$/).getAttribute("aria-label")?.replace("Força ", "");
   expect(within(history).getAllByRole("listitem").map((item) => item.textContent)).toEqual([`2026${strength}`]);
+});
+
+test("the squad's main action goes back to the club, since the eleven is picked at kick-off", async () => {
+  open(await services());
+  await screen.findByRole("heading", { name: "Elenco" });
+  await userEvent.click(screen.getByRole("link", { name: "Voltar ao clube" }));
+  expect(await screen.findByText("Clube aberto")).toBeTruthy();
 });
 
 test("a coach without a club has no squad", async () => {
