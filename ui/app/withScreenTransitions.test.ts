@@ -1,6 +1,10 @@
 import { createMemoryRouter } from "react-router";
-import { expect, test } from "vitest";
+import { afterEach, expect, test } from "vitest";
 import { withScreenTransitions } from "./withScreenTransitions.js";
+
+afterEach(() => {
+  document.body.innerHTML = "";
+});
 
 const routes = [{ path: "/" }, { path: "/hub" }, { path: "/tables" }];
 
@@ -25,4 +29,20 @@ test("a screen change can still opt out of the transition", async () => {
   const seen = transitionsOf(router);
   await router.navigate("/hub", { viewTransition: false });
   expect(seen).toEqual([false]);
+});
+
+test("the leaving screen stops taking clicks the moment a screen change starts", () => {
+  document.body.innerHTML = '<main class="screen"><button>Jogar rodada</button></main>';
+  const router = withScreenTransitions(createMemoryRouter(routes, { initialEntries: ["/hub"] }));
+  void router.navigate("/tables");
+  const leaving = document.querySelector("main");
+  expect(leaving?.hasAttribute("inert")).toBe(true);
+  expect(leaving?.getAttribute("aria-hidden")).toBe("true");
+});
+
+test("a change to the same screen leaves it usable", () => {
+  document.body.innerHTML = '<main class="screen"><button>Jogar rodada</button></main>';
+  const router = withScreenTransitions(createMemoryRouter(routes, { initialEntries: ["/hub"] }));
+  void router.navigate("/hub");
+  expect(document.querySelector("main")?.hasAttribute("inert")).toBe(false);
 });
