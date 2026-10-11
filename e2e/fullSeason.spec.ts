@@ -5,6 +5,7 @@ const SEASON = 2026;
 const MAX_STEPS = 400;
 // The round's 4x clock: 110 ms per match minute (MS_PER_MINUTE in ui/screens/Round.tsx).
 const FOUR_X_MINUTE_MS = 110;
+const PAUSE_LEAD_MS = 200;
 // The answer to "Jogar rodada" can take a while: up to 120 days played in the worker.
 const PLAY_TIMEOUT = 60_000;
 
@@ -41,6 +42,7 @@ async function askForSigning(page: Page): Promise<string> {
   await page.getByRole("combobox", { name: "Divisão" }).selectOption("Série D");
   const priced = page.getByRole("table", { name: "Jogadores" }).getByRole("row").filter({ has: page.getByRole("cell", { name: /^R\$/ }) }).first();
   const name = (await priced.getByRole("button").textContent()) ?? "";
+  expect(name).not.toBe("");
   await priced.getByRole("button").click();
   await page.getByRole("region", { name }).getByRole("button", { name: "Comprar" }).click();
   await expect(page.getByRole("list", { name: "Pedidos à diretoria" })).toContainText(`Contratação de ${name}`);
@@ -50,8 +52,9 @@ async function askForSigning(page: Page): Promise<string> {
 }
 
 /**
- * Plays the live round at 4x until the result is in, running the page clock through each stretch
- * instead of waiting for it. Returns how many times the round stopped by itself before full time.
+ * Plays the live round at 4x until the result is in, stepping the paused page clock one match
+ * minute at a time instead of waiting for it. Returns how many times the round stopped by itself
+ * before full time.
  */
 async function playLiveRound(page: Page): Promise<number> {
   const band = page.getByRole("region", { name: "Seu jogo" });
@@ -61,18 +64,23 @@ async function playLiveRound(page: Page): Promise<number> {
   const fourX = page.getByRole("button", { name: "4x" });
   const minute = band.getByLabel("Minuto");
   await expect(band).toBeVisible();
+  // pauseAt only moves forward, and the page's time keeps flowing until it lands.
+  await page.clock.pauseAt((await page.evaluate(() => Date.now())) + PAUSE_LEAD_MS);
   await fourX.click();
   let stops = 0;
-  // One match minute per step, so the screen has stopped the clock by itself before the next tick is due.
+  // One tick per step, so the screen has stopped the clock by itself before the next tick is due.
   while (!(await finishing.or(back).first().isVisible())) {
     const before = await minute.textContent();
     await page.clock.runFor(FOUR_X_MINUTE_MS);
-    await expect.poll(async () => (await minute.textContent()) !== before || (await paused.or(finishing).or(back).count()) > 0).toBe(true);
+    await expect
+      .poll(async () => (await minute.textContent()) !== before || (await paused.or(finishing).or(back).count()) > 0, { intervals: [0, 20, 50, 100] })
+      .toBe(true);
     if (await paused.isVisible()) {
       stops++;
       await fourX.click();
     }
   }
+  await page.clock.resume();
   await expect(back).toBeVisible();
   await expect(band).toContainText("Fim de jogo");
   await back.click();
@@ -85,7 +93,8 @@ test("a Série C club plays its whole first season through the screens and start
   await page.clock.install();
   await startAtSerieC(page);
 
-  const hubDate = page.locator(".hub .screen-sub");
+  const hubDate = page.getByText(/ de \d{4} · Tite$/);
+  const seeOffers = page.getByRole("link", { name: "Ver propostas" });
   const playRound = page.getByRole("button", { name: "Jogar rodada" });
   const waitForOffers = page.getByRole("button", { name: "Esperar propostas" });
   const canPlay = page.getByRole("button", { name: /^(Jogar rodada|Esperar propostas)$/, disabled: false });
@@ -110,7 +119,7 @@ test("a Série C club plays its whole first season through the screens and start
     if (await seasonEnd.isVisible()) break;
 
     if (await kickOff.isVisible()) {
-      labels.push((await page.getByRole("dialog", { name: "Escalação" }).locator(".lineup-sub").textContent()) ?? "");
+      labels.push((await page.getByRole("dialog", { name: "Escalação" }).getByText(/ x .+ · /).textContent()) ?? "");
       await kickOff.click();
       stops.push(await playLiveRound(page));
       continue;
@@ -128,7 +137,15 @@ test("a Série C club plays its whole first season through the screens and start
       continue;
     }
 
-    if (signing === null && labels.length > 0 && (await hubDate.textContent())?.includes("janeiro")) {
+    // A coach without a club looks at the offers as soon as there are any.
+    if (await seeOffers.isVisible()) {
+      await seeOffers.click();
+      await expect(offers).toBeVisible();
+      continue;
+    }
+    await expect(playRound.or(waitForOffers)).toBeVisible();
+    // Paysandu's first match falls in January, inside the window that opens on 5 January.
+    if (signing === null && labels.length > 0) {
       signing = await askForSigning(page);
       await expect(playRound).toBeVisible();
     }
@@ -143,7 +160,8 @@ test("a Série C club plays its whole first season through the screens and start
     const seen = await finishedCoachMatches(page);
     if (seen.date.startsWith(String(SEASON))) finished = seen.count;
     if (signing && !isAnswered && (await inbox.isVisible())) {
-      isAnswered = await inbox.getByText(new RegExp(`Diretoria (aprova|recusa) a contratação de ${signing}`)).isVisible();
+      const answer = inbox.getByText(`Diretoria aprova a contratação de ${signing}`).or(inbox.getByText(`Diretoria recusa a contratação de ${signing}`));
+      isAnswered = await answer.isVisible();
     }
   }
 
@@ -154,18 +172,22 @@ test("a Série C club plays its whole first season through the screens and start
   expect(stops.every((n) => n >= 1)).toBe(true);
   const played = labels.join("\n");
   expect(played).toContain("Paraense");
-  expect(played).toContain("Série C");
   expect(played).toContain("Copa do Brasil");
 
+  // The seed is random: a sacked coach may finish the year at another club, or with none.
+  const campaign = page.getByRole("region", { name: "Campanha" });
   if (!hasBeenSacked) {
+    expect(played).toContain("Série C");
     // No match of the club was played without the coach.
     expect(labels).toHaveLength(finished);
-
-    const campaign = page.getByRole("region", { name: "Campanha" });
     await expect(campaign).toContainText(/\d+º\s*Série C/);
-    await expect(campaign).toContainText(/Sobe para a Série B|Cai para a Série D|Fica na Série C|Campeão da Série C/);
+  }
+  if (await campaign.isVisible()) {
+    await expect(campaign).toContainText(/Sobe para a Série|Cai para a Série|Fica na Série|Fica só no estadual|Campeão da Série/);
     await page.getByRole("button", { name: "Ver a diretoria" }).click();
     await expect(page.getByRole("region", { name: "Diretoria" })).toContainText(/Meta (não )?cumprida/);
+  } else {
+    await expect(page.getByLabel("Campeões")).toContainText("Série C");
   }
   await page.getByRole("button", { name: `Começar ${SEASON + 1}` }).click();
   await expect(page).toHaveURL(/#\/hub$/);
