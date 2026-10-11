@@ -128,7 +128,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, colours, doneLa
                 >
                   <Shirt colours={p.group === "GK" ? KEEPER_SHIRT : colours} />
                   <span className="nm">
-                    {sentOff.has(p.id) && <i className="mk red" />}
+                    {sentOff.has(p.id) && <i className="lineup-red-mark" />}
                     {shirtName(p.name)}
                     <span className="st">{p.strength}</span>
                   </span>
