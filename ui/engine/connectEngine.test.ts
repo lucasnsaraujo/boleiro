@@ -320,3 +320,16 @@ test("declining an offer takes it off the table and keeps the others", async () 
   await engine.declineOffer(declined?.clubId ?? "");
   expect((await engine.read(["coach"])).coach.offers).toEqual(kept);
 });
+
+test("requests waiting on the desk are dropped when the coach changes club, so the new board never decides them", async () => {
+  const engine = startEngine();
+  await engine.newGame(7, { coachClubId: null, careerMode: true });
+  const [offer] = (await engine.read(["coach"])).coach.offers;
+  if (!offer) throw new Error("a career game starts with offers");
+  await engine.ask({ kind: "sign", playerId: await ownPlayerOf(engine, "palmeiras-sp") });
+  await engine.advance([{ acceptOffer: offer.clubId }]);
+  expect((await engine.read(["coachClubId"])).coachClubId).toBe(offer.clubId);
+  expect((await engine.desk()).pending).toEqual([]);
+  await engine.playToMatchDay();
+  expect((await engine.desk()).answers).toEqual([]);
+});

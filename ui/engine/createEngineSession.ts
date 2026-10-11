@@ -86,11 +86,13 @@ export function createEngineSession(files: GameFiles) {
     live = { ...live, day: { ...live.day, decisions: { ...decisions, requests: change(decisions.requests ?? []) } } };
   }
 
+  /** The desk after a day: the board's notes added, and the pending requests dropped if the coach changed club, since they were for the old board. */
   function noted(on: BoardDesk, before: GameState, day: { state: GameState; events: DayEvent[] }): BoardDesk {
     const notes = boardNotes(before, day.state, day.events);
-    if (!notes.answers.length && !notes.forcedSales.length) return on;
+    const pending = day.state.coachClubId === before.coachClubId ? on.pending : [];
+    if (!notes.answers.length && !notes.forcedSales.length) return pending === on.pending ? on : { ...on, pending };
     return {
-      pending: on.pending,
+      pending,
       answers: [...on.answers, ...notes.answers].slice(-DESK_ANSWERS),
       forcedSales: [...on.forcedSales, ...notes.forcedSales].slice(-DESK_FORCED_SALES),
     };
