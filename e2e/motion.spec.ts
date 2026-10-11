@@ -1,0 +1,103 @@
+import { expect, test, type Page } from "@playwright/test";
+
+const MAX_PRESSES = 5;
+
+declare global {
+  interface Window {
+    /** Every animation seen so far, by name, and whether any of its keyframes moves something. */
+    seenMotion?: { name: string; moves: boolean }[];
+  }
+}
+
+/** Records every animation the page runs (CSS, WAAPI, transitions and view transitions), frame by frame. */
+async function recordMotion(page: Page) {
+  await page.addInitScript(() => {
+    const seen = new WeakSet<Animation>();
+    window.seenMotion = [];
+    const MOVING = ["transform", "translate", "scale", "rotate"];
+    const look = () => {
+      for (const animation of document.getAnimations()) {
+        if (seen.has(animation)) continue;
+        seen.add(animation);
+        const effect = animation.effect;
+        if (!(effect instanceof KeyframeEffect) || Number(effect.getComputedTiming().duration) === 0) continue;
+        const moves = effect.getKeyframes().some((frame) => MOVING.some((property) => property in frame && frame[property] !== "none"));
+        const name = animation instanceof CSSAnimation ? animation.animationName : animation instanceof CSSTransition ? animation.transitionProperty : "script";
+        window.seenMotion?.push({ name: `${name}${effect.pseudoElement ?? ""}`, moves });
+      }
+      requestAnimationFrame(look);
+    };
+    requestAnimationFrame(look);
+  });
+}
+
+async function newGame(page: Page) {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Novo jogo" }).click();
+  await page.getByRole("button", { name: "Série A" }).click();
+  await page.getByRole("searchbox", { name: "Buscar clube" }).fill("bahia");
+  const clubs = page.getByRole("list", { name: "Clubes" });
+  await expect(clubs.getByRole("button", { name: "Bahia" })).not.toContainText("…");
+  await clubs.getByRole("button", { name: "Bahia" }).click();
+  await page.getByRole("button", { name: "Assumir o clube" }).click();
+  await page.getByRole("textbox", { name: "Nome do técnico" }).fill("Tite");
+  await page.getByRole("button", { name: "Começar" }).click();
+  await expect(page.getByRole("heading", { name: "Bahia" })).toBeVisible();
+}
+
+/** A tour of the moments that move: screen changes, a squad re-sort, the lineup sheet, kick-off and the full table. */
+async function tour(page: Page) {
+  await newGame(page);
+  const bar = page.getByRole("navigation", { name: "Telas" });
+  await bar.getByRole("link", { name: "Tabelas" }).click();
+  await bar.getByRole("link", { name: "Elenco" }).click();
+  await page.getByRole("button", { name: "Idade" }).click();
+  await bar.getByRole("link", { name: "Clube" }).click();
+  const lineup = page.getByRole("dialog", { name: "Escalação" });
+  const play = page.getByRole("button", { name: "Jogar rodada" });
+  for (let press = 0; press < MAX_PRESSES && !(await lineup.isVisible()); press++) {
+    // The round can open between the check and the press, taking the button with it.
+    await play.click({ timeout: 2000 }).catch(() => undefined);
+    await expect(play.or(lineup)).toBeVisible();
+  }
+  await lineup.getByRole("button", { name: "Começar a rodada" }).click();
+  await page.getByRole("button", { name: "Pausar" }).click();
+  await page.getByRole("button", { name: "Tabela completa" }).click();
+  await page.getByRole("button", { name: "Fechar" }).click();
+  await page.waitForTimeout(800);
+  return page.evaluate(() => window.seenMotion ?? []);
+}
+
+test("a click on the arriving screen lands while the screen change is still running", async ({ page }) => {
+  await newGame(page);
+  const bar = page.getByRole("navigation", { name: "Telas" });
+  const squad = await bar.getByRole("link", { name: "Elenco" }).boundingBox();
+  if (!squad) throw new Error("no Elenco link");
+  await page.mouse.click(squad.x + squad.width / 2, squad.y + squad.height / 2);
+  // Read the squad as soon as it is drawn, without waiting for anything to stop moving.
+  const age = await page.waitForFunction(() => [...document.querySelectorAll("button")].find((button) => button.textContent === "Idade") ?? null, null, { polling: "raf" });
+  const box = await age.asElement()?.boundingBox();
+  if (!box) throw new Error("no Idade button");
+  const isMidTransition = await page.evaluate(() => document.getAnimations().some((animation) => animation.effect instanceof KeyframeEffect && animation.effect.pseudoElement?.startsWith("::view-transition")));
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+
+  expect(isMidTransition).toBe(true);
+  await expect(page.getByRole("columnheader", { name: "Idade" })).not.toHaveAttribute("aria-sort", "none");
+});
+
+for (const reducedMotion of ["no-preference", "reduce"] as const) {
+  const title =
+    reducedMotion === "reduce" ? "with reduced motion, every moment only fades and nothing moves" : "with full motion, the screens, sheets, kick-off and squad rows move";
+  test(title, async ({ browser }) => {
+    const page = await browser.newPage({ reducedMotion });
+    await recordMotion(page);
+    const seen = await tour(page);
+    await page.close();
+
+    const names = new Set(seen.map((motion) => motion.name));
+    for (const moment of ["shell-arrive", "lineup-fade-in", "round-fade-in", "script"]) expect(names, moment).toContain(moment);
+    const moving = [...new Set(seen.filter((motion) => motion.moves).map((motion) => motion.name))];
+    if (reducedMotion === "reduce") expect(moving).toEqual([]);
+    else expect(moving).toEqual(expect.arrayContaining(["shell-arrive", "sheet-rise", "round-kickoff-home", "lineup-shirt-in", "round-sheet-in", "script"]));
+  });
+}
