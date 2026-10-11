@@ -20,7 +20,7 @@
 .squad-table thead th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 10;
   height: 32px;
   padding: 0 10px;
   background: var(--lawn-0);
@@ -64,6 +64,12 @@ th[aria-sort="descending"] .sq-sort::after {
   font: 600 14px var(--cond);
   color: var(--yellow);
   border-bottom: var(--hairline);
+}
+
+/* Opaque and stackable, so re-sorted rows slide over each other like cards instead of overprinting. */
+.sq-row {
+  position: relative;
+  background: var(--lawn-0);
 }
 
 .sq-row td {

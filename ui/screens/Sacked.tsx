@@ -7,6 +7,7 @@ import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
 import { formatGameDate } from "../format/formatGameDate.js";
 import { useSound } from "../sound/SoundProvider.js";
+import { stingerBeat } from "../sound/stingerBeat.js";
 import "./career.css";
 
 type Loaded = { firing: CoachFired; club: Club | undefined; offers: number } | "none";
@@ -57,7 +58,7 @@ export function Sacked() {
 
   return (
     <div className="career-sacked">
-      <section className="career-sacked-band">
+      <section className="career-sacked-band" style={{ ["--career-sacked-beat" as string]: `${stingerBeat("sacked")}ms` }}>
         {club && <Crest club={club} size={88} />}
         <div>
           <p className="career-sacked-who">

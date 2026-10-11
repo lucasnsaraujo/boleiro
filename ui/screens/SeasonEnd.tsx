@@ -11,6 +11,7 @@ import { seasonHeadline, type Stamp } from "../seasonEnd/seasonHeadline.js";
 import type { BoardVerdict, ContinentalPlace, ContractVerdict, Placing, SeasonReview } from "../seasonEnd/seasonReview.js";
 import type { Cue } from "../sound/soundCatalog.js";
 import { useSound } from "../sound/SoundProvider.js";
+import { stingerBeat } from "../sound/stingerBeat.js";
 import { boardGoal } from "./clubChoices.js";
 import "./seasonEnd.css";
 
@@ -115,7 +116,12 @@ function SeasonResult({ review, placing, club }: { review: SeasonReview; placing
   const headline = seasonHeadline(placing, review.titles);
   return (
     <>
-      <section className="season-end-band" aria-label="Campanha">
+      <section
+        className="season-end-band"
+        aria-label="Campanha"
+        data-stamp={headline.stamp ?? undefined}
+        style={headline.stamp ? { ["--season-end-beat" as string]: `${stingerBeat(STINGERS[headline.stamp])}ms` } : undefined}
+      >
         <Crest club={club} size={88} />
         <div className="season-end-who">
           <ClubPlate club={club} />

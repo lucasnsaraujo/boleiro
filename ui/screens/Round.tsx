@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router";
 import type { Club } from "../../src/data/clubs.js";
@@ -8,6 +8,8 @@ import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
 import type { AdvanceResult } from "../engine/createEngineSession.js";
 import { formatMatchDate } from "../format/formatGameDate.js";
+import { prefersReducedMotion } from "../motion/reducedMotion.js";
+import { useFlip } from "../motion/useFlip.js";
 import { LineupSheet } from "../round/LineupSheet.js";
 import { kickOffOf, liveChangeOf, liveLimits, type Sheet } from "../round/lineupDraft.js";
 import type { LiveRound, RoundClub, Side } from "../round/liveRoundOf.js";
@@ -33,10 +35,6 @@ const PAUSED_CROWD = 0.6;
 type PreMatch = { plan: MatchDayPlan; clubs: Readonly<Record<string, Club>>; date: string };
 /** A goal being celebrated on a row: the scoring club's colour, its side, and a count so each goal replays the animation. */
 type Flash = { colour: string; side: Side; count: number };
-
-function canAnimate(element: Element): boolean {
-  return typeof element.animate === "function" && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-}
 
 export function Round() {
   const { engine } = useServices();
@@ -436,12 +434,14 @@ function clockNote(minute: number, speed: Speed, isFinished: boolean): string {
 }
 
 function Band({ match, clubs, label, date, minute, speed, golCount, isFinished, shootoutWinner, onSpeed, children }: BandProps) {
+  // The band builds itself only at kick-off, not when the coach comes back to a match under way.
+  const [isKickOff] = useState(minute === 0);
   const home = clubs[match.homeId];
   const away = clubs[match.awayId];
   if (!home || !away) return null;
   const last = shootoutWinner ? `${shootoutWinner} nos pênaltis` : match.last && `${match.last.minute}' ${match.last.text}`;
   return (
-    <section className="band" aria-label="Seu jogo">
+    <section className={isKickOff ? "band round-kickoff" : "band"} aria-label="Seu jogo">
       {golCount > 0 && (
         <div key={golCount} className="gol-sweep" aria-hidden="true">
           GOL
@@ -530,43 +530,34 @@ function MatchRow({ match, clubs, minute, flash }: { match: MatchAt; clubs: Read
   );
 }
 
+const ROSE = "rgba(111, 211, 138, 0.24)";
+const FELL = "rgba(240, 138, 122, 0.2)";
+
+/** A table row slides to its new place, tinted green if it rose and red if it fell; with reduced motion only the tint fades. */
+function slideTableRow(row: HTMLElement, offset: number) {
+  if (typeof row.animate !== "function") return;
+  const tint = offset > 0 ? ROSE : FELL;
+  const slides = !prefersReducedMotion();
+  const at = (y: number) => (slides ? { transform: `translateY(${y}px)` } : {});
+  row.animate(
+    [
+      { ...at(offset), boxShadow: `inset 0 0 0 999px ${tint}` },
+      { ...at(0), boxShadow: `inset 0 0 0 999px ${tint}`, offset: 0.55 },
+      { ...at(0), boxShadow: "inset 0 0 0 999px transparent" },
+    ],
+    { duration: 1500, delay: 180, easing: EXPO_OUT, fill: "backwards" },
+  );
+}
+
 /** Table rows that slide to their new places when the order changes (FLIP). */
 function TableRows({ rows, clubs, coachClubId, isFull = false }: { rows: readonly LiveTableRow[]; clubs: Readonly<Record<string, RoundClub>>; coachClubId: string | null; isFull?: boolean }) {
   const list = useRef<HTMLOListElement>(null);
-  const tops = useRef(new Map<string, number>());
-  const order = rows.map((r) => r.clubId).join();
-  const lastOrder = useRef(order);
-
-  useLayoutEffect(() => {
-    const element = list.current;
-    if (!element) return;
-    const moved = lastOrder.current !== order;
-    lastOrder.current = order;
-    const next = new Map<string, number>();
-    for (const row of Array.from(element.children)) {
-      if (!(row instanceof HTMLElement)) continue;
-      const key = row.dataset.club ?? "";
-      const top = row.offsetTop;
-      next.set(key, top);
-      const was = tops.current.get(key);
-      if (!moved || was === undefined || Math.abs(was - top) < 1 || !canAnimate(row)) continue;
-      const tint = was > top ? "rgba(111, 211, 138, 0.24)" : "rgba(240, 138, 122, 0.2)";
-      row.animate(
-        [
-          { transform: `translateY(${was - top}px)`, boxShadow: `inset 0 0 0 999px ${tint}` },
-          { transform: "translateY(0)", boxShadow: `inset 0 0 0 999px ${tint}`, offset: 0.55 },
-          { transform: "translateY(0)", boxShadow: "inset 0 0 0 999px transparent" },
-        ],
-        { duration: 1500, delay: 180, easing: EXPO_OUT, fill: "backwards" },
-      );
-    }
-    tops.current = next;
-  }, [order]);
+  useFlip(list, rows.map((r) => r.clubId).join(), slideTableRow);
 
   return (
     <ol ref={list} className={isFull ? "trows full" : "trows"} aria-label={isFull ? "Tabela completa" : "Classificação ao vivo"}>
       {rows.map((r) => (
-        <li key={r.clubId} data-club={r.clubId} className={r.clubId === coachClubId ? "trow mine" : "trow"}>
+        <li key={r.clubId} data-flip={r.clubId} className={r.clubId === coachClubId ? "trow mine" : "trow"}>
           <span className="p">{r.position}</span>
           <span className="n">{clubs[r.clubId]?.shortName ?? r.clubId}</span>
           {isFull && (

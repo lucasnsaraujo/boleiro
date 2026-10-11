@@ -113,6 +113,64 @@
   color: var(--red);
 }
 
+/*
+ * The sacking stinger opens with a low hit the moment the screen shows, so the word lands already
+ * down: it slams in oversized and settles with no bounce while the band takes the knock. The club's
+ * crest then drains of colour under the drone (--career-sacked-beat, from the cue itself).
+ */
+.career-sacked-title {
+  animation: career-sacked-slam 220ms cubic-bezier(0.2, 0, 0, 1) backwards;
+}
+
+.career-sacked-band {
+  animation: career-sacked-knock 260ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.career-sacked-band .crest {
+  filter: grayscale(1);
+  opacity: 0.6;
+  animation: career-sacked-drain 1600ms cubic-bezier(0.4, 0, 0.2, 1) var(--career-sacked-beat, 0ms) backwards;
+}
+
+@keyframes career-sacked-slam {
+  from {
+    transform: scale(1.12);
+  }
+}
+
+@keyframes career-sacked-knock {
+  0%,
+  100% {
+    transform: none;
+  }
+  30% {
+    transform: translateY(4px);
+  }
+}
+
+@keyframes career-sacked-drain {
+  from {
+    filter: grayscale(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .career-sacked-title {
+    animation-name: career-sacked-fade-in;
+  }
+
+  .career-sacked-band {
+    animation: none;
+  }
+}
+
+@keyframes career-sacked-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
 .career-sacked-who {
   display: flex;
   align-items: center;

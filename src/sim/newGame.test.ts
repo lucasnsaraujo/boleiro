@@ -89,6 +89,13 @@ describe("newGame", () => {
     expect(state.history.strength[players[0]?.id ?? ""]).toEqual([{ season: 2026, strength: players[0]?.strength }]);
   });
 
+  it("gives the coach's board a tenth of room above its wage cap, and no other board", () => {
+    const withoutCoach = loadNewGame(2026, { coachClubId: null });
+    expect(state.finances["flamengo-rj"]?.wageCap).toBe(Math.round(1.1 * (withoutCoach.finances["flamengo-rj"]?.wageCap ?? 0)));
+    const others = (finances: GameState["finances"]) => Object.entries(finances).filter(([id]) => id !== "flamengo-rj");
+    expect(others(state.finances)).toEqual(others(withoutCoach.finances));
+  });
+
   it("depends only on the seed", () => {
     expect(loadNewGame(2026, { coachClubId: "flamengo-rj" })).toEqual(state);
     expect(loadNewGame(7, { coachClubId: "flamengo-rj" }).fixtures).not.toEqual(state.fixtures);
