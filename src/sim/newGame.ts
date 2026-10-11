@@ -7,7 +7,7 @@ import { newHistory } from "./history/history.js";
 import { recordStrengths } from "./history/recordStrengths.js";
 import { NEUTRAL_MOOD } from "./morale/clubMood.js";
 import { openingFinances, type FinanceData } from "./finances/openingFinances.js";
-import type { GameState, IsoDate, SimPlayer } from "./gameState.js";
+import type { ClubFinance, GameState, IsoDate, SimPlayer } from "./gameState.js";
 import { academyPlayer, groupsToFill } from "./players/developPlayers.js";
 import type { Qualification } from "./copaDoBrasilEntrants.js";
 import { openingProfile } from "./players/openingProfile.js";
@@ -50,6 +50,16 @@ function academyTopUp(clubs: readonly Club[], players: readonly Omit<SimPlayer, 
   );
 }
 
+// guess: every opening board spends exactly its wage cap, so a new coach could sign nobody in
+// January; his board gives him a tenth of room for the first window. July's budget resets it.
+const NEW_COACH_WAGE_ROOM = 1.1;
+
+function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: string | null): Record<string, ClubFinance> {
+  const finance = coachClubId === null ? undefined : finances[coachClubId];
+  if (coachClubId === null || !finance) return finances;
+  return { ...finances, [coachClubId]: { ...finance, wageCap: Math.round(NEW_COACH_WAGE_ROOM * finance.wageCap) } };
+}
+
 export function newGame(
   seed: number,
   { clubs, players, finances: financeData, competitionMoney, coachClubId, careerMode = false, season = FIRST_SEASON }: NewGameOptions,
@@ -68,7 +78,8 @@ export function newGame(
     });
   const squadPlayers = [...dataPlayers, ...academyTopUp(clubs, dataPlayers, `${season}-01-01`, randomStream(seed ^ ACADEMY_STREAM_SALT).next)];
   const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION);
-  const { economy, finances, wages } = openingFinances(clubsById, squadPlayers, competitions, fixtures, financeData, competitionMoney);
+  const { economy, finances: boardFinances, wages } = openingFinances(clubsById, squadPlayers, competitions, fixtures, financeData, competitionMoney);
+  const finances = withNewCoachRoom(boardFinances, coachClubId);
   const simPlayers = Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }]));
   const market = openingMarket(seed);
   return openingCoach({
