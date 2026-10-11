@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import type { Division } from "../../src/data/players.js";
 import type { Board } from "../../src/sim/coach/boardExpectations.js";
 import { useServices } from "../app/ServicesContext.js";
+import { useDialogFocus } from "../app/useDialogFocus.js";
 import { CLUBS, clubById } from "../clubs/clubCatalog.js";
 import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
@@ -206,6 +207,8 @@ function CoachAndSlot({ seed, picked, onBack }: { seed: number; picked: Choice; 
 
   const name = coachName.trim();
   const target = saved?.find((slot) => slot.id === slotId) ?? null;
+  const startButton = useRef<HTMLButtonElement>(null);
+  const confirmTitle = useDialogFocus<HTMLParagraphElement>(confirming && target !== null, { returnTo: startButton });
 
   async function start(slot: GameSlot) {
     setConfirming(false);
@@ -284,7 +287,7 @@ function CoachAndSlot({ seed, picked, onBack }: { seed: number; picked: Choice; 
         </fieldset>
         {confirming && target ? (
           <div className="confirm" role="alertdialog" aria-labelledby="confirm-title">
-            <p id="confirm-title" className="confirm-title">
+            <p id="confirm-title" ref={confirmTitle} tabIndex={-1} className="confirm-title">
               Substituir o {target.label}?
             </p>
             <p className="confirm-text">{slotSummary(target)} será apagado.</p>
@@ -298,7 +301,7 @@ function CoachAndSlot({ seed, picked, onBack }: { seed: number; picked: Choice; 
             </div>
           </div>
         ) : (
-          <button type="submit" className="btn-main" disabled={!name || !target || starting}>
+          <button ref={startButton} type="submit" className="btn-main" disabled={!name || !target || starting}>
             {starting ? "Montando a temporada…" : "Começar"}
           </button>
         )}

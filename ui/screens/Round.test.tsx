@@ -132,6 +132,22 @@ test("closing the full table of a paused round leaves it paused", async () => {
   expect(shownMinute()).toBe(paused);
 });
 
+test("the full table and the lineup take focus while open and give it back to their buttons", async () => {
+  const given = await onMatchDay();
+  await kickOff(given);
+  const tableButton = screen.getByRole("button", { name: "Tabela completa" });
+  await user().click(tableButton);
+  expect(document.activeElement).toBe(within(await screen.findByRole("dialog", { name: "Classificação" })).getByRole("heading", { name: "Classificação" }));
+  await user().click(screen.getByRole("button", { name: "Fechar" }));
+  expect(document.activeElement).toBe(tableButton);
+
+  const lineupButton = screen.getByRole("button", { name: /^Escalação/ });
+  await user().click(lineupButton);
+  expect(document.activeElement).toBe(within(await lineup()).getByRole("heading", { name: "Escalação" }));
+  await user().click(screen.getByRole("button", { name: "Voltar ao jogo" }));
+  expect(document.activeElement).toBe(lineupButton);
+});
+
 test("a round left mid-match comes back paused at the furthest minute shown", async () => {
   const given = await onMatchDay();
   await kickOff(given);

@@ -4,6 +4,7 @@ import type { Club } from "../../src/data/clubs.js";
 import { FORMATIONS, type Formation } from "../../src/engine/formations.js";
 import type { Posture } from "../../src/engine/match.js";
 import type { Tactics } from "../../src/sim/coach/tactics.js";
+import { useDialogFocus } from "../app/useDialogFocus.js";
 import {
   bringOn,
   canBringOn,
@@ -74,6 +75,7 @@ function hintOf(sheet: Sheet, mode: SheetMode, squad: readonly SquadPlayer[], pr
 /** The lineup sheet: shirts on the pitch, tactics and the bench, before kick-off or during the coach's match. */
 export function LineupSheet({ sub, squad, lineup, tactics, mode, colours, doneLabel, isBusy, error, onDone, onLeave }: Props) {
   const [sheet, setSheet] = useState(() => openSheet(lineup, tactics));
+  const title = useDialogFocus<HTMLHeadingElement>(true, { isModal: true });
   const byId = new Map(squad.map((p) => [p.id, p]));
   const starters = sheet.lineup.flatMap((id) => byId.get(id) ?? []);
   const spots = pitchSpots(starters, sheet.tactics.formation);
@@ -92,7 +94,9 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, colours, doneLa
     <div className="sheet-wrap">
       <section className={isLive ? "lineup" : "lineup lineup-prematch"} role="dialog" aria-modal="true" aria-labelledby="lineup-title">
         <header className="lineup-head">
-          <h2 id="lineup-title">Escalação</h2>
+          <h2 id="lineup-title" ref={title} tabIndex={-1}>
+            Escalação
+          </h2>
           <span className="lineup-sub">
             {sub} · {sheet.tactics.formation} · {posture}
           </span>

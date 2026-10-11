@@ -85,8 +85,11 @@ test("deleting a slot asks first, and only a confirmed delete removes it", async
   const given = services();
   await saveGame(given, "slot-1", "bahia-ba", "Renato", "2026-10-01T12:00:00Z");
   openStartMenu(given);
-  await userEvent.click(await screen.findByRole("button", { name: "Apagar Jogo 1" }));
+  const opener = await screen.findByRole("button", { name: "Apagar Jogo 1" });
+  await userEvent.click(opener);
+  expect(document.activeElement).toBe(screen.getByText("Apagar o Jogo 1?"));
   await userEvent.click(within(screen.getByRole("alertdialog", { name: "Apagar o Jogo 1?" })).getByRole("button", { name: "Cancelar" }));
+  expect(document.activeElement).toBe(opener);
   expect(await given.slots.list()).toHaveLength(1);
 
   await userEvent.click(screen.getByRole("button", { name: "Apagar Jogo 1" }));
