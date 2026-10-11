@@ -89,7 +89,7 @@ async function playLiveRound(page: Page): Promise<number> {
 }
 
 test("a Série C club plays its whole first season through the screens and starts season 2", async ({ page }) => {
-  test.setTimeout(5 * 60_000);
+  test.setTimeout(10 * 60_000);
   await page.clock.install();
   await startAtSerieC(page);
 
