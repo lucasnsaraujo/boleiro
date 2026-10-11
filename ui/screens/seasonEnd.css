@@ -76,8 +76,9 @@
 .season-end-band[data-stamp] {
   isolation: isolate;
   --season-end-fall: 260ms;
-  --season-end-impact: 182ms;
-  animation: season-end-knock 220ms cubic-bezier(0.2, 0, 0, 1) var(--season-end-beat, 0ms) backwards;
+  /* The stamp touches down 70% into its fall (season-end-stamp-fall). */
+  --season-end-impact: calc(var(--season-end-fall) * 0.7);
+  animation: season-end-knock 220ms cubic-bezier(0.2, 0, 0, 1) var(--season-end-beat, 0ms);
 }
 
 .season-end-band[data-stamp="title"] {
@@ -91,7 +92,6 @@
 .season-end-band[data-stamp="relegated"] {
   --season-end-wash: rgba(224, 68, 47, 0.22);
   --season-end-fall: 380ms;
-  --season-end-impact: 266ms;
 }
 
 /* The wash runs behind the crest, plate and place, over the band's own background. */
@@ -133,7 +133,11 @@
 }
 
 @keyframes season-end-knock {
-  from {
+  0%,
+  100% {
+    transform: none;
+  }
+  30% {
     transform: translateY(3px);
   }
 }
