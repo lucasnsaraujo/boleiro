@@ -227,3 +227,20 @@ test("at the final whistle the round is recorded and the coach goes back to the 
   await userEvent.click(back);
   expect(await screen.findByText("Clube aberto")).toBeTruthy();
 });
+
+test("a round whose final whistle didn't go through finishes when the coach comes back, and offers a retry if it fails again", async () => {
+  let isEngineDown = true;
+  const given = await onMatchDay((engine) => ({
+    ...engine,
+    finishRound: () => (isEngineDown ? Promise.reject(new Error("worker busy")) : engine.finishRound()),
+  }));
+  await given.engine.startRound({});
+  await given.engine.seeMinute(90);
+
+  openRound(given);
+  expect(await screen.findByText("Não deu para encerrar a rodada.")).toBeTruthy();
+  isEngineDown = false;
+  await userEvent.click(screen.getByRole("button", { name: "Tentar de novo" }));
+  expect(await screen.findByRole("button", { name: "Voltar ao clube" })).toBeTruthy();
+  expect(await given.engine.liveRound()).toBeNull();
+});

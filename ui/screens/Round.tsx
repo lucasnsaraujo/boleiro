@@ -75,6 +75,8 @@ export function Round() {
         roundRef.current = live;
         setRound(live);
         setMinute(at);
+        // Back after a final whistle that didn't go through: no new minute will call it again.
+        if (at >= FULL_TIME) void finish();
         return;
       }
       const [plan, { clubs, date }] = await Promise.all([engine.matchDayPlan(), engine.read(["clubs", "date"])]);
