@@ -66,6 +66,12 @@ th[aria-sort="descending"] .sq-sort::after {
   border-bottom: var(--hairline);
 }
 
+/* Opaque and stackable, so re-sorted rows slide over each other like cards instead of overprinting. */
+.sq-row {
+  position: relative;
+  background: var(--lawn-0);
+}
+
 .sq-row td {
   height: 36px;
   padding: 0 10px;

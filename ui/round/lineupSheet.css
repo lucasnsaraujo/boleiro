@@ -6,9 +6,10 @@
   animation: sheet-fade 160ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
+/* Only the dimming fades: the sheet inside stays opaque, so the round never shows through it. */
 @keyframes sheet-fade {
   from {
-    opacity: 0;
+    background-color: transparent;
   }
 }
 
@@ -20,7 +21,9 @@
   grid-template-rows: auto minmax(0, 1fr) auto;
   background: var(--lawn-1);
   border-top: var(--hairline);
-  animation: sheet-rise 340ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation:
+    sheet-rise 340ms cubic-bezier(0.16, 1, 0.3, 1) backwards,
+    lineup-fade-in 90ms linear backwards;
 }
 
 /*
@@ -29,7 +32,6 @@
  */
 @keyframes sheet-rise {
   from {
-    opacity: 0;
     transform: translateY(40px);
   }
 }

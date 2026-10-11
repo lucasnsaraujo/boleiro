@@ -31,14 +31,24 @@ const BY_STRENGTH: SquadSort = { key: "strength", descending: true };
 // Damping ratio 0.94: the rows settle with weight and no visible overshoot.
 const ROW_SLIDE = springTiming({ stiffness: 500, damping: 42 });
 
-/** A re-sorted row slides from where it was on a spring; with reduced motion it only fades back in. */
+/**
+ * A re-sorted row slides from where it was on a spring, lifted with a shadow; the farther it travels the
+ * higher it rides over the others. With reduced motion it only fades back in.
+ */
 function slideSquadRow(row: HTMLElement, offset: number) {
   if (typeof row.animate !== "function") return;
   if (prefersReducedMotion()) {
     row.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
     return;
   }
-  row.animate([{ transform: `translateY(${offset}px)` }, { transform: "none" }], ROW_SLIDE);
+  const zIndex = String(1 + Math.round(Math.abs(offset)));
+  row.animate(
+    [
+      { transform: `translateY(${offset}px)`, boxShadow: "0 10px 22px rgba(3, 8, 5, 0.55)", zIndex },
+      { transform: "none", boxShadow: "0 0 0 rgba(3, 8, 5, 0)", zIndex },
+    ],
+    ROW_SLIDE,
+  );
 }
 
 export function Squad() {
