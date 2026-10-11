@@ -494,8 +494,8 @@ function MatchRow({ match, clubs, minute, flash }: { match: MatchAt; clubs: Read
         {match.reds.home > 0 && red}
         <ClubPlate club={home} size="row" />
       </span>
-      <Digit value={match.score.home} className="box" flash={flash?.side === "home" ? flash.colour : undefined} />
-      <Digit value={match.score.away} className="box" flash={flash?.side === "away" ? flash.colour : undefined} />
+      <Digit value={match.score.home} className="round-box" flash={flash?.side === "home" ? flash.colour : undefined} />
+      <Digit value={match.score.away} className="round-box" flash={flash?.side === "away" ? flash.colour : undefined} />
       <span className="a">
         <ClubPlate club={away} size="row" />
         {match.reds.away > 0 && red}

@@ -66,7 +66,7 @@ export function Tables() {
     <div className="tables">
       <header className="tables-head">
         <h1 className="screen-title">Tabelas</h1>
-        <div className="tabs" role="tablist" aria-label="Competições">
+        <div className="tables-tabs" role="tablist" aria-label="Competições">
           {competitions.map((c) => (
             <button key={c.id} role="tab" aria-selected={c.id === shown?.id} onClick={() => setPickedId(c.id)}>
               {competitionName(c)}

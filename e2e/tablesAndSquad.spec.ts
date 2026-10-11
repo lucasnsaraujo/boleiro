@@ -26,6 +26,9 @@ test("from a new game, the bar opens the tables, the squad and a player", async 
 
   await page.getByRole("tab", { name: "Copa do Brasil" }).click();
   await expect(page.getByRole("list", { name: "1ª fase" }).getByRole("listitem")).toHaveCount(14);
+  const tieScore = page.getByRole("list", { name: "1ª fase" }).locator(".tie-score > span").first();
+  await expect(tieScore).toHaveCSS("overflow", "visible");
+  await expect(tieScore).toHaveCSS("position", "static");
   await expect(page.getByRole("group", { name: "Fases" }).getByRole("button", { name: "Final", exact: true })).toBeDisabled();
 
   await bar.getByRole("link", { name: "Elenco" }).click();

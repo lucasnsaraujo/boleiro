@@ -23,6 +23,28 @@
   margin: 0 0 10px auto;
 }
 
+.tables-tabs {
+  display: flex;
+  gap: 28px;
+}
+
+.tables-tabs button {
+  padding: 0 0 14px;
+  font: 600 16px var(--cond);
+  color: var(--chalk-3);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tables-tabs button:hover {
+  color: var(--chalk);
+}
+
+.tables-tabs button[aria-selected="true"] {
+  color: var(--chalk);
+  border-bottom-color: var(--yellow);
+}
+
 .tables-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
