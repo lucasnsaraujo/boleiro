@@ -83,6 +83,17 @@ test("a round left mid-match is autosaved at the furthest minute shown, so a rel
   await expect(reloaded.changeLive(30, { posture: "attacking" })).rejects.toThrow("a change can't come before minute 60");
 });
 
+test("a live round is autosaved every quarter of an hour shown, not on every minute", async () => {
+  const { engine, slots } = await startGame();
+  await engine.playToMatchDay();
+  await engine.startRound({});
+  await slots.remove(AUTOSAVE_SLOT_ID);
+  for (let minute = 1; minute < 15; minute++) await engine.seeMinute(minute);
+  expect(await slots.list()).toEqual([]);
+  await engine.seeMinute(15);
+  expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID }]);
+});
+
 test("autosaves asked for while one is being written are written one at a time, the latest last", async () => {
   const { engine: raw, close } = inMemoryEngine();
   closers.push(close);
@@ -101,12 +112,12 @@ test("autosaves asked for while one is being written are written one at a time, 
   await engine.newGame(7, { coachClubId: "bahia-ba" });
   await engine.playToMatchDay();
   await engine.startRound({});
-  await Promise.all([10, 20, 30, 40].map((minute) => engine.seeMinute(minute)));
+  await Promise.all([15, 30, 45, 60].map((minute) => engine.seeMinute(minute)));
   expect(mostAtOnce).toBe(1);
   const { engine: reloaded, close: closeReloaded } = inMemoryEngine();
   closers.push(closeReloaded);
   await reloaded.load(await store.read(AUTOSAVE_SLOT_ID));
-  expect((await reloaded.liveRound())?.seenMinute).toBe(40);
+  expect((await reloaded.liveRound())?.seenMinute).toBe(60);
 });
 
 test("playing on when already on the match day plays nothing and saves nothing", async () => {

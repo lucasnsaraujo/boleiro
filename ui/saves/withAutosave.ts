@@ -4,10 +4,14 @@ import { saveToSlot } from "./saveToSlot.js";
 import { AUTOSAVE_SLOT_ID } from "./slotMeta.js";
 import type { SlotStore } from "./slotStore.js";
 
+// guess: a live save is about 6 MB, so a round shown at 4x is saved every quarter of an hour, not every minute.
+// Leaving mid-match then rewinds at most this far, and changes still can't go back before the minute saved.
+const LIVE_SAVE_EVERY_MINUTES = 15;
+
 /**
  * The engine, writing the autosave slot after every advance that played a round of matches or signed an offer, every
- * play-on that moved the game, every kick-off, live change and minute shown of a live round, every live round's final
- * whistle, every offer turned down, every request asked or withdrawn, and every turning point closed. Autosaves go one
+ * play-on that moved the game, every kick-off and live change of a live round and every quarter of an hour shown of
+ * it, every live round's final whistle, every offer turned down, every request asked or withdrawn, and every turning point closed. Autosaves go one
  * at a time; those asked for while one is under way become a single save of the latest game.
  */
 export function withAutosave(engine: EngineClient, slots: SlotStore, game: CurrentGameRef): EngineClient {
@@ -66,7 +70,7 @@ export function withAutosave(engine: EngineClient, slots: SlotStore, game: Curre
     },
     async seeMinute(minute) {
       await engine.seeMinute(minute);
-      await autosave();
+      if (minute % LIVE_SAVE_EVERY_MINUTES === 0) await autosave();
     },
     async changeLive(minute, change) {
       const round = await engine.changeLive(minute, change);
