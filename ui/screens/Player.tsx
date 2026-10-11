@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import type { GameState } from "../../src/sim/gameState.js";
 import type { CoachRequest } from "../../src/sim/transfers/coachRequest.js";
 import { useServices } from "../app/ServicesContext.js";
@@ -70,6 +70,8 @@ function StrengthHistory({ marks }: { marks: PlayerCard["strengthBySeason"] }) {
 
 export function Player() {
   const { playerId = "" } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { engine } = useServices();
   const [state, setState] = useState<PlayerState | null>(null);
   const [desk, setDesk] = useState<BoardDesk | null>(null);
@@ -90,10 +92,12 @@ export function Player() {
     };
   }, [engine]);
 
+  // The squad, the market and the tables all open players; a player opened straight from a link has no screen behind him.
+  const hasScreenBehind = location.key !== "default";
   const back = (
-    <Link to="/squad" className="btn-quiet player-back">
-      Voltar ao elenco
-    </Link>
+    <button className="btn-quiet player-back" onClick={() => (hasScreenBehind ? navigate(-1) : navigate("/squad"))}>
+      Voltar
+    </button>
   );
   if (failed) return <p className="status error">Nenhum jogo aberto.</p>;
   if (!state || !desk) return <p className="status">Abrindo o jogador…</p>;

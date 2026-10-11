@@ -78,7 +78,7 @@ test("a player's name opens his screen, where the coach can ask to renew or sell
   await userEvent.click(first);
   expect(await screen.findByRole("heading", { name })).toBeTruthy();
   for (const action of ["Renovar", "Vender"]) expect(screen.getByRole("button", { name: action })).toHaveProperty("disabled", false);
-  await userEvent.click(screen.getByRole("link", { name: "Voltar ao elenco" }));
+  await userEvent.click(screen.getByRole("button", { name: "Voltar" }));
   expect(await screen.findByRole("heading", { name: "Elenco" })).toBeTruthy();
 });
 

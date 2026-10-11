@@ -16,14 +16,21 @@ afterEach(() => {
   for (const close of closers.splice(0)) close();
 });
 
-async function openPlayerOf(clubId: string): Promise<{ engine: EngineClient; playerId: string }> {
+async function openPlayerOf(clubId: string, from: string[] = []): Promise<{ engine: EngineClient; playerId: string }> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
   await engine.newGame(7, { coachClubId: "sport-pe" });
   const { players } = await engine.read(["players"]);
   const player = Object.values(players).find((p) => p.clubId === clubId && p.age > 21);
   if (!player) throw new Error(`no player at ${clubId}`);
-  const router = createMemoryRouter([{ path: "/squad/:playerId", element: <Player /> }], { initialEntries: [`/squad/${player.id}`] });
+  const router = createMemoryRouter(
+    [
+      { path: "/squad/:playerId", element: <Player /> },
+      { path: "/squad", element: <p>Elenco aberto</p> },
+      { path: "/tables", element: <p>Tabelas abertas</p> },
+    ],
+    { initialEntries: [...from, `/squad/${player.id}`] },
+  );
   render(
     <ServicesContext value={{ engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } }}>
       <RouterProvider router={router} />
@@ -54,4 +61,16 @@ test("another club's player has no contract actions here", async () => {
   await screen.findByText("Contrato");
   expect(screen.queryByRole("button", { name: "Renovar" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Vender" })).toBeNull();
+});
+
+test("Voltar goes back to the screen the player was opened from", async () => {
+  await openPlayerOf("palmeiras-sp", ["/tables"]);
+  await userEvent.click(await screen.findByRole("button", { name: "Voltar" }));
+  expect(await screen.findByText("Tabelas abertas")).toBeTruthy();
+});
+
+test("a player opened with no screen behind him goes back to the squad", async () => {
+  await openPlayerOf("sport-pe");
+  await userEvent.click(await screen.findByRole("button", { name: "Voltar" }));
+  expect(await screen.findByText("Elenco aberto")).toBeTruthy();
 });
