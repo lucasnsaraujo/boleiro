@@ -39,7 +39,13 @@ export function scorerStream(seed: number, fixtureId: string): () => number {
  * How likely a side's goal falls in each minute after `from` (index 0 is minute 1): the real minute
  * shares, scaled by the ten-men effect from each red card on.
  */
-export function goalMinuteWeights(ownReds: readonly number[], opponentReds: readonly number[], from: number): number[] {
+export function goalMinuteWeights(ownReds: readonly number[], opponentReds: readonly number[], from: number): readonly number[] {
+  // Most matches have no red card; their weights are the same every time, and a season draws them thousands of times.
+  if (from === 0 && ownReds.length === 0 && opponentReds.length === 0) return ELEVEN_A_SIDE_WEIGHTS;
+  return weightsAfter(ownReds, opponentReds, from);
+}
+
+function weightsAfter(ownReds: readonly number[], opponentReds: readonly number[], from: number): number[] {
   return GOAL_DENSITY.map((share, i) => {
     const minute = i + 1;
     if (minute <= from) return 0;
@@ -47,6 +53,8 @@ export function goalMinuteWeights(ownReds: readonly number[], opponentReds: read
     return share * scoringFactor(down(ownReds), down(opponentReds));
   });
 }
+
+const ELEVEN_A_SIDE_WEIGHTS: readonly number[] = weightsAfter([], [], 0);
 
 /** A minute drawn by `weights`, no later than `latest`. */
 function drawMinute(weights: readonly number[], random: () => number, latest: number = FULL_TIME): number {
