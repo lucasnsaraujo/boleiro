@@ -5,6 +5,12 @@ import type { PlayResult } from "../engine/createEngineSession.js";
 
 export type PlayRound = { play: () => Promise<void>; isPlaying: boolean; hasFailed: boolean };
 
+/** The play button's words: a coach without a club has no round to play, only offers to wait for. */
+export function playRoundLabel(isPlaying: boolean, hasClub: boolean): string {
+  if (isPlaying) return "Jogando…";
+  return hasClub ? "Jogar rodada" : "Esperar propostas";
+}
+
 /**
  * "Jogar rodada": plays on in the worker, then opens the live round on the coach's match day.
  * When a day stops it early, `onStopped` decides where the coach reads why.

@@ -8,7 +8,7 @@ import { Crest } from "../clubs/Crest.js";
 import { competitionName } from "../format/competitionName.js";
 import { formatDayMonth } from "../format/formatGameDate.js";
 import { nextMatch } from "../hub/hubSelectors.js";
-import { usePlayRound } from "../hub/usePlayRound.js";
+import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import {
   coachCompetitions,
   competitionStages,
@@ -66,7 +66,7 @@ export function Tables() {
     <div className="tables">
       <header className="tables-head">
         <h1 className="screen-title">Tabelas</h1>
-        <div className="tabs" role="tablist" aria-label="Competições">
+        <div className="tables-tabs" role="tablist" aria-label="Competições">
           {competitions.map((c) => (
             <button key={c.id} role="tab" aria-selected={c.id === shown?.id} onClick={() => setPickedId(c.id)}>
               {competitionName(c)}
@@ -74,7 +74,7 @@ export function Tables() {
           ))}
         </div>
         <button className="btn-main" onClick={() => void round.play()} disabled={round.isPlaying}>
-          {round.isPlaying ? "Jogando…" : "Jogar rodada"}
+          {playRoundLabel(round.isPlaying, state.coachClubId !== null)}
         </button>
       </header>
       {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}

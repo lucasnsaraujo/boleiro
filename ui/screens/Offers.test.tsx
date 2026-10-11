@@ -83,6 +83,19 @@ test("on his match day a coach with a club can only sign after the game", async 
   expect(await given.engine.liveRound()).not.toBeNull();
 });
 
+test("during a live round the coach can only turn an offer down after the game", async () => {
+  const given = await careerGame();
+  await given.engine.newGame(7, { coachClubId: "bahia-ba" });
+  await given.engine.playToMatchDay();
+  const save: { game: { coach: { offers: JobOffer[] } } } = JSON.parse(await given.engine.save());
+  save.game.coach.offers.push({ clubId: "vitoria-ba", salary: 90_000, untilSeason: 2026, expiresOn: "2026-12-31" });
+  await given.engine.load(JSON.stringify(save));
+  await given.engine.startRound({});
+  openOffers(given);
+  expect(await screen.findByText("Assine depois do jogo.")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Recusar Vitória" })).toHaveProperty("disabled", true);
+});
+
 test("with every offer turned down the coach can only wait for new ones", async () => {
   const given = await careerGame();
   const { coach } = await given.engine.read(["coach"]);

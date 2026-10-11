@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router";
 import type { Club } from "../../src/data/clubs.js";
 import { FULL_TIME, HALF_TIME } from "../../src/sim/live/matchTimeline.js";
 import { useServices } from "../app/ServicesContext.js";
+import { useDialogFocus } from "../app/useDialogFocus.js";
 import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
 import type { AdvanceResult } from "../engine/createEngineSession.js";
@@ -74,6 +75,8 @@ export function Round() {
         roundRef.current = live;
         setRound(live);
         setMinute(at);
+        // Back after a final whistle that didn't go through: no new minute will call it again.
+        if (at >= FULL_TIME) void finish();
         return;
       }
       const [plan, { clubs, date }] = await Promise.all([engine.matchDayPlan(), engine.read(["clubs", "date"])]);
@@ -338,30 +341,10 @@ export function Round() {
         )}
       </div>
 
-      {isTableOpen &&
-        table &&
-        createPortal(
-        <div className="sheet-wrap" onClick={(event) => event.target === event.currentTarget && closeTable()}>
-          <aside className="tsheet" role="dialog" aria-modal="true" aria-labelledby="full-table-title">
-            <header className="tsheet-head">
-              <h2 id="full-table-title">Classificação</h2>
-              <span>{isFinished ? "com os resultados da rodada" : "se terminasse agora"}</span>
-              <button className="ghost" onClick={closeTable}>
-                Fechar
-              </button>
-            </header>
-            <div className="trow trow-head" aria-hidden="true">
-              <span>#</span>
-              <span>Clube</span>
-              <span className="g">J</span>
-              <span className="g">V</span>
-              <span className="g">SG</span>
-              <span className="g">P</span>
-            </div>
-            <TableRows rows={table} clubs={round.clubs} coachClubId={round.coachClubId} isFull />
-          </aside>
-        </div>,
-        document.body,
+      {isTableOpen && table && (
+        <TableSheet onClose={closeTable} note={isFinished ? "com os resultados da rodada" : "se terminasse agora"}>
+          <TableRows rows={table} clubs={round.clubs} coachClubId={round.coachClubId} isFull />
+        </TableSheet>
       )}
 
       {isLineupOpen && coach && limits && (
@@ -511,8 +494,8 @@ function MatchRow({ match, clubs, minute, flash }: { match: MatchAt; clubs: Read
         {match.reds.home > 0 && red}
         <ClubPlate club={home} size="row" />
       </span>
-      <Digit value={match.score.home} className="box" flash={flash?.side === "home" ? flash.colour : undefined} />
-      <Digit value={match.score.away} className="box" flash={flash?.side === "away" ? flash.colour : undefined} />
+      <Digit value={match.score.home} className="round-box" flash={flash?.side === "home" ? flash.colour : undefined} />
+      <Digit value={match.score.away} className="round-box" flash={flash?.side === "away" ? flash.colour : undefined} />
       <span className="a">
         <ClubPlate club={away} size="row" />
         {match.reds.away > 0 && red}
@@ -527,6 +510,36 @@ function MatchRow({ match, clubs, minute, flash }: { match: MatchAt; clubs: Read
         )}
       </span>
     </li>
+  );
+}
+
+/** The full table over the round, closed by its button, a click outside it or Escape. */
+function TableSheet({ note, onClose, children }: { note: string; onClose: () => void; children: ReactNode }) {
+  const title = useDialogFocus<HTMLHeadingElement>(true, { isModal: true });
+  return createPortal(
+    <div className="sheet-wrap" onClick={(event) => event.target === event.currentTarget && onClose()}>
+      <aside className="tsheet" role="dialog" aria-modal="true" aria-labelledby="full-table-title">
+        <header className="tsheet-head">
+          <h2 id="full-table-title" ref={title} tabIndex={-1}>
+            Classificação
+          </h2>
+          <span>{note}</span>
+          <button className="ghost" onClick={onClose}>
+            Fechar
+          </button>
+        </header>
+        <div className="trow trow-head" aria-hidden="true">
+          <span>#</span>
+          <span>Clube</span>
+          <span className="g">J</span>
+          <span className="g">V</span>
+          <span className="g">SG</span>
+          <span className="g">P</span>
+        </div>
+        {children}
+      </aside>
+    </div>,
+    document.body,
   );
 }
 

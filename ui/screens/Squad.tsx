@@ -89,8 +89,8 @@ export function Squad() {
           <p className="screen-sub">{club ? `${club.shortName} · ${rows.length} jogadores` : "Sem clube"}</p>
         </div>
         {club && (
-          <Link to="/lineup" className="btn-main">
-            Escalação
+          <Link to="/hub" className="btn-main">
+            Voltar ao clube
           </Link>
         )}
       </header>

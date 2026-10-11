@@ -104,7 +104,7 @@
 }
 
 .digit,
-.box {
+.round-box {
   display: inline-block;
   overflow: hidden;
   text-align: center;
@@ -116,7 +116,7 @@
 }
 
 .digit > span,
-.box > span {
+.round-box > span {
   display: block;
 }
 
@@ -365,7 +365,7 @@
   background: var(--red);
 }
 
-.box {
+.round-box {
   position: relative;
   height: 34px;
   background: #030805;
@@ -373,7 +373,7 @@
   font: 800 24px/34px var(--num);
 }
 
-.box .roll {
+.round-box .roll {
   animation:
     digit-roll 520ms var(--expo-out) 80ms both,
     box-flash 1300ms ease-out both;
@@ -768,7 +768,7 @@
     animation: round-fade-in 240ms ease-out both;
   }
 
-  .box .roll {
+  .round-box .roll {
     animation:
       round-fade-in 240ms ease-out both,
       box-flash 1300ms ease-out both;

@@ -11,7 +11,6 @@ import { Options } from "../screens/Options.js";
 import { Round } from "../screens/Round.js";
 import { Sacked } from "../screens/Sacked.js";
 import { SeasonEnd } from "../screens/SeasonEnd.js";
-import { Placeholder } from "../screens/Placeholder.js";
 import { Player } from "../screens/Player.js";
 import { Squad } from "../screens/Squad.js";
 import { StartMenu } from "../screens/StartMenu.js";
@@ -19,7 +18,7 @@ import { Tables } from "../screens/Tables.js";
 import { SCREENS, type ScreenPath } from "./screens.js";
 import { Shell } from "./Shell.js";
 
-const BUILT: Partial<Record<ScreenPath, ReactElement>> = {
+const ELEMENTS: Record<ScreenPath, ReactElement> = {
   "/": <StartMenu />,
   "/new-game": <NewGame />,
   "/hub": <Hub />,
@@ -37,7 +36,7 @@ export const routes: RouteObject[] = [
   {
     element: <Shell />,
     children: [
-      ...SCREENS.map(({ path, title }) => ({ path, element: BUILT[path] ?? <Placeholder title={title} /> })),
+      ...SCREENS.map(({ path }) => ({ path, element: ELEMENTS[path] })),
       { path: "/squad/:playerId", element: <Player /> },
       { path: "/offers", element: <Offers /> },
       { path: "/sacked", element: <Sacked /> },

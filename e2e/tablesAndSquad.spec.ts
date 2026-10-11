@@ -14,6 +14,7 @@ test("from a new game, the bar opens the tables, the squad and a player", async 
   await expect(page.getByRole("heading", { name: "Bahia" })).toBeVisible();
 
   const bar = page.getByRole("navigation", { name: "Telas" });
+  await expect(bar.getByRole("link")).toHaveText(["Clube", "Tabelas", "Elenco", "Mercado", "Finanças", "Calendário", "História"]);
   await bar.getByRole("link", { name: "Tabelas" }).click();
   await expect(page.getByRole("heading", { name: "Tabelas" })).toBeVisible();
   await expect(page.getByRole("tab", { name: "Baiano" })).toHaveAttribute("aria-selected", "true");
@@ -25,6 +26,9 @@ test("from a new game, the bar opens the tables, the squad and a player", async 
 
   await page.getByRole("tab", { name: "Copa do Brasil" }).click();
   await expect(page.getByRole("list", { name: "1ª fase" }).getByRole("listitem")).toHaveCount(14);
+  const tieScore = page.getByRole("list", { name: "1ª fase" }).locator(".tie-score > span").first();
+  await expect(tieScore).toHaveCSS("overflow", "visible");
+  await expect(tieScore).toHaveCSS("position", "static");
   await expect(page.getByRole("group", { name: "Fases" }).getByRole("button", { name: "Final", exact: true })).toBeDisabled();
 
   await bar.getByRole("link", { name: "Elenco" }).click();
@@ -39,6 +43,6 @@ test("from a new game, the bar opens the tables, the squad and a player", async 
   await player.click();
   await expect(page.getByRole("heading", { name })).toBeVisible();
   await expect(page.getByRole("button", { name: "Renovar" })).toBeEnabled();
-  await page.getByRole("link", { name: "Voltar ao elenco" }).click();
+  await page.getByRole("button", { name: "Voltar" }).click();
   await expect(page.getByRole("heading", { name: "Elenco" })).toBeVisible();
 });

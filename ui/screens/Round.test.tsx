@@ -132,6 +132,22 @@ test("closing the full table of a paused round leaves it paused", async () => {
   expect(shownMinute()).toBe(paused);
 });
 
+test("the full table and the lineup take focus while open and give it back to their buttons", async () => {
+  const given = await onMatchDay();
+  await kickOff(given);
+  const tableButton = screen.getByRole("button", { name: "Tabela completa" });
+  await user().click(tableButton);
+  expect(document.activeElement).toBe(within(await screen.findByRole("dialog", { name: "Classificação" })).getByRole("heading", { name: "Classificação" }));
+  await user().click(screen.getByRole("button", { name: "Fechar" }));
+  expect(document.activeElement).toBe(tableButton);
+
+  const lineupButton = screen.getByRole("button", { name: /^Escalação/ });
+  await user().click(lineupButton);
+  expect(document.activeElement).toBe(within(await lineup()).getByRole("heading", { name: "Escalação" }));
+  await user().click(screen.getByRole("button", { name: "Voltar ao jogo" }));
+  expect(document.activeElement).toBe(lineupButton);
+});
+
 test("a round left mid-match comes back paused at the furthest minute shown", async () => {
   const given = await onMatchDay();
   await kickOff(given);
@@ -210,4 +226,21 @@ test("at the final whistle the round is recorded and the coach goes back to the 
   expect((await given.engine.read(["date"])).date > date).toBe(true);
   await userEvent.click(back);
   expect(await screen.findByText("Clube aberto")).toBeTruthy();
+});
+
+test("a round whose final whistle didn't go through finishes when the coach comes back, and offers a retry if it fails again", async () => {
+  let isEngineDown = true;
+  const given = await onMatchDay((engine) => ({
+    ...engine,
+    finishRound: () => (isEngineDown ? Promise.reject(new Error("worker busy")) : engine.finishRound()),
+  }));
+  await given.engine.startRound({});
+  await given.engine.seeMinute(90);
+
+  openRound(given);
+  expect(await screen.findByText("Não deu para encerrar a rodada.")).toBeTruthy();
+  isEngineDown = false;
+  await userEvent.click(screen.getByRole("button", { name: "Tentar de novo" }));
+  expect(await screen.findByRole("button", { name: "Voltar ao clube" })).toBeTruthy();
+  expect(await given.engine.liveRound()).toBeNull();
 });

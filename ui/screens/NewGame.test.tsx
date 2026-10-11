@@ -95,8 +95,10 @@ test("choosing a slot that holds a game asks before replacing it", async () => {
   await userEvent.click(screen.getByRole("button", { name: "Começar" }));
 
   const confirm = screen.getByRole("alertdialog", { name: "Substituir o Jogo 1?" });
+  expect(document.activeElement).toBe(within(confirm).getByText("Substituir o Jogo 1?"));
   await userEvent.click(within(confirm).getByRole("button", { name: "Escolher outro" }));
   expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(document.activeElement).toBe(screen.getByRole("button", { name: "Começar" }));
   expect(await slots.read("slot-1")).toBe("old save");
 
   await userEvent.click(screen.getByRole("button", { name: "Começar" }));

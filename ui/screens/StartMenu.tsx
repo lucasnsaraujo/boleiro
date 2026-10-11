@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useServices } from "../app/ServicesContext.js";
+import { useDialogFocus } from "../app/useDialogFocus.js";
 import { clubById } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { formatGameDate } from "../format/formatGameDate.js";
@@ -33,6 +34,7 @@ export function StartMenu() {
   const [openFailed, setOpenFailed] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteFailed, setDeleteFailed] = useState(false);
+  const confirmTitle = useDialogFocus<HTMLParagraphElement>(deleting !== null);
 
   async function refresh() {
     try {
@@ -154,7 +156,7 @@ export function StartMenu() {
                   </button>
                   {deleting === meta.id && (
                     <div className="slot-confirm" role="alertdialog" aria-labelledby={`delete-${meta.id}`}>
-                      <p id={`delete-${meta.id}`} className="slot-confirm-title">
+                      <p id={`delete-${meta.id}`} ref={confirmTitle} tabIndex={-1} className="slot-confirm-title">
                         Apagar o {label}?
                       </p>
                       <button className="btn-danger" onClick={() => void remove(meta.id)}>
