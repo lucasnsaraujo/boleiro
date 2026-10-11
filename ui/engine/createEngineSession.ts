@@ -223,13 +223,14 @@ export function createEngineSession(files: GameFiles) {
       return desk;
     },
     save(): string {
-      return writeSessionSave({ game: current(), desk, turningPoints });
+      return writeSessionSave({ game: current(), desk, turningPoints, live });
     },
     load(save: string): GameSummary {
       const loaded = readSessionSave(save);
       const summary = begin(loaded.game);
       desk = loaded.desk;
       turningPoints = loaded.turningPoints;
+      live = loaded.live;
       return summary;
     },
     read<K extends keyof GameState>(keys: readonly K[]): Pick<GameState, K> {

@@ -259,6 +259,31 @@ test("a round left mid-match comes back at the furthest minute shown, and no cha
   await expect(engine.changeLive(89, { posture: "attacking" })).resolves.toMatchObject({ seenMinute: 89 });
 });
 
+test("a save made mid-match brings the round back at the furthest minute shown, and no change can go back before it", async () => {
+  const engine = await onMatchDay();
+  await engine.startRound({});
+  await engine.seeMinute(60);
+  const round = await engine.liveRound();
+  const save = await engine.save();
+  await engine.newGame(8, { coachClubId: "bahia-ba" });
+  await engine.load(save);
+  expect(await engine.liveRound()).toEqual(round);
+  await expect(engine.changeLive(30, { posture: "attacking" })).rejects.toThrow("a change can't come before minute 60");
+  const reloaded = await engine.finishRound();
+  const twin = await onMatchDay();
+  await twin.startRound({});
+  expect(reloaded).toEqual(await twin.finishRound());
+});
+
+test("a save from before the live round was saved loads with no round under way", async () => {
+  const engine = await onMatchDay();
+  await engine.startRound({});
+  const older: Record<string, unknown> = JSON.parse(await engine.save());
+  delete older.live;
+  await engine.load(JSON.stringify(older));
+  expect(await engine.liveRound()).toBeNull();
+});
+
 test("the final whistle puts the coach's score in the inbox and ends the live round", async () => {
   const engine = await onMatchDay();
   await engine.startRound({});
