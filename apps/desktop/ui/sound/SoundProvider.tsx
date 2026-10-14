@@ -32,7 +32,8 @@ export function SoundProvider({ engine, store, children }: { engine: SoundEngine
     const click = (event: MouseEvent) => {
       const target = event.target instanceof Element ? event.target.closest(CLICKABLE) : null;
       if (!target || target.matches(":disabled") || target.getAttribute("aria-disabled") === "true") return;
-      engine.play(target.classList.contains("btn-main") ? "confirm" : "click");
+      // The main action of a screen confirms; every other button clicks.
+      engine.play(target.matches(".btn-main, .btn.go, .btn.y") ? "confirm" : "click");
     };
     document.addEventListener("pointerdown", unlock, true);
     document.addEventListener("keydown", unlock, true);

@@ -98,7 +98,7 @@
 .lineup-subs b {
   margin-left: 6px;
   font: 800 24px var(--num);
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .pitch-col {
@@ -231,13 +231,13 @@
   color: var(--chalk-3);
 }
 
-.seg {
+.lineup-seg {
   display: flex;
   width: max-content;
   border: var(--hairline);
 }
 
-.seg button {
+.lineup-seg button {
   height: 34px;
   padding: 0 13px;
   border-left: var(--hairline);
@@ -245,11 +245,11 @@
   color: var(--chalk-2);
 }
 
-.seg button:first-child {
+.lineup-seg button:first-child {
   border-left: 0;
 }
 
-.seg button[aria-pressed="true"] {
+.lineup-seg button[aria-pressed="true"] {
   background: var(--chalk);
   color: var(--lawn-0);
 }
@@ -395,7 +395,7 @@
     grid-template-columns: minmax(0, 1fr) 340px;
   }
 
-  .seg button {
+  .lineup-seg button {
     padding: 0 10px;
   }
 }

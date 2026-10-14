@@ -1,150 +1,649 @@
-.start {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 1fr);
-  gap: 64px;
-  max-width: 1180px;
+/* The start menu is an open album: the green cover on the left, the page of saved careers on the right. */
+.lobby {
+  position: relative;
+  height: 100%;
+  min-height: 600px;
 }
 
-.start-hero {
+.lobby-spread {
+  position: absolute;
+  inset: max(22px, var(--chrome-top)) 24px 24px;
+  display: grid;
+  grid-template-columns: 470px minmax(0, 1fr);
+}
+
+/* Cover: mown stripes and the centre circle of a pitch, the album's printed board. */
+.lobby-cover {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 24px;
-  padding-top: 24px;
+  padding: 36px 36px 28px;
+  border-radius: 10px 0 0 10px;
+  color: #fff;
+  background: repeating-linear-gradient(90deg, #0e8442 0 78px, #0b7a3b 78px 156px);
+  box-shadow: var(--sh-page);
 }
 
-.start-kicker {
-  font: 600 15px var(--cond);
-  color: var(--chalk-3);
-  margin-bottom: -8px;
+[data-theme="dark"] .lobby-cover {
+  background: repeating-linear-gradient(90deg, #0c6a35 0 78px, #0a5a2d 78px 156px);
 }
 
-.latest {
+.lobby-cover::before {
+  content: "";
+  position: absolute;
+  left: -120px;
+  top: 250px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.14);
+}
+
+.lobby-cover::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 380px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.lobby-cover > * {
+  position: relative;
+  z-index: 1;
+}
+
+.lobby-edition {
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.lobby-wordmark {
+  display: block;
+  width: auto;
+  margin-top: 16px;
+  align-self: flex-start;
+}
+
+.lobby-pitch {
+  margin-top: 18px;
+  max-width: 330px;
+  font-size: 14px;
+  line-height: 1.45;
+  opacity: 0.92;
+}
+
+.lobby-pile {
+  position: relative;
+  flex: 1;
+}
+
+.lobby-sticker {
+  position: absolute;
+  width: 148px;
+  padding: 8px 8px 9px;
+  background: #fff;
+  border-radius: 10px;
+  color: #14231a;
+  text-align: center;
+  transform: rotate(var(--tilt));
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.1),
+    0 12px 20px -10px rgba(0, 0, 0, 0.5);
+  transition:
+    transform var(--t-base) var(--e-out),
+    box-shadow var(--t-base) var(--e-out);
+}
+
+.lobby-sticker:hover {
+  z-index: 2;
+  transform: translateY(-6px) rotate(calc(var(--tilt) * 0.4));
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.1),
+    0 22px 28px -12px rgba(0, 0, 0, 0.55);
+}
+
+.lobby-sticker-photo {
+  position: relative;
+  height: 150px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.lobby-sticker-photo b {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 64px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.lobby-sticker-crest {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+}
+
+.lobby-sticker-no {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.lobby-sticker-name {
+  margin-top: 6px;
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.lobby-sticker-club {
+  font-size: 12px;
+  color: #5c584b;
+}
+
+.lobby-pack {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11.5px;
+  opacity: 0.85;
+}
+
+.lobby-pack b {
+  font-weight: 700;
+}
+
+/* The page: what to continue, the other careers, an empty slot for a new game. */
+.lobby-page {
+  position: relative;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 34px 40px 30px;
+  border-radius: 0 10px 10px 0;
+  background:
+    linear-gradient(90deg, rgba(20, 35, 26, 0.07), rgba(20, 35, 26, 0) 28px),
+    var(--card);
+}
+
+.lobby-title {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.lobby-last {
+  margin-top: 18px;
+  padding: 20px 22px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: center;
+  background: var(--foil);
+  box-shadow:
+    0 0 0 3px var(--yellow),
+    var(--sh-lift);
+  transform: rotate(-0.8deg);
+}
+
+.lobby-no-crest {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  border: 2px dashed var(--line-2);
+}
+
+.lobby-last h3 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.lobby-last p {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.lobby-last p b {
+  color: var(--ink);
+}
+
+.lobby-last .lobby-last-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.lobby-last-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.lobby-go {
+  height: 54px;
+  padding: 0 28px;
+  font-size: 20px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  box-shadow: 0 4px 0 var(--edge);
+}
+
+.lobby-others {
+  margin-top: 30px;
+}
+
+.lobby-others ul {
+  list-style: none;
+  margin-top: 6px;
+}
+
+.lobby-row {
+  width: 100%;
+  height: 52px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 200px 150px;
+  gap: 14px;
+  align-items: center;
+  text-align: left;
+  font-size: 13px;
+  border-bottom: 1px solid var(--rule);
+  transition: background var(--t-fast) var(--e-out);
+}
+
+.lobby-row:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--paper-2) 55%, transparent);
+}
+
+.lobby-row b {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.lobby-row .mute,
+.lobby-row-when {
+  font-size: 12px;
+}
+
+.lobby-row-when {
+  text-align: right;
+  color: var(--mute);
+}
+
+.lobby-row-crest {
+  display: grid;
+  place-items: center;
+}
+
+.lobby-empty {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.lobby-fresh {
+  margin-top: 26px;
+  flex: 1;
+  min-height: 120px;
   display: flex;
   align-items: center;
   gap: 22px;
+  padding: 0 28px;
+  color: var(--mute);
+  text-decoration: none;
+  transition:
+    border-color var(--t-base) var(--e-out),
+    background var(--t-base) var(--e-out);
 }
 
-.latest .screen-title {
-  font-size: 72px;
+.lobby-fresh:hover {
+  border-color: var(--green);
+  background: color-mix(in srgb, var(--green-l) 60%, transparent);
 }
 
-.start-pitch.screen-title {
-  font-size: 64px;
-  max-width: 12ch;
+.lobby-fresh.is-first {
+  border-color: var(--yellow-d);
 }
 
-.start-actions {
+.lobby-plus {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px dashed var(--line-2);
+  font-size: 26px;
+  color: var(--line-2);
+  transition:
+    transform var(--t-slow) var(--e-slap),
+    color var(--t-base) var(--e-out),
+    border-color var(--t-base) var(--e-out);
+}
+
+.lobby-fresh:hover .lobby-plus {
+  transform: rotate(90deg);
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.lobby-fresh-what b {
+  display: block;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.lobby-fresh-what span {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.lobby-fresh .btn {
+  margin-left: auto;
+}
+
+.lobby-acts {
+  margin-top: 22px;
+  padding-top: 18px;
   display: flex;
   align-items: center;
-  gap: 28px;
-  margin-top: 8px;
+  gap: 12px;
+  border-top: 2px dotted var(--line-2);
 }
 
-.start-slots-title {
-  font: 600 15px var(--cond);
-  color: var(--chalk-3);
-  padding-bottom: 8px;
-  border-bottom: var(--hairline);
+.lobby-acts .btn {
+  text-decoration: none;
 }
 
-.slot-list {
+.lobby-acts .tribute-sticker {
+  margin-left: auto;
+}
+
+.lobby-version {
+  text-align: right;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--mute);
+}
+
+/* Carregar jogo: every save on a sheet laid over the album. */
+.lobby-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  background: var(--veil);
+  animation: lobby-veil-in var(--t-base) var(--e-out) both;
+}
+
+.lobby-saves {
+  width: min(640px, calc(100% - 80px));
+  max-height: calc(100% - 120px);
+  overflow: auto;
+  padding: 26px 30px 22px;
+  border-radius: var(--r-m);
+  box-shadow: var(--sh-pop);
+  animation: lobby-sheet-in var(--t-slow) var(--e-out) both;
+}
+
+.lobby-saves-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.lobby-saves-head h2:focus {
+  outline: none;
+}
+
+.lobby-saves-list {
   list-style: none;
 }
 
-.slot-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+.lobby-save {
+  position: relative;
+  display: flex;
   align-items: center;
-  border-bottom: var(--hairline);
+  border-bottom: 1px solid var(--rule);
 }
 
-.slot {
+.lobby-save-open {
+  flex: 1;
+  min-width: 0;
+  height: 58px;
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) auto;
-  align-items: center;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
   gap: 14px;
-  padding: 12px 0;
+  align-items: center;
   text-align: left;
 }
 
-.slot:hover:not(:disabled) .slot-name {
-  color: var(--yellow);
+.lobby-save-main b {
+  display: block;
+  font-weight: 800;
+  font-size: 14px;
 }
 
-.slot:disabled {
-  cursor: progress;
+.lobby-save-main .mute {
+  font-size: 12px;
 }
 
-.slot-main,
-.slot-when {
+.lobby-save .lobby-row-when {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  font-weight: 700;
+  color: var(--ink);
 }
 
-.slot-when {
-  align-items: flex-end;
+.lobby-save .lobby-row-when small {
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--mute);
 }
 
-.slot-name {
-  font: 600 18px var(--cond);
+.lobby-save-delete {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  margin-left: 10px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  color: var(--mute);
+  font-size: 16px;
+  transition:
+    color var(--t-fast) var(--e-out),
+    background var(--t-fast) var(--e-out);
 }
 
-.slot-sub,
-.slot-saved {
-  font: 500 13px var(--cond);
-  color: var(--chalk-3);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.slot-date {
-  font: 500 14px var(--cond);
-  color: var(--chalk-2);
-  white-space: nowrap;
-}
-
-.slot-delete {
-  margin-left: 18px;
-  font: 600 14px var(--cond);
-  color: var(--chalk-3);
-}
-
-.slot-delete:hover {
+.lobby-save-delete:hover {
   color: var(--red);
+  background: var(--red-l);
 }
 
-.slot-confirm {
-  grid-column: 1 / -1;
+.lobby-confirm {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  z-index: 2;
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 12px 14px;
-  margin-bottom: 12px;
-  border: 1px solid var(--red);
-  background: var(--lawn-1);
+  gap: 10px;
+  translate: 0 -50%;
 }
 
-.slot-confirm-title {
-  flex: 1;
-  font: 600 16px var(--cond);
+.lobby-confirm p {
+  font-weight: 800;
+  font-size: 13px;
 }
 
-.slot-confirm .btn-danger {
-  height: 34px;
-  font-size: 15px;
+.lobby-confirm p:focus {
+  outline: none;
 }
 
-@media (max-width: 760px) {
-  .start {
-    grid-template-columns: 1fr;
-    gap: 32px;
+@keyframes lobby-veil-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* A small window narrows the cover and its pile of stickers before the page. */
+@media (max-width: 1180px) {
+  .lobby-spread {
+    grid-template-columns: 380px minmax(0, 1fr);
   }
 
-  .latest .screen-title,
-  .start-pitch.screen-title {
-    font-size: 48px;
+  .lobby-wordmark {
+    height: 90px;
+  }
+
+  .lobby-pile {
+    zoom: 0.8;
+  }
+
+  .lobby-page {
+    padding: 30px 28px 26px;
+  }
+
+  .lobby-row {
+    grid-template-columns: 30px minmax(0, 1fr) 150px 100px;
+  }
+}
+
+/* Motion: the album opens, the cover first, then the three stickers are dealt and the page's card is slapped on. */
+@media (prefers-reduced-motion: no-preference) {
+  .lobby-cover {
+    animation: lobby-cover-open var(--t-slow) var(--e-out) both;
+  }
+
+  .lobby-wordmark {
+    animation: lobby-stamp var(--t-stamp) var(--e-slap) 140ms both;
+  }
+
+  .lobby-sticker {
+    animation: lobby-deal 620ms var(--e-slap) var(--deal) both;
+  }
+
+  .lobby-page {
+    animation: lobby-page-open var(--t-slow) var(--e-out) 60ms both;
+  }
+
+  .lobby-last {
+    animation: lobby-slap var(--t-stamp) var(--e-slap) 260ms both;
+  }
+
+  .lobby-others li,
+  .lobby-fresh,
+  .lobby-acts {
+    animation: lobby-rise var(--t-slow) var(--e-out) both;
+  }
+
+  .lobby-others li:nth-child(1) {
+    animation-delay: 360ms;
+  }
+
+  .lobby-others li:nth-child(2) {
+    animation-delay: 400ms;
+  }
+
+  .lobby-others li:nth-child(n + 3) {
+    animation-delay: 440ms;
+  }
+
+  .lobby-fresh {
+    animation-delay: 420ms;
+  }
+
+  .lobby-acts {
+    animation-delay: 480ms;
+  }
+
+  .lobby-saves {
+    animation-name: lobby-sheet-rise;
+  }
+}
+
+@keyframes lobby-cover-open {
+  from {
+    opacity: 0;
+    transform: translateX(-18px) scale(0.985);
+  }
+}
+
+@keyframes lobby-stamp {
+  from {
+    opacity: 0;
+    transform: scale(1.12) rotate(-2deg);
+  }
+}
+
+@keyframes lobby-deal {
+  0% {
+    opacity: 0;
+    transform: translate(40px, -90px) rotate(calc(var(--tilt) + 18deg)) scale(1.06);
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+@keyframes lobby-page-open {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+}
+
+@keyframes lobby-slap {
+  from {
+    opacity: 0;
+    transform: rotate(-4deg) scale(1.05) translateY(-8px);
+  }
+}
+
+@keyframes lobby-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes lobby-sheet-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes lobby-sheet-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
   }
 }

@@ -81,10 +81,39 @@ test("a saved game opens from the list", async () => {
   expect(await given.engine.read(["coachClubId"])).toEqual({ coachClubId: "bahia-ba" });
 });
 
+test("other careers list each other game once, by its newest save, while Carregar jogo lists every save", async () => {
+  const given = services();
+  await saveGame(given, "slot-1", "bahia-ba", "Renato", "2026-10-01T12:00:00Z");
+  await saveGame(given, "slot-2", "vitoria-ba", "Tite", "2026-10-05T12:00:00Z");
+  await given.engine.apply({ type: "load", save: await given.slots.read("slot-1") });
+  await saveToSlot(given.engine, given.slots, "autosave", { slotId: "slot-1", coachName: "Renato" }, new Date("2026-10-09T12:00:00Z"));
+  openStartMenu(given);
+  const others = await screen.findByRole("list", { name: "Outras carreiras" });
+  expect(within(others).getAllByRole("button").map((row) => row.textContent)).toEqual([expect.stringMatching(/Vitória.*Tite.*Jogo 2/)]);
+  expect(screen.getByRole("region", { name: "Continuar" }).textContent).toMatch(/Bahia.*Renato.*Automático/);
+
+  await userEvent.click(screen.getByRole("button", { name: "Carregar jogo" }));
+  const saves = within(screen.getByRole("dialog", { name: "Jogos salvos" })).getByRole("list");
+  expect(within(saves).getAllByRole("button", { name: /^(Bahia|Vitória)/ })).toHaveLength(3);
+});
+
+test("the thank-you to Brasfoot opens from its sticker and from typing brasfoot on the start menu", async () => {
+  openStartMenu(services());
+  await screen.findByText("Nenhum jogo salvo.");
+  await userEvent.click(screen.getByRole("button", { name: "Uma homenagem ao Brasfoot" }));
+  expect(screen.getByRole("dialog", { name: "Valeu, Brasfoot" })).toBeTruthy();
+  await userEvent.keyboard("{Escape}");
+  expect(screen.queryByRole("dialog", { name: "Valeu, Brasfoot" })).toBeNull();
+
+  await userEvent.keyboard("brasfoot");
+  expect(screen.getByRole("dialog", { name: "Valeu, Brasfoot" })).toBeTruthy();
+});
+
 test("deleting a slot asks first, and only a confirmed delete removes it", async () => {
   const given = services();
   await saveGame(given, "slot-1", "bahia-ba", "Renato", "2026-10-01T12:00:00Z");
   openStartMenu(given);
+  await userEvent.click(await screen.findByRole("button", { name: "Carregar jogo" }));
   const opener = await screen.findByRole("button", { name: "Apagar Jogo 1" });
   await userEvent.click(opener);
   expect(document.activeElement).toBe(screen.getByText("Apagar o Jogo 1?"));

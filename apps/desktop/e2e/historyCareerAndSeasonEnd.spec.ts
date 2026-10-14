@@ -1,18 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
+import { bar as barOf, news, startAtClub, startCareer } from "./flows.js";
 
 // The last day of the first season; the next day played turns the year.
 const LAST_DAY = "2026-12-31";
 // From the last day: a sacking and its offers, or a job offer, can each stop the days once before the turn.
 const MAX_STEPS = 6;
-
-async function newGame(page: Page, start: (page: Page) => Promise<void>) {
-  await page.goto("/");
-  await page.getByRole("link", { name: "Novo jogo" }).click();
-  await start(page);
-  await page.getByRole("textbox", { name: "Nome do técnico" }).fill("Tite");
-  await page.getByRole("button", { name: "Começar" }).click();
-  await expect(page).toHaveURL(/#\/hub$/);
-}
 
 /** Plays every day up to `date` in the worker with no decisions, through the e2e build's engine hook. */
 async function fastForward(page: Page, date: string) {
@@ -26,10 +18,9 @@ async function fastForward(page: Page, date: string) {
 }
 
 test("in career mode the coach signs with a club from the hub, and his career shows in the history", async ({ page }) => {
-  await newGame(page, async (p) => {
-    await p.getByRole("tab", { name: "Modo carreira" }).click();
-    await p.getByRole("button", { name: "Começar carreira" }).click();
-  });
+  await page.goto("/");
+  await startCareer(page, "Tite");
+  await expect(page).toHaveURL(/#\/hub$/);
   await expect(page.getByRole("heading", { name: "Sem clube" })).toBeVisible();
 
   await page.getByRole("link", { name: "Ver propostas" }).click();
@@ -42,9 +33,9 @@ test("in career mode the coach signs with a club from the hub, and his career sh
 
   await expect(page).toHaveURL(/#\/hub$/);
   await expect(page.getByRole("heading", { name: club })).toBeVisible();
-  await expect(page.getByRole("list", { name: "Notícias" })).toContainText(`${club} anuncia você como técnico`);
+  await expect(await news(page)).toContainText(`${club} anuncia você como técnico`);
 
-  await page.getByRole("navigation", { name: "Telas" }).getByRole("link", { name: "História" }).click();
+  await page.getByRole("navigation", { name: "Telas" }).getByRole("link", { name: "Histórico" }).click();
   await expect(page.getByRole("heading", { name: "História" })).toBeVisible();
   await expect(page.getByRole("heading", { name: club })).toBeVisible();
   await page.getByRole("tab", { name: "Carreira" }).click();
@@ -53,19 +44,13 @@ test("in career mode the coach signs with a club from the hub, and his career sh
 });
 
 test("a season fast-forwarded to its last day ends on the end-of-season screen and season 2 starts", async ({ page }) => {
-  await newGame(page, async (p) => {
-    await p.getByRole("button", { name: "Série A" }).click();
-    await p.getByRole("searchbox", { name: "Buscar clube" }).fill("flamengo");
-    const clubs = p.getByRole("list", { name: "Clubes" });
-    await expect(clubs.getByRole("button", { name: "Flamengo" })).not.toContainText("…");
-    await clubs.getByRole("button", { name: "Flamengo" }).click();
-    await p.getByRole("button", { name: "Assumir o clube" }).click();
-  });
+  await page.goto("/");
+  await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Tite" });
   await fastForward(page, LAST_DAY);
 
-  const bar = page.getByRole("navigation", { name: "Telas" });
-  await bar.getByRole("link", { name: "Calendário" }).click();
-  await bar.getByRole("link", { name: "Clube" }).click();
+  const bar = barOf(page);
+  await bar.getByRole("link", { name: "Agenda" }).click();
+  await bar.getByRole("link", { name: "Times" }).click();
   const seasonEnd = page.getByRole("heading", { name: "Fim da temporada 2026" });
   // A sacking during the year goes through its own screen and the offers before the days go on.
   for (let step = 0; step < MAX_STEPS && !(await seasonEnd.isVisible()); step++) {
@@ -89,7 +74,8 @@ test("a season fast-forwarded to its last day ends on the end-of-season screen a
   await page.getByRole("button", { name: "Começar 2027" }).click();
 
   await expect(page).toHaveURL(/#\/hub$/);
-  await expect(page.getByText(/1 de janeiro de 2027/)).toBeVisible();
-  await bar.getByRole("link", { name: "Calendário" }).click();
+  await expect(bar).toContainText("Sex, 1 jan");
+  await expect(bar).toContainText("Temporada 2027");
+  await bar.getByRole("link", { name: "Agenda" }).click();
   await expect(page.getByRole("heading", { name: "Calendário 2027" })).toBeVisible();
 });

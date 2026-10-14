@@ -21,6 +21,12 @@ export function formatRowDate(date: IsoDate): string {
   return `${WEEKDAY.format(asDate(date)).replace(".", "")} ${Number(date.slice(8, 10))}`;
 }
 
+/** "Dom, 18 out", the game's day in the top bar. */
+export function formatBarDate(date: IsoDate): string {
+  const weekday = WEEKDAY.format(asDate(date)).replace(".", "");
+  return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)}, ${formatDayMonth(date)}`;
+}
+
 /** "1 mar", for news from different months. */
 export function formatDayMonth(date: IsoDate): string {
   return `${Number(date.slice(8, 10))} ${monthName(Number(date.slice(5, 7))).slice(0, 3)}`;

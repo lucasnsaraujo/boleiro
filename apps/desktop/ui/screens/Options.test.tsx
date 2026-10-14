@@ -7,6 +7,7 @@ import { parseCredits } from "../sound/credits.js";
 import { unlockedFakeSound } from "../sound/fakeAudioContext.js";
 import { MUSIC } from "../sound/soundCatalog.js";
 import { SoundProvider } from "../sound/SoundProvider.js";
+import { ThemeProvider } from "../theme/ThemeProvider.js";
 import { Options } from "./Options.js";
 
 afterEach(() => {
@@ -53,6 +54,36 @@ test("the music slider changes how loud the music plays, and the mute silences i
   expect(sound.ctx.loudness(MUSIC.menu)).toBeLessThan(full);
   await userEvent.click(screen.getByRole("checkbox", { name: "Sem som" }));
   expect(sound.ctx.loudness(MUSIC.menu)).toBe(0);
+});
+
+test("the paper follows the system until the coach picks one, and his pick is kept", async () => {
+  const theme = () => (
+    <ThemeProvider store={localStorage}>
+      <SoundProvider engine={unlockedFakeSound().engine} store={localStorage}>
+        <RouterProvider router={createMemoryRouter([{ path: "/options", element: <Options /> }], { initialEntries: ["/options"] })} />
+      </SoundProvider>
+    </ThemeProvider>
+  );
+  render(theme());
+  const themes = screen.getByRole("radiogroup", { name: "Tema" });
+  expect(within(themes).getByRole("radio", { name: "Igual ao sistema" })).toHaveProperty("checked", true);
+  await userEvent.click(within(themes).getByRole("radio", { name: "Escuro" }));
+  expect(document.documentElement.dataset.theme).toBe("dark");
+  cleanup();
+
+  render(theme());
+  expect(screen.getByRole("radio", { name: "Escuro" })).toHaveProperty("checked", true);
+  await userEvent.click(screen.getByRole("radio", { name: "Claro" }));
+  expect(document.documentElement.dataset.theme).toBe("light");
+});
+
+test("the shortcut sheet lists each bar screen on its F-key and the keys that work on any screen", () => {
+  openOptions();
+  const sheet = screen.getByRole("list", { name: "Atalhos" });
+  const rows = within(sheet).getAllByRole("listitem").map((row) => row.textContent);
+  expect(rows).toEqual(expect.arrayContaining(["F1Agenda", "F2Tabelas", "F5Times", "F9Opções", "EJogar rodada", "MSem som"]));
+  expect(rows.some((row) => /^(⌘|Ctrl)SSalvar$/.test(row ?? ""))).toBe(true);
+  expect(within(sheet).getByText("Estádio").closest("li")?.getAttribute("aria-disabled")).toBe("true");
 });
 
 test("the credits list every sound with its author, licence and source", () => {

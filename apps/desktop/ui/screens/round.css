@@ -337,7 +337,7 @@
 }
 
 .row.mine .t {
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .row .h,
@@ -507,7 +507,7 @@
 
 .link {
   font: 500 14px var(--cond);
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .link:hover {
@@ -575,7 +575,7 @@
 
 .trow.mine .n {
   font-weight: 700;
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 /* The full table slides in from the right edge; its rows settle in a beat behind the panel. */
@@ -672,7 +672,7 @@
     display: none;
   }
 
-  .band .plate {
+  .band .club-plate {
     font-size: 24px;
   }
 

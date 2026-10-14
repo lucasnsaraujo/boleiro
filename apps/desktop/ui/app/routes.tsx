@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import type { RouteObject } from "react-router";
+import { Navigate, type RouteObject } from "react-router";
 import { Calendar } from "../screens/Calendar.js";
 import { Finances } from "../screens/Finances.js";
 import { History } from "../screens/History.js";
@@ -12,10 +12,9 @@ import { Round } from "../screens/Round.js";
 import { Sacked } from "../screens/Sacked.js";
 import { SeasonEnd } from "../screens/SeasonEnd.js";
 import { Player } from "../screens/Player.js";
-import { Squad } from "../screens/Squad.js";
 import { StartMenu } from "../screens/StartMenu.js";
 import { Tables } from "../screens/Tables.js";
-import { SCREENS, type ScreenPath } from "./screens.js";
+import { SCREEN_PATHS, type ScreenPath } from "./screens.js";
 import { Shell } from "./Shell.js";
 
 const ELEMENTS: Record<ScreenPath, ReactElement> = {
@@ -23,24 +22,25 @@ const ELEMENTS: Record<ScreenPath, ReactElement> = {
   "/new-game": <NewGame />,
   "/hub": <Hub />,
   "/tables": <Tables />,
-  "/squad": <Squad />,
   "/market": <Market />,
   "/finances": <Finances />,
   "/calendar": <Calendar />,
   "/round": <Round />,
   "/history": <History />,
   "/season-end": <SeasonEnd />,
+  "/offers": <Offers />,
+  "/sacked": <Sacked />,
+  "/options": <Options />,
 };
 
 export const routes: RouteObject[] = [
   {
     element: <Shell />,
     children: [
-      ...SCREENS.map(({ path }) => ({ path, element: ELEMENTS[path] })),
+      ...SCREEN_PATHS.map((path) => ({ path, element: ELEMENTS[path] })),
+      // The squad lives on the club screen now; the old address still leads to it.
+      { path: "/squad", element: <Navigate to="/hub" replace /> },
       { path: "/squad/:playerId", element: <Player /> },
-      { path: "/offers", element: <Offers /> },
-      { path: "/sacked", element: <Sacked /> },
-      { path: "/options", element: <Options /> },
     ],
   },
 ];

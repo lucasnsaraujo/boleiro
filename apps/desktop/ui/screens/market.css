@@ -17,7 +17,7 @@
 }
 
 .market-window.open {
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .market-money {
@@ -135,7 +135,7 @@
 
 .market-t-row.on .market-t-name button,
 .market-t-name button:hover {
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 td.market-t-strength {

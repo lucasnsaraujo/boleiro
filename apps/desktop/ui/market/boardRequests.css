@@ -39,7 +39,7 @@
 }
 
 .board-desk-row.pending .board-desk-when {
-  color: var(--yellow);
+  color: var(--highlight);
   font-weight: 600;
 }
 

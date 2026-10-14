@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./album.css": "./album.css",
     "./tokens.css": "./tokens.css",
+    "./tokens.json": "./tokens.json",
     "./brand/*": "./brand/*"
   }
 }

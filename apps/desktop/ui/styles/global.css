@@ -1,22 +1,5 @@
-@import "@fontsource/big-shoulders-display/600";
-@import "@fontsource/big-shoulders-display/800";
-@import "@fontsource/big-shoulders-display/900";
-@import "@fontsource/ibm-plex-sans/400";
-@import "@fontsource/ibm-plex-sans/500";
-@import "@fontsource/ibm-plex-sans/600";
-@import "@fontsource/ibm-plex-sans-condensed/400";
-@import "@fontsource/ibm-plex-sans-condensed/500";
-@import "@fontsource/ibm-plex-sans-condensed/600";
-@import "@fontsource/ibm-plex-sans-condensed/700";
+@import "@boleiro/design-tokens/album.css";
 @import "@boleiro/design-tokens/tokens.css";
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
 
 html,
 body,
@@ -25,10 +8,8 @@ body,
 }
 
 body {
-  background: var(--lawn-0);
-  color: var(--chalk);
-  font: 15px/1.35 var(--text);
-  -webkit-font-smoothing: antialiased;
+  line-height: 1.35;
+  overflow: hidden;
 }
 
 button {
@@ -44,7 +25,11 @@ a {
   color: inherit;
 }
 
-:focus-visible {
-  outline: 2px solid var(--yellow);
-  outline-offset: 2px;
+/* With less motion asked for, hover and press still change colour and shade, but nothing slides or tilts. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-property: opacity, color, background-color, border-color, box-shadow, outline-color !important;
+  }
 }

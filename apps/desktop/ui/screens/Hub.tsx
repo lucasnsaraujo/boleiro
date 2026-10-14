@@ -1,37 +1,46 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate } from "react-router";
-import type { Club } from "@boleiro/data/clubs";
 import type { GameState } from "@boleiro/engine/sim/gameState";
-import { useServices } from "../app/ServicesContext.js";
-import { ClubPlate } from "../clubs/ClubPlate.js";
-import { Crest } from "../clubs/Crest.js";
-import { formatDayMonth, formatGameDate, formatMatchDate } from "@boleiro/game-client/format/formatGameDate";
-import { jobSecurity, nextMatch, type NextMatch } from "../hub/hubSelectors.js";
+import { formatBarDate, formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
+import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import type { InboxLine } from "@boleiro/game-client/hub/inboxLines";
 import type { TurningPoint } from "@boleiro/game-client/hub/turningPoints";
+import { useCommands } from "../app/AppCommands.js";
+import { useGameClock } from "../app/gameClock.js";
+import { useServices } from "../app/ServicesContext.js";
+import { useDialogFocus } from "../app/useDialogFocus.js";
+import { Crest } from "../clubs/Crest.js";
+import { boardConfidence, jobSecurity, leagueStanding, nextMatch, type NextMatch } from "../hub/hubSelectors.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
-import type { CurrentGame } from "@boleiro/game-client/saves/currentGame";
-import { saveToSlot } from "@boleiro/game-client/saves/saveToSlot";
-import { slotLabel } from "@boleiro/game-client/saves/slotMeta";
-import { boardGoal } from "@boleiro/game-client/screens/clubChoices";
+import { SQUAD_KEYS, squadRows } from "../squad/squadRows.js";
+import { PlayerSticker } from "../squad/PlayerSticker.js";
+import { SquadTable } from "../squad/SquadTable.js";
 import "./hub.css";
 
-const HUB_KEYS = ["date", "coachClubId", "clubs", "fixtures", "competitions", "boards", "coach"] as const;
+const HUB_KEYS = [...SQUAD_KEYS, "boards", "coach", "mood", "finances"] as const;
 type HubState = Pick<GameState, (typeof HUB_KEYS)[number]>;
 type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null };
-type Saving = "idle" | "saving" | "saved" | "failed";
 
 const TURNING_POINT_SCREENS: Record<TurningPoint["kind"], string> = { fired: "/sacked", seasonEnd: "/season-end" };
 const offersText = (count: number) => `${count} ${count === 1 ? "proposta" : "propostas"}`;
 
-// The inbox stays short: the newest lines only, everything else is on the other screens.
+// The newspaper stays short: the newest lines only, everything else is on the other screens.
 const INBOX_LINES = 7;
 
+/** The features of the dock that have no screen yet, greyed out until their slices land. */
+const LATER = [
+  { label: "Patrocínio", icon: "handshake", title: "Patrocínios" },
+  { label: "Auxiliar", icon: "user-switch", title: "Auxiliar técnico" },
+  { label: "Entrosamento", icon: "users-three", title: "Entrosamento" },
+] as const;
+
 export function Hub() {
-  const { engine, slots, game: open } = useServices();
+  const { engine, game: open } = useServices();
+  const clock = useGameClock();
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [missing, setMissing] = useState(false);
-  const [saving, setSaving] = useState<Saving>("idle");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isPaperOpen, setPaperOpen] = useState(false);
 
   const load = useCallback(
     (isCurrent: () => boolean) =>
@@ -50,145 +59,205 @@ export function Hub() {
     };
   }, [load]);
 
-  const round = usePlayRound(() => void load(() => true));
+  // A day that stops the coach early (a board answer, an offer) opens the paper on the news that stopped it.
+  const round = usePlayRound(() =>
+    void load(() => true).then(() => {
+      clock.refresh();
+      setPaperOpen(true);
+    }),
+  );
+  const club = loaded?.state.coachClubId ? loaded.state.clubs[loaded.state.coachClubId] : undefined;
+  useCommands({ jogarRodada: loaded !== null && !round.isPlaying && (() => void round.play()) });
 
-  async function save(opened: CurrentGame) {
-    setSaving("saving");
-    try {
-      await saveToSlot(engine, slots, opened.slotId, opened);
-      setSaving("saved");
-    } catch {
-      setSaving("failed");
-    }
-  }
-
-  const current = open.current;
-  if (missing || !current) {
+  if (missing || !open.current) {
     return (
-      <>
+      <div className="hub-missing">
         <h1 className="screen-title">Nenhum jogo aberto</h1>
         <p className="status">
           <Link to="/" className="btn-main">
             Voltar ao início
           </Link>
         </p>
-      </>
+      </div>
     );
   }
   if (!loaded) return <p className="status">Abrindo o jogo…</p>;
   if (loaded.turningPoint) return <Navigate to={TURNING_POINT_SCREENS[loaded.turningPoint.kind]} replace />;
 
   const { state, inbox } = loaded;
-  const club = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
-  const next = nextMatch({ ...state });
+  const rows = squadRows(state);
+  const next = nextMatch(state);
   const board = club ? state.boards[club.id] : undefined;
+  const standing = leagueStanding(state);
   const offers = state.coach.offers.length;
+  const fans = club ? (state.mood[club.id]?.fans ?? 50) : 50;
+  const security = jobSecurity(board);
+  const confidence = boardConfidence(board);
+  const news = inbox.slice(-INBOX_LINES).toReversed();
+  const todaysNews = inbox.filter((line) => line.date === state.date).length;
+  const strongest = rows.reduce<(typeof rows)[number] | null>((best, row) => (!best || row.strength > best.strength ? row : best), null);
+  const shown = rows.find((row) => row.id === selectedId) ?? strongest;
+  const shownId = shown?.id ?? null;
 
   return (
-    <div className="hub">
-      <section className="hub-band">
-        <div className="hub-club">
-          {club && <Crest club={club} size={64} />}
+    <div className="hub fills-screen">
+      <div className="hub-side">
+        <section className="stk hub-club" aria-labelledby="hub-club-name">
+          {club ? <Crest club={club} size={58} /> : <span className="hub-no-crest" aria-hidden="true" />}
           <div>
-            <h1 className="screen-title">{club?.shortName ?? "Sem clube"}</h1>
-            <p className="screen-sub">
-              {formatGameDate(state.date)}
-              {current.coachName && ` · ${current.coachName}`}
+            <h1 id="hub-club-name">{club?.shortName ?? "Sem clube"}</h1>
+            <p>
+              Técnico <b>{open.current.coachName}</b>
+              <br />
+              {club?.division ? `Série ${club.division}` : club ? "Fora das séries" : offers === 0 ? "Nenhuma proposta na mesa." : `${offersText(offers)} na mesa.`}
+              {standing && ` · ${standing.position}º lugar · ${standing.points} pts`}
             </p>
           </div>
-        </div>
-        {club ? (
-          next ? (
-            <NextMatchPlates next={next} clubs={state.clubs} />
-          ) : (
-            <p className="hub-next-none">Nenhum jogo marcado.</p>
-          )
-        ) : (
-          <p className="hub-next-none">{offers === 0 ? "Nenhuma proposta na mesa." : `${offersText(offers)} na mesa.`}</p>
-        )}
-        <div className="hub-foot">
-          {club && club.division && (
-            <dl className="hub-facts">
-              <div>
-                <dt>Cargo</dt>
-                <dd>{jobSecurity(board)}</dd>
-              </div>
-              {board && (
-                <div>
-                  <dt>Meta</dt>
-                  <dd>{boardGoal(board, club.division)}</dd>
-                </div>
-              )}
-            </dl>
+          {club && offers > 0 && (
+            <Link className="hub-offers" to="/offers">
+              {offersText(offers)}
+            </Link>
           )}
-          <div className="hub-actions">
-            {club && offers > 0 && (
-              <Link className="btn-quiet" to="/offers">
-                {offersText(offers)}
-              </Link>
-            )}
-            <button className="btn-quiet" onClick={() => void save(current)} disabled={saving === "saving"}>
-              Salvar jogo
-            </button>
-            <button className={club || offers === 0 ? "btn-main" : "btn-quiet"} onClick={() => void round.play()} disabled={round.isPlaying}>
-              {playRoundLabel(round.isPlaying, club !== undefined)}
-            </button>
-            {!club && offers > 0 && (
-              <Link className="btn-main" to="/offers">
-                Ver propostas
-              </Link>
-            )}
-          </div>
-        </div>
-        {saving === "saved" && <p className="status">Salvo em {slotLabel(current.slotId)}.</p>}
-        {saving === "failed" && <p className="status error">Não deu para salvar.</p>}
-        {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
-      </section>
-      <section className="hub-inbox" aria-labelledby="inbox-title">
-        <h2 id="inbox-title" className="hub-section-title">
-          Notícias
-        </h2>
-        {inbox.length === 0 ? (
-          <p className="status">Nada de novo por enquanto.</p>
-        ) : (
-          <ul className="inbox" aria-labelledby="inbox-title">
-            {inbox
-              .slice(-INBOX_LINES)
-              .toReversed()
-              .map((line, index) => (
-                <li key={`${line.date}-${index}`} className={`inbox-row ${line.tone}`}>
-                  <span className="inbox-date">{formatDayMonth(line.date)}</span>
-                  <span className="inbox-text">{line.text}</span>
-                </li>
-              ))}
-          </ul>
+        </section>
+
+        {club && (
+          <section className="stk hub-money" aria-label="Caixa, diretoria e torcida">
+            <div className="hub-cash">
+              <span className="lbl">Caixa</span>
+              <b>{formatMoney(state.finances[club.id]?.cash ?? 0)}</b>
+            </div>
+            <div>
+              <div className="lbl">
+                Diretoria · <span>{security}</span>
+              </div>
+              <div className={confidence < 0.2 ? "meter low" : confidence < 0.38 ? "meter mid" : "meter"}>
+                <i style={{ width: `${Math.round(confidence * 100)}%` }} />
+              </div>
+            </div>
+            <div>
+              <div className="lbl">Torcida · {Math.round(fans)}%</div>
+              <div className={fans < 30 ? "meter low" : fans < 45 ? "meter mid" : "meter"}>
+                <i style={{ width: `${Math.round(fans)}%` }} />
+              </div>
+            </div>
+          </section>
         )}
+
+        {club && (next ? <NextMatchSticker next={next} state={state} /> : <p className="stk hub-next hub-next-none">Nenhum jogo marcado.</p>)}
+
+        {!club && offers > 0 ? (
+          <div className="hub-actions">
+            <button className="btn" onClick={() => void round.play()} disabled={round.isPlaying}>
+              {playRoundLabel(round.isPlaying, false)}
+            </button>
+            <Link className="btn y" to="/offers">
+              Ver propostas
+            </Link>
+          </div>
+        ) : (
+          <button className="btn y hub-play" onClick={() => void round.play()} disabled={round.isPlaying} title="E">
+            <i className={club ? "ph-bold ph-soccer-ball" : "ph-bold ph-hourglass-medium"} aria-hidden="true" />
+            {playRoundLabel(round.isPlaying, club !== undefined)}
+          </button>
+        )}
+        {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
+
+        {club && shown ? <PlayerSticker key={shown.id} state={state} row={shown} club={club} /> : <div className="slot hub-card-empty" />}
+
+        <nav className="hub-dock" aria-label="Clube">
+          {club ? (
+            <Link to="/finances" className="hub-dock-item" title="Finanças">
+              <i className="ph-bold ph-coins" aria-hidden="true" />
+              Finanças
+            </Link>
+          ) : (
+            <span className="hub-dock-item off" aria-disabled="true" title="Sem clube, sem finanças">
+              <i className="ph-bold ph-coins" aria-hidden="true" />
+              Finanças
+            </span>
+          )}
+          {LATER.map(({ label, icon, title }) => (
+            <span key={label} className="hub-dock-item off" aria-disabled="true" title={`${title} · em breve`}>
+              <i className={`ph-bold ph-${icon}`} aria-hidden="true" />
+              {label}
+            </span>
+          ))}
+          <button className="hub-dock-item" aria-expanded={isPaperOpen} aria-controls="hub-paper" title="Jornal" onClick={() => setPaperOpen(!isPaperOpen)}>
+            <i className="ph-bold ph-newspaper" aria-hidden="true" />
+            Jornal
+            {todaysNews > 0 && (
+              <span className="hub-badge" aria-label={`${todaysNews} de hoje`}>
+                {todaysNews}
+              </span>
+            )}
+          </button>
+          <span className="hub-count">
+            <b>{rows.length}</b>
+            <span>elenco</span>
+          </span>
+        </nav>
+        {isPaperOpen && <Paper news={news} onClose={() => setPaperOpen(false)} />}
+      </div>
+
+      <section className="page hub-squad" aria-label="Elenco">
+        {club ? <SquadTable rows={rows} clubName={club.shortName} selectedId={shownId} onSelect={setSelectedId} /> : <p className="hub-squad-none">Sem clube, sem elenco.</p>}
       </section>
     </div>
   );
 }
 
-function NextMatchPlates({ next, clubs }: { next: NextMatch; clubs: Readonly<Record<string, Club>> }) {
-  const home = clubs[next.fixture.homeId];
-  const away = clubs[next.fixture.awayId];
-  if (!home || !away) return null;
+function NextMatchSticker({ next, state }: { next: NextMatch; state: HubState }) {
+  const opponent = state.clubs[next.opponentId];
+  if (!opponent) return null;
   return (
-    <section className="hub-next" aria-label="Próximo jogo">
-      <p className={next.isToday ? "hub-next-when today" : "hub-next-when"}>{next.isToday ? "Hoje" : formatMatchDate(next.fixture.date)}</p>
-      <div className="hub-next-teams">
-        <span className="hub-side home">
-          <ClubPlate club={home} />
-          <Crest club={home} size={46} />
-        </span>
-        <span className="hub-x">x</span>
-        <span className="hub-side">
-          <Crest club={away} size={46} />
-          <ClubPlate club={away} />
-        </span>
+    <section className="stk hub-next" aria-label="Próximo jogo">
+      <div className="lbl">Próximo jogo</div>
+      <div className="hub-next-match">
+        <Crest club={opponent} size={34} />
+        <div>
+          <b>{opponent.shortName}</b>
+          <p className={next.isToday ? "today" : undefined}>
+            {next.isToday ? "Hoje" : formatBarDate(next.fixture.date)} · {next.isHome ? "em casa" : "fora"}
+          </p>
+          <p className="hub-next-what">{next.label}</p>
+        </div>
       </div>
-      <p className="hub-next-what">
-        <span>{next.label}</span> · {next.isHome ? "em casa" : "fora"}
-      </p>
+    </section>
+  );
+}
+
+/** The round's paper: the newest lines of the inbox, pinned over the player's sticker. */
+function Paper({ news, onClose }: { news: InboxLine[]; onClose: () => void }) {
+  const title = useDialogFocus<HTMLHeadingElement>(true);
+  return (
+    <section
+      id="hub-paper"
+      className="note hub-paper"
+      aria-labelledby="hub-paper-title"
+      onKeyDown={(event) => {
+        if (event.key === "Escape") onClose();
+      }}
+    >
+      <header>
+        <h2 id="hub-paper-title" ref={title} tabIndex={-1}>
+          Jornal
+        </h2>
+        <button className="hub-paper-close" aria-label="Fechar o jornal" onClick={onClose}>
+          <i className="ph-bold ph-x" aria-hidden="true" />
+        </button>
+      </header>
+      {news.length === 0 ? (
+        <p className="hub-paper-empty">Nada de novo por enquanto.</p>
+      ) : (
+        <ul aria-label="Notícias">
+          {news.map((line, index) => (
+            <li key={`${line.date}-${index}`} className={line.tone}>
+              <span>{formatDayMonth(line.date)}</span>
+              {line.text}
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

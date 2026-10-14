@@ -40,7 +40,7 @@
 }
 
 .career-offer[aria-pressed="true"] .career-offer-salary {
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .career-offer .crest {
@@ -80,7 +80,7 @@
 
 .career-offer-days.is-urgent {
   font-weight: 700;
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .career-actions {

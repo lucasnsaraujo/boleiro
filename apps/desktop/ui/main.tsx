@@ -12,6 +12,7 @@ import { slotStore } from "@boleiro/game-client/saves/slotStore";
 import { withAutosave } from "@boleiro/game-client/saves/withAutosave";
 import { createSoundEngine } from "./sound/soundEngine.js";
 import { SoundProvider } from "./sound/SoundProvider.js";
+import { ThemeProvider } from "./theme/ThemeProvider.js";
 
 declare global {
   interface Window {
@@ -41,9 +42,11 @@ const sound = createSoundEngine({
 createRoot(root).render(
   <StrictMode>
     <ServicesContext value={services}>
-      <SoundProvider engine={sound} store={localStorage}>
-        <RouterProvider router={withScreenTransitions(createHashRouter(routes))} />
-      </SoundProvider>
+      <ThemeProvider store={localStorage}>
+        <SoundProvider engine={sound} store={localStorage}>
+          <RouterProvider router={withScreenTransitions(createHashRouter(routes))} />
+        </SoundProvider>
+      </ThemeProvider>
     </ServicesContext>
   </StrictMode>,
 );

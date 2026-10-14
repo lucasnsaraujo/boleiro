@@ -28,7 +28,7 @@ export function Crest({ club, size = 32 }: Props) {
   return (
     <svg className="crest" role="img" aria-label={club.shortName} viewBox="0 0 46 54" width={(size * 46) / 54} height={size}>
       <path d="M3 3h40v24c0 13-9 20-20 24C12 47 3 40 3 27z" fill={primary} stroke={secondary} strokeWidth="3" />
-      <text x="23" y="34" textAnchor="middle" fontFamily="IBM Plex Sans Condensed" fontWeight="700" fontSize="14" fill={text}>
+      <text x="23" y="34" textAnchor="middle" fontFamily="Archivo" fontWeight="800" fontSize="14" fill={text}>
         {initialsOf(club.shortName)}
       </text>
     </svg>

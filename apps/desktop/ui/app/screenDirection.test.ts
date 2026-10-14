@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { screenDirection } from "./screenDirection.js";
 
 test("moving along the bar goes next to the right and previous to the left", () => {
-  expect(screenDirection("/hub", "/tables")).toBe("next");
+  expect(screenDirection("/hub", "/market")).toBe("next");
   expect(screenDirection("/history", "/squad")).toBe("previous");
 });
 
@@ -20,7 +20,7 @@ test("the start menu is the top: leaving it goes deeper and returning to it goes
 });
 
 test("between two screens off the bar, the move goes deeper", () => {
-  expect(screenDirection("/sacked", "/offers")).toBe("deeper");
+  expect(screenDirection("/round", "/season-end")).toBe("deeper");
 });
 
 test("opening the game on a screen counts as going deeper into it", () => {
