@@ -83,6 +83,7 @@ export function Saves() {
 
   async function remove(meta: SlotMeta) {
     setConfirming(false);
+    if (busy) return;
     try {
       await slots.remove(meta.id);
       setStatus({ text: `${slotLabel(meta.id)} apagado.`, isError: false });
@@ -182,6 +183,8 @@ export function Saves() {
             key={picked.id}
             meta={picked}
             isOpening={busy === "opening"}
+            isBusy={busy !== null}
+            isOpen={opened !== null && (picked.id === opened.slotId || (picked.id === AUTOSAVE_SLOT_ID && picked.gameSlotId === opened.slotId))}
             isConfirming={isConfirming}
             onOpen={() => void open(picked)}
             onAsk={() => setConfirming(true)}
@@ -199,6 +202,10 @@ export function Saves() {
 type DetailsProps = {
   meta: SlotMeta;
   isOpening: boolean;
+  /** A save or a load under way: nothing else may touch the slots until it ends. */
+  isBusy: boolean;
+  /** Whether this save is the game open now, so deleting or reloading it loses what was played since. */
+  isOpen: boolean;
   isConfirming: boolean;
   onOpen: () => void;
   onAsk: () => void;
@@ -206,7 +213,7 @@ type DetailsProps = {
   onRemove: () => void;
 };
 
-function Details({ meta, isOpening, isConfirming, onOpen, onAsk, onCancel, onRemove }: DetailsProps) {
+function Details({ meta, isOpening, isBusy, isOpen, isConfirming, onOpen, onAsk, onCancel, onRemove }: DetailsProps) {
   const club = meta.coachClubId ? clubById(meta.coachClubId) : null;
   const label = slotLabel(meta.id);
   const confirmTitle = useDialogFocus<HTMLParagraphElement>(isConfirming);
@@ -232,11 +239,11 @@ function Details({ meta, isOpening, isConfirming, onOpen, onAsk, onCancel, onRem
         <dd>{savedWhen(meta.savedAt, new Date())}</dd>
       </dl>
       <div className="saves-acts">
-        <button className="btn saves-open" onClick={onOpen} disabled={isOpening}>
+        <button className="btn saves-open" onClick={onOpen} disabled={isBusy}>
           <i className="ph-fill ph-play" aria-hidden="true" />
           {isOpening ? "Abrindo…" : "Carregar este jogo"}
         </button>
-        <button className="btn flat saves-del" onClick={onAsk}>
+        <button className="btn flat saves-del" onClick={onAsk} disabled={isBusy}>
           <i className="ph-bold ph-trash" aria-hidden="true" />
           Apagar
         </button>
@@ -250,9 +257,9 @@ function Details({ meta, isOpening, isConfirming, onOpen, onAsk, onCancel, onRem
             }}
           >
             <p id="saves-confirm-title" ref={confirmTitle} tabIndex={-1}>
-              Apagar o {label}? Não tem volta.
+              Apagar o {label}? {isOpen ? "É o jogo aberto agora. " : ""}Não tem volta.
             </p>
-            <button className="btn sm no" onClick={onRemove}>
+            <button className="btn sm no" onClick={onRemove} disabled={isBusy}>
               Apagar o {label}
             </button>
             <button className="btn sm" onClick={onCancel}>
