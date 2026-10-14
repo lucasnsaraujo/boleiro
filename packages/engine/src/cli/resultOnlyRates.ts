@@ -13,8 +13,11 @@ import type { World, WorldClub } from "../sim/world/world.js";
 const LEAGUE_SIZE = 20;
 const DIVISION_ORDER = ["A", "B", "C", "D"];
 const SYNTHETIC = "synthetic-";
-/** How far apart, in standard errors of their difference, the two modes' rates may be. */
-export const TOLERANCE_STANDARD_ERRORS = 3;
+// The engine's calibration is held to these against real leagues (engine/calibration.test.ts), on the
+// plain score draw result-only plays; result-only may not stray further from the full pipeline. With
+// 36 leagues, two points is about 3.7 standard errors of the difference between the two modes.
+const SHARE_TOLERANCE = 0.02;
+const GOALS_TOLERANCE = 0.1;
 
 type Tally = { matches: number; goals: number; goalsSquared: number; home: number; draw: number; away: number };
 
@@ -30,7 +33,8 @@ function count(tally: Tally, { homeGoals, awayGoals }: MatchResult): void {
   else tally.away++;
 }
 
-export type RateGap = { metric: string; full: number; resultOnly: number; standardErrors: number };
+/** One metric in both modes, how far apart they may be, and how many standard errors of the difference they are. */
+export type RateGap = { metric: string; full: number; resultOnly: number; tolerance: number; standardErrors: number };
 export type RateComparison = { matches: { full: number; resultOnly: number }; gaps: RateGap[] };
 
 /** Each metric of both modes, with how many standard errors of the difference lie between them. */
@@ -38,13 +42,19 @@ function gapsOf(full: Tally, resultOnly: Tally): RateGap[] {
   const share = (metric: string, of: (t: Tally) => number): RateGap => {
     const [p, q] = [of(full) / full.matches, of(resultOnly) / resultOnly.matches];
     const error = Math.sqrt((p * (1 - p)) / full.matches + (q * (1 - q)) / resultOnly.matches);
-    return { metric, full: p, resultOnly: q, standardErrors: Math.abs(p - q) / error };
+    return { metric, full: p, resultOnly: q, tolerance: SHARE_TOLERANCE, standardErrors: Math.abs(p - q) / error };
   };
   const mean = (t: Tally) => t.goals / t.matches;
   const variance = (t: Tally) => t.goalsSquared / t.matches - mean(t) ** 2;
   const goalsError = Math.sqrt(variance(full) / full.matches + variance(resultOnly) / resultOnly.matches);
   return [
-    { metric: "goals per match", full: mean(full), resultOnly: mean(resultOnly), standardErrors: Math.abs(mean(full) - mean(resultOnly)) / goalsError },
+    {
+      metric: "goals per match",
+      full: mean(full),
+      resultOnly: mean(resultOnly),
+      tolerance: GOALS_TOLERANCE,
+      standardErrors: Math.abs(mean(full) - mean(resultOnly)) / goalsError,
+    },
     share("home wins", (t) => t.home),
     share("draws", (t) => t.draw),
     share("away wins", (t) => t.away),
@@ -53,7 +63,8 @@ function gapsOf(full: Tally, resultOnly: Tally): RateGap[] {
 
 /** Clones of the real clubs, best divisions first, `leagueCount` leagues of twenty, each club with its source's squad. */
 function clonesOf(clubs: readonly Club[], players: readonly SquadPlayer[], leagueCount: number) {
-  const ranked = [...clubs].sort((a, b) => DIVISION_ORDER.indexOf(a.division ?? "") - DIVISION_ORDER.indexOf(b.division ?? "") || a.id.localeCompare(b.id));
+  const rank = (club: Club) => (club.division ? DIVISION_ORDER.indexOf(club.division) : DIVISION_ORDER.length);
+  const ranked = [...clubs].sort((a, b) => rank(a) - rank(b) || a.id.localeCompare(b.id));
   const squads = new Map<string, SquadPlayer[]>();
   for (const player of players) squads.set(player.clubId, [...(squads.get(player.clubId) ?? []), player]);
   const leagues: string[][] = [];
@@ -116,7 +127,9 @@ function resultOnlyWorld(state: GameState, leagues: readonly string[][]): World 
 /**
  * Plays `leagueCount` synthetic twenty-club leagues of cloned clubs for a season twice: in the full
  * pipeline of a real game (lineups, fatigue, morale, cards, the market) and result-only, then compares
- * goals per match and home, draw and away rates.
+ * goals per match and home, draw and away rates. In the full run the clones, outside the national
+ * leagues, also play their estaduais and may reach the Copa do Brasil, and the market can move their
+ * players; only their synthetic league matches are counted, and the result-only squads stay as on day one.
  */
 export function resultOnlyRates(seed: number, leagueCount: number): RateComparison {
   const pack = loadPack();

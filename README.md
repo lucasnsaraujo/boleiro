@@ -73,7 +73,7 @@ pnpm strength:report [seasons] [seed]   # prints player strength bands and mean 
 pnpm career [--seasons N] [--seed S]    # career mode with an auto-coach: clubs, targets, results, firings per division
 pnpm history [--seasons N] [--seed S] [--club ID]   # same career run, then a club's titles, finishes, records, idols and the coach's record
 pnpm season [--seasons N] [--seed S] [--club ID] [--report]   # whole seasons with no coach, then the realism report
-pnpm world:rates [--leagues N] [--seed S]   # synthetic leagues played in full and result-only; fails if their goal and result rates are over 3 standard errors apart
+pnpm world:rates [--leagues N] [--seed S]   # synthetic leagues played in full and result-only; fails if goals per match differ by 0.1 or a home, draw or away rate by 2 points, the engine's calibration tolerance
 ```
 
 The repo is a pnpm workspace. Packages hold TypeScript source with no build step: each `package.json` maps `@boleiro/<name>/<path>` to `src/<path>.ts`.
