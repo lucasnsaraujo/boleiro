@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 
-function isTyping(target: EventTarget | null): boolean {
+/** Whether a key press lands in a text field, where letters are the coach typing, not commands. */
+export function isTyping(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.isContentEditable || target.matches("input, textarea, select"));
 }
 

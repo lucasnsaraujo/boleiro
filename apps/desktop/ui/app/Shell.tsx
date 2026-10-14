@@ -17,6 +17,7 @@ import { screenDirection } from "./screenDirection.js";
 import { NAV, navIndexOf, showsBar, type NavId } from "./screens.js";
 import { useServices } from "./ServicesContext.js";
 import { commandForKey } from "./shortcuts.js";
+import { isTyping } from "./useTypedWord.js";
 import "./shell.css";
 
 type Clock = Pick<GameState, "date" | "season"> & { clubName: string | null };
@@ -32,10 +33,6 @@ function windowTitle(pathname: string, clock: Clock | null): string {
   if (pathname === "/new-game") return "Boleiro · Nova carreira";
   if (!clock || pathname === "/") return "Boleiro";
   return `Boleiro · ${clock.clubName ?? "Sem clube"} ${clock.season}`;
-}
-
-function isTyping(target: EventTarget | null): boolean {
-  return target instanceof HTMLElement && (target.isContentEditable || target.matches("input, textarea, select"));
 }
 
 export function Shell() {
