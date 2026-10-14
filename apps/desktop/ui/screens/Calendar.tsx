@@ -1,27 +1,52 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import type { GameState } from "@boleiro/engine/sim/gameState";
+import type { Club } from "@boleiro/data/clubs";
+import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
+import { formatBarDate, formatDayMonth, formatRowDate, monthName } from "@boleiro/game-client/format/formatGameDate";
 import { useServices } from "../app/ServicesContext.js";
-import { calendarMonths, type CalendarEntry, type Outcome } from "../calendar/calendarMonths.js";
+import {
+  calendarMonths,
+  calendarPage,
+  matchAbsences,
+  pageFor,
+  turnPage,
+  upcomingMatches,
+  type Absence,
+  type Outcome,
+  type PageMatch,
+  type UpcomingMatch,
+  type WindowRibbon,
+} from "../calendar/calendarMonths.js";
 import { Crest } from "../clubs/Crest.js";
-import { formatRowDate, monthName } from "@boleiro/game-client/format/formatGameDate";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import "./calendar.css";
 
-const CALENDAR_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions"] as const;
+const CALENDAR_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions", "players", "discipline"] as const;
 type CalendarState = Pick<GameState, (typeof CALENDAR_KEYS)[number]>;
 
-const OUTCOME_LETTERS: Record<Outcome, string> = { win: "V", draw: "E", loss: "D" };
+const WEEKDAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"] as const;
+const OUTCOMES: Record<Outcome, { letter: string; word: string }> = {
+  win: { letter: "V", word: "vitória" },
+  draw: { letter: "E", word: "empate" },
+  loss: { letter: "D", word: "derrota" },
+};
+const ABSENCE_WORDS: Record<Absence["reason"], string> = { injured: "lesionado", suspended: "suspenso" };
+// The next game plus the three after it, as the mock's "Em seguida" shows.
+const COMING = 4;
+const SHOWN_ABSENCES = 2;
 
 const capitalized = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+const side = (isHome: boolean) => (isHome ? "casa" : "fora");
+
+type Turn = { start: IsoDate; direction: "back" | "on" };
 
 export function Calendar() {
   const { engine } = useServices();
   const navigate = useNavigate();
   const [state, setState] = useState<CalendarState | null>(null);
   const [failed, setFailed] = useState(false);
-  const [picked, setPicked] = useState<number | null>(null);
+  const [turn, setTurn] = useState<Turn | null>(null);
   const round = usePlayRound(() => navigate("/hub"));
 
   useEffect(() => {
@@ -36,100 +61,228 @@ export function Calendar() {
   }, [engine]);
 
   const months = useMemo(() => (state ? calendarMonths(state) : []), [state]);
+  const start = turn?.start ?? (state ? pageFor(state.season, state.date) : null);
+  const page = useMemo(() => (state && start ? calendarPage(state, start) : null), [state, start]);
 
   if (failed) return <p className="status error">Nenhum jogo aberto.</p>;
-  if (!state) return <p className="status">Abrindo o calendário…</p>;
+  if (!state || !page) return <p className="status">Abrindo o calendário…</p>;
 
   const club = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
-  const shown = months.find((m) => m.month === (picked ?? Number(state.date.slice(5, 7))));
-  const games = (entries: readonly CalendarEntry[]) => entries.filter((e) => e.kind === "match").length;
+  const shownMonths = new Set(page.months.map((m) => m.month));
+  const coming = upcomingMatches(state, COMING);
+  const [next, ...following] = coming;
+  const go = (to: IsoDate) => setTurn({ start: to, direction: to < page.start ? "back" : "on" });
 
   return (
-    <div className="calendar">
-      <header className="calendar-head">
-        <div>
-          <h1 className="screen-title">Calendário {state.season}</h1>
-          <p className="screen-sub">{club ? club.shortName : "Sem clube"}</p>
+    <div className="agenda fills-screen">
+      <h1 className="sr-only">Calendário {state.season}</h1>
+      <section className="page agenda-cal" aria-labelledby="agenda-title">
+        <header className="agenda-head">
+          <h2 id="agenda-title">{page.title}</h2>
+          <div className="agenda-months" role="group" aria-label="Meses">
+            {months.map(({ month, entries }) => {
+              const count = entries.filter((e) => e.kind === "match").length;
+              return (
+                <button
+                  key={month}
+                  aria-pressed={shownMonths.has(month)}
+                  aria-label={`${capitalized(monthName(month))}, ${plural(count, "jogo", "jogos")}`}
+                  title={`${capitalized(monthName(month))} · ${plural(count, "jogo", "jogos")}`}
+                  onClick={() => go(pageFor(state.season, `${state.season}-${String(month).padStart(2, "0")}-01`))}
+                >
+                  {monthName(month).slice(0, 3)}
+                </button>
+              );
+            })}
+          </div>
+          <button className="agenda-turn" aria-label="Semanas anteriores" disabled={!page.hasPrevious} onClick={() => go(turnPage(state.season, page.start, -1))}>
+            <i className="ph-bold ph-caret-left" aria-hidden="true" />
+          </button>
+          <button className="agenda-turn" aria-label="Próximas semanas" disabled={!page.hasNext} onClick={() => go(turnPage(state.season, page.start, 1))}>
+            <i className="ph-bold ph-caret-right" aria-hidden="true" />
+          </button>
+        </header>
+        <div className="agenda-weekdays" aria-hidden="true">
+          {WEEKDAYS.map((day) => (
+            <span key={day}>{day}</span>
+          ))}
         </div>
-        <button className="btn-main" onClick={() => void round.play()} disabled={round.isPlaying}>
-          {playRoundLabel(round.isPlaying, club !== undefined)}
-        </button>
-      </header>
-      {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
-      <div className="months" role="group" aria-label="Meses">
-        {months.map(({ month, entries, hasWindow }) => {
-          const count = games(entries);
-          const name = capitalized(monthName(month));
-          return (
-            <button
-              key={month}
-              className={hasWindow ? "month in-window" : "month"}
-              aria-pressed={month === shown?.month}
-              aria-label={`${name}, ${plural(count, "jogo", "jogos")}`}
-              onClick={() => setPicked(month)}
+        <div key={page.start} className="agenda-days" data-turn={turn?.direction}>
+          {page.days.map((day) => (
+            <div
+              key={day.date}
+              className={["agenda-day", !day.isInSeason && "off", day.isPast && "past", day.isToday && "today"].filter(Boolean).join(" ")}
+              style={{ gridRow: day.row, gridColumn: day.column }}
+              aria-hidden="true"
             >
-              <span className="month-name">{monthName(month).slice(0, 3)}</span>
-              <span className="month-games">{count > 0 ? plural(count, "jogo", "jogos") : "–"}</span>
-            </button>
-          );
-        })}
-      </div>
-      <p className="months-key">
-        <span className="window-mark" aria-hidden="true" /> janela de transferências
-      </p>
-      {shown && (
-        <section className="month-list" aria-labelledby="month-title">
-          <h2 id="month-title" className="month-title">
-            {capitalized(monthName(shown.month))}
-          </h2>
-          {shown.entries.length === 0 ? (
-            <p className="status">Sem jogos em {monthName(shown.month)}.</p>
-          ) : (
-            <ul aria-labelledby="month-title">
-              {shown.entries.map((entry) => (
-                <CalendarRow key={entry.kind === "match" ? entry.fixtureId : `${entry.date}-window`} entry={entry} state={state} />
-              ))}
-            </ul>
+              <span className="agenda-n">
+                {day.day}
+                {day.day === 1 && ` ${monthName(Number(day.date.slice(5, 7))).slice(0, 3)}`}
+                {day.isToday && <span className="agenda-today-tag">Hoje</span>}
+              </span>
+            </div>
+          ))}
+          {page.months.map(({ month, matches, windows }) =>
+            matches.length + windows.length === 0 ? null : (
+              <ul key={month} className="agenda-entries" aria-label={capitalized(monthName(month))}>
+                {matches.map((match) => (
+                  <MatchChip key={match.fixtureId} match={match} opponent={state.clubs[match.opponentId]} isToday={match.date === state.date} />
+                ))}
+                {windows.map((ribbon) => (
+                  <WindowMark key={ribbon.opensOn} ribbon={ribbon} />
+                ))}
+              </ul>
+            ),
           )}
+        </div>
+      </section>
+
+      <aside className="agenda-side">
+        <section className="stk agenda-next" aria-labelledby="agenda-next-title">
+          <span className="lbl">Hoje · {formatBarDate(state.date)}</span>
+          {next ? (
+            <NextMatch match={next} state={state} />
+          ) : (
+            <>
+              <h3 id="agenda-next-title">{club ? "Nenhum jogo marcado" : "Sem clube"}</h3>
+              <p className="agenda-next-none">{club ? "A temporada do clube acabou." : "Sem clube, sem jogos. As propostas chegam com os dias."}</p>
+            </>
+          )}
+          <button className="btn y agenda-play" onClick={() => void round.play()} disabled={round.isPlaying}>
+            <i className={club ? "ph-bold ph-soccer-ball" : "ph-bold ph-hourglass-medium"} aria-hidden="true" />
+            {playRoundLabel(round.isPlaying, club !== undefined)}
+          </button>
+          {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
         </section>
-      )}
+        {following.length > 0 && (
+          <section className="stk agenda-coming" aria-labelledby="agenda-coming-title">
+            <h3 id="agenda-coming-title">Em seguida</h3>
+            <ul>
+              {following.map((match) => {
+                const opponent = state.clubs[match.opponentId];
+                return (
+                  <li key={match.fixtureId}>
+                    <span className="agenda-coming-date">
+                      {formatRowDate(match.date)}
+                      {match.date.slice(5, 7) !== state.date.slice(5, 7) && <small> {monthName(Number(match.date.slice(5, 7))).slice(0, 3)}</small>}
+                    </span>
+                    <span aria-hidden="true">{opponent && <Crest club={opponent} size={22} />}</span>
+                    <span>
+                      <b>{opponent?.shortName ?? match.opponentId}</b>
+                      <small>
+                        {match.label} · {side(match.isHome)}
+                      </small>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+      </aside>
     </div>
   );
 }
 
-function CalendarRow({ entry, state }: { entry: CalendarEntry; state: CalendarState }) {
-  const isToday = entry.date === state.date;
-  if (entry.kind === "window") {
-    return (
-      <li className="cal-row window">
-        <span className="cal-date">{formatRowDate(entry.date)}</span>
-        <span className="cal-window">{entry.opens ? "Abre a janela de transferências" : "Fecha a janela de transferências"}</span>
-      </li>
-    );
-  }
-  const opponent = state.clubs[entry.opponentId];
-  const { result } = entry;
+function MatchChip({ match, opponent, isToday }: { match: PageMatch; opponent: Club | undefined; isToday: boolean }) {
+  const { result } = match;
+  // The coach's goals first, as the outcome letter reads.
+  const score = result
+    ? `${match.isHome ? result.homeGoals : result.awayGoals}×${match.isHome ? result.awayGoals : result.homeGoals}${result.onPenalties ? " pên." : ""} · `
+    : "";
   return (
-    <li className={isToday ? "cal-row today" : "cal-row"}>
-      <span className="cal-date">{isToday ? "Hoje" : formatRowDate(entry.date)}</span>
-      <span className="cal-competition">{entry.competition}</span>
-      <span className="cal-side">{entry.isHome ? "casa" : "fora"}</span>
-      <span className="cal-opponent">
+    <li className={result ? `agenda-match played ${result.outcome}` : "agenda-match"} style={{ gridRow: match.row, gridColumn: match.column }}>
+      <span className="sr-only">{isToday ? "Hoje" : formatRowDate(match.date)}, </span>
+      <span className="agenda-match-crest" aria-hidden="true">
         {opponent && <Crest club={opponent} size={22} />}
-        <span>{opponent?.shortName ?? entry.opponentId}</span>
       </span>
-      {result ? (
-        <span className="cal-result">
-          <span className="box">{result.homeGoals}</span>
-          <span className="box">{result.awayGoals}</span>
-          <span className={`cal-outcome ${result.outcome}`} title={result.onPenalties ? "nos pênaltis" : undefined}>
-            {OUTCOME_LETTERS[result.outcome]}
-            {result.onPenalties && <small> pên.</small>}
-          </span>
+      <span className="agenda-match-text">
+        <b>{opponent?.shortName ?? match.opponentId}</b>
+        <small>
+          {score}
+          {match.competition} · {side(match.isHome)}
+        </small>
+      </span>
+      {result && (
+        <span className="agenda-res">
+          <span aria-hidden="true">{OUTCOMES[result.outcome].letter}</span>
+          <span className="sr-only">, {OUTCOMES[result.outcome].word}</span>
         </span>
-      ) : (
-        <span className="cal-result" />
       )}
     </li>
+  );
+}
+
+function WindowMark({ ribbon }: { ribbon: WindowRibbon }) {
+  const { status, opensOn, closesOn } = ribbon;
+  return (
+    <li className="agenda-window" style={{ gridRow: ribbon.row }}>
+      <i className="ph-fill ph-flag-banner" aria-hidden="true" />
+      {status === "opens" && (
+        <>
+          <span>Abre a janela de transferências</span>
+          <span className="agenda-window-when">
+            {formatDayMonth(opensOn)} a {formatDayMonth(closesOn)}
+          </span>
+        </>
+      )}
+      {status === "closes" && (
+        <>
+          <span>Fecha a janela de transferências</span>
+          <span className="agenda-window-when">{formatDayMonth(closesOn)}</span>
+        </>
+      )}
+      {status === "open" && (
+        <>
+          <span>Janela de transferências aberta</span>
+          <span className="agenda-window-when">até {formatDayMonth(closesOn)}</span>
+        </>
+      )}
+    </li>
+  );
+}
+
+function NextMatch({ match, state }: { match: UpcomingMatch; state: CalendarState }) {
+  const coachClub = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
+  const opponent = state.clubs[match.opponentId];
+  const [home, away] = match.isHome ? [coachClub, opponent] : [opponent, coachClub];
+  const absences = matchAbsences(state, match);
+  const isToday = match.date === state.date;
+  return (
+    <>
+      <h3 id="agenda-next-title">{match.label}</h3>
+      <div className="agenda-vs">
+        {home && <Crest club={home} size={56} />}
+        <span className="agenda-x" aria-hidden="true">
+          ×
+        </span>
+        {away && <Crest club={away} size={56} />}
+      </div>
+      <dl>
+        {!isToday && (
+          <>
+            <dt>Quando</dt>
+            <dd>{formatBarDate(match.date)}</dd>
+          </>
+        )}
+        {home?.stadium && (
+          <>
+            <dt>Onde</dt>
+            <dd>{home.stadium}</dd>
+          </>
+        )}
+        <dt>Desfalques</dt>
+        <dd>
+          {absences.length === 0
+            ? "Nenhum"
+            : absences.slice(0, SHOWN_ABSENCES).map(({ name, reason }, index) => (
+                <span key={index}>
+                  {name}, {ABSENCE_WORDS[reason]}
+                </span>
+              ))}
+          {absences.length > SHOWN_ABSENCES && <span>e mais {absences.length - SHOWN_ABSENCES}</span>}
+        </dd>
+      </dl>
+    </>
   );
 }

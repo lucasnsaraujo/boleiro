@@ -55,6 +55,24 @@ test("picking another month shows that month's games", async () => {
   expect(screen.queryByRole("list", { name: "Janeiro" })).toBeNull();
 });
 
+test("the arrows turn five weeks at a time, from the season's first page on", async () => {
+  openCalendar(await services());
+  expect(await screen.findByRole("heading", { level: 2, name: "Janeiro e fevereiro" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Semanas anteriores" }).hasAttribute("disabled")).toBe(true);
+  await userEvent.click(screen.getByRole("button", { name: "Próximas semanas" }));
+  expect(screen.getByRole("heading", { level: 2, name: "Fevereiro e março" })).toBeTruthy();
+  expect(within(screen.getByRole("list", { name: "Março" })).getByText("Fecha a janela de transferências")).toBeTruthy();
+  expect(screen.queryByRole("list", { name: "Janeiro" })).toBeNull();
+});
+
+test("beside the page, the next game shows where it is played, and the three after it follow", async () => {
+  openCalendar(await services());
+  const next = await screen.findByRole("region", { name: /^Baiano · \dª rodada$/ });
+  expect(within(next).getByText("Onde")).toBeTruthy();
+  expect(within(next).getByText("Desfalques")).toBeTruthy();
+  expect(within(screen.getByRole("region", { name: "Em seguida" })).getAllByRole("listitem")).toHaveLength(3);
+});
+
 test("Jogar rodada from the calendar opens the live round on the match day", async () => {
   openCalendar(await services());
   await userEvent.click(await screen.findByRole("button", { name: "Jogar rodada" }));
