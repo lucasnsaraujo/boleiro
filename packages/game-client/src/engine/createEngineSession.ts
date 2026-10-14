@@ -262,6 +262,8 @@ export function createEngineSession(files: GameFiles) {
 
   return {
     apply<T extends CommandType>(command: GameCommand<T>): CommandResults[T] {
+      // A command comes off a message; a type the session doesn't own must not reach Object's own methods.
+      if (!Object.hasOwn(commands, command.type)) throw new Error(`unknown command: ${command.type}`);
       return commands[command.type](command);
     },
     /** The lineup sheet before kick-off on the coach's match day. */

@@ -250,3 +250,11 @@ test("the season and career logs between them send every kind of command", () =>
   };
   expect([...sent].sort()).toEqual(Object.keys(every).sort());
 });
+
+test("a command of a type the session doesn't know fails instead of reaching anything else", () => {
+  const session = createEngineSession(bundledGameFiles);
+  for (const type of ["constructor", "toString", "setTicketPrice"]) {
+    const forged: GameCommand = JSON.parse(JSON.stringify({ type }));
+    expect(() => session.apply(forged)).toThrow(`unknown command: ${type}`);
+  }
+});
