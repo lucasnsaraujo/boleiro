@@ -1,6 +1,9 @@
 import type { Platform } from "./platform.js";
 import { NAV, type NavId } from "./screens.js";
 
+/** What only the live round answers: the page keeps these keys (Space scrolls, digits type) on every other screen. */
+export const MATCH_COMMAND_IDS = ["pausar", "velocidade1", "velocidade2", "velocidade3", "tabelaAoVivo"] as const;
+
 /** Everything the bar, the keyboard and the native menu can ask the game to do. */
 export const COMMAND_IDS = [
   ...NAV.map(({ id }) => id),
@@ -12,11 +15,7 @@ export const COMMAND_IDS = [
   "temaClaro",
   "temaEscuro",
   "temaSistema",
-  "pausar",
-  "velocidade1",
-  "velocidade2",
-  "velocidade3",
-  "tabelaAoVivo",
+  ...MATCH_COMMAND_IDS,
 ] as const satisfies readonly string[];
 
 export type CommandId = (typeof COMMAND_IDS)[number];

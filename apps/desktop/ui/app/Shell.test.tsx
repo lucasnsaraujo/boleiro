@@ -81,6 +81,13 @@ test("a game key that does nothing on this screen still never reaches the browse
   expect(fireEvent.keyDown(document, { key: "F12" })).toBe(true);
 });
 
+test("a match key off the round is left to the page, so Space still presses buttons and scrolls", async () => {
+  open(await services(), "/hub");
+  await screen.findByRole("navigation", { name: "Telas" });
+  expect(fireEvent.keyDown(document, { key: " " })).toBe(true);
+  expect(fireEvent.keyDown(document, { key: "2" })).toBe(true);
+});
+
 test("there is no bar on the start menu or in a live round, and the F-keys can't leave a match", async () => {
   const router = open(await services(), "/round");
   expect(screen.queryByRole("navigation", { name: "Telas" })).toBeNull();

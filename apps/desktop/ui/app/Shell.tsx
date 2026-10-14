@@ -16,7 +16,7 @@ import { hasMica, platformOf, windowChrome, windowsVersion } from "./platform.js
 import { screenDirection } from "./screenDirection.js";
 import { NAV, navIndexOf, showsBar, type NavId } from "./screens.js";
 import { useServices } from "./ServicesContext.js";
-import { commandForKey } from "./shortcuts.js";
+import { commandForKey, MATCH_COMMAND_IDS } from "./shortcuts.js";
 import { isTyping } from "./useTypedWord.js";
 import "./shell.css";
 
@@ -131,9 +131,12 @@ export function Shell() {
     const onKey = (event: KeyboardEvent) => {
       const command = commandForKey(event, PLATFORM);
       if (!command || event.defaultPrevented || (event.key.length === 1 && !event.metaKey && !event.ctrlKey && isTyping(event.target))) return;
-      // WebView2 keeps the browser's own F-keys (F5 reloads the app, F3 finds), so a game key never reaches them.
-      event.preventDefault();
-      runCommand(command);
+      // Space on a control reached by the keyboard presses that control, as it should for keyboard users.
+      if (event.key === " " && event.target instanceof Element && event.target.matches(":focus-visible")) return;
+      // WebView2 keeps the browser's own F-keys (F5 reloads the app, F3 finds), so a game key never reaches them even
+      // when no screen takes it; only the match keys (Space, digits) stay the page's off the round.
+      const isMatchKey = MATCH_COMMAND_IDS.some((id) => id === command);
+      if (runCommand(command) || !isMatchKey) event.preventDefault();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
