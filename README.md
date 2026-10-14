@@ -62,12 +62,14 @@ python3 pipeline/build_pack.py pipeline/boleiro.db packages/data/pack           
 
 ```sh
 .venv/bin/python pipeline/scrape_world.py pipeline/boleiro.db [--countries br,gb-eng] [--delay 3]   # pages cached in data/tm_cache
-.venv/bin/python pipeline/build_world_packs.py pipeline/boleiro.db <out dir>    # <country>.pack.json.gz + national-teams.pack.json.gz
+.venv/bin/python pipeline/build_world_packs.py pipeline/boleiro.db packages/data/pack/world   # <country>.pack.json.gz + national-teams.pack.json.gz
 python3 pipeline/roster_diff.py pipeline/boleiro.db                               # who moved where between the two latest scrapes, as Markdown
 .venv/bin/python -m unittest discover -s pipeline/tests -t pipeline              # the pipeline's tests, on saved pages in pipeline/tests/fixtures
 ```
 
 The scraper waits `--delay` seconds after each page (never under 1; Transfermarkt's robots.txt asks for 2), retries 429s and server errors with a growing back-off, and keeps every page in the cache, so a stopped run resumes where it stopped and a rerun within `--max-age-days` downloads nothing. Each club costs a squad page, a facts page and a crest image. Brazil's clubs keep their ids from `data/clubs.csv`; other clubs are `tm-<Transfermarkt id>`, players `tm-<Transfermarkt id>`.
+
+The game doesn't load the world packs yet. `packages/data/src/worldPacks.test.ts` checks the committed ones: every club has at least eleven players with a goalkeeper (except the few Transfermarkt lists short, named in the test), a crest in `assets.json` or `world/assets.json` and every world crest's files within budget, two colours and a source for every field; every country's league tiers run from the first down; every national team has a squad with a goalkeeper.
 
 ## Development
 
