@@ -7,7 +7,7 @@
 
 .lobby-spread {
   position: absolute;
-  inset: 22px 24px 24px;
+  inset: max(22px, var(--chrome-top)) 24px 24px;
   display: grid;
   grid-template-columns: 470px minmax(0, 1fr);
 }

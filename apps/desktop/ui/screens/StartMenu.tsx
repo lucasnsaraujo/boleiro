@@ -106,7 +106,7 @@ export function StartMenu() {
   const others = otherCareers(list);
 
   return (
-    <div className="lobby fills-screen">
+    <div className="lobby fills-screen" data-tauri-drag-region>
       <div className="lobby-spread">
         <section className="lobby-cover" aria-label="Boleiro">
           <span className="lobby-edition">Edição 2026 · Brasil</span>

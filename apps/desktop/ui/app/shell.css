@@ -7,28 +7,81 @@
 }
 
 /*
- * macOS: the window's own title bar is hidden and its traffic lights sit over this strip, which the
- * window drags by. It is see-through paper over the window's vibrancy; on Windows the system draws a
- * Mica title bar with its caption buttons, so the strip is not drawn there at all.
+ * The game's header is the window's title bar. On macOS the traffic lights sit inside it, centred on
+ * the green bar (trafficLightPosition in tauri.macos.conf.json), so headers keep --chrome-left clear
+ * for them; on Windows the game's own caption buttons take --chrome-right. Screens without a header
+ * keep --chrome-top clear and drag the window by that band. A browser tab has no chrome: all zero.
  */
-.chrome {
-  flex: none;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  position: relative;
-  z-index: 5;
-  background: color-mix(in srgb, var(--paper) 78%, transparent);
-  backdrop-filter: blur(24px) saturate(1.6);
-  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--ink) 10%, transparent);
-  user-select: none;
-  -webkit-user-select: none;
+.app {
+  --chrome-left: 0px;
+  --chrome-right: 0px;
+  --chrome-top: 0px;
+  --chrome-header: 0px;
 }
 
-.chrome-title {
-  font: 600 13px -apple-system, "SF Pro Text", system-ui, sans-serif;
-  letter-spacing: -0.01em;
-  color: color-mix(in srgb, var(--ink) 78%, transparent);
+.app[data-chrome="mac"] {
+  --chrome-left: 84px;
+  --chrome-top: 52px;
+  --chrome-header: 66px;
+}
+
+.app[data-chrome="windows"] {
+  --chrome-right: 138px;
+  --chrome-top: 32px;
+  /* Mica tints the paper through the window, as Windows 11 apps let it; stickers and pages stay opaque. */
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+}
+
+.drag-edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--chrome-top);
+}
+
+.screen:has(> .fills-screen) > .drag-edge,
+.bar ~ .screen > .drag-edge {
+  display: none;
+}
+
+.bar ~ .screen {
+  padding-top: 28px;
+}
+
+.captions {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  height: 32px;
+}
+
+.caption {
+  width: 46px;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  transition: background var(--t-fast) linear;
+}
+
+.app:has(> .bar) .caption {
+  color: var(--bar-ink);
+}
+
+.caption:hover {
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+}
+
+.app:has(> .bar) .caption:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.caption.close:hover {
+  background: #c42b1c;
+  color: #fff;
 }
 
 /* Green top bar: Brasfoot's nine buttons, with the flag's yellow and blue stitched under it. */
@@ -37,7 +90,7 @@
   height: 66px;
   display: flex;
   align-items: stretch;
-  padding: 0 16px 0 8px;
+  padding: 0 calc(16px + var(--chrome-right)) 0 calc(8px + var(--chrome-left));
   background: var(--bar);
   color: var(--bar-ink);
   position: relative;
@@ -145,10 +198,11 @@
 }
 
 .screen {
+  position: relative;
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 28px 28px 32px;
+  padding: max(28px, var(--chrome-top)) 28px 32px;
   animation: shell-arrive var(--shell-arrive) backwards;
 }
 

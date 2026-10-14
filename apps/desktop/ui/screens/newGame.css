@@ -6,11 +6,11 @@
 }
 
 .career-new-top {
-  height: 60px;
+  height: max(60px, var(--chrome-header));
   display: flex;
   align-items: center;
   gap: 18px;
-  padding: 0 28px;
+  padding: 0 calc(28px + var(--chrome-right)) 0 max(28px, var(--chrome-left));
 }
 
 .career-new-mark {
@@ -36,7 +36,7 @@
   position: absolute;
   left: 20px;
   right: 20px;
-  top: 60px;
+  top: max(60px, var(--chrome-header));
   bottom: 20px;
   display: grid;
   grid-template-columns: 392px minmax(0, 1fr);

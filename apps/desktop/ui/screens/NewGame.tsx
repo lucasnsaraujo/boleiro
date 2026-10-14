@@ -125,7 +125,7 @@ export function NewGame() {
 
   return (
     <div className="career-new fills-screen">
-      <header className="career-new-top">
+      <header className="career-new-top" data-tauri-drag-region>
         <img className="career-new-mark" src={wordmark} height={40} alt="Boleiro 2026" />
         <img className="career-new-mark dark" src={wordmarkDark} height={40} alt="" />
         <span className="lbl">Nova carreira</span>

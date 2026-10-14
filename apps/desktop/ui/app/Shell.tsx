@@ -12,7 +12,7 @@ import { useTheme } from "../theme/ThemeProvider.js";
 import { useCommands, useRunCommand } from "./AppCommands.js";
 import { GameClockContext } from "./gameClock.js";
 import { installNativeMenu } from "./nativeMenu.js";
-import { platformOf } from "./platform.js";
+import { platformOf, windowChrome } from "./platform.js";
 import { screenDirection } from "./screenDirection.js";
 import { NAV, navIndexOf, showsBar, type NavId } from "./screens.js";
 import { useServices } from "./ServicesContext.js";
@@ -23,6 +23,7 @@ type Clock = Pick<GameState, "date" | "season"> & { clubName: string | null };
 type Toast = { id: number; text: string; isError: boolean };
 
 const PLATFORM = platformOf(navigator.userAgent);
+const CHROME = windowChrome(PLATFORM, isTauri(), import.meta.env.DEV ? location.search : "");
 const TOAST_MS = 2600;
 // The menu bar belongs to the app, not to a screen: it is built once, the first time the shell mounts.
 let hasNativeMenu = false;
@@ -76,6 +77,16 @@ export function Shell() {
     if (isTauri()) void getCurrentWindow().setTitle(title);
   }, [title]);
 
+  // In full screen macOS hides the traffic lights, so the header stops keeping room for them.
+  const [isFullScreen, setFullScreen] = useState(false);
+  useEffect(() => {
+    if (!isTauri()) return;
+    const check = () => void getCurrentWindow().isFullscreen().then(setFullScreen);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   useEffect(() => {
     if (hasNativeMenu || !isTauri() || PLATFORM !== "mac") return;
     hasNativeMenu = true;
@@ -125,19 +136,13 @@ export function Shell() {
   }, [runCommand]);
 
   const active = navIndexOf(pathname);
+  const chrome = isFullScreen ? "none" : CHROME;
 
   return (
     <GameClockContext value={{ refresh }}>
-      <div className="app" data-platform={PLATFORM}>
-        {PLATFORM === "mac" && (
-          <div className="chrome" data-tauri-drag-region>
-            <span className="chrome-title" data-tauri-drag-region>
-              {title}
-            </span>
-          </div>
-        )}
+      <div className="app" data-chrome={chrome}>
         {hasBar && (
-          <nav className="bar" aria-label="Telas">
+          <nav className="bar" aria-label="Telas" data-tauri-drag-region>
             {NAV.map((item, index) => (
               <BarButton key={item.id} id={item.id} isActive={index === active} />
             ))}
@@ -150,8 +155,10 @@ export function Shell() {
           </nav>
         )}
         <main key={pathname} className="screen">
+          <div className="drag-edge" data-tauri-drag-region />
           <Outlet />
         </main>
+        {chrome === "windows" && <CaptionButtons />}
         {toast && (
           <p key={toast.id} className={toast.isError ? "toast stk error" : "toast stk"} role="status">
             <i className={toast.isError ? "ph-bold ph-warning" : "ph-bold ph-floppy-disk"} aria-hidden="true" />
@@ -160,6 +167,35 @@ export function Shell() {
         )}
       </div>
     </GameClockContext>
+  );
+}
+
+/**
+ * Windows draws no title bar for the game (`decorations: false` in tauri.windows.conf.json): these are
+ * its minimise, maximise and close buttons, sitting in the game's own header at the top right.
+ */
+function CaptionButtons() {
+  const act = (action: "minimize" | "toggleMaximize" | "close") => {
+    if (isTauri()) void getCurrentWindow()[action]();
+  };
+  return (
+    <div className="captions">
+      <button className="caption" aria-label="Minimizar" onClick={() => act("minimize")}>
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+          <path d="M0 5.5h10" stroke="currentColor" />
+        </svg>
+      </button>
+      <button className="caption" aria-label="Maximizar" onClick={() => act("toggleMaximize")}>
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+          <rect x=".5" y=".5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" />
+        </svg>
+      </button>
+      <button className="caption close" aria-label="Fechar" onClick={() => act("close")}>
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+          <path d="M.5.5l9 9M9.5.5l-9 9" stroke="currentColor" />
+        </svg>
+      </button>
+    </div>
   );
 }
 

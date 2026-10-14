@@ -17,10 +17,7 @@
         "height": 800,
         "minWidth": 1024,
         "minHeight": 680,
-        "titleBarStyle": "Overlay",
-        "hiddenTitle": true,
-        "transparent": true,
-        "windowEffects": { "effects": ["titlebar", "mica"], "state": "followsWindowActiveState" }
+        "backgroundColor": "#F2EAD9"
       }
     ],
     "security": {
