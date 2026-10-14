@@ -103,6 +103,10 @@
   white-space: nowrap;
 }
 
+.live-paused {
+  height: 24px;
+}
+
 .live-clock b {
   min-width: 44px;
   padding: 2px 9px;

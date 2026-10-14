@@ -286,3 +286,13 @@ test("the board lists every match of the round, and Só meus jogos leaves only t
   await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
   expect(rows()).toHaveLength(everyMatch);
 });
+
+test("a paused round says Pausado beside the clock, and the label goes when it plays again", async () => {
+  await kickOff(await onMatchDay());
+  const cover = screen.getByRole("region", { name: "Seu jogo" });
+  expect(within(cover).queryByText("Pausado")).toBeNull();
+  await user().click(screen.getByRole("button", { name: "Pausar" }));
+  expect(within(cover).getByText("Pausado")).toBeTruthy();
+  await user().click(screen.getByRole("button", { name: "2x" }));
+  expect(within(cover).queryByText("Pausado")).toBeNull();
+});

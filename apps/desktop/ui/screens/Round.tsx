@@ -459,6 +459,12 @@ function Cover({ round, match, label, minute, speed, golCount, isOnlyMine, isFin
           <span>{[roundName, formatBarDate(round.date)].filter(Boolean).join(" · ")}</span>
         </h1>
         <div className="live-tools">
+          {speed === 0 && !isFinished && minute < FULL_TIME && (
+            <span className="chip wait live-paused">
+              <i className="ph-fill ph-pause" aria-hidden="true" />
+              Pausado
+            </span>
+          )}
           <div className="live-clock">
             <span>{clockNote(minute, speed, isFinished)}</span>
             <span className="live-track" aria-hidden="true">
