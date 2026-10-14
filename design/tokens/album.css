@@ -256,8 +256,15 @@ i.ph-bold, i.ph-fill { line-height: 1; }
 .meter.low > i { background: var(--red); }
 .meter.thin { height: 8px; }
 
-/* Crest wrapper (crests are drawn per club) */
-.crest { display: block; flex: none; }
+/* Crest: the club's real badge as a die-cut sticker. Four white drop-shadows trace a --cut border around the
+   badge's own shape, a fifth prints it on the page. */
+.crest { --cut: 1.5px; display: block; flex: none; object-fit: contain;
+  filter: drop-shadow(var(--cut) 0 0 #fff) drop-shadow(calc(var(--cut) * -1) 0 0 #fff) drop-shadow(0 var(--cut) 0 #fff) drop-shadow(0 calc(var(--cut) * -1) 0 #fff) drop-shadow(0 1px 1.5px rgba(20,35,26,.35)); }
+[data-theme='dark'] .crest { filter: drop-shadow(var(--cut) 0 0 #fff) drop-shadow(calc(var(--cut) * -1) 0 0 #fff) drop-shadow(0 var(--cut) 0 #fff) drop-shadow(0 calc(var(--cut) * -1) 0 #fff) drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
+
+/* Logo: a real sponsor or competition mark, sized by height. On coloured or dark ground it sits on a white chip. */
+.logo { display: block; flex: none; width: auto; }
+.logo-chip { display: inline-grid; place-items: center; background: #fff; border-radius: var(--r-s); padding: 3px 6px; box-shadow: 0 0 0 1px rgba(20,35,26,.10); }
 
 /* Avatar: coach or player initial in a white-rimmed disc */
 .av { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none; font-stretch: var(--wide); font-weight: 900; font-size: 15px; color: #fff; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(20,35,26,.18), 0 3px 6px -2px rgba(20,35,26,.35); }
