@@ -264,7 +264,7 @@ i.ph-bold, i.ph-fill { line-height: 1; }
 
 /* Position badge */
 .pos { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; font-stretch: var(--semi); font-weight: 900; font-size: 11px; color: #fff; flex: none; }
-.pos.G { background: var(--pos-g); } .pos.L { background: var(--pos-l); } .pos.Z { background: var(--pos-z); } .pos.M { background: var(--pos-m); } .pos.A { background: var(--pos-a); }
+.pos.G { background: var(--pos-g); color: var(--on-yellow); } .pos.L { background: var(--pos-l); } .pos.Z { background: var(--pos-z); } .pos.M { background: var(--pos-m); } .pos.A { background: var(--pos-a); }
 
 /* Pinned note: paper slip with tape */
 .note { position: relative; background: var(--note); color: var(--note-ink); padding: 10px 14px; font-size: 12px; line-height: 1.4; transform: rotate(-.6deg); box-shadow: 0 4px 10px -6px rgba(20,35,26,.4); }

@@ -17,7 +17,7 @@
 .next .m { display: flex; gap: 10px; align-items: center; margin-top: 6px; }
 .next b { font-weight: 800; font-size: 16px; display: block; }
 .next p { font-size: 12px; color: var(--mute); }
-.odds { position: absolute; right: 12px; top: 26px; transform: rotate(3deg); background: #fff; border-radius: 8px; padding: 13px 4px 4px; display: flex; color: #14231A; box-shadow: 0 0 0 1px rgba(20,35,26,.12), 0 6px 10px -4px rgba(20,35,26,.4); }
+.odds { position: absolute; right: 12px; top: 36px; transform: rotate(3deg); background: #fff; border-radius: 8px; padding: 13px 4px 4px; display: flex; color: #14231A; box-shadow: 0 0 0 1px rgba(20,35,26,.12), 0 6px 10px -4px rgba(20,35,26,.4); }
 .odds em { position: absolute; left: 6px; top: -6px; font-style: normal; font-stretch: var(--semi); font-weight: 900; font-size: 9px; letter-spacing: .02em; background: #FF5A00; color: #fff; padding: 2px 5px; border-radius: 3px; transform: rotate(-4deg); }
 .odds span { display: grid; text-align: center; font-size: 9px; color: #5C584B; font-weight: 700; line-height: 1.15; padding: 0 5px; }
 .odds span + span { border-left: 1px dotted #C4B796; }
