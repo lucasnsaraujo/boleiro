@@ -15,6 +15,9 @@ export type StandingRow = {
   yellowCards: number;
 };
 
+/** What the table reads of a match. */
+type PlayedMatch = Pick<Fixture, "homeId" | "awayId" | "result">;
+
 const emptyRow = (clubId: string): StandingRow => ({
   clubId, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0, redCards: 0, yellowCards: 0,
 });
@@ -32,7 +35,7 @@ function record(row: StandingRow, scored: number, conceded: number, cards: CardC
   row.points = row.wins * 3 + row.draws;
 }
 
-function table(clubIds: readonly string[], fixtures: readonly Fixture[]): Map<string, StandingRow> {
+function table(clubIds: readonly string[], fixtures: readonly PlayedMatch[]): Map<string, StandingRow> {
   const rows = new Map(clubIds.map((id) => [id, emptyRow(id)]));
   for (const { homeId, awayId, result } of fixtures) {
     if (!result) continue;
@@ -47,7 +50,7 @@ function table(clubIds: readonly string[], fixtures: readonly Fixture[]): Map<st
 const byOverall = (a: StandingRow, b: StandingRow): number =>
   b.points - a.points || b.wins - a.wins || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor;
 
-function headToHead(a: string, b: string, fixtures: readonly Fixture[]): number {
+function headToHead(a: string, b: string, fixtures: readonly PlayedMatch[]): number {
   const direct = fixtures.filter((f) => (f.homeId === a && f.awayId === b) || (f.homeId === b && f.awayId === a));
   const rows = table([a, b], direct);
   const rowA = rows.get(a);
@@ -61,7 +64,7 @@ function headToHead(a: string, b: string, fixtures: readonly Fixture[]): number 
 // points, wins, goal difference, goals scored, head-to-head (only between two clubs),
 // fewest red cards, fewest yellow cards, draw (`drawOrder`, a seeded shuffle made when the
 // competition starts). A second yellow counts as a red only.
-export function standings(clubIds: readonly string[], fixtures: readonly Fixture[], drawOrder: readonly string[]): StandingRow[] {
+export function standings(clubIds: readonly string[], fixtures: readonly PlayedMatch[], drawOrder: readonly string[]): StandingRow[] {
   const draw = new Map(drawOrder.map((id, index) => [id, index]));
   const byDraw = (a: StandingRow, b: StandingRow) => (draw.get(a.clubId) ?? 0) - (draw.get(b.clubId) ?? 0);
   const byCards = (a: StandingRow, b: StandingRow) => a.redCards - b.redCards || a.yellowCards - b.yellowCards;
