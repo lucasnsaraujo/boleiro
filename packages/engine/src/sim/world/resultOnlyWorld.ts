@@ -2,10 +2,11 @@ import { randomStream } from "../../engine/random.js";
 import type { IsoDate } from "../gameState.js";
 import { continentalPlaces } from "./continentalPlaces.js";
 import { pyramidMoves, type LevelExits } from "./pyramidMoves.js";
-import { leagueTable, openLeague, playLeagueDay } from "./resultOnlyLeague.js";
+import { checkSquad, leagueTable, openLeague, playLeagueDay } from "./resultOnlyLeague.js";
 import type { Country, CountryStructure, ResultOnlyLeague, World, WorldClub } from "./world.js";
 
 function checkPyramid({ id, levels }: CountryStructure, sizes: readonly number[]): void {
+  if (levels.length === 0) throw new Error(`${id}: no levels`);
   if (sizes.length !== levels.length) throw new Error(`${id}: ${levels.length} levels but clubs for ${sizes.length}`);
   levels.forEach((level, i) => {
     const size = sizes[i] ?? 0;
@@ -25,6 +26,7 @@ function openLeagues(structure: CountryStructure, members: readonly string[][], 
 /** A result-only country at the start of `season`, `levels` holding its clubs level by level, top first. */
 export function startCountry(structure: CountryStructure, levels: readonly (readonly WorldClub[])[], season: number, seed: number): Country {
   checkPyramid(structure, levels.map((clubs) => clubs.length));
+  for (const club of levels.flat()) checkSquad(club);
   const random = randomStream(seed);
   const leagues = openLeagues(structure, levels.map((clubs) => clubs.map((club) => club.id)), season, random.next);
   const clubs = Object.fromEntries(levels.flat().map((club) => [club.id, club]));
@@ -59,6 +61,8 @@ export function playWorldDay(world: World, date: IsoDate): World {
 /** Files a country's finished season, moves clubs through its pyramid and opens `season`. */
 function endCountrySeason(country: Country, season: number): Country {
   const { structure } = country;
+  const [top] = country.leagues;
+  if (!top) throw new Error(`${structure.id}: no leagues to end`);
   const tables = country.leagues.map(leagueTable);
   const exits = new Map(
     structure.levels.map((level, i): [number, LevelExits] => {
@@ -73,7 +77,7 @@ function endCountrySeason(country: Country, season: number): Country {
   const random = randomStream(country.rngState);
   const leagues = openLeagues(structure, members, season, random.next);
   const record = {
-    season: season - 1,
+    season: top.season,
     champions: tables.map((table) => table[0] ?? ""),
     promoted: structure.levels.map((_, i) => [...(exits.get(i)?.promotedIds ?? [])]),
     relegated: structure.levels.map((_, i) => [...(exits.get(i)?.relegatedIds ?? [])]),

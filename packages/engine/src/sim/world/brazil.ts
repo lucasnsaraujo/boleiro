@@ -2,7 +2,7 @@ import type { Division } from "@boleiro/data/players";
 import type { LeagueFormatId } from "../gameState.js";
 import type { ContinentalSlot } from "./continentalPlaces.js";
 
-export type BrazilContinentalEntry = "libertadoresGroups" | "libertadoresPreliminary" | "sulAmericana";
+type BrazilContinentalEntry = "libertadoresGroups" | "libertadoresPreliminary" | "sulAmericana";
 
 type FullTierCountry = {
   /** The national leagues, top first; each format decides its own champion, promoted and relegated clubs. */

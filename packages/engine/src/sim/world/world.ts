@@ -1,8 +1,8 @@
 import type { IsoDate } from "../gameState.js";
-import type { ContinentalSlot } from "./continentalPlaces.js";
+import type { LeaguePlace } from "./continentalPlaces.js";
 
 /** A level of a result-only pyramid: a round-robin table. */
-export type TableLevel = {
+type TableLevel = {
   name: string;
   /** 2 for home and away. */
   legs: 1 | 2;
@@ -19,7 +19,8 @@ export type CountryStructure = {
   levels: TableLevel[];
   /** First and last match day of the league season in the calendar year, as `MM-DD`. */
   window: [string, string];
-  continental: ContinentalSlot<string>[];
+  /** No cup is played result-only, so every place comes from the top league's table. */
+  continental: LeaguePlace<string>[];
 };
 
 /** A result-only club: its name and its squad as columns, one position letter (G, D, M, A) and one strength per player. */
@@ -42,7 +43,7 @@ export type ResultOnlyLeague = {
 };
 
 /** What a finished season decided: per level, top first, its champion and who went up and down; then the continental places. */
-export type CountrySeason = {
+type CountrySeason = {
   season: number;
   champions: string[];
   promoted: string[][];

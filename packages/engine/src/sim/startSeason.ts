@@ -22,7 +22,8 @@ export function startSeason(season: number, clubs: Record<string, Club>, random:
     const members = Object.values(clubs).filter((club) => club.division === level.division).map((club) => club.id).sort();
     return { ...level, members, stageCounts: LEAGUE_FORMATS[level.format].stageDateCounts(members.length) };
   });
-  const total = (division: Division) => levels.filter((level) => level.division === division).flatMap((level) => level.stageCounts).reduce((sum, n) => sum + n, 0);
+  const dateCounts = new Map(levels.map((level) => [level.division, level.stageCounts.reduce((sum, n) => sum + n, 0)]));
+  const total = (division: Division) => dateCounts.get(division) ?? 0;
   const calendar = seasonCalendar(season, { A: total("A"), B: total("B"), C: total("C"), D: total("D") });
   const competitions: Record<string, Competition> = {};
   const fixtures: Fixture[] = [];

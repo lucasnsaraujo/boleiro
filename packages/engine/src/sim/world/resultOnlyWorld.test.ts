@@ -88,4 +88,17 @@ describe("a result-only country", () => {
     const broken = { ...STRUCTURE, levels: STRUCTURE.levels.map((level, i) => (i === 1 ? { ...level, promoted: 2 } : level)) };
     expect(() => startCountry(broken, SIZES.map((size) => Array.from({ length: size }, (_, i) => squad(`c${size}-${i}`, 60))), 2026, 1)).toThrow();
   });
+
+  it.each([
+    ["a position missing for a strength", { positions: "GDDDDMMMMA" }],
+    ["fewer than eleven players", { positions: "GDDDMMMAA", strengths: Array.from({ length: 9 }, () => 60) }],
+    ["no goalkeeper", { positions: "DDDDDMMMMAA", strengths: Array.from({ length: 11 }, () => 60) }],
+    ["a position that isn't G, D, M or A", { positions: "GDDDDMMMMAX", strengths: Array.from({ length: 11 }, () => 60) }],
+  ])("refuses a club with %s", (_, change) => {
+    const levels = SIZES.map((size, level) => Array.from({ length: size }, (_, i) => squad(`l${level}-${i}`, 60)));
+    const [first = []] = levels;
+    const sound: WorldClub = { id: "bad", name: "BAD", positions: "GDDDDMMMMAA", strengths: Array.from({ length: 11 }, () => 60) };
+    first[0] = { ...sound, ...change };
+    expect(() => startCountry(STRUCTURE, levels, 2026, 1)).toThrow(/bad/);
+  });
 });

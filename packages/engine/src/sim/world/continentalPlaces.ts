@@ -3,6 +3,8 @@ export type ContinentalSlot<Entry extends string> =
   | { entry: Entry; from: "cupChampion" | "cupRunnerUp" }
   | { entry: Entry; from: "league"; places: number };
 
+export type LeaguePlace<Entry extends string> = Extract<ContinentalSlot<Entry>, { from: "league" }>;
+
 export type CupFinal = { championId: string; runnerUpId: string };
 
 /**

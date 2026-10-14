@@ -10,13 +10,12 @@ const BYE = "";
 const UNPLAYED = "-";
 const ZERO_GOALS = "0".charCodeAt(0);
 const GROUP_OF: Record<string, PositionGroup> = { G: "GK", D: "DEF", M: "MID", A: "ATT" };
-// guess: until each league has its own fit, every result-only match plays at Série A's calibration.
-const PARAMS = CALIBRATED;
+const STARTERS = 11;
 
 /** A league's matches in results order, and where each round starts in them (one entry more than rounds). */
 type Schedule = { pairs: Pairing[]; roundStarts: number[] };
 
-// The schedule only depends on the club order, which a league keeps all season; results change daily.
+// Keyed on the club order: a league keeps that array, and its legs, all season, while its results change daily.
 const schedules = new WeakMap<readonly string[], Schedule>();
 const teams = new WeakMap<WorldClub, Team>();
 
@@ -47,6 +46,15 @@ function teamOf(club: WorldClub): Team {
   const team = { name: club.name, players: pickLineup(players) };
   teams.set(club, team);
   return team;
+}
+
+/** Throws unless the club has a position for each strength, eleven players and a keeper, as the score draw needs. */
+export function checkSquad(club: WorldClub): void {
+  const { id, positions, strengths } = club;
+  if (positions.length !== strengths.length) throw new Error(`club ${id}: ${positions.length} positions for ${strengths.length} players`);
+  if (strengths.length < STARTERS) throw new Error(`club ${id}: ${strengths.length} players, fewer than ${STARTERS}`);
+  if (!positions.includes("G")) throw new Error(`club ${id}: no goalkeeper`);
+  if ([...positions].some((letter) => !(letter in GROUP_OF))) throw new Error(`club ${id}: positions "${positions}" are not all G, D, M or A`);
 }
 
 /** `rounds` match days spread evenly over the window, its first and last days included. */
@@ -81,13 +89,14 @@ export function playLeagueDay(league: ResultOnlyLeague, date: IsoDate, clubOf: (
   if (round < 0 || league.results[2 * from] !== UNPLAYED) return league;
   let played = "";
   for (const [homeId, awayId] of pairs.slice(from, to)) {
-    const { homeGoals, awayGoals } = simulateMatch(teamOf(clubOf(homeId)), teamOf(clubOf(awayId)), random, PARAMS);
+    // guess: until each league has its own fit, every result-only match plays at Série A's calibration.
+    const { homeGoals, awayGoals } = simulateMatch(teamOf(clubOf(homeId)), teamOf(clubOf(awayId)), random, CALIBRATED);
     played += String.fromCharCode(ZERO_GOALS + homeGoals, ZERO_GOALS + awayGoals);
   }
   return { ...league, results: league.results.slice(0, 2 * from) + played + league.results.slice(2 * to) };
 }
 
-export type LeagueMatch = { homeId: string; awayId: string; date: IsoDate; result: MatchResult | null };
+type LeagueMatch = { homeId: string; awayId: string; date: IsoDate; result: MatchResult | null };
 
 /** Every match of the league in results order, with its score once played. */
 export function leagueMatches(league: ResultOnlyLeague): LeagueMatch[] {
