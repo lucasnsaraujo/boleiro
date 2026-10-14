@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS players (
   snapshot_id INTEGER NOT NULL REFERENCES snapshots(id),
   id TEXT NOT NULL,
   seq INTEGER NOT NULL,
-  club_id TEXT,                        -- null for a free agent
+  club_id TEXT NOT NULL,
   name TEXT NOT NULL,
   birth_date TEXT,
   age INTEGER,                         -- as the source gave it, when there is no birth date
