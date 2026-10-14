@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Demissão</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="moments.css">
+<script src="mock.js"></script>
+<script src="moments.js"></script>
+<style>
+body { --end: 7400; }
+.stage { background: #0A1610; }
+
+/* ---------- Left: the pressure, match by match ---------- */
+.pres { position: absolute; left: 24px; top: 22px; width: 344px; bottom: 22px; display: flex; flex-direction: column; }
+.pres .when { color: var(--mute); }
+.pres h2 { font-stretch: var(--wide); font-weight: 900; font-size: 25px; line-height: 1; letter-spacing: -.01em; margin-top: 8px; }
+.run { margin-top: 14px; display: grid; grid-template-columns: repeat(9, 1fr); gap: 5px; }
+.r { text-align: center; animation: flipin 420ms var(--e-out) calc(var(--d) * 1ms) both; transform-origin: 50% 0; }
+.r b { display: grid; place-items: center; height: 30px; border-radius: 6px; font-stretch: var(--semi); font-weight: 900; font-size: 14px; background: #3A4A40; color: #E8E4D8; }
+.r.d b { background: var(--red); color: #fff; }
+.r .crest { margin: 6px auto 0; }
+.r small { display: block; font-size: 10px; font-weight: 700; color: var(--ink-2); margin-top: 3px; white-space: nowrap; }
+.r.gn b { box-shadow: 0 0 0 2px #0D80BF; }
+@keyframes flipin { from { opacity: 0; transform: rotateX(-90deg); } }
+
+.meter-row { margin-top: 18px; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: end; }
+.meter-row .lbl { color: var(--ink-2); }
+.meter-row .big { grid-row: span 2; font-stretch: var(--wide); font-weight: 900; font-size: 44px; line-height: .85; color: var(--red); text-align: right; }
+.meter-row .meter { height: 14px; background: #1E3127; box-shadow: inset 0 0 0 1px #2A4434; }
+.meter-row .meter i { background: var(--red); width: calc(var(--v) * 1%); transition: none; }
+.fans { margin-top: 10px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-2); }
+.fans .meter { flex: 1; height: 8px; background: #1E3127; box-shadow: inset 0 0 0 1px #2A4434; }
+.fans .meter i { background: var(--yellow-d); }
+.fans b { color: var(--ink); font-stretch: var(--semi); font-weight: 900; }
+
+.clips { position: relative; flex: 1; margin-top: 18px; }
+.clip { position: absolute; width: 300px; padding: 10px 14px 11px; background: #E9E2CF; color: #1A1A17; box-shadow: 0 14px 22px -12px rgba(0,0,0,.8); animation: pin 520ms var(--e-slap) calc(var(--d) * 1ms) both; }
+.clip .kick { font-stretch: var(--semi); font-weight: 900; font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: #C8102E; }
+.clip h3 { font-stretch: 72%; font-weight: 900; font-size: 25px; line-height: .92; text-transform: uppercase; margin-top: 3px; }
+.clip p { font-size: 11.5px; line-height: 1.35; margin-top: 5px; color: #2C2B26; }
+.clip .tape { width: 60px; height: 16px; left: 50%; top: -8px; margin-left: -30px; background: rgba(255,255,255,.45); }
+@keyframes pin { from { opacity: 0; transform: translateY(-30px) rotate(calc(var(--r) - 6deg)) scale(1.08); } to { opacity: 1; transform: rotate(var(--r)); } }
+
+/* ---------- Center: the night ---------- */
+.night { position: absolute; left: 388px; top: 0; width: 420px; bottom: 0; }
+.sky { position: absolute; inset: 0; background: radial-gradient(60% 46% at 60% 50%, #15291D, rgba(10,22,16,0) 75%); }
+.beira { position: absolute; left: 10px; right: 10px; top: 26px; height: 120px; }
+.win { fill: #3A4A40; animation: winlit 900ms steps(1) 2500ms both; }
+@keyframes winlit { 0% { fill: #3A4A40; } 6% { fill: #FFE7A0; } 100% { fill: #3A4A40; } }
+.log { position: absolute; left: 22px; top: 214px; width: 120px; display: grid; gap: 14px; }
+.log div { font-size: 11px; line-height: 1.3; color: var(--ink-2); animation: appear 400ms var(--e-out) calc(var(--d) * 1ms) both; }
+.log b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 13px; color: var(--ink); }
+@keyframes appear { from { opacity: 0; transform: translateX(-8px); } }
+
+.phone { position: absolute; left: 152px; top: 150px; width: 252px; height: 520px; border-radius: 40px; background: #050806; padding: 9px; box-shadow: 0 0 0 1.5px #2A3A30, 0 40px 60px -20px rgba(0,0,0,.9); transform: rotate(3deg); animation: buzz 360ms linear 3600ms both; }
+@keyframes buzz { 0%, 100% { transform: rotate(3deg); } 20% { transform: rotate(3deg) translateX(-5px); } 40% { transform: rotate(3deg) translateX(5px); } 60% { transform: rotate(3deg) translateX(-4px); } 80% { transform: rotate(3deg) translateX(3px); } }
+.scr { position: relative; height: 100%; border-radius: 32px; overflow: hidden; background: #000; }
+.wall { position: absolute; inset: 0; background: linear-gradient(180deg, #2A0507, #6E0A10 55%, #2A0507); animation: wake 700ms var(--e-out) 2400ms both; }
+.wall .ps { position: absolute; left: 50%; top: 250px; width: 110px; margin-left: -55px; --h: 104px; --fs: 46px; --c: #D00000; transform: rotate(-4deg); opacity: .5; }
+@keyframes wake { from { opacity: 0; } }
+.lock { position: absolute; left: 0; right: 0; top: 34px; text-align: center; color: #fff; animation: wake 700ms var(--e-out) 2400ms both; }
+.lock small { font-size: 13px; font-weight: 600; opacity: .9; }
+.lock b { display: block; font-stretch: var(--semi); font-weight: 600; font-size: 70px; line-height: 1; letter-spacing: -.02em; margin-top: 2px; }
+.notes { position: absolute; left: 10px; right: 10px; top: 168px; display: grid; gap: 7px; }
+.nt { background: rgba(245,243,238,.94); color: #14231A; border-radius: 16px; padding: 9px 11px 10px; animation: drop 520ms var(--e-slap) calc(var(--d) * 1ms) both; box-shadow: 0 6px 14px -6px rgba(0,0,0,.6); }
+.nt .h { display: flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 700; color: #5C584B; }
+.nt .h img, .nt .h .ic { width: 16px; height: 16px; border-radius: 4px; }
+.nt .h .ic { display: grid; place-items: center; background: #14231A; color: #FFCC00; font-size: 9px; font-weight: 900; }
+.nt .h span { margin-left: auto; font-weight: 600; }
+.nt b { display: block; font-weight: 800; font-size: 12.5px; line-height: 1.25; margin-top: 4px; }
+.nt p { font-size: 11.5px; line-height: 1.3; margin-top: 1px; color: #3C4A40; }
+@keyframes drop { from { opacity: 0; transform: translateY(-26px) scale(.94); } }
+
+/* ---------- Right: the morning after ---------- */
+.morning { position: absolute; left: 808px; right: 0; top: 0; bottom: 0; display: flex; flex-direction: column; gap: 14px; padding: 22px 22px 80px 34px; background: var(--paper) url('../tokens/paper.jpg') center / cover; clip-path: inset(0 0 0 100%); animation: dawn 1100ms var(--e-in-out) 4800ms both; }
+[data-theme='dark'] .morning { background-color: #F2EAD9; }
+@keyframes dawn { to { clip-path: inset(0 0 0 0); } }
+.morning::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(10,22,16,.55), rgba(10,22,16,0) 80px); }
+.morning .when { color: #5C584B; }
+.morning .when i { color: #3C4A40; }
+.jb.front { padding: 14px 18px 16px; transform: rotate(1.2deg); animation: land 760ms var(--e-out) 5300ms both; }
+@keyframes land { from { opacity: 0; transform: translate(40px, -60px) rotate(8deg) scale(1.06); } }
+.front h3 { font-size: 52px; margin-top: 4px; }
+.front .deck { font-size: 13px; font-weight: 600; line-height: 1.35; margin-top: 8px; color: #2C2B26; }
+.front .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px; padding-top: 9px; border-top: 1px solid #1A1A17; }
+.front .row h5 { font-stretch: 80%; font-weight: 900; font-size: 15px; line-height: 1.05; }
+.front .row p { font-size: 11px; margin-top: 3px; }
+.front .tally { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; padding: 7px 10px; background: #1A1A17; color: #FBF7EC; font-size: 10.5px; white-space: nowrap; }
+.front .tally b { font-stretch: var(--semi); font-weight: 900; color: #FFCC00; }
+.reac { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.fan { position: relative; padding: 12px 14px; background: #FFFDF7; color: #14231A; border-radius: 10px; box-shadow: 0 0 0 1px rgba(20,35,26,.1), 0 8px 14px -8px rgba(20,35,26,.45); animation: slap 460ms var(--e-slap) calc(var(--d) * 1ms) both; }
+.fan .who { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; color: #5C584B; }
+.fan b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 15px; line-height: 1.1; margin-top: 6px; }
+.fan p { font-size: 11px; color: #5C584B; margin-top: 4px; line-height: 1.35; }
+@keyframes slap { from { opacity: 0; transform: scale(1.3) rotate(-5deg); } 60% { opacity: 1; } }
+.morning .cause { color: #3C4A40; animation: appear 400ms var(--e-out) 6600ms both; }
+.morning .cause > b { color: #5C584B; }
+.acts .replay { color: #5C584B; }
+.acts .btn { --edge: #14231A; border-color: #14231A; box-shadow: 0 3px 0 #14231A; }
+.acts .btn:not(.go) { background: #FFFDF7; color: #14231A; }
+</style>
+</head>
+<body style="--top:#0A1610">
+<div class="app">
+  <div class="mbar"><span class="lights"><i></i><i></i><i></i></span></div>
+  <main><div class="stage">
+
+    <section class="pres">
+      <div class="when"><i class="ph-bold ph-trend-down"></i>Internacional · Brasileirão 2040 · 17º lugar</div>
+      <h2>Nove jogos sem vencer</h2>
+      <div class="run" id="run"></div>
+      <div class="meter-row">
+        <span class="lbl">Confiança da diretoria</span>
+        <span class="big" id="board">71</span>
+        <div class="meter low"><i id="boardbar" style="--v:71"></i></div>
+      </div>
+      <div class="fans"><span>Torcida</span><div class="meter thin"><i id="fanbar" style="width:88%"></i></div><b id="fans">88</b></div>
+      <div class="clips">
+        <div class="clip" style="--d:1700;--r:-2deg;left:0;top:4px"><span class="tape"></span><span class="kick">Seg, 30 jul · depois do Gre-Nal</span><h3>Ultimato: dois jogos</h3><p>Diretoria banca Lucas Araujo contra Vasco e Atlético-MG. Sem vitória, a conversa muda.</p></div>
+        <div class="clip" style="--d:2250;--r:1.6deg;left:30px;top:118px"><span class="tape"></span><span class="kick">Sáb, 4 ago · Beira-Rio</span><h3>Protesto no portão 8</h3><p>Duzentos torcedores cobram elenco e diretoria. Faixa pede a saída do vice de futebol, não do técnico.</p></div>
+        <div class="clip" style="--d:2450;--r:-1deg;left:8px;top:232px"><span class="tape"></span><span class="kick">Dom, 5 ago · Alfredo Jaconi</span><h3>Juventude 3 × 1 Inter</h3><p>Vaias no fim. Na saída do campo, você não fala com a imprensa.</p></div>
+      </div>
+    </section>
+
+    <section class="night">
+      <div class="sky"></div>
+      <svg class="beira" viewBox="0 0 420 120" preserveAspectRatio="none">
+        <g fill="none" stroke="#2E4A3A" stroke-width="2">
+          <path d="M 10 92 Q 210 40 410 92"/>
+          <path d="M 10 92 L 10 110 L 410 110 L 410 92"/>
+          <g id="ribs"></g>
+        </g>
+        <g id="wins"></g>
+        <text x="210" y="118" fill="#3E5C48" font-size="9" font-weight="800" text-anchor="middle" letter-spacing="2">BEIRA-RIO</text>
+      </svg>
+      <div class="log">
+        <div style="--d:2500"><b>21h40</b>Diretoria se reúne no Beira-Rio</div>
+        <div style="--d:2900"><b>23h55</b>Ninguém atende seu empresário</div>
+        <div style="--d:3300"><b>0h31</b>Luzes apagam na sala da presidência</div>
+        <div style="--d:3700"><b>0h47</b>Sai a nota</div>
+      </div>
+      <div class="phone"><div class="scr">
+        <div class="wall"><div class="ps"><div class="art"><b>L</b><em>2039</em></div><div class="nm">Campeão</div></div></div>
+        <div class="lock"><small>terça-feira, 7 de agosto</small><b id="clock">21:40</b></div>
+        <div class="notes">
+          <div class="nt" style="--d:3600"><div class="h"><img src="../../assets/crests/6600.png" alt="">Internacional<span>agora</span></div><b>Nota oficial</b><p>O Inter comunica que Lucas Araujo não é mais o técnico do clube. Agradecemos pelo título de 2039.</p></div>
+          <div class="nt" style="--d:4050"><div class="h"><span class="ic">JB</span>Jornal do Boleiro<span>agora</span></div><b>Urgente: Inter demite Lucas Araujo na madrugada</b></div>
+          <div class="nt" style="--d:4450"><div class="h"><span class="ic" style="background:#0B7A3B;color:#fff">G</span>Gilberto Paixão<span>agora</span></div><p>Professor, acabei de ver. Amanhã cedo tô aí.</p></div>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="morning">
+      <div class="when"><i class="ph-bold ph-newspaper"></i>Terça, 7 ago 2040 · 7h</div>
+      <article class="jb front">
+        <div class="mast"><h4><span>Jornal do</span>Boleiro</h4><small>Porto Alegre · terça, 7 ago 2040<br>Ano 15 · nº 4.410</small></div>
+        <div class="kick" style="margin-top:9px">Internacional</div>
+        <h3>Demitido na madrugada</h3>
+        <p class="deck">Oito meses depois de acabar com 60 anos de fila, Lucas Araujo cai após nove jogos sem vencer. A nota saiu à 0h47, por mensagem.</p>
+        <div class="row">
+          <div><h5>Vestiário soube pelo celular</h5><p>Capitão defende o técnico: "Ele nos tirou da fila."</p></div>
+          <div><h5>Inter já sonda substituto</h5><p>Diretoria quer nome até sábado, contra o Santos.</p></div>
+        </div>
+        <div class="tally"><span><b>2034–2040</b> no Inter</span><span><b>421</b> jogos</span><span>campeão brasileiro em <b>2039</b></span></div>
+      </article>
+      <div class="reac">
+        <div class="fan" style="--d:6000"><div class="who"><img class="crest" src="../../assets/crests/6600.png" width="18" height="18" style="--cut:1px" alt="">Colorados no CT</div><b>"Respeita quem tirou a gente da fila"</b><p>Faixa amarrada no portão do CT às 6h.</p></div>
+        <div class="fan" style="--d:6300"><div class="who"><img class="crest" src="../../assets/crests/210.png" width="18" height="18" style="--cut:1px" alt="">Gremistas nas redes</div><b>"A fila andou, Lucas"</b><p>Piada sobe aos assuntos do Brasil antes das 8h.</p></div>
+      </div>
+      <div class="cause"><b>Por quê</b><span>Nove jogos sem vencer, derrota no Gre-Nal e diretoria em 12. Ser ídolo segurou a torcida, não a diretoria. Ídolo do Inter: 94 → 86.</span></div>
+    </section>
+
+    <div class="acts">
+      <button class="skip" data-skip>Pular <span class="kbd">Esc</span></button>
+      <div class="cta"><button class="replay" data-replay><i class="ph-bold ph-arrows-clockwise"></i>Ver de novo</button><button class="btn"><i class="ph-bold ph-newspaper"></i>Jornal</button><button class="btn go">Central de empregos<i class="ph-bold ph-arrow-right"></i></button></div>
+    </div>
+  </div></main>
+</div>
+<script>
+fill();
+// Nine matches without a win. Each one knocks the board's confidence down; the Gre-Nal hurts most.
+// [result, opponent, score, board after, fans after]
+const RUN = [
+  ['E', 'BAH', '1 × 1', 64, 86], ['D', 'FOR', '0 × 2', 58, 84], ['E', 'CRU', '0 × 0', 55, 84], ['D', 'PAL', '1 × 3', 47, 80], ['D', 'RBB', '1 × 2', 40, 76],
+  ['D', 'GRE', '0 × 2', 27, 66], ['E', 'VAS', '1 × 1', 22, 64], ['D', 'CAM', '0 × 1', 16, 62], ['D', 'JUV', '1 × 3', 12, 61],
+];
+document.getElementById('run').innerHTML = RUN.map(([r, c, s], i) => `<div class="r ${r === 'D' ? 'd' : ''} ${c === 'GRE' ? 'gn' : ''}" style="--d:${200 + i * 210}"><b>${r}</b>${crest(c, 18)}<small>${s}</small></div>`).join('');
+
+const board = document.getElementById('board'), bar = document.getElementById('boardbar'), fans = document.getElementById('fans'), fbar = document.getElementById('fanbar');
+const startBoard = 71, startFans = 88;
+Moment.tick((t) => {
+  let b = startBoard, f = startFans;
+  RUN.forEach(([, , , nb, nf], i) => {
+    const p = Moment.ease.out(Moment.span(t, 300 + i * 210, 380));
+    b += (nb - (i ? RUN[i - 1][3] : startBoard)) * p;
+    f += (nf - (i ? RUN[i - 1][4] : startFans)) * p;
+  });
+  board.textContent = Math.round(b);
+  bar.style.width = b + '%';
+  fans.textContent = Math.round(f);
+  fbar.style.width = f + '%';
+});
+
+// The lock screen clock runs through the night and slows down to 0h47.
+const clock = document.getElementById('clock');
+Moment.tick((t) => {
+  const m = 21 * 60 + 40 + Math.round(Moment.ease.out(Moment.span(t, 2500, 1100)) * 187);
+  clock.textContent = `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+});
+
+// Beira-Rio silhouette: the roof ribs and one lit row of windows, the board room.
+document.getElementById('ribs').innerHTML = Array.from({ length: 21 }, (_, i) => { const x = 10 + i * 20, y = 92 - Math.sin((i / 20) * Math.PI) * 26; return `<path d="M ${x} ${y} L ${x} 110"/>`; }).join('');
+document.getElementById('wins').innerHTML = Array.from({ length: 9 }, (_, i) => `<rect class="${i > 2 && i < 6 ? 'win' : ''}" x="${160 + i * 11}" y="98" width="7" height="6" fill="#22362A"/>`).join('');
+Moment.run(7400);
+</script>
+</body>
+</html>

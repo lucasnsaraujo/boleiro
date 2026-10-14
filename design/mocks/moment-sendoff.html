@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Despedida</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="moments.css">
+<script src="mock.js"></script>
+<script src="moments.js"></script>
+<style>
+body { --end: 7800; }
+.stage { background: #0E1712; }
+
+/* Roof and floodlights */
+.roof { position: absolute; left: 0; right: 0; top: 0; height: 30px; background: linear-gradient(180deg, #E9E4D6, #CFC8B4); box-shadow: 0 2px 0 rgba(0,0,0,.35); z-index: 3; display: flex; justify-content: space-around; align-items: flex-end; padding: 0 30px 5px; }
+.roof i { width: 14px; height: 6px; border-radius: 2px; background: #6E6A5C; animation: lamp 160ms steps(1) calc(var(--d) * 1ms) both; }
+@keyframes lamp { 0% { background: #6E6A5C; } 40% { background: #FFF7D1; } 60% { background: #9C977F; } 100% { background: #FFF7D1; box-shadow: 0 0 0 1px #fff; } }
+.dim { position: absolute; inset: 0; background: #07100B; z-index: 20; pointer-events: none; animation: lightsup 900ms var(--e-out) 200ms both; }
+@keyframes lightsup { from { opacity: .72; } to { opacity: 0; } }
+
+.upper { position: absolute; left: 0; right: 0; top: 30px; height: 168px; background: #1A0B0C; }
+.lower { position: absolute; left: 0; right: 0; top: 198px; height: 88px; background: #160E0E; }
+.lower::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: #0B0707; }
+
+/* Banner on the barrier */
+.faixa { position: absolute; left: 120px; top: 238px; width: 640px; height: 44px; z-index: 4; display: grid; place-items: center; background: #FBF7EC; color: #14231A; box-shadow: 0 6px 10px -4px rgba(0,0,0,.6); clip-path: inset(0 100% 0 0); animation: unroll 900ms var(--e-out) 2300ms both; }
+.faixa::before, .faixa::after { content: ''; position: absolute; top: -6px; width: 3px; height: 56px; background: #8C8672; }
+.faixa::before { left: 10px; } .faixa::after { right: 10px; }
+.faixa b { font-stretch: 70%; font-weight: 900; font-size: 27px; letter-spacing: .01em; text-transform: uppercase; }
+.faixa b span { color: #C8102E; }
+@keyframes unroll { to { clip-path: inset(0 0 0 0); } }
+
+.boards { position: absolute; left: 0; right: 0; top: 286px; height: 22px; background: #111; z-index: 3; display: flex; align-items: center; gap: 70px; padding-left: 40px; overflow: hidden; white-space: nowrap; font-stretch: var(--wide); font-weight: 900; font-size: 12px; letter-spacing: .14em; color: #FBF7EC; }
+.boards span:nth-child(2n) { color: var(--yellow); }
+
+/* Pitch */
+.pitch { position: absolute; left: 0; right: 0; top: 308px; bottom: 0; background: repeating-linear-gradient(180deg, #1C7A3E 0 52px, #217F43 52px 104px); }
+.pitch::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.38), rgba(0,0,0,0) 90px), radial-gradient(120% 90% at 50% 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,.28)); pointer-events: none; }
+.pitch svg { position: absolute; inset: 0; }
+
+/* Squad corridor and the walking coach */
+.pl { position: absolute; width: 58px; margin: -40px 0 0 -29px; --h: 48px; --fs: 21px; --hoop: 4px; transform-origin: 50% 100%; animation: rise 520ms var(--e-slap) calc(var(--d) * 1ms) both; z-index: 5; }
+.pl .nm { font-size: 9.5px; padding: 3px 1px 4px; }
+@keyframes rise { from { opacity: 0; transform: translateY(26px) scale(calc(var(--k) * .7)) rotate(var(--r, 0deg)); } to { opacity: 1; transform: scale(var(--k)) rotate(var(--r, 0deg)); } }
+.coach { position: absolute; left: 0; top: 0; width: 80px; --h: 62px; --fs: 30px; --hoop: 5px; z-index: 30; offset-path: path('M 150 850 C 320 730, 520 590, 672 532'); offset-anchor: 50% 85%; offset-rotate: 0deg; offset-distance: 0%; animation: walk 2100ms var(--e-in-out) 3500ms both, appear 300ms var(--e-out) 3300ms both; }
+.coach .nm { font-size: 10px; font-stretch: 80%; }
+@keyframes walk { to { offset-distance: 100%; } }
+@keyframes appear { from { opacity: 0; } to { opacity: 1; } }
+.trail { stroke-dasharray: 3 7; }
+.trail-mask { stroke-dasharray: 640; stroke-dashoffset: 640; animation: draw 2100ms var(--e-in-out) 3500ms both; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+/* Title card */
+.title { position: absolute; left: 22px; top: 340px; width: 450px; z-index: 8; padding: 16px 20px 14px; background: var(--card); border-radius: 6px; box-shadow: var(--sh-page); transform: rotate(-.6deg); animation: slidein 700ms var(--e-out) 1400ms both; }
+@keyframes slidein { from { opacity: 0; transform: translateY(30px) rotate(-.6deg); } }
+.title .when { font-size: 11.5px; }
+.title h1 { font-stretch: var(--wide); font-weight: 900; font-size: 38px; line-height: .98; letter-spacing: -.02em; margin-top: 6px; }
+.title p { font-size: 13px; line-height: 1.45; color: var(--ink-2); margin-top: 8px; }
+.title .cause { margin-top: 10px; padding-top: 9px; border-top: 2px dotted var(--line-2); }
+
+/* Album page with the spell's numbers */
+.pg { position: absolute; right: 22px; top: 232px; width: 400px; z-index: 9; padding: 16px 18px; background: var(--card); border-radius: 6px; box-shadow: var(--sh-page), 0 30px 40px -20px rgba(0,0,0,.6); transform: rotate(1deg); animation: pagein 760ms var(--e-out) 4900ms both; }
+@keyframes pagein { from { opacity: 0; transform: translateX(80px) rotate(5deg); } }
+.pg .hd { display: flex; align-items: center; gap: 10px; }
+.pg .hd h2 { font-stretch: var(--wide); font-weight: 900; font-size: 15px; line-height: 1.05; white-space: nowrap; }
+.pg .hd small { display: block; font-size: 11.5px; color: var(--mute); font-weight: 600; }
+.pg .hd .pn { margin-left: auto; white-space: nowrap; font-stretch: var(--semi); font-weight: 900; font-size: 11px; color: var(--line-2); align-self: flex-start; }
+.nums { margin-top: 14px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 10px; }
+.nums .nst { animation: slap 460ms var(--e-slap) calc(var(--d) * 1ms) both; }
+.nums .nst:nth-child(2n) { transform: rotate(1.5deg); }
+.nums .nst:nth-child(3n) { transform: rotate(-1.2deg); }
+@keyframes slap { from { opacity: 0; transform: scale(1.5) rotate(-8deg); } 60% { opacity: 1; } }
+.tits { margin-top: 14px; font-size: 12px; line-height: 1.55; color: var(--ink-2); animation: appear 400ms var(--e-out) 6400ms both; }
+.tits b { color: var(--ink); white-space: nowrap; }
+.last { margin-top: 14px; display: grid; grid-template-columns: 92px 1fr; gap: 14px; align-items: center; padding-top: 12px; border-top: 2px dotted var(--line-2); }
+.last .slot { height: 110px; position: relative; }
+.last .ps { position: absolute; inset: -4px -2px; --h: 74px; --fs: 34px; --hoop: 5px; --sheen-at: 7300; animation: stick 620ms var(--e-slap) 6800ms both; }
+@keyframes stick { from { opacity: 0; transform: translate(-60px, -140px) rotate(-14deg) scale(1.35); } 70% { opacity: 1; } to { transform: rotate(-3deg); } }
+.last b { font-stretch: var(--semi); font-weight: 900; font-size: 15px; }
+.last p { font-size: 12px; color: var(--mute); line-height: 1.4; margin-top: 3px; }
+
+canvas.cr { position: absolute; left: 0; right: 0; width: 100%; }
+.acts .replay { color: rgba(255,255,255,.82); }
+</style>
+</head>
+<body style="--top:#E9E4D6">
+<div class="app">
+  <div class="mbar"><span class="lights"><i></i><i></i><i></i></span></div>
+  <main><div class="stage" id="st">
+    <div class="roof" id="roof"></div>
+    <div class="upper"><canvas class="fill" id="mos"></canvas></div>
+    <div class="lower"><canvas class="cr" id="crowd" style="top:6px;height:82px"></canvas></div>
+    <div class="faixa"><b>Lucas Araujo <span>·</span> 2026–2033 <span>·</span> onze taças <span>·</span> eterno</b></div>
+    <div class="boards"><span>FLAMENGO 3 × 1 BAHIA</span><span>OBRIGADO, PROFESSOR</span><span>38ª RODADA</span><span>FLAMENGO 3 × 1 BAHIA</span><span>OBRIGADO, PROFESSOR</span><span>38ª RODADA</span></div>
+    <div class="pitch" id="pitch">
+      <svg viewBox="0 0 1280 464" preserveAspectRatio="none">
+        <g fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2.5">
+          <path d="M 0 22 H 1280"/>
+          <path d="M 652 22 L 700 464"/>
+          <ellipse cx="672" cy="222" rx="176" ry="70"/>
+          <circle cx="672" cy="222" r="4" fill="rgba(255,255,255,.7)"/>
+        </g>
+        <mask id="mk"><path class="trail-mask" d="M 150 542 C 320 422, 520 282, 672 224" stroke="#fff" stroke-width="8" fill="none"/></mask>
+        <path class="trail" mask="url(#mk)" d="M 150 542 C 320 422, 520 282, 672 224" stroke="#FFCC00" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div id="squad"></div>
+    <div class="ps shiny hoops coach" id="coach"><div class="art"><span data-crest="FLA" data-size="14"></span><b>L</b></div><div class="nm">Lucas Araujo</div></div>
+
+    <div class="title">
+      <div class="when"><i class="ph-bold ph-flag-banner"></i>Flamengo 3 × 1 Bahia · 38ª rodada · dom, 4 dez 2033 · Maracanã</div>
+      <h1>A última volta no Maracanã</h1>
+      <p>Depois do apito, ninguém foi embora. O time fez o corredor, a arquibancada virou mosaico e você atravessou o campo até o meio, onde tudo começou em 2026.</p>
+      <div class="cause"><b>Por quê</b><span>Seu contrato acabou e você não renovou. Oito anos, onze títulos e ídolo da torcida: a despedida é das grandes.</span></div>
+    </div>
+
+    <section class="pg">
+      <div class="hd"><span data-crest="FLA" data-size="40"></span><div><h2>Flamengo de Lucas Araujo</h2><small>jan 2026 a dez 2033</small></div><span class="pn">2033 · 7</span></div>
+      <div class="nums">
+        <div class="nst" style="--d:5200"><b>8</b><span>temporadas</span></div>
+        <div class="nst" style="--d:5380"><b id="n2">547</b><span>jogos</span></div>
+        <div class="nst" style="--d:5560"><b id="n3">342</b><span>vitórias</span></div>
+        <div class="nst foil" style="--d:5740"><b id="n4">11</b><span>títulos</span></div>
+        <div class="nst" style="--d:5920"><b id="n5">31</b><span>clássicos vencidos</span></div>
+        <div class="nst foil" style="--d:6100"><b>100</b><span>ídolo, o máximo</span></div>
+      </div>
+      <p class="tits"><b>3 Brasileirões</b> (2026, 2029, 2031) · <b>2 Libertadores</b> (2027, 2031) · <b>2 Copas do Brasil</b> (2028, 2032) · <b>3 Cariocas</b> · <b>1 Supercopa</b></p>
+      <div class="last">
+        <div class="slot"><div class="ps shiny hoops"><div class="art"><span data-crest="FLA" data-size="14"></span><b>L</b><span class="sheen"></span></div><div class="nm">Despedida</div></div></div>
+        <div><b>Figurinha da despedida</b><p>Fecha a página do Flamengo no seu álbum. A torcida guarda a dela.</p></div>
+      </div>
+    </section>
+
+    <div class="dim"></div>
+    <div class="acts">
+      <button class="skip" data-skip>Pular <span class="kbd">Esc</span></button>
+      <div class="cta"><button class="replay" data-replay><i class="ph-bold ph-arrows-clockwise"></i>Ver de novo</button><button class="btn"><i class="ph-bold ph-book-open-text"></i>Ver no álbum</button><button class="btn go">Continuar<i class="ph-bold ph-arrow-right"></i></button></div>
+    </div>
+  </div></main>
+</div>
+<script>
+fill();
+document.getElementById('roof').innerHTML = Array.from({ length: 36 }, (_, i) => `<i style="--d:${40 + ((i * 7) % 36) * 22}"></i>`).join('');
+
+// The 2033 squad makes a corridor from the tunnel to the centre circle: two lines either side of your path,
+// smaller as they go away from the camera.
+const SQ = [
+  ['Evertton', 'E'], ['Kauã', 'K'], ['Ryan', 'R'], ['João Souza', 'J'], ['Dyogo', 'D'], ['Davi', 'D'],
+  ['Freitas', 'F'], ['Wesley', 'W'], ['Werneck', 'W'], ['Thiago', 'T'], ['Breno', 'B'], ['Rangel', 'R'],
+];
+const way = document.querySelector('.trail');
+const len = way.getTotalLength();
+document.getElementById('squad').innerHTML = SQ.map(([n, ini], i) => {
+  const step = Math.floor(i / 2), f = 0.2 + step * 0.13, side = i % 2 ? 1 : -1;
+  const a = way.getPointAtLength(len * f), b = way.getPointAtLength(len * f + 2);
+  const nx = -(b.y - a.y), ny = b.x - a.x, k = 1.08 - f * 0.6, off = (74 * k) / Math.hypot(nx, ny);
+  return `<div class="ps hoops pl" style="left:${a.x + nx * off * side}px;top:${308 + a.y + ny * off * side}px;--k:${k.toFixed(2)};z-index:${20 - step};--d:${2900 + (5 - step) * 90 + (i % 2) * 40};--r:${side * 1.5}deg"><div class="art"><b>${ini}</b></div><div class="nm">${n}</div></div>`;
+}).join('');
+
+// Upper ring: Flamengo's hoops with the message, card by card.
+Moment.mosaic(document.getElementById('mos'), {
+  cell: 7, at: 500, wave: 1900, flip: 320, back: '#2A1214',
+  draw(g, w, h) {
+    for (let y = 0; y < h; y++) { g.fillStyle = Math.floor(y / 3) % 2 ? '#141010' : '#C8102E'; g.fillRect(0, y, w, 1); }
+    g.fillStyle = '#C8102E'; g.fillRect(20, 3, w - 40, h - 6);
+    g.fillStyle = '#FFFFFF';
+    g.font = '900 condensed 16px Archivo';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('OBRIGADO, LUCAS', w / 2, h / 2 + 1);
+  },
+});
+
+// Lower ring: the crowd stands up as you pass in front of them.
+Moment.crowd(document.getElementById('crowd'), {
+  colors: ['#C8102E', '#C8102E', '#1A1A1A', '#2B2B2B', '#F2EAD9', '#8E1F2F'], gap: 7, rise: 4, shade: .35,
+  stand(t, x) {
+    const reach = Moment.ease.out(Moment.span(t, 4900, 1800)) * 0.62;
+    return Math.max(0, Math.min(1, (reach - Math.abs(x - 0.53)) * 10));
+  },
+});
+Moment.run(7800);
+</script>
+</body>
+</html>
