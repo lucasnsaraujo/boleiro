@@ -47,12 +47,21 @@ const FIRST_QUALIFICATION: Qualification = { statePlacings: {}, phase3Ids: [] };
 const ACADEMY_STREAM_SALT = 0xacade;
 const WORLD_STREAM_SALT = 0x3071d;
 
-/** Each country gets a stream of its own, its seed drawn in turn from the game's. */
+/** A 32-bit FNV-1a hash of the text. */
+function hashText(text: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 0x01000193);
+  return hash >>> 0;
+}
+
+/** Each country gets a stream of its own, seeded from the game's seed and its id, so other countries listed or not don't change it. */
 function startWorld(countries: readonly CountryStart[], season: number, seed: number): World {
-  const random = randomStream(seed ^ WORLD_STREAM_SALT);
-  return Object.fromEntries(
-    countries.map(({ structure, levels }) => [structure.id, startCountry(structure, levels, season, Math.floor(random.next() * 2 ** 32))]),
-  );
+  const world: World = {};
+  for (const { structure, levels } of countries) {
+    if (structure.id in world) throw new Error(`two countries have the id ${structure.id}`);
+    world[structure.id] = startCountry(structure, levels, season, (seed ^ WORLD_STREAM_SALT ^ hashText(structure.id)) >>> 0);
+  }
+  return world;
 }
 
 /**

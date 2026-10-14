@@ -49,4 +49,16 @@ describe("a game with a result-only country", () => {
   it("saves and loads the country with the rest of the game", () => {
     expect(loadGame(saveGame(midSeason))).toStrictEqual(midSeason);
   });
+
+  it("plays a country the same whichever countries are listed before it", () => {
+    const other = { structure: { ...STRUCTURE, id: "zz" }, levels: LEVELS.map((clubs) => clubs.map((c) => ({ ...c, id: c.id.replace("yy", "zz") }))) };
+    const alone = loadNewGame(5, { coachClubId: null, world: [{ structure: STRUCTURE, levels: LEVELS }] });
+    const second = loadNewGame(5, { coachClubId: null, world: [other, { structure: STRUCTURE, levels: LEVELS }] });
+    expect(second.world?.yy).toStrictEqual(alone.world?.yy);
+  });
+
+  it("refuses two countries with the same id", () => {
+    const country = { structure: STRUCTURE, levels: LEVELS };
+    expect(() => loadNewGame(5, { coachClubId: null, world: [country, country] })).toThrow(/yy/);
+  });
 });
