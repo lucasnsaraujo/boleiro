@@ -1,8 +1,12 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { imageFileOf, parseAssetManifest } from "./assetManifest.js";
+import { imageFileOf, parseAssetManifest, type ClubImages } from "./assetManifest.js";
+import { loadCrests } from "./crests.js";
 import { loadPack } from "./dataPack.js";
+
+const ROOT = join(import.meta.dirname, "..", "..", "..");
 
 const MANIFEST = JSON.stringify({
   format: 1,
@@ -33,10 +37,20 @@ describe("imageFileOf", () => {
 });
 
 describe("the shipped asset manifest", () => {
+  const shipped = parseAssetManifest(readFileSync(join(import.meta.dirname, "..", "pack", "assets.json"), "utf8"));
+
   it("has a crest for every club the data pack ships", () => {
-    const shipped = parseAssetManifest(readFileSync(join(import.meta.dirname, "..", "pack", "assets.json"), "utf8"));
     const missing = loadPack().clubs.filter((club) => imageFileOf(shipped, club.id, "crest", 64, "webp") === null);
     expect(missing.map((club) => club.id)).toEqual([]);
+  });
+
+  it("gives every club the images data/crests.csv lists, matched by content", () => {
+    const idOf = (kind: string, path: string) => `${kind}/${createHash("sha256").update(readFileSync(join(ROOT, path))).digest("hex").slice(0, 16)}`;
+    const listed = [...loadCrests()].map(([clubId, { crest, scoreboardCrest }]): [string, ClubImages] => [
+      clubId,
+      scoreboardCrest === null ? { crest: idOf("crest", crest) } : { crest: idOf("crest", crest), scoreboardCrest: idOf("scoreboard_crest", scoreboardCrest) },
+    ]);
+    expect(shipped.clubs).toStrictEqual(Object.fromEntries(listed));
   });
 });
 
