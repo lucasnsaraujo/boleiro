@@ -8,7 +8,7 @@
   padding: 18px 14px 14px;
 }
 
-.sr-only {
+.tables .sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -270,7 +270,7 @@
 }
 
 /* Zone badge: the place number, coloured by where it leads. */
-.zn {
+.tables .zn {
   display: inline-grid;
   place-items: center;
   width: 24px;
@@ -282,25 +282,25 @@
   color: var(--ink);
 }
 
-.zn.zone-libertadores,
-.zn.zone-promotion,
-.zn.zone-advance {
+.tables .zn.zone-libertadores,
+.tables .zn.zone-promotion,
+.tables .zn.zone-advance {
   background: var(--green);
   color: var(--on-green);
 }
 
-.zn.zone-preLibertadores {
+.tables .zn.zone-preLibertadores {
   background: var(--green-l);
   color: var(--green);
   box-shadow: inset 0 0 0 1.5px var(--green);
 }
 
-.zn.zone-sulAmericana {
+.tables .zn.zone-sulAmericana {
   background: #dce3f5;
   color: var(--blue);
 }
 
-.zn.zone-relegation {
+.tables .zn.zone-relegation {
   background: var(--red);
   color: var(--on-red);
 }
@@ -309,13 +309,13 @@
   background: #22305a;
 }
 
-.form {
+.tables .form {
   display: inline-flex;
   gap: 3px;
   vertical-align: middle;
 }
 
-.form i {
+.tables .form i {
   width: 16px;
   height: 16px;
   display: grid;
@@ -328,16 +328,16 @@
   color: #fff;
 }
 
-.form i.win {
+.tables .form i.win {
   background: var(--green);
 }
 
-.form i.draw {
+.tables .form i.draw {
   background: var(--line-2);
   color: #14231a;
 }
 
-.form i.loss {
+.tables .form i.loss {
   background: var(--red);
 }
 
@@ -345,7 +345,7 @@
   color: var(--ink);
 }
 
-.mv {
+.tables .mv {
   display: inline-flex;
   align-items: center;
   gap: 1px;
@@ -353,20 +353,20 @@
   font-weight: 800;
 }
 
-.mv.up {
+.tables .mv.up {
   color: var(--green);
 }
 
-.mv.dn {
+.tables .mv.dn {
   color: var(--red);
 }
 
 /* Knockout ties: two plates and the aggregate on the Brasfoot score boxes. */
-.ties {
+.tables .ties {
   list-style: none;
 }
 
-.tie {
+.tables .tie {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 200px;
   align-items: center;
@@ -378,11 +378,11 @@
   font-size: 13.5px;
 }
 
-.tie.mine {
+.tables .tie.mine {
   background: var(--yellow-l);
 }
 
-.tie-side {
+.tables .tie-side {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -390,30 +390,30 @@
   white-space: nowrap;
 }
 
-.tie-side.home {
+.tables .tie-side.home {
   justify-content: flex-end;
 }
 
-.tie-name {
+.tables .tie-name {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.tie-side.lost {
+.tables .tie-side.lost {
   color: var(--mute);
   font-weight: 500;
 }
 
-.tie-side.own .tie-name {
+.tables .tie-side.own .tie-name {
   color: var(--green);
 }
 
-.tie-score {
+.tables .tie-score {
   display: flex;
   gap: 3px;
 }
 
-.tie-legs {
+.tables .tie-legs {
   font-size: 12px;
   font-weight: 500;
   color: var(--mute);
@@ -544,7 +544,7 @@
     padding-left: 12px;
   }
 
-  .tie {
+  .tables .tie {
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 150px;
   }
 }
