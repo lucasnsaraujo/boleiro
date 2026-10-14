@@ -21,6 +21,8 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
+from positions import role_of
+
 SCHEMA = Path(__file__).resolve().parent / "schema.sql"
 # crests.csv paths, and so `images.path`, are relative to the repo root.
 ROOT = Path(__file__).resolve().parent.parent
@@ -150,10 +152,10 @@ def import_snapshot(data: Path, db: sqlite3.Connection) -> int:
         tm = candidates.pop(0)
         player_id = f"tm-{tm['tm_id']}"
         db.execute(
-            "INSERT INTO players VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO players VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (snapshot, player_id, seq, player["club_id"], player["name"], whole(player["age"]), player["nationality"],
              tm["foot"] or None, player["group"], int(player["strength"]), float(player["confidence"]),
-             whole(tm["market_value_eur"]), iso_date(tm["contract_until"])),
+             whole(tm["market_value_eur"]), iso_date(tm["contract_until"]), role_of(player["position"])),
         )
         db.execute("INSERT INTO external_ids VALUES (?, 'player', ?, 'transfermarkt', ?)", (snapshot, player_id, tm["tm_id"]))
         db.execute("INSERT INTO player_positions VALUES (?, ?, 0, ?, 'transfermarkt')", (snapshot, player_id, player["position"]))

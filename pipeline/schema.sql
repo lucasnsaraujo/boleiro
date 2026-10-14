@@ -6,7 +6,7 @@
 CREATE TABLE IF NOT EXISTS snapshots (
   id INTEGER PRIMARY KEY,
   taken_at TEXT NOT NULL,              -- UTC ISO time of the run
-  kind TEXT NOT NULL,                  -- "csv-import" today; later "fotmob", "espn", ...
+  kind TEXT NOT NULL,                  -- "csv-import", "transfermarkt"; later "fotmob", "espn", ...
   note TEXT NOT NULL DEFAULT ''
 );
 
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS clubs (
 -- Ids the same club or player has at each source: transfermarkt, fotmob, espn, wikidata, ea.
 CREATE TABLE IF NOT EXISTS external_ids (
   snapshot_id INTEGER NOT NULL REFERENCES snapshots(id),
-  entity TEXT NOT NULL,                -- club | player
+  entity TEXT NOT NULL,                -- club | player | national_team
   entity_id TEXT NOT NULL,
   source TEXT NOT NULL,
   external_id TEXT NOT NULL,
@@ -113,11 +113,49 @@ CREATE TABLE IF NOT EXISTS players (
   nationalities TEXT NOT NULL,         -- "Argentina/Italy", first is the sporting one
   foot TEXT,                           -- right | left | both
   position_group TEXT NOT NULL,        -- GK | DEF | MID | ATT
-  strength INTEGER NOT NULL,           -- Boleiro's 1-99
+  strength INTEGER,                    -- Boleiro's 1-99; null until a rating step has run on the player
   strength_confidence REAL,
   market_value_eur INTEGER,
   contract_until TEXT,                 -- ISO date
+  role TEXT,                           -- goleiro | lateral | zagueiro | meia | atacante (pipeline/positions.py)
   PRIMARY KEY (snapshot_id, id)
+);
+
+-- The clubs a competition lists this season: a continental draw, the Club World Cup.
+CREATE TABLE IF NOT EXISTS competition_clubs (
+  snapshot_id INTEGER NOT NULL REFERENCES snapshots(id),
+  competition_id TEXT NOT NULL,
+  seq INTEGER NOT NULL,
+  club_id TEXT NOT NULL,
+  PRIMARY KEY (snapshot_id, competition_id, club_id)
+);
+
+CREATE TABLE IF NOT EXISTS national_teams (
+  snapshot_id INTEGER NOT NULL REFERENCES snapshots(id),
+  id TEXT NOT NULL,                    -- "brazil"
+  seq INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  confederation TEXT,
+  PRIMARY KEY (snapshot_id, id)
+);
+
+-- A national team's last squad. Its players may play for clubs outside the game's world, so the
+-- row carries what the team page says about them; `player_id` joins `players` when he is there.
+CREATE TABLE IF NOT EXISTS national_team_players (
+  snapshot_id INTEGER NOT NULL REFERENCES snapshots(id),
+  team_id TEXT NOT NULL,
+  seq INTEGER NOT NULL,
+  player_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  birth_date TEXT,
+  position TEXT NOT NULL,
+  role TEXT,
+  club_tm_id TEXT,
+  club_name TEXT,
+  market_value_eur INTEGER,
+  caps INTEGER,
+  goals INTEGER,
+  PRIMARY KEY (snapshot_id, team_id, player_id)
 );
 
 -- Rank 0 is the main position, then the secondary ones in the source's order.
