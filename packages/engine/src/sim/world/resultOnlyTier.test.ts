@@ -61,4 +61,10 @@ describe("a game with a result-only country", () => {
     const country = { structure: STRUCTURE, levels: LEVELS };
     expect(() => loadNewGame(5, { coachClubId: null, world: [country, country] })).toThrow(/yy/);
   });
+
+  it("refuses a country id that can't name its save shard file: only lowercase letters, digits and dashes", () => {
+    for (const id of ["ENG", "pt_br", "a.b", "../x", ""]) {
+      expect(() => loadNewGame(5, { coachClubId: null, world: [{ structure: { ...STRUCTURE, id }, levels: LEVELS }] })).toThrow("country id");
+    }
+  });
 });

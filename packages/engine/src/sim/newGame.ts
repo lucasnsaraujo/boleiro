@@ -54,10 +54,14 @@ function hashText(text: string): number {
   return hash >>> 0;
 }
 
+// A country's id names its save shard, which the desktop app keeps as a file; see `is_plain_name` in `apps/desktop/src-tauri/src/slots.rs`.
+const COUNTRY_ID = /^[a-z0-9-]{1,64}$/;
+
 /** Each country gets a stream of its own, seeded from the game's seed and its id, so other countries listed or not don't change it. */
 function startWorld(countries: readonly CountryStart[], season: number, seed: number): World {
   const world: World = {};
   for (const { structure, levels } of countries) {
+    if (!COUNTRY_ID.test(structure.id)) throw new Error(`invalid country id "${structure.id}": only lowercase letters, digits and dashes`);
     if (structure.id in world) throw new Error(`two countries have the id ${structure.id}`);
     world[structure.id] = startCountry(structure, levels, season, (seed ^ WORLD_STREAM_SALT ^ hashText(structure.id)) >>> 0);
   }
