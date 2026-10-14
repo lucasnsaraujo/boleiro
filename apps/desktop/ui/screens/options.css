@@ -1,42 +1,59 @@
+/* Options: the settings on an album page, the keyboard on a sticker beside it. */
 .options {
-  max-width: 1100px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 14px;
+  height: 100%;
+  min-height: 0;
+  padding: max(18px, var(--chrome-top)) 14px 14px;
 }
 
-.options-body {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-  gap: 48px;
-  margin-top: 24px;
-  border-top: var(--hairline);
-  padding-top: 20px;
+.bar ~ .screen .options {
+  padding-top: 18px;
+}
+
+.options-page {
+  min-height: 0;
+  overflow: auto;
+  padding: 22px 28px;
+}
+
+.options-title {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 24px;
+}
+
+.options-group {
+  margin-top: 18px;
 }
 
 .options-heading {
-  font-stretch: var(--wide);
-  font-weight: 900;
-  font-size: 18px;
-  line-height: 1;
-  padding-bottom: 8px;
-  margin-bottom: 4px;
+  padding-bottom: 6px;
   border-bottom: 2px solid var(--ink);
-}
-
-.options-main > section + section {
-  margin-top: 26px;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 15px;
 }
 
 .options-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  min-height: 62px;
+  gap: 16px;
+  min-height: 50px;
+  padding: 6px 0;
   border-bottom: 1px solid var(--rule);
+}
+
+.options-row-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .options-row-label {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13.5px;
 }
 
 .options-row-note {
@@ -77,118 +94,119 @@
   outline-offset: 2px;
 }
 
-.options-side {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-
-.shortcuts {
-  padding: 22px 24px;
-  background: var(--card);
-  border-radius: var(--r-m);
-  box-shadow: var(--sh-page);
-}
-
-.shortcuts .options-row-note {
-  margin: 6px 0 10px;
-}
-
-.shortcuts-list {
-  list-style: none;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 18px;
-}
-
-.shortcut {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 34px;
-  font-size: 13px;
-  border-bottom: 2px dotted var(--line);
-}
-
-.shortcut[aria-disabled="true"] {
-  color: var(--mute);
-}
-
-.shortcut-keys {
-  display: flex;
-  gap: 4px;
-  min-width: 44px;
-}
-
-.shortcut .kbd {
-  font-family: var(--f);
-}
-
 .options-volume {
-  display: grid;
-  grid-template-columns: 92px minmax(0, 1fr) 64px;
+  display: flex;
   align-items: center;
-  column-gap: 16px;
-  min-height: 64px;
-  border-bottom: var(--hairline);
+  gap: 10px;
+  width: 290px;
 }
 
-.options-volume-label {
-  font: 600 17px var(--cond);
+.options-volume i {
+  font-size: 16px;
+  color: var(--ink-2);
 }
 
 .options-volume-value {
-  justify-self: end;
-  font: 800 30px/1 var(--num);
+  min-width: 40px;
+  text-align: right;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 
+/* The album's slider: a green fill on a paper track, a white knob with a printed edge. */
 .options-slider {
   appearance: none;
-  width: 100%;
-  height: 24px;
-  background: linear-gradient(var(--yellow), var(--yellow)) left center / var(--fill, 0%) 4px no-repeat, linear-gradient(var(--line), var(--line)) center / 100% 4px no-repeat;
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  margin: 0;
+  background:
+    linear-gradient(var(--green), var(--green)) left center / var(--fill, 0%) 8px no-repeat,
+    linear-gradient(var(--paper-2), var(--paper-2)) center / 100% 8px no-repeat;
+  border-radius: 999px;
   cursor: pointer;
 }
 
 .options-slider::-webkit-slider-thumb {
   appearance: none;
-  width: 14px;
-  height: 24px;
-  background: var(--chalk);
-  border: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow:
+    0 0 0 2px var(--edge),
+    0 2px 0 var(--edge);
 }
 
 .options-slider::-moz-range-thumb {
-  width: 14px;
-  height: 24px;
-  background: var(--chalk);
+  width: 20px;
+  height: 20px;
   border: 0;
-  border-radius: 0;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow:
+    0 0 0 2px var(--edge),
+    0 2px 0 var(--edge);
+}
+
+.options-slider:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
 }
 
 .options-slider:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: default;
 }
 
 .options-volume:has(.options-slider:disabled) .options-volume-value {
-  color: var(--chalk-3);
+  color: var(--mute);
 }
 
-.options-mute {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 56px;
-  font: 600 17px var(--cond);
+/* The album's toggle (.sw) on a real checkbox. */
+.options-sw {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 24px;
+  margin: 0;
+  border-radius: var(--r-pill);
+  background: var(--paper-2);
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
   cursor: pointer;
+  transition: background var(--t-base) var(--e-out);
 }
 
-.options-mute input {
+.options-sw::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
   width: 18px;
   height: 18px;
-  accent-color: var(--yellow);
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow:
+    0 1px 0 rgba(20, 35, 26, 0.25),
+    0 0 0 1px rgba(20, 35, 26, 0.12);
+  transition: transform var(--t-base) var(--e-out);
+}
+
+.options-sw:checked {
+  background: var(--green);
+  box-shadow: inset 0 0 0 1.5px var(--green-d);
+}
+
+.options-sw:checked::after {
+  transform: translateX(16px);
+}
+
+.options-sw:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
 }
 
 .credits-list {
@@ -200,42 +218,113 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
   column-gap: 16px;
-  padding: 9px 0;
+  padding: 8px 0;
   border-bottom: 1px solid var(--rule);
+  font-size: 12.5px;
 }
 
 .credits-sound {
-  font: 500 15px var(--cond);
-  text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
 }
 
 .credits-sound:hover {
-  color: var(--highlight);
+  color: var(--green);
   text-decoration: underline;
 }
 
 .credits-who {
-  font: 500 14px var(--cond);
-  color: var(--chalk-2);
+  color: var(--mute);
   white-space: nowrap;
 }
 
 .credits-note {
-  margin-top: 12px;
-  font: 400 14px var(--cond);
-  color: var(--chalk-2);
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--mute);
 }
 
 .options-actions {
-  margin-top: 28px;
+  margin-top: 22px;
 }
 
-@media (max-width: 900px) {
-  .options-body {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 28px;
+.options-page a.btn {
+  text-decoration: none;
+}
+
+.options-keys {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 20px 22px;
+}
+
+.options-keys h2 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 19px;
+}
+
+.options-keys > .options-row-note {
+  margin-top: 4px;
+}
+
+.shortcuts-list {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 18px;
+  list-style: none;
+}
+
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  border-bottom: 1px dotted var(--line-2);
+  font-size: 13px;
+}
+
+.shortcut[aria-disabled="true"] {
+  color: var(--mute);
+}
+
+.shortcut-keys {
+  display: flex;
+  gap: 4px;
+}
+
+.shortcut .kbd {
+  min-width: 34px;
+}
+
+.options-about {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 2px dotted var(--line-2);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--mute);
+}
+
+.options-about b {
+  color: var(--ink);
+}
+
+@media (max-width: 1100px) {
+  .options {
+    grid-template-columns: minmax(0, 1fr) 330px;
+  }
+
+  .options-volume {
+    width: 220px;
   }
 }
