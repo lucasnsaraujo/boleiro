@@ -4,8 +4,8 @@ import type { Club } from "@boleiro/data/clubs";
 import { formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import { loadFromSlot } from "@boleiro/game-client/saves/saveToSlot";
 import { slotLabel, type SlotMeta } from "@boleiro/game-client/saves/slotMeta";
-import wordmark from "../../../../design/logo/boleiro-wordmark-dark.svg";
-import icon from "../../../../design/logo/boleiro-icon-small.svg";
+import wordmark from "../../../../design/logo/boleiro-edition-dark.svg";
+import icon from "../../../../design/logo/boleiro-icon-16.svg";
 import tauriConfig from "../../src-tauri/tauri.conf.json?raw";
 import { platformOf } from "../app/platform.js";
 import { useServices } from "../app/ServicesContext.js";
@@ -111,7 +111,7 @@ export function StartMenu() {
       <div className="lobby-spread">
         <section className="lobby-cover" aria-label="Boleiro">
           <span className="lobby-edition">Edição 2026 · Brasil</span>
-          <img className="lobby-wordmark" src={wordmark} height={112} alt="Boleiro 2026" />
+          <img className="lobby-wordmark" src={wordmark} height={94} alt="Boleiro 2026" />
           <p className="lobby-pitch">Você é o técnico. Escala, contrata, negocia com a diretoria e vê a rodada inteira ao vivo.</p>
           <div className="lobby-pile" aria-hidden="true">
             {COVER_STICKERS.map((sticker, index) => (
