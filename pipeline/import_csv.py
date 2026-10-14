@@ -22,6 +22,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SCHEMA = Path(__file__).resolve().parent / "schema.sql"
+# crests.csv paths, and so `images.path`, are relative to the repo root.
+ROOT = Path(__file__).resolve().parent.parent
 COUNTRY = "BR"
 CURRENCY = "BRL"
 SEASON = 2026
@@ -130,7 +132,7 @@ def import_snapshot(data: Path, db: sqlite3.Connection) -> int:
         for kind, column in (("crest", "crest"), ("scoreboard_crest", "scoreboard_crest")):
             if not row[column]:
                 continue
-            path = data.resolve().parent / row[column]
+            path = ROOT / row[column]
             width, height = png_size(path)
             db.execute(
                 "INSERT INTO images VALUES (?, 'club', ?, ?, ?, ?, ?, ?, ?)",
