@@ -155,7 +155,7 @@ function ball(size, ink = '#14231A') {
 // ---------- Window chrome ----------
 function chrome(os, title) {
   if (os === 'win') {
-    return `<div class="chrome win"><img src="../logo/boleiro-icon-small.svg" width="16" height="16" alt=""><span class="ttl">${title}</span>
+    return `<div class="chrome win"><img src="../logo/boleiro-icon-16.svg" width="16" height="16" alt=""><span class="ttl">${title}</span>
       <span class="caps"><span class="cap"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 5.5h10" stroke="currentColor"/></svg></span><span class="cap"><svg width="10" height="10" viewBox="0 0 10 10"><rect x=".5" y=".5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor"/></svg></span><span class="cap x"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M.5.5l9 9M9.5.5l-9 9" stroke="currentColor"/></svg></span></span></div>`;
   }
   return `<div class="chrome mac"><span class="lights"><i></i><i></i><i></i></span><span class="ttl">${title}</span></div>`;
