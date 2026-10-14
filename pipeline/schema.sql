@@ -1,6 +1,7 @@
 -- Master database: every import or scrape run is one snapshot, and every data row carries the
 -- snapshot it came from, so two runs can be compared row by row (same club or player id).
--- Ids are stable across snapshots: clubs by slug ("bahia-ba"), players by source id ("tm-352324").
+-- Ids are stable across snapshots: Brazilian clubs by slug ("bahia-ba"), other clubs and players by
+-- source id ("tm-31", "tm-352324").
 -- `seq` keeps each table's order from its source, which the game's seeded draws depend on.
 
 CREATE TABLE IF NOT EXISTS snapshots (

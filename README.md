@@ -43,7 +43,7 @@ Sofascore shows a Cloudflare captcha if it gets requests too fast, so `fetch_his
 
 ### Master database and data pack
 
-The game does not read `data/` or `assets/` directly. The pipeline loads those files into a SQLite master database, one snapshot per run, and builds the **data pack** the app ships from the latest snapshot:
+The game does not read `data/` or `assets/` directly. The pipeline loads those files into a SQLite master database, one snapshot per run, and builds the **data pack** the app ships from the latest CSV-import snapshot:
 
 ```sh
 python3 pipeline/import_csv.py data pipeline/boleiro.db                          # a new snapshot in the master DB (git-ignored)
@@ -55,6 +55,19 @@ python3 pipeline/build_pack.py pipeline/boleiro.db packages/data/pack           
 - `packages/data/pack/brazil.pack.json.gz` is one JSON document with a column per field (`clubs.name[i]` is club i's name), gzipped. `packVersion` is a hash of its content. A new game stores it in the save (`GameState.packVersion`), so a career keeps the pack it started with; a save from before packs reads as `FIRST_PACK_VERSION`, the pack built from the 2026 Brazil CSVs, which keeps its value when newer packs ship. `packages/data/src/dataPack.ts` decodes it: `loadPack()` in Node, `parsePack` on the text Vite bundles through `gunzipImports` (`?gunzip` imports).
 - `packages/data/pack/assets/` holds every image in a folder per kind (`crest/`, `scoreboard_crest/`), deduplicated within the kind by the content hash in its name, as WebP and AVIF fitted into 64, 128 and 256 px boxes (never upscaled). `assets.json` lists them and which club uses which. The app ships only the WebP crests and picks the box that fills each crest's size, and twice that for sharp screens.
 - `pnpm test` builds a pack from `data/` in a temp folder and checks it decodes to exactly what the CSV parsers give, that the committed pack is that same pack, and that each asset class stays within its byte budget (`packages/data/src/assetBudget.test.ts`): today's size plus about 25%. When the world data lands, raise a budget on purpose in the same commit.
+
+### World squads (Transfermarkt)
+
+`pipeline/tm_world.py` lists the v1 world (SPEC §6): Brazil's Séries A–D, the top division of the other nine CONMEBOL countries (and Argentina's second), first and second divisions plus the national cup of every European country in the 2026/27 Champions or Europa League draw, Saudi Arabia, MLS and Mexico, the other Club World Cup clubs, and the national teams of the 2026 World Cup and the South American and European qualifiers. `scrape_world.py` writes it all into one `transfermarkt` snapshot of the master database: squads with Transfermarkt's position mapped to a role (goleiro, lateral, zagueiro, meia, atacante, in `pipeline/positions.py`), colours from each club's facts page, crests with their source URL, and the source of every club value (`guess` or `missing` where Transfermarkt has none). Players get no strength yet.
+
+```sh
+.venv/bin/python pipeline/scrape_world.py pipeline/boleiro.db [--countries br,gb-eng] [--delay 3]   # pages cached in data/tm_cache
+.venv/bin/python pipeline/build_world_packs.py pipeline/boleiro.db <out dir>    # <country>.pack.json.gz + national-teams.pack.json.gz
+python3 pipeline/roster_diff.py pipeline/boleiro.db                               # who moved where between the two latest scrapes, as Markdown
+.venv/bin/python -m unittest discover -s pipeline/tests -t pipeline              # the pipeline's tests, on saved pages in pipeline/tests/fixtures
+```
+
+The scraper waits `--delay` seconds after each page (never under 1; Transfermarkt's robots.txt asks for 2), retries 429s and server errors with a growing back-off, and keeps every page in the cache, so a stopped run resumes where it stopped and a rerun within `--max-age-days` downloads nothing. Each club costs a squad page, a facts page and a crest image. Brazil's clubs keep their ids from `data/clubs.csv`; other clubs are `tm-<Transfermarkt id>`, players `tm-<Transfermarkt id>`.
 
 ## Development
 
