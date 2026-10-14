@@ -1,7 +1,8 @@
+import { copyRecord } from "../copyRecord.js";
 import type { ClubFinance, Fixture, GameState } from "../gameState.js";
 import { clubMood } from "../morale/clubMood.js";
 import { crowdTurnout } from "../morale/crowdTurnout.js";
-import { bookMoney } from "./bookMoney.js";
+import { bookMoneyInDraft } from "./bookMoney.js";
 import { SELLABLE_SHARE_OF_CAPACITY } from "./openingFinances.js";
 import { tierOf } from "./tierOf.js";
 
@@ -38,17 +39,20 @@ export function attendance(state: GameState, home: ClubFinance, homeId: string, 
   return Math.round(Math.min(SELLABLE_SHARE_OF_CAPACITY * club.capacity, home.baseCrowd * form * opponent * price * crowdTurnout(clubMood(state, homeId))));
 }
 
-/** Books the home club's gate and both clubs' form for a played fixture. */
-export function recordMatchFinances(state: GameState, fixture: Fixture): GameState {
-  const home = state.finances[fixture.homeId];
-  const away = state.finances[fixture.awayId];
-  if (!home || !away || !fixture.result) return state;
-  const { homeGoals, awayGoals } = fixture.result;
-  const gate = Math.round(attendance(state, home, fixture.homeId, fixture.awayId) * home.ticketPrice);
-  const finances = {
-    ...state.finances,
-    [fixture.homeId]: withResult(home, pointsFor(homeGoals, awayGoals)),
-    [fixture.awayId]: withResult(away, pointsFor(awayGoals, homeGoals)),
-  };
-  return bookMoney({ ...state, finances }, fixture.homeId, { revenue: "tickets", amount: gate });
+/** Books the home club's gate and both clubs' form for each fixture played today, in one copy of the finances map. */
+export function recordMatchFinances(state: GameState, played: readonly Fixture[]): GameState {
+  if (!played.length) return state;
+  const draft: GameState = { ...state, finances: copyRecord(state.finances) };
+  const { finances } = draft;
+  for (const fixture of played) {
+    const home = finances[fixture.homeId];
+    const away = finances[fixture.awayId];
+    if (!home || !away || !fixture.result) continue;
+    const { homeGoals, awayGoals } = fixture.result;
+    const gate = Math.round(attendance(draft, home, fixture.homeId, fixture.awayId) * home.ticketPrice);
+    finances[fixture.homeId] = withResult(home, pointsFor(homeGoals, awayGoals));
+    finances[fixture.awayId] = withResult(away, pointsFor(awayGoals, homeGoals));
+    bookMoneyInDraft(finances, fixture.homeId, { revenue: "tickets", amount: gate });
+  }
+  return draft;
 }

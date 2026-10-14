@@ -119,7 +119,7 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: day.discipline, coach };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
   next = recordMatches(next, played, day.sheets);
-  for (const fixture of played) next = recordMatchFinances(next, fixture);
+  next = recordMatchFinances(next, played);
   const prizes = payCopaPrizes(next, played);
   next = prizes.state;
   events.push(...prizes.events);

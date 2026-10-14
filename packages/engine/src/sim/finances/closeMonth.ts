@@ -1,3 +1,4 @@
+import { copyRecord } from "../copyRecord.js";
 import type { ClubFinance, GameState, Ledger } from "../gameState.js";
 import { marketView, type MarketView } from "../transfers/marketView.js";
 import { openDraft } from "../transfers/movePlayer.js";
@@ -121,7 +122,8 @@ export function closeMonth(state: GameState, random: () => number): { state: Gam
   const wagesOf = wageBillsOf(state);
   const month = previousMonth(state.date);
   const events: FinanceEvent[] = [];
-  let current = state;
+  // One copy of the finances map for the whole closing; each club's entry is replaced in place.
+  let current: GameState = { ...state, finances: copyRecord(state.finances) };
   // Opened at the first forced sale, then shared by the rest of the closing's sales.
   let view: MarketView | null = null;
   for (const clubId of Object.keys(state.finances).sort()) {
@@ -132,7 +134,7 @@ export function closeMonth(state: GameState, random: () => number): { state: Gam
     let finance = payDown(settled.finance, wages);
     const late = finance.wagesOwed > 0;
     finance = { ...finance, lateWageMonths: late ? finance.lateWageMonths + 1 : 0, membership: membershipAfter(finance, late) };
-    current = { ...current, finances: { ...current.finances, [clubId]: finance } };
+    current.finances[clubId] = finance;
     if (late) events.push({ type: "wagesLate", clubId, owed: finance.wagesOwed, months: finance.lateWageMonths });
     if (late && finance.lateWageMonths >= FORCED_SALE_AFTER_LATE_MONTHS) {
       if (!view) {
@@ -149,17 +151,11 @@ export function closeMonth(state: GameState, random: () => number): { state: Gam
     const paid = payDown(closed, wages);
     const ledger: Ledger = { revenue: paid.month.revenue, costs: paid.month.costs };
     const budgeted = state.date.slice(5, 7) === MID_YEAR_WINDOW_MONTH ? setBoardBudget(paid, wages) : paid;
-    current = {
-      ...current,
-      finances: {
-        ...current.finances,
-        [clubId]: {
-          ...budgeted,
-          season: addLedgers(paid.season, ledger),
-          month: { ...emptyLedger(), points: 0, games: 0 },
-          lastClosing: { month, ledger, cash: paid.cash },
-        },
-      },
+    current.finances[clubId] = {
+      ...budgeted,
+      season: addLedgers(paid.season, ledger),
+      month: { ...emptyLedger(), points: 0, games: 0 },
+      lastClosing: { month, ledger, cash: paid.cash },
     };
     events.push({
       type: "monthClosed", clubId, month, ledger, cash: paid.cash, loans: paid.loans, wagesOwed: paid.wagesOwed, borrowed: settled.borrowed,
