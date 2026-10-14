@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
+import { isTauri } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
 import { saveToSlot } from "@boleiro/game-client/saves/saveToSlot";
@@ -9,6 +11,7 @@ import { musicFor, useSound } from "../sound/SoundProvider.js";
 import { useTheme } from "../theme/ThemeProvider.js";
 import { useCommands, useRunCommand } from "./AppCommands.js";
 import { GameClockContext } from "./gameClock.js";
+import { installNativeMenu } from "./nativeMenu.js";
 import { platformOf } from "./platform.js";
 import { screenDirection } from "./screenDirection.js";
 import { NAV, navIndexOf, showsBar, type NavId } from "./screens.js";
@@ -21,6 +24,8 @@ type Toast = { id: number; text: string; isError: boolean };
 
 const PLATFORM = platformOf(navigator.userAgent);
 const TOAST_MS = 2600;
+// The menu bar belongs to the app, not to a screen: it is built once, the first time the shell mounts.
+let hasNativeMenu = false;
 
 function windowTitle(pathname: string, clock: Clock | null): string {
   if (pathname === "/new-game") return "Boleiro · Nova carreira";
@@ -68,7 +73,14 @@ export function Shell() {
   const title = windowTitle(pathname, clock);
   useEffect(() => {
     document.title = title;
+    if (isTauri()) void getCurrentWindow().setTitle(title);
   }, [title]);
+
+  useEffect(() => {
+    if (hasNativeMenu || !isTauri() || PLATFORM !== "mac") return;
+    hasNativeMenu = true;
+    void installNativeMenu((id) => void runCommand(id));
+  }, [runCommand]);
 
   const [toast, setToast] = useState<Toast | null>(null);
   useEffect(() => {

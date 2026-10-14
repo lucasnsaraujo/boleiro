@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "The main window: core APIs only. Saves go through the app's own slot commands.",
+  "description": "The main window: core APIs, plus dragging by the drawn title bar and setting the window's title and theme. Saves go through the app's own slot commands.",
   "windows": ["main"],
-  "permissions": ["core:default"]
+  "permissions": ["core:default", "core:window:allow-start-dragging", "core:window:allow-set-title", "core:window:allow-set-theme"]
 }
