@@ -15,7 +15,10 @@ export type DataPack = {
 
 const PACK_FORMAT = 1;
 export const PACK_FILE = "brazil.pack.json.gz";
-/** The pack built from the 2026 Brazil CSVs: the data every save made before packs existed started from. */
+/**
+ * The pack built from the 2026 Brazil CSVs: the data every save made before packs existed started
+ * from. It stays this value when a newer pack ships; the shipped one is `loadPack().packVersion`.
+ */
 export const FIRST_PACK_VERSION = "br-a49b7692d13f";
 
 /** One table of the pack: a column per field, every column `rows` long. */

@@ -43,8 +43,8 @@ describe("the data pack", () => {
     expect(parsePack(built).packVersion).toMatch(/^br-[0-9a-f]{12}$/);
   });
 
-  it("still ships the first Brazil pack, which saves from before data packs are read as", () => {
-    expect(loadPack().packVersion).toBe(FIRST_PACK_VERSION);
+  it("never renames the first Brazil pack, whatever pack ships now, since saves from before data packs are read as it", () => {
+    expect(FIRST_PACK_VERSION).toBe("br-a49b7692d13f");
   });
 
   it("rejects a pack of another format", () => {
