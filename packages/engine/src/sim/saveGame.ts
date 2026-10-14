@@ -1,3 +1,4 @@
+import { FIRST_PACK_VERSION } from "@boleiro/data/dataPack";
 import type { GameState } from "./gameState.js";
 
 const SAVE_VERSION: GameState["version"] = 4;
@@ -20,10 +21,13 @@ export function saveGame(state: GameState): string {
   return JSON.stringify(state);
 }
 
-/** A parsed save checked as a game of this version; throws otherwise. */
+/**
+ * A parsed save checked as a game of this version; throws otherwise. A save from before data
+ * packs has no `packVersion` and started from the first Brazil pack.
+ */
 export function toGameState(parsed: unknown): GameState {
   if (!isGameState(parsed)) throw new Error(`not a version ${SAVE_VERSION} Boleiro save`);
-  return parsed;
+  return typeof parsed.packVersion === "string" ? parsed : { ...parsed, packVersion: FIRST_PACK_VERSION };
 }
 
 export function loadGame(json: string): GameState {

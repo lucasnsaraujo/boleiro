@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { FIRST_PACK_VERSION, loadPack } from "@boleiro/data/dataPack";
 import { advanceDay } from "./advanceDay.js";
 import type { GameState } from "./gameState.js";
 import { loadNewGame } from "./loadNewGame.js";
@@ -23,6 +24,16 @@ describe("saveGame and loadGame", () => {
     const resumed = playDays(loadGame(saveGame(midSeason)), 60);
     expect(resumed).toEqual(original);
     expect(resumed.fixtures.filter((f) => f.result).length).toBeGreaterThan(midSeason.fixtures.filter((f) => f.result).length);
+  });
+
+  it("keeps the data pack the career started with", () => {
+    expect(loadGame(saveGame(midSeason)).packVersion).toBe(loadPack().packVersion);
+  });
+
+  it("reads a save from before data packs as a career on the first Brazil pack", () => {
+    const old: Partial<GameState> = { ...midSeason };
+    delete old.packVersion;
+    expect(loadGame(JSON.stringify(old)).packVersion).toBe(FIRST_PACK_VERSION);
   });
 
   it("rejects a save from another version", () => {

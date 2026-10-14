@@ -21,6 +21,8 @@ export type NewGameOptions = {
   players: readonly SquadPlayer[];
   finances: FinanceData;
   competitionMoney: CompetitionMoney;
+  /** The data pack the clubs, players and money above come from. */
+  packVersion: string;
   coachClubId: string | null;
   /** Career mode: the coach starts unknown and unemployed, with offers from small clubs. */
   careerMode?: boolean;
@@ -62,7 +64,7 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs, players, finances: financeData, competitionMoney, coachClubId, careerMode = false, season = FIRST_SEASON }: NewGameOptions,
+  { clubs, players, finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON }: NewGameOptions,
 ): GameState {
   const random = randomStream(seed);
   const traitRandom = randomStream(seed ^ TRAIT_STREAM_SALT);
@@ -84,6 +86,7 @@ export function newGame(
   const market = openingMarket(seed);
   return openingCoach({
     version: 4,
+    packVersion,
     seed,
     rngState: random.state(),
     date: `${season}-01-01`,

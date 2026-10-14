@@ -146,6 +146,8 @@ export type Economy = {
 
 export type GameState = {
   version: 4;
+  /** The data pack the career started from (`DataPack.packVersion`); it keeps it for life. */
+  packVersion: string;
   seed: number;
   rngState: number;
   date: IsoDate;

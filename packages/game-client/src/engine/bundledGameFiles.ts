@@ -1,7 +1,5 @@
-import clubs from "../../../../data/clubs.csv?raw";
-import competitionMoney from "../../../../data/competition-money.json?raw";
-import finances from "../../../../data/finances.csv?raw";
-import players from "../../../../data/players.csv?raw";
+import { parsePack } from "@boleiro/data/dataPack";
+import pack from "@boleiro/data/pack/brazil.pack.json.gz?gunzip";
 import type { GameFiles } from "@boleiro/engine/sim/loadNewGame";
 
-export const bundledGameFiles: GameFiles = { clubs, players, finances, competitionMoney };
+export const bundledGameFiles: GameFiles = parsePack(pack);

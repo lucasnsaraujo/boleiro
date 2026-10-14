@@ -1,4 +1,4 @@
-import { readDataFile } from "./readDataFile.js";
+import { loadPack } from "./dataPack.js";
 import { parseCsv } from "./csv.js";
 
 export type Division = "A" | "B" | "C" | "D";
@@ -61,7 +61,7 @@ export function parsePlayers(csv: string): SquadPlayer[] {
 }
 
 export function loadPlayers(): SquadPlayer[] {
-  return parsePlayers(readDataFile("players.csv"));
+  return loadPack().players;
 }
 
 /** A club's name and squad: the shape the match engine plays as a team. */

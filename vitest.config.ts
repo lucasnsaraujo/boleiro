@@ -1,6 +1,8 @@
 import { configDefaults, defineConfig } from "vitest/config";
+import { gunzipImports } from "./packages/data/src/gunzipImports.ts";
 
 export default defineConfig({
+  plugins: [gunzipImports()],
   test: {
     exclude: [...configDefaults.exclude, ".claude/**"],
     projects: [

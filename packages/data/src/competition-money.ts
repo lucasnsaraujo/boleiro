@@ -1,4 +1,4 @@
-import { readDataFile } from "./readDataFile.js";
+import { loadPack } from "./dataPack.js";
 import { BASES, type Basis } from "./finances.js";
 
 type Sourced = { basis: Basis; source: string };
@@ -147,5 +147,5 @@ export function parseCompetitionMoney(json: string): CompetitionMoney {
 }
 
 export function loadCompetitionMoney(): CompetitionMoney {
-  return parseCompetitionMoney(readDataFile("competition-money.json"));
+  return loadPack().competitionMoney;
 }

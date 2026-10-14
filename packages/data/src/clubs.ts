@@ -1,4 +1,4 @@
-import { readDataFile } from "./readDataFile.js";
+import { loadPack } from "./dataPack.js";
 import { parseCsv } from "./csv.js";
 import type { Division } from "./players.js";
 
@@ -78,5 +78,5 @@ export function parseClubs(csv: string): Club[] {
 }
 
 export function loadClubs(): Club[] {
-  return parseClubs(readDataFile("clubs.csv"));
+  return loadPack().clubs;
 }

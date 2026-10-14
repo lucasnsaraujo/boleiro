@@ -1,10 +1,9 @@
 import { expect, test } from "vitest";
-import { parseClubs } from "@boleiro/data/clubs";
 import type { Board } from "@boleiro/engine/sim/coach/boardExpectations";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
 import { boardGoal, clubChoices, filterClubs, statesOf, type ClubFilter } from "./clubChoices.js";
 
-const CLUBS = parseClubs(bundledGameFiles.clubs);
+const CLUBS = bundledGameFiles.clubs;
 
 const ALL: ClubFilter = { query: "", division: null, state: null };
 
