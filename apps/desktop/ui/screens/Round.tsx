@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { memo, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router";
 import type { Club } from "@boleiro/data/clubs";
@@ -15,7 +15,7 @@ import { useFlip } from "../motion/useFlip.js";
 import { LineupSheet } from "../round/LineupSheet.js";
 import { kickOffOf, liveChangeOf, liveLimits, type Sheet } from "../round/lineupDraft.js";
 import type { LiveRound, RoundClub, Side } from "@boleiro/game-client/round/liveRoundOf";
-import { liveTable, type LiveTableRow } from "../round/liveTable.js";
+import { liveTable, shortTable, type LiveTableRow } from "../round/liveTable.js";
 import type { MatchDayPlan } from "@boleiro/game-client/round/matchDayPlan";
 import { goalsBetween, pauseReason, roundAt, scorersUntil, type EventKind, type MatchAt } from "../round/roundAt.js";
 import { crowdLevel, roundCues, thinCues } from "../sound/roundCues.js";
@@ -37,6 +37,8 @@ const COMPETITION_LOGOS = [
   { prefix: "Série B", src: serieB },
   { prefix: "Copa do Brasil", src: copaDoBrasil },
 ] as const;
+// The slip of the table on the cover: the coach's club between its neighbours.
+const TABLE_CARD_ROWS = 3;
 const EXPO_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 const NO_COLOURS = { primary: "#eef3e8", secondary: "#0a1a10" };
 /** The crowd quietens while the clock stands still: half-time, a pause, a sheet open. */
@@ -517,7 +519,21 @@ function Cover({ round, match, label, minute, speed, golCount, isOnlyMine, isFin
   );
 }
 
-function MatchRow({ match, clubs, flash }: { match: MatchAt; clubs: Readonly<Record<string, RoundClub>>; flash: Flash | undefined }) {
+type MatchRowProps = { match: MatchAt; clubs: Readonly<Record<string, RoundClub>>; flash: Flash | undefined };
+
+/** A row redraws only when its own match changes, so a whole round's board stays light at 4x. */
+const isSameRow = (before: MatchRowProps, after: MatchRowProps) =>
+  before.clubs === after.clubs &&
+  before.flash === after.flash &&
+  before.match.isCoach === after.match.isCoach &&
+  before.match.score.home === after.match.score.home &&
+  before.match.score.away === after.match.score.away &&
+  before.match.reds.home === after.match.reds.home &&
+  before.match.reds.away === after.match.reds.away &&
+  before.match.last?.minute === after.match.last?.minute &&
+  before.match.last?.text === after.match.last?.text;
+
+const MatchRow = memo(function MatchRow({ match, clubs, flash }: MatchRowProps) {
   const home = clubs[match.homeId];
   const away = clubs[match.awayId];
   if (!home || !away) return null;
@@ -546,7 +562,7 @@ function MatchRow({ match, clubs, flash }: { match: MatchAt; clubs: Readonly<Rec
       </span>
     </li>
   );
-}
+}, isSameRow);
 
 /** A club on the round board: its crest on a pill in its colours, as Brasfoot paints it. */
 function RowPlate({ club, red }: { club: RoundClub; red: boolean }) {
@@ -562,11 +578,9 @@ function RowPlate({ club, red }: { club: RoundClub; red: boolean }) {
 
 /** The coach's group as it would stand now, three rows around his club, over the button that opens it whole. */
 function TableCard({ rows, clubs, coachClubId, onOpen }: { rows: readonly LiveTableRow[]; clubs: Readonly<Record<string, RoundClub>>; coachClubId: string | null; onOpen: () => void }) {
-  const at = Math.max(0, rows.findIndex((row) => row.clubId === coachClubId));
-  const from = Math.max(0, Math.min(at - 1, rows.length - 3));
   return (
     <div className="live-table">
-      <TableRows rows={rows.slice(from, from + 3)} clubs={clubs} coachClubId={coachClubId} />
+      <TableRows rows={shortTable(rows, coachClubId, TABLE_CARD_ROWS)} clubs={clubs} coachClubId={coachClubId} />
       <button className="live-table-open" onClick={onOpen}>
         Tabela completa
       </button>
