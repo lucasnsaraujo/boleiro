@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Jogo de despedida</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="moments.css">
+<script src="mock.js"></script>
+<script src="moments.js"></script>
+<style>
+body { --end: 6600; }
+.stage { background: var(--paper) url('../tokens/paper.jpg') center / cover; }
+
+/* ---------- Left: the ticket and the man of the day ---------- */
+.ticket { position: absolute; left: 26px; top: 24px; width: 384px; height: 168px; display: flex; filter: drop-shadow(0 12px 14px rgba(20,35,26,.28)); animation: tin 700ms var(--e-slap) 100ms both; }
+@keyframes tin { from { opacity: 0; transform: translateY(-40px) rotate(-6deg); } to { transform: rotate(-1.5deg); } }
+.ticket .body { flex: 1; position: relative; background: #FFFDF7; border-radius: 10px 0 0 10px; padding: 14px 16px; overflow: hidden; -webkit-mask: radial-gradient(circle at 100% 50%, transparent 9px, #000 9.5px); }
+.ticket .body::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 10px; background: repeating-linear-gradient(180deg, #C8102E 0 10px, #141010 10px 20px); }
+.ticket .kick { font-stretch: var(--semi); font-weight: 900; font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: #C8102E; padding-left: 6px; }
+.ticket h3 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: .95; letter-spacing: -.02em; padding-left: 6px; margin-top: 4px; }
+.ticket h3 span { display: block; font-stretch: 100%; font-weight: 800; font-size: 11.5px; letter-spacing: 0; color: #3C4A40; margin-top: 4px; }
+.ticket dl { display: grid; grid-template-columns: auto auto auto auto; white-space: nowrap; gap: 2px 14px; padding-left: 6px; margin-top: 12px; font-size: 10px; color: #5C584B; }
+.ticket dd { font-stretch: var(--semi); font-weight: 900; font-size: 13px; color: #14231A; grid-row: 2; }
+.ticket .stub { width: 80px; position: relative; background: #FFCC00; border-radius: 0 10px 10px 0; border-left: 2px dashed rgba(20,35,26,.35); display: grid; place-items: center; text-align: center; color: #14231A; -webkit-mask: radial-gradient(circle at 0 50%, transparent 9px, #000 9.5px); animation: tear 620ms var(--e-out) 1100ms both; transform-origin: 0 100%; }
+.ticket .stub b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 36px; line-height: 1; }
+.ticket .stub small { font-size: 9.5px; font-weight: 800; letter-spacing: .08em; }
+.ticket .stub i { display: block; width: 58px; height: 26px; margin: 6px auto 0; background: repeating-linear-gradient(90deg, #14231A 0 2px, transparent 2px 4px, #14231A 4px 5px, transparent 5px 8px); }
+@keyframes tear { 0% { transform: none; } 40% { transform: rotate(-2deg) translateX(2px); } 100% { transform: translate(14px, 10px) rotate(9deg); } }
+
+.hero { position: absolute; left: 26px; top: 222px; width: 400px; display: grid; grid-template-columns: 168px 1fr; gap: 18px; }
+.hero { perspective: 900px; }
+.hero .ps { --h: 168px; --fs: 84px; --hoop: 12px; --sheen-at: 5800; transform: rotate(-3deg); animation: flipfoil 760ms var(--e-in-out) 5200ms both; }
+.hero .ps .nm { font-size: 15px; }
+.hero .ps .cl { font-size: 11px; }
+@keyframes flipfoil { 0% { transform: rotate(-3deg) rotateY(0); } 50% { transform: rotate(-3deg) rotateY(90deg) scale(1.06); } 100% { transform: rotate(-3deg) rotateY(0); } }
+.hero .ps .shine { position: absolute; inset: 0; border-radius: 8px; background: var(--foil); box-shadow: 0 0 0 2.5px var(--yellow); z-index: -1; opacity: 0; animation: foilon 1ms linear 5580ms both; }
+@keyframes foilon { to { opacity: 1; } }
+.hero h1 { font-stretch: var(--wide); font-weight: 900; font-size: 30px; line-height: .98; letter-spacing: -.02em; }
+.hero p { font-size: 13px; line-height: 1.45; color: var(--ink-2); margin-top: 8px; }
+.hstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+.hstats .nst { padding: 8px 9px 7px; }
+.hstats .nst b { font-size: 24px; }
+.hstats .nst span { font-size: 10.5px; }
+.cause.l { position: absolute; left: 26px; width: 400px; top: 640px; }
+
+/* ---------- Right: match day board ---------- */
+.board { position: absolute; left: 456px; right: 24px; top: 24px; bottom: 82px; background: var(--card); border-radius: 8px; box-shadow: var(--sh-page); overflow: hidden; display: flex; flex-direction: column; animation: bin 700ms var(--e-out) 400ms both; }
+@keyframes bin { from { opacity: 0; transform: translateY(20px); } }
+.sc { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 18px 22px 16px; background: #141010; color: #FBF7EC; }
+.sc::after { content: ''; position: absolute; left: 0; right: 0; bottom: -4px; height: 4px; background: repeating-linear-gradient(90deg, #C8102E 0 22px, #141010 22px 44px); }
+.sc .t { display: flex; align-items: center; gap: 12px; font-stretch: var(--semi); font-weight: 900; font-size: 19px; line-height: 1.05; }
+.sc .t small { display: block; font-stretch: 100%; font-weight: 600; font-size: 11px; color: #BDB6A3; margin-top: 2px; }
+.sc .t.b { justify-content: flex-end; text-align: right; }
+.sc .t .old { filter: saturate(.4) sepia(.5); }
+.sc .s { display: flex; align-items: center; gap: 10px; font-stretch: var(--wide); font-weight: 900; font-size: 54px; line-height: 1; padding: 0 20px; }
+.sc .s em { font-style: normal; font-size: 22px; color: var(--yellow); }
+.sc .clk { position: absolute; left: 50%; top: 6px; transform: translateX(-50%); font-stretch: var(--semi); font-weight: 900; font-size: 11px; letter-spacing: .08em; color: var(--yellow); }
+
+.xis { display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 18px 18px 6px; }
+.xi { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px 6px; padding: 0 6px; }
+.xi + .xi { border-left: 2px dotted var(--line-2); }
+.xi h4 { grid-column: 1 / -1; font-stretch: var(--semi); font-weight: 900; font-size: 12px; display: flex; justify-content: space-between; color: var(--ink-2); }
+.xi h4 span { font-weight: 600; color: var(--mute); }
+.xi .ps { --h: 34px; --fs: 15px; --hoop: 3px; padding: 3px 3px 0; border-radius: 6px; animation: slap 380ms var(--e-slap) calc(var(--d) * 1ms) both; }
+.xi .ps .nm { font-size: 9px; padding: 3px 0 4px; font-stretch: 80%; }
+.xi .ps .art em { font-size: 8px; left: 3px; top: 2px; }
+.xi .ps.ar { box-shadow: 0 0 0 2px var(--yellow), 0 8px 14px -8px rgba(20,35,26,.5); }
+@keyframes slap { from { opacity: 0; transform: scale(1.4) rotate(-6deg); } 60% { opacity: 1; } }
+
+.feed { flex: 1; margin: 8px 18px 0; border-top: 2px solid var(--ink); overflow: hidden; }
+.ev { display: grid; grid-template-columns: 44px 26px 1fr auto; align-items: center; gap: 8px; height: 36px; border-bottom: 1px solid var(--rule); font-size: 13px; animation: evin 420ms var(--e-out) calc(var(--d) * 1ms) both; }
+.ev .m { font-stretch: var(--semi); font-weight: 900; text-align: right; color: var(--mute); }
+.ev i { font-size: 16px; justify-self: center; }
+.ev b { font-weight: 800; }
+.ev .tag { font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; color: var(--mute); }
+.ev.hl { background: var(--yellow-l); }
+@keyframes evin { from { opacity: 0; transform: translateY(-8px); } }
+.board .foot { display: flex; justify-content: space-between; padding: 10px 18px 12px; font-size: 11.5px; color: var(--mute); border-top: 1px solid var(--rule); }
+.board .foot b { color: var(--ink); }
+canvas.conf { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 30; pointer-events: none; }
+</style>
+</head>
+<body style="--top:transparent">
+<div class="app">
+  <div class="mbar"><span class="lights"><i></i><i></i><i></i></span></div>
+  <main><div class="stage">
+
+    <div class="ticket">
+      <div class="body">
+        <div class="kick">Ingresso · jogo de despedida</div>
+        <h3>Arrascaeta<span>Flamengo de 2019 × Flamengo de 2029</span></h3>
+        <dl><dt>Data</dt><dd>15 dez 2029</dd><dt>Hora</dt><dd>17h</dd><dt>Setor</dt><dd>Norte</dd><dt>Cadeira</dt><dd>K 14</dd></dl>
+      </div>
+      <div class="stub"><div><small>CAMISA</small><b>10</b><i></i></div></div>
+    </div>
+
+    <section class="hero">
+      <div class="ps hoops"><span class="shine"></span><div class="art"><span data-crest="FLA" data-size="22"></span><em style="left:auto;right:7px;top:7px;font-size:12px">10</em><b>A</b><span class="sheen"></span></div><div class="nm">Arrascaeta</div><div class="cl">Flamengo · 2019 a 2029</div></div>
+      <div>
+        <h1>A última do camisa 10</h1>
+        <p>Primeiro tempo com o time de Lima, de 2019, de camisa 14. No intervalo ele troca de lado e veste a 10 do seu time.</p>
+      </div>
+    </section>
+    <div class="hstats" style="position:absolute;left:26px;top:430px;width:400px">
+      <div class="nst"><b>11</b><span>temporadas</span></div>
+      <div class="nst"><b>23</b><span>títulos</span></div>
+      <div class="nst foil"><b>4</b><span>Libertadores</span></div>
+    </div>
+    <div class="note" style="position:absolute;left:40px;top:528px;width:370px;transform:rotate(-1deg)">O primeiro tempo do 2019 tem os onze que começaram a final contra o River Plate. <b>Jorge Jesus</b> topou voltar para o banco.</div>
+    <div class="cause l"><b>Por quê</b><span>Ídolo com 23 títulos anunciou que para em dezembro. Você topou o jogo no fim da temporada, e o Maracanã esgotou.</span></div>
+
+    <section class="board">
+      <div class="sc">
+        <span class="clk" id="clk">0'</span>
+        <div class="t"><span class="old">${crest}</span><div>Flamengo de 2019<small>Jorge Jesus</small></div></div>
+        <div class="s"><span id="g1">0</span><em>×</em><span id="g2">0</span></div>
+        <div class="t b"><div>Flamengo de 2029<small>Lucas Araujo</small></div><span>${crest}</span></div>
+      </div>
+      <div class="xis">
+        <div class="xi" id="x19"><h4>Lima, 2019 <span>primeiro tempo</span></h4></div>
+        <div class="xi" id="x29"><h4>Seu time, 2029 <span>segundo tempo</span></h4></div>
+      </div>
+      <div class="feed" id="feed"></div>
+      <div class="foot"><span>Maracanã · <b>71.204</b> pagantes</span><span>Renda: <b>R$ 9,8 mi</b></span><span>Pontapé inicial: <b>Arrascaeta e você</b></span></div>
+    </section>
+
+    <canvas class="conf" id="conf"></canvas>
+    <div class="acts">
+      <button class="skip" data-skip>Pular <span class="kbd">Esc</span></button>
+      <div class="cta"><button class="replay" data-replay><i class="ph-bold ph-arrows-clockwise"></i>Ver de novo</button><button class="btn"><i class="ph-bold ph-book-open-text"></i>Colar no álbum</button><button class="btn go">Continuar<i class="ph-bold ph-arrow-right"></i></button></div>
+    </div>
+  </div></main>
+</div>
+<script>
+document.querySelectorAll('.sc .t > span').forEach((e) => { e.innerHTML = crest('FLA', 40); });
+fill();
+
+// 2019: the XI that started the Libertadores final in Lima, with their shirt numbers that day.
+const X19 = [['Diego Alves', 1], ['Rafinha', 18], ['Rodrigo Caio', 3], ['Pablo Marí', 24], ['Filipe Luís', 21], ['Willian Arão', 5], ['Gerson', 15], ['Everton Ribeiro', 7], ['Arrascaeta', 14], ['Bruno Henrique', 27], ['Gabigol', 9]];
+// 2029: your squad in the game.
+const X29 = [['Rossi', 1], ['Emerson Royal', 2], ['Léo Ortiz', 3], ['João Souza', 4], ['Ayrton Lucas', 6], ['Evertton', 5], ['Ryan Bastos', 8], ['Arrascaeta', 10], ['Kauã', 11], ['Samuel Lino', 7], ['Pedro', 9]];
+const xi = (list, old, at) => list.map(([n, no], i) => `<div class="ps hoops ${old ? 'old' : ''} ${n === 'Arrascaeta' ? 'ar' : ''}" style="--d:${at + i * 55}"><div class="art"><em>${no}</em><b>${n[0]}</b></div><div class="nm">${n.split(' ').pop() === 'Lucas' ? n : n}</div></div>`).join('');
+document.getElementById('x19').insertAdjacentHTML('beforeend', xi(X19, true, 1300));
+document.getElementById('x29').insertAdjacentHTML('beforeend', xi(X29, false, 1500));
+
+// The match runs from 0' to 90' between 2.4 s and 5.2 s; each event lands at its minute.
+const EV = [
+  [0, 'ph-t-shirt', 'Arrascaeta entra com a 14 de Lima', '', 0],
+  [14, 'ph-soccer-ball', '<b>Arrascaeta</b>, de cobertura, de camisa 14', '2019', 1],
+  [31, 'ph-soccer-ball', '<b>Pedro</b>, de cabeça', '2029', 2],
+  [39, 'ph-soccer-ball', '<b>Bruno Henrique</b> puxa o contra-ataque e fecha', '2019', 1],
+  [45, 'ph-arrows-left-right', 'Intervalo. <b>Arrascaeta</b> troca de lado e veste a 10', '', 0],
+  [58, 'ph-soccer-ball', '<b>Arrascaeta</b>, de falta, contra o time dele mesmo', '2029', 2],
+  [70, 'ph-soccer-ball', '<b>Kauã</b>, depois de tabela com Arrascaeta', '2029', 2],
+  [81, 'ph-soccer-ball', '<b>Gabigol</b> empata e faz o gesto de 2019', '2019', 1],
+  [88, 'ph-users-four', 'Sai <b>Arrascaeta</b>. Quatro minutos de aplauso', '', 0],
+  [90, 'ph-flag-banner', 'Fim. Volta no gramado com os dois times juntos', '', 0],
+];
+const T0 = 2400, PER = 31;
+const at = (m) => T0 + m * PER;
+document.getElementById('feed').innerHTML = EV.slice().reverse().map(([m, ic, txt, side, , hl]) => `<div class="ev ${m === 88 ? 'hl' : ''}" style="--d:${at(m)}"><span class="m">${m}'</span><i class="ph-fill ${ic}"></i><span>${txt}</span><span class="tag">${side}</span></div>`).join('');
+const g1 = document.getElementById('g1'), g2 = document.getElementById('g2'), clk = document.getElementById('clk');
+Moment.tick((t) => {
+  const m = Math.max(0, Math.min(90, Math.floor((t - T0) / PER)));
+  clk.textContent = t < T0 ? 'Entrada em campo' : m >= 90 ? 'Fim de jogo' : m === 45 ? 'Intervalo' : `${m}'`;
+  g1.textContent = EV.filter(([em, , , , s]) => s === 1 && em <= m && t >= T0).length;
+  g2.textContent = EV.filter(([em, , , , s]) => s === 2 && em <= m && t >= T0).length;
+});
+
+// At the final whistle the Maracanã throws paper in Flamengo's colours.
+Moment.confetti(document.getElementById('conf'), { at: 5300, colors: ['#C8102E', '#141010', '#FFFFFF', '#C8102E'], count: 160, origin: [0.66, 1.04], spread: 0.55, speed: 1500, seed: 11, life: 6000 });
+Moment.run(6600);
+</script>
+</body>
+</html>

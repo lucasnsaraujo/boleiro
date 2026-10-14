@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Título</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="moments.css">
+<script src="mock.js"></script>
+<script src="moments.js"></script>
+<style>
+/* The same trophy celebrated twice. A: first season, quick and happy. B: sixth season, 60 years of drought, long. */
+body { --end: 9800; }
+.stage { display: grid; grid-template-columns: 452px 1fr; background: #E9DFC9; }
+.var { position: absolute; top: 12px; z-index: 30; display: flex; align-items: center; gap: 8px; font-stretch: var(--semi); font-weight: 900; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.var span { padding: 3px 8px; border-radius: var(--r-pill); }
+.var em { font-style: normal; font-weight: 700; letter-spacing: .02em; text-transform: none; font-size: 11.5px; }
+
+/* The trophy: identical on both sides */
+.trophy { display: flex; align-items: center; gap: 14px; }
+.trophy .cup { width: 92px; height: 116px; flex: none; border-radius: 10px; background: #fff; display: grid; place-items: center; box-shadow: 0 0 0 3px var(--yellow), 0 12px 18px -8px rgba(20,35,26,.5); transform: rotate(-3deg); }
+.trophy .cup img { height: 92px; }
+.trophy b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 30px; line-height: .95; letter-spacing: -.02em; }
+.trophy small { display: block; font-size: 12.5px; font-weight: 600; margin-top: 5px; }
+
+/* ---------- A ---------- */
+.a { position: relative; padding: 46px 28px 24px; background: var(--paper) url('../tokens/paper.jpg') center / cover; display: flex; flex-direction: column; overflow: hidden; box-shadow: 6px 0 18px -10px rgba(20,35,26,.5); z-index: 2; }
+.a .var span { background: var(--ink); color: var(--card); }
+.a .var em { color: var(--mute); }
+.a .when { margin-top: 2px; }
+.a .trophy { margin-top: 18px; animation: slap 460ms var(--e-slap) 100ms both; }
+.a .trophy b { color: #C8102E; }
+@keyframes slap { from { opacity: 0; transform: scale(1.4) rotate(-6deg); } 60% { opacity: 1; } }
+.a .xi { margin-top: 22px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px 6px; }
+.a .xi .ps { --h: 44px; --fs: 19px; --hoop: 4px; animation: slap 360ms var(--e-slap) calc(var(--d) * 1ms) both; }
+.a .xi .ps .nm { font-size: 9.5px; font-stretch: 85%; }
+.a .facts { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; animation: rise 400ms var(--e-out) 900ms both; }
+.a .facts .nst b { font-size: 26px; }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+.a .clip { margin-top: 18px; padding: 10px 14px; background: #FBF7EC; box-shadow: 0 0 0 1px rgba(20,35,26,.1), 0 8px 14px -10px rgba(20,35,26,.5); transform: rotate(-1deg); animation: rise 400ms var(--e-out) 1200ms both; }
+.a .clip small { font-stretch: var(--semi); font-weight: 900; font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: #C8102E; }
+.a .clip b { display: block; font-stretch: 72%; font-weight: 900; font-size: 26px; line-height: .95; text-transform: uppercase; margin-top: 2px; }
+.a .cause { margin-top: auto; padding-top: 10px; border-top: 2px dotted var(--line-2); animation: rise 400ms var(--e-out) 1500ms both; }
+.a canvas { z-index: 5; pointer-events: none; }
+
+/* ---------- B ---------- */
+.b { position: relative; overflow: hidden; background: #1C0507; color: #FBF7EC; }
+.b .var span { background: #FBF7EC; color: #1C0507; }
+.b .var em { color: rgba(251,247,236,.7); }
+.b .var { left: 476px; }
+.b .warm { position: absolute; inset: 0; background: radial-gradient(90% 80% at 50% 30%, #A3121A, #4A060B 70%); opacity: 0; animation: warm 1600ms var(--e-out) 5600ms both; }
+@keyframes warm { to { opacity: 1; } }
+.b .crowdband { position: absolute; left: 0; bottom: 0; width: 100%; height: 104px; }
+.b .crowdband + .var { }
+.b::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 190px; background: linear-gradient(180deg, rgba(28,5,7,0), rgba(28,5,7,.75) 70%); pointer-events: none; z-index: 1; }
+
+.drought { position: absolute; left: 30px; top: 46px; width: 360px; z-index: 3; }
+.drought .when { color: rgba(251,247,236,.72); }
+.drought .when i { color: #FBF7EC; }
+.odo { margin-top: 10px; display: flex; align-items: flex-end; gap: 14px; }
+.odo .yr { font-stretch: var(--wide); font-weight: 900; font-size: 92px; line-height: .8; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.odo .yr.miss { color: #FF8A80; }
+.odo .n { padding-bottom: 6px; font-size: 13px; line-height: 1.3; color: rgba(251,247,236,.8); }
+.odo .n b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 30px; color: #FBF7EC; line-height: 1; }
+.tag60 { position: relative; margin-top: 14px; height: 46px; width: 340px; }
+.tag60 > div { position: absolute; top: 0; height: 46px; width: 50%; overflow: hidden; }
+.tag60 > div span { position: absolute; top: 0; left: 0; width: 340px; height: 46px; display: grid; place-items: center; background: #FBF7EC; color: #1C0507; font-stretch: 72%; font-weight: 900; font-size: 26px; text-transform: uppercase; letter-spacing: .02em; }
+.tag60 .l { left: 0; animation: tearl 900ms var(--e-peel) 5300ms both; transform-origin: 0 100%; }
+.tag60 .r { right: 0; animation: tearr 900ms var(--e-peel) 5300ms both; transform-origin: 100% 100%; }
+.tag60 .r span { left: -170px; }
+@keyframes tearl { 0% { transform: none; } 20% { transform: rotate(-4deg); } 100% { transform: translate(-40px, 420px) rotate(-38deg); opacity: 0; } }
+@keyframes tearr { 0% { transform: none; } 20% { transform: rotate(5deg); } 100% { transform: translate(60px, 440px) rotate(44deg); opacity: 0; } }
+.champ { position: absolute; left: 30px; top: 262px; z-index: 4; animation: champ 700ms var(--e-slap) 5900ms both; }
+@keyframes champ { from { opacity: 0; transform: scale(1.6) rotate(-6deg); } 60% { opacity: 1; } }
+.champ .trophy b { color: #FFFFFF; font-size: 26px; }
+.champ .trophy small { color: rgba(251,247,236,.85); }
+.champ .trophy .cup { box-shadow: 0 0 0 3px var(--yellow), 0 18px 24px -8px rgba(0,0,0,.7); }
+
+.photos { position: absolute; left: 410px; right: 22px; top: 42px; height: 300px; z-index: 3; }
+.ph { position: absolute; width: 122px; padding: 6px 6px 8px; background: #F4ECDA; color: #2A211A; box-shadow: 0 12px 18px -10px rgba(0,0,0,.8); animation: pinph 460ms var(--e-slap) calc(var(--d) * 1ms) both; }
+.ph .img { height: 78px; background: radial-gradient(circle at 30% 40%, #8A7A66 0 1.3px, transparent 1.6px) 0 0 / 5px 5px, linear-gradient(180deg, #6E6252, #4A4036); position: relative; overflow: hidden; }
+.ph .img b { position: absolute; left: 6px; bottom: 4px; font-stretch: var(--wide); font-weight: 900; font-size: 26px; color: rgba(244,236,218,.92); line-height: 1; }
+.ph.you .img { background: radial-gradient(circle at 30% 40%, #C86A66 0 1.3px, transparent 1.6px) 0 0 / 5px 5px, linear-gradient(180deg, #7A2A2A, #4A1416); }
+.ph small { display: block; font-size: 10.5px; line-height: 1.3; margin-top: 5px; font-weight: 600; }
+.ph small strong { font-weight: 900; }
+.ph::before { content: ''; position: absolute; left: 50%; top: -7px; width: 46px; height: 14px; margin-left: -23px; background: rgba(255,255,255,.4); transform: rotate(-3deg); }
+@keyframes pinph { from { opacity: 0; transform: translateY(-30px) rotate(calc(var(--r) - 10deg)) scale(1.1); } to { opacity: 1; transform: rotate(var(--r)); } }
+
+.vets { position: absolute; left: 30px; top: 420px; width: 400px; z-index: 4; animation: rise 400ms var(--e-out) 6700ms both; }
+.vets .lbl { color: rgba(251,247,236,.75); }
+.vets .row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+.vets .ps { --c: #D00000; --h: 76px; --fs: 32px; animation: slap 460ms var(--e-slap) calc(var(--d) * 1ms) both; }
+.vets .ps .cl { font-size: 9.5px; }
+.vets .ps.staff .art { --c: #0B7A3B; }
+
+.jb.fin { position: absolute; left: 456px; right: 22px; top: 384px; padding: 12px 16px 14px; z-index: 5; transform: rotate(1.2deg); animation: land 760ms var(--e-out) 8100ms both; }
+@keyframes land { from { opacity: 0; transform: translate(30px, 60px) rotate(6deg); } }
+.fin h3 { font-size: 58px; margin-top: 4px; }
+.fin p.deck { font-size: 12.5px; font-weight: 600; margin-top: 6px; }
+.b .cause { position: absolute; left: 30px; right: 30px; top: 616px; color: rgba(251,247,236,.85); z-index: 4; animation: rise 400ms var(--e-out) 8800ms both; }
+.b .cause > b { color: rgba(251,247,236,.6); }
+.b canvas.conf { z-index: 20; pointer-events: none; }
+.acts .replay { color: rgba(251,247,236,.8); }
+</style>
+</head>
+<body style="--top:linear-gradient(90deg, transparent 452px, #1C0507 452px)">
+<div class="app">
+  <div class="mbar"><span class="lights"><i></i><i></i><i></i></span></div>
+  <main><div class="stage">
+
+    <section class="a">
+      <div class="var" style="left:28px"><span>A</span><em>1ª temporada no Flamengo · festa de 2 s</em></div>
+      <div class="when"><i class="ph-bold ph-trophy"></i>Sáb, 21 nov 2026 · Palmeiras 1 × 2 Flamengo · Nubank Parque</div>
+      <div class="trophy"><div class="cup"><img src="img/competitions/serie-a.svg" alt="Série A"></div><div><b>Campeão brasileiro</b><small>Na sua primeira temporada</small></div></div>
+      <div class="xi" id="xiA"></div>
+      <div class="facts">
+        <div class="nst"><b>1 ano</b><span>desde o último, o de 2025</span></div>
+        <div class="nst"><b>+20</b><span>no seu ídolo com a torcida</span></div>
+      </div>
+      <div class="clip"><small>Jornal do Boleiro · dom, 22 nov</small><b>Fla campeão no Nubank Parque</b></div>
+      <div class="cause"><b>Por quê</b><span>Clube que ganhou em 2025, técnico recém-chegado: a festa é rápida e alegre, sem fila para quebrar.</span></div>
+      <canvas class="fill" id="confA"></canvas>
+    </section>
+
+    <section class="b">
+      <div class="warm"></div>
+      <canvas class="crowdband" id="crowdB"></canvas>
+      <div class="var"><span>B</span><em>6ª temporada no Inter · festa de 10 s</em></div>
+      <div class="drought">
+        <div class="when" style="margin-top:22px"><i class="ph-bold ph-trophy"></i>Dom, 4 dez 2039 · Inter 1 × 0 Fortaleza · Beira-Rio</div>
+        <div class="odo"><span class="yr" id="yr">1979</span><div class="n"><b id="yrs">0</b>anos sem<br>Brasileirão</div></div>
+        <div class="tag60"><div class="l"><span>60 anos de fila</span></div><div class="r"><span>60 anos de fila</span></div></div>
+      </div>
+      <div class="champ"><div class="trophy"><div class="cup"><img src="img/competitions/serie-a.svg" alt="Série A"></div><div><b>Campeão brasileiro</b><small>Depois de seis temporadas e de 60 anos</small></div></div></div>
+      <div class="photos" id="photos"></div>
+      <div class="vets">
+        <span class="lbl">Ficaram com você desde o começo</span>
+        <div class="row">
+          <div class="ps" style="--d:6800"><div class="art"><em>3</em><b>T</b></div><div class="nm">Moretti</div><div class="cl">zagueiro · 2034</div></div>
+          <div class="ps" style="--d:6950"><div class="art"><em>1</em><b>C</b></div><div class="nm">Bortolini</div><div class="cl">goleiro · 2034</div></div>
+          <div class="ps" style="--d:7100"><div class="art"><em>8</em><b>R</b></div><div class="nm">Rafael Kuhn</div><div class="cl">meia · 2035</div></div>
+          <div class="ps staff" style="--d:7250"><div class="art"><b>G</b></div><div class="nm">Gilberto</div><div class="cl">auxiliar · 2026</div></div>
+        </div>
+      </div>
+      <article class="jb fin">
+        <div class="mast"><h4><span>Jornal do</span>Boleiro</h4><small>Porto Alegre · segunda, 5 dez 2039</small></div>
+        <h3>Finalmente</h3>
+        <p class="deck">Sessenta anos depois, o Inter é campeão brasileiro. Lucas Araujo perdeu duas finais aqui antes desta, e foi o último a sair do gramado.</p>
+      </article>
+      <div class="cause"><b>Por quê</b><span>Seis temporadas, fila desde 1979, dois vices com você e veteranos que ficaram: a festa longa. Ídolo do Inter: 64 → 94.</span></div>
+      <canvas class="fill conf" id="confB"></canvas>
+    </section>
+
+    <div class="acts">
+      <button class="skip" data-skip>Pular <span class="kbd">Esc</span></button>
+      <div class="cta"><button class="replay" data-replay><i class="ph-bold ph-arrows-clockwise"></i>Ver de novo</button><button class="btn"><i class="ph-bold ph-book-open-text"></i>Colar no álbum</button><button class="btn go">Continuar<i class="ph-bold ph-arrow-right"></i></button></div>
+    </div>
+  </div></main>
+</div>
+<script>
+fill();
+// A: the 2026 XI slaps in fast.
+const XI = ['Rossi', 'Varela', 'Léo Ortiz', 'Léo Pereira', 'Ayrton Lucas', 'Pulgar', 'Jorginho', 'Paquetá', 'Carrascal', 'Samuel Lino', 'Pedro', 'Plata'];
+document.getElementById('xiA').innerHTML = XI.map((n, i) => `<div class="ps hoops" style="--d:${350 + i * 40}"><div class="art"><b>${n[0]}</b></div><div class="nm">${n}</div></div>`).join('');
+Moment.confetti(document.getElementById('confA'), { at: 250, colors: ['#C8102E', '#141010', '#FFFFFF', '#FFCC00'], count: 90, origin: [0.3, 0.3], spread: 0.9, speed: 800, seed: 3, life: 2600 });
+
+// B: the drought counter runs from 1979, slow at first, fast through the middle, and crawls through the last years.
+// Near misses pin as the counter passes them: Inter's real runner-up years, then the two you lost here.
+const yr = document.getElementById('yr'), yrs = document.getElementById('yrs');
+const T0 = 400, LEN = 4800;
+const curve = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const timeOf = (y) => { const target = (y - 1979) / 60; let lo = 0, hi = 1; for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (curve(m) < target) lo = m; else hi = m; } return T0 + lo * LEN; };
+const MISS = [
+  [2005, 'vice', 'Inter', -5, 0, 0], [2009, "vice", "Inter", 4, 128, 6], [2020, "vice", "por 1 ponto, para o Flamengo", -3, 256, -4],
+  [2022, 'vice', 'Inter', 6, 0, 150], [2036, "vice", "na última rodada, com você", -4, 128, 158], [2037, "final", "da Libertadores perdida, com você", 3, 256, 152],
+];
+document.getElementById('photos').innerHTML = MISS.map(([y, k, s, r, x, top]) => `<div class="ph ${y > 2030 ? 'you' : ''}" style="--d:${Math.round(timeOf(y))};--r:${r}deg;left:${x}px;top:${top}px"><div class="img"><b>${y}</b></div><small><strong>${k[0].toUpperCase() + k.slice(1)}</strong> ${s === 'Inter' ? 'do Brasileirão' : s}</small></div>`).join('');
+const misses = new Set(MISS.map(([y]) => y).filter((y) => y < 2030));
+Moment.tick((t) => {
+  const y = 1979 + Math.round(curve(Moment.span(t, T0, LEN)) * 60);
+  yr.textContent = y;
+  yrs.textContent = y - 1979;
+  yr.classList.toggle('miss', misses.has(y) || y === 2036 || y === 2037);
+});
+
+Moment.crowd(document.getElementById('crowdB'), {
+  colors: ['#D00000', '#D00000', '#FFFFFF', '#7A0A0F', '#2A0A0C'], gap: 7, rise: 5, shade: .5,
+  stand(t, x) { const p = Moment.span(t, 5800, 1300); return Math.max(0, Math.min(1, (p * 1.3 - Math.abs(x - 0.3)) * 5)); },
+});
+Moment.confetti(document.getElementById('confB'), { at: 6000, colors: ['#D00000', '#FFFFFF', '#D00000', '#FFCC00'], count: 200, origin: [0.25, 1.02], spread: 0.6, speed: 1500, seed: 9, life: 5200 });
+Moment.run(9800);
+</script>
+</body>
+</html>

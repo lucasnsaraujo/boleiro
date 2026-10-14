@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Homenagens</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="moments.css">
+<script src="mock.js"></script>
+<script src="moments.js"></script>
+<style>
+body { --end: 6400; }
+.stage { background: var(--paper) url('../tokens/paper.jpg') center / cover; perspective: 1600px; }
+.spread { position: absolute; inset: 16px 16px 74px; display: grid; grid-template-columns: 1fr 1fr; }
+.pl, .pr { position: relative; overflow: hidden; padding: 22px 26px 22px; display: flex; flex-direction: column; }
+.pl { border-radius: 8px 0 0 8px; background: linear-gradient(270deg, rgba(20,35,26,.09), rgba(20,35,26,0) 28px), var(--card); box-shadow: var(--sh-page); transform-origin: 100% 50%; animation: openl 700ms var(--e-out) 0ms both; }
+.pr { border-radius: 0 8px 8px 0; background: linear-gradient(90deg, rgba(20,35,26,.09), rgba(20,35,26,0) 28px), var(--card); box-shadow: var(--sh-page); padding-left: 32px; transform-origin: 0 50%; animation: openr 900ms var(--e-out) 120ms both; }
+@keyframes openl { from { transform: rotateY(30deg); opacity: 0; } }
+@keyframes openr { from { transform: rotateY(-100deg); } }
+.pgno { position: absolute; bottom: 10px; font-stretch: var(--semi); font-weight: 900; font-size: 11px; color: var(--line-2); }
+.pl .pgno { left: 26px; } .pr .pgno { right: 26px; }
+.kind { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--mute); }
+.kind i { font-size: 16px; color: #C8102E; }
+h2 { font-stretch: var(--wide); font-weight: 900; font-size: 28px; line-height: 1; letter-spacing: -.02em; margin-top: 8px; }
+.sub { font-size: 13px; line-height: 1.45; color: var(--ink-2); margin-top: 8px; max-width: 520px; }
+
+/* ---------- Left: 500 matches ---------- */
+.frame { position: relative; margin-top: 18px; height: 360px; display: grid; grid-template-columns: 300px 1fr; gap: 24px; }
+.fr { position: relative; background: #2A1E14; padding: 14px; border-radius: 3px; box-shadow: inset 0 0 0 2px #4A3626, inset 0 0 0 4px #1A120C, 0 16px 26px -14px rgba(20,35,26,.7); animation: hang 900ms var(--e-slap) 500ms both; transform-origin: 50% 0; }
+@keyframes hang { from { opacity: 0; transform: translateY(-50px) rotate(-4deg); } 60% { opacity: 1; transform: rotate(1.5deg); } to { transform: rotate(0); } }
+.fr .mat { height: 100%; background: #F4EFE3; box-shadow: inset 0 2px 6px rgba(0,0,0,.35); display: grid; place-items: center; }
+.fr svg { width: 220px; }
+.fr .no { font-stretch: var(--wide); font-weight: 900; }
+.facts { align-self: center; }
+.facts .nst { margin-bottom: 10px; animation: slap 460ms var(--e-slap) calc(var(--d) * 1ms) both; }
+.facts .nst b { font-size: 30px; }
+@keyframes slap { from { opacity: 0; transform: scale(1.4) rotate(-6deg); } 60% { opacity: 1; } }
+.m500 { margin-top: 18px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; padding: 12px 14px; border-radius: var(--r-m); box-shadow: inset 0 0 0 1.5px var(--line); animation: up 520ms var(--e-out) 2200ms both; }
+.m500 .s { font-stretch: var(--wide); font-weight: 900; font-size: 26px; }
+.m500 small { display: block; font-size: 11.5px; color: var(--mute); margin-top: 2px; }
+.m500 b { font-weight: 800; font-size: 14px; }
+@keyframes up { from { opacity: 0; transform: translateY(14px); } }
+.pl .cause { margin-top: auto; padding-top: 10px; border-top: 2px dotted var(--line-2); animation: up 520ms var(--e-out) 2400ms both; }
+
+/* ---------- Right: the former club honours you ---------- */
+.band { position: relative; margin: 16px -32px 0 -32px; height: 170px; background: #1A0B0C; overflow: hidden; }
+.band canvas { position: absolute; left: 0; width: 100%; }
+.ring { position: absolute; right: 26px; top: 26px; width: 118px; height: 118px; border-radius: 50%; background: rgba(251,247,236,.96); display: grid; place-items: center; text-align: center; box-shadow: 0 10px 18px -8px rgba(0,0,0,.6); z-index: 2; animation: up 500ms var(--e-out) 2300ms both; }
+.ring svg { position: absolute; inset: 6px; transform: rotate(-90deg); }
+.ring circle.f { stroke-dasharray: 333; stroke-dashoffset: 333; animation: ring 1800ms linear 2700ms both; }
+@keyframes ring { to { stroke-dashoffset: 0; } }
+.ring b { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: 1; }
+.ring small { display: block; font-size: 10px; font-weight: 700; color: var(--mute); margin-top: 2px; line-height: 1.15; }
+
+.plq { margin: 20px auto 0; width: 420px; padding: 18px 30px 16px; animation: plaque 760ms var(--e-out) 4400ms both; }
+@keyframes plaque { from { opacity: 0; transform: translateY(30px) rotate(-2deg); } }
+.plq .eng { clip-path: inset(0 100% 0 0); animation: engrave 1100ms var(--e-in-out) 4800ms both; }
+@keyframes engrave { to { clip-path: inset(0 0 0 0); } }
+.plq .crest { margin: 0 auto 6px; }
+.plq b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 15px; letter-spacing: .02em; text-transform: uppercase; }
+.plq span { display: block; font-size: 12.5px; line-height: 1.45; margin-top: 6px; }
+.plq small { display: block; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; margin-top: 8px; font-weight: 700; opacity: .8; }
+
+.res { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; animation: up 520ms var(--e-out) 5600ms both; }
+.res > div { padding: 10px 12px; border-radius: var(--r-m); box-shadow: inset 0 0 0 1.5px var(--line); font-size: 12px; color: var(--mute); line-height: 1.4; }
+.res b { display: flex; align-items: center; gap: 7px; font-stretch: var(--semi); font-weight: 900; font-size: 15px; color: var(--ink); margin-bottom: 2px; }
+.pr .cause { margin-top: auto; padding-top: 10px; border-top: 2px dotted var(--line-2); animation: up 520ms var(--e-out) 5800ms both; }
+</style>
+</head>
+<body style="--top:transparent">
+<div class="app">
+  <div class="mbar"><span class="lights"><i></i><i></i><i></i></span></div>
+  <main><div class="stage">
+    <div class="spread">
+      <section class="pl">
+        <div class="kind"><i class="ph-fill ph-medal"></i>Marca · qua, 17 ago 2033</div>
+        <h2>500 jogos pelo Flamengo</h2>
+        <p class="sub">Antes do Fla-Flu, a diretoria entrou em campo com uma camisa emoldurada e o Maracanã cantou seu nome pela primeira vez na noite.</p>
+        <div class="frame">
+          <div class="fr"><div class="mat">
+            <svg viewBox="0 0 220 230">
+              <defs><clipPath id="sh"><path d="M60 14 L84 6 Q110 22 136 6 L160 14 L210 46 L190 92 L168 80 L168 222 L52 222 L52 80 L30 92 L10 46 Z"/></clipPath></defs>
+              <g clip-path="url(#sh)">
+                <rect width="220" height="230" fill="#141010"/>
+                <g fill="#C8102E" id="hoops"></g>
+              </g>
+              <path d="M60 14 L84 6 Q110 22 136 6 L160 14 L210 46 L190 92 L168 80 L168 222 L52 222 L52 80 L30 92 L10 46 Z" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="2"/>
+              <text x="110" y="86" text-anchor="middle" fill="#fff" font-family="Archivo" font-weight="900" font-size="16" letter-spacing="2" style="font-stretch:125%">LUCAS</text>
+              <text class="no" id="no" x="110" y="176" text-anchor="middle" fill="#fff" font-family="Archivo" font-size="54" style="font-stretch:112%">1</text>
+            </svg>
+          </div></div>
+          <div class="facts">
+            <div class="nst" style="--d:1500"><b>312</b><span>vitórias</span></div>
+            <div class="nst" style="--d:1650"><b>104</b><span>empates</span></div>
+            <div class="nst" style="--d:1800"><b>84</b><span>derrotas</span></div>
+            <div class="nst foil" style="--d:1950"><b>11</b><span>títulos até aqui</span></div>
+          </div>
+        </div>
+        <div class="m500"><span class="s">2 × 0</span><div><b>Flamengo × Fluminense</b><small>Brasileirão 2033, 21ª rodada · Maracanã · o jogo 500</small></div><span data-crest="FLU" data-size="34"></span></div>
+        <div class="cause"><b>Por quê</b><span>Marcas de 100, 250 e 500 jogos e de 10 anos no clube viram homenagem quando a diretoria confia em você (78) e a torcida também (94).</span></div>
+        <span class="pgno">2033 · 5</span>
+      </section>
+
+      <section class="pr">
+        <div class="kind"><i class="ph-fill ph-users-four"></i>Volta ao Maracanã, do outro lado · dom, 23 abr 2034</div>
+        <h2>O Maracanã aplaudiu o técnico do Inter</h2>
+        <p class="sub">Primeira vez que você entra no Maracanã pelo vestiário visitante. Antes do jogo, um minuto de aplausos e uma placa entregue no gramado.</p>
+        <div class="band">
+          <canvas id="mos" style="top:0;height:100px"></canvas>
+          <canvas id="crowd" style="top:100px;height:70px"></canvas>
+          <div class="ring"><svg viewBox="0 0 106 106"><circle cx="53" cy="53" r="53" fill="none" stroke="#E9DFC9" stroke-width="5" transform="translate(0 0) scale(.95) translate(2.8 2.8)"/><circle class="f" cx="53" cy="53" r="53" fill="none" stroke="#C8102E" stroke-width="5" stroke-linecap="round" transform="scale(.95) translate(2.8 2.8)"/></svg><div><b id="sec">0:00</b><small>minuto de<br>aplausos</small></div></div>
+        </div>
+        <div class="plaque plq">
+          <div class="eng">
+            <img class="crest" src="../../assets/crests/614.png" width="30" height="30" style="--cut:1px" alt="">
+            <b>Lucas Araujo</b>
+            <span>547 jogos, 11 títulos e oito anos de Flamengo. Daqui pra frente, você sempre joga em casa no Maracanã.</span>
+            <small>Clube de Regatas do Flamengo · 23 abr 2034</small>
+          </div>
+        </div>
+        <div class="res">
+          <div><b><span data-crest="FLA" data-size="18"></span>1 × 1<span data-crest="INT" data-size="18"></span></b>Seu Inter empata. Nenhuma vaia quando você foi à beira do campo.</div>
+          <div><b><i class="ph-fill ph-star" style="color:var(--yellow-d)"></i>Ídolo do Flamengo: 100</b>Segue no máximo. O clube vai lembrar disso na próxima crise.</div>
+        </div>
+        <div class="cause"><b>Por quê</b><span>Você saiu ídolo, com despedida e sem brigar com ninguém. Ex-clube onde você é ídolo homenageia na primeira visita.</span></div>
+        <span class="pgno">2034 · 1</span>
+      </section>
+    </div>
+    <div class="acts">
+      <button class="skip" data-skip>Pular <span class="kbd">Esc</span></button>
+      <div class="cta"><button class="replay" data-replay><i class="ph-bold ph-arrows-clockwise"></i>Ver de novo</button><button class="btn"><i class="ph-bold ph-book-open-text"></i>Colar no álbum</button><button class="btn go">Ir para o jogo<i class="ph-bold ph-arrow-right"></i></button></div>
+    </div>
+  </div></main>
+</div>
+<script>
+fill();
+document.getElementById('hoops').innerHTML = Array.from({ length: 12 }, (_, i) => `<rect y="${i * 20}" width="220" height="10"/>`).join('');
+Moment.count(document.getElementById('no'), { from: 1, to: 500, at: 900, len: 1500 });
+
+// The stand on the right page: a smaller mosaic and the crowd standing up for the minute of applause.
+Moment.mosaic(document.getElementById('mos'), {
+  cell: 5, at: 1800, wave: 900, flip: 260, back: '#2A1214', dir: (x) => 1 - x,
+  draw(g, w, h) {
+    for (let y = 0; y < h; y++) { g.fillStyle = Math.floor(y / 2) % 2 ? '#141010' : '#C8102E'; g.fillRect(0, y, w, 1); }
+    g.fillStyle = '#C8102E'; g.fillRect(0, 2, w, h - 4);
+    g.fillStyle = '#FFFFFF'; g.font = '900 condensed 15px Archivo'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('VALEU, LUCAS', w * 0.4, h / 2 + 1);
+  },
+});
+Moment.crowd(document.getElementById('crowd'), {
+  colors: ['#C8102E', '#1A1A1A', '#2B2B2B', '#F2EAD9', '#C8102E'], gap: 6, rise: 4, shade: .3,
+  stand(t, x) { const p = Moment.span(t, 2600, 900); return Math.max(0, Math.min(1, (p * 1.4 - Math.abs(x - 0.4)) * 6)); },
+});
+const sec = document.getElementById('sec');
+Moment.tick((t) => { const s = Math.round(Moment.span(t, 2700, 1800) * 60); sec.textContent = s >= 60 ? '1:00' : `0:${String(s).padStart(2, '0')}`; });
+Moment.run(6400);
+</script>
+</body>
+</html>
