@@ -514,6 +514,29 @@
   }
 }
 
+/* A small window narrows the cover and its pile of stickers before the page. */
+@media (max-width: 1180px) {
+  .lobby-spread {
+    grid-template-columns: 380px minmax(0, 1fr);
+  }
+
+  .lobby-wordmark {
+    height: 90px;
+  }
+
+  .lobby-pile {
+    zoom: 0.8;
+  }
+
+  .lobby-page {
+    padding: 30px 28px 26px;
+  }
+
+  .lobby-row {
+    grid-template-columns: 30px minmax(0, 1fr) 150px 100px;
+  }
+}
+
 /* Motion: the album opens, the cover first, then the three stickers are dealt and the page's card is slapped on. */
 @media (prefers-reduced-motion: no-preference) {
   .lobby-cover {
