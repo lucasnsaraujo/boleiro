@@ -1,0 +1,121 @@
+import type { Division } from "@boleiro/data/players";
+import type { PositionGroup } from "@boleiro/engine/engine/match";
+import { tierOf } from "@boleiro/engine/sim/finances/tierOf";
+import type { GameState, IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
+import { isInPreContractWindow, ASKING_PREMIUM } from "@boleiro/engine/sim/transfers/tradeBetweenClubs";
+import { TRANSFER_WINDOWS } from "@boleiro/engine/sim/transfers/transferWindows";
+import { valuePlayer } from "@boleiro/engine/sim/transfers/valuePlayer";
+import { wageDemandAt, wageRateOf } from "@boleiro/engine/sim/transfers/wageDemand";
+import { willingToJoin } from "@boleiro/engine/sim/transfers/willingToJoin";
+import { isLendable, lineupsOf } from "@boleiro/game-client/market/coachRequests";
+
+/** The statuses the market can be filtered by. */
+export type MarketStatus = "freeAgent" | "contractEnding" | "lendable";
+/** A row's status: the filterable ones, or why he can't be bought. */
+export type RowStatus = MarketStatus | "onLoan" | "preContract" | null;
+export type Willingness = "yes" | "maybe" | "no";
+
+export type MarketFilters = {
+  name: string;
+  group: PositionGroup | null;
+  minStrength: number | null;
+  maxStrength: number | null;
+  clubId: string | null;
+  division: Division | null;
+  status: MarketStatus | null;
+};
+
+export const NO_FILTERS: MarketFilters = { name: "", group: null, minStrength: null, maxStrength: null, clubId: null, division: null, status: null };
+
+export type MarketRow = {
+  id: string;
+  name: string;
+  group: PositionGroup;
+  age: number;
+  strength: number;
+  /** null for a free agent. */
+  clubId: string | null;
+  status: RowStatus;
+  /** The fee the board would pay in BRL: 0 for a free agent or a pre-contract, null when he can't be bought. */
+  price: number | null;
+  /** The monthly wage he asks to join the coach's club. */
+  wage: number;
+  willing: Willingness;
+};
+
+export type MarketState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "market">;
+
+// guess: above 60% the coach can count on a yes, under 35% he shouldn't.
+const SURE_YES = 0.6;
+const LIKELY_NO = 0.35;
+
+const fold = (text: string) => text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
+/** The transfer window today: open until a date, or closed until the next opening. */
+export function windowStatus(date: IsoDate): { isOpen: boolean; date: IsoDate } {
+  const day = date.slice(5);
+  const year = Number(date.slice(0, 4));
+  const open = TRANSFER_WINDOWS.find((w) => day >= w.opens && day <= w.closes);
+  if (open) return { isOpen: true, date: `${year}-${open.closes}` };
+  const next = TRANSFER_WINDOWS.find((w) => day < w.opens);
+  return next ? { isOpen: false, date: `${year}-${next.opens}` } : { isOpen: false, date: `${year + 1}-${TRANSFER_WINDOWS[0]?.opens ?? "01-01"}` };
+}
+
+/** Other clubs' players and free agents that match, strongest first: how many, and the first `limit` as rows. */
+export function searchMarket(state: MarketState, filters: MarketFilters, limit: number): { total: number; rows: MarketRow[] } {
+  const { coachClubId, market, date } = state;
+  const lineupOf = lineupsOf(state.players);
+  const name = fold(filters.name.trim());
+  const coachSquad = Object.values(state.players).filter((p) => p.clubId === coachClubId);
+  const rate = wageRateOf(coachSquad);
+  const coachClub = coachClubId ? state.clubs[coachClubId] : undefined;
+  const to = { tier: tierOf(coachClub ?? { division: null }), fanbase: coachClub?.fanbase ?? 0 };
+  const tierOfClub = (clubId: string) => tierOf(state.clubs[clubId] ?? { division: null });
+
+  const statusOf = (player: SimPlayer, free: boolean): RowStatus => {
+    if (free) return "freeAgent";
+    if (market.loans[player.id]) return "onLoan";
+    if (market.preContracts[player.id]) return "preContract";
+    if (isInPreContractWindow(player, date)) return "contractEnding";
+    return null;
+  };
+
+  const matches = (player: SimPlayer, free: boolean): boolean => {
+    const strength = Math.round(player.strength);
+    if (filters.group && player.group !== filters.group) return false;
+    if (filters.minStrength !== null && strength < filters.minStrength) return false;
+    if (filters.maxStrength !== null && strength > filters.maxStrength) return false;
+    if (filters.clubId && (free || player.clubId !== filters.clubId)) return false;
+    if (filters.division && (free || state.clubs[player.clubId]?.division !== filters.division)) return false;
+    if (name && !fold(player.name).includes(name)) return false;
+    if (filters.status === "lendable") return !free && statusOf(player, false) === null && isLendable(state, player, lineupOf);
+    return filters.status === null || statusOf(player, free) === filters.status;
+  };
+
+  const found: { player: SimPlayer; free: boolean }[] = [];
+  for (const player of Object.values(state.players)) if (player.clubId !== coachClubId && matches(player, false)) found.push({ player, free: false });
+  for (const player of Object.values(market.freeAgents)) if (matches(player, true)) found.push({ player, free: true });
+  found.sort((a, b) => b.player.strength - a.player.strength || a.player.name.localeCompare(b.player.name, "pt-BR"));
+
+  const rows = found.slice(0, limit).map(({ player, free }): MarketRow => {
+    const status = statusOf(player, free);
+    const fromTier = tierOfClub(player.clubId);
+    const fee = status === "freeAgent" || status === "contractEnding" ? 0 : Math.round(valuePlayer(player, fromTier, date) * market.eurBrl * ASKING_PREMIUM);
+    // As the board prices it: a free agent gets the club's going rate, anyone else asks for a raise.
+    const wage = free ? Math.max(1, rate(player.strength)) : wageDemandAt(player, rate);
+    const chance = willingToJoin({ player, from: fromTier, to, wage, unemployed: free });
+    return {
+      id: player.id,
+      name: player.name,
+      group: player.group,
+      age: player.age,
+      strength: player.strength,
+      clubId: free ? null : player.clubId,
+      status: status === null && filters.status === "lendable" ? "lendable" : status,
+      price: status === "onLoan" || status === "preContract" ? null : fee,
+      wage,
+      willing: chance >= SURE_YES ? "yes" : chance >= LIKELY_NO ? "maybe" : "no",
+    };
+  });
+  return { total: found.length, rows };
+}

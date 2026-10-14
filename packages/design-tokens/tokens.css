@@ -1,0 +1,22 @@
+/* Direction F: lawn greens, chalk text, square corners, 1px hairlines. */
+:root {
+  --lawn-0: #0a1a10;
+  --lawn-1: #0f2416;
+  --lawn-2: #14301d;
+  --lawn-3: #1b3d26;
+  --line: #2a5236;
+  --chalk: #eef3e8;
+  --chalk-2: #b9c9b5;
+  --chalk-3: #8aa287;
+  --yellow: #f2d03b;
+  --yellow-hover: #ffe066;
+  --on-yellow: #1a1600;
+  --red: #e0442f;
+  --promotion: #4fb06a;
+
+  --num: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --cond: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+  --text: "IBM Plex Sans", system-ui, sans-serif;
+
+  --hairline: 1px solid var(--line);
+}

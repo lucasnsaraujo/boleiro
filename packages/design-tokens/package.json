@@ -1,0 +1,8 @@
+{
+  "name": "@boleiro/design-tokens",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./tokens.css"
+  }
+}

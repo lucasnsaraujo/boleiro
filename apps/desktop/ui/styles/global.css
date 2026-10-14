@@ -1,0 +1,50 @@
+@import "@fontsource/big-shoulders-display/600";
+@import "@fontsource/big-shoulders-display/800";
+@import "@fontsource/big-shoulders-display/900";
+@import "@fontsource/ibm-plex-sans/400";
+@import "@fontsource/ibm-plex-sans/500";
+@import "@fontsource/ibm-plex-sans/600";
+@import "@fontsource/ibm-plex-sans-condensed/400";
+@import "@fontsource/ibm-plex-sans-condensed/500";
+@import "@fontsource/ibm-plex-sans-condensed/600";
+@import "@fontsource/ibm-plex-sans-condensed/700";
+@import "@boleiro/design-tokens/tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--lawn-0);
+  color: var(--chalk);
+  font: 15px/1.35 var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+}
