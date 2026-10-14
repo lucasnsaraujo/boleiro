@@ -92,7 +92,7 @@ function continental(value: unknown, path: string, rate: number): Sourced & { st
   return { ...sourced(value, path), stages };
 }
 
-function toCompetitionMoney(json: unknown): CompetitionMoney {
+export function toCompetitionMoney(json: unknown): CompetitionMoney {
   const tv = field(json, "tv", "");
   const tvA = field(tv, "A", "tv");
   const shares = field(tvA, "shares", "tv.A");

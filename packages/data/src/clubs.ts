@@ -7,7 +7,7 @@ export const STATES = [
   "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
 ] as const;
 const DIVISIONS = ["A", "B", "C", "D"] as const satisfies readonly Division[];
-const PITCHES = ["natural", "artificial"] as const;
+export const PITCHES = ["natural", "artificial"] as const;
 
 export type State = (typeof STATES)[number];
 export type Pitch = (typeof PITCHES)[number];

@@ -4,8 +4,8 @@ import type { Division } from "./players.js";
 
 export const BASES = ["published", "estimate", "guess"] as const;
 const DIVISIONS = ["A", "B", "C", "D"] as const satisfies readonly Division[];
-const SIZES = ["small", "median", "large"] as const;
-const FIELDS = [
+export const SIZES = ["small", "median", "large"] as const;
+export const FIELDS = [
   "revenue_total", "broadcasting", "matchday", "membership", "sponsorship", "player_sales", "wage_bill", "net_debt",
 ] as const;
 

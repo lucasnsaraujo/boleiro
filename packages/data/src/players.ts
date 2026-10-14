@@ -22,8 +22,8 @@ export type SquadPlayer = Player & {
   nationalities: string[];
 };
 
-const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
-const DIVISIONS: readonly Division[] = ["A", "B", "C", "D"];
+export const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
+export const DIVISIONS: readonly Division[] = ["A", "B", "C", "D"];
 
 function isGroup(value: string): value is PositionGroup {
   return (GROUPS as readonly string[]).includes(value);
