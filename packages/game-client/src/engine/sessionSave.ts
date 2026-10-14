@@ -17,8 +17,10 @@ export type StoredSave = string | SaveShards;
 /** A game as last split into shards, so the next split reuses the shard of every country that is still the same object. */
 export type SplitGame = { game: GameState; shards: SaveShards };
 
-/** The desk, turning points and live round: everything a save holds besides the game. */
+/** The desk, the turning points and the furthest minute shown of a live round. */
 const SESSION_SHARD = "session";
+/** The live round's day, apart from the minutes shown, so the autosaves while it plays leave it as written. */
+const LIVE_SHARD = "live";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -41,16 +43,17 @@ function isSavedLive(value: unknown): value is SavedLive {
   return isRecord(decisions) && Array.isArray(matches) && (coachMatch === null || isRecord(coachMatch)) && isRecord(rest);
 }
 
-function sessionPartsOf({ desk, turningPoints, live }: Omit<SessionSave, "game">) {
-  const saved: SavedLive | null = live && {
-    day: { decisions: live.day.decisions, matches: live.day.matches, coachMatch: live.day.coachMatch, rest: live.day.rest },
-    seenMinute: live.seenMinute,
-  };
-  return { desk, turningPoints, live: saved };
+function savedLiveOf(live: LiveRoundSave | null): SavedLive | null {
+  return (
+    live && {
+      day: { decisions: live.day.decisions, matches: live.day.matches, coachMatch: live.day.coachMatch, rest: live.day.rest },
+      seenMinute: live.seenMinute,
+    }
+  );
 }
 
-export function writeSessionSave({ game, ...session }: SessionSave): string {
-  return JSON.stringify({ game, ...sessionPartsOf(session) });
+export function writeSessionSave({ game, desk, turningPoints, live }: SessionSave): string {
+  return JSON.stringify({ game, desk, turningPoints, live: savedLiveOf(live) });
 }
 
 /** The game's shards; a country that is the same object as when `last` was split keeps its shard from then. */
@@ -66,9 +69,12 @@ export function splitGame(game: GameState, last: SplitGame | null): SplitGame {
   return { game, shards };
 }
 
-/** The save in shards: the game's, from `split`, and one for the rest of the session. */
-export function writeSessionShards(split: SplitGame, session: Omit<SessionSave, "game">): SaveShards {
-  return { ...split.shards, [SESSION_SHARD]: JSON.stringify(sessionPartsOf(session)) };
+/** The save in shards: the game's, from `split`, one for the rest of the session and, during a live round, one for its day. */
+export function writeSessionShards(split: SplitGame, { desk, turningPoints, live }: Omit<SessionSave, "game">): SaveShards {
+  const saved = savedLiveOf(live);
+  const shards: Record<string, string> = { ...split.shards, [SESSION_SHARD]: JSON.stringify({ desk, turningPoints, seenMinute: saved?.seenMinute ?? null }) };
+  if (saved) shards[LIVE_SHARD] = JSON.stringify(saved.day);
+  return shards;
 }
 
 function withSessionParts(parts: Record<string, unknown>, game: GameState): SessionSave {
@@ -94,7 +100,12 @@ export function readStoredSave(save: StoredSave): SessionSave {
   if (typeof save === "string") return readSessionSave(save);
   const session = save[SESSION_SHARD];
   if (session === undefined) throw new Error("not a Boleiro save: it has no session shard");
-  const parts: unknown = JSON.parse(session);
-  if (!isRecord(parts)) throw new Error("not a Boleiro save: its session shard is malformed");
-  return withSessionParts(parts, loadShards(save));
+  const parsed: unknown = JSON.parse(session);
+  if (!isRecord(parsed)) throw new Error("not a Boleiro save: its session shard is malformed");
+  const { seenMinute = null, ...parts } = parsed;
+  const day = save[LIVE_SHARD];
+  if (seenMinute !== null && day === undefined) throw new Error("not a Boleiro save: its live round has no shard");
+  const savedDay: unknown = day === undefined ? null : JSON.parse(day);
+  const live = seenMinute === null ? null : { day: savedDay, seenMinute };
+  return withSessionParts({ ...parts, live }, loadShards(save));
 }

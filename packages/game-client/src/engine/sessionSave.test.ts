@@ -18,10 +18,29 @@ test("a Brazil game in shards is its game shard and the session's own state, the
   session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
   session.apply({ type: "ask", request: { kind: "sign", playerId: "x" } });
   const shards = session.saveShards();
-  const { game, ...own }: Record<string, unknown> = JSON.parse(session.save());
+  const { game, desk, turningPoints }: Record<string, unknown> = JSON.parse(session.save());
   expect(Object.keys(shards).sort()).toEqual(["game", "session"]);
   expect(JSON.parse(shards.game ?? "")).toEqual(game);
-  expect(JSON.parse(shards.session ?? "")).toEqual(own);
+  expect(JSON.parse(shards.session ?? "")).toMatchObject({ desk, turningPoints });
+});
+
+test("a live round keeps its day in a shard of its own, which the minutes shown leave as it was", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  session.apply({ type: "playToMatchDay" });
+  session.apply({ type: "startRound" });
+  const kickOff = session.saveShards();
+  expect(Object.keys(kickOff).sort()).toEqual(["game", "live", "session"]);
+  session.apply({ type: "seeMinute", minute: 30 });
+  const later = session.saveShards();
+  expect(later.live).toBe(kickOff.live);
+  expect(later.game).toBe(kickOff.game);
+  expect(later.session).not.toBe(kickOff.session);
+  const twin = createEngineSession(bundledGameFiles);
+  twin.apply({ type: "load", save: later });
+  expect(twin.liveRound()).toEqual(session.liveRound());
+  session.apply({ type: "finishRound" });
+  expect(Object.keys(session.saveShards()).sort()).toEqual(["game", "session"]);
 });
 
 test("a world game saved in shards, again after days only one country played, loads back the same session", () => {

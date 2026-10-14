@@ -5,8 +5,9 @@ import { saveToSlot } from "./saveToSlot.js";
 import { AUTOSAVE_SLOT_ID } from "./slotMeta.js";
 import type { SlotStore } from "./slotStore.js";
 
-// guess: a live save is about 6 MB, so a round shown at 4x is saved every quarter of an hour, not every minute.
-// Leaving mid-match then rewinds at most this far, and changes still can't go back before the minute saved.
+// A live autosave writes only the minute shown, since the game and the live day stay as at kick-off, but it still
+// splits and hashes the whole save (about 5.5 MB), so a round shown at 4x is saved every quarter of an hour, not
+// every minute. Leaving mid-match then rewinds at most this far, and changes still can't go back before the minute saved.
 const LIVE_SAVE_EVERY_MINUTES = 15;
 
 /** Whether the game a command left behind is worth writing to the autosave slot. */
