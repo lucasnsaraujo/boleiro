@@ -5,6 +5,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             slots::list_slots,
             slots::write_slot,
+            slots::write_slot_shards,
+            slots::slot_shard_hashes,
             slots::read_slot,
             slots::delete_slot
         ])
