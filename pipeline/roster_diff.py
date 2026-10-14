@@ -1,8 +1,9 @@
 """Prints who moved where between two snapshots of the master database, as Markdown for a PR body.
 
 Players and clubs keep their ids across snapshots, so the diff is a join on the player id. A club
-missing from the newer snapshot (its page failed, or it left the world) is listed on its own
-instead of every one of its players showing up as gone.
+missing from the newer snapshot (its page failed, or it left the world) or new in it (promoted, or
+its page failed last time) is listed on its own instead of every one of its players showing up as
+gone or arrived.
 
 Usage: python pipeline/roster_diff.py pipeline/boleiro.db [old snapshot id] [new snapshot id]
        (the two latest `transfermarkt` snapshots when the ids are left out)
@@ -21,6 +22,7 @@ class Changes:
     arrivals: list[tuple[str, str]]            # player new to the world, club
     departures: list[tuple[str, str]]          # player gone from the world, last club
     missing_clubs: list[str]                   # clubs of the old snapshot the new one doesn't have
+    new_clubs: list[str]                       # clubs of the new snapshot the old one didn't have
 
 
 def latest_pair(db: sqlite3.Connection) -> tuple[int, int]:
@@ -46,13 +48,17 @@ def roster_changes(db: sqlite3.Connection, old: int, new: int) -> Changes:
         for player, (name, club) in new_players.items()
         if player in old_players and old_players[player][1] != club
     ]
-    arrivals = [(name, club_name[club]) for player, (name, club) in new_players.items() if player not in old_players]
+    arrivals = [
+        (name, club_name[club]) for player, (name, club) in new_players.items()
+        if player not in old_players and club in old_clubs
+    ]
     departures = [
         (name, club_name[club]) for player, (name, club) in old_players.items()
         if player not in new_players and club in new_clubs
     ]
     missing = [name for club, name in old_clubs.items() if club not in new_clubs]
-    return Changes(moves, arrivals, departures, missing)
+    added = [name for club, name in new_clubs.items() if club not in old_clubs]
+    return Changes(moves, arrivals, departures, missing, added)
 
 
 def markdown(changes: Changes) -> str:
@@ -62,6 +68,7 @@ def markdown(changes: Changes) -> str:
         ("New to the world", [f"- {name} → {club}" for name, club in changes.arrivals]),
         ("Left the world", [f"- {name} left {club}" for name, club in changes.departures]),
         ("Clubs missing from the new snapshot", [f"- {club}" for club in changes.missing_clubs]),
+        ("Clubs new in this snapshot", [f"- {club}" for club in changes.new_clubs]),
     )
     for title, items in sections:
         if items:

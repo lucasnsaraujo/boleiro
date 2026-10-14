@@ -32,6 +32,7 @@ class RosterDiffTest(unittest.TestCase):
         self.assertEqual(changes.arrivals, [("Wirtz", "Liverpool")])
         self.assertEqual(changes.departures, [("Odegaard", "Arsenal")])
         self.assertEqual(changes.missing_clubs, [])
+        self.assertEqual(changes.new_clubs, [])
 
     def test_does_not_call_a_whole_squad_gone_when_its_club_failed_to_scrape(self) -> None:
         old = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka"], "Liverpool": ["Salah"]})
@@ -39,6 +40,14 @@ class RosterDiffTest(unittest.TestCase):
         changes = roster_diff.roster_changes(self.db, old, new)
         self.assertEqual(changes.departures, [])
         self.assertEqual(changes.missing_clubs, ["Liverpool"])
+
+    def test_lists_a_club_new_to_the_world_once_instead_of_each_of_its_players_as_an_arrival(self) -> None:
+        old = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka"]})
+        new = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka"], "Sunderland": ["Xhaka", "Isidor"]})
+        changes = roster_diff.roster_changes(self.db, old, new)
+        self.assertEqual(changes.arrivals, [])
+        self.assertEqual(changes.new_clubs, ["Sunderland"])
+        self.assertIn("## Clubs new in this snapshot\n- Sunderland", roster_diff.markdown(changes))
 
     def test_compares_the_two_latest_world_scrapes_by_default(self) -> None:
         snapshot(self.db, "transfermarkt", {})
