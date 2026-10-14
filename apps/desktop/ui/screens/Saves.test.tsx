@@ -108,7 +108,7 @@ test("a saved card prints its slot number and stripes in the ink that reads on i
   expect(colours).toBeDefined();
   const ink = document.createElement("i");
   ink.style.color = plateColours(colours ?? { primary: "#000000", secondary: "#000000" }).text;
-  const art = within(card).getByText("03").parentElement;
+  const art = within(card).getByText("02").parentElement;
   expect(art?.style.color).toBe(ink.style.color);
 });
 
@@ -125,4 +125,16 @@ test("while a save is being deleted, nothing else can save or load", async () =>
   expect(screen.getByRole("button", { name: "Carregar este jogo" })).toHaveProperty("disabled", true);
   finishRemoving();
   await waitFor(() => expect(screen.getByRole("button", { name: "Salvar agora" })).toHaveProperty("disabled", false));
+});
+
+test("each game slot's number matches its name, and the autosave carries no number", async () => {
+  const given = await services();
+  await saveToSlot(given.engine, given.slots, "autosave", { slotId: "slot-2", coachName: "Tite" });
+  await saveToSlot(given.engine, given.slots, "slot-2", { slotId: "slot-2", coachName: "Tite" });
+  openSaves(given);
+  const cards = within(await slotsList());
+  await cards.findByRole("button", { name: /^Jogo 2 · Bahia/ });
+  expect(within(cards.getByRole("button", { name: /^Automático · Bahia/ })).queryByText(/^\d\d$/)).toBeNull();
+  expect(within(cards.getByRole("button", { name: /^Jogo 2 · Bahia/ })).getByText(/^\d\d$/).textContent).toBe("02");
+  expect(cards.getAllByRole("listitem").map((card) => card.textContent?.match(/^\d\d/)?.[0] ?? null)).toEqual([null, "01", "02", "03"]);
 });

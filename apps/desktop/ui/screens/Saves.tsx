@@ -20,6 +20,8 @@ type Status = { text: string; isError: boolean } | null;
 
 const seriesOf = (meta: SlotMeta) => (meta.division ? `Série ${meta.division}` : "Sem clube");
 const yearOf = (meta: SlotMeta) => `${formatDayMonth(meta.date)} ${meta.season}`;
+/** A game slot's number, the one in its name (Jogo 1 is 01); the autosave goes by its chip instead. */
+const numberOf = (id: string) => (id === AUTOSAVE_SLOT_ID ? null : String(GAME_SLOT_IDS.findIndex((slotId) => slotId === id) + 1).padStart(2, "0"));
 
 /** Every save of the game, the autosave included: save the open game, open another, or delete one. */
 export function Saves() {
@@ -122,13 +124,13 @@ export function Saves() {
           <p className="status error">Não deu para ler os jogos salvos.</p>
         ) : (
           <ul className="saves-grid" aria-label="Vagas" aria-busy={list.kind === "loading"}>
-            {SLOT_IDS.map((id, index) => {
+            {SLOT_IDS.map((id) => {
               const meta = byId.get(id);
-              const number = String(index + 1).padStart(2, "0");
+              const number = numberOf(id);
               if (!meta) {
                 return (
                   <li key={id} className="slot saves-free">
-                    <b>{number}</b>
+                    {number && <b>{number}</b>}
                     {slotLabel(id)} · Vaga livre
                   </li>
                 );
@@ -148,7 +150,7 @@ export function Saves() {
                     }}
                   >
                     <span className="saves-art" style={plate ? { background: plate.background, color: plate.text } : undefined}>
-                      <span className="saves-no">{number}</span>
+                      {number && <span className="saves-no">{number}</span>}
                       {id === AUTOSAVE_SLOT_ID && (
                         <span className="chip saves-auto">
                           <i className="ph-bold ph-arrows-clockwise" aria-hidden="true" />
