@@ -79,6 +79,28 @@ fn shard_file(name: &str, generation: u64) -> String {
     format!("{name}.{generation}.json")
 }
 
+/// Slot `id`'s folder of shards. A folder that is a link is refused, so nothing is read or written outside the saves folder.
+fn slot_folder(dir: &Path, id: &str) -> Result<PathBuf, String> {
+    check_id(id)?;
+    let slot = dir.join(id);
+    match fs::symlink_metadata(&slot) {
+        Ok(found) if found.file_type().is_symlink() => Err(format!("the folder of slot {id} is a link")),
+        _ => Ok(slot),
+    }
+}
+
+/// The highest generation among the shard files in `slot`: a new generation above it never overwrites a file an
+/// index may name, even one this write could not read.
+fn highest_generation_on_disk(slot: &Path) -> u64 {
+    fs::read_dir(slot)
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter_map(|entry| entry.file_name().to_string_lossy().strip_suffix(".json")?.rsplit_once('.')?.1.parse::<u64>().ok())
+        .max()
+        .unwrap_or(0)
+}
+
 fn take_turn() -> std::sync::MutexGuard<'static, ()> {
     TURN.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
 }
@@ -146,7 +168,7 @@ fn stage_shards(
         return Err(format!("shard {name} came without its hash"));
     }
     let previous = read_index(slot).ok().flatten();
-    let generation = previous.as_ref().map_or(0, |index| index.generation) + 1;
+    let generation = previous.as_ref().map_or(0, |index| index.generation).max(highest_generation_on_disk(slot)) + 1;
     let mut shards = BTreeMap::new();
     for (name, hash) in hashes {
         if changed.contains_key(name) {
@@ -156,7 +178,7 @@ fn stage_shards(
         let kept = previous
             .as_ref()
             .and_then(|index| index.shards.get(name))
-            .filter(|kept| &kept.hash == hash)
+            .filter(|kept| &kept.hash == hash && slot.join(shard_file(name, kept.generation)).is_file())
             .ok_or_else(|| format!("the slot holds no shard {name} with that hash to keep"))?;
         shards.insert(name.clone(), kept.clone());
     }
@@ -199,20 +221,27 @@ fn write_shards(
     hashes: &BTreeMap<String, String>,
     changed: &BTreeMap<String, String>,
 ) -> Result<(), String> {
-    check_id(id)?;
+    let slot = slot_folder(dir, id)?;
     let _turn = take_turn();
-    let slot = dir.join(id);
     let index = stage_shards(&slot, meta, hashes, changed)?;
     commit_index(&slot, &index)?;
     remove_leftovers(dir, id, &index);
     Ok(())
 }
 
-/// The hash of each shard slot `id` holds; none when the slot holds no save in shards.
+/// The hash of each shard slot `id` holds whose file is there; none when the slot holds no save in shards. A shard
+/// left out is sent again by the next write.
 fn shard_hashes(dir: &Path, id: &str) -> Result<Option<BTreeMap<String, String>>, String> {
-    check_id(id)?;
-    let index = read_index(&dir.join(id)).ok().flatten();
-    Ok(index.map(|index| index.shards.into_iter().map(|(name, shard)| (name, shard.hash)).collect()))
+    let slot = slot_folder(dir, id)?;
+    let index = read_index(&slot).ok().flatten();
+    Ok(index.map(|index| {
+        index
+            .shards
+            .into_iter()
+            .filter(|(name, shard)| slot.join(shard_file(name, shard.generation)).is_file())
+            .map(|(name, shard)| (name, shard.hash))
+            .collect()
+    }))
 }
 
 /// The save written whole in slot `id`.
@@ -223,9 +252,8 @@ fn read(dir: &Path, id: &str) -> Result<String, String> {
 
 /// Slot `id`'s save: the shards its index names, or else the save written whole.
 fn read_save(dir: &Path, id: &str) -> Result<StoredSave, String> {
-    check_id(id)?;
+    let slot = slot_folder(dir, id)?;
     let _turn = take_turn();
-    let slot = dir.join(id);
     let Some(index) = read_index(&slot)? else {
         return read(dir, id).map(StoredSave::Whole);
     };
@@ -239,6 +267,7 @@ fn read_save(dir: &Path, id: &str) -> Result<StoredSave, String> {
 }
 
 /// Each slot's meta; a slot in shards gives the one in its index, even when a save written whole is still beside it.
+/// Only folders named as slots count, and never a link.
 fn list(dir: &Path) -> Result<Vec<String>, String> {
     let Ok(entries) = fs::read_dir(dir) else {
         return Ok(Vec::new());
@@ -250,15 +279,19 @@ fn list(dir: &Path) -> Result<Vec<String>, String> {
             if !dir.join(id).join(INDEX).exists() {
                 metas.extend(fs::read_to_string(entry.path()).ok());
             }
-        } else if entry.path().is_dir() {
+        } else if entry.file_type().is_ok_and(|kind| kind.is_dir()) && check_id(&file).is_ok() {
             metas.extend(read_index(&entry.path()).ok().flatten().map(|index| index.meta));
         }
     }
     Ok(metas)
 }
 
-/// The index goes first, so a delete cut short never leaves an index naming shard files already gone.
+/// The index goes first, so a delete cut short never leaves an index naming shard files already gone. A folder that
+/// is a link loses only the link.
 fn remove_shards_folder(slot: &Path) -> Result<(), String> {
+    if fs::symlink_metadata(slot).is_ok_and(|found| found.file_type().is_symlink()) {
+        return fs::remove_file(slot).or_else(|_| fs::remove_dir(slot)).map_err(|e| e.to_string());
+    }
     match fs::remove_file(slot.join(INDEX)) {
         Ok(()) => {}
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
@@ -469,7 +502,7 @@ mod tests {
         let third = shards(&[("game", "game-3"), ("session", "s-3")]);
         write_changed(&dir, "autosave", "meta-3", &third);
         assert_eq!(read_save(&dir, "autosave").unwrap(), StoredSave::Shards(third));
-        assert_eq!(files_in(&slot), ["game.2.json", "index.json", "session.2.json"]);
+        assert_eq!(files_in(&slot), ["game.3.json", "index.json", "session.3.json"]);
     }
 
     #[test]
@@ -549,6 +582,55 @@ mod tests {
         fs::write(dir.join("slot-1").join(INDEX), tampered).unwrap();
         assert!(read_save(&dir, "slot-1").is_err());
         assert!(list(&dir).unwrap().is_empty());
+    }
+
+    #[test]
+    fn a_write_after_the_index_became_unreadable_overwrites_no_shard_file_on_disk() {
+        let dir = empty_dir("shards-unreadable-index");
+        write_all(&dir, "slot-1", "meta-1", &first());
+        let slot = dir.join("slot-1");
+        fs::write(slot.join(INDEX), "{ not an index").unwrap();
+        assert_eq!(shard_hashes(&dir, "slot-1").unwrap(), None);
+        stage_shards(&slot, "meta-2", &hashes_of(&second()), &second()).unwrap();
+        assert_eq!(fs::read_to_string(slot.join("game.1.json")).unwrap(), "game-1");
+        assert_eq!(fs::read_to_string(slot.join("world.1.json")).unwrap(), "[aa,bb]");
+    }
+
+    #[test]
+    fn a_kept_shard_whose_file_went_missing_is_asked_for_again() {
+        let dir = empty_dir("shards-missing-file");
+        write_all(&dir, "slot-1", "meta-1", &first());
+        fs::remove_file(dir.join("slot-1").join("world.1.json")).unwrap();
+        assert!(!shard_hashes(&dir, "slot-1").unwrap().unwrap().contains_key("world"));
+        let written = write_changed(&dir, "slot-1", "meta-2", &second());
+        assert!(written.contains_key("world"));
+        assert_eq!(read_save(&dir, "slot-1").unwrap(), StoredSave::Shards(second()));
+    }
+
+    #[test]
+    fn folders_that_are_not_slots_are_not_listed() {
+        let dir = empty_dir("shards-stray-folder");
+        write_all(&dir, "slot-1", "meta-1", &first());
+        let stray = dir.join("Copy of slot-1");
+        fs::create_dir_all(&stray).unwrap();
+        fs::copy(dir.join("slot-1").join(INDEX), stray.join(INDEX)).unwrap();
+        assert_eq!(list(&dir).unwrap(), vec!["meta-1".to_string()]);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_slot_folder_that_is_a_link_elsewhere_is_neither_listed_nor_emptied() {
+        let dir = empty_dir("shards-symlink");
+        let elsewhere = empty_dir("shards-symlink-target");
+        write_all(&elsewhere, "slot-1", "meta-elsewhere", &first());
+        fs::create_dir_all(&dir).unwrap();
+        std::os::unix::fs::symlink(elsewhere.join("slot-1"), dir.join("slot-2")).unwrap();
+        assert!(list(&dir).unwrap().is_empty());
+        assert!(read_save(&dir, "slot-2").is_err());
+        assert!(write_shards(&dir, "slot-2", "meta", &hashes_of(&second()), &second()).is_err());
+        delete(&dir, "slot-2").unwrap();
+        assert!(!dir.join("slot-2").exists());
+        assert_eq!(read_save(&elsewhere, "slot-1").unwrap(), StoredSave::Shards(first()));
     }
 
     #[test]

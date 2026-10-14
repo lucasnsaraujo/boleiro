@@ -55,7 +55,11 @@ export function indexedDbSlots(factory: IDBFactory = indexedDB): SlotStore {
         }
         if (oldVersion < 2) request.result.createObjectStore(SHARDS);
       };
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = () => {
+        // Another tab upgrading the database waits until this one lets go of it.
+        request.result.onversionchange = () => request.result.close();
+        resolve(request.result);
+      };
       request.onerror = () => reject(request.error ?? new Error("could not open the saves database"));
     });
     return opened;
