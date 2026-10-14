@@ -5,7 +5,8 @@ uses, so Brazil's pages are reused) and a re-run only asks Transfermarkt for pag
 or older than the caller's limit. The cache is the resume point: a run stopped halfway restarts
 from the first page it doesn't have. Live page requests wait `delay` seconds (at least 1) after
 each answer, images from the CDN `image_delay`, and retry 429s, 5xxs and network errors with a
-growing back-off; a page that keeps failing, or a 404, raises `FetchError`.
+growing back-off. A page that keeps failing, or a 404, raises `FetchError`, unless an older copy
+is in the cache: then that copy is used.
 """
 from __future__ import annotations
 
@@ -74,28 +75,39 @@ class Fetcher:
                     return response.content
                 problem = f"HTTP {response.status_code}"
                 if response.status_code in FINAL_STATUSES:
-                    self.sleep(delay)
                     break
             if attempt < ATTEMPTS - 1:
                 self.log(f"  retry {attempt + 1}/{ATTEMPTS - 1} after {problem} on {url}")
                 self.sleep(20 * (attempt + 1))
+        self.sleep(delay)
         raise FetchError(f"{problem} on {url}")
+
+    def _cached(self, cached: Path, url: str, delay: float, max_age_days: float) -> None:
+        """Makes sure `cached` holds `url`: kept when fresh, kept stale when the site keeps failing."""
+        if cached.exists() and time.time() - cached.stat().st_mtime < max_age_days * 86_400:
+            return
+        try:
+            body = self._download(url, delay)
+        except FetchError as error:
+            if not cached.exists():
+                raise
+            self.log(f"  kept the cached copy of {url}: {error}")
+            return
+        cached.parent.mkdir(parents=True, exist_ok=True)
+        # Written aside and renamed, so a run stopped mid-write never leaves half a page that looks fresh.
+        partial = cached.with_name(cached.name + ".part")
+        partial.write_bytes(body)
+        partial.replace(cached)
 
     def page(self, path: str, max_age_days: float) -> Page:
         """The page at `path` (no host), from the cache when it is younger than `max_age_days`."""
         cached = self.cache / cache_name(path)
-        if not (cached.exists() and time.time() - cached.stat().st_mtime < max_age_days * 86_400):
-            body = self._download(BASE + path, self.delay)
-            cached.parent.mkdir(parents=True, exist_ok=True)
-            cached.write_bytes(body)
-        return Page(cached.read_text(encoding="utf-8"), BASE + path, iso_time(cached.stat().st_mtime))
+        self._cached(cached, BASE + path, self.delay, max_age_days)
+        return Page(cached.read_text(encoding="utf-8", errors="replace"), BASE + path, iso_time(cached.stat().st_mtime))
 
     def image(self, path: str, max_age_days: float) -> tuple[Path, str]:
         """An image under Transfermarkt's image host (`/wappen/head/631.png`), cached; its file and source URL."""
         cached = self.cache / "images" / path.strip("/").replace("/", "-")
         url = IMAGE_BASE + path
-        if not (cached.exists() and time.time() - cached.stat().st_mtime < max_age_days * 86_400):
-            body = self._download(url, self.image_delay)
-            cached.parent.mkdir(parents=True, exist_ok=True)
-            cached.write_bytes(body)
+        self._cached(cached, url, self.image_delay, max_age_days)
         return cached, url

@@ -85,6 +85,22 @@ class FetcherTest(unittest.TestCase):
         network = Recorder(Answer(200, b"<p>new</p>"))
         self.assertEqual(fetcher(self.cache, network).page("/a", max_age_days=0).html, "<p>new</p>")
 
+    def test_still_waits_after_a_page_that_kept_failing_before_the_next_request(self) -> None:
+        network = Recorder(*[Answer(503)] * tm_fetch.ATTEMPTS)
+        with self.assertRaises(tm_fetch.FetchError):
+            fetcher(self.cache, network, delay=2).page("/a", max_age_days=7)
+        self.assertEqual(len(network.waits), tm_fetch.ATTEMPTS)
+        self.assertGreaterEqual(network.waits[-1], 2)
+
+    def test_falls_back_to_an_old_cached_copy_when_the_site_keeps_failing(self) -> None:
+        (self.cache / tm_fetch.cache_name("/a")).write_text("<p>old</p>")
+        network = Recorder(*[Answer(429)] * tm_fetch.ATTEMPTS)
+        self.assertEqual(fetcher(self.cache, network).page("/a", max_age_days=0).html, "<p>old</p>")
+
+    def test_reads_a_page_with_bytes_that_are_not_utf8(self) -> None:
+        network = Recorder(Answer(200, "<p>S\u00e3o</p>".encode("latin-1")))
+        self.assertIn("S", fetcher(self.cache, network).page("/a", max_age_days=7).html)
+
     def test_introduces_itself_with_a_browser_user_agent(self) -> None:
         pages = tm_fetch.Fetcher(self.cache)
         self.assertIn("Mozilla/5.0", pages.session.headers["User-Agent"])
