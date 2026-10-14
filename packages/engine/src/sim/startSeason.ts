@@ -1,15 +1,13 @@
 import { STATES, type Club, type State } from "@boleiro/data/clubs";
 import type { Division } from "@boleiro/data/players";
 import { copaDoBrasilEntrants, nationalRanking, type Qualification } from "./copaDoBrasilEntrants.js";
-import type { Competition, CupCompetition, Fixture, LeagueCompetition, LeagueFormatId, SeasonCalendar, StateCompetition } from "./gameState.js";
+import type { Competition, CupCompetition, Fixture, LeagueCompetition, SeasonCalendar, StateCompetition } from "./gameState.js";
 import { LEAGUE_FORMATS } from "./leagueFormats.js";
 import { openNextStage } from "./openNextStage.js";
 import { seasonCalendar } from "./seasonCalendar.js";
 import { shuffle } from "./shuffle.js";
 import { STATE_CHAMPIONSHIP } from "./stateChampionship.js";
-
-const DIVISIONS: readonly Division[] = ["A", "B", "C", "D"];
-const FORMATS: Record<Division, LeagueFormatId> = { A: "serie-a", B: "serie-b", C: "serie-c", D: "serie-d" };
+import { BRAZIL } from "./world/brazil.js";
 
 /** The clubs joining the season's Copa do Brasil at each stage. */
 export const cupEntriesOf = (competitions: Record<string, Competition>): string[][] =>
@@ -20,10 +18,11 @@ export type SeasonStart = { calendar: SeasonCalendar; competitions: Record<strin
 /** Opens every competition of the season. `qualification` is what last season's estaduais and leagues decided. */
 export function startSeason(season: number, clubs: Record<string, Club>, random: () => number, qualification: Qualification): SeasonStart {
   const clubStates: Record<string, State> = Object.fromEntries(Object.values(clubs).map((club) => [club.id, club.state]));
-  const members = (division: Division) =>
-    Object.values(clubs).filter((club) => club.division === division).map((club) => club.id).sort();
-  const stageCounts = (division: Division) => LEAGUE_FORMATS[FORMATS[division]].stageDateCounts(members(division).length);
-  const total = (division: Division) => stageCounts(division).reduce((sum, n) => sum + n, 0);
+  const levels = BRAZIL.levels.map((level) => {
+    const members = Object.values(clubs).filter((club) => club.division === level.division).map((club) => club.id).sort();
+    return { ...level, members, stageCounts: LEAGUE_FORMATS[level.format].stageDateCounts(members.length) };
+  });
+  const total = (division: Division) => levels.filter((level) => level.division === division).flatMap((level) => level.stageCounts).reduce((sum, n) => sum + n, 0);
   const calendar = seasonCalendar(season, { A: total("A"), B: total("B"), C: total("C"), D: total("D") });
   const competitions: Record<string, Competition> = {};
   const fixtures: Fixture[] = [];
@@ -32,15 +31,15 @@ export function startSeason(season: number, clubs: Record<string, Club>, random:
     competitions[competition.id] = opened.competition;
     fixtures.push(...opened.fixtures);
   };
-  for (const division of DIVISIONS) {
-    const clubIds = shuffle(members(division), random);
+  for (const { division, format, members, stageCounts } of levels) {
+    const clubIds = shuffle(members, random);
     const dates = calendar.leagueDates[division];
     let offset = 0;
-    const stageDates = stageCounts(division).map((count) => dates.slice(offset, (offset += count)));
+    const stageDates = stageCounts.map((count) => dates.slice(offset, (offset += count)));
     const league: LeagueCompetition = {
-      id: `${FORMATS[division]}-${season}`,
+      id: `${format}-${season}`,
       kind: "league",
-      format: FORMATS[division],
+      format,
       division,
       season,
       clubIds,

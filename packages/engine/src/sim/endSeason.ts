@@ -10,9 +10,8 @@ import { serieDQualifiers } from "./serieDQualifiers.js";
 import { standings } from "./standings.js";
 import { startSeason } from "./startSeason.js";
 import { STATE_CHAMPIONSHIP } from "./stateChampionship.js";
-
-// Série D 2026 has 96 clubs (CBF, https://www.cbf.com.br/futebol-brasileiro/noticias/campeonato-brasileiro-serie-d/a/cbf-publica-documentos-tecnicos-da-nova-serie-d).
-const SERIE_D_SIZE = 96;
+import { BRAZIL } from "./world/brazil.js";
+import { pyramidMoves } from "./world/pyramidMoves.js";
 
 function leagueOf(state: GameState, division: Division): LeagueCompetition {
   const competition = Object.values(state.competitions).find((c) => c.kind === "league" && c.division === division && c.season === state.season);
@@ -46,25 +45,21 @@ function outcomeOf(state: GameState, division: Division): LeagueOutcome {
 }
 
 export function endSeason(state: GameState): { state: GameState; outcomes: Record<string, LeagueOutcome> } {
-  const a = outcomeOf(state, "A");
-  const b = outcomeOf(state, "B");
-  const c = outcomeOf(state, "C");
-  const d = outcomeOf(state, "D");
-  const moves = new Map<string, Division | null>();
-  for (const id of a.relegatedIds) moves.set(id, "B");
-  for (const id of b.promotedIds) moves.set(id, "A");
-  for (const id of b.relegatedIds) moves.set(id, "C");
-  for (const id of c.promotedIds) moves.set(id, "B");
-  for (const id of c.relegatedIds) moves.set(id, "D");
-  for (const id of d.promotedIds) moves.set(id, "C");
-  for (const id of d.relegatedIds) moves.set(id, null);
-
+  const byDivision = new Map(BRAZIL.levels.map(({ division }) => [division, outcomeOf(state, division)]));
+  const outcomeAt = (division: Division): LeagueOutcome => {
+    const outcome = byDivision.get(division);
+    if (!outcome) throw new Error(`Série ${division} is not one of Brazil's levels`);
+    return outcome;
+  };
+  const divisions = BRAZIL.levels.map((level) => level.division);
+  const moves = pyramidMoves(divisions, byDivision);
   const divisionOf = (club: Club) => (moves.has(club.id) ? (moves.get(club.id) ?? null) : club.division);
   const nextDivision = new Map(Object.values(state.clubs).map((club) => [club.id, divisionOf(club)]));
-  const stayingInD = [...nextDivision.values()].filter((division) => division === "D").length;
-  const qualification = qualificationOf(state, b, c, d);
+  const bottom = divisions.at(-1) ?? null;
+  const stayingInBottom = [...nextDivision.values()].filter((division) => division === bottom).length;
+  const qualification = qualificationOf(state, outcomeAt("B"), outcomeAt("C"), outcomeAt("D"));
   const outsideNationalLeagues = (id: string) => nextDivision.get(id) === null;
-  for (const id of serieDQualifiers(qualification.statePlacings, outsideNationalLeagues, SERIE_D_SIZE - stayingInD)) nextDivision.set(id, "D");
+  for (const id of serieDQualifiers(qualification.statePlacings, outsideNationalLeagues, BRAZIL.bottomLevelSize - stayingInBottom)) nextDivision.set(id, bottom);
 
   const clubs: Record<string, Club> = Object.fromEntries(
     Object.values(state.clubs).map((club) => [club.id, { ...club, division: nextDivision.get(club.id) ?? null }]),
@@ -73,11 +68,9 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
   const random = randomStream(state.rngState);
   const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification);
   const outcomes = Object.fromEntries(
-    Object.values(state.competitions).flatMap((competition) =>
-      competition.kind === "league" ? [[competition.id, { A: a, B: b, C: c, D: d }[competition.division]]] : [],
-    ),
+    Object.values(state.competitions).flatMap((competition) => (competition.kind === "league" ? [[competition.id, outcomeAt(competition.division)]] : [])),
   );
-  const finances = renewFinances(state, clubs, competitions, fixtures, { A: a, B: b, C: c, D: d });
+  const finances = renewFinances(state, clubs, competitions, fixtures, [...byDivision.values()]);
   const players = driftWagesToCap(state.players, finances);
   return {
     state: { ...state, season, clubs, players, calendar, competitions, fixtures, finances, rngState: random.state() },

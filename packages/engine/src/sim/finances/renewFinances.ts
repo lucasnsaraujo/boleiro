@@ -1,5 +1,4 @@
 import type { Club } from "@boleiro/data/clubs";
-import type { Division } from "@boleiro/data/players";
 import type { ClubFinance, Competition, Fixture, GameState } from "../gameState.js";
 import type { LeagueOutcome } from "../leagueFormats.js";
 import { standings } from "../standings.js";
@@ -51,7 +50,7 @@ export function renewFinances(
   clubs: Record<string, Club>,
   competitions: Record<string, Competition>,
   fixtures: readonly Fixture[],
-  outcomes: Record<Division, LeagueOutcome>,
+  outcomes: readonly LeagueOutcome[],
 ): Record<string, ClubFinance> {
   const { economy } = ended;
   const serieA = Object.values(ended.competitions).find((c) => c.kind === "league" && c.division === "A" && c.season === ended.season);
@@ -61,7 +60,7 @@ export function renewFinances(
   const newSerieA = new Set(Object.values(clubs).filter((c) => c.division === "A").map((c) => c.id));
   const ranked = [...lastTable.filter((id) => newSerieA.has(id)), ...[...newSerieA].filter((id) => !lastTable.includes(id))];
   const serieATvs = serieATv(economy, ranked, (id) => clubs[id]?.fanbase ?? 0);
-  const rewarded = new Set(Object.values(outcomes).flatMap((o) => [o.championId, ...o.promotedIds]));
+  const rewarded = new Set(outcomes.flatMap((o) => [o.championId, ...o.promotedIds]));
   const homeGames = expectedHomeGames(Object.values(competitions), fixtures);
   const cupEntryStage = new Map(cupEntriesOf(competitions).flatMap((ids, stage) => ids.map((id) => [id, stage])));
   const wages = wageBillsOf(ended);
