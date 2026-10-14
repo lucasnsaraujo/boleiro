@@ -111,14 +111,16 @@ export function SquadTable({ rows, clubName, selectedId, onSelect }: Props) {
                   <span className={`pos ${badge.colour}`}>{badge.letter}</span>
                 </td>
                 <td className="l nm">
-                  <Link to={`/squad/${p.id}`} onClick={(event) => event.stopPropagation()}>
-                    {p.name}
-                  </Link>
-                  {p.status?.kind === "injured" && <i className="ph-fill ph-first-aid flag inj" role="img" aria-label={statusText(p.status)} title={statusText(p.status)} />}
-                  {p.status?.kind === "suspended" && <span className="rc flag" role="img" aria-label={statusText(p.status)} title={statusText(p.status)} />}
-                  {p.isLastContractYear && (
-                    <i className="ph-bold ph-hourglass-medium flag ctr" role="img" aria-label={`Contrato acaba em ${formatMonthYear(p.contractUntil)}`} title={`Contrato acaba em ${formatMonthYear(p.contractUntil)}`} />
-                  )}
+                  <span className="sq-name">
+                    <Link to={`/squad/${p.id}`} onClick={(event) => event.stopPropagation()}>
+                      {p.name}
+                    </Link>
+                    {p.status?.kind === "injured" && <i className="ph-fill ph-first-aid flag inj" role="img" aria-label={statusText(p.status)} title={statusText(p.status)} />}
+                    {p.status?.kind === "suspended" && <span className="rc flag" role="img" aria-label={statusText(p.status)} title={statusText(p.status)} />}
+                    {p.isLastContractYear && (
+                      <i className="ph-bold ph-hourglass-medium flag ctr" role="img" aria-label={`Contrato acaba em ${formatMonthYear(p.contractUntil)}`} title={`Contrato acaba em ${formatMonthYear(p.contractUntil)}`} />
+                    )}
+                  </span>
                 </td>
                 <td className="sq-strength">{Math.round(p.strength)}</td>
                 <td className="l">

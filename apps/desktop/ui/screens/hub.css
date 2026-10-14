@@ -218,11 +218,24 @@
   color: var(--green);
 }
 
+/*
+ * In a short window the numbers don't fit under the contract: wrapping the column moves the whole table
+ * into a second column out of sight, so the sticker never ends on a header with its rows cut off.
+ */
 .hub-card-body {
+  flex: 1;
   min-height: 0;
-  overflow: auto;
+  display: flex;
+  flex-flow: column wrap;
+  align-content: flex-start;
+  column-gap: 24px;
+  overflow: hidden;
   padding: 10px 12px;
   font-size: 12px;
+}
+
+.hub-card-body > * {
+  width: 100%;
 }
 
 .hub-card-kv {
@@ -470,8 +483,28 @@
   background: var(--yellow-l);
 }
 
+/* In a narrow window a long name gives way first, cut with an ellipsis, and keeps its flags in view. */
+.hub-table .sq-name {
+  display: flex;
+  align-items: center;
+}
+
 .hub-table .nm a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   text-decoration: none;
+}
+
+.hub-table .sq-name .flag {
+  flex: none;
+}
+
+@media (max-width: 1179px) {
+  .hub-table td.nm {
+    width: 100%;
+    max-width: 0;
+  }
 }
 
 .hub-table .nm a:hover {
