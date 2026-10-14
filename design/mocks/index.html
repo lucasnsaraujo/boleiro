@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Screen mocks</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<style>
+body { min-height: 100vh; }
+header { display: flex; align-items: flex-end; gap: 28px; padding: 36px 48px 26px; border-bottom: 2px dotted var(--line-2); }
+header p { max-width: 640px; font-size: 14px; line-height: 1.5; color: var(--ink-2); padding-bottom: 6px; }
+header p b { color: var(--ink); }
+header nav { margin-left: auto; display: flex; gap: 8px; padding-bottom: 6px; }
+section { padding: 30px 48px 8px; }
+section h2 { font-stretch: var(--wide); font-weight: 900; font-size: 24px; letter-spacing: -.01em; display: flex; align-items: baseline; gap: 12px; }
+section h2 span { font-stretch: 100%; font-weight: 600; font-size: 13px; color: var(--mute); letter-spacing: 0; }
+.grid { margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 26px 24px; }
+a.card { display: block; color: inherit; text-decoration: none; padding: 8px 8px 12px; transition: transform var(--t-base) var(--e-out), box-shadow var(--t-base) var(--e-out); }
+a.card:hover { transform: translateY(-3px) rotate(-.6deg); box-shadow: var(--sh-lift); }
+a.card img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 6px; box-shadow: 0 0 0 1px var(--line); background: var(--paper-2); }
+a.card .t { display: flex; align-items: baseline; gap: 8px; margin: 10px 4px 0; }
+a.card .t b { font-stretch: var(--semi); font-weight: 900; font-size: 15px; }
+a.card .t em { font-style: normal; font-size: 12px; color: var(--mute); }
+a.card .t i { margin-left: auto; font-stretch: var(--semi); font-style: normal; font-weight: 800; font-size: 11px; color: var(--line-2); }
+a.card p { margin: 4px 4px 0; font-size: 12.5px; line-height: 1.4; color: var(--ink-2); }
+footer { padding: 30px 48px 40px; font-size: 12px; color: var(--mute); }
+</style>
+</head>
+<body>
+<header>
+  <img src="../logo/boleiro-wordmark.svg" height="72" alt="Boleiro 2026">
+  <p><b>Every Boleiro v1 screen, mocked in the Álbum system at the 1280×800 desktop window.</b> Each card opens the live HTML; the picture is a render from <code>shots/</code>. UI copy is in Portuguese, the game's language.</p>
+  <nav><a class="btn sm" href="../logo/logo.html">Logo sheet</a></nav>
+</header>
+<main id="m"></main>
+<footer>Tokens: <code>design/tokens/album.css</code> and <code>tokens.json</code>. Archivo (OFL) and Phosphor Icons (MIT) are vendored in <code>design/tokens/</code>.</footer>
+<script>
+const G = [
+  ['Brand', 'wordmark and app icon', [
+    ['../logo/logo.html', 'logo', 'Logo', 'Marca', 'The BOLEIRO wordmark with the yellow year tag, and the ball-sticker icon at 512, 128, 32 and 16 px on light and dark.'],
+  ]],
+  ['Skeleton', 'the walking skeleton screens', [
+    ['lobby.html', 'lobby', 'Start', 'Início', 'Continue the last career in one click; other careers below; an empty slot starts a new game.'],
+    ['new-career.html', 'new-career', 'New career', 'Nova carreira', 'Name the coach and pick any club from the album grid; the chosen club shows cash, board goal and rivals.'],
+    ['hub.html', 'hub', 'Team hub (macOS)', 'Tela do time', 'Brasfoot\'s hub: green bar with the nine buttons, club panel left, squad table right, one "Escalar time".'],
+    ['hub-windows.html', 'hub-windows', 'Team hub (Windows)', 'Tela do time', 'The same hub under a Windows 11 Mica title bar with caption buttons.'],
+    ['hub-dark.html', 'hub-dark', 'Team hub (dark)', 'Tela do time', 'Dark mode: night-green paper, same stickers and colours of the flag.'],
+    ['live.html', 'live', 'Live round', 'Rodada ao vivo', 'Your match as the hero band, every match of the round below with the latest event; speed and "só meus jogos" on top.'],
+    ['live-dark.html', 'live-dark', 'Live round (dark, VAR)', 'Rodada ao vivo', 'Dark mode with the round paused while VAR checks your goal.'],
+    ['tables.html', 'tables', 'Tables', 'Tabelas', 'Série A standings with the qualification zones and form, top scorers beside it.'],
+    ['calendar.html', 'calendar', 'Agenda', 'Agenda', 'Five weeks of fixtures as stickers on the calendar, the FIFA window as tape, today\'s match on the right.'],
+    ['saves.html', 'saves', 'Saved games', 'Jogos salvos', 'Six save slots as club stickers, autosave first, empty slots dashed; save now or load the selected one.'],
+    ['options.html', 'options', 'Options', 'Opções', 'Theme, sound and mute, match speed, pop-up windows, autosave, and the keyboard shortcuts.'],
+  ]],
+  ['Match', 'lineup, tactics and in-match windows', [
+    ['lineup.html', 'lineup', 'Lineup', 'Escalação', 'The XI on a pitch at real positions with out-of-position marks, bench beside it, "Escalar time" and "Jogar".'],
+    ['tactics.html', 'tactics', 'Tactics', 'Tática', 'Formation, posture, marking and play, each with the assistant\'s suggestion and one-click follow.'],
+    ['match-incident.html', 'match-incident', 'Red card window', 'Expulsão e lesão', 'Auto-opened over the paused round: red card and an injury in the same stop, with the assistant\'s fix.'],
+    ['penalties.html', 'penalties', 'Penalty order', 'Pênaltis', 'Shootout kicker order with each taker\'s skill, the keepers face to face, and the assistant\'s order.'],
+  ]],
+  ['Club', 'market, contracts, youth, stadium and money', [
+    ['market.html', 'market', 'Transfer search', 'Busca', 'Search and filters, saved filters and watch list, results table, and an offer panel for the selected player.'],
+    ['market-sell.html', 'market-sell', 'Incoming bid', 'Propostas', 'A bid for Samuel Lino that needs an answer, asking-price modes for players on sale, and a live auction.'],
+    ['contract.html', 'contract', 'Contract renewal', 'Renovação', 'Arrascaeta\'s renewal: 6 months to 3 years at different wages, his stance, and the assistant\'s default.'],
+    ['youth.html', 'youth', 'Youth academy', 'Base', 'Kids 16 to 20 with imprecise potential stars, a 21-year-old who needs a decision, trials and Copinha notes.'],
+    ['stadium.html', 'stadium', 'Stadium', 'Estádio', 'Ticket price against expected crowd and revenue, recent home gates, and a works request to the board.'],
+    ['finances.html', 'finances', 'Finances', 'Finanças', 'Cash, the month in and out, board and fan confidence, a friendly with a fee and a bank loan.'],
+    ['sponsors.html', 'sponsors', 'Sponsors', 'Patrocínio', 'The shirt\'s current sponsors and their value, new offers, and what the betting sponsor costs and shows.'],
+    ['player-card.html', 'player-card', 'Player card', 'Ficha', 'Arrascaeta as a big album sticker: contract, numbers, clubs, titles and who he gets along with.'],
+  ]],
+  ['World', 'career, living world and the album', [
+    ['coaches.html', 'coaches', 'Coaches and jobs', 'Técnicos', 'A job offer for you, open jobs, and the coach and club rankings; resigning stays a quiet link.'],
+    ['assistant.html', 'assistant', 'Assistant coach', 'Auxiliar', 'Level 1 to 5, the areas he handles, his tips and signings that fit, and better assistants to hire.'],
+    ['chemistry.html', 'chemistry', 'Team chemistry', 'Entrosamento', 'The 0 to 100 meter with its causes and the map of who gets along (green) and who clashes (red).'],
+    ['event.html', 'event', 'Event', 'Evento', 'Bruno Henrique says he will retire in December: three answers with their effects, or leave it to the assistant.'],
+    ['press.html', 'press', 'Press conference', 'Coletiva', 'A reporter asks about Abel Ferreira; three answers show what each moves.'],
+    ['newspaper.html', 'newspaper', 'Newspaper', 'Jornal da rodada', 'The round\'s paper: your match as the headline, upsets, VAR rows, signings, sackings and results.'],
+    ['national-team.html', 'national-team', 'National team', 'Seleção', 'November call-ups as album slots by position, the two friendlies, and who leaves your club.'],
+    ['continental.html', 'continental', 'Libertadores', 'Libertadores', 'The knockout bracket to the final with your semifinal highlighted, plus your group table.'],
+    ['awards.html', 'awards', 'Awards', 'Prêmios', 'Season-end awards as an album spread: Bola de Ouro, the Bola de Prata team, top scorer, records.'],
+    ['history.html', 'history', 'History album', 'Histórico', 'The club\'s album: this season\'s squad stickers with slots still to earn, shiny idols and title pages.'],
+  ]],
+];
+document.getElementById('m').innerHTML = G.map(([h, s, items]) => items.length ? `<section><h2>${h}<span>${s}</span></h2><div class="grid">${items.map(([href, shot, t, pt, cap], i) => `<a class="card stk" href="${href}"><img src="shots/${shot}.png" alt="${t}" loading="lazy"><div class="t"><b>${t}</b><em>${pt}</em><i>${String(i + 1).padStart(2, '0')}</i></div><p>${cap}</p></a>`).join('')}</div></section>` : '').join('');
+</script>
+</body>
+</html>
