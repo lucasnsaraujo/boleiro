@@ -1,0 +1,25 @@
+/* Phosphor Icons 2.1.1 (MIT), bold and fill, subset to the icons Boleiro uses. */
+@font-face { font-family: 'Phosphor-Bold'; src: url('phosphor-bold.woff2') format('woff2'); font-weight: normal; font-style: normal; font-display: block; }
+.ph-bold { font-family: 'Phosphor-Bold' !important; speak: never; font-style: normal; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; letter-spacing: 0; -webkit-font-smoothing: antialiased; }
+@font-face { font-family: 'Phosphor-Fill'; src: url('phosphor-fill.woff2') format('woff2'); font-weight: normal; font-style: normal; font-display: block; }
+.ph-fill { font-family: 'Phosphor-Fill' !important; speak: never; font-style: normal; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; letter-spacing: 0; -webkit-font-smoothing: antialiased; }
+.ph-book-open-text:before { content: "\e8f2"; }
+.ph-calendar-dots:before { content: "\e7b4"; }
+.ph-chalkboard-teacher:before { content: "\e600"; }
+.ph-coins:before { content: "\e78e"; }
+.ph-first-aid:before { content: "\e56e"; }
+.ph-gear-six:before { content: "\e272"; }
+.ph-handshake:before { content: "\e582"; }
+.ph-hourglass-medium:before { content: "\e2b8"; }
+.ph-magnifying-glass:before { content: "\e30c"; }
+.ph-monitor-play:before { content: "\e58c"; }
+.ph-newspaper:before { content: "\e344"; }
+.ph-pause:before { content: "\e39e"; }
+.ph-plant:before { content: "\ebae"; }
+.ph-soccer-ball:before { content: "\e716"; }
+.ph-strategy:before { content: "\ea3a"; }
+.ph-t-shirt:before { content: "\e670"; }
+.ph-table:before { content: "\e476"; }
+.ph-ticket:before { content: "\e490"; }
+.ph-user-switch:before { content: "\e756"; }
+.ph-users-three:before { content: "\e68e"; }

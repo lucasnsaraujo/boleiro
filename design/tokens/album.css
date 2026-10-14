@@ -1,0 +1,322 @@
+/* Álbum: Boleiro's design system. The sticker album of the Brasileirão:
+   warm paper, die-cut stickers with a white border, flag green and yellow.
+   Values mirror tokens.json; change both together. */
+
+@import url('icons/phosphor.css');
+
+@font-face {
+  font-family: 'Archivo';
+  src: url('fonts/Archivo.woff2') format('woff2');
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Archivo';
+  src: url('fonts/Archivo-Italic.woff2') format('woff2');
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-style: italic;
+  font-display: block;
+}
+
+/* ---------- Tokens ---------- */
+:root {
+  color-scheme: light;
+
+  /* Paper and ink */
+  --paper: #F2EAD9;
+  --paper-2: #E9DFC9;
+  --paper-tex: url('paper.jpg');
+  --card: #FFFDF7;
+  --ink: #14231A;
+  --ink-2: #3C4A40;
+  --mute: #5C584B;
+  --line: #D8CDB4;
+  --line-2: #C4B796;
+  --rule: #EFE7D6;
+  --edge: #14231A;
+
+  /* Flag */
+  --green: #0B7A3B;
+  --green-d: #075A2B;
+  --green-l: #E2F3EA;
+  --yellow: #FFCC00;
+  --yellow-d: #E0A800;
+  --yellow-l: #FFF3BF;
+  --blue: #1B3F9E;
+  --red: #D7322A;
+  --red-l: #FBE3E0;
+  --later: #8A6400;
+  --note: #FFF4B8;
+  --note-ink: #4A3F12;
+  --foil-a: #E8E3F0;
+  --foil-b: #C9E8DA;
+  --foil: linear-gradient(135deg, #FFF7D1 0%, #FFFDF7 30%, #E2F3EA 55%, #FFF4C2 80%, #FFFDF7 100%);
+
+  /* Text on filled colours */
+  --on-green: #FFFFFF;
+  --on-yellow: #14231A;
+  --on-red: #FFFFFF;
+
+  /* Top bar */
+  --bar: #0B7A3B;
+  --bar-d: #075A2B;
+  --bar-ink: #FFFFFF;
+
+  /* Positions (Brasfoot letters: G goleiro, L lateral, Z zagueiro, M meia, A atacante) */
+  --pos-g: #E0A800;
+  --pos-l: #1B3F9E;
+  --pos-z: #1B3F9E;
+  --pos-m: #0B7A3B;
+  --pos-a: #D7322A;
+
+  /* Type */
+  --f: 'Archivo', system-ui, sans-serif;
+  --fs-score: 64px;
+  --fs-display: 40px;
+  --fs-title: 24px;
+  --fs-head: 18px;
+  --fs-body: 13px;
+  --fs-table: 12.5px;
+  --fs-small: 11.5px;
+  --fs-label: 11px;
+  --wide: 125%;
+  --semi: 112%;
+  --narrow: 90%;
+  --tight: 75%;
+
+  /* Radii */
+  --r-s: 6px;
+  --r-m: 12px;
+  --r-l: 20px;
+  --r-pill: 999px;
+
+  /* Space */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 18px;
+  --s-5: 24px;
+  --s-6: 40px;
+
+  /* Shadows: printed, never glowing */
+  --sh-sticker: 0 0 0 1px rgba(20,35,26,.10), 0 1px 0 rgba(20,35,26,.08), 0 6px 14px -6px rgba(20,35,26,.28);
+  --sh-lift: 0 0 0 1px rgba(20,35,26,.10), 0 14px 22px -8px rgba(20,35,26,.38);
+  --sh-page: 0 0 0 1px var(--line), 0 10px 30px -14px rgba(20,35,26,.35);
+  --sh-pop: 0 0 0 5px #FFFFFF, 0 0 0 6px rgba(20,35,26,.12), 0 22px 40px -12px rgba(20,35,26,.55);
+  --sh-press: 0 3px 0 var(--edge);
+  --veil: rgba(242,234,217,.62);
+
+  /* Motion */
+  --t-fast: 120ms;
+  --t-base: 220ms;
+  --t-slow: 420ms;
+  --t-stamp: 560ms;
+  --e-out: cubic-bezier(.16, 1, .3, 1);
+  --e-in-out: cubic-bezier(.65, 0, .35, 1);
+  --e-slap: cubic-bezier(.34, 1.56, .64, 1);
+  --e-peel: cubic-bezier(.5, 0, .75, 0);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #0D1F15;
+  --paper-2: #15291D;
+  --paper-tex: none;
+  --card: #18301F;
+  --ink: #F2EAD9;
+  --ink-2: #CFC8B6;
+  --mute: #A3AE9F;
+  --line: #2A4434;
+  --line-2: #3E5C48;
+  --rule: #223A2A;
+  --edge: #050D08;
+
+  --green: #1E9152;
+  --green-d: #0B5A2E;
+  --green-l: #183D29;
+  --yellow-l: #3A3413;
+  --blue: #8EA6F0;
+  --red: #FF6A5C;
+  --red-l: #3E1F1B;
+  --later: #E8C15A;
+  --note: #3A3413;
+  --note-ink: #F2E3A0;
+  --foil: linear-gradient(135deg, #2B3A1E 0%, #18301F 35%, #1D3A33 60%, #33361A 85%, #18301F 100%);
+
+  --bar: #0A5A2D;
+  --bar-d: #053B1D;
+
+  --pos-l: #3D63D0;
+  --pos-z: #3D63D0;
+  --pos-m: #1E9152;
+
+  --sh-sticker: 0 0 0 1px rgba(255,255,255,.07), 0 1px 0 rgba(0,0,0,.4), 0 8px 16px -6px rgba(0,0,0,.6);
+  --sh-lift: 0 0 0 1px rgba(255,255,255,.08), 0 16px 24px -8px rgba(0,0,0,.7);
+  --sh-page: 0 0 0 1px var(--line), 0 12px 30px -14px rgba(0,0,0,.7);
+  --sh-pop: 0 0 0 5px #F2EAD9, 0 0 0 6px rgba(0,0,0,.3), 0 22px 40px -12px rgba(0,0,0,.8);
+  --veil: rgba(13,31,21,.66);
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--f);
+  font-stretch: 100%;
+  font-size: var(--fs-body);
+  color: var(--ink);
+  background: var(--paper) var(--paper-tex) center / cover;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+::selection { background: var(--yellow); color: var(--on-yellow); }
+:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; border-radius: var(--r-s); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: var(--r-pill); border: 3px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-track { background: transparent; }
+i.ph-bold, i.ph-fill { line-height: 1; }
+
+/* ---------- Type ---------- */
+.x { font-stretch: var(--wide); font-weight: 900; letter-spacing: -.01em; }
+.c { font-stretch: var(--tight); }
+.n90 { font-stretch: var(--narrow); }
+.lbl { font-stretch: var(--semi); font-weight: 800; font-size: var(--fs-label); letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
+.t-display { font-stretch: var(--wide); font-weight: 900; font-size: var(--fs-display); line-height: 1; letter-spacing: -.02em; }
+.t-title { font-stretch: var(--wide); font-weight: 900; font-size: var(--fs-title); line-height: 1.05; letter-spacing: -.01em; }
+.t-head { font-stretch: var(--semi); font-weight: 900; font-size: var(--fs-head); line-height: 1.1; }
+.t-score { font-stretch: var(--wide); font-weight: 900; font-size: var(--fs-score); line-height: 1; letter-spacing: -.02em; }
+.mute { color: var(--mute); }
+
+/* ---------- Primitives ---------- */
+
+/* Sticker: white die-cut border and printed shadow */
+.stk { background: var(--card); border-radius: var(--r-m); box-shadow: var(--sh-sticker); position: relative; }
+.stk.tilt-l { transform: rotate(-2deg); }
+.stk.tilt-r { transform: rotate(2deg); }
+.stk.foil { background: var(--foil); }
+.stk.peel::after {
+  content: ''; position: absolute; right: -1px; bottom: -1px; width: 30px; height: 30px;
+  background: linear-gradient(135deg, transparent 50%, var(--paper-2) 50%, var(--card) 85%);
+  border-radius: 0 0 var(--r-m) 0; box-shadow: -2px -2px 5px -2px rgba(20,35,26,.28);
+}
+
+/* Album page */
+.page { background: var(--card); border-radius: var(--r-s); box-shadow: var(--sh-page); }
+
+/* Empty slot: the missing sticker */
+.slot { border: 2px dashed var(--line-2); border-radius: var(--r-m); background: color-mix(in srgb, var(--paper-2) 50%, transparent); }
+
+/* Buttons: pill with a hard printed edge */
+.btn {
+  height: 38px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border-radius: var(--r-pill); font-family: inherit; font-stretch: var(--semi); font-weight: 800; font-size: 13px; letter-spacing: .02em;
+  color: var(--ink); background: var(--card); border: 2px solid var(--edge); box-shadow: var(--sh-press); white-space: nowrap; cursor: pointer;
+  transition: transform var(--t-fast) var(--e-out), box-shadow var(--t-fast) var(--e-out);
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--edge); }
+.btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--edge); }
+.btn.go { background: var(--green); color: var(--on-green); }
+.btn.y { background: var(--yellow); color: var(--on-yellow); }
+.btn.no { background: var(--red); color: var(--on-red); }
+.btn.sm { height: 30px; padding: 0 12px; font-size: 12px; box-shadow: 0 2px 0 var(--edge); }
+.btn.lg { height: 52px; padding: 0 26px; font-size: 19px; font-stretch: var(--wide); font-weight: 900; box-shadow: 0 4px 0 var(--edge); }
+.btn.flat { border-color: transparent; box-shadow: none; background: transparent; color: var(--ink-2); }
+.btn[disabled] { background: var(--paper-2); color: var(--mute); border-color: var(--line-2); box-shadow: 0 3px 0 var(--line-2); cursor: default; }
+
+/* Chips: status, never decoration */
+.chip { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px; border-radius: var(--r-pill); font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+.chip.ok { background: var(--green); color: var(--on-green); }
+.chip.wait { background: var(--yellow); color: var(--on-yellow); }
+.chip.off { background: var(--paper-2); color: var(--mute); }
+.chip.bad { background: var(--red); color: var(--on-red); }
+.chip.ink { background: var(--ink); color: var(--card); }
+
+/* Segmented control */
+.seg { display: inline-flex; padding: 3px; border-radius: var(--r-pill); background: var(--paper); box-shadow: inset 0 0 0 1px var(--line-2); }
+.seg > span { height: 28px; padding: 0 12px; display: grid; place-items: center; border-radius: var(--r-pill); font-weight: 700; font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
+.seg > span.on { background: var(--ink); color: var(--card); }
+
+/* Field: filter or search pill */
+.field { height: 34px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: var(--r-pill); background: var(--paper); box-shadow: inset 0 0 0 1px var(--line-2); font-weight: 600; font-size: 13px; color: var(--ink); white-space: nowrap; }
+.field small { font-stretch: var(--semi); font-weight: 800; font-size: 10px; letter-spacing: .08em; color: var(--mute); text-transform: uppercase; }
+.field.ph { color: var(--mute); }
+
+/* Toggle */
+.sw { width: 40px; height: 24px; border-radius: var(--r-pill); background: var(--paper-2); box-shadow: inset 0 0 0 1.5px var(--line-2); position: relative; flex: none; }
+.sw::after { content: ''; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--card); box-shadow: 0 1px 0 rgba(20,35,26,.25), 0 0 0 1px rgba(20,35,26,.12); transition: transform var(--t-base) var(--e-out); }
+.sw.on { background: var(--green); box-shadow: inset 0 0 0 1.5px var(--green-d); }
+.sw.on::after { transform: translateX(16px); }
+
+/* Meter: confidence, energy, chemistry */
+.meter { height: 12px; border-radius: var(--r-pill); background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+.meter > i { display: block; height: 100%; background: var(--green); border-radius: var(--r-pill); }
+.meter.mid > i { background: var(--yellow-d); }
+.meter.low > i { background: var(--red); }
+.meter.thin { height: 8px; }
+
+/* Crest wrapper (crests are drawn per club) */
+.crest { display: block; flex: none; }
+
+/* Avatar: coach or player initial in a white-rimmed disc */
+.av { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none; font-stretch: var(--wide); font-weight: 900; font-size: 15px; color: #fff; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(20,35,26,.18), 0 3px 6px -2px rgba(20,35,26,.35); }
+
+/* Position badge */
+.pos { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; font-stretch: var(--semi); font-weight: 900; font-size: 11px; color: #fff; flex: none; }
+.pos.G { background: var(--pos-g); } .pos.L { background: var(--pos-l); } .pos.Z { background: var(--pos-z); } .pos.M { background: var(--pos-m); } .pos.A { background: var(--pos-a); }
+
+/* Pinned note: paper slip with tape */
+.note { position: relative; background: var(--note); color: var(--note-ink); padding: 10px 14px; font-size: 12px; line-height: 1.4; transform: rotate(-.6deg); box-shadow: 0 4px 10px -6px rgba(20,35,26,.4); }
+.note::before { content: ''; position: absolute; left: 50%; top: -8px; width: 64px; height: 16px; margin-left: -32px; background: rgba(255,255,255,.6); box-shadow: 0 0 0 1px rgba(20,35,26,.06); transform: rotate(2deg); }
+.note b { color: var(--ink); }
+[data-theme='dark'] .note b { color: var(--note-ink); }
+[data-theme='dark'] .note::before { background: rgba(255,255,255,.18); }
+
+/* Keyboard key */
+.kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; padding: 0 6px; border-radius: 5px; background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line-2), 0 2px 0 var(--line-2); font-stretch: var(--semi); font-weight: 800; font-size: 11px; color: var(--ink); }
+
+/* Score digit box (Brasfoot round board) */
+.sbox { height: 21px; min-width: 26px; display: grid; place-items: center; border-radius: var(--r-s); background: var(--ink); color: var(--card); font-stretch: var(--semi); font-weight: 900; font-size: 12.5px; }
+.sbox.x { background: var(--paper-2); color: var(--mute); }
+
+/* Club plate: club-colour pill with crest (Brasfoot plate) */
+.plate { height: 21px; display: flex; align-items: center; gap: 6px; padding: 0 8px 0 3px; border-radius: var(--r-pill); font-weight: 700; font-size: 12.5px; box-shadow: inset 0 0 0 1px rgba(20,35,26,.12); white-space: nowrap; overflow: hidden; }
+
+/* Card markers */
+.yc, .rc { display: inline-block; width: 9px; height: 12px; border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); flex: none; }
+.yc { background: var(--yellow); } .rc { background: #D7322A; }
+
+/* "Novo" tag */
+.new { font-stretch: var(--semi); font-weight: 900; font-size: 9.5px; letter-spacing: .06em; background: var(--red); color: var(--on-red); padding: 2px 6px; border-radius: var(--r-pill); vertical-align: 1px; white-space: nowrap; }
+
+/* Wordmark: green wide lettering + tilted yellow tag */
+.wm { display: inline-flex; flex-direction: column; line-height: .86; }
+.wm .b { font-stretch: var(--wide); font-weight: 900; letter-spacing: -.02em; color: var(--green); }
+.wm .o { align-self: flex-start; font-stretch: var(--wide); font-weight: 900; font-style: italic; color: var(--on-yellow); background: var(--yellow); padding: .08em .3em .1em; border-radius: .18em; transform: rotate(-3deg); margin-top: .05em; margin-left: .6em; box-shadow: 0 .06em 0 var(--edge); letter-spacing: .01em; }
+[data-theme='dark'] .wm .b { color: #fff; }
+
+/* Squad table */
+table.tb { width: 100%; border-collapse: collapse; }
+.tb th { height: 30px; font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); text-align: right; padding: 0 10px; border-bottom: 2px solid var(--ink); background: var(--paper); white-space: nowrap; }
+.tb td { height: 31px; padding: 0 10px; text-align: right; font-size: var(--fs-table); border-bottom: 1px solid var(--rule); white-space: nowrap; font-stretch: var(--narrow); }
+.tb .l { text-align: left; }
+.tb td.nm { font-stretch: 100%; font-weight: 700; font-size: 13.5px; }
+.tb tr.sel td { background: var(--yellow-l); }
+.tb tr.sel td:first-child { box-shadow: inset 4px 0 0 var(--yellow); }
+.tb .dim { color: var(--mute); }
+.tb .old { color: var(--red); font-weight: 700; }
+.tb .young { color: var(--blue); font-weight: 700; }
+
+/* Energy bar inside tables */
+.en { display: inline-block; width: 80px; height: 10px; border-radius: var(--r-pill); background: var(--paper-2); vertical-align: middle; margin-right: 8px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
+.en > i { display: block; height: 100%; background: var(--green); border-radius: var(--r-pill); }
+.en.mid > i { background: var(--yellow-d); }
+.en.low > i { background: var(--red); }
+
+/* Dotted rule used between groups */
+.dots { border: 0; border-top: 2px dotted var(--line-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}
