@@ -7,14 +7,13 @@ import { useCommands } from "../app/AppCommands.js";
 import { useGameClock } from "../app/gameClock.js";
 import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
-import { clubById } from "../clubs/clubCatalog.js";
+import { clubById, plateColours } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { savedWhen } from "../start/savedWhen.js";
 import "./saves.css";
 
 /** The autosave first, then the slots a game can be started in. */
 const SLOT_IDS = [AUTOSAVE_SLOT_ID, ...GAME_SLOT_IDS] as const;
-const NO_CLUB_COLOUR = "#5c584b";
 
 type Slots = { kind: "loading" } | { kind: "ready"; saved: SlotMeta[] } | { kind: "failed" };
 type Status = { text: string; isError: boolean } | null;
@@ -132,6 +131,7 @@ export function Saves() {
                 );
               }
               const club = meta.coachClubId ? clubById(meta.coachClubId) : null;
+              const plate = club ? plateColours(club.colours) : null;
               const isPicked = meta.id === picked?.id;
               return (
                 <li key={id}>
@@ -144,7 +144,7 @@ export function Saves() {
                       setConfirming(false);
                     }}
                   >
-                    <span className="saves-art" style={{ ["--c" as string]: club?.colours.primary ?? NO_CLUB_COLOUR }}>
+                    <span className="saves-art" style={plate ? { background: plate.background, color: plate.text } : undefined}>
                       <span className="saves-no">{number}</span>
                       {id === AUTOSAVE_SLOT_ID && (
                         <span className="chip saves-auto">

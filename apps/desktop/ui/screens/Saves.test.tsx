@@ -7,6 +7,7 @@ import { ServicesContext, type Services } from "../app/ServicesContext.js";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { saveToSlot } from "@boleiro/game-client/saves/saveToSlot";
+import { clubById, plateColours } from "../clubs/clubCatalog.js";
 import { Saves } from "./Saves.js";
 
 const closers: (() => void)[] = [];
@@ -96,4 +97,17 @@ test("deleting the save of the game open now says so before the coach confirms",
   await userEvent.click(within(await slotsList()).getByRole("button", { name: /^Jogo 3 · Bahia/ }));
   await userEvent.click(screen.getByRole("button", { name: "Apagar" }));
   expect(screen.getByRole("alertdialog").textContent).not.toContain("É o jogo aberto agora.");
+});
+
+test("a saved card prints its slot number and stripes in the ink that reads on its club's colour", async () => {
+  const given = await services();
+  await saveToSlot(given.engine, given.slots, "slot-2", { slotId: "slot-2", coachName: "Tite" });
+  openSaves(given);
+  const card = await within(await slotsList()).findByRole("button", { name: /^Jogo 2 · Bahia/ });
+  const colours = clubById("bahia-ba")?.colours;
+  expect(colours).toBeDefined();
+  const ink = document.createElement("i");
+  ink.style.color = plateColours(colours ?? { primary: "#000000", secondary: "#000000" }).text;
+  const art = within(card).getByText("03").parentElement;
+  expect(art?.style.color).toBe(ink.style.color);
 });

@@ -88,7 +88,8 @@
   max-height: 150px;
   display: grid;
   place-items: center;
-  background: var(--c);
+  background: #5c584b;
+  color: #ffffff;
   border-radius: var(--r-m) var(--r-m) 0 0;
 }
 
@@ -97,7 +98,7 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0 14px, rgba(255, 255, 255, 0) 14px 28px);
+  background: repeating-linear-gradient(135deg, color-mix(in srgb, currentColor 12%, transparent) 0 14px, transparent 14px 28px);
 }
 
 .saves-art .crest {
@@ -111,7 +112,7 @@
   font-stretch: var(--wide);
   font-weight: 900;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.85);
+  opacity: 0.85;
 }
 
 .saves-auto {
@@ -125,7 +126,7 @@
 .saves-no-club {
   position: relative;
   font-size: 44px;
-  color: rgba(255, 255, 255, 0.85);
+  opacity: 0.85;
 }
 
 .saves-tx {
