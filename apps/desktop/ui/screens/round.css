@@ -492,6 +492,11 @@
   padding: 0 24px;
 }
 
+.live-r[hidden],
+.live-group[hidden] {
+  display: none;
+}
+
 .live-r .std {
   padding-right: 8px;
   overflow: hidden;

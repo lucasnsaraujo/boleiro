@@ -296,3 +296,12 @@ test("a paused round says Pausado beside the clock, and the label goes when it p
   await user().click(screen.getByRole("button", { name: "2x" }));
   expect(within(cover).queryByText("Pausado")).toBeNull();
 });
+
+test("rows hidden by Só meus jogos come back as they were, so their old goals don't flash again", async () => {
+  await kickOff(await onMatchDay());
+  const other = screen.getAllByRole("listitem").find((row) => / \d+ x \d+ /.test(row.getAttribute("aria-label") ?? "") && !row.getAttribute("aria-label")?.includes("Bahia"));
+  expect(other).toBeDefined();
+  await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
+  await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
+  expect(other?.isConnected).toBe(true);
+});

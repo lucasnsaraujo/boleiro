@@ -281,8 +281,9 @@ export function Round() {
   const limits = coach && coachMatch && round.coachClubId ? liveLimits(coach, coachMatch.events, round.coachClubId, minute) : null;
   const ownColours = round.coachClubId ? round.clubs[round.coachClubId]?.colours : undefined;
   const isFinished = result !== null;
+  // Rows Só meus jogos leaves out are hidden, not dropped, so they don't replay their goals when they come back.
   const groups = round.competitions
-    .map((competition) => ({ ...competition, rows: matches.filter((m) => m.competitionId === competition.id && (!isOnlyMine || m.isCoach)) }))
+    .map((competition) => ({ ...competition, rows: matches.filter((m) => m.competitionId === competition.id) }))
     .filter((group) => group.rows.length > 0);
 
   return (
@@ -334,14 +335,14 @@ export function Round() {
 
       <div className="live-list">
         {groups.map((group) => (
-          <section key={group.id} className="live-group" aria-labelledby={`live-${group.id}`}>
+          <section key={group.id} className="live-group" aria-labelledby={`live-${group.id}`} hidden={isOnlyMine && !group.rows.some((m) => m.isCoach)}>
             <h2 id={`live-${group.id}`} className="live-g">
               <CompetitionLogo label={group.label} size={20} />
               {group.label}
             </h2>
             <ul className="live-rows" aria-labelledby={`live-${group.id}`}>
               {group.rows.map((m) => (
-                <MatchRow key={m.fixtureId} match={m} clubs={round.clubs} flash={flashes[m.fixtureId]} />
+                <MatchRow key={m.fixtureId} match={m} clubs={round.clubs} flash={flashes[m.fixtureId]} isHidden={isOnlyMine && !m.isCoach} />
               ))}
             </ul>
           </section>
@@ -525,12 +526,13 @@ function Cover({ round, match, label, minute, speed, golCount, isOnlyMine, isFin
   );
 }
 
-type MatchRowProps = { match: MatchAt; clubs: Readonly<Record<string, RoundClub>>; flash: Flash | undefined };
+type MatchRowProps = { match: MatchAt; clubs: Readonly<Record<string, RoundClub>>; flash: Flash | undefined; isHidden: boolean };
 
 /** A row redraws only when its own match changes, so a whole round's board stays light at 4x. */
 const isSameRow = (before: MatchRowProps, after: MatchRowProps) =>
   before.clubs === after.clubs &&
   before.flash === after.flash &&
+  before.isHidden === after.isHidden &&
   before.match.isCoach === after.match.isCoach &&
   before.match.score.home === after.match.score.home &&
   before.match.score.away === after.match.score.away &&
@@ -539,13 +541,13 @@ const isSameRow = (before: MatchRowProps, after: MatchRowProps) =>
   before.match.last?.minute === after.match.last?.minute &&
   before.match.last?.text === after.match.last?.text;
 
-const MatchRow = memo(function MatchRow({ match, clubs, flash }: MatchRowProps) {
+const MatchRow = memo(function MatchRow({ match, clubs, flash, isHidden }: MatchRowProps) {
   const home = clubs[match.homeId];
   const away = clubs[match.awayId];
   if (!home || !away) return null;
   const lead = (side: Side) => (side === "home" ? match.score.home > match.score.away : match.score.away > match.score.home);
   return (
-    <li className={match.isCoach ? "live-r human" : "live-r"} aria-label={`${home.shortName} ${match.score.home} x ${match.score.away} ${away.shortName}`}>
+    <li className={match.isCoach ? "live-r human" : "live-r"} hidden={isHidden} aria-label={`${home.shortName} ${match.score.home} x ${match.score.away} ${away.shortName}`}>
       {flash && <i key={flash.count} className="flash" style={{ background: `linear-gradient(90deg, transparent 12%, ${flash.colour} 40%, transparent 95%)` }} />}
       <span className="std">{home.stadium}</span>
       <RowPlate club={home} red={match.reds.home > 0} />
