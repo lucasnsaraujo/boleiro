@@ -5,7 +5,7 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, expect, test } from "vitest";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
 import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
-import type { CommandResults, CommandType, GameCommand } from "@boleiro/game-client/engine/createEngineSession";
+import type { CommandResults, CommandType, GameCommand, PlayResult } from "@boleiro/game-client/engine/createEngineSession";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import type { JobOffer } from "@boleiro/engine/sim/coach/coach";
 import type { TurningPoint } from "@boleiro/game-client/hub/turningPoints";
@@ -74,7 +74,7 @@ test("when a day stops the coach early, the hub stays and shows the news that st
     async function apply(command: GameCommand): Promise<unknown> {
       if (command.type !== "playToMatchDay") return engine.apply(command);
       const played = await engine.apply({ type: "advance", days: [{}] });
-      return { date: played.date, stop: "jobOffer", daysPlayed: 1 };
+      return { date: played.date, stop: "jobOffer", daysPlayed: 1 } satisfies PlayResult;
     }
     return {
       ...engine,

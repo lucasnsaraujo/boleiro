@@ -1,7 +1,7 @@
 import { IDBFactory } from "fake-indexeddb";
 import { afterEach, expect, test } from "vitest";
 import type { EngineClient } from "../engine/connectEngine.js";
-import type { CommandResults, CommandType, GameCommand } from "../engine/createEngineSession.js";
+import type { CommandResults, CommandType, GameCommand, PlayResult } from "../engine/createEngineSession.js";
 import { inMemoryEngine } from "../engine/inMemoryEngine.js";
 import type { CurrentGameRef } from "./currentGame.js";
 import { indexedDbSlots } from "./indexedDbSlots.js";
@@ -56,7 +56,7 @@ test("playing on through days with no match anywhere still autosaves", async () 
   function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
   async function apply(command: GameCommand): Promise<unknown> {
     if (command.type !== "playToMatchDay") return raw.apply(command);
-    return { date: (await raw.apply({ type: "advance", days: [{}] })).date, stop: "jobOffer", daysPlayed: 1 };
+    return { date: (await raw.apply({ type: "advance", days: [{}] })).date, stop: "jobOffer", daysPlayed: 1 } satisfies PlayResult;
   }
   const stoppedByAnOffer: EngineClient = { ...raw, apply };
   const engine = withAutosave(stoppedByAnOffer, slots, { current: { slotId: "slot-1", coachName: "Tite" } });

@@ -145,14 +145,23 @@ function playSeason(): Season {
   };
 }
 
-/** Feeds a fresh session the same commands, each sent through JSON as it would cross a wire. */
+/**
+ * Feeds a fresh session the same commands, each sent through JSON as it would cross a wire. A load
+ * overwrites the game, so the hash of the session's own save just before each load is kept too.
+ */
 function replay(applied: readonly Applied[]) {
   const session = createEngineSession(bundledGameFiles);
+  const savesBeforeLoad: string[] = [];
   const results = applied.map(({ command }) => {
     const sent: GameCommand = JSON.parse(JSON.stringify(command));
+    if (sent.type === "load") savesBeforeLoad.push(sha256(session.save()));
     return session.apply(sent);
   });
-  return { session, results };
+  return { session, results, savesBeforeLoad };
+}
+
+function loadedSaves(applied: readonly Applied[]): string[] {
+  return applied.flatMap(({ command }) => (command.type === "load" ? [sha256(command.save)] : []));
 }
 
 /** A career start: one offer turned down, another signed, then on to the first stop. */
@@ -213,13 +222,15 @@ test("a request withdrawn before the board sees it leaves the desk", () => {
 
 test("every command survives a JSON round trip unchanged", () => {
   const commands = [...season.recorded.applied, ...career.recorded.applied].map(({ command }) => command);
-  for (const command of commands) expect(JSON.parse(JSON.stringify(command))).toEqual(command);
+  for (const command of commands) expect(JSON.parse(JSON.stringify(command))).toStrictEqual(command);
 });
 
 test("two sessions fed the same command log from the same seed end in the same save, answering every command alike", () => {
   const { session, applied } = season.recorded;
   const twin = replay(applied);
   expect(twin.results).toEqual(applied.map(({ result }) => result));
+  expect(twin.savesBeforeLoad).toHaveLength(1);
+  expect(twin.savesBeforeLoad).toEqual(loadedSaves(applied));
   expect(sha256(twin.session.save())).toBe(sha256(session.save()));
 }, 120_000);
 
