@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { Competition, CupCompetition, Fixture, GameState, LeagueCompetition, MatchResult } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
-import { coachCompetitions, competitionStages, defaultStage, groupTables, knockoutTies, playedRounds, tableTabs, topScorers, type TableRow } from "./competitionTables.js";
+import { coachCompetitions, competitionStages, defaultStage, groupTables, knockoutTies, openingCompetitionId, playedRounds, tableTabs, topScorers, type TableRow } from "./competitionTables.js";
 
 const game = newGameFromFiles(7, { coachClubId: "bahia-ba" }, bundledGameFiles);
 
@@ -242,5 +242,16 @@ describe("topScorers", () => {
       { playerId: second.id, name: second.name, clubId: second.clubId, goals: 5 },
       { playerId: first.id, name: first.name, clubId: first.clubId, goals: 2 },
     ]);
+  });
+});
+
+describe("openingCompetitionId", () => {
+  test("is the competition of the coach's next match", () => {
+    expect(openingCompetitionId(game, "copa-do-brasil-2026")).toBe("copa-do-brasil-2026");
+  });
+
+  test("with no match ahead is the first competition the coach's club plays, not the first tab", () => {
+    expect(tableTabs(game).tabs[0]?.id).toBe("serie-a-2026");
+    expect(openingCompetitionId(game, undefined)).toBe("state-ba-2026");
   });
 });

@@ -41,6 +41,11 @@ export function coachCompetitions({ coachClubId, competitions, season }: Pick<Ga
 
 const DIVISION_ORDER = ["A", "B", "C", "D"] as const;
 
+/** The tables open on the competition of the coach's next match, else on the first his club plays this season. */
+export function openingCompetitionId(state: Pick<GameState, "coachClubId" | "competitions" | "season">, nextCompetitionId: string | undefined): string | undefined {
+  return nextCompetitionId ?? coachCompetitions(state)[0]?.id;
+}
+
 /**
  * The tables screen's tabs: the four national divisions, the cup and the state championship the coach's club plays.
  * Every other state championship waits behind "Outras ligas".

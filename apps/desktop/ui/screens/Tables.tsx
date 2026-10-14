@@ -17,6 +17,7 @@ import {
   defaultStage,
   groupTables,
   knockoutTies,
+  openingCompetitionId,
   playedRounds,
   tableTabs,
   topScorers,
@@ -78,7 +79,7 @@ export function Tables() {
 
   const all = [...tabs, ...otherStates];
   const nextId = nextMatch(state)?.fixture.competitionId;
-  const shown = all.find((c) => c.id === (pickedId ?? nextId)) ?? tabs[0];
+  const shown = all.find((c) => c.id === (pickedId ?? openingCompetitionId(state, nextId))) ?? tabs[0];
   const isOther = otherStates.some((c) => c.id === shown?.id);
   const openOthers = () => setPickedId(otherId ?? otherStates[0]?.id ?? null);
   const view = shown ? (views[shown.id] ?? { stage: defaultStage(shown, state.coachClubId), round: null }) : null;
