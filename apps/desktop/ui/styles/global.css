@@ -24,3 +24,12 @@ button {
 a {
   color: inherit;
 }
+
+/* With less motion asked for, hover and press still change colour and shade, but nothing slides or tilts. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-property: opacity, color, background-color, border-color, box-shadow, outline-color !important;
+  }
+}
