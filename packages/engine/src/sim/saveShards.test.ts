@@ -3,7 +3,7 @@ import { advanceDay } from "./advanceDay.js";
 import type { GameState } from "./gameState.js";
 import { loadNewGame } from "./loadNewGame.js";
 import { saveGame } from "./saveGame.js";
-import { GAME_SHARD, loadShards, saveShards } from "./saveShards.js";
+import { GAME_SHARD, loadShards, saveShards, WORLD_SHARD } from "./saveShards.js";
 import type { CountryStructure, WorldClub } from "./world/world.js";
 
 const structure = (id: string, window: [string, string]): CountryStructure => ({
@@ -37,7 +37,7 @@ describe("save shards", () => {
 
   it("give each result-only country a shard of its own, and load back the same game", () => {
     const shards = saveShards(world);
-    expect(Object.keys(shards).sort()).toEqual(["country-aa", "country-bb", GAME_SHARD].sort());
+    expect(Object.keys(shards).sort()).toEqual(["country-aa", "country-bb", GAME_SHARD, WORLD_SHARD].sort());
     expect(shards[GAME_SHARD]).not.toContain("aa-0");
     expect(loadShards(shards)).toStrictEqual(world);
   });
@@ -48,8 +48,13 @@ describe("save shards", () => {
 
   it("write only the shards that changed since the last save", () => {
     const firstMatchDay = playUntil(world, "2026-03-03");
-    expect(Object.keys(saveShards(firstMatchDay, world)).sort()).toEqual(["country-aa", GAME_SHARD].sort());
+    expect(Object.keys(saveShards(firstMatchDay, world)).sort()).toEqual(["country-aa", GAME_SHARD, WORLD_SHARD].sort());
     const quietDay = advanceDay(firstMatchDay, {}).state;
-    expect(Object.keys(saveShards(quietDay, firstMatchDay))).toEqual([GAME_SHARD]);
+    expect(Object.keys(saveShards(quietDay, firstMatchDay)).sort()).toEqual([GAME_SHARD, WORLD_SHARD].sort());
+  });
+
+  it("refuse a save missing the shard of a country it lists", () => {
+    const shards = Object.fromEntries(Object.entries(saveShards(world)).filter(([shard]) => shard !== "country-bb"));
+    expect(() => loadShards(shards)).toThrow(/bb/);
   });
 });

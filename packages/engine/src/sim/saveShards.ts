@@ -4,6 +4,8 @@ import type { Country, World } from "./world/world.js";
 
 /** The game without its result-only countries: the whole save of a Brazil-only game. */
 export const GAME_SHARD = "game";
+/** The ids of the game's result-only countries, so a load can tell a country's shard went missing. */
+export const WORLD_SHARD = "world";
 const COUNTRY_SHARD = "country-";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -21,20 +23,31 @@ function isCountry(value: unknown): value is Country {
   );
 }
 
-function toCountry(parsed: unknown, shard: string): Country {
-  if (!isCountry(parsed)) throw new Error(`save shard ${shard} is not a Boleiro country`);
+function countryIdsOf(json: string): string[] {
+  const parsed: unknown = JSON.parse(json);
+  if (!Array.isArray(parsed) || !parsed.every((id) => typeof id === "string")) throw new Error("the save's world shard is not a list of countries");
+  return parsed;
+}
+
+function countryOf(shards: Readonly<Record<string, string>>, id: string): Country {
+  const json = shards[`${COUNTRY_SHARD}${id}`];
+  if (json === undefined) throw new Error(`the save is missing the shard of country ${id}`);
+  const parsed: unknown = JSON.parse(json);
+  if (!isCountry(parsed)) throw new Error(`the save's shard of country ${id} is not a Boleiro country`);
   return parsed;
 }
 
 /**
- * The save split into shards written apart: the game, then one per result-only country. Given the
- * game as last saved, only the shards that changed since are returned; a country that played no match
- * is the same object and is left out.
+ * The save split into shards written apart: the game, then with result-only countries their list
+ * and one shard each. Given the game as last saved, a country that played no match since is the same
+ * object and its shard is left out.
  */
 export function saveShards(state: GameState, saved?: GameState): Record<string, string> {
   const { world, ...game } = state;
   const shards: Record<string, string> = { [GAME_SHARD]: saveGame(game) };
-  for (const [id, country] of Object.entries(world ?? {})) {
+  if (!world) return shards;
+  shards[WORLD_SHARD] = JSON.stringify(Object.keys(world));
+  for (const [id, country] of Object.entries(world)) {
     if (country !== saved?.world?.[id]) shards[`${COUNTRY_SHARD}${id}`] = JSON.stringify(country);
   }
   return shards;
@@ -45,9 +58,8 @@ export function loadShards(shards: Readonly<Record<string, string>>): GameState 
   const whole = shards[GAME_SHARD];
   if (whole === undefined) throw new Error("the save has no game shard");
   const game = toGameState(JSON.parse(whole));
-  const countries: World = {};
-  for (const [shard, json] of Object.entries(shards)) {
-    if (shard.startsWith(COUNTRY_SHARD)) countries[shard.slice(COUNTRY_SHARD.length)] = toCountry(JSON.parse(json), shard);
-  }
-  return Object.keys(countries).length ? { ...game, world: { ...game.world, ...countries } } : game;
+  const countryIds = shards[WORLD_SHARD];
+  if (countryIds === undefined) return game;
+  const world: World = Object.fromEntries(countryIdsOf(countryIds).map((id) => [id, countryOf(shards, id)]));
+  return { ...game, world };
 }
