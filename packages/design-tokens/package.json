@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./tokens.css": "./tokens.css"
+    "./album.css": "./album.css",
+    "./tokens.css": "./tokens.css",
+    "./tokens.json": "./tokens.json"
   }
 }

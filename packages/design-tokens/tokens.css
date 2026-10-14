@@ -1,22 +1,22 @@
-/* Direction F: lawn greens, chalk text, square corners, 1px hairlines. */
+/*
+ * Direction F's token names, pointed at the Álbum tokens in album.css. The screens drawn before the
+ * Álbum rebuild still read these names; through them they follow the paper, ink and dark mode of
+ * album.css. A screen rebuilt to its mock reads album.css directly.
+ */
 :root {
-  --lawn-0: #0a1a10;
-  --lawn-1: #0f2416;
-  --lawn-2: #14301d;
-  --lawn-3: #1b3d26;
-  --line: #2a5236;
-  --chalk: #eef3e8;
-  --chalk-2: #b9c9b5;
-  --chalk-3: #8aa287;
-  --yellow: #f2d03b;
-  --yellow-hover: #ffe066;
-  --on-yellow: #1a1600;
-  --red: #e0442f;
-  --promotion: #4fb06a;
+  --lawn-0: var(--paper);
+  --lawn-1: var(--card);
+  --lawn-2: var(--paper-2);
+  --lawn-3: var(--line);
+  --chalk: var(--ink);
+  --chalk-2: var(--ink-2);
+  --chalk-3: var(--mute);
+  --yellow-hover: var(--yellow-d);
+  --promotion: var(--green);
 
-  --num: "Big Shoulders Display", "Arial Narrow", sans-serif;
-  --cond: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
-  --text: "IBM Plex Sans", system-ui, sans-serif;
+  --num: var(--f);
+  --cond: var(--f);
+  --text: var(--f);
 
   --hairline: 1px solid var(--line);
 }

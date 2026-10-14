@@ -140,7 +140,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, colours, doneLa
           <div className="tactics">
             <div>
               <h3 id="formation-title">Formação</h3>
-              <div className="seg" role="group" aria-labelledby="formation-title">
+              <div className="lineup-seg" role="group" aria-labelledby="formation-title">
                 {FORMATION_NAMES.map((formation) => (
                   <button key={formation} aria-pressed={sheet.tactics.formation === formation} onClick={() => setSheet((s) => changeTactics(s, { formation }))}>
                     {formation}
@@ -150,7 +150,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, colours, doneLa
             </div>
             <div>
               <h3 id="posture-title">Postura</h3>
-              <div className="seg" role="group" aria-labelledby="posture-title">
+              <div className="lineup-seg" role="group" aria-labelledby="posture-title">
                 {POSTURES.map(({ value, label }) => (
                   <button key={value} aria-pressed={sheet.tactics.posture === value} onClick={() => setSheet((s) => changeTactics(s, { posture: value }))}>
                     {label}
