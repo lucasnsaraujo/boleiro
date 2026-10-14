@@ -7,10 +7,21 @@ type Props = { club: Pick<Club, "id" | "shortName" | "colours">; size?: number }
 
 /** The club's real crest, or a shield in its colours with its initials when there is none. */
 export function Crest({ club, size = 32 }: Props) {
-  const url = crestUrlOf(club.id);
+  const url = crestUrlOf(club.id, size);
+  const retinaUrl = crestUrlOf(club.id, size * 2);
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   if (url && url !== failedUrl) {
-    return <img className="crest" src={url} alt={club.shortName} width={size} height={size} onError={() => setFailedUrl(url)} />;
+    return (
+      <img
+        className="crest"
+        src={url}
+        srcSet={retinaUrl ? `${url} 1x, ${retinaUrl} 2x` : undefined}
+        alt={club.shortName}
+        width={size}
+        height={size}
+        onError={() => setFailedUrl(url)}
+      />
+    );
   }
   const { primary, secondary } = club.colours;
   const { text } = plateColours(club.colours);

@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test } from "vitest";
 import { clubById, crestUrlOf, initialsOf, plateColours } from "./clubCatalog.js";
 
@@ -7,7 +10,8 @@ test("a club is found by id with its name, state and division", () => {
 });
 
 test("every club with a crest file gets an image url, others get none", () => {
-  expect(crestUrlOf("bahia-ba")).toMatch(/10010.*\.png$/);
+  const bahiaCrest = createHash("sha256").update(readFileSync(join(import.meta.dirname, "../../../../assets/crests/10010.png"))).digest("hex").slice(0, 16);
+  expect(crestUrlOf("bahia-ba")).toMatch(new RegExp(`${bahiaCrest}-64.*\\.webp$`));
   expect(crestUrlOf("nobody")).toBeNull();
 });
 

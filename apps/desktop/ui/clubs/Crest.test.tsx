@@ -12,6 +12,13 @@ test("a club with a crest file shows the crest image", () => {
   expect(screen.getByRole("img", { name: "Bahia" }).tagName).toBe("IMG");
 });
 
+test("a crest picks the variant that fills its size, and a twice-as-large one for sharp screens", () => {
+  render(<Crest club={bahia} size={46} />);
+  const crest = screen.getByRole("img", { name: "Bahia" });
+  expect(crest.getAttribute("src")).toMatch(/-64[^/]*\.webp$/);
+  expect(crest.getAttribute("srcset")).toMatch(/-128[^/]*\.webp 2x$/);
+});
+
 test("a club without a crest shows its initials on its colours", () => {
   render(<Crest club={unknown} />);
   expect(screen.getByRole("img", { name: "Sem Escudo" }).textContent).toBe("SE");

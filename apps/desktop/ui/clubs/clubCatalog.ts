@@ -1,23 +1,25 @@
-import clubsCsv from "../../../../data/clubs.csv?raw";
-import crestsCsv from "../../../../data/crests.csv?raw";
-import { parseClubs, type Club } from "@boleiro/data/clubs";
-import { crestOf, parseCrests } from "@boleiro/data/crests";
+import manifestJson from "@boleiro/data/pack/assets.json?raw";
+import { imageFileOf, parseAssetManifest } from "@boleiro/data/assetManifest";
+import type { Club } from "@boleiro/data/clubs";
+import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
 
-/** Every club as `data/clubs.csv` has it, for screens that only need names, colours and crests. */
-export const CLUBS: readonly Club[] = parseClubs(clubsCsv);
+/** Every club in the bundled data pack, for screens that only need names, colours and crests. */
+export const CLUBS: readonly Club[] = bundledGameFiles.clubs;
 
 const BY_ID = new Map(CLUBS.map((club) => [club.id, club]));
-const CRESTS = parseCrests(crestsCsv);
-// Keys are relative to this file, so a crest path from data/crests.csv maps to `../../../../<path>`.
-const CREST_FILES = import.meta.glob<string>("../../../../assets/crests/*.png", { eager: true, query: "?url", import: "default" });
+const ASSETS = parseAssetManifest(manifestJson);
+// Keys are relative to this file, so a manifest path maps to `../../../../packages/data/pack/assets/<path>`.
+// Only WebP ships: every desktop webview reads it, and the AVIF files stay in the pack for later clients.
+const CREST_FILES = import.meta.glob<string>("../../../../packages/data/pack/assets/crest/*.webp", { eager: true, query: "?url", import: "default" });
 
 export function clubById(id: string): Club | null {
   return BY_ID.get(id) ?? null;
 }
 
-export function crestUrlOf(clubId: string): string | null {
-  const crest = crestOf(CRESTS, clubId);
-  return crest ? (CREST_FILES[`../../../../${crest.crest}`] ?? null) : null;
+/** The club's crest in the smallest variant at least `size` device pixels tall or wide, or null when it has none. */
+export function crestUrlOf(clubId: string, size = 64): string | null {
+  const file = imageFileOf(ASSETS, clubId, "crest", size, "webp");
+  return file ? (CREST_FILES[`../../../../packages/data/pack/assets/${file}`] ?? null) : null;
 }
 
 /** Up to three letters for a generated crest: "Bahia" gives BAH, "São Paulo" SP, "Atlético-MG" AMG. */
