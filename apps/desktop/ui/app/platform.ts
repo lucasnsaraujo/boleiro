@@ -20,3 +20,24 @@ export function windowChrome(platform: Platform, isDesktopApp: boolean, search: 
   if (!isDesktopApp || platform === "other") return "none";
   return platform;
 }
+
+declare global {
+  interface Navigator {
+    /** Chromium's client hints; WebView2 has them, WebKit doesn't. */
+    readonly userAgentData?: { getHighEntropyValues(hints: readonly string[]): Promise<{ platformVersion?: string }> };
+  }
+}
+
+/** Windows' version as client hints report it, or null where the browser doesn't say. */
+export async function windowsVersion(): Promise<string | null> {
+  const values = await navigator.userAgentData?.getHighEntropyValues(["platformVersion"]);
+  return values?.platformVersion ?? null;
+}
+
+/**
+ * Mica fills the see-through window only on Windows 11, which client hints report as version 13 or
+ * later; Windows 10 has nothing behind the page, so the paper must stay opaque there.
+ */
+export function hasMica(platformVersion: string | null): boolean {
+  return Number(platformVersion?.split(".")[0] ?? 0) >= 13;
+}

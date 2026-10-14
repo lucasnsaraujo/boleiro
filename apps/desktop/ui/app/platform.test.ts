@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { platformOf, windowChrome } from "./platform.js";
+import { hasMica, platformOf, windowChrome } from "./platform.js";
 
 test("the platform comes from the webview's user agent", () => {
   expect(platformOf("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15")).toBe("mac");
@@ -18,4 +18,12 @@ test("a dev preview can ask for either platform's chrome", () => {
   expect(windowChrome("mac", false, "?chrome=windows")).toBe("windows");
   expect(windowChrome("windows", false, "?chrome=mac")).toBe("mac");
   expect(windowChrome("mac", false, "?chrome=linux")).toBe("none");
+});
+
+test("only Windows 11 has Mica behind the window; Windows 10 or an unknown version keeps opaque paper", () => {
+  expect(hasMica("15.0.0")).toBe(true);
+  expect(hasMica("13.0.0")).toBe(true);
+  expect(hasMica("10.0.0")).toBe(false);
+  expect(hasMica("0.3.0")).toBe(false);
+  expect(hasMica(null)).toBe(false);
 });

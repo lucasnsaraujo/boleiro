@@ -28,12 +28,18 @@
 .app[data-chrome="windows"] {
   --chrome-right: 138px;
   --chrome-top: 32px;
-  /* Mica tints the paper through the window, as Windows 11 apps let it; stickers and pages stay opaque. */
+}
+
+/* Mica tints the paper through the window, as Windows 11 apps let it; stickers and pages stay opaque. */
+.app[data-chrome="windows"][data-mica] {
   background: color-mix(in srgb, var(--paper) 86%, transparent);
 }
 
-/* The body's paper would cover the Mica the window is filled with (transparent in tauri.windows.conf.json). */
-body:has(.app[data-chrome="windows"]) {
+/*
+ * The body's paper would cover the Mica the window is filled with (transparent in tauri.windows.conf.json).
+ * Windows 10 has no Mica, so there the paper stays or the desktop shows through.
+ */
+body:has(.app[data-chrome="windows"][data-mica]) {
   background: none;
 }
 
