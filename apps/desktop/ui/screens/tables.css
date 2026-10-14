@@ -1,283 +1,392 @@
+/* The tables screen: competition tabs and the round on top, the table as an album page, scorers and zones beside it. */
 .tables {
-  --zone-libertadores: var(--promotion);
-  --zone-pre-libertadores: #2f7d47;
-  --zone-sul-americana: #4f8fa8;
-  --zone-promotion: var(--promotion);
-  --zone-advance: var(--promotion);
-  --zone-relegation: var(--red);
-  max-width: 1180px;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 14px 14px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .tables-head {
   display: flex;
-  align-items: flex-end;
-  gap: 40px;
-  border-bottom: var(--hairline);
+  align-items: center;
+  gap: 12px;
 }
 
-.tables-head .screen-title {
-  padding-bottom: 12px;
+.tables-head > .tables-tabs {
+  margin-right: auto;
 }
 
-.tables-head .btn-main {
-  margin: 0 0 10px auto;
-}
-
-.tables-tabs {
+.tables-play {
   display: flex;
-  gap: 28px;
+  align-items: center;
+  gap: 10px;
 }
 
-.tables-tabs button {
-  padding: 0 0 14px;
-  font: 600 16px var(--cond);
-  color: var(--chalk-3);
-  border-bottom: 3px solid transparent;
-  margin-bottom: -1px;
+.tables-play .status {
+  margin: 0;
+  font-size: 12px;
 }
 
-.tables-tabs button:hover {
-  color: var(--chalk);
-}
-
-.tables-tabs button[aria-selected="true"] {
-  color: var(--chalk);
-  border-bottom-color: var(--yellow);
-}
-
-.tables-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 40px;
-  padding-top: 22px;
-}
-
-.tables-main {
-  min-width: 0;
-}
-
-.stages,
-.group-picker {
-  display: flex;
+/* Segmented controls built of buttons: the album's .seg, with the pressed state from ARIA. */
+.tables-seg {
   flex-wrap: wrap;
-  margin-bottom: 18px;
-  border: var(--hairline);
-  width: fit-content;
   max-width: 100%;
 }
 
-.stages button,
-.group-picker button {
-  height: 34px;
-  padding: 0 14px;
-  font: 600 14px var(--cond);
-  color: var(--chalk-2);
-  border-left: var(--hairline);
-  margin-left: -1px;
+.tables-seg > button {
+  height: 28px;
+  padding: 0 12px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  transition:
+    background var(--t-fast) var(--e-out),
+    color var(--t-fast) var(--e-out);
 }
 
-.group-picker button {
-  min-width: 34px;
-  padding: 0 8px;
-  font: 800 17px var(--num);
+.tables-seg > button:hover:not(:disabled, [aria-selected="true"], [aria-pressed="true"]) {
+  background: var(--paper-2);
+  color: var(--ink);
 }
 
-.stages button:hover:not(:disabled, [aria-pressed="true"]),
-.group-picker button:hover:not([aria-pressed="true"]) {
-  background: var(--lawn-2);
+.tables-seg > button[aria-selected="true"],
+.tables-seg > button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--card);
 }
 
-.stages button[aria-pressed="true"],
-.group-picker button[aria-pressed="true"] {
-  background: var(--chalk);
-  color: var(--lawn-0);
-}
-
-.stages button:disabled {
-  color: var(--line);
+.tables-seg > button:disabled {
+  color: var(--mute);
+  opacity: 0.45;
   cursor: default;
 }
 
-.standings {
-  width: 100%;
-  border-collapse: collapse;
-  font: 500 15px var(--cond);
-  font-variant-numeric: tabular-nums;
+.tables-tabs > button {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.tables-round {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tables-round b {
+  min-width: 104px;
+  text-align: center;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.tables-step {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+  font-size: 14px;
+  transition:
+    transform var(--t-fast) var(--e-out),
+    background var(--t-fast) var(--e-out);
+}
+
+.tables-step:hover:not(:disabled) {
+  background: var(--paper-2);
+  transform: translateY(-1px);
+}
+
+.tables-step:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.tables-step:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.tables-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 318px;
+  gap: 14px;
+}
+
+.tables-main {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tables-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.tables-groups {
+  align-self: flex-start;
+}
+
+.tables-groups > button {
+  min-width: 30px;
+  padding: 0 8px;
+  font-stretch: var(--semi);
+  font-weight: 900;
+}
+
+/* "Outras ligas": the other state championships in a field-styled select. */
+.tables-state {
+  position: relative;
+  padding-right: 34px;
+  cursor: pointer;
+}
+
+.tables-state select {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+.tables-state:has(select:focus-visible) {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.tables-state i {
+  position: absolute;
+  right: 14px;
+  pointer-events: none;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+/* The page scrolls under its own header when the table is taller than the window. */
+.tables-sheet {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* A collapsed border scrolls away from a sticky cell, so the header's rule is a shadow. */
+.standings thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 0;
+  box-shadow: inset 0 -2px 0 var(--ink);
 }
 
 .standings + .standings {
-  margin-top: 22px;
+  margin-top: 14px;
 }
 
 .standings caption {
+  padding: 10px 12px 6px;
   text-align: left;
-  padding-bottom: 6px;
-  font: 600 15px var(--cond);
-  color: var(--chalk-3);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute);
 }
 
-.standings th {
-  height: 30px;
-  font: 600 13px var(--cond);
-  color: var(--chalk-3);
-  text-align: right;
-  border-bottom: var(--hairline);
-}
-
+/* Opaque cells, so a row sliding to its new place covers the rows it passes. */
 .standings td {
-  height: 38px;
-  text-align: right;
-  color: var(--chalk-2);
-  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+  height: 28px;
+  background: var(--card);
 }
 
-.standings th,
-.standings td {
-  width: 44px;
-  padding: 0 4px;
+.standings tbody tr {
+  position: relative;
+}
+
+.standings tbody tr:not(.me):hover td {
+  background: color-mix(in srgb, var(--paper-2) 50%, var(--card));
+}
+
+.standings tr.me td {
+  background: var(--yellow-l);
 }
 
 .standings .st-pos {
-  width: 42px;
-  padding-left: 14px;
-  text-align: left;
+  width: 44px;
+  text-align: center;
 }
 
-td.st-pos {
-  font: 800 18px var(--num);
-  box-shadow: inset 4px 0 0 transparent;
-}
-
-.standings .st-club {
-  width: auto;
-  text-align: left;
+.standings td.st-club {
+  width: 100%;
+  font-stretch: 100%;
+  font-weight: 700;
+  font-size: 13.5px;
 }
 
 .st-club-in {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 0;
-  color: var(--chalk);
-  font-weight: 600;
-  white-space: nowrap;
+  gap: 8px;
 }
 
-.standings .st-pts {
-  width: 56px;
-  padding-right: 14px;
+.standings td.st-pts {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 14px;
 }
 
-td.st-pts {
-  font: 800 20px var(--num);
-  color: var(--chalk);
+.standings .st-form {
+  padding-left: 24px;
 }
 
-.standings tr.mine td {
-  background: var(--lawn-3);
+.standings .st-mv {
+  width: 44px;
 }
 
-.standings tr.mine .st-club-in {
-  color: var(--highlight);
-  font-weight: 700;
+/* Zone badge: the place number, coloured by where it leads. */
+.zn {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 20px;
+  border-radius: var(--r-s);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 11.5px;
+  color: var(--ink);
 }
 
-td.zone-libertadores {
-  box-shadow: inset 4px 0 0 var(--zone-libertadores);
+.zn.zone-libertadores,
+.zn.zone-promotion,
+.zn.zone-advance {
+  background: var(--green);
+  color: var(--on-green);
 }
 
-td.zone-preLibertadores {
-  box-shadow: inset 4px 0 0 var(--zone-pre-libertadores);
+.zn.zone-preLibertadores {
+  background: var(--green-l);
+  color: var(--green);
+  box-shadow: inset 0 0 0 1.5px var(--green);
 }
 
-td.zone-sulAmericana {
-  box-shadow: inset 4px 0 0 var(--zone-sul-americana);
+.zn.zone-sulAmericana {
+  background: #dce3f5;
+  color: var(--blue);
 }
 
-td.zone-promotion {
-  box-shadow: inset 4px 0 0 var(--zone-promotion);
+.zn.zone-relegation {
+  background: var(--red);
+  color: var(--on-red);
 }
 
-td.zone-advance {
-  box-shadow: inset 4px 0 0 var(--zone-advance);
+[data-theme="dark"] .zn.zone-sulAmericana {
+  background: #22305a;
 }
 
-td.zone-relegation {
-  box-shadow: inset 4px 0 0 var(--zone-relegation);
+.form {
+  display: inline-flex;
+  gap: 3px;
+  vertical-align: middle;
 }
 
-.zone-key {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 22px;
-  margin-top: 12px;
-  font: 400 13px var(--cond);
-  color: var(--chalk-3);
+.form i {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  font-style: normal;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 9.5px;
+  color: #fff;
 }
 
-.zone-key span::before {
-  content: "";
-  display: inline-block;
-  width: 4px;
-  height: 12px;
-  margin-right: 8px;
-  vertical-align: -1px;
-  background: var(--zone);
+.form i.win {
+  background: var(--green);
 }
 
-.zone-key .zone-libertadores {
-  --zone: var(--zone-libertadores);
+.form i.draw {
+  background: var(--line-2);
+  color: #14231a;
 }
 
-.zone-key .zone-preLibertadores {
-  --zone: var(--zone-pre-libertadores);
+.form i.loss {
+  background: var(--red);
 }
 
-.zone-key .zone-sulAmericana {
-  --zone: var(--zone-sul-americana);
+[data-theme="dark"] .form i.draw {
+  color: var(--ink);
 }
 
-.zone-key .zone-promotion {
-  --zone: var(--zone-promotion);
+.mv {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 11px;
+  font-weight: 800;
 }
 
-.zone-key .zone-advance {
-  --zone: var(--zone-advance);
+.mv.up {
+  color: var(--green);
 }
 
-.zone-key .zone-relegation {
-  --zone: var(--zone-relegation);
+.mv.dn {
+  color: var(--red);
 }
 
+/* Knockout ties: two plates and the aggregate on the Brasfoot score boxes. */
 .ties {
   list-style: none;
 }
 
 .tie {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 170px;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 200px;
   align-items: center;
-  column-gap: 14px;
-  height: 46px;
-  padding: 0 14px;
-  border-top: 1px solid rgba(42, 82, 54, 0.55);
-  font: 500 15px var(--cond);
-}
-
-.tie:last-child {
-  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+  column-gap: 12px;
+  height: 40px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--rule);
+  font-weight: 700;
+  font-size: 13.5px;
 }
 
 .tie.mine {
-  background: var(--lawn-3);
+  background: var(--yellow-l);
 }
 
 .tie-side {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
-  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -291,95 +400,180 @@ td.zone-relegation {
 }
 
 .tie-side.lost {
-  color: var(--chalk-3);
+  color: var(--mute);
   font-weight: 500;
 }
 
 .tie-side.own .tie-name {
-  color: var(--highlight);
+  color: var(--green);
 }
 
 .tie-score {
   display: flex;
-  gap: 4px;
-}
-
-.tie-score .box {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  background: #030805;
-  box-shadow: inset 0 0 0 1px var(--line);
-  font: 800 20px/1 var(--num);
+  gap: 3px;
 }
 
 .tie-legs {
-  font-size: 13px;
-  color: var(--chalk-3);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--mute);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.tables-section-title {
-  font: 600 15px var(--cond);
-  color: var(--chalk-3);
-  padding-bottom: 8px;
+.tables-side {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.scorer-list {
+.tables-side h2 {
+  margin-bottom: 8px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 17px;
+}
+
+.tables-scorers {
+  padding: 14px 16px 10px;
+}
+
+.tables-scorers ol {
   list-style: none;
 }
 
-.scorer {
+.tables-scorers li {
   display: grid;
-  grid-template-columns: 22px 18px minmax(0, 1fr) 30px;
+  grid-template-columns: 22px 22px minmax(0, 1fr) auto;
+  gap: 8px;
   align-items: center;
-  column-gap: 10px;
-  height: 36px;
-  border-top: 1px solid rgba(42, 82, 54, 0.55);
-  font: 500 15px var(--cond);
+  height: 38px;
+  border-bottom: 1px dotted var(--line-2);
+  font-size: 13px;
 }
 
-.scorer:last-child {
-  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+.tables-scorers li:last-child {
+  border-bottom: 0;
 }
 
-.scorer-rank {
-  font: 800 16px var(--num);
-  color: var(--chalk-3);
+.tables-rank {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  color: var(--mute);
 }
 
-.scorer-name {
-  color: var(--chalk);
-  text-decoration: none;
-  white-space: nowrap;
+.tables-who {
+  min-width: 0;
+}
+
+.tables-who a {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 800;
+  line-height: 1.1;
+  text-decoration: none;
 }
 
-.scorer-name:hover {
-  color: var(--highlight);
+.tables-who a:hover {
+  text-decoration: underline;
 }
 
-.scorer.mine .scorer-name {
-  font-weight: 700;
+.tables-scorers li.mine a {
+  color: var(--green);
 }
 
-.scorer-goals {
-  text-align: right;
-  font: 800 20px var(--num);
+.tables-who small {
+  display: block;
+  font-size: 11.5px;
+  color: var(--mute);
 }
 
-@media (max-width: 1100px) {
+.tables-goals {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 20px;
+}
+
+.tables-none {
+  padding: 4px 0 6px;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.tables-zones {
+  padding: 14px 16px;
+}
+
+.tables-zones ul {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.tables-zones li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 1179px) {
   .tables-body {
-    grid-template-columns: minmax(0, 1fr) 240px;
-    gap: 28px;
+    grid-template-columns: minmax(0, 1fr) 250px;
+  }
+
+  .tables-tabs > button {
+    padding: 0 10px;
+    font-size: 12.5px;
+  }
+
+  .tables-round b {
+    min-width: 84px;
+  }
+
+  .standings th,
+  .standings td {
+    padding: 0 7px;
+  }
+
+  .standings .st-form {
+    padding-left: 12px;
   }
 
   .tie {
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 150px;
-    column-gap: 10px;
+  }
+}
+
+/* Motion: the page slides in from the right, the stickers are laid down top to bottom. */
+@media (prefers-reduced-motion: no-preference) {
+  .tables-sheet {
+    animation: tables-page var(--t-slow) var(--e-out) both;
+  }
+
+  .tables-side > * {
+    animation: tables-lay var(--t-slow) var(--e-out) 60ms both;
+  }
+
+  .tables-side > :nth-child(2) {
+    animation-delay: 120ms;
+  }
+}
+
+@keyframes tables-page {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+
+@keyframes tables-lay {
+  from {
+    opacity: 0;
+    transform: translateY(10px) rotate(-1deg);
   }
 }

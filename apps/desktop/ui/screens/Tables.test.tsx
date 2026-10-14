@@ -77,3 +77,57 @@ test("a coach without a club waits for offers from the tables instead of playing
   expect(await screen.findByRole("button", { name: "Esperar propostas" })).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Jogar rodada" })).toBeNull();
 });
+
+test("every national division has a tab, next to the cup and the club's state championship", async () => {
+  openTables(await services());
+  await screen.findByRole("tab", { name: "Baiano" });
+  expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual(["Série A", "Série B", "Série C", "Série D", "Copa do Brasil", "Baiano", "Outras ligas"]);
+});
+
+test("a picked tab keeps the keyboard focus", async () => {
+  openTables(await services());
+  const tab = await screen.findByRole("tab", { name: "Série B" });
+  await userEvent.click(tab);
+  expect(screen.getByRole("tabpanel", { name: "Série B" })).toBeTruthy();
+  expect(document.activeElement).toBe(screen.getByRole("tab", { name: "Série B" }));
+});
+
+test("the other state championships are one pick away under Outras ligas", async () => {
+  openTables(await services());
+  await userEvent.click(await screen.findByRole("tab", { name: "Outras ligas" }));
+  expect(screen.getByRole("tab", { name: "Outras ligas" }).getAttribute("aria-selected")).toBe("true");
+  const picker = screen.getByRole("combobox", { name: "Estadual" });
+  const names = within(picker).getAllByRole("option").map((option) => option.textContent);
+  expect(names).not.toContain("Baiano");
+  expect(names).toContain("Paulista");
+  await userEvent.selectOptions(picker, "Paulista");
+  expect(screen.getByRole("tabpanel", { name: "Paulista" })).toBeTruthy();
+});
+
+test("a table before its first round has no round to step through", async () => {
+  openTables(await services());
+  await userEvent.click(await screen.findByRole("tab", { name: "Série A" }));
+  expect(screen.getByRole("table", { name: "Série A" })).toBeTruthy();
+  expect(screen.queryByRole("group", { name: "Rodada" })).toBeNull();
+});
+
+test("the round stepper shows the table as it stood after an earlier round", async () => {
+  const given = await services();
+  const { date, competitions } = await given.engine.read(["date", "competitions"]);
+  const groups = competitions["state-ba-2026"]?.stages[0];
+  const secondRound = groups?.kind === "groups" ? (groups.dates[1] ?? date) : date;
+  const days = Math.round((Date.parse(secondRound) - Date.parse(date)) / 86_400_000) + 1;
+  await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+  openTables(given);
+
+  const stepper = await screen.findByRole("group", { name: "Rodada" });
+  const gamesPlayed = () => screen.getAllByRole("table").flatMap((table) => within(table).getAllByRole("row").slice(1).map((row) => Number(row.children[3]?.textContent)));
+  expect(within(stepper).getByText("2ª rodada")).toBeTruthy();
+  expect(Math.max(...gamesPlayed())).toBe(2);
+  expect(within(stepper).getByRole("button", { name: "Próxima rodada" })).toHaveProperty("disabled", true);
+
+  await userEvent.click(within(stepper).getByRole("button", { name: "Rodada anterior" }));
+  expect(within(stepper).getByText("1ª rodada")).toBeTruthy();
+  expect(Math.max(...gamesPlayed())).toBe(1);
+  expect(within(stepper).getByRole("button", { name: "Rodada anterior" })).toHaveProperty("disabled", true);
+});
