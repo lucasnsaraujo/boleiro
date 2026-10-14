@@ -1,11 +1,15 @@
 import type { GameState } from "@boleiro/engine/sim/gameState";
-import type { EngineSession } from "./createEngineSession.js";
+import type { CommandResults, CommandType, EngineSession, GameCommand } from "./createEngineSession.js";
 import type { EngineCall, EngineMethod, EnginePort, EngineResponse } from "./engineMessages.js";
 
 type Async<F> = F extends (...args: infer A) => infer R ? (...args: A) => Promise<R> : never;
 
-/** The engine as the main thread sees it: the session's methods, answered by the worker. */
-export type EngineClient = { [M in Exclude<EngineMethod, "read">]: Async<EngineSession[M]> } & {
+/**
+ * The engine as the main thread sees it: the session's methods, answered by the worker. The game
+ * changes only through `apply`, which hands the worker a command; the other methods read it.
+ */
+export type EngineClient = { [M in Exclude<EngineMethod, "read" | "apply">]: Async<EngineSession[M]> } & {
+  apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
   read<K extends keyof GameState>(keys: readonly K[]): Promise<Pick<GameState, K>>;
 };
 
@@ -48,25 +52,20 @@ export function connectEngine(port: EngineWorker): EngineClient {
     });
   }
 
+  // TypeScript can't widen a command of a generic type to the union the message carries; the plain signature below does.
+  function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+  function apply(command: GameCommand): Promise<unknown> {
+    return send({ method: "apply", args: [command] });
+  }
+
   return {
-    newGame: (...args) => send({ method: "newGame", args }),
-    advance: (...args) => send({ method: "advance", args }),
-    playToMatchDay: () => send({ method: "playToMatchDay", args: [] }),
+    apply,
     matchDayPlan: () => send({ method: "matchDayPlan", args: [] }),
-    startRound: (...args) => send({ method: "startRound", args }),
     liveRound: () => send({ method: "liveRound", args: [] }),
-    seeMinute: (...args) => send({ method: "seeMinute", args }),
-    changeLive: (...args) => send({ method: "changeLive", args }),
-    finishRound: () => send({ method: "finishRound", args: [] }),
     turningPoint: () => send({ method: "turningPoint", args: [] }),
-    closeTurningPoint: () => send({ method: "closeTurningPoint", args: [] }),
-    declineOffer: (...args) => send({ method: "declineOffer", args }),
     inbox: () => send({ method: "inbox", args: [] }),
-    ask: (...args) => send({ method: "ask", args }),
-    withdraw: (...args) => send({ method: "withdraw", args }),
     desk: () => send({ method: "desk", args: [] }),
     save: () => send({ method: "save", args: [] }),
-    load: (...args) => send({ method: "load", args }),
     read: (keys) => send({ method: "read", args: [keys] }),
   };
 }

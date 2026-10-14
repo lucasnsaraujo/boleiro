@@ -19,7 +19,7 @@ afterEach(() => {
 async function services(coachClubId: string | null = "bahia-ba"): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.newGame(7, { coachClubId });
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId } });
   return { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
 }
 

@@ -19,7 +19,7 @@ afterEach(() => {
 async function careerGame(): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.newGame(7, { coachClubId: null, careerMode: true });
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: null, careerMode: true } });
   return { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
 }
 
@@ -71,12 +71,12 @@ test("turning an offer down takes it off the list and leaves the coach without a
 
 test("on his match day a coach with a club can only sign after the game", async () => {
   const given = await careerGame();
-  await given.engine.newGame(7, { coachClubId: "bahia-ba" });
-  await given.engine.playToMatchDay();
+  await given.engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  await given.engine.apply({ type: "playToMatchDay" });
   const save: { game: { coach: { offers: JobOffer[] } } } = JSON.parse(await given.engine.save());
   save.game.coach.offers.push({ clubId: "vitoria-ba", salary: 90_000, untilSeason: 2026, expiresOn: "2026-12-31" });
-  await given.engine.load(JSON.stringify(save));
-  await given.engine.startRound({});
+  await given.engine.apply({ type: "load", save: JSON.stringify(save) });
+  await given.engine.apply({ type: "startRound" });
   openOffers(given);
   expect(await screen.findByText("Assine depois do jogo.")).toBeTruthy();
   expect(screen.getByRole("button", { name: "Assinar com Vitória" })).toHaveProperty("disabled", true);
@@ -85,12 +85,12 @@ test("on his match day a coach with a club can only sign after the game", async 
 
 test("during a live round the coach can only turn an offer down after the game", async () => {
   const given = await careerGame();
-  await given.engine.newGame(7, { coachClubId: "bahia-ba" });
-  await given.engine.playToMatchDay();
+  await given.engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  await given.engine.apply({ type: "playToMatchDay" });
   const save: { game: { coach: { offers: JobOffer[] } } } = JSON.parse(await given.engine.save());
   save.game.coach.offers.push({ clubId: "vitoria-ba", salary: 90_000, untilSeason: 2026, expiresOn: "2026-12-31" });
-  await given.engine.load(JSON.stringify(save));
-  await given.engine.startRound({});
+  await given.engine.apply({ type: "load", save: JSON.stringify(save) });
+  await given.engine.apply({ type: "startRound" });
   openOffers(given);
   expect(await screen.findByText("Assine depois do jogo.")).toBeTruthy();
   expect(screen.getByRole("button", { name: "Recusar Vitória" })).toHaveProperty("disabled", true);
@@ -99,7 +99,7 @@ test("during a live round the coach can only turn an offer down after the game",
 test("with every offer turned down the coach can only wait for new ones", async () => {
   const given = await careerGame();
   const { coach } = await given.engine.read(["coach"]);
-  for (const offer of coach.offers) await given.engine.declineOffer(offer.clubId);
+  for (const offer of coach.offers) await given.engine.apply({ type: "declineOffer", clubId: offer.clubId });
   openOffers(given);
   expect(await screen.findByText("Nenhuma proposta na mesa.")).toBeTruthy();
   expect(screen.getByRole("button", { name: "Esperar propostas" })).toBeTruthy();

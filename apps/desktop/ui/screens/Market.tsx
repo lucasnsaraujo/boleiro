@@ -100,11 +100,11 @@ export function Market() {
   }
 
   async function ask(request: CoachRequest) {
-    setDesk(await engine.ask(request));
+    setDesk(await engine.apply({ type: "ask", request }));
   }
 
   async function withdraw(playerId: string) {
-    setDesk(await engine.withdraw(playerId));
+    setDesk(await engine.apply({ type: "withdraw", playerId }));
   }
 
   return (

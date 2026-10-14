@@ -27,8 +27,8 @@ afterEach(() => {
 async function onMatchDay(): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.newGame(7, { coachClubId: "bahia-ba" });
-  await engine.playToMatchDay();
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  await engine.apply({ type: "playToMatchDay" });
   return { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
 }
 

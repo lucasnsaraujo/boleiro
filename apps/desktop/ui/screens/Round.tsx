@@ -110,7 +110,7 @@ export function Round() {
     isFinishing.current = true;
     setError(null);
     try {
-      setResult(await engine.finishRound());
+      setResult(await engine.apply({ type: "finishRound" }));
     } catch {
       isFinishing.current = false;
       setError("Não deu para encerrar a rodada.");
@@ -124,7 +124,7 @@ export function Round() {
     const from = shownMinute.current;
     if (!live || minute <= from) return;
     shownMinute.current = minute;
-    engine.seeMinute(minute).catch(() => undefined);
+    engine.apply({ type: "seeMinute", minute }).catch(() => undefined);
     for (const cue of thinCues(roundCues(live, from, minute), resumeSpeed.current)) sound.play(cue);
     const goals = goalsBetween(live, from, minute);
     if (goals.length) {
@@ -148,7 +148,7 @@ export function Round() {
     setBusy(true);
     setError(null);
     try {
-      const live = await engine.startRound(kickOffOf(sheet, preMatch.plan.lineup, preMatch.plan.tactics));
+      const live = await engine.apply({ type: "startRound", ...kickOffOf(sheet, preMatch.plan.lineup, preMatch.plan.tactics) });
       shownMinute.current = 0;
       roundRef.current = live;
       setRound(live);
@@ -185,7 +185,7 @@ export function Round() {
     if (change) {
       setBusy(true);
       try {
-        const changed = await engine.changeLive(minute, change);
+        const changed = await engine.apply({ type: "changeLive", minute, change });
         roundRef.current = changed;
         setRound(changed);
       } catch {

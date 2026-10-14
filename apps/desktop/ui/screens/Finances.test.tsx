@@ -20,7 +20,7 @@ afterEach(() => {
 async function startGame(): Promise<EngineClient> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.newGame(7, { coachClubId: "sport-pe" });
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "sport-pe" } });
   return engine;
 }
 
@@ -47,7 +47,7 @@ test("before the first closing it says when the month closes", async () => {
 
 test("after a month the closing shows revenue against costs and the month's result", async () => {
   const engine = await startGame();
-  await engine.advance(Array.from({ length: 31 }, () => ({})));
+  await engine.apply({ type: "advance", days: Array.from({ length: 31 }, () => ({})) });
   const { finances } = await engine.read(["finances"]);
   const closing = finances["sport-pe"]?.lastClosing;
   if (!closing) throw new Error("no closing");
@@ -64,8 +64,8 @@ test("the board's answers are listed, and the primary action opens the market", 
   const { players } = await engine.read(["players"]);
   const own = Object.values(players).find((p) => p.clubId === "sport-pe");
   if (!own) throw new Error("no player");
-  await engine.ask({ kind: "renew", playerId: own.id, years: 2 });
-  await engine.playToMatchDay();
+  await engine.apply({ type: "ask", request: { kind: "renew", playerId: own.id, years: 2 } });
+  await engine.apply({ type: "playToMatchDay" });
   openFinances(engine);
   const desk = await screen.findByRole("list", { name: "Pedidos à diretoria" });
   expect(within(desk).getByText(new RegExp(`^Renovação de ${own.name}: (aprovada|recusada)`))).toBeTruthy();

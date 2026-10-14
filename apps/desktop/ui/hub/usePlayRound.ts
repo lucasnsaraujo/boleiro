@@ -25,7 +25,7 @@ export function usePlayRound(onStopped: (result: PlayResult) => void): PlayRound
     setPlaying(true);
     setFailed(false);
     try {
-      const result = await engine.playToMatchDay();
+      const result = await engine.apply({ type: "playToMatchDay" });
       if (result.stop === "matchDay") navigate("/round");
       else onStopped(result);
     } catch {

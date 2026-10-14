@@ -8,8 +8,8 @@ import { boardSummary, closingStatement } from "./financeSummary.js";
 
 const COACH = "sport-pe";
 const session = createEngineSession(bundledGameFiles);
-session.newGame(5, { coachClubId: COACH });
-session.advance(Array.from({ length: 31 }, () => ({})));
+session.apply({ type: "newGame", seed: 5, choices: { coachClubId: COACH } });
+session.apply({ type: "advance", days: Array.from({ length: 31 }, () => ({})) });
 const game = session.read(["coachClubId", "clubs", "finances", "boards", "players", "market"]);
 type FinanceState = typeof game;
 

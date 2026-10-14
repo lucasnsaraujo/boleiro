@@ -23,6 +23,48 @@ export type PlayResult = { date: IsoDate; stop: StopReason; daysPlayed: number }
 /** The coach's eleven and tactics for kick-off; left out, the assistant's pick and his last tactics. */
 export type KickOff = Pick<DayDecisions, "lineup" | "tactics">;
 
+/** What each command carries besides its `type`. */
+type CommandFields = {
+  newGame: { seed: number; choices: NewGameChoices };
+  /** Replaces the whole session with the one a save holds. */
+  load: { save: string };
+  /** Plays one day per entry, each with the coach's decisions for that day. */
+  advance: { days: readonly DayDecisions[] };
+  playToMatchDay: Record<never, never>;
+  startRound: KickOff;
+  seeMinute: { minute: number };
+  changeLive: { minute: number; change: LiveChange };
+  finishRound: Record<never, never>;
+  closeTurningPoint: Record<never, never>;
+  declineOffer: { clubId: string };
+  ask: { request: CoachRequest };
+  withdraw: { playerId: string };
+};
+
+export type CommandType = keyof CommandFields;
+
+/**
+ * Something the coach does to the game, as plain data: the only way a session's game changes.
+ * Each one survives JSON, so the same commands applied from the same seed rebuild the same game.
+ */
+export type GameCommand<T extends CommandType = CommandType> = { [K in T]: { type: K } & CommandFields[K] }[T];
+
+/** What applying each command answers. */
+export type CommandResults = {
+  newGame: GameSummary;
+  load: GameSummary;
+  advance: AdvanceResult;
+  playToMatchDay: PlayResult;
+  startRound: LiveRound;
+  seeMinute: undefined;
+  changeLive: LiveRound;
+  finishRound: AdvanceResult;
+  closeTurningPoint: undefined;
+  declineOffer: undefined;
+  ask: BoardDesk;
+  withdraw: BoardDesk;
+};
+
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
 const INBOX_SIZE = 40;
 // guess: the market and finances screens show a handful of the board's latest answers and sales.
@@ -39,7 +81,10 @@ function pick<T, K extends keyof T>(source: T, keys: readonly K[]): Pick<T, K> {
   return slice;
 }
 
-/** The game the worker holds. Everything that runs the sim goes through here, off the main thread. */
+/**
+ * The game the worker holds. It changes only through `apply`, one command at a time; everything
+ * else reads it. Everything that runs the sim goes through here, off the main thread.
+ */
 export function createEngineSession(files: GameFiles) {
   let state: GameState | null = null;
   /** What happened to the coach since he last played on, oldest first. */
@@ -98,12 +143,20 @@ export function createEngineSession(files: GameFiles) {
     };
   }
 
-  return {
-    newGame(seed: number, choices: NewGameChoices): GameSummary {
+  const commands: { [T in CommandType]: (command: GameCommand<T>) => CommandResults[T] } = {
+    newGame({ seed, choices }) {
       return begin(newGameFromFiles(seed, choices, files));
     },
-    /** Plays one day per entry. If any day throws, the game stays where it was. */
-    advance(days: readonly DayDecisions[]): AdvanceResult {
+    load({ save }) {
+      const loaded = readSessionSave(save);
+      const summary = begin(loaded.game);
+      desk = loaded.desk;
+      turningPoints = loaded.turningPoints;
+      live = loaded.live;
+      return summary;
+    },
+    /** If any day throws, the game stays where it was. */
+    advance({ days }) {
       let next = current();
       const events: DayEvent[] = [];
       const lines: InboxLine[] = [];
@@ -130,7 +183,7 @@ export function createEngineSession(files: GameFiles) {
      * day it plays nothing and the inbox stays. Each day hands the board the coach's requests that
      * are due. If any day throws, the game stays where it was.
      */
-    playToMatchDay(): PlayResult {
+    playToMatchDay() {
       const points: TurningPoint[] = [];
       let notes = desk;
       const played = playToMatchDay(current(), (before) => {
@@ -146,37 +199,30 @@ export function createEngineSession(files: GameFiles) {
       if (played.daysPlayed > 0) news = played.news.slice(-INBOX_SIZE);
       return { date: played.state.date, stop: played.stop, daysPlayed: played.daysPlayed };
     },
-    /** The lineup sheet before kick-off on the coach's match day. */
-    matchDayPlan(): MatchDayPlan {
-      return matchDayPlan(current());
-    },
     /**
      * Kicks off the coach's match day. Every match is drawn now; the screen plays the timelines back.
      * The coach's requests that are due go with the day and reach the board after the final whistle.
      */
-    startRound(kickOff: KickOff): LiveRound {
+    startRound({ lineup, tactics }) {
+      const kickOff: KickOff = { lineup, tactics };
       const { due } = dueRequests(current(), desk.pending);
       live = { day: startMatchDay(current(), due.length ? { ...kickOff, requests: due } : kickOff), seenMinute: 0 };
       return liveRoundOf(live.day, live.seenMinute);
     },
-    /** The match day kicked off and not yet finished, if any. */
-    liveRound(): LiveRound | null {
-      return live && liveRoundOf(live.day, live.seenMinute);
-    },
     /** The screen has shown the round up to `minute`; the coach can't change his match before it any more. */
-    seeMinute(minute: number): void {
+    seeMinute({ minute }) {
       const round = underWay();
       round.seenMinute = Math.max(round.seenMinute, minute);
     },
     /** The coach's change at `minute` of his match; the rest of his match is drawn again. */
-    changeLive(minute: number, change: LiveChange): LiveRound {
+    changeLive({ minute, change }) {
       const round = underWay();
       if (minute < round.seenMinute) throw new Error(`a change can't come before minute ${round.seenMinute}`);
       live = { day: applyLiveChange(round.day, minute, change), seenMinute: minute };
       return liveRoundOf(live.day, live.seenMinute);
     },
     /** The final whistle: records the day and adds the coach's results to the inbox. */
-    finishRound(): AdvanceResult {
+    finishRound() {
       const round = underWay();
       const before = current();
       const day = finishMatchDay(round.day);
@@ -188,50 +234,56 @@ export function createEngineSession(files: GameFiles) {
       turningPoints = [...turningPoints, ...turningPointsOf(before, day.state, day.events)];
       return { date: day.state.date, events: day.events };
     },
-    /** The oldest firing or season end the coach has not seen through yet. */
-    turningPoint(): TurningPoint | null {
-      return turningPoints[0] ?? null;
-    },
-    closeTurningPoint(): void {
+    closeTurningPoint() {
       turningPoints = turningPoints.slice(1);
     },
     /**
      * The coach turns an open offer down; accepting one is a day's decision (`acceptOffer`). Refused
      * during a round, whose final whistle rebuilds the game from the kick-off copy and would undo it.
      */
-    declineOffer(clubId: string): void {
+    declineOffer({ clubId }) {
       if (live) throw new Error("an offer can't be declined while a match day is under way");
       state = declineOffer(current(), clubId);
     },
-    inbox(): InboxLine[] {
-      return news;
-    },
     /** Puts a request on the board's desk; it reaches the board on the next day played that it is due. */
-    ask(request: CoachRequest): BoardDesk {
+    ask({ request }) {
       current();
       desk = { ...desk, pending: withRequest(desk.pending, request) };
       if (isInRound(request.playerId)) changeRoundRequests((requests) => withRequest(requests, request));
       return desk;
     },
     /** Takes the pending request for this player off the desk. */
-    withdraw(playerId: string): BoardDesk {
+    withdraw({ playerId }) {
       desk = { ...desk, pending: desk.pending.filter((r) => r.playerId !== playerId) };
       if (isInRound(playerId)) changeRoundRequests((requests) => requests.filter((r) => r.playerId !== playerId));
       return desk;
+    },
+  };
+
+  return {
+    apply<T extends CommandType>(command: GameCommand<T>): CommandResults[T] {
+      return commands[command.type](command);
+    },
+    /** The lineup sheet before kick-off on the coach's match day. */
+    matchDayPlan(): MatchDayPlan {
+      return matchDayPlan(current());
+    },
+    /** The match day kicked off and not yet finished, if any. */
+    liveRound(): LiveRound | null {
+      return live && liveRoundOf(live.day, live.seenMinute);
+    },
+    /** The oldest firing or season end the coach has not seen through yet. */
+    turningPoint(): TurningPoint | null {
+      return turningPoints[0] ?? null;
+    },
+    inbox(): InboxLine[] {
+      return news;
     },
     desk(): BoardDesk {
       return desk;
     },
     save(): string {
       return writeSessionSave({ game: current(), desk, turningPoints, live });
-    },
-    load(save: string): GameSummary {
-      const loaded = readSessionSave(save);
-      const summary = begin(loaded.game);
-      desk = loaded.desk;
-      turningPoints = loaded.turningPoints;
-      live = loaded.live;
-      return summary;
     },
     read<K extends keyof GameState>(keys: readonly K[]): Pick<GameState, K> {
       return pick(current(), keys);

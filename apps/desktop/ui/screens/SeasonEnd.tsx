@@ -76,7 +76,7 @@ export function SeasonEnd() {
   async function startNextSeason() {
     setLeaving(true);
     try {
-      await engine.closeTurningPoint();
+      await engine.apply({ type: "closeTurningPoint" });
       navigate("/hub");
     } catch {
       setFailed(true);

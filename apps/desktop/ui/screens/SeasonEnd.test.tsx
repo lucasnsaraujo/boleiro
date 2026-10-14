@@ -5,6 +5,7 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, expect, test } from "vitest";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
 import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
+import type { CommandResults, CommandType, GameCommand } from "@boleiro/game-client/engine/createEngineSession";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import type { TurningPoint } from "@boleiro/game-client/hub/turningPoints";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
@@ -47,17 +48,16 @@ const withoutClub: SeasonReview = { ...promoted, clubId: null, placing: null, ti
 async function services(points: TurningPoint[]): Promise<{ given: Services; closed: () => number }> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.newGame(7, { coachClubId: "bahia-ba" });
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
   let closedCount = 0;
   const queue = [...points];
-  const faked: EngineClient = {
-    ...engine,
-    turningPoint: async () => queue[0] ?? null,
-    closeTurningPoint: async () => {
-      queue.shift();
-      closedCount++;
-    },
-  };
+  function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+  async function apply(command: GameCommand): Promise<unknown> {
+    if (command.type !== "closeTurningPoint") return engine.apply(command);
+    queue.shift();
+    closedCount++;
+  }
+  const faked: EngineClient = { ...engine, turningPoint: async () => queue[0] ?? null, apply };
   return { given: { engine: faked, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } }, closed: () => closedCount };
 }
 

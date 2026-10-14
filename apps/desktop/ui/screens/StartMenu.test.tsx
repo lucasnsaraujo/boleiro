@@ -23,7 +23,7 @@ function services(): Services {
 }
 
 async function saveGame({ engine, slots }: Services, id: string, coachClubId: string, coachName: string, savedAt: string) {
-  await engine.newGame(1, { coachClubId });
+  await engine.apply({ type: "newGame", seed: 1, choices: { coachClubId } });
   await saveToSlot(engine, slots, id, { slotId: id, coachName }, new Date(savedAt));
 }
 

@@ -72,10 +72,10 @@ export function Offers() {
     }
   }
 
-  const sign = (clubId: string) => answer(() => engine.advance([{ acceptOffer: clubId }]), () => navigate("/hub"));
+  const sign = (clubId: string) => answer(() => engine.apply({ type: "advance", days: [{ acceptOffer: clubId }] }), () => navigate("/hub"));
   const decline = (clubId: string) =>
     answer(
-      () => engine.declineOffer(clubId),
+      () => engine.apply({ type: "declineOffer", clubId }),
       () => {
         setPickedId(null);
         void load();

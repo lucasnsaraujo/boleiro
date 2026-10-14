@@ -220,8 +220,8 @@ export function Player() {
           playerId={card.id}
           name={card.name}
           desk={desk}
-          onAsk={(request) => void engine.ask(request).then(setDesk)}
-          onWithdraw={() => void engine.withdraw(card.id).then(setDesk)}
+          onAsk={(request) => void engine.apply({ type: "ask", request }).then(setDesk)}
+          onWithdraw={() => void engine.apply({ type: "withdraw", playerId: card.id }).then(setDesk)}
         />
       )}
     </div>

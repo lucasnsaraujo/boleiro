@@ -5,6 +5,7 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
 import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
+import type { CommandResults, CommandType, GameCommand } from "@boleiro/game-client/engine/createEngineSession";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { Round } from "./Round.js";
@@ -25,8 +26,8 @@ afterEach(() => {
 async function onMatchDay(change: (engine: EngineClient) => EngineClient = (engine) => engine): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.newGame(7, { coachClubId: "bahia-ba" });
-  await engine.playToMatchDay();
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  await engine.apply({ type: "playToMatchDay" });
   return { engine: change(engine), slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
 }
 
@@ -172,7 +173,7 @@ test("when the engine can't be reached the round says so instead of claiming the
 
 test("a substitution is made at the minute on the clock", async () => {
   const given = await onMatchDay();
-  const changeLive = vi.spyOn(given.engine, "changeLive");
+  const apply = vi.spyOn(given.engine, "apply");
   await kickOff(given);
   play(12);
   const minute = shownMinute();
@@ -189,7 +190,7 @@ test("a substitution is made at the minute on the clock", async () => {
   await user().click(within(sheet).getByRole("button", { name: "Voltar ao jogo" }));
 
   await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-  expect(changeLive).toHaveBeenCalledWith(minute, { substitutions: [{ offId: off.id, onId: on.id }] });
+  expect(apply).toHaveBeenCalledWith({ type: "changeLive", minute, change: { substitutions: [{ offId: off.id, onId: on.id }] } });
   const events = (await given.engine.liveRound())?.matches.find((m) => m.fixtureId === coach?.fixtureId)?.events ?? [];
   expect(events).toContainEqual({ type: "substitution", minute, clubId: "bahia-ba", playerId: on.id, offId: off.id });
   expect(screen.getByRole("button", { name: /^Escalação/ }).textContent).toContain("4 trocas");
@@ -230,12 +231,15 @@ test("at the final whistle the round is recorded and the coach goes back to the 
 
 test("a round whose final whistle didn't go through finishes when the coach comes back, and offers a retry if it fails again", async () => {
   let isEngineDown = true;
-  const given = await onMatchDay((engine) => ({
-    ...engine,
-    finishRound: () => (isEngineDown ? Promise.reject(new Error("worker busy")) : engine.finishRound()),
-  }));
-  await given.engine.startRound({});
-  await given.engine.seeMinute(90);
+  const given = await onMatchDay((engine) => {
+    function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+    function apply(command: GameCommand): Promise<unknown> {
+      return command.type === "finishRound" && isEngineDown ? Promise.reject(new Error("worker busy")) : engine.apply(command);
+    }
+    return { ...engine, apply };
+  });
+  await given.engine.apply({ type: "startRound" });
+  await given.engine.apply({ type: "seeMinute", minute: 90 });
 
   openRound(given);
   expect(await screen.findByText("Não deu para encerrar a rodada.")).toBeTruthy();

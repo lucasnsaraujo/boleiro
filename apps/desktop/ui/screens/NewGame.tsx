@@ -34,7 +34,7 @@ function useBoards(seed: number): Readonly<Record<string, Board>> | null {
     let current = true;
     game.current = null;
     engine
-      .newGame(seed, { coachClubId: null })
+      .apply({ type: "newGame", seed, choices: { coachClubId: null } })
       .then(() => engine.read(["boards"]))
       .then(
         (read) => current && setBoards(read.boards),
@@ -216,7 +216,7 @@ function CoachAndSlot({ seed, picked, onBack }: { seed: number; picked: Choice; 
     setFailed(false);
     try {
       const coachClubId = picked.mode === "club" ? picked.choice.club.id : null;
-      await engine.newGame(seed, { coachClubId, careerMode: picked.mode === "career" });
+      await engine.apply({ type: "newGame", seed, choices: { coachClubId, careerMode: picked.mode === "career" } });
       const opened = { slotId: slot.id, coachName: name };
       await saveToSlot(engine, slots, slot.id, opened);
       game.current = opened;

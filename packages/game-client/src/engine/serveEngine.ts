@@ -3,42 +3,20 @@ import type { EnginePort, EngineRequest, EngineResponse } from "./engineMessages
 
 function run(session: EngineSession, request: EngineRequest): unknown {
   switch (request.method) {
-    case "newGame":
-      return session.newGame(...request.args);
-    case "advance":
-      return session.advance(...request.args);
-    case "playToMatchDay":
-      return session.playToMatchDay();
+    case "apply":
+      return session.apply(...request.args);
     case "matchDayPlan":
       return session.matchDayPlan();
-    case "startRound":
-      return session.startRound(...request.args);
     case "liveRound":
       return session.liveRound();
-    case "seeMinute":
-      return session.seeMinute(...request.args);
-    case "changeLive":
-      return session.changeLive(...request.args);
-    case "finishRound":
-      return session.finishRound();
     case "turningPoint":
       return session.turningPoint();
-    case "closeTurningPoint":
-      return session.closeTurningPoint();
-    case "declineOffer":
-      return session.declineOffer(...request.args);
     case "inbox":
       return session.inbox();
-    case "ask":
-      return session.ask(...request.args);
-    case "withdraw":
-      return session.withdraw(...request.args);
     case "desk":
       return session.desk();
     case "save":
       return session.save();
-    case "load":
-      return session.load(...request.args);
     case "read":
       return session.read(...request.args);
   }

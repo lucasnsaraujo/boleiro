@@ -18,7 +18,7 @@ afterEach(() => {
 async function openMarket(): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.newGame(7, { coachClubId: "sport-pe" });
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "sport-pe" } });
   const services: Services = { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
   const router = createMemoryRouter([{ path: "/market", element: <Market /> }], { initialEntries: ["/market"] });
   render(

@@ -19,7 +19,7 @@ afterEach(() => {
 async function openPlayerOf(clubId: string, from: string[] = []): Promise<{ engine: EngineClient; playerId: string }> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.newGame(7, { coachClubId: "sport-pe" });
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "sport-pe" } });
   const { players } = await engine.read(["players"]);
   const player = Object.values(players).find((p) => p.clubId === clubId && p.age > 21);
   if (!player) throw new Error(`no player at ${clubId}`);

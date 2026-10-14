@@ -118,7 +118,7 @@ export function Finances() {
           <h2 id="desk-title" className="fin-title">
             Pedidos à diretoria
           </h2>
-          <BoardRequests desk={desk} state={state} answers={DESK_ANSWERS} onWithdraw={(playerId) => void engine.withdraw(playerId).then(setDesk)} />
+          <BoardRequests desk={desk} state={state} answers={DESK_ANSWERS} onWithdraw={(playerId) => void engine.apply({ type: "withdraw", playerId }).then(setDesk)} />
           <Link to="/market" className="btn-main fin-market">
             Ir ao mercado
           </Link>

@@ -5,6 +5,7 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, expect, test } from "vitest";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
 import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
+import type { CommandResults, CommandType, GameCommand } from "@boleiro/game-client/engine/createEngineSession";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import type { JobOffer } from "@boleiro/engine/sim/coach/coach";
 import type { TurningPoint } from "@boleiro/game-client/hub/turningPoints";
@@ -21,7 +22,7 @@ afterEach(() => {
 async function services(coachClubId: string | null, change: (engine: EngineClient) => EngineClient = (engine) => engine): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.newGame(7, { coachClubId, careerMode: coachClubId === null });
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId, careerMode: coachClubId === null } });
   return { engine: change(engine), slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
 }
 
@@ -68,14 +69,19 @@ test("Jogar rodada plays on to the first match day and opens the live round", as
 });
 
 test("when a day stops the coach early, the hub stays and shows the news that stopped it", async () => {
-  const given = await services("bahia-ba", (engine) => ({
-    ...engine,
-    playToMatchDay: async () => {
-      const played = await engine.advance([{}]);
+  const given = await services("bahia-ba", (engine) => {
+    function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+    async function apply(command: GameCommand): Promise<unknown> {
+      if (command.type !== "playToMatchDay") return engine.apply(command);
+      const played = await engine.apply({ type: "advance", days: [{}] });
       return { date: played.date, stop: "jobOffer", daysPlayed: 1 };
-    },
-    inbox: async () => [{ date: "2026-01-01", text: "Vitória faz proposta: R$ 250 mil por mês até 2026", tone: "good" }],
-  }));
+    }
+    return {
+      ...engine,
+      apply,
+      inbox: async () => [{ date: "2026-01-01", text: "Vitória faz proposta: R$ 250 mil por mês até 2026", tone: "good" }],
+    };
+  });
   openHub(given);
   await userEvent.click(await screen.findByRole("button", { name: "Jogar rodada" }));
   const inbox = await screen.findByRole("list", { name: "Notícias" });
@@ -109,7 +115,7 @@ test("a coach with a club sees an offer on the table without leaving his round",
   const given = await services("bahia-ba");
   const save: { game: { coach: { offers: JobOffer[] } } } = JSON.parse(await given.engine.save());
   save.game.coach.offers.push({ clubId: "vitoria-ba", salary: 90_000, untilSeason: 2026, expiresOn: "2026-01-14" });
-  await given.engine.load(JSON.stringify(save));
+  await given.engine.apply({ type: "load", save: JSON.stringify(save) });
   openHub(given);
   expect(await screen.findByRole("link", { name: "1 proposta" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Jogar rodada" })).toBeTruthy();

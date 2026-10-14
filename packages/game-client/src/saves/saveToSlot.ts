@@ -11,5 +11,5 @@ export async function saveToSlot(engine: EngineClient, slots: SlotStore, id: str
 }
 
 export async function loadFromSlot(engine: EngineClient, slots: SlotStore, id: string): Promise<GameSummary> {
-  return engine.load(await slots.read(id));
+  return engine.apply({ type: "load", save: await slots.read(id) });
 }

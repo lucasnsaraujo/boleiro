@@ -49,7 +49,7 @@ export function Sacked() {
   async function seeOffers() {
     setLeaving(true);
     try {
-      await engine.closeTurningPoint();
+      await engine.apply({ type: "closeTurningPoint" });
       navigate("/offers");
     } catch {
       setFailed(true);

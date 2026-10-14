@@ -21,7 +21,7 @@ async function fastForward(page: Page, date: string) {
     if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
     const { date: today } = await engine.read(["date"]);
     const days = Math.round((Date.parse(until) - Date.parse(today)) / 86_400_000);
-    await engine.advance(Array.from({ length: days }, () => ({})));
+    await engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
   }, date);
 }
 
