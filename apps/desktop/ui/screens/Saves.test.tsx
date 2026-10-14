@@ -83,3 +83,17 @@ test("a save is deleted only after the coach confirms it", async () => {
   await waitFor(async () => expect(await given.slots.list()).toEqual([]));
   await waitFor(() => expect(within(screen.getByRole("list", { name: "Vagas" })).getAllByRole("listitem").at(-1)?.textContent).toContain("Vaga livre"));
 });
+
+test("deleting the save of the game open now says so before the coach confirms", async () => {
+  const given = await services();
+  await saveToSlot(given.engine, given.slots, "slot-2", { slotId: "slot-2", coachName: "Tite" });
+  await saveToSlot(given.engine, given.slots, "slot-3", { slotId: "slot-3", coachName: "Abel" });
+  openSaves(given);
+  await userEvent.click(await within(await slotsList()).findByRole("button", { name: /^Jogo 2 · Bahia/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Apagar" }));
+  expect(screen.getByRole("alertdialog").textContent).toContain("É o jogo aberto agora.");
+  await userEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+  await userEvent.click(within(await slotsList()).getByRole("button", { name: /^Jogo 3 · Bahia/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Apagar" }));
+  expect(screen.getByRole("alertdialog").textContent).not.toContain("É o jogo aberto agora.");
+});
