@@ -17,6 +17,8 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.desk();
     case "save":
       return session.save();
+    case "saveShards":
+      return session.saveShards();
     case "read":
       return session.read(...request.args);
   }

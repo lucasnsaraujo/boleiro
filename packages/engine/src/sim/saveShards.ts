@@ -6,7 +6,8 @@ import type { Country, World } from "./world/world.js";
 export const GAME_SHARD = "game";
 /** The ids of the game's result-only countries, so a load can tell a country's shard went missing. */
 export const WORLD_SHARD = "world";
-const COUNTRY_SHARD = "country-";
+/** Prefix of each result-only country's shard, followed by the country's id. */
+export const COUNTRY_SHARD = "country-";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;

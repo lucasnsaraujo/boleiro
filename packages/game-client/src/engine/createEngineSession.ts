@@ -14,7 +14,7 @@ import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
 import { boardNotes, dueRequests, EMPTY_DESK, withRequest, type BoardDesk } from "../market/boardDesk.js";
 import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
 import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
-import { readSessionSave, writeSessionSave } from "./sessionSave.js";
+import { readStoredSave, splitGame, writeSessionSave, writeSessionShards, type SaveShards, type SplitGame, type StoredSave } from "./sessionSave.js";
 
 export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode">;
 export type GameSummary = Pick<GameState, "date" | "season" | "coachClubId">;
@@ -26,8 +26,8 @@ export type KickOff = Pick<DayDecisions, "lineup" | "tactics">;
 /** What each command carries besides its `type`. */
 type CommandFields = {
   newGame: { seed: number; choices: NewGameChoices };
-  /** Replaces the whole session with the one a save holds. */
-  load: { save: string };
+  /** Replaces the whole session with the one a save holds, in shards or written whole. */
+  load: { save: StoredSave };
   /** Plays one day per entry, each with the coach's decisions for that day. */
   advance: { days: readonly DayDecisions[] };
   playToMatchDay: Record<never, never>;
@@ -95,6 +95,8 @@ export function createEngineSession(files: GameFiles) {
   let live: { day: LiveDay; seenMinute: number } | null = null;
   /** Firings and season ends the coach has not closed the screen on yet, oldest first; saved with the game. */
   let turningPoints: TurningPoint[] = [];
+  /** The game as last saved in shards, whose unchanged countries the next save reuses. */
+  let split: SplitGame | null = null;
 
   function underWay() {
     if (!live) throw new Error("no match day is under way");
@@ -112,6 +114,7 @@ export function createEngineSession(files: GameFiles) {
     desk = EMPTY_DESK;
     live = null;
     turningPoints = [];
+    split = null;
     return summaryOf(next);
   }
 
@@ -148,7 +151,7 @@ export function createEngineSession(files: GameFiles) {
       return begin(newGameFromFiles(seed, choices, files));
     },
     load({ save }) {
-      const loaded = readSessionSave(save);
+      const loaded = readStoredSave(save);
       const summary = begin(loaded.game);
       desk = loaded.desk;
       turningPoints = loaded.turningPoints;
@@ -286,6 +289,11 @@ export function createEngineSession(files: GameFiles) {
     },
     save(): string {
       return writeSessionSave({ game: current(), desk, turningPoints, live });
+    },
+    /** The save as shards: the game, each result-only country, and the rest of the session. */
+    saveShards(): SaveShards {
+      split = splitGame(current(), split);
+      return writeSessionShards(split, { desk, turningPoints, live });
     },
     read<K extends keyof GameState>(keys: readonly K[]): Pick<GameState, K> {
       return pick(current(), keys);

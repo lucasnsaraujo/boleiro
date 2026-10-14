@@ -161,7 +161,7 @@ function replay(applied: readonly Applied[]) {
 }
 
 function loadedSaves(applied: readonly Applied[]): string[] {
-  return applied.flatMap(({ command }) => (command.type === "load" ? [sha256(command.save)] : []));
+  return applied.flatMap(({ command }) => (command.type === "load" ? [sha256(typeof command.save === "string" ? command.save : JSON.stringify(command.save))] : []));
 }
 
 /** A career start: one offer turned down, another signed, then on to the first stop. */

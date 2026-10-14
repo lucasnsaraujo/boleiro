@@ -66,6 +66,7 @@ export function connectEngine(port: EngineWorker): EngineClient {
     inbox: () => send({ method: "inbox", args: [] }),
     desk: () => send({ method: "desk", args: [] }),
     save: () => send({ method: "save", args: [] }),
+    saveShards: () => send({ method: "saveShards", args: [] }),
     read: (keys) => send({ method: "read", args: [keys] }),
   };
 }
