@@ -13,9 +13,20 @@ import { parsePlayers } from "./players.js";
 const ROOT = join(import.meta.dirname, "..", "..", "..");
 const csv = (name: string) => readFileSync(join(ROOT, "data", name), "utf8");
 
-function buildPackFromCsv(dir: string): string {
+// Adds an older season's prize money to the database's latest snapshot, with a different season number.
+const ADD_OLDER_MONEY = `
+import json, sqlite3, sys
+db = sqlite3.connect(sys.argv[1])
+snapshot, season, body = db.execute("SELECT snapshot_id, season, body FROM competition_money").fetchone()
+older = {**json.loads(body), "season": season - 1}
+db.execute("INSERT INTO competition_money VALUES (?, 'BR', ?, ?)", (snapshot, season - 1, json.dumps(older)))
+db.commit()
+`;
+
+function buildPackFromCsv(dir: string, editDatabase?: string): string {
   const db = join(dir, "boleiro.db");
   execFileSync("python3", [join(ROOT, "pipeline", "import_csv.py"), join(ROOT, "data"), db]);
+  if (editDatabase) execFileSync("python3", ["-c", editDatabase, db]);
   execFileSync("python3", [join(ROOT, "pipeline", "build_pack.py"), db, dir]);
   return gunzipSync(readFileSync(join(dir, "brazil.pack.json.gz"))).toString("utf8");
 }
@@ -45,6 +56,11 @@ describe("the data pack", () => {
 
   it("never renames the first Brazil pack, whatever pack ships now, since saves from before data packs are read as it", () => {
     expect(FIRST_PACK_VERSION).toBe("br-a49b7692d13f");
+  });
+
+  it("takes the latest season's prize money when the database holds several", () => {
+    const withOlderMoney = buildPackFromCsv(mkdtempSync(join(dir, "older-money-")), ADD_OLDER_MONEY);
+    expect(parsePack(withOlderMoney).competitionMoney).toStrictEqual(parsePack(built).competitionMoney);
   });
 
   it("decodes a pack cut down to its clubs into the same clubs as the whole pack", () => {

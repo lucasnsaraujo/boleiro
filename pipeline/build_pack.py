@@ -60,7 +60,11 @@ def build(db: sqlite3.Connection, snapshot: int) -> dict[str, object]:
     ).fetchall()
     club_finances = [row for row in finances if row["club_id"] is not None]
     estimates = [row for row in finances if row["club_id"] is None]
-    money = db.execute("SELECT body FROM competition_money WHERE snapshot_id = ? AND country_code = 'BR'", (snapshot,)).fetchone()
+    money = db.execute(
+        "SELECT body FROM competition_money WHERE snapshot_id = ? AND country_code = 'BR' ORDER BY season DESC LIMIT 1", (snapshot,)
+    ).fetchone()
+    if money is None:
+        raise RuntimeError(f"snapshot {snapshot} has no Brazilian prize money")
 
     return {
         "clubs": {
