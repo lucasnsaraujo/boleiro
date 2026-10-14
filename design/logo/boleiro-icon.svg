@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="512" height="512" role="img" aria-label="Boleiro">
+  <defs><clipPath id="bl1c"><circle cx="64" cy="62" r="27"/></clipPath><radialGradient id="bl1s" cx="38%" cy="30%" r="80%"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".65" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".38"/></radialGradient></defs>
+  <rect x="4" y="6" width="120" height="120" rx="30" fill="#14231A" fill-opacity=".22"/>
+  <rect x="2" y="2" width="124" height="120" rx="30" fill="#fff"/>
+  <rect x="10" y="10" width="108" height="104" rx="22" fill="#0B7A3B"/>
+  <path d="M64 22L110 62L64 102L18 62Z" fill="#FFCC00"/>
+  <circle cx="64" cy="62" r="27" fill="#fff"/><g clip-path="url(#bl1c)"><path fill="#14231A" d="M64.00 53.90L71.70 59.50L68.76 68.55L59.24 68.55L56.30 59.50ZM75.27 46.49L72.42 37.74L79.87 32.33L87.32 37.74L84.47 46.49ZM82.23 67.92L89.68 62.51L97.13 67.92L94.28 76.68L85.08 76.68ZM64.00 81.17L71.45 86.58L68.60 95.33L59.40 95.33L56.55 86.58ZM45.77 67.92L42.92 76.68L33.72 76.68L30.87 67.92L38.32 62.51ZM52.73 46.49L43.53 46.49L40.68 37.74L48.13 32.33L55.58 37.74Z"/><path d="M64.00 53.90L64.00 45.26M64.00 45.26L72.42 37.74M64.00 45.26L55.58 37.74M71.70 59.50L79.92 56.83M79.92 56.83L89.68 62.51M79.92 56.83L84.47 46.49M68.76 68.55L73.84 75.54M73.84 75.54L71.45 86.58M73.84 75.54L85.08 76.68M59.24 68.55L54.16 75.54M54.16 75.54L42.92 76.68M54.16 75.54L56.55 86.58M56.30 59.50L48.08 56.83M48.08 56.83L43.53 46.49M48.08 56.83L38.32 62.51" stroke="#14231A" stroke-width="1.21" stroke-linecap="round" fill="none"/><circle cx="64" cy="62" r="27" fill="url(#bl1s)"/></g>
+  <path d="M126 92L126 96Q126 122 100 122L94 122Z" fill="#E8DEC6"/>
+  <path d="M94 122L126 92Q108 100 94 122Z" fill="#fff"/>
+</svg>

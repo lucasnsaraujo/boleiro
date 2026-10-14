@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Marca</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<style>
+html, body { width: 1280px; height: 800px; overflow: hidden; }
+.hd { height: 58px; display: flex; align-items: center; gap: 14px; padding: 0 32px; border-bottom: 2px dotted var(--line-2); }
+.hd b { font-stretch: var(--wide); font-weight: 900; font-size: 20px; }
+.hd span { color: var(--mute); font-size: 13px; }
+.sheet { display: grid; grid-template-columns: 560px 1fr; height: 742px; }
+.big { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; border-right: 2px dotted var(--line-2); }
+.cap { font-stretch: var(--semi); font-weight: 800; font-size: 12px; letter-spacing: .08em; color: var(--mute); text-transform: uppercase; }
+.dark .cap { color: #9DB3A4; }
+.right { display: grid; grid-template-rows: 262px 262px 1fr; }
+.blk { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; }
+.blk.dark { background: #0F2418; }
+.blk .cap { position: absolute; left: 24px; top: 16px; }
+.lock { display: flex; align-items: center; gap: 16px; }
+.lock .t { font-stretch: var(--semi); font-weight: 800; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); margin-top: 6px; }
+.dark .lock .t { color: #9DB3A4; }
+.sizes { display: flex; align-items: flex-end; justify-content: space-between; padding: 0 40px 34px; border-top: 2px dotted var(--line-2); }
+.sz { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.tile { display: grid; place-items: center; width: 60px; height: 60px; border-radius: 12px; }
+.tile.l { background: #fff; box-shadow: 0 0 0 1px var(--line); }
+.tile.d { background: #0F2418; }
+.tile.k { background: #000; }
+</style>
+</head>
+<body>
+<div class="hd"><b>Boleiro</b><span>Letreiro verde largo, etiqueta amarela com o ano da edição e a figurinha da bola como ícone</span></div>
+<div class="sheet">
+  <div class="big"><img src="boleiro-icon.svg" width="512" height="512" alt="Ícone do Boleiro"><span class="cap">Ícone do app · 512</span></div>
+  <div class="right">
+    <div class="blk"><span class="cap">Fundo claro</span>
+      <img src="boleiro-wordmark.svg" height="120" alt="Boleiro 2026">
+      <div class="lock"><img src="boleiro-icon.svg" width="64" height="64" alt=""><div><img src="boleiro-wordmark.svg" height="46" alt="Boleiro 2026"><div class="t">Jogo de técnico de futebol</div></div></div>
+    </div>
+    <div class="blk dark"><span class="cap">Fundo escuro</span>
+      <img src="boleiro-wordmark-dark.svg" height="120" alt="Boleiro 2026">
+      <div class="lock"><img src="boleiro-icon.svg" width="64" height="64" alt=""><div><img src="boleiro-wordmark-dark.svg" height="46" alt="Boleiro 2026"><div class="t">Jogo de técnico de futebol</div></div></div>
+    </div>
+    <div class="sizes">
+      <div class="sz"><img src="boleiro-icon.svg" width="128" height="128" alt=""><span class="cap">128</span></div>
+      <div class="sz"><div class="tile l"><img src="boleiro-icon-small.svg" width="32" height="32" alt=""></div><span class="cap">32 · claro</span></div>
+      <div class="sz"><div class="tile d"><img src="boleiro-icon-small.svg" width="32" height="32" alt=""></div><span class="cap">32 · escuro</span></div>
+      <div class="sz"><div class="tile l"><img src="boleiro-icon-small.svg" width="16" height="16" alt=""></div><span class="cap">16 · claro</span></div>
+      <div class="sz"><div class="tile k"><img src="boleiro-icon-small.svg" width="16" height="16" alt=""></div><span class="cap">16 · escuro</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
