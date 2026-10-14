@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router";
 import type { Club } from "@boleiro/data/clubs";
 import { FULL_TIME, HALF_TIME } from "@boleiro/engine/sim/live/matchTimeline";
+import { useCommands } from "../app/AppCommands.js";
 import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { plateColours } from "../clubs/clubCatalog.js";
@@ -211,6 +212,16 @@ export function Round() {
     if (next !== 0) resumeSpeed.current = next;
     setSpeed(next);
   }
+
+  // The match keys work only while the match can still be driven: kicked off, before the final whistle, no sheet open.
+  const isDrivable = round !== null && result === null && minute < FULL_TIME && !isLineupOpen && !isTableOpen;
+  useCommands({
+    pausar: isDrivable && (() => chooseSpeed(speed === 0 ? resumeSpeed.current : 0)),
+    velocidade1: isDrivable && (() => chooseSpeed(1)),
+    velocidade2: isDrivable && (() => chooseSpeed(2)),
+    velocidade3: isDrivable && (() => chooseSpeed(4)),
+    tabelaAoVivo: isDrivable && round.table !== null && (() => openSheet(setTableOpen)),
+  });
 
   const crowd = round && result === null && minute < FULL_TIME ? crowdLevel(round, minute) * (isRunning ? 1 : PAUSED_CROWD) : null;
   useEffect(() => sound.setCrowd(crowd), [sound, crowd]);

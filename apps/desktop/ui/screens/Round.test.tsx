@@ -3,7 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { useRunCommand } from "../app/AppCommands.js";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
+import type { CommandId } from "../app/shortcuts.js";
 import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
 import type { CommandResults, CommandType, GameCommand } from "@boleiro/game-client/engine/createEngineSession";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
@@ -247,6 +249,30 @@ test("a round whose final whistle didn't go through finishes when the coach come
   await userEvent.click(screen.getByRole("button", { name: "Tentar de novo" }));
   expect(await screen.findByRole("button", { name: "Voltar ao clube" })).toBeTruthy();
   expect(await given.engine.liveRound()).toBeNull();
+});
+
+let runCommand: (id: CommandId) => boolean = () => false;
+/** Reaches the commands the round registers, as the keyboard does through the shell. */
+function CommandProbe() {
+  runCommand = useRunCommand();
+  return null;
+}
+
+test("in the match, Space pauses and resumes, the number keys pick the speed and T opens the live table", async () => {
+  render(<CommandProbe />);
+  await kickOff(await onMatchDay());
+  const run = (id: CommandId) => act(() => void runCommand(id));
+  const pressed = () => within(screen.getByRole("group", { name: "Velocidade" })).getByRole("button", { pressed: true }).getAttribute("aria-label");
+  run("velocidade3");
+  expect(pressed()).toBe("4x");
+  run("pausar");
+  expect(pressed()).toBe("Pausar");
+  run("pausar");
+  expect(pressed()).toBe("4x");
+  run("velocidade1");
+  expect(pressed()).toBe("1x");
+  run("tabelaAoVivo");
+  expect(await screen.findByRole("dialog", { name: "Classificação" })).toBeTruthy();
 });
 
 test("the board lists every match of the round, and Só meus jogos leaves only the coach's", async () => {

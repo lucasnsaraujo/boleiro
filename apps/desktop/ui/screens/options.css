@@ -281,6 +281,19 @@
   list-style: none;
 }
 
+.options-keys-sub {
+  margin-top: 18px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--ink);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.options-keys-sub + .shortcuts-list {
+  margin-top: 0;
+}
+
 .shortcut {
   display: flex;
   align-items: center;

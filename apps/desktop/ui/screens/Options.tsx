@@ -42,6 +42,12 @@ const SHORTCUTS: readonly Shortcut[] = [
   { command: "salvar", label: "Salvar", isAvailable: true },
 ];
 
+const MATCH_KEYS: readonly { commands: readonly CommandId[]; label: string }[] = [
+  { commands: ["pausar"], label: "Pausa" },
+  { commands: ["velocidade1", "velocidade2", "velocidade3"], label: "Velocidade" },
+  { commands: ["tabelaAoVivo"], label: "Tabela ao vivo" },
+];
+
 /** Paper, sound, saving and the keyboard; the credits of every sound file. */
 export function Options() {
   const { settings, changeSettings } = useSound();
@@ -201,6 +207,25 @@ export function Options() {
                     {key}
                   </kbd>
                 ))}
+              </span>
+              {label}
+            </li>
+          ))}
+        </ul>
+        <h3 className="options-keys-sub" id="match-keys-title">
+          Na partida
+        </h3>
+        <ul className="shortcuts-list" aria-labelledby="match-keys-title">
+          {MATCH_KEYS.map(({ commands, label }) => (
+            <li key={label} className="shortcut">
+              <span className="shortcut-keys">
+                {commands
+                  .flatMap((command) => shortcutKeys(command, PLATFORM))
+                  .map((key) => (
+                    <kbd key={key} className="kbd">
+                      {key}
+                    </kbd>
+                  ))}
               </span>
               {label}
             </li>
