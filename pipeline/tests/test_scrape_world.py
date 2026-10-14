@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import tm_fetch
 from tests.world_fixture import Offline, saved_cache, scrape_tiny_world
 
 
@@ -75,6 +76,16 @@ class ScrapeWorldTest(unittest.TestCase):
         db = sqlite3.connect(":memory:")
         scrape_tiny_world(db, self.cache, Offline(), known_club_ids={"31": "liverpool"})
         self.assertEqual(db.execute("SELECT club_id FROM players WHERE id = 'tm-105470'").fetchone(), ("liverpool",))
+
+
+    def test_skips_a_page_that_came_back_without_a_squad_and_lists_it(self) -> None:
+        robot_check = self.cache / tm_fetch.cache_name("/fc-arsenal/kader/verein/11/plus/1")
+        robot_check.write_text("<html><body>Are you a robot?</body></html>")
+        db = sqlite3.connect(":memory:")
+        run = scrape_tiny_world(db, self.cache, Offline())
+        self.assertEqual(db.execute("SELECT id FROM clubs").fetchall(), [("tm-31",)])
+        self.assertTrue(any("/fc-arsenal/kader/verein/11/plus/1" in failure for failure in run.failures))
+        self.assertFalse(robot_check.exists(), "the next run should download the page again")
 
 
 if __name__ == "__main__":

@@ -25,7 +25,7 @@ import tm_pages
 import tm_world
 from import_csv import SCHEMA, png_size, slugify
 from positions import GROUP_OF_ROLE
-from tm_fetch import FetchError, Fetcher
+from tm_fetch import FetchError, Fetcher, cache_name
 
 ROOT = Path(__file__).resolve().parent.parent
 SEASON = 2026
@@ -62,6 +62,20 @@ class Scraper:
             self.log(f"  failed: {error}")
             return None
 
+    def squad(self, ref: tm_pages.ClubRef) -> tm_pages.Squad | None:
+        """A club's or national team's squad page; one that came back as something else is dropped from the cache."""
+        path = f"/{ref.slug}/kader/verein/{ref.tm_id}/plus/1"
+        html = self.page(path)
+        if html is None:
+            return None
+        try:
+            return tm_pages.squad(html)
+        except ValueError as error:
+            (self.fetcher.cache / cache_name(path)).unlink(missing_ok=True)
+            self.run.failures.append(f"{error} on {path}")
+            self.log(f"  failed: {error} on {path}")
+            return None
+
     def insert(self, table: str, *values: object) -> None:
         marks = ", ".join("?" for _ in range(len(values) + 1))
         self.db.execute(f"INSERT INTO {table} VALUES ({marks})", (self.run.snapshot, *values))
@@ -78,10 +92,9 @@ class Scraper:
         """Scrapes one club into the snapshot and returns its id; `country` None takes it from the page."""
         if ref.tm_id in self.club_ids:
             return self.club_ids[ref.tm_id]
-        html = self.page(f"/{ref.slug}/kader/verein/{ref.tm_id}/plus/1")
-        if html is None:
+        squad = self.squad(ref)
+        if squad is None:
             return None
-        squad = tm_pages.squad(html)
         if country is None:
             country = self.guest_country(squad.country or "")
         club_id = self.known_club_ids.get(ref.tm_id, f"tm-{ref.tm_id}")
@@ -188,10 +201,9 @@ class Scraper:
                 refs.setdefault(ref.tm_id, ref)
         self.log(f"national teams: {len(refs)}")
         for seq, ref in enumerate(refs.values()):
-            html = self.page(f"/{ref.slug}/kader/verein/{ref.tm_id}/plus/1")
-            if html is None:
+            squad = self.squad(ref)
+            if squad is None:
                 continue
-            squad = tm_pages.squad(html)
             team_id = slugify(squad.name)
             self.insert("national_teams", team_id, seq, squad.name, squad.confederation)
             self.insert("external_ids", "national_team", team_id, "transfermarkt", ref.tm_id)
