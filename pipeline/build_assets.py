@@ -1,4 +1,4 @@
-"""Converts the images of the master database's latest snapshot into the pack's small variants.
+"""Converts the images of the master database's latest CSV-import snapshot into the pack's small variants.
 
 Each distinct source image of a kind (by content hash) becomes WebP and AVIF files fitted into
 64, 128 and 256 px boxes, never upscaled: a 139x181 crest's 256 variant stays 139x181. An image is
@@ -18,6 +18,8 @@ import sys
 from pathlib import Path
 
 from PIL import Image
+
+from build_pack import latest_snapshot
 
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_FORMAT = 1
@@ -74,7 +76,7 @@ def main() -> None:
     db_path, out = Path(sys.argv[1]), Path(sys.argv[2])
     with sqlite3.connect(db_path) as db:
         db.row_factory = sqlite3.Row
-        snapshot = int(sys.argv[3]) if len(sys.argv) > 3 else db.execute("SELECT max(id) FROM snapshots").fetchone()[0]
+        snapshot = int(sys.argv[3]) if len(sys.argv) > 3 else latest_snapshot(db)
         manifest = build(db, snapshot, out)
     (out / "assets.json").write_text(json.dumps(manifest, ensure_ascii=False, separators=(",", ":")) + "\n")
     files = sorted((out / "assets").rglob("*.*"))
