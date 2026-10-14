@@ -32,6 +32,11 @@
   background: color-mix(in srgb, var(--paper) 86%, transparent);
 }
 
+/* The body's paper would cover the Mica the window is filled with (transparent in tauri.windows.conf.json). */
+body:has(.app[data-chrome="windows"]) {
+  background: none;
+}
+
 .drag-edge {
   position: absolute;
   left: 0;
