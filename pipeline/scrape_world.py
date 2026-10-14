@@ -76,9 +76,12 @@ class Scraper:
             self.log(f"  failed: {error} on {path}")
             return None
 
-    def insert(self, table: str, *values: object) -> None:
+    def insert(self, table: str, *values: object, verb: str = "INSERT") -> None:
         marks = ", ".join("?" for _ in range(len(values) + 1))
-        self.db.execute(f"INSERT INTO {table} VALUES ({marks})", (self.run.snapshot, *values))
+        self.db.execute(f"{verb} INTO {table} VALUES ({marks})", (self.run.snapshot, *values))
+
+    def insert_or_ignore(self, table: str, *values: object) -> None:
+        self.insert(table, *values, verb="INSERT OR IGNORE")
 
     def competition(self, competition_id: str, country: str | None, path: str, kind: str, tier: int | None, code: str | None) -> str | None:
         html = self.page(path)
@@ -100,7 +103,8 @@ class Scraper:
         club_id = self.known_club_ids.get(ref.tm_id, f"tm-{ref.tm_id}")
         self.club_ids[ref.tm_id] = club_id
         colours = self.colours(ref.tm_id)
-        stadium_id = f"{slugify(squad.stadium)}-{country.lower()}" if squad.stadium else f"tm-{ref.tm_id}-ground"
+        stadium_slug = slugify(squad.stadium or "")
+        stadium_id = f"{stadium_slug}-{country.lower()}" if stadium_slug else f"tm-{ref.tm_id}-ground"
         self.db.execute(
             "INSERT OR IGNORE INTO stadiums VALUES (?, ?, ?, ?, NULL, ?, 'natural')",
             (self.run.snapshot, stadium_id, squad.stadium or "", country.upper(), squad.capacity or 0),
@@ -176,6 +180,7 @@ class Scraper:
             clubs = tm_pages.participants(html) if html else []
             self.log(f" {league.code}: {len(clubs)} clubs")
             if html is not None and not clubs:
+                (self.fetcher.cache / cache_name(league.clubs_page)).unlink(missing_ok=True)
                 self.run.failures.append(f"no clubs on {league.clubs_page}")
             for ref in clubs:
                 self.club(ref, country.id, league_id)
@@ -205,10 +210,12 @@ class Scraper:
             if squad is None:
                 continue
             team_id = slugify(squad.name)
+            if not team_id or self.db.execute("SELECT 1 FROM national_teams WHERE snapshot_id = ? AND id = ?", (self.run.snapshot, team_id)).fetchone():
+                team_id = f"tm-{ref.tm_id}"
             self.insert("national_teams", team_id, seq, squad.name, squad.confederation)
             self.insert("external_ids", "national_team", team_id, "transfermarkt", ref.tm_id)
             for rank, player in enumerate(squad.players):
-                self.insert("national_team_players", team_id, rank, f"tm-{player.tm_id}", player.name, player.birth_date,
+                self.insert_or_ignore("national_team_players", team_id, rank, f"tm-{player.tm_id}", player.name, player.birth_date,
                             player.position, player.role, player.club_tm_id, player.club_name, player.market_value_eur,
                             player.caps, player.goals)
             self.run.national_teams += 1

@@ -88,5 +88,23 @@ class ScrapeWorldTest(unittest.TestCase):
         self.assertFalse(robot_check.exists(), "the next run should download the page again")
 
 
+    def test_drops_a_league_page_without_clubs_from_the_cache_so_the_next_run_asks_again(self) -> None:
+        league = self.cache / tm_fetch.cache_name("/x/startseite/wettbewerb/GB1")
+        league.write_text('<html><header class="data-header"><h1>Premier League</h1></header></html>')
+        run = scrape_tiny_world(sqlite3.connect(":memory:"), self.cache, Offline())
+        self.assertIn("no clubs on /x/startseite/wettbewerb/GB1", run.failures)
+        self.assertFalse(league.exists())
+
+    def test_keeps_two_national_teams_with_the_same_name_apart(self) -> None:
+        brazil = (self.cache / tm_fetch.cache_name("/brasilien/kader/verein/3439/plus/1")).read_text()
+        (self.cache / tm_fetch.cache_name("/argentinien/kader/verein/3437/plus/1")).write_text(brazil)
+        db = sqlite3.connect(":memory:")
+        run = scrape_tiny_world(db, self.cache, Offline())
+        self.assertEqual(run.national_teams, 2)
+        ids = sorted(row[0] for row in db.execute("SELECT id FROM national_teams"))
+        self.assertEqual(ids[0], "brazil")
+        self.assertIn(ids[1], ("tm-3437", "tm-3439"))
+
+
 if __name__ == "__main__":
     unittest.main()

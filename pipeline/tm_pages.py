@@ -139,7 +139,7 @@ def column_indexes(soup: BeautifulSoup) -> dict[str, int]:
 
 def player_of(row: Tag, columns: dict[str, int]) -> SquadPlayer | None:
     cells = row.find_all("td", recursive=False)
-    if len(cells) < len(columns):
+    if not columns or len(cells) <= max(columns.values()):
         return None
     cell = lambda name: cells[columns[name]] if name in columns else None
     player_cell = cell("Player")
