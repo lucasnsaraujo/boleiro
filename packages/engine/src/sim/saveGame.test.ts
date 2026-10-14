@@ -36,6 +36,10 @@ describe("saveGame and loadGame", () => {
     expect(loadGame(JSON.stringify(old)).packVersion).toBe(FIRST_PACK_VERSION);
   });
 
+  it("reads a save whose pack version is not text as a career on the first Brazil pack", () => {
+    expect(loadGame(JSON.stringify({ ...midSeason, packVersion: null })).packVersion).toBe(FIRST_PACK_VERSION);
+  });
+
   it("writes a save from before data packs back out byte for byte like a new save on the first pack", () => {
     const old: Partial<GameState> = { ...midSeason };
     delete old.packVersion;
