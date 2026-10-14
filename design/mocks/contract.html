@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Renovação de contrato</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="hub.css">
+<script src="mock.js"></script>
+<script src="hub.js"></script>
+<style>
+.ct-veil { position: absolute; inset: 28px 0 0; background: var(--veil); z-index: 10; }
+.ct { position: absolute; left: 50%; top: 128px; width: 860px; margin-left: -430px; z-index: 11; background: var(--card); border-radius: 18px; box-shadow: var(--sh-pop); display: grid; grid-template-columns: 236px minmax(0, 1fr); overflow: visible; animation: ct-in var(--t-stamp) var(--e-slap) both; }
+@keyframes ct-in { from { transform: translateY(16px) rotate(-1.5deg) scale(.97); opacity: 0; } }
+
+.ct-l { background: var(--paper-2); border-radius: 18px 0 0 18px; padding: 24px 20px; display: flex; flex-direction: column; align-items: center; position: relative; }
+.ct-stk { width: 190px; padding: 8px 8px 10px; border-radius: 12px; background: var(--foil); box-shadow: 0 0 0 3px var(--yellow), 0 16px 24px -12px rgba(20,35,26,.55); transform: rotate(-3deg); text-align: center; position: relative; }
+.ct-stk .ph { height: 200px; border-radius: 7px; position: relative; overflow: hidden; display: grid; place-items: center; background: repeating-linear-gradient(180deg, #C8102E 0 25px, #111 25px 50px); }
+.ct-stk .ph b { font-stretch: var(--wide); font-weight: 900; font-size: 96px; color: rgba(255,255,255,.95); text-shadow: 0 4px 0 rgba(0,0,0,.25); }
+.ct-stk .ph .cr { position: absolute; left: 7px; top: 7px; }
+.ct-stk .ph .f { position: absolute; right: 8px; bottom: 8px; background: var(--yellow); color: var(--on-yellow); font-stretch: var(--wide); font-weight: 900; font-size: 19px; padding: 3px 8px; border-radius: 7px; transform: rotate(4deg); box-shadow: 0 2px 0 rgba(0,0,0,.3); }
+.ct-stk .nm { font-weight: 800; font-size: 16px; margin-top: 8px; color: var(--ink); }
+.ct-stk .sb { font-size: 11.5px; color: var(--ink-2); }
+.ct-idol { position: absolute; right: -14px; top: -12px; background: var(--ink); color: var(--yellow); font-stretch: var(--semi); font-weight: 900; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; padding: 5px 9px; border-radius: 6px; transform: rotate(8deg); display: flex; align-items: center; gap: 4px; box-shadow: 0 0 0 2px #fff; }
+.ct-kv { width: 100%; margin-top: 22px; display: grid; grid-template-columns: auto 1fr; gap: 5px 10px; font-size: 12px; color: var(--mute); }
+.ct-kv b { color: var(--ink); font-weight: 700; text-align: right; }
+.ct-kv b.w { color: var(--later); }
+
+.ct-r { padding: 22px 26px 20px; display: flex; flex-direction: column; }
+.ct-r h2 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: 1; letter-spacing: -.01em; }
+.ct-r .sub { font-size: 13px; color: var(--ink-2); margin-top: 6px; }
+.ct-r .sub b { color: var(--ink); }
+.ct-say { margin-top: 16px; display: flex; gap: 10px; align-items: flex-start; }
+.ct-say .av { width: 34px; height: 34px; font-size: 13px; background: #C8102E; border-width: 2px; }
+.ct-say p { position: relative; background: var(--paper); border-radius: 4px 12px 12px 12px; padding: 9px 12px; font-size: 13px; line-height: 1.4; box-shadow: inset 0 0 0 1px var(--line); }
+.ct-say p b { font-weight: 800; }
+
+.ct-opts { margin-top: 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.ct-o { border-radius: var(--r-m); padding: 10px 10px 10px; box-shadow: inset 0 0 0 1.5px var(--line-2); background: var(--card); position: relative; display: flex; flex-direction: column; gap: 3px; }
+.ct-o .d { font-stretch: var(--semi); font-weight: 900; font-size: 16px; }
+.ct-o .w { font-stretch: var(--semi); font-weight: 900; font-size: 15px; margin-top: 6px; }
+.ct-o .w small { font-stretch: 100%; font-weight: 600; font-size: 11px; color: var(--mute); }
+.ct-o .t { font-size: 11.5px; color: var(--mute); line-height: 1.35; }
+.ct-o .chip { align-self: flex-start; margin-top: 6px; height: 20px; font-size: 10px; }
+.ct-o.on { box-shadow: 0 0 0 3px var(--ink), 0 6px 12px -6px rgba(20,35,26,.4); transform: translateY(-3px); background: var(--yellow-l); }
+.ct-o.on::before { content: ''; position: absolute; right: 9px; top: 10px; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); }
+.ct-o.on::after { content: ''; position: absolute; right: 15px; top: 14px; width: 4px; height: 8px; border: solid var(--yellow); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
+.ct-o.no { opacity: .62; }
+.ct-o .aux { position: absolute; left: 10px; top: -10px; background: var(--green); color: #fff; font-stretch: var(--semi); font-weight: 800; font-size: 10px; padding: 2px 7px; border-radius: 999px; display: flex; align-items: center; gap: 3px; }
+
+.ct-sum { margin-top: 16px; display: flex; gap: 22px; font-size: 12.5px; color: var(--mute); padding: 12px 0 0; border-top: 2px dotted var(--line-2); }
+.ct-sum b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 15px; color: var(--ink); }
+.ct-sum .aut { margin-left: auto; display: flex; align-items: center; gap: 10px; text-align: right; line-height: 1.3; }
+.ct-sum .aut b { font-stretch: 100%; font-weight: 700; font-size: 12.5px; }
+
+.ct-acts { margin-top: 16px; display: flex; gap: 10px; align-items: center; }
+.ct-acts .go { margin-left: auto; height: 46px; font-size: 16px; padding: 0 22px; }
+</style>
+</head>
+<body>
+<script>
+renderHub('mac');
+const ct = document.createElement('div');
+ct.innerHTML = `<div class="ct-veil"></div>
+<div class="ct">
+  <div class="ct-l">
+    <div class="ct-stk"><span class="ct-idol"><i class="ph-fill ph-star"></i>Ídolo</span>
+      <div class="ph"><span class="cr">${crest('FLA', 24)}</span><b>A</b><span class="f">78</span></div>
+      <div class="nm">Arrascaeta</div><div class="sb">Meia · esquerda · 32 · Uruguai</div></div>
+    <div class="ct-kv"><span>No clube</span><b>desde jan 2019</b><span>Jogos</span><b>341</b><span>Gols</span><b>88</b><span>Salário hoje</span><b>R$ 890 mil</b><span>Contrato</span><b class="w">até jun 2027</b></div>
+  </div>
+  <div class="ct-r">
+    <h2>Renovar com Arrascaeta</h2>
+    <p class="sub">O contrato acaba em <b>8 meses</b>. A partir de janeiro ele pode assinar pré-contrato com outro clube.</p>
+    <div class="ct-say"><span class="av">A</span><p>Quer <b>3 anos</b> e encerrar a carreira no Flamengo. Aceita 2 se o salário subir. Por 6 meses, nem conversa.</p></div>
+    <div class="ct-opts">
+      <div class="ct-o no"><span class="d">6 meses</span><span class="w">R$ 1,3 mi</span><span class="t">por mês<br>Total R$ 7,8 mi</span><span class="chip bad">Recusa</span></div>
+      <div class="ct-o"><span class="d">1 ano</span><span class="w">R$ 1,05 mi</span><span class="t">por mês<br>Total R$ 12,6 mi</span><span class="chip off">Difícil</span></div>
+      <div class="ct-o on"><span class="aux"><i class="ph-bold ph-user-switch"></i>Auxiliar</span><span class="d">2 anos</span><span class="w">R$ 960 mil</span><span class="t">por mês<br>Total R$ 23 mi</span><span class="chip ok">Topa</span></div>
+      <div class="ct-o"><span class="d">3 anos</span><span class="w">R$ 920 mil</span><span class="t">por mês<br>Total R$ 33,1 mi</span><span class="chip ok">É o que ele quer</span></div>
+    </div>
+    <div class="ct-sum">
+      <div>Folha mensal<b>R$ 14,1 mi → 14,2 mi</b></div>
+      <div>Fim do contrato<b>dez 2028, aos 34</b></div>
+      <div class="aut"><span>O auxiliar renova sozinho<br><b>em 30 dias, por 2 anos</b></span><span class="sw on"></span></div>
+    </div>
+    <div class="ct-acts">
+      <button class="btn flat">Agora não</button>
+      <button class="btn"><i class="ph-bold ph-chats-circle"></i>Negociar salário</button>
+      <button class="btn go"><i class="ph-bold ph-signature"></i>Renovar por 2 anos</button>
+    </div>
+  </div>
+</div>`;
+document.querySelector('.app').append(...ct.children);
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Base</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: minmax(0, 1fr) 340px; grid-template-rows: auto minmax(0, 1fr); gap: 14px; }
+
+.top { grid-column: 1 / -1; display: flex; gap: 14px; align-items: stretch; }
+.dec { flex: 1; display: flex; align-items: center; gap: 14px; padding: 10px 12px 10px 14px; border-radius: var(--r-m); background: var(--card); box-shadow: 0 0 0 2px var(--yellow-d), var(--sh-sticker); }
+.dec .ic { width: 38px; height: 38px; border-radius: 50%; background: var(--yellow); display: grid; place-items: center; font-size: 19px; flex: none; }
+.dec b { font-weight: 800; font-size: 14px; display: block; }
+.dec span { font-size: 12px; color: var(--mute); }
+.dec .bs { margin-left: auto; display: flex; gap: 6px; }
+.note.sm { width: 210px; padding: 9px 12px; font-size: 11.5px; display: flex; gap: 8px; align-items: flex-start; }
+.note.sm i { font-size: 16px; margin-top: 1px; }
+.note.sm.r { transform: rotate(.8deg); }
+
+.lst { overflow: hidden; display: flex; flex-direction: column; }
+.lst .hd { display: flex; align-items: center; gap: 12px; padding: 14px 16px 10px; }
+.lst .hd h1 { font-stretch: var(--wide); font-weight: 900; font-size: 22px; line-height: 1; }
+.lst .hd > span { font-size: 12px; color: var(--mute); }
+.lst .hd .seg { margin-left: auto; }
+.tb td { height: 36px; }
+.tb th:first-child, .tb td:first-child { padding-left: 16px; }
+.tb td.nm small { font-weight: 600; font-size: 11.5px; color: var(--mute); margin-left: 6px; font-stretch: 100%; }
+.stars { display: inline-flex; gap: 1px; font-size: 14px; vertical-align: -2px; }
+.stars .s { color: var(--yellow-d); }
+.stars .m { color: var(--yellow-d); opacity: .9; }
+.stars .o { color: var(--line); }
+.tb .t21 { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 8px; border-radius: 999px; background: var(--yellow); color: var(--on-yellow); font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; }
+.tb .tg { font-stretch: 100%; font-size: 11.5px; color: var(--mute); }
+.tb .tg.b { color: var(--blue); font-weight: 700; }
+
+/* Selected kid */
+.kid { display: flex; flex-direction: column; overflow: visible; }
+.kid .face { margin: -6px auto 0; width: 210px; padding: 8px 8px 10px; background: #fff; border-radius: 12px; transform: rotate(2deg); box-shadow: 0 1px 0 rgba(0,0,0,.08), 0 14px 22px -12px rgba(20,35,26,.55); text-align: center; color: #14231A; position: relative; }
+.kid .face .ph { height: 140px; border-radius: 7px; background: repeating-linear-gradient(180deg, #C8102E 0 20px, #111 20px 40px); display: grid; place-items: center; position: relative; overflow: hidden; }
+.kid .face .ph b { font-stretch: var(--wide); font-weight: 900; font-size: 74px; color: rgba(255,255,255,.95); text-shadow: 0 4px 0 rgba(0,0,0,.25); }
+.kid .face .ph .cr { position: absolute; left: 7px; top: 7px; }
+.kid .face .ph .sub { position: absolute; right: 8px; top: 8px; font-stretch: var(--semi); font-weight: 900; font-size: 10.5px; color: #fff; background: rgba(0,0,0,.4); padding: 2px 6px; border-radius: 4px; }
+.kid .face .nm { font-weight: 800; font-size: 16px; margin-top: 7px; }
+.kid .face .sb { font-size: 11.5px; color: #5C584B; }
+.kid .bd { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+.pot { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; }
+.pot .big { font-stretch: var(--wide); font-weight: 900; font-size: 34px; line-height: 1; }
+.pot .big small { display: block; font-stretch: 100%; font-weight: 700; font-size: 10.5px; color: var(--mute); margin-top: 3px; }
+.pot .stars { font-size: 22px; gap: 2px; }
+.pot p { font-size: 11.5px; color: var(--mute); margin-top: 3px; }
+.pot p b { color: var(--ink-2); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 5px 10px; font-size: 12px; color: var(--mute); padding-top: 10px; border-top: 1px dotted var(--line-2); }
+.kv b { color: var(--ink); font-weight: 700; text-align: right; }
+.kid .acts { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+.kid .acts .go { height: 46px; font-size: 15px; }
+.kid .acts .row { display: flex; gap: 8px; }
+.kid .acts .row .btn { flex: 1; }
+.vs { display: grid; gap: 0; }
+.vs .lbl { margin-bottom: 4px; }
+.vr { display: grid; grid-template-columns: 22px auto 1fr auto; gap: 8px; align-items: center; height: 28px; font-size: 12.5px; border-bottom: 1px dotted var(--line-2); }
+.vr:last-child { border-bottom: 0; }
+.vr b { font-weight: 700; }
+.vr span:not(.pos) { color: var(--mute); font-size: 11.5px; }
+.vr em { font-style: normal; font-stretch: var(--semi); font-weight: 900; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="base"></div>
+  <main><div class="wrap">
+    <div class="top">
+      <div class="dec"><span class="ic"><i class="ph-bold ph-cake"></i></span><div><b>Davi Coutinho faz 21 em 3 de novembro</b><span>Sai da base: promover, vender ou dispensar. Botafogo e Vasco perguntaram.</span></div>
+        <div class="bs"><button class="btn sm">Promover</button><button class="btn sm">Vender</button><button class="btn sm flat">Dispensar</button></div></div>
+      <div class="note sm"><i class="ph-bold ph-users-four"></i><span><b>Peneira</b> no fim da temporada, 7 a 11 de dez. Até 4 vagas.</span></div>
+      <div class="note sm r"><i class="ph-bold ph-trophy"></i><span><b>Copinha</b> começa 2 de jan. Inscreva até 30 da base.</span></div>
+    </div>
+
+    <div class="page lst">
+      <div class="hd"><h1>Base</h1><span>16 a 20 anos · 12 garotos</span><div class="seg"><span class="on">Todos</span><span>Sub-17</span><span>Sub-20</span></div></div>
+      <table class="tb"><thead><tr><th class="l" style="width:40px">P</th><th class="l">Nome</th><th>Idade</th><th>F</th><th class="l" style="padding-left:20px">Potencial</th><th class="l">Observação</th></tr></thead><tbody id="t"></tbody></table>
+    </div>
+
+    <div class="stk kid">
+      <div class="face"><div class="ph"><span class="cr" data-crest="FLA" data-size="22"></span><span class="sub">Sub-20</span><b>R</b></div><div class="nm">Ryan Bastos</div><div class="sb">Meia · esquerda · 19 · Nova Iguaçu</div></div>
+      <div class="bd">
+        <div class="pot"><div class="big">68<small>força hoje</small></div><div><span class="stars"><i class="ph-fill ph-star s"></i><i class="ph-fill ph-star s"></i><i class="ph-fill ph-star s"></i><i class="ph-fill ph-star s"></i><i class="ph-bold ph-star m"></i></span><p>Potencial de <b>4 a 5 estrelas</b><br>Auxiliar nível 3: erra por até 1</p></div></div>
+        <div class="kv"><span>Sub-20 no ano</span><b>21 jogos · 6 gols · 9 assist.</b><span>Contrato</span><b>formação, até dez 2027</b><span>Salário no profissional</span><b>R$ 45 mil</b><span>Elenco</span><b>23 → 24 de 35</b></div>
+        <div class="vs"><span class="lbl">Briga por vaga com</span>
+          <div class="vr"><span class="pos M">M</span><b>Arrascaeta</b><span>32 anos</span><em>78</em></div>
+          <div class="vr"><span class="pos M">M</span><b>De la Cruz</b><span>29 anos · em leilão</span><em>73</em></div>
+          <div class="vr"><span class="pos M">M</span><b>Carrascal</b><span>28 anos</span><em>78</em></div>
+        </div>
+        <div class="acts">
+          <button class="btn go"><i class="ph-bold ph-arrow-fat-up"></i>Promover ao profissional</button>
+          <div class="row"><button class="btn sm">Emprestar</button><button class="btn sm flat">Dispensar</button></div>
+        </div>
+      </div>
+    </div>
+  </div></main>
+</div>
+<script>
+// [pos, name, age, F, potMin, potMax, note, cls]
+const K = [
+  ['Z', 'Davi Coutinho', 20, 66, 3, 4, '21', ''],
+  ['M', 'Ryan Bastos', 19, 68, 4, 5, 'Seleção sub-20', 'b'],
+  ['A', 'Jhonatan Cruz', 19, 64, 3, 4, ''],
+  ['Z', 'Pedro Lucas Moura', 19, 64, 3, 4, ''],
+  ['A', 'Thiago Bento', 20, 65, 2, 3, 'Emprestado ao Volta Redonda'],
+  ['L', 'Wesley Maia', 18, 63, 3, 4, ''],
+  ['M', 'Gabriel Rangel', 18, 62, 3, 4, ''],
+  ['A', 'Kauã Pinheiro', 17, 61, 3, 5, 'Veio da peneira de 2025'],
+  ['G', 'João Vítor Saraiva', 18, 60, 2, 4, ''],
+  ['L', 'Luan Werneck', 17, 57, 2, 4, ''],
+  ['M', 'Matheus Firmino', 16, 54, 2, 5, 'Seleção sub-17', 'b'],
+  ['G', 'Breno Caldas', 16, 51, 2, 4, ''],
+];
+const stars = (a, b) => [1, 2, 3, 4, 5].map((i) => i <= a ? '<i class="ph-fill ph-star s"></i>' : i <= b ? '<i class="ph-bold ph-star m"></i>' : '<i class="ph-fill ph-star o"></i>').join('');
+document.getElementById('t').innerHTML = K.map(([p, n, a, f, lo, hi, note, cls]) => `<tr class="${n === 'Ryan Bastos' ? 'sel' : ''} ${note === '21' ? 'dec21' : ''}"><td class="l"><span class="pos ${p}">${p}</span></td><td class="l nm">${n}</td><td class="${a <= 17 ? 'young' : ''}">${a}</td><td style="font-weight:800">${f}</td><td class="l" style="padding-left:20px"><span class="stars">${stars(lo, hi)}</span></td><td class="l">${note === '21' ? '<span class="t21"><i class="ph-bold ph-cake"></i>Faz 21 em 3 nov</span>' : `<span class="tg ${cls}">${note}</span>`}</td></tr>`).join('');
+</script>
+</body>
+</html>

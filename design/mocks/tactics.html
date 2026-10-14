@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Tática</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: minmax(0, 1fr) 372px; gap: 14px; }
+
+.dials { display: flex; flex-direction: column; padding: 18px 24px 16px; overflow: hidden; }
+.dials .hd { display: flex; align-items: flex-end; gap: 12px; padding-bottom: 12px; border-bottom: 2px solid var(--ink); }
+.dials h1 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: 1; letter-spacing: -.01em; }
+.dials .hd p { font-size: 12.5px; color: var(--mute); margin-left: auto; }
+.dials .hd p b { color: var(--ink); }
+
+.dial { display: grid; grid-template-columns: 158px minmax(0, 1fr) 236px; gap: 18px; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--rule); }
+.dial:nth-child(5) { border-bottom: 0; }
+.dial .nm b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 17px; line-height: 1.1; }
+.dial .nm span { font-size: 12px; color: var(--mute); line-height: 1.35; display: block; margin-top: 3px; }
+.dial .ctl { display: flex; flex-direction: column; align-items: flex-start; gap: 9px; min-width: 0; }
+.dial .seg > span { height: 30px; padding: 0 13px; }
+.dial .seg > span.sg { box-shadow: inset 0 0 0 2px var(--yellow-d); color: var(--ink); }
+.dial .eff { display: flex; gap: 14px; font-size: 12px; color: var(--ink-2); }
+.dial .eff span { display: flex; align-items: center; gap: 5px; }
+.dial .eff b { font-stretch: var(--semi); font-weight: 900; }
+.up { color: var(--green); } .dn { color: var(--red); }
+.dial .eff .k { color: var(--mute); }
+
+.sug { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; padding: 10px 12px; border-radius: var(--r-m); background: var(--yellow-l); }
+.sug .who { grid-column: 1 / -1; display: flex; align-items: center; gap: 5px; font-weight: 700; font-size: 11.5px; color: var(--later); }
+.sug b { font-weight: 900; font-size: 14px; }
+.sug p { grid-column: 1 / -1; font-size: 11.5px; line-height: 1.35; color: var(--note-ink); }
+.sug.same { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); }
+.sug.same .who { color: var(--green); }
+.sug.same p { color: var(--mute); }
+
+.mk { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-2); }
+.mk .scale { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; width: 84px; }
+.mk .scale i { height: 6px; border-radius: 2px; background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--line); }
+.mk .scale i.on { background: var(--ink-2); box-shadow: none; }
+.mk .scale.c i.on { background: var(--yellow-d); }
+
+.acts { margin-top: auto; display: flex; align-items: center; gap: 12px; padding-top: 14px; border-top: 2px dotted var(--line-2); }
+.acts .n { font-size: 12.5px; color: var(--mute); }
+.acts .n b { color: var(--ink); }
+.acts .btn.y { margin-left: auto; height: 48px; padding: 0 24px; font-size: 16px; }
+
+/* Right: sector comparison */
+.side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.cmp { padding: 14px 16px 14px; }
+.cmp h3 { font-stretch: var(--wide); font-weight: 900; font-size: 17px; }
+.cmp .vs { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 12px; color: var(--mute); }
+.cmp .vs b { color: var(--ink); font-weight: 800; }
+.lanes { margin-top: 12px; height: 204px; border-radius: 8px; position: relative; overflow: hidden; background: repeating-linear-gradient(90deg, #0E8442 0 37px, #0B7A3B 37px 74px); box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); display: grid; grid-template-columns: 1fr 1fr 1fr; }
+[data-theme='dark'] .lanes { background: repeating-linear-gradient(90deg, #0A5E31 0 37px, #08532B 37px 74px); }
+.lanes::before { content: ''; position: absolute; inset: 8px; border: 2px solid rgba(255,255,255,.3); border-radius: 3px; }
+.lane { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #fff; padding: 22px 6px 12px; }
+.lane + .lane { border-left: 2px dashed rgba(255,255,255,.28); }
+.lane .tt { font-stretch: var(--semi); font-weight: 800; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; opacity: .82; }
+.lane .duel { background: var(--card); color: var(--ink); border-radius: 9px; padding: 7px 8px 6px; text-align: center; box-shadow: 0 6px 12px -6px rgba(0,0,0,.6); width: 100%; }
+.lane .duel .sc { font-stretch: var(--wide); font-weight: 900; font-size: 19px; line-height: 1; }
+.lane .duel .sc em { font-style: normal; color: var(--line-2); font-size: 13px; margin: 0 3px; }
+.lane .duel small { display: block; font-size: 10.5px; color: var(--mute); line-height: 1.25; margin-top: 4px; }
+.lane.win .duel { box-shadow: 0 0 0 3px var(--yellow), 0 6px 12px -6px rgba(0,0,0,.6); transform: rotate(-2deg); }
+.lane .res { font-stretch: var(--semi); font-weight: 900; font-size: 11px; display: flex; align-items: center; gap: 4px; }
+.lane.win .res { color: var(--yellow); }
+.lane .arr { font-size: 18px; opacity: .9; }
+
+.sec { margin-top: 12px; }
+.sr { display: grid; grid-template-columns: 62px 30px 1fr 30px; gap: 8px; align-items: center; height: 28px; border-bottom: 1px dotted var(--line-2); font-size: 12.5px; }
+.sr:last-child { border-bottom: 0; }
+.sr .k { color: var(--mute); }
+.sr b { font-stretch: var(--semi); font-weight: 900; text-align: center; }
+.sr .sb { display: flex; height: 8px; gap: 2px; }
+.sr .sb i { border-radius: 999px; }
+.sr.hd { height: 24px; border-bottom: 2px solid var(--ink); }
+.sr.hd span { display: flex; justify-content: center; }
+
+.ref { padding: 12px 14px; display: flex; gap: 12px; align-items: center; font-size: 12px; line-height: 1.4; }
+.ref .ic { width: 38px; height: 38px; border-radius: 50%; background: var(--ink); color: var(--yellow); display: grid; place-items: center; font-size: 19px; flex: none; }
+.ref b { font-weight: 800; font-size: 13px; display: block; }
+.ref span { color: var(--mute); }
+.ref .cards { margin-left: auto; text-align: right; flex: none; }
+.ref .cards b { font-stretch: var(--wide); font-weight: 900; font-size: 20px; display: flex; align-items: center; gap: 5px; justify-content: flex-end; }
+.opp { padding: 12px 14px; flex: 1; }
+.opp .t { display: flex; align-items: center; gap: 10px; }
+.opp .t b { display: block; font-weight: 800; font-size: 15px; line-height: 1.1; }
+.opp .t span { font-size: 12px; color: var(--mute); }
+.opp dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin-top: 10px; font-size: 12.5px; }
+.opp dt { color: var(--mute); }
+.opp dd { font-weight: 700; text-align: right; }
+.fm { display: flex; gap: 3px; justify-content: flex-end; }
+.fm i { width: 16px; height: 16px; border-radius: 4px; display: grid; place-items: center; font-style: normal; font-stretch: var(--semi); font-weight: 900; font-size: 9.5px; color: #fff; }
+.fm .v { background: var(--green); } .fm .e { background: var(--line-2); color: var(--ink); } .fm .d { background: var(--red); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="times"></div>
+  <main><div class="wrap">
+    <div class="page dials">
+      <div class="hd"><h1>Tática</h1><p>Flamengo × Palmeiras · <b>hoje 16h</b> · o auxiliar mudaria <b>3 de 4</b></p></div>
+
+      <div class="dial">
+        <div class="nm"><b>Formação</b><span>Muda a força de cada setor</span></div>
+        <div class="ctl">
+          <div class="seg"><span class="on">4-2-3-1</span><span>4-3-3</span><span>4-4-2</span><span>3-5-2</span><span>5-3-2</span></div>
+          <div class="eff"><span class="k">Com 4-2-3-1</span><span>Defesa <b>77</b></span><span>Meio <b>77</b></span><span>Ataque <b>79</b></span></div>
+        </div>
+        <div class="sug same"><span class="who"><i class="ph-bold ph-check-circle"></i>Igual ao auxiliar</span><p>Cinco no meio pra não perder a bola pro meio deles.</p></div>
+      </div>
+
+      <div class="dial">
+        <div class="nm"><b>Postura</b><span>Quanto o time sobe</span></div>
+        <div class="ctl">
+          <div class="seg"><span>Retranca</span><span>Contra-ataque</span><span class="sg">Equilibrado</span><span class="on">Ofensivo</span></div>
+          <div class="eff"><span class="k">Ofensivo</span><span>Chances suas <b class="up">+12%</b></span><span>Chances deles <b class="dn">+15%</b></span></div>
+        </div>
+        <div class="sug"><span class="who"><i class="ph-bold ph-user-switch"></i>Auxiliar sugere</span><b>Equilibrado</b><button class="btn sm">Seguir</button><p>Flaco López e Vitor Roque punem time aberto.</p></div>
+      </div>
+
+      <div class="dial">
+        <div class="nm"><b>Marcação</b><span>Mais desarme, mais cartão</span></div>
+        <div class="ctl">
+          <div class="seg"><span class="sg">Leve</span><span class="on">Pesada</span><span>Muito pesada</span></div>
+          <div class="eff">
+            <div class="mk">Desarmes<div class="scale"><i class="on"></i><i class="on"></i><i></i></div></div>
+            <div class="mk">Cartões<div class="scale c"><i class="on"></i><i class="on"></i><i></i></div></div>
+          </div>
+        </div>
+        <div class="sug"><span class="who"><i class="ph-bold ph-user-switch"></i>Auxiliar sugere</span><b>Leve</b><button class="btn sm">Seguir</button><p>Jorginho e Léo Ortiz pendurados. Quarta tem River.</p></div>
+      </div>
+
+      <div class="dial">
+        <div class="nm"><b>Jogada</b><span>Rende onde seu setor ganha</span></div>
+        <div class="ctl">
+          <div class="seg"><span class="on">Pelo meio</span><span class="sg">Pelas pontas</span></div>
+          <div class="eff"><span class="k">Pelo meio</span><span>Seu meio <b>77</b> × <b>79</b> deles</span><span class="dn" style="font-weight:700"><i class="ph-bold ph-trend-down"></i>perde</span></div>
+        </div>
+        <div class="sug"><span class="who"><i class="ph-bold ph-user-switch"></i>Auxiliar sugere</span><b>Pelas pontas</b><button class="btn sm">Seguir</button><p>Samuel Lino 82 contra Giay 77 na esquerda.</p></div>
+      </div>
+
+      <div class="acts">
+        <button class="btn"><i class="ph-bold ph-arrow-left"></i>Escalação</button>
+        <span class="n">Muda também no intervalo e nas paradas</span>
+        <button class="btn y"><i class="ph-bold ph-user-switch"></i>Seguir o auxiliar em tudo</button>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="stk cmp">
+        <h3>Onde você ganha</h3>
+        <div class="vs"><span data-crest="FLA" data-size="20"></span><b>Flamengo</b> ataca contra a defesa do <b>Palmeiras</b><span data-crest="PAL" data-size="20"></span></div>
+        <div class="lanes">
+          <div class="lane win"><span class="tt">Esquerda</span><i class="ph-bold ph-arrow-up arr"></i><div class="duel"><div class="sc">82<em>×</em>77</div><small>Samuel Lino<br>× Giay</small></div><span class="res"><i class="ph-fill ph-check-circle"></i>+5</span></div>
+          <div class="lane"><span class="tt">Centro</span><i class="ph-bold ph-arrow-up arr" style="opacity:.4"></i><div class="duel"><div class="sc">77<em>×</em>79</div><small>Arrascaeta, Pedro<br>× Gómez, Murilo</small></div><span class="res">−2</span></div>
+          <div class="lane win"><span class="tt">Direita</span><i class="ph-bold ph-arrow-up arr"></i><div class="duel"><div class="sc">78<em>×</em>77</div><small>Carrascal<br>× Piquerez</small></div><span class="res"><i class="ph-fill ph-check-circle"></i>+1</span></div>
+        </div>
+        <div class="sec">
+          <div class="sr hd"><span class="lbl">Setor</span><span data-crest="FLA" data-size="18"></span><span></span><span data-crest="PAL" data-size="18"></span></div>
+          <div class="sr"><span class="k">Defesa</span><b>77</b><span class="sb"><i style="flex:77;background:#C8102E"></i><i style="flex:78;background:#006437"></i></span><b>78</b></div>
+          <div class="sr"><span class="k">Meio</span><b>77</b><span class="sb"><i style="flex:77;background:#C8102E"></i><i style="flex:79;background:#006437"></i></span><b>79</b></div>
+          <div class="sr"><span class="k">Ataque</span><b>79</b><span class="sb"><i style="flex:79;background:#C8102E"></i><i style="flex:79;background:#006437"></i></span><b>79</b></div>
+        </div>
+      </div>
+      <div class="stk ref"><span class="ic"><i class="ph-fill ph-cards"></i></span><div><b>Wilton Pereira Sampaio</b><span>Árbitro de hoje · rigoroso</span></div><div class="cards"><b><span class="yc"></span>5,6</b><span>cartões por jogo</span></div></div>
+      <div class="stk opp"><div class="t"><span data-crest="PAL" data-size="34"></span><div><b>Palmeiras</b><span>Abel Ferreira · 1º, 61 pts</span></div></div>
+        <dl><dt>Formação</dt><dd>4-4-2</dd><dt>Postura</dt><dd>Contra-ataque</dd><dt>Marcação</dt><dd>Pesada</dd><dt>Últimos 5</dt><dd class="fm"><i class="v">V</i><i class="v">V</i><i class="e">E</i><i class="v">V</i><i class="d">D</i></dd></dl></div>
+    </div>
+  </div></main>
+</div>
+</body>
+</html>

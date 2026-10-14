@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Pênaltis</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.cover { height: 170px; flex: none; color: #fff; position: relative; overflow: hidden; background: repeating-linear-gradient(90deg, #0E8442 0 80px, #0B7A3B 80px 160px); box-shadow: 0 3px 0 var(--bar-d); z-index: 2; }
+[data-theme='dark'] .cover { background: repeating-linear-gradient(90deg, #0A5E31 0 80px, #08532B 80px 160px); }
+.cover::before { content: ''; position: absolute; left: 50%; bottom: -1px; width: 700px; height: 96px; margin-left: -350px; border: 3px solid rgba(255,255,255,.16); border-bottom: 0; }
+.cover::after { content: ''; position: absolute; left: 50%; bottom: 52px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: rgba(255,255,255,.4); }
+.cv { position: relative; z-index: 1; height: 100%; display: grid; grid-template-columns: 300px 1fr 300px; align-items: center; padding: 0 28px; }
+.cv .comp b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 19px; letter-spacing: -.01em; line-height: 1.1; }
+.cv .comp span { display: block; font-size: 12.5px; opacity: .88; margin-top: 4px; }
+.duel { display: flex; align-items: center; justify-content: center; gap: 16px; }
+.tm { width: 138px; padding: 10px 8px 9px; display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--ink); text-align: center; }
+.tm b { font-stretch: var(--semi); font-weight: 900; font-size: 15px; line-height: 1; }
+.tm small { font-weight: 700; font-size: 11px; color: var(--mute); }
+.tm.h { transform: rotate(-2deg); } .tm.a { transform: rotate(2deg); }
+.sc { text-align: center; }
+.sc .n { font-stretch: var(--wide); font-weight: 900; font-size: 54px; line-height: 1; letter-spacing: -.02em; text-shadow: 0 3px 0 rgba(0,0,0,.18); }
+.sc .n span { font-size: 26px; color: var(--yellow); margin: 0 8px; vertical-align: 8px; }
+.sc .ag { display: inline-block; margin-top: 4px; font-weight: 700; font-size: 12px; background: rgba(0,0,0,.24); padding: 3px 10px; border-radius: 999px; }
+.pk { justify-self: end; transform: rotate(3deg); background: var(--yellow); color: var(--on-yellow); border-radius: 14px; padding: 12px 20px 12px 14px; display: flex; gap: 10px; align-items: center; box-shadow: 0 0 0 4px #fff, 0 12px 20px -10px rgba(0,0,0,.55); }
+.pk .ball { flex: none; }
+.pk b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 20px; line-height: 1; margin-bottom: 3px; }
+.pk span { font-size: 12px; font-weight: 600; color: #4A3F12; }
+
+.body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 360px; gap: 14px; padding: 20px 14px 14px; }
+.ord { padding: 16px 20px 12px; display: flex; flex-direction: column; overflow: hidden; }
+.ord .hd { display: flex; align-items: baseline; gap: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--ink); }
+.ord h2 { font-stretch: var(--wide); font-weight: 900; font-size: 22px; }
+.ord .hd span { font-size: 12px; color: var(--mute); margin-left: auto; }
+.k { display: grid; grid-template-columns: 22px 44px 26px 1fr 240px 170px; gap: 12px; align-items: center; height: 50px; border-bottom: 1px solid var(--rule); position: relative; background: var(--card); }
+.k .h { color: var(--line-2); font-size: 18px; }
+.k .no { font-stretch: var(--wide); font-weight: 900; font-size: 24px; line-height: 1; color: var(--ink); }
+.k .nm b { display: block; font-weight: 800; font-size: 14.5px; line-height: 1.1; }
+.k .nm small { font-size: 11.5px; color: var(--mute); }
+.k .sk { display: flex; align-items: center; gap: 8px; }
+.k .sk .meter { flex: 1; height: 9px; }
+.k .sk b { font-stretch: var(--wide); font-weight: 900; font-size: 17px; min-width: 24px; text-align: right; }
+.k .nt { white-space: nowrap; font-size: 11.5px; color: var(--mute); text-align: right; }
+.k .nt.w { color: var(--red); font-weight: 700; }
+.k.lift { z-index: 2; border-radius: 10px; border-bottom-color: transparent; box-shadow: 0 0 0 2px var(--ink), 0 16px 22px -10px rgba(20,35,26,.45); transform: rotate(-1.2deg) translate(6px, -6px); padding-right: 10px; }
+.k.lift .h { color: var(--ink); }
+.k.drop { height: 46px; border: 2px dashed var(--line-2); border-radius: 10px; background: color-mix(in srgb, var(--paper-2) 50%, transparent); display: flex; align-items: center; padding-left: 40px; font-size: 12px; color: var(--mute); font-weight: 600; margin: 3px 0; }
+.alt { margin-top: 12px; }
+.alt .g { display: flex; align-items: center; gap: 8px; font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.alt .g::after { content: ''; flex: 1; border-bottom: 2px dotted var(--line-2); }
+.alt .k { height: 36px; }
+.alt .k .no { font-size: 15px; color: var(--mute); }
+.alt .k .nm b { font-size: 13px; font-weight: 700; display: inline; }
+.alt .k .nm small { margin-left: 6px; }
+.alt .k .sk b { font-size: 13.5px; }
+.alt .k .sk .meter { height: 7px; }
+
+.side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.gk { padding: 14px 16px; }
+.gk h3, .aux h3 { font-stretch: var(--wide); font-weight: 900; font-size: 16px; }
+.gkv { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; margin-top: 12px; }
+.g1 { text-align: center; }
+.g1 .ph { width: 64px; height: 64px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center; font-stretch: var(--wide); font-weight: 900; font-size: 26px; color: #fff; border: 4px solid #fff; box-shadow: 0 0 0 1px rgba(20,35,26,.18), 0 4px 8px -3px rgba(20,35,26,.4); position: relative; }
+.g1 .ph .cr { position: absolute; right: -8px; bottom: -6px; }
+.g1 b { display: block; font-weight: 800; font-size: 14px; margin-top: 8px; }
+.g1 small { font-size: 11.5px; color: var(--mute); }
+.g1 .v { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: 1; margin-top: 6px; }
+.g1 .v.hi { color: var(--green); }
+.gkv .x { font-stretch: var(--wide); font-weight: 900; font-size: 18px; color: var(--line-2); }
+.gk p { margin-top: 12px; font-size: 12px; color: var(--ink-2); line-height: 1.4; padding-top: 10px; border-top: 1px dotted var(--line-2); }
+
+.aux { padding: 14px 16px; flex: 1; display: flex; flex-direction: column; }
+.aux .who { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--later); font-weight: 700; margin-top: 2px; }
+.ao { margin-top: 10px; display: grid; gap: 0; }
+.ao div { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: center; height: 27px; font-size: 13px; border-bottom: 1px dotted var(--line-2); }
+.ao div:last-child { border-bottom: 0; }
+.ao .n { font-stretch: var(--wide); font-weight: 900; color: var(--mute); }
+.ao b { font-weight: 700; }
+.ao .mv { font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
+.ao .mv.up { color: var(--green); } .ao .mv.dn { color: var(--red); }
+.aux .btn { margin-top: auto; align-self: flex-start; }
+.conf { height: 54px; font-size: 19px; width: 100%; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <section class="cover"><div class="cv">
+    <div class="comp"><b>Libertadores</b><span>Semifinal, volta · Maracanã · Qua, 28 out</span></div>
+    <div class="duel">
+      <div class="stk tm h"><span data-crest="FLA" data-size="46"></span><b>Flamengo</b><small>Seu time</small></div>
+      <div class="sc"><div class="n">1<span>×</span>1</div><span class="ag">Ida 1 × 1 · agregado 2 × 2</span></div>
+      <div class="stk tm a"><span data-crest="RIV" data-size="46"></span><b>River Plate</b><small>Marcelo Gallardo</small></div>
+    </div>
+    <div class="pk"><span data-ball="34"></span><div><b>Pênaltis</b><span>Flamengo bate primeiro</span></div></div>
+  </div></section>
+
+  <div class="body">
+    <div class="page ord">
+      <div class="hd"><h2>Ordem das cobranças</h2><span>Arraste pra trocar · só quem terminou em campo</span></div>
+      <div id="main"></div>
+      <div class="alt"><div class="g">Alternadas, se empatar nas cinco</div><div id="alt"></div></div>
+    </div>
+
+    <div class="side">
+      <div class="stk gk"><h3>Goleiros</h3>
+        <div class="gkv">
+          <div class="g1"><div class="ph" style="background:#C8102E">R<span class="cr" data-crest="FLA" data-size="24"></span></div><b>Rossi</b><small>Defesa de pênalti</small><div class="v hi">84</div></div>
+          <span class="x">×</span>
+          <div class="g1"><div class="ph" style="background:#B8202A">A<span class="cr" data-crest="RIV" data-size="24"></span></div><b>Armani</b><small>Defesa de pênalti</small><div class="v">81</div></div>
+        </div>
+        <p>No ano: Rossi pegou <b>3 de 8</b> pênaltis, Armani <b>2 de 9</b>.</p>
+      </div>
+      <div class="stk aux"><h3>Ordem do auxiliar</h3><span class="who"><i class="ph-bold ph-user-switch"></i>O mais frio bate a quinta</span>
+        <div class="ao" id="ao"></div>
+        <button class="btn"><i class="ph-bold ph-user-switch"></i>Usar ordem do auxiliar</button>
+      </div>
+      <button class="btn go conf"><i class="ph-bold ph-check"></i>Confirmar ordem</button>
+    </div>
+  </div>
+</div>
+<script>
+const S = Object.fromEntries(SQUAD.map((r) => [r[1], r]));
+// [name, penalty skill, note, warn]
+const MAIN = [
+  ['Jorginho', 90, '6 de 6 na temporada'],
+  ['Arrascaeta', 85, '3 de 4'],
+  ['Pedro', 84, '4 de 5'],
+  ['Samuel Lino', 76, 'Cansado, 41% de energia', true],
+  ['De la Cruz', 78, '1 de 1'],
+];
+const ALT = [['Léo Ortiz', 72, 'Z'], ['Plata', 74, 'A'], ['Pulgar', 70, 'M'], ['Varela', 66, 'L'], ['Vitão', 61, 'Z'], ['Rossi', 55, 'G']];
+const row = ([n, sk, note, w], i) => {
+  const p = S[n][0];
+  return `<div class="k ${i === 3 ? 'lift' : ''}"><i class="ph-bold ph-dots-six-vertical h"></i><span class="no">${i + 1}</span><span class="pos ${p}">${p}</span><div class="nm"><b>${n}</b></div><div class="sk"><span class="meter ${sk < 75 ? 'mid' : ''}"><i style="width:${sk}%"></i></span><b>${sk}</b></div><span class="nt ${w ? 'w' : ''}">${note}</span></div>`;
+};
+document.getElementById('main').innerHTML = MAIN.map(row).join('');
+document.getElementById('alt').innerHTML = ALT.map(([n, sk, p], i) => `<div class="k"><i class="ph-bold ph-dots-six-vertical h"></i><span class="no">${i + 6}</span><span class="pos ${p}">${p}</span><div class="nm"><b>${n}</b></div><div class="sk"><span class="meter thin ${sk < 65 ? 'low' : sk < 75 ? 'mid' : ''}"><i style="width:${sk}%"></i></span><b>${sk}</b></div><span class="nt"></span></div>`).join('');
+const AO = [['Pedro', 'up', 2], ['Arrascaeta'], ['De la Cruz', 'up', 2], ['Plata', 'up', 'entra'], ['Jorginho', 'dn', 4]];
+document.getElementById('ao').innerHTML = AO.map(([n, d, v], i) => `<div><span class="n">${i + 1}</span><b>${n}</b>${d ? `<span class="mv ${d}"><i class="ph-fill ph-caret-${d === 'up' ? 'up' : 'down'}"></i>${v}</span>` : '<span></span>'}</div>`).join('');
+</script>
+</body>
+</html>

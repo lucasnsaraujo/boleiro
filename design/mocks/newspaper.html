@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Jornal da rodada</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 16px 14px 14px; display: grid; grid-template-columns: 1fr 236px; gap: 18px; }
+
+.sheet { position: relative; background: #FBF7EC; color: #1A1A17; padding: 18px 26px 16px; transform: rotate(-.5deg); box-shadow: 0 0 0 1px rgba(20,35,26,.10), 0 18px 30px -16px rgba(20,35,26,.5); margin: 4px 6px 4px 8px; display: flex; flex-direction: column; }
+[data-theme='dark'] .sheet { background: #E9E2CF; }
+.tape { position: absolute; width: 86px; height: 22px; background: rgba(255,255,255,.62); box-shadow: 0 0 0 1px rgba(20,35,26,.06); z-index: 2; }
+
+.mast { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; padding-bottom: 8px; border-bottom: 4px double #1A1A17; }
+.mast .l, .mast .r { font-size: 11px; line-height: 1.35; color: #4A473E; }
+.mast .r { text-align: right; }
+.mast .l b, .mast .r b { color: #1A1A17; }
+.mast h1 { font-stretch: var(--wide); font-weight: 900; font-size: 44px; line-height: .9; letter-spacing: -.03em; text-align: center; }
+.mast h1 span { font-style: italic; font-weight: 800; font-size: 20px; letter-spacing: 0; vertical-align: 6px; margin-right: 6px; }
+.dl { display: flex; justify-content: space-between; font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; padding: 5px 0; border-bottom: 1px solid #1A1A17; }
+
+.body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.55fr 1fr; gap: 0; margin-top: 12px; }
+.lead { padding-right: 20px; border-right: 1px solid #1A1A17; display: flex; flex-direction: column; }
+.kick { font-stretch: var(--semi); font-weight: 900; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: #C8102E; }
+.lead h2 { text-wrap: balance; font-stretch: 70%; font-weight: 900; font-size: 64px; line-height: .88; letter-spacing: -.02em; margin-top: 4px; text-transform: uppercase; }
+.lead .deck { font-size: 15px; line-height: 1.35; font-weight: 600; margin-top: 10px; color: #2C2B26; }
+.board { margin-top: 14px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px; padding: 12px 16px; background: #1A1A17; color: #FBF7EC; }
+.board .t { display: flex; align-items: center; gap: 10px; font-stretch: var(--semi); font-weight: 900; font-size: 18px; }
+.board .t.a { justify-content: flex-end; }
+.board .s { font-stretch: var(--wide); font-weight: 900; font-size: 40px; line-height: 1; }
+.board .s span { color: var(--yellow); font-size: 22px; margin: 0 8px; vertical-align: 6px; }
+.gls { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; font-size: 11.5px; padding: 6px 2px 0; color: #4A473E; }
+.gls div:nth-child(2n) { text-align: right; }
+.cols { margin-top: 12px; columns: 2; column-gap: 18px; column-rule: 1px solid #CFC7B0; font-size: 12.5px; line-height: 1.45; color: #2C2B26; flex: 1; overflow: hidden; }
+.cols p + p { margin-top: 6px; }
+.cols p:first-child::first-letter { float: left; font-stretch: var(--wide); font-weight: 900; font-size: 34px; line-height: .9; margin: 3px 6px 0 0; color: #1A1A17; }
+.tbl { margin-top: 10px; display: flex; gap: 14px; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid #1A1A17; font-size: 12px; }
+.tbl b { font-stretch: var(--semi); font-weight: 900; }
+.tbl > span { white-space: nowrap; }
+.tbl > b { white-space: nowrap; }
+.tbl .up { color: var(--green); font-weight: 800; }
+
+.side { padding-left: 18px; display: flex; flex-direction: column; }
+.st { padding: 10px 0; border-bottom: 1px solid #CFC7B0; }
+.st:first-child { padding-top: 0; }
+.st:last-child { border-bottom: 0; }
+.st h3 { font-stretch: 80%; font-weight: 900; font-size: 21px; line-height: 1.02; margin-top: 3px; }
+.st p { font-size: 12px; line-height: 1.4; margin-top: 4px; color: #2C2B26; }
+.st .kick.z { color: #0B7A3B; }
+.st .kick.v { color: #1A1A17; display: inline-flex; align-items: center; gap: 5px; }
+.st .kick.v i { background: #1A1A17; color: var(--yellow); border-radius: 3px; padding: 1px 3px; font-size: 10px; }
+.st .kick.m { color: #1B3F9E; }
+.st .kick.d { color: #8A6400; }
+.st.quote h3 { font-style: italic; }
+
+.res { margin-top: 10px; padding-top: 6px; border-top: 4px double #1A1A17; display: grid; grid-template-columns: auto repeat(5, 1fr); gap: 2px 14px; font-size: 11.5px; align-items: center; }
+.res .h { grid-row: span 2; font-stretch: var(--semi); font-weight: 900; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; line-height: 1.2; }
+.res span b { font-stretch: var(--semi); font-weight: 900; }
+
+.eds { display: flex; flex-direction: column; gap: 10px; padding-top: 2px; }
+.eds h3 { font-stretch: var(--wide); font-weight: 900; font-size: 18px; }
+.ed { padding: 10px 12px; border-radius: var(--r-m); font-size: 12px; line-height: 1.3; }
+.ed small { display: block; font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); margin-bottom: 3px; }
+.ed b { font-weight: 800; font-size: 13px; }
+.ed.on { background: var(--card); box-shadow: 0 0 0 2px var(--ink), var(--sh-sticker); }
+.ed:not(.on) { box-shadow: inset 0 0 0 1px var(--line); }
+.eds .more { font-size: 12px; color: var(--mute); padding: 0 4px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="times"><div class="date"><b>Seg, 26 out</b><span>Temporada 2026</span></div></div>
+  <main><div class="wrap">
+    <article class="sheet">
+      <span class="tape" style="left:-18px;top:14px;transform:rotate(-38deg)"></span>
+      <span class="tape" style="right:-18px;top:14px;transform:rotate(38deg)"></span>
+      <header class="mast">
+        <div class="l"><b>Rio de Janeiro</b><br>Segunda-feira, 26 de outubro de 2026</div>
+        <h1><span>Folha da</span>Arquibancada</h1>
+        <div class="r"><b>Edição da 30ª rodada</b><br>Ano 3 · nº 812 · R$ 4,00</div>
+      </header>
+      <div class="dl"><span>Série A · Série B · Libertadores · Mercado</span><span>Quarta tem Fla × River no Maracanã</span></div>
+      <div class="body">
+        <div class="lead">
+          <span class="kick">Série A · 30ª rodada</span>
+          <h2>O Fla passou o Verdão</h2>
+          <p class="deck">Pedro faz o segundo aos 63', o VAR confirma e o Flamengo assume a ponta no saldo. Os dois têm 61 pontos e 18 vitórias.</p>
+          <div class="board"><div class="t"></div><div class="s">2<span>×</span>1</div><div class="t a">Palmeiras</div></div>
+          <div class="gls"><div>Samuel Lino 18' · Pedro 63'</div><div>Flaco López 41'</div><div>Maracanã · 61.832 pagantes</div><div>Árbitro: Wilton Pereira Sampaio</div></div>
+          <div class="cols">
+            <p>O Maracanã esperou quatro minutos. Wilton Pereira Sampaio ouviu o VAR, foi ao monitor e voltou apontando o meio de campo. Samuel Lino estava na mesma linha de Gustavo Gómez quando recebeu, e o gol de Pedro valeu.</p>
+            <p>Abel Ferreira saiu sem falar com a arbitragem. Na coletiva, reclamou do tempo de checagem. Lucas Araujo preferiu a tabela: “Quarta tem River. Hoje é dormir líder.”</p>
+            <p>Faltam oito rodadas. O Palmeiras tem jogo mais difícil no domingo, contra o Cruzeiro, terceiro colocado.</p>
+          </div>
+          <div class="tbl"><b>Topo da tabela</b><span>1 Flamengo <b>61</b> <span class="up">+28</span></span><span>2 Palmeiras <b>61</b> +27</span><span>3 Cruzeiro <b>56</b></span><span>4 Botafogo <b>55</b></span></div>
+        </div>
+        <div class="side">
+          <div class="st"><span class="kick z">Zebra</span><h3>Vasco vence na Vila e Neymar sai vaiado</h3><p>Andrés Gómez fez o gol da virada aos 57'. Santos cai para 15º.</p></div>
+          <div class="st"><span class="kick v"><i class="ph-fill ph-monitor-play"></i>VAR</span><h3>Pênalti no Gre-Nal racha Porto Alegre</h3><p>Árbitro marca toque em Carlos Vinícius depois de 5 minutos de revisão. Inter fala em “roubo” e vai à CBF.</p></div>
+          <div class="st"><span class="kick m">Mercado</span><h3>Santos renova com Neymar até o fim de 2027</h3><p>Salário cai pela metade. Diretoria fala em “último contrato”.</p></div>
+          <div class="st"><span class="kick d">Demissão</span><h3>Fortaleza demite técnico depois da 4ª derrota seguida</h3><p>É a terceira troca na Série B em outubro.</p></div>
+          <div class="st quote"><span class="kick">Rivalidade</span><h3>Abel rebate: “Às quatro ele ganhou. Em dezembro a gente conversa.”</h3></div>
+        </div>
+      </div>
+      <div class="res"><span class="h">Resultados<br>30ª rodada</span>
+        <span>Flamengo <b>2 × 1</b> Palmeiras</span><span>Corinthians <b>1 × 0</b> São Paulo</span><span>Grêmio <b>1 × 1</b> Inter</span><span>Atlético-MG <b>1 × 1</b> Cruzeiro</span><span>Botafogo <b>2 × 0</b> Fluminense</span>
+        <span>Bahia <b>3 × 1</b> Vitória</span><span>Santos <b>1 × 2</b> Vasco</span><span>Athletico <b>1 × 0</b> Coritiba</span><span>Bragantino <b>0 × 1</b> Mirassol</span><span>Chapecoense <b>0 × 0</b> Remo</span>
+      </div>
+    </article>
+    <aside class="eds"><h3>Edições</h3>
+      <div class="ed on"><small>Hoje · 30ª rodada</small><b>O Fla passou o Verdão</b></div>
+      <div class="ed"><small>Qui, 22 out · Libertadores</small><b>Arrascaeta salva empate no Monumental</b></div>
+      <div class="ed"><small>Seg, 19 out · 29ª rodada</small><b>Lino decide e Fla cola no líder</b></div>
+      <div class="ed"><small>Qui, 15 out · 28ª rodada</small><b>Bruno Henrique se machuca no Mineirão</b></div>
+      <div class="ed"><small>Seg, 12 out · 27ª rodada</small><b>Cruzeiro goleia e entra na briga</b></div>
+      <div class="ed"><small>Qui, 8 out · 26ª rodada</small><b>Rossi pega pênalti e segura o 1&nbsp;×&nbsp;0</b></div>
+      <div class="ed"><small>Seg, 5 out · 25ª rodada</small><b>Timão de Seedorf vence a 4ª seguida</b></div>
+      <button class="btn sm flat" style="align-self:flex-start"><i class="ph-bold ph-archive"></i>Edições de setembro e antes</button>
+    </aside>
+  </div></main>
+</div>
+<script>
+document.querySelector('.board .t').innerHTML = crest('FLA', 30) + 'Flamengo';
+document.querySelector('.board .t.a').innerHTML = 'Palmeiras' + crest('PAL', 30);
+</script>
+</body>
+</html>

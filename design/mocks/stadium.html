@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Estádio</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<script>CLUBS.EST = { n: 'Estudiantes', c1: '#E30613', c2: '#FFFFFF', p: 'vstripes', bg: '#E30613', fg: '#FFFFFF', st: 'UNO' };</script>
+<style>
+.wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 14px; }
+
+.hero { padding: 20px 24px 18px; display: flex; flex-direction: column; overflow: hidden; }
+.hero .hd { display: flex; align-items: flex-end; gap: 12px; }
+.hero h1 { font-stretch: var(--wide); font-weight: 900; font-size: 28px; line-height: 1; letter-spacing: -.01em; }
+.hero .hd p { font-size: 12.5px; color: var(--mute); margin-top: 5px; }
+.hero .hd p b { color: var(--ink); }
+.nx { margin-left: auto; display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 10px; transform: rotate(1.5deg); }
+.nx b { display: block; font-weight: 800; font-size: 14px; line-height: 1.1; }
+.nx small { font-size: 11.5px; color: var(--mute); }
+
+.mid { flex: 1; display: grid; grid-template-columns: 440px minmax(0, 1fr); gap: 22px; align-items: center; margin-top: 4px; }
+.bowl { position: relative; }
+.bowl svg { display: block; }
+.bowl .cap { position: absolute; left: 0; right: 0; bottom: -2px; text-align: center; font-size: 11.5px; color: var(--mute); display: flex; justify-content: center; gap: 14px; }
+.bowl .cap span { display: flex; align-items: center; gap: 5px; }
+.bowl .cap i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+.fc .big { display: flex; gap: 20px; }
+.fc .big div span { display: block; font-size: 12px; color: var(--mute); font-weight: 600; }
+.fc .big div b { display: block; white-space: nowrap; font-stretch: var(--wide); font-weight: 900; font-size: 30px; line-height: 1.05; letter-spacing: -.01em; }
+.fc .big div small { font-size: 12px; font-weight: 700; color: var(--green); }
+.fc .was { margin-top: 6px; font-size: 12px; color: var(--mute); }
+.fc .was b { color: var(--ink-2); }
+
+.price { margin-top: 20px; }
+.price .row { display: flex; align-items: center; gap: 12px; }
+.price .tag { font-stretch: var(--wide); font-weight: 900; font-size: 26px; min-width: 104px; padding: 4px 12px; border-radius: 10px; background: var(--yellow); color: var(--on-yellow); transform: rotate(-2deg); box-shadow: 0 3px 0 var(--edge); text-align: center; }
+.price .tag small { font-stretch: 100%; font-weight: 700; font-size: 11px; display: block; margin-top: -2px; }
+.track { flex: 1; height: 10px; border-radius: 999px; background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--line); position: relative; margin: 0 10px; }
+.track > b { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--green); }
+.track > u { position: absolute; top: 50%; width: 24px; height: 24px; margin: -12px 0 0 -12px; border-radius: 50%; background: var(--card); box-shadow: 0 0 0 2px var(--edge), 0 3px 0 var(--edge); }
+.track > em { position: absolute; top: 18px; transform: translateX(-50%); font-style: normal; font-size: 10.5px; color: var(--mute); font-weight: 700; white-space: nowrap; }
+.track > s { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--ink-2); opacity: .45; }
+.track > span { position: absolute; top: -20px; transform: translateX(-50%); font-size: 10.5px; color: var(--mute); font-weight: 700; white-space: nowrap; }
+.mm { display: flex; gap: 4px; }
+.mm i { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line-2); font-size: 13px; }
+
+.why { margin-top: 34px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.why div { padding: 8px 10px; border-radius: 10px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); }
+.why span { display: block; font-size: 11px; color: var(--mute); font-weight: 600; }
+.why b { display: flex; align-items: center; gap: 4px; font-weight: 800; font-size: 13px; margin-top: 2px; }
+.why b.up { color: var(--green); } .why b.dn { color: var(--red); }
+
+.acts { margin-top: 16px; padding-top: 14px; border-top: 2px dotted var(--line-2); display: flex; align-items: center; gap: 12px; }
+.acts .aux { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--ink-2); }
+.acts .aux b { font-weight: 800; }
+.acts .go { margin-left: auto; height: 46px; font-size: 16px; padding: 0 24px; }
+
+.side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.att { padding: 14px 16px 8px; }
+.att h3, .obra h3 { font-stretch: var(--wide); font-weight: 900; font-size: 17px; }
+.ar { display: grid; grid-template-columns: 44px 22px 1fr 62px; gap: 8px; align-items: center; height: 44px; border-bottom: 1px dotted var(--line-2); font-size: 12.5px; }
+.ar:last-child { border-bottom: 0; }
+.ar .dt { font-stretch: var(--semi); font-weight: 800; font-size: 11.5px; color: var(--mute); line-height: 1.15; }
+.ar .nm b { font-weight: 800; }
+.ar .nm small { font-size: 11px; color: var(--mute); margin-left: 4px; }
+.ar .nm { min-width: 0; }
+.ar .meter { display: block; height: 6px; margin-top: 5px; }
+.ar .r { text-align: right; line-height: 1.2; }
+.ar .r b { font-stretch: var(--semi); font-weight: 900; display: block; }
+.ar .r small { font-size: 11px; color: var(--mute); }
+
+.obra { padding: 14px 16px; flex: 1; display: flex; flex-direction: column; }
+.obra .opt { margin-top: 10px; padding: 10px 12px; border-radius: var(--r-m); box-shadow: inset 0 0 0 1.5px var(--line-2); display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; }
+.obra .opt.on { box-shadow: 0 0 0 2px var(--ink); background: var(--yellow-l); }
+.obra .opt b { font-weight: 800; font-size: 13px; }
+.obra .opt span { font-size: 11.5px; color: var(--mute); grid-column: 1; }
+.obra .opt em { grid-row: 1 / 3; grid-column: 2; font-style: normal; text-align: right; font-stretch: var(--semi); font-weight: 900; font-size: 14px; align-self: center; }
+.obra .opt em small { display: block; font-stretch: 100%; font-weight: 600; font-size: 11px; color: var(--mute); }
+.obra .ok { margin-top: 10px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-2); }
+.obra .ok .meter { flex: 1; height: 8px; }
+.obra .ok b { font-weight: 800; color: var(--ink); }
+.obra .bd { margin-top: 8px; font-size: 12px; color: var(--mute); line-height: 1.4; }
+.obra .btn { margin-top: auto; align-self: flex-start; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="estadio"></div>
+  <main><div class="wrap">
+    <div class="page hero">
+      <div class="hd"><div><h1>Maracanã</h1><p><b>78.838 lugares</b> · dividido com o Fluminense</p></div>
+        <div class="stk nx"><span data-crest="RIV" data-size="32"></span><div><b>River Plate, qua 28 out</b><small>Libertadores · semifinal, volta</small></div></div></div>
+
+      <div class="mid">
+        <div class="bowl"><svg id="bowl" width="440" height="322" viewBox="0 0 400 292"></svg>
+          <div class="cap"><span><i style="background:var(--green)"></i>Previsto</span><span><i style="background:var(--paper-2);box-shadow:inset 0 0 0 1px var(--line-2)"></i>Vazio</span><span><i style="background:#E30613"></i>Visitante</span></div></div>
+        <div class="fc">
+          <div class="big"><div><span>Público previsto</span><b>76.420</b><small>97% · quase lotado</small></div><div><span>Renda</span><b>R$ 9,1 mi</b><small>+R$ 2,9 mi</small></div></div>
+          <p class="was">Com R$ 120: <b>lotado, R$ 6,2 mi</b>. Meia e sócio-torcedor puxam o tíquete médio pra 66% da inteira.</p>
+          <div class="price"><span class="lbl">Ingresso, inteira</span>
+            <div class="row" style="margin-top:10px"><span class="tag">R$ 180<small>era R$ 120</small></span>
+              <div class="track"><b style="width:62%"></b><s style="left:37%"></s><span style="left:37%">atual</span><u style="left:62%"></u><em style="left:0">R$ 40</em><em style="left:100%">R$ 260</em></div>
+              <span class="mm"><i class="ph-bold ph-minus"></i><i class="ph-bold ph-plus"></i></span></div></div>
+          <div class="why">
+        <div><span>Peso do jogo</span><b class="up"><i class="ph-bold ph-arrow-up"></i>Semifinal</b></div>
+        <div><span>Moral da torcida</span><b class="up"><i class="ph-bold ph-arrow-up"></i>74%</b></div>
+        <div><span>Fase</span><b class="up"><i class="ph-bold ph-arrow-up"></i>3 vitórias</b></div>
+        <div><span>Preço</span><b class="dn"><i class="ph-bold ph-arrow-down"></i>+50%</b></div>
+      </div>
+        </div>
+      </div>
+
+
+      <div class="acts">
+        <label class="aux"><span class="sw"></span><span>Auxiliar define o preço<br><b>Desligado: você decide</b></span></label>
+        <button class="btn go"><i class="ph-bold ph-ticket"></i>Aplicar preço</button>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="stk att"><h3>Últimos jogos em casa</h3><div id="att"></div></div>
+      <div class="stk obra"><h3>Pedir obra à diretoria</h3>
+        <div class="opt on"><b>Camarotes e cadeiras novas</b><span>+3.200 lugares premium · 7 meses</span><em>R$ 38 mi<small>+R$ 0,6 mi/jogo</small></em></div>
+        <div class="opt"><b>Telão e iluminação</b><span>Torcida +2% · 3 meses</span><em>R$ 14 mi<small></small></em></div>
+        <div class="ok"><span>Chance de aprovar</span><span class="meter"><i style="width:70%"></i></span><b>Alta</b></div>
+        <p class="bd">Diretoria 92% com você, caixa de R$ 84,3 mi. Paga em 7 parcelas durante a obra.</p>
+        <button class="btn"><i class="ph-bold ph-paper-plane-tilt"></i>Enviar pedido</button>
+      </div>
+    </div>
+  </div></main>
+</div>
+<script>
+// Stadium bowl: 28 stand sectors around an ellipse, filled by expected attendance.
+(() => {
+  const cx = 200, cy = 140, n = 28, R1x = 186, R1y = 128, R0x = 128, R0y = 80;
+  const fill = (i) => i === 6 ? 'away' : [13, 14].includes(i) ? 'part' : 'full';
+  let s = `<ellipse cx="${cx}" cy="${cy + 6}" rx="${R1x + 6}" ry="${R1y + 6}" fill="rgba(20,35,26,.12)"/><ellipse cx="${cx}" cy="${cy}" rx="${R1x + 6}" ry="${R1y + 6}" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.5"/>`;
+  for (let i = 0; i < n; i++) {
+    const a0 = (i / n) * Math.PI * 2 + .02, a1 = ((i + 1) / n) * Math.PI * 2 - .02;
+    const p = (rx, ry, a) => `${(cx + rx * Math.cos(a)).toFixed(1)} ${(cy + ry * Math.sin(a)).toFixed(1)}`;
+    const f = fill(i);
+    const col = f === 'away' ? '#E30613' : f === 'part' ? 'url(#half)' : 'var(--green)';
+    s += `<path d="M${p(R0x, R0y, a0)} L${p(R1x, R1y, a0)} A${R1x} ${R1y} 0 0 1 ${p(R1x, R1y, a1)} L${p(R0x, R0y, a1)} A${R0x} ${R0y} 0 0 0 ${p(R0x, R0y, a0)}Z" fill="${col}"/>`;
+  }
+  s = `<defs><linearGradient id="half" x1="0" y1="0" x2="0" y2="1"><stop offset=".45" stop-color="var(--paper-2)"/><stop offset=".45" stop-color="var(--green)"/></linearGradient><clipPath id="pc"><rect x="${cx - 84}" y="${cy - 52}" width="168" height="104" rx="3"/></clipPath></defs>` + s;
+  s += `<ellipse cx="${cx}" cy="${cy}" rx="${R0x - 4}" ry="${R0y - 4}" fill="#0B7A3B"/>`;
+  s += `<g clip-path="url(#pc)">${Array.from({ length: 8 }, (_, k) => `<rect x="${cx - 84 + k * 21}" y="${cy - 52}" width="21" height="104" fill="${k % 2 ? '#0B7A3B' : '#0E8442'}"/>`).join('')}</g>`;
+  s += `<rect x="${cx - 80}" y="${cy - 48}" width="160" height="96" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><line x1="${cx}" y1="${cy - 48}" x2="${cx}" y2="${cy + 48}" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><circle cx="${cx}" cy="${cy}" r="14" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><rect x="${cx - 80}" y="${cy - 22}" width="22" height="44" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><rect x="${cx + 58}" y="${cy - 22}" width="22" height="44" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/>`;
+  document.getElementById('bowl').innerHTML = s;
+})();
+const A = [
+  ['Hoje', 'PAL', 'Palmeiras', 'Série A', 120, 61832, '4,9 mi', 'vendidos'],
+  ['18 out', 'VIT', 'Vitória', 'Série A', 80, 48210, '2,6 mi'],
+  ['1 out', 'EST', 'Estudiantes', 'Liberta', 140, 70115, '6,5 mi'],
+  ['28 set', 'FLU', 'Fluminense', 'Série A', 100, 66404, '4,4 mi'],
+  ['14 set', 'MIR', 'Mirassol', 'Série A', 80, 41380, '2,2 mi'],
+];
+document.getElementById('att').innerHTML = A.map(([d, c, n, comp, pr, pub, ren, note]) => `<div class="ar"><span class="dt">${d}</span>${crest(c, 22)}<div class="nm"><b>${n}</b><small>${comp} · R$ ${pr}</small><span class="meter thin ${pub / 78838 < .6 ? 'mid' : ''}"><i style="width:${(pub / 78838 * 100).toFixed(0)}%"></i></span></div><div class="r"><b>${pub.toLocaleString('pt-BR')}</b><small>${note || 'R$ ' + ren}</small></div></div>`).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Expulsão no jogo</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="live.css">
+<script src="mock.js"></script>
+<script src="live.js"></script>
+<style>
+.veil { position: absolute; inset: 28px 0 0; background: var(--veil); z-index: 10; }
+.win { position: absolute; left: 50%; top: 150px; width: 664px; margin-left: -332px; z-index: 11; background: var(--card); border-radius: 18px; box-shadow: var(--sh-pop); padding: 22px 26px 20px; animation: stick var(--t-stamp) var(--e-slap) both; }
+@keyframes stick { from { transform: rotate(-4deg) scale(1.12); opacity: 0; } }
+
+.rcard { position: absolute; left: -22px; top: -26px; width: 66px; height: 88px; border-radius: 8px; background: #D7322A; transform: rotate(-11deg); box-shadow: 0 0 0 4px #fff, 0 10px 18px -8px rgba(20,35,26,.6); display: grid; place-items: end center; padding-bottom: 8px; color: rgba(255,255,255,.9); font-stretch: var(--wide); font-weight: 900; font-size: 15px; }
+.top { display: flex; align-items: flex-start; gap: 16px; padding-left: 50px; }
+.top h2 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: 1; letter-spacing: -.01em; }
+.top h2 em { font-style: normal; color: var(--red); }
+.top p { font-size: 13px; color: var(--ink-2); margin-top: 6px; }
+.scw { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
+.scw .tl { display: flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; color: var(--mute); }
+.top .sc { display: flex; align-items: center; gap: 6px; flex: none; }
+.top .sc .sbox { height: 26px; min-width: 30px; font-size: 14px; }
+.top .sc small { display: block; text-align: center; font-size: 11px; color: var(--mute); margin-top: 3px; font-weight: 700; }
+
+.fix { margin-top: 18px; padding: 14px 16px; border-radius: var(--r-m); background: var(--yellow-l); display: grid; grid-template-columns: auto auto auto 1fr; gap: 12px; align-items: center; }
+.fix .who { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 12px; color: var(--later); margin-bottom: -2px; }
+.mp { width: 104px; height: 70px; border-radius: 6px; position: relative; background: repeating-linear-gradient(90deg, #0E8442 0 13px, #0B7A3B 13px 26px); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.35); }
+.mp::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1.5px solid rgba(255,255,255,.3); }
+.mp i { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: #fff; z-index: 1; }
+.mp i.gone { background: transparent; box-shadow: inset 0 0 0 1.5px #FF8A80; }
+.mp i.out { background: #FFCC00; }
+.mp i.in { background: #FFCC00; width: 10px; height: 10px; margin: -5px 0 0 -5px; box-shadow: 0 0 0 2px #14231A; }
+.mpw { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.mpw > span { font-stretch: var(--semi); font-weight: 800; font-size: 11px; color: var(--note-ink); }
+.fix .ar { font-size: 18px; color: var(--later); }
+.fix .chg b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 16px; line-height: 1.2; }
+.fix .chg .sw2 { display: flex; align-items: center; gap: 8px; margin-top: 7px; font-size: 12.5px; font-weight: 600; }
+.fix .chg .sw2 span { display: flex; align-items: center; gap: 5px; }
+.fix .chg .sw2 .o { color: var(--red); } .fix .chg .sw2 .n { color: var(--green); }
+.fix .chg p { font-size: 12px; color: var(--note-ink); margin-top: 6px; }
+
+.inj { margin-top: 12px; padding: 12px 4px 4px; border-top: 2px dotted var(--line-2); display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; }
+.inj .ic { width: 36px; height: 36px; border-radius: 50%; background: var(--red-l); color: var(--red); display: grid; place-items: center; font-size: 18px; }
+.inj b { font-weight: 800; font-size: 14px; display: block; }
+.inj p { font-size: 12px; color: var(--mute); margin-top: 2px; }
+.inj p b { display: inline; font-size: 12px; color: var(--ink-2); font-weight: 700; }
+.inj label { display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+
+.acts .btn.flat { padding: 0 8px; }
+.acts { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--rule); display: flex; align-items: center; gap: 10px; }
+.acts .tr { font-size: 12px; color: var(--mute); line-height: 1.35; }
+.acts .tr b { color: var(--ink); font-weight: 800; }
+.acts .btn.go { margin-left: auto; height: 44px; padding: 0 20px; font-size: 15px; }
+</style>
+</head>
+<body>
+<script>
+// The board at 58': Flamengo 1 × 1 Palmeiras, match paused for the red card.
+const R0 = ROUND[0].rows, R1 = ROUND[1].rows;
+R0[0] = ['Maracanã', '61.832', 'FLA', 'PAL', 1, 1, ['vm', 'Léo Pereira', "58'"], 'human'];
+R0[1] = ['Neo Química Arena', '44.120', 'COR', 'SAO', 1, 0, ['gol', 'Garro', "52'"]];
+R0[3][6] = ['am', 'Lyanco', "49'"]; R0[4][6] = ['gol', 'Arthur Cabral', "44'"]; R0[5][6] = ['vm', 'Luan Cândido', "55'"];
+R1[5][6] = ['gol', 'Léo Gamalho', "51'"]; R1[4][6] = ['gol', 'Eliel', "50'"];
+renderLive();
+document.querySelector('.clock').outerHTML = `<span class="chip bad" style="height:24px"><i class="ph-fill ph-pause"></i>Pausado</span><div class="clock">2º tempo<span class="tr"><i style="width:64%"></i></span><b>58'</b></div>`;
+document.querySelectorAll('.sp span').forEach((s, i) => s.classList.toggle('on', i === 0));
+document.querySelector('.sc').innerHTML = '1<span>×</span>1';
+document.querySelector('.evs').innerHTML = `<span><i class="ph-fill ph-soccer-ball"></i>Samuel Lino 18'</span><span><i class="ph-fill ph-soccer-ball"></i>Flaco López 41'</span><span class="last"><span class="rc"></span>Léo Pereira 58'</span>`;
+document.querySelector('.right .btn small').textContent = '5 trocas';
+
+const dots = (pts) => pts.map(([x, y, c]) => `<i class="${c || ''}" style="left:${x}%;top:${y}%"></i>`).join('');
+// Flamengo attacking right. 4-2-3-1 with the sent-off centre-back missing.
+const before = dots([[8, 50], [24, 14], [22, 38, 'gone'], [22, 62], [24, 86], [42, 36], [42, 64], [62, 18], [62, 50], [62, 82, 'out'], [82, 50]]);
+const after = dots([[8, 50], [24, 14], [22, 38, 'in'], [22, 62], [24, 86], [48, 14], [46, 38], [46, 62], [48, 86], [78, 50]]);
+
+document.querySelector('.app').insertAdjacentHTML('beforeend', `<div class="veil"></div>
+<div class="win">
+  <div class="rcard">58'</div>
+  <div class="top">
+    <div><h2>Expulso: <em>Léo Pereira</em></h2><p>Vermelho direto, carrinho em Vitor Roque. Flamengo fica com 10.</p></div>
+    <div class="scw"><div class="sc"><div>${crest('FLA', 26)}</div><div class="sbox">1</div><div class="sbox">1</div><div>${crest('PAL', 26)}</div></div><span class="tl"><i class="ph-bold ph-arrows-left-right"></i>5 trocas · 3 paradas</span></div>
+  </div>
+
+  <div class="fix">
+    <span class="who"><i class="ph-bold ph-user-switch"></i>Auxiliar sugere</span>
+    <div class="mpw"><div class="mp">${before}</div><span>4-2-3-1</span></div>
+    <i class="ph-bold ph-arrow-right ar"></i>
+    <div class="mpw"><div class="mp">${after}</div><span>4-4-1 com 10</span></div>
+    <div class="chg"><b>Sai Carrascal, entra Vitão.<br>Vai pro 4-4-1.</b>
+      <div class="sw2"><span class="o"><i class="ph-bold ph-arrow-down"></i>Carrascal 64%</span><span class="n"><i class="ph-bold ph-arrow-up"></i>Vitão, zagueiro, 100%</span></div>
+      <p>Repõe a zaga e tira o mais cansado.</p></div>
+  </div>
+
+  <div class="inj">
+    <span class="ic"><i class="ph-fill ph-first-aid"></i></span>
+    <div><b>Ayrton Lucas sentiu a coxa</b><p>Fora de <b>2 a 3 semanas</b>, perde o River na quarta.</p></div>
+    <label>Sai Ayrton Lucas, entra Alex Sandro<span class="sw on"></span></label>
+  </div>
+
+  <div class="acts">
+    <button class="btn flat">Deixar como está</button>
+    <button class="btn"><i class="ph-bold ph-strategy"></i>Abrir escalação</button>
+    <button class="btn go"><i class="ph-bold ph-arrows-left-right"></i>Fazer as 2 trocas</button>
+  </div>
+</div>`);
+</script>
+</body>
+</html>

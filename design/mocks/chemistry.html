@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Entrosamento</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: 340px 1fr; gap: 14px; }
+.side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+
+.gauge { padding: 16px 18px 18px; }
+.gauge h2 { font-stretch: var(--wide); font-weight: 900; font-size: 20px; }
+.gauge .num { display: flex; align-items: baseline; gap: 10px; margin-top: 10px; }
+.gauge .num b { font-stretch: var(--wide); font-weight: 900; font-size: 64px; line-height: .9; letter-spacing: -.02em; color: var(--green); }
+.gauge .num span { font-stretch: var(--semi); font-weight: 800; font-size: 15px; }
+.gauge .num small { display: block; font-stretch: 100%; font-weight: 600; font-size: 12px; color: var(--mute); margin-top: 2px; }
+.scale { position: relative; margin-top: 14px; }
+.scale .meter { height: 14px; }
+.scale .tk { display: flex; justify-content: space-between; margin-top: 5px; font-size: 10.5px; font-weight: 700; color: var(--mute); }
+.scale .was { position: absolute; top: -4px; width: 2px; height: 22px; background: var(--ink); border-radius: 2px; }
+.scale .was::after { content: 'set'; position: absolute; top: -15px; left: -8px; font-size: 10px; font-weight: 800; color: var(--ink-2); }
+.eff { margin-top: 16px; display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 2px dotted var(--line-2); font-size: 12.5px; color: var(--ink-2); }
+.eff b { font-stretch: var(--wide); font-weight: 900; font-size: 22px; color: var(--green); flex: none; }
+
+.why { padding: 12px 18px 8px; flex: 1; }
+.why h3 { font-stretch: var(--wide); font-weight: 900; font-size: 16px; margin-bottom: 2px; }
+.cz { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; min-height: 52px; padding: 7px 0; border-bottom: 1px dotted var(--line-2); font-size: 12.5px; }
+.cz:last-child { border-bottom: 0; }
+.cz b { display: block; font-weight: 800; font-size: 13px; line-height: 1.2; }
+.cz small { font-size: 11.5px; color: var(--mute); line-height: 1.3; display: block; margin-top: 2px; }
+.cz .v { font-stretch: var(--wide); font-weight: 900; font-size: 16px; min-width: 40px; text-align: right; }
+.cz .v.up { color: var(--green); } .cz .v.dn { color: var(--red); }
+
+.map { position: relative; overflow: hidden; }
+.map .hd { position: absolute; left: 22px; top: 18px; right: 22px; display: flex; align-items: baseline; gap: 12px; z-index: 3; }
+.map .hd h2 { font-stretch: var(--wide); font-weight: 900; font-size: 22px; }
+.map .hd span { font-size: 12px; color: var(--mute); }
+.map .lg { margin-left: auto; display: flex; gap: 16px; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.map .lg span { display: flex; align-items: center; gap: 7px; }
+.map .lg i { width: 22px; height: 4px; border-radius: 2px; }
+.pitch { position: absolute; left: 22px; right: 22px; top: 62px; bottom: 18px; }
+.pitch .ln { position: absolute; inset: 0; border: 2px solid var(--rule); border-radius: 6px; }
+.pitch .ln::before { content: ''; position: absolute; left: 50%; top: -2px; width: 180px; height: 90px; margin-left: -90px; border: 2px solid var(--rule); border-top: 0; border-radius: 0 0 90px 90px; }
+.pitch .ln::after { content: ''; position: absolute; left: 50%; bottom: -2px; width: 260px; height: 86px; margin-left: -130px; border: 2px solid var(--rule); border-bottom: 0; }
+.pitch svg { position: absolute; inset: 0; overflow: visible; }
+
+.p { position: absolute; width: 104px; margin: -36px 0 0 -52px; padding: 4px 4px 5px; background: #fff; border-radius: 9px; text-align: center; color: #14231A; box-shadow: 0 1px 0 rgba(20,35,26,.12), 0 0 0 1px rgba(20,35,26,.08), 0 8px 14px -8px rgba(20,35,26,.45); z-index: 2; }
+.p .a { height: 40px; border-radius: 5px; background: #C8102E; position: relative; overflow: hidden; display: grid; place-items: center; }
+.p .a::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,.0) 0 8px, rgba(0,0,0,.22) 8px 16px); }
+.p .a b { position: relative; font-stretch: var(--wide); font-weight: 900; font-size: 22px; color: #fff; }
+.p .a .f { position: absolute; right: 4px; top: 3px; font-stretch: var(--semi); font-weight: 900; font-size: 10px; color: rgba(255,255,255,.85); }
+.p .a .cap { position: absolute; left: 4px; top: 4px; width: 15px; height: 15px; border-radius: 50%; background: var(--yellow); color: #14231A; font-stretch: var(--semi); font-weight: 900; font-size: 9px; display: grid; place-items: center; }
+.p .n { font-weight: 800; font-size: 11px; line-height: 1.1; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.p.res { transform: scale(.88); opacity: .96; }
+.p.res .a { background: #8C8577; }
+.p.res .n { color: #5C584B; }
+.p .r { font-size: 10px; font-weight: 600; color: #5C584B; margin-top: 1px; }
+.tag { position: absolute; z-index: 2; transform: translate(-50%, -50%) rotate(-2deg); background: var(--red); color: #fff; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 6px; white-space: nowrap; box-shadow: 0 0 0 2px var(--card); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="times"></div>
+  <main><div class="wrap">
+    <div class="side">
+      <div class="stk gauge">
+        <h2>Entrosamento</h2>
+        <div class="num"><b>71</b><span>Bom<small>subiu 6 desde setembro</small></span></div>
+        <div class="scale"><div class="meter"><i style="width:71%"></i></div><div class="tk"><span>0</span><span>50</span><span>100</span></div></div>
+        <div class="eff"><b>+2%</b><span>de força em campo para os 11 titulares. Vai de −3% a +3%.</span></div>
+      </div>
+      <div class="stk why"><h3>Por que está assim</h3>
+        <div class="cz"><div><b>Mesmo time há 5 jogos</b><small>9 dos 11 titulares repetidos</small></div><span class="v up">+12</span></div>
+        <div class="cz"><div><b>Capitão respeitado</b><small>Jorginho, 34 anos, líder do vestiário</small></div><span class="v up">+6</span></div>
+        <div class="cz"><div><b>Zaga junta há dois anos</b><small>Léo Ortiz e Léo Pereira</small></div><span class="v up">+4</span></div>
+        <div class="cz"><div><b>Paquetá ainda chegando</b><small>contratado em julho, 11 jogos</small></div><span class="v dn">−4</span></div>
+        <div class="cz"><div><b>Dois atritos no elenco</b><small>Ayrton Lucas × Alex Sandro, Pedro × Plata</small></div><span class="v dn">−5</span></div>
+        <div class="cz"><div><b>Rodízio na Libertadores</b><small>4 trocas no 1 × 1 com o River</small></div><span class="v dn">−2</span></div>
+      </div>
+    </div>
+    <div class="page map">
+      <div class="hd"><h2>Quem se dá com quem</h2><span>Titulares do 4-2-3-1 e reservas ligados a eles</span>
+        <div class="lg"><span><i style="background:var(--green)"></i>Se dão bem</span><span><i style="background:var(--red)"></i>Atrito</span></div></div>
+      <div class="pitch" id="field"><div class="ln"></div><svg id="lines"></svg></div>
+    </div>
+  </div></main>
+</div>
+<script>
+// [name, x%, y%, strength, reserve?, captain?]
+const P = {
+  pedro: ['Pedro', 50, 12, 76],
+  lino: ['Samuel Lino', 17, 33, 82], arr: ['Arrascaeta', 50, 36, 78], car: ['Carrascal', 83, 33, 78],
+  jor: ['Jorginho', 37, 57, 77, 0, 1], eve: ['Evertton Araújo', 63, 57, 76],
+  ayr: ['Ayrton Lucas', 13, 70, 75], lpe: ['Léo Pereira', 38, 78, 80], lor: ['Léo Ortiz', 62, 78, 80], var: ['Varela', 87, 70, 73],
+  ros: ['Rossi', 50, 93, 79],
+  pla: ['Plata', 80, 9, 76, 1], dlc: ['De la Cruz', 27, 13, 73, 1], als: ['Alex Sandro', 24, 93, 70, 1], paq: ['Paquetá', 67, 21, 80, 1],
+};
+const G = [['lpe', 'lor', 3], ['lor', 'ros', 2], ['jor', 'eve', 3], ['arr', 'pedro', 3], ['lino', 'ayr', 2], ['arr', 'dlc', 2], ['car', 'arr', 2], ['jor', 'lpe', 2], ['var', 'car', 1.5], ['paq', 'car', 1.5]];
+const B = [['ayr', 'als', 'disputa a lateral'], ['pedro', 'pla', 'discutiram no treino']];
+window.addEventListener('load', () => {
+const f = document.getElementById('field'), W = f.clientWidth, H = f.clientHeight;
+const xy = (k) => [P[k][1] / 100 * W, P[k][2] / 100 * H];
+let svg = '';
+for (const [a, b, w] of G) { const [x1, y1] = xy(a), [x2, y2] = xy(b); svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--green)" stroke-width="${w * 1.6}" stroke-linecap="round" opacity=".85"/>`; }
+let tags = '';
+for (const [a, b, t] of B) {
+  const [x1, y1] = xy(a), [x2, y2] = xy(b);
+  svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--red)" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 8"/>`;
+  tags += `<span class="tag" style="left:${(x1 + x2) / 2}px;top:${(y1 + y2) / 2}px">${t}</span>`;
+}
+document.getElementById('lines').innerHTML = svg;
+f.insertAdjacentHTML('beforeend', tags + Object.values(P).map(([n, x, y, s, res, cap]) => `<div class="p ${res ? 'res' : ''}" style="left:${x}%;top:${y}%"><div class="a">${cap ? '<span class="cap">C</span>' : ''}<span class="f">${s}</span><b>${n[0]}</b></div><div class="n">${n}</div>${res ? '<div class="r">reserva</div>' : ''}</div>`).join(''));
+});
+</script>
+</body>
+</html>

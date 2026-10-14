@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Prêmios da temporada</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.spread { position: absolute; inset: 16px 14px 14px; display: grid; grid-template-columns: 548px 1fr; }
+.pl, .pr { position: relative; overflow: hidden; }
+.pl { border-radius: 8px 0 0 8px; padding: 22px 26px 34px 28px; display: flex; flex-direction: column; background: linear-gradient(270deg, rgba(20,35,26,.08), rgba(20,35,26,0) 26px), var(--card); }
+.pr { border-radius: 0 8px 8px 0; padding: 22px 28px 18px 30px; display: flex; flex-direction: column; background: linear-gradient(90deg, rgba(20,35,26,.08), rgba(20,35,26,0) 26px), var(--card); }
+.ph { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.ph h2 { font-stretch: var(--wide); font-weight: 900; font-size: 24px; letter-spacing: -.01em; line-height: 1; }
+.ph span { font-size: 12px; color: var(--mute); }
+.pgno { position: absolute; bottom: 10px; font-stretch: var(--semi); font-weight: 900; font-size: 11px; color: var(--line-2); }
+.pl .pgno { left: 28px; } .pr .pgno { right: 28px; }
+
+/* Player sticker */
+.ps { position: relative; width: var(--w, 104px); padding: 5px 5px 0; background: #fff; border-radius: 10px; box-shadow: 0 1px 0 rgba(20,35,26,.12), 0 0 0 1px rgba(20,35,26,.08), 0 8px 14px -8px rgba(20,35,26,.45); text-align: center; color: #14231A; }
+.ps .art { height: var(--h, 74px); border-radius: 6px; position: relative; overflow: hidden; display: grid; place-items: center; background: var(--c); }
+.ps .art::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(135deg, rgba(255,255,255,.12) 0 10px, rgba(255,255,255,0) 10px 20px); }
+.ps .art b { position: relative; font-stretch: var(--wide); font-weight: 900; font-size: var(--ini, 40px); line-height: 1; color: var(--ic, rgba(255,255,255,.94)); }
+.ps .art .crest { position: absolute; left: 5px; top: 5px; }
+.ps .art em { position: absolute; right: 6px; top: 5px; font-style: normal; font-stretch: var(--semi); font-weight: 900; font-size: 9.5px; color: var(--ic, rgba(255,255,255,.8)); opacity: .85; }
+.ps .nm { font-weight: 800; font-size: 12px; line-height: 1.1; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ps .cl { font-size: 10.5px; color: #5C584B; padding-bottom: 6px; white-space: nowrap; }
+.ps.win { background: var(--foil); box-shadow: 0 0 0 3px var(--yellow), 0 14px 22px -8px rgba(20,35,26,.45); }
+[data-theme='dark'] .ps.win .nm, [data-theme='dark'] .ps.win .cl { color: var(--ink); }
+
+/* Bola de Ouro */
+.gold { display: grid; grid-template-columns: 196px 1fr; gap: 22px; align-items: center; margin-top: 18px; }
+.gold .ps { --w: 188px; --h: 196px; --ini: 108px; transform: rotate(-2.5deg); margin-left: 4px; }
+.gold .ps .nm { font-size: 17px; font-stretch: var(--semi); font-weight: 900; margin-top: 8px; }
+.gold .ps .cl { font-size: 12px; padding-bottom: 10px; }
+.gold .ps .art .crest { left: 8px; top: 8px; }
+.aw { display: flex; align-items: center; gap: 8px; font-stretch: var(--semi); font-weight: 900; font-size: 13px; letter-spacing: .02em; }
+.aw .ball { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 17px; flex: none; }
+.aw .ball.au { background: var(--yellow); color: var(--on-yellow); box-shadow: 0 2px 0 var(--yellow-d); }
+.aw .ball.ag { background: #DCDCE2; color: #3C4A40; box-shadow: 0 2px 0 #A9A9B3; }
+.gold h3 { font-stretch: var(--wide); font-weight: 900; font-size: 32px; line-height: 1; letter-spacing: -.01em; margin-top: 10px; }
+.gold p { font-size: 13px; color: var(--ink-2); margin-top: 6px; line-height: 1.4; }
+.gold .nums { display: grid; grid-template-columns: repeat(4, auto); justify-content: start; gap: 0 18px; margin-top: 14px; }
+.gold .nums div { font-size: 11px; color: var(--mute); }
+.gold .nums b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 22px; color: var(--ink); line-height: 1.05; }
+.gold .votes { margin-top: 12px; font-size: 12px; color: var(--mute); }
+.gold .votes b { color: var(--ink); }
+
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 22px; padding-top: 16px; border-top: 2px dotted var(--line-2); }
+.trio .it { display: flex; gap: 10px; align-items: flex-start; }
+.trio .ps { --w: 56px; --h: 56px; --ini: 26px; flex: none; }
+.trio .ps .nm { display: none; }
+.trio .ps .cl { display: none; }
+.trio .ps { padding-bottom: 5px; }
+.trio .it:nth-child(1) .ps { transform: rotate(-2deg); }
+.trio .it:nth-child(3) .ps { transform: rotate(2deg); }
+.trio .lbl { font-size: 10px; }
+.trio b { display: block; font-weight: 800; font-size: 13.5px; white-space: nowrap; line-height: 1.15; margin-top: 3px; }
+.trio small { display: block; font-size: 11.5px; color: var(--mute); margin-top: 2px; line-height: 1.3; }
+
+.rec { margin-top: 22px; }
+.rec h4 { font-stretch: var(--semi); font-weight: 900; font-size: 14px; padding-bottom: 5px; border-bottom: 2px solid var(--ink); }
+.rr { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; height: 32px; border-bottom: 1px solid var(--rule); font-size: 12.5px; }
+.rr span { color: var(--mute); }
+.rr b { font-weight: 700; text-align: right; }
+.rr b small { font-weight: 500; color: var(--mute); margin-left: 4px; }
+.pl .acts { margin-top: auto; padding-top: 14px; display: flex; align-items: center; gap: 12px; }
+
+/* Bola de Prata: team of the year on a faint pitch */
+.pitch { position: relative; flex: 1; margin-top: 12px; }
+.pitch .ln { position: absolute; inset: 6px 10px 0; border: 2px solid var(--rule); border-bottom: 0; border-radius: 4px 4px 0 0; }
+.pitch .ln::before { content: ''; position: absolute; left: 50%; bottom: 0; width: 220px; height: 92px; margin-left: -110px; border: 2px solid var(--rule); border-bottom: 0; }
+.pitch .ln::after { content: ''; position: absolute; left: 50%; top: -2px; width: 160px; height: 80px; margin-left: -80px; border: 2px solid var(--rule); border-top: 0; border-radius: 0 0 80px 80px; }
+.row { position: absolute; left: 0; right: 0; display: flex; justify-content: center; gap: var(--gap, 30px); }
+.row .ps { --w: 114px; --h: 66px; --ini: 36px; }
+.row .pos { position: absolute; left: 50%; bottom: -9px; margin-left: -11px; box-shadow: 0 0 0 2px #fff; }
+.row .ps { padding-bottom: 6px; }
+.row .ps.win { padding-bottom: 6px; }
+.pr .note { position: absolute; right: 34px; bottom: 74px; width: 190px; transform: rotate(2deg); z-index: 2; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="historico"><div class="date"><b>Qua, 9 dez</b><span>Temporada 2026</span></div></div>
+  <main><div class="spread">
+    <section class="page pl">
+      <div class="ph"><h2>Prêmios 2026</h2><span>Brasileirão Série A · entregues em 9 dez</span></div>
+      <div class="gold">
+        <div id="gold"></div>
+        <div>
+          <div class="aw"><span class="ball au"><i class="ph-fill ph-soccer-ball"></i></span>Bola de Ouro</div>
+          <h3>Samuel Lino</h3>
+          <p>Flamengo, campeão brasileiro. Melhor jogador do campeonato.</p>
+          <div class="nums"><div><b>36</b>jogos</div><div><b>14</b>gols</div><div><b>11</b>assist.</div><div><b>7,8</b>nota</div></div>
+          <div class="votes">2º <b>Matheus Pereira</b> · 3º <b>Andreas Pereira</b></div>
+        </div>
+      </div>
+      <div class="trio" id="trio"></div>
+      <div class="rec"><h4>Recordes</h4>
+        <div class="rr"><span>Maior goleada de 2026</span><b>Cruzeiro 6 × 0 Chapecoense<small>22ª rodada</small></b></div>
+        <div class="rr"><span>Mais gols numa temporada</span><b>Washington, 34<small>Athletico-PR, 2004</small></b></div>
+        <div class="rr"><span>Artilheiro histórico</span><b>Roberto Dinamite, 190<small>Vasco</small></b></div>
+        <div class="rr"><span>Maior invencibilidade de 2026</span><b>Flamengo, 17 jogos<small>da 12ª à 28ª</small></b></div>
+      </div>
+      <div class="acts"><button class="btn go"><i class="ph-bold ph-book-open-text"></i>Colar no álbum de 2026</button><button class="btn flat"><i class="ph-bold ph-list-numbers"></i>Votação completa</button></div>
+      <span class="pgno">38</span>
+    </section>
+    <section class="page pr">
+      <div class="ph"><div class="aw" style="font-size:24px;font-stretch:var(--wide);letter-spacing:-.01em"><span class="ball ag"><i class="ph-fill ph-soccer-ball"></i></span>Bola de Prata</div><span>Seleção do campeonato · 4-3-3</span></div>
+      <div class="note"><b>2 do Flamengo</b> na seleção. Rossi ficou em segundo entre os goleiros.</div>
+      <div class="pitch" id="pitch"><div class="ln"></div></div>
+      <span class="pgno">39</span>
+    </section>
+  </div></main>
+</div>
+<script>
+function sticker(c, n, no, sub, cls = '', crestSize = 18) {
+  const k = CLUBS[c], bg = k.bg === '#FFFFFF' ? '#2A2A2A' : k.bg;
+  const light = /^#FF[DE]/.test(k.bg);
+  return `<div class="ps ${cls}" style="--c:${bg};${light ? `--ic:${k.fg}` : ''}"><div class="art">${crest(c, crestSize)}<em>${no}</em><b>${n.split(' ').map((w) => w[0]).slice(0, 1).join('')}</b></div><div class="nm">${n}</div><div class="cl">${sub}</div></div>`;
+}
+document.getElementById('gold').innerHTML = sticker('FLA', 'Samuel Lino', 'BO 26', 'Flamengo · atacante', 'win', 30);
+document.getElementById('trio').innerHTML = [
+  ['CRU', 'Kaio Jorge', 'Artilheiro', '23 gols · Cruzeiro'],
+  ['CRU', 'Keny Arroyo', 'Revelação', '20 anos · Cruzeiro'],
+  ['FLA', 'Lucas Araujo', 'Técnico', 'Flamengo campeão'],
+].map(([c, n, t, s]) => `<div class="it">${sticker(c, n, '', '', 'win', 16)}<div><span class="lbl">${t}</span><b>${n}</b><small>${s}</small></div></div>`).join('');
+// Team of the year, attack at the top. [club, name, pos letter, number]
+const XI = [
+  [[ 'PAL', 'Jhon Arias', 'A' ], [ 'CRU', 'Kaio Jorge', 'A' ], [ 'FLA', 'Samuel Lino', 'A' ]],
+  [[ 'CRU', 'Matheus Pereira', 'M' ], [ 'PAL', 'Marlon Freitas', 'M' ], [ 'PAL', 'Andreas Pereira', 'M' ]],
+  [[ 'BOT', 'Vitinho', 'L' ], [ 'FLA', 'Léo Ortiz', 'Z' ], [ 'VAS', 'Robert Renan', 'Z' ], [ 'BAH', 'Luciano Juba', 'L' ]],
+  [[ 'PAL', 'Carlos Miguel', 'G' ]],
+];
+const TOP = [6, 160, 314, 468], GAP = [56, 56, 18, 0];
+let no = 1;
+document.getElementById('pitch').insertAdjacentHTML('beforeend', XI.map((r, i) => `<div class="row" style="top:${TOP[i]}px;--gap:${GAP[i]}px">${r.map(([c, n, p]) => {
+  const s = sticker(c, n, 'BP ' + String(no++).padStart(2, '0'), CLUBS[c].n, n === 'Samuel Lino' ? 'win' : '');
+  return s.replace('</div></div>', `</div><span class="pos ${p}">${p}</span></div>`);
+}).join('')}</div>`).join(''));
+</script>
+</body>
+</html>

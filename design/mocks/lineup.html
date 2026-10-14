@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Escalação</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: 560px minmax(0, 1fr); gap: 14px; }
+
+/* Pitch: the hero */
+.pitch { position: relative; border-radius: var(--r-s); overflow: hidden; box-shadow: var(--sh-page); background: repeating-linear-gradient(180deg, #0E8442 0 62px, #0B7A3B 62px 124px); }
+[data-theme='dark'] .pitch { background: repeating-linear-gradient(180deg, #0A5E31 0 62px, #08532B 62px 124px); }
+.pitch .ln { position: absolute; border: 3px solid rgba(255,255,255,.34); }
+.pitch .out { inset: 16px; border-radius: 4px; }
+.pitch .half { left: 16px; right: 16px; top: 50%; height: 0; border-width: 3px 0 0; }
+.pitch .cc { left: 50%; top: 50%; width: 132px; height: 132px; margin: -66px 0 0 -66px; border-radius: 50%; }
+.pitch .box { left: 50%; width: 300px; height: 96px; margin-left: -150px; }
+.pitch .box.t { top: 16px; border-top: 0; } .pitch .box.b { bottom: 16px; border-bottom: 0; }
+.pitch .six { left: 50%; width: 136px; height: 38px; margin-left: -68px; }
+.pitch .six.t { top: 16px; border-top: 0; } .pitch .six.b { bottom: 16px; border-bottom: 0; }
+.pitch .arc { left: 50%; width: 110px; height: 110px; margin-left: -55px; border-radius: 50%; clip-path: inset(0 0 0 0); }
+.pitch .arc.t { top: 56px; clip-path: inset(56% 0 0 0); } .pitch .arc.b { bottom: 56px; clip-path: inset(0 0 56% 0); }
+.pitch .att { position: absolute; left: 30px; top: 26px; display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,.78); font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; }
+.pitch .att i { font-size: 13px; }
+
+/* Player sticker on the pitch */
+.pl { position: absolute; width: 134px; margin-left: -67px; margin-top: -30px; padding: 6px 8px 7px; border-radius: 10px; background: var(--card); box-shadow: 0 0 0 1px rgba(20,35,26,.12), 0 8px 14px -6px rgba(0,0,0,.55); }
+.pl .t { display: flex; align-items: center; gap: 6px; }
+.pl .t .pos { width: 20px; height: 20px; font-size: 10px; }
+.pl .t b { font-weight: 800; font-size: 13px; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl .s { display: flex; align-items: center; gap: 7px; margin-top: 5px; }
+.pl .s .f { font-stretch: var(--wide); font-weight: 900; font-size: 15px; line-height: 1; min-width: 22px; }
+.pl .s .f s { font-stretch: 100%; font-weight: 600; font-size: 10.5px; color: var(--mute); margin-left: 3px; text-decoration-thickness: 1.5px; }
+.pl .s .en { flex: 1; width: auto; height: 6px; margin: 0; }
+.pl .s small { font-weight: 700; font-size: 10.5px; color: var(--mute); }
+.pl .cap { position: absolute; right: -7px; top: -8px; width: 22px; height: 22px; border-radius: 50%; background: var(--yellow); color: var(--on-yellow); display: grid; place-items: center; font-stretch: var(--wide); font-weight: 900; font-size: 11px; box-shadow: 0 0 0 2px #fff, 0 2px 4px -1px rgba(20,35,26,.4); transform: rotate(8deg); }
+.pl .tag { position: absolute; left: 50%; bottom: -21px; transform: translateX(-50%) rotate(-2deg); height: 19px; padding: 0 8px; display: flex; align-items: center; gap: 4px; border-radius: 4px; font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; white-space: nowrap; box-shadow: 0 2px 5px -2px rgba(0,0,0,.45); }
+.pl .tag.sec { background: var(--yellow); color: var(--on-yellow); }
+.pl .tag.imp { background: var(--red); color: var(--on-red); transform: translateX(-50%) rotate(2deg); }
+.pl.imp { box-shadow: 0 0 0 3px var(--red), 0 8px 14px -6px rgba(0,0,0,.55); }
+.pl.sec { box-shadow: 0 0 0 3px var(--yellow), 0 8px 14px -6px rgba(0,0,0,.55); }
+.pl.sel { transform: rotate(-2deg); }
+
+/* Right column */
+.col { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.hd { display: flex; align-items: center; gap: 14px; }
+.hd h1 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; letter-spacing: -.01em; line-height: 1; }
+.hd p { font-size: 12.5px; color: var(--mute); margin-top: 4px; }
+.hd p b { color: var(--ink); font-weight: 700; }
+.opp { margin-left: auto; display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 9px; transform: rotate(1.5deg); }
+.opp b { display: block; font-weight: 800; font-size: 14px; line-height: 1.1; }
+.opp small { font-size: 11.5px; color: var(--mute); }
+.mini { width: 44px; height: 58px; border-radius: 5px; background: repeating-linear-gradient(180deg, #0E8442 0 10px, #0B7A3B 10px 20px); position: relative; flex: none; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.35); }
+.mini i { position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: #fff; }
+
+.ctl { display: flex; align-items: center; gap: 10px; }
+.ctl .field b { font-stretch: var(--semi); font-weight: 900; }
+.tac { flex: 1; display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 6px 0 14px; border-radius: var(--r-pill); background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line-2); font-size: 12.5px; min-width: 0; }
+.tac span { white-space: nowrap; }
+.tac .tl { font-stretch: var(--semi); font-weight: 800; font-size: 10px; letter-spacing: .08em; color: var(--mute); text-transform: uppercase; }
+.tac span b { font-weight: 800; }
+.tac .sep { width: 4px; height: 4px; border-radius: 50%; background: var(--line-2); flex: none; }
+.tac .sug { margin-left: auto; display: flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; border-radius: var(--r-pill); background: var(--yellow-l); color: var(--later); font-weight: 800; font-size: 11.5px; }
+
+.bench { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.bench .tb td { height: 33px; }
+.bench .tb th:first-child, .bench .tb td:first-child { padding-left: 14px; }
+.bench .tb td .note-s { font-stretch: 100%; font-size: 11.5px; color: var(--mute); }
+.bench .tb td .note-s.w { color: var(--later); font-weight: 700; }
+.bench .tb tr.g td { height: 26px; background: var(--paper); font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); border-bottom: 1px solid var(--line); }
+.bench .tb tr.out td { color: var(--mute); }
+.bench .tb tr.out td.nm { color: var(--ink-2); font-weight: 600; }
+.bench .tb .inj { color: var(--red); font-size: 13px; vertical-align: -2px; margin-left: 6px; }
+.bench .tb tr.hint td { background: var(--green-l); }
+.bench .tb .sw-in { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 8px; border-radius: var(--r-pill); background: var(--green); color: #fff; font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; }
+
+.foot { display: flex; align-items: center; gap: 20px; padding: 2px 2px 0; }
+.foot .k { line-height: 1.15; }
+.foot .k span { display: block; font-size: 11.5px; color: var(--mute); }
+.foot .k b { font-stretch: var(--wide); font-weight: 900; font-size: 22px; }
+.foot .k b small { font-stretch: 100%; font-weight: 700; font-size: 12px; color: var(--red); margin-left: 4px; }
+.foot .esc { margin-left: auto; }
+.foot .go { height: 56px; padding: 0 30px 0 34px; font-size: 22px; }
+.foot .go i { font-size: 22px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="times"></div>
+  <main><div class="wrap">
+    <div class="pitch" id="pitch">
+      <span class="ln out"></span><span class="ln half"></span><span class="ln cc"></span>
+      <span class="ln box t"></span><span class="ln six t"></span><span class="ln arc t"></span>
+      <span class="ln box b"></span><span class="ln six b"></span><span class="ln arc b"></span>
+      <span class="att"><i class="ph-bold ph-arrow-up"></i>Ataque</span>
+    </div>
+
+    <div class="col">
+      <div class="hd">
+        <div><h1>Escalação</h1><p>Série A, 30ª rodada · <b>Maracanã, hoje 16h</b></p></div>
+        <div class="stk opp"><span data-crest="PAL" data-size="34"></span><div><b>Palmeiras</b><small>4-4-2 · Abel Ferreira</small></div>
+          <div class="mini" id="mini"></div></div>
+      </div>
+
+      <div class="ctl">
+        <span class="field"><small>Formação</small><b>4-2-3-1</b><i class="ph-bold ph-caret-down"></i></span>
+        <div class="tac" title="Abrir tática">
+          <small class="tl">Tática</small><span><b>Ofensivo</b></span><i class="sep"></i><span><b>Marcação pesada</b></span><i class="sep"></i><span><b>Pelo meio</b></span>
+          <span class="sug"><i class="ph-bold ph-user-switch"></i>3 sugestões<i class="ph-bold ph-caret-right"></i></span>
+        </div>
+      </div>
+
+      <div class="page bench"><table class="tb"><thead><tr><th class="l" style="width:46px">P</th><th class="l">Reservas · 9 de 12</th><th>L</th><th>F</th><th class="l">Energia</th><th class="l"></th></tr></thead><tbody id="bench"></tbody></table></div>
+
+      <div class="foot">
+        <div class="k"><span>Força do time</span><b>77,7<small>−1,7 vs auxiliar</small></b></div>
+        <div class="k"><span>Entrosamento</span><b>71</b></div>
+        <button class="btn esc" title="O auxiliar escala os 11 melhores"><i class="ph-bold ph-strategy"></i>Escalar time</button>
+        <button class="btn go"><b>Jogar</b><i class="ph-bold ph-caret-double-right"></i></button>
+      </div>
+    </div>
+  </div></main>
+</div>
+<script>
+const S = Object.fromEntries(SQUAD.map((r) => [r[1], r]));
+// [name, x%, y%, tag]
+const XI = [
+  ['Pedro', 50, 10],
+  ['Samuel Lino', 18, 28], ['Arrascaeta', 50, 31], ['Plata', 82, 28, 'sec'],
+  ['Jorginho', 33, 50], ['Evertton Araújo', 67, 50],
+  ['Ayrton Lucas', 14, 68], ['Erick Pulgar', 38, 74, 'imp'], ['Léo Ortiz', 62, 74], ['Varela', 86, 68],
+  ['Rossi', 50, 90],
+];
+const short = { 'Evertton Araújo': 'Evertton', 'Erick Pulgar': 'Pulgar', 'Samuel Lino': 'Samuel Lino' };
+document.getElementById('pitch').insertAdjacentHTML('beforeend', XI.map(([n, x, y, tag]) => {
+  const r = S[n === 'Erick Pulgar' ? 'Pulgar' : n];
+  const [p, , , f, e] = r;
+  const en = e < 70 ? 'low' : e < 85 ? 'mid' : '';
+  const adj = tag === 'imp' ? Math.round(f * .85) : tag === 'sec' ? Math.round(f * .97) : f;
+  const fHtml = adj !== f ? `${adj}<s>${f}</s>` : f;
+  const tagHtml = tag === 'imp' ? '<span class="tag imp"><i class="ph-fill ph-warning"></i>Improvisado na zaga −15%</span>'
+    : tag === 'sec' ? '<span class="tag sec">2ª posição, meia −3%</span>' : '';
+  const cap = n === 'Jorginho' ? '<span class="cap" title="Capitão">C</span>' : '';
+  return `<div class="pl ${tag || ''}" style="left:${x}%;top:${y}%">${cap}<div class="t"><span class="pos ${p}">${p}</span><b>${short[n] || n}</b></div><div class="s"><span class="f">${fHtml}</span><span class="en ${en}"><i style="width:${e}%"></i></span><small>${e}%</small></div>${tagHtml}</div>`;
+}).join(''));
+
+// Palmeiras 4-4-2 dots, attacking down
+const P442 = [[50, 10], [16, 30], [38, 28], [62, 28], [84, 30], [16, 55], [38, 58], [62, 58], [84, 55], [38, 82], [62, 82]];
+document.getElementById('mini').innerHTML = P442.map(([x, y]) => `<i style="left:${x}%;top:${y}%"></i>`).join('');
+
+const B = [
+  ['Léo Pereira', 'Poupado pra quarta', 'w', true], ['Vitão'], ['Carrascal', 'Cansado', 'w'], ['Paquetá'],
+  ['Andrew'], ['Emerson Royal'], ['De la Cruz'], ['Luiz Araújo'], ['Joaquín Freitas'],
+];
+const row = ([n, note, cls, hint]) => {
+  const [p, , l, f, e] = S[n];
+  const en = e < 70 ? 'low' : e < 85 ? 'mid' : '';
+  return `<tr><td class="l"><span class="pos ${p}">${p}</span></td><td class="l nm">${n}</td><td class="dim">${l}</td><td style="font-weight:800">${f}</td><td class="l"><span class="en ${en}"><i style="width:${e}%"></i></span>${e}%</td><td class="l">${n === 'Vitão' ? '<span class="sw-in"><i class="ph-bold ph-arrows-left-right"></i>Zagueiro de origem</span>' : note ? `<span class="note-s ${cls || ''}">${note}</span>` : ''}</td></tr>`;
+};
+const out = (n, note, inj) => { const [p, , l, f] = S[n]; return `<tr class="out"><td class="l"><span class="pos ${p}" style="opacity:.55">${p}</span></td><td class="l nm">${n}${inj ? '<i class="ph-fill ph-first-aid inj"></i>' : ''}</td><td class="dim">${l}</td><td>${f}</td><td class="l" colspan="2"><span class="note-s">${note}</span></td></tr>`; };
+document.getElementById('bench').innerHTML = B.map(row).join('')
+  + '<tr class="g"><td class="l" colspan="6">Fora da lista</td></tr>'
+  + out('Alex Sandro', 'Contrato acaba em dez') + out('Danilo', 'Contrato acaba em dez') + out('Bruno Henrique', 'Machucado · volta em 2 jogos', true);
+</script>
+</body>
+</html>

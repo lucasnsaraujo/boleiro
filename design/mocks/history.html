@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Histórico</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.spread { position: absolute; inset: 16px 64px 14px 14px; display: grid; grid-template-columns: 1fr 1fr; }
+.pl, .pr { position: relative; overflow: hidden; padding: 20px 22px 26px; display: flex; flex-direction: column; }
+.pl { border-radius: 8px 0 0 8px; background: linear-gradient(270deg, rgba(20,35,26,.08), rgba(20,35,26,0) 26px), var(--card); }
+.pr { border-radius: 0 8px 8px 0; background: linear-gradient(90deg, rgba(20,35,26,.08), rgba(20,35,26,0) 26px), var(--card); padding-left: 30px; }
+.pgno { position: absolute; bottom: 8px; font-stretch: var(--semi); font-weight: 900; font-size: 11px; color: var(--line-2); }
+.pl .pgno { left: 24px; } .pr .pgno { right: 24px; }
+
+.ph { display: flex; align-items: flex-end; gap: 14px; }
+.ph .yr { font-stretch: var(--wide); font-weight: 900; font-size: 42px; line-height: .85; letter-spacing: -.03em; color: #C8102E; }
+.ph h2 { font-stretch: var(--wide); font-weight: 900; font-size: 17px; line-height: 1.05; white-space: nowrap; }
+.ph p { font-size: 12px; color: var(--mute); margin-top: 3px; }
+.ph .cnt { margin-left: auto; text-align: right; font-size: 11.5px; color: var(--mute); white-space: nowrap; }
+.ph .cnt b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 18px; color: var(--ink); line-height: 1; }
+
+.grid { margin-top: 20px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 18px 9px; }
+.ps { position: relative; padding: 4px 4px 0; background: #fff; border-radius: 8px; text-align: center; color: #14231A; box-shadow: 0 1px 0 rgba(20,35,26,.12), 0 0 0 1px rgba(20,35,26,.08), 0 6px 12px -7px rgba(20,35,26,.45); }
+.ps .art { height: 76px; border-radius: 5px; background: #C8102E; position: relative; overflow: hidden; display: grid; place-items: center; }
+.ps .art::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 7px, rgba(0,0,0,.24) 7px 14px); }
+.ps .art b { position: relative; font-stretch: var(--wide); font-weight: 900; font-size: 30px; color: #fff; }
+.ps .art em { position: absolute; left: 4px; top: 3px; font-style: normal; font-stretch: var(--semi); font-weight: 900; font-size: 9px; color: rgba(255,255,255,.85); }
+.ps .art .p { position: absolute; right: 3px; top: 3px; width: 15px; height: 15px; font-size: 8.5px; box-shadow: 0 0 0 1.5px #fff; }
+.ps .nm { font-stretch: var(--tight); font-weight: 800; font-size: 11.5px; line-height: 1.1; padding: 4px 1px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grid .ps .nm { white-space: normal; height: 30px; padding: 0 2px; display: flex; align-items: center; justify-content: center; line-height: 1.05; }
+.ps.shiny { background: var(--foil); box-shadow: 0 0 0 2.5px var(--yellow), 0 10px 16px -8px rgba(20,35,26,.5); }
+.ps.shiny .art { box-shadow: inset 0 0 0 2px rgba(255,204,0,.9); }
+.grid .sl { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px; text-align: center; font-size: 9.5px; line-height: 1.2; font-weight: 600; color: var(--mute); min-height: 106px; }
+.grid .sl i { font-size: 17px; color: var(--line-2); }
+.grid .sl b { font-weight: 800; font-size: 10.5px; color: var(--ink-2); }
+.leg { margin-top: auto; display: flex; gap: 18px; align-items: center; padding-top: 12px; border-top: 2px dotted var(--line-2); font-size: 11.5px; color: var(--mute); }
+.leg span { display: flex; align-items: center; gap: 6px; }
+.leg .sw1 { width: 14px; height: 14px; border-radius: 3px; background: var(--foil); box-shadow: 0 0 0 2px var(--yellow); }
+.leg .sw2 { width: 14px; height: 14px; border-radius: 3px; border: 2px dashed var(--line-2); }
+
+.sec { display: flex; align-items: baseline; gap: 10px; }
+.sec h3 { font-stretch: var(--wide); font-weight: 900; font-size: 18px; }
+.sec span { font-size: 12px; color: var(--mute); }
+.idols { margin-top: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.idols .ps .art { height: 104px; }
+.idols .ps .art b { font-size: 44px; }
+.idols .ps .nm { font-size: 12.5px; padding-bottom: 1px; }
+.idols .ps .cl { font-size: 10.5px; color: #5C584B; padding-bottom: 7px; }
+.idols .ps:nth-child(1) { transform: rotate(-2deg); }
+.idols .ps:nth-child(3) { transform: rotate(1.5deg); }
+.idols .ps.old .art { background: #8C1A1A; filter: saturate(.75) sepia(.2); }
+
+.titles { margin-top: 18px; }
+.tp { margin-top: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.tt { position: relative; padding: 10px 12px 10px; border-radius: 6px; background: var(--green); color: #fff; overflow: hidden; box-shadow: var(--sh-sticker); }
+.tt::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 22px, rgba(255,255,255,0) 22px 44px); }
+.tt.lib { background: #14231A; }
+.tt > * { position: relative; }
+.tt .tr { width: 30px; height: 30px; border-radius: 50%; background: var(--yellow); color: var(--on-yellow); display: grid; place-items: center; font-size: 16px; box-shadow: 0 2px 0 var(--yellow-d); float: right; }
+.tt .y { font-stretch: var(--wide); font-weight: 900; font-size: 24px; line-height: 1; }
+.tt b { display: block; font-weight: 800; font-size: 12.5px; margin-top: 4px; }
+.tt small { display: block; font-size: 11px; opacity: .8; margin-top: 1px; }
+
+.rec { margin-top: auto; }
+.rr { display: flex; justify-content: space-between; align-items: center; height: 32px; border-bottom: 1px solid var(--rule); font-size: 12.5px; }
+.rr:last-child { border-bottom: 0; }
+.rr span { color: var(--mute); }
+.rr b { font-weight: 700; }
+.tabs { position: absolute; right: 14px; top: 34px; display: flex; flex-direction: column; gap: 6px; width: 64px; }
+.tabs a { position: relative; height: 46px; padding-left: 14px; display: flex; flex-direction: column; justify-content: center; border-radius: 0 10px 10px 0; background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--line); font-stretch: var(--semi); font-weight: 900; font-size: 13px; color: var(--ink-2); line-height: 1.05; }
+.tabs a small { font-stretch: 100%; font-weight: 600; font-size: 9.5px; color: var(--mute); }
+.tabs a.on { background: var(--card); color: #C8102E; box-shadow: 3px 3px 0 -1px var(--line), inset 0 0 0 1px var(--line); margin-left: -6px; padding-left: 20px; }
+.tabs a.on small { color: var(--ink-2); }
+.tabs .gap { height: 10px; border-left: 2px dotted var(--line-2); margin-left: 24px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="historico"></div>
+  <main>
+    <div class="spread">
+      <section class="page pl">
+        <div class="ph"><span class="yr">2026</span><div><h2>Flamengo de Lucas Araujo</h2><p>Sua 1ª temporada · em andamento, 30ª rodada</p></div><div class="cnt"><b>23 de 27</b>figurinhas</div></div>
+        <div class="grid" id="grid"></div>
+        <div class="leg"><span><i class="sw1"></i>Brilhante: ídolo ou artilheiro</span><span><i class="sw2"></i>Ainda falta ganhar</span></div>
+        <span class="pgno">2026 · 1</span>
+      </section>
+      <section class="page pr">
+        <div class="sec"><h3>Ídolos</h3><span>figurinhas brilhantes, ficam no álbum para sempre</span></div>
+        <div class="idols" id="idols"></div>
+        <div class="titles">
+          <div class="sec"><h3>Antes de você</h3><span>páginas especiais dos últimos títulos</span></div>
+          <div class="tp">
+            <div class="tt lib"><span class="tr"><i class="ph-fill ph-trophy"></i></span><span class="y">2025</span><b>Libertadores</b><small>Filipe Luís · 1 × 0 Palmeiras, Lima</small></div>
+            <div class="tt"><span class="tr"><i class="ph-fill ph-trophy"></i></span><span class="y">2025</span><b>Brasileirão</b><small>Filipe Luís</small></div>
+            <div class="tt lib"><span class="tr"><i class="ph-fill ph-trophy"></i></span><span class="y">2022</span><b>Libertadores</b><small>Dorival Júnior · 1 × 0 Athletico-PR</small></div>
+            <div class="tt"><span class="tr"><i class="ph-fill ph-trophy"></i></span><span class="y">2020</span><b>Brasileirão</b><small>Rogério Ceni</small></div>
+            <div class="tt lib"><span class="tr"><i class="ph-fill ph-trophy"></i></span><span class="y">2019</span><b>Libertadores</b><small>Jorge Jesus · 2 × 1 River Plate, Lima</small></div>
+            <div class="tt"><span class="tr"><i class="ph-fill ph-trophy"></i></span><span class="y">2019</span><b>Brasileirão</b><small>Jorge Jesus</small></div>
+          </div>
+        </div>
+        <div class="rec"><div class="sec"><h3>Recordes</h3></div>
+          <div class="rr"><span>Artilheiro da história</span><b>Zico, 508 gols</b></div>
+          <div class="rr"><span>Mais jogos com a camisa</span><b>Júnior, 876</b></div>
+          <div class="rr"><span>Sua maior vitória</span><b>4 × 0 Vasco · 12 abr 2026</b></div>
+        </div>
+        <span class="pgno">2026 · 2</span>
+      </section>
+    </div>
+    <nav class="tabs"><a class="on">2026<small>você</small></a><div class="gap"></div><a>2025<small>antes</small></a><a>2024<small>antes</small></a><a>2023<small>antes</small></a><a>2022<small>antes</small></a><a>2021<small>antes</small></a><a style="font-size:11px">1895<small>início</small></a></nav>
+  </main>
+</div>
+<script>
+const shiny = { Pedro: 1, Arrascaeta: 1, 'Samuel Lino': 1 };
+const cells = SQUAD.map(([p, n], i) => `<div class="ps ${shiny[n] ? 'shiny' : ''}"><div class="art"><em>${String(i + 1).padStart(2, '0')}</em><span class="pos p ${p}">${p}</span><b>${n[0]}</b></div><div class="nm">${n}</div></div>`);
+const slots = [
+  ['ph-trophy', 'Campeão da Série A', 'faltam 9 rodadas, 3 pts atrás'],
+  ['ph-trophy', 'Campeão da Libertadores', 'semifinal, volta qua 28'],
+  ['ph-soccer-ball', 'Artilheiro do Brasileirão', 'Pedro tem 11, líder 17'],
+  ['ph-question', 'Figurinha rara', '???'],
+];
+document.getElementById('grid').innerHTML = cells.join('') + slots.map(([ic, t, s]) => `<div class="slot sl"><i class="ph-bold ${ic}"></i><b>${t}</b>${s}</div>`).join('');
+const I = [
+  ['Z', 'Zico', '1971 a 1989 · 508 gols', 1],
+  ['G', 'Gabigol', '2019 a 2024 · 2 Libertadores'],
+  ['A', 'Arrascaeta', 'desde 2019 · camisa 10'],
+  ['B', 'Bruno Henrique', 'desde 2020 · para em dez'],
+];
+document.getElementById('idols').innerHTML = I.map(([ini, n, s, old]) => `<div class="ps shiny ${old ? 'old' : ''}"><div class="art"><b>${ini}</b></div><div class="nm">${n}</div><div class="cl">${s}</div></div>`).join('');
+</script>
+</body>
+</html>
