@@ -1,26 +1,27 @@
 // Live round board: your match as the hero band, every match of the round below (Brasfoot's soul).
 // Row: [stadium, crowd, home, away, homeGoals, awayGoals, event, kind]
+// Round 31 of the real 2026 fixture list (ESPN). Scores, crowds and events are game state; every scorer plays for that club.
 const ROUND = [
-  { title: 'Brasileirão Série A · 30ª rodada', rows: [
-    ['Maracanã', '61.832', 'FLA', 'PAL', 2, 1, ['gol', 'Pedro', "63'"], 'human'],
-    ['Neo Química Arena', '44.120', 'COR', 'SAO', 1, 0, ['gol', 'Garro', "66'"], 'flash'],
-    ['Arena do Grêmio', '50.004', 'GRE', 'INT', 0, 0, ['var', 'pênalti em Carlos Vinícius']],
-    ['Arena MRV', '44.590', 'CAM', 'CRU', 1, 1, ['am', 'Lyanco', "64'"]],
-    ['Nilton Santos', '38.201', 'BOT', 'FLU', 2, 0, ['gol', 'Arthur Cabral', "59'"]],
-    ['Fonte Nova', '47.880', 'BAH', 'VIT', 3, 1, ['vm', 'Luan Cândido', "61'"]],
-    ['Vila Belmiro', '15.420', 'SAN', 'VAS', 1, 2, ['gol', 'Andrés Gómez', "57'"]],
-    ['Ligga Arena', '37.100', 'CAP', 'CFC', 1, 0, ['gol', 'Kevin Viveros', "34'"]],
-    ['Nabi Abi Chedid', '9.870', 'RBB', 'MIR', 0, 1, ['pen', 'Alesson vai bater']],
-    ['Arena Condá', '14.302', 'CHA', 'REM', 0, 0, null],
+  { title: 'Brasileirão Série A · 31ª rodada', logo: 'competitions/serie-a.svg', rows: [
+    ['Fonte Nova', '45.118', 'BAH', 'FLA', 1, 2, ['gol', 'Pedro', "63'"], 'human'],
+    ['Arena da Baixada', '38.904', 'CAP', 'PAL', 1, 0, ['gol', 'Kevin Viveros', "66'"], 'flash'],
+    ['Maião', '9.870', 'MIR', 'INT', 0, 0, ['var', 'pênalti em Carbonero']],
+    ['Nilton Santos', '27.310', 'BOT', 'CHA', 2, 0, ['gol', 'Arthur Cabral', "59'"]],
+    ['Arena MRV', '36.220', 'CAM', 'CFC', 1, 1, ['am', 'Lyanco', "64'"]],
+    ['MorumBIS', '41.580', 'SAO', 'VAS', 1, 2, ['gol', 'Andrés Gómez', "57'"]],
+    ['Maracanã', '38.415', 'FLU', 'SAN', 1, 0, ['gol', 'John Kennedy', "52'"]],
+    ['Arena do Grêmio', '35.006', 'GRE', 'CRU', 0, 0, ['pen', 'Kaio Jorge vai bater']],
+    ['Mangueirão', '31.210', 'REM', 'RBB', 0, 1, ['gol', 'Isidro Pitta', "62'"]],
+    ['Neo Química Arena', '40.880', 'COR', 'VIT', 2, 1, ['vm', 'Raniele', "61'"]],
   ]},
-  { title: 'Brasileirão Série B · 30ª rodada', rows: [
-    ['Castelão', '52.310', 'FOR', 'CEA', 1, 1, ['gol', 'Paulo Baya', "55'"]],
-    ['Ilha do Retiro', '22.400', 'SPT', 'NAU', 2, 0, null],
-    ['Serrinha', '11.300', 'GOI', 'VNO', 0, 0, ['am', 'Lucas Lima', "48'"]],
-    ['Alfredo Jaconi', '8.940', 'JUV', 'CRI', 1, 0, null],
-    ['Independência', '7.650', 'AME', 'CUI', 0, 1, ['gol', 'Eliel', "62'"]],
-    ['Ressacada', '9.120', 'AVA', 'PON', 2, 2, ['gol', 'Léo Gamalho', "66'"]],
-    ['Rei Pelé', '18.770', 'CRB', 'NOV', 0, 0, null],
+  { title: 'Brasileirão Série B · 31ª rodada', logo: 'competitions/serie-b.svg', rows: [
+    ['Ilha do Retiro', '19.230', 'SPT', 'FOR', 1, 1, ['gol', 'Chrystian Barletta', "55'"]],
+    ['Castelão', '28.400', 'CEA', 'JUV', 2, 0, null],
+    ['Independência', '6.880', 'AME', 'OPE', 0, 0, ['am', 'Matías Segovia', "48'"]],
+    ['Ressacada', '7.150', 'AVA', 'ATH', 1, 0, null],
+    ['Rei Pelé', '12.040', 'CRB', 'BFS', 0, 1, ['gol', 'Everton Morelli', "62'"]],
+    ['Primeiro de Maio', '5.310', 'SBE', 'CRI', 2, 2, ['gol', 'Rómulo Otero', "66'"]],
+    ['OBA', '6.950', 'VNO', 'NOV', 0, 0, null],
   ]},
 ];
 
@@ -36,7 +37,7 @@ function eventHTML(ev) {
 }
 
 function renderLive({ os = 'mac', varPause = false } = {}) {
-  const rows = ROUND.map((gp) => `<div class="g">${gp.title}</div>` + gp.rows.map(([st, pub, h, a, hg, ag, ev, kind]) => {
+  const rows = ROUND.map((gp) => `<div class="g">${logo(gp.logo, 20, 'crest')}${gp.title}</div>` + gp.rows.map(([st, pub, h, a, hg, ag, ev, kind]) => {
     const H = CLUBS[h], A = CLUBS[a];
     const box = (v, lead) => `<div class="sbox ${kind === 'flash' && lead ? 'lead' : ''}">${v}</div>`;
     const evh = (kind === 'flash' ? '<span class="gol">Gol</span>' : '') + eventHTML(varPause && kind === 'human' ? ['var', 'gol de Pedro'] : ev);
@@ -52,18 +53,18 @@ function renderLive({ os = 'mac', varPause = false } = {}) {
   document.body.innerHTML = `<div class="app">
   ${chrome(os, 'Boleiro · Flamengo 2026')}
   <section class="cover ${varPause ? 'dim-hero' : ''}">
-    <div class="ttl"><h3>Brasileirão Série A<span>30ª rodada · Dom, 25 out</span></h3>
+    <div class="ttl"><h3>${logo('competitions/serie-a.svg', 30, 'crest')}Brasileirão Série A<span>31ª rodada · Dom, 18 out</span></h3>
       <div class="r">${clock}
         <div class="sp" title="Espaço pausa · 1 a 3 velocidade"><span class="${varPause ? 'on' : ''}"><i class="ph-fill ph-pause"></i></span><span>1×</span><span class="${varPause ? '' : 'on'}">2×</span><span>4×</span></div>
         <label class="mine">Só meus jogos<span class="sw"></span></label></div></div>
     <div class="feat">
-      <div class="stad"><b>Maracanã</b>Público 61.832<br>Renda R$ 4,9 mi<div class="ref"><em>VAR</em>Árbitro Wilton Pereira Sampaio</div></div>
+      <div class="stad"><b>Fonte Nova</b>Público 45.118<br>Renda R$ 3,1 mi<div class="ref"><em>VAR</em>Árbitro Wilton Pereira Sampaio</div></div>
       <div class="mid">
-        <div class="duel"><div class="stk tm h you">${crest('FLA', 54)}<b>Flamengo</b><small>Seu time</small></div><div class="sc">2<span>×</span>1</div><div class="stk tm a">${crest('PAL', 54)}<b>Palmeiras</b><small>Abel Ferreira</small></div></div>
-        <div class="evs"><span><i class="ph-fill ph-soccer-ball"></i>Samuel Lino 18'</span><span><i class="ph-fill ph-soccer-ball"></i>Flaco López 41'</span><span class="last"><i class="ph-fill ph-soccer-ball"></i>Pedro 63'</span></div>
+        <div class="duel"><div class="stk tm h">${crest('BAH', 54)}<b>Bahia</b><small>Rogério Ceni</small></div><div class="sc">1<span>×</span>2</div><div class="stk tm a you">${crest('FLA', 54)}<b>Flamengo</b><small>Seu time</small></div></div>
+        <div class="evs"><span><i class="ph-fill ph-soccer-ball"></i>Samuel Lino 18'</span><span><i class="ph-fill ph-soccer-ball"></i>Luciano Juba 41'</span><span class="last"><i class="ph-fill ph-soccer-ball"></i>Pedro 63'</span></div>
       </div>
       <div class="right">
-        <div class="stats"><b>54%</b><em>posse de bola</em><b>46%</b><div class="pb"><i style="flex:54;background:#C8102E"></i><i style="flex:46;background:#006437"></i></div><b>11</b><em>finalizações</em><b>7</b><b>5/6</b><em>no gol / fora</em><b>3/4</b><b>14</b><em>desarmes</em><b>17</b></div>
+        <div class="stats"><b>46%</b><em>posse de bola</em><b>54%</b><div class="pb"><i style="flex:46;background:#0050A0"></i><i style="flex:54;background:#C8102E"></i></div><b>7</b><em>finalizações</em><b>11</b><b>3/4</b><em>no gol / fora</em><b>5/6</b><b>17</b><em>desarmes</em><b>14</b></div>
         <button class="btn y"><i class="ph-bold ph-strategy"></i>Escalação<small>5 trocas</small></button>
       </div>
     </div>

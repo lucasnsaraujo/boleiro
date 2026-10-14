@@ -14,7 +14,7 @@
 
 .wall { height: 118px; position: relative; background: #FFFFFF; display: grid; grid-template-columns: repeat(10, 1fr); grid-auto-rows: 40px; border-bottom: 3px solid var(--ink); box-shadow: inset 0 -12px 18px -14px rgba(20,35,26,.25); }
 .wall > span { display: grid; place-items: center; }
-.wall .bt { height: 15px; padding: 0 5px; border-radius: 3px; background: #FF5A00; color: #fff; font-stretch: var(--semi); font-weight: 900; font-size: 9px; display: grid; place-items: center; }
+.wall .bt { height: 16px; padding: 0 5px; border-radius: 3px; background: #fff; display: grid; place-items: center; box-shadow: 0 0 0 1px rgba(20,35,26,.1); }
 .ctx { position: absolute; left: 20px; top: 16px; z-index: 2; display: flex; align-items: center; gap: 8px; background: var(--ink); color: var(--card); border-radius: 999px; padding: 5px 12px 5px 6px; font-weight: 700; font-size: 12px; }
 .ctx b { background: var(--red); color: #fff; font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .08em; padding: 3px 7px; border-radius: 999px; display: inline-flex; gap: 5px; align-items: center; }
 .ctx b i { font-size: 8px; }
@@ -52,26 +52,26 @@
 <body>
 <script>
 renderHub('mac');
-const tiles = Array.from({ length: 30 }, (_, i) => ((i + Math.floor(i / 10)) % 2 ? '<span><span class="bt">Betano</span></span>' : `<span>${crest('FLA', 20)}</span>`)).join('');
+const tiles = Array.from({ length: 30 }, (_, i) => ((i + Math.floor(i / 10)) % 2 ? `<span><span class="bt">${logo('logos/betano.svg', 10)}</span></span>` : `<span>${crest('FLA', 20)}</span>`)).join('');
 document.querySelector('.app').insertAdjacentHTML('beforeend', `<div class="veil"></div>
 <div class="pop">
   <div class="wall">${tiles}</div>
-  <div class="ctx"><b><i class="ph-fill ph-circle"></i>Ao vivo</b>Coletiva antes de Flamengo × Palmeiras · hoje 16h</div>
+  <div class="ctx"><b><i class="ph-fill ph-circle"></i>Ao vivo</b>Coletiva antes de Bahia × Flamengo · hoje 18h30</div>
   <span class="x"><i class="ph-bold ph-x"></i></span>
   <div class="q">
-    <div class="rep"><span class="av">R</span><b>Renata Moura</b><small>Rádio Tupi</small></div>
-    <div class="bub"><p>“O Abel disse ontem que o Palmeiras vem ao Maracanã para sair campeão. Você responde a ele?”</p><small>Pergunta <b>2 de 3</b> · Palmeiras 61 pts, Flamengo 58</small></div>
+    <div class="rep"><span class="av">R</span><b>Renata Moura</b><small>Jornal do Boleiro</small></div>
+    <div class="bub"><p>“O Palmeiras está a um ponto e joga em Curitiba. O título passa pela Fonte Nova hoje?”</p><small>Pergunta <b>2 de 3</b> · Flamengo 64 pts, Palmeiras 63</small></div>
   </div>
   <div class="ans">
     <div class="fxh"><span class="lbl">Moral</span><span class="lbl">Diretoria</span><span class="lbl">Torcida</span><span class="lbl">Rivalidade</span></div>
-    <div class="a"><span class="k">1</span><div><b>“Respeito o Abel. Mas aqui a casa é nossa.”</b></div>
+    <div class="a"><span class="k">1</span><div><b>“Respeito o Palmeiras. Mas a liderança é nossa.”</b></div>
       <div class="fx"><span class="up">+3</span><span class="eq">0</span><span class="up">+2</span><span class="eq">+1</span></div></div>
-    <div class="a on"><span class="k">2</span><div><b>“O Abel fala muito. Às quatro da tarde a gente conversa.”</b><small>Abel deve responder no jornal de segunda</small></div>
+    <div class="a on"><span class="k">2</span><div><b>“Quem tem que olhar a tabela é o Palmeiras. A gente depende só da gente.”</b><small>Vira manchete no jornal de segunda</small></div>
       <div class="fx"><span class="up">+5</span><span class="dn">−3</span><span class="up">+6</span><span class="hot">+4</span></div></div>
     <div class="a"><span class="k">3</span><div><b>“Não falo do Palmeiras. Falo do Flamengo.”</b></div>
       <div class="fx"><span class="eq">0</span><span class="up">+2</span><span class="dn">−2</span><span class="eq">0</span></div></div>
   </div>
-  <div class="foot"><p>Rivalidade com <b>Abel Ferreira</b>: 3 jogos, 1 vitória de cada</p><button class="btn flat"><i class="ph-bold ph-user-switch"></i>O auxiliar responde</button><button class="btn go"><i class="ph-bold ph-microphone"></i>Responder</button></div>
+  <div class="foot"><p>Rivalidade com <b>Abel Ferreira</b>: briga direta pelo título</p><button class="btn flat"><i class="ph-bold ph-user-switch"></i>O auxiliar responde</button><button class="btn go"><i class="ph-bold ph-microphone"></i>Responder</button></div>
 </div>`);
 </script>
 </body>

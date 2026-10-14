@@ -73,7 +73,7 @@
     <div class="side">
       <div class="stk offer">
         <div class="tp"><span>Proposta para você</span><span class="chip wait"><i class="ph-bold ph-hourglass-medium"></i>Até 31 out</span></div>
-        <div class="who"><span data-crest="BEN" data-size="64"></span><div><h2>Benfica</h2><p>Liga Portugal · 1º lugar · começa em jul 2027</p></div></div>
+        <div class="who"><span data-crest="BEN" data-size="64"></span><div><h2>Benfica</h2><p>Liga Portugal · 2º lugar · começa em jul 2027</p></div></div>
         <dl>
           <dt>Salário</dt><dd><s>R$ 1,8 mi</s>R$ 2,6 mi por mês</dd>
           <dt>Contrato</dt><dd>jul 2027 a jun 2030</dd>
@@ -84,10 +84,10 @@
       </div>
 
       <div class="stk jobs"><h3>Vagas abertas <small>4 no Brasil</small></h3>
-        <div class="jr"><span data-crest="INT" data-size="26"></span><div><b>Internacional</b><small>Série A, 9º · demitiu em 19 out</small></div><div class="k"><b>6</b> candidatos</div></div>
-        <div class="jr"><span data-crest="CAM" data-size="26"></span><div><b>Atlético-MG</b><small>Série A, 10º · interino desde 12 out</small></div><div class="k"><b>9</b> candidatos</div></div>
-        <div class="jr"><span data-crest="FOR" data-size="26"></span><div><b>Fortaleza</b><small>Série B, 5º · demitiu em 22 out</small></div><div class="k"><b>3</b> candidatos</div></div>
-        <div class="jr"><span data-crest="CEA" data-size="26"></span><div><b>Ceará</b><small>Série B, 8º · demitiu em 5 out</small></div><div class="k"><b>11</b> candidatos</div></div>
+        <div class="jr"><span data-crest="GRE" data-size="26"></span><div><b>Grêmio</b><small>Série A, 18º · demitiu em 17 out</small></div><div class="k"><b>9</b> candidatos</div></div>
+        <div class="jr"><span data-crest="INT" data-size="26"></span><div><b>Internacional</b><small>Série A, 17º · técnico só até dezembro</small></div><div class="k"><b>6</b> candidatos</div></div>
+        <div class="jr"><span data-crest="CEA" data-size="26"></span><div><b>Ceará</b><small>Série B, 15º · demitiu em 16 out</small></div><div class="k"><b>11</b> candidatos</div></div>
+        <div class="jr"><span data-crest="AME" data-size="26"></span><div><b>América-MG</b><small>Série B, 19º · interino desde 15 out</small></div><div class="k"><b>3</b> candidatos</div></div>
       </div>
 
       <div class="foot">
@@ -98,28 +98,28 @@
 
     <div class="page rank">
       <div class="hd"><div class="seg"><span class="on">Técnicos</span><span>Clubes</span></div><p>Pontos de 2026 · Brasil, Séries A e B</p></div>
-      <table class="tb"><thead><tr><th>#</th><th class="l">Técnico</th><th class="l">Clube</th><th>Jogos</th><th class="l">Aproveitamento</th><th>Títulos</th><th>Pontos</th></tr></thead><tbody id="t"></tbody></table>
+      <table class="tb"><thead><tr><th>#</th><th class="l">Técnico</th><th class="l">Clube</th><th>Jogos</th><th class="l">Aproveitamento</th><th>Pontos</th></tr></thead><tbody id="t"></tbody></table>
     </div>
   </div></main>
 </div>
 <script>
-CLUBS.BEN = { n: 'Benfica', c1: '#E30613', c2: '#FFFFFF', p: 'solid', bg: '#E30613', fg: '#FFFFFF' };
-// [name, nationality, club or null, games, aprov, titles, points, move, since]
+// Who coaches where, and since when, is real (14 Oct 2026); the user replaced Flamengo's coach at the start of the
+// career. Games, win rate, points and moves are the game's own 2026 ranking. [name, nationality, club or null, games, aprov, points, move, since]
 const R = [
-  ['Abel Ferreira', 'Portugal', 'PAL', 44, 68, 10, '2.912', 0, 'desde 2020'],
-  ['Lucas Araujo', 'Brasil', 'FLA', 41, 64, 1, '2.488', 1, 'desde mar 2026 · você'],
-  ['Rogério Ceni', 'Brasil', 'BAH', 45, 57, 4, '2.130', -1, 'desde 2023'],
-  ['Filipe Luís', 'Brasil', null, 14, 62, 5, '1.974', 0, 'saiu do Flamengo em mar'],
-  ['Luís Castro', 'Portugal', 'GRE', 43, 51, 0, '1.702', 2, 'desde jan 2026'],
-  ['Tite', 'Brasil', null, 9, 33, 9, '1.655', -1, 'saiu do Cruzeiro em mar'],
-  ['Fernando Diniz', 'Brasil', null, 6, 39, 3, '1.410', 0, 'saiu do Vasco em fev'],
-  ['Rafael Guanaes', 'Brasil', 'MIR', 42, 48, 0, '1.388', 1, 'desde 2025'],
-  ['Clarence Seedorf', 'Holanda', 'COR', 21, 52, 0, '1.204', 3, 'desde ago 2026'],
-  ['Fábio Mathias', 'Brasil', 'CHA', 30, 37, 0, '1.032', -2, 'desde abr 2026'],
-  ['Hernán Crespo', 'Argentina', null, 8, 42, 2, '987', -1, 'saiu do São Paulo em mar'],
-  ['Jair Ventura', 'Brasil', 'VIT', 40, 39, 0, '921', 0, 'desde 2025'],
+  ['Lucas Araujo', 'Brasil', 'FLA', 57, 71, '3.104', 1, 'desde jan 2026 · você'],
+  ['Abel Ferreira', 'Portugal', 'PAL', 56, 70, '3.051', -1, 'desde 2020'],
+  ['Odair Hellmann', 'Brasil', 'CAP', 44, 59, '2.214', 2, 'desde mai 2025'],
+  ['Rogério Ceni', 'Brasil', 'BAH', 47, 55, '2.120', 0, 'desde 2023'],
+  ['Artur Jorge', 'Portugal', 'CRU', 40, 54, '1.980', -2, 'desde mar 2026'],
+  ['Eduardo Domínguez', 'Argentina', 'CAM', 41, 52, '1.874', 0, 'desde fev 2026'],
+  ['Cuca', 'Brasil', 'SAN', 38, 48, '1.611', 1, 'desde mar 2026'],
+  ['Fernando Diniz', 'Brasil', null, 33, 48, '1.402', -1, 'saiu do Corinthians em out'],
+  ['Marcão', 'Brasil', 'FLU', 14, 57, '1.250', 3, 'desde ago 2026'],
+  ['Jair Ventura', 'Brasil', 'VIT', 42, 45, '1.180', 0, 'desde set 2025'],
+  ['Luís Castro', 'Portugal', null, 30, 41, '1.103', -2, 'saiu do Grêmio em set'],
+  ['Tite', 'Brasil', 'BOT', 6, 50, '702', 1, 'desde set 2026'],
 ];
-document.getElementById('t').innerHTML = R.map(([n, nat, c, j, ap, tt, pts, mv, since], i) => {
+document.getElementById('t').innerHTML = R.map(([n, nat, c, j, ap, pts, mv, since], i) => {
   const k = c ? CLUBS[c] : null;
   const avBg = k ? (k.bg === '#FFFFFF' ? '#2A2A2A' : k.bg) : 'var(--line-2)';
   const en = ap >= 55 ? '' : ap >= 40 ? 'mid' : 'low';
@@ -127,7 +127,6 @@ document.getElementById('t').innerHTML = R.map(([n, nat, c, j, ap, tt, pts, mv, 
     <td class="l"><div class="co"><span class="av" style="background:${avBg};color:${k && /^#FF[DE]/.test(k.bg) ? k.fg : '#fff'}">${n[0]}</span><div><b>${n}</b><small>${nat} · ${since}</small></div></div></td>
     <td class="l">${k ? `<span class="cl">${crest(c, 20)}${k.n}</span>` : '<span class="cl free">sem clube</span>'}</td>
     <td>${j}</td><td class="l"><span class="ap"><span class="en ${en}"><i style="width:${ap}%"></i></span>${ap}%</span></td>
-    <td>${tt ? `<i class="ph-fill ph-trophy tr"></i> ${tt}` : '<span class="dim">0</span>'}</td>
     <td class="pts">${pts}${mv > 0 ? `<span class="mv up"><i class="ph-fill ph-caret-up"></i>${mv}</span>` : mv < 0 ? `<span class="mv dn"><i class="ph-fill ph-caret-down"></i>${-mv}</span>` : '<span class="mv" style="visibility:hidden"><i class="ph-fill ph-caret-up"></i>0</span>'}</td></tr>`;
 }).join('');
 </script>

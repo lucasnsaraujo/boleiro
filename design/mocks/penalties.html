@@ -87,11 +87,11 @@
 <div class="app">
   <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
   <section class="cover"><div class="cv">
-    <div class="comp"><b>Libertadores</b><span>Semifinal, volta · Maracanã · Qua, 28 out</span></div>
+    <div class="comp"><span class="logo-chip" style="display:inline-grid;opacity:1;margin:0"><span data-logo="competitions/libertadores.svg" data-h="18"></span></span><span>Semifinal, volta · Maracanã · Qui, 22 out</span></div>
     <div class="duel">
       <div class="stk tm h"><span data-crest="FLA" data-size="46"></span><b>Flamengo</b><small>Seu time</small></div>
       <div class="sc"><div class="n">1<span>×</span>1</div><span class="ag">Ida 1 × 1 · agregado 2 × 2</span></div>
-      <div class="stk tm a"><span data-crest="RIV" data-size="46"></span><b>River Plate</b><small>Marcelo Gallardo</small></div>
+      <div class="stk tm a"><span data-crest="EST" data-size="46"></span><b>Estudiantes</b><small>Alexander Medina</small></div>
     </div>
     <div class="pk"><span data-ball="34"></span><div><b>Pênaltis</b><span>Flamengo bate primeiro</span></div></div>
   </div></section>
@@ -108,9 +108,9 @@
         <div class="gkv">
           <div class="g1"><div class="ph" style="background:#C8102E">R<span class="cr" data-crest="FLA" data-size="24"></span></div><b>Rossi</b><small>Defesa de pênalti</small><div class="v hi">84</div></div>
           <span class="x">×</span>
-          <div class="g1"><div class="ph" style="background:#B8202A">A<span class="cr" data-crest="RIV" data-size="24"></span></div><b>Armani</b><small>Defesa de pênalti</small><div class="v">81</div></div>
+          <div class="g1"><div class="ph" style="background:#B8202A">M<span class="cr" data-crest="EST" data-size="24"></span></div><b>Muslera</b><small>Defesa de pênalti</small><div class="v">80</div></div>
         </div>
-        <p>No ano: Rossi pegou <b>3 de 8</b> pênaltis, Armani <b>2 de 9</b>.</p>
+        <p>Nas quartas de 2025, Rossi pegou as cobranças de <b>Benedetti</b> e <b>Ascacíbar</b> e eliminou o Estudiantes.</p>
       </div>
       <div class="stk aux"><h3>Ordem do auxiliar</h3><span class="who"><i class="ph-bold ph-user-switch"></i>O mais frio bate a quinta</span>
         <div class="ao" id="ao"></div>
@@ -124,11 +124,11 @@
 const S = Object.fromEntries(SQUAD.map((r) => [r[1], r]));
 // [name, penalty skill, note, warn]
 const MAIN = [
-  ['Jorginho', 90, '6 de 6 na temporada'],
-  ['Arrascaeta', 85, '3 de 4'],
-  ['Pedro', 84, '4 de 5'],
+  ['Jorginho', 90, ''],
+  ['Pedro', 84, ''],
+  ['Paquetá', 82, ''],
   ['Samuel Lino', 76, 'Cansado, 41% de energia', true],
-  ['De la Cruz', 78, '1 de 1'],
+  ['De la Cruz', 78, ''],
 ];
 const ALT = [['Léo Ortiz', 72, 'Z'], ['Plata', 74, 'A'], ['Pulgar', 70, 'M'], ['Varela', 66, 'L'], ['Vitão', 61, 'Z'], ['Rossi', 55, 'G']];
 const row = ([n, sk, note, w], i) => {
@@ -137,7 +137,7 @@ const row = ([n, sk, note, w], i) => {
 };
 document.getElementById('main').innerHTML = MAIN.map(row).join('');
 document.getElementById('alt').innerHTML = ALT.map(([n, sk, p], i) => `<div class="k"><i class="ph-bold ph-dots-six-vertical h"></i><span class="no">${i + 6}</span><span class="pos ${p}">${p}</span><div class="nm"><b>${n}</b></div><div class="sk"><span class="meter thin ${sk < 65 ? 'low' : sk < 75 ? 'mid' : ''}"><i style="width:${sk}%"></i></span><b>${sk}</b></div><span class="nt"></span></div>`).join('');
-const AO = [['Pedro', 'up', 2], ['Arrascaeta'], ['De la Cruz', 'up', 2], ['Plata', 'up', 'entra'], ['Jorginho', 'dn', 4]];
+const AO = [['Pedro', 'up', 1], ['Paquetá', 'up', 1], ['De la Cruz', 'up', 2], ['Plata', 'up', 'entra'], ['Jorginho', 'dn', 4]];
 document.getElementById('ao').innerHTML = AO.map(([n, d, v], i) => `<div><span class="n">${i + 1}</span><b>${n}</b>${d ? `<span class="mv ${d}"><i class="ph-fill ph-caret-${d === 'up' ? 'up' : 'down'}"></i>${v}</span>` : '<span></span>'}</div>`).join('');
 </script>
 </body>

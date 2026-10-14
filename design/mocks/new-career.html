@@ -52,11 +52,11 @@ h2 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; letter-spacin
         <label class="name"><span class="lbl">Nome</span><span class="field">Lucas Araujo<i class="ph-bold ph-pencil-simple"></i></span></label>
         <div class="stk pick"><span data-crest="FLA" data-size="70"></span><div><h3>Flamengo</h3><p>Rio de Janeiro · Maracanã, 78.838 lugares</p></div></div>
         <div class="facts">
-          <span>Força do elenco</span><b>79 · 2ª da Série A</b>
+          <span>Força do elenco</span><b>78 · 2ª da Série A</b>
           <span>Caixa</span><b>R$ 84,3 mi</b>
-          <span>Folha mensal</span><b>R$ 14,1 mi</b>
+          <span>Folha mensal</span><b>R$ 52,3 mi</b>
           <span>A diretoria quer</span><b>Título da Série A</b>
-          <span>Estreia</span><b>Remo, no Maracanã · 28 jan</b>
+          <span>Estreia</span><b>São Paulo, no MorumBIS · 28 jan</b>
           <span>Rivais</span><b class="rv"><span data-crest="VAS" data-size="20"></span><span data-crest="FLU" data-size="20"></span><span data-crest="BOT" data-size="20"></span></b>
         </div>
         <div class="aux"><div><b>O auxiliar escala e renova contratos</b><br><span class="mute">Você assume quando quiser, em Auxiliar.</span></div><span class="sw on"></span></div>
@@ -74,7 +74,8 @@ h2 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; letter-spacin
   </main>
 </div>
 <script>
-const PICK = [['CAP', 75], ['CAM', 76], ['BAH', 77], ['BOT', 77], ['RBB', 76], ['CHA', 70], ['COR', 76], ['CFC', 73], ['CRU', 78], ['FLA', 79], ['FLU', 76], ['GRE', 75], ['INT', 76], ['MIR', 73], ['PAL', 79], ['REM', 70], ['SAN', 75], ['SAO', 75], ['VAS', 76], ['VIT', 73]];
+// Força: mean strength of each club's best 4-3-3 eleven in data/players.csv.
+const PICK = [['CAP', 76], ['CAM', 76], ['BAH', 76], ['BOT', 76], ['RBB', 75], ['CHA', 71], ['COR', 76], ['CFC', 73], ['CRU', 77], ['FLA', 78], ['FLU', 76], ['GRE', 75], ['INT', 75], ['MIR', 74], ['PAL', 79], ['REM', 72], ['SAN', 76], ['SAO', 74], ['VAS', 76], ['VIT', 74]];
 document.getElementById('grid').innerHTML = PICK.map(([k, f], i) => {
   const c = CLUBS[k], mine = k === 'FLA';
   return `<div class="stk cs ${mine ? 'mine' : ''} ${k === 'PAL' ? 'hov' : ''}"><span class="no">${String(i + 1).padStart(2, '0')}</span>${crest(k, 48)}<div><div class="nm">${c.n}</div><div class="meta">${mine ? '<b style="color:var(--green)">Seu time</b>' : 'Força ' + f}</div></div></div>`;

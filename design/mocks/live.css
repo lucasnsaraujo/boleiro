@@ -4,7 +4,7 @@
 .cover::after { content: ''; position: absolute; left: 0; right: 0; top: 157px; height: 3px; background: rgba(255,255,255,.12); }
 
 .ttl { position: relative; z-index: 1; height: 50px; display: flex; align-items: center; gap: 12px; padding: 0 24px; }
-.ttl h3 { font-stretch: var(--wide); font-weight: 900; font-size: 17px; letter-spacing: -.01em; }
+.ttl h3 { display: flex; align-items: center; gap: 9px; font-stretch: var(--wide); font-weight: 900; font-size: 17px; letter-spacing: -.01em; }
 .ttl h3 span { font-stretch: 100%; font-weight: 600; font-size: 13px; opacity: .85; margin-left: 6px; letter-spacing: 0; }
 .ttl .r { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 .clock { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,.24); padding: 4px 5px 4px 12px; border-radius: 999px; font-weight: 700; font-size: 12px; }

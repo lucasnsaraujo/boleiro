@@ -93,16 +93,16 @@
           <div class="aw"><span class="ball au"><i class="ph-fill ph-soccer-ball"></i></span>Bola de Ouro</div>
           <h3>Samuel Lino</h3>
           <p>Flamengo, campeão brasileiro. Melhor jogador do campeonato.</p>
-          <div class="nums"><div><b>36</b>jogos</div><div><b>14</b>gols</div><div><b>11</b>assist.</div><div><b>7,8</b>nota</div></div>
+          <div class="nums"><div><b>36</b>jogos</div><div><b>12</b>gols</div><div><b>10</b>assist.</div><div><b>7,6</b>nota</div></div>
           <div class="votes">2º <b>Matheus Pereira</b> · 3º <b>Andreas Pereira</b></div>
         </div>
       </div>
       <div class="trio" id="trio"></div>
       <div class="rec"><h4>Recordes</h4>
-        <div class="rr"><span>Maior goleada de 2026</span><b>Cruzeiro 6 × 0 Chapecoense<small>22ª rodada</small></b></div>
+        <div class="rr"><span>Maior goleada de 2026</span><b>Vasco 5 × 0 Coritiba<small>19 set</small></b></div>
         <div class="rr"><span>Mais gols numa temporada</span><b>Washington, 34<small>Athletico-PR, 2004</small></b></div>
         <div class="rr"><span>Artilheiro histórico</span><b>Roberto Dinamite, 190<small>Vasco</small></b></div>
-        <div class="rr"><span>Maior invencibilidade de 2026</span><b>Flamengo, 17 jogos<small>da 12ª à 28ª</small></b></div>
+        <div class="rr"><span>Maior vitória fora de casa</span><b>Mirassol 1 × 5 Flamengo<small>16 ago</small></b></div>
       </div>
       <div class="acts"><button class="btn go"><i class="ph-bold ph-book-open-text"></i>Colar no álbum de 2026</button><button class="btn flat"><i class="ph-bold ph-list-numbers"></i>Votação completa</button></div>
       <span class="pgno">38</span>
@@ -123,13 +123,13 @@ function sticker(c, n, no, sub, cls = '', crestSize = 18) {
 }
 document.getElementById('gold').innerHTML = sticker('FLA', 'Samuel Lino', 'BO 26', 'Flamengo · atacante', 'win', 30);
 document.getElementById('trio').innerHTML = [
-  ['CRU', 'Kaio Jorge', 'Artilheiro', '23 gols · Cruzeiro'],
+  ['CAP', 'Kevin Viveros', 'Artilheiro', '26 gols · Athletico-PR'],
   ['CRU', 'Keny Arroyo', 'Revelação', '20 anos · Cruzeiro'],
   ['FLA', 'Lucas Araujo', 'Técnico', 'Flamengo campeão'],
 ].map(([c, n, t, s]) => `<div class="it">${sticker(c, n, '', '', 'win', 16)}<div><span class="lbl">${t}</span><b>${n}</b><small>${s}</small></div></div>`).join('');
 // Team of the year, attack at the top. [club, name, pos letter, number]
 const XI = [
-  [[ 'PAL', 'Jhon Arias', 'A' ], [ 'CRU', 'Kaio Jorge', 'A' ], [ 'FLA', 'Samuel Lino', 'A' ]],
+  [[ 'PAL', 'Jhon Arias', 'A' ], [ 'CAP', 'Kevin Viveros', 'A' ], [ 'FLA', 'Samuel Lino', 'A' ]],
   [[ 'CRU', 'Matheus Pereira', 'M' ], [ 'PAL', 'Marlon Freitas', 'M' ], [ 'PAL', 'Andreas Pereira', 'M' ]],
   [[ 'BOT', 'Vitinho', 'L' ], [ 'FLA', 'Léo Ortiz', 'Z' ], [ 'VAS', 'Robert Renan', 'Z' ], [ 'BAH', 'Luciano Juba', 'L' ]],
   [[ 'PAL', 'Carlos Miguel', 'G' ]],

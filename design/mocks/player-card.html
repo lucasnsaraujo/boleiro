@@ -6,10 +6,6 @@
 <link rel="stylesheet" href="../tokens/album.css">
 <link rel="stylesheet" href="mock.css">
 <script src="mock.js"></script>
-<script>
-CLUBS.DEF = { n: 'Defensor Sporting', c1: '#5B2C83', c2: '#FFFFFF', p: 'solid', bg: '#5B2C83', fg: '#FFFFFF', st: 'Franzini' };
-CLUBS.URU = { n: 'Uruguai', c1: '#5CBFEB', c2: '#FFFFFF', p: 'solid', bg: '#5CBFEB', fg: '#0B2340', st: 'Centenario' };
-</script>
 <style>
 .wrap { height: 100%; padding: 14px 14px 14px; display: grid; grid-template-columns: 372px minmax(0, 1fr); gap: 22px; }
 
@@ -70,6 +66,8 @@ CLUBS.URU = { n: 'Uruguai', c1: '#5CBFEB', c2: '#FFFFFF', p: 'solid', bg: '#5CBF
 .inj i { font-size: 18px; color: var(--green); }
 .inj b { font-weight: 800; }
 .inj span { color: var(--ink-2); }
+.inj.out { background: var(--red-l); }
+.inj.out i { color: var(--red); }
 
 .rel { display: flex; flex-direction: column; }
 .map { position: relative; height: 236px; margin-top: 6px; }
@@ -101,14 +99,14 @@ CLUBS.URU = { n: 'Uruguai', c1: '#5CBFEB', c2: '#FFFFFF', p: 'solid', bg: '#5CBF
   <div data-bar="times"></div>
   <main><div class="wrap">
     <div class="lft">
-      <div class="nav"><button class="btn sm flat"><i class="ph-bold ph-arrow-left"></i>Elenco</button><span>16 de 23</span><span class="ar"><span class="icb"><i class="ph-bold ph-caret-left"></i></span><span class="icb"><i class="ph-bold ph-caret-right"></i></span></span></div>
+      <div class="nav"><button class="btn sm flat"><i class="ph-bold ph-arrow-left"></i>Elenco</button><span>18 de 27</span><span class="ar"><span class="icb"><i class="ph-bold ph-caret-left"></i></span><span class="icb"><i class="ph-bold ph-caret-right"></i></span></span></div>
       <div class="big">
         <span class="idol"><i class="ph-fill ph-star"></i>Ídolo</span>
         <div class="ph"><span class="cr" data-crest="FLA" data-size="34"></span><b>A</b>
           <span class="nat"><span data-crest="URU" data-size="20"></span>Uruguai</span>
           <span class="f"><b>78</b><span>força</span></span></div>
         <h1>Arrascaeta</h1>
-        <div class="full">Giorgian de Arrascaeta · 32 anos · canhoto</div>
+        <div class="full">Giorgian de Arrascaeta · 32 anos · destro · camisa 10</div>
         <div class="ps"><span><span class="pos M">M</span>Meia, esquerda</span><span class="sec"><span class="pos A">A</span>2ª: ponta</span></div>
         <div class="en2"><span>Energia</span><span class="meter"><i style="width:100%"></i></span><span>100%</span></div>
       </div>
@@ -118,26 +116,25 @@ CLUBS.URU = { n: 'Uruguai', c1: '#5CBFEB', c2: '#FFFFFF', p: 'solid', bg: '#5CBF
     <div class="page det">
       <div class="sec">
         <h3>Contrato</h3>
-        <div class="kv"><span>Até</span><b class="w">jun 2027 · faltam 8 meses</b><span>Salário</span><b>R$ 890 mil por mês</b><span>Passe</span><b>R$ 84 mi</b><span>Multa pra fora</span><b>€ 50 mi</b></div>
+        <div class="kv"><span>Até</span><b>dez 2028</b><span>Salário</span><b>R$ 3,1 mi por mês</b><span>Passe</span><b>R$ 79 mi</b><span>Multa pra fora</span><b>€ 35 mi</b></div>
         <div class="tr2"><span class="trt"><i class="ph-bold ph-path"></i>Passe</span><span class="trt"><i class="ph-bold ph-target"></i>Finalização</span></div>
-        <div class="inj"><i class="ph-fill ph-heartbeat"></i><span><b>Sem lesão.</b> Última: coxa, mar 2026, 3 semanas fora.</span></div>
+        <div class="inj out"><i class="ph-fill ph-first-aid"></i><span><b>Machucado.</b> Fraturou o punho pela seleção em 28 set. Volta em meados de novembro.</span></div>
       </div>
       <div class="sec">
         <h3>Números</h3>
-        <table class="st"><tr><th></th><th>Temporada</th><th>Flamengo</th><th>Carreira</th></tr>
-          <tr><td>Jogos</td><td>26</td><td>341</td><td>562</td></tr>
-          <tr><td>Gols</td><td><b>5</b></td><td><b>88</b></td><td><b>139</b></td></tr>
-          <tr><td>Assistências</td><td>7</td><td>104</td><td>163</td></tr>
-          <tr><td>Nota média</td><td>7,4</td><td>7,5</td><td>7,2</td></tr>
-          <tr><td>Títulos</td><td>—</td><td>16</td><td>19</td></tr></table>
+        <table class="st"><tr><th></th><th>Série A 2026</th><th>Flamengo</th><th>Carreira</th></tr>
+          <tr><td>Jogos</td><td>21</td><td>389</td><td>640</td></tr>
+          <tr><td>Gols</td><td><b>3</b></td><td><b>107</b></td><td><b>174</b></td></tr>
+          <tr><td>Assistências</td><td>4</td><td>114</td><td>168</td></tr>
+          <tr><td>Títulos</td><td>—</td><td>18</td><td>22</td></tr></table>
       </div>
       <div class="sec">
         <h3>Clubes</h3>
         <div class="cl">
-          <div class="cr2"><span data-crest="DEF" data-size="20"></span><b>Defensor Sporting</b><span class="y">2012–14</span><span class="n">68 jogos</span></div>
-          <div class="cr2"><span data-crest="CRU" data-size="20"></span><b>Cruzeiro</b><span class="y">2015–18</span><span class="n">153 jogos</span></div>
-          <div class="cr2 now"><span data-crest="FLA" data-size="20"></span><b>Flamengo</b><span class="y">2019–</span><span class="n">341 jogos</span></div>
-          <div class="cr2"><span data-crest="URU" data-size="20"></span><b>Seleção do Uruguai</b><span class="y">2014–</span><span class="n">52 jogos</span></div>
+          <div class="cr2"><span data-crest="DEF" data-size="20"></span><b>Defensor Sporting</b><span class="y">2012–15</span><span class="n">65 jogos</span></div>
+          <div class="cr2"><span data-crest="CRU" data-size="20"></span><b>Cruzeiro</b><span class="y">2015–18</span><span class="n">186 jogos</span></div>
+          <div class="cr2 now"><span data-crest="FLA" data-size="20"></span><b>Flamengo</b><span class="y">2019–</span><span class="n">389 jogos</span></div>
+          <div class="cr2"><span data-crest="URU" data-size="20"></span><b>Seleção do Uruguai</b><span class="y">2014–</span><span class="n">61 jogos</span></div>
         </div>
         <div class="tro"><span class="t"><i class="ph-fill ph-trophy"></i><b>3</b>Libertadores</span><span class="t"><i class="ph-fill ph-trophy"></i><b>3</b>Brasileiro</span><span class="t"><i class="ph-fill ph-trophy"></i><b>2</b>Copa do Brasil</span></div>
       </div>
@@ -155,7 +152,7 @@ CLUBS.URU = { n: 'Uruguai', c1: '#5CBFEB', c2: '#FFFFFF', p: 'solid', bg: '#5CBF
 const me = [50, 42];
 const N = [
   ['De la Cruz', 'D', 'uruguaio', 14, 24, 'g'], ['Varela', 'V', 'uruguaio', 14, 78, 'g'],
-  ['Pedro', 'P', '7 gols juntos', 86, 24, 'g'], ['Jorginho', 'J', 'capitão', 86, 78, 'g'], ['Carrascal', 'C', 'mesma posição', 50, 88, 'y'],
+  ['Pedro', 'P', 'dupla desde 2020', 86, 24, 'g'], ['Jorginho', 'J', 'capitão', 86, 78, 'g'], ['Carrascal', 'C', 'mesma posição', 50, 88, 'y'],
 ];
 const col = { g: 'var(--green)', y: 'var(--yellow-d)' };
 const w = 300, h = 236;
@@ -163,8 +160,8 @@ const lines = N.map(([, , , x, y, k]) => `<line x1="${me[0] * w / 100}" y1="${me
 document.getElementById('map').innerHTML = `<svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${lines}</svg>`
   + N.map(([n, ini, why, x, y]) => `<div class="nd" style="left:${x}%;top:${y}%"><span class="av" style="background:#C8102E">${ini}</span>${n}<small>${why}</small></div>`).join('')
   + `<div class="nd me" style="left:${me[0]}%;top:${me[1]}%"><span class="av" style="background:#C8102E">A</span></div>`;
-const LJ = [['RIV', 'River', '21 out', '7,1'], ['VIT', 'Vitória', '18 out', '8,2', 1], ['CAM', 'Atlético', '12 out', '6,8'], ['EST', 'Estudiantes', '1 out', '7,6', 1], ['FLU', 'Fluminense', '28 set', '7,4']];
-CLUBS.EST = { n: 'Estudiantes', c1: '#E30613', c2: '#FFFFFF', p: 'vstripes' };
+// His last five Flamengo games before the injury (real dates and opponents; ratings are game state).
+const LJ = [['RBB', 'Bragantino', '20 set', '7,1'], ['IDV', 'Del Valle', '17 set', '7,6', 1], ['COR', 'Corinthians', '13 set', '6,8'], ['IDV', 'Del Valle', '10 set', '8,2', 1], ['REM', 'Remo', '6 set', '7,0']];
 document.getElementById('lj').innerHTML = LJ.map(([c, n, d, r, hi]) => `<div>${crest(c, 22)}<span><em>${n}</em>${d}</span><b class="${hi ? 'hi' : ''}">${r}</b></div>`).join('');
 </script>
 </body>

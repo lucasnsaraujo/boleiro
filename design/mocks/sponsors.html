@@ -22,24 +22,27 @@
 .shirt { transform: scale(1.14); transform-origin: 50% 50%; }
 .shirt { position: relative; width: 330px; height: 360px; }
 .shirt svg { position: absolute; inset: 0; filter: drop-shadow(0 14px 16px rgba(20,35,26,.28)); }
-.pl { position: absolute; display: grid; place-items: center; font-stretch: var(--semi); font-weight: 900; border-radius: 5px; box-shadow: 0 0 0 2px #fff, 0 3px 6px -2px rgba(0,0,0,.45); white-space: nowrap; letter-spacing: .01em; }
-.pl.master { left: 95px; top: 150px; width: 140px; height: 38px; font-size: 22px; background: #FF5A00; color: #fff; transform: rotate(-2deg); }
-.pl.kitm { left: 196px; top: 92px; height: 18px; padding: 0 6px; font-size: 10px; background: #111; color: #fff; }
-.pl.slv { left: 18px; top: 104px; height: 20px; padding: 0 7px; font-size: 10.5px; background: #E30613; color: #fff; transform: rotate(-28deg); }
-.pl.back { left: 120px; top: 232px; width: 90px; height: 22px; font-size: 11px; background: #00B1EA; color: #fff; }
-.slot.empty { position: absolute; left: 112px; top: 200px; width: 106px; height: 24px; border-radius: 5px; display: grid; place-items: center; font-size: 10.5px; font-weight: 800; color: rgba(255,255,255,.85); border-color: rgba(255,255,255,.7); background: rgba(0,0,0,.25); }
+/* Sponsor marks printed in white on the shirt, like the real one */
+.pl { position: absolute; display: grid; place-items: center; }
+.pl img { filter: brightness(0) invert(1) drop-shadow(0 1px 1px rgba(0,0,0,.35)); }
+.pl.master { left: 95px; top: 148px; width: 140px; height: 40px; }
+.pl.bar { left: 115px; top: 198px; width: 100px; height: 22px; }
+.pl.kitm { left: 196px; top: 84px; height: 24px; }
+.pl.club { left: 104px; top: 80px; }
+.pl.slv { left: 22px; top: 96px; height: 26px; transform: rotate(-28deg); }
 .lead { position: absolute; font-size: 11px; font-weight: 700; color: var(--mute); white-space: nowrap; display: flex; align-items: center; gap: 4px; }
 
 .cur h3 { font-stretch: var(--semi); font-weight: 900; font-size: 15px; padding-bottom: 6px; border-bottom: 2px solid var(--ink); display: flex; align-items: baseline; }
 .cur h3 small { margin-left: auto; font-stretch: 100%; font-weight: 600; font-size: 11.5px; color: var(--mute); }
 .sp { display: grid; grid-template-columns: 112px 1fr auto; gap: 2px 12px; align-items: center; padding: 10px 0; border-bottom: 1px dotted var(--line-2); }
-.sp .mk { height: 26px; border-radius: 5px; display: grid; place-items: center; white-space: nowrap; font-stretch: var(--semi); font-weight: 900; font-size: 12px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); grid-row: 1 / 3; }
+.sp .mk { height: 28px; border-radius: 5px; display: grid; place-items: center; background: #fff; box-shadow: inset 0 0 0 1px var(--line); grid-row: 1 / 3; }
+.sp .mk img { max-width: 92px; }
+.sp .mk.txt { background: transparent; box-shadow: inset 0 0 0 1px var(--line-2); font-weight: 800; font-size: 11px; color: var(--mute); }
 .sp b { font-weight: 800; font-size: 13px; }
 .sp small { font-size: 11.5px; color: var(--mute); grid-column: 2; }
 .sp small.w { color: var(--later); font-weight: 700; }
 .sp .v { grid-row: 1 / 3; grid-column: 3; text-align: right; font-stretch: var(--semi); font-weight: 900; font-size: 15px; }
 .sp .v small { display: block; font-stretch: 100%; font-weight: 600; font-size: 11px; color: var(--mute); }
-.sp.gap .mk { background: transparent; border: 2px dashed var(--line-2); color: var(--mute); font-size: 11px; box-shadow: none; }
 .tot { display: flex; justify-content: space-between; padding-top: 10px; font-size: 12.5px; color: var(--mute); }
 .tot b { font-stretch: var(--semi); font-weight: 900; font-size: 16px; color: var(--ink); }
 
@@ -50,14 +53,14 @@
 .off h3 small { margin-left: auto; font-stretch: 100%; font-weight: 600; font-size: 11.5px; color: var(--mute); }
 .or { display: grid; grid-template-columns: 96px 1fr auto; gap: 2px 10px; align-items: center; padding: 12px 8px; margin: 0 -8px; border-radius: 10px; }
 .or + .or { border-top: 1px dotted var(--line-2); }
-.or .mk { height: 26px; border-radius: 5px; display: grid; place-items: center; font-stretch: var(--semi); font-weight: 900; font-size: 12.5px; grid-row: 1 / 3; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.or .mk { height: 30px; border-radius: 5px; display: grid; place-items: center; background: #fff; grid-row: 1 / 3; box-shadow: inset 0 0 0 1px var(--line); }
+.or .mk img { max-width: 80px; }
 .or b { font-weight: 800; font-size: 13px; }
 .or small { font-size: 11.5px; color: var(--mute); grid-column: 2; }
 .or .v { grid-row: 1 / 3; grid-column: 3; text-align: right; font-stretch: var(--semi); font-weight: 900; font-size: 14px; }
 .or .v small { display: block; font-stretch: 100%; font-weight: 600; font-size: 11px; }
 .or.sel { background: var(--yellow-l); box-shadow: 0 0 0 2px var(--ink); border-top-color: transparent; }
 .or.sel + .or { border-top-color: transparent; }
-.new1 { font-stretch: var(--semi); font-weight: 900; font-size: 9.5px; letter-spacing: .04em; background: var(--blue); color: #fff; padding: 2px 6px; border-radius: 999px; margin-left: 4px; vertical-align: 1px; }
 
 .off { flex: 1; }
 .bet { padding: 14px 16px; display: flex; flex-direction: column; position: relative; }
@@ -68,7 +71,7 @@
 .bet li i.up { color: var(--green); } .bet li i.dn { color: var(--red); } .bet li i.nt { color: var(--ink-2); }
 .bet li b { font-weight: 800; }
 .odds { position: relative; transform: rotate(3deg); background: #fff; border-radius: 9px; padding: 15px 5px 5px; display: flex; color: #14231A; box-shadow: 0 0 0 1px rgba(20,35,26,.12), 0 8px 14px -6px rgba(20,35,26,.45); flex: none; margin-top: 8px; }
-.odds em { position: absolute; left: 7px; top: -7px; font-style: normal; font-stretch: var(--semi); font-weight: 900; font-size: 10px; background: #FF5A00; color: #fff; padding: 2px 6px; border-radius: 3px; transform: rotate(-4deg); }
+.odds em { position: absolute; left: 7px; top: -7px; font-style: normal; font-stretch: var(--semi); font-weight: 900; font-size: 10px; background: #fff; color: #14231A; padding: 3px 6px; border-radius: 3px; transform: rotate(-4deg); box-shadow: 0 0 0 1px rgba(20,35,26,.14); }
 .odds span { display: grid; text-align: center; font-size: 10px; color: #5C584B; font-weight: 700; line-height: 1.15; padding: 0 7px; }
 .odds span + span { border-left: 1px dotted #C4B796; }
 .odds span b { font-size: 15px; color: #14231A; font-weight: 900; font-stretch: var(--semi); }
@@ -82,7 +85,7 @@
   <div data-bar="times"></div>
   <main><div class="wrap">
     <div class="page kit">
-      <div class="hd"><div><h1>Patrocínio</h1><p>Valores por ano, <b>estimados</b> a partir de contratos públicos</p></div>
+      <div class="hd"><div><h1>Patrocínio</h1><p>Valores por ano, <b>estimados</b> pela imprensa · — fim não divulgado</p></div>
         <label class="brd"><span class="sw"></span><div><b>A diretoria negocia</b><span>Desligado: você escolhe</span></div></label></div>
       <div class="body">
         <div class="shirt">
@@ -92,39 +95,41 @@
             <path d="M112 22 C128 40 202 40 218 22 L286 50 L322 128 L270 154 L256 132 L256 340 C220 352 110 352 74 340 L74 132 L60 154 L8 128 L44 50 Z" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2"/>
             <path d="M112 22 C128 40 202 40 218 22 C206 48 124 48 112 22 Z" fill="#111"/>
           </svg>
-          <span class="pl kitm">adidas</span>
-          <span class="pl slv">Assaí</span>
-          <span class="pl master">Betano</span>
-          <span class="slot empty">barra livre</span>
+          <span class="pl kitm"><span data-logo="logos/adidas.svg" data-h="22"></span></span>
+          <span class="pl club"><span data-crest="FLA" data-size="30"></span></span>
+          <span class="pl slv"><span data-logo="logos/shopee.svg" data-h="24"></span></span>
+          <span class="pl master"><span data-logo="logos/betano.svg" data-h="32"></span></span>
+          <span class="pl bar"><span data-logo="logos/ademicon.svg" data-h="17"></span></span>
         </div>
         <div class="cur"><h3>Na camisa hoje<small>até</small></h3>
-          <div class="sp"><span class="mk" style="background:#FF5A00;color:#fff">Betano</span><b>Master</b><small>Aposta · peito</small><span class="v">R$ 96 mi<small>dez 2027</small></span></div>
-          <div class="sp"><span class="mk" style="background:#111;color:#fff">adidas</span><b>Fornecedor</b><small>Uniforme e royalties</small><span class="v">R$ 28 mi<small>dez 2029</small></span></div>
-          <div class="sp"><span class="mk" style="background:#00B1EA;color:#0B2340">Mercado Pago</span><b>Costas</b><small>Acima do número</small><span class="v">R$ 12 mi<small>jun 2027</small></span></div>
-          <div class="sp"><span class="mk" style="background:#E30613;color:#fff">Assaí</span><b>Manga</b><small class="w">Acaba em dezembro</small><span class="v">R$ 8 mi<small>dez 2026</small></span></div>
-          <div class="sp gap"><span class="mk">vazio</span><b>Barra frontal</b><small>Abaixo do master</small><span class="v" style="color:var(--mute)">—</span></div>
-          <div class="tot"><span>Total por ano</span><b>R$ 144 mi</b></div>
+          <div class="sp"><span class="mk"><span data-logo="logos/betano.svg" data-h="16"></span></span><b>Master</b><small>Aposta · peito</small><span class="v">R$ 268,5 mi<small>dez 2028</small></span></div>
+          <div class="sp"><span class="mk"><span data-logo="logos/adidas.svg" data-h="20"></span></span><b>Fornecedor</b><small>Uniforme e royalties</small><span class="v">R$ 70 mi<small>dez 2029</small></span></div>
+          <div class="sp"><span class="mk"><span data-logo="logos/brb.svg" data-h="18"></span></span><b>Ombros</b><small>Banco de Brasília</small><span class="v">R$ 42,6 mi<small>—</small></span></div>
+          <div class="sp"><span class="mk"><span data-logo="logos/hapvida.svg" data-h="16"></span></span><b>Costas</b><small>Acima do número</small><span class="v">R$ 23,8 mi<small>—</small></span></div>
+          <div class="sp"><span class="mk"><span data-logo="logos/ademicon.svg" data-h="14"></span></span><b>Barra frontal</b><small>Abaixo do master</small><span class="v">R$ 14 mi<small>2029</small></span></div>
+          <div class="sp"><span class="mk"><span data-logo="logos/shopee.svg" data-h="22"></span></span><b>Mangas</b><small>As duas</small><span class="v">R$ 12 mi<small>—</small></span></div>
+          <div class="sp"><span class="mk txt">mais 5</span><b>Calção, meião, números</b><small>GAC, WAP, Assist Card, Zé Delivery, Texaco</small><span class="v">R$ 36,7 mi<small></small></span></div>
+          <div class="tot"><span>Total por ano</span><b>R$ 467,6 mi</b></div>
         </div>
       </div>
     </div>
 
     <div class="side">
-      <div class="stk off"><h3>Propostas<small>6 marcas</small></h3>
-        <div class="or sel"><span class="mk" style="background:#0B5A3C;color:#F4E6C3">Granado</span><b>Granado <span class="new1">1º no futebol</span></b><small>Barra frontal · 3 anos</small><span class="v">R$ 7,5 mi<small>por ano</small></span></div>
-        <div class="or"><span class="mk" style="background:#00843D;color:#fff">Guaraná</span><b>Guaraná Antarctica</b><small>Barra frontal · 2 anos</small><span class="v">R$ 7 mi<small>por ano</small></span></div>
-        <div class="or"><span class="mk" style="background:#F15A22;color:#fff">Tok&amp;Stok</span><b>Tok&amp;Stok <span class="new1">1º no futebol</span></b><small>Barra · 1 ano · bônus por título</small><span class="v">R$ 5 mi<small>+R$ 2 mi</small></span></div>
-        <div class="or"><span class="mk" style="background:#FFD200;color:#0B5A2B">Havaianas</span><b>Havaianas</b><small>Manga · 2 anos</small><span class="v">R$ 10 mi<small>por ano</small></span></div>
-        <div class="or"><span class="mk" style="background:#E30613;color:#fff">Assaí</span><b>Assaí renova</b><small>Manga · 1 ano</small><span class="v">R$ 9 mi<small>por ano</small></span></div>
-        <div class="or"><span class="mk" style="background:#F6C9D5;color:#7A1E3A">Melissa</span><b>Melissa <span class="new1">1º no futebol</span></b><small>Calção · 2 anos</small><span class="v">R$ 3 mi<small>por ano</small></span></div>
+      <div class="stk off"><h3>Propostas<small>para jan 2027</small></h3>
+        <div class="or sel"><span class="mk"><span data-logo="logos/granado.svg" data-h="11"></span></span><b>Granado</b><small>Mangas, no lugar da Shopee · 3 anos</small><span class="v">R$ 15 mi<small>por ano</small></span></div>
+        <div class="or"><span class="mk"><span data-logo="logos/guarana-antarctica.svg" data-h="26"></span></span><b>Guaraná Antarctica</b><small>Costas, no lugar da Hapvida · 2 anos</small><span class="v">R$ 26 mi<small>por ano</small></span></div>
+        <div class="or"><span class="mk"><span data-logo="logos/assai.svg" data-h="24"></span></span><b>Assaí</b><small>Ombros, no lugar do BRB · 2 anos</small><span class="v">R$ 40 mi<small>por ano</small></span></div>
+        <div class="or"><span class="mk"><span data-logo="logos/havaianas.svg" data-h="13"></span></span><b>Havaianas</b><small>Meião · 2 anos</small><span class="v">R$ 6 mi<small>por ano</small></span></div>
+        <div class="or"><span class="mk"><span data-logo="logos/tok-stok.svg" data-h="11"></span></span><b>Tok&amp;Stok</b><small>Calção · 1 ano · bônus por título</small><span class="v">R$ 5 mi<small>+R$ 2 mi</small></span></div>
       </div>
-      <div class="stk bet"><h3>Betano é casa de aposta</h3>
+      <div class="stk bet"><h3><span data-logo="logos/betano.svg" data-h="17"></span>é casa de aposta</h3>
         <div class="row">
           <ul>
-            <li><i class="ph-bold ph-arrow-up up"></i><span>Paga <b>R$ 38 mi a mais</b> que a melhor proposta fora das apostas</span></li>
+            <li><i class="ph-bold ph-arrow-up up"></i><span>Paga <b>R$ 150 mi a mais</b> que o melhor master fora das apostas</span></li>
             <li><i class="ph-bold ph-arrow-down dn"></i><span>Torcida <b>−2%</b> enquanto durar</span></li>
             <li><i class="ph-bold ph-ticket nt"></i><span>Antes de cada jogo, as odds aparecem no seu painel</span></li>
           </ul>
-          <div><div class="odds"><em>Betano</em><span>FLA<b>2,10</b></span><span>X<b>3,30</b></span><span>PAL<b>3,45</b></span></div><div class="cap">hoje, 16h</div></div>
+          <div><div class="odds"><em><span data-logo="logos/betano.svg" data-h="9"></span></em><span>BAH<b>3,10</b></span><span>X<b>3,25</b></span><span>FLA<b>2,30</b></span></div><div class="cap">hoje, 18h30</div></div>
         </div>
       </div>
       <button class="btn go"><i class="ph-bold ph-handshake"></i>Fechar com Granado</button>

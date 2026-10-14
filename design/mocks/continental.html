@@ -9,7 +9,7 @@
 <style>
 .wrap { height: 100%; padding: 18px 14px 14px; display: flex; flex-direction: column; gap: 12px; }
 .hd { display: flex; align-items: center; gap: 12px; }
-.hd h2 { margin-left: auto; font-stretch: var(--wide); font-weight: 900; font-size: 18px; }
+.hd h2 { margin-left: auto; display: flex; align-items: center; gap: 8px; font-stretch: var(--wide); font-weight: 900; font-size: 18px; }
 .hd h2 span { font-stretch: 100%; font-weight: 600; font-size: 12.5px; color: var(--mute); margin-left: 6px; }
 
 .br { position: relative; flex: 1; min-height: 0; }
@@ -71,16 +71,16 @@
   <main><div class="wrap">
     <div class="hd">
       <div class="seg"><span>Série A</span><span>Série B</span><span>Copa do Brasil</span><span class="on">Libertadores</span><span>Carioca</span><span>Outras ligas</span></div>
-      <h2>Libertadores 2026<span>mata-mata</span></h2>
+      <h2><span data-logo="competitions/libertadores.svg" data-h="22"></span>2026<span>mata-mata</span></h2>
     </div>
     <div class="br" id="br"><svg id="ln"></svg></div>
     <div class="low">
-      <div class="stk grp"><h3>Grupo C <small>fase de grupos · abr a mai</small></h3>
+      <div class="stk grp"><h3>Grupo A <small>fase de grupos</small></h3>
         <table class="tb"><thead><tr><th>#</th><th class="l">Clube</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th></tr></thead><tbody id="g"></tbody></table></div>
       <div class="stk nx"><h3>Semifinal, volta <small>quem passar joga a final</small></h3>
         <div>
-          <div class="duel"><span data-crest="FLA" data-size="44"></span><b>Flamengo</b><span class="x">×</span><b>River Plate</b><span data-crest="RIV" data-size="44"></span></div>
-          <dl><dt>Quando</dt><dd>Qua, 28 out · 21h30</dd><dt>Onde</dt><dd>Maracanã</dd><dt>Ida</dt><dd>River 1 × 1 Flamengo, Monumental · gol de Arrascaeta</dd></dl>
+          <div class="duel"><span data-crest="FLA" data-size="44"></span><b>Flamengo</b><span class="x">×</span><b>Estudiantes</b><span data-crest="EST" data-size="44"></span></div>
+          <dl><dt>Quando</dt><dd>Qui, 22 out · 21h30</dd><dt>Onde</dt><dd>Maracanã</dd><dt>Ida</dt><dd>Estudiantes 1 × 1 Flamengo, La Plata · gol de Pedro</dd></dl>
         </div>
         <div class="rt"><div class="note">Outro 1 × 1 dá 2 × 2 no agregado e a vaga vai para os <b>pênaltis</b>. Não existe gol fora de casa.</div></div>
       </div>
@@ -88,20 +88,13 @@
   </div></main>
 </div>
 <script>
-CLUBS.CER = { n: 'Cerro Porteño', c1: '#D0021B', c2: '#0A3A86', p: 'vstripes', bg: '#0A3A86', fg: '#fff' };
-CLUBS.EST = { n: 'Estudiantes', c1: '#FFFFFF', c2: '#D0021B', p: 'vstripes', bg: '#FFFFFF', fg: '#D0021B' };
-CLUBS.RAC = { n: 'Racing', c1: '#7FC4EA', c2: '#FFFFFF', p: 'vstripes', bg: '#7FC4EA', fg: '#0B2340' };
-CLUBS.LIB = { n: 'Libertad', c1: '#FFFFFF', c2: '#111111', p: 'band', bg: '#FFFFFF', fg: '#111111' };
-CLUBS.IDV = { n: 'Ind. del Valle', c1: '#111111', c2: '#0A3A86', p: 'sash', bg: '#111111', fg: '#fff' };
-CLUBS.NAC = { n: 'Nacional', c1: '#FFFFFF', c2: '#0A3A86', c3: '#D0021B', p: 'band', bg: '#FFFFFF', fg: '#0A3A86' };
-CLUBS.UNI = { n: 'Universitario', c1: '#F5EEDC', c2: '#8E1F2F', p: 'solid', bg: '#F5EEDC', fg: '#8E1F2F' };
-CLUBS.TAC = { n: 'Dep. Táchira', c1: '#FFD100', c2: '#111111', p: 'vstripes', bg: '#FFD100', fg: '#111111' };
 
-// [home-side club, agg, away-side club, agg] ; winner = higher (penalties marked with p)
-const L_O = [['FLA', 3, 'CER', 1], ['EST', 2, 'LDU', 2, 'EST'], ['RAC', 3, 'BOL', 1], ['RIV', 2, 'PEN', 0]];
-const L_Q = [['FLA', 2, 'EST', 1], ['RIV', 3, 'RAC', 2]];
-const R_O = [['PAL', 4, 'LIB', 1], ['BOC', 1, 'IDV', 2], ['CRU', 2, 'NAC', 0], ['BOT', 1, 'CCO', 1, 'BOT']];
-const R_Q = [['PAL', 2, 'IDV', 0], ['CRU', 2, 'BOT', 1]];
+// The real 2026 knockout bracket and aggregate scores up to the quarter-finals (CONMEBOL, ESPN).
+// [club, agg, club, agg, shootout winner]
+const L_O = [['CRU', 2, 'FLA', 3], ['TOL', 1, 'IDV', 4], ['EST', 4, 'UCA', 1], ['ROS', 0, 'COR', 1]];
+const L_Q = [['IDV', 1, 'FLA', 3], ['EST', 2, 'COR', 1]];
+const R_O = [['FLU', 1, 'IRV', 1, 'FLU'], ['PLA', 1, 'COQ', 1, 'PLA'], ['PAL', 2, 'CER', 1], ['MIR', 1, 'LDU', 1, 'LDU']];
+const R_Q = [['FLU', 3, 'PLA', 2], ['PAL', 3, 'LDU', 3, 'PAL']];
 
 const br = document.getElementById('br');
 function tie([a, ga, b, gb, pen], x, y, cls = '') {
@@ -128,13 +121,14 @@ window.addEventListener('load', () => {
   [0, 1].forEach((i) => { link(colX[1] + TW, yQ[i] + TH / 2, colX[2], yS); link(rcolX[1], yQ[i] + TH / 2, W - 344, yS); });
   const sx = colX[2] + SW, rsx = W - 344;
   svg += `<path d="M${sx} ${yS}H${W / 2 - 92}" stroke="var(--line-2)" stroke-width="2" stroke-dasharray="4 5"/><path d="M${rsx} ${yS}H${W / 2 + 92}" stroke="var(--line-2)" stroke-width="2" stroke-dasharray="4 5"/>`;
-  html += `<div class="stk tie semi me" style="left:${colX[2]}px;top:${yS - 62}px"><div class="r w me">${crest('FLA', 20)}<span>Flamengo</span><span class="sbox">1</span></div><div class="r w">${crest('RIV', 20)}<span>River Plate</span><span class="sbox">1</span></div><div class="leg">Ida <b>1 × 1</b> · Buenos Aires<br>Volta <b class="nxt">qua 28 · Maracanã</b></div></div>`;
-  html += `<div class="stk tie semi" style="left:${W - 344 - SW}px;top:${yS - 62}px"><div class="r w">${crest('PAL', 20)}<span>Palmeiras</span><span class="sbox">2</span></div><div class="r l">${crest('CRU', 20)}<span>Cruzeiro</span><span class="sbox">0</span></div><div class="leg">Ida <b>0 × 2</b> · Mineirão<br>Volta <b>qui 29 · Allianz Parque</b></div></div>`;
-  html += `<div class="stk fin" style="left:${W / 2 - 92}px;top:${yS - 70}px"><div class="tr"><i class="ph-fill ph-trophy"></i></div><h3>Final</h3><p>Sáb, 28 nov · jogo único · Montevidéu</p><div class="slot sl"><i class="ph-bold ph-question"></i>Flamengo ou River</div><div class="slot sl"><i class="ph-bold ph-question"></i>Palmeiras ou Cruzeiro</div></div>`;
+  html += `<div class="stk tie semi me" style="left:${colX[2]}px;top:${yS - 62}px"><div class="r w me">${crest('FLA', 20)}<span>Flamengo</span><span class="sbox">1</span></div><div class="r w">${crest('EST', 20)}<span>Estudiantes</span><span class="sbox">1</span></div><div class="leg">Ida <b>1 × 1</b> · La Plata<br>Volta <b class="nxt">qui 22 · Maracanã</b></div></div>`;
+  html += `<div class="stk tie semi" style="left:${W - 344 - SW}px;top:${yS - 62}px"><div class="r l">${crest('FLU', 20)}<span>Fluminense</span><span class="sbox">1</span></div><div class="r w">${crest('PAL', 20)}<span>Palmeiras</span><span class="sbox">2</span></div><div class="leg">Ida <b>1 × 2</b> · Maracanã<br>Volta <b>qua 21 · São Paulo</b></div></div>`;
+  html += `<div class="stk fin" style="left:${W / 2 - 92}px;top:${yS - 70}px"><div class="tr"><i class="ph-fill ph-trophy"></i></div><h3>Final</h3><p>Sáb, 28 nov · jogo único · Centenário, Montevidéu</p><div class="slot sl"><i class="ph-bold ph-question"></i>Flamengo ou Estudiantes</div><div class="slot sl"><i class="ph-bold ph-question"></i>Fluminense ou Palmeiras</div></div>`;
   document.getElementById('ln').innerHTML = svg;
   br.insertAdjacentHTML('beforeend', html);
 });
-const GR = [['FLA', 14, 6, 4, 2, 0, 9], ['BOL', 10, 6, 3, 1, 2, 2], ['UNI', 6, 6, 1, 3, 2, -3], ['TAC', 2, 6, 0, 2, 4, -8]];
+// Real final table of group A.
+const GR = [['FLA', 16, 6, 5, 1, 0, 12], ['EST', 9, 6, 2, 3, 1, 1], ['DIM', 7, 6, 2, 1, 3, -5], ['CUS', 1, 6, 0, 1, 5, -8]];
 document.getElementById('g').innerHTML = GR.map(([c, p, j, v, e, d, sg], i) => `<tr class="${c === 'FLA' ? 'me' : ''}"><td style="width:34px;text-align:center"><span class="q ${i > 1 ? 'no' : ''}"></span>${i + 1}</td><td class="l cl"><span>${crest(c, 20)}${CLUBS[c].n}</span></td><td class="pts">${p}</td><td>${j}</td><td>${v}</td><td>${e}</td><td>${d}</td><td>${sg > 0 ? '+' : ''}${sg}</td></tr>`).join('');
 </script>
 </body>

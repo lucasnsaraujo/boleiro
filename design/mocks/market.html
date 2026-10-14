@@ -95,7 +95,7 @@
     <div class="lft">
       <div class="srch">
         <span class="field q"><i class="ph-bold ph-magnifying-glass"></i>Nome, clube ou país<span class="cnt">4.214 times · 102 mil jogadores</span></span>
-        <span class="cap"><i class="ph-bold ph-users-three"></i>Elenco <b>23/35</b></span>
+        <span class="cap"><i class="ph-bold ph-users-three"></i>Elenco <b>27/35</b></span>
       </div>
       <div class="flt">
         <span class="posf"><span class="pos G">G</span><span class="pos L on">L</span><span class="pos Z">Z</span><span class="pos M">M</span><span class="pos A">A</span></span>
@@ -105,7 +105,7 @@
         <label class="tg">Só quem toparia vir<span class="sw on"></span></label>
       </div>
       <div class="tabs">
-        <span class="tab on">Resultados <span class="n">14</span></span>
+        <span class="tab on">Resultados <span class="n">13</span></span>
         <span class="tab"><i class="ph-fill ph-star" style="color:var(--yellow-d)"></i>Observados <span class="n y">4</span></span>
         <div class="saved"><i class="ph-bold ph-bookmark-simple"></i><span class="sv on">Lateral esquerdo</span><span class="sv">Zagueiro sub-23</span><span class="sv">Livres</span><span class="sv"><i class="ph-bold ph-plus"></i>Salvar</span></div>
       </div>
@@ -117,21 +117,21 @@
         <div><h2>Luciano Juba</h2><p>Lateral esquerdo · 2ª: meia<br>Bahia · 27 anos · Brasil</p></div>
         <div class="f"><b>80</b><span>força</span></div></div>
       <div class="bd">
-        <div class="kv"><span>Passe</span><b>R$ 78 mi</b><span>Mercado</span><b>R$ 96 mi</b><span>Salário</span><b>R$ 410 mil</b><span>Contrato</span><b>até dez 2028</b><span>Temp.</span><b>4 gols, 6 assist.</b><span>Car.</span><b>Cru/Fin</b></div>
+        <div class="kv"><span>Passe</span><b>R$ 85 mi</b><span>Mercado</span><b>R$ 90 mi</b><span>Salário</span><b>R$ 410 mil</b><span>Contrato</span><b>até dez 2029</b><span>Série A</span><b>10 gols, 1 assist.</b><span>Car.</span><b>Cru/Fin</b></div>
         <div class="of">
           <div class="row"><span class="lbl">Tipo</span><div class="seg"><span class="on">Comprar</span><span>Emprestar</span></div></div>
-          <div class="row"><span class="lbl">Oferta</span><div class="money"><b>R$ 72 mi</b><span>Bahia pede 78</span><span class="pm"><i class="ph-bold ph-minus"></i><i class="ph-bold ph-plus"></i></span></div></div>
-          <div class="row"><span class="lbl">Salário</span><div class="money"><b>R$ 520 mil</b><span>por mês</span><span class="pm"><i class="ph-bold ph-minus"></i><i class="ph-bold ph-plus"></i></span></div></div>
+          <div class="row"><span class="lbl">Oferta</span><div class="money"><b>R$ 80 mi</b><span>Bahia pede 85</span><span class="pm"><i class="ph-bold ph-minus"></i><i class="ph-bold ph-plus"></i></span></div></div>
+          <div class="row"><span class="lbl">Salário</span><div class="money"><b>R$ 1,1 mi</b><span>por mês</span><span class="pm"><i class="ph-bold ph-minus"></i><i class="ph-bold ph-plus"></i></span></div></div>
         </div>
         <div class="fit"><span class="who"><i class="ph-bold ph-user-switch" style="color:inherit;font-size:13px"></i>Auxiliar</span>
-          <div><i class="ph-fill ph-check-circle"></i>Cabe no caixa: sobra <b>R$ 12,3 mi</b></div>
+          <div><i class="ph-fill ph-check-circle"></i>Cabe no caixa: sobra <b>R$ 132,4 mi</b></div>
           <div><i class="ph-fill ph-check-circle"></i>Toparia vir: quer jogar a Libertadores</div>
           <div><i class="ph-fill ph-check-circle"></i>Sua lateral esquerda é a mais fraca: <b>75 → 80</b></div>
         </div>
         <div class="cmpw"><span class="lbl">Sua lateral esquerda</span>
           <div class="cr2 me"><span>Luciano Juba</span><span class="meter thin"><i style="width:80%"></i></span><b>80</b></div>
           <div class="cr2"><span>Ayrton Lucas</span><span class="meter thin"><i style="width:75%"></i></span><b>75</b></div>
-          <div class="cr2"><span>Alex Sandro <small>sai em dez</small></span><span class="meter thin mid"><i style="width:70%"></i></span><b>70</b></div>
+          <div class="cr2"><span>Alex Sandro <small>35 anos</small></span><span class="meter thin mid"><i style="width:70%"></i></span><b>70</b></div>
         </div>
         <div class="acts"><button class="btn"><i class="ph-fill ph-star" style="color:var(--yellow-d)"></i>Observando</button><button class="btn go"><i class="ph-bold ph-paper-plane-tilt"></i>Fazer proposta</button></div>
       </div>
@@ -139,24 +139,24 @@
   </div></main>
 </div>
 <script>
-// [name, 2nd, club, age, F, price, wage, contract, status, starred]
+// Clubs, ages and strength from data/players.csv; contract ends from the press (see SOURCES.md).
+// Asking prices, wages and the sale status are game state. [name, 2nd, club, age, F, price, wage, contract, status, starred]
 const R = [
-  ['Luciano Juba', 'M', 'BAH', 27, 80, '78 mi', '410 mil', 'dez 2028', 'sale', 1],
-  ['Lucas Esquivel', '', 'CAP', 24, 79, '52 mi', '260 mil', 'dez 2029', 'ctr', 1],
-  ['Juninho Capixaba', '', 'RBB', 29, 79, '45 mi', '330 mil', 'dez 2027', 'sale'],
-  ['Renan Lodi', 'Z', 'CAM', 28, 78, '61 mi', '620 mil', 'dez 2028', 'auc'],
-  ['Alexandro Bernabei', '', 'INT', 26, 78, '50 mi', '380 mil', 'dez 2028', 'ctr'],
-  ['Cuiabano', 'M', 'VAS', 23, 78, '74 mi', '220 mil', 'dez 2029', 'ctr', 1],
-  ['Matheus Bidu', '', 'COR', 27, 77, '46 mi', '300 mil', 'dez 2027', 'sale'],
-  ['Alex Telles', '', 'BOT', 33, 75, '—', '700 mil', 'dez 2026', 'pre', 1],
-  ['Lucas Piton', '', 'VAS', 26, 75, '38 mi', '240 mil', 'dez 2027', 'ctr'],
-  ['Guilherme Arana', '', 'FLU', 29, 74, '34 mi', '540 mil', 'dez 2027', 'ctr'],
-  ['Luan Cândido', '', 'VIT', 25, 74, '22 mi', '150 mil', 'dez 2027', 'sale'],
-  ['Marlon', '', 'GRE', 29, 74, '24 mi', '280 mil', 'jun 2027', 'ctr'],
-  ['Gabriel Rojas', 'M', 'CRU', 29, 73, '26 mi', '310 mil', 'dez 2026', 'pre'],
-  ['Marcelo Hermes', '', 'CRI', 31, 70, '—', '—', '—', 'free'],
+  ['Luciano Juba', 'M', 'BAH', 27, 80, '85 mi', '410 mil', 'dez 2029', 'sale', 1],
+  ['Lucas Esquivel', '', 'CAP', 24, 79, '50 mi', '260 mil', 'jun 2029', 'ctr', 1],
+  ['Juninho Capixaba', '', 'RBB', 29, 79, '42 mi', '330 mil', 'dez 2027', 'sale'],
+  ['Renan Lodi', 'Z', 'CAM', 28, 78, '60 mi', '620 mil', 'dez 2030', 'auc'],
+  ['Alexandro Bernabei', '', 'INT', 26, 78, '48 mi', '380 mil', 'dez 2028', 'ctr'],
+  ['Cuiabano', 'M', 'VAS', 23, 78, '—', '220 mil', 'dez 2026', 'loan', 1],
+  ['Matheus Bidu', '', 'COR', 27, 77, '40 mi', '300 mil', 'dez 2027', 'sale'],
+  ['Alex Telles', '', 'BOT', 33, 75, '16 mi', '700 mil', 'dez 2028', 'ctr', 1],
+  ['Lucas Piton', '', 'VAS', 26, 75, '34 mi', '240 mil', 'dez 2028', 'ctr'],
+  ['Guilherme Arana', '', 'FLU', 29, 74, '34 mi', '540 mil', 'dez 2029', 'ctr'],
+  ['Luan Cândido', '', 'VIT', 25, 74, '—', '150 mil', 'dez 2026', 'loan'],
+  ['Gabriel Rojas', 'M', 'CRU', 29, 73, '22 mi', '310 mil', 'dez 2029', 'ctr'],
+  ['Marcelo Hermes', '', 'CRI', 31, 70, '—', '180 mil', 'dez 2026', 'pre'],
 ];
-const ST = { sale: '<span class="st sale">À venda</span>', auc: '<span class="st auc"><i class="ph-bold ph-gavel"></i>Leilão · 2 dias</span>', free: '<span class="st free">Livre</span>', pre: '<span class="st pre">Pré-contrato</span>', ctr: '<span class="st ctr">Sob contrato</span>' };
+const ST = { sale: '<span class="st sale">À venda</span>', auc: '<span class="st auc"><i class="ph-bold ph-gavel"></i>Leilão · 2 dias</span>', loan: '<span class="st ctr">Emprestado</span>', pre: '<span class="st pre">Pré-contrato</span>', ctr: '<span class="st ctr">Sob contrato</span>' };
 document.getElementById('r').innerHTML = R.map(([n, s2, c, a, f, p, w, ct, st, star]) => `<tr class="${n === 'Luciano Juba' ? 'sel' : ''}"><td class="l"><i class="ph-fill ph-star star ${star ? '' : 'off'}"></i></td><td class="l nm"><span class="pos L" style="width:20px;height:20px;font-size:10px;margin-right:8px;vertical-align:1px">L</span>${n}${s2 ? `<small>2ª ${s2}</small>` : ''}</td><td class="l cl"><span>${crest(c, 18)}${CLUBS[c].n}</span></td><td class="${a <= 23 ? 'young' : a >= 33 ? 'old' : ''}">${a}</td><td style="font-weight:800">${f}</td><td>${p}</td><td>${w}</td><td class="dim">${ct}</td><td class="l">${ST[st]}</td></tr>`).join('');
 </script>
 </body>

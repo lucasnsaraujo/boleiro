@@ -76,14 +76,14 @@
         <div class="cz"><div><b>Mesmo time há 5 jogos</b><small>9 dos 11 titulares repetidos</small></div><span class="v up">+12</span></div>
         <div class="cz"><div><b>Capitão respeitado</b><small>Jorginho, 34 anos, líder do vestiário</small></div><span class="v up">+6</span></div>
         <div class="cz"><div><b>Zaga junta há dois anos</b><small>Léo Ortiz e Léo Pereira</small></div><span class="v up">+4</span></div>
-        <div class="cz"><div><b>Paquetá ainda chegando</b><small>contratado em julho, 11 jogos</small></div><span class="v dn">−4</span></div>
-        <div class="cz"><div><b>Dois atritos no elenco</b><small>Ayrton Lucas × Alex Sandro, Pedro × Plata</small></div><span class="v dn">−5</span></div>
-        <div class="cz"><div><b>Rodízio na Libertadores</b><small>4 trocas no 1 × 1 com o River</small></div><span class="v dn">−2</span></div>
+        <div class="cz"><div><b>Arrascaeta fora</b><small>fratura no punho desde 28 de setembro</small></div><span class="v dn">−4</span></div>
+        <div class="cz"><div><b>Duas disputas de vaga</b><small>Ayrton Lucas × Alex Sandro, Carrascal × Plata</small></div><span class="v dn">−5</span></div>
+        <div class="cz"><div><b>Rodízio na Libertadores</b><small>4 trocas no 1 × 1 com o Estudiantes</small></div><span class="v dn">−2</span></div>
       </div>
     </div>
     <div class="page map">
       <div class="hd"><h2>Quem se dá com quem</h2><span>Titulares do 4-2-3-1 e reservas ligados a eles</span>
-        <div class="lg"><span><i style="background:var(--green)"></i>Se dão bem</span><span><i style="background:var(--red)"></i>Atrito</span></div></div>
+        <div class="lg"><span><i style="background:var(--green)"></i>Se dão bem</span><span><i style="background:var(--red)"></i>Disputam vaga</span></div></div>
       <div class="pitch" id="field"><div class="ln"></div><svg id="lines"></svg></div>
     </div>
   </div></main>
@@ -92,14 +92,14 @@
 // [name, x%, y%, strength, reserve?, captain?]
 const P = {
   pedro: ['Pedro', 50, 12, 76],
-  lino: ['Samuel Lino', 17, 33, 82], arr: ['Arrascaeta', 50, 36, 78], car: ['Carrascal', 83, 33, 78],
+  lino: ['Samuel Lino', 17, 33, 82], paq: ['Paquetá', 50, 36, 80], car: ['Carrascal', 83, 33, 78],
   jor: ['Jorginho', 37, 57, 77, 0, 1], eve: ['Evertton Araújo', 63, 57, 76],
   ayr: ['Ayrton Lucas', 13, 70, 75], lpe: ['Léo Pereira', 38, 78, 80], lor: ['Léo Ortiz', 62, 78, 80], var: ['Varela', 87, 70, 73],
   ros: ['Rossi', 50, 93, 79],
-  pla: ['Plata', 80, 9, 76, 1], dlc: ['De la Cruz', 27, 13, 73, 1], als: ['Alex Sandro', 24, 93, 70, 1], paq: ['Paquetá', 67, 21, 80, 1],
+  pla: ['Plata', 80, 9, 76, 1], dlc: ['De la Cruz', 27, 13, 73, 1], als: ['Alex Sandro', 24, 93, 70, 1],
 };
-const G = [['lpe', 'lor', 3], ['lor', 'ros', 2], ['jor', 'eve', 3], ['arr', 'pedro', 3], ['lino', 'ayr', 2], ['arr', 'dlc', 2], ['car', 'arr', 2], ['jor', 'lpe', 2], ['var', 'car', 1.5], ['paq', 'car', 1.5]];
-const B = [['ayr', 'als', 'disputa a lateral'], ['pedro', 'pla', 'discutiram no treino']];
+const G = [['lpe', 'lor', 3], ['lor', 'ros', 2], ['jor', 'eve', 3], ['paq', 'pedro', 3], ['lino', 'ayr', 2], ['paq', 'dlc', 2], ['car', 'paq', 2], ['jor', 'lpe', 2], ['var', 'car', 1.5]];
+const B = [['ayr', 'als', 'disputam a lateral'], ['car', 'pla', 'disputam a ponta']];
 window.addEventListener('load', () => {
 const f = document.getElementById('field'), W = f.clientWidth, H = f.clientHeight;
 const xy = (k) => [P[k][1] / 100 * W, P[k][2] / 100 * H];

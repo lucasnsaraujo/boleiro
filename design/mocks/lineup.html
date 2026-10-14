@@ -100,8 +100,8 @@
 
     <div class="col">
       <div class="hd">
-        <div><h1>Escalação</h1><p>Série A, 30ª rodada · <b>Maracanã, hoje 16h</b></p></div>
-        <div class="stk opp"><span data-crest="PAL" data-size="34"></span><div><b>Palmeiras</b><small>4-4-2 · Abel Ferreira</small></div>
+        <div><h1>Escalação</h1><p>Série A, 31ª rodada · <b>Fonte Nova, hoje 18h30</b></p></div>
+        <div class="stk opp"><span data-crest="BAH" data-size="34"></span><div><b>Bahia</b><small>4-3-3 · Rogério Ceni</small></div>
           <div class="mini" id="mini"></div></div>
       </div>
 
@@ -116,7 +116,7 @@
       <div class="page bench"><table class="tb"><thead><tr><th class="l" style="width:46px">P</th><th class="l">Reservas · 9 de 12</th><th>L</th><th>F</th><th class="l">Energia</th><th class="l"></th></tr></thead><tbody id="bench"></tbody></table></div>
 
       <div class="foot">
-        <div class="k"><span>Força do time</span><b>77,7<small>−1,7 vs auxiliar</small></b></div>
+        <div class="k"><span>Força do time</span><b>76,1<small>−2,0 vs auxiliar</small></b></div>
         <div class="k"><span>Entrosamento</span><b>71</b></div>
         <button class="btn esc" title="O auxiliar escala os 11 melhores"><i class="ph-bold ph-strategy"></i>Escalar time</button>
         <button class="btn go"><b>Jogar</b><i class="ph-bold ph-caret-double-right"></i></button>
@@ -129,7 +129,7 @@ const S = Object.fromEntries(SQUAD.map((r) => [r[1], r]));
 // [name, x%, y%, tag]
 const XI = [
   ['Pedro', 50, 10],
-  ['Samuel Lino', 18, 28], ['Arrascaeta', 50, 31], ['Plata', 82, 28, 'sec'],
+  ['Samuel Lino', 18, 28], ['Paquetá', 50, 31], ['Plata', 82, 28, 'sec'],
   ['Jorginho', 33, 50], ['Evertton Araújo', 67, 50],
   ['Ayrton Lucas', 14, 68], ['Erick Pulgar', 38, 74, 'imp'], ['Léo Ortiz', 62, 74], ['Varela', 86, 68],
   ['Rossi', 50, 90],
@@ -147,13 +147,13 @@ document.getElementById('pitch').insertAdjacentHTML('beforeend', XI.map(([n, x, 
   return `<div class="pl ${tag || ''}" style="left:${x}%;top:${y}%">${cap}<div class="t"><span class="pos ${p}">${p}</span><b>${short[n] || n}</b></div><div class="s"><span class="f">${fHtml}</span><span class="en ${en}"><i style="width:${e}%"></i></span><small>${e}%</small></div>${tagHtml}</div>`;
 }).join(''));
 
-// Palmeiras 4-4-2 dots, attacking down
-const P442 = [[50, 10], [16, 30], [38, 28], [62, 28], [84, 30], [16, 55], [38, 58], [62, 58], [84, 55], [38, 82], [62, 82]];
-document.getElementById('mini').innerHTML = P442.map(([x, y]) => `<i style="left:${x}%;top:${y}%"></i>`).join('');
+// Bahia 4-3-3 dots, attacking down
+const P433 = [[50, 10], [16, 30], [38, 28], [62, 28], [84, 30], [30, 55], [50, 52], [70, 55], [20, 82], [50, 86], [80, 82]];
+document.getElementById('mini').innerHTML = P433.map(([x, y]) => `<i style="left:${x}%;top:${y}%"></i>`).join('');
 
 const B = [
-  ['Léo Pereira', 'Poupado pra quarta', 'w', true], ['Vitão'], ['Carrascal', 'Cansado', 'w'], ['Paquetá'],
-  ['Andrew'], ['Emerson Royal'], ['De la Cruz'], ['Luiz Araújo'], ['Joaquín Freitas'],
+  ['Léo Pereira', 'Poupado pra quinta', 'w', true], ['Vitão'], ['Carrascal', 'Cansado', 'w'], ['Bruno Henrique'],
+  ['Andrew'], ['Emerson Royal'], ['De la Cruz'], ['Luiz Araújo'], ['Saúl'],
 ];
 const row = ([n, note, cls, hint]) => {
   const [p, , l, f, e] = S[n];
@@ -163,7 +163,7 @@ const row = ([n, note, cls, hint]) => {
 const out = (n, note, inj) => { const [p, , l, f] = S[n]; return `<tr class="out"><td class="l"><span class="pos ${p}" style="opacity:.55">${p}</span></td><td class="l nm">${n}${inj ? '<i class="ph-fill ph-first-aid inj"></i>' : ''}</td><td class="dim">${l}</td><td>${f}</td><td class="l" colspan="2"><span class="note-s">${note}</span></td></tr>`; };
 document.getElementById('bench').innerHTML = B.map(row).join('')
   + '<tr class="g"><td class="l" colspan="6">Fora da lista</td></tr>'
-  + out('Alex Sandro', 'Contrato acaba em dez') + out('Danilo', 'Contrato acaba em dez') + out('Bruno Henrique', 'Machucado · volta em 2 jogos', true);
+  + out('Arrascaeta', 'Fratura no punho · volta em novembro', true) + out('Danilo', 'Contrato acaba em dez') + out('Alex Sandro', 'Opção do técnico');
 </script>
 </body>
 </html>

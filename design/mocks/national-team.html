@@ -67,15 +67,15 @@
   <div data-bar="times"></div>
   <main><div class="wrap">
     <div class="side">
-      <div class="stk nt"><span data-crest="BRA" data-size="52"></span><div><h2>Brasil</h2><p>Técnico <b>Lucas Araujo</b><br>desde ago 2026, junto com o Flamengo</p></div><div class="rk"><b>5º</b><small>Fifa</small></div></div>
+      <div class="stk nt"><span data-crest="BRA" data-size="52"></span><div><h2>Brasil</h2><p>Técnico <b>Lucas Araujo</b><br>desde ago 2026, junto com o Flamengo</p></div><div class="rk"><b>6º</b><small>Fifa</small></div></div>
       <div class="stk box"><h3>Data Fifa <small>9 a 17 nov</small></h3>
-        <div class="fx"><div class="d">Qui<b>12</b></div><div><div class="m"><span data-crest="BRA" data-size="20"></span>Brasil × Croácia<span data-crest="CRO" data-size="20"></span></div><small>Amistoso · Arena MRV, BH · 21h30</small></div></div>
-        <div class="fx"><div class="d">Dom<b>15</b></div><div><div class="m"><span data-crest="BRA" data-size="20"></span>Brasil × Marrocos<span data-crest="MAR" data-size="20"></span></div><small>Amistoso · Mané Garrincha, Brasília · 16h</small></div></div>
+        <div class="fx"><div class="d">Sáb<b>14</b></div><div><div class="m"><span data-crest="BRA" data-size="20"></span>Brasil × Japão<span data-crest="JPN" data-size="20"></span></div><small>Amistoso · Estádio Nacional, Singapura · 7h15</small></div></div>
+        <div class="fx"><div class="d">Ter<b>17</b></div><div><div class="m"><span data-crest="BRA" data-size="20"></span>Brasil × Singapura<span data-crest="SGP" data-size="20"></span></div><small>Amistoso · Estádio Nacional, Singapura · 7h</small></div></div>
       </div>
       <div class="stk box"><h3>Saem do Flamengo <small>2 jogadores</small></h3>
         <div class="out"><span data-crest="FLA" data-size="24"></span><div><b>Samuel Lino</b><small>atacante · 26 anos</small></div><span class="f">82</span></div>
-        <div class="out"><span data-crest="FLA" data-size="24"></span><div><b>Paquetá</b><small>meia · 29 anos</small></div><span class="f">80</span></div>
-        <p class="nb">O Flamengo não joga na data Fifa. Os dois voltam no dia 18, contra o Santos, com um dia de treino.</p>
+        <div class="out"><span data-crest="FLA" data-size="24"></span><div><b>Pedro</b><small>atacante · 29 anos</small></div><span class="f">76</span></div>
+        <p class="nb">O Flamengo não joga na data Fifa. Os dois jogam em Singapura no dia 17 e devem desfalcar o time contra o Athletico-PR, no dia 18.</p>
       </div>
       <div class="go-wrap"><button class="btn go"><i class="ph-bold ph-check-fat"></i>Confirmar convocação</button><p>Prazo da CBF: Sex, 30 out</p></div>
     </div>
@@ -86,26 +86,15 @@
   </div></main>
 </div>
 <script>
-CLUBS.LIV = { n: 'Liverpool', c1: '#C8102E', c2: '#FFFFFF', p: 'solid', bg: '#C8102E', fg: '#fff' };
-CLUBS.FEN = { n: 'Fenerbahçe', c1: '#0A2463', c2: '#FFD100', p: 'vstripes', bg: '#0A2463', fg: '#FFD100' };
-CLUBS.PSG = { n: 'PSG', c1: '#0A2A5E', c2: '#D0021B', p: 'band', bg: '#0A2A5E', fg: '#fff' };
-CLUBS.ARS = { n: 'Arsenal', c1: '#D0021B', c2: '#FFFFFF', p: 'solid', bg: '#D0021B', fg: '#fff' };
-CLUBS.RMA = { n: 'Real Madrid', c1: '#FFFFFF', c2: '#3D195B', p: 'solid', bg: '#FFFFFF', fg: '#3D195B' };
-CLUBS.JUVE = { n: 'Juventus', c1: '#111111', c2: '#FFFFFF', p: 'vstripes', bg: '#111111', fg: '#fff' };
-CLUBS.ROM = { n: 'Roma', c1: '#8E1F2F', c2: '#F0BC42', p: 'solid', bg: '#8E1F2F', fg: '#fff' };
-CLUBS.NEW = { n: 'Newcastle', c1: '#111111', c2: '#FFFFFF', p: 'vstripes', bg: '#111111', fg: '#fff' };
-CLUBS.WOL = { n: 'Wolves', c1: '#F9A01B', c2: '#231F20', p: 'solid', bg: '#F9A01B', fg: '#231F20' };
-CLUBS.CHE = { n: 'Chelsea', c1: '#034694', c2: '#FFFFFF', p: 'solid', bg: '#034694', fg: '#fff' };
-CLUBS.BAR = { n: 'Barcelona', c1: '#A50044', c2: '#004D98', p: 'vstripes', bg: '#A50044', fg: '#fff' };
-CLUBS.CRO = { n: 'Croácia', c1: '#FFFFFF', c2: '#D0021B', p: 'halves', bg: '#FFFFFF', fg: '#D0021B' };
-CLUBS.MAR = { n: 'Marrocos', c1: '#C1272D', c2: '#006233', p: 'star', bg: '#C1272D', fg: '#fff' };
 // [group, hint, slots: [club, name, strength] or null]
+// Every name comes from Brazil's last real call-up (9 Sep 2026), with the club each plays for in October 2026.
+// Strength is the game's rating: data/players.csv for Brazilian clubs, a game estimate for the rest.
 const G = [
-  ['Goleiros', '3 vagas', [['LIV', 'Alisson', 86], ['FEN', 'Ederson', 84], ['COR', 'Hugo Souza', 78]]],
-  ['Laterais', '4 vagas', [['ROM', 'Wesley', 80], ['BOT', 'Vitinho', 78], ['BAH', 'Luciano Juba', 80], null]],
-  ['Zagueiros', '4 vagas', [['PSG', 'Marquinhos', 86], ['ARS', 'Gabriel Magalhães', 87], ['RMA', 'Éder Militão', 84], ['JUVE', 'Bremer', 84]]],
-  ['Meio-campo', '7 vagas', [['NEW', 'Bruno Guimarães', 86], ['WOL', 'André', 80], ['CHE', 'Andrey Santos', 80], ['FLA', 'Paquetá', 80], ['CRU', 'Gerson', 80], null, null]],
-  ['Atacantes', '8 vagas', [['RMA', 'Vinícius Júnior', 89], ['BAR', 'Raphinha', 88], ['CHE', 'Estêvão', 84], ['ARS', 'Gabriel Martinelli', 83], ['CHE', 'João Pedro', 83], ['FLA', 'Samuel Lino', 82], null, null]],
+  ['Goleiros', '3 vagas', [['COR', 'Hugo Souza', 78], ['CFC', 'Pedro Morisco', 76], ['CRU', 'Otávio', 73]]],
+  ['Laterais', '4 vagas', [['ROM', 'Wesley', 80], ['COR', 'Matheuzinho', 78], ['ZEN', 'Douglas Santos', 79], null]],
+  ['Zagueiros', '4 vagas', [['PSG', 'Marquinhos', 86], ['ARS', 'Gabriel Magalhães', 87], ['MCI', 'Vitor Reis', 79], ['NFO', 'Jair', 78]]],
+  ['Meio-campo', '7 vagas', [['ARS', 'Bruno Guimarães', 86], ['MUN', 'Andrey Santos', 81], ['JUVE', 'Douglas Luiz', 80], ['BOT', 'Danilo', 78], ['COR', 'Breno Bidon', 78], null, null]],
+  ['Atacantes', '8 vagas', [['RMA', 'Vinícius Júnior', 89], ['BAR', 'Raphinha', 88], ['CHE', 'Estêvão', 85], ['CHE', 'João Pedro', 83], ['FLA', 'Samuel Lino', 82], ['FLA', 'Pedro', 76], null, null]],
 ];
 let no = 1;
 document.getElementById('groups').innerHTML = G.map(([g, h, s]) => `<div class="grp"><div class="gl">${g} <small>${s.filter(Boolean).length} de ${s.length}</small></div><div class="row">${s.map((p) => {

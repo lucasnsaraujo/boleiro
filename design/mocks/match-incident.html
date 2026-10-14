@@ -57,17 +57,18 @@
 </head>
 <body>
 <script>
-// The board at 58': Flamengo 1 × 1 Palmeiras, match paused for the red card.
+// The board at 58': Bahia 1 × 1 Flamengo, match paused for the red card.
 const R0 = ROUND[0].rows, R1 = ROUND[1].rows;
-R0[0] = ['Maracanã', '61.832', 'FLA', 'PAL', 1, 1, ['vm', 'Léo Pereira', "58'"], 'human'];
-R0[1] = ['Neo Química Arena', '44.120', 'COR', 'SAO', 1, 0, ['gol', 'Garro', "52'"]];
-R0[3][6] = ['am', 'Lyanco', "49'"]; R0[4][6] = ['gol', 'Arthur Cabral', "44'"]; R0[5][6] = ['vm', 'Luan Cândido', "55'"];
-R1[5][6] = ['gol', 'Léo Gamalho', "51'"]; R1[4][6] = ['gol', 'Eliel', "50'"];
+R0[0] = ['Fonte Nova', '45.118', 'BAH', 'FLA', 1, 1, ['vm', 'Pulgar', "58'"], 'human'];
+R0[1] = ['Arena da Baixada', '38.904', 'CAP', 'PAL', 1, 0, ['gol', 'Kevin Viveros', "52'"]];
+R0[3][6] = ['gol', 'Arthur Cabral', "44'"]; R0[4][6] = ['am', 'Lyanco', "49'"]; R0[5][6] = ['gol', 'Andrés Gómez', "55'"];
+R0[8][6] = ['gol', 'Isidro Pitta', "47'"]; R0[9][6] = ['vm', 'Raniele', "55'"];
+R1[4][6] = ['gol', 'Everton Morelli', "50'"]; R1[5][6] = ['gol', 'Rómulo Otero', "51'"];
 renderLive();
 document.querySelector('.clock').outerHTML = `<span class="chip bad" style="height:24px"><i class="ph-fill ph-pause"></i>Pausado</span><div class="clock">2º tempo<span class="tr"><i style="width:64%"></i></span><b>58'</b></div>`;
 document.querySelectorAll('.sp span').forEach((s, i) => s.classList.toggle('on', i === 0));
 document.querySelector('.sc').innerHTML = '1<span>×</span>1';
-document.querySelector('.evs').innerHTML = `<span><i class="ph-fill ph-soccer-ball"></i>Samuel Lino 18'</span><span><i class="ph-fill ph-soccer-ball"></i>Flaco López 41'</span><span class="last"><span class="rc"></span>Léo Pereira 58'</span>`;
+document.querySelector('.evs').innerHTML = `<span><i class="ph-fill ph-soccer-ball"></i>Samuel Lino 18'</span><span><i class="ph-fill ph-soccer-ball"></i>Luciano Juba 41'</span><span class="last"><span class="rc"></span>Pulgar 58'</span>`;
 document.querySelector('.right .btn small').textContent = '5 trocas';
 
 const dots = (pts) => pts.map(([x, y, c]) => `<i class="${c || ''}" style="left:${x}%;top:${y}%"></i>`).join('');
@@ -79,8 +80,8 @@ document.querySelector('.app').insertAdjacentHTML('beforeend', `<div class="veil
 <div class="win">
   <div class="rcard">58'</div>
   <div class="top">
-    <div><h2>Expulso: <em>Léo Pereira</em></h2><p>Vermelho direto, carrinho em Vitor Roque. Flamengo fica com 10.</p></div>
-    <div class="scw"><div class="sc"><div>${crest('FLA', 26)}</div><div class="sbox">1</div><div class="sbox">1</div><div>${crest('PAL', 26)}</div></div><span class="tl"><i class="ph-bold ph-arrows-left-right"></i>5 trocas · 3 paradas</span></div>
+    <div><h2>Expulso: <em>Pulgar</em></h2><p>Vermelho direto, carrinho em Erick Pulga. Flamengo fica com 10.</p></div>
+    <div class="scw"><div class="sc"><div>${crest('BAH', 26)}</div><div class="sbox">1</div><div class="sbox">1</div><div>${crest('FLA', 26)}</div></div><span class="tl"><i class="ph-bold ph-arrows-left-right"></i>5 trocas · 3 paradas</span></div>
   </div>
 
   <div class="fix">
@@ -88,14 +89,14 @@ document.querySelector('.app').insertAdjacentHTML('beforeend', `<div class="veil
     <div class="mpw"><div class="mp">${before}</div><span>4-2-3-1</span></div>
     <i class="ph-bold ph-arrow-right ar"></i>
     <div class="mpw"><div class="mp">${after}</div><span>4-4-1 com 10</span></div>
-    <div class="chg"><b>Sai Carrascal, entra Vitão.<br>Vai pro 4-4-1.</b>
-      <div class="sw2"><span class="o"><i class="ph-bold ph-arrow-down"></i>Carrascal 64%</span><span class="n"><i class="ph-bold ph-arrow-up"></i>Vitão, zagueiro, 100%</span></div>
-      <p>Repõe a zaga e tira o mais cansado.</p></div>
+    <div class="chg"><b>Sai Plata, entra Vitão.<br>Vai pro 4-4-1.</b>
+      <div class="sw2"><span class="o"><i class="ph-bold ph-arrow-down"></i>Plata, fora de posição</span><span class="n"><i class="ph-bold ph-arrow-up"></i>Vitão, zagueiro, 100%</span></div>
+      <p>Repõe a zaga e tira quem rende menos.</p></div>
   </div>
 
   <div class="inj">
     <span class="ic"><i class="ph-fill ph-first-aid"></i></span>
-    <div><b>Ayrton Lucas sentiu a coxa</b><p>Fora de <b>2 a 3 semanas</b>, perde o River na quarta.</p></div>
+    <div><b>Ayrton Lucas sentiu a coxa</b><p>Fora de <b>2 a 3 semanas</b>, perde o Estudiantes na quinta.</p></div>
     <label>Sai Ayrton Lucas, entra Alex Sandro<span class="sw on"></span></label>
   </div>
 

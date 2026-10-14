@@ -6,7 +6,6 @@
 <link rel="stylesheet" href="../tokens/album.css">
 <link rel="stylesheet" href="mock.css">
 <script src="mock.js"></script>
-<script>CLUBS.EST = { n: 'Estudiantes', c1: '#E30613', c2: '#FFFFFF', p: 'vstripes', bg: '#E30613', fg: '#FFFFFF', st: 'UNO' };</script>
 <style>
 .wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 14px; }
 
@@ -92,7 +91,7 @@
   <main><div class="wrap">
     <div class="page hero">
       <div class="hd"><div><h1>Maracanã</h1><p><b>78.838 lugares</b> · dividido com o Fluminense</p></div>
-        <div class="stk nx"><span data-crest="RIV" data-size="32"></span><div><b>River Plate, qua 28 out</b><small>Libertadores · semifinal, volta</small></div></div></div>
+        <div class="stk nx"><span data-crest="EST" data-size="32"></span><div><b>Estudiantes, qui 22 out</b><small>Libertadores · semifinal, volta</small></div></div></div>
 
       <div class="mid">
         <div class="bowl"><svg id="bowl" width="440" height="322" viewBox="0 0 400 292"></svg>
@@ -126,7 +125,7 @@
         <div class="opt on"><b>Camarotes e cadeiras novas</b><span>+3.200 lugares premium · 7 meses</span><em>R$ 38 mi<small>+R$ 0,6 mi/jogo</small></em></div>
         <div class="opt"><b>Telão e iluminação</b><span>Torcida +2% · 3 meses</span><em>R$ 14 mi<small></small></em></div>
         <div class="ok"><span>Chance de aprovar</span><span class="meter"><i style="width:70%"></i></span><b>Alta</b></div>
-        <p class="bd">Diretoria 92% com você, caixa de R$ 84,3 mi. Paga em 7 parcelas durante a obra.</p>
+        <p class="bd">Diretoria 92% com você, caixa de R$ 212,4 mi. Paga em 7 parcelas durante a obra.</p>
         <button class="btn"><i class="ph-bold ph-paper-plane-tilt"></i>Enviar pedido</button>
       </div>
     </div>
@@ -151,12 +150,13 @@
   s += `<rect x="${cx - 80}" y="${cy - 48}" width="160" height="96" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><line x1="${cx}" y1="${cy - 48}" x2="${cx}" y2="${cy + 48}" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><circle cx="${cx}" cy="${cy}" r="14" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><rect x="${cx - 80}" y="${cy - 22}" width="22" height="44" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><rect x="${cx + 58}" y="${cy - 22}" width="22" height="44" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/>`;
   document.getElementById('bowl').innerHTML = s;
 })();
+// Flamengo's real last five home games; crowds, prices and gate money are game state.
 const A = [
-  ['Hoje', 'PAL', 'Palmeiras', 'Série A', 120, 61832, '4,9 mi', 'vendidos'],
-  ['18 out', 'VIT', 'Vitória', 'Série A', 80, 48210, '2,6 mi'],
-  ['1 out', 'EST', 'Estudiantes', 'Liberta', 140, 70115, '6,5 mi'],
-  ['28 set', 'FLU', 'Fluminense', 'Série A', 100, 66404, '4,4 mi'],
-  ['14 set', 'MIR', 'Mirassol', 'Série A', 80, 41380, '2,2 mi'],
+  ['11 out', 'FLU', 'Fluminense', 'Série A', 100, 66404, '4,4 mi'],
+  ['20 set', 'RBB', 'Bragantino', 'Série A', 80, 48210, '2,6 mi'],
+  ['17 set', 'IDV', 'Del Valle', 'Liberta', 140, 70115, '6,5 mi'],
+  ['13 set', 'COR', 'Corinthians', 'Série A', 100, 64220, '4,3 mi'],
+  ['2 set', 'MIR', 'Mirassol', 'Série A', 80, 41380, '2,2 mi'],
 ];
 document.getElementById('att').innerHTML = A.map(([d, c, n, comp, pr, pub, ren, note]) => `<div class="ar"><span class="dt">${d}</span>${crest(c, 22)}<div class="nm"><b>${n}</b><small>${comp} · R$ ${pr}</small><span class="meter thin ${pub / 78838 < .6 ? 'mid' : ''}"><i style="width:${(pub / 78838 * 100).toFixed(0)}%"></i></span></div><div class="r"><b>${pub.toLocaleString('pt-BR')}</b><small>${note || 'R$ ' + ren}</small></div></div>`).join('');
 </script>

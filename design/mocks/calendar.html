@@ -29,8 +29,7 @@
 .m.lib { box-shadow: 0 0 0 2px var(--ink), var(--sh-sticker); }
 .m .res { margin-left: auto; font-stretch: var(--semi); font-weight: 900; font-size: 12px; }
 .m.past { opacity: .72; }
-.fifa { grid-row: 4; grid-column: 1 / 8; align-self: end; margin: 0 -4px 12px; height: 26px; display: flex; align-items: center; gap: 8px; padding: 0 12px; transform: rotate(-.4deg); background: repeating-linear-gradient(90deg, var(--yellow) 0 28px, #FFD83A 28px 56px); color: var(--on-yellow); font-stretch: var(--semi); font-weight: 800; font-size: 12px; box-shadow: 0 3px 8px -4px rgba(20,35,26,.45); z-index: 1; }
-.fifa.end { grid-row: 5; grid-column: 1 / 3; transform: rotate(.6deg); }
+.fifa { grid-row: 5; grid-column: 1 / 8; align-self: end; margin: 0 -4px 12px; height: 26px; display: flex; align-items: center; gap: 8px; padding: 0 12px; transform: rotate(-.4deg); background: repeating-linear-gradient(90deg, var(--yellow) 0 28px, #FFD83A 28px 56px); color: var(--on-yellow); font-stretch: var(--semi); font-weight: 800; font-size: 12px; box-shadow: 0 3px 8px -4px rgba(20,35,26,.45); z-index: 1; }
 .fifa i { font-size: 15px; }
 .side { display: flex; flex-direction: column; gap: 12px; }
 .day { padding: 16px; }
@@ -58,39 +57,39 @@
     <div class="page cal">
       <div class="hd"><h2>Outubro e novembro</h2><span class="icb"><i class="ph-bold ph-caret-left"></i></span><span class="icb"><i class="ph-bold ph-caret-right"></i></span></div>
       <div class="wk"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span></div>
-      <div class="days" id="days"><div class="fifa end"><i class="ph-fill ph-flag-banner"></i>Data Fifa até 17</div><div class="fifa"><i class="ph-fill ph-flag-banner"></i>Data Fifa, 9 a 17 de novembro · Samuel Lino e Paquetá convocados para a Seleção</div></div>
+      <div class="days" id="days"><div class="fifa"><i class="ph-fill ph-flag-banner"></i>Data Fifa, 9 a 17 de novembro · Samuel Lino e Pedro convocados para a Seleção</div></div>
     </div>
     <div class="side">
-      <div class="stk day"><span class="lbl">Hoje · Dom, 25 out</span><h3>Série A, 30ª rodada</h3>
-        <div class="vs"><span data-crest="FLA" data-size="56"></span><span class="x">×</span><span data-crest="PAL" data-size="56"></span></div>
-        <dl><dt>Onde</dt><dd>Maracanã · 16h</dd><dt>Árbitro</dt><dd>Wilton Pereira Sampaio</dd><dt>Ingresso</dt><dd>R$ 120 · público previsto 61 mil</dd><dt>Desfalques</dt><dd>Bruno Henrique</dd></dl>
+      <div class="stk day"><span class="lbl">Hoje · Dom, 18 out</span><h3>Série A, 31ª rodada</h3>
+        <div class="vs"><span data-crest="BAH" data-size="56"></span><span class="x">×</span><span data-crest="FLA" data-size="56"></span></div>
+        <dl><dt>Onde</dt><dd>Fonte Nova · 18h30</dd><dt>Árbitro</dt><dd>Wilton Pereira Sampaio</dd><dt>Público previsto</dt><dd>45 mil</dd><dt>Desfalques</dt><dd>Arrascaeta, fratura no punho</dd></dl>
         <button class="btn y"><i class="ph-bold ph-strategy"></i>Escalar time</button>
       </div>
       <div class="stk nx"><h3>Em seguida</h3>
-        <div class="nr"><span class="dt">Qua 28</span><span data-crest="RIV" data-size="22"></span><div><b>River Plate</b><small>Libertadores · semifinal, volta · casa</small></div></div>
-        <div class="nr"><span class="dt">Dom 1</span><span data-crest="VAS" data-size="22"></span><div><b>Vasco</b><small>Série A · 31ª · São Januário</small></div></div>
-        <div class="nr"><span class="dt">Qua 4</span><span data-crest="BAH" data-size="22"></span><div><b>Bahia</b><small>Série A · 32ª · casa</small></div></div>
+        <div class="nr"><span class="dt">Qui 22</span><span data-crest="EST" data-size="22"></span><div><b>Estudiantes</b><small>Libertadores · semifinal, volta · casa</small></div></div>
+        <div class="nr"><span class="dt">Seg 26</span><span data-crest="CAM" data-size="22"></span><div><b>Atlético-MG</b><small>Série A · 32ª · Maracanã</small></div></div>
+        <div class="nr"><span class="dt">Qui 29</span><span data-crest="VAS" data-size="22"></span><div><b>Vasco</b><small>Série A · 33ª · fora</small></div></div>
       </div>
     </div>
   </div></main>
 </div>
 <script>
-// Rolling five weeks, Mon 19 Oct to Sun 22 Nov 2026.
+// Rolling five weeks, Mon 12 Oct to Sun 15 Nov 2026. Fixtures, dates and venues are Flamengo's real 2026 schedule (ESPN);
+// the 1 × 1 in La Plata is game state. Brazil's November friendly against Japan is the real one, in Singapore.
 const M = {
-  o21: ['RIV', 'River Plate', '1×1 · Liberta', 'lib'],
-  o25: ['PAL', 'Palmeiras', 'Série A · 16h'],
-  o28: ['RIV', 'River Plate', 'Liberta · casa', 'lib'],
-  n1: ['VAS', 'Vasco', 'Série A · fora'],
-  n4: ['BAH', 'Bahia', 'Série A · casa'],
-  n7: ['GRE', 'Grêmio', 'Série A · fora'],
-  n18: ['SAN', 'Santos', 'Série A · casa'],
-  n22: ['CRU', 'Cruzeiro', 'Série A · fora'],
+  o15: ['EST', 'Estudiantes', '1×1 · Liberta · fora', 'lib past'],
+  o18: ['BAH', 'Bahia', 'Série A · 18h30'],
+  o22: ['EST', 'Estudiantes', 'Liberta · casa', 'lib'],
+  o26: ['CAM', 'Atlético-MG', 'Série A · casa'],
+  o29: ['VAS', 'Vasco', 'Série A · fora'],
+  n4: ['GRE', 'Grêmio', 'Série A · casa'],
+  n14: ['BRA', 'Japão', 'Seleção · 7h15'],
 };
 const out = [];
 for (let i = 0; i < 35; i++) {
-  const oct = i < 13, day = oct ? 19 + i : i - 12, m = M[(oct ? 'o' : 'n') + day];
-  const past = oct && day < 25, today = oct && day === 25;
-  out.push(`<div class="d ${past ? 'past' : ''} ${today ? 'today' : ''}" style="grid-row:${Math.floor(i / 7) + 1};grid-column:${(i % 7) + 1}"><span class="n">${day}${!oct && day === 1 ? ' nov' : ''}</span>${m ? `<div class="m ${m[3] || ''} ${past ? 'past' : ''}">${crest(m[0], 22)}<div><b>${m[1]}</b><small>${m[2]}</small></div>${m[4] ? `<span class="res">${m[4]}</span>` : ''}</div>` : ''}</div>`);
+  const oct = i < 20, day = oct ? 12 + i : i - 19, m = M[(oct ? 'o' : 'n') + day];
+  const past = oct && day < 18, today = oct && day === 18;
+  out.push(`<div class="d ${past ? 'past' : ''} ${today ? 'today' : ''}" style="grid-row:${Math.floor(i / 7) + 1};grid-column:${(i % 7) + 1}"><span class="n">${day}${!oct && day === 1 ? ' nov' : ''}</span>${m ? `<div class="m ${m[3] || ''}">${crest(m[0], 22)}<div><b>${m[1]}</b><small>${m[2]}</small></div>${m[4] ? `<span class="res">${m[4]}</span>` : ''}</div>` : ''}</div>`);
 }
 document.getElementById('days').insertAdjacentHTML('afterbegin', out.join(''));
 </script>

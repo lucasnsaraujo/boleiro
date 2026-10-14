@@ -52,7 +52,7 @@
   <main><div class="wrap">
     <div class="hd">
       <div class="seg"><span class="on">Série A</span><span>Série B</span><span>Copa do Brasil</span><span>Libertadores</span><span>Carioca</span><span>Outras ligas</span></div>
-      <div class="rd"><span class="icb"><i class="ph-bold ph-caret-left"></i></span><b>29ª rodada</b><span class="icb"><i class="ph-bold ph-caret-right"></i></span></div>
+      <div class="rd"><span class="icb"><i class="ph-bold ph-caret-left"></i></span><b>30ª rodada</b><span class="icb"><i class="ph-bold ph-caret-right"></i></span></div>
     </div>
     <div class="body">
       <div class="page tbl"><table class="tb"><thead><tr><th>#</th><th class="l">Clube</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th><th class="l" style="padding-left:24px">Últimos 5</th><th></th></tr></thead><tbody id="t"></tbody></table></div>
@@ -61,7 +61,7 @@
         <div class="stk leg"><h3>Vagas</h3>
           <div><span class="zn lib">1</span>Libertadores, fase de grupos</div>
           <div><span class="zn pre">5</span>Libertadores, fase prévia</div>
-          <div><span class="zn sul">7</span>Sul-Americana</div>
+          <div><span class="zn sul">6</span>Sul-Americana</div>
           <div><span class="zn reb">17</span>Rebaixados para a Série B</div>
         </div>
       </div>
@@ -69,16 +69,19 @@
   </div></main>
 </div>
 <script>
+// Real Série A 2026 table after round 30 (ESPN standings, 14 Oct 2026): [club, P, J, V, E, D, GP, GC, last 5, places moved in the last round]
 const T = [
-  ['PAL', 61, 18, 7, 4, 52, 24, 'vvevd', 0], ['FLA', 58, 17, 7, 5, 55, 28, 'vvvev', 0], ['CRU', 55, 16, 7, 6, 44, 27, 'evvdv', 1], ['BOT', 52, 15, 7, 7, 41, 30, 'dvvev', -1],
-  ['BAH', 50, 14, 8, 7, 43, 34, 'vvdve', 0], ['FLU', 48, 13, 9, 7, 38, 31, 'eevdv', 2], ['SAO', 45, 12, 9, 8, 36, 33, 'deevv', 0], ['COR', 44, 12, 8, 9, 35, 32, 'vdedv', -2],
-  ['INT', 43, 12, 7, 10, 39, 37, 'dvedv', 0], ['CAM', 42, 11, 9, 9, 37, 35, 'eedve', 1], ['VAS', 41, 11, 8, 10, 40, 41, 'vddve', -1], ['GRE', 40, 11, 7, 11, 34, 38, 'dvdde', 0],
-  ['RBB', 39, 10, 9, 10, 33, 36, 'eevde', 0], ['MIR', 38, 10, 8, 11, 31, 37, 'vdvdd', 0], ['SAN', 36, 9, 9, 11, 38, 44, 'devvd', 1], ['CAP', 34, 9, 7, 13, 30, 40, 'ddved', -1],
-  ['VIT', 31, 8, 7, 14, 29, 45, 'vedde', 0], ['CFC', 29, 7, 8, 14, 26, 42, 'edved', 0], ['CHA', 25, 6, 7, 16, 24, 50, 'ddedd', 0], ['REM', 22, 5, 7, 17, 22, 52, 'deddv', 0],
+  ['FLA', 64, 30, 19, 7, 4, 58, 25, 'vvvev', 0], ['PAL', 63, 30, 18, 9, 3, 52, 22, 'evevv', 0], ['CAP', 53, 30, 15, 8, 7, 49, 35, 'devev', 1], ['FLU', 51, 30, 14, 9, 7, 48, 37, 'vdvvd', -1],
+  ['BAH', 49, 30, 13, 10, 7, 44, 36, 'vvddv', 1], ['CRU', 48, 30, 14, 6, 10, 46, 44, 'vdvvd', -1], ['CAM', 47, 30, 13, 8, 9, 41, 35, 'vevev', 0], ['SAN', 42, 30, 11, 9, 10, 46, 45, 'vvved', 0],
+  ['RBB', 40, 30, 11, 7, 12, 38, 35, 'eddev', 1], ['SAO', 39, 30, 11, 6, 13, 35, 35, 'dvddv', 1], ['CFC', 39, 30, 10, 9, 11, 38, 48, 'dedde', -2], ['VIT', 36, 30, 10, 6, 14, 33, 44, 'vedvd', 0],
+  ['BOT', 36, 30, 9, 9, 12, 43, 48, 'evdde', 0], ['VAS', 35, 29, 9, 8, 12, 36, 42, 'dvvve', 0], ['MIR', 33, 30, 8, 9, 13, 34, 44, 'veved', 0], ['COR', 32, 30, 8, 8, 14, 31, 38, 'ddddd', 0],
+  ['INT', 32, 30, 7, 11, 12, 33, 38, 'dvdve', 0], ['GRE', 31, 30, 7, 10, 13, 32, 40, 'ddeee', 0], ['REM', 25, 30, 5, 10, 15, 33, 48, 'dddee', 0], ['CHA', 18, 29, 3, 9, 17, 30, 61, 'vdedd', 0],
 ];
-const zone = (i) => i < 4 ? 'lib' : i < 6 ? 'pre' : i < 12 ? 'sul' : i >= 16 ? 'reb' : '';
-document.getElementById('t').innerHTML = T.map(([c, p, v, e, d, gp, gc, f, mv], i) => `<tr class="${c === 'FLA' ? 'me' : ''}"><td class="n"><span class="zn ${zone(i)}">${i + 1}</span></td><td class="l cl"><span class="c">${crest(c, 20)}${CLUBS[c].n}</span></td><td class="pts">${p}</td><td>29</td><td>${v}</td><td>${e}</td><td>${d}</td><td>${gp}</td><td>${gc}</td><td>${gp - gc > 0 ? '+' : ''}${gp - gc}</td><td class="l" style="padding-left:24px"><span class="form">${[...f].map((r) => `<i class="${r}">${r.toUpperCase()}</i>`).join('')}</span></td><td class="mv ${mv > 0 ? 'up' : mv < 0 ? 'dn' : ''}">${mv > 0 ? '<i class="ph-fill ph-caret-up"></i>' + mv : mv < 0 ? '<i class="ph-fill ph-caret-down"></i>' + -mv : ''}</td></tr>`).join('');
-const A = [['CRU', 'Kaio Jorge', 'Cruzeiro', 17], ['PAL', 'Flaco López', 'Palmeiras', 15], ['FLA', 'Pedro', 'Flamengo', 11], ['BOT', 'Arthur Cabral', 'Botafogo', 11], ['CAP', 'Kevin Viveros', 'Athletico-PR', 10], ['GRE', 'Carlos Vinícius', 'Grêmio', 10], ['FLA', 'Samuel Lino', 'Flamengo', 9]];
+// 2026 regulation: 1-4 Libertadores group stage, 5 qualifiers, 6-11 Sul-Americana, 17-20 relegated.
+const zone = (i) => i < 4 ? 'lib' : i < 5 ? 'pre' : i < 11 ? 'sul' : i >= 16 ? 'reb' : '';
+document.getElementById('t').innerHTML = T.map(([c, p, j, v, e, d, gp, gc, f, mv], i) => `<tr class="${c === 'FLA' ? 'me' : ''}"><td class="n"><span class="zn ${zone(i)}">${i + 1}</span></td><td class="l cl"><span class="c">${crest(c, 20)}${CLUBS[c].n}</span></td><td class="pts">${p}</td><td>${j}</td><td>${v}</td><td>${e}</td><td>${d}</td><td>${gp}</td><td>${gc}</td><td>${gp - gc > 0 ? '+' : ''}${gp - gc}</td><td class="l" style="padding-left:24px"><span class="form">${[...f].map((r) => `<i class="${r}">${r.toUpperCase()}</i>`).join('')}</span></td><td class="mv ${mv > 0 ? 'up' : mv < 0 ? 'dn' : ''}">${mv > 0 ? '<i class="ph-fill ph-caret-up"></i>' + mv : mv < 0 ? '<i class="ph-fill ph-caret-down"></i>' + -mv : ''}</td></tr>`).join('');
+// Real top scorers after round 30 (ESPN).
+const A = [['CAP', 'Kevin Viveros', 'Athletico-PR', 21], ['FLA', 'Pedro', 'Flamengo', 16], ['SAN', 'Gabriel Barbosa', 'Santos', 14], ['GRE', 'Carlos Vinícius', 'Grêmio', 10], ['BAH', 'Luciano Juba', 'Bahia', 10], ['SAO', 'Jonathan Calleri', 'São Paulo', 10], ['BOT', 'Danilo', 'Botafogo', 10]];
 document.getElementById('a').innerHTML = A.map(([c, n, cl, g], i) => `<div class="ar ${c === 'FLA' ? 'me' : ''}"><span class="k">${i + 1}</span>${crest(c, 22)}<div><b>${n}</b><small>${cl}</small></div><span class="g">${g}</span></div>`).join('');
 </script>
 </body>

@@ -21,7 +21,7 @@
 .ph .cnt { margin-left: auto; text-align: right; font-size: 11.5px; color: var(--mute); white-space: nowrap; }
 .ph .cnt b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 18px; color: var(--ink); line-height: 1; }
 
-.grid { margin-top: 20px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 18px 9px; }
+.grid { margin-top: 18px; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 16px 7px; }
 .ps { position: relative; padding: 4px 4px 0; background: #fff; border-radius: 8px; text-align: center; color: #14231A; box-shadow: 0 1px 0 rgba(20,35,26,.12), 0 0 0 1px rgba(20,35,26,.08), 0 6px 12px -7px rgba(20,35,26,.45); }
 .ps .art { height: 76px; border-radius: 5px; background: #C8102E; position: relative; overflow: hidden; display: grid; place-items: center; }
 .ps .art::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 7px, rgba(0,0,0,.24) 7px 14px); }
@@ -83,7 +83,7 @@
   <main>
     <div class="spread">
       <section class="page pl">
-        <div class="ph"><span class="yr">2026</span><div><h2>Flamengo de Lucas Araujo</h2><p>Sua 1ª temporada · em andamento, 30ª rodada</p></div><div class="cnt"><b>23 de 27</b>figurinhas</div></div>
+        <div class="ph"><span class="yr">2026</span><div><h2>Flamengo de Lucas Araujo</h2><p>Sua 1ª temporada · em andamento, 31ª rodada</p></div><div class="cnt"><b>27 de 31</b>figurinhas</div></div>
         <div class="grid" id="grid"></div>
         <div class="leg"><span><i class="sw1"></i>Brilhante: ídolo ou artilheiro</span><span><i class="sw2"></i>Ainda falta ganhar</span></div>
         <span class="pgno">2026 · 1</span>
@@ -96,7 +96,7 @@
           <div class="tp">
             <div class="tt lib"><span class="tr"><i class="ph-fill ph-trophy"></i></span><span class="y">2025</span><b>Libertadores</b><small>Filipe Luís · 1 × 0 Palmeiras, Lima</small></div>
             <div class="tt"><span class="tr"><i class="ph-fill ph-trophy"></i></span><span class="y">2025</span><b>Brasileirão</b><small>Filipe Luís</small></div>
-            <div class="tt lib"><span class="tr"><i class="ph-fill ph-trophy"></i></span><span class="y">2022</span><b>Libertadores</b><small>Dorival Júnior · 1 × 0 Athletico-PR</small></div>
+            <div class="tt lib"><span class="tr"><i class="ph-fill ph-trophy"></i></span><span class="y">2022</span><b>Libertadores</b><small>Dorival Júnior · 1 × 0 Athletico-PR, Guayaquil</small></div>
             <div class="tt"><span class="tr"><i class="ph-fill ph-trophy"></i></span><span class="y">2020</span><b>Brasileirão</b><small>Rogério Ceni</small></div>
             <div class="tt lib"><span class="tr"><i class="ph-fill ph-trophy"></i></span><span class="y">2019</span><b>Libertadores</b><small>Jorge Jesus · 2 × 1 River Plate, Lima</small></div>
             <div class="tt"><span class="tr"><i class="ph-fill ph-trophy"></i></span><span class="y">2019</span><b>Brasileirão</b><small>Jorge Jesus</small></div>
@@ -104,8 +104,8 @@
         </div>
         <div class="rec"><div class="sec"><h3>Recordes</h3></div>
           <div class="rr"><span>Artilheiro da história</span><b>Zico, 508 gols</b></div>
-          <div class="rr"><span>Mais jogos com a camisa</span><b>Júnior, 876</b></div>
-          <div class="rr"><span>Sua maior vitória</span><b>4 × 0 Vasco · 12 abr 2026</b></div>
+          <div class="rr"><span>Mais jogos com a camisa</span><b>Júnior, 875</b></div>
+          <div class="rr"><span>Sua maior vitória</span><b>5 × 1 Mirassol, fora · 16 ago 2026</b></div>
         </div>
         <span class="pgno">2026 · 2</span>
       </section>
@@ -117,9 +117,9 @@
 const shiny = { Pedro: 1, Arrascaeta: 1, 'Samuel Lino': 1 };
 const cells = SQUAD.map(([p, n], i) => `<div class="ps ${shiny[n] ? 'shiny' : ''}"><div class="art"><em>${String(i + 1).padStart(2, '0')}</em><span class="pos p ${p}">${p}</span><b>${n[0]}</b></div><div class="nm">${n}</div></div>`);
 const slots = [
-  ['ph-trophy', 'Campeão da Série A', 'faltam 9 rodadas, 3 pts atrás'],
-  ['ph-trophy', 'Campeão da Libertadores', 'semifinal, volta qua 28'],
-  ['ph-soccer-ball', 'Artilheiro do Brasileirão', 'Pedro tem 11, líder 17'],
+  ['ph-trophy', 'Campeão da Série A', 'faltam 8 rodadas, 1 pt à frente'],
+  ['ph-trophy', 'Campeão da Libertadores', 'semifinal, volta qui 22'],
+  ['ph-soccer-ball', 'Artilheiro do Brasileirão', 'Pedro tem 16, Viveros 21'],
   ['ph-question', 'Figurinha rara', '???'],
 ];
 document.getElementById('grid').innerHTML = cells.join('') + slots.map(([ic, t, s]) => `<div class="slot sl"><i class="ph-bold ${ic}"></i><b>${t}</b>${s}</div>`).join('');
@@ -127,7 +127,7 @@ const I = [
   ['Z', 'Zico', '1971 a 1989 · 508 gols', 1],
   ['G', 'Gabigol', '2019 a 2024 · 2 Libertadores'],
   ['A', 'Arrascaeta', 'desde 2019 · camisa 10'],
-  ['B', 'Bruno Henrique', 'desde 2020 · para em dez'],
+  ['B', 'Bruno Henrique', 'desde 2019 · 3 Libertadores'],
 ];
 document.getElementById('idols').innerHTML = I.map(([ini, n, s, old]) => `<div class="ps shiny ${old ? 'old' : ''}"><div class="art"><b>${ini}</b></div><div class="nm">${n}</div><div class="cl">${s}</div></div>`).join('');
 </script>
