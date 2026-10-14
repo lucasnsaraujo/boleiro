@@ -1,0 +1,87 @@
+/* Career moments: the shared stage, stickers, the paper and the skip/continue bar.
+   Each moment sets --end (ms) on <body>: the skip button leaves and the choices arrive at that time. */
+
+body:not(.go) .app > main { visibility: hidden; }
+
+/* Window controls live inside the scene: a 28 px band in the scene's own colour (--top on <body>), or inside the
+   green bar on regular screens. No title strip. */
+.mbar { flex: none; height: 28px; position: relative; z-index: 6; background: var(--top, transparent); }
+.lights { position: absolute; left: 12px; top: 8px; display: flex; gap: 8px; z-index: 7; }
+.lights i { width: 12px; height: 12px; border-radius: 50%; background: #FF5F57; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.18); }
+.lights i:nth-child(2) { background: #FEBC2E; }
+.lights i:nth-child(3) { background: #28C840; }
+.bar.lit { padding-left: 84px; }
+.bar.lit .lights { top: 27px; left: 16px; }
+.stage { position: absolute; inset: 0; overflow: hidden; }
+canvas.fill { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* ---------- Skip while it plays, the choices once it ends ---------- */
+.acts { position: absolute; right: 22px; bottom: 20px; z-index: 40; display: flex; align-items: center; gap: 10px; }
+.acts .skip { position: absolute; right: 0; bottom: 4px; height: 30px; padding: 0 12px; border-radius: var(--r-pill); display: inline-flex; align-items: center; gap: 6px; font-family: inherit; font-stretch: var(--semi); font-weight: 800; font-size: 12px; color: var(--ink-2); background: color-mix(in srgb, var(--card) 80%, transparent); border: 0; box-shadow: inset 0 0 0 1.5px var(--line-2); cursor: pointer; animation: leave 260ms var(--e-in-out) calc(var(--end) * 1ms) both; }
+.acts .skip .kbd { height: 18px; min-width: 22px; font-size: 10px; }
+.acts .cta { display: flex; align-items: center; gap: 10px; animation: arrive 520ms var(--e-out) calc(var(--end) * 1ms + 120ms) both; }
+.acts .replay { font-size: 12px; font-weight: 700; color: var(--mute); display: inline-flex; align-items: center; gap: 5px; background: none; border: 0; font-family: inherit; cursor: pointer; margin-right: 6px; }
+@keyframes leave { to { opacity: 0; transform: translateY(6px); visibility: hidden; } }
+@keyframes arrive { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Stickers ---------- */
+/* Player or coach sticker: white die-cut card, club-colour art with the initial (the album has no photos). */
+.ps { --c: #C8102E; --h: 76px; --fs: 30px; --hoop: 7px; position: relative; padding: 4px 4px 0; background: #fff; border-radius: 8px; text-align: center; color: #14231A;
+  box-shadow: 0 1px 0 rgba(20,35,26,.12), 0 0 0 1px rgba(20,35,26,.08), 0 8px 14px -8px rgba(20,35,26,.5); }
+.ps .art { height: var(--h); border-radius: 5px; background: var(--c); position: relative; overflow: hidden; display: grid; place-items: center; }
+.ps.hoops .art::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 var(--hoop), rgba(0,0,0,.26) var(--hoop) calc(var(--hoop) * 2)); }
+.ps.sash .art::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent 38%, rgba(255,255,255,.9) 38% 50%, transparent 50%); }
+.ps .art b { position: relative; font-stretch: var(--wide); font-weight: 900; font-size: var(--fs); color: var(--ci, #fff); line-height: 1; }
+.ps .art em { position: absolute; left: 5px; top: 4px; font-style: normal; font-stretch: var(--semi); font-weight: 900; font-size: 9px; color: rgba(255,255,255,.88); z-index: 1; }
+.ps .art .crest { position: absolute; left: 5px; top: 5px; z-index: 1; }
+.ps .nm { font-stretch: var(--semi); font-weight: 800; font-size: 12px; line-height: 1.1; padding: 5px 2px 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ps .cl { font-size: 10.5px; color: #5C584B; padding-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ps.shiny { background: var(--foil); box-shadow: 0 0 0 2.5px var(--yellow), 0 10px 18px -8px rgba(20,35,26,.55); }
+.ps.shiny .art { box-shadow: inset 0 0 0 2px rgba(255,204,0,.9); }
+.ps.old .art { filter: saturate(.55) sepia(.35) contrast(.95); }
+
+/* Foil catching the light once: a printed sheen, never a glow */
+.sheen { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; z-index: 2; }
+.sheen::after { content: ''; position: absolute; top: -20%; bottom: -20%; width: 45%; left: -60%; transform: skewX(-18deg);
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.75) 45%, rgba(255,247,209,.9) 50%, rgba(255,255,255,0));
+  mix-blend-mode: soft-light; animation: sheen 900ms var(--e-in-out) calc(var(--sheen-at, 0) * 1ms) both; }
+@keyframes sheen { from { left: -60%; } to { left: 130%; } }
+
+/* Number sticker: the spell's numbers as album stickers */
+.nst { position: relative; background: var(--card); border-radius: 10px; padding: 10px 12px 9px; box-shadow: var(--sh-sticker); }
+.nst b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 34px; line-height: .95; letter-spacing: -.02em; }
+.nst span { display: block; font-size: 11.5px; font-weight: 600; color: var(--mute); margin-top: 3px; }
+.nst.foil { background: var(--foil); box-shadow: 0 0 0 2px var(--yellow), var(--sh-sticker); }
+
+/* Engraved plate: trophy plates and club plaques */
+.plaque { position: relative; background: linear-gradient(180deg, #EAD9A4, #D9C27F); color: #3B2F0E; border-radius: 4px; padding: 10px 16px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.55), inset 0 0 0 4px #CDB46E, inset 0 0 0 5px rgba(59,47,14,.35), 0 2px 0 #A88C45, 0 10px 18px -10px rgba(20,35,26,.6); text-align: center; }
+.plaque b, .plaque span { text-shadow: 0 1px 0 rgba(255,255,255,.45); }
+.plaque::before, .plaque::after { content: ''; position: absolute; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #F6EBC6, #9C8037); box-shadow: 0 1px 0 rgba(255,255,255,.4); }
+.plaque::before { left: 9px; } .plaque::after { right: 9px; }
+
+/* Tape holding a clipping to the page */
+.tape { position: absolute; width: 74px; height: 20px; background: rgba(255,255,255,.6); box-shadow: 0 0 0 1px rgba(20,35,26,.06); z-index: 3; }
+[data-theme='dark'] .tape { background: rgba(255,255,255,.22); }
+
+/* ---------- Jornal do Boleiro: the game's newspaper ---------- */
+.jb { position: relative; background: #FBF7EC; color: #1A1A17; box-shadow: 0 0 0 1px rgba(20,35,26,.10), 0 18px 30px -16px rgba(20,35,26,.5); }
+.jb .mast { display: flex; align-items: flex-end; justify-content: space-between; border-bottom: 3px double #1A1A17; padding-bottom: 5px; }
+.jb .mast h4 { font-stretch: var(--wide); font-weight: 900; font-size: 24px; line-height: .9; letter-spacing: -.03em; }
+.jb .mast h4 span { font-style: italic; font-weight: 800; font-size: 11px; letter-spacing: 0; vertical-align: 4px; margin-right: 4px; }
+.jb .mast small { font-size: 9.5px; color: #4A473E; text-align: right; line-height: 1.3; }
+.jb .kick { font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #C8102E; }
+.jb h3 { font-stretch: 70%; font-weight: 900; text-transform: uppercase; line-height: .88; letter-spacing: -.01em; text-wrap: balance; }
+.jb p { font-size: 12px; line-height: 1.4; color: #2C2B26; }
+
+/* Small caption line with an icon, for times and places */
+.when { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--mute); }
+.when i { font-size: 15px; color: var(--ink-2); }
+
+/* Cause strip: every moment says what in the game made it happen */
+.cause { display: flex; align-items: baseline; gap: 8px; font-size: 11.5px; line-height: 1.35; color: var(--ink-2); }
+.cause > b { flex: none; font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+
+@media (prefers-reduced-motion: reduce) {
+  .acts .skip { display: none; }
+}
