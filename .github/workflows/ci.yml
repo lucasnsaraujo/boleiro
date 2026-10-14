@@ -30,7 +30,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm --filter @boleiro/desktop exec playwright install --with-deps chromium
       - run: pnpm e2e
 
   tauri:
@@ -41,6 +41,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: src-tauri
+          workspaces: apps/desktop/src-tauri
       - run: cargo test
-        working-directory: src-tauri
+        working-directory: apps/desktop/src-tauri

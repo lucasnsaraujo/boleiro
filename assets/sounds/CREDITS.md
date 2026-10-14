@@ -1,6 +1,6 @@
 # Sound credits
 
-Every sound file in this folder, where it came from and its licence. The Opções screen shows this table, and `ui/sound/credits.test.ts` fails if a file here has no row or its licence isn't CC0, the Pixabay licence or CC BY.
+Every sound file in this folder, where it came from and its licence. The Opções screen shows this table, and `apps/desktop/ui/sound/credits.test.ts` fails if a file here has no row or its licence isn't CC0, the Pixabay licence or CC BY.
 
 All files are the Freesound previews of the sounds below, cut and re-encoded as MP3. Each licence was checked on the sound's own page on 2026-10-10.
 

@@ -37,9 +37,9 @@ All files are recompressed losslessly with `oxipng`, which keeps the folder at a
 
 `club_id` links each player to `clubs.csv`. Strength starts from a division baseline (A 72, B 63, C 56, D 49). State-only clubs start at 42, one step below Série D (`guess`, keeping the roughly 7-point gap between divisions). They have no Sofascore stats, so their strength moves only with market value and age.
 
-The baselines were checked against Copa do Brasil 2017–2025 matches between divisions (`pnpm calibrate`) and left unchanged. With Série A's strength-to-goals curve, these gaps make cup favourites win far too often (Série A away at Série D or below: 89% simulated, 61% real). Squeezing the baselines to about a third of their gaps would fit the cup, but the cup is a biased witness: big clubs rest players, first-round favourites go through on a draw, and the small clubs that reach later rounds are the best of their division. So the cup gets its own flatter strength curve (`CUP_PARAMS` in `src/engine/paramsForDivision.ts`) and the league gaps stay. No league data compares divisions directly, because every 2026 squad is rated within its own 2026 division.
+The baselines were checked against Copa do Brasil 2017–2025 matches between divisions (`pnpm calibrate`) and left unchanged. With Série A's strength-to-goals curve, these gaps make cup favourites win far too often (Série A away at Série D or below: 89% simulated, 61% real). Squeezing the baselines to about a third of their gaps would fit the cup, but the cup is a biased witness: big clubs rest players, first-round favourites go through on a draw, and the small clubs that reach later rounds are the best of their division. So the cup gets its own flatter strength curve (`CUP_PARAMS` in `packages/engine/src/engine/paramsForDivision.ts`) and the league gaps stay. No league data compares divisions directly, because every 2026 squad is rated within its own 2026 division.
 
-How the game uses `age` and `nationality` (`src/sim/players/`): each season a player's strength follows the 2026 squads' mean strength by age within a division (about 4 below the division level at 17, 1 above from 27 to 31, 4 below at 38), and players leave at the rate each age group shrinks in this file (about 6% a year from 29, rising to 70% past 40). Players whose nationalities don't include Brazil count as foreign. Injury, fatigue and travel rates name their studies in the code; every other rate there is marked `guess`.
+How the game uses `age` and `nationality` (`packages/engine/src/sim/players/`): each season a player's strength follows the 2026 squads' mean strength by age within a division (about 4 below the division level at 17, 1 above from 27 to 31, 4 below at 38), and players leave at the rate each age group shrinks in this file (about 6% a year from 29, rising to 70% past 40). Players whose nationalities don't include Brazil count as foreign. Injury, fatigue and travel rates name their studies in the code; every other rate there is marked `guess`.
 
 ## Historical results
 
@@ -60,7 +60,7 @@ Notes:
 - Teams are joined across sources by `team_key` (`pipeline/team_key.py`): lowercase ASCII words without club-type abbreviations. It is approximate; names that differ beyond that do not match.
 - The 2026 season was still running when fetched, so it only has the matches finished by then.
 
-## Engine parameters (`src/engine/paramsForDivision.ts`)
+## Engine parameters (`packages/engine/src/engine/paramsForDivision.ts`)
 
 | Params | Fitted by `pnpm calibrate` to |
 |---|---|
@@ -69,7 +69,7 @@ Notes:
 | Série D | Same, from the 2024 season only (510 games, so its test tolerance is twice as wide) |
 | Copa do Brasil (`CUP_PARAMS`) | Win, draw and loss shares and goals per game of the higher-division club, by division gap and venue, 2017–2025. In ESPN seasons a club with no A–C standing counts as "D or below". Two-leg knockout rates are checked, not fitted. |
 
-## Season calendar and league formats (`src/sim/`)
+## Season calendar and league formats (`packages/engine/src/sim/`)
 
 | Value | Source |
 |---|---|
@@ -84,7 +84,7 @@ Notes:
 | State championships: one format for all 27 states, groups of up to six (one round each), top 8 (states with 12+ clubs) or top 4 to two-leg knockouts | Spec #2 settles one standard format; group size, qualifiers and legs are `guess`. State games use `CUP_PARAMS` (`guess`: mixed divisions, rested players). The first season seeds estaduais and the Copa from the ranking stand-in (`guess`). |
 | Tie-break order: points, wins, goal difference, goals scored, head-to-head (two clubs only), red cards, yellow cards, draw | [Band](https://www.band.com.br/esportes/brasileirao-criterios-desempate), [TecMundo](https://www.tecmundo.com.br/apostas/409831-brasileirao-2026-formato-datas-vagas-para-libertadores-e-sul-americana.htm). Every competition uses this order. |
 
-## Morale and organised supporters (`src/sim/morale/`)
+## Morale and organised supporters (`packages/engine/src/sim/morale/`)
 
 | Value | Source |
 |---|---|
@@ -94,7 +94,7 @@ Notes:
 
 Mood swings, escalation thresholds, the strength effect of morale (at most one point either way) and the crowd effect of fan mood (at most 10%) are all `guess`, marked in the code.
 
-## Transfer market (`src/sim/transfers/`)
+## Transfer market (`packages/engine/src/sim/transfers/`)
 
 | Value | Source |
 |---|---|
@@ -124,7 +124,7 @@ One row per Série A 2026 club (`club_id` links to `clubs.csv`), plus `small` / 
 
 Remo and Chapecoense played Série B in 2025, so their revenue is below the rest of Série A; Flamengo's passed R$2B. The game pays them 2026 Série A TV money, so they start above their 2025 accounts.
 
-How the game uses these files (`src/sim/finances/openingFinances.ts`): each club's wage bill comes from its row (Série A) or from the small/median/large rows by squad strength rank in its division (Série B–D); state-only clubs are half a small Série D club (guess). TV money and crowds come from `competition-money.json`, not from the `broadcasting` and `matchday` columns. Sponsorship and membership come from the row. Gate money counts every opening home fixture (league, estadual group and Copa phase 1). Whatever the row's revenue without player sales holds beyond those lines, less the Copa do Brasil prizes the club can expect (`expectedPrizes`, `src/sim/finances/expectedCopaPrize.ts`: each tie a coin flip, a guess), becomes `otherIncome`, which stands for state championship, continental and other money the game does not simulate. Real Copa prizes are paid as they are won (`src/sim/finances/payCopaPrizes.ts`), so they count once. Each new season puts last season's expected prizes back into `otherIncome` and takes the new season's out. Every rate in `src/sim/finances/` names its source or is marked `guess` in the code.
+How the game uses these files (`packages/engine/src/sim/finances/openingFinances.ts`): each club's wage bill comes from its row (Série A) or from the small/median/large rows by squad strength rank in its division (Série B–D); state-only clubs are half a small Série D club (guess). TV money and crowds come from `competition-money.json`, not from the `broadcasting` and `matchday` columns. Sponsorship and membership come from the row. Gate money counts every opening home fixture (league, estadual group and Copa phase 1). Whatever the row's revenue without player sales holds beyond those lines, less the Copa do Brasil prizes the club can expect (`expectedPrizes`, `packages/engine/src/sim/finances/expectedCopaPrize.ts`: each tie a coin flip, a guess), becomes `otherIncome`, which stands for state championship, continental and other money the game does not simulate. Real Copa prizes are paid as they are won (`packages/engine/src/sim/finances/payCopaPrizes.ts`), so they count once. Each new season puts last season's expected prizes back into `otherIncome` and takes the new season's out. Every rate in `packages/engine/src/sim/finances/` names its source or is marked `guess` in the code.
 
 ### competition-money.json
 
@@ -142,7 +142,7 @@ How the game uses these files (`src/sim/finances/openingFinances.ts`): each club
 | `matchday.C` | 2025 crowds about 2,700–2,950 (A União); ticket price derived from reported takings. |
 | `matchday.D` | `guess`: no league-wide figure; 2,000 crowd and R$20 ticket. |
 
-## Cards and suspensions (`src/sim/discipline/`, `src/engine/sendOffRates.ts`)
+## Cards and suspensions (`packages/engine/src/sim/discipline/`, `packages/engine/src/engine/sendOffRates.ts`)
 
 | Value | Source |
 |---|---|

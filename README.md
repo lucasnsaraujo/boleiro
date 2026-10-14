@@ -32,7 +32,7 @@ The rest of `data/history/` holds Copa do Brasil and Série B–D results from t
 
 Each file has one row per finished match: date, round, source team ids and names, a normalized `*_key` for joining across sources, the score without any shootout, the shootout winner (`home`/`away`) and the odds columns. Série A odds come from football-data.co.uk (above). 2026 only has the matches finished when fetched.
 
-`src/data/history.ts` loads them (`loadResults`, `loadDivisions`); a season both sources cover comes from Sofascore. To rebuild:
+`packages/data/src/history.ts` loads them (`loadResults`, `loadDivisions`); a season both sources cover comes from Sofascore. To rebuild:
 
 ```sh
 .venv/bin/python pipeline/fetch_espn.py       # plain HTTP; caches raw answers in data/history_cache/espn
@@ -48,7 +48,7 @@ pnpm install
 pnpm test && pnpm typecheck && pnpm lint
 pnpm dev         # the game in the browser at http://localhost:5173 (saves go to IndexedDB)
 pnpm tauri dev   # the desktop app (needs Rust); saves go to <app data dir>/saves
-pnpm e2e         # Playwright tests on the web build at port 4173 (first run: pnpm exec playwright install chromium)
+pnpm e2e         # Playwright tests on the web build at port 4173 (first run: pnpm --filter @boleiro/desktop exec playwright install chromium)
                  # it reuses a server already on that port; set E2E_PORT when another checkout has one running
                  # the build runs with VITE_E2E=1, which exposes the engine on window so a test can skip days
 pnpm calibrate   # refits the engine, prints real-vs-Boleiro tables per division and for cup ties
@@ -60,6 +60,16 @@ pnpm history [--seasons N] [--seed S] [--club ID]   # same career run, then a cl
 pnpm season [--seasons N] [--seed S] [--club ID] [--report]   # whole seasons with no coach, then the realism report
 ```
 
-The app lives in `ui/` (Vite + React) and `src-tauri/` (the desktop window and save files). The sim in `src/` stays UI-free: it runs in a Web Worker (`ui/engine/engine.worker.ts`) and the screens talk to it through `EngineClient` in `ui/engine/connectEngine.ts`. ESLint stops `src/` from importing React, Tauri or `ui/`, and stops `ui/` from importing `advanceDay` outside the worker's session. In the browser the worker builds new games from the same data files, bundled by Vite (`newGameFromFiles` in `src/sim/loadNewGame.ts`).
+The repo is a pnpm workspace. Packages hold TypeScript source with no build step: each `package.json` maps `@boleiro/<name>/<path>` to `src/<path>.ts`.
+
+| Folder | Package | What it holds |
+|---|---|---|
+| `packages/data/` | `@boleiro/data` | Parsers and Node loaders for the files in `data/` (clubs, players, finances, history) |
+| `packages/engine/` | `@boleiro/engine` | The sim: match engine (`src/engine/`), seasons and the club world (`src/sim/`), the CLI runs (`src/cli/`) |
+| `packages/game-client/` | `@boleiro/game-client` | The engine session and its Web Worker, saves, and the selectors screens read from game state; no React |
+| `packages/design-tokens/` | `@boleiro/design-tokens` | Colour and font tokens as CSS custom properties |
+| `apps/desktop/` | `@boleiro/desktop` | The app: screens in `ui/` (Vite + React), the desktop window and save files in `src-tauri/`, Playwright tests in `e2e/` |
+
+Dependencies point one way: `data` ← `engine` ← `game-client` ← `desktop`. The sim stays UI-free: it runs in a Web Worker (`packages/game-client/src/engine/engine.worker.ts`) and the screens talk to it through `EngineClient` in `packages/game-client/src/engine/connectEngine.ts`. ESLint stops `engine` and `data` from importing React, Tauri or the UI packages, stops `data` from importing any other Boleiro package, stops `game-client` from importing React, and stops everything outside the worker's session from importing `advanceDay`. In the browser the worker builds new games from the same data files, bundled by Vite (`newGameFromFiles` in `packages/engine/src/sim/loadNewGame.ts`). The raw files stay at the repo root in `data/` and `assets/`.
 
 `pnpm season` prints, for each season, the final tables (Série A and B with points, the top of C and D), the Copa do Brasil and estadual winners, promotions and relegations, the five biggest transfer fees, revenue bands per division and the clubs with the most and least cash. Then it prints one club's history (`--club`, by default the last Série A champion) and a realism report: markdown tables that compare results, Copa do Brasil upsets by division gap, cards, revenue, foreign players and injuries with the real data the sim is built on. `--report` prints only the realism report. The default test suite plays two seasons of it, saving and loading the game at each season start.
