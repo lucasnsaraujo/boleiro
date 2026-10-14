@@ -169,7 +169,9 @@ export function Shell() {
 
 /**
  * Windows draws no title bar for the game (`decorations: false` in tauri.windows.conf.json): these are
- * its minimise, maximise and close buttons, sitting in the game's own header at the top right.
+ * its minimise, maximise and close buttons, sitting in the game's own header at the top right. Windows
+ * 11 opens its snap layouts flyout only over a button the window reports as HTMAXBUTTON, which a web
+ * page can't, so hovering this one shows none.
  */
 function CaptionButtons() {
   const act = (action: "minimize" | "toggleMaximize" | "close") => {
