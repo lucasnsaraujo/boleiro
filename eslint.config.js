@@ -9,6 +9,7 @@ export default tseslint.config(
       "pipeline",
       ".venv",
       ".claude",
+      "design/mocks",
       "apps/desktop/dist",
       "apps/desktop/src-tauri/target",
       "apps/desktop/src-tauri/gen",
