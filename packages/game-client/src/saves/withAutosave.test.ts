@@ -1,8 +1,9 @@
-import { IDBFactory } from "fake-indexeddb";
-import { afterEach, expect, test } from "vitest";
+import { IDBFactory, IDBObjectStore } from "fake-indexeddb";
+import { afterEach, expect, test, vi } from "vitest";
 import type { EngineClient } from "../engine/connectEngine.js";
 import type { CommandResults, CommandType, GameCommand, PlayResult } from "../engine/createEngineSession.js";
 import { inMemoryEngine } from "../engine/inMemoryEngine.js";
+import { twoCountryGame } from "../engine/twoCountryGame.js";
 import type { CurrentGameRef } from "./currentGame.js";
 import { indexedDbSlots } from "./indexedDbSlots.js";
 import { AUTOSAVE_SLOT_ID } from "./slotMeta.js";
@@ -12,6 +13,7 @@ const closers: (() => void)[] = [];
 
 afterEach(() => {
   for (const close of closers.splice(0)) close();
+  vi.restoreAllMocks();
 });
 
 async function startGame() {
@@ -207,4 +209,27 @@ test("signing an offer on a day with no match is autosaved, so the coach keeps h
   const { events } = await career.apply({ type: "advance", days: [{ acceptOffer: offer.clubId }] });
   expect(events.some((event) => event.type === "matchPlayed")).toBe(false);
   expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID, coachClubId: offer.clubId }]);
+});
+
+const days = (count: number) => Array.from({ length: count }, () => ({}));
+
+test("an autosave of a world game writes the game and the countries that played, not one that has not played since", async () => {
+  const { engine: raw, close } = inMemoryEngine();
+  closers.push(close);
+  const slots = indexedDbSlots(new IDBFactory());
+  const engine = withAutosave(raw, slots, { current: { slotId: "slot-1", coachName: "Tite" } });
+  await engine.apply({ type: "load", save: twoCountryGame() });
+  await engine.apply({ type: "advance", days: days(57) });
+  const put = vi.spyOn(IDBObjectStore.prototype, "put");
+  const { date } = await engine.apply({ type: "advance", days: days(11) });
+  const shardsPut = put.mock.calls.flatMap(([, key], call) => {
+    const store = put.mock.contexts[call];
+    return store instanceof IDBObjectStore && store.name === "shards" && Array.isArray(key) ? [key[1]] : [];
+  });
+  expect(date).toBe("2026-03-10");
+  expect(shardsPut.sort()).toEqual(["country-aa", "game"]);
+  const { engine: reloaded, close: closeReloaded } = inMemoryEngine();
+  closers.push(closeReloaded);
+  await reloaded.apply({ type: "load", save: await slots.read(AUTOSAVE_SLOT_ID) });
+  expect(JSON.parse(await reloaded.save())).toEqual(JSON.parse(await engine.save()));
 });
