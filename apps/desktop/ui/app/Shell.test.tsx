@@ -74,6 +74,13 @@ test("the F-keys open the bar's screens, and the ones still to come do nothing",
   expect(await screen.findByRole("heading", { name: "tela /market" })).toBeTruthy();
 });
 
+test("a game key that does nothing on this screen still never reaches the browser, so F5 can't reload a live round", async () => {
+  open(await services(), "/round");
+  expect(fireEvent.keyDown(document, { key: "F5" })).toBe(false);
+  expect(fireEvent.keyDown(document, { key: "F3" })).toBe(false);
+  expect(fireEvent.keyDown(document, { key: "F12" })).toBe(true);
+});
+
 test("there is no bar on the start menu or in a live round, and the F-keys can't leave a match", async () => {
   const router = open(await services(), "/round");
   expect(screen.queryByRole("navigation", { name: "Telas" })).toBeNull();

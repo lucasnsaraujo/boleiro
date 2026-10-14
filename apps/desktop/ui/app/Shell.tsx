@@ -12,7 +12,7 @@ import { useTheme } from "../theme/ThemeProvider.js";
 import { useCommands, useRunCommand } from "./AppCommands.js";
 import { GameClockContext } from "./gameClock.js";
 import { installNativeMenu } from "./nativeMenu.js";
-import { platformOf, windowChrome } from "./platform.js";
+import { hasMica, platformOf, windowChrome, windowsVersion } from "./platform.js";
 import { screenDirection } from "./screenDirection.js";
 import { NAV, navIndexOf, showsBar, type NavId } from "./screens.js";
 import { useServices } from "./ServicesContext.js";
@@ -84,6 +84,11 @@ export function Shell() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  const [isMicaOn, setMicaOn] = useState(false);
+  useEffect(() => {
+    if (CHROME === "windows") void windowsVersion().then((version) => setMicaOn(hasMica(version)));
+  }, []);
+
   useEffect(() => {
     if (hasNativeMenu || !isTauri() || PLATFORM !== "mac") return;
     hasNativeMenu = true;
@@ -126,7 +131,9 @@ export function Shell() {
     const onKey = (event: KeyboardEvent) => {
       const command = commandForKey(event, PLATFORM);
       if (!command || event.defaultPrevented || (event.key.length === 1 && !event.metaKey && !event.ctrlKey && isTyping(event.target))) return;
-      if (runCommand(command)) event.preventDefault();
+      // WebView2 keeps the browser's own F-keys (F5 reloads the app, F3 finds), so a game key never reaches them.
+      event.preventDefault();
+      runCommand(command);
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -137,7 +144,7 @@ export function Shell() {
 
   return (
     <GameClockContext value={{ refresh }}>
-      <div className="app" data-chrome={chrome}>
+      <div className="app" data-chrome={chrome} data-mica={isMicaOn || undefined}>
         {hasBar && (
           <nav className="bar" aria-label="Telas" data-tauri-drag-region>
             {NAV.map((item, index) => (
