@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { loadThemeSetting, resolveTheme, saveThemeSetting, type ThemeSetting } from "./themeSetting.js";
@@ -30,7 +30,8 @@ export function ThemeProvider({ store, children }: { store: Pick<Storage, "getIt
     return () => query.removeEventListener("change", follow);
   }, []);
 
-  useEffect(() => {
+  // Before the first paint: the window's own background is cream, so a later effect flashes it at dark players.
+  useLayoutEffect(() => {
     document.documentElement.dataset.theme = resolveTheme(setting, systemDark);
   }, [setting, systemDark]);
 
