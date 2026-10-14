@@ -1,0 +1,161 @@
+/* The tribute's sticker: a pinhead of a pixel ball by the version, easy to walk past. */
+.tribute-sticker {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgba(20, 35, 26, 0.12),
+    0 2px 3px -1px rgba(20, 35, 26, 0.35);
+  transform: rotate(-6deg);
+  opacity: 0.55;
+  transition:
+    transform var(--t-base) var(--e-slap),
+    opacity var(--t-base) var(--e-out),
+    box-shadow var(--t-base) var(--e-out);
+}
+
+/* The corner lifts like a sticker you start to peel off the page. */
+.tribute-sticker::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  border-radius: 0 0 4px 0;
+  background: linear-gradient(135deg, transparent 50%, var(--paper-2) 50%, #fff 90%);
+  box-shadow: -1px -1px 2px -1px rgba(20, 35, 26, 0.4);
+  transition:
+    width var(--t-base) var(--e-out),
+    height var(--t-base) var(--e-out);
+}
+
+.tribute-sticker:hover,
+.tribute-sticker:focus-visible,
+.tribute-sticker[aria-expanded="true"] {
+  opacity: 1;
+  transform: rotate(4deg) translateY(-2px);
+  box-shadow:
+    0 0 0 1px rgba(20, 35, 26, 0.12),
+    0 6px 8px -3px rgba(20, 35, 26, 0.45);
+}
+
+.tribute-sticker:hover::after,
+.tribute-sticker:focus-visible::after {
+  width: 9px;
+  height: 9px;
+}
+
+/* A 7x7 ball in the square pixels of a 1990s screen: white patches on black, drawn with one shadow per pixel. */
+.tribute-ball {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 2px;
+  height: 2px;
+  background: transparent;
+  box-shadow:
+    4px 0px #14231a, 6px 0px #14231a, 8px 0px #14231a,
+    2px 2px #14231a, 4px 2px #fff, 6px 2px #fff, 8px 2px #fff, 10px 2px #14231a,
+    0px 4px #14231a, 2px 4px #fff, 4px 4px #fff, 6px 4px #14231a, 8px 4px #fff, 10px 4px #fff, 12px 4px #14231a,
+    0px 6px #14231a, 2px 6px #fff, 4px 6px #14231a, 6px 6px #14231a, 8px 6px #14231a, 10px 6px #fff, 12px 6px #14231a,
+    0px 8px #14231a, 2px 8px #fff, 4px 8px #fff, 6px 8px #14231a, 8px 8px #fff, 10px 8px #fff, 12px 8px #14231a,
+    2px 10px #14231a, 4px 10px #fff, 6px 10px #fff, 8px 10px #fff, 10px 10px #14231a,
+    4px 12px #14231a, 6px 12px #14231a, 8px 12px #14231a;
+}
+
+/* The card: an album sticker under the grey title bar of an old PC game's window. */
+.tribute {
+  position: absolute;
+  right: 26px;
+  bottom: 70px;
+  z-index: 6;
+  width: 300px;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  background: #c0c0c0;
+  box-shadow:
+    1px 1px 0 #404040,
+    var(--sh-lift);
+  transform-origin: 100% 100%;
+}
+
+.tribute-bar {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 3px 0 6px;
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: #fff;
+}
+
+.tribute-bar h2 {
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.01em;
+}
+
+.tribute-bar h2:focus {
+  outline: none;
+}
+
+.tribute-x {
+  width: 16px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  color: #000;
+  background: #c0c0c0;
+  border: 1px solid;
+  border-color: #fff #404040 #404040 #fff;
+}
+
+.tribute-x:active {
+  border-color: #404040 #fff #fff #404040;
+}
+
+.tribute-body {
+  margin: 4px;
+  padding: 12px 14px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 12.5px;
+  line-height: 1.45;
+  border: 1px solid;
+  border-color: #808080 #fff #fff #808080;
+}
+
+.tribute-body p + p {
+  margin-top: 8px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tribute {
+    animation: tribute-unpeel 520ms var(--e-slap) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tribute {
+    animation: tribute-fade var(--t-base) ease-out both;
+  }
+}
+
+@keyframes tribute-unpeel {
+  from {
+    opacity: 0;
+    transform: translate(18px, 30px) rotate(12deg) scale(0.2);
+  }
+}
+
+@keyframes tribute-fade {
+  from {
+    opacity: 0;
+  }
+}

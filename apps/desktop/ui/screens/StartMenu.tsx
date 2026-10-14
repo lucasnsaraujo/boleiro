@@ -12,6 +12,7 @@ import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { CLUBS, clubById } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
+import { BrasfootTribute } from "../start/BrasfootTribute.js";
 import { savedWhen } from "../start/savedWhen.js";
 import "./startMenu.css";
 
@@ -215,6 +216,7 @@ export function StartMenu() {
               <i className="ph-bold ph-gear-six" aria-hidden="true" />
               Opções
             </Link>
+            <BrasfootTribute />
             <span className="lobby-version">
               Boleiro {VERSION}
               <br />
