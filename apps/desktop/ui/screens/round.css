@@ -313,7 +313,7 @@
 }
 
 .digit,
-.sbox {
+.live-r .sbox {
   overflow: hidden;
 }
 
@@ -325,7 +325,7 @@
 }
 
 .digit > span,
-.sbox > span {
+.live-r .sbox > span {
   display: block;
 }
 
