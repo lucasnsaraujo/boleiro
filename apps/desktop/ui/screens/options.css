@@ -314,6 +314,7 @@
 
 .shortcut .kbd {
   min-width: 34px;
+  font-family: inherit;
 }
 
 .options-about {
