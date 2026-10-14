@@ -2,15 +2,22 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, expect, test } from "vitest";
+import { IDBFactory } from "fake-indexeddb";
+import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
+import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
+import { ServicesContext } from "../app/ServicesContext.js";
 import { Shell } from "../app/Shell.js";
 import { FakeAudioContext, fetchUrlBytes } from "./fakeAudioContext.js";
 import { MUSIC } from "./soundCatalog.js";
 import { createSoundEngine } from "./soundEngine.js";
 import { musicFor, SoundProvider } from "./SoundProvider.js";
 
+const closers: (() => void)[] = [];
+
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  for (const close of closers.splice(0)) close();
 });
 
 function withSound() {
@@ -56,10 +63,14 @@ test("sound starts on the first gesture with the screen's music, and buttons cli
     ],
     { initialEntries: ["/"] },
   );
+  const game = inMemoryEngine();
+  closers.push(game.close);
   render(
-    <SoundProvider engine={engine} store={localStorage}>
-      <RouterProvider router={router} />
-    </SoundProvider>,
+    <ServicesContext value={{ engine: game.engine, slots: indexedDbSlots(new IDBFactory()), game: { current: null } }}>
+      <SoundProvider engine={engine} store={localStorage}>
+        <RouterProvider router={router} />
+      </SoundProvider>
+    </ServicesContext>,
   );
   expect(contexts).toHaveLength(0);
 

@@ -1,75 +1,210 @@
-.shell {
-  min-height: 100%;
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--paper) var(--paper-tex) center / cover;
+}
+
+/*
+ * macOS: the window's own title bar is hidden and its traffic lights sit over this strip, which the
+ * window drags by. It is see-through paper over the window's vibrancy; on Windows the system draws a
+ * Mica title bar with its caption buttons, so the strip is not drawn there at all.
+ */
+.chrome {
+  flex: none;
+  height: 28px;
   display: grid;
-  grid-template-rows: 44px 1fr;
-}
-
-.top {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 0 28px;
-  border-bottom: var(--hairline);
-}
-
-.brand {
-  font: 800 21px/1 var(--num);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--yellow);
-  text-decoration: none;
-}
-
-.bar {
-  display: flex;
-  align-self: stretch;
-  gap: 22px;
-  margin-left: 12px;
-  overflow-x: auto;
-}
-
-.bar-link {
+  place-items: center;
   position: relative;
+  z-index: 5;
+  background: color-mix(in srgb, var(--paper) 78%, transparent);
+  backdrop-filter: blur(24px) saturate(1.6);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--ink) 10%, transparent);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.chrome-title {
+  font: 600 13px -apple-system, "SF Pro Text", system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  color: color-mix(in srgb, var(--ink) 78%, transparent);
+}
+
+/* Green top bar: Brasfoot's nine buttons, with the flag's yellow and blue stitched under it. */
+.bar {
+  flex: none;
+  height: 66px;
   display: flex;
-  align-items: center;
-  font: 600 15px var(--cond);
-  color: var(--chalk-3);
-  text-decoration: none;
-  white-space: nowrap;
-  border-bottom: 3px solid transparent;
-  padding-top: 3px;
+  align-items: stretch;
+  padding: 0 16px 0 8px;
+  background: var(--bar);
+  color: var(--bar-ink);
+  position: relative;
+  z-index: 4;
+  box-shadow: 0 3px 0 var(--bar-d);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.bar-link:hover {
-  color: var(--chalk);
-}
-
-.bar-link[aria-current="page"] {
-  color: var(--chalk);
-}
-
-/* The active screen's underline. Its own transition name lets it glide to the next tab on a screen change. */
-.shell-bar-mark {
+.bar::after {
+  content: "";
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -3px;
-  height: 3px;
+  bottom: -7px;
+  height: 4px;
+  background: repeating-linear-gradient(90deg, var(--yellow) 0 24px, var(--blue) 24px 48px);
+  opacity: 0.9;
+}
+
+[data-theme="dark"] .bar::after {
+  background: repeating-linear-gradient(90deg, var(--yellow) 0 24px, #1b3f9e 24px 48px);
+  opacity: 0.75;
+}
+
+.bar .ic {
+  position: relative;
+  width: 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-weight: 700;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  border-radius: 12px;
+  transition: color var(--t-fast) var(--e-out);
+}
+
+.bar .ic i {
+  font-size: 24px;
+  transition: transform var(--t-base) var(--e-slap);
+}
+
+.bar .ic:not(.on, .off):hover {
+  color: #fff;
+}
+
+.bar .ic:not(.on, .off):hover i {
+  transform: translateY(-2px) rotate(-6deg);
+}
+
+.bar .ic:not(.on, .off):active i {
+  transform: translateY(1px) scale(0.92);
+  transition-duration: var(--t-fast);
+}
+
+.bar .ic.off {
+  color: rgba(255, 255, 255, 0.42);
+  cursor: default;
+}
+
+.bar .ic:focus-visible {
+  outline-offset: -4px;
+}
+
+.bar .ic.on {
+  color: var(--on-yellow);
+}
+
+/* The active button is a yellow sticker; its transition name lets it slide to the next button on a screen change. */
+.bar .ic-plate {
+  width: 66px;
+  height: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   background: var(--yellow);
+  border-radius: 12px;
+  box-shadow: 0 3px 0 var(--bar-d);
   view-transition-name: shell-bar-mark;
 }
 
+.bar-date {
+  margin-left: auto;
+  align-self: center;
+  text-align: right;
+  line-height: 1.15;
+}
+
+.bar-date b {
+  display: block;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.bar-date span {
+  font-size: 11.5px;
+  opacity: 0.82;
+}
+
 .screen {
-  padding: 32px 28px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 28px 28px 32px;
   animation: shell-arrive var(--shell-arrive) backwards;
+}
+
+/* A screen built to its mock lays out the whole window itself. */
+.screen:has(> .fills-screen) {
+  padding: 0;
+}
+
+.toast {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 13px;
+  animation:
+    toast-slap var(--t-stamp) var(--e-slap) both,
+    toast-peel 260ms var(--e-peel) 2340ms both;
+}
+
+.toast i {
+  font-size: 17px;
+  color: var(--green);
+}
+
+.toast.error i {
+  color: var(--red);
+}
+
+@keyframes toast-slap {
+  from {
+    opacity: 0;
+    transform: translateY(14px) rotate(-5deg) scale(1.08);
+  }
+  to {
+    transform: rotate(-1deg);
+  }
+}
+
+@keyframes toast-peel {
+  to {
+    opacity: 0;
+    transform: translate(10px, -6px) rotate(4deg);
+  }
 }
 
 /*
  * Screen changes. The router starts a View Transition on every change to another screen, but only the
- * leaving screen (named shell-screen by withScreenTransitions) and the bar's underline are captured:
- * the new screen is live from its first frame, so a click on it lands at once. The old screen, on top,
- * is pushed out and gone in 80ms; the new one arrives a beat later and settles with expo-out. Along the
- * bar the screens slide in the bar's order; off the bar they stack in depth.
+ * leaving screen (named shell-screen by withScreenTransitions) and the bar's yellow sticker are
+ * captured: the new screen is live from its first frame, so a click on it lands at once. The old
+ * screen, on top, is pushed out and gone in 80ms; the new one arrives a beat later and settles with
+ * expo-out. Along the bar the screens slide in the bar's order; off the bar they stack in depth.
  */
 :root {
   --shell-leave: 80ms cubic-bezier(0.2, 0, 0, 1);
@@ -123,9 +258,10 @@
   }
 }
 
+/* The sticker overshoots a hair as it lands on the next button, like a hand pressing it down. */
 ::view-transition-group(shell-bar-mark) {
-  animation-duration: 240ms;
-  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.34, 1.3, 0.64, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -137,68 +273,101 @@
   ::view-transition-group(shell-bar-mark) {
     animation-duration: 0s;
   }
+
+  .toast {
+    animation:
+      toast-fade var(--t-base) ease-out both,
+      toast-fade 260ms ease-in 2340ms reverse both;
+  }
 }
 
+@keyframes toast-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Shared pieces of the screens drawn before the Álbum rebuild, in the Álbum's type and buttons. */
 .screen-title {
-  font: 800 44px/1 var(--num);
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.01em;
 }
 
 .screen-sub {
   margin-top: 6px;
-  font: 500 16px var(--cond);
-  color: var(--chalk-2);
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.btn-main,
+.btn-danger,
+.btn-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: var(--r-pill);
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  border: 2px solid var(--edge);
+  box-shadow: var(--sh-press);
+  transition:
+    transform var(--t-fast) var(--e-out),
+    box-shadow var(--t-fast) var(--e-out);
 }
 
 .btn-main {
-  display: inline-flex;
-  align-items: center;
-  height: 40px;
-  padding: 0 18px;
   background: var(--yellow);
   color: var(--on-yellow);
-  font: 700 16px var(--cond);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  text-decoration: none;
-}
-
-.btn-main:hover {
-  background: var(--yellow-hover);
-}
-
-.btn-main:disabled {
-  opacity: 0.6;
-  cursor: progress;
 }
 
 .btn-danger {
-  display: inline-flex;
-  align-items: center;
-  height: 40px;
-  padding: 0 18px;
   background: var(--red);
-  color: #fff;
-  font: 700 16px var(--cond);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  color: var(--on-red);
 }
 
 .btn-quiet {
-  font: 600 15px var(--cond);
-  color: var(--chalk-2);
-  text-decoration: none;
+  background: var(--card);
+  color: var(--ink);
 }
 
-.btn-quiet:hover {
-  color: var(--chalk);
+.btn-main:hover:not(:disabled),
+.btn-danger:hover:not(:disabled),
+.btn-quiet:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--edge);
+}
+
+.btn-main:active:not(:disabled),
+.btn-danger:active:not(:disabled),
+.btn-quiet:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--edge);
+}
+
+.btn-main:disabled,
+.btn-danger:disabled,
+.btn-quiet:disabled {
+  background: var(--paper-2);
+  color: var(--mute);
+  border-color: var(--line-2);
+  box-shadow: 0 3px 0 var(--line-2);
+  cursor: progress;
 }
 
 .status {
   margin-top: 12px;
-  font: 500 15px var(--cond);
-  color: var(--chalk-2);
+  font-size: 13px;
+  color: var(--ink-2);
 }
 
 .status.error {
