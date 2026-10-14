@@ -29,7 +29,7 @@ export function Saves() {
   const [list, setList] = useState<Slots>({ kind: "loading" });
   const [pickedId, setPickedId] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>(null);
-  const [busy, setBusy] = useState<"saving" | "opening" | null>(null);
+  const [busy, setBusy] = useState<"saving" | "opening" | "removing" | null>(null);
   const [isConfirming, setConfirming] = useState(false);
 
   const refresh = useCallback(
@@ -83,11 +83,14 @@ export function Saves() {
   async function remove(meta: SlotMeta) {
     setConfirming(false);
     if (busy) return;
+    setBusy("removing");
     try {
       await slots.remove(meta.id);
       setStatus({ text: `${slotLabel(meta.id)} apagado.`, isError: false });
     } catch {
       setStatus({ text: "Não deu para apagar esse jogo.", isError: true });
+    } finally {
+      setBusy(null);
     }
     await refresh();
   }

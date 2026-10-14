@@ -111,3 +111,18 @@ test("a saved card prints its slot number and stripes in the ink that reads on i
   const art = within(card).getByText("03").parentElement;
   expect(art?.style.color).toBe(ink.style.color);
 });
+
+test("while a save is being deleted, nothing else can save or load", async () => {
+  const given = await services();
+  await saveToSlot(given.engine, given.slots, "slot-3", { slotId: "slot-3", coachName: "Tite" });
+  let finishRemoving = () => {};
+  const remove = given.slots.remove.bind(given.slots);
+  openSaves({ ...given, slots: { ...given.slots, list: given.slots.list.bind(given.slots), remove: (id) => new Promise<void>((resolve) => (finishRemoving = () => void remove(id).then(resolve))) } });
+  await userEvent.click(await within(await slotsList()).findByRole("button", { name: /^Jogo 3 · Bahia/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Apagar" }));
+  await userEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Apagar o Jogo 3" }));
+  expect(screen.getByRole("button", { name: "Salvar agora" })).toHaveProperty("disabled", true);
+  expect(screen.getByRole("button", { name: "Carregar este jogo" })).toHaveProperty("disabled", true);
+  finishRemoving();
+  await waitFor(() => expect(screen.getByRole("button", { name: "Salvar agora" })).toHaveProperty("disabled", false));
+});
