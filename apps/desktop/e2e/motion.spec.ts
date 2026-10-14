@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { startAtClub } from "./flows.js";
 
 const MAX_PRESSES = 5;
 
@@ -33,16 +34,7 @@ async function recordMotion(page: Page) {
 
 async function newGame(page: Page) {
   await page.goto("/");
-  await page.getByRole("link", { name: "Novo jogo" }).click();
-  await page.getByRole("button", { name: "Série A" }).click();
-  await page.getByRole("searchbox", { name: "Buscar clube" }).fill("bahia");
-  const clubs = page.getByRole("list", { name: "Clubes" });
-  await expect(clubs.getByRole("button", { name: "Bahia" })).not.toContainText("…");
-  await clubs.getByRole("button", { name: "Bahia" }).click();
-  await page.getByRole("button", { name: "Assumir o clube" }).click();
-  await page.getByRole("textbox", { name: "Nome do técnico" }).fill("Tite");
-  await page.getByRole("button", { name: "Começar" }).click();
-  await expect(page.getByRole("heading", { name: "Bahia" })).toBeVisible();
+  await startAtClub(page, { division: "Série A", search: "bahia", club: "Bahia", coach: "Tite" });
 }
 
 /** A tour of the moments that move: screen changes, a squad re-sort, the lineup sheet, kick-off and the full table. */
@@ -50,9 +42,8 @@ async function tour(page: Page) {
   await newGame(page);
   const bar = page.getByRole("navigation", { name: "Telas" });
   await bar.getByRole("link", { name: "Tabelas" }).click();
-  await bar.getByRole("link", { name: "Elenco" }).click();
+  await bar.getByRole("link", { name: "Times" }).click();
   await page.getByRole("button", { name: "Idade" }).click();
-  await bar.getByRole("link", { name: "Clube" }).click();
   const lineup = page.getByRole("dialog", { name: "Escalação" });
   const play = page.getByRole("button", { name: "Jogar rodada" });
   for (let press = 0; press < MAX_PRESSES && !(await lineup.isVisible()); press++) {
@@ -71,8 +62,10 @@ async function tour(page: Page) {
 test("a click on the arriving screen lands while the screen change is still running", async ({ page }) => {
   await newGame(page);
   const bar = page.getByRole("navigation", { name: "Telas" });
-  const squad = await bar.getByRole("link", { name: "Elenco" }).boundingBox();
-  if (!squad) throw new Error("no Elenco link");
+  await bar.getByRole("link", { name: "Tabelas" }).click();
+  await expect(page.getByRole("heading", { name: "Tabelas" })).toBeVisible();
+  const squad = await bar.getByRole("link", { name: "Times" }).boundingBox();
+  if (!squad) throw new Error("no Times link");
   await page.mouse.click(squad.x + squad.width / 2, squad.y + squad.height / 2);
   // Read the squad as soon as it is drawn, without waiting for anything to stop moving.
   const age = await page.waitForFunction(() => [...document.querySelectorAll("button")].find((button) => button.textContent === "Idade") ?? null, null, { polling: "raf" });

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { bar as barOf, barDate, news, startAtClub } from "./flows.js";
 
 const SEASON = 2026;
 // A Série C club plays about 40 matches a year, and some presses of "Jogar rodada" stop early for news.
@@ -11,17 +12,7 @@ const PLAY_TIMEOUT = 60_000;
 
 async function startAtSerieC(page: Page) {
   await page.goto("/");
-  await page.getByRole("link", { name: "Novo jogo" }).click();
-  await page.getByRole("button", { name: "Série C" }).click();
-  await page.getByRole("searchbox", { name: "Buscar clube" }).fill("paysandu");
-  const clubs = page.getByRole("list", { name: "Clubes" });
-  await expect(clubs.getByRole("button", { name: "Paysandu" })).not.toContainText("…");
-  await clubs.getByRole("button", { name: "Paysandu" }).click();
-  await page.getByRole("button", { name: "Assumir o clube" }).click();
-  await page.getByRole("textbox", { name: "Nome do técnico" }).fill("Tite");
-  await page.getByRole("button", { name: "Começar" }).click();
-  await expect(page).toHaveURL(/#\/hub$/);
-  await expect(page.getByRole("heading", { name: "Paysandu" })).toBeVisible();
+  await startAtClub(page, { division: "Série C", search: "paysandu", club: "Paysandu", coach: "Tite" });
 }
 
 /** Read-only, through the e2e build's engine hook: the game date and how many matches of the coach's club have a result. */
@@ -36,8 +27,8 @@ async function finishedCoachMatches(page: Page): Promise<{ date: string; count: 
 
 /** Asks the board for a priced Série D player while the window is open, and returns his name. */
 async function askForSigning(page: Page): Promise<string> {
-  const bar = page.getByRole("navigation", { name: "Telas" });
-  await bar.getByRole("link", { name: "Mercado" }).click();
+  const bar = barOf(page);
+  await bar.getByRole("link", { name: "Busca" }).click();
   await expect(page.getByText(/^Janela aberta até /)).toBeVisible();
   await page.getByRole("combobox", { name: "Divisão" }).selectOption("Série D");
   const priced = page.getByRole("table", { name: "Jogadores" }).getByRole("row").filter({ has: page.getByRole("cell", { name: /^R\$/ }) }).first();
@@ -47,7 +38,7 @@ async function askForSigning(page: Page): Promise<string> {
   await page.getByRole("region", { name }).getByRole("button", { name: "Comprar" }).click();
   await expect(page.getByRole("list", { name: "Pedidos à diretoria" })).toContainText(`Contratação de ${name}`);
   await expect(page.getByRole("region", { name })).toContainText("A diretoria responde amanhã.");
-  await bar.getByRole("link", { name: "Clube" }).click();
+  await bar.getByRole("link", { name: "Times" }).click();
   return name;
 }
 
@@ -93,7 +84,7 @@ test("a Série C club plays its whole first season through the screens and start
   await page.clock.install();
   await startAtSerieC(page);
 
-  const hubDate = page.getByText(/ de \d{4} · Tite$/);
+  const hubDate = barDate(page);
   const seeOffers = page.getByRole("link", { name: "Ver propostas" });
   const playRound = page.getByRole("button", { name: "Jogar rodada" });
   const waitForOffers = page.getByRole("button", { name: "Esperar propostas" });
@@ -103,7 +94,6 @@ test("a Série C club plays its whole first season through the screens and start
   const seasonEnd = page.getByRole("heading", { name: `Fim da temporada ${SEASON}` });
   const sacked = page.getByRole("heading", { name: "Demitido" });
   const offers = page.getByRole("heading", { name: "Propostas" });
-  const inbox = page.getByRole("list", { name: "Notícias" });
   const elsewhere = kickOff.or(band).or(seasonEnd).or(sacked).or(offers);
 
   const labels: string[] = [];
@@ -159,7 +149,8 @@ test("a Série C club plays its whole first season through the screens and start
       .toBe(true);
     const seen = await finishedCoachMatches(page);
     if (seen.date.startsWith(String(SEASON))) finished = seen.count;
-    if (signing && !isAnswered && (await inbox.isVisible())) {
+    if (signing && !isAnswered && (await playRound.isVisible())) {
+      const inbox = await news(page);
       const answer = inbox.getByText(`Diretoria aprova a contratação de ${signing}`).or(inbox.getByText(`Diretoria recusa a contratação de ${signing}`));
       isAnswered = await answer.isVisible();
     }
@@ -191,5 +182,6 @@ test("a Série C club plays its whole first season through the screens and start
   }
   await page.getByRole("button", { name: `Começar ${SEASON + 1}` }).click();
   await expect(page).toHaveURL(/#\/hub$/);
-  await expect(page.getByText(`1 de janeiro de ${SEASON + 1}`)).toBeVisible();
+  await expect(barOf(page)).toContainText("1 jan");
+  await expect(barOf(page)).toContainText(`Temporada ${SEASON + 1}`);
 });

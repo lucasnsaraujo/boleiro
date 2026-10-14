@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { backToStart, news, savedGames, startAtClub } from "./flows.js";
 
 const MAX_PRESSES = 5;
 // Half-time and every goal against, red card or injury of the coach's side stop the clock.
@@ -6,16 +7,7 @@ const MAX_STOPS = 30;
 
 test("from the hub, set the lineup, play the round live with a substitution, and land back on the hub with the result saved", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "Novo jogo" }).click();
-  await page.getByRole("button", { name: "Série A" }).click();
-  await page.getByRole("searchbox", { name: "Buscar clube" }).fill("bahia");
-  const clubs = page.getByRole("list", { name: "Clubes" });
-  await expect(clubs.getByRole("button", { name: "Bahia" })).not.toContainText("…");
-  await clubs.getByRole("button", { name: "Bahia" }).click();
-  await page.getByRole("button", { name: "Assumir o clube" }).click();
-  await page.getByRole("textbox", { name: "Nome do técnico" }).fill("Tite");
-  await page.getByRole("button", { name: "Começar" }).click();
-  await expect(page.getByRole("heading", { name: "Bahia" })).toBeVisible();
+  await startAtClub(page, { division: "Série A", search: "bahia", club: "Bahia", coach: "Tite" });
 
   const lineup = page.getByRole("dialog", { name: "Escalação" });
   for (let press = 0; press < MAX_PRESSES && !(await lineup.isVisible()); press++) {
@@ -60,8 +52,9 @@ test("from the hub, set the lineup, play the round live with a substitution, and
 
   await back.click();
   await expect(page.getByRole("heading", { name: "Bahia" })).toBeVisible();
-  await expect(page.getByRole("list", { name: "Notícias" })).toContainText(score ?? "no score");
+  await expect(await news(page)).toContainText(score ?? "no score");
 
-  await page.getByRole("link", { name: "Boleiro" }).click();
+  await backToStart(page);
+  await savedGames(page);
   await expect(page.getByRole("button", { name: "Apagar Automático" })).toBeVisible();
 });
