@@ -7,10 +7,10 @@ import { loadPack } from "./dataPack.js";
 const MANIFEST = JSON.stringify({
   format: 1,
   images: {
-    abc: { kind: "crest", width: 139, height: 181, boxes: [64, 128, 256], formats: ["webp", "avif"] },
-    def: { kind: "scoreboard_crest", width: 500, height: 500, boxes: [64, 128, 256], formats: ["webp", "avif"] },
+    "crest/abc": { kind: "crest", width: 139, height: 181, boxes: [64, 128, 256], formats: ["webp", "avif"] },
+    "scoreboard_crest/def": { kind: "scoreboard_crest", width: 500, height: 500, boxes: [64, 128, 256], formats: ["webp", "avif"] },
   },
-  clubs: { "bahia-ba": { crest: "abc", scoreboardCrest: "def" }, "jacuipense-ba": { crest: "abc" } },
+  clubs: { "bahia-ba": { crest: "crest/abc", scoreboardCrest: "scoreboard_crest/def" }, "jacuipense-ba": { crest: "crest/abc" } },
 });
 
 describe("imageFileOf", () => {

@@ -15,13 +15,13 @@ const IMAGE_BUDGETS: Record<string, { largestFile: number; total: number }> = {
   // today 30,508 and 1,372,720 (40 ESPN logos)
   scoreboard_crest: { largestFile: 38_000, total: 1_700_000 },
 };
-// today 60,278 and 49,218
-const FILE_BUDGETS: Record<string, number> = { [PACK_FILE]: 75_000, "assets.json": 62_000 };
+// today 60,278 and 53,950
+const FILE_BUDGETS: Record<string, number> = { [PACK_FILE]: 75_000, "assets.json": 67_000 };
 
 function filesOf(kind: string): string[] {
   return Object.entries(manifest.images)
     .filter(([, image]) => image.kind === kind)
-    .flatMap(([hash, image]) => image.boxes.flatMap((box) => image.formats.map((format) => join(PACK, "assets", kind, `${hash}-${box}.${format}`))));
+    .flatMap(([id, image]) => image.boxes.flatMap((box) => image.formats.map((format) => join(PACK, "assets", `${id}-${box}.${format}`))));
 }
 
 describe("asset size budgets", () => {

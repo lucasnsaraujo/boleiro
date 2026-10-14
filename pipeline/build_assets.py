@@ -1,9 +1,11 @@
 """Converts the images of the master database's latest snapshot into the pack's small variants.
 
-Each distinct source image (by content hash) becomes WebP and AVIF files fitted into 64, 128
-and 256 px boxes, never upscaled: a 139x181 crest's 256 variant stays 139x181. Files are named
-`assets/<kind>/<hash>-<box>.<format>`, and `assets.json` lists every image and which club uses it,
-read by packages/data/src/assetManifest.ts. Files no image needs any more are removed.
+Each distinct source image of a kind (by content hash) becomes WebP and AVIF files fitted into
+64, 128 and 256 px boxes, never upscaled: a 139x181 crest's 256 variant stays 139x181. An image is
+named by its kind and hash, `<kind>/<hash>`, and its files `assets/<kind>/<hash>-<box>.<format>`;
+a PNG used both as a crest and a scoreboard crest gets files in both folders. `assets.json` lists
+every image and which club uses it, read by packages/data/src/assetManifest.ts. Files no image
+needs any more are removed. `images.path` is relative to the repo root, as import_csv.py writes it.
 
 Usage: .venv/bin/python pipeline/build_assets.py pipeline/boleiro.db packages/data/pack [snapshot id]
 """
@@ -46,7 +48,7 @@ def build(db: sqlite3.Connection, snapshot: int, out: Path) -> dict[str, object]
     clubs: dict[str, dict[str, str]] = {}
     written: set[Path] = set()
     for row in rows:
-        key = row["sha256"][:HASH_LENGTH]
+        key = f"{row['kind']}/{row['sha256'][:HASH_LENGTH]}"
         if row["entity"] == "club":
             clubs.setdefault(row["entity_id"], {})[CLUB_KEYS[row["kind"]]] = key
         if key in images:
@@ -56,7 +58,7 @@ def build(db: sqlite3.Connection, snapshot: int, out: Path) -> dict[str, object]
         for box in BOXES:
             variant = fitted(source, box)
             for extension, (format_name, options) in FORMATS.items():
-                path = out / "assets" / row["kind"] / f"{key}-{box}.{extension}"
+                path = out / "assets" / f"{key}-{box}.{extension}"
                 path.parent.mkdir(parents=True, exist_ok=True)
                 data = encoded(variant, format_name, options)
                 if not path.exists() or path.read_bytes() != data:

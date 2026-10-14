@@ -1,8 +1,11 @@
 /** One source image, converted into `boxes` (px, longest side, never upscaled) in each of `formats`. */
 export type ImageAsset = { kind: string; width: number; height: number; boxes: number[]; formats: string[] };
-/** The images a club uses, by their content hash in `images`. */
+/** The images a club uses, by their id in `images`. */
 export type ClubImages = { crest?: string; scoreboardCrest?: string };
-/** `packages/data/pack/assets.json`, written by `pipeline/build_assets.py`. */
+/**
+ * `packages/data/pack/assets.json`, written by `pipeline/build_assets.py`. An image's id is its kind and
+ * content hash, `crest/0036ad7407124464`, and its files are `<id>-<box>.<format>` under `pack/assets/`.
+ */
 export type AssetManifest = { images: Record<string, ImageAsset>; clubs: Record<string, ClubImages> };
 
 const MANIFEST_FORMAT = 1;
@@ -23,11 +26,11 @@ function isList<T>(value: unknown, isItem: (item: unknown) => item is T): value 
 const isNumber = (value: unknown): value is number => typeof value === "number";
 const isString = (value: unknown): value is string => typeof value === "string";
 
-function imageOf(value: unknown, hash: string): ImageAsset {
-  if (!isRecord(value)) fail(`images.${hash}`, "an image");
+function imageOf(value: unknown, id: string): ImageAsset {
+  if (!isRecord(value)) fail(`images.${id}`, "an image");
   const { kind, width, height, boxes, formats } = value;
-  if (!isString(kind) || !isNumber(width) || !isNumber(height)) fail(`images.${hash}`, "a kind, width and height");
-  if (!isList(boxes, isNumber) || !isList(formats, isString)) fail(`images.${hash}`, "boxes and formats");
+  if (!isString(kind) || !isNumber(width) || !isNumber(height)) fail(`images.${id}`, "a kind, width and height");
+  if (!isList(boxes, isNumber) || !isList(formats, isString)) fail(`images.${id}`, "boxes and formats");
   return { kind, width, height, boxes: [...boxes].sort((a, b) => a - b), formats };
 }
 
@@ -35,16 +38,16 @@ export function parseAssetManifest(json: string): AssetManifest {
   const manifest: unknown = JSON.parse(json);
   if (!isRecord(manifest) || manifest.format !== MANIFEST_FORMAT) fail("format", String(MANIFEST_FORMAT));
   if (!isRecord(manifest.images) || !isRecord(manifest.clubs)) fail("", "images and clubs");
-  const images = Object.fromEntries(Object.entries(manifest.images).map(([hash, image]) => [hash, imageOf(image, hash)]));
+  const images = Object.fromEntries(Object.entries(manifest.images).map(([id, image]) => [id, imageOf(image, id)]));
   const clubs = Object.fromEntries(
     Object.entries(manifest.clubs).map(([clubId, uses]): [string, ClubImages] => {
       if (!isRecord(uses)) fail(`clubs.${clubId}`, "an object");
       const found: ClubImages = {};
       for (const key of CLUB_IMAGES) {
-        const hash = uses[key];
-        if (hash === undefined) continue;
-        if (!isString(hash) || !(hash in images)) fail(`clubs.${clubId}.${key}`, `an image in the manifest, not ${String(hash)}`);
-        found[key] = hash;
+        const id = uses[key];
+        if (id === undefined) continue;
+        if (!isString(id) || !(id in images)) fail(`clubs.${clubId}.${key}`, `an image in the manifest, not ${String(id)}`);
+        found[key] = id;
       }
       return [clubId, found];
     }),
@@ -57,9 +60,9 @@ export function parseAssetManifest(json: string): AssetManifest {
  * pixels, or the largest box when none does; null when the club has no such image or format.
  */
 export function imageFileOf(manifest: AssetManifest, clubId: string, use: keyof ClubImages, size: number, format: string): string | null {
-  const hash = manifest.clubs[clubId]?.[use];
-  const image = hash === undefined ? undefined : manifest.images[hash];
+  const id = manifest.clubs[clubId]?.[use];
+  const image = id === undefined ? undefined : manifest.images[id];
   if (!image || !image.formats.includes(format)) return null;
   const box = image.boxes.find((candidate) => candidate >= size) ?? image.boxes[image.boxes.length - 1];
-  return `${image.kind}/${hash}-${box}.${format}`;
+  return `${id}-${box}.${format}`;
 }

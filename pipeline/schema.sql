@@ -87,8 +87,8 @@ CREATE TABLE IF NOT EXISTS field_sources (
   PRIMARY KEY (snapshot_id, entity, entity_id, field)
 );
 
--- Crests, kits and logos. `path` is the source file in the repo; `sha256` its content, so the
--- asset builder converts each distinct image once.
+-- Crests, kits and logos. `path` is the source file, relative to the repo root; `sha256` its
+-- content, so the asset builder converts each distinct image of a kind once.
 CREATE TABLE IF NOT EXISTS images (
   snapshot_id INTEGER NOT NULL REFERENCES snapshots(id),
   entity TEXT NOT NULL,                -- club | competition | sponsor
