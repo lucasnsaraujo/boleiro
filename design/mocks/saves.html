@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Jogos salvos</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: 1fr 340px; gap: 14px; }
+.pg { padding: 22px 24px; display: flex; flex-direction: column; }
+.hd { display: flex; align-items: center; gap: 12px; }
+.hd h2 { font-stretch: var(--wide); font-weight: 900; font-size: 24px; margin-right: auto; }
+.hd p { font-size: 12.5px; color: var(--mute); }
+.slots { margin-top: 20px; flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 16px; }
+.sv { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+.sv .art { height: 118px; position: relative; display: grid; place-items: center; background: var(--c); border-radius: var(--r-m) var(--r-m) 0 0; }
+.sv .art::before { content: ''; position: absolute; inset: 0; border-radius: inherit; background: repeating-linear-gradient(135deg, rgba(255,255,255,.12) 0 14px, rgba(255,255,255,0) 14px 28px); }
+.sv .art .crest { position: relative; }
+.sv .no { position: absolute; left: 12px; top: 10px; font-stretch: var(--wide); font-weight: 900; font-size: 13px; color: rgba(255,255,255,.85); }
+.sv .auto { position: absolute; right: 10px; top: 10px; background: rgba(0,0,0,.35); color: #fff; }
+.sv .tx { padding: 12px 16px 14px; display: flex; flex-direction: column; flex: 1; }
+.sv h3 { font-stretch: var(--wide); font-weight: 900; font-size: 19px; line-height: 1; }
+.sv .co { font-size: 12px; color: var(--mute); margin-top: 4px; }
+.sv dl { margin-top: auto; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 12px; }
+.sv dt { color: var(--mute); }
+.sv dd { text-align: right; font-weight: 700; }
+.sv.sel { box-shadow: 0 0 0 3px var(--yellow), var(--sh-lift); transform: rotate(-1deg); }
+.sv.sel .tx { background: var(--foil); border-radius: 0 0 var(--r-m) var(--r-m); }
+.slot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--mute); font-size: 12.5px; font-weight: 600; }
+.slot b { font-stretch: var(--wide); font-weight: 900; font-size: 26px; color: var(--line-2); }
+.det { padding: 20px; display: flex; flex-direction: column; }
+.det .big { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding: 6px 0 16px; border-bottom: 2px dotted var(--line-2); }
+.det h3 { font-stretch: var(--wide); font-weight: 900; font-size: 24px; line-height: 1; }
+.det .big p { font-size: 13px; color: var(--ink-2); }
+.det dl { margin-top: 14px; display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; font-size: 13px; }
+.det dt { color: var(--mute); }
+.det dd { text-align: right; font-weight: 700; }
+.det .acts { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+.det .acts .btn { width: 100%; }
+.det .acts .btn:first-child { height: 46px; font-size: 15px; }
+.det .acts .del { color: var(--red); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="opcoes"></div>
+  <main><div class="wrap">
+    <div class="page pg">
+      <div class="hd"><h2>Jogos salvos</h2><p>O jogo salva sozinho a cada rodada.</p><button class="btn go"><i class="ph-bold ph-floppy-disk"></i>Salvar agora</button></div>
+      <div class="slots">
+        <div class="stk sv"><div class="art" style="--c:#C8102E"><span class="no">01</span><span class="chip auto"><i class="ph-bold ph-arrows-clockwise"></i>Automático</span><span data-crest="FLA" data-size="70"></span></div><div class="tx"><h3>Flamengo</h3><div class="co">Lucas Araujo</div><dl><dt>Jogo</dt><dd>30ª rodada · 25 out 2026</dd><dt>Salvo</dt><dd>hoje, 21:42</dd></dl></div></div>
+        <div class="stk sv sel"><div class="art" style="--c:#C8102E"><span class="no">02</span><span data-crest="FLA" data-size="70"></span></div><div class="tx"><h3>Flamengo</h3><div class="co">Lucas Araujo · antes da semi</div><dl><dt>Jogo</dt><dd>29ª rodada · 21 out 2026</dd><dt>Salvo</dt><dd>hoje, 20:10</dd></dl></div></div>
+        <div class="stk sv"><div class="art" style="--c:#0A1F5C"><span class="no">03</span><span data-crest="REM" data-size="70"></span></div><div class="tx"><h3>Remo</h3><div class="co">Lucas Araujo</div><dl><dt>Jogo</dt><dd>Série B 2027 · 12ª rodada</dd><dt>Salvo</dt><dd>sexta, 18:05</dd></dl></div></div>
+        <div class="stk sv"><div class="art" style="--c:#0050A0"><span class="no">04</span><span data-crest="BAH" data-size="70"></span></div><div class="tx"><h3>Bahia</h3><div class="co">Primo João</div><dl><dt>Jogo</dt><dd>Série A 2026 · 4ª rodada</dd><dt>Salvo</dt><dd>3 out</dd></dl></div></div>
+        <div class="slot"><b>05</b>Vaga livre</div>
+        <div class="slot"><b>06</b>Vaga livre</div>
+      </div>
+    </div>
+    <div class="stk det">
+      <div class="big"><span data-crest="FLA" data-size="72"></span><h3>Flamengo 2026</h3><p>Salvo por você antes da semifinal da Libertadores</p></div>
+      <dl><dt>Data no jogo</dt><dd>Qua, 21 out 2026</dd><dt>Posição</dt><dd>Série A, 2º lugar</dd><dt>Campanha</dt><dd>17 V · 7 E · 5 D</dd><dt>Caixa</dt><dd>R$ 81,9 mi</dd><dt>Tempo de jogo</dt><dd>41 h</dd><dt>Pacote de dados</dt><dd>2026.10</dd><dt>Tamanho</dt><dd>6,8 MB</dd></dl>
+      <div class="acts"><button class="btn"><i class="ph-fill ph-play"></i>Carregar este jogo</button><button class="btn flat del"><i class="ph-bold ph-trash"></i>Apagar</button></div>
+    </div>
+  </div></main>
+</div>
+</body>
+</html>

@@ -3,11 +3,20 @@
 .ph-bold { font-family: 'Phosphor-Bold' !important; speak: never; font-style: normal; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; letter-spacing: 0; -webkit-font-smoothing: antialiased; }
 @font-face { font-family: 'Phosphor-Fill'; src: url('phosphor-fill.woff2') format('woff2'); font-weight: normal; font-style: normal; font-display: block; }
 .ph-fill { font-family: 'Phosphor-Fill' !important; speak: never; font-style: normal; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; letter-spacing: 0; -webkit-font-smoothing: antialiased; }
+.ph-arrow-left:before { content: "\e058"; }
+.ph-arrows-clockwise:before { content: "\e094"; }
 .ph-book-open-text:before { content: "\e8f2"; }
 .ph-calendar-dots:before { content: "\e7b4"; }
+.ph-caret-down:before { content: "\e136"; }
+.ph-caret-left:before { content: "\e138"; }
+.ph-caret-right:before { content: "\e13a"; }
+.ph-caret-up:before { content: "\e13c"; }
 .ph-chalkboard-teacher:before { content: "\e600"; }
 .ph-coins:before { content: "\e78e"; }
 .ph-first-aid:before { content: "\e56e"; }
+.ph-flag-banner:before { content: "\e622"; }
+.ph-floppy-disk:before { content: "\e248"; }
+.ph-folder-open:before { content: "\e256"; }
 .ph-gear-six:before { content: "\e272"; }
 .ph-handshake:before { content: "\e582"; }
 .ph-hourglass-medium:before { content: "\e2b8"; }
@@ -15,11 +24,17 @@
 .ph-monitor-play:before { content: "\e58c"; }
 .ph-newspaper:before { content: "\e344"; }
 .ph-pause:before { content: "\e39e"; }
+.ph-pencil-simple:before { content: "\e3b4"; }
 .ph-plant:before { content: "\ebae"; }
+.ph-play:before { content: "\e3d0"; }
+.ph-plus:before { content: "\e3d4"; }
 .ph-soccer-ball:before { content: "\e716"; }
+.ph-speaker-high:before { content: "\e44a"; }
+.ph-speaker-low:before { content: "\e44c"; }
 .ph-strategy:before { content: "\ea3a"; }
 .ph-t-shirt:before { content: "\e670"; }
 .ph-table:before { content: "\e476"; }
 .ph-ticket:before { content: "\e490"; }
+.ph-trash:before { content: "\e4a6"; }
 .ph-user-switch:before { content: "\e756"; }
 .ph-users-three:before { content: "\e68e"; }

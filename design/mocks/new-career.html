@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Nova carreira</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.top { height: 60px; display: flex; align-items: center; gap: 18px; padding: 0 28px; }
+.top .back { margin-left: auto; }
+.spread { position: absolute; left: 20px; right: 20px; top: 60px; bottom: 20px; display: grid; grid-template-columns: 392px 1fr; }
+.left { border-radius: 8px 0 0 8px; padding: 22px 24px; position: relative; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+.left::after { content: ''; position: absolute; right: -1px; top: 0; bottom: 0; width: 26px; background: linear-gradient(270deg, rgba(20,35,26,.08), transparent); pointer-events: none; }
+.right { border-radius: 0 8px 8px 0; padding: 22px 24px 20px; display: flex; flex-direction: column; background: linear-gradient(90deg, rgba(20,35,26,.06), rgba(20,35,26,0) 26px), var(--card); }
+h2 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; letter-spacing: -.01em; line-height: 1; }
+.name { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+.name .field { height: 40px; font-size: 15px; font-weight: 700; justify-content: space-between; }
+.pick { margin-top: 18px; padding: 16px; display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; background: var(--foil); box-shadow: 0 0 0 3px var(--yellow), var(--sh-lift); transform: rotate(-1deg); }
+.pick h3 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: 1; }
+.pick p { font-size: 12px; color: var(--ink-2); margin-top: 5px; }
+.facts { margin-top: 18px; display: grid; grid-template-columns: auto 1fr; gap: 7px 14px; font-size: 13px; }
+.facts span { color: var(--mute); }
+.facts b { font-weight: 700; text-align: right; }
+.facts .rv { display: flex; gap: 4px; justify-content: flex-end; align-items: center; }
+.aux { margin-top: 18px; display: flex; gap: 12px; align-items: center; padding: 12px 0; border-top: 2px dotted var(--line-2); border-bottom: 2px dotted var(--line-2); font-size: 13px; line-height: 1.35; }
+.aux b { font-weight: 800; }
+.aux .sw { margin-left: auto; }
+.go { margin-top: auto; }
+.go .btn { width: 100%; height: 56px; font-size: 21px; }
+.go small { display: block; text-align: center; font-size: 11.5px; color: var(--mute); margin-top: 9px; }
+.hd { display: flex; align-items: center; gap: 10px; }
+.hd h2 { margin-right: auto; }
+.grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 18px; }
+.cs { height: 124px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; text-align: center; }
+.cs .nm { font-weight: 800; font-size: 13.5px; line-height: 1.1; }
+.cs .meta { font-size: 12px; color: var(--mute); font-weight: 500; }
+.cs .no { position: absolute; left: 8px; top: 6px; font-stretch: var(--semi); font-weight: 800; font-size: 10px; color: var(--line-2); }
+.cs.mine { background: var(--foil); box-shadow: 0 0 0 3px var(--yellow), 0 8px 16px -6px rgba(20,35,26,.35); transform: rotate(-1.5deg); }
+.cs.hov { transform: translateY(-3px) rotate(1deg); box-shadow: var(--sh-lift); }
+.leg { margin-top: auto; padding-top: 14px; border-top: 2px dotted var(--line-2); display: flex; align-items: center; gap: 18px; font-size: 12px; color: var(--mute); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Nova carreira"></div>
+  <main>
+    <div class="top"><img src="../logo/boleiro-wordmark.svg" height="40" alt="Boleiro 2026"><span class="lbl">Nova carreira</span><button class="btn sm back"><i class="ph-bold ph-arrow-left"></i>Voltar</button></div>
+    <div class="spread">
+      <div class="page left">
+        <h2>Seu técnico</h2>
+        <label class="name"><span class="lbl">Nome</span><span class="field">Lucas Araujo<i class="ph-bold ph-pencil-simple"></i></span></label>
+        <div class="stk pick"><span data-crest="FLA" data-size="70"></span><div><h3>Flamengo</h3><p>Rio de Janeiro · Maracanã, 78.838 lugares</p></div></div>
+        <div class="facts">
+          <span>Força do elenco</span><b>79 · 2ª da Série A</b>
+          <span>Caixa</span><b>R$ 84,3 mi</b>
+          <span>Folha mensal</span><b>R$ 14,1 mi</b>
+          <span>A diretoria quer</span><b>Título da Série A</b>
+          <span>Estreia</span><b>Remo, no Maracanã · 28 jan</b>
+          <span>Rivais</span><b class="rv"><span data-crest="VAS" data-size="20"></span><span data-crest="FLU" data-size="20"></span><span data-crest="BOT" data-size="20"></span></b>
+        </div>
+        <div class="aux"><div><b>O auxiliar escala e renova contratos</b><br><span class="mute">Você assume quando quiser, em Auxiliar.</span></div><span class="sw on"></span></div>
+        <div class="go"><button class="btn go lg">Começar carreira<i class="ph-fill ph-play"></i></button><small>Temporada 2026 começa em 28 de janeiro</small></div>
+      </div>
+      <div class="page right">
+        <div class="hd"><h2>Escolha seu time</h2>
+          <span class="field"><small>País</small>Brasil <i class="ph-bold ph-caret-down"></i></span>
+          <span class="field"><small>Divisão</small>Série A <i class="ph-bold ph-caret-down"></i></span>
+          <span class="field ph" style="width:200px"><i class="ph-bold ph-magnifying-glass"></i>Buscar time…</span></div>
+        <div class="grid" id="grid"></div>
+        <div class="leg"><span>Força é a média dos 11 titulares.</span><span style="margin-left:auto">20 times · Série A 2026</span></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+const PICK = [['CAP', 75], ['CAM', 76], ['BAH', 77], ['BOT', 77], ['RBB', 76], ['CHA', 70], ['COR', 76], ['CFC', 73], ['CRU', 78], ['FLA', 79], ['FLU', 76], ['GRE', 75], ['INT', 76], ['MIR', 73], ['PAL', 79], ['REM', 70], ['SAN', 75], ['SAO', 75], ['VAS', 76], ['VIT', 73]];
+document.getElementById('grid').innerHTML = PICK.map(([k, f], i) => {
+  const c = CLUBS[k], mine = k === 'FLA';
+  return `<div class="stk cs ${mine ? 'mine' : ''} ${k === 'PAL' ? 'hov' : ''}"><span class="no">${String(i + 1).padStart(2, '0')}</span>${crest(k, 48)}<div><div class="nm">${c.n}</div><div class="meta">${mine ? '<b style="color:var(--green)">Seu time</b>' : 'Força ' + f}</div></div></div>`;
+}).join('');
+</script>
+</body>
+</html>

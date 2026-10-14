@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Opções</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: 1fr 400px; gap: 14px; }
+.pg { padding: 22px 28px; overflow: hidden; }
+.pg h2 { font-stretch: var(--wide); font-weight: 900; font-size: 24px; }
+.grp { margin-top: 18px; }
+.grp h3 { font-stretch: var(--semi); font-weight: 900; font-size: 15px; padding-bottom: 6px; border-bottom: 2px solid var(--ink); }
+.opt { display: flex; align-items: center; gap: 16px; min-height: 50px; border-bottom: 1px solid var(--rule); }
+.opt .t { flex: 1; }
+.opt .t b { display: block; font-weight: 700; font-size: 13.5px; }
+.opt .t span { font-size: 12px; color: var(--mute); }
+.vol { display: flex; align-items: center; gap: 10px; width: 240px; }
+.vol i { font-size: 16px; color: var(--ink-2); }
+.track { flex: 1; height: 8px; border-radius: 999px; background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--line); position: relative; }
+.track > b { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--green); }
+.track > u { position: absolute; top: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; background: var(--card); box-shadow: 0 0 0 2px var(--edge), 0 2px 0 var(--edge); }
+.keys { padding: 20px 22px; }
+.keys h3 { font-stretch: var(--wide); font-weight: 900; font-size: 19px; }
+.keys p { font-size: 12.5px; color: var(--mute); margin-top: 4px; }
+.kg { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+.k { display: flex; align-items: center; gap: 10px; height: 34px; border-bottom: 1px dotted var(--line-2); font-size: 13px; }
+.k .kbd { min-width: 34px; }
+.kfull { grid-column: 1 / -1; }
+.keys { display: flex; flex-direction: column; }
+.about { margin-top: auto; display: flex; align-items: center; gap: 12px; padding-top: 14px; border-top: 2px dotted var(--line-2); font-size: 12px; color: var(--mute); line-height: 1.45; }
+.about b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="opcoes"></div>
+  <main><div class="wrap">
+    <div class="page pg">
+      <h2>Opções</h2>
+      <div class="grp"><h3>Aparência</h3>
+        <div class="opt"><div class="t"><b>Tema</b><span>O escuro troca o papel por verde-noite.</span></div><div class="seg"><span>Claro</span><span>Escuro</span><span class="on">Igual ao sistema</span></div></div>
+      </div>
+      <div class="grp"><h3>Som</h3>
+        <div class="opt"><div class="t"><b>Efeitos</b><span>Gol, torcida, apito e VAR</span></div><span class="sw on"></span></div>
+        <div class="opt"><div class="t"><b>Música de fundo</b></div><div class="vol"><i class="ph-bold ph-speaker-low"></i><span class="track"><b style="width:30%"></b><u style="left:30%"></u></span><i class="ph-bold ph-speaker-high"></i></div></div>
+        <div class="opt"><div class="t"><b>Tudo mudo</b><span>Tecla M em qualquer tela</span></div><span class="sw"></span></div>
+      </div>
+      <div class="grp"><h3>Partida</h3>
+        <div class="opt"><div class="t"><b>Velocidade</b></div><div class="seg"><span>Lenta</span><span class="on">Normal</span><span>Rápida</span><span>Turbo</span></div></div>
+        <div class="opt"><div class="t"><b>Abrir janela em expulsão e lesão</b><span>O jogo pausa até você decidir</span></div><span class="sw on"></span></div>
+        <div class="opt"><div class="t"><b>Começar com “só meus jogos”</b></div><span class="sw"></span></div>
+      </div>
+      <div class="grp"><h3>Jogo salvo</h3>
+        <div class="opt"><div class="t"><b>Salvar sozinho</b></div><div class="seg"><span class="on">A cada rodada</span><span>Todo mês</span><span>Nunca</span></div></div>
+        <div class="opt"><div class="t"><b>Jogos salvos</b><span>4 de 6 vagas usadas</span></div><button class="btn sm"><i class="ph-bold ph-folder-open"></i>Abrir</button></div>
+      </div>
+    </div>
+    <div class="stk keys">
+      <h3>Atalhos</h3><p>Funcionam em qualquer tela do jogo.</p>
+      <div class="kg">
+        <div class="k"><span class="kbd">F1</span>Agenda</div><div class="k"><span class="kbd">F6</span>Busca</div>
+        <div class="k"><span class="kbd">F2</span>Tabelas</div><div class="k"><span class="kbd">F7</span>Técnicos</div>
+        <div class="k"><span class="kbd">F3</span>Estádio</div><div class="k"><span class="kbd">F8</span>Histórico</div>
+        <div class="k"><span class="kbd">F4</span>Base</div><div class="k"><span class="kbd">F9</span>Opções</div>
+        <div class="k"><span class="kbd">F5</span>Times</div><div class="k"><span class="kbd">E</span>Escalar time</div>
+      </div>
+      <div class="kg" style="margin-top:18px">
+        <div class="k kfull" style="font-weight:800;border-bottom:2px solid var(--ink);height:28px">Na partida</div>
+        <div class="k"><span class="kbd">Espaço</span>Pausa</div><div class="k"><span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span>Velocidade</div>
+        <div class="k"><span class="kbd">S</span>Só meus jogos</div><div class="k"><span class="kbd">M</span>Mudo</div>
+        <div class="k"><span class="kbd">T</span>Tabela ao vivo</div><div class="k"><span class="kbd">⌘</span><span class="kbd">S</span>Salvar</div>
+      </div>
+      <div class="about"><img src="../logo/boleiro-icon.svg" width="44" height="44" alt=""><div><b>Boleiro 1.0</b> · pacote de dados 2026.10<br>Archivo (OFL) · Phosphor Icons (MIT)</div></div>
+    </div>
+  </div></main>
+</div>
+</body>
+</html>

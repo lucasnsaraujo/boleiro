@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Início</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.spread { position: absolute; inset: 22px 24px 24px; display: grid; grid-template-columns: 470px 1fr; }
+.cover { border-radius: 10px 0 0 10px; position: relative; overflow: hidden; color: #fff; background: repeating-linear-gradient(90deg, #0E8442 0 78px, #0B7A3B 78px 156px); box-shadow: var(--sh-page); }
+.cover::before { content: ''; position: absolute; left: -120px; top: 250px; width: 260px; height: 260px; border-radius: 50%; border: 3px solid rgba(255,255,255,.14); }
+.cover::after { content: ''; position: absolute; left: 0; right: 0; top: 380px; height: 3px; background: rgba(255,255,255,.12); }
+.cover .in { position: relative; z-index: 1; height: 100%; padding: 36px 36px 28px; display: flex; flex-direction: column; }
+.cover .ed { font-stretch: var(--semi); font-weight: 800; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; opacity: .8; }
+.cover .wmk { margin-top: 16px; }
+.cover .sub { margin-top: 18px; font-size: 14px; line-height: 1.45; max-width: 330px; opacity: .92; }
+.pile { position: relative; flex: 1; }
+.pile .s { position: absolute; width: 148px; padding: 8px 8px 9px; background: #fff; border-radius: 10px; color: var(--ink); box-shadow: 0 1px 0 rgba(0,0,0,.1), 0 12px 20px -10px rgba(0,0,0,.5); text-align: center; }
+.pile .s .ph { height: 150px; border-radius: 6px; display: grid; place-items: center; position: relative; overflow: hidden; }
+.pile .s .ph b { font-stretch: var(--wide); font-weight: 900; font-size: 64px; color: rgba(255,255,255,.92); }
+.pile .s .ph .cr { position: absolute; left: 6px; top: 6px; }
+.pile .s .nm { font-weight: 800; font-size: 14px; margin-top: 6px; line-height: 1.1; }
+.pile .s .cl { font-size: 12px; color: var(--mute); }
+.pile .s .no { position: absolute; right: 8px; top: 8px; font-stretch: var(--semi); font-weight: 900; font-size: 11px; color: rgba(255,255,255,.75); }
+.cover .foot { display: flex; align-items: center; gap: 10px; font-size: 11.5px; opacity: .85; }
+.cover .foot b { font-weight: 700; }
+
+.pg { border-radius: 0 10px 10px 0; padding: 34px 40px 30px; display: flex; flex-direction: column; background: linear-gradient(90deg, rgba(20,35,26,.07), rgba(20,35,26,0) 28px), var(--card); }
+.pg h2 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; letter-spacing: -.01em; line-height: 1; }
+.last { margin-top: 18px; padding: 20px 22px; display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center; background: var(--foil); box-shadow: 0 0 0 3px var(--yellow), var(--sh-lift); transform: rotate(-.8deg); }
+.last h3 { font-stretch: var(--wide); font-weight: 900; font-size: 30px; line-height: 1; letter-spacing: -.01em; }
+.last p { font-size: 13px; color: var(--ink-2); margin-top: 6px; }
+.last p b { color: var(--ink); }
+.last .meta { display: flex; gap: 16px; margin-top: 12px; font-size: 12px; color: var(--mute); }
+.last .meta span { display: flex; align-items: center; gap: 5px; }
+.last .btn { height: 54px; padding: 0 28px; font-size: 20px; }
+.others { margin-top: 30px; }
+.row { display: grid; grid-template-columns: 30px 1fr 200px 150px; gap: 14px; align-items: center; height: 52px; border-bottom: 1px solid var(--rule); font-size: 13px; }
+.row b { font-weight: 800; font-size: 14px; }
+.row .mute { font-size: 12px; }
+.row .dt { text-align: right; color: var(--mute); font-size: 12px; }
+.fresh { margin-top: 26px; flex: 1; display: flex; align-items: center; gap: 22px; padding: 0 28px; color: var(--mute); }
+.fresh .plus { width: 64px; height: 64px; border-radius: 50%; border: 2px dashed var(--line-2); display: grid; place-items: center; font-size: 26px; color: var(--line-2); flex: none; }
+.fresh b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 20px; color: var(--ink); line-height: 1.1; }
+.fresh p { font-size: 13px; margin-top: 4px; }
+.fresh .btn { margin-left: auto; }
+.acts { margin-top: 22px; display: flex; gap: 12px; align-items: center; padding-top: 18px; border-top: 2px dotted var(--line-2); }
+.acts .ver { margin-left: auto; font-size: 11.5px; color: var(--mute); text-align: right; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro"></div>
+  <main>
+    <div class="spread">
+      <div class="cover"><div class="in">
+        <span class="ed">Edição 2026 · Brasil e o mundo</span>
+        <div class="wmk"><img src="../logo/boleiro-wordmark-dark.svg" height="112" alt="Boleiro 2026"></div>
+        <p class="sub">Você é o técnico. Escala, contrata, negocia com a diretoria e vê a rodada inteira ao vivo.</p>
+        <div class="pile" id="pile"></div>
+        <div class="foot"><img src="../logo/boleiro-icon-small.svg" width="16" height="16" alt=""><span><b>Pacote de dados 2026.10</b> · 4.214 times · 94 países</span></div>
+      </div></div>
+      <div class="pg page">
+        <h2>Continuar</h2>
+        <div class="stk last">
+          <span data-crest="FLA" data-size="78"></span>
+          <div><h3>Flamengo</h3><p>Técnico <b>Lucas Araujo</b> · Série A, 2º lugar</p>
+            <div class="meta"><span><i class="ph-bold ph-calendar-dots"></i>30ª rodada · 25 out 2026</span><span><i class="ph-bold ph-floppy-disk"></i>Salvo hoje, 21:42</span></div></div>
+          <button class="btn go"><i class="ph-fill ph-play"></i>Continuar</button>
+        </div>
+        <div class="others">
+          <div class="lbl" style="margin-bottom:6px">Outras carreiras</div>
+          <div class="row"><span data-crest="REM" data-size="28"></span><div><b>Remo</b> <span class="mute">· Lucas Araujo</span></div><span class="mute">Série B 2027, 12ª rodada</span><span class="dt">sexta, 18:05</span></div>
+          <div class="row"><span data-crest="BAH" data-size="28"></span><div><b>Bahia</b> <span class="mute">· Primo João</span></div><span class="mute">Série A 2026, 4ª rodada</span><span class="dt">3 out</span></div>
+          <div class="row"><span data-crest="CRI" data-size="28"></span><div><b>Criciúma</b> <span class="mute">· Lucas Araujo</span></div><span class="mute">Série B 2031, campeão</span><span class="dt">12 set</span></div>
+        </div>
+        <div class="slot fresh"><span class="plus"><i class="ph-bold ph-plus"></i></span><div><b>Novo jogo</b><p>Qualquer um dos 4.214 times do pacote, do Flamengo ao Ivinhema.</p></div><button class="btn">Escolher time</button></div>
+        <div class="acts">
+          <button class="btn"><i class="ph-bold ph-folder-open"></i>Carregar jogo</button>
+          <button class="btn flat"><i class="ph-bold ph-gear-six"></i>Opções</button>
+          <span class="ver">Boleiro 1.0<br>macOS</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+const P = [
+  ['FLA', 'L', 'Samuel Lino', 'Flamengo', 'A', 6, 70, -7, '012'],
+  ['PAL', 'F', 'Flaco López', 'Palmeiras', 'A', 142, 18, 4, '047'],
+  ['SAN', 'N', 'Neymar', 'Santos', 'M', 252, 120, -3, '133'],
+];
+document.getElementById('pile').innerHTML = P.map(([c, ini, n, cl, pos, x, y, r, no]) => {
+  const k = CLUBS[c];
+  return `<div class="s" style="left:${x}px;top:${y}px;transform:rotate(${r}deg)"><div class="ph" style="background:${k.bg === '#FFFFFF' ? '#2A2A2A' : k.bg}"><span class="cr">${crest(c, 22)}</span><b>${ini}</b></div><div class="nm">${n}</div><div class="cl">${cl}</div><span class="no">${no}</span></div>`;
+}).join('');
+</script>
+</body>
+</html>

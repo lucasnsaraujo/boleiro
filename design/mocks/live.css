@@ -1,0 +1,87 @@
+.cover { height: 222px; flex: none; color: #fff; position: relative; overflow: hidden; background: repeating-linear-gradient(90deg, #0E8442 0 80px, #0B7A3B 80px 160px); box-shadow: 0 3px 0 var(--bar-d); z-index: 2; }
+[data-theme='dark'] .cover { background: repeating-linear-gradient(90deg, #0A5E31 0 80px, #08532B 80px 160px); }
+.cover::before { content: ''; position: absolute; left: 50%; top: 50%; width: 190px; height: 190px; margin: -60px 0 0 -95px; border-radius: 50%; border: 3px solid rgba(255,255,255,.16); }
+.cover::after { content: ''; position: absolute; left: 0; right: 0; top: 157px; height: 3px; background: rgba(255,255,255,.12); }
+
+.ttl { position: relative; z-index: 1; height: 50px; display: flex; align-items: center; gap: 12px; padding: 0 24px; }
+.ttl h3 { font-stretch: var(--wide); font-weight: 900; font-size: 17px; letter-spacing: -.01em; }
+.ttl h3 span { font-stretch: 100%; font-weight: 600; font-size: 13px; opacity: .85; margin-left: 6px; letter-spacing: 0; }
+.ttl .r { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.clock { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,.24); padding: 4px 5px 4px 12px; border-radius: 999px; font-weight: 700; font-size: 12px; }
+.clock b { background: var(--yellow); color: var(--on-yellow); font-stretch: var(--wide); font-weight: 900; font-size: 13px; padding: 2px 9px; border-radius: 999px; min-width: 44px; text-align: center; }
+.clock .tr { width: 120px; height: 6px; background: rgba(255,255,255,.25); border-radius: 999px; overflow: hidden; }
+.clock .tr i { display: block; height: 100%; background: #fff; }
+.sp { display: flex; background: rgba(0,0,0,.24); border-radius: 999px; padding: 3px; }
+.sp span { height: 26px; min-width: 32px; padding: 0 9px; display: grid; place-items: center; border-radius: 999px; font-weight: 800; font-size: 12px; color: rgba(255,255,255,.88); }
+.sp span i { font-size: 13px; }
+.sp span.on { background: #fff; color: #14231A; }
+.mine { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 12px; background: rgba(0,0,0,.24); border-radius: 999px; padding: 4px 5px 4px 12px; }
+.mine .sw { width: 34px; height: 22px; background: rgba(255,255,255,.22); box-shadow: none; }
+.mine .sw::after { width: 16px; height: 16px; }
+.mine .sw.on { background: var(--yellow); }
+.mine .sw.on::after { transform: translateX(12px); }
+
+.feat { position: relative; z-index: 1; display: grid; grid-template-columns: 250px 1fr 250px; align-items: center; padding: 6px 24px 0; }
+.stad { font-size: 12px; line-height: 1.45; opacity: .95; }
+.stad b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 16px; margin-bottom: 2px; }
+.stad .ref { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11.5px; opacity: .9; }
+.stad .ref em { font-style: normal; font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .06em; background: rgba(255,255,255,.18); padding: 2px 6px; border-radius: 4px; }
+.mid { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.duel { display: flex; align-items: center; justify-content: center; gap: 18px; }
+.tm { width: 152px; padding: 11px 10px 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--ink); text-align: center; }
+.tm b { font-stretch: var(--semi); font-weight: 900; font-size: 15px; line-height: 1; }
+.tm small { font-weight: 700; font-size: 11px; color: var(--mute); }
+.tm.h { transform: rotate(-2deg); } .tm.a { transform: rotate(2deg); }
+.tm.you small { color: var(--green); }
+.sc { font-stretch: var(--wide); font-weight: 900; font-size: 68px; line-height: 1; letter-spacing: -.02em; display: flex; gap: 12px; align-items: center; text-shadow: 0 3px 0 rgba(0,0,0,.18); }
+.sc span { font-size: 30px; color: var(--yellow); }
+.evs { display: flex; gap: 14px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.evs span { display: flex; align-items: center; gap: 5px; opacity: .9; }
+.evs span.last { opacity: 1; background: rgba(0,0,0,.24); padding: 3px 10px 3px 7px; border-radius: 999px; }
+.evs i { font-size: 13px; }
+.right { justify-self: end; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+.right .btn { box-shadow: 0 3px 0 #053B1D; border-color: #053B1D; }
+.right .btn small { font-stretch: 100%; font-weight: 700; font-size: 11px; background: rgba(20,35,26,.12); border-radius: 999px; padding: 2px 7px; }
+.stats { width: 240px; background: var(--card); color: var(--ink); border-radius: 12px; padding: 9px 12px; display: grid; grid-template-columns: 38px 1fr 38px; row-gap: 3px; font-size: 12px; box-shadow: 0 6px 14px -6px rgba(0,0,0,.45); transform: rotate(1deg); }
+.stats b { font-stretch: var(--semi); font-weight: 900; }
+.stats b:nth-child(3n) { text-align: right; }
+.stats em { font-style: normal; text-align: center; color: var(--mute); font-size: 11px; font-weight: 600; }
+.pb { grid-column: 1 / -1; height: 6px; display: flex; gap: 2px; margin-bottom: 3px; }
+.pb i { border-radius: 999px; }
+
+.list { flex: 1; min-height: 0; overflow: hidden; padding: 10px 0 0; }
+.g { height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 24px; font-stretch: var(--semi); font-weight: 900; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+.g::after { content: ''; flex: 1; border-bottom: 2px dotted var(--line-2); }
+.r { height: 27px; display: grid; grid-template-columns: 250px 220px 26px 26px 220px 1fr; gap: 4px; align-items: center; padding: 0 24px; position: relative; }
+.r .std { text-align: right; padding-right: 8px; font-size: 12.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r .std span { color: var(--mute); font-stretch: var(--narrow); }
+.r .sbox.lead { background: var(--green); color: #fff; }
+.ev { padding-left: 10px; font-size: 12.5px; font-weight: 500; display: flex; gap: 7px; align-items: center; white-space: nowrap; }
+.ev .ph-soccer-ball { font-size: 14px; }
+.ev .mn { color: var(--mute); }
+.r.human { background: linear-gradient(90deg, var(--yellow-l), transparent 75%); }
+.r.human::before { content: ''; position: absolute; left: 0; top: 3px; bottom: 3px; width: 4px; border-radius: 0 3px 3px 0; background: var(--yellow); }
+.r.flash { background: linear-gradient(90deg, transparent 12%, color-mix(in srgb, var(--green) 16%, transparent) 38%, transparent 95%); }
+.r.flash .gol { font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .08em; background: var(--green); color: #fff; padding: 3px 7px; border-radius: 999px; }
+.var { display: inline-flex; align-items: center; gap: 5px; font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .08em; background: #14231A; color: var(--yellow); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); padding: 3px 8px 3px 6px; border-radius: 999px; }
+.var i { font-size: 12px; animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+.pen { font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .08em; background: var(--yellow); color: var(--on-yellow); padding: 3px 8px; border-radius: 999px; }
+
+/* VAR pause on the hero */
+.varstk { position: absolute; left: 50%; top: 92px; transform: translateX(-50%) rotate(-3deg); z-index: 3; background: var(--yellow); color: var(--on-yellow); border-radius: 16px; padding: 12px 18px 12px 14px; display: flex; gap: 12px; align-items: center; box-shadow: var(--sh-pop); white-space: nowrap; }
+.varstk .pz { width: 46px; height: 46px; border-radius: 50%; background: #14231A; color: var(--yellow); display: grid; place-items: center; font-size: 24px; flex: none; }
+.varstk h2 { font-stretch: 118%; font-weight: 900; font-size: 22px; line-height: 1; letter-spacing: -.01em; }
+.varstk p { font-size: 12.5px; font-weight: 600; margin-top: 4px; color: #4A3F12; }
+.dim-hero .duel, .dim-hero .evs { filter: saturate(.7); opacity: .55; }
+[data-theme='dark'] .plate { box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); }
+
+/* Motion: a goal elsewhere rolls the digit, slaps the chip and sweeps the row; the VAR sticker slaps onto the hero. */
+.r.flash { background-size: 220% 100%; animation: sweep 1.6s var(--e-out) both; }
+.r.flash .sbox.lead { animation: roll var(--t-slow) var(--e-out) both; }
+.r.flash .gol { display: inline-block; animation: slap var(--t-stamp) var(--e-slap) 120ms both; }
+.varstk { animation: stick var(--t-stamp) var(--e-slap) both; }
+@keyframes sweep { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@keyframes roll { from { transform: translateY(-70%); opacity: 0; } }
+@keyframes slap { from { transform: scale(1.9) rotate(-10deg); opacity: 0; } }
+@keyframes stick { from { transform: translateX(-50%) rotate(-9deg) scale(1.25); opacity: 0; } }
