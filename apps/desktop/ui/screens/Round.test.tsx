@@ -248,3 +248,15 @@ test("a round whose final whistle didn't go through finishes when the coach come
   expect(await screen.findByRole("button", { name: "Voltar ao clube" })).toBeTruthy();
   expect(await given.engine.liveRound()).toBeNull();
 });
+
+test("the board lists every match of the round, and Só meus jogos leaves only the coach's", async () => {
+  await kickOff(await onMatchDay());
+  const rows = () => screen.getAllByRole("listitem").filter((row) => / \d+ x \d+ /.test(row.getAttribute("aria-label") ?? ""));
+  const everyMatch = rows().length;
+  expect(everyMatch).toBeGreaterThan(1);
+  await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
+  expect(rows()).toHaveLength(1);
+  expect(rows()[0]?.getAttribute("aria-label")).toContain("Bahia");
+  await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
+  expect(rows()).toHaveLength(everyMatch);
+});

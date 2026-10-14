@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import type { LiveRound } from "@boleiro/game-client/round/liveRoundOf";
-import { goalsBetween, pauseReason, roundAt } from "./roundAt.js";
+import { goalsBetween, pauseReason, roundAt, scorersUntil } from "./roundAt.js";
 
 const colours = { primary: "#000000", secondary: "#ffffff" };
 const club = (id: string, shortName: string) => ({ id, shortName, colours, stadium: `Estádio do ${shortName}` });
@@ -69,4 +69,13 @@ test("the round stops by itself at half-time, at the final whistle, and when the
   expect(pauseReason(round, 45)).toBe("halfTime");
   expect(pauseReason(round, 50)).toBe("coachMatch");
   expect(pauseReason(round, 90)).toBe("fullTime");
+});
+
+test("a match's scorers up to a minute come in order, named, with their side", () => {
+  expect(scorersUntil(round, "ours", 30)).toEqual([
+    { name: "Everaldo", minute: 10, side: "away" },
+    { name: "Renato Kayzer", minute: 30, side: "home" },
+  ]);
+  expect(scorersUntil(round, "ours", 29)).toHaveLength(1);
+  expect(scorersUntil(round, "nobody", 90)).toEqual([]);
 });
