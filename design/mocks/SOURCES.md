@@ -2,6 +2,8 @@
 
 The mocks show a career on Sunday 18 October 2026, the day of Bahia × Flamengo, round 31 of the Série A. Everything up to 14 October 2026 is real. Results after that date, and everything the game itself decides, are game state. All sources were read on 14 October 2026.
 
+The career moments (`moment-*.html`) are the exception: they follow one invented career to 2045, see the last section.
+
 ## Images
 
 | What | Source |
@@ -64,3 +66,27 @@ These numbers are the game's, chosen to be plausible and consistent across scree
 - Danilo said in mid-2026 he plans to stop at the end of his contract (Correio, Portal Tela); there is no official retirement announcement. The event mock is game state.
 - Arrascaeta's career assists differ between Wikipedia (163 before 2026) and ogol (135); the card uses Wikipedia plus his 2026 games.
 - Flamengo's net debt: `data/finances.csv` has R$ 473 mi (EY); Flamengo's own 2025 balance reports R$ 174 mi of "operational net debt" ([MKT Esportivo](https://www.mktesportivo.com/2026/04/flamengo-ultrapassa-r-2-bilhoes-em-receita-com-superavit-e-reducao-de-divida/)). The mock follows the game's data file.
+
+## Career moments (`moment-*.html`)
+
+The moments follow one invented career of the user's coach Lucas Araujo from 2026 to 2045. Only the facts in this table are real; the career itself is game state.
+
+| Fact | Where it shows | Source |
+|---|---|---|
+| Internacional's Série A titles: 1975, 1976, 1979, none since; runner-up in 1988, 2005, 2006, 2009, 2020 and 2022 | title, sacked at night, entropy | [Wikipedia, Série A](https://en.wikipedia.org/wiki/Campeonato_Brasileiro_S%C3%A9rie_A), [Placar](https://placar.com.br/brasileirao/brasileirao-pode-ter-melhor-vice-campeao-da-era-pontos-corridos-veja-lista/) |
+| Brasileirão 2020: Flamengo 71 points, Inter 70 | title | [Wikipedia, 2020 Série A](https://en.wikipedia.org/wiki/2020_Campeonato_Brasileiro_S%C3%A9rie_A) |
+| Inter plays at the Beira-Rio, its fans are colorados, the derby with Grêmio is the Gre-Nal | sacked at night, title | [Wikipedia, SC Internacional](https://en.wikipedia.org/wiki/Sport_Club_Internacional) |
+| Benfica's full name, Sport Lisboa e Benfica, and its city | quiet exit | [Wikipedia, S.L. Benfica](https://en.wikipedia.org/wiki/S.L._Benfica) |
+| The Flamengo XI that started the 2019 Libertadores final in Lima, with shirt numbers (Arrascaeta wore 14), coach Jorge Jesus | testimonial | [Wikipedia, 2019 Copa Libertadores final](https://en.wikipedia.org/wiki/2019_Copa_Libertadores_final) |
+| Arrascaeta born 1 June 1994 (51 in Dec 2045), at Flamengo since January 2019, contract to December 2028 | testimonial, retirement | [Wikipedia](https://en.wikipedia.org/wiki/Giorgian_de_Arrascaeta), [Exame](https://exame.com/esporte/flamengo-renova-contrato-com-arrascaeta-ate-2028/) |
+| FIFA's award for the best men's player is The Best FIFA Men's Player | player award | [Wikipedia](https://en.wikipedia.org/wiki/The_Best_FIFA_Men%27s_Player), [FIFA](https://inside.fifa.com/news/aitana-bonmati-ousmane-dembele-top-honours-the-best-football-awards-2025) |
+| The Bola de Ouro is the best-player prize inside ESPN's Bola de Prata | player award | [Itatiaia](https://www.itatiaia.com.br/esportes/futebol/futebol-nacional/brasileirao-serie-a/bola-de-prata-2025-veja-lista-de-premiados-e-selecao-do-brasileirao/) |
+| Flamengo won the 2025 Brasileirão, so a 2026 title ends a one-year wait | title | as in the history mock |
+
+### Game state in the moments
+
+- The whole career: Flamengo 2026–2033 (11 titles, idol from Nov 2027, 547 matches, send-off on 4 Dec 2033), the Seleção 2026–2030 (quarter-final of the 2030 World Cup), Internacional 2034–2040 (Gaúcho 2035, Brasileirão 2039, sacked at 0h47 on 7 Aug 2040), Benfica Sep 2040 to Feb 2041 (resigned), Flamengo again Mar 2041 to Dec 2045 (5 titles), retirement on 16 Dec 2045. 18 titles and 1.346 matches in all.
+- Every date after 14 October 2026, every result, score, crowd, meter, chance, post count and contract figure.
+- Real players appear only in plausible future roles: Flamengo's 2026 squad aging through the 2029–2045 squads, Arrascaeta's farewell match in 2029, the 2019 XI and Jorge Jesus in that match, Brazil's current players on the Seleção album page. None of it is a claim about what they will do.
+- Invented people: Kauã Pinheiro and the other academy kids (from the youth mock), the Inter veterans Moretti, Bortolini and Rafael Kuhn, the Inter and Benfica names on the album's back pages, the assistant Gilberto Paixão, and every fan banner and quote.
+- The game's own Jornal do Boleiro prints every newspaper page; no real outlet is quoted.

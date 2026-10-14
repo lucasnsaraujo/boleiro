@@ -29,7 +29,7 @@ footer { padding: 30px 48px 40px; font-size: 12px; color: var(--mute); }
 <header>
   <img src="../logo/boleiro-wordmark.svg" height="72" alt="Boleiro 2026">
   <p><b>Every Boleiro v1 screen, mocked in the Álbum system at the 1280×800 desktop window.</b> Each card opens the live HTML; the picture is a render from <code>shots/</code>. UI copy is in Portuguese, the game's language. Crests, logos and facts are real; <a href="SOURCES.md">SOURCES.md</a> lists where each fact comes from and which numbers are game state.</p>
-  <nav><a class="btn sm" href="../logo/logo.html">Logo sheet</a></nav>
+  <nav><a class="btn sm" href="../logo/logo.html">Logo sheet</a><a class="btn sm" href="MOTION.md">Motion notes</a></nav>
 </header>
 <main id="m"></main>
 <footer>Tokens: <code>design/tokens/album.css</code> and <code>tokens.json</code>. Archivo (OFL) and Phosphor Icons (MIT) are vendored in <code>design/tokens/</code>.</footer>
@@ -78,6 +78,20 @@ const G = [
     ['continental.html', 'continental', 'Libertadores', 'Libertadores', 'The real 2026 bracket to the final in Montevideo with your semifinal against Estudiantes highlighted, plus group A.'],
     ['awards.html', 'awards', 'Awards', 'Prêmios', 'Season-end awards as an album spread: Bola de Ouro, the Bola de Prata team, top scorer, records.'],
     ['history.html', 'history', 'History album', 'Histórico', 'The club\'s album: this season\'s squad stickers with slots still to earn, shiny idols and title pages.'],
+  ]],
+  ['Career moments', 'one invented career, 2026 to 2045: every date after Oct 2026 is game future. Each opens animated; MOTION.md has the timing', [
+    ['moment-title.html', 'moment-title', 'Same title, two stories', 'Título', 'The Brasileirão twice: Flamengo in your first season (2 s, happy) and Inter in your sixth, 60 years after 1979 (10 s, the drought breaking).'],
+    ['moment-idol.html', 'moment-idol', 'You became an idol', 'Ídolo', 'Nov 2027: the ledger that earned it fills the meter past 80, your sticker turns foil and joins Zico on the idols page.'],
+    ['moment-testimonial.html', 'moment-testimonial', 'Testimonial match', 'Jogo de despedida', 'Arrascaeta\'s farewell, 2029: the Lima 2019 XI against your 2029 side, ticket, live board and his sticker turning foil.'],
+    ['moment-player-award.html', 'moment-player-award', 'Your player is the best', 'Prêmio', 'Kauã Pinheiro, your academy kid, wins The Best 2031: pack opened, foil sticker, plate, and the three awards shown on three days.'],
+    ['moment-tribute.html', 'moment-tribute', 'Tributes', 'Homenagens', 'Your 500th Flamengo match framed as a shirt, then Flamengo applauding you as Inter\'s coach in 2034: minute of applause, mosaic, plaque.'],
+    ['moment-sendoff.html', 'moment-sendoff', 'Send-off', 'Despedida', 'Dec 2033, eight years and eleven titles: the Maracanã mosaic, the banner, the squad\'s corridor, your last walk and the spell as stickers.'],
+    ['moment-sacked-night.html', 'moment-sacked-night', 'Sacked at night', 'Demissão', 'Inter 2040: nine games without a win drain the board, the meeting runs past midnight, the note lands at 0h47, then the morning paper.'],
+    ['moment-quiet-exit.html', 'moment-quiet-exit', 'Quiet exit', 'Saída', 'Benfica 2041: five months, no title, a short resignation letter and a footnote on page 9. Few elements on purpose.'],
+    ['moment-come-back.html', 'moment-come-back', 'Asked to come back', 'Volta', 'Flamengo in crisis, 2041: "Volta, Lucas" on the front page, the fans\' campaign, and the written offer.'],
+    ['moment-retirement.html', 'moment-retirement', 'Retirement', 'Aposentadoria', '2045: the album opens and every club\'s pages turn, then the last spread fills with the numbers, tributes, the farewell match and the last sticker.'],
+    ['moment-trajectory.html', 'moment-trajectory', 'Trajectory', 'Trajetória', 'The whole career on one timeline: clubs, the Seleção, titles, idol lines, the sacking and the records, with one moment opened.'],
+    ['moment-entropy.html', 'moment-entropy', 'Entropy sheet', 'Entropia', 'Eight career events, each with the state that causes it, how likely it gets and what it changes, with its loop.'],
   ]],
 ];
 document.getElementById('m').innerHTML = G.map(([h, s, items]) => items.length ? `<section><h2>${h}<span>${s}</span></h2><div class="grid">${items.map(([href, shot, t, pt, cap], i) => `<a class="card stk" href="${href}"><img src="shots/${shot}.png" alt="${t}" loading="lazy"><div class="t"><b>${t}</b><em>${pt}</em><i>${String(i + 1).padStart(2, '0')}</i></div><p>${cap}</p></a>`).join('')}</div></section>` : '').join('');
