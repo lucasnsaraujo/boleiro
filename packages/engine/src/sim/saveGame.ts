@@ -27,7 +27,9 @@ export function saveGame(state: GameState): string {
  */
 export function toGameState(parsed: unknown): GameState {
   if (!isGameState(parsed)) throw new Error(`not a version ${SAVE_VERSION} Boleiro save`);
-  return typeof parsed.packVersion === "string" ? parsed : { ...parsed, packVersion: FIRST_PACK_VERSION };
+  if (typeof parsed.packVersion === "string") return parsed;
+  // Assigned onto the leading keys, so the save re-serialises in a new game's key order.
+  return Object.assign({ version: parsed.version, packVersion: FIRST_PACK_VERSION }, parsed);
 }
 
 export function loadGame(json: string): GameState {

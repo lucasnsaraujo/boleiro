@@ -36,6 +36,12 @@ describe("saveGame and loadGame", () => {
     expect(loadGame(JSON.stringify(old)).packVersion).toBe(FIRST_PACK_VERSION);
   });
 
+  it("writes a save from before data packs back out byte for byte like a new save on the first pack", () => {
+    const old: Partial<GameState> = { ...midSeason };
+    delete old.packVersion;
+    expect(saveGame(loadGame(JSON.stringify(old)))).toBe(saveGame({ ...midSeason, packVersion: FIRST_PACK_VERSION }));
+  });
+
   it("rejects a save from another version", () => {
     expect(() => loadGame(JSON.stringify({ ...midSeason, version: 99 }))).toThrow();
   });
