@@ -3,8 +3,6 @@ from __future__ import annotations
 import sqlite3
 import unittest
 
-import tests.fixtures  # noqa: F401  (puts pipeline/ on the import path)
-
 import roster_diff
 from import_csv import SCHEMA
 

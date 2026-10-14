@@ -4,8 +4,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import tests.fixtures  # noqa: F401  (puts pipeline/ on the import path)
-
 import tm_fetch
 
 
