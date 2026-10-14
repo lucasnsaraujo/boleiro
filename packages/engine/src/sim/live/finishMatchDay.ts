@@ -20,6 +20,7 @@ import { openNextStage } from "../openNextStage.js";
 import { developPlayers } from "../players/developPlayers.js";
 import { settleShootout } from "../settleShootout.js";
 import { runTransferDay } from "../transfers/runTransferDay.js";
+import { endWorldSeason, playWorldDay } from "../world/resultOnlyWorld.js";
 import { coachOutcome } from "./coachOutcome.js";
 import type { CoachMatch, DayInProgress, LiveDay, MatchOutcome } from "./liveDay.js";
 import { FULL_TIME, type MatchEvent } from "./matchTimeline.js";
@@ -132,6 +133,7 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   next = career.state;
   events.push(...career.events);
   next = { ...next, rngState: random.state() };
+  if (state.world) next = { ...next, world: playWorldDay(state.world, state.date) };
   if (next.date.slice(0, 4) !== String(state.season)) {
     const developed = developPlayers(closeSeasonHistory(next));
     const ended = endSeason(developed.state);
@@ -142,6 +144,7 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
     // Bans still pending when a competition ends lapse with it.
     const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
     next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };
+    if (next.world) next = { ...next, world: endWorldSeason(next.world, next.season) };
   }
   const market = runTransferDay(next, decisions.requests ?? []);
   events.push(...market.events);

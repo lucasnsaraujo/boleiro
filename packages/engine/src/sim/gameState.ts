@@ -8,6 +8,7 @@ import type { History } from "./history/history.js";
 import type { ClubMood } from "./morale/clubMood.js";
 import type { PlayerProfile } from "./players/playerProfile.js";
 import type { TransferMarket } from "./transfers/transferMarket.js";
+import type { World } from "./world/world.js";
 
 export type IsoDate = string;
 
@@ -169,4 +170,6 @@ export type GameState = {
   /** Champions, records, idols and the coach's career, kept across seasons. */
   history: History;
   market: TransferMarket;
+  /** Countries played result-only, outside the full tier; a game of Brazil alone has none. */
+  world?: World;
 };

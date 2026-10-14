@@ -15,6 +15,11 @@ import { tierOf } from "./finances/tierOf.js";
 import { openingContractUntil } from "./transfers/openingContractUntil.js";
 import { openingMarket } from "./transfers/openingMarket.js";
 import { startSeason } from "./startSeason.js";
+import { startCountry } from "./world/resultOnlyWorld.js";
+import type { CountryStructure, World, WorldClub } from "./world/world.js";
+
+/** A result-only country to start: its structure and its clubs level by level, top first. */
+export type CountryStart = { structure: CountryStructure; levels: readonly (readonly WorldClub[])[] };
 
 export type NewGameOptions = {
   clubs: readonly Club[];
@@ -27,6 +32,8 @@ export type NewGameOptions = {
   /** Career mode: the coach starts unknown and unemployed, with offers from small clubs. */
   careerMode?: boolean;
   season?: number;
+  /** Countries played result-only next to Brazil. */
+  world?: readonly CountryStart[];
 };
 
 const FIRST_SEASON = 2026;
@@ -38,6 +45,15 @@ const CONTRACT_STREAM_SALT = 0xc0417;
 // from the national ranking stand-in (division, then fanbase).
 const FIRST_QUALIFICATION: Qualification = { statePlacings: {}, phase3Ids: [] };
 const ACADEMY_STREAM_SALT = 0xacade;
+const WORLD_STREAM_SALT = 0x3071d;
+
+/** Each country gets a stream of its own, its seed drawn in turn from the game's. */
+function startWorld(countries: readonly CountryStart[], season: number, seed: number): World {
+  const random = randomStream(seed ^ WORLD_STREAM_SALT);
+  return Object.fromEntries(
+    countries.map(({ structure, levels }) => [structure.id, startCountry(structure, levels, season, Math.floor(random.next() * 2 ** 32))]),
+  );
+}
 
 /**
  * The data lists only part of some small clubs' squads (one has two players), so each club below
@@ -64,7 +80,7 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs, players, finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON }: NewGameOptions,
+  { clubs, players, finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world }: NewGameOptions,
 ): GameState {
   const random = randomStream(seed);
   const traitRandom = randomStream(seed ^ TRAIT_STREAM_SALT);
@@ -103,5 +119,6 @@ export function newGame(
     discipline: {},
     history: recordStrengths({ season, players: simPlayers, market, history: newHistory(season, `${season}-01-01`, careerMode ? null : coachClubId) }),
     market,
+    ...(world?.length ? { world: startWorld(world, season, seed) } : {}),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
 }
