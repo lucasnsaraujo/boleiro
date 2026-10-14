@@ -1,4 +1,4 @@
-.plate {
+.club-plate {
   display: inline-block;
   font: 700 30px/1 var(--cond);
   text-transform: uppercase;
@@ -10,7 +10,7 @@
   text-overflow: ellipsis;
 }
 
-.plate-row {
+.club-plate-row {
   font: 600 15px/1 var(--cond);
   padding: 7px 10px 6px;
   letter-spacing: 0;

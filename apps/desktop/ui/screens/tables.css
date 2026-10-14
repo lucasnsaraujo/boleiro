@@ -178,7 +178,7 @@ td.st-pts {
 }
 
 .standings tr.mine .st-club-in {
-  color: var(--yellow);
+  color: var(--highlight);
   font-weight: 700;
 }
 
@@ -296,7 +296,7 @@ td.zone-relegation {
 }
 
 .tie-side.own .tie-name {
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .tie-score {
@@ -360,7 +360,7 @@ td.zone-relegation {
 }
 
 .scorer-name:hover {
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .scorer.mine .scorer-name {

@@ -84,7 +84,7 @@
 .fin-col-title {
   padding: 4px 0 6px;
   font: 700 16px var(--cond);
-  color: var(--yellow);
+  color: var(--highlight);
   border-bottom: var(--hairline);
 }
 

@@ -98,7 +98,7 @@
 .lineup-subs b {
   margin-left: 6px;
   font: 800 24px var(--num);
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .pitch-col {

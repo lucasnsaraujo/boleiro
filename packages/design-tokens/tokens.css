@@ -12,6 +12,8 @@
   --chalk-2: var(--ink-2);
   --chalk-3: var(--mute);
   --yellow-hover: var(--yellow-d);
+  /* Yellow text read on the old dark lawn; on paper the highlight is the album's dark gold. */
+  --highlight: var(--later);
   --promotion: var(--green);
 
   --num: var(--f);

@@ -55,7 +55,7 @@
 }
 
 .player-status.suspended {
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .player-club {

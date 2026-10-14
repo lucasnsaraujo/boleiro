@@ -52,7 +52,7 @@
 }
 
 .month[aria-pressed="true"] .month-name {
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .month-games {
@@ -109,7 +109,7 @@
 }
 
 .cal-row.today .cal-date {
-  color: var(--yellow);
+  color: var(--highlight);
   font-weight: 700;
 }
 
@@ -186,5 +186,5 @@
 .cal-row.window .cal-window {
   grid-column: 2 / -1;
   font-weight: 600;
-  color: var(--yellow);
+  color: var(--highlight);
 }

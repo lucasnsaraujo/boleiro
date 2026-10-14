@@ -71,7 +71,7 @@
 
 .history-count-n {
   font: 900 72px/0.86 var(--num);
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .history-count-l {
@@ -164,7 +164,7 @@
 
 .history-times {
   font: 800 18px var(--num);
-  color: var(--yellow);
+  color: var(--highlight);
   margin-right: 4px;
 }
 
@@ -237,7 +237,7 @@
 .history-roll tbody th small {
   display: block;
   font: 500 12px var(--cond);
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .history-cell {
@@ -260,7 +260,7 @@ button.history-cell:hover span {
 }
 
 .history-cell.is-mine {
-  color: var(--yellow);
+  color: var(--highlight);
 }
 
 .history-goals {
@@ -287,7 +287,7 @@ button.history-cell:hover span {
   font: 700 15px var(--cond);
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: var(--yellow);
+  color: var(--highlight);
   text-decoration: none;
 }
 

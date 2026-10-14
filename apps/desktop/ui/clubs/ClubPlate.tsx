@@ -8,7 +8,7 @@ type Props = { club: Pick<Club, "shortName" | "colours">; size?: "big" | "row" }
 export function ClubPlate({ club, size = "big" }: Props) {
   const { background, text } = plateColours(club.colours);
   return (
-    <span className={size === "big" ? "plate" : "plate plate-row"} style={{ background, color: text }}>
+    <span className={size === "big" ? "club-plate" : "club-plate club-plate-row"} style={{ background, color: text }}>
       {club.shortName}
     </span>
   );
