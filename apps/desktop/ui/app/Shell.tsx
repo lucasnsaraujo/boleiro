@@ -128,18 +128,35 @@ export function Shell() {
   });
 
   useEffect(() => {
+    // A control the coach reached with Tab, where Space presses it as keyboard users expect. A click focuses a control too,
+    // and Chromium then calls it :focus-visible on the next key, so that test alone would let Space re-press the last click.
+    let isTabbing = false;
+    let tabbedTo: EventTarget | null = null;
+    const onFocus = (event: FocusEvent) => {
+      tabbedTo = isTabbing ? event.target : null;
+    };
+    const onPointer = () => {
+      isTabbing = false;
+    };
     const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Tab") isTabbing = true;
       const command = commandForKey(event, PLATFORM);
       if (!command || event.defaultPrevented || (event.key.length === 1 && !event.metaKey && !event.ctrlKey && isTyping(event.target))) return;
-      // Space on a control reached by the keyboard presses that control, as it should for keyboard users.
-      if (event.key === " " && event.target instanceof Element && event.target.matches(":focus-visible")) return;
+      if (event.key === " " && event.target === tabbedTo) return;
+      const isMatchKey = MATCH_COMMAND_IDS.some((id) => id === command);
+      if (isMatchKey && event.repeat) return;
       // WebView2 keeps the browser's own F-keys (F5 reloads the app, F3 finds), so a game key never reaches them even
       // when no screen takes it; only the match keys (Space, digits) stay the page's off the round.
-      const isMatchKey = MATCH_COMMAND_IDS.some((id) => id === command);
       if (runCommand(command) || !isMatchKey) event.preventDefault();
     };
+    document.addEventListener("focusin", onFocus);
+    document.addEventListener("pointerdown", onPointer);
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("focusin", onFocus);
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [runCommand]);
 
   const active = navIndexOf(pathname);

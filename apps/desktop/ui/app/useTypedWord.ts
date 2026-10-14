@@ -1,9 +1,13 @@
 import { useEffect, useRef } from "react";
 
+// A checkbox, a slider or a button input takes no letters, so the game's keys still work while one has focus.
+const TEXT_FIELDS = "input:not([type=checkbox], [type=radio], [type=range], [type=button], [type=submit], [type=reset]), textarea, select";
+
 /** Whether a key press lands in a text field, where letters are the coach typing, not commands. */
 export function isTyping(target: EventTarget | null): boolean {
-  return target instanceof HTMLElement && (target.isContentEditable || target.matches("input, textarea, select"));
+  return target instanceof HTMLElement && (target.isContentEditable || target.matches(TEXT_FIELDS));
 }
+
 
 /**
  * Runs `onTyped` when the coach types `word` on the screen, letter by letter, outside any text field
