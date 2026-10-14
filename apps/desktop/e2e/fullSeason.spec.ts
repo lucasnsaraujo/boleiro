@@ -42,6 +42,39 @@ async function askForSigning(page: Page): Promise<string> {
   return name;
 }
 
+/** After a played match: the club's row in its table, the result on the agenda, and the game saved from the saves screen. */
+async function tourScreens(page: Page, club: string) {
+  const bar = barOf(page);
+  await bar.getByRole("link", { name: "Tabelas" }).click();
+  await expect(page.getByRole("heading", { name: "Tabelas" })).toBeAttached();
+  await expect(page.getByRole("row").filter({ has: page.getByText(club, { exact: true }) }).first()).toHaveAttribute("aria-current", "true");
+  await bar.getByRole("link", { name: "Agenda" }).click();
+  await expect(page.getByRole("heading", { name: `Calendário ${SEASON}` })).toBeAttached();
+  // The agenda opens on today's week; the first match was played in January, maybe the week before.
+  await page.getByRole("button", { name: /^Janeiro/ }).click();
+  await expect(page.getByRole("listitem").filter({ hasText: /\d×\d/ }).first()).toBeVisible();
+  await bar.getByRole("link", { name: "Opções" }).click();
+  await page.getByRole("link", { name: "Abrir" }).click();
+  await page.getByRole("button", { name: "Salvar agora" }).click();
+  await expect(page.getByRole("list", { name: "Vagas" }).getByRole("button", { name: new RegExp(`^Jogo \\d · ${club}`) })).toBeVisible();
+  await bar.getByRole("link", { name: "Times" }).click();
+}
+
+/**
+ * Stops the page clock a moment ahead. pauseAt only moves forward and the page's time keeps flowing until it
+ * lands, so on a loaded machine the moment can pass before the call arrives; then it aims again.
+ */
+async function pauseClock(page: Page) {
+  for (;;) {
+    try {
+      await page.clock.pauseAt((await page.evaluate(() => Date.now())) + PAUSE_LEAD_MS);
+      return;
+    } catch (error) {
+      if (!String(error).includes("Cannot fast-forward to the past")) throw error;
+    }
+  }
+}
+
 /**
  * Plays the live round at 4x until the result is in, stepping the paused page clock one match
  * minute at a time instead of waiting for it. Returns how many times the round stopped by itself
@@ -55,8 +88,7 @@ async function playLiveRound(page: Page): Promise<number> {
   const fourX = page.getByRole("button", { name: "4x" });
   const minute = band.getByLabel("Minuto");
   await expect(band).toBeVisible();
-  // pauseAt only moves forward, and the page's time keeps flowing until it lands.
-  await page.clock.pauseAt((await page.evaluate(() => Date.now())) + PAUSE_LEAD_MS);
+  await pauseClock(page);
   await fourX.click();
   let stops = 0;
   // One tick per step, so the screen has stopped the clock by itself before the next tick is due.
@@ -79,8 +111,9 @@ async function playLiveRound(page: Page): Promise<number> {
   return stops;
 }
 
-test("a Série C club plays its whole first season through the screens and starts season 2", async ({ page }) => {
-  test.setTimeout(10 * 60_000);
+test("a Série C club plays its whole first season through the screens and starts season 2 with the champions on record", async ({ page }) => {
+  // The board now draws every match of the round, and the season visits the tables, agenda and saves on the way.
+  test.setTimeout(20 * 60_000);
   await page.clock.install();
   await startAtSerieC(page);
 
@@ -99,6 +132,7 @@ test("a Série C club plays its whole first season through the screens and start
   const labels: string[] = [];
   const stops: number[] = [];
   let signing: string | null = null;
+  let hasToured = false;
   let isAnswered = false;
   let hasBeenSacked = false;
   // A season's fixtures are gone once the year turns, so the count is taken on the hub before that.
@@ -134,6 +168,11 @@ test("a Série C club plays its whole first season through the screens and start
       continue;
     }
     await expect(playRound.or(waitForOffers)).toBeVisible();
+    if (!hasToured && labels.length > 0 && !hasBeenSacked) {
+      await tourScreens(page, "Paysandu");
+      hasToured = true;
+      await expect(playRound).toBeVisible();
+    }
     // Paysandu's first match falls in January, inside the window that opens on 5 January.
     if (signing === null && labels.length > 0) {
       signing = await askForSigning(page);
@@ -184,4 +223,10 @@ test("a Série C club plays its whole first season through the screens and start
   await expect(page).toHaveURL(/#\/hub$/);
   await expect(barOf(page)).toContainText("1 jan");
   await expect(barOf(page)).toContainText(`Temporada ${SEASON + 1}`);
+
+  expect(hasToured).toBe(true);
+  await barOf(page).getByRole("link", { name: "Histórico" }).click();
+  await page.getByRole("tab", { name: "Campeões" }).click();
+  const lastSeason = page.getByRole("table", { name: "Campeões" }).getByRole("row", { name: new RegExp(`^${SEASON}`) });
+  await expect(lastSeason.getByRole("button").first()).toBeVisible();
 });
