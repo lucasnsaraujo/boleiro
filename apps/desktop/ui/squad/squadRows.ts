@@ -1,6 +1,8 @@
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import type { GameState, IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
+import { tierOf } from "@boleiro/engine/sim/finances/tierOf";
 import { fatigueOn } from "@boleiro/engine/sim/players/fatigueOn";
+import { valuePlayer } from "@boleiro/engine/sim/transfers/valuePlayer";
 import { isInjured } from "@boleiro/engine/sim/players/isInjured";
 import type { Trait } from "@boleiro/engine/sim/players/playerProfile";
 import { competitionName } from "@boleiro/game-client/format/competitionName";
@@ -17,12 +19,19 @@ export type SquadRow = {
   trait: Trait | null;
   /** Today's fatigue, where one full match adds 100. */
   fatigue: number;
+  /** What fatigue leaves of a fresh player, 100 down to 0 a full match after kick-off. */
+  energy: number;
   status: PlayerStatus;
   contractUntil: IsoDate;
+  isLastContractYear: boolean;
   wage: number;
+  /** Market value in reais at his club's division. */
+  value: number;
+  /** Goals this season, every competition together. */
+  goals: number;
 };
 
-export type SquadSortKey = "name" | "strength" | "age" | "fatigue" | "contractUntil" | "wage";
+export type SquadSortKey = "name" | "strength" | "age" | "energy" | "contractUntil" | "wage" | "value" | "goals";
 export type SquadSort = { key: SquadSortKey; descending: boolean };
 export type SquadGroup = { group: PositionGroup; rows: SquadRow[] };
 
@@ -57,25 +66,36 @@ export function statusText(status: PlayerStatus): string {
   return `Suspenso: ${status.competitions.join(", ")}`;
 }
 
+export const SQUAD_KEYS = ["date", "season", "coachClubId", "clubs", "players", "discipline", "competitions", "fixtures", "history", "market"] as const;
+
 /** The coach's squad, one row per player. */
-export function squadRows(state: Pick<GameState, "date" | "coachClubId" | "players" | "discipline" | "competitions" | "fixtures">): SquadRow[] {
+export function squadRows(state: Pick<GameState, (typeof SQUAD_KEYS)[number]>): SquadRow[] {
   const { coachClubId, date } = state;
-  if (!coachClubId) return [];
+  const club = coachClubId ? state.clubs[coachClubId] : undefined;
+  if (!coachClubId || !club) return [];
   const statusState = { ...state, discipline: liveDiscipline(state, coachClubId) };
+  const goalsByCompetition = Object.values(state.history.current.goals);
   return Object.values(state.players)
     .filter((p) => p.clubId === coachClubId)
-    .map((p) => ({
-      id: p.id,
-      name: p.name,
-      group: p.group,
-      strength: p.strength,
-      age: p.age,
-      trait: p.trait,
-      fatigue: Math.round(fatigueOn(p, date)),
-      status: playerStatus(p, statusState),
-      contractUntil: p.contractUntil,
-      wage: p.wage,
-    }));
+    .map((p) => {
+      const fatigue = Math.round(fatigueOn(p, date));
+      return {
+        id: p.id,
+        name: p.name,
+        group: p.group,
+        strength: p.strength,
+        age: p.age,
+        trait: p.trait,
+        fatigue,
+        energy: Math.max(0, 100 - fatigue),
+        status: playerStatus(p, statusState),
+        contractUntil: p.contractUntil,
+        isLastContractYear: p.contractUntil <= `${state.season}-12-31`,
+        wage: p.wage,
+        value: Math.round(valuePlayer(p, tierOf(club), date) * state.market.eurBrl),
+        goals: goalsByCompetition.reduce((sum, byPlayer) => sum + (byPlayer[p.id] ?? 0), 0),
+      };
+    });
 }
 
 // Names, ages and contract ends read first-to-last; numbers where more is better read biggest first.

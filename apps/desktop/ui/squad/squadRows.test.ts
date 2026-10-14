@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
+import { valuePlayer } from "@boleiro/engine/sim/transfers/valuePlayer";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
 import { nextSort, sortedSquad, squadRows, statusText, type SquadRow } from "./squadRows.js";
 
@@ -50,6 +51,33 @@ describe("squadRows", () => {
     const rows = (date: string) => squadRows({ ...game, date, players: withPlayer(tired) });
     expect(rowOf(rows("2026-01-01"), someone.id)?.fatigue).toBe(100);
     expect(rowOf(rows("2026-01-04"), someone.id)?.fatigue).toBe(25);
+  });
+
+  test("energy is what a match's fatigue leaves, from 100 when fresh down to 0", () => {
+    const tired = { ...someone, condition: { ...someone.condition, fatigue: 140, fatigueOn: "2026-01-01" } };
+    const rows = (date: string) => squadRows({ ...game, date, players: withPlayer(tired) });
+    expect(rowOf(rows("2026-01-01"), someone.id)?.energy).toBe(0);
+    expect(rowOf(rows("2026-01-04"), someone.id)?.energy).toBe(65);
+    expect(rowOf(squadRows(game), other.id)?.energy).toBe(100);
+  });
+
+  test("a player's value is his market value at his club's division, in reais", () => {
+    const expected = Math.round(valuePlayer(someone, "A", game.date) * game.market.eurBrl);
+    expect(rowOf(squadRows(game), someone.id)?.value).toBe(expected);
+  });
+
+  test("goals add up every competition of this season", () => {
+    const history = { ...game.history, current: { ...game.history.current, goals: { "state-ba": { [someone.id]: 2 }, "serie-a": { [someone.id]: 3, [other.id]: 1 } } } };
+    expect(rowOf(squadRows({ ...game, history }), someone.id)?.goals).toBe(5);
+    expect(rowOf(squadRows(game), someone.id)?.goals).toBe(0);
+  });
+
+  test("a contract that ends this season is flagged", () => {
+    const leaving = { ...someone, contractUntil: "2026-12-31" };
+    const staying = { ...other, contractUntil: "2027-12-31" };
+    const rows = squadRows({ ...game, players: { ...withPlayer(leaving), [other.id]: staying } });
+    expect(rowOf(rows, someone.id)?.isLastContractYear).toBe(true);
+    expect(rowOf(rows, other.id)?.isLastContractYear).toBe(false);
   });
 });
 

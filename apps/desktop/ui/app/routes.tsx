@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import type { RouteObject } from "react-router";
+import { Navigate, type RouteObject } from "react-router";
 import { Calendar } from "../screens/Calendar.js";
 import { Finances } from "../screens/Finances.js";
 import { History } from "../screens/History.js";
@@ -12,7 +12,6 @@ import { Round } from "../screens/Round.js";
 import { Sacked } from "../screens/Sacked.js";
 import { SeasonEnd } from "../screens/SeasonEnd.js";
 import { Player } from "../screens/Player.js";
-import { Squad } from "../screens/Squad.js";
 import { StartMenu } from "../screens/StartMenu.js";
 import { Tables } from "../screens/Tables.js";
 import { SCREEN_PATHS, type ScreenPath } from "./screens.js";
@@ -39,7 +38,8 @@ export const routes: RouteObject[] = [
     element: <Shell />,
     children: [
       ...SCREEN_PATHS.map((path) => ({ path, element: ELEMENTS[path] })),
-      { path: "/squad", element: <Squad /> },
+      // The squad lives on the club screen now; the old address still leads to it.
+      { path: "/squad", element: <Navigate to="/hub" replace /> },
       { path: "/squad/:playerId", element: <Player /> },
     ],
   },

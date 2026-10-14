@@ -6,7 +6,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
-import { Squad } from "./Squad.js";
+import { Hub } from "./Hub.js";
 
 const closers: (() => void)[] = [];
 const animate = vi.fn((keyframes: Keyframe[]) => keyframes);
@@ -39,10 +39,10 @@ async function sortByAge() {
   const services: Services = { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
   render(
     <ServicesContext value={services}>
-      <RouterProvider router={createMemoryRouter([{ path: "/squad", element: <Squad /> }], { initialEntries: ["/squad"] })} />
+      <RouterProvider router={createMemoryRouter([{ path: "/hub", element: <Hub /> }], { initialEntries: ["/hub"] })} />
     </ServicesContext>,
   );
-  await screen.findByRole("heading", { name: "Elenco" });
+  await screen.findByRole("table", { name: "Elenco do Bahia" });
   expect(animate).not.toHaveBeenCalled();
   await userEvent.click(screen.getByRole("button", { name: "Idade" }));
   expect(animate).toHaveBeenCalled();

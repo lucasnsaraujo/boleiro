@@ -1,170 +1,607 @@
-.hub-band {
-  margin: -32px -28px 0;
-  padding: 24px 28px 0;
-  background: linear-gradient(180deg, var(--lawn-2), var(--lawn-1));
-  border-bottom: var(--hairline);
+/* Brasfoot's team screen: the club panel on the left, the squad table on the right. */
+.hub {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 14px;
+  height: 100%;
+  min-height: 0;
+  padding: 18px 14px 14px;
+}
+
+.hub-missing {
+  padding: 28px;
+}
+
+.hub-side {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
 }
 
 .hub-club {
   display: flex;
+  gap: 12px;
   align-items: center;
-  gap: 18px;
+  padding: 12px;
+}
+
+.hub-club h1 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.hub-club p {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--mute);
+}
+
+.hub-club p b {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.hub-no-crest {
+  width: 58px;
+  height: 58px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px dashed var(--line-2);
+}
+
+/* An offer on the table is a slip taped to the club's sticker. */
+.hub-offers {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--note);
+  color: var(--note-ink);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 11px;
+  text-decoration: none;
+  transform: rotate(3deg);
+  box-shadow:
+    0 0 0 1px rgba(20, 35, 26, 0.14),
+    0 2px 4px -1px rgba(20, 35, 26, 0.4);
+  transition: transform var(--t-base) var(--e-slap);
+}
+
+.hub-offers:hover {
+  transform: rotate(-2deg) scale(1.06);
+}
+
+.hub-money {
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 9px 12px;
+}
+
+.hub-cash {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.hub-cash b {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 19px;
+}
+
+.hub-money .lbl {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.hub-money .meter {
+  margin-top: 5px;
+}
+
+.hub-money .meter > i {
+  transform-origin: left;
 }
 
 .hub-next {
-  display: grid;
-  justify-items: center;
-  gap: 14px;
-  padding: 30px 0 34px;
-}
-
-.hub-next-when {
-  font: 600 16px var(--cond);
-  color: var(--chalk-2);
-}
-
-.hub-next-when.today {
-  font-weight: 700;
-  color: var(--yellow);
-}
-
-.hub-next-when:first-letter {
-  text-transform: uppercase;
-}
-
-.hub-next-teams {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 24px;
-  width: 100%;
-}
-
-.hub-side {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-width: 0;
-}
-
-.hub-side.home {
-  justify-content: flex-end;
-}
-
-.hub-x {
-  font: 600 40px/1 var(--num);
-  color: var(--chalk-3);
-}
-
-.hub-next-what {
-  font: 500 15px var(--cond);
-  color: var(--chalk-3);
-}
-
-.hub-next-what span {
-  color: var(--chalk);
-  font-weight: 600;
+  padding: 10px 12px;
 }
 
 .hub-next-none {
-  padding: 30px 0 34px;
-  font: 600 20px var(--cond);
-  color: var(--chalk-2);
+  font-size: 12px;
+  color: var(--mute);
 }
 
-.hub-foot {
+.hub-next-match {
   display: flex;
+  gap: 10px;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 14px 0;
-  border-top: var(--hairline);
+  margin-top: 6px;
 }
 
-.hub-facts {
-  display: flex;
-  gap: 32px;
+.hub-next-match b {
+  display: block;
+  font-weight: 800;
+  font-size: 16px;
 }
 
-.hub-facts div {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
+.hub-next-match p {
+  font-size: 12px;
+  color: var(--mute);
 }
 
-.hub-facts dt {
-  font: 500 14px var(--cond);
-  color: var(--chalk-3);
+.hub-next-match .hub-next-what {
+  font-weight: 700;
+  color: var(--ink-2);
 }
 
-.hub-facts dd {
-  font: 700 17px var(--cond);
+.hub-next-match p.today {
+  font-weight: 800;
+  color: var(--green);
+}
+
+.hub-play {
+  width: 100%;
+  height: 46px;
+  flex: none;
+  font-size: 15px;
 }
 
 .hub-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.hub-actions .btn {
+  text-decoration: none;
+}
+
+/* The picked player's sticker. */
+.hub-card,
+.hub-card-empty {
+  flex: 1;
+  min-height: 0;
+}
+
+.hub-card {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.hub-card-top {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--foil);
+  border-bottom: 1px solid var(--line);
+  border-radius: var(--r-m) var(--r-m) 0 0;
+}
+
+.hub-card-top b {
+  display: block;
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.hub-card-top a {
+  text-decoration: none;
+}
+
+.hub-card-top a:hover {
+  text-decoration: underline;
+}
+
+.hub-card-top span {
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+
+.hub-card-top .hub-card-strength {
   margin-left: auto;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--green);
 }
 
-.hub-band .status {
-  margin: 0 0 12px;
+.hub-card-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 10px 12px;
+  font-size: 12px;
 }
 
-.hub-inbox {
-  max-width: 760px;
-  padding-top: 26px;
+.hub-card-kv {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 10px;
+  color: var(--mute);
 }
 
-.hub-section-title {
-  font: 600 15px var(--cond);
-  color: var(--chalk-3);
-  padding-bottom: 8px;
+.hub-card-kv dd {
+  font-weight: 600;
+  color: var(--ink);
 }
 
-.inbox {
+.hub-card-kv .hub-card-out {
+  color: var(--red);
+}
+
+.hub-card-stats {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+}
+
+.hub-card-stats th,
+.hub-card-stats td {
+  padding: 3px 0;
+  text-align: right;
+}
+
+.hub-card-stats thead th {
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mute);
+  border-bottom: 2px solid var(--ink);
+}
+
+.hub-card-stats tbody th {
+  text-align: left;
+  font-weight: 400;
+}
+
+.hub-card-stats tbody th,
+.hub-card-stats td {
+  border-bottom: 1px dotted var(--line-2);
+}
+
+/* The dock: Finanças and the club's other desks; the ones still to come are greyed out. */
+.hub-dock {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 2px 0;
+}
+
+.hub-dock-item {
+  position: relative;
+  flex: 1;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 10px;
+  color: var(--ink-2);
+  font-stretch: var(--tight);
+  font-weight: 700;
+  font-size: 11px;
+  text-decoration: none;
+  transition: background var(--t-fast) var(--e-out);
+}
+
+.hub-dock-item i {
+  font-size: 21px;
+  color: var(--ink);
+  transition: transform var(--t-base) var(--e-slap);
+}
+
+.hub-dock-item:not(.off):hover {
+  background: var(--paper-2);
+}
+
+.hub-dock-item:not(.off):hover i {
+  transform: translateY(-2px) rotate(-6deg);
+}
+
+.hub-dock-item[aria-expanded="true"] {
+  background: var(--paper-2);
+}
+
+.hub-dock-item.off {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.hub-badge {
+  position: absolute;
+  top: 3px;
+  right: 9px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  background: var(--red);
+  color: #fff;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10px;
+  box-shadow: 0 0 0 2px var(--paper);
+}
+
+.hub-count {
+  flex: none;
+  padding: 0 6px 0 8px;
+  text-align: right;
+  line-height: 1.1;
+}
+
+.hub-count b {
+  display: block;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.hub-count span {
+  font-size: 10.5px;
+  color: var(--mute);
+}
+
+/* The paper: the inbox on a slip pinned over the player's sticker, the dock left free under it. */
+.hub-paper {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 64px;
+  z-index: 3;
+  max-height: 340px;
+  overflow: auto;
+  padding: 16px 16px 12px;
+  transform: rotate(-0.6deg);
+  transform-origin: 50% 100%;
+}
+
+.hub-paper header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.hub-paper h2 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.hub-paper h2:focus {
+  outline: none;
+}
+
+.hub-paper-close {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--note-ink);
+}
+
+.hub-paper-close:hover {
+  background: rgba(20, 35, 26, 0.08);
+}
+
+.hub-paper ul {
   list-style: none;
 }
 
-.inbox-row {
+.hub-paper li {
   display: grid;
-  grid-template-columns: 4px 52px minmax(0, 1fr);
-  align-items: center;
-  column-gap: 12px;
-  min-height: 40px;
-  border-top: 1px solid rgba(42, 82, 54, 0.55);
-  font: 500 15px var(--cond);
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 12px;
+  line-height: 1.35;
+  border-top: 1px dotted color-mix(in srgb, var(--note-ink) 30%, transparent);
 }
 
-.inbox-row:last-child {
-  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+.hub-paper li span {
+  font-weight: 700;
+  opacity: 0.7;
 }
 
-.inbox-row::before {
-  content: "";
-  height: 18px;
+.hub-paper li.bad {
+  color: var(--red);
 }
 
-.inbox-row.good::before {
-  background: var(--promotion);
+.hub-paper-empty {
+  font-size: 12px;
 }
 
-.inbox-row.bad::before {
-  background: var(--red);
+/* The squad table fills the right page and scrolls under its own header. */
+.hub-squad {
+  min-height: 0;
+  overflow: auto;
 }
 
-.inbox-date {
-  font-size: 14px;
-  color: var(--chalk-3);
+.hub-squad-none {
+  padding: 24px;
+  font-size: 13px;
+  color: var(--mute);
 }
 
-.inbox-text {
-  padding: 9px 0;
+.hub-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-@media (max-width: 1100px) {
-  .hub-next .plate {
-    font-size: 24px;
+.hub-table td {
+  height: 23px;
+  cursor: default;
+}
+
+.hub-table tbody + tbody tr:first-child td {
+  border-top: 2px solid var(--line);
+}
+
+.hub-table tr {
+  position: relative;
+  transition: background var(--t-fast) var(--e-out);
+}
+
+.hub-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--paper-2) 50%, transparent);
+}
+
+.hub-table tr.sel td {
+  background: var(--yellow-l);
+}
+
+.hub-table .nm a {
+  text-decoration: none;
+}
+
+.hub-table .nm a:hover {
+  text-decoration: underline;
+}
+
+.hub-table .sq-strength {
+  font-weight: 800;
+}
+
+.hub-table abbr {
+  text-decoration: none;
+}
+
+.hub-table .flag {
+  margin-left: 6px;
+  font-size: 13px;
+  vertical-align: -2px;
+}
+
+.hub-table .flag.inj {
+  color: var(--red);
+}
+
+.hub-table .flag.ctr {
+  color: var(--later);
+}
+
+.hub-table .flag.rc {
+  vertical-align: -1px;
+}
+
+.sq-sort {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  border-radius: 4px;
+  padding: 2px 3px;
+  margin: 0 -3px;
+}
+
+.sq-sort:hover {
+  background: var(--paper-2);
+}
+
+.sq-sort.on {
+  box-shadow: inset 0 -2px 0 var(--yellow-d);
+}
+
+/* Motion: the panel's stickers are laid down top to bottom; the table rises in with them. */
+@media (prefers-reduced-motion: no-preference) {
+  .hub-side > * {
+    animation: hub-lay var(--t-slow) var(--e-out) both;
+  }
+
+  .hub-side > :nth-child(2) {
+    animation-delay: 40ms;
+  }
+
+  .hub-side > :nth-child(3) {
+    animation-delay: 80ms;
+  }
+
+  .hub-side > :nth-child(4) {
+    animation-delay: 120ms;
+  }
+
+  .hub-side > :nth-child(n + 5) {
+    animation-delay: 160ms;
+  }
+
+  .hub-squad {
+    animation: hub-page var(--t-slow) var(--e-out) 60ms both;
+  }
+
+  .hub-money .meter > i {
+    animation: hub-fill 700ms var(--e-out) 260ms both;
+  }
+
+  .hub-card {
+    animation: hub-swap var(--t-stamp) var(--e-slap) both;
+  }
+
+  .hub-paper {
+    animation: hub-paper-in var(--t-slow) var(--e-slap) both;
+  }
+
+  .hub-offers {
+    animation: hub-tape 520ms var(--e-slap) 380ms both;
+  }
+}
+
+@keyframes hub-lay {
+  from {
+    opacity: 0;
+    transform: translateY(10px) rotate(-1deg);
+  }
+}
+
+@keyframes hub-page {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+
+@keyframes hub-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes hub-swap {
+  from {
+    opacity: 0.3;
+    transform: rotate(-2.5deg) scale(1.03);
+  }
+}
+
+@keyframes hub-paper-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) rotate(-4deg) scale(0.96);
+  }
+}
+
+@keyframes hub-tape {
+  from {
+    opacity: 0;
+    transform: rotate(14deg) scale(1.3);
   }
 }
