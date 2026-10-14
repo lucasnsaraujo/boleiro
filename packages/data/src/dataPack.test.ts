@@ -6,7 +6,7 @@ import { gunzipSync } from "node:zlib";
 import { afterAll, describe, expect, it } from "vitest";
 import { parseClubs } from "./clubs.js";
 import { parseCompetitionMoney } from "./competition-money.js";
-import { FIRST_PACK_VERSION, loadPack, parsePack } from "./dataPack.js";
+import { FIRST_PACK_VERSION, loadPack, parsePack, parsePackClubs } from "./dataPack.js";
 import { parseFinances } from "./finances.js";
 import { parsePlayers } from "./players.js";
 
@@ -47,9 +47,15 @@ describe("the data pack", () => {
     expect(FIRST_PACK_VERSION).toBe("br-a49b7692d13f");
   });
 
+  it("decodes a pack cut down to its clubs into the same clubs as the whole pack", () => {
+    const { format, clubs } = JSON.parse(built);
+    expect(parsePackClubs(JSON.stringify({ format, clubs }))).toStrictEqual(parsePack(built).clubs);
+  });
+
   it("rejects a pack of another format", () => {
     const other = { ...JSON.parse(built), format: 2 };
     expect(() => parsePack(JSON.stringify(other))).toThrow(/format/);
+    expect(() => parsePackClubs(JSON.stringify(other))).toThrow(/format/);
   });
 
   it("rejects a pack whose columns disagree on the number of rows", () => {

@@ -196,11 +196,16 @@ function divisionEstimatesOf(table: Table): DivisionFinances[] {
   return rowsOf(table, (row) => ({ ...finances(row), division: division(row), size: size(row) }));
 }
 
-/** Decodes the pack's JSON text into the game's inputs; throws on a pack of another format or a malformed column. */
-export function parsePack(json: string): DataPack {
+function packOf(json: string): Record<string, unknown> {
   const pack: unknown = JSON.parse(json);
   if (!isRecord(pack)) fail("", "an object");
   if (pack.format !== PACK_FORMAT) fail("format", String(PACK_FORMAT));
+  return pack;
+}
+
+/** Decodes the pack's JSON text into the game's inputs; throws on a pack of another format or a malformed column. */
+export function parsePack(json: string): DataPack {
+  const pack = packOf(json);
   if (typeof pack.packVersion !== "string" || pack.packVersion === "") fail("packVersion", "a version");
   if (!isRecord(pack.finances)) fail("finances", "an object");
   const clubs = clubsOf(tableOf(pack.clubs, "clubs", "id"));
@@ -214,6 +219,11 @@ export function parsePack(json: string): DataPack {
     },
     competitionMoney: toCompetitionMoney(pack.competitionMoney),
   };
+}
+
+/** The clubs alone, from a pack whose other tables may have been left out (`?gunzip&keys=format,clubs`). */
+export function parsePackClubs(json: string): Club[] {
+  return clubsOf(tableOf(packOf(json).clubs, "clubs", "id"));
 }
 
 /**
