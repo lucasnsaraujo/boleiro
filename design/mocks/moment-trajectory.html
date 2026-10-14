@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Trajetória</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="moments.css">
+<script src="mock.js"></script>
+<script src="moments.js"></script>
+<style>
+body { --end: 4600; }
+.wrap { position: absolute; inset: 14px 16px 14px; display: flex; flex-direction: column; gap: 12px; }
+.hd { display: flex; align-items: flex-end; gap: 18px; }
+.hd h1 { font-stretch: var(--wide); font-weight: 900; font-size: 28px; line-height: 1; letter-spacing: -.02em; }
+.hd h1 small { display: block; font-stretch: 100%; font-weight: 600; font-size: 12.5px; color: var(--mute); letter-spacing: 0; margin-top: 4px; }
+.sum { margin-left: auto; display: flex; gap: 8px; }
+.sum .nst { padding: 6px 12px 6px; min-width: 86px; }
+.sum .nst b { font-size: 22px; }
+.sum .nst span { font-size: 10.5px; margin-top: 1px; }
+.tools { display: flex; align-items: center; gap: 10px; }
+
+.tl { position: relative; height: 352px; background: var(--card); border-radius: 8px; box-shadow: var(--sh-page); overflow: hidden; }
+.tl svg { position: absolute; inset: 0; }
+.lane-l { position: absolute; left: 14px; font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.band { position: absolute; height: 46px; border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px; color: #fff; font-stretch: var(--semi); font-weight: 900; font-size: 13px; overflow: hidden; white-space: nowrap; box-shadow: var(--sh-sticker); clip-path: inset(0 100% 0 0 round 8px); animation: grow linear both; animation-delay: calc(var(--d) * 1ms); animation-duration: calc(var(--len) * 1ms); }
+.band.hoops { background: repeating-linear-gradient(0deg, #C8102E 0 6px, #8E0B20 6px 12px); }
+.band small { font-stretch: 100%; font-weight: 600; font-size: 11px; opacity: .85; }
+.band.sel { height: 28px; background: #FFCC00; color: #0B4F27; }
+@keyframes grow { to { clip-path: inset(0 0 0 0 round 8px); } }
+.mk { position: absolute; width: 30px; height: 30px; margin-left: -15px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; background: var(--card); box-shadow: 0 0 0 2px var(--ink), 0 3px 0 var(--ink); animation: pop 380ms var(--e-slap) calc(var(--d) * 1ms) both; z-index: 2; }
+.mk.t { background: var(--yellow); }
+.mk.i { background: var(--foil); box-shadow: 0 0 0 2px var(--yellow-d), 0 3px 0 var(--yellow-d); color: #8A6400; }
+.mk.x { background: var(--red); color: #fff; box-shadow: 0 0 0 2px #8E1F1A, 0 3px 0 #8E1F1A; }
+.mk.q { background: var(--paper-2); color: var(--mute); box-shadow: 0 0 0 2px var(--line-2), 0 3px 0 var(--line-2); }
+.mk.m { background: var(--green); color: #fff; box-shadow: 0 0 0 2px var(--green-d), 0 3px 0 var(--green-d); }
+.mk b { position: absolute; top: -9px; right: -9px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: var(--r-pill); background: var(--ink); color: var(--card); font-stretch: var(--semi); font-weight: 900; font-size: 10px; display: grid; place-items: center; }
+.mk.on { box-shadow: 0 0 0 2px var(--ink), 0 0 0 6px var(--yellow), 0 3px 0 var(--ink); }
+@keyframes pop { from { opacity: 0; transform: scale(.2); } }
+.yr { position: absolute; bottom: 10px; width: 40px; margin-left: -20px; text-align: center; font-stretch: var(--semi); font-weight: 800; font-size: 11px; color: var(--mute); }
+.yr.big { color: var(--ink); font-weight: 900; }
+.head { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink); z-index: 3; }
+.head::before { content: attr(data-y); position: absolute; top: 6px; left: 6px; font-stretch: var(--semi); font-weight: 900; font-size: 11px; white-space: nowrap; }
+.today { position: absolute; top: 8px; right: 14px; font-size: 11px; font-weight: 700; color: var(--mute); }
+
+.low { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.25fr 1fr; gap: 14px; }
+.det { position: relative; padding: 16px 18px; background: var(--card); border-radius: 8px; box-shadow: var(--sh-pop); display: grid; grid-template-columns: 112px 1fr; gap: 16px; animation: open 560ms var(--e-out) 3400ms both; }
+@keyframes open { from { opacity: 0; transform: translateY(18px) scale(.97); } }
+.det .ps { --c: #D00000; --h: 108px; --fs: 50px; align-self: start; transform: rotate(-3deg); }
+.det .kind { font-size: 11.5px; font-weight: 700; color: var(--mute); display: flex; gap: 6px; align-items: center; }
+.det h2 { font-stretch: var(--wide); font-weight: 900; font-size: 22px; line-height: 1.02; margin-top: 4px; }
+.det p { font-size: 12.5px; line-height: 1.45; color: var(--ink-2); margin-top: 6px; }
+.det .links { display: flex; gap: 8px; margin-top: 10px; }
+.det .chain { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px; font-size: 11.5px; color: var(--ink-2); }
+.det .chain span { padding: 2px 8px; border-radius: 6px; background: var(--paper); font-weight: 700; }
+.det .chain i { color: var(--mute); font-size: 12px; }
+.rec { padding: 14px 18px; background: var(--card); border-radius: 8px; box-shadow: var(--sh-page); animation: open 560ms var(--e-out) 3600ms both; }
+.rec h3 { font-stretch: var(--wide); font-weight: 900; font-size: 16px; }
+.rr { display: flex; justify-content: space-between; align-items: center; gap: 12px; height: 31px; border-bottom: 1px solid var(--rule); font-size: 12.5px; }
+.rr:last-child { border-bottom: 0; }
+.rr span { color: var(--mute); }
+.rr b { font-weight: 700; text-align: right; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-bar="historico"><div class="date"><b>Dom, 10 dez</b><span>Temporada 2045</span></div></div>
+  <main>
+    <div class="wrap">
+      <div class="hd">
+        <h1>Sua carreira<small>Lucas Araujo · técnico desde jan 2026 · 1.346 jogos</small></h1>
+        <div class="sum">
+          <div class="nst"><b>20</b><span>temporadas</span></div>
+          <div class="nst"><b>3</b><span>clubes e a Seleção</span></div>
+          <div class="nst foil"><b>18</b><span>títulos</span></div>
+          <div class="nst foil"><b>2</b><span>vezes ídolo</span></div>
+          <div class="nst"><b>1</b><span>demissão</span></div>
+        </div>
+      </div>
+      <div class="tools"><div class="seg"><span class="on">Tudo</span><span>Títulos</span><span>Saídas</span><span>Ídolo</span><span>Recordes</span></div><span class="when" style="margin-left:auto"><i class="ph-bold ph-path"></i>2026 a 2045</span></div>
+      <section class="tl" id="tl">
+        <span class="lane-l" style="top:16px">Marcos</span>
+        <span class="lane-l" style="top:132px">Clubes</span>
+        <span class="lane-l" style="top:196px">Seleção</span>
+        <span class="lane-l" style="top:236px">Ídolo</span>
+        <svg viewBox="0 0 1248 352" preserveAspectRatio="none" id="spark"></svg>
+        <div id="items"></div>
+        <span class="today">hoje · 10 dez 2045</span>
+      </section>
+      <div class="low">
+        <article class="det">
+          <div class="ps"><div class="art"><img class="crest" src="../../assets/crests/6600.png" width="22" height="22" style="--cut:1px" alt=""><b>L</b><em style="left:auto;right:6px">2039</em></div><div class="nm">Campeão</div><div class="cl">Internacional</div></div>
+          <div>
+            <div class="kind"><i class="ph-fill ph-trophy" style="color:var(--yellow-d)"></i>Dom, 4 dez 2039 · Internacional · selecionado</div>
+            <h2>Brasileirão 2039, 60 anos depois</h2>
+            <p>Sexta temporada no Inter, depois do vice de 2036 na última rodada e da final da Libertadores perdida em 2037. A festa longa, a página "Finalmente" no jornal.</p>
+            <div class="chain"><span>vice 2036</span><i class="ph-bold ph-arrow-right"></i><span>final perdida 2037</span><i class="ph-bold ph-arrow-right"></i><span>título 2039</span><i class="ph-bold ph-arrow-right"></i><span>ídolo do Inter</span><i class="ph-bold ph-arrow-right"></i><span>demitido em ago 2040</span></div>
+            <div class="links"><button class="btn sm"><i class="ph-bold ph-play"></i>Rever o momento</button><button class="btn sm flat"><i class="ph-bold ph-book-open-text"></i>Página do álbum</button></div>
+          </div>
+        </article>
+        <section class="rec">
+          <h3>Recordes</h3>
+          <div class="rr"><span>Mais jogos num clube</span><b>Flamengo, 547 e mais 313 na volta</b></div>
+          <div class="rr"><span>Maior goleada</span><b>6 × 0 Vasco, Maracanã · 2029</b></div>
+          <div class="rr"><span>Maior fila quebrada</span><b>60 anos · Inter, 2039</b></div>
+          <div class="rr"><span>Jogador revelado</span><b>Kauã Pinheiro, melhor do mundo 2031</b></div>
+          <div class="rr"><span>Saída mais curta</span><b>Benfica, 5 meses</b></div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+fill();
+document.querySelector('.bar').classList.add('lit');
+document.querySelector('.bar').insertAdjacentHTML('afterbegin', '<span class="lights"><i></i><i></i><i></i></span>');
+// One year = 59 px. The playhead sweeps the career in 2.6 s and everything appears as it passes.
+const X0 = 70, PX = 57.5, T0 = 300, LEN = 2700;
+const x = (y) => X0 + (y - 2026) * PX;
+const tAt = (y) => T0 + ((y - 2026) / 20) * LEN;
+const items = [];
+
+// Clubs lane
+const CL = [
+  [2026, 2034, 'Flamengo', 'FLA', 'hoops', '8 temporadas · 11 títulos'],
+  [2034, 2040.6, "Internacional", "INT", "", "2034 a 2040 · 2 títulos"],
+  [2040.7, 2041.15, '', 'BEN', '', ''],
+  [2041.2, 2046, 'Flamengo', 'FLA', 'hoops', 'a volta · 5 títulos'],
+];
+CL.forEach(([a, b, n, c, cls, s]) => items.push(`<div class="band ${cls}" style="left:${x(a)}px;width:${x(b) - x(a) - 3}px;top:122px;${c === "INT" ? 'background:#D00000;' : c === 'BEN' ? 'background:#E30613;padding:0 3px;' : ''}--d:${tAt(a)};--len:${tAt(b) - tAt(a)}">${crest(c, 26)}${n ? `<span>${n} <small>${s}</small></span>` : ''}</div>`));
+items.push(`<div class="band sel" style="left:${x(2026.6)}px;width:${x(2030.55) - x(2026.6)}px;top:190px;--d:${tAt(2026.6)};--len:${tAt(2030.55) - tAt(2026.6)}">${crest('BRA', 18)}<span>Seleção <small>2026 a 2030</small></span></div>`);
+
+// Moments lane: [year, kind, icon, count]
+const MK = [
+  [2026.9, 't', 'ph-trophy', 1], [2027.9, 't', 'ph-trophy', 2], [2027.92, 'i', 'ph-star', 0], [2028.8, 't', 'ph-trophy', 1], [2029.9, "t", "ph-trophy", 1],
+  [2029.96, "m", "ph-t-shirt", 0], [2030.2, "t", "ph-trophy", 2], [2030.5, "q", "ph-door-open", 0], [2031.9, 't', 'ph-trophy', 2], [2031.96, 'm', 'ph-medal', 0], [2032.8, 't', 'ph-trophy', 1],
+  [2033.25, "t", "ph-trophy", 1], [2033.6, "m", "ph-medal", 0], [2033.93, 'm', 'ph-flag-banner', 0], [2034.3, "m", "ph-users-four", 0], [2035.3, "t", "ph-trophy", 1], [2036.93, 'q', 'ph-trend-down', 0], [2037.9, 'q', 'ph-trend-down', 0],
+  [2039.93, 't', 'ph-trophy', 1], [2039.95, 'i', 'ph-star', 0], [2040.6, 'x', 'ph-timer', 0], [2041.13, 'q', 'ph-signature', 0], [2041.2, 'm', 'ph-handshake', 0],
+  [2042.9, 't', 'ph-trophy', 2], [2044.9, 't', 'ph-trophy', 3], [2045.9, 'm', 'ph-flag-banner', 0],
+];
+const rowEnd = [-99, -99, -99];
+MK.forEach(([y, k, ic, n]) => {
+  const px = x(y);
+  const row = rowEnd.findIndex((e) => px - e >= 34);
+  rowEnd[row] = px;
+  items.push(`<div class="mk ${k} ${y === 2039.93 ? 'on' : ''}" style="left:${px}px;top:${30 + row * 33}px;--d:${tAt(y)}"><i class="ph-fill ${ic}"></i>${n > 1 ? `<b>${n}</b>` : ''}</div>`);
+});
+
+// Years axis
+for (let y = 2026; y <= 2045; y++) items.push(`<span class="yr ${y % 5 === 0 ? 'big' : ''}" style="left:${x(y + 0.5)}px">${y}</span>`);
+items.push('<div class="head" id="head" data-y="2026"></div>');
+document.getElementById('items').innerHTML = items.join('');
+
+// Idol lines: your standing with each club over time, drawn as the playhead passes.
+const IDOL = {
+  FLA: { c: '#C8102E', pts: [[2026, 30], [2026.9, 50], [2027.9, 84], [2029.9, 92], [2031.9, 98], [2033.9, 100], [2041.2, 100], [2045.9, 100]] },
+  INT: { c: '#7A0A0F', pts: [[2034, 12], [2036.9, 40], [2037.9, 52], [2039.9, 94], [2040.6, 86], [2045.9, 84]] },
+};
+const ys = (v) => 330 - v * 0.9;
+const svg = document.getElementById('spark');
+svg.innerHTML = `<line x1="${X0}" x2="1240" y1="${ys(80)}" y2="${ys(80)}" stroke="#C4B796" stroke-dasharray="4 5"/><text x="${X0 - 6}" y="${ys(80) + 4}" text-anchor="end" font-size="10" font-weight="800" fill="#5C584B">80</text>` +
+  Object.values(IDOL).map(({ c, pts }) => `<polyline class="idl" fill="none" stroke="${c}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="${pts.map(([y, v]) => `${x(y)},${ys(v)}`).join(' ')}"/>`).join('');
+const head = document.getElementById('head');
+const clipLines = [...svg.querySelectorAll('.idl')];
+Moment.tick((t) => {
+  const p = Moment.span(t, T0, LEN);
+  const yNow = 2026 + p * 20;
+  head.style.left = x(yNow) + 'px';
+  head.dataset.y = Math.min(2045, Math.floor(yNow));
+  head.style.opacity = p >= 1 ? 0 : 1;
+  clipLines.forEach((l) => l.style.clipPath = `inset(0 ${1248 - x(yNow)}px 0 0)`);
+});
+Moment.run(4600);
+</script>
+</body>
+</html>

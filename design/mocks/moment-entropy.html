@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Entropia</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="moments.css">
+<script src="mock.js"></script>
+<script src="moments.js"></script>
+<style>
+/* Eight career events, each with the state that causes it, how likely it gets, and what it changes.
+   Each card loops its own small animation, so the sheet can sit open in the gallery. */
+body { --end: 1600; }
+.stage { background: var(--paper) url('../tokens/paper.jpg') center / cover; }
+.hd { position: absolute; left: 24px; right: 24px; top: 18px; display: flex; align-items: flex-end; gap: 20px; }
+.hd h1 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: 1; letter-spacing: -.02em; }
+.hd p { font-size: 12.5px; line-height: 1.45; color: var(--ink-2); max-width: 640px; padding-bottom: 2px; }
+.leg { margin-left: auto; display: flex; gap: 14px; font-size: 11.5px; color: var(--mute); padding-bottom: 3px; }
+.leg span { display: flex; align-items: center; gap: 6px; }
+.leg i { width: 10px; height: 10px; border-radius: 3px; }
+
+.sheet { position: absolute; left: 24px; right: 24px; top: 76px; bottom: 20px; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; gap: 14px; }
+.ec { position: relative; display: flex; flex-direction: column; padding: 12px 14px 12px; background: var(--card); border-radius: 10px; box-shadow: var(--sh-sticker); animation: cardin 460ms var(--e-out) calc(var(--d) * 1ms) both; overflow: hidden; }
+@keyframes cardin { from { opacity: 0; transform: translateY(14px); } }
+.ec .no { position: absolute; right: 12px; top: 10px; font-stretch: var(--semi); font-weight: 900; font-size: 11px; color: var(--line-2); }
+.step { display: grid; grid-template-columns: 54px 1fr; gap: 8px; align-items: start; }
+.step > em { font-style: normal; font-stretch: var(--semi); font-weight: 900; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); padding-top: 3px; }
+.step b { display: block; font-weight: 800; font-size: 13px; line-height: 1.2; }
+.step small { display: block; font-size: 11px; color: var(--mute); line-height: 1.35; margin-top: 2px; }
+.ev { margin: 8px -14px; padding: 8px 14px; background: var(--paper); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.ev b { font-stretch: var(--semi); font-weight: 900; font-size: 15px; }
+.viz { position: relative; height: 66px; margin: 8px 0 2px; border-radius: 8px; background: var(--paper-2); overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
+.odds { display: block; font-size: 11px; color: var(--mute); margin-top: 6px; }
+.odds b { font-stretch: var(--semi); font-weight: 900; font-size: 12px; color: var(--ink); }
+.fx { margin-top: auto; padding-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+.fx span { height: 21px; padding: 0 7px; border-radius: 5px; display: inline-flex; align-items: center; gap: 4px; font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; background: var(--paper); color: var(--ink-2); white-space: nowrap; }
+.fx .up { color: var(--green); } .fx .dn { color: var(--red); }
+
+/* 1. Long spell: seasons stack up, the send-off chance climbs */
+.v1 { display: flex; align-items: flex-end; gap: 4px; padding: 8px 10px; }
+.v1 i { flex: 1; height: calc(var(--h) * 1%); border-radius: 3px 3px 0 0; background: repeating-linear-gradient(0deg, #C8102E 0 4px, #8E0B20 4px 8px); transform-origin: 50% 100%; animation: grow1 4000ms var(--e-out) infinite; animation-delay: calc(var(--i) * 120ms); }
+@keyframes grow1 { 0% { transform: scaleY(0); } 30%, 95% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1); opacity: 0; } }
+
+/* 2. Losing run: results flip red, the clock reaches 0h47 */
+.v2 { display: flex; align-items: center; gap: 5px; padding: 0 10px; }
+.v2 .d { width: 18px; height: 22px; border-radius: 4px; display: grid; place-items: center; font-stretch: var(--semi); font-weight: 900; font-size: 10px; color: #fff; background: var(--red); animation: flip2 4000ms var(--e-out) infinite; animation-delay: calc(var(--i) * 140ms); }
+.v2 .d.e { background: #6B7A70; }
+@keyframes flip2 { 0% { transform: rotateX(90deg); } 10%, 95% { transform: none; opacity: 1; } 100% { opacity: 0; } }
+.v2 .clk { margin-left: auto; width: 46px; height: 46px; border-radius: 50%; background: #0D1F15; position: relative; box-shadow: 0 0 0 2px #2A4434; }
+.v2 .clk i { position: absolute; left: 50%; top: 50%; width: 2px; margin-left: -1px; border-radius: 1px; background: #F2EAD9; transform-origin: 50% 0; }
+.v2 .clk .h { height: 13px; transform: rotate(180deg); }
+.v2 .clk .m { height: 18px; background: var(--red); animation: hand 4000ms var(--e-in-out) infinite; }
+@keyframes hand { 0% { transform: rotate(60deg); } 55%, 100% { transform: rotate(462deg); } }
+
+/* 3. Drought: years roll and the counter breaks */
+.v3 { display: grid; place-items: center start; padding-left: 16px; background: #1C0507; }
+.v3 .roll { height: 40px; overflow: hidden; font-stretch: var(--wide); font-weight: 900; font-size: 34px; line-height: 40px; color: #FBF7EC; }
+.v3 .roll div { animation: roll3 4000ms var(--e-in-out) infinite; }
+@keyframes roll3 { 0% { transform: translateY(0); } 50%, 100% { transform: translateY(-200px); } }
+.v3 .stampc { position: absolute; right: 8px; top: 6px; padding: 4px 8px; background: var(--yellow); color: var(--on-yellow); font-stretch: var(--semi); font-weight: 900; font-size: 11px; transform: rotate(8deg); animation: stamp3 4000ms var(--e-slap) infinite; }
+@keyframes stamp3 { 0%, 52% { opacity: 0; transform: scale(2) rotate(-10deg); } 60%, 100% { opacity: 1; transform: rotate(8deg); } }
+
+/* 4. Derby streak: wins slap in, the idol meter jumps */
+.v4 { display: flex; align-items: center; gap: 6px; padding: 0 10px; }
+.v4 .w { width: 26px; height: 32px; border-radius: 5px; background: #fff; display: grid; place-items: center; box-shadow: 0 0 0 1px rgba(20,35,26,.12); animation: slap4 4000ms var(--e-slap) infinite; animation-delay: calc(var(--i) * 160ms); }
+.v4 .w img { width: 18px; }
+@keyframes slap4 { 0% { opacity: 0; transform: scale(1.6); } 8%, 95% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+.v4 .mtr { margin-left: auto; width: 74px; }
+.v4 .mtr .meter { height: 10px; }
+.v4 .mtr .meter i { animation: jump4 4000ms var(--e-slap) infinite; }
+.v4 .mtr small { display: block; text-align: right; font-stretch: var(--semi); font-weight: 900; font-size: 13px; margin-top: 3px; }
+@keyframes jump4 { 0%, 35% { width: 62%; } 45%, 100% { width: 80%; background: var(--green); } }
+
+/* 5. Crisis at a club where you're idol: crisis climbs, the phone rings */
+.v5 { display: flex; align-items: center; gap: 12px; padding: 0 12px; }
+.v5 .bars { flex: 1; }
+.v5 .bars .meter { height: 9px; margin-top: 5px; }
+.v5 .bars .meter i { animation: crisis 4000ms var(--e-out) infinite; }
+@keyframes crisis { 0% { width: 20%; } 45%, 100% { width: 88%; } }
+.v5 .ph { width: 30px; height: 46px; border-radius: 7px; background: #14231A; display: grid; place-items: center; color: var(--yellow); font-size: 15px; animation: ring 4000ms linear infinite; }
+@keyframes ring { 0%, 45% { transform: none; } 48% { transform: rotate(-12deg); } 51% { transform: rotate(12deg); } 54% { transform: rotate(-10deg); } 57% { transform: rotate(10deg); } 60%, 100% { transform: none; } }
+
+/* 6. Short spell: a note fades in, the tribute is struck out */
+.v6 { display: flex; align-items: center; gap: 12px; padding: 0 12px; }
+.v6 .note-s { width: 70px; height: 46px; background: #FFFEFA; box-shadow: 0 4px 8px -4px rgba(20,35,26,.4); transform: rotate(-3deg); padding: 7px 8px; animation: fade6 4000ms var(--e-in-out) infinite; }
+.v6 .note-s i { display: block; height: 3px; margin-bottom: 5px; border-radius: 2px; background: #C4B796; }
+@keyframes fade6 { 0% { opacity: 0; } 25%, 95% { opacity: 1; } 100% { opacity: 0; } }
+.v6 .nope { position: relative; font-size: 12px; font-weight: 700; color: var(--mute); }
+.v6 .nope::after { content: ''; position: absolute; left: -2px; right: -2px; top: 50%; height: 2px; background: var(--red); transform-origin: 0 50%; animation: strike 4000ms var(--e-out) infinite; }
+@keyframes strike { 0%, 30% { transform: scaleX(0); } 42%, 100% { transform: scaleX(1); } }
+
+/* 7. Academy kid becomes the best: the sticker turns foil */
+.v7 { display: flex; align-items: center; gap: 10px; padding: 0 12px; perspective: 400px; }
+.v7 .ps { width: 40px; --h: 34px; --fs: 16px; --hoop: 3px; padding: 3px 3px 0; }
+.v7 .ps .nm { font-size: 8px; padding: 2px 0 3px; }
+.v7 .ps.y .art { --c: #0B7A3B; }
+.v7 .arr { flex: 1; height: 2px; background: repeating-linear-gradient(90deg, var(--line-2) 0 5px, transparent 5px 9px); }
+.v7 .ps.f { animation: foil7 4000ms var(--e-in-out) infinite; }
+@keyframes foil7 { 0%, 25% { transform: rotateY(0); background: #fff; box-shadow: 0 0 0 1px rgba(20,35,26,.1); } 35% { transform: rotateY(90deg); } 36%, 100% { transform: rotateY(0); background: var(--foil); box-shadow: 0 0 0 2px var(--yellow); } }
+
+/* 8. Coming back as visitor: the stand rises or boos, by how you left */
+.v8 { display: grid; grid-template-columns: 1fr 1fr; }
+.v8 > div { position: relative; overflow: hidden; }
+.v8 > div + div { border-left: 1px solid var(--line); }
+.v8 canvas { position: absolute; left: 0; top: 0; width: 100%; height: 48px; }
+.v8 small { position: absolute; left: 6px; bottom: 3px; font-stretch: var(--semi); font-weight: 900; font-size: 10px; }
+</style>
+</head>
+<body style="--top:transparent">
+<div class="app">
+  <div class="mbar"><span class="lights"><i></i><i></i><i></i></span></div>
+  <main><div class="stage">
+    <div class="hd">
+      <h1>Todo drama tem causa</h1>
+      <p>Cada momento da carreira nasce de um estado do jogo, tem uma chance por rodada, um tempo de espera e um efeito no clube, na torcida ou em você.</p>
+      <div class="leg"><span><i style="background:var(--green)"></i>sobe</span><span><i style="background:var(--red)"></i>desce</span></div>
+    </div>
+    <div class="sheet">
+
+      <article class="ec" style="--d:0"><span class="no">01</span>
+        <div class="step"><em>Causa</em><div><b>Muito tempo no clube, ganhando</b><small>5+ temporadas, 4+ títulos, ídolo acima de 80</small></div></div>
+        <div class="viz v1" id="v1"></div>
+        <div class="ev step"><em>Evento</em><b>Despedida grande</b></div>
+        <div class="odds">Chance quando você sai: <b>de 5% a 92%</b></div>
+        <div class="fx"><span class="up">+ mosaico</span><span class="up">+ corredor</span><span class="up">+ homenagem na volta</span><span>tela: despedida</span></div>
+      </article>
+
+      <article class="ec" style="--d:80"><span class="no">02</span>
+        <div class="step"><em>Causa</em><div><b>Sequência sem vencer</b><small>7+ jogos, diretoria abaixo de 20, um clássico perdido</small></div></div>
+        <div class="viz v2"><span class="d" style="--i:0">D</span><span class="d e" style="--i:1">E</span><span class="d" style="--i:2">D</span><span class="d" style="--i:3">D</span><span class="d e" style="--i:4">E</span><span class="d" style="--i:5">D</span><span class="d" style="--i:6">D</span><div class="clk"><i class="h"></i><i class="m"></i></div></div>
+        <div class="ev step"><em>Evento</em><b>Demissão de madrugada</b></div>
+        <div class="odds">Por rodada: <b>0,4%</b> a <b>38%</b> · espera <b>2 jogos</b> depois do ultimato</div>
+        <div class="fx"><span class="dn">− ídolo 8</span><span class="dn">rival comemora</span><span>jornal da manhã</span><span>tela: 0h47</span></div>
+      </article>
+
+      <article class="ec" style="--d:160"><span class="no">03</span>
+        <div class="step"><em>Causa</em><div><b>Título depois de fila longa</b><small>clube sem o título há 10+ anos, você há 3+ temporadas</small></div></div>
+        <div class="viz v3"><div class="roll"><div>1979<br>1995<br>2005<br>2020<br>2036<br>2039</div></div><span class="stampc">FINALMENTE</span></div>
+        <div class="ev step"><em>Evento</em><b>Festa longa</b></div>
+        <div class="odds">Duração cresce com a fila: <b>2 s</b> no 1º ano, <b>10 s</b> com 60 anos</div>
+        <div class="fx"><span class="up">+30 ídolo</span><span class="up">+ veteranos na tela</span><span class="up">+ homenagens</span></div>
+      </article>
+
+      <article class="ec" style="--d:240"><span class="no">04</span>
+        <div class="step"><em>Causa</em><div><b>Clássicos em sequência</b><small>5 vitórias seguidas contra o mesmo rival</small></div></div>
+        <div class="viz v4" id="v4"></div>
+        <div class="ev step"><em>Evento</em><b>Salto no ídolo</b></div>
+        <div class="odds">Sempre que a sequência fecha · espera <b>1 temporada</b></div>
+        <div class="fx"><span class="up">+9 ídolo</span><span class="dn">rival vaia</span><span class="dn">rival não te contrata</span></div>
+      </article>
+
+      <article class="ec" style="--d:320"><span class="no">05</span>
+        <div class="step"><em>Causa</em><div><b>Ex-clube em crise, você ídolo</b><small>zona de rebaixamento ou 3 técnicos no ano; ídolo 80+</small></div></div>
+        <div class="viz v5"><div class="bars"><span class="lbl">Crise</span><div class="meter low"><i></i></div></div><div class="ph"><i class="ph-fill ph-handshake"></i></div></div>
+        <div class="ev step"><em>Evento</em><b>Pedido de volta</b></div>
+        <div class="odds">Por mês: <b>até 45%</b> · só se você estiver livre ou mal no clube atual</div>
+        <div class="fx"><span class="up">+ campanha no jornal</span><span>proposta por escrito</span><span>tela: volta</span></div>
+      </article>
+
+      <article class="ec" style="--d:400"><span class="no">06</span>
+        <div class="step"><em>Causa</em><div><b>Passagem curta e sem título</b><small>menos de 1 temporada, você pede para sair</small></div></div>
+        <div class="viz v6"><div class="note-s"><i></i><i style="width:80%"></i><i style="width:60%"></i></div><span class="nope">despedida</span><span class="nope">homenagem</span></div>
+        <div class="ev step"><em>Evento</em><b>Saída discreta</b></div>
+        <div class="odds">Sempre que você pede demissão nessas condições</div>
+        <div class="fx"><span>nota curta</span><span>pé de página do jornal</span><span class="dn">sem ídolo</span></div>
+      </article>
+
+      <article class="ec" style="--d:480"><span class="no">07</span>
+        <div class="step"><em>Causa</em><div><b>Garoto da base vira craque</b><small>você subiu, ele foi titular com você, ganhou prêmio</small></div></div>
+        <div class="viz v7"><div class="ps y"><div class="art"><b>K</b></div><div class="nm">base</div></div><span class="arr"></span><div class="ps hoops"><div class="art"><b>K</b></div><div class="nm">titular</div></div><span class="arr"></span><div class="ps hoops f"><div class="art"><b>K</b></div><div class="nm">melhor</div></div></div>
+        <div class="ev step"><em>Evento</em><b>Prêmio do seu jogador</b></div>
+        <div class="odds">Um por dia, nunca empilhado: <b>campeão</b>, depois <b>liga</b>, depois <b>mundo</b></div>
+        <div class="fx"><span class="up">+4 ídolo</span><span class="up">fica mais 1 ano</span><span>tela: prêmio</span></div>
+      </article>
+
+      <article class="ec" style="--d:560"><span class="no">08</span>
+        <div class="step"><em>Causa</em><div><b>Você volta como visitante</b><small>primeira vez no estádio de um ex-clube</small></div></div>
+        <div class="viz v8"><div><canvas id="c8a"></canvas><small style="color:var(--green)">saiu ídolo: aplauso</small></div><div><canvas id="c8b"></canvas><small style="color:var(--red)">saiu brigado: vaia</small></div></div>
+        <div class="ev step"><em>Evento</em><b>Homenagem ou vaia</b></div>
+        <div class="odds">Depende de <b>como você saiu</b> e do ídolo naquele clube</div>
+        <div class="fx"><span class="up">+ placa</span><span class="up">+ minuto de aplausos</span><span class="dn">ou: moral −3 no jogo</span></div>
+      </article>
+    </div>
+  </div></main>
+</div>
+<script>
+fill();
+document.getElementById('v1').innerHTML = [22, 34, 46, 58, 66, 78, 88, 96].map((h, i) => `<i style="--h:${h};--i:${i}"></i>`).join('');
+document.getElementById('v4').innerHTML = Array.from({ length: 5 }, (_, i) => `<span class="w" style="--i:${i}">${crest('FLU', 18)}</span>`).join('') + '<div class="mtr"><div class="meter"><i style="width:62%"></i></div><small>62 → 80</small></div>';
+// Card 8: the same stand, standing to applaud (club colours) or slumped and booing (grey).
+const loop = (t, len) => ((t % len) + len) % len;
+Moment.crowd(document.getElementById('c8a'), { colors: ['#C8102E', '#141010', '#F2EAD9'], gap: 6, rise: 4, stand: (t, x) => Math.max(0, Math.min(1, (Moment.span(loop(t, 4000), 300, 900) * 1.4 - Math.abs(x - 0.5)) * 4)) });
+Moment.crowd(document.getElementById('c8b'), { colors: ['#6B6B60', '#8A8A7A', '#4A4A42'], gap: 6, rise: 2, stand: (t, x) => (Math.sin(loop(t, 4000) / 90 + x * 30) > 0.6 ? 0.6 : 0) });
+Moment.run(1600, true);
+</script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Aposentadoria</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="moments.css">
+<script src="mock.js"></script>
+<script src="moments.js"></script>
+<style>
+/* The career replayed as the album: the cover opens, every club's pages flip past, then the last spread fills up
+   with the numbers, the tributes, the farewell match and the last sticker. */
+body { --end: 12400; }
+.stage { background: #2A2219 radial-gradient(90% 80% at 50% 40%, #4A3B2A, #241C14 75%); }
+.stage::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(92deg, rgba(255,255,255,.018) 0 3px, rgba(0,0,0,.02) 3px 7px); }
+.spread { position: absolute; left: 16px; top: 14px; width: 1248px; height: 690px; perspective: 2600px; }
+.pg { position: absolute; top: 0; width: 624px; height: 690px; overflow: hidden; }
+.pl { left: 0; border-radius: 8px 0 0 8px; background: linear-gradient(270deg, rgba(20,35,26,.12), rgba(20,35,26,0) 34px), var(--card); box-shadow: 0 30px 50px -20px rgba(0,0,0,.7); padding: 24px 30px 20px; display: flex; flex-direction: column; animation: show 400ms var(--e-out) 500ms both; }
+.pr { left: 624px; border-radius: 0 8px 8px 0; background: linear-gradient(90deg, rgba(20,35,26,.12), rgba(20,35,26,0) 34px), var(--card); box-shadow: 0 30px 50px -20px rgba(0,0,0,.7); padding: 24px 28px 20px 36px; display: flex; flex-direction: column; }
+@keyframes show { from { opacity: 0; } }
+.pgno { position: absolute; bottom: 10px; font-stretch: var(--semi); font-weight: 900; font-size: 11px; color: var(--line-2); }
+.pl .pgno { left: 30px; } .pr .pgno { right: 28px; }
+.in { animation: rise 520ms var(--e-out) calc(var(--d) * 1ms) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.sl { animation: slap 460ms var(--e-slap) calc(var(--d) * 1ms) both; }
+@keyframes slap { from { opacity: 0; transform: scale(1.45) rotate(-7deg); } 60% { opacity: 1; } }
+
+/* ---------- Leaves: the cover and one page per club ---------- */
+.leaf { position: absolute; left: 624px; top: 0; width: 624px; height: 690px; transform-origin: 0 50%; transform-style: preserve-3d; z-index: var(--z0); animation: turn 760ms var(--e-in-out) calc(var(--d) * 1ms) both; }
+@keyframes turn { 0% { transform: rotateY(0); z-index: var(--z0); } 49% { z-index: var(--z0); } 50% { z-index: var(--z1); } 100% { transform: rotateY(-180deg); z-index: var(--z1); } }
+@keyframes gone { to { opacity: 0; visibility: hidden; } }
+.leaf > div { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; animation: gone 420ms var(--e-out) 4300ms both; }
+.leaf .f { border-radius: 0 8px 8px 0; background: linear-gradient(90deg, rgba(20,35,26,.14), rgba(20,35,26,0) 40px), var(--card); }
+.leaf .b { border-radius: 8px 0 0 8px; transform: rotateY(180deg); background: linear-gradient(270deg, rgba(20,35,26,.14), rgba(20,35,26,0) 40px), var(--card); }
+.leaf .f::after, .leaf .b::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.18), rgba(0,0,0,0) 30%); opacity: 0; animation: shade 760ms var(--e-in-out) calc(var(--d) * 1ms) both; pointer-events: none; }
+@keyframes shade { 50% { opacity: 1; } }
+
+.cover .f { background: #0B7A3B; display: flex; flex-direction: column; justify-content: center; padding: 0 70px; box-shadow: inset 10px 0 0 #075A2B, inset 0 0 0 1px rgba(0,0,0,.3); }
+.cover .f::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 40px, rgba(255,255,255,0) 40px 80px); }
+.cover .wm { position: relative; font-size: 74px; }
+.cover .wm .b { color: #fff; }
+.cover .nm { position: relative; margin-top: 46px; color: #fff; font-stretch: var(--wide); font-weight: 900; font-size: 30px; line-height: 1; letter-spacing: -.01em; }
+.cover .nm small { display: block; font-stretch: var(--semi); font-size: 15px; letter-spacing: .14em; color: var(--yellow); margin-top: 8px; }
+.cover .stk-e { position: absolute; right: 60px; bottom: 60px; width: 120px; transform: rotate(6deg); }
+.cover .b { background: #E9DFC9; }
+
+.era { height: 100%; padding: 40px 46px; display: flex; flex-direction: column; }
+.era .crest { margin-bottom: 18px; }
+.era h3 { font-stretch: var(--wide); font-weight: 900; font-size: 46px; line-height: .95; letter-spacing: -.02em; }
+.era .yrs { font-stretch: var(--semi); font-weight: 900; font-size: 20px; margin-top: 6px; color: var(--mute); }
+.era .grid { margin-top: auto; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.era .grid i { display: block; height: 62px; border-radius: 6px; background: var(--c); box-shadow: 0 0 0 3px #fff, 0 4px 8px -4px rgba(20,35,26,.5); }
+.era .grid i:nth-child(5n) { background: var(--foil); box-shadow: 0 0 0 3px var(--yellow); }
+.era p { font-size: 15px; line-height: 1.45; color: var(--ink-2); margin-top: 14px; max-width: 420px; }
+.backside { padding: 40px 46px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; align-content: start; }
+.backside { gap: 18px 14px; padding-top: 50px; }
+.mini { background: #fff; border-radius: 7px; padding: 4px 4px 0; text-align: center; box-shadow: 0 0 0 1px rgba(20,35,26,.08), 0 6px 10px -6px rgba(20,35,26,.5); }
+.mini b { display: grid; place-items: center; height: 104px; border-radius: 4px; background: var(--c); color: #fff; font-stretch: var(--wide); font-weight: 900; font-size: 40px; }
+.mini.hoops b { background: repeating-linear-gradient(0deg, var(--c) 0 9px, #8E0B20 9px 18px); }
+.mini.shiny { background: var(--foil); box-shadow: 0 0 0 2.5px var(--yellow); }
+.mini span { display: block; font-stretch: var(--semi); font-weight: 800; font-size: 11px; padding: 5px 0 6px; color: #14231A; }
+
+/* ---------- Final spread: left page ---------- */
+.kick { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--mute); }
+.kick i { color: #C8102E; font-size: 15px; }
+.pl h1 { font-stretch: var(--wide); font-weight: 900; font-size: 48px; line-height: .95; letter-spacing: -.03em; margin-top: 8px; }
+.pl .sub { font-size: 13.5px; line-height: 1.45; color: var(--ink-2); margin-top: 8px; }
+.clubs { margin-top: 16px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.clubs .ps { --h: 90px; --fs: 0px; padding-bottom: 0; }
+.clubs .ps .art { display: grid; place-items: center; }
+.clubs .ps .art .crest { position: static; }
+.clubs .ps .nm { font-size: 11px; }
+.clubs .ps .cl { font-size: 10px; }
+.clubs .ps .star { position: absolute; right: -7px; top: -7px; width: 24px; height: 24px; border-radius: 50%; background: var(--yellow); color: var(--on-yellow); display: grid; place-items: center; font-size: 12px; box-shadow: 0 2px 0 var(--yellow-d); z-index: 3; }
+.nums { margin-top: 14px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.nums .nst { padding: 11px 12px 10px; }
+.nums .nst b { font-size: 32px; }
+.nums .nst span { font-size: 11px; }
+.tits { margin-top: 12px; font-size: 12px; line-height: 1.55; color: var(--ink-2); }
+.tits b { color: var(--ink); white-space: nowrap; }
+.strip { position: relative; margin-top: 16px; height: 100px; }
+.strip .lbl { display: block; font-size: 10px; }
+.strip .bd { position: absolute; top: 46px; height: 22px; border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+.strip .bd.hoops { background: repeating-linear-gradient(0deg, #C8102E 0 4px, #8E0B20 4px 8px); }
+.strip .bd.sel { top: 72px; height: 10px; background: #FFCC00; }
+.strip .tk { position: absolute; top: 26px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--yellow); box-shadow: 0 0 0 1.5px var(--ink); }
+.strip .tk.x { background: var(--red); }
+.strip .tk.i { background: var(--foil); box-shadow: 0 0 0 1.5px var(--yellow-d); }
+.strip .yr { position: absolute; top: 86px; font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; color: var(--mute); transform: translateX(-50%); }
+.pl .cause { margin-top: auto; padding-top: 10px; border-top: 2px dotted var(--line-2); }
+
+/* ---------- Final spread: right page ---------- */
+.sec { display: flex; align-items: baseline; gap: 10px; }
+.sec h3 { font-stretch: var(--wide); font-weight: 900; font-size: 18px; }
+.sec span { font-size: 12px; color: var(--mute); }
+.tribs { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tr { position: relative; display: grid; grid-template-columns: 30px 1fr; gap: 10px; padding: 10px 12px; border-radius: 10px; background: #FBF7EC; box-shadow: 0 0 0 1px rgba(20,35,26,.08), 0 8px 14px -10px rgba(20,35,26,.5); font-size: 11.5px; line-height: 1.38; color: var(--ink-2); animation: tribin 560ms var(--e-slap) calc(var(--d) * 1ms) both; }
+.tr:nth-child(1) { transform: rotate(-1deg); } .tr:nth-child(4) { transform: rotate(.8deg); }
+.tr b { display: block; color: var(--ink); font-weight: 800; font-size: 12.5px; margin-bottom: 2px; }
+@keyframes tribin { from { opacity: 0; transform: translateY(-30px) rotate(-6deg) scale(1.08); } 60% { opacity: 1; } }
+
+.match { margin-top: 14px; border-radius: 10px; overflow: hidden; box-shadow: var(--sh-sticker); animation: rise 520ms var(--e-out) 7700ms both; }
+.match .sc { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; padding: 10px 14px; background: #141010; color: #FBF7EC; }
+.match .sc .t { font-stretch: var(--semi); font-weight: 900; font-size: 14px; line-height: 1.1; }
+.match .sc .t small { display: block; font-stretch: 100%; font-weight: 600; font-size: 10.5px; color: #BDB6A3; }
+.match .sc .t.r { text-align: right; }
+.match .sc .s { font-stretch: var(--wide); font-weight: 900; font-size: 32px; }
+.match .sc .s em { font-style: normal; font-size: 16px; color: var(--yellow); margin: 0 6px; vertical-align: 4px; }
+.match .xi { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; padding: 10px 12px 8px; background: var(--card); }
+.match .xi .ps { --h: 34px; --fs: 15px; --hoop: 3px; padding: 3px 3px 0; border-radius: 6px; }
+.match .xi .ps .nm { font-size: 8.5px; font-stretch: 80%; padding: 3px 0; }
+.match .note-l { padding: 0 12px 10px; background: var(--card); font-size: 11.5px; color: var(--ink-2); }
+.match .note-l b { color: var(--ink); }
+
+.last { margin-top: auto; display: grid; grid-template-columns: 1fr 150px; gap: 16px; align-items: end; }
+.last .txt { padding-bottom: 6px; }
+.mos { margin-bottom: 14px; }
+.mos canvas { display: block; width: 100%; height: 92px; border-radius: 6px; background: #1A0B0C; }
+.mos span { display: block; font-size: 11px; color: var(--mute); margin-top: 5px; font-weight: 600; }
+.last .txt b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 20px; line-height: 1.05; }
+.last .txt p { font-size: 12px; line-height: 1.45; color: var(--mute); margin-top: 6px; }
+.last .slot { position: relative; height: 196px; }
+.last .final { position: absolute; inset: -6px -4px; --h: 140px; --fs: 70px; --hoop: 10px; --sheen-at: 10900; animation: final 820ms var(--e-slap) 10200ms both; z-index: 5; }
+.last .final .nm { font-size: 14px; padding-top: 7px; }
+.last .final .cl { font-size: 11px; padding-bottom: 8px; }
+@keyframes final { 0% { opacity: 0; transform: translate(-420px, -360px) rotate(-24deg) scale(2.4); } 55% { opacity: 1; } 80% { transform: rotate(3deg) scale(.98); } 100% { transform: rotate(-4deg); } }
+.thud { position: absolute; inset: 0; z-index: 4; border-radius: 12px; border: 3px solid var(--yellow-d); opacity: 0; animation: thud 640ms var(--e-out) 10750ms both; }
+@keyframes thud { from { opacity: 1; transform: scale(.92); } to { opacity: 0; transform: scale(1.22); } }
+canvas.conf { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none; }
+.acts { bottom: 18px; }
+.acts .replay { color: rgba(251,247,236,.8); }
+.acts .skip { color: #E9DFC9; background: rgba(0,0,0,.25); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.25); }
+.acts .btn:not(.go) { background: #FFFDF7; }
+.caption { position: absolute; left: 22px; bottom: 26px; font-size: 12px; font-weight: 600; color: rgba(251,247,236,.72); display: flex; align-items: center; gap: 8px; animation: show 400ms var(--e-out) 600ms both; }
+.caption b { color: #FBF7EC; }
+</style>
+</head>
+<body style="--top:#2A2219">
+<div class="app">
+  <div class="mbar"><span class="lights"><i></i><i></i><i></i></span></div>
+  <main><div class="stage">
+    <div class="spread" id="spread">
+      <section class="pg pl">
+        <div class="kick in" style="--d:4500"><i class="ph-fill ph-flag-banner"></i>Sáb, 16 dez 2045 · Maracanã · seu último jogo</div>
+        <h1 class="in" style="--d:4600">Lucas Araujo</h1>
+        <p class="sub in" style="--d:4750">Técnico de 2026 a 2045. Vinte temporadas, três clubes e a Seleção. Este é o álbum inteiro.</p>
+        <div class="clubs" id="clubs"></div>
+        <div class="nums">
+          <div class="nst sl" style="--d:5800"><b id="nj">0</b><span>jogos</span></div>
+          <div class="nst foil sl" style="--d:5950"><b id="nt">0</b><span>títulos</span></div>
+          <div class="nst foil sl" style="--d:6100"><b>2</b><span>clubes onde você é ídolo</span></div>
+          <div class="nst sl" style="--d:6250"><b>60</b><span>anos de fila quebrados no Inter</span></div>
+          <div class="nst sl" style="--d:6400"><b>0h47</b><span>a nota da demissão, 2040</span></div>
+          <div class="nst sl" style="--d:6550"><b>1</b><span>melhor do mundo revelado</span></div>
+        </div>
+        <p class="tits in" style="--d:6700"><b>5 Brasileirões</b> · <b>3 Libertadores</b> · <b>3 Copas do Brasil</b> · <b>5 Cariocas</b> · <b>1 Supercopa</b> · <b>1 Gaúcho</b></p>
+        <div class="strip in" style="--d:6850" id="strip"><span class="lbl">Trajetória</span></div>
+        <div class="cause in" style="--d:6900"><b>Por quê</b><span>Você escolheu parar. Vinte temporadas e ídolo de dois clubes: a despedida mais longa do jogo, com todos os ex-clubes.</span></div>
+        <span class="pgno">fim · 1</span>
+      </section>
+      <section class="pg pr">
+        <div class="sec in" style="--d:4700"><h3>Homenagens</h3><span>de todos os clubes por onde você passou</span></div>
+        <div class="tribs">
+          <div class="tr" style="--d:5000"><img class="crest" src="../../assets/crests/614.png" width="28" height="28" style="--cut:1px" alt=""><div><b>Flamengo</b>Mosaico na Norte e na Sul, de novo: "Obrigado, Lucas". Camisa com os 860 jogos pelo clube.</div></div>
+          <div class="tr" style="--d:5400"><img class="crest" src="../../assets/crests/6600.png" width="28" height="28" style="--cut:1px" alt=""><div><b>Internacional</b>A faixa de 2039 volta ao Beira-Rio no domingo: "A fila acabou com ele".</div></div>
+          <div class="tr" style="--d:5800"><img class="crest" src="img/crests/benfica.png" width="28" height="28" style="--cut:1px" alt=""><div><b>Benfica</b>Nota curta no site: "Obrigado, mister. Felicidades."</div></div>
+          <div class="tr" style="--d:6200"><img class="crest" src="img/crests/brasil.svg" width="28" height="28" style="--cut:1px" alt=""><div><b>Seleção</b>Vídeo com a campanha de 2026 a 2030 no telão antes do jogo.</div></div>
+        </div>
+        <div class="sec in" style="margin-top:14px;--d:7600"><h3>Jogo de despedida</h3><span>seus jogadores de cada época</span></div>
+        <div class="match">
+          <div class="sc"><div class="t">Amigos do Lucas<small>2026 a 2045</small></div><div class="s"><span id="s1">0</span><em>×</em><span id="s2">0</span></div><div class="t r">Flamengo 2045<small>Gilberto Paixão no banco</small></div></div>
+          <div class="xi" id="xi"></div>
+          <div class="note-l"><b>Arrascaeta, 51 anos</b>, fez o gol de falta. Kauã fez dois. Você entrou aos 89'.</div>
+        </div>
+        <div class="last">
+          <div class="txt"><div class="mos in" style="--d:7000"><canvas id="mos"></canvas><span>Maracanã, 16 dez 2045 · 78.838 lugares, esgotado</span></div><div class="in" style="--d:9800"><b>A última figurinha</b><p>Fecha o álbum. Daqui pra frente, seu nome aparece nos álbuns dos outros técnicos, na página de quem veio antes.</p></div></div>
+          <div class="slot slot-l"><div class="thud"></div><div class="ps hoops shiny final"><div class="art"><span data-crest="FLA" data-size="20"></span><em style="left:auto;right:7px;top:7px;font-size:11px">1.346</em><b>L</b><span class="sheen"></span></div><div class="nm">Lucas Araujo</div><div class="cl">técnico · 2026 a 2045</div></div></div>
+        </div>
+        <span class="pgno">fim · 2</span>
+      </section>
+      <div id="leaves"></div>
+    </div>
+    <div class="caption"><i class="ph-bold ph-book-open-text"></i><span id="cap">Seu álbum</span></div>
+    <canvas class="conf" id="conf"></canvas>
+    <div class="acts">
+      <button class="skip" data-skip>Pular <span class="kbd">Esc</span></button>
+      <div class="cta"><button class="replay" data-replay><i class="ph-bold ph-arrows-clockwise"></i>Ver de novo</button><button class="btn"><i class="ph-bold ph-path"></i>Ver a trajetória</button><button class="btn go">Fechar o álbum<i class="ph-bold ph-arrow-right"></i></button></div>
+    </div>
+  </div></main>
+</div>
+<script>
+fill();
+// The leaves, top to bottom: the cover, then one page per club. Each flips over the spine onto the left page.
+const ERAS = [
+  ['FLA', 'Flamengo', '2026 a 2033', '#C8102E', '11 títulos, 547 jogos. O corredor no Maracanã.'],
+  ['BRA', 'Seleção', '2026 a 2030', '#FFCC00', 'Quatro anos, quartas de final da Copa de 2030.'],
+  ['INT', 'Internacional', '2034 a 2040', '#D00000', 'A fila de 60 anos, e a nota da 0h47.'],
+  ['BEN', 'Benfica', '2040 e 2041', '#E30613', 'Cinco meses. Uma carta curta.'],
+  ['FLA', 'Flamengo, a volta', '2041 a 2045', '#C8102E', '"Volta, Lucas." Mais cinco títulos.'],
+];
+const D = [400, 1350, 2000, 2600, 3150, 3650];
+const n = ERAS.length + 1;
+const grid = (c, k) => Array.from({ length: k }, () => `<i style="--c:${c}"></i>`).join('');
+const NAMES = {
+  FLA: 'Rossi Varela Ortiz Pereira Jorginho Pulgar Paquetá Carrascal Arrascaeta Lino Pedro Plata Evertton Kauã Ryan',
+  BRA: 'Alisson Marquinhos Bruno Casemiro Raphinha Vinícius Rodrygo Endrick Militão Danilo Paquetá Estêvão Gabriel João Kauã',
+  INT: 'Bortolini Moretti Kuhn Silveira Dalmás Tavares Fontoura Brum Vieira Menezes Rocha Lemos Prates Aguiar Becker',
+  BEN: 'Leite Moura Sá Pinto Costa Faria Neves Matos Ramos Duarte Lopes Gomes Reis Dias Valente',
+};
+const back = (c, col) => NAMES[c === 'BEN' ? 'BEN' : c].split(' ').map((n, i) => `<div class="mini ${c === 'FLA' ? 'hoops' : ''} ${i % 6 === 2 ? 'shiny' : ''}" style="--c:${col}"><b>${n[0]}</b><span>${n}</span></div>`).join('');
+const leaf = (i, front, back) => `<div class="leaf ${i === 0 ? 'cover' : ''}" style="--d:${D[i]};--z0:${40 - i};--z1:${50 + i}"><div class="f">${front}</div><div class="b">${back}</div></div>`;
+document.getElementById('leaves').innerHTML = [
+  leaf(0, `<span class="wm"><span class="b">BOLEIRO</span><span class="o">2026</span></span><div class="nm">Lucas Araujo<small>TÉCNICO · 2026 A 2045</small></div>`, ''),
+  ...ERAS.map(([c, nm, y, col, p], i) => leaf(i + 1,
+    `<div class="era">${crest(c, 96)}<h3>${nm}</h3><div class="yrs">${y}</div><p>${p}</p><div class="grid">${grid(col, 12)}</div></div>`,
+    `<div class="backside">${back(c, col)}</div>`)),
+].join('');
+const cap = document.getElementById('cap');
+const CAPS = [[0, 'Seu álbum, <b>2026 a 2045</b>'], ...ERAS.map(([, nm, y], i) => [D[i + 1] + 200, `<b>${nm}</b> · ${y}`]), [4300, 'A última página']];
+Moment.tick((t) => { let c = CAPS[0][1]; for (const [at, s] of CAPS) if (t >= at) c = s; cap.innerHTML = c; });
+
+// Left page: one sticker per club.
+const CLUBS_L = [['FLA', 'Flamengo', '2026–33', '11 títulos', 1, 'hoops'], ['BRA', 'Seleção', '2026–30', 'quartas, Copa 30', 0, ''], ['INT', 'Internacional', '2034–40', '2 títulos', 1, ''], ['BEN', 'Benfica', '2040–41', '5 meses', 0, ''], ['FLA', 'Flamengo', '2041–45', '5 títulos', 1, 'hoops']];
+const BG = { FLA: '#C8102E', BRA: '#FFCC00', INT: '#D00000', BEN: '#E30613' };
+document.getElementById('clubs').innerHTML = CLUBS_L.map(([c, nm, y, s, idol, cls], i) => `<div class="ps ${cls} ${idol ? 'shiny' : ''} sl" style="--c:${BG[c]};--d:${5000 + i * 140}">${idol ? '<span class="star"><i class="ph-fill ph-star"></i></span>' : ''}<div class="art">${crest(c, 44)}</div><div class="nm">${nm}</div><div class="cl">${y} · ${s}</div></div>`).join('');
+// The whole career as one strip: clubs, the Seleção, titles (yellow), idol (foil) and the sacking (red).
+const pct = (y) => ((y - 2026) / 20) * 100;
+const strip = [
+  [2026, 2034, 'hoops', ''], [2034, 2040.6, '', '#D00000'], [2040.7, 2041.15, '', '#E30613'], [2041.2, 2046, 'hoops', ''],
+].map(([a, b, cls, c]) => `<i class="bd ${cls}" style="left:${pct(a)}%;width:calc(${pct(b) - pct(a)}% - 2px);${c ? `background:${c}` : ''}"></i>`);
+strip.push(`<i class="bd sel" style="left:${pct(2026.6)}%;width:${pct(2030.55) - pct(2026.6)}%"></i>`);
+[2026.9, 2027.9, 2028.8, 2029.9, 2030.2, 2031.9, 2032.8, 2033.25, 2035.3, 2039.93, 2042.9, 2044.9].forEach((y) => strip.push(`<i class="tk" style="left:${pct(y)}%"></i>`));
+[[2027.95, 'i'], [2039.98, 'i'], [2040.6, 'x']].forEach(([y, k]) => strip.push(`<i class="tk ${k}" style="left:${pct(y)}%;top:${k === "x" ? 26 : 10}px"></i>`));
+[2026, 2030, 2035, 2040, 2045].forEach((y) => strip.push(`<span class="yr" style="left:${pct(y + 0.5)}%">${y}</span>`));
+document.getElementById('strip').insertAdjacentHTML('beforeend', strip.join(''));
+Moment.count(document.getElementById('nj'), { from: 0, to: 1346, at: 5800, len: 1200 });
+Moment.count(document.getElementById('nt'), { from: 0, to: 18, at: 5950, len: 1100 });
+
+// Farewell match: his players from every era.
+const XI = [['Rossi', 'FLA'], ['Léo Ortiz', 'FLA'], ['Moretti', 'INT'], ['Bortolini', 'INT'], ['Arrascaeta', 'FLA'], ['Rafael Kuhn', 'INT'], ['Samuel Lino', 'FLA'], ['Pedro', 'FLA'], ['Kauã', 'FLA']];
+document.getElementById('xi').innerHTML = XI.map(([nm, c], i) => `<div class="ps ${c === 'FLA' ? 'hoops' : ''} sl" style="--c:${BG[c]};--d:${7900 + i * 90}"><div class="art"><b>${nm[0]}</b></div><div class="nm">${nm}</div></div>`).join('');
+const s1 = document.getElementById('s1'), s2 = document.getElementById('s2');
+const goals = [[8800, 1], [9000, 2], [9150, 1], [9300, 1], [9420, 2], [9520, 2], [9620, 1], [9700, 2], [9780, 1], [9850, 2]];
+Moment.tick((t) => { s1.textContent = goals.filter(([a, s]) => s === 1 && t >= a).length; s2.textContent = goals.filter(([a, s]) => s === 2 && t >= a).length; });
+
+// The last sticker lands: paper in the colours of every club, from both sides of the page.
+const conf = document.getElementById('conf');
+const COLORS = ['#C8102E', '#141010', '#D00000', '#FFFFFF', '#E30613', '#FFCC00', '#0B7A3B', '#FFFFFF'];
+Moment.confetti(conf, { at: 10750, colors: COLORS, count: 130, origin: [0.62, 1.04], spread: 0.45, speed: 1550, seed: 21, life: 5200 });
+Moment.confetti(conf, { at: 10850, colors: COLORS, count: 130, origin: [0.92, 1.04], spread: 0.45, speed: 1500, seed: 22, life: 5200 });
+// The Maracanã says it one more time.
+Moment.mosaic(document.getElementById('mos'), {
+  cell: 4, at: 7100, wave: 1200, flip: 300, back: '#2A1214',
+  draw(g, w, h) {
+    for (let y = 0; y < h; y++) { g.fillStyle = Math.floor(y / 2) % 2 ? '#141010' : '#C8102E'; g.fillRect(0, y, w, 1); }
+    g.fillStyle = '#C8102E'; g.fillRect(4, 2, w - 8, h - 4);
+    g.fillStyle = '#FFFFFF'; g.font = '900 condensed 11px Archivo'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('OBRIGADO,', w / 2, h / 2 - 5);
+    g.fillText('LUCAS', w / 2, h / 2 + 6);
+  },
+});
+Moment.run(12400);
+</script>
+</body>
+</html>
