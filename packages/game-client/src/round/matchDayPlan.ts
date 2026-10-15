@@ -50,6 +50,12 @@ function matchContextOf(state: GameState, fixture: Fixture): MatchContext {
   return { date: fixture.date, pitch: home.pitch };
 }
 
+/** The formation a club's AI coach plays, a continental guest's included. */
+export function aiFormationOf(state: GameState, clubId: string): Formation {
+  const guest = guestClubOf(state, clubId);
+  return formationOf(state, clubId, guest ? guestSquadOf(guest) : playersOf(state, clubId));
+}
+
 function playersOf(state: Pick<GameState, "players">, clubId: string): SimPlayer[] {
   const squad: SimPlayer[] = [];
   for (const id in state.players) {
@@ -87,9 +93,7 @@ export function matchDayPlan(state: GameState, formation?: Formation): MatchDayP
   const competition = state.competitions[fixture.competitionId];
   const label = competition ? fixtureLabel(competition, fixture) : "";
   const { homeId, awayId } = fixture;
-  const opponentId = homeId === clubId ? awayId : homeId;
-  const guest = guestClubOf(state, opponentId);
-  const opponentFormation = formationOf(state, opponentId, guest ? guestSquadOf(guest) : playersOf(state, opponentId));
+  const opponentFormation = aiFormationOf(state, homeId === clubId ? awayId : homeId);
   const squad = squadOf(state, clubId, fixture, playingStrength(state, clubId, context, available));
   return { fixtureId: fixture.id, clubId, homeId, awayId, label, squad, lineup, tactics, opponentFormation };
 }
