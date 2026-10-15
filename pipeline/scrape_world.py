@@ -277,6 +277,7 @@ def scrape_world(
     if club_world_cup:
         scraper.entries(club_world_cup, take_guests=True)
     scraper.national_teams(national_team_lists)
+    db.executemany("INSERT INTO snapshot_failures VALUES (?, ?)", [(snapshot, failure) for failure in scraper.run.failures])
     return scraper.run
 
 

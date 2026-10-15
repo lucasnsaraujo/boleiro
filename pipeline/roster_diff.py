@@ -3,7 +3,8 @@
 Players and clubs keep their ids across snapshots, so the diff is a join on the player id. A club
 missing from the newer snapshot (its page failed, or it left the world) or new in it (promoted, or
 its page failed last time) is listed on its own instead of every one of its players showing up as
-gone or arrived.
+gone or arrived. When the newer scrape lost squad pages, a player missing from it whose club it has may
+have moved to a club whose page failed, so he is listed apart instead of as gone from the world.
 
 Usage: python pipeline/roster_diff.py pipeline/boleiro.db [old snapshot id] [new snapshot id]
        (the two latest full `transfermarkt` snapshots when the ids are left out; partial runs are skipped)
@@ -21,6 +22,7 @@ class Changes:
     moves: list[tuple[str, str, str]]          # player, from club, to club
     arrivals: list[tuple[str, str]]            # player new to the world, club
     departures: list[tuple[str, str]]          # player gone from the world, last club
+    unknown: list[tuple[str, str]]             # player missing from a scrape that lost pages, last club
     missing_clubs: list[str]                   # clubs of the old snapshot the new one doesn't have
     new_clubs: list[str]                       # clubs of the new snapshot the old one didn't have
 
@@ -52,21 +54,25 @@ def roster_changes(db: sqlite3.Connection, old: int, new: int) -> Changes:
         (name, club_name[club]) for player, (name, club) in new_players.items()
         if player not in old_players and club in old_clubs
     ]
-    departures = [
+    gone = [
         (name, club_name[club]) for player, (name, club) in old_players.items()
         if player not in new_players and club in new_clubs
     ]
+    lost_squads = db.execute("SELECT 1 FROM snapshot_failures WHERE snapshot_id = ? AND problem LIKE '%/kader/verein/%'", (new,)).fetchone() is not None
+    departures, unknown = ([], gone) if lost_squads else (gone, [])
     missing = [name for club, name in old_clubs.items() if club not in new_clubs]
     added = [name for club, name in new_clubs.items() if club not in old_clubs]
-    return Changes(moves, arrivals, departures, missing, added)
+    return Changes(moves, arrivals, departures, unknown, missing, added)
 
 
 def markdown(changes: Changes) -> str:
-    lines = [f"{len(changes.moves)} moved, {len(changes.arrivals)} arrived, {len(changes.departures)} left"]
+    lines = [f"{len(changes.moves)} moved, {len(changes.arrivals)} arrived, {len(changes.departures)} left"
+             + (f", {len(changes.unknown)} not found" if changes.unknown else "")]
     sections = (
         ("Moved", [f"- {name}: {old} → {new}" for name, old, new in changes.moves]),
         ("New to the world", [f"- {name} → {club}" for name, club in changes.arrivals]),
         ("Left the world", [f"- {name} left {club}" for name, club in changes.departures]),
+        ("Not found (the new scrape lost pages)", [f"- {name} left {club}, or moved to a club whose page failed" for name, club in changes.unknown]),
         ("Clubs missing from the new snapshot", [f"- {club}" for club in changes.missing_clubs]),
         ("Clubs new in this snapshot", [f"- {club}" for club in changes.new_clubs]),
     )
