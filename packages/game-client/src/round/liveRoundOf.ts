@@ -1,16 +1,23 @@
 import type { Club } from "@boleiro/data/clubs";
+import type { PositionGroup } from "@boleiro/engine/engine/match";
 import type { Tactics } from "@boleiro/engine/sim/coach/tactics";
 import { humanClubIds } from "@boleiro/engine/sim/coach/humanCoaches";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
 import type { Fixture, IsoDate } from "@boleiro/engine/sim/gameState";
+import { onPitchAt } from "@boleiro/engine/sim/live/aiSubstitutions";
+import { incidentHandling, type IncidentHandling } from "@boleiro/engine/sim/live/incidentHandling";
 import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
+import { matchRatings, type PlayerRating } from "@boleiro/engine/sim/live/matchRatings";
 import type { MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
+import { clubMood } from "@boleiro/engine/sim/morale/clubMood";
+import { shootoutKickers } from "@boleiro/engine/sim/settleShootout";
 import { fixtureLabel } from "../format/competitionName.js";
 import { squadOf, type SquadPlayer } from "./matchDayPlan.js";
 
 export type Side = "home" | "away";
 export type RoundClub = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
 
+const ONCE_PLAYED = 0.5;
 // A continental guest whose pack gives no colours shows in plain white and black.
 const GUEST_COLOURS = { primary: "#FFFFFF", secondary: "#000000" };
 export type RoundMatch = { fixtureId: string; competitionId: string; homeId: string; awayId: string; events: MatchEvent[] };
@@ -27,7 +34,16 @@ export type CoachSide = {
   squad: SquadPlayer[];
   tactics: Tactics;
   lastChangeMinute: number;
+  /** Whether the screen asks the coach about his side's red cards and injuries, or something else answers them. */
+  incidentHandling: IncidentHandling;
+  /** Who would kick a shootout now, in order, and whether the squad overruled the coach's order to get it. */
+  shootout: { kickers: string[]; isOverruled: boolean };
 };
+
+/** A player's 0–10 mark, with his position group for the screen to show. */
+export type RatedPlayer = PlayerRating & { group: PositionGroup };
+/** The mark of everyone who took part in the coach's match, as it stands after its last change. */
+export type MatchRatings = Record<Side, RatedPlayer[]>;
 
 /** A match day as the live round screen plays it back: every match's timeline and what the rows, the band and the table need. */
 export type LiveRound = {
@@ -40,6 +56,8 @@ export type LiveRound = {
   names: Record<string, string>;
   table: RoundTable | null;
   coach: CoachSide | null;
+  /** Marks for the coach's match, drawn from its whole timeline; the screen shows them only after the final whistle. */
+  ratings: MatchRatings | null;
   /** The furthest minute of the round the screen has shown; changes can only come from it on. */
   seenMinute: number;
   /** The clubs of a hot-seat game's other human coaches, whose matches show with the coach's; none in a one-coach game. */
@@ -58,10 +76,16 @@ function tableOf(live: LiveDay, fixture: Fixture | undefined): RoundTable | null
   return { clubIds, fixtures, drawOrder: competition.drawOrder };
 }
 
-function coachSideOf(live: LiveDay, fixture: Fixture | undefined): CoachSide | null {
+function coachSideOf(live: LiveDay, fixture: Fixture | undefined, seenMinute: number): CoachSide | null {
   const { state, coachMatch } = live;
   if (!coachMatch || !fixture) return null;
   const side: Side = fixture.homeId === state.coachClubId ? "home" : "away";
+  const clubId = state.coachClubId ?? "";
+  const events = live.matches.find((m) => m.fixtureId === coachMatch.fixtureId)?.events ?? [];
+  // On the pitch once the minute's events have happened.
+  const onPitch = onPitchAt(coachMatch.starters[side], coachMatch.bench, events, clubId, seenMinute + ONCE_PLAYED);
+  const order = coachMatch.tactics.kickerOrder;
+  const shootout = shootoutKickers({ clubId, onPitch, morale: clubMood(state, clubId).squad, ...(order ? { order } : {}) }, (p) => coachMatch.strengths[p.id] ?? p.strength);
   return {
     fixtureId: coachMatch.fixtureId,
     side,
@@ -70,7 +94,25 @@ function coachSideOf(live: LiveDay, fixture: Fixture | undefined): CoachSide | n
     squad: squadOf(state, state.coachClubId ?? "", fixture, (p) => coachMatch.strengths[p.id] ?? p.strength),
     tactics: coachMatch.tactics,
     lastChangeMinute: coachMatch.lastChangeMinute,
+    incidentHandling: incidentHandling(state, clubId),
+    shootout: { kickers: shootout.kickers.map((p) => p.id), isOverruled: shootout.isOverruled },
   };
+}
+
+function ratingsOf(live: LiveDay, match: RoundMatch | undefined): MatchRatings | null {
+  const { coachMatch } = live;
+  if (!coachMatch || !match) return null;
+  const benches = [...coachMatch.bench, ...(coachMatch.opponentBench ?? [])];
+  const groups = new Map([...coachMatch.starters.home, ...coachMatch.starters.away, ...benches].map((p) => [p.id, p.group]));
+  const ratings = matchRatings(
+    {
+      home: { clubId: match.homeId, starters: coachMatch.starters.home, bench: benches },
+      away: { clubId: match.awayId, starters: coachMatch.starters.away, bench: benches },
+    },
+    match.events,
+  );
+  const withGroups = (rated: readonly PlayerRating[]) => rated.map((r) => ({ ...r, group: groups.get(r.playerId) ?? "MID" }));
+  return { home: withGroups(ratings.home), away: withGroups(ratings.away) };
 }
 
 /** The live round screen's view of a live day. */
@@ -119,11 +161,15 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
     for (const e of m.events) {
       if ("playerId" in e) nameOf(e.playerId);
       if (e.type === "substitution") nameOf(e.offId);
+      if (e.type === "goal" && e.assistId) nameOf(e.assistId);
+      if (e.type === "penaltyMiss") nameOf(e.keeperId);
     }
   }
-  const coach = coachSideOf(live, coachFixture);
+  const coach = coachSideOf(live, coachFixture, seenMinute);
   for (const p of coach?.squad ?? []) names[p.id] = p.name;
+  const ratings = ratingsOf(live, matches.find((m) => m.fixtureId === live.coachMatch?.fixtureId));
+  for (const r of [...(ratings?.home ?? []), ...(ratings?.away ?? [])]) nameOf(r.playerId);
 
   const others = humanClubIds(state).filter((id) => id !== state.coachClubId);
-  return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach, seenMinute, ...(others.length ? { otherHumanClubIds: others } : {}) };
+  return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach, ratings, seenMinute, ...(others.length ? { otherHumanClubIds: others } : {}) };
 }

@@ -38,6 +38,8 @@ export type CoachMatch = {
   starters: { home: SimPlayer[]; away: SimPlayer[] };
   /** The coach's players who may come on: fit, not suspended and not starting. */
   bench: SimPlayer[];
+  /** Who the AI opponent may bring on; missing in a match saved before AI substitutions. */
+  opponentBench?: SimPlayer[];
   /** The strength each player who may take part plays at today, by player id. */
   strengths: Record<string, number>;
   /** The coach's tactics as of his last change. */

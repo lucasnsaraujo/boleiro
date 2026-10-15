@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { backToStart, news, savedGames, startAtClub } from "./flows.js";
+import { backToStart, leaveIncident, news, savedGames, startAtClub } from "./flows.js";
 
 const MAX_PRESSES = 5;
 // Half-time and every goal against, red card or injury of the coach's side stop the clock.
@@ -31,6 +31,7 @@ test("from the hub, set the lineup, play the round live with a substitution, and
   for (let stop = 0; stop < MAX_STOPS && !(await back.isVisible()); stop++) {
     await expect(page.getByRole("button", { name: "Pausar" }).and(page.locator("[aria-pressed=true]")).or(back)).toBeVisible({ timeout: 20_000 });
     if (await back.isVisible()) break;
+    await leaveIncident(page);
     if (!hasSubbed) {
       await page.getByRole("button", { name: /^Escalação/ }).click();
       await expect(lineup).toContainText("4-3-3 · ofensiva");

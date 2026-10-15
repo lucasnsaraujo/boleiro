@@ -1,8 +1,12 @@
 import type { Formation } from "../../engine/formations.js";
 import type { Posture } from "../../engine/match.js";
 
-/** How the coach sets his side up. With no penalty taker, or one not on the pitch, the best forward takes them. */
-export type Tactics = { formation: Formation; posture: Posture; penaltyTakerId: string | null };
+/**
+ * How the coach sets his side up. With no penalty taker, or one not on the pitch, the best forward
+ * takes them. `kickerOrder` is who kicks first in a shootout; anyone left out, or every kicker when
+ * the order is missing, lines up strongest first.
+ */
+export type Tactics = { formation: Formation; posture: Posture; penaltyTakerId: string | null; kickerOrder?: readonly string[] };
 
 export const DEFAULT_TACTICS: Tactics = { formation: "4-4-2", posture: "balanced", penaltyTakerId: null };
 

@@ -10,6 +10,7 @@ import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
 import type { CommandResults, CommandType, GameCommand } from "@boleiro/game-client/engine/createEngineSession";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
+import { HALF_TIME, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import { Round } from "./Round.js";
 
 const closers: (() => void)[] = [];
@@ -326,4 +327,155 @@ test("a goal's flash leaves its row once played, so Só meus jogos turned off do
   await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
   expect(row.hidden).toBe(false);
   expect(celebration()).toEqual([null, null, null]);
+});
+
+test("a red card and an injury to the coach's side stop the round with a window of the assistant's substitutions, each one a switch", async () => {
+  const MINUTE = 4;
+  let sentOff = "";
+  let hurt = "";
+  const given = await onMatchDay((engine) => {
+    function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+    async function apply(command: GameCommand): Promise<unknown> {
+      const result = await engine.apply(command);
+      if (command.type !== "startRound" && command.type !== "changeLive") return result;
+      const round = result as CommandResults["startRound"];
+      const coach = round.coach;
+      const defender = coach?.squad.find((p) => coach.starters.includes(p.id) && p.group === "DEF");
+      const midfielder = coach?.squad.find((p) => coach.starters.includes(p.id) && p.group === "MID");
+      if (!coach || !defender || !midfielder) throw new Error("the coach starts a defender and a midfielder");
+      sentOff = defender.id;
+      hurt = midfielder.id;
+      const incidents = [
+        { type: "card", minute: MINUTE, clubId: "bahia-ba", playerId: defender.id, card: "red" },
+        { type: "injury", minute: MINUTE, clubId: "bahia-ba", playerId: midfielder.id, days: 18 },
+      ] as const;
+      const mine = (m: (typeof round.matches)[number]) => m.fixtureId === coach.fixtureId;
+      const matches = round.matches.map((m) => (mine(m) ? { ...m, events: [...incidents, ...m.events.filter((e) => e.minute !== MINUTE || e.type === "substitution")] } : m));
+      return { ...round, matches };
+    }
+    return { ...engine, apply };
+  });
+  const apply = vi.spyOn(given.engine, "apply");
+  await kickOff(given);
+  // A minute at a time, so the screen sees each minute the clock shows.
+  for (let minute = 0; minute < MINUTE + 2; minute++) play(1);
+
+  const window = await screen.findByRole("dialog", { name: /^Expulso:/ });
+  expect(shownMinute()).toBe(MINUTE);
+  expect(screen.getByRole("button", { name: "Pausar" })).toHaveProperty("ariaPressed", "true");
+  const round = await given.engine.liveRound();
+  const nameOf = (id: string) => round?.coach?.squad.find((p) => p.id === id)?.name ?? "";
+  expect(window.textContent).toContain(nameOf(sentOff));
+  expect(window.textContent).toContain(`${nameOf(hurt)} se machucou`);
+  expect(window.textContent).toContain("Fora de 2 a 3 semanas.");
+  const switches = within(window).getAllByRole("checkbox");
+  expect(switches).toHaveLength(2);
+  expect(within(window).getByRole("button", { name: "Fazer as 2 trocas" })).toBeTruthy();
+
+  await user().click(switches[0] as HTMLElement);
+  await user().click(within(window).getByRole("button", { name: "Fazer a troca" }));
+  await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  const sent = apply.mock.calls.flatMap(([command]) => (command.type === "changeLive" ? [command] : []));
+  expect(sent).toHaveLength(1);
+  expect(sent[0]).toMatchObject({ minute: MINUTE, change: { substitutions: [{ offId: hurt }] } });
+  expect(screen.getByRole("button", { name: "Pausar" })).toHaveProperty("ariaPressed", "false");
+});
+
+test("leaving the incident window as it is changes nothing and plays on", async () => {
+  const MINUTE = 3;
+  const given = await onMatchDay((engine) => {
+    function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+    async function apply(command: GameCommand): Promise<unknown> {
+      const result = await engine.apply(command);
+      if (command.type !== "startRound") return result;
+      const round = result as CommandResults["startRound"];
+      const coach = round.coach;
+      const forward = coach?.squad.find((p) => coach.starters.includes(p.id) && p.group === "ATT");
+      if (!coach || !forward) throw new Error("the coach starts a forward");
+      const injury = { type: "injury", minute: MINUTE, clubId: "bahia-ba", playerId: forward.id, days: 4 } as const;
+      return { ...round, matches: round.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [injury, ...m.events.filter((e) => e.minute !== MINUTE)] } : m)) };
+    }
+    return { ...engine, apply };
+  });
+  const apply = vi.spyOn(given.engine, "apply");
+  await kickOff(given);
+  // A minute at a time, so the screen sees each minute the clock shows.
+  for (let minute = 0; minute < MINUTE + 2; minute++) play(1);
+  const window = await screen.findByRole("dialog", { name: /^Machucou:/ });
+  expect(window.textContent).toContain("Fora de 4 dias.");
+  await user().click(within(window).getByRole("button", { name: "Deixar como está" }));
+  expect(screen.queryByRole("dialog")).toBeNull();
+  play(2);
+  expect(shownMinute()).toBeGreaterThan(MINUTE);
+  expect(apply.mock.calls.some(([command]) => command.type === "changeLive")).toBe(false);
+});
+
+/** A session whose coach's match has `incident` at its minute and nothing else of the coach's side before it. */
+function withIncidentAt(minute: number, incident: (coach: NonNullable<CommandResults["startRound"]["coach"]>) => MatchEvent) {
+  return (engine: EngineClient): EngineClient => {
+    function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+    async function apply(command: GameCommand): Promise<unknown> {
+      const result = await engine.apply(command);
+      if (command.type !== "startRound") return result;
+      const round = result as CommandResults["startRound"];
+      const coach = round.coach;
+      if (!coach) throw new Error("the coach has a match");
+      const quiet = (e: MatchEvent) => e.minute > minute || !("clubId" in e);
+      return { ...round, matches: round.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [incident(coach), ...m.events.filter(quiet)] } : m)) };
+    }
+    async function liveRound() {
+      const round = await engine.liveRound();
+      const coach = round?.coach;
+      if (!round || !coach) return round;
+      const quiet = (e: MatchEvent) => e.minute > minute || !("clubId" in e);
+      return { ...round, matches: round.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [incident(coach), ...m.events.filter(quiet)] } : m)) };
+    }
+    return { ...engine, apply, liveRound };
+  };
+}
+
+const hurtForward = (minute: number) => (coach: NonNullable<CommandResults["startRound"]["coach"]>): MatchEvent => {
+  const forward = coach.squad.find((p) => coach.starters.includes(p.id) && p.group === "ATT");
+  return { type: "injury", minute, clubId: "bahia-ba", playerId: forward?.id ?? "", days: 9 };
+};
+
+test("an injury in first-half stoppage time opens the incident window at half-time", async () => {
+  const given = await onMatchDay(withIncidentAt(HALF_TIME, hurtForward(HALF_TIME)));
+  await kickOff(given);
+  for (let minute = 0; minute < HALF_TIME + 2; minute++) play(1);
+  expect(shownMinute()).toBe(HALF_TIME);
+  expect(await screen.findByRole("dialog", { name: /^Machucou:/ })).toBeTruthy();
+});
+
+test("coming back to a round stopped on an incident opens its window again", async () => {
+  const MINUTE = 6;
+  const given = await onMatchDay(withIncidentAt(MINUTE, hurtForward(MINUTE)));
+  await kickOff(given);
+  for (let minute = 0; minute < MINUTE + 2; minute++) play(1);
+  await screen.findByRole("dialog", { name: /^Machucou:/ });
+  await vi.waitFor(async () => expect((await given.engine.liveRound())?.seenMinute).toBe(MINUTE));
+  cleanup();
+  openRound(given);
+  expect(await screen.findByRole("dialog", { name: /^Machucou:/ })).toBeTruthy();
+  expect(shownMinute()).toBe(MINUTE);
+});
+
+test("no window opens when the session leaves the coach's incidents to something else", async () => {
+  const MINUTE = 5;
+  const handledElsewhere = (engine: EngineClient): EngineClient => {
+    const injured = withIncidentAt(MINUTE, hurtForward(MINUTE))(engine);
+    function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+    async function apply(command: GameCommand): Promise<unknown> {
+      const result = await injured.apply(command);
+      if (command.type !== "startRound") return result;
+      const round = result as CommandResults["startRound"];
+      return round.coach ? { ...round, coach: { ...round.coach, incidentHandling: "aiSubstitutions" } } : round;
+    }
+    return { ...injured, apply };
+  };
+  const given = await onMatchDay(handledElsewhere);
+  await kickOff(given);
+  for (let minute = 0; minute < MINUTE + 2; minute++) play(1);
+  expect(shownMinute()).toBe(MINUTE);
+  expect(screen.queryByRole("dialog")).toBeNull();
 });

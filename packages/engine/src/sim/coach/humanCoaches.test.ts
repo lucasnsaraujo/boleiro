@@ -63,7 +63,8 @@ describe("hot-seat coaches", () => {
     const day = startMatchDay(matchDay, { waiting: [{ lineup: eleven }] });
     const sheet = fixture && day.rest.sheets[fixture.id];
     const played = fixture?.homeId === SECOND ? sheet?.home : sheet?.away;
-    expect(played?.map((p) => p.id).sort()).toEqual([...eleven].sort());
+    // The sheet lists the starters first, then whoever came on.
+    expect(played?.slice(0, eleven.length).map((p) => p.id).sort()).toEqual([...eleven].sort());
   });
 
   it("hands the waiting coach's request to the board and brings the answer back as his news", () => {

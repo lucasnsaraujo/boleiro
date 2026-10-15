@@ -130,8 +130,8 @@ const POSTURE: Record<Posture, { scoring: number; conceding: number }> = {
 
 // 212 penalties in the 760 Série A matches of 2024 and 2025, 166 of them scored: ESPN's public
 // match summaries (keyEvents "Penalty - Scored", "Saved", "Missed" and "Hit Woodwork").
-const PENALTIES_PER_SIDE = 212 / 760 / 2;
-const PENALTY_CONVERSION = 166 / 212;
+export const PENALTIES_PER_SIDE = 212 / 760 / 2;
+export const PENALTY_CONVERSION = 166 / 212;
 // guess: each strength point a taker has over the side's best forward adds a point of conversion,
 // kept between 60% and 95%.
 const CONVERSION_PER_POINT = 0.01;

@@ -14,12 +14,17 @@ import type { HotSeatView } from "@boleiro/game-client/hub/hotSeat";
 import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { useFlip } from "../motion/useFlip.js";
+import { incidentAt, type Incident } from "../round/incident.js";
+import { IncidentWindow } from "../round/IncidentWindow.js";
 import { LineupSheet } from "../round/LineupSheet.js";
+import { MatchReport } from "../round/MatchReport.js";
 import { kickOffOf, liveChangeOf, liveLimits, type Sheet } from "../round/lineupDraft.js";
 import type { LiveRound, RoundClub, Side } from "@boleiro/game-client/round/liveRoundOf";
 import { liveTable, shortTable, type LiveTableRow } from "../round/liveTable.js";
 import type { MatchDayPlan } from "@boleiro/game-client/round/matchDayPlan";
-import { goalsBetween, pauseReason, roundAt, scorersUntil, type EventKind, type MatchAt } from "../round/roundAt.js";
+import { goalsBetween, highlightsBetween, pauseReason, roundAt, scorersUntil, type EventKind, type Highlight, type MatchAt } from "../round/roundAt.js";
+import type { Substitution } from "@boleiro/engine/sim/live/applyLiveChange";
+import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
 import { crowdLevel, roundCues, thinCues } from "../sound/roundCues.js";
 import { useSound } from "../sound/SoundProvider.js";
 import copaDoBrasil from "../../../../design/mocks/img/competitions/copa-do-brasil.svg";
@@ -49,8 +54,26 @@ const NO_COLOURS = { primary: "#eef3e8", secondary: "#0a1a10" };
 const PAUSED_CROWD = 0.6;
 
 type PreMatch = { plan: MatchDayPlan; clubs: Readonly<Record<string, Club>>; date: string };
+
+/** The red cards and injuries of the coach's side the round stopped on at `minute`, when the session asks him about them and he has not answered yet. */
+function incidentOf(round: LiveRound, minute: number): Incident | null {
+  const reason = pauseReason(round, minute);
+  const { coach, coachClubId } = round;
+  const match = round.matches.find((m) => m.fixtureId === coach?.fixtureId);
+  if (reason !== "coachMatch" && reason !== "halfTime") return null;
+  if (!coach || coach.incidentHandling !== "askCoach" || !match || !coachClubId || coach.lastChangeMinute === minute) return null;
+  return incidentAt(coach, match.events, coachClubId, liveLimits(coach, match.events, coachClubId, minute));
+}
 /** A goal being celebrated on a row: the scoring club's colour, its side, and the round's goal count so each goal replays the animation. */
 type Flash = { colour: string; side: Side; count: number };
+/** A missed penalty or a red card called out on its row with a chip, counted like goals so each replays. */
+type Alert = { kind: Exclude<Highlight["kind"], "goal">; count: number };
+const ALERT_CHIPS: Record<Alert["kind"], { label: string; className: string }> = {
+  penaltyMiss: { label: "Pênalti", className: "pen" },
+  red: { label: "Expulsão", className: "exp" },
+};
+// How the band notes a goal that did not come from open play.
+const GOAL_NOTES: Partial<Record<GoalKind, string>> = { penalty: "pên.", freeKick: "falta", olympic: "olímpico", ownGoal: "contra" };
 
 export function Round() {
   const { engine } = useServices();
@@ -71,6 +94,8 @@ export function Round() {
   const [result, setResult] = useState<AdvanceResult | null>(null);
   const [isOnlyMine, setOnlyMine] = useState(false);
   const [flashes, setFlashes] = useState<Record<string, Flash>>({});
+  const [alerts, setAlerts] = useState<Record<string, Alert>>({});
+  const [incident, setIncident] = useState<Incident | null>(null);
   const [golCount, setGolCount] = useState(0);
   const goalsCelebrated = useRef(0);
   const roundRef = useRef(round);
@@ -94,6 +119,7 @@ export function Round() {
         roundRef.current = live;
         setRound(live);
         setMinute(at);
+        setIncident(incidentOf(live, at));
         // Back after a final whistle that didn't go through: no new minute will call it again.
         if (at >= FULL_TIME) void finish();
         return;
@@ -119,7 +145,7 @@ export function Round() {
     };
   }, [engine]);
 
-  const isRunning = round !== null && speed > 0 && !isLineupOpen && !isTableOpen && minute < FULL_TIME;
+  const isRunning = round !== null && speed > 0 && !isLineupOpen && !isTableOpen && incident === null && minute < FULL_TIME;
   useEffect(() => {
     if (!isRunning || speed === 0) return;
     const tick = setInterval(() => setMinute((m) => Math.min(FULL_TIME, m + 1)), MS_PER_MINUTE[speed]);
@@ -170,8 +196,16 @@ export function Round() {
       );
       if (goals.some((goal) => goal.fixtureId === live.coach?.fixtureId && goal.clubId === live.coachClubId)) setGolCount((n) => n + 1);
     }
+    const called = Object.fromEntries(
+      highlightsBetween(live, from, minute).flatMap((h) => (h.kind === "goal" ? [] : [[h.fixtureId, { kind: h.kind, count: ++goalsCelebrated.current }] as const])),
+    );
+    if (Object.keys(called).length) {
+      setAlerts((current) => ({ ...current, ...called }));
+      setTimeout(() => setAlerts((current) => Object.fromEntries(Object.entries(current).filter(([fixtureId, alert]) => called[fixtureId] !== alert))), FLOOD_MS[resumeSpeed.current]);
+    }
     const reason = pauseReason(live, minute);
     if (reason === "halfTime" || reason === "coachMatch") pause();
+    setIncident(incidentOf(live, minute));
     if (reason === "fullTime") void finish();
   }, [minute]);
 
@@ -237,13 +271,41 @@ export function Round() {
     resumeIfRunning();
   }
 
+  /** The incident window closes into the match as it was running before the stop. */
+  function leaveIncident() {
+    setIncident(null);
+    setSpeed(resumeSpeed.current);
+  }
+
+  function openLineupFromIncident() {
+    setIncident(null);
+    wasRunning.current = true;
+    setError(null);
+    setLineupOpen(true);
+  }
+
+  async function substituteFromIncident(substitutions: Substitution[]) {
+    setBusy(true);
+    setError(null);
+    try {
+      const changed = await engine.apply({ type: "changeLive", minute, change: { substitutions } });
+      roundRef.current = changed;
+      setRound(changed);
+      leaveIncident();
+    } catch {
+      setError("A troca não valeu. Tente de novo.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function chooseSpeed(next: Speed) {
     if (next !== 0) resumeSpeed.current = next;
     setSpeed(next);
   }
 
   // The match keys work only while the match can still be driven: kicked off, before the final whistle, no sheet open.
-  const isDrivable = round !== null && result === null && minute < FULL_TIME && !isLineupOpen && !isTableOpen;
+  const isDrivable = round !== null && result === null && minute < FULL_TIME && !isLineupOpen && !isTableOpen && incident === null;
   useCommands({
     pausar: isDrivable && (() => chooseSpeed(speed === 0 ? resumeSpeed.current : 0)),
     velocidade1: isDrivable && (() => chooseSpeed(1)),
@@ -367,9 +429,10 @@ export function Round() {
           )}
         </header>
       )}
-      {error && !isLineupOpen && <p className="status error live-error">{error}</p>}
+      {error && !isLineupOpen && !incident && <p className="status error live-error">{error}</p>}
 
       <div className="live-list">
+        {minute >= FULL_TIME && <MatchReport round={round} />}
         {groups.map((group) => (
           <section key={group.id} className="live-group" aria-labelledby={`live-${group.id}`} hidden={isOnlyMine && !group.rows.some((m) => m.isHuman)}>
             <h2 id={`live-${group.id}`} className="live-g">
@@ -378,7 +441,7 @@ export function Round() {
             </h2>
             <ul className="live-rows" aria-labelledby={`live-${group.id}`}>
               {group.rows.map((m) => (
-                <MatchRow key={m.fixtureId} match={m} clubs={round.clubs} flash={flashes[m.fixtureId]} isHidden={isOnlyMine && !m.isHuman} />
+                <MatchRow key={m.fixtureId} match={m} clubs={round.clubs} flash={flashes[m.fixtureId]} alert={alerts[m.fixtureId]} isHidden={isOnlyMine && !m.isHuman} />
               ))}
             </ul>
           </section>
@@ -389,6 +452,21 @@ export function Round() {
         <TableSheet onClose={closeTable} note={isFinished ? "com os resultados da rodada" : "se terminasse agora"}>
           <TableRows rows={table} clubs={round.clubs} coachClubId={round.coachClubId} isFull />
         </TableSheet>
+      )}
+
+      {incident && coach && limits && mine && (
+        <IncidentWindow
+          incident={incident}
+          round={round}
+          match={mine}
+          subsLeft={limits.subsLeft}
+          stopsLeft={limits.stopsLeft}
+          isBusy={isBusy}
+          error={error}
+          onLeave={leaveIncident}
+          onOpenLineup={openLineupFromIncident}
+          onSubstitute={(substitutions) => void substituteFromIncident(substitutions)}
+        />
       )}
 
       {isLineupOpen && coach && limits && (
@@ -436,7 +514,12 @@ function Digit({ value, className, flash, isSettled }: { value: number; classNam
   );
 }
 
-const EVENT_ICONS: Partial<Record<EventKind, string>> = { goal: "ph-fill ph-soccer-ball", injury: "ph-fill ph-first-aid", substitution: "ph-bold ph-arrows-left-right" };
+const EVENT_ICONS: Partial<Record<EventKind, string>> = {
+  goal: "ph-fill ph-soccer-ball",
+  penaltyMiss: "ph-bold ph-target",
+  injury: "ph-fill ph-first-aid",
+  substitution: "ph-bold ph-arrows-left-right",
+};
 
 function EventMark({ kind }: { kind: EventKind }) {
   if (kind === "yellow") return <span className="yc" aria-hidden="true" />;
@@ -549,7 +632,7 @@ function Cover({ round, match, label, minute, speed, golCount, isOnlyMine, isFin
               scorers.map((goal, index) => (
                 <span key={`${goal.minute}-${index}`} className={index === scorers.length - 1 ? "last" : undefined}>
                   <i className="ph-fill ph-soccer-ball" aria-hidden="true" />
-                  {goal.name} {goal.minute}'
+                  {goal.name} {goal.minute}'{goal.kind && GOAL_NOTES[goal.kind] ? ` (${GOAL_NOTES[goal.kind]})` : ""}
                 </span>
               ))
             )}
@@ -564,12 +647,13 @@ function Cover({ round, match, label, minute, speed, golCount, isOnlyMine, isFin
   );
 }
 
-type MatchRowProps = { match: MatchAt; clubs: Readonly<Record<string, RoundClub>>; flash: Flash | undefined; isHidden: boolean };
+type MatchRowProps = { match: MatchAt; clubs: Readonly<Record<string, RoundClub>>; flash: Flash | undefined; alert: Alert | undefined; isHidden: boolean };
 
 /** A row redraws only when its own match changes, so a whole round's board stays light at 4x. */
 const isSameRow = (before: MatchRowProps, after: MatchRowProps) =>
   before.clubs === after.clubs &&
   before.flash === after.flash &&
+  before.alert === after.alert &&
   before.isHidden === after.isHidden &&
   before.match.isHuman === after.match.isHuman &&
   before.match.score.home === after.match.score.home &&
@@ -579,7 +663,7 @@ const isSameRow = (before: MatchRowProps, after: MatchRowProps) =>
   before.match.last?.minute === after.match.last?.minute &&
   before.match.last?.text === after.match.last?.text;
 
-const MatchRow = memo(function MatchRow({ match, clubs, flash, isHidden }: MatchRowProps) {
+const MatchRow = memo(function MatchRow({ match, clubs, flash, alert, isHidden }: MatchRowProps) {
   const home = clubs[match.homeId];
   const away = clubs[match.awayId];
   if (!home || !away) return null;
@@ -596,6 +680,11 @@ const MatchRow = memo(function MatchRow({ match, clubs, flash, isHidden }: Match
         {flash && (
           <span key={flash.count} className="gol">
             Gol
+          </span>
+        )}
+        {alert && !flash && (
+          <span key={alert.count} className={`gol ${ALERT_CHIPS[alert.kind].className}`}>
+            {ALERT_CHIPS[alert.kind].label}
           </span>
         )}
         {match.last && (
