@@ -316,3 +316,17 @@ test("a club's page, reached from the market's search, spends the market clock l
   expect(clock.className).toContain("running");
   expect(await screen.findByRole("timer", { name: "Relógio do mercado: 4:59" }, { timeout: 3_000 })).toBeTruthy();
 });
+
+test("a coach who takes a club outside the windows sees his own window in the top bar", async () => {
+  const { engine, close } = inMemoryEngine();
+  closers.push(close);
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: null, careerMode: true } });
+  const { coach } = await engine.read(["coach"]);
+  const offer = coach.offers[0];
+  if (!offer) throw new Error("a career starts with offers");
+  // Signed on the first day, he starts on 2 January, before the game's window opens on the 5th and carries his on.
+  await engine.apply({ type: "advance", days: [{ acceptOffer: offer.clubId }] });
+  const given: Services = { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-2", coachName: "Tite" } } };
+  openShellWith(given, [{ path: "/hub", element: <h1>tela do clube</h1> }], "/hub");
+  expect(await screen.findByRole("status", { name: "Sua janela de transferências, aberta até 3 mar" })).toBeTruthy();
+});

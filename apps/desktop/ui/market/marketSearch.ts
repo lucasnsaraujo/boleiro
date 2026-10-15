@@ -7,7 +7,7 @@ import { squadsByClub } from "@boleiro/engine/sim/players/squadsByClub";
 import { sellerPrice } from "@boleiro/engine/sim/transfers/askingPrice";
 import { valuePlayer } from "@boleiro/engine/sim/transfers/valuePlayer";
 import { isInPreContractWindow } from "@boleiro/engine/sim/transfers/tradeBetweenClubs";
-import { TRANSFER_WINDOWS } from "@boleiro/engine/sim/transfers/transferWindows";
+import { nextWindowOpensOn, windowClosesOn, type CoachWindows } from "@boleiro/engine/sim/transfers/transferWindows";
 import { wageDemandAt, wageRateOf } from "@boleiro/engine/sim/transfers/wageDemand";
 import { willingToJoin } from "@boleiro/engine/sim/transfers/willingToJoin";
 import { isLendable, lineupsOf } from "@boleiro/game-client/market/coachRequests";
@@ -87,14 +87,15 @@ const leagueName = (division: Division) => `Série ${division}`;
 
 const fold = (text: string) => text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 
-/** The transfer window today: open until a date, or closed until the next opening. */
-export function windowStatus(date: IsoDate): { isOpen: boolean; date: IsoDate } {
-  const day = date.slice(5);
-  const year = Number(date.slice(0, 4));
-  const open = TRANSFER_WINDOWS.find((w) => day >= w.opens && day <= w.closes);
-  if (open) return { isOpen: true, date: `${year}-${open.closes}` };
-  const next = TRANSFER_WINDOWS.find((w) => day < w.opens);
-  return next ? { isOpen: false, date: `${year}-${next.opens}` } : { isOpen: false, date: `${year + 1}-${TRANSFER_WINDOWS[0]?.opens ?? "01-01"}` };
+/**
+ * The coach's transfer window today: open until a date, or closed until the game's next opening. `isOwn`
+ * marks a window he got for himself on taking a club outside the game's. Left out, the rules are a game's
+ * usual windows.
+ */
+export function windowStatus(date: IsoDate, rules: CoachWindows = { coach: {} }): { isOpen: boolean; date: IsoDate; isOwn?: true } {
+  const closes = windowClosesOn(rules, date);
+  if (!closes) return { isOpen: false, date: nextWindowOpensOn(rules, date) };
+  return windowClosesOn({ ...rules, coach: {} }, date) ? { isOpen: true, date: closes } : { isOpen: true, date: closes, isOwn: true };
 }
 
 /** The leagues whose players are on the market, grouped by country. */

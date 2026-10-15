@@ -7,7 +7,7 @@ import type { ListingMode } from "@boleiro/engine/sim/transfers/transferMarket";
 import { valuePlayer } from "@boleiro/engine/sim/transfers/valuePlayer";
 import { willingToJoin } from "@boleiro/engine/sim/transfers/willingToJoin";
 
-export type SellState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "market" | "finances">;
+export type SellState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "market" | "finances" | "hasMidSeasonWindow" | "coach">;
 
 /** One club's offer for one of the coach's players, with what taking it means for him. */
 export type BidSheet = {
