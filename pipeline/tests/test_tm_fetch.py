@@ -5,12 +5,14 @@ import unittest
 from pathlib import Path
 
 import tm_fetch
+from tests.world_fixture import tiny_png
 
 
 class Answer:
-    def __init__(self, status_code: int, body: bytes = b"<html></html>") -> None:
+    def __init__(self, status_code: int, body: bytes = b"<html></html>", headers: dict[str, str] | None = None) -> None:
         self.status_code = status_code
         self.content = body
+        self.headers = headers or {}
 
 
 class Recorder:
@@ -29,8 +31,8 @@ class Recorder:
         self.waits.append(seconds)
 
 
-def fetcher(cache: Path, network: Recorder, delay: float = 3.0) -> tm_fetch.Fetcher:
-    return tm_fetch.Fetcher(cache, delay=delay, log=lambda _: None, get=network.get, sleep=network.sleep)
+def fetcher(cache: Path, network: Recorder, delay: float = 3.0, is_offline: bool = False) -> tm_fetch.Fetcher:
+    return tm_fetch.Fetcher(cache, delay=delay, log=lambda _: None, get=network.get, sleep=network.sleep, is_offline=is_offline)
 
 
 class FetcherTest(unittest.TestCase):
@@ -104,6 +106,66 @@ class FetcherTest(unittest.TestCase):
     def test_introduces_itself_with_a_browser_user_agent(self) -> None:
         pages = tm_fetch.Fetcher(self.cache)
         self.assertIn("Mozilla/5.0", pages.session.headers["User-Agent"])
+
+    def test_names_itself_and_its_repository_in_the_user_agent(self) -> None:
+        agent = tm_fetch.Fetcher(self.cache).session.headers["User-Agent"]
+        self.assertIn("Boleiro", agent)
+        self.assertIn("github.com/lucasnsaraujo/boleiro", agent)
+
+    def test_waits_the_two_seconds_robots_txt_asks_for_after_every_page(self) -> None:
+        network = Recorder(Answer(200))
+        fetcher(self.cache, network, delay=0.5).page("/a", max_age_days=7)
+        self.assertEqual(network.waits, [2.0])
+
+    def test_waits_as_long_as_retry_after_asks_before_trying_again(self) -> None:
+        network = Recorder(Answer(429, headers={"Retry-After": "300"}), Answer(200))
+        fetcher(self.cache, network).page("/a", max_age_days=7)
+        self.assertEqual(network.waits[0], 300)
+
+    def test_stops_the_run_after_the_site_keeps_refusing_in_a_row(self) -> None:
+        network = Recorder(*[Answer(403)] * tm_fetch.BLOCKED_IN_A_ROW, Answer(200))
+        pages = fetcher(self.cache, network)
+        with self.assertRaises(tm_fetch.Blocked):
+            for path in ("/a", "/b", "/c", "/d"):
+                try:
+                    pages.page(path, max_age_days=7)
+                except tm_fetch.FetchError:
+                    pass
+        self.assertEqual(len(network.urls), tm_fetch.BLOCKED_IN_A_ROW)
+
+    def test_a_good_answer_resets_the_count_of_refusals(self) -> None:
+        refusals = [Answer(429)] * (tm_fetch.BLOCKED_IN_A_ROW - 1)
+        network = Recorder(*refusals, Answer(200), *refusals, Answer(200))
+        pages = fetcher(self.cache, network)
+        for path in ("/a", "/b", "/c", "/d"):
+            try:
+                pages.page(path, max_age_days=7)
+            except tm_fetch.FetchError:
+                pass
+        self.assertEqual(network.answers, [])
+
+    def test_offline_reads_old_cached_pages_and_never_asks_the_site(self) -> None:
+        (self.cache / tm_fetch.cache_name("/a")).write_text("<p>old</p>")
+        network = Recorder()
+        pages = fetcher(self.cache, network, is_offline=True)
+        self.assertEqual(pages.page("/a", max_age_days=0).html, "<p>old</p>")
+        with self.assertRaises(tm_fetch.FetchError):
+            pages.page("/missing", max_age_days=7)
+        self.assertEqual(network.urls, [])
+
+    def test_does_not_cache_an_image_that_does_not_decode(self) -> None:
+        network = Recorder(Answer(200, b"<html>blocked</html>"))
+        with self.assertRaises(tm_fetch.FetchError):
+            fetcher(self.cache, network).image("/wappen/head/31.png", max_age_days=7)
+        self.assertFalse((self.cache / "images" / "wappen-head-31.png").exists())
+
+    def test_downloads_again_a_cached_image_that_does_not_decode(self) -> None:
+        cached = self.cache / "images" / "wappen-head-31.png"
+        cached.parent.mkdir()
+        cached.write_bytes(b"<html>blocked</html>")
+        network = Recorder(Answer(200, tiny_png(3, 4)))
+        file, _ = fetcher(self.cache, network).image("/wappen/head/31.png", max_age_days=7)
+        self.assertEqual(file.read_bytes(), tiny_png(3, 4))
 
 
 if __name__ == "__main__":

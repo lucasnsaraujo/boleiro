@@ -4,10 +4,12 @@ For every country in tm_world.py: each league's clubs, each club's detailed squa
 (facts page) and crest; then the Champions/Europa League draw (checked against the world), the
 Club World Cup's other clubs, and the national teams' last squads. Pages come through tm_fetch's
 cache, so a second run, or one resumed after a crash, only downloads what is missing. A page that
-keeps failing is logged and skipped; the summary at the end lists every one.
+keeps failing is logged and skipped; the summary at the end lists every one. When the site refuses
+too many requests in a row the run stops and writes no snapshot; the cache keeps what it got.
+`--offline` builds the snapshot from the cache alone and never asks the site.
 
 Usage: .venv/bin/python pipeline/scrape_world.py pipeline/boleiro.db [--countries br,gb-eng]
-         [--no-national-teams] [--no-guests] [--delay 3] [--max-age-days 7]
+         [--no-national-teams] [--no-guests] [--delay 3] [--max-age-days 7] [--offline]
 """
 from __future__ import annotations
 
@@ -25,7 +27,7 @@ import tm_pages
 import tm_world
 from import_csv import SCHEMA, png_size, slugify
 from positions import GROUP_OF_ROLE
-from tm_fetch import FetchError, Fetcher, cache_name
+from tm_fetch import Blocked, FetchError, Fetcher, cache_name
 
 ROOT = Path(__file__).resolve().parent.parent
 SEASON = 2026
@@ -262,9 +264,10 @@ def main() -> None:
     parser.add_argument("--countries", help="comma-separated ids from tm_world.py; all when left out")
     parser.add_argument("--no-national-teams", action="store_true")
     parser.add_argument("--no-guests", action="store_true", help="skip the draw check and the Club World Cup's other clubs")
-    parser.add_argument("--delay", type=float, default=3.0, help="seconds after each page request (at least 1)")
+    parser.add_argument("--delay", type=float, default=3.0, help="seconds after each page request (at least 2)")
     parser.add_argument("--max-age-days", type=float, default=7, help="refetch cached pages older than this")
     parser.add_argument("--cache", type=Path, default=ROOT / "data" / "tm_cache")
+    parser.add_argument("--offline", action="store_true", help="read only the cache, whatever its age; never ask the site")
     args = parser.parse_args()
 
     wanted = set(args.countries.split(",")) if args.countries else None
@@ -272,17 +275,20 @@ def main() -> None:
     unknown = (wanted or set()) - {country.id for country in countries}
     if unknown:
         parser.error(f"unknown countries: {', '.join(sorted(unknown))}")
-    fetcher = Fetcher(args.cache, delay=args.delay)
+    fetcher = Fetcher(args.cache, delay=args.delay, is_offline=args.offline)
     started = time.monotonic()
-    with sqlite3.connect(args.db) as db:
-        run = scrape_world(
-            db, fetcher, countries,
-            draws=() if args.no_guests else tm_world.DRAWS,
-            club_world_cup=None if args.no_guests else tm_world.CLUB_WORLD_CUP,
-            national_team_lists=() if args.no_national_teams else tm_world.NATIONAL_TEAM_LISTS,
-            known_club_ids=brazil_club_ids(ROOT / "data" / "clubs.csv"),
-            max_age_days=args.max_age_days,
-        )
+    try:
+        with sqlite3.connect(args.db) as db:
+            run = scrape_world(
+                db, fetcher, countries,
+                draws=() if args.no_guests else tm_world.DRAWS,
+                club_world_cup=None if args.no_guests else tm_world.CLUB_WORLD_CUP,
+                national_team_lists=() if args.no_national_teams else tm_world.NATIONAL_TEAM_LISTS,
+                known_club_ids=brazil_club_ids(ROOT / "data" / "clubs.csv"),
+                max_age_days=args.max_age_days,
+            )
+    except Blocked as error:
+        raise SystemExit(f"stopped, no snapshot written: {error}. Run again later; the cache keeps every page so far.")
     elapsed = time.monotonic() - started
     print(f"\nsnapshot {run.snapshot}: {run.clubs} clubs, {run.players} players, {run.national_teams} national teams")
     print(f"{elapsed:.0f} s, {fetcher.requests} live requests, {elapsed / max(run.clubs + run.national_teams, 1):.1f} s per squad")
