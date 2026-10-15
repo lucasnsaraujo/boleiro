@@ -44,8 +44,10 @@ function pairedPotMatchings(): Pairing[][] {
 const PAIRED = pairedPotMatchings();
 
 /** The slots of a paired-pot matching, the pots being `x` and `y`. */
-const pairedDay = (matching: readonly Pairing[], x: number, y: number): Pairing[] =>
-  matching.map(([a, b]) => [a, b].map((v) => (v % 2 === 0 ? x : y) * POT_SIZE + Math.floor(v / 2)) as Pairing);
+const pairedDay = (matching: readonly Pairing[], x: number, y: number): Pairing[] => {
+  const slotOf = (v: number) => (v % 2 === 0 ? x : y) * POT_SIZE + Math.floor(v / 2);
+  return matching.map(([a, b]): Pairing => [slotOf(a), slotOf(b)]);
+};
 
 /** Each club of pot `x` against one of pot `y`: club i hosting club i, or visiting club i - 1 of `y` hosting it. */
 const crossDay = (x: number, y: number, isXHosting: boolean): Pairing[] =>

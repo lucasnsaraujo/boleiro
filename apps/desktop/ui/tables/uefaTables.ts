@@ -1,4 +1,4 @@
-import { knockoutTie, leaguePhaseMatches, type KnockoutRound, type LeaguePhaseCup } from "@boleiro/engine/sim/continental/uefaCups";
+import { aggregateOf, knockoutTie, leaguePhaseMatches, type KnockoutRound, type LeaguePhaseCup } from "@boleiro/engine/sim/continental/uefaCups";
 import { standings } from "@boleiro/engine/sim/standings";
 import { recentForm, zoneKeys, type BracketRound, type GroupTable, type TieView, type ZoneKey, type ZoneKind } from "./competitionTables.js";
 
@@ -25,8 +25,7 @@ export function uefaLeaguePhase(cup: LeaguePhaseCup): { groups: GroupTable[]; zo
 function tieViews(cup: LeaguePhaseCup, round: KnockoutRound): TieView[] {
   return round.ties.map((_, index) => {
     const { clubIds, legs, winnerId, onPenalties } = knockoutTie(round, index);
-    const played = legs.filter((leg) => leg.result);
-    const goalsOf = (id: string) => played.reduce((sum, { homeId, result }) => sum + (result ? (homeId === id ? result.homeGoals : result.awayGoals) : 0), 0);
+    const isStarted = legs.some((leg) => leg.result);
     return {
       clubIds,
       legs: legs.map((leg, i) => ({
@@ -37,7 +36,7 @@ function tieViews(cup: LeaguePhaseCup, round: KnockoutRound): TieView[] {
         homeGoals: leg.result?.homeGoals ?? null,
         awayGoals: leg.result?.awayGoals ?? null,
       })),
-      aggregate: played.length > 0 ? [goalsOf(clubIds[0]), goalsOf(clubIds[1])] : null,
+      aggregate: isStarted ? aggregateOf(clubIds, legs) : null,
       winnerId,
       onPenalties,
       isPlayoff: false,

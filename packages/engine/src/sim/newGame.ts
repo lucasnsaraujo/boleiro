@@ -134,7 +134,7 @@ export function newGame(
   const usualLineups = openingLineups(Object.keys(clubsById), squadsByClub(simPlayers), lineups, (row) => idOfRow.get(row));
   const market = openingMarket(seed);
   const startedWorld = world?.length ? startWorld(world, season, seed) : null;
-  const europe = startedWorld && openingEuropeanCups(startedWorld, seed);
+  const europe = startedWorld && openingEuropeanCups(startedWorld, seed, season);
   const game = openingCoach({
     version: 4,
     packVersion,

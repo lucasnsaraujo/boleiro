@@ -1,14 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { leaguePhaseTable, openingEuropeanCups, playEuropeDay, type EuropeanCups } from "@boleiro/engine/sim/continental/uefaCups";
 import { addDays } from "@boleiro/engine/sim/dates";
+import { seededRandom } from "@boleiro/engine/engine/random";
 import { loadEurope } from "@boleiro/engine/sim/world/loadEurope";
+import { cupFinal, playCupDay } from "@boleiro/engine/sim/world/resultOnlyCup";
 import { playWorldDay, startCountry } from "@boleiro/engine/sim/world/resultOnlyWorld";
 import type { World } from "@boleiro/engine/sim/world/world";
 import { worldLeagueTables } from "./competitionTables.js";
 import { uefaBracket, uefaLeaguePhase, uefaPlayoffs } from "./uefaTables.js";
 
 let world: World = Object.fromEntries(loadEurope(2026).map(({ structure, levels }, i) => [structure.id, startCountry(structure, levels, 2026, i)]));
-const opening = openingEuropeanCups(world, 2);
+const opening = openingEuropeanCups(world, 2, 2026);
 if (!opening) throw new Error("no European cups");
 let europe: EuropeanCups = opening;
 for (let date = "2026-08-01"; date < "2027-03-12"; date = addDays(date, 1)) {
@@ -59,5 +61,23 @@ describe("a European league's table", () => {
       null,
     ]);
     expect(premierLeague?.rows.slice(-3).map((row) => row.zone)).toEqual(["relegation", "relegation", "relegation"]);
+  });
+
+  it("gives the first Europa League place to the cup winner once England's cup final is played", () => {
+    const england = world["gb-eng"];
+    if (!england?.cup) throw new Error("no English cup");
+    const clubOf = (id: string) => {
+      const club = england.clubs[id];
+      if (!club) throw new Error(`no English club ${id}`);
+      return club;
+    };
+    let cup = england.cup;
+    for (const date of cup.dates) cup = playCupDay(cup, date, clubOf, seededRandom(date.length));
+    const final = cupFinal(cup);
+    if (!final) throw new Error("the cup has no final");
+    const [premierLeague] = worldLeagueTables({ world: { ...world, "gb-eng": { ...england, cup } } }, "gb-eng");
+    const winner = premierLeague?.rows.find((row) => row.clubId === final.championId);
+    if (winner) expect(winner.zone).toBe(winner.position <= 5 ? "championsLeague" : "europaLeague");
+    expect(premierLeague?.rows.filter((row) => row.zone === "europaLeague")).toHaveLength(3);
   });
 });

@@ -8,6 +8,7 @@ import { STATE_CHAMPIONSHIP } from "@boleiro/engine/sim/stateChampionship";
 import { standings, type StandingRow } from "@boleiro/engine/sim/standings";
 import { aggregate, tieResults } from "@boleiro/engine/sim/tieResults";
 import { continentalPlaces } from "@boleiro/engine/sim/world/continentalPlaces";
+import { cupFinal } from "@boleiro/engine/sim/world/resultOnlyCup";
 import { leagueMatches } from "@boleiro/engine/sim/world/resultOnlyLeague";
 import { uefaPlaces } from "@boleiro/engine/sim/world/uefaPlaces";
 
@@ -371,7 +372,7 @@ export function worldLeagueTables(state: Pick<GameState, "world">, countryId: st
       level > 0
         ? new Map<string, string[]>()
         : uefa
-          ? new Map(Object.entries(uefaPlaces(uefa, ids, null)))
+          ? new Map(Object.entries(uefaPlaces(uefa, ids, country.cup ? cupFinal(country.cup) : null)))
           : continentalPlaces(country.structure.continental, ids, null);
     const promoted = level > 0 ? ids.slice(0, structure?.promoted ?? 0) : [];
     const relegated = ids.slice(ids.length - (structure?.relegated ?? 0));

@@ -87,7 +87,8 @@ export function countryOfClub(state: Pick<GameState, "clubs" | "world">): (id: s
   };
 }
 
-const elevenAverage = (club: WorldClub | undefined) => [...(club?.strengths ?? [])].sort((a, b) => b - a).slice(0, 11).reduce((sum, s) => sum + s, 0) / 11;
+/** The average strength of the club's best eleven. */
+export const elevenAverage = (club: WorldClub | undefined) => [...(club?.strengths ?? [])].sort((a, b) => b - a).slice(0, 11).reduce((sum, s) => sum + s, 0) / 11;
 
 /**
  * The first season's field. guess: with no 2025 tables in the game, the 2025 champions open the

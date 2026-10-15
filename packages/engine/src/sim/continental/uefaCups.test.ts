@@ -24,7 +24,7 @@ function play(world: World, europe: EuropeanCups, from: string, to: string, onDa
 
 describe("a season of UEFA's cups", () => {
   const world = startEurope();
-  const opening = openingEuropeanCups(world, 7);
+  const opening = openingEuropeanCups(world, 7, 2026);
   if (!opening) throw new Error("no European cups");
   let lastDay: { world: World; europe: EuropeanCups } | null = null;
   const end = play(world, opening, "2026-01-01", "2027-09-01", (date, w, e) => {
@@ -93,6 +93,19 @@ describe("a season of UEFA's cups", () => {
     expect(end.europe.superCup?.clubIds).toEqual([winnersOf(end.europe).championsLeague, winnersOf(end.europe).europaLeague]);
     expect(end.europe.superCup?.date.startsWith("2027-08")).toBe(true);
     expect(superCupWinner(end.europe.superCup)).not.toBeNull();
+  });
+
+  it("opens the next season on 1 July after one it could not field", () => {
+    const empty: EuropeanCups = { season: 2026, cups: [], superCup: null, winners: [], rngState: 1 };
+    const next = playEuropeDay(empty, end.world, "2027-07-01");
+    expect(next.season).toBe(2027);
+    expect(next.cups.map((cup) => cup.clubIds.length)).toEqual([36, 36]);
+    expect(next.superCup).toBeNull();
+    expect(next.winners).toEqual([]);
+  });
+
+  it("opens only on the 2026/27 season, whose field is the real one", () => {
+    expect(openingEuropeanCups(world, 7, 2027)).toBeNull();
   });
 
   it("is left as it was on a day without a European match", () => {

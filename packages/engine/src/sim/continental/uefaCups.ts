@@ -7,6 +7,7 @@ import { EUROPE } from "../world/europe.js";
 import { scoreDraw } from "../world/resultOnlyLeague.js";
 import { UEFA_CUPS, type UefaCup } from "../world/uefaPlaces.js";
 import type { World, WorldClub } from "../world/world.js";
+import { elevenAverage } from "./continentalField.js";
 import { drawLeaguePhase, LEAGUE_PHASE_CLUBS } from "./leaguePhaseDraw.js";
 
 export const KNOCKOUT_ROUNDS = ["playoffs", "round-of-16", "quarter-finals", "semi-finals", "final"] as const;
@@ -105,8 +106,6 @@ const BRACKET = [1, 8, 4, 5, 2, 7, 3, 6];
 /** A date of the 2026/27 calendar on the same weekday in `season`'s. */
 const shifted = (date: IsoDate, season: number) => inSeason(date, Number(date.slice(0, 4)) + season - FIRST_SEASON);
 
-const elevenAverage = (club: WorldClub | null) => [...(club?.strengths ?? [])].sort((a, b) => b - a).slice(0, 11).reduce((sum, s) => sum + s, 0) / 11;
-
 function clubsOf(world: World): Map<string, { club: WorldClub; country: string }> {
   return new Map(Object.entries(world).flatMap(([country, { clubs }]) => Object.values(clubs).map((club) => [club.id, { club, country }] as const)));
 }
@@ -148,7 +147,8 @@ export function knockoutTie(round: KnockoutRound, index: number): { clubIds: [st
   return { clubIds, legs, winnerId, onPenalties: winnerId !== null && first === second };
 }
 
-function aggregateOf(clubIds: readonly [string, string], legs: readonly TieLeg[]): [number, number] {
+/** Each club's goals over the tie's legs played so far, in the order of `clubIds`. */
+export function aggregateOf(clubIds: readonly [string, string], legs: readonly TieLeg[]): [number, number] {
   const goalsOf = (id: string) => legs.reduce((sum, { homeId, result }) => sum + (result ? (homeId === id ? result.homeGoals : result.awayGoals) : 0), 0);
   return [goalsOf(clubIds[0]), goalsOf(clubIds[1])];
 }
@@ -241,7 +241,7 @@ function playCupDay(cup: LeaguePhaseCup, date: IsoDate, clubOf: ClubOf, random: 
 
 /** The league phase of `cup` drawn among `field`: pots by the clubs' best elevens, the strongest first. guess: UEFA seeds by club coefficients. */
 function openCup(cup: UefaCup, season: number, field: readonly string[], clubs: ReturnType<typeof clubsOf>, random: () => number): LeaguePhaseCup {
-  const strength = (id: string) => elevenAverage(clubs.get(id)?.club ?? null);
+  const strength = (id: string) => elevenAverage(clubs.get(id)?.club);
   const seeded = [...field].sort((a, b) => strength(b) - strength(a) || a.localeCompare(b));
   const countryOf = (id: string) => clubs.get(id)?.country ?? id;
   const matches = drawLeaguePhase(seeded, countryOf, random).flat();
@@ -275,9 +275,9 @@ const isWholeField = (field: Record<UefaCup, string[]>, world: World) => {
 // The draws come from a stream of their own, so opening the cups leaves the game's main stream as it was.
 const UEFA_STREAM_SALT = 0x0efa;
 
-/** The 2026/27 season of UEFA's cups on its real field; null unless every European country is in the world. */
-export function openingEuropeanCups(world: World, seed: number): EuropeanCups | null {
-  if (!EUROPE.every((structure) => world[structure.id])) return null;
+/** The 2026/27 season of UEFA's cups on its real field; null for a game starting another season, or unless every European country is in the world. */
+export function openingEuropeanCups(world: World, seed: number, season: number): EuropeanCups | null {
+  if (season !== FIRST_SEASON || !EUROPE.every((structure) => world[structure.id])) return null;
   if (!isWholeField(FIRST_FIELD, world)) return null;
   const random = randomStream((seed ^ UEFA_STREAM_SALT) >>> 0);
   const opened = openSeason(FIRST_SEASON, FIRST_FIELD, FIRST_SUPER_CUP, world, random.next);
@@ -316,8 +316,8 @@ export function superCupWinner(superCup: SuperCup | null): string | null {
 
 /**
  * Today's matches of UEFA's cups, played by the score draw on the result-only clubs of `world`; on 1
- * July after both finals, the season's winners filed and the next season opened on the places the
- * countries filed that day. The same object on a day with nothing to do.
+ * July after both finals (or after a season it could not field), the season's winners filed and the
+ * next season opened on the places the countries filed that day. The same object on a day with nothing to do.
  */
 export function playEuropeDay(europe: EuropeanCups, world: World, date: IsoDate): EuropeanCups {
   const isRollover = date.slice(5) === ROLLOVER && Number(date.slice(0, 4)) > europe.season;
@@ -334,11 +334,12 @@ export function playEuropeDay(europe: EuropeanCups, world: World, date: IsoDate)
   const superCup = playSuperCup(europe.superCup, date, clubOf, random.next);
   let next: EuropeanCups = { ...europe, cups, superCup, rngState: random.state() };
   const [championsLeague, europaLeague] = cups.map(cupChampion);
-  if (isRollover && championsLeague && europaLeague) {
+  const champions: [string, string] | null = championsLeague && europaLeague ? [championsLeague, europaLeague] : null;
+  if (isRollover && (champions || cups.length === 0)) {
     const season = Number(date.slice(0, 4));
     const field = fieldFromTables(world, season);
-    const winners = [...europe.winners, { season: europe.season, championsLeague, europaLeague, superCup: superCupWinner(superCup) }];
-    const opened = isWholeField(field, world) ? openSeason(season, field, [championsLeague, europaLeague], world, random.next) : { season, cups: [], superCup: null };
+    const winners = champions ? [...europe.winners, { season: europe.season, championsLeague: champions[0], europaLeague: champions[1], superCup: superCupWinner(superCup) }] : europe.winners;
+    const opened = isWholeField(field, world) ? openSeason(season, field, champions, world, random.next) : { season, cups: [], superCup: null };
     next = { ...opened, winners, rngState: random.state() };
   }
   const isChanged = next.superCup !== europe.superCup || next.cups.some((cup, i) => cup !== europe.cups[i]) || next.season !== europe.season || next.winners !== europe.winners;

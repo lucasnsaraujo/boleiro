@@ -44,7 +44,7 @@ const TABLES_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "comp
 type TablesState = Pick<GameState, (typeof TABLES_KEYS)[number]>;
 type Clubs = Readonly<Record<string, ClubFace>>;
 
-// The countries the game plays result-only, as Brazilians name them, South America's first.
+// South America's countries the game plays result-only, as Brazilians name them.
 const SOUTH_AMERICA = [
   { id: "ar", name: "Argentina" },
   { id: "bo", name: "Bolívia" },
@@ -56,6 +56,7 @@ const SOUTH_AMERICA = [
   { id: "uy", name: "Uruguai" },
   { id: "ve", name: "Venezuela" },
 ];
+// Europe's countries the game plays result-only, as Brazilians name them.
 const EUROPE = [
   { id: "gb-eng", name: "Inglaterra" },
   { id: "es", name: "Espanha" },
