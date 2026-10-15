@@ -9,14 +9,14 @@ test("the menu bar has the game's menus after the app menu", () => {
   expect(MENU.map((s) => s.text)).toEqual(["Boleiro", "Jogo", "Editar", "Visualizar", "Janela", "Ajuda"]);
 });
 
-test("Visualizar opens every bar screen on the same F-key as the keyboard, greying out the ones still to come", () => {
+test("Visualizar opens every bar screen on the same F-key as the keyboard, each one enabled now that it has its screen", () => {
   const screens = commands(section("Visualizar")).filter((entry) => entry.accelerator?.startsWith("F"));
   expect(screens.map((entry) => entry.text)).toEqual(["Agenda", "Tabelas", "Estádio", "Base", "Times", "Busca", "Técnicos", "Histórico", "Opções"]);
   for (const entry of screens) {
     const key = { key: entry.accelerator ?? "", metaKey: false, ctrlKey: false, altKey: false, shiftKey: false };
     expect(commandForKey(key, "mac")).toBe(entry.command);
   }
-  expect(screens.filter((entry) => entry.isEnabled === false).map((entry) => entry.text)).toEqual(["Base"]);
+  expect(screens.filter((entry) => entry.isEnabled === false).map((entry) => entry.text)).toEqual([]);
 });
 
 test("Jogo saves, plays the round and starts a new game", () => {

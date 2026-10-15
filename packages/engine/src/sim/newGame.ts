@@ -27,6 +27,7 @@ import { unifiedDatesOf } from "./seasonCalendar.js";
 import { mostRounds, startCountry } from "./world/resultOnlyWorld.js";
 import { SOUTH_AMERICA } from "./world/southAmerica.js";
 import type { CountryStructure, UnifiedDates, World, WorldClub } from "./world/world.js";
+import { openAcademies } from "./youth/academy.js";
 
 /** A result-only country to start: its structure and its clubs level by level, top first. */
 export type CountryStart = { structure: CountryStructure; levels: readonly (readonly WorldClub[])[] };
@@ -186,7 +187,8 @@ export function newGame(
     ...(isRealista(formats) ? {} : { formats }),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
   const withClock = marketClockSeconds === undefined ? game : { ...game, marketClockSeconds };
-  return withHotSeat(withContinentalCups(withClock, competitionMoney), hotSeat);
+  const withAcademies = { ...withClock, youth: openAcademies(withClock) };
+  return withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat);
 }
 
 /** The game with its other human coaches waiting for their turns; a one-coach game stays as it is. */

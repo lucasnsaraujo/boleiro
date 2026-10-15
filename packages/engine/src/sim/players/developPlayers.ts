@@ -4,6 +4,7 @@ import { randomStream } from "../../engine/random.js";
 import { tierOf } from "../finances/tierOf.js";
 import type { GameState, IsoDate, SimPlayer, Tier } from "../gameState.js";
 import { wageRateOf, type WageRate } from "../transfers/wageDemand.js";
+import type { Prospect } from "../youth/academy.js";
 import { inventName } from "./inventName.js";
 import { freshCondition, rollTrait } from "./openingProfile.js";
 
@@ -12,7 +13,7 @@ export type YouthPromoted = { type: "youthPromoted"; playerId: string; clubId: s
 
 // The level a club's players drift toward: the division baselines new players are rated from
 // (pipeline/rate_players.py DIVISION_PRIOR, data/SOURCES.md), 42 for clubs outside Série A–D.
-const CLUB_LEVEL: Record<Division | "none", number> = { A: 72, B: 63, C: 56, D: 49, none: 42 };
+export const CLUB_LEVEL: Record<Division | "none", number> = { A: 72, B: 63, C: 56, D: 49, none: 42 };
 
 /**
  * Strength by age relative to the club level. Piecewise linear through the 2026 squads' mean
@@ -20,6 +21,7 @@ const CLUB_LEVEL: Record<Division | "none", number> = { A: 72, B: 63, C: 56, D: 
  * 27 to 31, back to 4 below at 38. The peak window agrees with Dendir 2016, "When do soccer
  * players peak?", J Sports Analytics 2(2):89–105 (peak 25–27, flat to about 30).
  */
+const PEAK_AGE = 27;
 const AGE_CURVE: readonly [age: number, offset: number][] = [[17, -4], [27, 1], [31, 1], [38, -4], [45, -11]];
 
 function ageOffset(age: number): number {
@@ -62,22 +64,22 @@ const RETIREMENT: readonly [minAge: number, chance: number][] = [
 
 // The 2026 squads have 24 players a club on average (data/players.csv). guess: no club drops
 // below 18, enough for an eleven plus injuries and rotation.
-const MIN_SQUAD = 18;
+export const MIN_SQUAD = 18;
 const YOUTH_MIN_AGE = 17;
 // guess: a youth player in a division with nobody to compare wages with earns about the 2026
 // national minimum wage, R$1,621 a month.
-const NO_SQUAD_WAGE = 1621;
+export const NO_SQUAD_WAGE = 1621;
 const YOUTH_AGES = 3;
 // guess: a first professional contract runs three seasons (Lei 14.597/2023 allows up to five).
-const YOUTH_CONTRACT_YEARS = 3;
+export const YOUTH_CONTRACT_YEARS = 3;
 // guess: spread of a new youth player's strength around his club's level for his age, a little
 // above the 2026 squads' 18–19 year-olds (about 3 points within a division).
 const YOUTH_SD = 3;
 // guess: share of each position group in a squad when topping one up (3 keepers in 24).
-const SQUAD_SHAPE: Record<PositionGroup, number> = { GK: 3, DEF: 8, MID: 8, ATT: 5 };
+export const SQUAD_SHAPE: Record<PositionGroup, number> = { GK: 3, DEF: 8, MID: 8, ATT: 5 };
 const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
 
-function normal(random: () => number): number {
+export function normal(random: () => number): number {
   return Math.sqrt(-2 * Math.log(1 - random())) * Math.cos(2 * Math.PI * random());
 }
 
@@ -132,6 +134,34 @@ export function academyPlayer(
   };
 }
 
+/** An academy kid as a professional at `clubId` on a first contract at `wage`; he keeps his hidden potential. */
+export function professionalOf(prospect: Prospect, clubId: string, wage: number, date: IsoDate, random: () => number): SimPlayer {
+  return {
+    id: prospect.id,
+    clubId,
+    name: prospect.name,
+    group: prospect.group,
+    strength: prospect.strength,
+    potential: prospect.potential,
+    age: prospect.age,
+    nationalities: ["Brazil"],
+    trait: rollTrait(random),
+    contractUntil: `${Number(date.slice(0, 4)) + YOUTH_CONTRACT_YEARS - 1}-12-31`,
+    condition: freshCondition(date),
+    wage,
+  };
+}
+
+/** The academy's best teenager at `group` old enough for the squad, if any; its 20-year-olds finish their last youth year. */
+export function readyProspect(academy: readonly Prospect[], group: PositionGroup, taken: ReadonlySet<string>): Prospect | null {
+  let best: Prospect | null = null;
+  for (const p of academy) {
+    if (taken.has(p.id) || p.group !== group || p.age < YOUTH_MIN_AGE || p.age >= YOUTH_MIN_AGE + YOUTH_AGES) continue;
+    if (!best || p.strength > best.strength || (p.strength === best.strength && p.id < best.id)) best = p;
+  }
+  return best;
+}
+
 /** What each tier pays for a given strength, from the wages of everyone playing in it. */
 function tierWageRates(clubs: GameState["clubs"], players: readonly SimPlayer[]): (tier: Tier) => WageRate {
   const byTier = new Map<Tier, SimPlayer[]>();
@@ -148,8 +178,10 @@ function tierWageRates(clubs: GameState["clubs"], players: readonly SimPlayer[])
 
 /**
  * The end-of-season turnover of every squad: each player ages a year and his strength drifts
- * with age, minutes and form toward his club's level; veterans retire; Brazilian teenagers with
- * invented names replace them and fill any squad below 18. Runs on the first day of the new year,
+ * with age, minutes and form toward his club's level (an academy graduate toward his potential, when
+ * higher); veterans retire; the academy's best teenagers at each position replace them and fill any squad
+ * below 18, and Brazilian teenagers with invented names stand in where the academy has nobody (a club
+ * without one). Runs on the first day of the new year,
  * before promotions and relegations, so each academy produces players for the division it played in.
  */
 export function developPlayers(state: GameState): { state: GameState; events: (PlayerRetired | YouthPromoted)[] } {
@@ -172,7 +204,9 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
       const minutes = MINUTES_EFFECT * (seasonMinutes / mostMinutes - averageShare);
       const form = seasonMinutes >= FORM_MIN_MINUTES ? FORM_EFFECT * ((seasonPoints * 90) / seasonMinutes - AVERAGE_POINTS_PER_GAME) : 0;
       // A loaned player goes for minutes, not to settle at the borrower's level: he drifts toward his own club's.
-      const target = levelOf(state.market.loans[p.id]?.fromClubId ?? clubId) + ageOffset(p.age);
+      const clubTarget = levelOf(state.market.loans[p.id]?.fromClubId ?? clubId) + ageOffset(p.age);
+      // An academy graduate grows toward his own potential, reached at the peak age, when it beats his club's level.
+      const target = p.potential === undefined ? clubTarget : Math.max(clubTarget, p.potential + ageOffset(p.age) - ageOffset(PEAK_AGE));
       const drift = ageOffset(p.age + 1) - ageOffset(p.age) + PULL_TO_CLUB_LEVEL * (target - p.strength);
       const strength = clamp(p.strength + drift + minutes + form + SEASON_NOISE_SD * normal(random.next));
       if (random.next() < retirementChance(p.age)) {
@@ -186,6 +220,11 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
 
   const { date } = state;
   const intake = date.slice(0, 4);
+  // A squad short of players takes its academy's best kids at each position first.
+  const prospects = state.youth?.prospects ?? {};
+  const taken = new Set<string>();
+  const academies = new Map<string, Prospect[]>();
+  for (const p of Object.values(prospects)) academies.set(p.clubId, [...(academies.get(p.clubId) ?? []), p]);
   // guess: a first contract pays the division's going rate for the youngster's strength, so a thin
   // club's few remaining big earners don't set every newcomer's wage.
   const wageRate = tierWageRates(state.clubs, Object.values(players));
@@ -195,7 +234,11 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
     const retiredGroups = squad.filter((p) => !players[p.id]).map((p) => p.group);
     const rate = wageRate(tierOf(club));
     groupsToFill(staying, retiredGroups).forEach((group, i) => {
-      const youth = academyPlayer(`y${intake}-${club.id}-${i}`, club.id, club.division, group, date, random.next);
+      const prospect = readyProspect(academies.get(club.id) ?? [], group, taken);
+      if (prospect) taken.add(prospect.id);
+      const youth = prospect
+        ? professionalOf(prospect, club.id, 0, date, random.next)
+        : academyPlayer(`y${intake}-${club.id}-${i}`, club.id, club.division, group, date, random.next);
       players[youth.id] = { ...youth, wage: Math.max(1, rate(youth.strength)) };
       events.push({ type: "youthPromoted", playerId: youth.id, clubId: club.id });
     });
@@ -203,5 +246,6 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
   // A retired player's pre-contract and loan go with him.
   const stillPlaying = <T>(byPlayer: Record<string, T>) => Object.fromEntries(Object.entries(byPlayer).filter(([id]) => players[id]));
   const market = { ...state.market, preContracts: stillPlaying(state.market.preContracts), loans: stillPlaying(state.market.loans) };
-  return { state: { ...state, players, market, rngState: random.state() }, events };
+  const youth = state.youth && { ...state.youth, prospects: Object.fromEntries(Object.entries(prospects).filter(([id]) => !taken.has(id))) };
+  return { state: { ...state, players, market, ...(youth ? { youth } : {}), rngState: random.state() }, events };
 }

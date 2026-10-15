@@ -13,6 +13,7 @@ import {
   openSheet,
   pick,
   subsLeft,
+  swapIn,
   undo,
   type SheetMode,
 } from "./lineupDraft.js";
@@ -143,4 +144,24 @@ test("each stoppage with substitutions uses one of the three, half-time none", (
   const stopsAt = (events: MatchEvent[], minute: number) => liveLimits(coach, events, "bahia", minute).stopsLeft;
   expect(stopsAt([], 10)).toBe(3);
   expect(stopsAt([sub(45, "b2", "s5"), sub(60, "b3", "s9"), sub(60, "b4", "s10")], 70)).toBe(2);
+});
+
+describe("dropping a bench player on a starter", () => {
+  const mode = live([], 30);
+
+  test("makes the substitution in one go, whoever was picked before", () => {
+    const sheet = swapIn(pick(openSheet(eleven, tactics), mode, "s1"), mode, "s9", player("b3", "ATT"));
+    expect(sheet.subs).toEqual([{ offId: "s9", onId: "b3" }]);
+    expect(sheet.lineup).toContain("b3");
+    expect(sheet.picked).toBeNull();
+    expect(undo(sheet).lineup).toEqual(eleven);
+  });
+
+  test("does nothing for a player who can't come on or a starter who can't go off", () => {
+    const sheet = openSheet(eleven, tactics);
+    expect(swapIn(sheet, mode, "s9", banned)).toBe(sheet);
+    expect(swapIn(sheet, mode, "s9", starters[2] ?? hurt)).toBe(sheet);
+    const sentOff = live([{ type: "card", card: "red", minute: 20, clubId: "bahia", playerId: "s9" }], 30);
+    expect(swapIn(sheet, sentOff, "s9", player("b3", "ATT"))).toBe(sheet);
+  });
 });

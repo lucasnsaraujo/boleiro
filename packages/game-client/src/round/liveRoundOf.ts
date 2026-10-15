@@ -1,12 +1,12 @@
 import type { Club } from "@boleiro/data/clubs";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import type { Tactics } from "@boleiro/engine/sim/coach/tactics";
-import { humanClubIds } from "@boleiro/engine/sim/coach/humanCoaches";
+import { humanClubIds, waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
 import type { Fixture, IsoDate } from "@boleiro/engine/sim/gameState";
 import { onPitchAt } from "@boleiro/engine/sim/live/aiSubstitutions";
 import { incidentHandling, type IncidentHandling } from "@boleiro/engine/sim/live/incidentHandling";
-import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
+import type { CoachMatch, LiveDay } from "@boleiro/engine/sim/live/liveDay";
 import { matchRatings, type PlayerRating } from "@boleiro/engine/sim/live/matchRatings";
 import type { MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import { clubMood } from "@boleiro/engine/sim/morale/clubMood";
@@ -41,6 +41,9 @@ export type CoachSide = {
   shootout: { kickers: string[]; isOverruled: boolean };
 };
 
+/** A human coach's side of his match in a hot-seat game, with his club and his name. */
+export type HumanSide = CoachSide & { clubId: string; coachName: string };
+
 /** A player's 0–10 mark, with his position group for the screen to show. */
 export type RatedPlayer = PlayerRating & { group: PositionGroup };
 /** The mark of everyone who took part in the coach's match, as it stands after its last change. */
@@ -63,6 +66,8 @@ export type LiveRound = {
   seenMinute: number;
   /** The clubs of a hot-seat game's other human coaches, whose matches show with the coach's; none in a one-coach game. */
   otherHumanClubIds?: string[];
+  /** Every human coach's side in today's matches in a hot-seat game, the seated coach's first; none in a one-coach game. */
+  humanSides?: HumanSide[];
 };
 
 function tableOf(live: LiveDay, fixture: Fixture | undefined): RoundTable | null {
@@ -77,27 +82,51 @@ function tableOf(live: LiveDay, fixture: Fixture | undefined): RoundTable | null
   return { clubIds, fixtures, drawOrder: competition.drawOrder };
 }
 
-function coachSideOf(live: LiveDay, fixture: Fixture | undefined, seenMinute: number): CoachSide | null {
-  const { state, coachMatch } = live;
-  if (!coachMatch || !fixture) return null;
-  const side: Side = fixture.homeId === state.coachClubId ? "home" : "away";
-  const clubId = state.coachClubId ?? "";
-  const events = live.matches.find((m) => m.fixtureId === coachMatch.fixtureId)?.events ?? [];
+/** A human coach's side of his open match: the owner's, or in a match between two human coaches his rival's. */
+function sideOf(live: LiveDay, open: CoachMatch, clubId: string, fixture: Fixture, seenMinute: number): CoachSide | null {
+  const { state } = live;
+  const side: Side = fixture.homeId === clubId ? "home" : "away";
+  const isOwner = (open.clubId ?? state.coachClubId) === clubId;
+  const bench = (isOwner ? open.bench : open.opponentBench) ?? [];
+  const tactics = isOwner ? open.tactics : open.rivalTactics;
+  if (!tactics) return null;
+  const events = live.matches.find((m) => m.fixtureId === open.fixtureId)?.events ?? [];
   // On the pitch once the minute's events have happened.
-  const onPitch = onPitchAt(coachMatch.starters[side], coachMatch.bench, events, clubId, seenMinute + ONCE_PLAYED);
-  const order = coachMatch.tactics.kickerOrder;
-  const shootout = shootoutKickers({ clubId, onPitch, morale: clubMood(state, clubId).squad, ...(order ? { order } : {}) }, (p) => coachMatch.strengths[p.id] ?? p.strength);
+  const onPitch = onPitchAt(open.starters[side], bench, events, clubId, seenMinute + ONCE_PLAYED);
+  const order = tactics.kickerOrder;
+  const shootout = shootoutKickers({ clubId, onPitch, morale: clubMood(state, clubId).squad, ...(order ? { order } : {}) }, (p) => open.strengths[p.id] ?? p.strength);
   return {
-    fixtureId: coachMatch.fixtureId,
+    fixtureId: open.fixtureId,
     side,
-    starters: coachMatch.starters[side].map((p) => p.id),
-    benchIds: coachMatch.bench.map((p) => p.id),
-    squad: squadOf(state, state.coachClubId ?? "", fixture, (p) => coachMatch.strengths[p.id] ?? p.strength),
-    tactics: coachMatch.tactics,
-    lastChangeMinute: coachMatch.lastChangeMinute,
+    starters: open.starters[side].map((p) => p.id),
+    benchIds: bench.map((p) => p.id),
+    squad: squadOf(state, clubId, fixture, (p) => open.strengths[p.id] ?? p.strength),
+    tactics,
+    lastChangeMinute: open.lastChangeMinute,
     incidentHandling: incidentHandling(state, clubId),
     shootout: { kickers: shootout.kickers.map((p) => p.id), isOverruled: shootout.isOverruled },
   };
+}
+
+function coachSideOf(live: LiveDay, fixture: Fixture | undefined, seenMinute: number): CoachSide | null {
+  const { state, coachMatch } = live;
+  if (!coachMatch || !fixture) return null;
+  return sideOf(live, coachMatch, state.coachClubId ?? "", fixture, seenMinute);
+}
+
+/** Every human coach's side today in a hot-seat game, the seated coach's first, then the waiting coaches' in turn order. */
+function humanSidesOf(live: LiveDay, today: ReadonlyMap<string, Fixture>, seenMinute: number): HumanSide[] {
+  const { state } = live;
+  const open = [live.coachMatch, ...(live.waitingMatches ?? [])].filter((m): m is CoachMatch => m !== null);
+  const coaches = [{ name: state.coachName ?? "", clubId: state.coachClubId }, ...waitingCoachesOf(state)];
+  return coaches.flatMap(({ name, clubId }) => {
+    if (!clubId) return [];
+    const fixtureOf = (m: CoachMatch) => today.get(m.fixtureId);
+    const match = open.find((m) => [fixtureOf(m)?.homeId, fixtureOf(m)?.awayId].includes(clubId));
+    const fixture = match && fixtureOf(match);
+    const side = match && fixture && sideOf(live, match, clubId, fixture, seenMinute);
+    return side ? [{ ...side, clubId, coachName: name }] : [];
+  });
 }
 
 function ratingsOf(live: LiveDay, match: RoundMatch | undefined): MatchRatings | null {
@@ -176,5 +205,8 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
   for (const r of [...(ratings?.home ?? []), ...(ratings?.away ?? [])]) nameOf(r.playerId);
 
   const others = humans.filter((id) => id !== state.coachClubId);
-  return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach, ratings, seenMinute, ...(others.length ? { otherHumanClubIds: others } : {}) };
+  if (!others.length) return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach, ratings, seenMinute };
+  const humanSides = humanSidesOf(live, today, seenMinute);
+  for (const p of humanSides.flatMap((side) => side.squad)) names[p.id] = p.name;
+  return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach, ratings, seenMinute, otherHumanClubIds: others, humanSides };
 }

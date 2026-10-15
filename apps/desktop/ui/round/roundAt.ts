@@ -96,21 +96,24 @@ export function highlightsBetween(round: LiveRound, from: number, to: number): H
   );
 }
 
-/** Why the round stops by itself at `minute`: half-time, the final whistle, or something that needs the coach in his match. */
+const isIncidentOf = (e: MatchEvent, clubId: string) => (e.type === "injury" || (e.type === "card" && e.card !== "yellow")) && e.clubId === clubId;
+
+/**
+ * Why the round stops by itself at `minute`: half-time, the final whistle, or something that needs
+ * a coach in his match: a goal against the seated coach, or a red card or an injury to any human
+ * coach's side.
+ */
 export function pauseReason(round: LiveRound, minute: number): "halfTime" | "fullTime" | "coachMatch" | null {
   if (minute >= FULL_TIME) return "fullTime";
   if (minute === HALF_TIME) return "halfTime";
   const coachClubId = round.coachClubId;
   const match = round.matches.find((m) => m.fixtureId === round.coach?.fixtureId);
-  if (!match || !coachClubId) return null;
-  const needsCoach = match.events.some(
-    (e) =>
-      e.minute === minute &&
-      ((e.type === "injury" && e.clubId === coachClubId) ||
-        (e.type === "card" && e.card !== "yellow" && e.clubId === coachClubId) ||
-        (e.type === "goal" && e.clubId !== coachClubId)),
+  const needsCoach =
+    !!match && !!coachClubId && match.events.some((e) => e.minute === minute && "clubId" in e && (isIncidentOf(e, coachClubId) || (e.type === "goal" && e.clubId !== coachClubId)));
+  const needsOther = (round.humanSides ?? []).some((side) =>
+    round.matches.some((m) => m.fixtureId === side.fixtureId && m.events.some((e) => e.minute === minute && isIncidentOf(e, side.clubId))),
   );
-  return needsCoach ? "coachMatch" : null;
+  return needsCoach || needsOther ? "coachMatch" : null;
 }
 
 /** Who scored in a match up to `minute`, in order, as the band lists them under the score; `side` is the side the goal counts for. */

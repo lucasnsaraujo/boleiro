@@ -17,6 +17,7 @@ import { SeasonEnd } from "../screens/SeasonEnd.js";
 import { Player } from "../screens/Player.js";
 import { StartMenu } from "../screens/StartMenu.js";
 import { Tables } from "../screens/Tables.js";
+import { Youth } from "../screens/Youth.js";
 import { Turn } from "../screens/Turn.js";
 import { SCREEN_PATHS, type ScreenPath } from "./screens.js";
 import { Shell } from "./Shell.js";
@@ -29,6 +30,7 @@ const ELEMENTS: Record<ScreenPath, ReactElement> = {
   "/market": <Market />,
   "/finances": <Finances />,
   "/stadium": <Stadium />,
+  "/youth": <Youth />,
   "/calendar": <Calendar />,
   "/round": <Round />,
   "/history": <History />,
