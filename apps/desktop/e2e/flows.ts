@@ -54,6 +54,11 @@ export function barDate(page: Page): Locator {
 /** The hub's paper, opened from the dock if it is closed. */
 export async function news(page: Page): Promise<Locator> {
   const paper = page.getByRole("button", { name: /^Jornal/ });
-  if ((await paper.getAttribute("aria-expanded")) !== "true") await paper.click();
-  return page.getByRole("list", { name: "Notícias" });
+  const list = page.getByRole("list", { name: "Notícias" });
+  // The hub opens the paper by itself when a day brings news, so a click can land just as it does and shut it again.
+  await expect(async () => {
+    if (!(await list.isVisible())) await paper.click();
+    await expect(list).toBeVisible({ timeout: 1_000 });
+  }).toPass();
+  return list;
 }
