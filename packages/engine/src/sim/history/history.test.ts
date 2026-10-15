@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { STATES } from "@boleiro/data/clubs";
 import type { Division } from "@boleiro/data/players";
-import { advanceDay, type DayEvent } from "../advanceDay.js";
+import type { DayEvent } from "../advanceDay.js";
 import type { GameState } from "../gameState.js";
+import { finishMatchDay } from "../live/finishMatchDay.js";
+import { startMatchDay } from "../live/startMatchDay.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { clubHistory } from "./clubHistory.js";
@@ -11,16 +13,35 @@ import { competitionKey } from "./history.js";
 const DIVISIONS: readonly Division[] = ["A", "B", "C", "D"];
 const SEASONS = 3;
 
-type Run = { states: GameState[]; lastDays: GameState[]; events: DayEvent[]; final: GameState };
+type Run = {
+  states: GameState[];
+  lastDays: GameState[];
+  events: DayEvent[];
+  /** Own goals by competition id, read from the match timelines. */
+  ownGoals: Map<string, number>;
+  /** Substitutes who came on, by season and club ("2026 flamengo-rj"). */
+  cameOn: Map<string, number>;
+  final: GameState;
+};
 
-/** A career-mode game whose coach takes the first offer whenever he is out of work. */
+const add = (counts: Map<string, number>, key: string) => counts.set(key, (counts.get(key) ?? 0) + 1);
+
+/** A career-mode game whose coach takes the first offer whenever he is out of work, played a day at a time as advanceDay plays it. */
 function playSeasons(seed: number, seasons: number): Run {
   let state = loadNewGame(seed, { coachClubId: null, careerMode: true });
-  const run: Run = { states: [], lastDays: [], events: [], final: state };
+  const run: Run = { states: [], lastDays: [], events: [], ownGoals: new Map(), cameOn: new Map(), final: state };
   const last = state.season + seasons;
   while (state.season < last) {
     const acceptOffer = state.coachClubId ? undefined : state.coach.offers[0]?.clubId;
-    const day = advanceDay(state, { acceptOffer });
+    const live = startMatchDay(state, { acceptOffer });
+    const competitionOf = new Map(live.state.fixtures.map((f) => [f.id, f.competitionId]));
+    for (const match of live.matches) {
+      for (const e of match.events) {
+        if (e.type === "goal" && e.kind === "ownGoal") add(run.ownGoals, competitionOf.get(match.fixtureId) ?? "");
+        if (e.type === "substitution") add(run.cameOn, `${state.season} ${e.clubId}`);
+      }
+    }
+    const day = finishMatchDay(live);
     run.events.push(...day.events);
     if (day.state.season !== state.season) {
       run.lastDays.push(state);
@@ -78,9 +99,10 @@ describe("club history over several seasons", () => {
     const serieA = Object.values(before.competitions).find((c) => c.id === "serie-a-2026");
     if (!serieA) throw new Error("no Série A");
     const scored = Object.values(before.history.current.goals["serie-a"] ?? {}).reduce((sum, g) => sum + g, 0);
-    // Own goals go to no scorer: Série A had 42 in 1,889 goals in 2024 and 2025 (2.2%).
-    expect(scored).toBeLessThanOrEqual(goalsIn(before, serieA.id));
-    expect(scored).toBeGreaterThan(0.95 * goalsIn(before, serieA.id));
+    // An own goal goes to no scorer.
+    const ownGoals = run.ownGoals.get(serieA.id) ?? 0;
+    expect(ownGoals).toBeGreaterThan(0);
+    expect(scored).toBe(goalsIn(before, serieA.id) - ownGoals);
     const top = history.seasons[0]?.topScorers["serie-a"];
     expect(top?.goals).toBe(Math.max(...Object.values(before.history.current.goals["serie-a"] ?? {})));
     expect(top?.goals).toBeGreaterThan(10);
@@ -90,9 +112,10 @@ describe("club history over several seasons", () => {
     // Counted on the season's last day: the close forgets players who left with few games, as sales do.
     const apps = Object.values(run.lastDays[0]?.history.players["flamengo-rj"] ?? {}).reduce((sum, p) => sum + p.apps, 0);
     const games = (run.lastDays[0]?.fixtures ?? []).filter((f) => f.homeId === "flamengo-rj" || f.awayId === "flamengo-rj").length;
-    // Eleven starters a game, and up to five substitutes who come on.
-    expect(apps).toBeGreaterThanOrEqual(11 * games);
-    expect(apps).toBeLessThanOrEqual(16 * games);
+    // Eleven starters a game, and every substitute who comes on.
+    const cameOn = run.cameOn.get(`${run.lastDays[0]?.season} flamengo-rj`) ?? 0;
+    expect(cameOn).toBeGreaterThan(games);
+    expect(apps).toBe(11 * games + cameOn);
     // Whether one club's regulars reach idol status in three seasons depends on who it sells, so
     // idols are counted over every Série A club.
     const serieA = Object.values(run.final.clubs).filter((club) => club.division === "A").map((club) => club.id);
