@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 import tm_fetch
-from tests.world_fixture import Offline, saved_cache, scrape_tiny_world
+from tests.world_fixture import QUALIFIERS, Offline, saved_cache, scrape_tiny_world
 
 
 class ScrapeWorldTest(unittest.TestCase):
@@ -94,6 +94,23 @@ class ScrapeWorldTest(unittest.TestCase):
         run = scrape_tiny_world(sqlite3.connect(":memory:"), self.cache, Offline())
         self.assertIn("no clubs on /x/startseite/wettbewerb/GB1", run.failures)
         self.assertFalse(league.exists())
+
+    def test_drops_a_facts_page_that_is_not_a_club_page_and_guesses_the_colours(self) -> None:
+        facts = self.cache / tm_fetch.cache_name("/x/datenfakten/verein/31")
+        facts.write_text("<html><body>Are you a robot?</body></html>")
+        db = sqlite3.connect(":memory:")
+        run = scrape_tiny_world(db, self.cache, Offline())
+        self.assertTrue(any("/x/datenfakten/verein/31" in failure for failure in run.failures))
+        self.assertFalse(facts.exists(), "the next run should download the page again")
+        source = db.execute("SELECT source FROM field_sources WHERE entity_id = 'tm-31' AND field = 'colours'").fetchone()
+        self.assertEqual(source, ("guess",))
+
+    def test_drops_a_national_team_list_without_teams_from_the_cache(self) -> None:
+        listing = self.cache / tm_fetch.cache_name(QUALIFIERS)
+        listing.write_text("<html><body>Are you a robot?</body></html>")
+        run = scrape_tiny_world(sqlite3.connect(":memory:"), self.cache, Offline())
+        self.assertIn(f"no teams on {QUALIFIERS}", run.failures)
+        self.assertFalse(listing.exists())
 
     def test_keeps_two_national_teams_with_the_same_name_apart(self) -> None:
         brazil = (self.cache / tm_fetch.cache_name("/brasilien/kader/verein/3439/plus/1")).read_text()

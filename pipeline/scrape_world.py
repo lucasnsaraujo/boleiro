@@ -73,10 +73,14 @@ class Scraper:
         try:
             return tm_pages.squad(html)
         except ValueError as error:
-            (self.fetcher.cache / cache_name(path)).unlink(missing_ok=True)
-            self.run.failures.append(f"{error} on {path}")
-            self.log(f"  failed: {error} on {path}")
+            self.drop(path, f"{error} on {path}")
             return None
+
+    def drop(self, path: str, problem: str) -> None:
+        """Lists a page that came back as something else and removes it from the cache, so the next run asks again."""
+        (self.fetcher.cache / cache_name(path)).unlink(missing_ok=True)
+        self.run.failures.append(problem)
+        self.log(f"  failed: {problem}")
 
     def insert(self, table: str, *values: object, verb: str = "INSERT") -> None:
         marks = ", ".join("?" for _ in range(len(values) + 1))
@@ -142,8 +146,15 @@ class Scraper:
         return found
 
     def colours(self, tm_id: str) -> list[str]:
-        html = self.page(f"/x/datenfakten/verein/{tm_id}")
-        return tm_pages.club_colours(html) if html else []
+        path = f"/x/datenfakten/verein/{tm_id}"
+        html = self.page(path)
+        if html is None:
+            return []
+        try:
+            return tm_pages.club_colours(html)
+        except ValueError as error:
+            self.drop(path, f"{error} on {path}")
+            return []
 
     def crest(self, club_id: str, image: str) -> None:
         try:
@@ -182,8 +193,7 @@ class Scraper:
             clubs = tm_pages.participants(html) if html else []
             self.log(f" {league.code}: {len(clubs)} clubs")
             if html is not None and not clubs:
-                (self.fetcher.cache / cache_name(league.clubs_page)).unlink(missing_ok=True)
-                self.run.failures.append(f"no clubs on {league.clubs_page}")
+                self.drop(league.clubs_page, f"no clubs on {league.clubs_page}")
             for ref in clubs:
                 self.club(ref, country.id, league_id)
         if country.cup:
@@ -204,7 +214,10 @@ class Scraper:
         refs: dict[str, tm_pages.ClubRef] = {}
         for path in lists:
             html = self.page(path)
-            for ref in tm_pages.participants(html) if html else []:
+            teams = tm_pages.participants(html) if html else []
+            if html is not None and not teams:
+                self.drop(path, f"no teams on {path}")
+            for ref in teams:
                 refs.setdefault(ref.tm_id, ref)
         self.log(f"national teams: {len(refs)}")
         for seq, ref in enumerate(refs.values()):

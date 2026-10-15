@@ -206,6 +206,9 @@ def squad(html: str) -> Squad:
 
 
 def club_colours(html: str) -> list[str]:
-    """A club facts page's colours, as `#RRGGBB`, in the site's order."""
-    box = soup_of(html).select_one("p.vereinsfarbe")
+    """A club facts page's colours, as `#RRGGBB`, in the site's order; some clubs list none."""
+    soup = soup_of(html)
+    if soup.select_one("header.data-header") is None:
+        raise ValueError("not a club facts page: no data header")
+    box = soup.select_one("p.vereinsfarbe")
     return [colour.upper() for colour in HEX.findall(str(box))] if box else []
