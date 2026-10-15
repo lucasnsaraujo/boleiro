@@ -31,7 +31,7 @@ test("from the hub, set the lineup, play the round live with a substitution, and
   for (let stop = 0; stop < MAX_STOPS && !(await back.isVisible()); stop++) {
     await expect(page.getByRole("button", { name: "Pausar" }).and(page.locator("[aria-pressed=true]")).or(back)).toBeVisible({ timeout: 20_000 });
     if (await back.isVisible()) break;
-    if (await leaveIncident(page)) continue;
+    await leaveIncident(page);
     if (!hasSubbed) {
       await page.getByRole("button", { name: /^Escalação/ }).click();
       await expect(lineup).toContainText("4-3-3 · ofensiva");

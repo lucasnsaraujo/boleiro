@@ -13,7 +13,7 @@ export type Incident = {
   minute: number;
   sentOff: { playerId: string; card: Exclude<Booking["card"], "yellow"> }[];
   hurt: { playerId: string; days: number }[];
-  /** How many of the coach's players are left on the pitch. */
+  /** How many of the coach's players are left on the pitch: those sent off and those hurt earlier and never replaced are not. */
   playersLeft: number;
   suggestions: Suggestion[];
 };
@@ -56,7 +56,8 @@ export function incidentAt(coach: CoachSide, events: readonly MatchEvent[], club
     const free = bench.filter(isFree);
     suggest(playerId, player, strongest(free.filter((p) => p.group === player.group)) ?? strongest(free.filter((p) => p.group !== "GK")));
   }
-  return { minute: limits.minute, sentOff, hurt, playersLeft: onPitch.length, suggestions };
+  const isHurtBefore = (p: SquadPlayer) => limits.hurt.has(p.id) && !hurt.some((h) => h.playerId === p.id);
+  return { minute: limits.minute, sentOff, hurt, playersLeft: onPitch.filter((p) => !isHurtBefore(p)).length, suggestions };
 }
 
 const DAYS_PER_WEEK = 7;

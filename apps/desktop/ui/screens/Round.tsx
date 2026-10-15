@@ -53,6 +53,15 @@ const NO_COLOURS = { primary: "#eef3e8", secondary: "#0a1a10" };
 const PAUSED_CROWD = 0.6;
 
 type PreMatch = { plan: MatchDayPlan; clubs: Readonly<Record<string, Club>>; date: string };
+
+/** The red cards and injuries of the coach's side the round stopped on at `minute`, unless he has already answered them. */
+function incidentOf(round: LiveRound, minute: number): Incident | null {
+  const reason = pauseReason(round, minute);
+  const { coach, coachClubId } = round;
+  const match = round.matches.find((m) => m.fixtureId === coach?.fixtureId);
+  if ((reason !== "coachMatch" && reason !== "halfTime") || !coach || !match || !coachClubId || coach.lastChangeMinute === minute) return null;
+  return incidentAt(coach, match.events, coachClubId, liveLimits(coach, match.events, coachClubId, minute));
+}
 /** A goal being celebrated on a row: the scoring club's colour, its side, and the round's goal count so each goal replays the animation. */
 type Flash = { colour: string; side: Side; count: number };
 /** A missed penalty or a red card called out on its row with a chip, counted like goals so each replays. */
@@ -105,6 +114,7 @@ export function Round() {
         roundRef.current = live;
         setRound(live);
         setMinute(at);
+        setIncident(incidentOf(live, at));
         // Back after a final whistle that didn't go through: no new minute will call it again.
         if (at >= FULL_TIME) void finish();
         return;
@@ -181,10 +191,7 @@ export function Round() {
     }
     const reason = pauseReason(live, minute);
     if (reason === "halfTime" || reason === "coachMatch") pause();
-    const coachMatch = live.matches.find((m) => m.fixtureId === live.coach?.fixtureId);
-    if (reason === "coachMatch" && live.coach && coachMatch && live.coachClubId) {
-      setIncident(incidentAt(live.coach, coachMatch.events, live.coachClubId, liveLimits(live.coach, coachMatch.events, live.coachClubId, minute)));
-    }
+    setIncident(incidentOf(live, minute));
     if (reason === "fullTime") void finish();
   }, [minute]);
 
@@ -394,7 +401,7 @@ export function Round() {
           <span>{formatBarDate(round.date)}</span>
         </header>
       )}
-      {error && !isLineupOpen && <p className="status error live-error">{error}</p>}
+      {error && !isLineupOpen && !incident && <p className="status error live-error">{error}</p>}
 
       <div className="live-list">
         {minute >= FULL_TIME && <MatchReport round={round} />}

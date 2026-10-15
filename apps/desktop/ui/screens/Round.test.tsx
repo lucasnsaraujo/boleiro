@@ -10,6 +10,7 @@ import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
 import type { CommandResults, CommandType, GameCommand } from "@boleiro/game-client/engine/createEngineSession";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
+import { HALF_TIME, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import { Round } from "./Round.js";
 
 const closers: (() => void)[] = [];
@@ -407,4 +408,54 @@ test("leaving the incident window as it is changes nothing and plays on", async 
   play(2);
   expect(shownMinute()).toBeGreaterThan(MINUTE);
   expect(apply.mock.calls.some(([command]) => command.type === "changeLive")).toBe(false);
+});
+
+/** A session whose coach's match has `incident` at its minute and nothing else of the coach's side before it. */
+function withIncidentAt(minute: number, incident: (coach: NonNullable<CommandResults["startRound"]["coach"]>) => MatchEvent) {
+  return (engine: EngineClient): EngineClient => {
+    function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+    async function apply(command: GameCommand): Promise<unknown> {
+      const result = await engine.apply(command);
+      if (command.type !== "startRound") return result;
+      const round = result as CommandResults["startRound"];
+      const coach = round.coach;
+      if (!coach) throw new Error("the coach has a match");
+      const quiet = (e: MatchEvent) => e.minute > minute || !("clubId" in e);
+      return { ...round, matches: round.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [incident(coach), ...m.events.filter(quiet)] } : m)) };
+    }
+    async function liveRound() {
+      const round = await engine.liveRound();
+      const coach = round?.coach;
+      if (!round || !coach) return round;
+      const quiet = (e: MatchEvent) => e.minute > minute || !("clubId" in e);
+      return { ...round, matches: round.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [incident(coach), ...m.events.filter(quiet)] } : m)) };
+    }
+    return { ...engine, apply, liveRound };
+  };
+}
+
+const hurtForward = (minute: number) => (coach: NonNullable<CommandResults["startRound"]["coach"]>): MatchEvent => {
+  const forward = coach.squad.find((p) => coach.starters.includes(p.id) && p.group === "ATT");
+  return { type: "injury", minute, clubId: "bahia-ba", playerId: forward?.id ?? "", days: 9 };
+};
+
+test("an injury in first-half stoppage time opens the incident window at half-time", async () => {
+  const given = await onMatchDay(withIncidentAt(HALF_TIME, hurtForward(HALF_TIME)));
+  await kickOff(given);
+  for (let minute = 0; minute < HALF_TIME + 2; minute++) play(1);
+  expect(shownMinute()).toBe(HALF_TIME);
+  expect(await screen.findByRole("dialog", { name: /^Machucou:/ })).toBeTruthy();
+});
+
+test("coming back to a round stopped on an incident opens its window again", async () => {
+  const MINUTE = 6;
+  const given = await onMatchDay(withIncidentAt(MINUTE, hurtForward(MINUTE)));
+  await kickOff(given);
+  for (let minute = 0; minute < MINUTE + 2; minute++) play(1);
+  await screen.findByRole("dialog", { name: /^Machucou:/ });
+  await vi.waitFor(async () => expect((await given.engine.liveRound())?.seenMinute).toBe(MINUTE));
+  cleanup();
+  openRound(given);
+  expect(await screen.findByRole("dialog", { name: /^Machucou:/ })).toBeTruthy();
+  expect(shownMinute()).toBe(MINUTE);
 });

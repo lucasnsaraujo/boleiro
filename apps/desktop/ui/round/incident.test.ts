@@ -77,3 +77,11 @@ test("a layoff reads in days when short and in weeks when long", () => {
   expect(layoffText(14)).toBe("2 semanas");
   expect(layoffText(18)).toBe("2 a 3 semanas");
 });
+
+test("a side that lost a player hurt earlier and never replaced counts him out of those left", () => {
+  const events: MatchEvent[] = [
+    { type: "injury", minute: 20, clubId: CLUB, playerId: "m3", days: 9 },
+    { type: "card", minute: 50, clubId: CLUB, playerId: "m1", card: "red" },
+  ];
+  expect(at(events, 50)?.playersLeft).toBe(9);
+});
