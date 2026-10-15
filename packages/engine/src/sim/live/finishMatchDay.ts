@@ -10,6 +10,7 @@ import { countCards, type Booking } from "../discipline/drawCards.js";
 import { endSeason } from "../endSeason.js";
 import { closeMonth } from "../finances/closeMonth.js";
 import { payCopaPrizes } from "../finances/payCopaPrizes.js";
+import { payTitleBonuses } from "../finances/payTitleBonuses.js";
 import { recordMatchFinances } from "../finances/recordMatchFinances.js";
 import { playFriendlies } from "../friendlies/friendlies.js";
 import { releaseTicketPrice } from "../finances/setTicketPrice.js";
@@ -122,7 +123,9 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   const coach = tactics === state.coach.tactics ? state.coach : { ...state.coach, tactics };
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: day.discipline, coach };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
-  next = recordMatches(next, played, day.sheets);
+  const bonuses = payTitleBonuses(next, recordMatches(next, played, day.sheets));
+  next = bonuses.state;
+  events.push(...bonuses.events);
   next = recordMatchFinances(next, played);
   const prizes = payCopaPrizes(next, played);
   next = prizes.state;

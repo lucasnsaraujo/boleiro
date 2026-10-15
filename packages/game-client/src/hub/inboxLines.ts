@@ -115,6 +115,8 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         const paid = competition(event.competitionId);
         return isOurs(event.clubId) ? [`${paid ? competitionName(paid) : "Copa do Brasil"}: prêmio de ${formatMoney(event.amount)}`, "good"] : null;
       }
+      case "titleBonusPaid":
+        return isOurs(event.clubId) ? [`Bicho do título pago ao elenco: ${formatMoney(event.amount)}`, "neutral"] : null;
       case "friendlyPlayed": {
         const { homeId, awayId, result, fee } = event.friendly;
         if (!result || !(isOurs(homeId) || isOurs(awayId))) return null;

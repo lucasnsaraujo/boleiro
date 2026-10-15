@@ -60,6 +60,11 @@ describe("board and money", () => {
     expect(line({ type: "friendlyCalledOff", friendly })).toMatchObject({ text: "Amistoso contra o Vitória cancelado: a data virou jogo oficial", tone: "neutral" });
   });
 
+  test("a title bonus is the squad's bicho", () => {
+    expect(line({ type: "titleBonusPaid", clubId: "bahia-ba", competitionId: baiano.id, amount: 2_000_000 })).toMatchObject({ text: "Bicho do título pago ao elenco: R$ 2 mi", tone: "neutral" });
+    expect(line({ type: "titleBonusPaid", clubId: "vitoria-ba", competitionId: baiano.id, amount: 2_000_000 })).toBeUndefined();
+  });
+
   test("late wages and forced sales are bad news", () => {
     expect(line({ type: "wagesLate", clubId: "bahia-ba", owed: 4_000_000, months: 1 })).toMatchObject({ text: "Salários atrasados: R$ 4 mi em aberto", tone: "bad" });
     expect(line({ type: "forcedSale", clubId: "bahia-ba", playerId: own.id, buyerId: "vitoria-ba", fee: 900_000 })).toMatchObject({
