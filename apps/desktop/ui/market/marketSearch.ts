@@ -111,7 +111,19 @@ export function marketClubs(state: Pick<GameState, "clubs" | "coachClubId">, div
     .map((club) => ({ value: club.id, label: club.shortName, group: division || !club.division ? undefined : leagueName(club.division) }));
 }
 
-// The data names countries in English; the language's own region names give them in Portuguese, through their codes.
+// The data names countries in English, Transfermarkt's way; the language's own region names give most of them in
+// Portuguese, through their codes. These are the names Transfermarkt spells its own way, or that have no region code.
+const TRANSFERMARKT_NAMES: Record<string, string> = {
+  England: "Inglaterra",
+  Scotland: "Escócia",
+  Wales: "País de Gales",
+  "Northern Ireland": "Irlanda do Norte",
+  "Korea, South": "Coreia do Sul",
+  "Cote d'Ivoire": "Costa do Marfim",
+  "DR Congo": "RD Congo",
+  "Sao Tome and Principe": "São Tomé e Príncipe",
+  "St. Vincent & Grenadinen": "São Vicente e Granadinas",
+};
 const REGION_CODES = Array.from({ length: 26 * 26 }, (_, i) => String.fromCharCode(65 + Math.floor(i / 26), 65 + (i % 26)));
 let portugueseNames: Map<string, string> | null = null;
 
@@ -125,7 +137,7 @@ function inPortuguese(country: string): string {
       return from && to ? [[from, to] as const] : [];
     }));
   }
-  return portugueseNames.get(country) ?? country;
+  return TRANSFERMARKT_NAMES[country] ?? portugueseNames.get(country) ?? country;
 }
 
 /** The nationalities among other clubs' players and free agents, named in Portuguese, alphabetically. */
@@ -133,7 +145,9 @@ export function marketNationalities(state: Pick<GameState, "coachClubId" | "play
   const found = new Set<string>();
   for (const player of Object.values(state.players)) if (player.clubId !== state.coachClubId) for (const n of player.nationalities) found.add(n);
   for (const player of Object.values(state.market.freeAgents)) for (const n of player.nationalities) found.add(n);
-  return [...found].map((value) => ({ value, label: inPortuguese(value) })).sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
+  // The data's "N/A", split at its slash like a second nationality, leaves single letters.
+  return [...found]
+    .filter((value) => value.length > 1).map((value) => ({ value, label: inPortuguese(value) })).sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
 }
 
 /** The weakest and strongest rounded strength among other clubs' players and free agents: the strength range's ends. */
@@ -182,7 +196,8 @@ export function searchMarket(state: MarketState, filters: MarketFilters, limit: 
   const matches = (player: SimPlayer, free: boolean): boolean => {
     const strength = Math.round(player.strength);
     if (filters.nationality && !player.nationalities.includes(filters.nationality)) return false;
-    if (filters.minMinutes !== null && player.condition.seasonMinutes < filters.minMinutes) return false;
+    // A free agent keeps the minutes of the season he was released in, which may be long gone.
+    if (filters.minMinutes !== null && (free ? 0 : player.condition.seasonMinutes) < filters.minMinutes) return false;
     if (filters.minGoals !== null && seasonGoals(player.id) < filters.minGoals) return false;
     if (filters.group && player.group !== filters.group) return false;
     if (filters.minStrength !== null && strength < filters.minStrength) return false;

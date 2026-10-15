@@ -121,6 +121,14 @@ describe("searching the market", () => {
     expect(search({ minGoals: 1, minMinutes: 1 }, state)).toEqual([]);
   });
 
+  test("a free agent's minutes are from before he was released, maybe seasons ago, so the minutes filter counts none for him", () => {
+    const released = { ...anyPlayerOf("vitoria-ba"), id: "free-1" };
+    const free = { ...released, condition: { ...released.condition, seasonMinutes: 2000 } };
+    const state = { ...game, market: { ...game.market, freeAgents: { [free.id]: free } } };
+    expect(search({ minMinutes: 90 }, state)).toEqual([]);
+    expect(search({ status: "freeAgent" }, state).map((r) => r.id)).toEqual([free.id]);
+  });
+
   test("filters combine: a league, a nationality and a position together", () => {
     const rows = search({ division: "A", nationality: "Argentina", group: "MID" });
     expect(rows.length).toBeGreaterThan(0);
@@ -144,6 +152,15 @@ describe("searching the market", () => {
     const nationalities = marketNationalities(game);
     expect(nationalities).toContainEqual({ value: "Brazil", label: "Brasil" });
     expect(nationalities).toContainEqual({ value: "Uruguay", label: "Uruguai" });
+    const odd = Object.values(game.players).slice(0, 6);
+    const named = (nationalities: string[]) => odd.map((p, i): [string, SimPlayer] => [p.id, { ...p, nationalities: [nationalities[i] ?? "Brazil"] }]);
+    const withOdd = { ...game, players: { ...game.players, ...Object.fromEntries(named(["England", "Korea, South", "Cote d'Ivoire", "DR Congo", "N", "A"])) } };
+    const odds = marketNationalities(withOdd);
+    expect(odds).toContainEqual({ value: "England", label: "Inglaterra" });
+    expect(odds).toContainEqual({ value: "Korea, South", label: "Coreia do Sul" });
+    expect(odds).toContainEqual({ value: "Cote d'Ivoire", label: "Costa do Marfim" });
+    expect(odds).toContainEqual({ value: "DR Congo", label: "RD Congo" });
+    expect(odds.some((option) => option.value.length < 2)).toBe(false);
     const labels = nationalities.map((option) => option.label);
     expect(labels).toEqual(labels.toSorted((a, b) => a.localeCompare(b, "pt-BR")));
   });
