@@ -4,6 +4,7 @@ import type { Division } from "@boleiro/data/players";
 import type { Board } from "@boleiro/engine/sim/coach/boardExpectations";
 import { formatDayMonth, formatGameDate } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
+import { TRANSFER_WINDOWS } from "@boleiro/engine/sim/transfers/transferWindows";
 import { saveToSlot } from "@boleiro/game-client/saves/saveToSlot";
 import { gameSlots, type GameSlot } from "@boleiro/game-client/saves/slotMeta";
 import { boardGoal, clubChoices, filterClubs, statesOf, type ClubChoice, type ClubFilter } from "@boleiro/game-client/screens/clubChoices";
@@ -29,6 +30,11 @@ const MAX_COACHES = 8;
 /** The market clock's choices, in minutes per coach per window; null runs no clock. */
 const CLOCK_MINUTES: readonly (number | null)[] = [null, 3, 5, 10];
 const DEFAULT_CLOCK_MINUTES = 5;
+const MID_SEASON_WINDOW = TRANSFER_WINDOWS.find((w) => w.isMidSeason);
+const SEASON_BREAK_WINDOW = TRANSFER_WINDOWS.find((w) => !w.isMidSeason);
+/** "20 jul a 11 set", from a window's month-day bounds. */
+const windowSpan = (window: (typeof TRANSFER_WINDOWS)[number] | undefined) =>
+  window ? `${formatDayMonth(`2000-${window.opens}`)} a ${formatDayMonth(`2000-${window.closes}`)}` : "";
 // The first stickers of the grid are dealt one after another; past these, the rest land together.
 const DEALT_STICKERS = 20;
 
@@ -79,6 +85,7 @@ export function NewGame() {
   const [confirming, setConfirming] = useState(false);
   const [starting, setStarting] = useState(false);
   const [playsEstaduais, setPlaysEstaduais] = useState(true);
+  const [hasMidSeasonWindow, setHasMidSeasonWindow] = useState(true);
   const [failed, setFailed] = useState(false);
   const [others, setOthers] = useState<OtherCoach[]>([]);
   // Which coach the club grid picks for: 0 is the first, 1 on the others in turn order.
@@ -148,6 +155,7 @@ export function NewGame() {
           coachClubId,
           careerMode: picked.mode === "career",
           stateChampionships: playsEstaduais,
+          ...(hasMidSeasonWindow ? {} : { midSeasonWindow: false }),
           ...(hotSeat ? { hotSeat } : {}),
           ...(clockMinutes === null ? {} : { marketClockSeconds: clockMinutes * 60 }),
         },
@@ -278,6 +286,21 @@ export function NewGame() {
                 <span className="mute">{playsEstaduais ? "De janeiro a março, antes do Brasileirão." : "Sem estaduais, o ranking nacional dá as vagas da Copa do Brasil e da Série D."}</span>
               </p>
               <button type="button" className={playsEstaduais ? "sw on" : "sw"} aria-label="Estaduais" aria-pressed={playsEstaduais} onClick={() => setPlaysEstaduais(!playsEstaduais)} />
+            </div>
+
+            <div className="career-new-free">
+              <p>
+                <b>Janela no meio da temporada</b>
+                <br />
+                <span className="mute">{hasMidSeasonWindow ? `Abre de ${windowSpan(MID_SEASON_WINDOW)}, com o Brasileirão rolando.` : `Só a janela entre temporadas, de ${windowSpan(SEASON_BREAK_WINDOW)}.`}</span>
+              </p>
+              <button
+                type="button"
+                className={hasMidSeasonWindow ? "sw on" : "sw"}
+                aria-label="Janela no meio da temporada"
+                aria-pressed={hasMidSeasonWindow}
+                onClick={() => setHasMidSeasonWindow(!hasMidSeasonWindow)}
+              />
             </div>
 
             <div className="career-new-free career-new-clock">

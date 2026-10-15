@@ -29,7 +29,7 @@ import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
 import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
 import { readStoredSave, splitGame, writeSessionSave, writeSessionShards, type SaveShards, type SeatParts, type SplitGame, type StoredSave } from "./sessionSave.js";
 
-export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode" | "stateChampionships" | "hotSeat" | "marketClockSeconds">;
+export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode" | "stateChampionships" | "midSeasonWindow" | "hotSeat" | "marketClockSeconds">;
 export type GameSummary = Pick<GameState, "date" | "season" | "coachClubId">;
 export type AdvanceResult = { date: IsoDate; events: DayEvent[] };
 export type PlayResult = { date: IsoDate; stop: StopReason; daysPlayed: number };
@@ -292,7 +292,7 @@ export function createEngineSession(files: GameFiles) {
 
   function clockView(): MarketClockView | null {
     const game = current();
-    return marketClockView(clock, game.date, game.marketClockSeconds);
+    return marketClockView(clock, game, game.date, game.marketClockSeconds);
   }
 
   function addNews(lines: readonly InboxLine[]) {
@@ -534,7 +534,7 @@ export function createEngineSession(files: GameFiles) {
     spendMarketTime({ seconds, playerId }) {
       const game = current();
       const isOwnPlayer = playerId !== undefined && game.coachClubId !== null && game.players[playerId]?.clubId === game.coachClubId;
-      if (!isOwnPlayer) clock = spendMarketTime(clock, game.date, game.marketClockSeconds, seconds);
+      if (!isOwnPlayer) clock = spendMarketTime(clock, game, game.date, game.marketClockSeconds, seconds);
       return clockView();
     },
   };

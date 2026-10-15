@@ -21,7 +21,7 @@ import { Crest } from "../clubs/Crest.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import "./calendar.css";
 
-const CALENDAR_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions", "players", "discipline"] as const;
+const CALENDAR_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions", "players", "discipline", "hasMidSeasonWindow"] as const;
 type CalendarState = Pick<GameState, (typeof CALENDAR_KEYS)[number]>;
 
 const WEEKDAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"] as const;

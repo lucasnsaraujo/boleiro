@@ -35,7 +35,7 @@ export function listPlayer(state: GameState, playerId: string, way: SaleWay | nu
   }
   // Clubs bid from tomorrow, and the best bid takes him the morning after the last day of bids, which
   // must still be inside the window.
-  const closes = windowClosesOn(state.date);
+  const closes = windowClosesOn(state, state.date);
   const lastInWindow = closes && addDays(closes, -1);
   if (!lastInWindow || lastInWindow <= state.date) throw new Error("an auction needs the transfer window open a few more days");
   const fourDays = addDays(state.date, AUCTION_DAYS);
