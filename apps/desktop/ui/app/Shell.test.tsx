@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import userEvent from "@testing-library/user-event";
 import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider, type RouteObject } from "react-router";
+import { useState } from "react";
 import { afterEach, expect, test } from "vitest";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
@@ -232,4 +233,37 @@ test("Novo jogo over a game the autosave holds whole goes straight on", async ()
   await userEvent.click(screen.getByRole("button", { name: "Jogo › Novo jogo" }));
   expect(screen.queryByRole("alertdialog")).toBeNull();
   expect(router.state.location.pathname).toBe("/new-game");
+});
+
+/** A screen with a dialog up over it, the way the newspaper or a confirm puts one up. */
+function ScreenUnderDialog() {
+  const [isOpen, setOpen] = useState(true);
+  return (
+    <>
+      <Options />
+      {isOpen && (
+        <section role="dialog" aria-label="Jornal">
+          <button onClick={() => setOpen(false)}>Fechar o jornal</button>
+        </section>
+      )}
+    </>
+  );
+}
+
+test("while a dialog is up the game keys do nothing, and F5 still can't reload the app", async () => {
+  const given = await services();
+  const router = openShellWith(given, [{ path: "/hub", element: <ScreenUnderDialog /> }, { path: "/tables", element: <h1>tela /tables</h1> }], "/hub");
+  fireEvent.keyDown(document, { key: "m" });
+  expect(screen.getByRole("checkbox", { name: "Sem som" })).toHaveProperty("checked", false);
+  fireEvent.keyDown(document, { key: "s", ctrlKey: true });
+  expect(fireEvent.keyDown(document, { key: "F2" })).toBe(false);
+  expect(fireEvent.keyDown(document, { key: "F5" })).toBe(false);
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  expect(router.state.location.pathname).toBe("/hub");
+  expect(screen.queryByRole("status")).toBeNull();
+  expect(await given.slots.list()).toEqual([]);
+
+  await userEvent.click(screen.getByRole("button", { name: "Fechar o jornal" }));
+  fireEvent.keyDown(document, { key: "F2" });
+  expect(await screen.findByRole("heading", { name: "tela /tables" })).toBeTruthy();
 });

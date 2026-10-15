@@ -233,6 +233,7 @@ function Paper({ news, onClose }: { news: InboxLine[]; onClose: () => void }) {
     <section
       id="hub-paper"
       className="note hub-paper"
+      role="dialog"
       aria-labelledby="hub-paper-title"
       onKeyDown={(event) => {
         if (event.key === "Escape") onClose();

@@ -30,6 +30,11 @@ const TOAST_MS = 2600;
 // The menu bar belongs to the app, not to a screen: it is built once, the first time the shell mounts.
 let hasNativeMenu = false;
 
+/** Whether a dialog is up (a confirm, a sheet, the newspaper): the game's shortcuts wait until it closes, Escape closes it. */
+function isDialogOpen(): boolean {
+  return document.querySelector('[role="dialog"], [role="alertdialog"]') !== null;
+}
+
 function windowTitle(pathname: string, clock: Clock | null): string {
   if (pathname === "/new-game") return "Boleiro · Nova carreira";
   if (!clock || pathname === "/") return "Boleiro";
@@ -95,7 +100,7 @@ export function Shell() {
   useEffect(() => {
     if (hasNativeMenu || !isTauri() || PLATFORM !== "mac") return;
     hasNativeMenu = true;
-    void installNativeMenu((id) => void runCommand(id));
+    void installNativeMenu((id) => !isDialogOpen() && runCommand(id));
   }, [runCommand]);
 
   const [toast, setToast] = useState<Toast | null>(null);
@@ -147,6 +152,10 @@ export function Shell() {
       if (!command || event.defaultPrevented || (event.key.length === 1 && !event.metaKey && !event.ctrlKey && isTyping(event.target))) return;
       if (event.key === " " && event.target === tabbedTo) return;
       const isMatchKey = MATCH_COMMAND_IDS.some((id) => id === command);
+      if (isDialogOpen()) {
+        if (!isMatchKey) event.preventDefault();
+        return;
+      }
       // Holding a match key runs it once, but its repeats stay off the page too: Space would press the focused button on release and scroll the board.
       if (isMatchKey && event.repeat) {
         if (isCommandAnswered(command)) event.preventDefault();

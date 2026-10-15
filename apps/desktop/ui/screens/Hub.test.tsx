@@ -126,6 +126,15 @@ test("the paper opens and closes from the dock", async () => {
   expect(screen.queryByText("Nada de novo por enquanto.")).toBeNull();
 });
 
+test("the open paper is a dialog named Jornal that takes focus and closes on Escape", async () => {
+  openHub(await services("bahia-ba"));
+  await userEvent.click(await screen.findByRole("button", { name: /^Jornal/ }));
+  const paper = screen.getByRole("dialog", { name: "Jornal" });
+  expect(document.activeElement).toBe(within(paper).getByRole("heading", { name: "Jornal" }));
+  await userEvent.keyboard("{Escape}");
+  expect(screen.queryByRole("dialog", { name: "Jornal" })).toBeNull();
+});
+
 test("a coach without a club waits for offers instead of playing a round", async () => {
   openHub(await services(null));
   expect(await screen.findByRole("heading", { name: "Sem clube" })).toBeTruthy();
