@@ -128,8 +128,9 @@ export function Tables() {
     return {
       tabs: found.tabs,
       otherStates: found.otherStates.toSorted(byName),
-      southAmerica: SOUTH_AMERICA.filter((country) => state.world?.[country.id]),
-      europe: EUROPE.filter((country) => state.world?.[country.id]),
+      // A country in the full tier shows its leagues with the game's own tables, not as a result-only one.
+      southAmerica: SOUTH_AMERICA.filter((country) => state.world?.[country.id] && !state.world[country.id]?.isFullTier),
+      europe: EUROPE.filter((country) => state.world?.[country.id] && !state.world[country.id]?.isFullTier),
       clubs: { ...WORLD_FACES, ...state.clubs },
     };
   }, [state]);
