@@ -83,7 +83,13 @@ function withGate(finance: ClubFinance, fixture: Fixture, crowd: number, gate: n
   return { ...finance, homeGates: [...(finance.homeGates ?? []), game].slice(-HOME_GATES_KEPT) };
 }
 
-/** Books the home club's gate and both clubs' form for each fixture played today, in one copy of the finances map. */
+/** How many real games a game of this stage stands for in the season's money (`Competition.gameScales`). */
+export const gameScaleOf = (state: Pick<GameState, "competitions">, fixture: GameWeight): number => state.competitions[fixture.competitionId]?.gameScales?.[fixture.stage] ?? 1;
+
+/**
+ * Books the home club's gate and both clubs' form for each fixture played today, in one copy of the
+ * finances map. On shorter formats a game's gate counts for the real games it stands for.
+ */
 export function recordMatchFinances(state: GameState, played: readonly Fixture[]): GameState {
   if (!played.length) return state;
   const draft: GameState = { ...state, finances: copyRecord(state.finances) };
@@ -97,7 +103,7 @@ export function recordMatchFinances(state: GameState, played: readonly Fixture[]
     const { homeGoals, awayGoals } = fixture.result;
     if (home) {
       const crowd = attendance(draft, home, fixture.homeId, fixture.awayId, fixture);
-      const gate = Math.round(crowd * home.ticketPrice);
+      const gate = Math.round(crowd * home.ticketPrice * gameScaleOf(state, fixture));
       const kept = isHumanClub(state, fixture.homeId) ? withGate(home, fixture, crowd, gate) : home;
       finances[fixture.homeId] = withResult(kept, pointsFor(homeGoals, awayGoals));
       bookMoneyInDraft(finances, fixture.homeId, { revenue: "tickets", amount: gate });
