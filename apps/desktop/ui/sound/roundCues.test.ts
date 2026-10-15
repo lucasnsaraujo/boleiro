@@ -14,7 +14,7 @@ function roundWith(ours: MatchEvent[], other: MatchEvent[] = [], hasCoach = true
   return {
     date: "2026-04-01",
     coachClubId: hasCoach ? "bahia" : null,
-    competitions: [{ id: "a", label: "Série A · 1ª rodada" }],
+    competitions: [{ id: "a", label: "Série A · 1ª rodada", hasHumanCoach: true }],
     matches: [
       { fixtureId: "other", competitionId: "a", homeId: "fla", awayId: "rem", events: [...other, ...whistles] },
       { fixtureId: "ours", competitionId: "a", homeId: "vit", awayId: "bahia", events: [...ours, ...whistles] },

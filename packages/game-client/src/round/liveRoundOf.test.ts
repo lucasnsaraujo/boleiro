@@ -77,3 +77,12 @@ test("the coach's side is asked about its red cards and injuries, and shows who 
   expect(shootout?.isOverruled ? shootout.kickers.slice(0, 3) : order).toEqual(shootout?.kickers.slice(0, 3));
   expect(plan.squad.find((p) => p.id === shootout?.kickers.at(-1))?.group).toBe("GK");
 });
+
+test("only the competitions a human coach's club plays in open the round; the others go under Outras ligas", () => {
+  const coachCompetition = kickOff.matches.find((m) => m.fixtureId === kickOff.coach?.fixtureId)?.competitionId;
+  expect(kickOff.competitions.find((c) => c.id === coachCompetition)?.hasHumanCoach).toBe(true);
+  expect(kickOff.competitions.some((c) => !c.hasHumanCoach)).toBe(true);
+  for (const competition of kickOff.competitions.filter((c) => c.hasHumanCoach)) {
+    expect(kickOff.matches.some((m) => m.competitionId === competition.id && (m.homeId === CLUB || m.awayId === CLUB))).toBe(true);
+  }
+});
