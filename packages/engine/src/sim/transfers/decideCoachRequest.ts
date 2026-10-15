@@ -1,7 +1,12 @@
 import { pickLineup } from "../../engine/match.js";
+import { addDays } from "../dates.js";
 import type { GameState, SimPlayer } from "../gameState.js";
+import { sellerPrice } from "./askingPrice.js";
 import { boardRefusal } from "./boardRefusal.js";
+import { coachMarketOf, withCoachMarket } from "./coachMarket.js";
 import type { CoachRequest } from "./coachRequest.js";
+import { isSquadFull } from "./squadCap.js";
+import type { Counter } from "./transferMarket.js";
 import { contractEnd } from "./expireContracts.js";
 import { LENDER_WAGE_SHARE, LOAN_MAX_AGE, loanUntil } from "./loans.js";
 import { marketView, type MarketView } from "./marketView.js";
@@ -17,6 +22,9 @@ type Outcome = { state: GameState; events: TransferEvent[] };
 const RANK = { A: 4, B: 3, C: 2, D: 1, state: 0 } as const;
 // guess: a renewal or a new deal can run at most five seasons (Lei 14.597/2023 caps contracts at five years).
 const MAX_CONTRACT_YEARS = 5;
+// guess: a club counters an offer of at least 60% of its price and ignores a lower one; its counter stands a week.
+const COUNTER_FLOOR = 0.6;
+const COUNTER_DAYS = 7;
 
 function refuse(state: GameState, request: CoachRequest, reason: string): Outcome {
   return { state, events: [{ type: "requestDecided", request, approved: false, reason }] };
@@ -27,6 +35,32 @@ function approve(state: GameState, request: CoachRequest, transfer: Transfer | n
   if (!transfer) return { state, events: [decided, ...extra] };
   const moved = movePlayer(state, transfer);
   return { state: moved.state, events: [decided, moved.event, ...extra] };
+}
+
+/**
+ * The selling club's answer to the coach's offer of `fee` BRL: null when it takes it (it reaches the
+ * club's price, or a counter the club made and still stands), else its counter-offer at its price, or
+ * no counter when the offer is too far below it to talk.
+ */
+function sellerAnswer(state: GameState, view: MarketView, player: SimPlayer, fee: number): { counter: Counter | null } | null {
+  const standing = coachMarketOf(state).counters[player.id];
+  const isStanding = standing && standing.clubId === player.clubId && standing.until >= state.date;
+  const price = isStanding ? standing.fee : sellerPrice(player, view.squad(player.clubId), view.tier(player.clubId), state.date, state.market.eurBrl);
+  if (fee >= price) return null;
+  if (fee < price * COUNTER_FLOOR) return { counter: null };
+  return { counter: { clubId: player.clubId, fee: price, until: addDays(state.date, COUNTER_DAYS) } };
+}
+
+function counter(state: GameState, request: CoachRequest, offered: Counter): Outcome {
+  const coach = coachMarketOf(state);
+  const countered = withCoachMarket(state, { ...coach, counters: { ...coach.counters, [request.playerId]: offered } });
+  return {
+    state: countered,
+    events: [
+      { type: "requestDecided", request, approved: false, reason: "counterOffer" },
+      { type: "counterOffered", playerId: request.playerId, clubId: offered.clubId, fee: offered.fee },
+    ],
+  };
 }
 
 function isWilling(view: MarketView, state: GameState, player: SimPlayer, clubId: string, wage: number, random: () => number, loan = false): boolean {
@@ -60,12 +94,18 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (own) return refuse(state, request, "alreadyAtClub");
       // The borrower can't sell what it doesn't own, and the owner can't sell a player it lent out.
       if (loan) return refuse(state, request, "onLoan");
+      if (isSquadFull(squad.length)) return refuse(state, request, "squadFull");
       const free = !state.players[player.id];
       const preContract = !free && isInPreContractWindow(player, state.date);
       if (!free && !preContract && !isWindowOpen(state.date)) return refuse(state, request, "windowClosed");
       if (!free && !preContract && view.squad(player.clubId).length <= MIN_SQUAD) return refuse(state, request, "sellerWillNotSell");
-      const wage = free ? Math.max(1, goingRate(player.strength, squad)) : wageDemand(player, squad);
-      const fee = free || preContract ? 0 : Math.round(valuePlayer(player, view.tier(player.clubId), state.date) * state.market.eurBrl * ASKING_PREMIUM);
+      let fee = free || preContract ? 0 : Math.round(valuePlayer(player, view.tier(player.clubId), state.date) * state.market.eurBrl * ASKING_PREMIUM);
+      if (request.fee !== undefined && fee > 0) {
+        const answer = sellerAnswer(state, view, player, request.fee);
+        if (answer) return answer.counter ? counter(state, request, answer.counter) : refuse(state, request, "offerTooLow");
+        fee = Math.round(request.fee);
+      }
+      const wage = request.wage !== undefined ? Math.max(1, Math.round(request.wage)) : free ? Math.max(1, goingRate(player.strength, squad)) : wageDemand(player, squad);
       const refused = boardRefusal(finance, bill, { upFront: fee + 3 * wage, wageChange: wage });
       if (refused) return refuse(state, request, refused);
       if (!isWilling(view, state, player, coachClubId, wage, random)) return refuse(state, request, "playerUnwilling");
@@ -107,6 +147,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
     }
     case "loanIn": {
       if (own || !state.players[player.id] || loan) return refuse(state, request, "notAvailable");
+      if (isSquadFull(squad.length)) return refuse(state, request, "squadFull");
       if (!isWindowOpen(state.date)) return refuse(state, request, "windowClosed");
       if (RANK[view.tier(player.clubId)] <= RANK[view.tier(coachClubId)]) return refuse(state, request, "lenderNotBigger");
       if (pickLineup([...view.squad(player.clubId)]).includes(player)) return refuse(state, request, "lenderNeedsHim");

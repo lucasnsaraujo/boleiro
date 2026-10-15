@@ -12,13 +12,16 @@ export const TRANSFER_WINDOWS: readonly { opens: string; closes: string }[] = [
 // guess: AI clubs do their business once a week while a window is open, not every day.
 const DAYS_BETWEEN_MARKET_DAYS = 7;
 
-function windowOf(date: IsoDate): { opens: IsoDate } | null {
+function windowOf(date: IsoDate): { opens: IsoDate; closes: IsoDate } | null {
   const day = date.slice(5);
   const found = TRANSFER_WINDOWS.find((w) => day >= w.opens && day <= w.closes);
-  return found ? { opens: `${date.slice(0, 4)}-${found.opens}` } : null;
+  return found ? { opens: `${date.slice(0, 4)}-${found.opens}`, closes: `${date.slice(0, 4)}-${found.closes}` } : null;
 }
 
 export const isWindowOpen = (date: IsoDate): boolean => windowOf(date) !== null;
+
+/** The last day of the window open on `date`, or null when none is. */
+export const windowClosesOn = (date: IsoDate): IsoDate | null => windowOf(date)?.closes ?? null;
 
 /** Whether AI clubs trade today: the window's first day and every week after it. */
 export function isMarketDay(date: IsoDate): boolean {
