@@ -4,6 +4,9 @@ import type { ClubLineup } from "@boleiro/data/dataPack";
 import type { Role, SquadPlayer } from "@boleiro/data/players";
 import { randomStream } from "../engine/random.js";
 import { openingCoach } from "./coach/openingCoach.js";
+import { openingField } from "./continental/continentalField.js";
+import { openContinentalCups } from "./continental/openContinentalCups.js";
+import { continentalStagesOf } from "./continental/payContinentalPrizes.js";
 import { newHistory } from "./history/history.js";
 import { recordStrengths } from "./history/recordStrengths.js";
 import { NEUTRAL_MOOD } from "./morale/clubMood.js";
@@ -126,7 +129,7 @@ export function newGame(
   const simPlayers = Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }]));
   const usualLineups = openingLineups(Object.keys(clubsById), squadsByClub(simPlayers), lineups, (row) => idOfRow.get(row));
   const market = openingMarket(seed);
-  return openingCoach({
+  const game = openingCoach({
     version: 4,
     packVersion,
     seed,
@@ -148,4 +151,12 @@ export function newGame(
     usualLineups,
     ...(world?.length ? { world: startWorld(world, season, seed) } : {}),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
+  return withContinentalCups(game, competitionMoney);
+}
+
+/** The game with CONMEBOL's cups when South America is in its world, their prizes kept in its economy. */
+function withContinentalCups(state: GameState, competitionMoney: CompetitionMoney): GameState {
+  const field = openingField(state);
+  if (!field) return state;
+  return openContinentalCups({ ...state, economy: { ...state.economy, continentalStages: continentalStagesOf(competitionMoney) } }, field);
 }

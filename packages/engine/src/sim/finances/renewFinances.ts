@@ -24,9 +24,11 @@ const CEILING_PULL = 0.25;
 /**
  * CONMEBOL's money for next season's continental entrants, in BRL at today's rate (the dollar moves
  * with the market's euro). guess: paid in full when the season turns, as the place is settled then,
- * though CONMEBOL pays during the group stage; the matches themselves are not played (spec #2).
+ * though CONMEBOL pays during the group stage, in a game without South America, which plays no CONMEBOL cup.
  */
 function continentalPrizes(ended: GameState, serieATable: readonly string[]): Map<string, number> {
+  // A game that plays CONMEBOL's cups pays their prizes match by match (payContinentalPrizes).
+  if (ended.economy.continentalStages) return new Map();
   const cup = Object.values(ended.competitions).find((c) => c.kind === "cup" && c.season === ended.season);
   const copa = cup?.kind === "cup" ? COPA_DO_BRASIL.finalists(cup, ended.fixtures.filter((f) => f.competitionId === cup.id)) : null;
   const { usdBrl, libertadoresGroups, libertadoresPreliminary, sulAmericanaGroups } = ended.economy.continental;

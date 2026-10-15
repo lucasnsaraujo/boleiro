@@ -73,7 +73,17 @@ export type StateCompetition = CompetitionBase & { kind: "state"; state: State }
 /** `clubIds` is the ranking order, best first; `entries[stage]` are the clubs that join at that stage. */
 export type CupCompetition = CompetitionBase & { kind: "cup"; entries: string[][] };
 
-export type Competition = LeagueCompetition | StateCompetition | CupCompetition;
+/** CONMEBOL's club cups the game plays. */
+export const CONTINENTAL_CUPS = ["libertadores", "sul-americana", "recopa"] as const;
+export type ContinentalCup = (typeof CONTINENTAL_CUPS)[number];
+
+/**
+ * A CONMEBOL cup: `entries[stage]` are the clubs that join at that stage, best seed first, and
+ * `countries` names each club's country ("br", "ar", ...), which the draws keep apart.
+ */
+export type ContinentalCompetition = CompetitionBase & { kind: "continental"; cup: ContinentalCup; entries: string[][]; countries: Record<string, string> };
+
+export type Competition = LeagueCompetition | StateCompetition | CupCompetition | ContinentalCompetition;
 
 export type SeasonCalendar = {
   season: number;
@@ -163,6 +173,11 @@ export type Economy = {
    * Sul-Americana group stage. `usdBrl` is the dollar rate when the market's euro rate was its opening one.
    */
   continental: { usdBrl: number; libertadoresGroups: number; libertadoresPreliminary: number; sulAmericanaGroups: number };
+  /**
+   * CONMEBOL's prize for each stage a club plays, in USD by stage name ("group-stage", "champion"),
+   * when the game plays the cups; a game without South America has none.
+   */
+  continentalStages?: Record<"libertadores" | "sul-americana", Record<string, number>>;
 };
 
 export type GameState = {

@@ -1,4 +1,6 @@
+import type { Club, State } from "@boleiro/data/clubs";
 import { inFormation, type Formation } from "../../engine/formations.js";
+import { guestClubOf } from "../continental/guestClubs.js";
 import type { Team } from "../../engine/match.js";
 import { DEFAULT_TACTICS, type Tactics } from "../coach/tactics.js";
 import type { Fixture, GameState, SimPlayer } from "../gameState.js";
@@ -19,6 +21,19 @@ export type MatchSetup = {
   away: Team;
   formations: { home: Formation; away: Formation };
 };
+
+// guess: a trip abroad in CONMEBOL's cups, about São Paulo to Buenos Aires; the clubs keep no cities.
+const INTERNATIONAL_TRIP_KM = 1_700;
+
+type MatchClub = Pick<Club, "id" | "shortName" | "pitch"> & { state: State | null };
+
+/** A club as a match reads it; a guest from a result-only country plays on grass and has no Brazilian state. */
+function matchClubOf(state: GameState, clubId: string): MatchClub | null {
+  const club = state.clubs[clubId];
+  if (club) return club;
+  const guest = guestClubOf(state, clubId);
+  return guest ? { id: guest.id, shortName: guest.name, pitch: "natural", state: null } : null;
+}
 
 /** The coach's choices for his club's match: his eleven, or none to let the AI pick it in his formation. */
 export type CoachPlan = { lineup: readonly SimPlayer[] | null; tactics: Tactics };
@@ -49,8 +64,8 @@ export function matchSetup(
   squadOf: (clubId: string) => readonly SimPlayer[],
   coach: CoachPlan,
 ): MatchSetup {
-  const homeClub = state.clubs[fixture.homeId];
-  const awayClub = state.clubs[fixture.awayId];
+  const homeClub = matchClubOf(state, fixture.homeId);
+  const awayClub = matchClubOf(state, fixture.awayId);
   if (!homeClub || !awayClub) throw new Error(`fixture ${fixture.id} has an unknown club`);
   const context: MatchContext = { date: fixture.date, pitch: homeClub.pitch };
   const isCoach = (clubId: string) => clubId === state.coachClubId;
@@ -67,7 +82,7 @@ export function matchSetup(
     context,
     homeLineup,
     awayLineup,
-    awayTravelKm: travelKm(awayClub.state, homeClub.state),
+    awayTravelKm: homeClub.state && awayClub.state ? travelKm(awayClub.state, homeClub.state) : INTERNATIONAL_TRIP_KM,
     home: team(homeClub.id, homeClub.shortName, homeLineup, homeTactics),
     away: team(awayClub.id, awayClub.shortName, awayLineup, awayTactics),
     formations: { home: homeTactics.formation, away: awayTactics.formation },

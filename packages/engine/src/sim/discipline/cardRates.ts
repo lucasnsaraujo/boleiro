@@ -26,7 +26,9 @@ export const CARD_RATES: Record<CardCompetition, CardRates> = {
   state: CUP,
 };
 
+// guess: no CONMEBOL card data was fetched; the continental cups take the Copa do Brasil's rates.
 export function cardCompetitionOf(competition: Competition): CardCompetition {
+  if (competition.kind === "continental") return "cup";
   return competition.kind === "league" ? competition.division : competition.kind;
 }
 

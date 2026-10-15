@@ -1,6 +1,7 @@
 import { simulateMatch } from "../../engine/match.js";
 import { randomStream } from "../../engine/random.js";
 import type { DayDecisions, DayEvent } from "../advanceDay.js";
+import { guestClubOf, guestSquadOf } from "../continental/guestClubs.js";
 import { CARD_RATES, cardCompetitionOf } from "../discipline/cardRates.js";
 import { countCards, drawCards, sendOffMinutes } from "../discipline/drawCards.js";
 import { openDisciplineDay } from "../discipline/recordCards.js";
@@ -25,12 +26,13 @@ const LINEUP_SIZE = 11;
 const TIMELINE_STREAM_SALT = 0x71e11e;
 const COACH_MATCH_STREAM_SALT = 0xc0ac5;
 
-/** Club squads, indexed on first use: most days have no match and need none. */
+/** Club squads, indexed on first use: most days have no match and need none. A continental cup's guest from abroad brings its own. */
 function squadsOf(state: GameState): (clubId: string) => SimPlayer[] {
   let squads: Map<string, SimPlayer[]> | null = null;
   return (clubId) => {
     squads ??= squadsByClub(state.players);
-    return squads.get(clubId) ?? [];
+    const guest = squads.has(clubId) ? null : guestClubOf(state, clubId);
+    return guest ? guestSquadOf(guest) : (squads.get(clubId) ?? []);
   };
 }
 

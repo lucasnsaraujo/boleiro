@@ -37,7 +37,8 @@ const COPA_DO_BRASIL_ROUNDS: { name: string; dates: IsoDate[] }[] = [
 const LEAGUE_WEEKDAYS = new Set([0, 3, 6]); // guess: Sunday, Wednesday and Saturday, the usual Brasileirão match days
 const MIN_DAYS_BETWEEN_GAMES = 3; // guess: two full rest days, the shortest gap CBF schedules in practice
 
-function inSeason(date2026: IsoDate, season: number): IsoDate {
+/** A 2026 date moved to `season`, on the same weekday within three days. */
+export function inSeason(date2026: IsoDate, season: number): IsoDate {
   const shifted = `${season}${date2026.slice(4)}`;
   const shift = (new Date(date2026).getUTCDay() - new Date(shifted).getUTCDay() + 7) % 7;
   return addDays(shifted, shift > 3 ? shift - 7 : shift);
