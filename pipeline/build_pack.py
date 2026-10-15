@@ -1,4 +1,4 @@
-"""Builds the data pack the game ships from the master database's latest snapshot.
+"""Builds the data pack the game ships from the master database's latest CSV-import snapshot.
 
 The pack is one gzipped JSON document with a column per field (`clubs.name[i]` is club i's name),
 read by packages/data/src/dataPack.ts. `packVersion` is a hash of the content, so a career saved
@@ -30,7 +30,8 @@ def columns(rows: list[sqlite3.Row], fields: dict[str, str]) -> dict[str, list[o
 
 
 def latest_snapshot(db: sqlite3.Connection) -> int:
-    found = db.execute("SELECT max(id) FROM snapshots").fetchone()[0]
+    """The newest snapshot of the Brazil CSVs; world scrapes are snapshots too, packed by build_world_packs.py."""
+    found = db.execute("SELECT max(id) FROM snapshots WHERE kind = 'csv-import'").fetchone()[0]
     if found is None:
         raise RuntimeError("the database has no snapshot; run import_csv.py first")
     return found

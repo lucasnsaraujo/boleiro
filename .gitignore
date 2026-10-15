@@ -10,4 +10,5 @@ playwright-report/
 apps/desktop/src-tauri/target/
 apps/desktop/src-tauri/gen/
 .vitest/
-pipeline/boleiro.db
+pipeline/boleiro.db*
+__pycache__/

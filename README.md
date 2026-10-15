@@ -43,18 +43,33 @@ Sofascore shows a Cloudflare captcha if it gets requests too fast, so `fetch_his
 
 ### Master database and data pack
 
-The game does not read `data/` or `assets/` directly. The pipeline loads those files into a SQLite master database, one snapshot per run, and builds the **data pack** the app ships from the latest snapshot:
+The game does not read `data/` or `assets/` directly. The pipeline loads those files into a SQLite master database, one snapshot per run, and builds the **data pack** the app ships from the latest CSV-import snapshot:
 
 ```sh
 python3 pipeline/import_csv.py data pipeline/boleiro.db                          # a new snapshot in the master DB (git-ignored)
 python3 pipeline/build_pack.py pipeline/boleiro.db packages/data/pack             # brazil.pack.json.gz
-.venv/bin/python pipeline/build_assets.py pipeline/boleiro.db packages/data/pack  # assets/ and assets.json, needs Pillow
+.venv/bin/python pipeline/build_assets.py pipeline/boleiro.db packages/data/pack  # assets/ and assets.json, needs Pillow (and data/tm_cache for world/)
 ```
 
 - `pipeline/schema.sql` is the database: countries, competitions, clubs, stadiums, players with ranked positions, values and contracts, finances, prize money, images, the source of each value, and every source's ids for a club or player. Every row carries its `snapshot_id`, and clubs and players keep the same id across snapshots, so two runs compare with a join. Back it up as a GitHub Release asset, not in git. The schema has no migrations yet: `CREATE TABLE IF NOT EXISTS` leaves an existing database's tables as they were, so after changing `schema.sql`, delete `pipeline/boleiro.db` and import again.
 - `packages/data/pack/brazil.pack.json.gz` is one JSON document with a column per field (`clubs.name[i]` is club i's name), gzipped. `packVersion` is a hash of its content. A new game stores it in the save (`GameState.packVersion`), so a career keeps the pack it started with; a save from before packs reads as `FIRST_PACK_VERSION`, the pack built from the 2026 Brazil CSVs, which keeps its value when newer packs ship. `packages/data/src/dataPack.ts` decodes it: `loadPack()` in Node, `parsePack` on the text Vite bundles through `gunzipImports` (`?gunzip` imports).
-- `packages/data/pack/assets/` holds every image in a folder per kind (`crest/`, `scoreboard_crest/`), deduplicated within the kind by the content hash in its name, as WebP and AVIF fitted into 64, 128 and 256 px boxes (never upscaled). `assets.json` lists them and which club uses which. The app ships only the WebP crests and picks the box that fills each crest's size, and twice that for sharp screens.
+- `packages/data/pack/assets/` holds every image in a folder per kind (`crest/`, `scoreboard_crest/`), deduplicated within the kind by the content hash in its name, as WebP and AVIF fitted into 64, 128 and 256 px boxes (never upscaled). `assets.json` lists them and which club uses which. The app ships only the WebP crests and picks the box that fills each crest's size, and twice that for sharp screens. `pack/world/assets/` and `pack/world/assets.json`, laid out the same, hold the crests of the latest world scrape's clubs that the CSV import doesn't have, in WebP only, so the v1 world's images stay within SPEC's ~25 MB; the app doesn't bundle them yet.
 - `pnpm test` builds a pack from `data/` in a temp folder and checks it decodes to exactly what the CSV parsers give, that the committed pack is that same pack, and that each asset class stays within its byte budget (`packages/data/src/assetBudget.test.ts`): today's size plus about 25%. When the world data lands, raise a budget on purpose in the same commit.
+
+### World squads (Transfermarkt)
+
+`pipeline/tm_world.py` lists the v1 world (SPEC §6): Brazil's Séries A–D, the top division of the other nine CONMEBOL countries (and Argentina's second), first and second divisions plus the national cup of every European country in the 2026/27 Champions or Europa League draw, Saudi Arabia, MLS and Mexico, the other Club World Cup clubs, and the national teams of the 2026 World Cup and the South American and European qualifiers. `scrape_world.py` writes it all into one `transfermarkt` snapshot of the master database (a run with `--countries`, `--no-guests` or `--no-national-teams` writes a `transfermarkt-partial` one, which the packs, the asset build and the roster diff skip when they look for the latest world): squads with Transfermarkt's position mapped to a role (goleiro, lateral, zagueiro, meia, atacante, in `pipeline/positions.py`), colours from each club's facts page, crests with their source URL, and the source of every club value (`guess` or `missing` where Transfermarkt has none). Players get no strength yet.
+
+```sh
+.venv/bin/python pipeline/scrape_world.py pipeline/boleiro.db [--countries br,gb-eng] [--delay 3]   # pages cached in data/tm_cache
+.venv/bin/python pipeline/build_world_packs.py pipeline/boleiro.db packages/data/pack/world   # <country>.pack.json.gz + national-teams.pack.json.gz
+python3 pipeline/roster_diff.py pipeline/boleiro.db                               # who moved where between the two latest full scrapes, as Markdown
+.venv/bin/python -m unittest discover -s pipeline/tests -t pipeline              # the pipeline's tests, on saved pages in pipeline/tests/fixtures
+```
+
+The scraper names itself and this repository in its User-Agent, waits `--delay` seconds after each page (never under the 2 Transfermarkt's robots.txt asks for), retries 429s and server errors with a growing back-off or the Retry-After the site sends, stops the run after 10 refusals (403 or 429) in a row, and keeps every page in the cache, so a stopped run resumes where it stopped and a rerun within `--max-age-days` downloads nothing. Each club costs a squad page, a facts page and a crest image. `--offline` rebuilds the snapshot from the cache alone and fails a page it doesn't have instead of downloading it. Brazil's clubs keep their ids from `data/clubs.csv`; other clubs are `tm-<Transfermarkt id>`, players `tm-<Transfermarkt id>`.
+
+The game doesn't load the world packs yet. `packages/data/src/worldPacks.test.ts` checks the committed ones: every country in `tm_world.py` has a pack and each league holds the club count `tm_world.py` records for it (the count Transfermarkt's league page lists; `verified=False` marks the ones no second source confirms yet); every club has at least eleven players with a goalkeeper (except the few Transfermarkt lists short, named in the test), a crest in `assets.json` or `world/assets.json` and every world crest's files within budget, two colours and a source for every field; every country's league tiers run from the first down; every national team has a squad with a goalkeeper.
 
 ## Development
 

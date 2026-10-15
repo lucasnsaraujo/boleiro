@@ -1,0 +1,110 @@
+from __future__ import annotations
+
+import sqlite3
+import tempfile
+import unittest
+from pathlib import Path
+
+from tests.world_fixture import Offline, saved_cache, scrape_tiny_world
+
+import roster_diff
+from import_csv import SCHEMA
+
+
+def snapshot(db: sqlite3.Connection, kind: str, clubs: dict[str, list[str]]) -> int:
+    """A snapshot whose clubs (by name) hold the named players; a player's id is his name."""
+    snapshot_id = db.execute("INSERT INTO snapshots (taken_at, kind) VALUES ('2026-10-14T00:00:00+00:00', ?)", (kind,)).lastrowid
+    for seq, (club, players) in enumerate(clubs.items()):
+        db.execute("INSERT INTO clubs VALUES (?, ?, ?, 'GB-ENG', NULL, ?, ?, NULL, 'ground', '#FFFFFF', '#000000', 0)",
+                   (snapshot_id, club.lower(), seq, club, club))
+        for player in players:
+            db.execute("INSERT INTO players (snapshot_id, id, seq, club_id, name, nationalities, position_group) VALUES (?, ?, 0, ?, ?, '', 'MID')",
+                       (snapshot_id, player.lower(), club.lower(), player))
+    return snapshot_id
+
+
+class RosterDiffTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.db = sqlite3.connect(":memory:")
+        self.db.executescript(SCHEMA.read_text())
+
+    def test_lists_moves_arrivals_and_departures_between_two_snapshots(self) -> None:
+        old = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka", "Odegaard"], "Liverpool": ["Salah", "Alisson"]})
+        new = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka", "Salah"], "Liverpool": ["Alisson", "Wirtz"]})
+        changes = roster_diff.roster_changes(self.db, old, new)
+        self.assertEqual(changes.moves, [("Salah", "Liverpool", "Arsenal")])
+        self.assertEqual(changes.arrivals, [("Wirtz", "Liverpool")])
+        self.assertEqual(changes.departures, [("Odegaard", "Arsenal")])
+        self.assertEqual(changes.missing_clubs, [])
+        self.assertEqual(changes.new_clubs, [])
+
+    def test_does_not_call_a_whole_squad_gone_when_its_club_failed_to_scrape(self) -> None:
+        old = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka"], "Liverpool": ["Salah"]})
+        new = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka"]})
+        changes = roster_diff.roster_changes(self.db, old, new)
+        self.assertEqual(changes.departures, [])
+        self.assertEqual(changes.missing_clubs, ["Liverpool"])
+
+    def test_holds_back_a_player_who_may_have_moved_to_a_club_whose_page_failed(self) -> None:
+        old = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka", "Odegaard"], "Liverpool": ["Salah"]})
+        new = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka"], "Liverpool": ["Salah"]})
+        self.db.execute("INSERT INTO snapshot_failures VALUES (?, 'no clubs on /x/startseite/wettbewerb/GB2', 1)", (new,))
+        changes = roster_diff.roster_changes(self.db, old, new)
+        self.assertEqual(changes.departures, [])
+        self.assertEqual(changes.unknown, [("Odegaard", "Arsenal")])
+        self.assertIn("- Odegaard left Arsenal, or moved to a club whose page failed", roster_diff.markdown(changes))
+
+    def test_still_calls_a_player_gone_when_the_scrape_lost_only_pages_without_club_squads(self) -> None:
+        old = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka", "Odegaard"]})
+        new = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka"]})
+        self.db.execute("INSERT INTO snapshot_failures VALUES (?, 'HTTP 503 on https://www.transfermarkt.com/brasilien/kader/verein/3439/plus/1', 0)", (new,))
+        self.assertEqual(roster_diff.roster_changes(self.db, old, new).departures, [("Odegaard", "Arsenal")])
+
+    def test_reads_a_database_from_before_scrapes_recorded_their_lost_pages(self) -> None:
+        self.db.execute("DROP TABLE snapshot_failures")
+        old = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka", "Odegaard"]})
+        new = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka"]})
+        self.assertEqual(roster_diff.roster_changes(self.db, old, new).departures, [("Odegaard", "Arsenal")])
+
+    def test_scrape_records_the_pages_it_could_not_get_in_its_snapshot(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            cache = Path(folder)
+            saved_cache(cache)
+            run = scrape_tiny_world(self.db, cache, Offline())
+        stored = [row[0] for row in self.db.execute("SELECT problem FROM snapshot_failures WHERE snapshot_id = ? ORDER BY rowid", (run.snapshot,))]
+        self.assertEqual(stored, run.failures)
+        self.assertTrue(stored)
+
+    def test_lists_a_club_new_to_the_world_once_instead_of_each_of_its_players_as_an_arrival(self) -> None:
+        old = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka"]})
+        new = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka"], "Sunderland": ["Xhaka", "Isidor"]})
+        changes = roster_diff.roster_changes(self.db, old, new)
+        self.assertEqual(changes.arrivals, [])
+        self.assertEqual(changes.new_clubs, ["Sunderland"])
+        self.assertIn("## Clubs new in this snapshot\n- Sunderland", roster_diff.markdown(changes))
+
+    def test_compares_the_two_latest_world_scrapes_by_default(self) -> None:
+        snapshot(self.db, "transfermarkt", {})
+        second = snapshot(self.db, "transfermarkt", {})
+        snapshot(self.db, "csv-import", {})
+        third = snapshot(self.db, "transfermarkt", {})
+        self.assertEqual(roster_diff.latest_pair(self.db), (second, third))
+
+    def test_skips_partial_world_scrapes_when_comparing_the_latest(self) -> None:
+        first = snapshot(self.db, "transfermarkt", {})
+        second = snapshot(self.db, "transfermarkt", {})
+        snapshot(self.db, "transfermarkt-partial", {})
+        self.assertEqual(roster_diff.latest_pair(self.db), (first, second))
+
+    def test_prints_the_changes_as_a_markdown_summary(self) -> None:
+        old = snapshot(self.db, "transfermarkt", {"Arsenal": ["Odegaard"], "Liverpool": ["Salah"]})
+        new = snapshot(self.db, "transfermarkt", {"Arsenal": ["Salah"], "Liverpool": ["Wirtz"]})
+        text = roster_diff.markdown(roster_diff.roster_changes(self.db, old, new))
+        self.assertIn("- Salah: Liverpool → Arsenal", text)
+        self.assertIn("- Wirtz → Liverpool", text)
+        self.assertIn("- Odegaard left Arsenal", text)
+        self.assertIn("1 moved, 1 arrived, 1 left", text)
+
+
+if __name__ == "__main__":
+    unittest.main()
