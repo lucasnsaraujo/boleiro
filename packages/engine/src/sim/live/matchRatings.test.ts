@@ -62,4 +62,22 @@ describe("match ratings", () => {
     expect(ratings.home.map((r) => r.playerId)).toContain("home-sub");
     expect(ratings.home.map((r) => r.playerId)).not.toContain("home-unused");
   });
+
+  it("give a player hurt early and never replaced no more credit than one taken off at the same minute", () => {
+    const events: MatchEvent[] = [
+      { type: "injury", minute: 10, clubId: "home", playerId: "home-1", days: 20 },
+      { type: "substitution", minute: 10, clubId: "home", playerId: "home-sub", offId: "home-2" },
+    ];
+    const ratings = matchRatings(sides([player("home-sub", "home", "DEF")]), events);
+    expect(ratingOf(ratings, "home-1")).toBe(ratingOf(ratings, "home-2"));
+  });
+
+  it("charge a goal let in at a change's minute to the player going off, not the one coming on", () => {
+    const events: MatchEvent[] = [
+      { type: "goal", minute: 70, clubId: "away", playerId: "away-9", kind: "openPlay" },
+      { type: "substitution", minute: 70, clubId: "home", playerId: "home-sub", offId: "home-1" },
+    ];
+    const ratings = matchRatings(sides([player("home-sub", "home", "DEF")]), events);
+    expect(ratingOf(ratings, "home-1")).toBeLessThan(ratingOf(ratings, "home-sub") ?? -Infinity);
+  });
 });

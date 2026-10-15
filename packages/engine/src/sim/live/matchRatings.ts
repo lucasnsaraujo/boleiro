@@ -25,11 +25,24 @@ const CLEAN_SHEET_MINUTES = 60;
 const LOWEST = 3;
 const HIGHEST = 10;
 
+const JUST_BEFORE = 0.5;
+
+/** How long a player was on the pitch: from kick-off or his coming on until he went off, was sent off or got hurt. */
+function minutesPlayed(events: readonly MatchEvent[], playerId: string): number {
+  const cameOn = events.find((e) => e.type === "substitution" && e.playerId === playerId)?.minute ?? 0;
+  const left = events.flatMap((e) => {
+    const isOff = e.type === "substitution" && e.offId === playerId;
+    const isOut = (e.type === "card" && e.card !== "yellow") || e.type === "injury";
+    return isOff || (isOut && e.playerId === playerId) ? [e.minute] : [];
+  });
+  return Math.min(FULL_TIME, ...left) - cameOn;
+}
+
 /** Every player who took part in the match, rated 0 to 10 in tenths from what he did and how his side did. */
 export function matchRatings(sides: { home: RatedSide; away: RatedSide }, events: readonly MatchEvent[]): { home: PlayerRating[]; away: PlayerRating[] } {
   const goalsOf = (clubId: string) => events.filter((e) => e.type === "goal" && e.clubId === clubId).length;
   const rate = (own: RatedSide, other: RatedSide): PlayerRating[] => {
-    const { players, minutes } = whoPlayed(own.starters, own.bench, events, own.clubId);
+    const { players } = whoPlayed(own.starters, own.bench, events, own.clubId);
     const margin = Math.sign(goalsOf(own.clubId) - goalsOf(other.clubId));
     const against = events.filter((e) => e.type === "goal" && e.clubId === other.clubId);
     return players.map((player) => {
@@ -41,9 +54,10 @@ export function matchRatings(sides: { home: RatedSide; away: RatedSide }, events
         if (e.type === "penaltyMiss" && e.playerId === player.id) rating += PENALTY_MISSED;
         if (e.type === "penaltyMiss" && e.keeperId === player.id && e.isSaved) rating += PENALTY_SAVED;
       }
-      const conceded = against.filter((g) => onPitchAt(own.starters, own.bench, events, own.clubId, g.minute).some((p) => p.id === player.id)).length;
+      // A goal comes before the changes made at its minute (inMatchOrder), so it counts against the side just before them.
+      const conceded = against.filter((g) => onPitchAt(own.starters, own.bench, events, own.clubId, g.minute - JUST_BEFORE).some((p) => p.id === player.id)).length;
       rating += CONCEDED[player.group] * conceded;
-      if (conceded === 0 && !against.length && (minutes.get(player.id) ?? FULL_TIME) >= CLEAN_SHEET_MINUTES) rating += CLEAN_SHEET[player.group];
+      if (conceded === 0 && !against.length && minutesPlayed(events, player.id) >= CLEAN_SHEET_MINUTES) rating += CLEAN_SHEET[player.group];
       return { playerId: player.id, rating: Math.round(Math.min(HIGHEST, Math.max(LOWEST, rating)) * 10) / 10 };
     });
   };
