@@ -56,6 +56,12 @@ class RosterDiffTest(unittest.TestCase):
         third = snapshot(self.db, "transfermarkt", {})
         self.assertEqual(roster_diff.latest_pair(self.db), (second, third))
 
+    def test_skips_partial_world_scrapes_when_comparing_the_latest(self) -> None:
+        first = snapshot(self.db, "transfermarkt", {})
+        second = snapshot(self.db, "transfermarkt", {})
+        snapshot(self.db, "transfermarkt-partial", {})
+        self.assertEqual(roster_diff.latest_pair(self.db), (first, second))
+
     def test_prints_the_changes_as_a_markdown_summary(self) -> None:
         old = snapshot(self.db, "transfermarkt", {"Arsenal": ["Odegaard"], "Liverpool": ["Salah"]})
         new = snapshot(self.db, "transfermarkt", {"Arsenal": ["Salah"], "Liverpool": ["Wirtz"]})

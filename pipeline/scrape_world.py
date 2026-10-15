@@ -259,13 +259,16 @@ def scrape_world(
     known_club_ids: dict[str, str] | None = None,
     max_age_days: float = 7,
     log: Callable[[str], None] = print,
+    is_partial: bool = False,
 ) -> Run:
-    """Writes one `transfermarkt` snapshot; `known_club_ids` keeps a club's existing id (Brazil's "bahia-ba")."""
+    """Writes one `transfermarkt` snapshot, or `transfermarkt-partial` for a run over part of the world, which
+    the packs, the asset build and the roster diff skip; `known_club_ids` keeps a club's existing id (Brazil's "bahia-ba")."""
     db.executescript(SCHEMA.read_text())
     countries = list(countries)
     taken_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     note = "countries " + ",".join(country.id for country in countries)
-    snapshot = db.execute("INSERT INTO snapshots (taken_at, kind, note) VALUES (?, 'transfermarkt', ?)", (taken_at, note)).lastrowid
+    kind = "transfermarkt-partial" if is_partial else "transfermarkt"
+    snapshot = db.execute("INSERT INTO snapshots (taken_at, kind, note) VALUES (?, ?, ?)", (taken_at, kind, note)).lastrowid
     scraper = Scraper(db, fetcher, Run(snapshot), known_club_ids or {}, max_age_days, log)
     for country in countries:
         scraper.country(country)
@@ -286,7 +289,7 @@ def brazil_club_ids(clubs_csv: Path) -> dict[str, str]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("db", type=Path)
-    parser.add_argument("--countries", help="comma-separated ids from tm_world.py; all when left out")
+    parser.add_argument("--countries", help="comma-separated ids from tm_world.py; all when left out (a partial run otherwise)")
     parser.add_argument("--no-national-teams", action="store_true")
     parser.add_argument("--no-guests", action="store_true", help="skip the draw check and the Club World Cup's other clubs")
     parser.add_argument("--delay", type=float, default=3.0, help="seconds after each page request (at least 2)")
@@ -311,6 +314,7 @@ def main() -> None:
                 national_team_lists=() if args.no_national_teams else tm_world.NATIONAL_TEAM_LISTS,
                 known_club_ids=brazil_club_ids(ROOT / "data" / "clubs.csv"),
                 max_age_days=args.max_age_days,
+                is_partial=wanted is not None or args.no_national_teams or args.no_guests,
             )
     except Blocked as error:
         raise SystemExit(f"stopped, no snapshot written: {error}. Run again later; the cache keeps every page so far.")

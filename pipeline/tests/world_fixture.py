@@ -57,6 +57,8 @@ def saved_cache(cache: Path) -> None:
     (cache / "images" / "wappen-head-31.png").write_bytes(tiny_png(3, 4))
 
 
-def scrape_tiny_world(db: sqlite3.Connection, cache: Path, network: Offline, known_club_ids: dict[str, str] | None = None) -> Run:
+def scrape_tiny_world(db: sqlite3.Connection, cache: Path, network: Offline, known_club_ids: dict[str, str] | None = None,
+                      is_partial: bool = False) -> Run:
     fetcher = tm_fetch.Fetcher(cache, log=lambda _: None, get=network.get, sleep=lambda _: None)
-    return scrape_world(db, fetcher, [ENGLAND], national_team_lists=[QUALIFIERS], known_club_ids=known_club_ids, log=lambda _: None)
+    return scrape_world(db, fetcher, [ENGLAND], national_team_lists=[QUALIFIERS], known_club_ids=known_club_ids, log=lambda _: None,
+                        is_partial=is_partial)

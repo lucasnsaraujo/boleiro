@@ -60,6 +60,26 @@ class WorldPacksTest(unittest.TestCase):
         changed = json.loads(gzip.decompress((out / "gb-eng.pack.json.gz").read_bytes()))
         self.assertNotEqual(changed["packVersion"], pack["packVersion"])
 
+    def test_takes_the_latest_full_world_scrape_and_skips_partial_ones(self) -> None:
+        scrape_tiny_world(self.db, self.root / "cache", Offline(), is_partial=True)
+        self.assertEqual(build_world_packs.latest_world_snapshot(self.db), self.snapshot)
+
+    def test_a_full_world_scrape_removes_the_packs_of_countries_it_no_longer_has(self) -> None:
+        out = self.root / "packs"
+        out.mkdir()
+        (out / "xx.pack.json.gz").write_bytes(b"old")
+        (out / "assets.json").write_text("{}")
+        build_world_packs.write(self.db, self.snapshot, out)
+        self.assertEqual(sorted(path.name for path in out.iterdir()), ["assets.json", "gb-eng.pack.json.gz", "national-teams.pack.json.gz"])
+
+    def test_a_partial_scrape_leaves_the_other_countries_packs_alone(self) -> None:
+        out = self.root / "packs"
+        out.mkdir()
+        (out / "xx.pack.json.gz").write_bytes(b"old")
+        partial = scrape_tiny_world(self.db, self.root / "cache", Offline(), is_partial=True).snapshot
+        build_world_packs.write(self.db, partial, out)
+        self.assertTrue((out / "xx.pack.json.gz").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

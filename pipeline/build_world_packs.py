@@ -3,10 +3,12 @@
 Same layout as brazil.pack.json.gz (build_pack.py): gzipped JSON with a column per field, a
 `packVersion` hashed from the content, and gzip's time zeroed, so the same snapshot always gives
 the same bytes. Files are `<country id>.pack.json.gz` ("gb-eng.pack.json.gz") and
-`national-teams.pack.json.gz`. Players carry no strength yet: the rating step comes later.
+`national-teams.pack.json.gz`. Players carry no strength yet: the rating step comes later. A full
+world scrape's packs replace the folder's, so a country that left the world loses its pack; a
+partial scrape's (`transfermarkt-partial`, from `scrape_world.py --countries`) only overwrite their own.
 
 Usage: python pipeline/build_world_packs.py pipeline/boleiro.db <out dir> [snapshot id]
-       (the latest `transfermarkt` snapshot when the id is left out)
+       (the latest full `transfermarkt` snapshot when the id is left out)
 """
 from __future__ import annotations
 
@@ -123,6 +125,10 @@ def write(db: sqlite3.Connection, snapshot: int, out: Path) -> dict[str, Path]:
         path = out / f"{name}.pack.json.gz"
         path.write_bytes(pack_bytes(name, content))
         written[name] = path
+    kind = db.execute("SELECT kind FROM snapshots WHERE id = ?", (snapshot,)).fetchone()[0]
+    if kind == "transfermarkt":
+        for stale in set(out.glob("*.pack.json.gz")) - set(written.values()):
+            stale.unlink()
     return written
 
 

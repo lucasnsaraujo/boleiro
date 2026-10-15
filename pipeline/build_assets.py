@@ -7,7 +7,7 @@ a PNG used both as a crest and a scoreboard crest gets files in both folders. `a
 every image and which club uses it, read by packages/data/src/assetManifest.ts. Files no image
 needs any more are removed. `images.path` is relative to the repo root, as import_csv.py writes it.
 
-The crests of the latest world scrape's clubs that the import doesn't have go to their own manifest,
+The crests of the latest full world scrape's clubs that the import doesn't have go to their own manifest,
 `world/assets.json`, with their files under `world/assets/`: the app doesn't load the world yet, so
 its bundle (apps/desktop/ui/clubs/clubCatalog.ts) stays Brazil's. They come in WebP only, the format
 the app reads, which keeps the v1 world's images within SPEC §4.3's ~25 MB, and need the scrape's

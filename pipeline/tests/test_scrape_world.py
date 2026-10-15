@@ -34,6 +34,11 @@ class ScrapeWorldTest(unittest.TestCase):
             [("tm-11", "Arsenal FC", "GB-ENG", "gb-eng-1"), ("tm-31", "Liverpool FC", "GB-ENG", "gb-eng-1")],
         )
 
+    def test_marks_a_run_over_part_of_the_world_as_partial(self) -> None:
+        db = sqlite3.connect(":memory:")
+        scrape_tiny_world(db, self.cache, Offline(), is_partial=True)
+        self.assertEqual(db.execute("SELECT kind FROM snapshots").fetchall(), [("transfermarkt-partial",)])
+
     def test_stores_each_player_with_his_role_group_and_transfermarkt_details_but_no_strength_yet(self) -> None:
         self.assertEqual(self.run.players, self.rows("SELECT count(*) FROM players")[0][0])
         alisson = self.rows(

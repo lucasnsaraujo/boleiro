@@ -6,7 +6,7 @@ its page failed last time) is listed on its own instead of every one of its play
 gone or arrived.
 
 Usage: python pipeline/roster_diff.py pipeline/boleiro.db [old snapshot id] [new snapshot id]
-       (the two latest `transfermarkt` snapshots when the ids are left out)
+       (the two latest full `transfermarkt` snapshots when the ids are left out; partial runs are skipped)
 """
 from __future__ import annotations
 

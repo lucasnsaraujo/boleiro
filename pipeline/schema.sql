@@ -7,7 +7,7 @@
 CREATE TABLE IF NOT EXISTS snapshots (
   id INTEGER PRIMARY KEY,
   taken_at TEXT NOT NULL,              -- UTC ISO time of the run
-  kind TEXT NOT NULL,                  -- "csv-import", "transfermarkt"; later "fotmob", "espn", ...
+  kind TEXT NOT NULL,                  -- "csv-import", "transfermarkt", "transfermarkt-partial" (part of the world); later "fotmob", ...
   note TEXT NOT NULL DEFAULT ''
 );
 
