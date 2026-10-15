@@ -83,7 +83,7 @@ test("the shortcut sheet lists each bar screen on its F-key and the keys that wo
   const rows = within(sheet).getAllByRole("listitem").map((row) => row.textContent);
   expect(rows).toEqual(expect.arrayContaining(["F1Agenda", "F2Tabelas", "F5Times", "F9Opções", "EJogar rodada", "MSem som"]));
   expect(rows.some((row) => /^(⌘|Ctrl)SSalvar$/.test(row ?? ""))).toBe(true);
-  expect(within(sheet).getByText("Estádio").closest("li")?.getAttribute("aria-disabled")).toBe("true");
+  expect(within(sheet).getByText("Base").closest("li")?.getAttribute("aria-disabled")).toBe("true");
 });
 
 test("the credits list every sound with its author, licence and source", () => {

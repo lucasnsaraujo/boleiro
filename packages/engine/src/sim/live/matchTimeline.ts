@@ -1,5 +1,5 @@
 import type { Score } from "../../engine/match.js";
-import { randomStream } from "../../engine/random.js";
+import { keyedStream } from "../../engine/random.js";
 import { scoringFactor } from "../../engine/sendOffRates.js";
 import type { Booking } from "../discipline/drawCards.js";
 import type { SimPlayer } from "../gameState.js";
@@ -30,9 +30,7 @@ const GOAL_DENSITY = Array.from({ length: FULL_TIME }, (_, i) => (GOALS_PER_BAND
  * them leaves every other draw of the day (and so every result) as it was.
  */
 export function scorerStream(seed: number, fixtureId: string): () => number {
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < fixtureId.length; i++) hash = Math.imul(hash ^ fixtureId.charCodeAt(i), 0x01000193);
-  return randomStream(seed ^ hash).next;
+  return keyedStream(seed, fixtureId);
 }
 
 /**

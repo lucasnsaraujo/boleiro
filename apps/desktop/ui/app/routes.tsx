@@ -10,6 +10,7 @@ import { Offers } from "../screens/Offers.js";
 import { Options } from "../screens/Options.js";
 import { Round } from "../screens/Round.js";
 import { Sacked } from "../screens/Sacked.js";
+import { Stadium } from "../screens/Stadium.js";
 import { Saves } from "../screens/Saves.js";
 import { SeasonEnd } from "../screens/SeasonEnd.js";
 import { Player } from "../screens/Player.js";
@@ -25,6 +26,7 @@ const ELEMENTS: Record<ScreenPath, ReactElement> = {
   "/tables": <Tables />,
   "/market": <Market />,
   "/finances": <Finances />,
+  "/stadium": <Stadium />,
   "/calendar": <Calendar />,
   "/round": <Round />,
   "/history": <History />,

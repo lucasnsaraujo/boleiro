@@ -3,6 +3,7 @@ import { advanceDay, type DayEvent } from "../advanceDay.js";
 import type { ClubFinance, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
+import { assistantTicketPrice, setTicketPrice } from "./setTicketPrice.js";
 
 function playUntil(state: GameState, date: string): { state: GameState; events: DayEvent[] } {
   let current = state;
@@ -60,6 +61,16 @@ describe("club finances across a season change", () => {
     const coached: GameState = { ...before, coachClubId: "flamengo-rj", coach: { ...before.coach, contract: { salary, untilSeason: 2030 } } };
     const turned = advanceDay(coached, {}).state;
     expect(financeOf(turned, "flamengo-rj").month.costs.wages).toBe(salary);
+  });
+
+  it("keeps the coach's ticket price as far above his new division's average as it was above the old one's", () => {
+    const relegated = outcome("a").relegatedIds[0];
+    if (!relegated) throw new Error("no club went down");
+    const oldAverage = assistantTicketPrice(before, relegated);
+    const coached: GameState = { ...before, coachClubId: relegated };
+    const turned = advanceDay(setTicketPrice(coached, 2 * oldAverage), {}).state;
+    expect(financeOf(turned, relegated).ticketPrice).toBe(2 * assistantTicketPrice(turned, relegated));
+    expect(financeOf(after, relegated).ticketPrice).toBe(assistantTicketPrice(after, relegated));
   });
 
   it("files the finished season's books and opens empty ones", () => {

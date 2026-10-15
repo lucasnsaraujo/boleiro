@@ -123,6 +123,8 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         return [event.fine > 0 ? `Briga na torcida: multa de ${formatMoney(event.fine)}` : "Briga na torcida", "bad"];
       case "closedDoors":
         return isOurs(event.clubId) ? [`Punição: ${plural(event.games, "jogo", "jogos")} com portões fechados`, "bad"] : null;
+      case "stadiumOpened":
+        return isOurs(event.clubId) ? [`Obra pronta: ${event.seats.toLocaleString("pt-BR")} lugares novos, ${event.capacity.toLocaleString("pt-BR")} no total`, "good"] : null;
       case "coachHired":
         return [`${clubName(event.clubId)} anuncia você como técnico até ${event.untilSeason}`, "good"];
       case "coachFired":

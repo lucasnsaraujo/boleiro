@@ -13,6 +13,8 @@ import { answerBid, type BidAnswer, type BidOutcome } from "@boleiro/engine/sim/
 import { declineCounter } from "@boleiro/engine/sim/transfers/coachMarket";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { listPlayer, type SaleWay } from "@boleiro/engine/sim/transfers/listPlayer";
+import { setTicketPrice } from "@boleiro/engine/sim/finances/setTicketPrice";
+import { requestStadiumWorks, type WorksAnswer } from "@boleiro/engine/sim/stadium/stadiumWorks";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { playToMatchDay, type StopReason } from "../hub/playToMatchDay.js";
 import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
@@ -49,6 +51,10 @@ type CommandFields = {
   answerBid: { playerId: string; answer: BidAnswer };
   /** Turns down a selling club's counter to the coach's offer. */
   declineCounter: { playerId: string };
+  /** Sets the ticket price of the coach's home games, in whole reais. */
+  priceTickets: { price: number };
+  /** Asks the board for `seats` new seats at the coach's stadium; it answers at once. */
+  askStadiumWorks: { seats: number };
 };
 
 export type CommandType = keyof CommandFields;
@@ -76,6 +82,8 @@ export type CommandResults = {
   listPlayer: undefined;
   answerBid: BidOutcome;
   declineCounter: undefined;
+  priceTickets: undefined;
+  askStadiumWorks: WorksAnswer;
 };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
@@ -297,6 +305,14 @@ export function createEngineSession(files: GameFiles) {
     },
     declineCounter({ playerId }) {
       state = declineCounter(betweenDays("a counter-offer can't be declined"), playerId);
+    },
+    priceTickets({ price }) {
+      state = setTicketPrice(betweenDays("tickets can't be priced"), price);
+    },
+    askStadiumWorks({ seats }) {
+      const asked = requestStadiumWorks(betweenDays("the board can't be asked for works"), seats);
+      state = asked.state;
+      return asked.answer;
     },
   };
 

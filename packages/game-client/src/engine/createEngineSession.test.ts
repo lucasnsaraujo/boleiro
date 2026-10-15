@@ -199,6 +199,8 @@ function playMarketWindow() {
   const recorded = recordedSession();
   const { session, apply } = recorded;
   apply({ type: "newGame", seed: SEED, choices: { coachClubId: CLUB } });
+  apply({ type: "priceTickets", price: 60 });
+  const stadiumAnswer = apply({ type: "askStadiumWorks", seats: 2_000 });
   apply({ type: "advance", days: Array.from({ length: 5 }, () => ({})) });
   const { players, clubs, market, date } = session.read(["players", "clubs", "market", "date"]);
   const own = ownPlayers(players);
@@ -227,7 +229,7 @@ function playMarketWindow() {
     outcomes.push(answer);
     if (answer === "finalOffer") outcomes.push(apply({ type: "answerBid", playerId: bid.playerId, answer: { kind: "accept" } }));
   }
-  return { recorded, counter, outcomes, counterAfterDecline: session.read(["market"]).market.coach?.counters[target.id] };
+  return { recorded, counter, outcomes, counterAfterDecline: session.read(["market"]).market.coach?.counters[target.id], stadiumAnswer };
 }
 
 let season: Season;
@@ -310,6 +312,13 @@ test("a club's offer for a listed player waits for the coach, and his counter se
   if (first === "finalOffer") expect(second).toBe("sold");
 });
 
+test("the coach's ticket price is in the game his commands leave, and works on the ground he shares are refused", () => {
+  const { finances } = marketWindow.recorded.session.read(["finances"]);
+  expect(finances[CLUB]?.ticketPrice).toBe(60);
+  expect(marketWindow.stadiumAnswer).toMatchObject({ approved: false, reason: "shared", quote: { seats: 2_000 } });
+  expect(finances[CLUB]?.stadiumWorks).toBeUndefined();
+});
+
 test("the market window's commands survive JSON and replay alike from the same seed", () => {
   const { session, applied } = marketWindow.recorded;
   for (const { command } of applied) expect(JSON.parse(JSON.stringify(command))).toStrictEqual(command);
@@ -336,6 +345,8 @@ test("the season, career and market logs between them send every kind of command
     listPlayer: true,
     answerBid: true,
     declineCounter: true,
+    priceTickets: true,
+    askStadiumWorks: true,
   };
   expect([...sent].sort()).toEqual(Object.keys(every).sort());
 });

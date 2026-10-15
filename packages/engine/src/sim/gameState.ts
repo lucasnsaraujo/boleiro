@@ -129,7 +129,17 @@ export type ClubFinance = {
   lastSeason: Ledger | null;
   /** The last monthly closing: the month as `YYYY-MM`, its ledger and the cash it ended with. */
   lastClosing: { month: string; ledger: Ledger; cash: number } | null;
+  /** New seats the board is building, if any; saves from before stadium works have none. */
+  stadiumWorks?: StadiumWorks;
+  /** The coach's club's last home games, newest last; saves from before kept none. */
+  homeGates?: HomeGate[];
 };
+
+/** Seats under construction, paid for in monthly instalments booked as infrastructure. */
+export type StadiumWorks = { seats: number; cost: number; paid: number; startedOn: IsoDate; opensOn: IsoDate };
+
+/** One home game at the gate: the ticket price then, the paying crowd and the money it brought. */
+export type HomeGate = { date: IsoDate; competitionId: string; opponentId: string; price: number; crowd: number; gate: number };
 
 /** Division-level money rules, copied into the save so a data rebuild does not change a running game. */
 export type Economy = {

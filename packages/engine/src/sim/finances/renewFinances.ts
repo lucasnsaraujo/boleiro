@@ -40,7 +40,8 @@ function continentalPrizes(ended: GameState, serieATable: readonly string[]): Ma
 }
 
 /**
- * Season-start money: clubs that changed division get that division's TV money and ticket price.
+ * Season-start money: clubs that changed division get that division's TV money and ticket price
+ * (scaled by how far the coach set his club's price from the old division's average).
  * Sponsorship, membership, other income, crowds and running costs move by the square root of the
  * gap between the divisions' typical revenues (guess: fans and sponsors stay partly loyal, and a
  * stadium does not shrink with the division).
@@ -75,7 +76,8 @@ export function renewFinances(
     const step = Math.sqrt(economy.typicalRevenue[to] / economy.typicalRevenue[from]);
     const crowdRatio = Math.sqrt(economy.matchday[to].attendance / economy.matchday[from].attendance);
     const bonus = rewarded.has(id) ? Math.round(SPONSOR_BONUS_SHARE * finance.sponsorship) : 0;
-    const ticketPrice = economy.matchday[to].price;
+    // A price the coach set keeps its distance from the average; everyone else's stays on it.
+    const ticketPrice = Math.round(economy.matchday[to].price * (finance.ticketPrice / economy.matchday[from].price));
     const baseCrowd = Math.round(finance.baseCrowd * crowdRatio);
     const tv = to === "A" ? (serieATvs[id] ?? 0) : economy.tvPerClub[to];
     const expectedTickets = Math.round(baseCrowd * ticketPrice * (homeGames.get(id) ?? 0));
