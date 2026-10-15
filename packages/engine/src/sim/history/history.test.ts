@@ -78,7 +78,9 @@ describe("club history over several seasons", () => {
     const serieA = Object.values(before.competitions).find((c) => c.id === "serie-a-2026");
     if (!serieA) throw new Error("no Série A");
     const scored = Object.values(before.history.current.goals["serie-a"] ?? {}).reduce((sum, g) => sum + g, 0);
-    expect(scored).toBe(goalsIn(before, serieA.id));
+    // Own goals go to no scorer: Série A had 42 in 1,889 goals in 2024 and 2025 (2.2%).
+    expect(scored).toBeLessThanOrEqual(goalsIn(before, serieA.id));
+    expect(scored).toBeGreaterThan(0.95 * goalsIn(before, serieA.id));
     const top = history.seasons[0]?.topScorers["serie-a"];
     expect(top?.goals).toBe(Math.max(...Object.values(before.history.current.goals["serie-a"] ?? {})));
     expect(top?.goals).toBeGreaterThan(10);
@@ -88,7 +90,9 @@ describe("club history over several seasons", () => {
     // Counted on the season's last day: the close forgets players who left with few games, as sales do.
     const apps = Object.values(run.lastDays[0]?.history.players["flamengo-rj"] ?? {}).reduce((sum, p) => sum + p.apps, 0);
     const games = (run.lastDays[0]?.fixtures ?? []).filter((f) => f.homeId === "flamengo-rj" || f.awayId === "flamengo-rj").length;
-    expect(apps).toBe(11 * games);
+    // Eleven starters a game, and up to five substitutes who come on.
+    expect(apps).toBeGreaterThanOrEqual(11 * games);
+    expect(apps).toBeLessThanOrEqual(16 * games);
     // Whether one club's regulars reach idol status in three seasons depends on who it sells, so
     // idols are counted over every Série A club.
     const serieA = Object.values(run.final.clubs).filter((club) => club.division === "A").map((club) => club.id);
