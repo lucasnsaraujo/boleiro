@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { Link } from "react-router";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
@@ -67,12 +67,42 @@ function energyClass(energy: number): string {
 
 type Props = { rows: readonly SquadRow[]; clubName: string; selectedId: string | null; onSelect: (id: string) => void };
 
-/** The squad as Brasfoot lists it, by position; a click picks a player for the sticker, his name opens his screen. */
+/** Where a key moves the pick, from the row at `index` of `count`; null for a key that doesn't move it. */
+function rowAfterKey(key: string, index: number, count: number): number | null {
+  if (key === "ArrowDown") return Math.min(index + 1, count - 1);
+  if (key === "ArrowUp") return Math.max(index - 1, 0);
+  if (key === "Home") return 0;
+  if (key === "End") return count - 1;
+  return null;
+}
+
+/**
+ * The squad as Brasfoot lists it, by position; a click picks a player for the sticker, his name opens his screen.
+ * From the keyboard, Tab stops on the picked row alone, the arrows (Home, End) move the pick, Enter and Space pick the focused row.
+ */
 export function SquadTable({ rows, clubName, selectedId, onSelect }: Props) {
   const [sort, setSort] = useState<SquadSort>(BY_STRENGTH);
   const groups = useMemo(() => sortedSquad(rows, sort), [rows, sort]);
   const table = useRef<HTMLTableElement>(null);
-  useFlip(table, groups.flatMap((group) => group.rows.map((p) => p.id)).join(), slideSquadRow);
+  const order = groups.flatMap((group) => group.rows.map((p) => p.id));
+  useFlip(table, order.join(), slideSquadRow);
+  const tabStopId = selectedId !== null && order.includes(selectedId) ? selectedId : order[0];
+
+  function pickByKey(event: KeyboardEvent<HTMLTableRowElement>, id: string) {
+    if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onSelect(id);
+      return;
+    }
+    const next = rowAfterKey(event.key, order.indexOf(id), order.length);
+    if (next === null) return;
+    const nextId = order[next];
+    if (nextId === undefined) return;
+    event.preventDefault();
+    table.current?.querySelectorAll<HTMLTableRowElement>("tbody tr")[next]?.focus();
+    onSelect(nextId);
+  }
 
   return (
     <table ref={table} className="tb hub-table" aria-label={`Elenco do ${clubName}`}>
@@ -106,7 +136,15 @@ export function SquadTable({ rows, clubName, selectedId, onSelect }: Props) {
             const badge = POSITION_BADGES[p.group];
             const isSelected = p.id === selectedId;
             return (
-              <tr key={p.id} data-flip={p.id} className={isSelected ? "sel" : undefined} aria-current={isSelected ? "true" : undefined} onClick={() => onSelect(p.id)}>
+              <tr
+                key={p.id}
+                data-flip={p.id}
+                className={isSelected ? "sel" : undefined}
+                aria-current={isSelected ? "true" : undefined}
+                tabIndex={p.id === tabStopId ? 0 : -1}
+                onClick={() => onSelect(p.id)}
+                onKeyDown={(event) => pickByKey(event, p.id)}
+              >
                 <td className="l">
                   <span className={`pos ${badge.colour}`}>{badge.letter}</span>
                 </td>
