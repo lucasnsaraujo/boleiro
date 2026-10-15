@@ -1,9 +1,9 @@
-import type { Club, State } from "@boleiro/data/clubs";
+import { STATES, type Club, type State } from "@boleiro/data/clubs";
 import type { Division } from "@boleiro/data/players";
 import { randomStream } from "../engine/random.js";
 import { driftWagesToCap } from "./finances/driftWagesToCap.js";
 import { renewFinances } from "./finances/renewFinances.js";
-import type { Qualification } from "./copaDoBrasilEntrants.js";
+import { nationalRanking, type Qualification } from "./copaDoBrasilEntrants.js";
 import type { GameState, LeagueCompetition } from "./gameState.js";
 import { LEAGUE_FORMATS, type LeagueOutcome } from "./leagueFormats.js";
 import { serieDQualifiers } from "./serieDQualifiers.js";
@@ -21,11 +21,18 @@ function leagueOf(state: GameState, division: Division): LeagueCompetition {
 
 const fixturesOf = (state: GameState, competitionId: string) => state.fixtures.filter((f) => f.competitionId === competitionId);
 
-/** Each state's final placings; with the Série C and D champions and two Série B clubs, they qualify clubs for next season. */
+/**
+ * Each state's final placings; with the Série C and D champions and two Série B clubs, they qualify clubs for next
+ * season. guess: in a game without the estaduais each state's clubs line up by the national ranking instead.
+ */
 function qualificationOf(state: GameState, b: LeagueOutcome, c: LeagueOutcome, d: LeagueOutcome): Qualification {
   const statePlacings: Partial<Record<State, string[]>> = {};
   for (const competition of Object.values(state.competitions)) {
     if (competition.kind === "state") statePlacings[competition.state] = STATE_CHAMPIONSHIP.placings(competition, fixturesOf(state, competition.id));
+  }
+  if (state.playsStateChampionships === false) {
+    const ranking = nationalRanking(Object.values(state.clubs));
+    for (const uf of STATES) statePlacings[uf] = ranking.filter((id) => state.clubs[id]?.state === uf);
   }
   const serieB = leagueOf(state, "B");
   const bTable = standings(serieB.clubIds, fixturesOf(state, serieB.id), serieB.drawOrder).map((row) => row.clubId);
@@ -66,7 +73,7 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
   );
   const season = state.season + 1;
   const random = randomStream(state.rngState);
-  const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification);
+  const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false);
   const outcomes = Object.fromEntries(
     Object.values(state.competitions).flatMap((competition) => (competition.kind === "league" ? [[competition.id, outcomeAt(competition.division)]] : [])),
   );

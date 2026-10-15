@@ -15,8 +15,11 @@ export const cupEntriesOf = (competitions: Record<string, Competition>): string[
 
 export type SeasonStart = { calendar: SeasonCalendar; competitions: Record<string, Competition>; fixtures: Fixture[] };
 
-/** Opens every competition of the season. `qualification` is what last season's estaduais and leagues decided. */
-export function startSeason(season: number, clubs: Record<string, Club>, random: () => number, qualification: Qualification): SeasonStart {
+/**
+ * Opens every competition of the season. `qualification` is what last season's estaduais and leagues decided;
+ * without `playsStateChampionships` the estaduais are not played and their dates stay empty.
+ */
+export function startSeason(season: number, clubs: Record<string, Club>, random: () => number, qualification: Qualification, playsStateChampionships = true): SeasonStart {
   const clubStates: Record<string, State> = Object.fromEntries(Object.values(clubs).map((club) => [club.id, club.state]));
   const levels = BRAZIL.levels.map((level) => {
     const members = Object.values(clubs).filter((club) => club.division === level.division).map((club) => club.id).sort();
@@ -51,7 +54,7 @@ export function startSeason(season: number, clubs: Record<string, Club>, random:
     open(league);
   }
   const ranking = nationalRanking(Object.values(clubs));
-  for (const state of STATES) {
+  for (const state of playsStateChampionships ? STATES : []) {
     const inState = new Set(Object.values(clubs).filter((club) => club.state === state).map((club) => club.id));
     const seeding = [...(qualification.statePlacings[state] ?? []), ...ranking].filter((id, i, all) => inState.has(id) && all.indexOf(id) === i);
     if (seeding.length < 2) continue;

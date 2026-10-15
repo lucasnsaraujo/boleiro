@@ -44,6 +44,8 @@ export type NewGameOptions = {
   season?: number;
   /** Countries played result-only next to Brazil. */
   world?: readonly CountryStart[];
+  /** False to start a game without the estaduais (SPEC §6's new-game option). */
+  stateChampionships?: boolean;
 };
 
 const FIRST_SEASON = 2026;
@@ -103,7 +105,7 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs, players, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world }: NewGameOptions,
+  { clubs, players, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, stateChampionships = true }: NewGameOptions,
 ): GameState {
   const random = randomStream(seed);
   const traitRandom = randomStream(seed ^ TRAIT_STREAM_SALT);
@@ -123,7 +125,7 @@ export function newGame(
       return { id, clubId, name, group, strength, ...(roles?.length ? { positions: [...roles] } : {}), contractUntil, ...openingProfile(player, `${season}-01-01`, traitRandom.next) };
     });
   const squadPlayers = [...dataPlayers, ...academyTopUp(clubs, dataPlayers, `${season}-01-01`, randomStream(seed ^ ACADEMY_STREAM_SALT).next)];
-  const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION);
+  const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION, stateChampionships);
   const { economy, finances: boardFinances, wages } = openingFinances(clubsById, squadPlayers, competitions, fixtures, financeData, competitionMoney);
   const finances = withNewCoachRoom(boardFinances, coachClubId);
   const simPlayers = Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }]));
@@ -150,6 +152,7 @@ export function newGame(
     market,
     usualLineups,
     ...(world?.length ? { world: startWorld(world, season, seed) } : {}),
+    ...(stateChampionships ? {} : { playsStateChampionships: false as const }),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
   return withContinentalCups(game, competitionMoney);
 }

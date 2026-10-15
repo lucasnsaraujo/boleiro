@@ -212,6 +212,8 @@ export type GameState = {
   usualLineups?: Record<string, UsualLineup>;
   /** Countries played result-only, outside the full tier; a game of Brazil alone has none. */
   world?: World;
+  /** False when the game was started without the estaduais (a new-game option); left out, they are played. */
+  playsStateChampionships?: false;
   /** The coach's club's friendlies, booked and lately played; saves from before friendlies have none. */
   friendlies?: Friendly[];
 };
