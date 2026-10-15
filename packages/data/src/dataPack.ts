@@ -1,7 +1,13 @@
 import { PITCHES, STATES, type Club } from "./clubs.js";
 import { toCompetitionMoney, type CompetitionMoney } from "./competition-money.js";
 import { BASES, FIELDS as FINANCE_FIELDS, SIZES, type ClubFinances, type DivisionFinances, type Finances } from "./finances.js";
-import { DIVISIONS, GROUPS, type SquadPlayer } from "./players.js";
+import { DIVISIONS, GROUPS, ROLES, type Role, type SquadPlayer } from "./players.js";
+
+/**
+ * A club's eleven in its last real match: the formation as the source writes it ("4-2-3-1") and the
+ * starters, keeper first, as rows of `DataPack.players`; null for a starter the squad doesn't list.
+ */
+export type ClubLineup = { clubId: string; formation: string; starters: (number | null)[] };
 
 /** Everything the game is built from, decoded from the data pack `pipeline/build_pack.py` writes. */
 export type DataPack = {
@@ -9,6 +15,10 @@ export type DataPack = {
   packVersion: string;
   clubs: Club[];
   players: SquadPlayer[];
+  /** Each player's positions, row for row with `players`, the main one first. */
+  positions: Role[][];
+  /** The clubs whose last real eleven the data has. */
+  lineups: ClubLineup[];
   finances: { clubs: ClubFinances[]; divisionEstimates: DivisionFinances[] };
   competitionMoney: CompetitionMoney;
 };
@@ -147,6 +157,31 @@ function playersOf(table: Table, clubs: readonly Club[]): SquadPlayer[] {
   });
 }
 
+const isRole = (value: string): value is Role => ROLES.some((role) => role === value);
+
+/** The `positions` column: each player's roles joined by "/", main first. */
+function positionsOf(table: Table): Role[][] {
+  const positions = text(table, "positions");
+  return rowsOf(table, (row) =>
+    positions(row)
+      .split("/")
+      .map((role) => (isRole(role) ? role : fail(`${table.name}.positions`, ROLES.join(" | ")))),
+  );
+}
+
+const isStarters = (value: unknown): value is (number | null)[] => Array.isArray(value) && value.every(isNumberOrNull);
+
+function lineupsOf(table: Table, clubs: readonly Club[], players: number): ClubLineup[] {
+  const club = clubAt(clubs, table);
+  const formation = text(table, "formation");
+  const starters = column(table, "starters", isStarters, "lists of player rows or nulls");
+  return rowsOf(table, (row) => ({
+    clubId: club(row).id,
+    formation: formation(row),
+    starters: starters(row).map((index) => (index === null || index < players ? index : fail(`${table.name}.starters`, `player rows below ${players}`))),
+  }));
+}
+
 function financesOf(table: Table): Column<Finances> {
   const season = amount(table, "season");
   const total = amount(table, "revenueTotal");
@@ -209,10 +244,13 @@ export function parsePack(json: string): DataPack {
   if (typeof pack.packVersion !== "string" || pack.packVersion === "") fail("packVersion", "a version");
   if (!isRecord(pack.finances)) fail("finances", "an object");
   const clubs = clubsOf(tableOf(pack.clubs, "clubs", "id"));
+  const players = tableOf(pack.players, "players", "name");
   return {
     packVersion: pack.packVersion,
     clubs,
-    players: playersOf(tableOf(pack.players, "players", "name"), clubs),
+    players: playersOf(players, clubs),
+    positions: positionsOf(players),
+    lineups: lineupsOf(tableOf(pack.lineups, "lineups", "club"), clubs, players.rows),
     finances: {
       clubs: clubFinancesOf(tableOf(pack.finances.clubs, "finances.clubs", "season"), clubs),
       divisionEstimates: divisionEstimatesOf(tableOf(pack.finances.divisionEstimates, "finances.divisionEstimates", "season")),

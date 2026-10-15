@@ -1,7 +1,8 @@
 """Builds the data pack the game ships from the master database's latest CSV-import snapshot.
 
 The pack is one gzipped JSON document with a column per field (`clubs.name[i]` is club i's name),
-read by packages/data/src/dataPack.ts. `packVersion` is a hash of the content, so a career saved
+read by packages/data/src/dataPack.ts. Each player's `positions` are his roles, Transfermarkt's main
+one first, then the others FotMob lists; `lineups` holds each club's last real eleven. `packVersion` is a hash of the content, so a career saved
 with one pack never silently loads another.
 
 Usage: python pipeline/build_pack.py pipeline/boleiro.db packages/data/pack [snapshot id]
@@ -14,6 +15,8 @@ import json
 import sqlite3
 import sys
 from pathlib import Path
+
+from positions import roles_of
 
 PACK_FORMAT = 1
 PACK_FILE = "brazil.pack.json.gz"
@@ -53,6 +56,14 @@ def build(db: sqlite3.Connection, snapshot: int) -> dict[str, object]:
     }
     club_index = {club["id"]: i for i, club in enumerate(clubs)}
     players = db.execute("SELECT * FROM players WHERE snapshot_id = ? ORDER BY seq", (snapshot,)).fetchall()
+    player_index = {player["id"]: i for i, player in enumerate(players)}
+    fotmob_codes: dict[str, list[str]] = {}
+    for row in db.execute("SELECT * FROM player_positions WHERE snapshot_id = ? AND source = 'fotmob' ORDER BY player_id, rank", (snapshot,)):
+        fotmob_codes.setdefault(row["player_id"], []).append(row["position"])
+    lineups: dict[str, list[sqlite3.Row]] = {}
+    for row in db.execute("SELECT * FROM club_lineups WHERE snapshot_id = ? ORDER BY slot", (snapshot,)):
+        lineups.setdefault(row["club_id"], []).append(row)
+    lineup_clubs = sorted(lineups, key=lambda club_id: club_index[club_id])
     finances = db.execute(
         """SELECT f.*, l.code AS division FROM finances f
            JOIN competitions l ON l.snapshot_id = f.snapshot_id AND l.id = f.league_id
@@ -79,6 +90,12 @@ def build(db: sqlite3.Connection, snapshot: int) -> dict[str, object]:
         "players": {
             "club": [club_index[player["club_id"]] for player in players],
             **columns(players, {"name": "name", "group": "position_group", "strength": "strength", "age": "age", "nationalities": "nationalities"}),
+            "positions": ["/".join(roles_of(player["role"], fotmob_codes.get(player["id"], []))) for player in players],
+        },
+        "lineups": {
+            "club": [club_index[club_id] for club_id in lineup_clubs],
+            "formation": [lineups[club_id][0]["formation"] for club_id in lineup_clubs],
+            "starters": [[player_index.get(row["player_id"]) for row in lineups[club_id]] for club_id in lineup_clubs],
         },
         "finances": {
             "clubs": {"club": [club_index[row["club_id"]] for row in club_finances], "division": [row["division"] for row in club_finances], **columns(club_finances, FINANCE_FIELDS)},

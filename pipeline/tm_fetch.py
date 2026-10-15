@@ -1,4 +1,4 @@
-"""Polite, cached Transfermarkt fetching for the world scraper.
+"""Polite, cached fetching for the scrapers: Transfermarkt's pages, and FotMob's JSON through `base`.
 
 Every page lands in a disk cache (git-ignored `data/tm_cache`, the same file names scrape_tm.py
 uses, so Brazil's pages are reused) and a re-run only asks Transfermarkt for pages missing from it
@@ -77,8 +77,9 @@ def iso_time(seconds: float) -> str:
 class Fetcher:
     def __init__(self, cache: Path, delay: float = 3.0, image_delay: float = 0.5, log: Callable[[str], None] = print,
                  get: Callable[[str], requests.Response] | None = None, sleep: Callable[[float], None] = time.sleep,
-                 is_offline: bool = False) -> None:
+                 is_offline: bool = False, base: str = BASE) -> None:
         self.cache = cache
+        self.base = base
         self.delay = max(delay, MIN_PAGE_DELAY)
         self.image_delay = image_delay
         self.log = log
@@ -102,7 +103,7 @@ class Fetcher:
             except requests.RequestException as error:
                 problem = str(error)
             else:
-                if url.startswith(BASE):
+                if url.startswith(self.base):
                     self.refusals_in_a_row = self.refusals_in_a_row + 1 if response.status_code in REFUSALS else 0
                 if self.refusals_in_a_row >= BLOCKED_IN_A_ROW:
                     raise Blocked(f"{self.refusals_in_a_row} refusals in a row, the last HTTP {response.status_code} on {url}")
@@ -143,8 +144,8 @@ class Fetcher:
         `is_valid` rejects is never cached, and an older cached copy is used instead."""
         cached = self.cache / cache_name(path)
         check = (lambda body: is_valid(body.decode("utf-8", errors="replace"))) if is_valid else None
-        self._cached(cached, BASE + path, self.delay, max_age_days, check)
-        return Page(cached.read_text(encoding="utf-8", errors="replace"), BASE + path, iso_time(cached.stat().st_mtime))
+        self._cached(cached, self.base + path, self.delay, max_age_days, check)
+        return Page(cached.read_text(encoding="utf-8", errors="replace"), self.base + path, iso_time(cached.stat().st_mtime))
 
     def image(self, path: str, max_age_days: float) -> tuple[Path, str]:
         """An image under Transfermarkt's image host (`/wappen/head/631.png`), cached; its file and source URL."""

@@ -8,7 +8,7 @@ import { parseClubs } from "./clubs.js";
 import { parseCompetitionMoney } from "./competition-money.js";
 import { FIRST_PACK_VERSION, loadPack, parsePack, parsePackClubs } from "./dataPack.js";
 import { parseFinances } from "./finances.js";
-import { parsePlayers } from "./players.js";
+import { GROUP_OF_ROLE, parsePlayers } from "./players.js";
 
 const ROOT = join(import.meta.dirname, "..", "..", "..");
 const csv = (name: string) => readFileSync(join(ROOT, "data", name), "utf8");
@@ -52,6 +52,27 @@ describe("the data pack", () => {
     const again = buildPackFromCsv(mkdtempSync(join(dir, "again-")));
     expect(parsePack(again).packVersion).toBe(parsePack(built).packVersion);
     expect(parsePack(built).packVersion).toMatch(/^br-[0-9a-f]{12}$/);
+  });
+
+  it("gives every player his positions, Transfermarkt's main one first, row for row with the players", () => {
+    const pack = parsePack(built);
+    expect(pack.positions).toHaveLength(pack.players.length);
+    pack.positions.forEach((roles, row) => {
+      const main = roles[0];
+      expect(main && GROUP_OF_ROLE[main]).toBe(pack.players[row]?.group);
+      expect(new Set(roles).size).toBe(roles.length);
+    });
+    expect(pack.positions.filter((roles) => roles.length > 1).length).toBeGreaterThan(400);
+  });
+
+  it("holds the last real eleven of every Série A and B club, each starter a player of that club", () => {
+    const pack = parsePack(built);
+    const withLineup = new Set(pack.lineups.map((lineup) => lineup.clubId));
+    for (const club of pack.clubs.filter((c) => c.division === "A" || c.division === "B")) expect(withLineup, club.id).toContain(club.id);
+    for (const lineup of pack.lineups) {
+      expect(lineup.starters).toHaveLength(11);
+      for (const row of lineup.starters) if (row !== null) expect(pack.players[row]?.clubId).toBe(lineup.clubId);
+    }
   });
 
   it("never renames the first Brazil pack, whatever pack ships now, since saves from before data packs are read as it", () => {
