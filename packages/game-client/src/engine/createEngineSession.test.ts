@@ -12,8 +12,8 @@ import { createEngineSession, type CommandResults, type CommandType, type GameCo
 
 const CLUB = "flamengo-rj";
 const SEED = 7;
-// The season test needs a coach the board keeps all year; on seed 7 he is sacked in March since bids wait for his answer.
-const SEASON_SEED = 8;
+// The season test needs a coach the board keeps all year; the board sacks him on seeds 1, 7 and 8 of today's engine.
+const SEASON_SEED = 2;
 // Enough steps for a season of play-ons and match days; a stuck loop fails instead of hanging.
 const MAX_STEPS = 400;
 
