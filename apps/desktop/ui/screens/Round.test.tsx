@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider } from "react-router";
@@ -304,4 +304,26 @@ test("rows hidden by Só meus jogos come back as they were, so their old goals d
   await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
   await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
   expect(other?.isConnected).toBe(true);
+});
+
+test("a goal's flash leaves its row once played, so Só meus jogos turned off doesn't play it again", async () => {
+  await kickOff(await onMatchDay());
+  const otherRows = () => screen.getAllByRole("listitem").filter((row) => / \d+ x \d+ /.test(row.getAttribute("aria-label") ?? "") && !row.getAttribute("aria-label")?.includes("Bahia"));
+  let scored: HTMLElement | undefined;
+  for (let minute = 0; minute < 90 && !scored; minute++) {
+    const paused = screen.getByRole("button", { name: "Pausar" });
+    if (paused.getAttribute("aria-pressed") === "true") fireEvent.click(screen.getByRole("button", { name: "1x" }));
+    play(1);
+    scored = otherRows().find((row) => within(row).queryByText("Gol"));
+  }
+  if (!scored) throw new Error("another match of the round has a goal");
+  const row = scored;
+  const celebration = () => [within(row).queryByText("Gol"), row.querySelector(".flash"), row.querySelector(".roll")];
+  expect(row.querySelector(".roll")).not.toBeNull();
+
+  await waitFor(() => expect(celebration()).toEqual([null, null, null]), { timeout: 3000 });
+  await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
+  await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
+  expect(row.hidden).toBe(false);
+  expect(celebration()).toEqual([null, null, null]);
 });

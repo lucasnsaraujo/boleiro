@@ -534,7 +534,7 @@
 .live-r .sbox .roll {
   animation:
     digit-roll 520ms var(--expo-out) 80ms both,
-    box-flash 1300ms ease-out both;
+    box-flash var(--box-flash) ease-out both;
 }
 
 @keyframes box-flash {
@@ -932,7 +932,7 @@
   .live-r .sbox .roll {
     animation:
       round-fade-in 240ms ease-out both,
-      box-flash 1300ms ease-out both;
+      box-flash var(--box-flash) ease-out both;
   }
 
   .flash {

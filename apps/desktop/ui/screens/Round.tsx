@@ -32,6 +32,8 @@ const SPEEDS: readonly Running[] = [1, 2, 4];
 const MS_PER_MINUTE: Record<Running, number> = { 1: 660, 2: 330, 4: 110 };
 // A goal floods its row for less time when the clock runs faster, so goals a few minutes apart don't pile up.
 const FLOOD_MS: Record<Running, number> = { 1: 1500, 2: 1150, 4: 800 };
+// How long the scoring side's score box flashes; at 2x and 4x it outlasts the row's flood.
+const BOX_FLASH_MS = 1300;
 const COMPETITION_LOGOS = [
   { prefix: "Série A", src: serieA },
   { prefix: "Série B", src: serieB },
@@ -45,7 +47,7 @@ const NO_COLOURS = { primary: "#eef3e8", secondary: "#0a1a10" };
 const PAUSED_CROWD = 0.6;
 
 type PreMatch = { plan: MatchDayPlan; clubs: Readonly<Record<string, Club>>; date: string };
-/** A goal being celebrated on a row: the scoring club's colour, its side, and a count so each goal replays the animation. */
+/** A goal being celebrated on a row: the scoring club's colour, its side, and the round's goal count so each goal replays the animation. */
 type Flash = { colour: string; side: Side; count: number };
 
 export function Round() {
@@ -67,6 +69,7 @@ export function Round() {
   const [isOnlyMine, setOnlyMine] = useState(false);
   const [flashes, setFlashes] = useState<Record<string, Flash>>({});
   const [golCount, setGolCount] = useState(0);
+  const goalsCelebrated = useRef(0);
   const roundRef = useRef(round);
   const shownMinute = useRef(0);
   const isFinishing = useRef(false);
@@ -139,14 +142,18 @@ export function Round() {
     for (const cue of thinCues(roundCues(live, from, minute), resumeSpeed.current)) sound.play(cue);
     const goals = goalsBetween(live, from, minute);
     if (goals.length) {
-      setFlashes((current) => {
-        const next = { ...current };
-        for (const goal of goals) {
+      const celebrated = Object.fromEntries(
+        goals.map((goal) => {
           const colour = live.clubs[goal.clubId]?.colours.primary ?? NO_COLOURS.primary;
-          next[goal.fixtureId] = { colour, side: goal.side, count: (next[goal.fixtureId]?.count ?? 0) + 1 };
-        }
-        return next;
-      });
+          return [goal.fixtureId, { colour, side: goal.side, count: ++goalsCelebrated.current }];
+        }),
+      );
+      setFlashes((current) => ({ ...current, ...celebrated }));
+      // Once played, a flash leaves its row: a row Só meus jogos hid and shows again would otherwise replay it.
+      setTimeout(
+        () => setFlashes((current) => Object.fromEntries(Object.entries(current).filter(([fixtureId, flash]) => celebrated[fixtureId] !== flash))),
+        Math.max(FLOOD_MS[resumeSpeed.current], BOX_FLASH_MS),
+      );
       if (goals.some((goal) => goal.fixtureId === live.coach?.fixtureId && goal.clubId === live.coachClubId)) setGolCount((n) => n + 1);
     }
     const reason = pauseReason(live, minute);
@@ -281,13 +288,13 @@ export function Round() {
   const limits = coach && coachMatch && round.coachClubId ? liveLimits(coach, coachMatch.events, round.coachClubId, minute) : null;
   const ownColours = round.coachClubId ? round.clubs[round.coachClubId]?.colours : undefined;
   const isFinished = result !== null;
-  // Rows Só meus jogos leaves out are hidden, not dropped, so they don't replay their goals when they come back.
+  // Rows Só meus jogos leaves out are hidden, not dropped, so they keep their state while out of sight.
   const groups = round.competitions
     .map((competition) => ({ ...competition, rows: matches.filter((m) => m.competitionId === competition.id) }))
     .filter((group) => group.rows.length > 0);
 
   return (
-    <div className="live fills-screen" style={{ ["--flood" as string]: `${FLOOD_MS[resumeSpeed.current]}ms` }}>
+    <div className="live fills-screen" style={{ ["--flood" as string]: `${FLOOD_MS[resumeSpeed.current]}ms`, ["--box-flash" as string]: `${BOX_FLASH_MS}ms` }}>
       {mine ? (
         <Cover
           round={round}
@@ -385,10 +392,13 @@ function shootoutWinnerOf(result: AdvanceResult | null, fixtureId: string, clubs
   return winnerId ? (clubs[winnerId]?.shortName ?? null) : null;
 }
 
-/** A score digit that rolls up into place when it changes. */
-function Digit({ value, className, flash }: { value: number; className: string; flash?: string }) {
-  const first = useRef(value);
-  const rolls = value !== first.current;
+/** A score digit that rolls up into place when it changes, and on the board stands still again once its row's goal has been celebrated. */
+function Digit({ value, className, flash, isSettled }: { value: number; className: string; flash?: string; isSettled?: boolean }) {
+  const [still, setStill] = useState(value);
+  useEffect(() => {
+    if (isSettled) setStill(value);
+  }, [isSettled]);
+  const rolls = value !== still;
   return (
     <span className={className} style={flash ? { ["--flash" as string]: flash } : undefined}>
       <span key={value} className={rolls ? "roll" : undefined}>
@@ -551,8 +561,8 @@ const MatchRow = memo(function MatchRow({ match, clubs, flash, isHidden }: Match
       {flash && <i key={flash.count} className="flash" style={{ background: `linear-gradient(90deg, transparent 12%, ${flash.colour} 40%, transparent 95%)` }} />}
       <span className="std">{home.stadium}</span>
       <RowPlate club={home} red={match.reds.home > 0} />
-      <Digit value={match.score.home} className={lead("home") ? "sbox lead" : "sbox"} flash={flash?.side === "home" ? flash.colour : undefined} />
-      <Digit value={match.score.away} className={lead("away") ? "sbox lead" : "sbox"} flash={flash?.side === "away" ? flash.colour : undefined} />
+      <Digit value={match.score.home} className={lead("home") ? "sbox lead" : "sbox"} flash={flash?.side === "home" ? flash.colour : undefined} isSettled={!flash} />
+      <Digit value={match.score.away} className={lead("away") ? "sbox lead" : "sbox"} flash={flash?.side === "away" ? flash.colour : undefined} isSettled={!flash} />
       <RowPlate club={away} red={match.reds.away > 0} />
       <span className="ev">
         {flash && (
