@@ -8,7 +8,7 @@ from pathlib import Path
 import tm_fetch
 import tm_pages
 import tm_world
-from scrape_world import scrape_world
+from scrape_world import scrape_world, short_squads
 from tests.fixtures import fixture
 from tests.world_fixture import ENGLAND,  QUALIFIERS, Offline, saved_cache, scrape_tiny_world
 
@@ -153,6 +153,10 @@ class ScrapeWorldTest(unittest.TestCase):
         self.assertEqual(len(kept), 32)
         self.assertIn("Los Angeles FC", [ref.name for ref in kept])
         self.assertNotIn("CF América", [ref.name for ref in kept])
+
+    def test_lists_the_clubs_with_fewer_players_than_a_squad_needs(self) -> None:
+        self.assertEqual(short_squads(self.db, self.run.snapshot, minimum=25), [("Arsenal FC", "tm-11", 24)])
+        self.assertEqual(short_squads(self.db, self.run.snapshot, minimum=24), [])
 
     def test_keeps_two_national_teams_with_the_same_name_apart(self) -> None:
         brazil = (self.cache / tm_fetch.cache_name("/brasilien/kader/verein/3439/plus/1")).read_text()

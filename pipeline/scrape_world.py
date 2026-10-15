@@ -32,6 +32,8 @@ from tm_fetch import Blocked, FetchError, Fetcher, cache_name
 ROOT = Path(__file__).resolve().parent.parent
 SEASON = 2026
 FALLBACK_COLOURS = ("#FFFFFF", "#000000")
+# A club under this many players can't field a matchday squad of eleven and seven substitutes.
+FULL_SQUAD = 18
 
 
 @dataclass
@@ -282,6 +284,16 @@ def scrape_world(
     return scraper.run
 
 
+def short_squads(db: sqlite3.Connection, snapshot: int, minimum: int = FULL_SQUAD) -> list[tuple[str, str, int]]:
+    """(name, id, players) of the snapshot's clubs with fewer than `minimum` players, in scrape order."""
+    return db.execute(
+        """SELECT c.name, c.id, count(p.id) FROM clubs c
+           LEFT JOIN players p ON p.snapshot_id = c.snapshot_id AND p.club_id = c.id
+           WHERE c.snapshot_id = ? GROUP BY c.id HAVING count(p.id) < ? ORDER BY c.seq""",
+        (snapshot, minimum),
+    ).fetchall()
+
+
 def brazil_club_ids(clubs_csv: Path) -> dict[str, str]:
     """Transfermarkt id -> the id Brazil's CSVs give the club, so both snapshots name it alike."""
     with clubs_csv.open(newline="", encoding="utf-8") as handle:
@@ -318,6 +330,7 @@ def main() -> None:
                 max_age_days=args.max_age_days,
                 is_partial=wanted is not None or args.no_national_teams or args.no_guests,
             )
+            short = short_squads(db, run.snapshot)
     except Blocked as error:
         raise SystemExit(f"stopped, no snapshot written: {error}. Run again later; the cache keeps every page so far.")
     elapsed = time.monotonic() - started
@@ -327,6 +340,9 @@ def main() -> None:
         print(f"warning: {warning}")
     for failure in run.failures:
         print(f"failed: {failure}")
+    if short:
+        print(f"warning: {len(short)} clubs have fewer than {FULL_SQUAD} players: "
+              + ", ".join(f"{name} ({club_id}) {players}" for name, club_id, players in short))
 
 
 if __name__ == "__main__":
