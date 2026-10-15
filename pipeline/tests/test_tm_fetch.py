@@ -144,6 +144,21 @@ class FetcherTest(unittest.TestCase):
                 pass
         self.assertEqual(network.answers, [])
 
+    def test_refusals_from_the_image_host_do_not_stop_the_run(self) -> None:
+        network = Recorder(*[Answer(403)] * (2 * tm_fetch.ATTEMPTS))
+        images = fetcher(self.cache, network)
+        for crest in ("/wappen/head/1.png", "/wappen/head/2.png"):
+            with self.assertRaises(tm_fetch.FetchError):
+                images.image(crest, max_age_days=7)
+        self.assertEqual(len(network.urls), 2 * tm_fetch.ATTEMPTS)
+
+    def test_a_page_that_comes_back_wrong_keeps_the_older_cached_copy(self) -> None:
+        cached = self.cache / tm_fetch.cache_name("/a")
+        cached.write_text("<p>squad</p>")
+        network = Recorder(Answer(200, b"<p>robot check</p>"))
+        page = fetcher(self.cache, network).page("/a", max_age_days=0, is_valid=lambda html: "squad" in html)
+        self.assertEqual(page.html, "<p>squad</p>")
+
     def test_offline_reads_old_cached_pages_and_never_asks_the_site(self) -> None:
         (self.cache / tm_fetch.cache_name("/a")).write_text("<p>old</p>")
         network = Recorder()

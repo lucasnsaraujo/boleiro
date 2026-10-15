@@ -8,8 +8,8 @@ User-Agent and wait `delay` seconds (at least the 2 s robots.txt asks for) after
 from the CDN `image_delay`. 429s, 5xxs and network errors are retried with a growing back-off, or
 after the Retry-After the site sends. A page that keeps failing, or a 404, raises `FetchError`,
 unless an older copy is in the cache: then that copy is used. After `BLOCKED_IN_A_ROW` refusals
-(403 or 429) in a row the fetcher raises `Blocked`, which stops the run instead of asking for every
-remaining page. An image that doesn't decode is never cached. Offline, only the cache is read,
+(403 or 429) in a row from the site (not its image host) the fetcher raises `Blocked`, which stops the run instead of asking for every
+remaining page. An image that doesn't decode, or a page the caller's check rejects, is never cached. Offline, only the cache is read,
 whatever its age, and a page missing from it raises `FetchError`.
 """
 from __future__ import annotations
@@ -102,7 +102,8 @@ class Fetcher:
             except requests.RequestException as error:
                 problem = str(error)
             else:
-                self.refusals_in_a_row = self.refusals_in_a_row + 1 if response.status_code in REFUSALS else 0
+                if url.startswith(BASE):
+                    self.refusals_in_a_row = self.refusals_in_a_row + 1 if response.status_code in REFUSALS else 0
                 if self.refusals_in_a_row >= BLOCKED_IN_A_ROW:
                     raise Blocked(f"{self.refusals_in_a_row} refusals in a row, the last HTTP {response.status_code} on {url}")
                 if response.status_code == 200:
@@ -137,10 +138,12 @@ class Fetcher:
         partial.write_bytes(body)
         partial.replace(cached)
 
-    def page(self, path: str, max_age_days: float) -> Page:
-        """The page at `path` (no host), from the cache when it is younger than `max_age_days`."""
+    def page(self, path: str, max_age_days: float, is_valid: Callable[[str], bool] | None = None) -> Page:
+        """The page at `path` (no host), from the cache when it is younger than `max_age_days`; a download that
+        `is_valid` rejects is never cached, and an older cached copy is used instead."""
         cached = self.cache / cache_name(path)
-        self._cached(cached, BASE + path, self.delay, max_age_days)
+        check = (lambda body: is_valid(body.decode("utf-8", errors="replace"))) if is_valid else None
+        self._cached(cached, BASE + path, self.delay, max_age_days, check)
         return Page(cached.read_text(encoding="utf-8", errors="replace"), BASE + path, iso_time(cached.stat().st_mtime))
 
     def image(self, path: str, max_age_days: float) -> tuple[Path, str]:
