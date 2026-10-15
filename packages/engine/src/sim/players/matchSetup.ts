@@ -56,22 +56,23 @@ export function engineTeam(name: string, lineup: readonly SimPlayer[], strength:
 /**
  * Both elevens for a fixture played today on the home club's pitch. AI clubs pick with
  * pickMatchLineup in their usual formation; the coach's club plays the coach's eleven, or the AI's
- * pick in his formation. Every eleven plays placed in its formation by position (inFormation).
+ * pick in his formation, and so does each waiting hot-seat coach's club with his plan in `waiting`, by club. Every eleven plays placed in its formation by position (inFormation).
  */
 export function matchSetup(
   state: GameState,
   fixture: Fixture,
   squadOf: (clubId: string) => readonly SimPlayer[],
   coach: CoachPlan,
+  waiting: Readonly<Record<string, CoachPlan>> = {},
 ): MatchSetup {
   const homeClub = matchClubOf(state, fixture.homeId);
   const awayClub = matchClubOf(state, fixture.awayId);
   if (!homeClub || !awayClub) throw new Error(`fixture ${fixture.id} has an unknown club`);
   const context: MatchContext = { date: fixture.date, pitch: homeClub.pitch };
-  const isCoach = (clubId: string) => clubId === state.coachClubId;
-  const tacticsOf = (clubId: string): Tactics => (isCoach(clubId) ? coach.tactics : { ...DEFAULT_TACTICS, formation: formationOf(state, clubId, squadOf(clubId)) });
-  const lineupOf = (clubId: string, tactics: Tactics) =>
-    isCoach(clubId) && coach.lineup ? [...coach.lineup] : pickMatchLineup(squadOf(clubId), context, tactics.formation, usualStartersOf(state, clubId));
+  const planOf = (clubId: string): CoachPlan | undefined => (clubId === state.coachClubId ? coach : waiting[clubId]);
+  const tacticsOf = (clubId: string): Tactics => planOf(clubId)?.tactics ?? { ...DEFAULT_TACTICS, formation: formationOf(state, clubId, squadOf(clubId)) };
+  const lineupOf = (clubId: string, tactics: Tactics, lineup = planOf(clubId)?.lineup) =>
+    lineup ? [...lineup] : pickMatchLineup(squadOf(clubId), context, tactics.formation, usualStartersOf(state, clubId));
   const team = (clubId: string, name: string, lineup: readonly SimPlayer[], tactics: Tactics): Team =>
     engineTeam(name, lineup, playingStrength(state, clubId, context, squadOf(clubId)), tactics);
   const homeTactics = tacticsOf(homeClub.id);

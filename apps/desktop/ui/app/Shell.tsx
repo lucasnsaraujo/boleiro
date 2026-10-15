@@ -4,6 +4,7 @@ import { isTauri } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
+import type { MarketClockView } from "@boleiro/game-client/market/marketClock";
 import { saveToSlot } from "@boleiro/game-client/saves/saveToSlot";
 import { slotLabel } from "@boleiro/game-client/saves/slotMeta";
 import { clubById } from "../clubs/clubCatalog.js";
@@ -21,7 +22,7 @@ import { useAskBeforeDiscarding } from "./useAskBeforeDiscarding.js";
 import { isTyping } from "./useTypedWord.js";
 import "./shell.css";
 
-type Clock = Pick<GameState, "date" | "season"> & { clubName: string | null };
+type Clock = Pick<GameState, "date" | "season"> & { clubName: string | null; coachName: string | null };
 type Toast = { id: number; text: string; isError: boolean };
 
 const PLATFORM = platformOf(navigator.userAgent);
@@ -44,8 +45,24 @@ function windowTitle(pathname: string, clock: Clock | null): string {
   return `Boleiro · ${clock.clubName ?? "Sem clube"} ${clock.season}`;
 }
 
+/** The player's page the screen shows, when it shows one. */
+function playerOnScreen(pathname: string): string | undefined {
+  return pathname.startsWith("/squad/") ? decodeURIComponent(pathname.slice("/squad/".length)) : undefined;
+}
+
+/** Whether the screen spends the market clock: the market's search and a player's page (the session leaves the coach's own players out); his offers tab is selling. */
+function spendsMarketTime(pathname: string, search: string): boolean {
+  if (pathname === "/market") return new URLSearchParams(search).get("aba") !== "propostas";
+  return playerOnScreen(pathname) !== undefined;
+}
+
+/** The clock's time left as m:ss. */
+function formatClock(seconds: number): string {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
 export function Shell() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const { engine, slots, game } = useServices();
   const { engine: sound, settings, changeSettings } = useSound();
@@ -65,6 +82,7 @@ export function Shell() {
   }, [pathname]);
 
   const [clock, setClock] = useState<Clock | null>(null);
+  const [marketClock, setMarketClock] = useState<MarketClockView | null>(null);
   const reads = useRef(0);
   const refresh = useCallback(() => {
     const read = ++reads.current;
@@ -72,12 +90,27 @@ export function Shell() {
       setClock(null);
       return;
     }
-    engine.read(["date", "season", "coachClubId"]).then(
-      ({ date, season, coachClubId }) => read === reads.current && setClock({ date, season, clubName: coachClubId ? (clubById(coachClubId)?.shortName ?? null) : null }),
+    Promise.all([engine.read(["date", "season", "coachClubId", "coachName"]), engine.marketClock()]).then(
+      ([{ date, season, coachClubId, coachName }, market]) => {
+        if (read !== reads.current) return;
+        setClock({ date, season, clubName: coachClubId ? (clubById(coachClubId)?.shortName ?? null) : null, coachName: coachName ?? null });
+        setMarketClock(market);
+      },
       () => read === reads.current && setClock(null),
     );
   }, [engine, game]);
   useEffect(refresh, [refresh, pathname]);
+
+  // The market clock runs a second at a time while the coach is on a market screen, until it runs out.
+  const isClockRunning = hasBar && spendsMarketTime(pathname, search) && (marketClock?.leftSeconds ?? 0) > 0;
+  useEffect(() => {
+    if (!isClockRunning) return;
+    const playerId = playerOnScreen(pathname);
+    const tick = setInterval(() => {
+      engine.apply({ type: "spendMarketTime", seconds: 1, ...(playerId ? { playerId } : {}) }).then(setMarketClock, () => undefined);
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [engine, isClockRunning, pathname]);
 
   const title = windowTitle(pathname, clock);
   useEffect(() => {
@@ -189,8 +222,21 @@ export function Shell() {
             {NAV.map((item, index) => (
               <BarButton key={item.id} id={item.id} isActive={index === active} />
             ))}
+            {marketClock && (
+              <div
+                className={marketClock.leftSeconds === 0 ? "bar-clock out" : isClockRunning ? "bar-clock running" : "bar-clock"}
+                role="timer"
+                aria-label={`Relógio do mercado: ${formatClock(marketClock.leftSeconds)}`}
+                title={marketClock.leftSeconds === 0 ? "Seu tempo de mercado acabou nesta janela" : "Seu tempo nas telas de compra nesta janela"}
+                data-tauri-drag-region
+              >
+                <i className="ph-bold ph-timer" aria-hidden="true" />
+                <b>{formatClock(marketClock.leftSeconds)}</b>
+                <span>{clock?.coachName ? `Mercado · ${clock.coachName}` : "Mercado"}</span>
+              </div>
+            )}
             {clock && (
-              <div className="bar-date" data-tauri-drag-region>
+              <div className={marketClock ? "bar-date beside-clock" : "bar-date"} data-tauri-drag-region>
                 <b>{formatBarDate(clock.date)}</b>
                 <span>Temporada {clock.season}</span>
               </div>

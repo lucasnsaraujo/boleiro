@@ -72,7 +72,19 @@ export function Offers() {
     }
   }
 
-  const sign = (clubId: string) => answer(() => engine.apply({ type: "advance", days: [{ acceptOffer: clubId }] }), () => navigate("/hub"));
+  // A hot-seat coach before the last one leaves his yes for the day the last coach plays, and passes his turn.
+  const sign = (clubId: string) => {
+    let isPassed = false;
+    return answer(
+      async () => {
+        const seats = await engine.hotSeat();
+        isPassed = seats !== null && !seats.isLastTurn;
+        if (isPassed) await engine.apply({ type: "passTurn", acceptOffer: clubId });
+        else await engine.apply({ type: "advance", days: [{ acceptOffer: clubId }] });
+      },
+      () => navigate(isPassed ? "/turn" : "/hub"),
+    );
+  };
   const decline = (clubId: string) =>
     answer(
       () => engine.apply({ type: "declineOffer", clubId }),

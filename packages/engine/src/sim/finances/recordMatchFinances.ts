@@ -6,6 +6,7 @@ import { rivalsOf } from "../morale/rivalsOf.js";
 import { bookMoneyInDraft } from "./bookMoney.js";
 import { SELLABLE_SHARE_OF_CAPACITY } from "./openingFinances.js";
 import { tierOf } from "./tierOf.js";
+import { isHumanClub } from "../coach/humanCoaches.js";
 
 // guess: football ticket demand is usually reported as inelastic, around -0.3 to -0.6; not checked
 // against a Brazilian study.
@@ -97,7 +98,7 @@ export function recordMatchFinances(state: GameState, played: readonly Fixture[]
     if (home) {
       const crowd = attendance(draft, home, fixture.homeId, fixture.awayId, fixture);
       const gate = Math.round(crowd * home.ticketPrice);
-      const kept = fixture.homeId === state.coachClubId ? withGate(home, fixture, crowd, gate) : home;
+      const kept = isHumanClub(state, fixture.homeId) ? withGate(home, fixture, crowd, gate) : home;
       finances[fixture.homeId] = withResult(kept, pointsFor(homeGoals, awayGoals));
       bookMoneyInDraft(finances, fixture.homeId, { revenue: "tickets", amount: gate });
     }

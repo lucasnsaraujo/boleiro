@@ -5,6 +5,7 @@ import { SQUAD_TARGET } from "./squadNeeds.js";
 import { movePlayer } from "./movePlayer.js";
 import type { PlayerContractRenewed, PlayerMoved } from "./transferEvents.js";
 import { wageDemand } from "./wageDemand.js";
+import { isHumanClub } from "../coach/humanCoaches.js";
 
 // guess: an AI club offers a new deal to the players inside its usual squad size (SQUAD_TARGET) who
 // are under 34, and four in five of them sign it; the rest leave as free agents.
@@ -83,7 +84,7 @@ export function expireContracts(state: GameState, random: () => number): { state
     const squad = squads.get(player.clubId) ?? [];
     const rank = squad.filter((p) => p.strength > player.strength).length;
     const tier = tierOf(state.clubs[player.clubId] ?? { division: null });
-    const keeps = player.clubId !== state.coachClubId && rank < SQUAD_TARGET[tier] && player.age < RENEWAL_MAX_AGE && random() < RENEWAL_CHANCE;
+    const keeps = !isHumanClub(state, player.clubId) && rank < SQUAD_TARGET[tier] && player.age < RENEWAL_MAX_AGE && random() < RENEWAL_CHANCE;
     if (keeps) {
       const until = contractEnd(year, random);
       players[player.id] = { ...player, contractUntil: until };

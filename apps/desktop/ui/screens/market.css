@@ -231,6 +231,17 @@
   color: var(--ink);
 }
 
+.market-out-of-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  background: var(--red);
+  color: var(--on-red);
+  font-weight: 700;
+}
+
 /* Results */
 .market-results {
   flex: 1;

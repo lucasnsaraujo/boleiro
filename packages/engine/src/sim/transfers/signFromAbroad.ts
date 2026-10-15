@@ -11,6 +11,7 @@ import type { PlayerMoved } from "./transferEvents.js";
 import { valuePlayer } from "./valuePlayer.js";
 import { goingRate } from "./wageDemand.js";
 import { willingToJoin } from "./willingToJoin.js";
+import { isHumanClub } from "../coach/humanCoaches.js";
 
 // guess: chance a club looks abroad on a market day; Série A clubs sign a few foreigners and
 // returning Brazilians a year, lower divisions almost never.
@@ -44,7 +45,7 @@ export function signFromAbroad(state: GameState, random: () => number, serial: (
   for (const clubId of Object.keys(state.finances).sort()) {
     const club = next.clubs[clubId];
     const finance = next.finances[clubId];
-    if (clubId === state.coachClubId || !club || !finance || random() >= LOOKS_ABROAD[view.tier(clubId)]) continue;
+    if (isHumanClub(state, clubId) || !club || !finance || random() >= LOOKS_ABROAD[view.tier(clubId)]) continue;
     const squad = view.squad(clubId);
     if (squad.length < 11 || isClubFull(next, clubId, squad.length)) continue;
     const starters = pickLineup([...squad]);

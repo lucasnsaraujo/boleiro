@@ -11,6 +11,7 @@ import type { PlayerMoved, PreContractSigned } from "./transferEvents.js";
 import { valuePlayer } from "./valuePlayer.js";
 import { wageDemandAt, wageRateOf } from "./wageDemand.js";
 import { willingToJoin } from "./willingToJoin.js";
+import { isHumanClub } from "../coach/humanCoaches.js";
 
 // guess: a selling club asks a tenth over market value.
 export const ASKING_PREMIUM = 1.1;
@@ -86,7 +87,7 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
     // The pools are built once a market day, so skip anyone who has moved since.
     if (player.clubId === buyerId || state.players[player.id]?.clubId !== player.clubId || state.market.preContracts[player.id]) continue;
     const preContract = isInPreContractWindow(player, state.date);
-    if (player.clubId === state.coachClubId && !preContract) continue;
+    if (isHumanClub(state, player.clubId) && !preContract) continue;
     const sellerTier = view.tier(player.clubId);
     if (replacing && RANK[sellerTier] > RANK[buyerTier]) continue;
     if (!preContract && view.squad(player.clubId).length <= MIN_SQUAD) continue;
@@ -109,7 +110,7 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
  */
 export function tradeBetweenClubs(state: GameState, random: () => number): { state: GameState; events: (PlayerMoved | PreContractSigned)[] } {
   const events: (PlayerMoved | PreContractSigned)[] = [];
-  const buyers = Object.keys(state.finances).filter((id) => id !== state.coachClubId).sort();
+  const buyers = Object.keys(state.finances).filter((id) => !isHumanClub(state, id)).sort();
   for (let i = buyers.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));
     [buyers[i], buyers[j]] = [buyers[j] ?? "", buyers[i] ?? ""];
