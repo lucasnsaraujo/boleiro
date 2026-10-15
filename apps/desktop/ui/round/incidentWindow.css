@@ -89,6 +89,18 @@
   padding-left: 50px;
 }
 
+/* In a hot-seat round, whose match stopped: the coach and his club, over the headline. */
+.inc-coach {
+  display: block;
+  margin-bottom: 6px;
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
 .inc-top h2 {
   font-stretch: var(--wide);
   font-weight: 900;

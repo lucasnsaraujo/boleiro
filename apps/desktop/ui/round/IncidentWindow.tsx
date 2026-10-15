@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import type { Substitution } from "@boleiro/engine/sim/live/applyLiveChange";
-import type { LiveRound } from "@boleiro/game-client/round/liveRoundOf";
+import type { CoachSide, LiveRound } from "@boleiro/game-client/round/liveRoundOf";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { Crest } from "../clubs/Crest.js";
 import { layoffText, type Incident, type Suggestion } from "./incident.js";
@@ -16,6 +16,11 @@ type Props = {
   incident: Incident;
   round: LiveRound;
   match: MatchAt;
+  /** The human coach's side the incident befell, and his club. */
+  side: CoachSide;
+  clubId: string;
+  /** In a hot-seat round, the coach whose match it is. */
+  coachName?: string;
   subsLeft: number;
   stopsLeft: number;
   isBusy: boolean;
@@ -29,13 +34,13 @@ type Props = {
  * The window that stops the coach's match on a red card or an injury to his side: what happened,
  * the assistant's substitutions (each one a switch, all on), and the way back to the match.
  */
-export function IncidentWindow({ incident, round, match, subsLeft, stopsLeft, isBusy, error, onLeave, onOpenLineup, onSubstitute }: Props) {
+export function IncidentWindow({ incident, round, match, side, clubId, coachName, subsLeft, stopsLeft, isBusy, error, onLeave, onOpenLineup, onSubstitute }: Props) {
   const title = useDialogFocus<HTMLHeadingElement>(true, { isModal: true });
   const [chosen, setChosen] = useState<ReadonlySet<string>>(() => new Set(incident.suggestions.map((s) => s.forId)));
   const nameOf = (id: string) => round.names[id] ?? "Um jogador";
-  const playerOf = (id: string) => round.coach?.squad.find((p) => p.id === id);
+  const playerOf = (id: string) => side.squad.find((p) => p.id === id);
   const suggestionFor = (id: string) => incident.suggestions.find((s) => s.forId === id);
-  const club = round.clubs[round.coachClubId ?? ""];
+  const club = round.clubs[clubId];
   const home = round.clubs[match.homeId];
   const away = round.clubs[match.awayId];
 
@@ -79,6 +84,11 @@ export function IncidentWindow({ incident, round, match, subsLeft, stopsLeft, is
         </div>
         <div className="inc-top">
           <div>
+            {coachName && (
+              <span className="inc-coach">
+                {coachName} · {club?.shortName}
+              </span>
+            )}
             <h2 id="incident-title" ref={title} tabIndex={-1}>
               {red ? "Expulso: " : "Machucou: "}
               <em>{nameOf(headlineId)}</em>

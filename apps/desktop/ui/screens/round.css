@@ -650,6 +650,13 @@
   color: #fff;
 }
 
+/* A human coach's substitution, made under a window, is called out on its row when the board shows again. */
+.live-r .gol.sub {
+  max-width: 76px;
+  background: var(--ink);
+  color: var(--paper);
+}
+
 @keyframes gol-slap {
   0% {
     opacity: 0;
