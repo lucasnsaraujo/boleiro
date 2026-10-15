@@ -17,6 +17,7 @@ import { setTicketPrice } from "@boleiro/engine/sim/finances/setTicketPrice";
 import { repayBankLoan, takeBankLoan, type BankLoanAnswer } from "@boleiro/engine/sim/finances/bankLoan";
 import { bookFriendly, type FriendlyAnswer } from "@boleiro/engine/sim/friendlies/friendlies";
 import { requestStadiumWorks, type WorksAnswer } from "@boleiro/engine/sim/stadium/stadiumWorks";
+import { promoteProspect, releaseProspect, sellProspect, type ProspectRefusal, type ProspectSold } from "@boleiro/engine/sim/youth/moveProspect";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { playToMatchDay, type StopReason } from "../hub/playToMatchDay.js";
 import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
@@ -63,7 +64,16 @@ type CommandFields = {
   repayBankLoan: Record<never, never>;
   /** Books a friendly for the coach's club against `opponentId` on `date`; the other club answers at once. */
   bookFriendly: { opponentId: string; date: IsoDate; isHome: boolean };
+  /** Moves a kid of the coach's academy into his squad. */
+  promoteProspect: { prospectId: string };
+  /** Lets a kid of the coach's academy go. */
+  releaseProspect: { prospectId: string };
+  /** Sells a kid of the coach's academy to the club that wants him most. */
+  sellProspect: { prospectId: string };
 };
+
+/** What a move on a kid of the academy answers: null when it went through, and the sale it made. */
+export type ProspectAnswer = { refusal: ProspectRefusal | null; sale?: ProspectSold };
 
 export type CommandType = keyof CommandFields;
 
@@ -95,6 +105,9 @@ export type CommandResults = {
   takeBankLoan: BankLoanAnswer;
   repayBankLoan: undefined;
   bookFriendly: FriendlyAnswer;
+  promoteProspect: ProspectAnswer;
+  releaseProspect: ProspectAnswer;
+  sellProspect: ProspectAnswer;
 };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
@@ -337,6 +350,21 @@ export function createEngineSession(files: GameFiles) {
       const asked = bookFriendly(betweenDays("a friendly can't be booked"), opponentId, date, isHome);
       state = asked.state;
       return asked.answer;
+    },
+    promoteProspect({ prospectId }) {
+      const moved = promoteProspect(betweenDays("a kid can't be promoted"), prospectId);
+      state = moved.state;
+      return { refusal: moved.refusal };
+    },
+    releaseProspect({ prospectId }) {
+      const moved = releaseProspect(betweenDays("a kid can't be released"), prospectId);
+      state = moved.state;
+      return { refusal: moved.refusal };
+    },
+    sellProspect({ prospectId }) {
+      const { state: sold, ...answer } = sellProspect(betweenDays("a kid can't be sold"), prospectId);
+      state = sold;
+      return answer;
     },
   };
 
