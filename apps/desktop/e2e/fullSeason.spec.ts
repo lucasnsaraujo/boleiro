@@ -139,8 +139,12 @@ test("a Série C club plays its whole first season through the screens and start
   let hasToured = false;
   let isAnswered = false;
   let hasBeenSacked = false;
-  // A season's fixtures are gone once the year turns, so the count is taken on the hub before that.
+  // A season's fixtures are gone once the year turns, so the count is taken after every step that can play a match.
   let finished = 0;
+  const countFinished = async () => {
+    const seen = await finishedCoachMatches(page);
+    if (seen.date.startsWith(String(SEASON))) finished = seen.count;
+  };
 
   for (let step = 0; step < MAX_STEPS && !(await seasonEnd.isVisible()); step++) {
     await expect(canPlay.or(elsewhere).first()).toBeVisible();
@@ -150,6 +154,7 @@ test("a Série C club plays its whole first season through the screens and start
       labels.push((await page.getByRole("dialog", { name: "Escalação" }).getByText(/ x .+ · /).textContent()) ?? "");
       await kickOff.click();
       stops.push(await playLiveRound(page));
+      await countFinished();
       continue;
     }
     if (await sacked.isVisible()) {
@@ -190,8 +195,7 @@ test("a Série C club plays its whole first season through the screens and start
         timeout: PLAY_TIMEOUT,
       })
       .toBe(true);
-    const seen = await finishedCoachMatches(page);
-    if (seen.date.startsWith(String(SEASON))) finished = seen.count;
+    await countFinished();
     if (signing && !isAnswered && (await playRound.isVisible())) {
       const inbox = await news(page);
       const answer = inbox.getByText(`Diretoria aprova a contratação de ${signing}`).or(inbox.getByText(`Diretoria recusa a contratação de ${signing}`));
