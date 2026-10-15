@@ -76,5 +76,8 @@ export type Country = {
   rngState: number;
 };
 
+/** The unified calendar's days a result-only country plays on: the leagues' grid, round k on its k-th day, and the cups' shared midweeks. */
+export type UnifiedDates = { league: IsoDate[]; cup: IsoDate[] };
+
 /** Every result-only country, by id. */
 export type World = Record<string, Country>;

@@ -2,7 +2,8 @@ import { randomStream } from "../../engine/random.js";
 import type { ContinentalCompetition, ContinentalCup, GameState } from "../gameState.js";
 import { openNextStage } from "../openNextStage.js";
 import { shuffle } from "../shuffle.js";
-import { cupStageDates } from "./conmebolCups.js";
+import { formatsOf, gameScales } from "../formats.js";
+import { CUP_STAGES, cupStageDates } from "./conmebolCups.js";
 import type { ContinentalField } from "./continentalField.js";
 
 // The draws come from a stream of their own, so opening the cups leaves the game's main stream as it was.
@@ -21,9 +22,12 @@ export function openContinentalCups(state: GameState, field: ContinentalField | 
   ];
   const competitions = { ...state.competitions };
   const fixtures = [...state.fixtures];
+  const formats = formatsOf(state);
   for (const { cup, entries, drawn } of cups) {
     const clubIds = entries.flat();
     if (clubIds.length < 2) continue;
+    const stageDates = cupStageDates(cup, state.season, formats);
+    const scales = gameScales(CUP_STAGES[cup].map((stage) => stage.dates.length), stageDates.map((dates) => dates.length));
     const competition: ContinentalCompetition = {
       id: `${cup}-${state.season}`,
       kind: "continental",
@@ -33,8 +37,9 @@ export function openContinentalCups(state: GameState, field: ContinentalField | 
       entries,
       countries: field.countries,
       stages: [],
-      stageDates: cupStageDates(cup, state.season),
+      stageDates,
       drawOrder: shuffle(drawn, random),
+      ...(scales ? { gameScales: scales } : {}),
     };
     const opened = openNextStage(competition, [], {});
     competitions[competition.id] = opened.competition;

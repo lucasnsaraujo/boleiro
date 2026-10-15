@@ -14,7 +14,8 @@ export type LeagueOutcome = {
 export type StageShape = Omit<GroupStage, "dates"> | Omit<KnockoutStage, "dates">;
 
 export type LeagueFormat = {
-  stageDateCounts: (clubCount: number) => number[];
+  /** `legs` is how often the game's formats let a round robin meet; only a straight table reads it. */
+  stageDateCounts: (clubCount: number, legs: 1 | 2) => number[];
   /** Clubs playing each stage. */
   stageSizes: (clubCount: number) => number[];
   nextStage: (competition: LeagueCompetition, fixtures: readonly Fixture[], clubStates: Record<string, State>) => StageShape;
@@ -37,9 +38,9 @@ const knockoutWinner = (competition: LeagueCompetition, fixtures: readonly Fixtu
 
 function singleTable(relegated: number, promoted: number): LeagueFormat {
   return {
-    stageDateCounts: (clubCount) => [(clubCount - 1) * 2],
+    stageDateCounts: (clubCount, legs) => [(clubCount - 1) * legs],
     stageSizes: (clubCount) => [clubCount],
-    nextStage: (competition) => ({ kind: "groups", groups: [competition.clubIds], legs: 2 }),
+    nextStage: (competition) => ({ kind: "groups", groups: [competition.clubIds], legs: competition.legs ?? 2 }),
     outcome: (competition, fixtures) => {
       const order = table(competition, competition.clubIds, fixtures);
       return {

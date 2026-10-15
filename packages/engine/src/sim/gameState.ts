@@ -13,6 +13,7 @@ import type { PlayerProfile } from "./players/playerProfile.js";
 import type { TransferMarket } from "./transfers/transferMarket.js";
 import type { EuropeanCups } from "./continental/uefaCups.js";
 import type { World } from "./world/world.js";
+import type { Formats } from "./formats.js";
 
 export type IsoDate = string;
 
@@ -65,9 +66,12 @@ type CompetitionBase = {
   stages: Stage[];
   stageDates: IsoDate[][];
   drawOrder: string[];
+  /** Each stage's games in its real format over its games in this game's (`formats.gameScales`); absent when they are the same. */
+  gameScales?: number[];
 };
 
-export type LeagueCompetition = CompetitionBase & { kind: "league"; format: LeagueFormatId; division: Division };
+/** `legs` 1 when the game's formats play the league's round robin once. */
+export type LeagueCompetition = CompetitionBase & { kind: "league"; format: LeagueFormatId; division: Division; legs?: 1 };
 
 /** `clubIds` is the seeding order, best first. */
 export type StateCompetition = CompetitionBase & { kind: "state"; state: State };
@@ -92,6 +96,8 @@ export type SeasonCalendar = {
   stateChampionshipDates: IsoDate[];
   copaDoBrasilRounds: { name: string; dates: IsoDate[] }[];
   leagueDates: Record<Division, IsoDate[]>;
+  /** The unified calendar's match days, which every league's rounds follow from the first; a real calendar has none. */
+  leagueGrid?: IsoDate[];
 };
 
 /** Where a club plays: its national division, or only its state championship. */
@@ -226,4 +232,6 @@ export type GameState = {
   waitingCoaches?: WaitingCoach[];
   /** Each coach's market time per transfer window, in seconds; a game without the market clock has none. */
   marketClockSeconds?: number;
+  /** The calendar and formats chosen at new game; a game on Realista's, or saved before them, has none. */
+  formats?: Formats;
 };
