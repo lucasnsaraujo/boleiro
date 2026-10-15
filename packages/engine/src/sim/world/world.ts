@@ -74,6 +74,8 @@ export type Country = {
   cup?: ResultOnlyCup;
   seasons: CountrySeason[];
   rngState: number;
+  /** True when a human coach took one of its clubs: its leagues play in the full tier, and only its cup here. */
+  isFullTier?: true;
 };
 
 /** The unified calendar's days a result-only country plays on: the leagues' grid, round k on its k-th day, and the cups' shared midweeks. */

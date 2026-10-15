@@ -14,7 +14,7 @@ export function rivalsOf(clubs: Record<string, Club>): ReadonlyMap<string, Reado
   const cached = known.get(clubs);
   if (cached) return cached;
   const byState = new Map<string, Club[]>();
-  for (const club of Object.values(clubs)) byState.set(club.state, [...(byState.get(club.state) ?? []), club]);
+  for (const club of Object.values(clubs)) if (club.state) byState.set(club.state, [...(byState.get(club.state) ?? []), club]);
   const rivals = new Map<string, ReadonlySet<string>>();
   for (const members of byState.values()) {
     const big = members

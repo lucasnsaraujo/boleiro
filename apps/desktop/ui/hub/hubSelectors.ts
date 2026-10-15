@@ -54,7 +54,14 @@ export function clubMeters(state: Pick<GameState, "boards" | "mood">, clubId: st
   };
 }
 
-export type LeagueStanding = { division: Division; position: number; points: number };
+/** `division` null for a league abroad. */
+export type LeagueStanding = { division: Division | null; position: number; points: number };
+
+/** The name of the league abroad the coach's club plays in, or null for a club in Brazil's. */
+export function leagueAbroadName({ coachClubId, competitions }: Pick<GameState, "coachClubId" | "competitions">): string | null {
+  const league = Object.values(competitions).find((c) => c.kind === "league" && c.abroad && coachClubId !== null && c.clubIds.includes(coachClubId));
+  return league?.kind === "league" && league.abroad ? league.abroad.name : null;
+}
 
 /** The coach's club in its national league's first phase, once it has played a game of it. */
 export function leagueStanding({ coachClubId, competitions, fixtures }: Pick<GameState, "coachClubId" | "competitions" | "fixtures">): LeagueStanding | null {

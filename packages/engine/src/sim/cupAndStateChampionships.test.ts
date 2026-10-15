@@ -213,6 +213,7 @@ describe("qualification for next season", () => {
     const newcomers = Object.values(next.clubs).filter((c) => c.division === "D" && !staysInD(c.id) && ended.clubs[c.id]?.division !== "C");
     expect(newcomers.length).toBeGreaterThan(50);
     for (const club of newcomers) {
+      if (!club.state) throw new Error(`${club.id} has no state`);
       const eligible = placingsOf(club.state).filter((id) => next.clubs[id]?.division === null || newcomers.some((n) => n.id === id));
       const qualifiedHere = newcomers.filter((n) => n.state === club.state).map((n) => n.id);
       expect(eligible.slice(0, qualifiedHere.length).sort(), club.state).toEqual(qualifiedHere.sort());

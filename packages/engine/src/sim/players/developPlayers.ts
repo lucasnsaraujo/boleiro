@@ -1,7 +1,7 @@
 import type { Division } from "@boleiro/data/players";
 import type { PositionGroup } from "../../engine/match.js";
 import { randomStream } from "../../engine/random.js";
-import { tierOf } from "../finances/tierOf.js";
+import { divisionOf, tierOf } from "../finances/tierOf.js";
 import type { GameState, IsoDate, SimPlayer, Tier } from "../gameState.js";
 import { wageRateOf, type WageRate } from "../transfers/wageDemand.js";
 import type { Prospect } from "../youth/academy.js";
@@ -187,7 +187,10 @@ function tierWageRates(clubs: GameState["clubs"], players: readonly SimPlayer[])
 export function developPlayers(state: GameState): { state: GameState; events: (PlayerRetired | YouthPromoted)[] } {
   const random = randomStream(state.rngState);
   const events: (PlayerRetired | YouthPromoted)[] = [];
-  const levelOf = (clubId: string) => CLUB_LEVEL[state.clubs[clubId]?.division ?? "none"];
+  const levelOf = (clubId: string) => {
+    const club = state.clubs[clubId];
+    return CLUB_LEVEL[(club && divisionOf(club)) ?? "none"];
+  };
   const squads = new Map<string, SimPlayer[]>();
   for (const p of Object.values(state.players)) {
     const squad = squads.get(p.clubId) ?? [];
@@ -238,7 +241,7 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
       if (prospect) taken.add(prospect.id);
       const youth = prospect
         ? professionalOf(prospect, club.id, 0, date, random.next)
-        : academyPlayer(`y${intake}-${club.id}-${i}`, club.id, club.division, group, date, random.next);
+        : academyPlayer(`y${intake}-${club.id}-${i}`, club.id, divisionOf(club), group, date, random.next);
       players[youth.id] = { ...youth, wage: Math.max(1, rate(youth.strength)) };
       events.push({ type: "youthPromoted", playerId: youth.id, clubId: club.id });
     });

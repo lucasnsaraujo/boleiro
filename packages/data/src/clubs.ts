@@ -17,13 +17,16 @@ export type Club = {
   transfermarktId: string;
   name: string;
   shortName: string;
-  state: State;
+  /** Brazil's clubs only; a club abroad has none. */
+  state?: State;
   division: Division | null;
   stadium: string;
   capacity: number;
   pitch: Pitch;
   colours: { primary: string; secondary: string };
   fanbase: number;
+  /** A club abroad in the full tier: its country and the level of the country's pyramid it plays at, 0 the top. */
+  abroad?: { country: string; level: number };
   sources: {
     names: string;
     state: string;

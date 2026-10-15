@@ -9,7 +9,35 @@ import { shuffle } from "./shuffle.js";
 import { STATE_CHAMPIONSHIP } from "./stateChampionship.js";
 import { BRAZIL } from "./world/brazil.js";
 import { continentalDates } from "./continental/continentalDays.js";
+import type { CountryStructure } from "./world/world.js";
 import { gameScales, REALISTA, type Formats } from "./formats.js";
+
+/**
+ * A country's leagues in the full tier, one per level of its pyramid: a round robin of the clubs at
+ * that level, its rounds on the unified grid's first days.
+ */
+function leaguesAbroad(country: CountryStructure, clubs: Record<string, Club>, season: number, calendar: SeasonCalendar, random: () => number): LeagueCompetition[] {
+  const grid = calendar.leagueGrid;
+  if (!grid) throw new Error(`${country.id}: a league abroad needs the unified calendar`);
+  return country.levels.map((level, index) => {
+    const members = Object.values(clubs).filter((club) => club.abroad?.country === country.id && club.abroad.level === index).map((club) => club.id).sort();
+    const [rounds = 0] = LEAGUE_FORMATS["round-robin"].stageDateCounts(members.length, level.legs);
+    const clubIds = shuffle(members, random);
+    return {
+      id: `${country.id}-${index + 1}-${season}`,
+      kind: "league",
+      format: "round-robin",
+      division: null,
+      abroad: { country: country.id, level: index, name: level.name, promoted: index > 0 ? level.promoted : 0, relegated: level.relegated },
+      season,
+      clubIds,
+      stages: [],
+      stageDates: [grid.slice(0, rounds)],
+      drawOrder: shuffle(clubIds, random),
+      ...(level.legs === 1 ? { legs: 1 as const } : {}),
+    };
+  });
+}
 
 /** The clubs joining the season's Copa do Brasil at each stage. */
 export const cupEntriesOf = (competitions: Record<string, Competition>): string[][] =>
@@ -32,8 +60,9 @@ export function startSeason(
   playsContinentalCups = false,
   formats: Formats = REALISTA,
   gridRounds = 0,
+  abroad: readonly CountryStructure[] = [],
 ): SeasonStart {
-  const clubStates: Record<string, State> = Object.fromEntries(Object.values(clubs).map((club) => [club.id, club.state]));
+  const clubStates: Record<string, State> = Object.fromEntries(Object.values(clubs).flatMap((club) => (club.state ? [[club.id, club.state]] : [])));
   const levels = BRAZIL.levels.map((level) => {
     const members = Object.values(clubs).filter((club) => club.division === level.division).map((club) => club.id).sort();
     const { stageDateCounts } = LEAGUE_FORMATS[level.format];
@@ -101,5 +130,6 @@ export function startSeason(
   };
   const cupScales = copaDoBrasilGameScales(formats);
   open(cupScales ? { ...cup, gameScales: cupScales } : cup);
+  for (const country of abroad) for (const league of leaguesAbroad(country, clubs, season, calendar, random)) open(league);
   return { calendar, competitions, fixtures };
 }

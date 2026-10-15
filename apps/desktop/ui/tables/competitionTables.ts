@@ -65,7 +65,11 @@ export function openingCompetitionId(state: Pick<GameState, "coachClubId" | "com
  */
 export function tableTabs(state: Pick<GameState, "coachClubId" | "competitions" | "season">): { tabs: Competition[]; otherStates: StateCompetition[] } {
   const thisSeason = Object.values(state.competitions).filter((c) => c.season === state.season);
-  const leagues = DIVISION_ORDER.flatMap((division) => thisSeason.filter((c) => c.kind === "league" && c.division === division));
+  const brazil = DIVISION_ORDER.flatMap((division) => thisSeason.filter((c) => c.kind === "league" && c.division === division));
+  // Leagues abroad in the full tier, a country's levels top first; the coach's own come before Brazil's.
+  const abroad = thisSeason.flatMap((c) => (c.kind === "league" && c.abroad ? [c] : [])).sort((a, b) => (a.abroad?.country ?? "").localeCompare(b.abroad?.country ?? "") || (a.abroad?.level ?? 0) - (b.abroad?.level ?? 0));
+  const isCoachAbroad = state.coachClubId !== null && abroad.some((c) => isPlaying(c, state.coachClubId ?? ""));
+  const leagues = isCoachAbroad ? [...abroad, ...brazil] : [...brazil, ...abroad];
   const cups = thisSeason.filter((c) => c.kind === "cup");
   const isShownCup = (c: Competition) => c.kind === "continental" && (c.cup !== "recopa" || (state.coachClubId !== null && isPlaying(c, state.coachClubId)));
   const continental = thisSeason.filter(isShownCup).sort(byKind);

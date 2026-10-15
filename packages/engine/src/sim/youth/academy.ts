@@ -1,4 +1,4 @@
-import type { Club } from "@boleiro/data/clubs";
+import type { Club, State } from "@boleiro/data/clubs";
 import type { PositionGroup } from "../../engine/match.js";
 import { randomStream } from "../../engine/random.js";
 import { clubStatures } from "../coach/clubStatures.js";
@@ -81,8 +81,11 @@ export function scoutedStars(prospect: Pick<Prospect, "potential" | "scoutDraw" 
 }
 
 /** The clubs that keep an academy: those in a national division. A state-only club tops its squad up as before. */
-export function academyClubs(state: Pick<GameState, "clubs">): Club[] {
-  return Object.values(state.clubs).filter((club) => club.division !== null);
+/** A club of Brazil's national leagues, the ones that keep an academy. */
+export type AcademyClub = Club & { state: State };
+
+export function academyClubs(state: Pick<GameState, "clubs">): AcademyClub[] {
+  return Object.values(state.clubs).filter((club): club is AcademyClub => club.division !== null && club.state !== undefined);
 }
 
 /** How many kids the club keeps and how good they are, by its stature (0 to 100). */
@@ -104,7 +107,7 @@ export function thinnestGroup(groups: readonly PositionGroup[]): PositionGroup {
 /** A new kid of `age` at the club, his potential drawn around the academy's. */
 export function inventProspect(
   id: string,
-  club: Club,
+  club: AcademyClub,
   potentialMean: number,
   group: PositionGroup,
   age: number,

@@ -12,7 +12,7 @@ import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { clubFaceOf } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
-import { clubMeters, jobSecurity, leagueStanding, nextMatch, type NextMatch } from "../hub/hubSelectors.js";
+import { clubMeters, jobSecurity, leagueAbroadName, leagueStanding, nextMatch, type NextMatch } from "../hub/hubSelectors.js";
 import { ConfidenceMeter } from "../finances/ConfidenceMeter.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import { SQUAD_KEYS, squadRows } from "../squad/squadRows.js";
@@ -122,7 +122,7 @@ export function Hub() {
                 </span>
               )}
               <br />
-              {club?.division ? `Série ${club.division}` : club ? "Fora das séries" : offers === 0 ? "Nenhuma proposta na mesa." : `${offersText(offers)} na mesa.`}
+              {club?.division ? `Série ${club.division}` : club?.abroad ? leagueAbroadName(state) : club ? "Fora das séries" : offers === 0 ? "Nenhuma proposta na mesa." : `${offersText(offers)} na mesa.`}
               {standing && ` · ${standing.position}º lugar · ${standing.points} pts`}
             </p>
           </div>

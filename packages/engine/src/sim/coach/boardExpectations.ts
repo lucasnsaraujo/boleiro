@@ -1,4 +1,5 @@
 import type { Division } from "@boleiro/data/players";
+import type { Club } from "@boleiro/data/clubs";
 import type { GameState } from "../gameState.js";
 import { clubStatures } from "./clubStatures.js";
 import { firstPhaseTables } from "./firstPhaseTables.js";
@@ -65,21 +66,28 @@ const LADDERS: Record<Division, Rung[]> = {
   ],
 };
 
-/** Every national club's board at the start of the season, from its stature and division. */
+/**
+ * Every national club's board at the start of the season, from its stature and division; a league
+ * abroad in the full tier ranks its clubs the same way. guess: its top level's boards ask what Série
+ * A's do, and the levels below what Série B's do.
+ */
 export function boardExpectations(state: GameState): { boards: Record<string, Board>; events: BoardExpectationsSet[] } {
   const statures = clubStatures(state);
   const tables = firstPhaseTables(state);
   const boards: Record<string, Board> = {};
   const events: BoardExpectationsSet[] = [];
-  for (const division of ["A", "B", "C", "D"] as const) {
-    const members = Object.values(state.clubs)
-      .filter((club) => club.division === division)
+  const leagues: { ladder: Division; clubs: Club[] }[] = (["A", "B", "C", "D"] as const).map((division) => ({ ladder: division, clubs: Object.values(state.clubs).filter((club) => club.division === division) }));
+  const abroad = new Map<string, Club[]>();
+  for (const club of Object.values(state.clubs)) if (club.abroad) abroad.set(`${club.abroad.country}:${club.abroad.level}`, [...(abroad.get(`${club.abroad.country}:${club.abroad.level}`) ?? []), club]);
+  for (const clubs of abroad.values()) leagues.push({ ladder: clubs[0]?.abroad?.level === 0 ? "A" : "B", clubs });
+  for (const { ladder, clubs } of leagues) {
+    const members = clubs
       .map((club) => club.id)
       .sort((a, b) => (statures.get(b) ?? 0) - (statures.get(a) ?? 0) || a.localeCompare(b));
     members.forEach((clubId, rank) => {
       const tableSize = tables.get(clubId)?.length;
       if (!tableSize) return;
-      const rung = LADDERS[division].find((r) => rank < r.biggest * members.length) ?? LADDERS[division].at(-1);
+      const rung = LADDERS[ladder].find((r) => rank < r.biggest * members.length) ?? LADDERS[ladder].at(-1);
       if (!rung) return;
       const targetPosition = Math.round(rung.target(tableSize));
       boards[clubId] = { expectation: rung.expectation, targetPosition, tableSize, position: targetPosition, games: 0, pressure: 0 };
