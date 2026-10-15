@@ -15,7 +15,9 @@ from dataclasses import dataclass
 class League:
     tier: int
     code: str                          # Transfermarkt's competition code, "GB1"
+    clubs: int                         # how many clubs its Transfermarkt page lists, which its pack must hold
     path: str | None = None            # the page listing its clubs, when not the start page
+    verified: bool = True              # False while no second source confirms `clubs`
 
     @property
     def clubs_page(self) -> str:
@@ -37,59 +39,52 @@ class Competition:
     withdrawn: tuple[str, ...] = ()    # Transfermarkt ids its page still lists but that don't play in it
 
 
-def top(code: str) -> tuple[League, ...]:
-    return (League(1, code),)
-
-
-def two(first: str, second: str) -> tuple[League, ...]:
-    return (League(1, first), League(2, second))
-
-
 COUNTRIES = (
     Country("br", "Brazil", (
-        League(1, "BRA1"), League(2, "BRA2"),
+        League(1, "BRA1", 20),
+        League(2, "BRA2", 20),
         # Séries C and D's start pages show groups, not clubs; their participants pages list them.
-        League(3, "BRA3", "/x/teilnehmer/pokalwettbewerb/BRA3/saison_id/2025"),
-        League(4, "BRA4", "/x/teilnehmer/pokalwettbewerb/BRA4/saison_id/2025"),
+        League(3, "BRA3", 20, "/x/teilnehmer/pokalwettbewerb/BRA3/saison_id/2025"),
+        League(4, "BRA4", 96, "/x/teilnehmer/pokalwettbewerb/BRA4/saison_id/2025"),
     ), "BRC"),
-    Country("ar", "Argentina", two("ARGC", "ARG2"), "ARCA"),
-    Country("bo", "Bolivia", top("BO1A")),
-    Country("cl", "Chile", top("CLPD")),
-    Country("co", "Colombia", top("COL1")),
-    Country("ec", "Ecuador", top("EC1N")),
-    Country("py", "Paraguay", top("PR1C")),
-    Country("pe", "Peru", top("TDeC")),
-    Country("uy", "Uruguay", top("URUC")),
-    Country("ve", "Venezuela", top("VZ1L")),
-    Country("gb-eng", "England", two("GB1", "GB2"), "FAC"),
-    Country("es", "Spain", two("ES1", "ES2"), "CDR"),
-    Country("it", "Italy", two("IT1", "IT2"), "CIT"),
-    Country("de", "Germany", two("L1", "L2"), "DFB"),
-    Country("fr", "France", two("FR1", "FR2"), "FRC"),
-    Country("pt", "Portugal", two("PO1", "PO2"), "POPO"),
-    Country("nl", "Netherlands", two("NL1", "NL2"), "NLP"),
-    Country("tr", "Türkiye", two("TR1", "TR2"), "TRP"),
-    Country("be", "Belgium", two("BE1", "BE2"), "CCB"),
-    Country("gb-sct", "Scotland", two("SC1", "SC2"), "SFA"),
-    Country("at", "Austria", two("A1", "A2"), "ofb"),
-    Country("gr", "Greece", two("GR1", "GRS2"), "GRP"),
-    Country("cz", "Czech Republic", two("TS1", "TS2"), "TSP"),
-    Country("hr", "Croatia", two("KR1", "KR2"), "KRC"),
-    Country("ua", "Ukraine", two("UKR1", "UKR2"), "UKRP"),
-    Country("pl", "Poland", two("PL1", "PL2"), "POPU"),
-    Country("no", "Norway", two("NO1", "NO2"), "NOPO"),
-    Country("sk", "Slovakia", two("SLO1", "SK2"), "SKC"),
-    Country("si", "Slovenia", two("SL1", "SL2"), "SLP"),
-    Country("hu", "Hungary", two("UNG1", "UN2"), "UNGP"),
-    Country("bg", "Bulgaria", two("BU1", "BU2"), "BULP"),
-    Country("cy", "Cyprus", two("ZYP1", "CYP2"), "CPO1"),
-    Country("am", "Armenia", two("ARM1", "ARM2"), "ARPO"),
-    Country("il", "Israel", two("ISR1", "ISR2"), "ISPO"),
+    Country("ar", "Argentina", (League(1, "ARGC", 30), League(2, "ARG2", 36)), "ARCA"),
+    Country("bo", "Bolivia", (League(1, "BO1A", 16),)),
+    Country("cl", "Chile", (League(1, "CLPD", 16),)),
+    Country("co", "Colombia", (League(1, "COL1", 20),)),
+    Country("ec", "Ecuador", (League(1, "EC1N", 16),)),
+    Country("py", "Paraguay", (League(1, "PR1C", 12),)),
+    Country("pe", "Peru", (League(1, "TDeC", 18, verified=False),)),
+    Country("uy", "Uruguay", (League(1, "URUC", 16),)),
+    Country("ve", "Venezuela", (League(1, "VZ1L", 15, verified=False),)),
+    Country("gb-eng", "England", (League(1, "GB1", 20), League(2, "GB2", 24)), "FAC"),
+    Country("es", "Spain", (League(1, "ES1", 20), League(2, "ES2", 22)), "CDR"),
+    Country("it", "Italy", (League(1, "IT1", 20), League(2, "IT2", 20)), "CIT"),
+    Country("de", "Germany", (League(1, "L1", 18), League(2, "L2", 18)), "DFB"),
+    Country("fr", "France", (League(1, "FR1", 18), League(2, "FR2", 18)), "FRC"),
+    Country("pt", "Portugal", (League(1, "PO1", 18), League(2, "PO2", 18)), "POPO"),
+    Country("nl", "Netherlands", (League(1, "NL1", 18), League(2, "NL2", 20)), "NLP"),
+    Country("tr", "Türkiye", (League(1, "TR1", 18), League(2, "TR2", 20)), "TRP"),
+    Country("be", "Belgium", (League(1, "BE1", 18), League(2, "BE2", 15)), "CCB"),
+    Country("gb-sct", "Scotland", (League(1, "SC1", 12), League(2, "SC2", 10)), "SFA"),
+    Country("at", "Austria", (League(1, "A1", 12), League(2, "A2", 16)), "ofb"),
+    Country("gr", "Greece", (League(1, "GR1", 14), League(2, "GRS2", 16)), "GRP"),
+    Country("cz", "Czech Republic", (League(1, "TS1", 16), League(2, "TS2", 16)), "TSP"),
+    Country("hr", "Croatia", (League(1, "KR1", 10), League(2, "KR2", 16)), "KRC"),
+    Country("ua", "Ukraine", (League(1, "UKR1", 16), League(2, "UKR2", 16)), "UKRP"),
+    Country("pl", "Poland", (League(1, "PL1", 18), League(2, "PL2", 18)), "POPU"),
+    Country("no", "Norway", (League(1, "NO1", 16), League(2, "NO2", 16)), "NOPO"),
+    Country("sk", "Slovakia", (League(1, "SLO1", 12), League(2, "SK2", 16)), "SKC"),
+    Country("si", "Slovenia", (League(1, "SL1", 10), League(2, "SL2", 16)), "SLP"),
+    Country("hu", "Hungary", (League(1, "UNG1", 12), League(2, "UN2", 16)), "UNGP"),
+    Country("bg", "Bulgaria", (League(1, "BU1", 14), League(2, "BU2", 18)), "BULP"),
+    Country("cy", "Cyprus", (League(1, "ZYP1", 14), League(2, "CYP2", 16)), "CPO1"),
+    Country("am", "Armenia", (League(1, "ARM1", 12, verified=False), League(2, "ARM2", 15)), "ARPO"),
+    Country("il", "Israel", (League(1, "ISR1", 14), League(2, "ISR2", 16)), "ISPO"),
     # Transfermarkt lists no second tier for Azerbaijan.
-    Country("az", "Azerbaijan", top("AZ1"), "ASPK"),
-    Country("sa", "Saudi Arabia", top("SA1"), "SAKC"),
-    Country("us", "United States", top("MLS1"), "MLSP"),
-    Country("mx", "Mexico", top("MEXA")),
+    Country("az", "Azerbaijan", (League(1, "AZ1", 12),), "ASPK"),
+    Country("sa", "Saudi Arabia", (League(1, "SA1", 18),), "SAKC"),
+    Country("us", "United States", (League(1, "MLS1", 30),), "MLSP"),
+    Country("mx", "Mexico", (League(1, "MEXA", 18),)),
 )
 
 # The clubs of these competitions must all play in a league above: the draw that picks Europe.

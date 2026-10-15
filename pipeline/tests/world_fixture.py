@@ -13,7 +13,7 @@ import tm_fetch
 import tm_world
 from scrape_world import Run, scrape_world
 
-ENGLAND = tm_world.Country("gb-eng", "England", (tm_world.League(1, "GB1"),))
+ENGLAND = tm_world.Country("gb-eng", "England", (tm_world.League(1, "GB1", 2),))
 QUALIFIERS = "/x/teilnehmer/pokalwettbewerb/WMQ4/saison_id/2023"
 PAGES = {
     "/x/startseite/wettbewerb/GB1": "league-premier-league-two-clubs",

@@ -94,13 +94,45 @@ function leaguesOf(file: string, clubs: readonly WorldClub[]): League[] {
   );
 }
 
+type ExpectedLeague = { id: string; clubs: number };
+
+// The world's countries and the club count of each league, as pipeline/tm_world.py's COUNTRIES records them.
+function expectedWorldOf(source: string): { countries: string[]; leagues: ExpectedLeague[]; leagueCalls: number } {
+  const start = source.indexOf("COUNTRIES = (");
+  const block = source.slice(start, source.indexOf("\n)\n", start));
+  const countries = [...block.matchAll(/Country\("([a-z-]+)"([\s\S]*?)(?=Country\(|$)/g)];
+  return {
+    countries: countries.map((match) => match[1] ?? ""),
+    leagues: countries.flatMap((match) =>
+      [...(match[2] ?? "").matchAll(/League\((\d+), "[^"]+", (\d+)/g)].map((league) => ({
+        id: `${match[1] ?? ""}-${league[1] ?? ""}`,
+        clubs: Number(league[2]),
+      })),
+    ),
+    leagueCalls: (block.match(/League\(/g) ?? []).length,
+  };
+}
+
 const countryFiles = readdirSync(WORLD).filter((file) => file.endsWith(".pack.json.gz") && file !== NATIONAL_TEAMS).sort();
 const clubs = countryFiles.flatMap(clubsOf);
 const leagues = countryFiles.flatMap((file) => leaguesOf(file, clubs.filter((club) => club.pack === file)));
+const expectedWorld = expectedWorldOf(readFileSync(join(import.meta.dirname, "..", "..", "..", "pipeline", "tm_world.py"), "utf8"));
 
 describe("the world packs", () => {
   it("cover the v1 world's clubs", () => {
     expect(clubs.length).toBeGreaterThan(1_000);
+  });
+
+  it("have a pack for every country pipeline/tm_world.py lists", () => {
+    expect(expectedWorld.countries.length).toBeGreaterThan(0);
+    expect(expectedWorld.countries.filter((country) => !countryFiles.includes(`${country}.pack.json.gz`))).toEqual([]);
+  });
+
+  it("give each league exactly the clubs pipeline/tm_world.py records for it", () => {
+    expect(expectedWorld.leagues.length).toBe(expectedWorld.leagueCalls);
+    const found = new Map(leagues.map((league) => [league.id, league.clubs]));
+    const wrong = expectedWorld.leagues.filter((league) => found.get(league.id) !== league.clubs);
+    expect(wrong.map((league) => `${league.id}: ${String(found.get(league.id) ?? "no league")}, expected ${String(league.clubs)}`)).toEqual([]);
   });
 
   it("give every club at least eleven players and a goalkeeper", () => {
