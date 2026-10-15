@@ -251,7 +251,8 @@ export function NewGame() {
               </span>
             </label>
 
-            {isHotSeat ? <PickedCard picked={pickedChoice ? { mode: "club", choice: pickedChoice } : null} /> : <PickedCard picked={picked} />}
+            {/* A hot-seat coach's row already says he has no club yet: the empty card would only push the page down. */}
+            {isHotSeat ? pickedChoice && <PickedCard picked={{ mode: "club", choice: pickedChoice }} /> : <PickedCard picked={picked} />}
             {pickedChoice && <ClubFacts choice={pickedChoice} season={season} />}
 
             <div className="career-new-free" hidden={isHotSeat}>
