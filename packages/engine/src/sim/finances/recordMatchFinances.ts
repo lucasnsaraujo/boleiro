@@ -87,17 +87,21 @@ export function recordMatchFinances(state: GameState, played: readonly Fixture[]
   if (!played.length) return state;
   const draft: GameState = { ...state, finances: copyRecord(state.finances) };
   const { finances } = draft;
+  // A continental guest from abroad keeps no accounts; its Brazilian opponent books its side alone.
+  const isGuest = (clubId: string) => !state.clubs[clubId];
   for (const fixture of played) {
     const home = finances[fixture.homeId];
     const away = finances[fixture.awayId];
-    if (!home || !away || !fixture.result) continue;
+    if (!fixture.result || (!home && !isGuest(fixture.homeId)) || (!away && !isGuest(fixture.awayId))) continue;
     const { homeGoals, awayGoals } = fixture.result;
-    const crowd = attendance(draft, home, fixture.homeId, fixture.awayId, fixture);
-    const gate = Math.round(crowd * home.ticketPrice);
-    const kept = fixture.homeId === state.coachClubId ? withGate(home, fixture, crowd, gate) : home;
-    finances[fixture.homeId] = withResult(kept, pointsFor(homeGoals, awayGoals));
-    finances[fixture.awayId] = withResult(away, pointsFor(awayGoals, homeGoals));
-    bookMoneyInDraft(finances, fixture.homeId, { revenue: "tickets", amount: gate });
+    if (home) {
+      const crowd = attendance(draft, home, fixture.homeId, fixture.awayId, fixture);
+      const gate = Math.round(crowd * home.ticketPrice);
+      const kept = fixture.homeId === state.coachClubId ? withGate(home, fixture, crowd, gate) : home;
+      finances[fixture.homeId] = withResult(kept, pointsFor(homeGoals, awayGoals));
+      bookMoneyInDraft(finances, fixture.homeId, { revenue: "tickets", amount: gate });
+    }
+    if (away) finances[fixture.awayId] = withResult(away, pointsFor(awayGoals, homeGoals));
   }
   return draft;
 }
