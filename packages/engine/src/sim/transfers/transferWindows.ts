@@ -16,10 +16,10 @@ export const TRANSFER_WINDOWS: readonly TransferWindow[] = [
 const DAYS_BETWEEN_MARKET_DAYS = 7;
 // guess: ten days, a week and a half of business with two or three match days in it: long enough to
 // sign a few players, short enough that a mid-season move stays an emergency and not a second window.
-export const PERSONAL_WINDOW_DAYS = 10;
+const PERSONAL_WINDOW_DAYS = 10;
 
 /** The game's own windows, which every club shares. */
-export type GameWindows = Pick<GameState, "hasMidSeasonWindow">;
+type GameWindows = Pick<GameState, "hasMidSeasonWindow">;
 /** The windows of the coach in the seat: the game's, and his own window after a move outside them. */
 export type CoachWindows = GameWindows & { coach: Pick<Coach, "personalWindowUntil"> };
 
@@ -54,12 +54,14 @@ export function nextWindowOpensOn(game: GameWindows, date: IsoDate): IsoDate {
 }
 
 /**
- * The last day of the window a coach who takes a new club on `date` gets for himself, or undefined
- * when the game's window is open. A game window that opens before his would end carries it on to its close.
+ * The last day of the window a coach who takes a new club on `date` gets for himself, or undefined when
+ * the game's window has that long left anyway. A game window that opens before his would end carries it
+ * on to its close.
  */
 export function personalWindowEnd(game: GameWindows, date: IsoDate): IsoDate | undefined {
-  if (windowOf(game, date)) return undefined;
   const last = addDays(date, PERSONAL_WINDOW_DAYS - 1);
+  const open = windowOf(game, date);
+  if (open) return open.closes < last ? last : undefined;
   const opens = nextWindowOpensOn(game, date);
   return opens <= last ? (windowOf(game, opens)?.closes ?? last) : last;
 }

@@ -129,8 +129,13 @@ describe("a coach's own window after taking a club outside the game's windows", 
     expect(movesThrough(hired, "2026-07-29")).toEqual([]);
   });
 
-  it("does not open when he moves inside the game's window", () => {
+  it("does not open when he moves inside the game's window with ten days or more of it left", () => {
     expect(hiredAtNewClub(windowEve).coach.personalWindowUntil).toBeUndefined();
+  });
+
+  it("runs ten days past a game window that closes sooner after his move", () => {
+    const lastDays = { ...windowEve, date: "2026-09-09" };
+    expect(hiredAtNewClub(lastDays).coach.personalWindowUntil).toBe("2026-09-19");
   });
 
   it("runs on to the close of a game window that opens before it ends", () => {
