@@ -15,6 +15,8 @@ import type { PlayerInjured } from "./players/recordMatchLoad.js";
 import type { StadiumOpened } from "./stadium/stadiumWorks.js";
 import type { CoachRequest } from "./transfers/coachRequest.js";
 import type { TransferEvent } from "./transfers/transferEvents.js";
+import type { CopinhaPlayed } from "./youth/copinha.js";
+import type { YouthEvent } from "./youth/turnOverAcademies.js";
 
 export type DayDecisions = {
   lineup?: readonly string[];
@@ -41,7 +43,9 @@ export type DayEvent =
   | SupporterEvent
   | StadiumOpened
   | CoachEvent
-  | TransferEvent;
+  | TransferEvent
+  | YouthEvent
+  | CopinhaPlayed;
 
 /** One day of the game: today's matches with no live changes, then everything else the day brings. */
 export function advanceDay(state: GameState, decisions: DayDecisions): { state: GameState; events: DayEvent[] } {

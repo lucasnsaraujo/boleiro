@@ -25,6 +25,7 @@ import { startSeason } from "./startSeason.js";
 import { startCountry } from "./world/resultOnlyWorld.js";
 import { SOUTH_AMERICA } from "./world/southAmerica.js";
 import type { CountryStructure, World, WorldClub } from "./world/world.js";
+import { openAcademies } from "./youth/academy.js";
 
 /** A result-only country to start: its structure and its clubs level by level, top first. */
 export type CountryStart = { structure: CountryStructure; levels: readonly (readonly WorldClub[])[] };
@@ -159,7 +160,7 @@ export function newGame(
     ...(europe ? { europe } : {}),
     ...(stateChampionships ? {} : { playsStateChampionships: false as const }),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
-  return withContinentalCups(game, competitionMoney);
+  return withContinentalCups({ ...game, youth: openAcademies(game) }, competitionMoney);
 }
 
 /** Whether the world holds all of South America, which the CONMEBOL cups need. */

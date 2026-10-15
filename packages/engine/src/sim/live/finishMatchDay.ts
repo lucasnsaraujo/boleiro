@@ -26,6 +26,8 @@ import { recordMatches } from "../history/recordMatches.js";
 import { reactToDay } from "../morale/reactToDay.js";
 import { openNextStage } from "../openNextStage.js";
 import { developPlayers } from "../players/developPlayers.js";
+import { copinhaDate, playCopinha } from "../youth/copinha.js";
+import { turnOverAcademies } from "../youth/turnOverAcademies.js";
 import { settleShootout } from "../settleShootout.js";
 import { runTransferDay } from "../transfers/runTransferDay.js";
 import { endWorldSeason, playWorldDay } from "../world/resultOnlyWorld.js";
@@ -155,16 +157,22 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   if (state.coachClubId && next.coachClubId !== state.coachClubId) next = dropCoachFriendlies(next, state.coachClubId);
   events.push(...career.events);
   next = { ...next, rngState: random.state() };
+  if (state.date === copinhaDate(state.season)) {
+    const copinha = playCopinha(next);
+    next = copinha.state;
+    events.push(...copinha.events);
+  }
   if (state.world) next = { ...next, world: playWorldDay(state.world, state.date) };
   if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date) };
   if (next.date.slice(0, 4) !== String(state.season)) {
     const continentalField = seasonEndField(next);
-    const developed = developPlayers(closeSeasonHistory(next));
+    const academies = turnOverAcademies(closeSeasonHistory(next));
+    const developed = developPlayers(academies.state);
     const ended = endSeason(developed.state);
     const marked = { ...ended.state, history: recordStrengths(ended.state) };
     const coachRandom = randomStream(marked.rngState);
     const started = startCoachSeason(marked, Object.values(ended.outcomes), coachRandom.next);
-    events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...developed.events, ...started.events);
+    events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...academies.events, ...developed.events, ...started.events);
     // Bans still pending when a competition ends lapse with it.
     const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
     next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };
