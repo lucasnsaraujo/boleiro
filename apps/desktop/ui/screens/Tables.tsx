@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
 import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
 import type { Competition, Fixture, GameState } from "@boleiro/engine/sim/gameState";
+import { superCupScore, superCupWinner, type LeaguePhaseCup, type SuperCup } from "@boleiro/engine/sim/continental/uefaCups";
 import { useServices } from "../app/ServicesContext.js";
 import { WORLD_FACES, type ClubFace } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
@@ -14,6 +15,7 @@ import { springTiming } from "../motion/springEasing.js";
 import { useFlip } from "../motion/useFlip.js";
 import { Bracket } from "../tables/Bracket.js";
 import { GroupCard, NextTieCard, type NextTie } from "../tables/BracketCards.js";
+import { uefaBracket, uefaLeaguePhase, uefaPlayoffs } from "../tables/uefaTables.js";
 import {
   competitionStages,
   defaultStage,
@@ -38,12 +40,12 @@ const copaFinalists = (competitions: readonly Competition[], fixtures: GameState
   return copa?.kind === "cup" ? COPA_DO_BRASIL.finalists(copa, fixtures) : null;
 };
 
-const TABLES_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions", "calendar", "history", "players", "world"] as const;
+const TABLES_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions", "calendar", "history", "players", "world", "europe"] as const;
 type TablesState = Pick<GameState, (typeof TABLES_KEYS)[number]>;
 type Clubs = Readonly<Record<string, ClubFace>>;
 
-// South America's countries the game plays result-only, as Brazilians name them.
-const COUNTRIES = [
+// The countries the game plays result-only, as Brazilians name them, South America's first.
+const SOUTH_AMERICA = [
   { id: "ar", name: "Argentina" },
   { id: "bo", name: "Bolívia" },
   { id: "cl", name: "Chile" },
@@ -54,6 +56,36 @@ const COUNTRIES = [
   { id: "uy", name: "Uruguai" },
   { id: "ve", name: "Venezuela" },
 ];
+const EUROPE = [
+  { id: "gb-eng", name: "Inglaterra" },
+  { id: "es", name: "Espanha" },
+  { id: "it", name: "Itália" },
+  { id: "de", name: "Alemanha" },
+  { id: "fr", name: "França" },
+  { id: "pt", name: "Portugal" },
+  { id: "nl", name: "Holanda" },
+  { id: "tr", name: "Turquia" },
+  { id: "be", name: "Bélgica" },
+  { id: "gb-sct", name: "Escócia" },
+  { id: "at", name: "Áustria" },
+  { id: "gr", name: "Grécia" },
+  { id: "cz", name: "Tchéquia" },
+  { id: "hr", name: "Croácia" },
+  { id: "ua", name: "Ucrânia" },
+  { id: "pl", name: "Polônia" },
+  { id: "no", name: "Noruega" },
+  { id: "sk", name: "Eslováquia" },
+  { id: "si", name: "Eslovênia" },
+  { id: "hu", name: "Hungria" },
+  { id: "bg", name: "Bulgária" },
+  { id: "cy", name: "Chipre" },
+  { id: "am", name: "Armênia" },
+  { id: "il", name: "Israel" },
+  { id: "az", name: "Azerbaijão" },
+];
+const UEFA_NAMES: Record<LeaguePhaseCup["cup"], string> = { "champions-league": "Champions League", "europa-league": "Europa League" };
+/** A UEFA cup is picked under "Outras ligas" by this id. */
+const uefaPick = (cup: LeaguePhaseCup["cup"]) => `uefa:${cup}`;
 /** A country's leagues are picked under "Outras ligas" by this id, apart from the competitions'. */
 const worldPick = (countryId: string) => `world:${countryId}`;
 
@@ -88,13 +120,14 @@ export function Tables() {
     };
   }, [engine]);
 
-  const { tabs, otherStates, countries, clubs } = useMemo(() => {
-    if (!state) return { tabs: [], otherStates: [], countries: [], clubs: WORLD_FACES };
+  const { tabs, otherStates, southAmerica, europe, clubs } = useMemo(() => {
+    if (!state) return { tabs: [], otherStates: [], southAmerica: [], europe: [], clubs: WORLD_FACES };
     const found = tableTabs(state);
     return {
       tabs: found.tabs,
       otherStates: found.otherStates.toSorted(byName),
-      countries: COUNTRIES.filter((country) => state.world?.[country.id]),
+      southAmerica: SOUTH_AMERICA.filter((country) => state.world?.[country.id]),
+      europe: EUROPE.filter((country) => state.world?.[country.id]),
       clubs: { ...WORLD_FACES, ...state.clubs },
     };
   }, [state]);
@@ -103,12 +136,15 @@ export function Tables() {
   if (!state) return <p className="status">Abrindo as tabelas…</p>;
 
   const all = [...tabs, ...otherStates];
-  const others = [...otherStates.map((c) => c.id), ...countries.map((c) => worldPick(c.id))];
+  const countries = [...southAmerica, ...europe];
+  const uefaCups = state.europe?.cups ?? [];
+  const others = [...otherStates.map((c) => c.id), ...countries.map((c) => worldPick(c.id)), ...uefaCups.map((c) => uefaPick(c.cup))];
   const nextId = nextMatch(state)?.fixture.competitionId;
   const pick = pickedId ?? openingCompetitionId(state, nextId);
   const country = countries.find((c) => worldPick(c.id) === pick) ?? null;
-  const shown = country ? undefined : (all.find((c) => c.id === pick) ?? tabs[0]);
-  const isOther = country !== null || otherStates.some((c) => c.id === shown?.id);
+  const uefaCup = uefaCups.find((c) => uefaPick(c.cup) === pick) ?? null;
+  const shown = country || uefaCup ? undefined : (all.find((c) => c.id === pick) ?? tabs[0]);
+  const isOther = country !== null || uefaCup !== null || otherStates.some((c) => c.id === shown?.id);
   const openOthers = () => setPickedId(otherId ?? others[0] ?? null);
   const view = shown ? (views[shown.id] ?? { stage: defaultStage(shown, state.coachClubId), round: null }) : null;
   const latestRound = shown && view ? playedRounds(shown, view.stage, state.fixtures) : 0;
@@ -133,9 +169,27 @@ export function Tables() {
             </option>
           ))}
         </optgroup>
-        {countries.length > 0 && (
+        {southAmerica.length > 0 && (
           <optgroup label="América do Sul">
-            {countries.map((c) => (
+            {southAmerica.map((c) => (
+              <option key={c.id} value={worldPick(c.id)}>
+                {c.name}
+              </option>
+            ))}
+          </optgroup>
+        )}
+        {uefaCups.length > 0 && (
+          <optgroup label="Copas europeias">
+            {uefaCups.map((c) => (
+              <option key={c.cup} value={uefaPick(c.cup)}>
+                {UEFA_NAMES[c.cup]}
+              </option>
+            ))}
+          </optgroup>
+        )}
+        {europe.length > 0 && (
+          <optgroup label="Europa">
+            {europe.map((c) => (
               <option key={c.id} value={worldPick(c.id)}>
                 {c.name}
               </option>
@@ -183,6 +237,7 @@ export function Tables() {
           </aside>
         </div>
       )}
+      {uefaCup && <UefaPanel key={uefaCup.cup} cup={uefaCup} superCup={state.europe?.superCup ?? null} clubs={clubs} coachClubId={state.coachClubId} picker={picker} />}
       {shown && view && (
         <CompetitionPanel
           competition={shown}
@@ -264,6 +319,59 @@ function BracketPanel({ competition, state, clubs, stage, onStage, picker }: Omi
           <NextTieCard next={nextTieOf(competition, state.fixtures, stages, clubs, state.coachClubId)} clubs={clubs} />
         </div>
       </section>
+    </div>
+  );
+}
+
+const UEFA_STAGES = ["Fase de liga", "Playoffs", "Mata-mata"] as const;
+
+/** The Super Cup of the season, as a line: its clubs, and its score once played. */
+function superCupLine(superCup: SuperCup, clubs: Clubs): string {
+  const [home, away] = superCup.clubIds.map((id) => clubs[id]?.shortName ?? id);
+  const winner = superCupWinner(superCup);
+  const score = superCupScore(superCup);
+  if (!winner || !score) return `${home} × ${away}, ${formatDayMonth(superCup.date)}`;
+  const onPenalties = score.homeGoals === score.awayGoals ? `, ${clubs[winner]?.shortName ?? winner} nos pênaltis` : "";
+  return `${home} ${score.homeGoals} × ${score.awayGoals} ${away}${onPenalties}`;
+}
+
+/** A UEFA cup played result-only: its league phase table, its knockout play-offs, or its bracket from the round of 16. */
+function UefaPanel({ cup, superCup, clubs, coachClubId, picker }: { cup: LeaguePhaseCup; superCup: SuperCup | null; clubs: Clubs; coachClubId: string | null; picker: ReactNode }) {
+  const playoffs = uefaPlayoffs(cup);
+  const bracket = uefaBracket(cup);
+  const latest = bracket.length > 0 ? 2 : playoffs.length > 0 ? 1 : 0;
+  const [stage, setStage] = useState(latest);
+  const name = UEFA_NAMES[cup.cup];
+  const isDrawn = [true, playoffs.length > 0, bracket.length > 0];
+  const phase = uefaLeaguePhase(cup);
+  return (
+    <div className={stage === 2 ? "tables-body wide" : "tables-body"} role="tabpanel" aria-label={name}>
+      <section className="tables-main">
+        <div className="tables-sub">
+          {picker}
+          <StagePicker stages={UEFA_STAGES.map((stageName, index) => ({ index, name: stageName, isDrawn: isDrawn[index] ?? false }))} stage={stage} onStage={setStage} />
+          {stage === 2 && (
+            <h2 className="bk-title">
+              {name} {cup.season}/{String(cup.season + 1).slice(2)}
+              <span>mata-mata</span>
+            </h2>
+          )}
+        </div>
+        {stage === 0 && <GroupStage key={`${cup.cup}-phase`} name={UEFA_STAGES[0]} groups={phase.groups} clubs={clubs} coachClubId={coachClubId} />}
+        {stage === 1 && <TieList key={`${cup.cup}-playoffs`} name={UEFA_STAGES[1]} ties={playoffs} clubs={clubs} coachClubId={coachClubId} />}
+        {stage === 2 && <Bracket name={name} rounds={bracket} clubs={clubs} coachClubId={coachClubId} />}
+      </section>
+      {stage !== 2 && (
+        <aside className="tables-side">
+          {stage === 0 && phase.zones.length > 0 && <ZoneKeySticker zones={phase.zones} groups={phase.groups} />}
+          {superCup && (
+            <section className="stk tables-zones" aria-labelledby="super-cup-title">
+              <h2 id="super-cup-title">Supercopa da UEFA</h2>
+              <p className="tables-none">{superCupLine(superCup, clubs)}</p>
+            </section>
+          )}
+        </aside>
+      )}
     </div>
   );
 }

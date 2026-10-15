@@ -10,6 +10,31 @@ import peru from "@boleiro/data/pack/world/pe.pack.json.gz?gunzip&keys=format,cl
 import paraguay from "@boleiro/data/pack/world/py.pack.json.gz?gunzip&keys=format,clubs";
 import uruguay from "@boleiro/data/pack/world/uy.pack.json.gz?gunzip&keys=format,clubs";
 import venezuela from "@boleiro/data/pack/world/ve.pack.json.gz?gunzip&keys=format,clubs";
+import armenia from "@boleiro/data/pack/world/am.pack.json.gz?gunzip&keys=format,clubs";
+import austria from "@boleiro/data/pack/world/at.pack.json.gz?gunzip&keys=format,clubs";
+import azerbaijan from "@boleiro/data/pack/world/az.pack.json.gz?gunzip&keys=format,clubs";
+import belgium from "@boleiro/data/pack/world/be.pack.json.gz?gunzip&keys=format,clubs";
+import bulgaria from "@boleiro/data/pack/world/bg.pack.json.gz?gunzip&keys=format,clubs";
+import cyprus from "@boleiro/data/pack/world/cy.pack.json.gz?gunzip&keys=format,clubs";
+import czechia from "@boleiro/data/pack/world/cz.pack.json.gz?gunzip&keys=format,clubs";
+import germany from "@boleiro/data/pack/world/de.pack.json.gz?gunzip&keys=format,clubs";
+import spain from "@boleiro/data/pack/world/es.pack.json.gz?gunzip&keys=format,clubs";
+import france from "@boleiro/data/pack/world/fr.pack.json.gz?gunzip&keys=format,clubs";
+import england from "@boleiro/data/pack/world/gb-eng.pack.json.gz?gunzip&keys=format,clubs";
+import scotland from "@boleiro/data/pack/world/gb-sct.pack.json.gz?gunzip&keys=format,clubs";
+import greece from "@boleiro/data/pack/world/gr.pack.json.gz?gunzip&keys=format,clubs";
+import croatia from "@boleiro/data/pack/world/hr.pack.json.gz?gunzip&keys=format,clubs";
+import hungary from "@boleiro/data/pack/world/hu.pack.json.gz?gunzip&keys=format,clubs";
+import israel from "@boleiro/data/pack/world/il.pack.json.gz?gunzip&keys=format,clubs";
+import italy from "@boleiro/data/pack/world/it.pack.json.gz?gunzip&keys=format,clubs";
+import netherlands from "@boleiro/data/pack/world/nl.pack.json.gz?gunzip&keys=format,clubs";
+import norway from "@boleiro/data/pack/world/no.pack.json.gz?gunzip&keys=format,clubs";
+import poland from "@boleiro/data/pack/world/pl.pack.json.gz?gunzip&keys=format,clubs";
+import portugal from "@boleiro/data/pack/world/pt.pack.json.gz?gunzip&keys=format,clubs";
+import slovenia from "@boleiro/data/pack/world/si.pack.json.gz?gunzip&keys=format,clubs";
+import slovakia from "@boleiro/data/pack/world/sk.pack.json.gz?gunzip&keys=format,clubs";
+import turkey from "@boleiro/data/pack/world/tr.pack.json.gz?gunzip&keys=format,clubs";
+import ukraine from "@boleiro/data/pack/world/ua.pack.json.gz?gunzip&keys=format,clubs";
 import { imageFileOf, parseAssetManifest } from "@boleiro/data/assetManifest";
 import type { Club } from "@boleiro/data/clubs";
 import { parsePackClubs } from "@boleiro/data/dataPack";
@@ -32,7 +57,7 @@ const CREST_FILES = import.meta.glob<string>("./crest/*.webp", {
   import: "default",
 });
 
-// South America's clubs, which the game plays result-only and meet Brazil's in CONMEBOL's cups: their
+// South America's and Europe's clubs, which the game plays result-only, South America's meeting Brazil's in CONMEBOL's cups: their
 // names, colours and crests, kept in 64 and 128 px only (pipeline/build_assets.py).
 const WORLD_ASSETS = parseAssetManifest(worldManifestJson);
 const WORLD_CREST_FILES = import.meta.glob<string>("./crest/*.webp", {
@@ -46,19 +71,19 @@ const WORLD_CREST_FILES = import.meta.glob<string>("./crest/*.webp", {
 export type ClubFace = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
 
 const WORLD_BY_ID = new Map<string, ClubFace>(
-  [argentina, bolivia, chile, colombia, ecuador, peru, paraguay, uruguay, venezuela]
+  [argentina, bolivia, chile, colombia, ecuador, peru, paraguay, uruguay, venezuela, armenia, austria, azerbaijan, belgium, bulgaria, cyprus, czechia, germany, spain, france, england, scotland, greece, croatia, hungary, israel, italy, netherlands, norway, poland, portugal, slovenia, slovakia, turkey, ukraine]
     .flatMap((text) => parseWorldPackClubs(text))
     .map(({ id, shortName, colours, stadium }) => [id, { id, shortName, colours, stadium }]),
 );
 
-/** South America's clubs by id, for screens that list clubs the game's own `clubs` don't have. */
+/** South America's and Europe's clubs by id, for screens that list clubs the game's own `clubs` don't have. */
 export const WORLD_FACES: Readonly<Record<string, ClubFace>> = Object.fromEntries(WORLD_BY_ID);
 
 export function clubById(id: string): Club | null {
   return BY_ID.get(id) ?? null;
 }
 
-/** A club in the game's own `clubs`, or one of South America's from the packs; null when neither has it. */
+/** A club in the game's own `clubs`, or one of South America's or Europe's from the packs; null when neither has it. */
 export function clubFaceOf(clubs: Readonly<Record<string, ClubFace>>, id: string): ClubFace | null {
   return clubs[id] ?? WORLD_BY_ID.get(id) ?? null;
 }

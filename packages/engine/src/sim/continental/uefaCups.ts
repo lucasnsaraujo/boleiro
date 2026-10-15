@@ -303,6 +303,11 @@ function playSuperCup(superCup: SuperCup | null, date: IsoDate, clubOf: ClubOf, 
   return { ...superCup, result: score(homeGoals, awayGoals) + (isAwayWinner ? "1" : "0") };
 }
 
+/** The Super Cup's score once it is played, else null. */
+export function superCupScore(superCup: SuperCup): MatchResult | null {
+  return superCup.result[0] === UNPLAYED ? null : { homeGoals: goalsAt(superCup.result, 0), awayGoals: goalsAt(superCup.result, 1) };
+}
+
 /** The Super Cup's winner once it is played, else null. */
 export function superCupWinner(superCup: SuperCup | null): string | null {
   if (!superCup || superCup.result[2] === UNPLAYED) return null;
