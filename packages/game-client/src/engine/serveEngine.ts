@@ -6,7 +6,7 @@ function run(session: EngineSession, request: EngineRequest): unknown {
     case "apply":
       return session.apply(...request.args);
     case "matchDayPlan":
-      return session.matchDayPlan();
+      return session.matchDayPlan(...request.args);
     case "liveRound":
       return session.liveRound();
     case "turningPoint":

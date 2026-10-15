@@ -1,7 +1,7 @@
 import type { Formation } from "../../engine/formations.js";
 import { matchOdds, type Posture, type Team } from "../../engine/match.js";
 import { randomStream } from "../../engine/random.js";
-import { aiPosture, type Tactics } from "../coach/tactics.js";
+import { aiPosture, DEFAULT_TACTICS, type Tactics } from "../coach/tactics.js";
 import { drawCardsAfter } from "../discipline/drawCards.js";
 import type { SimPlayer } from "../gameState.js";
 import { scorersOf } from "../history/scorersOf.js";
@@ -112,7 +112,7 @@ function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEv
   const takerOnPitch = playing(coachSide).some((p) => p.id === penaltyTakerId);
   const coachTactics = { ...coachMatch.tactics, penaltyTakerId: takerOnPitch ? penaltyTakerId : null };
   const team = (side: Side, posture: Posture): Team =>
-    side === coachSide ? engineTeam(clubIds[side], elevens[side], strength, coachTactics) : { ...engineTeam(clubIds[side], elevens[side], strength), posture };
+    engineTeam(clubIds[side], elevens[side], strength, side === coachSide ? coachTactics : { ...DEFAULT_TACTICS, formation: match.formations[side], posture });
   const expected = new Map<Posture, { home: number; away: number }>();
   const expectedGoals = (aiPostureNow: Posture) => {
     const known = expected.get(aiPostureNow);

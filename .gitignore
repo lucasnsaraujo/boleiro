@@ -12,3 +12,4 @@ apps/desktop/src-tauri/gen/
 .vitest/
 pipeline/boleiro.db*
 __pycache__/
+data/fotmob_cache

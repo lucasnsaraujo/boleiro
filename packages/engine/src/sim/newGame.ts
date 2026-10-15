@@ -1,6 +1,7 @@
 import type { Club } from "@boleiro/data/clubs";
 import type { CompetitionMoney } from "@boleiro/data/competition-money";
-import type { SquadPlayer } from "@boleiro/data/players";
+import type { ClubLineup } from "@boleiro/data/dataPack";
+import type { Role, SquadPlayer } from "@boleiro/data/players";
 import { randomStream } from "../engine/random.js";
 import { openingCoach } from "./coach/openingCoach.js";
 import { newHistory } from "./history/history.js";
@@ -11,6 +12,8 @@ import type { ClubFinance, GameState, IsoDate, SimPlayer } from "./gameState.js"
 import { academyPlayer, groupsToFill } from "./players/developPlayers.js";
 import type { Qualification } from "./copaDoBrasilEntrants.js";
 import { openingProfile } from "./players/openingProfile.js";
+import { squadsByClub } from "./players/squadsByClub.js";
+import { openingLineups } from "./players/usualLineups.js";
 import { tierOf } from "./finances/tierOf.js";
 import { openingContractUntil } from "./transfers/openingContractUntil.js";
 import { openingMarket } from "./transfers/openingMarket.js";
@@ -24,6 +27,10 @@ export type CountryStart = { structure: CountryStructure; levels: readonly (read
 export type NewGameOptions = {
   clubs: readonly Club[];
   players: readonly SquadPlayer[];
+  /** Each player's positions, row for row with `players`, main first; a player left without plays his group. */
+  positions?: readonly (readonly Role[])[];
+  /** Clubs' last real elevens, as rows of `players`. */
+  lineups?: readonly ClubLineup[];
   finances: FinanceData;
   competitionMoney: CompetitionMoney;
   /** The data pack the clubs, players and money above come from. */
@@ -93,25 +100,31 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs, players, finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world }: NewGameOptions,
+  { clubs, players, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world }: NewGameOptions,
 ): GameState {
   const random = randomStream(seed);
   const traitRandom = randomStream(seed ^ TRAIT_STREAM_SALT);
   const contractRandom = randomStream(seed ^ CONTRACT_STREAM_SALT);
   const clubsById = Object.fromEntries(clubs.map((club) => [club.id, club]));
+  const idOfRow = new Map<number, string>();
   const dataPlayers = players
-    .filter((player) => clubsById[player.clubId])
-    .map((player, index): Omit<SimPlayer, "wage"> => {
+    .map((player, row) => ({ player, row }))
+    .filter(({ player }) => clubsById[player.clubId])
+    .map(({ player, row }, index): Omit<SimPlayer, "wage"> => {
       const { clubId, name, group, strength } = player;
       const tier = tierOf(clubsById[clubId] ?? { division: null });
       const contractUntil = openingContractUntil(tier, season, contractRandom.next);
-      return { id: `p${index}`, clubId, name, group, strength, contractUntil, ...openingProfile(player, `${season}-01-01`, traitRandom.next) };
+      const id = `p${index}`;
+      idOfRow.set(row, id);
+      const roles = positions[row];
+      return { id, clubId, name, group, strength, ...(roles?.length ? { positions: [...roles] } : {}), contractUntil, ...openingProfile(player, `${season}-01-01`, traitRandom.next) };
     });
   const squadPlayers = [...dataPlayers, ...academyTopUp(clubs, dataPlayers, `${season}-01-01`, randomStream(seed ^ ACADEMY_STREAM_SALT).next)];
   const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION);
   const { economy, finances: boardFinances, wages } = openingFinances(clubsById, squadPlayers, competitions, fixtures, financeData, competitionMoney);
   const finances = withNewCoachRoom(boardFinances, coachClubId);
   const simPlayers = Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }]));
+  const usualLineups = openingLineups(Object.keys(clubsById), squadsByClub(simPlayers), lineups, (row) => idOfRow.get(row));
   const market = openingMarket(seed);
   return openingCoach({
     version: 4,
@@ -132,6 +145,7 @@ export function newGame(
     discipline: {},
     history: recordStrengths({ season, players: simPlayers, market, history: newHistory(season, `${season}-01-01`, careerMode ? null : coachClubId) }),
     market,
+    usualLineups,
     ...(world?.length ? { world: startWorld(world, season, seed) } : {}),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
 }

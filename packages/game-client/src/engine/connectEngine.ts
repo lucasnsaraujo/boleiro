@@ -60,7 +60,7 @@ export function connectEngine(port: EngineWorker): EngineClient {
 
   return {
     apply,
-    matchDayPlan: () => send({ method: "matchDayPlan", args: [] }),
+    matchDayPlan: (...args) => send({ method: "matchDayPlan", args }),
     liveRound: () => send({ method: "liveRound", args: [] }),
     turningPoint: () => send({ method: "turningPoint", args: [] }),
     inbox: () => send({ method: "inbox", args: [] }),
