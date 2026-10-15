@@ -28,15 +28,20 @@ async function takeTurn(page: Page, coach: string) {
   await expect(page.getByText(new RegExp(`vez \\d de 2`))).toBeVisible();
 }
 
-/** Plays the live round at 4x to its end and goes on to the next turn. */
+/** Plays the live round at 4x to its end, leaving every coach's red card and injury as it is, and goes on to the next turn. */
 async function playRound(page: Page) {
   const next = page.getByRole("button", { name: "Próxima vez" });
+  const leave = page.getByRole("button", { name: "Deixar como está" });
   // A round where only the other coach plays has no band of the coach's own match and runs on its own.
-  if (!(await page.getByRole("button", { name: "4x" }).isVisible())) await expect(next).toBeVisible({ timeout: 150_000 });
+  if (!(await page.getByRole("button", { name: "4x" }).isVisible())) await expect(next.or(leave)).toBeVisible({ timeout: 150_000 });
   for (let stop = 0; stop < MAX_STOPS && !(await next.isVisible()); stop++) {
+    if (await leave.isVisible()) {
+      await leave.click();
+      continue;
+    }
     const fourX = page.getByRole("button", { name: "4x" });
     if (await fourX.isVisible()) await fourX.click();
-    await expect(page.getByRole("button", { name: "Pausar" }).and(page.locator("[aria-pressed=true]")).or(next)).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("button", { name: "Pausar" }).and(page.locator("[aria-pressed=true]")).or(next).or(leave).first()).toBeVisible({ timeout: 30_000 });
   }
   await next.click();
 }
