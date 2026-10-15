@@ -3,6 +3,7 @@ import { advanceDay, type DayEvent } from "../advanceDay.js";
 import type { ClubFinance, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
+import { projectedRevenue } from "./setBoardBudget.js";
 import { bankLoanLimit, bankLoanQuote, repayBankLoan, takeBankLoan } from "./bankLoan.js";
 
 const CLUB = "bahia-ba";
@@ -95,6 +96,21 @@ describe("a bank loan", () => {
     expect(financeOf(repaid).cash).toBe(financeOf(start).cash);
     const broke = withFinance(state, { cash: 1_000_000 });
     expect(() => repayBankLoan(broke)).toThrow();
+  });
+
+  it("keeps the loan's cash from paying down old debt at the closing", () => {
+    const rich = withFinance(start, { cash: 200_000_000 });
+    const { state } = takeBankLoan(rich, AMOUNT, 24);
+    const debtAfter = (s: GameState) => financeOf(playUntil(s, "2026-02-01").state).legacyDebt;
+    expect(debtAfter(state)).toBeGreaterThanOrEqual(debtAfter(rich));
+  });
+
+  it("counts against the board's overdraft cap", () => {
+    const { state } = takeBankLoan(start, bankLoanLimit(financeOf(start)), 36);
+    const broke = withFinance(state, { cash: -500_000_000 });
+    const closed = playUntil(broke, "2026-02-01").state;
+    const owed = financeOf(closed).loans + (financeOf(closed).bankLoan?.balance ?? 0);
+    expect(owed).toBeLessThanOrEqual(Math.round(0.25 * projectedRevenue(financeOf(state))));
   });
 
   it("survives a save and load", () => {

@@ -67,7 +67,8 @@ function settle(finance: ClubFinance, wages: number): { finance: ClubFinance; bo
   const costs = { wages, infrastructure: Math.round(finance.infrastructure / 12), interest };
   let cash = finance.cash + revenue.tv + revenue.sponsorship + revenue.membership + revenue.otherIncome - costs.wages - costs.infrastructure - costs.interest - (bank?.principal ?? 0);
   let { loans, wagesOwed } = finance;
-  const borrowed = cash < 0 ? Math.min(-cash, Math.max(0, LOAN_CAP_SHARE_OF_REVENUE * projectedRevenue(finance) - loans)) : 0;
+  const bankOwed = bank?.loan?.balance ?? 0;
+  const borrowed = cash < 0 ? Math.min(-cash, Math.max(0, LOAN_CAP_SHARE_OF_REVENUE * projectedRevenue(finance) - loans - bankOwed)) : 0;
   loans += borrowed;
   cash += borrowed;
   if (cash < 0) {
@@ -107,12 +108,13 @@ function settle(finance: ClubFinance, wages: number): { finance: ClubFinance; bo
 
 /**
  * Uses spare cash to pay wage arrears first, then loans above a cushion of wages, then the old
- * debt above that cushion plus the season's transfer reserve.
+ * debt above that cushion plus the season's transfer reserve. Cash the coach borrowed from the bank
+ * and still owes is his to spend, so the board leaves it out of the spare cash.
  */
 function payDown(finance: ClubFinance, wages: number): ClubFinance {
   const arrears = Math.min(finance.cash, finance.wagesOwed);
   let cash = finance.cash - arrears;
-  const cushion = CUSHION_MONTHS_OF_WAGES * wages;
+  const cushion = CUSHION_MONTHS_OF_WAGES * wages + (finance.bankLoan?.balance ?? 0);
   const repaid = Math.max(0, Math.min(finance.loans, cash - cushion));
   cash -= repaid;
   const reserve = cushion + TRANSFER_SHARE_OF_REVENUE * projectedRevenue(finance);

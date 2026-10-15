@@ -11,8 +11,9 @@ export const BANK_LOAN_TERMS = [12, 24, 36] as const;
 const SHARE_OF_REVENUE = 0.25;
 const DEBT_YEARS_TO_FLOOR = 4;
 const DEBT_FLOOR = 0.25;
-// The bank lends in round steps of R$ 100 thousand.
-const STEP = 100_000;
+/** The bank lends in round steps of R$ 100 thousand, the smallest loan it makes. */
+export const BANK_LOAN_MIN_AMOUNT = 100_000;
+const STEP = BANK_LOAN_MIN_AMOUNT;
 
 export type BankLoanQuote = { amount: number; months: number; monthlyRate: number; instalment: number };
 
@@ -45,7 +46,7 @@ function coachFinance(state: Pick<GameState, "coachClubId" | "finances">): { clu
 }
 
 /** What the bank would answer the coach's club for `amount` over `months`, without asking it. */
-export function bankAnswer(state: Pick<GameState, "coachClubId" | "finances" | "date">, amount: number, months: number): BankLoanAnswer {
+function bankAnswer(state: Pick<GameState, "coachClubId" | "finances" | "date">, amount: number, months: number): BankLoanAnswer {
   const { finance } = coachFinance(state);
   if (finance.bankLoan) return { approved: false, reason: "running" };
   if (!BANK_LOAN_TERMS.some((term) => term === months)) return { approved: false, reason: "term" };
