@@ -10,7 +10,7 @@
 
 .discard {
   position: relative;
-  width: min(440px, calc(100% - 80px));
+  width: min(500px, calc(100% - 80px));
   padding: 30px 30px 22px;
   border-radius: var(--r-m);
   box-shadow: var(--sh-pop);
