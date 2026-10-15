@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, Navigate } from "react-router";
+import { Link, Navigate, useNavigate } from "react-router";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import { formatBarDate, formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
+import type { HotSeatView } from "@boleiro/game-client/hub/hotSeat";
 import type { InboxLine } from "@boleiro/game-client/hub/inboxLines";
 import type { TurningPoint } from "@boleiro/game-client/hub/turningPoints";
 import { useCommands } from "../app/AppCommands.js";
@@ -21,7 +22,7 @@ import "./hub.css";
 
 const HUB_KEYS = [...SQUAD_KEYS, "boards", "coach", "mood", "finances"] as const;
 type HubState = Pick<GameState, (typeof HUB_KEYS)[number]>;
-type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null };
+type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null; seats: HotSeatView | null };
 
 const TURNING_POINT_SCREENS: Record<TurningPoint["kind"], string> = { fired: "/sacked", seasonEnd: "/season-end" };
 const offersText = (count: number) => `${count} ${count === 1 ? "proposta" : "propostas"}`;
@@ -46,8 +47,8 @@ export function Hub() {
 
   const load = useCallback(
     (isCurrent: () => boolean) =>
-      Promise.all([engine.read(HUB_KEYS), engine.inbox(), engine.turningPoint()]).then(
-        ([state, inbox, turningPoint]) => isCurrent() && setLoaded({ state, inbox, turningPoint }),
+      Promise.all([engine.read(HUB_KEYS), engine.inbox(), engine.turningPoint(), engine.hotSeat()]).then(
+        ([state, inbox, turningPoint, seats]) => isCurrent() && setLoaded({ state, inbox, turningPoint, seats }),
         () => isCurrent() && setMissing(true),
       ),
     [engine],
@@ -62,14 +63,36 @@ export function Hub() {
   }, [load]);
 
   // A day that stops the coach early (a board answer, an offer) opens the paper on the news that stopped it.
-  const round = usePlayRound(() =>
-    void load(() => true).then(() => {
-      clock.refresh();
-      setPaperOpen(true);
-    }),
+  const seats = loaded?.seats ?? null;
+  const round = usePlayRound(
+    () =>
+      void load(() => true).then(() => {
+        clock.refresh();
+        setPaperOpen(true);
+      }),
+    seats !== null,
   );
+  const navigate = useNavigate();
+  const [isPassing, setPassing] = useState(false);
+  const seated = seats?.coaches[seats.seated];
+  // A hot-seat coach before the last one sets his eleven or passes; the last one plays the day for everyone.
+  const passes = seats !== null && !seats.isLastTurn;
+  async function passTurn() {
+    if (seated?.playsToday) {
+      navigate("/round");
+      return;
+    }
+    setPassing(true);
+    try {
+      await engine.apply({ type: "passTurn" });
+      navigate("/turn");
+    } catch {
+      setPassing(false);
+    }
+  }
+  const act = passes ? () => void passTurn() : () => void round.play();
   const club = loaded?.state.coachClubId ? loaded.state.clubs[loaded.state.coachClubId] : undefined;
-  useCommands({ jogarRodada: loaded !== null && !round.isPlaying && (() => void round.play()) });
+  useCommands({ jogarRodada: loaded !== null && !round.isPlaying && !isPassing && act });
 
   if (missing || !open.current) {
     return (
@@ -108,7 +131,13 @@ export function Hub() {
           <div>
             <h1 id="hub-club-name">{club?.shortName ?? "Sem clube"}</h1>
             <p>
-              Técnico <b>{open.current.coachName}</b>
+              Técnico <b>{seated?.name ?? open.current.coachName}</b>
+              {seats && (
+                <span className="hub-turn">
+                  {" "}
+                  · vez {seats.seated + 1} de {seats.coaches.length}
+                </span>
+              )}
               <br />
               {club?.division ? `Série ${club.division}` : club ? "Fora das séries" : offers === 0 ? "Nenhuma proposta na mesa." : `${offersText(offers)} na mesa.`}
               {standing && ` · ${standing.position}º lugar · ${standing.points} pts`}
@@ -140,17 +169,17 @@ export function Hub() {
 
         {!club && offers > 0 ? (
           <div className="hub-actions">
-            <button className="btn" onClick={() => void round.play()} disabled={round.isPlaying}>
-              {playRoundLabel(round.isPlaying, false)}
+            <button className="btn" onClick={act} disabled={round.isPlaying || isPassing}>
+              {passes ? "Passar a vez" : playRoundLabel(round.isPlaying, false)}
             </button>
             <Link className="btn y" to="/offers">
               Ver propostas
             </Link>
           </div>
         ) : (
-          <button className="btn y hub-play" onClick={() => void round.play()} disabled={round.isPlaying} title="E">
-            <i className={club ? "ph-bold ph-soccer-ball" : "ph-bold ph-hourglass-medium"} aria-hidden="true" />
-            {playRoundLabel(round.isPlaying, club !== undefined)}
+          <button className="btn y hub-play" onClick={act} disabled={round.isPlaying || isPassing} title="E">
+            <i className={passes ? (seated?.playsToday ? "ph-bold ph-strategy" : "ph-bold ph-arrow-bend-up-right") : club ? "ph-bold ph-soccer-ball" : "ph-bold ph-hourglass-medium"} aria-hidden="true" />
+            {passes ? (seated?.playsToday ? "Escalar e passar a vez" : "Passar a vez") : playRoundLabel(round.isPlaying, club !== undefined)}
           </button>
         )}
         {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
