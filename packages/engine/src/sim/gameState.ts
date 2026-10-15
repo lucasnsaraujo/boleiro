@@ -10,6 +10,7 @@ import type { History } from "./history/history.js";
 import type { ClubMood } from "./morale/clubMood.js";
 import type { PlayerProfile } from "./players/playerProfile.js";
 import type { TransferMarket } from "./transfers/transferMarket.js";
+import type { EuropeanCups } from "./continental/uefaCups.js";
 import type { World } from "./world/world.js";
 
 export type IsoDate = string;
@@ -212,6 +213,8 @@ export type GameState = {
   usualLineups?: Record<string, UsualLineup>;
   /** Countries played result-only, outside the full tier; a game of Brazil alone has none. */
   world?: World;
+  /** UEFA's cups, played result-only when all of Europe is in the world; a game without it, or saved before it, has none. */
+  europe?: EuropeanCups;
   /** False when the game was started without the estaduais (a new-game option); left out, they are played. */
   playsStateChampionships?: false;
   /** The coach's club's friendlies, booked and lately played; saves from before friendlies have none. */

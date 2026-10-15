@@ -18,6 +18,13 @@ describe("a result-only league", () => {
     expect(league.results).toBe("--".repeat(30));
   });
 
+  it("runs into the next year when its window ends before it starts, as Europe's August to May", () => {
+    const league = openLeague("x-1-2026", 2026, Object.keys(clubs), 2, ["08-15", "05-23"], seededRandom(1));
+    expect(league.dates[0]).toBe("2026-08-15");
+    expect(league.dates.at(-1)).toBe("2027-05-23");
+    expect(league.dates.toSorted()).toEqual(league.dates);
+  });
+
   it("has every club meet every other at home and away", () => {
     const pairs = leagueMatches(open()).map((m) => `${m.homeId}-${m.awayId}`);
     expect(new Set(pairs).size).toBe(30);

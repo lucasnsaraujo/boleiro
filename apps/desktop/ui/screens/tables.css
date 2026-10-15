@@ -283,19 +283,22 @@
 }
 
 .tables .zn.zone-libertadores,
+.tables .zn.zone-championsLeague,
 .tables .zn.zone-promotion,
 .tables .zn.zone-advance {
   background: var(--green);
   color: var(--on-green);
 }
 
-.tables .zn.zone-preLibertadores {
+.tables .zn.zone-preLibertadores,
+.tables .zn.zone-playoff {
   background: var(--green-l);
   color: var(--green);
   box-shadow: inset 0 0 0 1.5px var(--green);
 }
 
-.tables .zn.zone-sulAmericana {
+.tables .zn.zone-sulAmericana,
+.tables .zn.zone-europaLeague {
   background: #dce3f5;
   color: var(--blue);
 }
@@ -305,7 +308,8 @@
   color: var(--on-red);
 }
 
-[data-theme="dark"] .zn.zone-sulAmericana {
+[data-theme="dark"] .zn.zone-sulAmericana,
+[data-theme="dark"] .zn.zone-europaLeague {
   background: #22305a;
 }
 

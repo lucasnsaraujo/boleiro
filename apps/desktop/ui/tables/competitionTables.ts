@@ -8,9 +8,11 @@ import { STATE_CHAMPIONSHIP } from "@boleiro/engine/sim/stateChampionship";
 import { standings, type StandingRow } from "@boleiro/engine/sim/standings";
 import { aggregate, tieResults } from "@boleiro/engine/sim/tieResults";
 import { continentalPlaces } from "@boleiro/engine/sim/world/continentalPlaces";
+import { cupFinal } from "@boleiro/engine/sim/world/resultOnlyCup";
 import { leagueMatches } from "@boleiro/engine/sim/world/resultOnlyLeague";
+import { uefaPlaces } from "@boleiro/engine/sim/world/uefaPlaces";
 
-export type ZoneKind = "libertadores" | "preLibertadores" | "sulAmericana" | "promotion" | "advance" | "relegation";
+export type ZoneKind = "libertadores" | "preLibertadores" | "sulAmericana" | "championsLeague" | "europaLeague" | "promotion" | "advance" | "playoff" | "relegation";
 export type ZoneKey = { zone: ZoneKind; label: string };
 export type Outcome = "win" | "draw" | "loss";
 /** `form` is the club's last five results, oldest first; `movement` the places it gained (negative: lost) in the last round. */
@@ -131,13 +133,16 @@ export function defaultStage(competition: Competition, coachClubId: string | nul
   return withClub >= 0 ? withClub : Math.max(0, competition.stages.length - 1);
 }
 
-const ZONE_ORDER: readonly ZoneKind[] = ["libertadores", "preLibertadores", "sulAmericana", "promotion", "advance", "relegation"];
+const ZONE_ORDER: readonly ZoneKind[] = ["libertadores", "preLibertadores", "sulAmericana", "championsLeague", "europaLeague", "promotion", "advance", "playoff", "relegation"];
 
 const ZONE_LABELS: Record<Exclude<ZoneKind, "advance">, string> = {
   libertadores: "Libertadores",
   preLibertadores: "Pré-Libertadores",
   sulAmericana: "Sul-Americana",
+  championsLeague: "Champions League",
+  europaLeague: "Europa League",
   promotion: "Acesso",
+  playoff: "Playoffs",
   relegation: "Rebaixamento",
 };
 
@@ -228,14 +233,14 @@ export function playedRounds(competition: Competition, stage: number, fixtures: 
 
 const FORM_LENGTH = 5;
 
-function outcomeFor(clubId: string, { homeId, result }: Fixture): Outcome | null {
+function outcomeFor(clubId: string, { homeId, result }: Pick<Fixture, "homeId" | "result">): Outcome | null {
   if (!result) return null;
   const [scored, conceded] = homeId === clubId ? [result.homeGoals, result.awayGoals] : [result.awayGoals, result.homeGoals];
   return scored > conceded ? "win" : scored === conceded ? "draw" : "loss";
 }
 
 /** The club's last five results in these games, oldest first. */
-function recentForm(clubId: string, stageFixtures: readonly Fixture[]): Outcome[] {
+export function recentForm(clubId: string, stageFixtures: readonly Pick<Fixture, "homeId" | "awayId" | "date" | "result">[]): Outcome[] {
   return stageFixtures
     .filter((f) => f.result && (f.homeId === clubId || f.awayId === clubId))
     .toSorted((a, b) => a.date.localeCompare(b.date))
@@ -349,9 +354,11 @@ const PLACE_ZONES: Record<string, ZoneKind> = {
   libertadoresStage1: "preLibertadores",
   sulAmericanaGroups: "sulAmericana",
   sulAmericanaStage1: "sulAmericana",
+  "champions-league": "championsLeague",
+  "europa-league": "europaLeague",
 };
 
-/** A result-only country's league tables as they stand, top level first, each row in its CONMEBOL place, promotion or relegation. */
+/** A result-only country's league tables as they stand, top level first, each row in its CONMEBOL or UEFA place, promotion or relegation. */
 export function worldLeagueTables(state: Pick<GameState, "world">, countryId: string): GroupTable[] {
   const country = state.world?.[countryId];
   if (!country) return [];
@@ -360,7 +367,13 @@ export function worldLeagueTables(state: Pick<GameState, "world">, countryId: st
     const fixtures: Fixture[] = leagueMatches(league).map((match, i) => ({ ...match, id: String(i), competitionId: league.id, stage: 0 }));
     const order = standings(league.clubIds, fixtures, league.drawOrder);
     const ids = order.map((row) => row.clubId);
-    const places = level === 0 ? continentalPlaces(country.structure.continental, ids, null) : new Map<string, string[]>();
+    const { uefa } = country.structure;
+    const places =
+      level > 0
+        ? new Map<string, string[]>()
+        : uefa
+          ? new Map(Object.entries(uefaPlaces(uefa, ids, country.cup ? cupFinal(country.cup) : null)))
+          : continentalPlaces(country.structure.continental, ids, null);
     const promoted = level > 0 ? ids.slice(0, structure?.promoted ?? 0) : [];
     const relegated = ids.slice(ids.length - (structure?.relegated ?? 0));
     const zoneOf = (clubId: string): ZoneKind | null => {

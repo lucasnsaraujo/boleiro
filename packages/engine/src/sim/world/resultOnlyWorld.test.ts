@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { addDays } from "../dates.js";
+import { cupFinal } from "./resultOnlyCup.js";
 import { leagueMatches, leagueTable } from "./resultOnlyLeague.js";
 import { endWorldSeason, playWorldDay, startCountry } from "./resultOnlyWorld.js";
 import type { Country, CountryStructure, World, WorldClub } from "./world.js";
@@ -100,5 +101,58 @@ describe("a result-only country", () => {
     const sound: WorldClub = { id: "bad", name: "BAD", positions: "GDDDDMMMMAA", strengths: Array.from({ length: 11 }, () => 60) };
     first[0] = { ...sound, ...change };
     expect(() => startCountry(STRUCTURE, levels, 2026, 1)).toThrow(/bad/);
+  });
+});
+
+const EUROPEAN: CountryStructure = {
+  id: "yy",
+  levels: [
+    { name: "First", legs: 2, promoted: 0, relegated: 2 },
+    { name: "Second", legs: 2, promoted: 2, relegated: 0 },
+  ],
+  window: ["08-15", "05-23"],
+  rollover: "07-01",
+  continental: [],
+  uefa: { championsLeague: 2, europaLeague: 1 },
+  hasCup: true,
+};
+
+function playDays(world: World, from: string, to: string): World {
+  let current = world;
+  for (let date = from; date < to; date = addDays(date, 1)) current = playWorldDay(current, date);
+  return current;
+}
+
+describe("a result-only country whose season crosses the new year", () => {
+  const levels = [10, 8].map((size, level) => Array.from({ length: size }, (_, i) => squad(`e${level + 1}-${i}`, 75 - 10 * level - i)));
+  const start = { yy: startCountry(EUROPEAN, levels, 2026, 3) };
+  const midway = playDays(start, "2026-01-01", "2027-01-01");
+  const rolledAtNewYear = endWorldSeason(midway, 2027);
+  const finished = playDays(rolledAtNewYear, "2027-01-01", "2027-07-01");
+  const rolled = playWorldDay(finished, "2027-07-01");
+
+  it("waits for August and plays its season into the next May, its cup with it", () => {
+    expect(start.yy.leagues[0]?.dates[0]).toBe("2026-08-15");
+    expect(start.yy.cup?.bracket.filter((id) => id)).toHaveLength(18);
+    expect(finished.yy?.leagues.every((league) => leagueMatches(league).every((m) => m.result !== null))).toBe(true);
+    expect(finished.yy?.cup && cupFinal(finished.yy.cup)).not.toBeNull();
+  });
+
+  it("keeps its season open across 1 January", () => {
+    expect(rolledAtNewYear.yy).toBe(midway.yy);
+  });
+
+  it("files the season on its rollover day with its cup final and UEFA places, and opens the next", () => {
+    const country = rolled.yy;
+    const [top] = finished.yy?.leagues ?? [];
+    const table = top ? leagueTable(top) : [];
+    const record = country?.seasons.at(-1);
+    expect(record?.season).toBe(2026);
+    expect(record?.cup).toEqual(finished.yy?.cup && cupFinal(finished.yy.cup));
+    expect(record?.continental["champions-league"]).toEqual(table.slice(0, 2));
+    expect(record?.continental["europa-league"]).toHaveLength(1);
+    expect(country?.leagues.map((league) => league.season)).toEqual([2027, 2027]);
+    expect(country?.cup?.season).toBe(2027);
+    expect(country?.leagues[0]?.dates[0]).toBe("2027-08-15");
   });
 });

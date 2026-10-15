@@ -126,6 +126,30 @@ test("South America's leagues are one pick away under Outras ligas, Argentina wi
   expect(within(panel).getByRole("table", { name: "Primera Nacional" })).toBeTruthy();
 });
 
+test("Europe's leagues are one pick away under Outras ligas, England with both its divisions", async () => {
+  openTables(await services());
+  await userEvent.click(await screen.findByRole("tab", { name: "Outras ligas" }));
+  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Liga" }), "Inglaterra");
+  const panel = screen.getByRole("tabpanel", { name: "Inglaterra" });
+  const top = within(panel).getByRole("table", { name: "Premier League" });
+  expect(within(top).getAllByRole("row")).toHaveLength(21);
+  expect(within(top).getByText("Arsenal FC")).toBeTruthy();
+  expect(within(panel).getByRole("table", { name: "Championship" })).toBeTruthy();
+  expect(within(screen.getByRole("region", { name: "Vagas" })).getByText("Champions League")).toBeTruthy();
+});
+
+test("the Champions League is one pick away under Outras ligas, its league phase one table of 36 and its later stages waiting for their draw", async () => {
+  openTables(await services());
+  await userEvent.click(await screen.findByRole("tab", { name: "Outras ligas" }));
+  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Liga" }), "Champions League");
+  const panel = screen.getByRole("tabpanel", { name: "Champions League" });
+  const table = within(panel).getByRole("table", { name: "Fase de liga" });
+  expect(within(table).getAllByRole("row")).toHaveLength(37);
+  expect(within(table).getByText("Real Madrid")).toBeTruthy();
+  expect((within(panel).getByRole("button", { name: "Mata-mata" }) as HTMLButtonElement).disabled).toBe(true);
+  expect(within(panel).getByText(/Paris Saint-Germain × Aston Villa/)).toBeTruthy();
+});
+
 test("the Libertadores tab shows its first stage's ties between foreign clubs by name", async () => {
   openTables(await services());
   await userEvent.click(await screen.findByRole("tab", { name: "Libertadores" }));
