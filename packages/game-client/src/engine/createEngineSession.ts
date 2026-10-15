@@ -47,7 +47,8 @@ type CommandFields = {
   playToMatchDay: Record<never, never>;
   startRound: KickOff;
   seeMinute: { minute: number };
-  changeLive: { minute: number; change: LiveChange };
+  /** A change in a human coach's match: the seated coach's, or with `clubId` a waiting hot-seat coach's. */
+  changeLive: { minute: number; change: LiveChange; clubId?: string };
   finishRound: Record<never, never>;
   closeTurningPoint: Record<never, never>;
   declineOffer: { clubId: string };
@@ -408,11 +409,11 @@ export function createEngineSession(files: GameFiles) {
       const round = underWay();
       round.seenMinute = Math.max(round.seenMinute, minute);
     },
-    /** The coach's change at `minute` of his match; the rest of his match is drawn again. */
-    changeLive({ minute, change }) {
+    /** A coach's change at `minute` of his match; the rest of his match is drawn again. */
+    changeLive({ minute, change, clubId }) {
       const round = underWay();
       if (minute < round.seenMinute) throw new Error(`a change can't come before minute ${round.seenMinute}`);
-      live = { day: applyLiveChange(round.day, minute, change), seenMinute: minute };
+      live = { day: applyLiveChange(round.day, minute, change, clubId), seenMinute: minute };
       return liveRoundOf(live.day, live.seenMinute);
     },
     /** The final whistle: records the day and adds the coach's results to the inbox. */

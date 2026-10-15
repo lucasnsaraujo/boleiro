@@ -61,7 +61,8 @@ describe("hot-seat coaches", () => {
     const fixture = matchDay.fixtures.find((f) => f.date === matchDay.date && (f.homeId === SECOND || f.awayId === SECOND));
     const eleven = weakestEleven(matchDay, SECOND);
     const day = startMatchDay(matchDay, { waiting: [{ lineup: eleven }] });
-    const sheet = fixture && day.rest.sheets[fixture.id];
+    // His match stays open for his live changes; untouched, it plays as drawn at kick-off.
+    const sheet = day.waitingMatches?.find((open) => open.fixtureId === fixture?.id)?.kickOff.sheet;
     const played = fixture?.homeId === SECOND ? sheet?.home : sheet?.away;
     // The sheet lists the starters first, then whoever came on.
     expect(played?.slice(0, eleven.length).map((p) => p.id).sort()).toEqual([...eleven].sort());

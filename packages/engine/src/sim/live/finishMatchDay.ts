@@ -20,6 +20,7 @@ import { recordMatchFinances } from "../finances/recordMatchFinances.js";
 import { dropCoachFriendlies, playFriendlies } from "../friendlies/friendlies.js";
 import { releaseTicketPrice } from "../finances/setTicketPrice.js";
 import type { Fixture, GameState, SimPlayer } from "../gameState.js";
+import type { Tactics } from "../coach/tactics.js";
 import { closeSeasonHistory } from "../history/closeSeasonHistory.js";
 import { recordStrengths } from "../history/recordStrengths.js";
 import { recordDayEvents } from "../history/recordDayEvents.js";
@@ -67,7 +68,7 @@ function shootoutOfOldSave(state: GameState, coachMatch: CoachMatch, played: Fix
   return settled.fixture.result?.penaltyWinnerId;
 }
 
-/** The coach's match as its timeline ended after his changes, recorded on its own stream. */
+/** A human coach's match as its timeline ended after the changes, recorded on its own stream. */
 function redrawnOutcome(state: GameState, coachMatch: CoachMatch, events: readonly MatchEvent[]): MatchOutcome {
   const fixture = state.fixtures.find((f) => f.id === coachMatch.fixtureId);
   const competition = fixture && state.competitions[fixture.competitionId];
@@ -85,20 +86,42 @@ function redrawnOutcome(state: GameState, coachMatch: CoachMatch, events: readon
   return coachOutcome(state, competition, match, random.next);
 }
 
-/** The day's other matches with the coach's one added where it stands in the fixture list. */
-function withCoachMatch(live: LiveDay, coachMatch: CoachMatch): DayInProgress {
+/** The day's other matches with the human coaches' ones added where they stand in the fixture list. */
+function withCoachMatches(live: LiveDay, open: readonly CoachMatch[]): DayInProgress {
   const { state, rest } = live;
-  const events = live.matches.find((m) => m.fixtureId === coachMatch.fixtureId)?.events ?? [];
-  const outcome = coachMatch.isChanged ? redrawnOutcome(state, coachMatch, events) : coachMatch.kickOff;
-  const { competitionId } = outcome.fixture;
-  return {
-    fixtures: rest.fixtures.map((f) => (f.id === outcome.fixture.id ? outcome.fixture : f)),
-    events: [...rest.events.slice(0, coachMatch.eventsIndex), ...outcome.events, ...rest.events.slice(coachMatch.eventsIndex)],
-    players: [...rest.players, ...outcome.players],
-    discipline: { ...rest.discipline, [competitionId]: { ...rest.discipline[competitionId], ...outcome.discipline } },
-    sheets: { ...rest.sheets, [outcome.fixture.id]: outcome.sheet },
-    rngState: rest.rngState,
-  };
+  let day: DayInProgress = { ...rest, events: [] };
+  let eventsIndex = 0;
+  for (const coachMatch of [...open].sort((a, b) => a.eventsIndex - b.eventsIndex)) {
+    const events = live.matches.find((m) => m.fixtureId === coachMatch.fixtureId)?.events ?? [];
+    const outcome = coachMatch.isChanged ? redrawnOutcome(state, coachMatch, events) : coachMatch.kickOff;
+    const { competitionId } = outcome.fixture;
+    day = {
+      fixtures: day.fixtures.map((f) => (f.id === outcome.fixture.id ? outcome.fixture : f)),
+      events: [...day.events, ...rest.events.slice(eventsIndex, coachMatch.eventsIndex), ...outcome.events],
+      players: [...day.players, ...outcome.players],
+      discipline: { ...day.discipline, [competitionId]: { ...day.discipline[competitionId], ...outcome.discipline } },
+      sheets: { ...day.sheets, [outcome.fixture.id]: outcome.sheet },
+      rngState: rest.rngState,
+    };
+    eventsIndex = coachMatch.eventsIndex;
+  }
+  return { ...day, events: [...day.events, ...rest.events.slice(eventsIndex)] };
+}
+
+/** Every human coach's open match of a live day: the seated coach's and the waiting coaches'. */
+function openMatchesOf(live: LiveDay): CoachMatch[] {
+  return [...(live.coachMatch ? [live.coachMatch] : []), ...(live.waitingMatches ?? [])];
+}
+
+/** A coach's tactics as he left them in his open match, when he changed anything in it. */
+function liveTacticsOf(live: LiveDay, clubId: string): Tactics | undefined {
+  for (const open of openMatchesOf(live)) {
+    if (!open.isChanged) continue;
+    if (open.clubId === clubId) return open.tactics;
+    const match = live.matches.find((m) => m.fixtureId === open.fixtureId);
+    if (open.rivalTactics && (match?.homeId === clubId || match?.awayId === clubId)) return open.rivalTactics;
+  }
+  return undefined;
 }
 
 /**
@@ -108,7 +131,8 @@ function withCoachMatch(live: LiveDay, coachMatch: CoachMatch): DayInProgress {
  */
 export function finishMatchDay(live: LiveDay): DayResult {
   const { state, decisions } = live;
-  const day = live.coachMatch ? withCoachMatch(live, live.coachMatch) : live.rest;
+  const open = openMatchesOf(live);
+  const day = open.length ? withCoachMatches(live, open) : live.rest;
   const random = randomStream(day.rngState);
   const events: DayEvent[] = [...day.events];
   let { fixtures } = day;
@@ -134,7 +158,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const tactics = live.coachMatch?.tactics ?? decisions.tactics ?? state.coach.tactics;
   const coach = tactics === state.coach.tactics ? state.coach : { ...state.coach, tactics };
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: day.discipline, coach };
-  if (state.waitingCoaches) next = { ...next, waitingCoaches: withWaitingTactics(state.waitingCoaches, decisions.waiting ?? []) };
+  if (state.waitingCoaches) next = { ...next, waitingCoaches: withWaitingTactics(state.waitingCoaches, decisions.waiting ?? [], (clubId) => liveTacticsOf(live, clubId)) };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
   const bonuses = payTitleBonuses(next, recordMatches(next, played, day.sheets));
   next = bonuses.state;
@@ -190,9 +214,10 @@ export function finishMatchDay(live: LiveDay): DayResult {
   return state.waitingCoaches ? { state: recorded, events, waitingEvents } : { state: recorded, events };
 }
 
-function withWaitingTactics(coaches: readonly WaitingCoach[], decisions: readonly WaitingDecisions[]): WaitingCoach[] {
+/** The waiting coaches with the tactics they last chose: in their match today, else on their turn. */
+function withWaitingTactics(coaches: readonly WaitingCoach[], decisions: readonly WaitingDecisions[], liveTactics: (clubId: string) => Tactics | undefined): WaitingCoach[] {
   return coaches.map((waiting, index) => {
-    const tactics = decisions[index]?.tactics;
+    const tactics = (waiting.clubId && liveTactics(waiting.clubId)) || decisions[index]?.tactics;
     return tactics ? { ...waiting, coach: { ...waiting.coach, tactics } } : waiting;
   });
 }

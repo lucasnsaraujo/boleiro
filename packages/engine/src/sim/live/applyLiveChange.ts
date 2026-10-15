@@ -41,7 +41,15 @@ function onPitch(coachMatch: CoachMatch, events: readonly MatchEvent[], side: Si
 }
 
 /** Throws unless every substitution follows Law 3 and the bench at this minute. */
-function checkSubstitutions(coachMatch: CoachMatch, kept: readonly MatchEvent[], eleven: readonly SimPlayer[], clubId: string, minute: number, subs: readonly Substitution[]): void {
+function checkSubstitutions(
+  coachMatch: CoachMatch,
+  kept: readonly MatchEvent[],
+  eleven: readonly SimPlayer[],
+  bench: readonly SimPlayer[],
+  clubId: string,
+  minute: number,
+  subs: readonly Substitution[],
+): void {
   if (!subs.length) return;
   const made = kept.filter((e) => e.type === "substitution" && e.clubId === clubId);
   if (made.length + subs.length > MAX_SUBSTITUTIONS) throw new Error(`a side makes at most ${MAX_SUBSTITUTIONS} substitutions`);
@@ -55,7 +63,7 @@ function checkSubstitutions(coachMatch: CoachMatch, kept: readonly MatchEvent[],
   const onIds = new Set<string>();
   for (const { offId, onId } of subs) {
     if (!eleven.some((p) => p.id === offId) || sentOffMinute(kept, offId) !== undefined || offIds.has(offId)) throw new Error(`${offId} is not on the pitch`);
-    if (!coachMatch.bench.some((p) => p.id === onId) || played.has(onId) || onIds.has(onId)) throw new Error(`${onId} cannot come on`);
+    if (!bench.some((p) => p.id === onId) || played.has(onId) || onIds.has(onId)) throw new Error(`${onId} cannot come on`);
     offIds.add(offId);
     onIds.add(onId);
   }
@@ -77,9 +85,9 @@ function poissonCount(mean: number, random: () => number): number {
 /**
  * The coach's match from `minute` on, drawn again with the elevens and tactics now on the pitch:
  * cards, injuries and goals, minute by minute, then the goals' kinds and assists, missed penalties
- * and the AI side's substitutions. Each side's goals follow the engine's expected goals for the
- * whole match, spread by Série A's goal minutes and the ten-men effect; the AI side takes the
- * posture aiPosture gives it for the score at each minute.
+ * and an AI side's substitutions. Each side's goals follow the engine's expected goals for the
+ * whole match, spread by Série A's goal minutes and the ten-men effect; an AI side takes the
+ * posture aiPosture gives it for the score at each minute, a rival human coach's side his tactics.
  */
 function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEvent[], coachSide: Side, minute: number, random: () => number): MatchEvent[] {
   const clubIds = { home: match.homeId, away: match.awayId };
@@ -110,11 +118,16 @@ function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEv
   const injuredMinute = new Map([...kept, ...injuries].flatMap((e) => (e.type === "injury" ? [[e.playerId, e.minute] as const] : [])));
 
   const aiSide: Side = coachSide === "home" ? "away" : "home";
-  const { penaltyTakerId } = coachMatch.tactics;
-  const takerOnPitch = playing(coachSide).some((p) => p.id === penaltyTakerId);
-  const coachTactics = { ...coachMatch.tactics, penaltyTakerId: takerOnPitch ? penaltyTakerId : null };
+  // A side's penalty taker only takes them while he is on the pitch.
+  const onPitchTaker = (side: Side, tactics: Tactics): Tactics => {
+    const isOn = playing(side).some((p) => p.id === tactics.penaltyTakerId);
+    return { ...tactics, penaltyTakerId: isOn ? tactics.penaltyTakerId : null };
+  };
+  const coachTactics = onPitchTaker(coachSide, coachMatch.tactics);
+  const rivalTactics = coachMatch.rivalTactics && onPitchTaker(aiSide, coachMatch.rivalTactics);
+  const humanTactics = (side: Side) => (side === coachSide ? coachTactics : rivalTactics);
   const team = (side: Side, posture: Posture): Team =>
-    engineTeam(clubIds[side], elevens[side], strength, side === coachSide ? coachTactics : { ...DEFAULT_TACTICS, formation: match.formations[side], posture });
+    engineTeam(clubIds[side], elevens[side], strength, humanTactics(side) ?? { ...DEFAULT_TACTICS, formation: match.formations[side], posture });
   const expected = new Map<Posture, { home: number; away: number }>();
   const expectedGoals = (aiPostureNow: Posture) => {
     const known = expected.get(aiPostureNow);
@@ -144,20 +157,22 @@ function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEv
   const goalSide = (side: Side): GoalSide => ({
     clubId: clubIds[side],
     onPitch: (at) => onPitchAt(coachMatch.starters[side], benchOf(coachMatch, side, coachSide), before, clubIds[side], at),
-    penaltyTakerId: side === coachSide ? coachTactics.penaltyTakerId : null,
+    penaltyTakerId: humanTactics(side)?.penaltyTakerId ?? null,
   });
   const sides = { home: goalSide("home"), away: goalSide("away") };
   const goals = describeGoals(drawn, sides, strength, random);
   const misses = drawPenaltyMisses(sides, strength, minute, () => drawMinute(goalMinuteWeights([], [], minute), random), random);
   const allGoals = [...kept.filter((e): e is GoalEvent => e.type === "goal"), ...goals];
   const goalDifferenceAt = (at: number) => allGoals.reduce((diff, g) => (g.minute < at ? diff + (g.clubId === clubIds[aiSide] ? 1 : -1) : diff), 0);
-  const aiSubs = aiSubstitutions(
-    { clubId: clubIds[aiSide], starters: coachMatch.starters[aiSide], bench: benchOf(coachMatch, aiSide, coachSide), tiredness: (p) => tirednessOn(p, coachMatch.context.date) },
-    [...before, ...goals, ...misses],
-    minute,
-    goalDifferenceAt,
-    random,
-  );
+  const aiSubs = rivalTactics
+    ? []
+    : aiSubstitutions(
+        { clubId: clubIds[aiSide], starters: coachMatch.starters[aiSide], bench: benchOf(coachMatch, aiSide, coachSide), tiredness: (p) => tirednessOn(p, coachMatch.context.date) },
+        [...before, ...goals, ...misses],
+        minute,
+        goalDifferenceAt,
+        random,
+      );
   return [...cards, ...injuries, ...goals, ...misses, ...aiSubs];
 }
 
@@ -171,7 +186,7 @@ function shootoutAfter(live: LiveDay, coachMatch: CoachMatch, match: LiveMatch, 
   const strength = (p: SimPlayer) => coachMatch.strengths[p.id] ?? p.strength;
   const side = (s: Side) => {
     const clubId = s === "home" ? match.homeId : match.awayId;
-    const order = s === coachSide ? coachMatch.tactics.kickerOrder : undefined;
+    const order = s === coachSide ? coachMatch.tactics.kickerOrder : coachMatch.rivalTactics?.kickerOrder;
     return {
       clubId,
       onPitch: onPitchAt(coachMatch.starters[s], benchOf(coachMatch, s, coachSide), events, clubId, FULL_TIME + 1),
@@ -182,42 +197,53 @@ function shootoutAfter(live: LiveDay, coachMatch: CoachMatch, match: LiveMatch, 
   return settleShootout({ ...fixture, result }, shootoutSeed(random), side("home"), side("away"), strength).events;
 }
 
+/** The open match a human coach's club plays today: the seated coach's, or a waiting coach's in a hot-seat game. */
+function openMatchOf(live: LiveDay, clubId: string): CoachMatch | undefined {
+  const plays = (open: CoachMatch) => live.matches.some((m) => m.fixtureId === open.fixtureId && (m.homeId === clubId || m.awayId === clubId));
+  return [live.coachMatch, ...(live.waitingMatches ?? [])].find((open): open is CoachMatch => open !== null && open !== undefined && plays(open));
+}
+
 /**
- * The coach changes his side at `minute` of his match: substitutions, formation, posture or penalty
- * taker. Everything up to that minute stays; the rest of his match is drawn again. The day's other
- * matches are untouched. Changes come in minute order.
+ * A human coach changes his side at `minute` of his match: substitutions, formation, posture or
+ * penalty taker. Everything up to that minute stays; the rest of his match is drawn again. The day's
+ * other matches are untouched. Changes come in minute order. The coach is the one in the seat unless
+ * `clubId` names a hot-seat coach waiting for his turn.
  */
-export function applyLiveChange(live: LiveDay, minute: number, change: LiveChange): LiveDay {
-  const { coachMatch } = live;
-  const clubId = live.state.coachClubId;
+export function applyLiveChange(live: LiveDay, minute: number, change: LiveChange, clubId: string | null = live.state.coachClubId): LiveDay {
+  const coachMatch = clubId === null ? undefined : openMatchOf(live, clubId);
   if (!coachMatch || !clubId) throw new Error("the coach has no match today");
   if (!Number.isInteger(minute) || minute < coachMatch.lastChangeMinute || minute >= FULL_TIME) {
     throw new Error(`a change must come between minute ${coachMatch.lastChangeMinute} and ${FULL_TIME - 1}`);
   }
   const match = live.matches.find((m) => m.fixtureId === coachMatch.fixtureId);
   if (!match) throw new Error(`coach's match ${coachMatch.fixtureId} has no timeline`);
-  const coachSide: Side = match.homeId === clubId ? "home" : "away";
+  const ownerId = coachMatch.clubId ?? live.state.coachClubId;
+  const ownerSide: Side = match.homeId === ownerId ? "home" : "away";
+  const changingSide: Side = match.homeId === clubId ? "home" : "away";
+  const isRival = changingSide !== ownerSide;
+  const before = isRival ? coachMatch.rivalTactics : coachMatch.tactics;
+  if (!before) throw new Error(`${clubId} has no coach in match ${coachMatch.fixtureId}`);
   const kept = match.events.filter((e) => e.minute <= minute && e.type !== "halfTime" && e.type !== "fullTime" && e.type !== "shootoutKick" && e.type !== "orderOverruled");
   const subs = change.substitutions ?? [];
-  checkSubstitutions(coachMatch, kept, onPitch(coachMatch, kept, coachSide, clubId), clubId, minute, subs);
+  const bench = benchOf(coachMatch, changingSide, ownerSide);
+  checkSubstitutions(coachMatch, kept, onPitch(coachMatch, kept, changingSide, clubId), bench, clubId, minute, subs);
   const substitutions: MatchEvent[] = subs.map(({ offId, onId }) => ({ type: "substitution", minute, clubId, playerId: onId, offId }));
   const tactics: Tactics = {
-    ...coachMatch.tactics,
-    formation: change.formation ?? coachMatch.tactics.formation,
-    posture: change.posture ?? coachMatch.tactics.posture,
-    penaltyTakerId: change.penaltyTakerId === undefined ? coachMatch.tactics.penaltyTakerId : change.penaltyTakerId,
+    ...before,
+    formation: change.formation ?? before.formation,
+    posture: change.posture ?? before.posture,
+    penaltyTakerId: change.penaltyTakerId === undefined ? before.penaltyTakerId : change.penaltyTakerId,
   };
   const random = randomStream(coachMatch.rngState);
-  const next: CoachMatch = { ...coachMatch, tactics, lastChangeMinute: minute, isChanged: true };
-  const before = [...kept, ...substitutions];
-  const after = redraw(next, match, before, coachSide, minute, random.next);
-  const played = [...before, ...after];
-  const shootout = shootoutAfter(live, next, match, played, coachSide, random.next);
+  const next: CoachMatch = isRival ? { ...coachMatch, rivalTactics: tactics, lastChangeMinute: minute, isChanged: true } : { ...coachMatch, tactics, lastChangeMinute: minute, isChanged: true };
+  const sofar = [...kept, ...substitutions];
+  const after = redraw(next, match, sofar, ownerSide, minute, random.next);
+  const played = [...sofar, ...after];
+  const shootout = shootoutAfter(live, next, match, played, ownerSide, random.next);
   const events = inMatchOrder([...played, { type: "halfTime", minute: HALF_TIME }, { type: "fullTime", minute: FULL_TIME }, ...shootout]);
-  const formations = { ...match.formations, [coachSide]: tactics.formation };
-  return {
-    ...live,
-    matches: live.matches.map((m) => (m === match ? { ...match, formations, events } : m)),
-    coachMatch: { ...next, rngState: random.state() },
-  };
+  const formations = { ...match.formations, [changingSide]: tactics.formation };
+  const redrawn: CoachMatch = { ...next, rngState: random.state() };
+  const matches = live.matches.map((m) => (m === match ? { ...match, formations, events } : m));
+  if (coachMatch === live.coachMatch) return { ...live, matches, coachMatch: redrawn };
+  return { ...live, matches, waitingMatches: (live.waitingMatches ?? []).map((open) => (open === coachMatch ? redrawn : open)) };
 }
