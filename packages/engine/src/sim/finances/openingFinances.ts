@@ -29,6 +29,11 @@ const OPENING_CASH_MONTHS_OF_REVENUE = 1;
 // guess: wages rise about 10% per strength point, so a 70 earns about 20 times a 40 at the same club.
 const WAGE_GROWTH_PER_STRENGTH_POINT = 0.1;
 
+/** The crowd a club would draw with seats to spare: its division's average, by the root of its fanbase against the division's median. */
+export function crowdDemand(averageAttendance: number, fanbase: number, medianFanbase: number): number {
+  return averageAttendance * (medianFanbase > 0 ? Math.sqrt(fanbase / medianFanbase) : 1);
+}
+
 const moneyOf = ({ revenue, wageBill, netDebt }: Finances): Money => ({ ...revenue, wageBill, netDebt });
 
 const lerp = (a: Money, b: Money, t: number): Money => {
@@ -47,7 +52,7 @@ const scale = (a: Money, factor: number): Money => ({
 const quantile = (values: readonly number[], q: number): number =>
   [...values].sort((a, b) => a - b)[Math.floor(q * (values.length - 1))] ?? 0;
 
-const median = (values: readonly number[]): number => {
+export const median = (values: readonly number[]): number => {
   const sorted = [...values].sort((a, b) => a - b);
   const middle = sorted.length >> 1;
   return sorted.length % 2 ? (sorted[middle] ?? 0) : ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
@@ -166,8 +171,7 @@ export function openingFinances(
       const row = data.clubs.find((r) => r.clubId === club.id) ?? (tier === "A" ? smallestSerieA : undefined);
       const base = row ? moneyOf(row) : moneyByRank(data, tier, rankOf.get(club.id) ?? 0, members.length);
       const { attendance, price } = economy.matchday[tier];
-      const fanFactor = medianFans > 0 ? Math.sqrt(club.fanbase / medianFans) : 1;
-      const baseCrowd = Math.min(SELLABLE_SHARE_OF_CAPACITY * club.capacity, attendance * fanFactor);
+      const baseCrowd = Math.min(SELLABLE_SHARE_OF_CAPACITY * club.capacity, crowdDemand(attendance, club.fanbase, medianFans));
       const expectedTickets = Math.round(baseCrowd * price * (homeGames.get(club.id) ?? 0));
       const tv = tier === "A" ? (serieA[club.id] ?? 0) : economy.tvPerClub[tier];
       const revenue = operatingRevenue(base);

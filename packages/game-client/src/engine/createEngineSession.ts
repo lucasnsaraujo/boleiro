@@ -1,3 +1,4 @@
+import type { Formation } from "@boleiro/engine/engine/formations";
 import { advanceDay, type DayDecisions, type DayEvent } from "@boleiro/engine/sim/advanceDay";
 import { declineOffer } from "@boleiro/engine/sim/coach/declineOffer";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
@@ -5,12 +6,15 @@ import { applyLiveChange, type LiveChange } from "@boleiro/engine/sim/live/apply
 import { finishMatchDay } from "@boleiro/engine/sim/live/finishMatchDay";
 import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
 import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
+import { withPackPositions } from "@boleiro/engine/sim/players/withPackPositions";
 import { newGameFromFiles, type GameFiles } from "@boleiro/engine/sim/loadNewGame";
 import type { NewGameOptions } from "@boleiro/engine/sim/newGame";
 import { answerBid, type BidAnswer, type BidOutcome } from "@boleiro/engine/sim/transfers/answerBid";
 import { declineCounter } from "@boleiro/engine/sim/transfers/coachMarket";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { listPlayer, type SaleWay } from "@boleiro/engine/sim/transfers/listPlayer";
+import { setTicketPrice } from "@boleiro/engine/sim/finances/setTicketPrice";
+import { requestStadiumWorks, type WorksAnswer } from "@boleiro/engine/sim/stadium/stadiumWorks";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { playToMatchDay, type StopReason } from "../hub/playToMatchDay.js";
 import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
@@ -47,6 +51,10 @@ type CommandFields = {
   answerBid: { playerId: string; answer: BidAnswer };
   /** Turns down a selling club's counter to the coach's offer. */
   declineCounter: { playerId: string };
+  /** Sets the ticket price of the coach's home games, in whole reais. */
+  priceTickets: { price: number };
+  /** Asks the board for `seats` new seats at the coach's stadium; it answers at once. */
+  askStadiumWorks: { seats: number };
 };
 
 export type CommandType = keyof CommandFields;
@@ -74,6 +82,8 @@ export type CommandResults = {
   listPlayer: undefined;
   answerBid: BidOutcome;
   declineCounter: undefined;
+  priceTickets: undefined;
+  askStadiumWorks: WorksAnswer;
 };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
@@ -170,12 +180,14 @@ export function createEngineSession(files: GameFiles) {
     newGame({ seed, choices }) {
       return begin(newGameFromFiles(seed, choices, files));
     },
+    /** A save from before positions gets them from the shipped pack (withPackPositions). */
     load({ save }) {
       const loaded = readStoredSave(save);
-      const summary = begin(loaded.game);
+      const game = withPackPositions(loaded.game, files);
+      const summary = begin(game);
       desk = loaded.desk;
       turningPoints = loaded.turningPoints;
-      live = loaded.live;
+      live = loaded.live && { ...loaded.live, day: { ...loaded.live.day, state: game } };
       return summary;
     },
     /** If any day throws, the game stays where it was. */
@@ -294,6 +306,14 @@ export function createEngineSession(files: GameFiles) {
     declineCounter({ playerId }) {
       state = declineCounter(betweenDays("a counter-offer can't be declined"), playerId);
     },
+    priceTickets({ price }) {
+      state = setTicketPrice(betweenDays("tickets can't be priced"), price);
+    },
+    askStadiumWorks({ seats }) {
+      const asked = requestStadiumWorks(betweenDays("the board can't be asked for works"), seats);
+      state = asked.state;
+      return asked.answer;
+    },
   };
 
   return {
@@ -302,9 +322,9 @@ export function createEngineSession(files: GameFiles) {
       if (!Object.hasOwn(commands, command.type)) throw new Error(`unknown command: ${command.type}`);
       return commands[command.type](command);
     },
-    /** The lineup sheet before kick-off on the coach's match day. */
-    matchDayPlan(): MatchDayPlan {
-      return matchDayPlan(current());
+    /** The lineup sheet before kick-off on the coach's match day; with a formation, the assistant's eleven in it. */
+    matchDayPlan(formation?: Formation): MatchDayPlan {
+      return matchDayPlan(current(), formation);
     },
     /** The match day kicked off and not yet finished, if any. */
     liveRound(): LiveRound | null {

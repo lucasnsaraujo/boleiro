@@ -56,7 +56,7 @@ export function recordMatches(state: GameState, played: readonly Fixture[], shee
       }
       const mark = { season: state.season, date: fixture.date, competition, opponentId, home, goalsFor, goalsAgainst };
       const finance = state.finances[clubId];
-      const crowd = home && finance ? attendance(state, finance, clubId, opponentId) : 0;
+      const crowd = home && finance ? attendance(state, finance, clubId, opponentId, fixture) : 0;
       clubs[clubId] = updateClubRecords(clubs[clubId], mark, crowd > 0 ? { season: state.season, date: fixture.date, competition, opponentId, crowd } : null);
     }
   }

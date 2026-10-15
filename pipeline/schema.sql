@@ -176,6 +176,18 @@ CREATE TABLE IF NOT EXISTS player_positions (
   PRIMARY KEY (snapshot_id, player_id, rank)
 );
 
+-- A club's eleven in its last real match, as a source showed it: one row per starter, keeper first.
+CREATE TABLE IF NOT EXISTS club_lineups (
+  snapshot_id INTEGER NOT NULL REFERENCES snapshots(id),
+  club_id TEXT NOT NULL,
+  slot INTEGER NOT NULL,               -- 0 for the keeper, then the source's order of slots
+  formation TEXT NOT NULL,             -- "4-2-3-1"
+  player_id TEXT,                      -- null when the starter isn't in the club's squad
+  position TEXT NOT NULL,              -- the source's code for the slot (FotMob's positionId)
+  source TEXT NOT NULL,
+  PRIMARY KEY (snapshot_id, club_id, slot)
+);
+
 CREATE TABLE IF NOT EXISTS player_season_stats (
   snapshot_id INTEGER NOT NULL REFERENCES snapshots(id),
   player_id TEXT NOT NULL,

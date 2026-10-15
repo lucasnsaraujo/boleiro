@@ -1,12 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar as barOf, barDate, news, startAtClub } from "./flows.js";
+import { bar as barOf, barDate, news, playLiveRound, startAtClub } from "./flows.js";
 
 const SEASON = 2026;
 // A Série C club plays about 40 matches a year, and some presses of "Jogar rodada" stop early for news.
 const MAX_STEPS = 400;
-// The round's 4x clock: 110 ms per match minute (MS_PER_MINUTE in ui/screens/Round.tsx).
-const FOUR_X_MINUTE_MS = 110;
-const PAUSE_LEAD_MS = 200;
 // The answer to "Jogar rodada" can take a while: up to 120 days played in the worker.
 const PLAY_TIMEOUT = 60_000;
 
@@ -62,57 +59,6 @@ async function tourScreens(page: Page, club: string) {
   await expect(saved).toBeVisible();
   await expect(page.getByRole("list", { name: "Vagas" }).getByRole("button", { name: new RegExp(`^Jogo \\d · ${club}`) })).toBeVisible();
   await bar.getByRole("link", { name: "Times" }).click();
-}
-
-/**
- * Stops the page clock a moment ahead. pauseAt only moves forward and the page's time keeps flowing until it
- * lands, so on a loaded machine the moment can pass before the call arrives; then it aims again.
- */
-async function pauseClock(page: Page) {
-  for (;;) {
-    try {
-      await page.clock.pauseAt((await page.evaluate(() => Date.now())) + PAUSE_LEAD_MS);
-      return;
-    } catch (error) {
-      if (!String(error).includes("Cannot fast-forward to the past")) throw error;
-    }
-  }
-}
-
-/**
- * Plays the live round at 4x until the result is in, stepping the paused page clock one match
- * minute at a time instead of waiting for it. Returns how many times the round stopped by itself
- * before full time.
- */
-async function playLiveRound(page: Page): Promise<number> {
-  const band = page.getByRole("region", { name: "Seu jogo" });
-  const back = page.getByRole("button", { name: "Voltar ao clube" });
-  const finishing = page.getByRole("button", { name: "Encerrando…" });
-  const paused = page.getByRole("button", { name: "Pausar", pressed: true, disabled: false });
-  const fourX = page.getByRole("button", { name: "4x" });
-  const minute = band.getByLabel("Minuto");
-  await expect(band).toBeVisible();
-  await pauseClock(page);
-  await fourX.click();
-  let stops = 0;
-  // One tick per step, so the screen has stopped the clock by itself before the next tick is due.
-  while (!(await finishing.or(back).first().isVisible())) {
-    const before = await minute.textContent();
-    await page.clock.runFor(FOUR_X_MINUTE_MS);
-    await expect
-      .poll(async () => (await minute.textContent()) !== before || (await paused.or(finishing).or(back).count()) > 0, { intervals: [0, 20, 50, 100] })
-      .toBe(true);
-    if (await paused.isVisible()) {
-      stops++;
-      await fourX.click();
-    }
-  }
-  await page.clock.resume();
-  await expect(back).toBeVisible();
-  await expect(band).toContainText("Fim de jogo");
-  await back.click();
-  await expect(band).toBeHidden();
-  return stops;
 }
 
 test("a Série C club plays its whole first season through the screens and starts season 2 with the champions on record", async ({ page }) => {

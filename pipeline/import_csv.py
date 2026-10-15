@@ -1,7 +1,8 @@
 """Loads the repo's data files into the master database as a new snapshot.
 
 Reads the files the game is built from (clubs, players, finances, prize money, crests) plus
-Transfermarkt's squad file for ids, foot, contract and value. The raw scrape outputs that
+Transfermarkt's squad file for ids, foot, contract and value, and FotMob's files
+(scrape_fotmob.py) for the players' other positions and the clubs' last elevens. The raw scrape outputs that
 build_clubs.py and rate_players.py already folded into those (club facts, wiki colours,
 Sofascore stats) are left out.
 
@@ -91,11 +92,34 @@ def stadium_ids(clubs: list[dict[str, str]]) -> dict[str, str]:
     return by_club
 
 
+def import_fotmob(db: sqlite3.Connection, snapshot: int, players: list[dict[str, str]], lineups: list[dict[str, str]]) -> None:
+    """FotMob's positions for the snapshot's players (ranked after Transfermarkt's main one) and each club's last eleven.
+    Rows of players FotMob couldn't match to Transfermarkt, or that aren't in the snapshot, are left out."""
+    in_snapshot = {row[0] for row in db.execute("SELECT id FROM players WHERE snapshot_id = ?", (snapshot,))}
+    for row in players:
+        player_id = f"tm-{row['tm_id']}"
+        if not row["tm_id"] or player_id not in in_snapshot:
+            continue
+        db.execute("INSERT OR IGNORE INTO external_ids VALUES (?, 'player', ?, 'fotmob', ?)", (snapshot, player_id, row["fotmob_id"]))
+        for rank, code in enumerate(row["positions"].split(","), start=1):
+            db.execute("INSERT OR IGNORE INTO player_positions VALUES (?, ?, ?, ?, 'fotmob')", (snapshot, player_id, rank, code))
+    for row in lineups:
+        player_id = f"tm-{row['tm_id']}" if row["tm_id"] and f"tm-{row['tm_id']}" in in_snapshot else None
+        db.execute("INSERT OR IGNORE INTO external_ids VALUES (?, 'club', ?, 'fotmob', ?)", (snapshot, row["club_id"], row["fotmob_team_id"]))
+        db.execute(
+            "INSERT INTO club_lineups VALUES (?, ?, ?, ?, ?, ?, 'fotmob')",
+            (snapshot, row["club_id"], int(row["slot"]), row["formation"], player_id, row["fotmob_position_id"]),
+        )
+
+
 def import_snapshot(data: Path, db: sqlite3.Connection) -> int:
-    files = ["clubs.csv", "players.csv", "transfermarkt-players.csv", "finances.csv", "competition-money.json", "crests.csv"]
+    files = ["clubs.csv", "players.csv", "transfermarkt-players.csv", "finances.csv", "competition-money.json", "crests.csv",
+             "fotmob-players.csv", "fotmob-lineups.csv"]
     clubs = read_csv(data / "clubs.csv")
     players = read_csv(data / "players.csv")
     tm_players = read_csv(data / "transfermarkt-players.csv")
+    fotmob_players = read_csv(data / "fotmob-players.csv")
+    fotmob_lineups = read_csv(data / "fotmob-lineups.csv")
     finances = read_csv(data / "finances.csv")
     crests = read_csv(data / "crests.csv")
     money = json.loads((data / "competition-money.json").read_text(encoding="utf-8"))
@@ -165,6 +189,8 @@ def import_snapshot(data: Path, db: sqlite3.Connection) -> int:
                 (snapshot, player_id, STATS_SEASON, int(player["sofa_minutes"]),
                  float(player["sofa_rating"]) if player["sofa_rating"] else None, int(player["sofa_goals_assists"])),
             )
+
+    import_fotmob(db, snapshot, fotmob_players, fotmob_lineups)
 
     for seq, row in enumerate(finances):
         db.execute(

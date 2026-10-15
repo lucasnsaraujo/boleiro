@@ -16,7 +16,7 @@ test("Visualizar opens every bar screen on the same F-key as the keyboard, greyi
     const key = { key: entry.accelerator ?? "", metaKey: false, ctrlKey: false, altKey: false, shiftKey: false };
     expect(commandForKey(key, "mac")).toBe(entry.command);
   }
-  expect(screens.filter((entry) => entry.isEnabled === false).map((entry) => entry.text)).toEqual(["Estádio", "Base"]);
+  expect(screens.filter((entry) => entry.isEnabled === false).map((entry) => entry.text)).toEqual(["Base"]);
 });
 
 test("Jogo saves, plays the round and starts a new game", () => {

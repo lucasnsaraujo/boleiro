@@ -4,6 +4,7 @@ import type { Fixture, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { clubMood, NEUTRAL_MOOD, type ClubMood } from "./clubMood.js";
+import { rivalsOf } from "./rivalsOf.js";
 
 const start = loadNewGame(7, { coachClubId: null });
 
@@ -103,9 +104,62 @@ describe("organised supporters", () => {
     }
   });
 
+  it("cost a first offender a fine of R$ 10,000 to R$ 100,000 or one to three home games", () => {
+    for (const { events } of violentDays) {
+      for (const e of ofType(events, "fansViolence").filter((v) => v.fine > 0)) {
+        expect(e.fine).toBeGreaterThanOrEqual(10_000);
+        expect(e.fine).toBeLessThanOrEqual(100_000);
+      }
+      for (const e of ofType(events, "closedDoors")) expect(e.games).toBeLessThanOrEqual(3);
+    }
+  });
+
+  const repeatDays = Array.from({ length: 160 }, (_, seed) => advanceDay(losing({ fans: 10, supporters: "violence" }, seed), {}).events);
+
+  it("punish a repeat offender harder: up to R$ 198,000 or three to eight home games", () => {
+    const fines = repeatDays.flatMap((events) => ofType(events, "fansViolence").filter((e) => e.fine > 0).map((e) => e.fine));
+    const games = repeatDays.flatMap((events) => ofType(events, "closedDoors").map((e) => e.games));
+    expect(Math.max(...fines)).toBeGreaterThan(100_000);
+    expect(Math.max(...fines)).toBeLessThanOrEqual(198_000);
+    expect(Math.min(...games)).toBeGreaterThanOrEqual(3);
+    expect(Math.max(...games)).toBeLessThanOrEqual(8);
+  });
+
   it("calm down once results bring fan mood back up", () => {
     const winning = withMood(withStrength(leagueDay, visitor, 1), host, { fans: 47, supporters: "protest" });
     expect(clubMood(advanceDay(winning, {}).state, host).supporters).toBe("calm");
+  });
+});
+
+describe("crowd trouble after a derby defeat", () => {
+  const rival = [...(rivalsOf(leagueDay.clubs).get(host) ?? [])].find((id) => id !== visitor);
+  if (!rival) throw new Error(`${host} has no rival`);
+  const derbyDay: GameState = {
+    ...weakHost,
+    fixtures: weakHost.fixtures.map((f) => (f.id === game.id ? { ...f, awayId: rival } : f)),
+  };
+  const days = Array.from({ length: 400 }, (_, seed) => {
+    const before = withMood({ ...derbyDay, seed, rngState: seed }, host, { ...NEUTRAL_MOOD, fans: 70 });
+    const after = advanceDay(before, {});
+    const result = after.state.fixtures.find((f) => f.id === game.id)?.result;
+    return { ...after, lost: (result?.homeGoals ?? 0) < (result?.awayGoals ?? 0) };
+  });
+  const defeats = days.filter((d) => d.lost);
+  const troubled = defeats.filter(({ events }) => ofType(events, "fansViolence").some((e) => e.clubId === host));
+
+  it("sometimes brings the court down on a club whose fans were happy, but rarely", () => {
+    expect(defeats.length).toBeGreaterThan(200);
+    expect(troubled.length).toBeGreaterThan(0);
+    expect(troubled.length).toBeLessThan(defeats.length / 10);
+  });
+
+  it("punishes the club but leaves its happy supporters' step as it was", () => {
+    for (const { state } of troubled) expect(clubMood(state, host).supporters).toBe("calm");
+  });
+
+  it("never follows a derby the club didn't lose", () => {
+    const spared = days.filter((d) => !d.lost && ofType(d.events, "fansViolence").some((e) => e.clubId === host));
+    expect(spared).toEqual([]);
   });
 });
 

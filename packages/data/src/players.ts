@@ -5,12 +5,21 @@ export type Division = "A" | "B" | "C" | "D";
 
 export type PositionGroup = "GK" | "DEF" | "MID" | "ATT";
 
+/** The positions Brazilian football names a squad by, as `pipeline/positions.py` maps the sources' to them. */
+export const ROLES = ["goleiro", "lateral", "zagueiro", "meia", "atacante"] as const;
+export type Role = (typeof ROLES)[number];
+export const GROUP_OF_ROLE: Record<Role, PositionGroup> = { goleiro: "GK", lateral: "DEF", zagueiro: "DEF", meia: "MID", atacante: "ATT" };
+
 export type Player = {
   name: string;
   group: PositionGroup;
   strength: number;
+  /** His positions, the main one first; left out when the data has none, and then his group is his position. */
+  positions?: readonly Role[];
   /** The position he plays in the formation, when it is not his own group. */
   slot?: PositionGroup;
+  /** The share of his strength he plays at in his slot of the formation; left out, the slot's group decides. */
+  fit?: number;
 };
 
 export type SquadPlayer = Player & {
