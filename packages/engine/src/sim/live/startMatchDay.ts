@@ -84,11 +84,17 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const shootout = isShootoutDue(state, { ...fixture, result: score }) ? shootoutSeed(random.next) : null;
     const injuries = drawMatchInjuries([...setup.homeLineup, ...setup.awayLineup], setup.context, random.next);
     const { homeId, awayId } = fixture;
+    // Each player's strength today, worked out once: goal kinds, penalties and substitutions ask for it again and again.
     const strengths = new Map<string, (p: SimPlayer) => number>();
+    const known = new Map<string, number>();
     const strength = (p: SimPlayer) => {
+      const cached = known.get(p.id);
+      if (cached !== undefined) return cached;
       let own = strengths.get(p.clubId);
       if (!own) strengths.set(p.clubId, (own = playingStrength(state, p.clubId, setup.context, available(p.clubId))));
-      return own(p);
+      const today = own(p);
+      known.set(p.id, today);
+      return today;
     };
     const isFit = (p: SimPlayer) => !isInjured(p, state.date);
     const benchOf = (clubId: string, lineup: readonly SimPlayer[]) => (clubId === coachClubId ? [] : aiBench(available(clubId), lineup, isFit));

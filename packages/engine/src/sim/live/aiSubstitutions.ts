@@ -72,13 +72,15 @@ export function onPitchAt(starters: readonly SimPlayer[], bench: readonly SimPla
   return players.filter((p) => !gone.has(p.id));
 }
 
-/** The last minute a player does something in the match: scores, assists, is booked, hurt or misses a penalty. */
-function lastInvolvement(events: readonly MatchEvent[], playerId: string): number {
-  let last = 0;
+/** The last minute each player does something in the match: comes on, scores, assists, is booked, hurt or faces a penalty. */
+function lastInvolvements(events: readonly MatchEvent[]): Map<string, number> {
+  const last = new Map<string, number>();
+  const involve = (playerId: string, minute: number) => last.set(playerId, Math.max(minute, last.get(playerId) ?? 0));
   for (const e of events) {
     if (e.type === "halfTime" || e.type === "fullTime" || e.type === "shootoutKick" || e.type === "orderOverruled") continue;
-    const involved = e.playerId === playerId || (e.type === "goal" && e.assistId === playerId) || (e.type === "penaltyMiss" && e.keeperId === playerId);
-    if (involved && e.minute > last) last = e.minute;
+    involve(e.playerId, e.minute);
+    if (e.type === "goal" && e.assistId) involve(e.assistId, e.minute);
+    if (e.type === "penaltyMiss") involve(e.keeperId, e.minute);
   }
   return last;
 }
@@ -123,9 +125,18 @@ export function aiSubstitutions(side: AiSide, events: readonly MatchEvent[], fro
 
   const subs: MatchEvent[] = [];
   const all = () => [...events, ...subs];
+  const last = lastInvolvements(events);
+  const lastInvolvement = (p: SimPlayer) => last.get(p.id) ?? 0;
+  const sentOff = new Set(events.flatMap((e) => (e.type === "card" && e.card !== "yellow" ? [e.playerId] : [])));
+  const tiredness = new Map<string, number>();
+  const tirednessOf = (p: SimPlayer) => {
+    if (!tiredness.has(p.id)) tiredness.set(p.id, side.tiredness(p));
+    return tiredness.get(p.id) ?? 0;
+  };
   const canUseWindow = (minute: number) => minute === HALF_TIME || windows.has(minute) || windows.size < MAX_SUBSTITUTION_WINDOWS;
   const substitute = (minute: number, off: SimPlayer, on: SimPlayer) => {
     subs.push({ type: "substitution", minute, clubId, playerId: on.id, offId: off.id });
+    last.set(on.id, Math.max(minute, last.get(on.id) ?? 0));
     used.add(on.id);
     if (minute !== HALF_TIME) windows.add(minute);
   };
@@ -136,12 +147,11 @@ export function aiSubstitutions(side: AiSide, events: readonly MatchEvent[], fro
     const { minute } = moment;
     if (made.length + subs.length >= MAX_SUBSTITUTIONS || !canUseWindow(minute)) continue;
     const onPitch = onPitchAt(side.starters, side.bench, all(), clubId, minute);
-    const isSentOff = (p: SimPlayer) => all().some((e) => e.type === "card" && e.card !== "yellow" && e.playerId === p.id);
-    const canLeave = (p: SimPlayer) => !isSentOff(p) && lastInvolvement(all(), p.id) <= minute && (moment.reason === "hurt" || p.id !== moment.playerId);
+    const canLeave = (p: SimPlayer) => !sentOff.has(p.id) && lastInvolvement(p) <= minute && (moment.reason === "hurt" || p.id !== moment.playerId);
     if (moment.reason === "hurt") {
       const hurt = onPitch.find((p) => p.id === moment.playerId);
       const on = hurt && (bestOf(freeBench().filter((p) => p.group === hurt.group)) ?? bestOf(freeBench()));
-      if (hurt && on && lastInvolvement(all(), hurt.id) <= minute) substitute(minute, hurt, on);
+      if (hurt && on && lastInvolvement(hurt) <= minute) substitute(minute, hurt, on);
       continue;
     }
     if (moment.reason === "sentOff") {
@@ -155,7 +165,7 @@ export function aiSubstitutions(side: AiSide, events: readonly MatchEvent[], fro
     const isChasing = minute >= CHASE_FROM_MINUTE && goalDifferenceAt(minute) < 0;
     for (let i = 0; i < perWindow && made.length + subs.length < planned && canUseWindow(minute); i++) {
       const leaving = onPitchAt(side.starters, side.bench, all(), clubId, minute).filter((p) => p.group !== "GK" && canLeave(p));
-      const tiredFirst = leaving.sort((a, b) => side.tiredness(b) - side.tiredness(a));
+      const tiredFirst = leaving.sort((a, b) => tirednessOf(b) - tirednessOf(a));
       const off = isChasing ? (tiredFirst.find((p) => p.group === "DEF") ?? tiredFirst.find((p) => p.group === "MID")) : tiredFirst[0];
       const on = off && (isChasing ? bestOf(freeBench().filter((p) => p.group === "ATT")) : bestOf(freeBench().filter((p) => p.group === off.group)));
       if (!off || !on) break;
