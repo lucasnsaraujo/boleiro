@@ -1,3 +1,4 @@
+import { guestClubOf } from "@boleiro/engine/sim/continental/guestClubs";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { SQUAD_CAP } from "@boleiro/engine/sim/transfers/squadCap";
@@ -12,7 +13,7 @@ export type InboxTone = "good" | "bad" | "neutral";
 /** One line of the hub's inbox, as a newspaper would print it. */
 export type InboxLine = { date: IsoDate; text: string; tone: InboxTone };
 
-export type NewsState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "competitions" | "market">;
+export type NewsState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "competitions" | "market" | "world">;
 
 const REQUEST_NOUNS: Record<CoachRequest["kind"], string> = {
   sign: "a contratação",
@@ -56,7 +57,7 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
   const coachClubId = before.coachClubId;
   // On the day he changes clubs, both the club he left and the one he joined are his news.
   const isOurs = (clubId: string | null) => clubId !== null && (clubId === coachClubId || clubId === after.coachClubId);
-  const clubName = (clubId: string) => after.clubs[clubId]?.shortName ?? before.clubs[clubId]?.shortName ?? clubId;
+  const clubName = (clubId: string) => after.clubs[clubId]?.shortName ?? before.clubs[clubId]?.shortName ?? guestClubOf(after, clubId)?.name ?? clubId;
   const playerName = (playerId: string) =>
     after.players[playerId]?.name ?? before.players[playerId]?.name ?? after.market.freeAgents[playerId]?.name ?? "Um jogador";
   const competition = (id: string) => before.competitions[id] ?? after.competitions[id];

@@ -36,6 +36,11 @@ describe("the coach's matches", () => {
     expect(line(played({ homeGoals: 1, awayGoals: 1 }))?.tone).toBe("neutral");
   });
 
+  test("a continental match names the club from abroad as its pack does", () => {
+    const fixture: Fixture = { id: "f", competitionId: "sul-americana-2026", stage: 1, date: game.date, homeId: "tm-209", awayId: "bahia-ba", result: { homeGoals: 1, awayGoals: 1 } };
+    expect(line({ type: "matchPlayed", fixture })?.text).toBe("Sul-Americana: CA River Plate 1 x 1 Bahia");
+  });
+
   test("a tie settled on penalties says who went through", () => {
     expect(line(played({ homeGoals: 0, awayGoals: 0, penaltyWinnerId: "bahia-ba" }))).toMatchObject({ text: "Baiano: Bahia 0 x 0 Vitória, Bahia nos pênaltis", tone: "good" });
   });
