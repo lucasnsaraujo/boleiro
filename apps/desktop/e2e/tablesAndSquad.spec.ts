@@ -13,7 +13,7 @@ test("from a new game, the bar opens the tables, the squad and a player", async 
 
   await page.getByRole("tab", { name: "Série A" }).click();
   await expect(page.getByRole("table", { name: "Série A" }).getByRole("row")).toHaveCount(21);
-  await expect(page.getByText("Libertadores", { exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Vagas" }).getByText("Libertadores", { exact: true })).toBeVisible();
 
   await page.getByRole("tab", { name: "Copa do Brasil" }).click();
   await expect(page.getByRole("list", { name: "1ª fase" }).getByRole("listitem")).toHaveCount(14);
