@@ -10,6 +10,7 @@ import { startMatchDay } from "./live/startMatchDay.js";
 import type { SupporterEvent } from "./morale/escalateSupporters.js";
 import type { PlayerRetired, YouthPromoted } from "./players/developPlayers.js";
 import type { PlayerInjured } from "./players/recordMatchLoad.js";
+import type { StadiumOpened } from "./stadium/stadiumWorks.js";
 import type { CoachRequest } from "./transfers/coachRequest.js";
 import type { TransferEvent } from "./transfers/transferEvents.js";
 
@@ -34,6 +35,7 @@ export type DayEvent =
   | YouthPromoted
   | PrizePaid
   | SupporterEvent
+  | StadiumOpened
   | CoachEvent
   | TransferEvent;
 

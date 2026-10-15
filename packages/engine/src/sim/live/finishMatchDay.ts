@@ -3,6 +3,7 @@ import { randomStream } from "../../engine/random.js";
 import type { DayEvent } from "../advanceDay.js";
 import { coachCareerDay } from "../coach/coachCareerDay.js";
 import { startCoachSeason } from "../coach/startCoachSeason.js";
+import { buildStadiums } from "../stadium/stadiumWorks.js";
 import { copyRecord } from "../copyRecord.js";
 import { addDays } from "../dates.js";
 import { countCards, type Booking } from "../discipline/drawCards.js";
@@ -126,7 +127,9 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   events.push(...prizes.events);
   const closed = next.date.endsWith("-01") ? closeMonth(next, random.next) : { state: next, events: [] };
   events.push(...closed.events);
-  const reacted = reactToDay(closed.state, played, closed.events, random.next);
+  const built = buildStadiums(closed.state, closed.state.date);
+  events.push(...built.events);
+  const reacted = reactToDay(built.state, played, closed.events, random.next);
   next = reacted.state;
   events.push(...reacted.events);
   const career = coachCareerDay(next, played, decisions.acceptOffer, random.next);

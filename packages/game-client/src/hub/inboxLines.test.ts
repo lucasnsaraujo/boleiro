@@ -170,6 +170,13 @@ describe("supporters", () => {
   });
 });
 
+describe("the stadium", () => {
+  test("new seats opening at the coach's ground are good news, at another club's no news", () => {
+    expect(line({ type: "stadiumOpened", clubId: "bahia-ba", seats: 5_000, capacity: 52_364 })).toMatchObject({ text: "Obra pronta: 5.000 lugares novos, 52.364 no total", tone: "good" });
+    expect(lines({ type: "stadiumOpened", clubId: "vitoria-ba", seats: 5_000, capacity: 40_000 })).toEqual([]);
+  });
+});
+
 describe("the coach's career", () => {
   test("job offers name the club, the salary and how long", () => {
     expect(line({ type: "jobOffered", offer: { clubId: "vitoria-ba", salary: 250_000, untilSeason: 2027, expiresOn: "2026-02-01" } })).toMatchObject({
