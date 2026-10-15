@@ -111,6 +111,27 @@ export function highlightsBetween(round: LiveRound, from: number, to: number): H
   });
 }
 
+/** What a row of the board calls out on a chip; a bad day names every player the assistant noticed. */
+export type Callout = { fixtureId: string; kind: Exclude<Highlight["kind"], "goal">; who?: string };
+
+/**
+ * One callout per row for a stretch of minutes, goals left to their own celebration: its latest red
+ * card or missed penalty, else the players the assistant noticed having a bad day, named together.
+ */
+export function calloutsBetween(round: LiveRound, from: number, to: number): Callout[] {
+  const called = new Map<string, Callout>();
+  for (const h of highlightsBetween(round, from, to)) {
+    if (h.kind === "goal") continue;
+    const before = called.get(h.fixtureId);
+    if (h.kind !== "badDay") called.set(h.fixtureId, { fixtureId: h.fixtureId, kind: h.kind });
+    else if (!before || before.kind === "badDay") {
+      const name = round.names[h.playerId] ?? "Um jogador";
+      called.set(h.fixtureId, { fixtureId: h.fixtureId, kind: "badDay", who: before?.who ? `${before.who}, ${name}` : name });
+    }
+  }
+  return [...called.values()];
+}
+
 const isIncidentOf = (e: MatchEvent, clubId: string) => (e.type === "injury" || (e.type === "card" && e.card !== "yellow")) && e.clubId === clubId;
 
 /**
