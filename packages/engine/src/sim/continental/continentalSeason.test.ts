@@ -3,9 +3,10 @@ import { advanceDay } from "../advanceDay.js";
 import type { ContinentalCompetition, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { standings } from "../standings.js";
+import { tieResults } from "../tieResults.js";
 import { loadSouthAmerica } from "../world/loadSouthAmerica.js";
 import { leagueTable } from "../world/resultOnlyLeague.js";
-import { CONMEBOL_CUPS } from "./conmebolCups.js";
+import { CONMEBOL_CUPS, groupOrders } from "./conmebolCups.js";
 
 const SEED = 4;
 
@@ -52,9 +53,19 @@ describe("a season with South America", () => {
   it("drops the Libertadores' group thirds into the Sul-Americana play-offs", () => {
     const sulAmericana = cupOf(lastDay, "sul-americana");
     const playoffClubs = sulAmericana.stages[2]?.kind === "knockout" ? sulAmericana.stages[2].ties.map(([third]) => third) : [];
-    const libertadores = cupOf(lastDay, "libertadores");
+    const thirds = groupOrders(cupOf(lastDay, "libertadores"), lastDay.fixtures, 3).map((order) => order[2]);
     expect(playoffClubs).toHaveLength(8);
-    expect(playoffClubs.every((id) => libertadores.clubIds.includes(id))).toBe(true);
+    expect(playoffClubs.toSorted()).toEqual(thirds.toSorted());
+  });
+
+  it("drops the Libertadores' third-stage losers into the Sul-Americana groups", () => {
+    const libertadores = cupOf(lastDay, "libertadores");
+    const third = libertadores.stages[2];
+    const played = lastDay.fixtures.filter((f) => f.competitionId === libertadores.id && f.stage === 2);
+    const knockedOut = third?.kind === "knockout" ? tieResults(third, played).map((t) => t.loserId) : [];
+    const groups = cupOf(lastDay, "sul-americana").stages[1];
+    expect(knockedOut).toHaveLength(4);
+    expect(groups?.kind === "groups" && knockedOut.every((id) => groups.groups.flat().includes(id))).toBe(true);
   });
 
   it("qualifies next season's clubs from this season's tables and champions", () => {
@@ -68,5 +79,14 @@ describe("a season with South America", () => {
     const holders = new Set(direct.slice(0, 2));
     expect(direct).toEqual(expect.arrayContaining(argentinaTop.filter((id) => !holders.has(id)).slice(0, 5)));
     expect(brazilTop.filter((id) => !holders.has(id)).slice(0, 3).every((id) => direct.includes(id))).toBe(true);
+  });
+
+  it("pays next season's entrants no lump sum at the turn, the cups paying as they are played, though the board still expects it", () => {
+    const entrants = (cupOf(next, "libertadores").entries[3] ?? []).filter((id) => next.finances[id]);
+    expect(entrants.length).toBeGreaterThan(0);
+    for (const id of entrants) {
+      expect(next.finances[id]?.month.revenue.prizes).toBe(0);
+      expect(next.finances[id]?.expectedPrizes).toBeGreaterThan(0);
+    }
   });
 });

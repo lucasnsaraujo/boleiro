@@ -5,6 +5,7 @@ import type { PrizePaid } from "../finances/payCopaPrizes.js";
 import { OPENING_EUR_BRL } from "../transfers/openingMarket.js";
 import { tieResults } from "../tieResults.js";
 import { CUP_STAGES } from "./conmebolCups.js";
+import type { ContinentalField } from "./continentalField.js";
 
 // The game's stage names against competition-money's (CONMEBOL's 2026 prize table); a stage it
 // lists no prize for, as the Sul-Americana's first stage and the Recopa, pays nothing.
@@ -66,4 +67,32 @@ export function payContinentalPrizes(state: GameState, played: readonly Fixture[
     }
   }
   return { state: next, events };
+}
+
+/**
+ * The opening finances with the CONMEBOL money each Brazilian entrant's board expects (its entry
+ * stage's prize, as renewFinances counts it at every later season turn) taken out of its other
+ * income, which the 2025 accounts it comes from already hold; the cups then pay it match by match.
+ */
+export function withExpectedContinentalPrizes(state: GameState, field: ContinentalField): GameState {
+  const { usdBrl, libertadoresGroups, libertadoresPreliminary, sulAmericanaGroups } = state.economy.continental;
+  const brl = (usd: number) => Math.round(usd * usdBrl * (state.market.eurBrl / OPENING_EUR_BRL));
+  const expected = new Map<string, number>([
+    ...(field.sulAmericana[1] ?? []).map((id): [string, number] => [id, brl(sulAmericanaGroups)]),
+    ...(field.libertadores[1] ?? []).map((id): [string, number] => [id, brl(libertadoresPreliminary)]),
+    ...(field.libertadores[3] ?? []).map((id): [string, number] => [id, brl(libertadoresGroups)]),
+  ]);
+  const finances = { ...state.finances };
+  for (const [id, prize] of expected) {
+    const finance = finances[id];
+    if (!finance) continue;
+    const taken = Math.min(finance.otherIncome, prize);
+    finances[id] = {
+      ...finance,
+      otherIncome: finance.otherIncome - taken,
+      prizesOutOfOtherIncome: finance.prizesOutOfOtherIncome + taken,
+      expectedPrizes: finance.expectedPrizes + prize,
+    };
+  }
+  return { ...state, finances };
 }

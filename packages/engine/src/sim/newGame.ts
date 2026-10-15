@@ -6,7 +6,7 @@ import { randomStream } from "../engine/random.js";
 import { openingCoach } from "./coach/openingCoach.js";
 import { openingField } from "./continental/continentalField.js";
 import { openContinentalCups } from "./continental/openContinentalCups.js";
-import { continentalStagesOf } from "./continental/payContinentalPrizes.js";
+import { continentalStagesOf, withExpectedContinentalPrizes } from "./continental/payContinentalPrizes.js";
 import { newHistory } from "./history/history.js";
 import { recordStrengths } from "./history/recordStrengths.js";
 import { NEUTRAL_MOOD } from "./morale/clubMood.js";
@@ -161,5 +161,6 @@ export function newGame(
 function withContinentalCups(state: GameState, competitionMoney: CompetitionMoney): GameState {
   const field = openingField(state);
   if (!field) return state;
-  return openContinentalCups({ ...state, economy: { ...state.economy, continentalStages: continentalStagesOf(competitionMoney) } }, field);
+  const withStages = { ...state, economy: { ...state.economy, continentalStages: continentalStagesOf(competitionMoney) } };
+  return openContinentalCups(withExpectedContinentalPrizes(withStages, field), field);
 }
