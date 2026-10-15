@@ -194,14 +194,8 @@
   color: var(--chalk-2);
 }
 
-.player-renew select {
+.player-renew .select {
   height: 34px;
-  padding: 0 6px;
-  background: var(--lawn-1);
-  border: var(--hairline);
-  border-radius: 0;
-  color: var(--chalk);
-  font: 600 15px var(--cond);
 }
 
 .player-pending {

@@ -4,10 +4,19 @@ import { expect, type Locator, type Page } from "@playwright/test";
 const FOUR_X_MINUTE_MS = 110;
 const PAUSE_LEAD_MS = 200;
 
+/** Opens one of the game's selects and clicks an option, by its name or its place in the list. */
+export async function pickOption(select: Locator, option: string | RegExp | { index: number }) {
+  await select.click();
+  const list = select.page().getByRole("listbox");
+  const options = list.getByRole("option");
+  await (typeof option === "string" || option instanceof RegExp ? list.getByRole("option", { name: option, exact: true }) : options.nth(option.index)).click();
+  await expect(list).toBeHidden();
+}
+
 /** From the start menu, a new career at a club found by division and name. */
 export async function startAtClub(page: Page, { division, search, club, coach }: { division: string; search: string; club: string; coach: string }) {
   await page.getByRole("link", { name: "Novo jogo" }).click();
-  await page.getByRole("combobox", { name: "Divisão" }).selectOption(division);
+  await pickOption(page.getByRole("combobox", { name: "Divisão" }), division);
   await page.getByRole("searchbox", { name: "Buscar clube" }).fill(search);
   const clubs = page.getByRole("list", { name: "Clubes" });
   // The sticker shows the squad's strength once the season is drawn.

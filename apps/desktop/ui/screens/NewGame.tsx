@@ -13,6 +13,7 @@ import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { CLUBS, clubById } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
+import { Select } from "../controls/Select.js";
 import { clubPreviews, PREVIEW_KEYS, type ClubPreviews } from "../newGame/clubPreview.js";
 import "./newGame.css";
 
@@ -246,34 +247,18 @@ export function NewGame() {
             <h2 id="clubs-title" className="career-new-title">
               Escolha seu time
             </h2>
-            <label className="field">
-              <small>Divisão</small>
-              <select
-                aria-label="Divisão"
-                value={filter.division ?? ""}
-                onChange={(event) => setFilter({ ...filter, division: DIVISIONS.find((division) => division === event.target.value) ?? null })}
-              >
-                <option value="">Todas</option>
-                {DIVISIONS.map((division) => (
-                  <option key={division} value={division}>
-                    Série {division}
-                  </option>
-                ))}
-              </select>
-              <i className="ph-bold ph-caret-down" aria-hidden="true" />
-            </label>
-            <label className="field">
-              <small>Estado</small>
-              <select aria-label="Estado" value={filter.state ?? ""} onChange={(event) => setFilter({ ...filter, state: states.find((state) => state === event.target.value) ?? null })}>
-                <option value="">Todos</option>
-                {states.map((state) => (
-                  <option key={state} value={state}>
-                    {state}
-                  </option>
-                ))}
-              </select>
-              <i className="ph-bold ph-caret-down" aria-hidden="true" />
-            </label>
+            <Select
+              label="Divisão"
+              value={filter.division ?? ""}
+              options={[{ value: "", label: "Todas" }, ...DIVISIONS.map((division) => ({ value: division, label: `Série ${division}` }))]}
+              onChange={(value) => setFilter({ ...filter, division: DIVISIONS.find((division) => division === value) ?? null })}
+            />
+            <Select
+              label="Estado"
+              value={filter.state ?? ""}
+              options={[{ value: "", label: "Todos" }, ...states.map((state) => ({ value: state, label: state }))]}
+              onChange={(value) => setFilter({ ...filter, state: states.find((state) => state === value) ?? null })}
+            />
             <label className="field career-new-search">
               <i className="ph-bold ph-magnifying-glass" aria-hidden="true" />
               <input type="search" aria-label="Buscar clube" placeholder="Buscar time…" value={filter.query} onChange={(event) => setFilter({ ...filter, query: event.target.value })} />

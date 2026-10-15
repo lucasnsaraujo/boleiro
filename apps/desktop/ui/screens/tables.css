@@ -157,37 +157,6 @@
   font-weight: 900;
 }
 
-/* "Outras ligas": the other state championships in a field-styled select. */
-.tables-state {
-  position: relative;
-  padding-right: 34px;
-  cursor: pointer;
-}
-
-.tables-state select {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  font: inherit;
-  font-weight: 700;
-  color: inherit;
-  cursor: pointer;
-  outline: none;
-}
-
-.tables-state:has(select:focus-visible) {
-  outline: 3px solid var(--yellow);
-  outline-offset: 2px;
-}
-
-.tables-state i {
-  position: absolute;
-  right: 14px;
-  pointer-events: none;
-  font-size: 12px;
-  color: var(--mute);
-}
-
 /* The page scrolls under its own header when the table is taller than the window. */
 .tables-sheet {
   flex: 1;

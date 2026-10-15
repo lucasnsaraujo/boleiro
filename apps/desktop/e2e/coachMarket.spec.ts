@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar as barOf, barDate, startAtClub } from "./flows.js";
+import { bar as barOf, barDate, pickOption, startAtClub } from "./flows.js";
 
 // A cheap listing draws a buyer in about four window days; a month is plenty for three of them.
 const MAX_WAIT_DAYS = 30;
@@ -55,7 +55,7 @@ test("from a new game: list players, answer a club's offer, make an offer and ge
   const sale = page.getByRole("combobox", { name: "Jogador para vender" });
   const forSale = page.getByRole("list", { name: "Jogadores à venda" });
   for (let listed = 0; listed < 3; listed++) {
-    await sale.selectOption({ index: 1 });
+    await pickOption(sale, { index: 1 });
     await page.getByRole("button", { name: "Pôr à venda" }).click();
     await expect(forSale.getByRole("listitem")).toHaveCount(listed + 1);
   }
@@ -77,7 +77,7 @@ test("from a new game: list players, answer a club's offer, make an offer and ge
   }
 
   await page.getByRole("tab", { name: "Buscar" }).click();
-  await page.getByRole("combobox", { name: "Divisão" }).selectOption("Série B");
+  await pickOption(page.getByRole("combobox", { name: "Divisão" }), "Série B");
   const priced = page.getByRole("table", { name: "Jogadores" }).getByRole("row").filter({ has: page.getByRole("cell", { name: /^R\$/ }) }).first();
   const name = (await priced.getByRole("button").textContent()) ?? "";
   await priced.getByRole("button").click();
@@ -92,7 +92,7 @@ test("from a new game: list players, answer a club's offer, make an offer and ge
   await page.getByRole("button", { name: "Jogar rodada" }).click();
   await expect(barDate(page)).not.toHaveText(before);
   await bar.getByRole("link", { name: "Busca" }).click();
-  await page.getByRole("combobox", { name: "Divisão" }).selectOption("Série B");
+  await pickOption(page.getByRole("combobox", { name: "Divisão" }), "Série B");
   await page.getByRole("searchbox", { name: "Nome" }).fill(name);
   await page.getByRole("table", { name: "Jogadores" }).getByRole("button", { name, exact: true }).first().click();
   const countered = page.getByRole("region", { name });
@@ -113,7 +113,7 @@ test("a squad at the 50-player cap can't sign anyone: the market warns and the b
   await fillSquadTo(page, 50);
   await bar.getByRole("link", { name: "Busca" }).click();
   await expect(page.getByText("Elenco 50/50", { exact: true })).toBeVisible();
-  await page.getByRole("combobox", { name: "Divisão" }).selectOption("Série B");
+  await pickOption(page.getByRole("combobox", { name: "Divisão" }), "Série B");
   const priced = page.getByRole("table", { name: "Jogadores" }).getByRole("row").filter({ has: page.getByRole("cell", { name: /^R\$/ }) }).first();
   const name = (await priced.getByRole("button").textContent()) ?? "";
   await priced.getByRole("button").click();

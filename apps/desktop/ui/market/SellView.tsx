@@ -5,6 +5,7 @@ import type { SaleWay } from "@boleiro/engine/sim/transfers/listPlayer";
 import { daysBetween } from "@boleiro/engine/sim/dates";
 import { formatBarDate, formatDayMonth, formatMonthYear } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
+import { Select } from "../controls/Select.js";
 import { Crest } from "../clubs/Crest.js";
 import { plateColours } from "../clubs/clubCatalog.js";
 import { POSITION_NAMES } from "../format/playerLabels.js";
@@ -253,14 +254,14 @@ function ForSale({ state, rows, onList }: { state: SellState; rows: SaleRow[]; o
         )}
       </ul>
       <div className="market-add">
-        <select aria-label="Jogador para vender" value={chosen} onChange={(e) => setPick(e.target.value)}>
-          <option value="">Escolha um jogador…</option>
-          {squad.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name} · F {Math.round(p.strength)}
-            </option>
-          ))}
-        </select>
+        <Select
+          label="Jogador para vender"
+          caption={null}
+          className="market-add-pick"
+          value={chosen}
+          options={[{ value: "", label: "Escolha um jogador…" }, ...squad.map((p) => ({ value: p.id, label: `${p.name} · F ${Math.round(p.strength)}` }))]}
+          onChange={setPick}
+        />
         <button className="btn sm" disabled={!chosen} onClick={() => chosen && onList(chosen, "cheap")}>
           Pôr à venda
         </button>

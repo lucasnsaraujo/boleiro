@@ -10,6 +10,7 @@ import { formatDayMonth, formatMonthYear } from "@boleiro/game-client/format/for
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import type { BoardDesk } from "@boleiro/game-client/market/boardDesk";
 import { requestOptions } from "@boleiro/game-client/market/coachRequests";
+import { Select } from "../controls/Select.js";
 import { Crest } from "../clubs/Crest.js";
 import { plateColours } from "../clubs/clubCatalog.js";
 import { POSITION_GROUP_NAMES, POSITION_NAMES } from "../format/playerLabels.js";
@@ -112,56 +113,36 @@ export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDe
           </span>
         </form>
         <div className="market-filters">
-          <label className="field">
-            <small>Posição</small>
-            <select aria-label="Posição" value={filters.group ?? ""} onChange={(e) => filter({ group: GROUPS.find((g) => g === e.target.value) ?? null })}>
-              <option value="">Todas</option>
-              {GROUPS.map((group) => (
-                <option key={group} value={group}>
-                  {POSITION_NAMES[group]}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Select
+            label="Posição"
+            value={filters.group ?? ""}
+            options={[{ value: "", label: "Todas" }, ...GROUPS.map((group) => ({ value: group, label: POSITION_NAMES[group] }))]}
+            onChange={(value) => filter({ group: GROUPS.find((g) => g === value) ?? null })}
+          />
           <label className="field">
             <small>Força</small>
             <input type="number" min={1} max={99} aria-label="Força mínima" placeholder="de" value={filters.minStrength ?? ""} onChange={(e) => filter({ minStrength: asNumber(e.target.value) })} />
             <span aria-hidden="true">–</span>
             <input type="number" min={1} max={99} aria-label="Força máxima" placeholder="até" value={filters.maxStrength ?? ""} onChange={(e) => filter({ maxStrength: asNumber(e.target.value) })} />
           </label>
-          <label className="field">
-            <small>Divisão</small>
-            <select aria-label="Divisão" value={filters.division ?? ""} onChange={(e) => filter({ division: DIVISIONS.find((d) => d === e.target.value) ?? null, clubId: null })}>
-              <option value="">Todas</option>
-              {DIVISIONS.map((division) => (
-                <option key={division} value={division}>
-                  Série {division}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            <small>Clube</small>
-            <select aria-label="Clube" value={filters.clubId ?? ""} onChange={(e) => filter({ clubId: e.target.value || null })}>
-              <option value="">Todos</option>
-              {clubs.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.shortName}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            <small>Situação</small>
-            <select aria-label="Situação" value={filters.status ?? ""} onChange={(e) => filter({ status: STATUSES.find((s) => s.value === e.target.value)?.value ?? null })}>
-              <option value="">Todas</option>
-              {STATUSES.map((status) => (
-                <option key={status.value} value={status.value}>
-                  {status.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Select
+            label="Divisão"
+            value={filters.division ?? ""}
+            options={[{ value: "", label: "Todas" }, ...DIVISIONS.map((division) => ({ value: division, label: `Série ${division}` }))]}
+            onChange={(value) => filter({ division: DIVISIONS.find((d) => d === value) ?? null, clubId: null })}
+          />
+          <Select
+            label="Clube"
+            value={filters.clubId ?? ""}
+            options={[{ value: "", label: "Todos" }, ...clubs.map((c) => ({ value: c.id, label: c.shortName }))]}
+            onChange={(value) => filter({ clubId: value || null })}
+          />
+          <Select
+            label="Situação"
+            value={filters.status ?? ""}
+            options={[{ value: "", label: "Todas" }, ...STATUSES]}
+            onChange={(value) => filter({ status: STATUSES.find((s) => s.value === value)?.value ?? null })}
+          />
 
         </div>
         <div className="market-tabs-row">

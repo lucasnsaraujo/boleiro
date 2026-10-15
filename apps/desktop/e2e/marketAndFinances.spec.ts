@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { bar as barOf, news, startAtClub } from "./flows.js";
+import { bar as barOf, news, pickOption, startAtClub } from "./flows.js";
 
 test("from a new game, a signing asked in the market is answered when the window opens, and the player screen renews", async ({ page }) => {
   await page.goto("/");
@@ -8,7 +8,7 @@ test("from a new game, a signing asked in the market is answered when the window
   const bar = barOf(page);
   await bar.getByRole("link", { name: "Busca" }).click();
   await expect(page.getByText("Janela fechada · abre 5 jan")).toBeVisible();
-  await page.getByRole("combobox", { name: "Divisão" }).selectOption("Série B");
+  await pickOption(page.getByRole("combobox", { name: "Divisão" }), "Série B");
   // A player with a fee: under contract past this season, neither on loan nor in his last six months.
   const priced = page.getByRole("table", { name: "Jogadores" }).getByRole("row").filter({ has: page.getByRole("cell", { name: /^R\$/ }) }).first();
   const name = (await priced.getByRole("button").textContent()) ?? "";
@@ -43,7 +43,7 @@ test("from a new game, a signing asked in the market is answered when the window
   const player = page.getByRole("table", { name: "Elenco do Bahia" }).getByRole("link").first();
   const own = (await player.textContent()) ?? "";
   await player.click();
-  await page.getByRole("combobox", { name: "Anos" }).selectOption("3");
+  await pickOption(page.getByRole("combobox", { name: "Anos" }), "3");
   await page.getByRole("button", { name: "Renovar" }).click();
   await expect(page.getByText(`Renovação de ${own} na mesa. A diretoria responde amanhã.`)).toBeVisible();
 });

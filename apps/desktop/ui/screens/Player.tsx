@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
+import { Select } from "../controls/Select.js";
 import { useServices } from "../app/ServicesContext.js";
 import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
@@ -263,13 +264,7 @@ function ContractActions({ state, playerId, name, desk, onAsk, onWithdraw }: Act
             </button>
             <label>
               por
-              <select aria-label="Anos" value={years} onChange={(e) => setYears(Number(e.target.value))}>
-                {RENEWAL_YEARS.map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
+              <Select label="Anos" caption={null} value={String(years)} options={RENEWAL_YEARS.map((n) => ({ value: String(n), label: String(n) }))} onChange={(value) => setYears(Number(value))} />
               {years === 1 ? "ano" : "anos"}
             </label>
           </span>

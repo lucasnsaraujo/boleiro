@@ -156,3 +156,19 @@ test("a disabled select doesn't open", async () => {
   await userEvent.keyboard("{ArrowDown}");
   expect(screen.queryByRole("listbox")).toBeNull();
 });
+
+test("inside a label, picking an option leaves the list closed", async () => {
+  function Renewal() {
+    const [years, setYears] = useState("1");
+    return (
+      <label>
+        por <Select label="Anos" caption={null} value={years} options={["1", "2", "3"].map((n) => ({ value: n, label: n }))} onChange={setYears} /> anos
+      </label>
+    );
+  }
+  render(<Renewal />);
+  await userEvent.click(screen.getByRole("combobox", { name: "Anos" }));
+  await userEvent.click(screen.getByRole("option", { name: "3" }));
+  expect(screen.queryByRole("listbox")).toBeNull();
+  expect(screen.getByRole("combobox", { name: "Anos" }).textContent).toBe("3");
+});

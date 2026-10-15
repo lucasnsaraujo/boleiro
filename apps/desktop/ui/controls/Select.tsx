@@ -48,6 +48,8 @@ function placeUnder(trigger: HTMLElement): Placement {
   return { top: isAbove ? box.top - GAP : box.bottom + GAP, left: Math.max(EDGE, left), minWidth: box.width, maxHeight, isAbove };
 }
 
+const isSamePlace = (a: Placement, b: Placement) => a.top === b.top && a.left === b.left && a.minWidth === b.minWidth && a.maxHeight === b.maxHeight && a.isAbove === b.isAbove;
+
 /**
  * The Álbum's select: a pill that opens a sticker-card list. Keyboard as a native select: arrows,
  * Home/End, Page Up/Down, Enter or Space to pick, Escape to leave, Tab to pick and move on, letters to
@@ -155,19 +157,19 @@ export function Select<T extends string>({ label, value, options, onChange, capt
     }
   }
 
-  // Placed before the first frame, then kept beside the pill while the window resizes or the page scrolls.
+  // Placed before the first frame, then kept beside the pill every frame: a screen sliding in, a scroll or a resize moves it.
   useLayoutEffect(() => {
     if (phase === "closed") return;
     const trigger = triggerRef.current;
     if (!trigger) return;
-    const place = () => setPlacement(placeUnder(trigger));
-    place();
-    window.addEventListener("resize", place);
-    window.addEventListener("scroll", place, true);
-    return () => {
-      window.removeEventListener("resize", place);
-      window.removeEventListener("scroll", place, true);
+    let frame = 0;
+    const follow = () => {
+      const next = placeUnder(trigger);
+      setPlacement((current) => (current && isSamePlace(current, next) ? current : next));
+      frame = requestAnimationFrame(follow);
     };
+    follow();
+    return () => cancelAnimationFrame(frame);
   }, [phase]);
 
   // The list goes to the top layer, so no scrolling panel or sheet clips it.
@@ -255,6 +257,8 @@ export function Select<T extends string>({ label, value, options, onChange, capt
           className={placement?.isAbove ? "select-pop above" : "select-pop"}
           style={placement ? { top: placement.top, left: placement.left, minWidth: placement.minWidth, maxHeight: placement.maxHeight } : undefined}
           onPointerDown={(event) => event.preventDefault()}
+          // Inside a <label>, a click in the list would otherwise press the pill again and reopen it.
+          onClick={(event) => event.preventDefault()}
           onAnimationEnd={(event) => event.target === event.currentTarget && phase === "closing" && setPhase("closed")}
         >
           {groups.map((group, g) =>

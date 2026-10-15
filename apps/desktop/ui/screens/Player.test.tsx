@@ -8,6 +8,7 @@ import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { Player } from "./Player.js";
+import { pickOption } from "../controls/pickOption.js";
 
 const closers: (() => void)[] = [];
 
@@ -41,7 +42,7 @@ async function openPlayerOf(clubId: string, from: string[] = []): Promise<{ engi
 
 test("Renovar asks the board for the years chosen and says when it answers", async () => {
   const { engine, playerId } = await openPlayerOf("sport-pe");
-  await userEvent.selectOptions(await screen.findByRole("combobox", { name: "Anos" }), "3");
+  await pickOption(await screen.findByRole("combobox", { name: "Anos" }), "3");
   await userEvent.click(screen.getByRole("button", { name: "Renovar" }));
   expect(await screen.findByText(/Renovação de .+ na mesa\. A diretoria responde amanhã\./)).toBeTruthy();
   expect((await engine.desk()).pending).toEqual([{ kind: "renew", playerId, years: 3 }]);
