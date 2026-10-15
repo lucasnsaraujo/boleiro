@@ -1,4 +1,6 @@
 import type { Board } from "@boleiro/engine/sim/coach/boardExpectations";
+import { crowdPressure } from "@boleiro/engine/sim/coach/judgeCoaches";
+import { clubMood } from "@boleiro/engine/sim/morale/clubMood";
 import type { Fixture, GameState } from "@boleiro/engine/sim/gameState";
 import type { Division } from "@boleiro/data/players";
 import { fixtureLabel } from "@boleiro/game-client/format/competitionName";
@@ -36,9 +38,20 @@ const SECURITY_STEPS: readonly { below: number; word: JobSecurity }[] = [
   { below: 0.6, word: "Pressionado" },
 ];
 
-/** How full the board's meter on the hub is, 0 to 1: half on target, emptying as the pressure grows. */
-export function boardConfidence(board: Board | undefined): number {
-  return Math.min(1, Math.max(0, (1 - (board?.pressure ?? 0)) / 2));
+/**
+ * How full the board's meter is, 0 to 1: half on target, emptying as the pressure grows. `stands` is the
+ * pressure from the fans the board adds when it decides to fire (judgeCoaches).
+ */
+export function boardConfidence(board: Board | undefined, stands = 0): number {
+  return Math.min(1, Math.max(0, (1 - (board?.pressure ?? 0) - stands) / 2));
+}
+
+/** The club panel's two meters, 0 to 100: the board's confidence in the coach and the fans' mood. */
+export function clubMeters(state: Pick<GameState, "boards" | "mood">, clubId: string): { board: number; fans: number } {
+  return {
+    board: Math.round(100 * boardConfidence(state.boards[clubId], crowdPressure(state, clubId))),
+    fans: Math.round(clubMood(state, clubId).fans),
+  };
 }
 
 export type LeagueStanding = { division: Division; position: number; points: number };

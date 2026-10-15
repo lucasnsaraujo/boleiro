@@ -5,6 +5,7 @@ import type { Player } from "../engine/match.js";
 import type { Board } from "./coach/boardExpectations.js";
 import type { Coach } from "./coach/coach.js";
 import type { Discipline, MatchCards } from "./discipline/discipline.js";
+import type { Friendly } from "./friendlies/friendlies.js";
 import type { History } from "./history/history.js";
 import type { ClubMood } from "./morale/clubMood.js";
 import type { PlayerProfile } from "./players/playerProfile.js";
@@ -84,8 +85,8 @@ export type SeasonCalendar = {
 /** Where a club plays: its national division, or only its state championship. */
 export type Tier = Division | "state";
 
-export const REVENUE_LINES = ["tickets", "tv", "membership", "sponsorship", "otherIncome", "prizes", "playerSales"] as const;
-export const COST_LINES = ["wages", "transferFees", "signingFees", "agentFees", "infrastructure", "interest", "fines"] as const;
+export const REVENUE_LINES = ["tickets", "tv", "membership", "sponsorship", "otherIncome", "prizes", "playerSales", "friendlies"] as const;
+export const COST_LINES = ["wages", "transferFees", "signingFees", "agentFees", "infrastructure", "interest", "fines", "friendlies", "bonuses"] as const;
 export type RevenueLine = (typeof REVENUE_LINES)[number];
 export type CostLine = (typeof COST_LINES)[number];
 
@@ -133,7 +134,12 @@ export type ClubFinance = {
   stadiumWorks?: StadiumWorks;
   /** The coach's club's last home games, newest last; saves from before kept none. */
   homeGates?: HomeGate[];
+  /** The coach's fixed-term bank loan, if one is running; saves from before bank loans have none. */
+  bankLoan?: BankLoan;
 };
+
+/** A bank loan repaid in fixed monthly instalments at the monthly closing; `balance` is what is still owed. */
+export type BankLoan = { amount: number; balance: number; monthlyRate: number; instalment: number; instalmentsLeft: number; takenOn: IsoDate };
 
 /** Seats under construction, paid for in monthly instalments booked as infrastructure. */
 export type StadiumWorks = { seats: number; cost: number; paid: number; startedOn: IsoDate; opensOn: IsoDate };
@@ -191,4 +197,6 @@ export type GameState = {
   usualLineups?: Record<string, UsualLineup>;
   /** Countries played result-only, outside the full tier; a game of Brazil alone has none. */
   world?: World;
+  /** The coach's club's friendlies, booked and lately played; saves from before friendlies have none. */
+  friendlies?: Friendly[];
 };

@@ -6,7 +6,7 @@ import { clubMood } from "@boleiro/engine/sim/morale/clubMood";
 import { rivalsOf } from "@boleiro/engine/sim/morale/rivalsOf";
 import { boardAnswerToWorks, freeCash, withNewSeats, type WorksAnswer } from "@boleiro/engine/sim/stadium/stadiumWorks";
 import { competitionName } from "@boleiro/game-client/format/competitionName";
-import { boardConfidence } from "../hub/hubSelectors.js";
+import { clubMeters } from "../hub/hubSelectors.js";
 
 export const STADIUM_KEYS = ["date", "coachClubId", "clubs", "finances", "mood", "fixtures", "competitions", "economy", "boards"] as const;
 export type StadiumState = Pick<GameState, (typeof STADIUM_KEYS)[number]>;
@@ -116,6 +116,6 @@ export function stadiumView(state: StadiumState): StadiumView | null {
       const after = forecastIn(withNewSeats(state, clubId, seats), finance.ticketPrice);
       return { answer, gainPerGame: now && after ? Math.max(0, after.gate - now.gate) : 0 };
     }),
-    board: { confidence: boardConfidence(state.boards[clubId]), cash: freeCash(finance) },
+    board: { confidence: clubMeters(state, clubId).board / 100, cash: freeCash(finance) },
   };
 }

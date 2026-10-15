@@ -3,6 +3,8 @@ import type { CoachEvent } from "./coach/coachEvent.js";
 import type { DisciplineEvent } from "./discipline/discipline.js";
 import type { FinanceEvent } from "./finances/closeMonth.js";
 import type { PrizePaid } from "./finances/payCopaPrizes.js";
+import type { TitleBonusPaid } from "./finances/payTitleBonuses.js";
+import type { FriendlyEvent } from "./friendlies/friendlies.js";
 import type { Fixture, GameState } from "./gameState.js";
 import type { LeagueOutcome } from "./leagueFormats.js";
 import { finishMatchDay } from "./live/finishMatchDay.js";
@@ -34,6 +36,8 @@ export type DayEvent =
   | PlayerRetired
   | YouthPromoted
   | PrizePaid
+  | FriendlyEvent
+  | TitleBonusPaid
   | SupporterEvent
   | StadiumOpened
   | CoachEvent

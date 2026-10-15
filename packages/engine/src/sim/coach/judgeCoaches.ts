@@ -33,7 +33,7 @@ const FIRING_CHANCE_PER_GAME = 0.15;
 const clamp = (value: number) => Math.min(GAP_RANGE.max, Math.max(GAP_RANGE.min, value));
 
 /** Pressure from the stands: unhappy fans and escalating organised supporters. */
-function crowdPressure(state: GameState, clubId: string): number {
+export function crowdPressure(state: Pick<GameState, "mood">, clubId: string): number {
   const mood = clubMood(state, clubId);
   return (UNHAPPY_FANS * Math.max(0, 50 - mood.fans)) / 50 + SUPPORTER_PRESSURE[mood.supporters];
 }

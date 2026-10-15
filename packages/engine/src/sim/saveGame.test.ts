@@ -46,6 +46,21 @@ describe("saveGame and loadGame", () => {
     expect(saveGame(loadGame(JSON.stringify(old)))).toBe(saveGame({ ...midSeason, packVersion: FIRST_PACK_VERSION }));
   });
 
+  it("reads a save from before friendlies and title bonuses with those ledger lines at zero", () => {
+    const finances = Object.fromEntries(Object.entries(midSeason.finances).map(([id, finance]) => {
+      const revenue: Partial<typeof finance.month.revenue> = { ...finance.month.revenue };
+      const costs: Partial<typeof finance.month.costs> = { ...finance.month.costs };
+      delete revenue.friendlies;
+      delete costs.friendlies;
+      delete costs.bonuses;
+      return [id, { ...finance, month: { ...finance.month, revenue, costs } }];
+    }));
+    const loaded = loadGame(JSON.stringify({ ...midSeason, finances }));
+    expect(loaded.finances["flamengo-rj"]?.month.revenue.friendlies).toBe(0);
+    expect(loaded.finances["flamengo-rj"]?.month.costs.bonuses).toBe(0);
+    expect(loaded).toStrictEqual(midSeason);
+  });
+
   it("rejects a save from another version", () => {
     expect(() => loadGame(JSON.stringify({ ...midSeason, version: 99 }))).toThrow();
   });

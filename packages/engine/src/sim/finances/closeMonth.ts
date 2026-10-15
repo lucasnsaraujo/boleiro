@@ -4,6 +4,7 @@ import { marketView, type MarketView } from "../transfers/marketView.js";
 import { openDraft } from "../transfers/movePlayer.js";
 import { wageBillsOf } from "../transfers/wageBillsOf.js";
 import { forceSale, type ForcedSale } from "./forceSale.js";
+import { bankInstalment } from "./bankLoan.js";
 import { addLedgers, emptyLedger } from "./ledger.js";
 import { CUSHION_MONTHS_OF_WAGES, projectedRevenue, setBoardBudget, TRANSFER_SHARE_OF_REVENUE } from "./setBoardBudget.js";
 
@@ -18,7 +19,7 @@ export type MonthClosed = {
   wagesOwed: number;
   /** Loan the board took at this closing. */
   borrowed: number;
-  /** Loans and old debt the board paid back at this closing. */
+  /** Loans, the bank loan's instalments less their interest, and old debt paid back at this closing. */
   debtRepaid: number;
 };
 export type WagesLate = { type: "wagesLate"; clubId: string; owed: number; months: number };
@@ -50,18 +51,24 @@ function membershipAfter(finance: ClubFinance, late: boolean): number {
   return Math.round(Math.min(MEMBERSHIP_DRIFT.ceiling * anchor, Math.max(MEMBERSHIP_DRIFT.floor * anchor, finance.membership * drift)));
 }
 
-/** Pays one club's recurring money for the month, borrowing or paying wages late if cash runs out. */
-function settle(finance: ClubFinance, wages: number): { finance: ClubFinance; borrowed: number } {
+/**
+ * Pays one club's recurring money for the month and its bank loan's instalment, borrowing or paying
+ * wages late if cash runs out.
+ */
+function settle(finance: ClubFinance, wages: number): { finance: ClubFinance; borrowed: number; bankRepaid: number } {
   const revenue = {
     tv: Math.round(finance.tv / 12),
     sponsorship: Math.round(finance.sponsorship / 12),
     membership: Math.round(finance.membership / 12),
     otherIncome: Math.round(finance.otherIncome / 12),
   };
-  const costs = { wages, infrastructure: Math.round(finance.infrastructure / 12), interest: Math.round(finance.loans * LOAN_RATE_PER_MONTH) };
-  let cash = finance.cash + revenue.tv + revenue.sponsorship + revenue.membership + revenue.otherIncome - costs.wages - costs.infrastructure - costs.interest;
+  const bank = finance.bankLoan && bankInstalment(finance.bankLoan);
+  const interest = Math.round(finance.loans * LOAN_RATE_PER_MONTH) + (bank?.interest ?? 0);
+  const costs = { wages, infrastructure: Math.round(finance.infrastructure / 12), interest };
+  let cash = finance.cash + revenue.tv + revenue.sponsorship + revenue.membership + revenue.otherIncome - costs.wages - costs.infrastructure - costs.interest - (bank?.principal ?? 0);
   let { loans, wagesOwed } = finance;
-  const borrowed = cash < 0 ? Math.min(-cash, Math.max(0, LOAN_CAP_SHARE_OF_REVENUE * projectedRevenue(finance) - loans)) : 0;
+  const bankOwed = bank?.loan?.balance ?? 0;
+  const borrowed = cash < 0 ? Math.min(-cash, Math.max(0, LOAN_CAP_SHARE_OF_REVENUE * projectedRevenue(finance) - loans - bankOwed)) : 0;
   loans += borrowed;
   cash += borrowed;
   if (cash < 0) {
@@ -69,10 +76,13 @@ function settle(finance: ClubFinance, wages: number): { finance: ClubFinance; bo
     cash = 0;
   }
   const { month } = finance;
+  const rest: ClubFinance = { ...finance };
+  delete rest.bankLoan;
   return {
     borrowed: Math.round(borrowed),
+    bankRepaid: bank?.principal ?? 0,
     finance: {
-      ...finance,
+      ...(bank?.loan ? { ...finance, bankLoan: bank.loan } : rest),
       cash,
       loans: Math.round(loans),
       wagesOwed: Math.round(wagesOwed),
@@ -98,12 +108,13 @@ function settle(finance: ClubFinance, wages: number): { finance: ClubFinance; bo
 
 /**
  * Uses spare cash to pay wage arrears first, then loans above a cushion of wages, then the old
- * debt above that cushion plus the season's transfer reserve.
+ * debt above that cushion plus the season's transfer reserve. Cash the coach borrowed from the bank
+ * and still owes is his to spend, so the board leaves it out of the spare cash.
  */
 function payDown(finance: ClubFinance, wages: number): ClubFinance {
   const arrears = Math.min(finance.cash, finance.wagesOwed);
   let cash = finance.cash - arrears;
-  const cushion = CUSHION_MONTHS_OF_WAGES * wages;
+  const cushion = CUSHION_MONTHS_OF_WAGES * wages + (finance.bankLoan?.balance ?? 0);
   const repaid = Math.max(0, Math.min(finance.loans, cash - cushion));
   cash -= repaid;
   const reserve = cushion + TRANSFER_SHARE_OF_REVENUE * projectedRevenue(finance);
@@ -159,7 +170,7 @@ export function closeMonth(state: GameState, random: () => number): { state: Gam
     };
     events.push({
       type: "monthClosed", clubId, month, ledger, cash: paid.cash, loans: paid.loans, wagesOwed: paid.wagesOwed, borrowed: settled.borrowed,
-      debtRepaid: opening.loans + settled.borrowed - paid.loans + opening.legacyDebt - paid.legacyDebt,
+      debtRepaid: opening.loans + settled.borrowed - paid.loans + opening.legacyDebt - paid.legacyDebt + settled.bankRepaid,
     });
   }
   return { state: current, events };

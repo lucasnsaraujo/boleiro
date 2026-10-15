@@ -115,6 +115,23 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         const paid = competition(event.competitionId);
         return isOurs(event.clubId) ? [`${paid ? competitionName(paid) : "Copa do Brasil"}: prêmio de ${formatMoney(event.amount)}`, "good"] : null;
       }
+      case "titleBonusPaid":
+        return isOurs(event.clubId) ? [`Bicho do título pago ao elenco: ${formatMoney(event.amount)}`, "neutral"] : null;
+      case "friendlyPlayed": {
+        const { homeId, awayId, result, fee } = event.friendly;
+        if (!result || !(isOurs(homeId) || isOurs(awayId))) return null;
+        const score = `Amistoso: ${clubName(homeId)} ${result.homeGoals} x ${result.awayGoals} ${clubName(awayId)}`;
+        if (isOurs(awayId)) return [`${score}, cachê de ${formatMoney(fee)}`, "good"];
+        return [`${score}, bilheteria de ${formatMoney(event.gate)} e cachê pago de ${formatMoney(fee)}`, event.gate >= fee ? "neutral" : "bad"];
+      }
+      case "friendlyCalledOff": {
+        const { homeId, awayId } = event.friendly;
+        if (!(isOurs(homeId) || isOurs(awayId))) return null;
+        const against = `Amistoso contra o ${clubName(isOurs(homeId) ? awayId : homeId)} cancelado`;
+        if (event.reason === "fixture") return [`${against}: a data virou jogo oficial`, "neutral"];
+        if (event.reason === "cash") return [`${against}: o mandante ficou sem caixa para o cachê`, "bad"];
+        return [against, "neutral"];
+      }
       case "fansPressure":
         return isOurs(event.clubId) ? ["Torcida cobra o time", "bad"] : null;
       case "fansProtest":

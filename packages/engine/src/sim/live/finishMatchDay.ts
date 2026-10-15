@@ -10,7 +10,9 @@ import { countCards, type Booking } from "../discipline/drawCards.js";
 import { endSeason } from "../endSeason.js";
 import { closeMonth } from "../finances/closeMonth.js";
 import { payCopaPrizes } from "../finances/payCopaPrizes.js";
+import { payTitleBonuses } from "../finances/payTitleBonuses.js";
 import { recordMatchFinances } from "../finances/recordMatchFinances.js";
+import { dropCoachFriendlies, playFriendlies } from "../friendlies/friendlies.js";
 import { releaseTicketPrice } from "../finances/setTicketPrice.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { closeSeasonHistory } from "../history/closeSeasonHistory.js";
@@ -121,11 +123,16 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   const coach = tactics === state.coach.tactics ? state.coach : { ...state.coach, tactics };
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: day.discipline, coach };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
-  next = recordMatches(next, played, day.sheets);
+  const bonuses = payTitleBonuses(next, recordMatches(next, played, day.sheets));
+  next = bonuses.state;
+  events.push(...bonuses.events);
   next = recordMatchFinances(next, played);
   const prizes = payCopaPrizes(next, played);
   next = prizes.state;
   events.push(...prizes.events);
+  const friendlies = playFriendlies(next, state.date);
+  next = friendlies.state;
+  events.push(...friendlies.events);
   const closed = next.date.endsWith("-01") ? closeMonth(next, random.next) : { state: next, events: [] };
   events.push(...closed.events);
   const built = buildStadiums(closed.state, closed.state.date);
@@ -135,6 +142,8 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   events.push(...reacted.events);
   const career = coachCareerDay(next, played, decisions.acceptOffer, random.next);
   next = career.state;
+  // Friendlies the coach booked for a club he no longer runs are called off with his move.
+  if (state.coachClubId && next.coachClubId !== state.coachClubId) next = dropCoachFriendlies(next, state.coachClubId);
   events.push(...career.events);
   next = { ...next, rngState: random.state() };
   if (state.world) next = { ...next, world: playWorldDay(state.world, state.date) };

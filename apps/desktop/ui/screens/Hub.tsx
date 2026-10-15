@@ -10,7 +10,8 @@ import { useGameClock } from "../app/gameClock.js";
 import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { Crest } from "../clubs/Crest.js";
-import { boardConfidence, jobSecurity, leagueStanding, nextMatch, type NextMatch } from "../hub/hubSelectors.js";
+import { clubMeters, jobSecurity, leagueStanding, nextMatch, type NextMatch } from "../hub/hubSelectors.js";
+import { ConfidenceMeter } from "../finances/ConfidenceMeter.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import { SQUAD_KEYS, squadRows } from "../squad/squadRows.js";
 import { PlayerSticker } from "../squad/PlayerSticker.js";
@@ -90,9 +91,8 @@ export function Hub() {
   const board = club ? state.boards[club.id] : undefined;
   const standing = leagueStanding(state);
   const offers = state.coach.offers.length;
-  const fans = club ? (state.mood[club.id]?.fans ?? 50) : 50;
   const security = jobSecurity(board);
-  const confidence = boardConfidence(board);
+  const meters = club ? clubMeters(state, club.id) : null;
   const news = inbox.slice(-INBOX_LINES).toReversed();
   const todaysNews = inbox.filter((line) => line.date === state.date).length;
   const strongest = rows.reduce<(typeof rows)[number] | null>((best, row) => (!best || row.strength > best.strength ? row : best), null);
@@ -126,20 +126,12 @@ export function Hub() {
               <span className="lbl">Caixa</span>
               <b>{formatMoney(state.finances[club.id]?.cash ?? 0)}</b>
             </div>
-            <div>
-              <div className="lbl">
-                Diretoria · <span>{security}</span>
-              </div>
-              <div className={confidence < 0.2 ? "meter low" : confidence < 0.38 ? "meter mid" : "meter"}>
-                <i style={{ width: `${Math.round(confidence * 100)}%` }} />
-              </div>
-            </div>
-            <div>
-              <div className="lbl">Torcida · {Math.round(fans)}%</div>
-              <div className={fans < 30 ? "meter low" : fans < 45 ? "meter mid" : "meter"}>
-                <i style={{ width: `${Math.round(fans)}%` }} />
-              </div>
-            </div>
+            {meters && (
+              <>
+                <ConfidenceMeter label="Diretoria" value={meters.board} detail={security} />
+                <ConfidenceMeter label="Torcida" value={meters.fans} />
+              </>
+            )}
           </section>
         )}
 

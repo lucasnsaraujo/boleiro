@@ -14,6 +14,8 @@ import { declineCounter } from "@boleiro/engine/sim/transfers/coachMarket";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { listPlayer, type SaleWay } from "@boleiro/engine/sim/transfers/listPlayer";
 import { setTicketPrice } from "@boleiro/engine/sim/finances/setTicketPrice";
+import { repayBankLoan, takeBankLoan, type BankLoanAnswer } from "@boleiro/engine/sim/finances/bankLoan";
+import { bookFriendly, type FriendlyAnswer } from "@boleiro/engine/sim/friendlies/friendlies";
 import { requestStadiumWorks, type WorksAnswer } from "@boleiro/engine/sim/stadium/stadiumWorks";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { playToMatchDay, type StopReason } from "../hub/playToMatchDay.js";
@@ -55,6 +57,12 @@ type CommandFields = {
   priceTickets: { price: number };
   /** Asks the board for `seats` new seats at the coach's stadium; it answers at once. */
   askStadiumWorks: { seats: number };
+  /** Borrows `amount` from the bank for the coach's club, repaid in `months` monthly instalments; the bank answers at once. */
+  takeBankLoan: { amount: number; months: number };
+  /** Pays off the coach's club's bank loan from cash. */
+  repayBankLoan: Record<never, never>;
+  /** Books a friendly for the coach's club against `opponentId` on `date`; the other club answers at once. */
+  bookFriendly: { opponentId: string; date: IsoDate; isHome: boolean };
 };
 
 export type CommandType = keyof CommandFields;
@@ -84,6 +92,9 @@ export type CommandResults = {
   declineCounter: undefined;
   priceTickets: undefined;
   askStadiumWorks: WorksAnswer;
+  takeBankLoan: BankLoanAnswer;
+  repayBankLoan: undefined;
+  bookFriendly: FriendlyAnswer;
 };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
@@ -311,6 +322,19 @@ export function createEngineSession(files: GameFiles) {
     },
     askStadiumWorks({ seats }) {
       const asked = requestStadiumWorks(betweenDays("the board can't be asked for works"), seats);
+      state = asked.state;
+      return asked.answer;
+    },
+    takeBankLoan({ amount, months }) {
+      const asked = takeBankLoan(betweenDays("the bank can't be asked for a loan"), amount, months);
+      state = asked.state;
+      return asked.answer;
+    },
+    repayBankLoan() {
+      state = repayBankLoan(betweenDays("the bank loan can't be paid off"));
+    },
+    bookFriendly({ opponentId, date, isHome }) {
+      const asked = bookFriendly(betweenDays("a friendly can't be booked"), opponentId, date, isHome);
       state = asked.state;
       return asked.answer;
     },

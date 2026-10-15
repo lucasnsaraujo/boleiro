@@ -8,6 +8,7 @@ const revenueBy = (value: (line: RevenueLine) => number): Record<RevenueLine, nu
   otherIncome: value("otherIncome"),
   prizes: value("prizes"),
   playerSales: value("playerSales"),
+  friendlies: value("friendlies"),
 });
 
 const costsBy = (value: (line: CostLine) => number): Record<CostLine, number> => ({
@@ -18,7 +19,15 @@ const costsBy = (value: (line: CostLine) => number): Record<CostLine, number> =>
   infrastructure: value("infrastructure"),
   interest: value("interest"),
   fines: value("fines"),
+  friendlies: value("friendlies"),
+  bonuses: value("bonuses"),
 });
+
+/** The ledger with every line this version books, lines a save from before them had at zero. */
+export function withEveryLine(ledger: Ledger): Ledger {
+  const isComplete = REVENUE_LINES.every((line) => line in ledger.revenue) && COST_LINES.every((line) => line in ledger.costs);
+  return isComplete ? ledger : { revenue: revenueBy((line) => ledger.revenue[line] ?? 0), costs: costsBy((line) => ledger.costs[line] ?? 0) };
+}
 
 export function emptyLedger(): Ledger {
   return { revenue: revenueBy(() => 0), costs: costsBy(() => 0) };

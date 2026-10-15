@@ -3,7 +3,7 @@ import type { Board } from "@boleiro/engine/sim/coach/boardExpectations";
 import type { Fixture } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
-import { boardConfidence, jobSecurity, leagueStanding, nextMatch } from "./hubSelectors.js";
+import { boardConfidence, clubMeters, jobSecurity, leagueStanding, nextMatch } from "./hubSelectors.js";
 
 const game = newGameFromFiles(5, { coachClubId: "bahia-ba" }, bundledGameFiles);
 const own = game.fixtures.filter((f) => f.homeId === "bahia-ba" || f.awayId === "bahia-ba").toSorted((a, b) => a.date.localeCompare(b.date));
@@ -56,6 +56,21 @@ describe("boardConfidence", () => {
     expect(boardConfidence(board(-0.5))).toBeGreaterThan(boardConfidence(board(0)));
     expect(boardConfidence(board(3))).toBe(0);
     expect(boardConfidence(board(-3))).toBe(1);
+  });
+});
+
+describe("clubMeters", () => {
+  const withMood = (fans: number, supporters: "calm" | "protest") => ({ ...game, mood: { ...game.mood, "bahia-ba": { squad: 50, fans, supporters, closedDoorGames: 0 } } });
+
+  test("read the board and the fans from 0 to 100, the board half full on target with calm stands", () => {
+    expect(clubMeters(withMood(50, "calm"), "bahia-ba")).toEqual({ board: 50, fans: 50 });
+    expect(clubMeters(withMood(82.4, "calm"), "bahia-ba").fans).toBe(82);
+  });
+
+  test("let unhappy fans and protests weigh on the board, as they do when it decides to fire", () => {
+    const calm = clubMeters(withMood(50, "calm"), "bahia-ba").board;
+    expect(clubMeters(withMood(10, "calm"), "bahia-ba").board).toBeLessThan(calm);
+    expect(clubMeters(withMood(10, "protest"), "bahia-ba").board).toBeLessThan(clubMeters(withMood(10, "calm"), "bahia-ba").board);
   });
 });
 
