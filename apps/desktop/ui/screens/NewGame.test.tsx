@@ -151,3 +151,39 @@ test("Voltar goes back to the start menu", async () => {
   await userEvent.click(screen.getByRole("link", { name: "Voltar" }));
   expect(await screen.findByText("Início")).toBeTruthy();
 });
+
+test("two coaches each name themselves and pick a club, and the game starts with both in turn order and a five-minute market clock", async () => {
+  const { engine, game } = await openNewGame();
+  await userEvent.click(screen.getByRole("button", { name: "Mais um técnico" }));
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico 1" }), "Ana");
+  await userEvent.click(clubList().getByRole("button", { name: "Flamengo" }));
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico 2" }), "Bruno");
+  await userEvent.click(clubList().getByRole("button", { name: "Palmeiras" }));
+  await userEvent.click(screen.getByRole("button", { name: /Começar com 2 técnicos/ }));
+  await screen.findByText("Clube aberto", {}, { timeout: 10_000 });
+  expect(await engine.hotSeat()).toMatchObject({ seated: 0, coaches: [{ name: "Ana", clubId: "flamengo-rj" }, { name: "Bruno", clubId: "palmeiras-sp" }] });
+  expect(await engine.read(["marketClockSeconds"])).toEqual({ marketClockSeconds: 300 });
+  expect(game.current?.coachName).toBe("Ana e Bruno");
+});
+
+test("a club one coach took is closed to the others, and the game can't start until every coach has a name and a club", async () => {
+  await openNewGame();
+  await userEvent.click(screen.getByRole("button", { name: "Mais um técnico" }));
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico 1" }), "Ana");
+  await userEvent.click(clubList().getByRole("button", { name: "Flamengo" }));
+  await userEvent.click(screen.getByRole("button", { name: "Escolher o time do técnico 2" }));
+  const flamengo = clubList().getByRole("button", { name: "Flamengo" });
+  expect(flamengo.hasAttribute("disabled")).toBe(true);
+  expect(flamengo.textContent).toContain("Ana");
+  expect(screen.getByRole("button", { name: /Começar com 2 técnicos/ }).hasAttribute("disabled")).toBe(true);
+});
+
+test("with the market clock off a game starts without one", async () => {
+  const { engine } = await openNewGame();
+  await userEvent.click(screen.getByRole("radio", { name: "Sem" }));
+  await userEvent.click(clubList().getByRole("button", { name: "Bahia" }));
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico" }), "Rogério");
+  await userEvent.click(screen.getByRole("button", { name: "Começar carreira" }));
+  await screen.findByText("Clube aberto", {}, { timeout: 10_000 });
+  expect(await engine.read(["marketClockSeconds"])).toEqual({ marketClockSeconds: undefined });
+});
