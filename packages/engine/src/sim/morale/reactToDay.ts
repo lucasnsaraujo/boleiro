@@ -1,9 +1,10 @@
+import { keyedStream } from "../../engine/random.js";
 import { bookMoney } from "../finances/bookMoney.js";
 import type { FinanceEvent } from "../finances/closeMonth.js";
 import { tierOf } from "../finances/tierOf.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { clubMood, type ClubMood } from "./clubMood.js";
-import { escalateSupporters, type SupporterEvent } from "./escalateSupporters.js";
+import { DERBY_TROUBLE_CHANCE, escalateSupporters, type SupporterEvent } from "./escalateSupporters.js";
 import { rivalsOf } from "./rivalsOf.js";
 
 // guess: the league average points per game when a quarter of games are drawn, as in developPlayers.
@@ -16,6 +17,8 @@ const FAN_SWING = 4;
 const SQUAD_SWING = 3;
 // guess: a derby counts double for the fans.
 const DERBY_WEIGHT = 2;
+// Derby trouble draws from a stream of its own per fixture and loser, so the day's other draws stay as they were.
+const DERBY_TROUBLE_SALT = 0xd3e2b7;
 // guess: fan mood points when a rival wins (lost) or loses (gained) a game against someone else.
 const RIVAL_RESULT = 1;
 // guess: monthly fan mood points per 100% the ticket price sits above the division's average,
@@ -54,6 +57,8 @@ export function reactToDay(
     moods.set(id, { ...mood, ...update(mood) });
   };
   const lost = new Set<string>();
+  /** Clubs whose fans made trouble after losing a derby, with the stream the court's verdict draws from. */
+  const troubled = new Map<string, () => number>();
   const rivals = played.length ? rivalsOf(state.clubs) : new Map<string, ReadonlySet<string>>();
 
   for (const fixture of played) {
@@ -61,7 +66,11 @@ export function reactToDay(
     for (const [id, opponent] of [[fixture.homeId, fixture.awayId], [fixture.awayId, fixture.homeId]] as const) {
       const above = pointsOf(fixture, id) - AVERAGE_POINTS;
       const derby = rivals.get(id)?.has(opponent) ? DERBY_WEIGHT : 1;
-      if (pointsOf(fixture, id) === 0) lost.add(id);
+      if (pointsOf(fixture, id) === 0) {
+        lost.add(id);
+        const trouble = derby > 1 ? keyedStream(state.seed ^ DERBY_TROUBLE_SALT, `${fixture.id}:${id}`) : null;
+        if (trouble && trouble() < DERBY_TROUBLE_CHANCE) troubled.set(id, trouble);
+      }
       change(id, (mood) => ({
         fans: clamp(remember(mood.fans) + FAN_SWING * above * derby),
         squad: clamp(remember(mood.squad) + SQUAD_SWING * above),
@@ -93,7 +102,7 @@ export function reactToDay(
   let next = state;
   const mood = { ...state.mood };
   for (const [clubId, changed] of [...moods].sort(([a], [b]) => a.localeCompare(b))) {
-    const escalated = escalateSupporters(clubId, changed, lost.has(clubId), random);
+    const escalated = escalateSupporters(clubId, changed, lost.has(clubId), random, troubled.get(clubId) ?? null);
     mood[clubId] = escalated.mood;
     events.push(...escalated.events);
     if (escalated.fine) next = bookMoney(next, clubId, { cost: "fines", amount: escalated.fine });
