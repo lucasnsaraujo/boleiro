@@ -7,6 +7,11 @@ body,
   height: 100%;
 }
 
+/* The page under the paper texture, so an area the window has just grown into is the theme's colour. */
+html {
+  background-color: var(--paper);
+}
+
 body {
   line-height: 1.35;
   overflow: hidden;
