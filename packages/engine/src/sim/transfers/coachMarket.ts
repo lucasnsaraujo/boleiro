@@ -38,6 +38,13 @@ export function withoutPlayer(coach: CoachMarket, playerId: string): CoachMarket
   };
 }
 
+/** The coach turns down a selling club's counter to his offer; the rest of his business stays. */
+export function declineCounter(state: GameState, playerId: string): GameState {
+  const coach = coachMarketOf(state);
+  if (!coach.counters[playerId]) throw new Error(`no counter-offer for ${playerId} waits for an answer`);
+  return withCoachMarket(state, { ...coach, counters: without(coach.counters, playerId) });
+}
+
 /** A fixed 0–1 number hashed from `text` (FNV-1a), for draws a command makes without a random stream. */
 export function unitHash(text: string): number {
   let hash = 2166136261;

@@ -32,21 +32,24 @@ const AUCTION_LIMIT = { min: 0.9, spread: 0.7 };
 // guess: a club pays the fee up front plus three months of the new wage, as the AI's own deals budget it.
 const WAGE_MONTHS_UP_FRONT = 3;
 
-/** The clubs that would buy `player` for `fee` today: room in the squad, he would play, and the board can pay. */
+/** Whether a club would buy `player` for `fee` today: room in the squad, he would play, and its board can pay. */
+function canBuy(state: GameState, view: MarketView, player: SimPlayer, clubId: string, fee: number): boolean {
+  const finance = state.finances[clubId];
+  const squad = view.squad(clubId);
+  if (clubId === state.coachClubId || !finance || squad.length < 11 || isSquadFull(squad.length)) return false;
+  if (player.strength < squadNeeds(squad, view.tier(clubId)).level - REPLACEMENT_BAND.below) return false;
+  const wage = buyerWage(player, squad);
+  // guess: like the AI's own upgrades, the buyer counts on moving on its cheapest player at his
+  // position, so only the difference weighs on its wage cap (most boards sit right at theirs).
+  const outgoing = squad.reduce((low, p) => (p.group === player.group && p.wage < low ? p.wage : low), wage);
+  return !boardRefusal(finance, view.bill(clubId), { upFront: fee + WAGE_MONTHS_UP_FRONT * wage, wageChange: wage - outgoing });
+}
+
+/** The clubs that would buy `player` for `fee` today. */
 function interestedBuyers(state: GameState, view: MarketView, player: SimPlayer, fee: number): string[] {
   return Object.keys(state.finances)
     .sort()
-    .filter((clubId) => {
-      const finance = state.finances[clubId];
-      const squad = view.squad(clubId);
-      if (clubId === state.coachClubId || !finance || squad.length < 11 || isSquadFull(squad.length)) return false;
-      if (player.strength < squadNeeds(squad, view.tier(clubId)).level - REPLACEMENT_BAND.below) return false;
-      const wage = buyerWage(player, squad);
-      // guess: like the AI's own upgrades, the buyer counts on moving on its cheapest player at his
-      // position, so only the difference weighs on its wage cap (most boards sit right at theirs).
-      const outgoing = squad.reduce((low, p) => (p.group === player.group && p.wage < low ? p.wage : low), wage);
-      return !boardRefusal(finance, view.bill(clubId), { upFront: fee + WAGE_MONTHS_UP_FRONT * wage, wageChange: wage - outgoing });
-    });
+    .filter((clubId) => canBuy(state, view, player, clubId, fee));
 }
 
 /**
@@ -126,7 +129,7 @@ export function coachMarketDay(state: GameState, random: () => number): { state:
       if (top.clubId === clubId) continue;
       const fee = Math.max(auction.minBid, Math.round(top.fee * (1 + AUCTION_RAISE.min + AUCTION_RAISE.spread * random())));
       const limit = valueOf(player) * (AUCTION_LIMIT.min + AUCTION_LIMIT.spread * unitHash(`${clubId}:${playerId}`));
-      if (fee <= limit) bids.push({ clubId, fee, date: state.date });
+      if (fee <= limit && canBuy(next, view, player, clubId, fee)) bids.push({ clubId, fee, date: state.date });
     }
     if (bids.length > auction.bids.length) coach = { ...coach, auctions: { ...coach.auctions, [playerId]: { ...auction, bids } } };
   }
@@ -139,9 +142,10 @@ export function coachMarketDay(state: GameState, random: () => number): { state:
   for (const [playerId, listing] of Object.entries(coach.listings).sort(([a], [b]) => a.localeCompare(b))) {
     const player = next.players[playerId];
     if (!player || coach.bids[playerId] || random() >= LISTING_DAILY_CHANCE[listing.mode]) continue;
-    const buyerId = pickBuyer(next, view, player, listing.price, random, true);
-    if (!buyerId) continue;
+    // A buyer must be able to pay all it would go to if pushed.
     const ceiling = Math.round(listing.price * (1 + LISTING_CEILING_SPREAD * random()));
+    const buyerId = pickBuyer(next, view, player, ceiling, random, true);
+    if (!buyerId) continue;
     offer({ playerId, buyerId, fee: listing.price, feeEur: null, ceiling, isFinal: false, madeOn: state.date, until });
   }
 
@@ -150,9 +154,9 @@ export function coachMarketDay(state: GameState, random: () => number): { state:
     for (const player of squad.sort((a, b) => a.id.localeCompare(b.id))) {
       if (random() >= UNASKED_BID_CHANCE) continue;
       const fee = Math.round(valueOf(player) * (UNASKED_FEE.min + UNASKED_FEE.spread * random()));
-      const buyerId = pickBuyer(next, view, player, fee, random, false);
-      if (!buyerId) continue;
       const ceiling = Math.round(fee * (UNASKED_CEILING.min + UNASKED_CEILING.spread * random()));
+      const buyerId = pickBuyer(next, view, player, ceiling, random, false);
+      if (!buyerId) continue;
       offer({ playerId: player.id, buyerId, fee, feeEur: null, ceiling, isFinal: false, madeOn: state.date, until });
     }
   }

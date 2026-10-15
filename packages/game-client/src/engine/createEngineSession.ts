@@ -8,7 +8,7 @@ import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
 import { newGameFromFiles, type GameFiles } from "@boleiro/engine/sim/loadNewGame";
 import type { NewGameOptions } from "@boleiro/engine/sim/newGame";
 import { answerBid, type BidAnswer, type BidOutcome } from "@boleiro/engine/sim/transfers/answerBid";
-import { coachMarketOf, withCoachMarket, withoutPlayer } from "@boleiro/engine/sim/transfers/coachMarket";
+import { declineCounter } from "@boleiro/engine/sim/transfers/coachMarket";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { listPlayer, type SaleWay } from "@boleiro/engine/sim/transfers/listPlayer";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
@@ -292,8 +292,7 @@ export function createEngineSession(files: GameFiles) {
       return answered.outcome;
     },
     declineCounter({ playerId }) {
-      const game = betweenDays("a counter-offer can't be declined");
-      state = withCoachMarket(game, withoutPlayer(coachMarketOf(game), playerId));
+      state = declineCounter(betweenDays("a counter-offer can't be declined"), playerId);
     },
   };
 

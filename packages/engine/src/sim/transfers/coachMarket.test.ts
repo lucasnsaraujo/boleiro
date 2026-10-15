@@ -90,6 +90,13 @@ describe("listing a player for sale", () => {
     expect(cheapBids).toBeGreaterThan(expensiveBids);
   });
 
+  it("keeps a club's waiting offer when the coach changes the price or takes him off, but not when he goes to auction", () => {
+    const offered = withBid(listPlayer(windowOpen, median.id, "cheap"), { playerId: median.id });
+    expect(coachMarketOf(listPlayer(offered, median.id, "expensive")).bids[median.id]).toBeDefined();
+    expect(coachMarketOf(listPlayer(offered, median.id, null)).bids[median.id]).toBeDefined();
+    expect(coachMarketOf(listPlayer(offered, median.id, "auction")).bids[median.id]).toBeUndefined();
+  });
+
   it("survives a save and a load", () => {
     const listed = listPlayer(windowOpen, median.id, "expensive");
     expect(coachMarketOf(loadGame(saveGame(listed))).listings[median.id]).toEqual(coachMarketOf(listed).listings[median.id]);
@@ -122,12 +129,18 @@ describe("answering a club's offer", () => {
   });
 
   it("gets the buyer's last word at its highest price for a counter above it, which can be taken but not countered", () => {
-    const { state, outcome } = answerBid(offered, median.id, { kind: "counter", fee: 20_000_000 });
+    const { state, outcome } = answerBid(offered, median.id, { kind: "counter", fee: 13_000_000 });
     expect(outcome).toBe("finalOffer");
     expect(coachMarketOf(state).bids[median.id]).toMatchObject({ fee: 12_000_000, isFinal: true });
     expect(state.players[median.id]?.clubId).toBe(COACH);
     expect(() => answerBid(state, median.id, { kind: "counter", fee: 13_000_000 })).toThrow();
     expect(answerBid(state, median.id, { kind: "accept" }).state.players[median.id]?.clubId).toBe(BUYER);
+  });
+
+  it("sees the buyer walk away from a counter far above what it would pay", () => {
+    const { state, outcome } = answerBid(offered, median.id, { kind: "counter", fee: 20_000_000 });
+    expect(outcome).toBe("walkedAway");
+    expect(state.players[median.id]?.clubId).toBe(COACH);
   });
 
   it("sees the buyer walk away from a counter when it had already offered all it would", () => {
@@ -204,8 +217,11 @@ describe("an auction", () => {
     expect(play(withdrawn, 6).state.players[median.id]?.clubId).toBe(COACH);
   });
 
-  it("needs the window open", () => {
+  it("needs the window open, and sells inside it", () => {
     expect(() => listPlayer({ ...windowOpen, date: "2026-04-10" }, median.id, "auction")).toThrow();
+    expect(() => listPlayer({ ...windowOpen, date: "2026-03-02" }, median.id, "auction")).toThrow();
+    const late = listPlayer({ ...windowOpen, date: "2026-02-28" }, median.id, "auction");
+    expect(coachMarketOf(late).auctions[median.id]?.closesOn).toBe("2026-03-02");
   });
 });
 
@@ -248,6 +264,14 @@ describe(`the ${SQUAD_CAP}-player cap`, () => {
 
   it("makes the board refuse a signing while the squad is full", () => {
     const { events } = play(full, 1, [{ kind: "sign", playerId: target.id }]);
+    expect(events.find((e) => e.type === "requestDecided")).toMatchObject({ approved: false, reason: "squadFull" });
+  });
+
+  it("counts players with a pre-contract here, who join when their contracts end", () => {
+    const below = { ...full, players: Object.fromEntries(Object.entries(full.players).filter(([id]) => id !== `filler-${SQUAD_CAP - 1}`)) };
+    const joining = { ...below, market: { ...below.market, preContracts: { ...below.market.preContracts, [target.id]: COACH } } };
+    const other = squadOf(windowOpen, "vitoria-ba")[1];
+    const { events } = play(joining, 1, [{ kind: "sign", playerId: other?.id ?? "" }]);
     expect(events.find((e) => e.type === "requestDecided")).toMatchObject({ approved: false, reason: "squadFull" });
   });
 

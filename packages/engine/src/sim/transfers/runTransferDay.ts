@@ -13,15 +13,19 @@ import { signFreeAgents } from "./signFreeAgents.js";
 import { signFromAbroad } from "./signFromAbroad.js";
 import { tradeBetweenClubs } from "./tradeBetweenClubs.js";
 import type { TransferEvent } from "./transferEvents.js";
-import { isMarketDay } from "./transferWindows.js";
+import { isMarketDay, isWindowOpen } from "./transferWindows.js";
 
 type Step = (state: GameState, random: () => number) => { state: GameState; events: TransferEvent[] };
 
-/** Whether the coach has anything on the market today, or clubs may bid for his players. */
+/**
+ * Whether the coach's market has anything to do today: offers, counters and auctions to lapse or close,
+ * listings to find buyers inside the window, or a market day for clubs to bid. Most days it has not.
+ */
 function hasCoachBusiness(state: GameState): boolean {
   const coach = state.market.coach;
-  const isWaiting = !!coach && Object.values(coach).some((entries) => Object.keys(entries).length > 0);
-  return isWaiting || (state.coachClubId !== null && isMarketDay(state.date));
+  const has = (entries: Record<string, unknown> | undefined) => !!entries && Object.keys(entries).length > 0;
+  if (has(coach?.bids) || has(coach?.counters) || has(coach?.auctions)) return true;
+  return (has(coach?.listings) && isWindowOpen(state.date)) || (state.coachClubId !== null && isMarketDay(state.date));
 }
 
 /**
