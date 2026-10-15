@@ -8,6 +8,7 @@ import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { Market } from "./Market.js";
+import { pickOption } from "../controls/pickOption.js";
 
 const closers: (() => void)[] = [];
 
@@ -50,7 +51,7 @@ test("the closed window is shown with the day it opens", async () => {
 test("filtering by position lists only players of that position", async () => {
   await openMarket();
   const results = await screen.findByRole("table", { name: "Jogadores" });
-  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Posição" }), "Goleiro");
+  await pickOption(screen.getByRole("combobox", { name: "Posição" }), "Goleiro");
   const positions = within(results).getAllByRole("cell", { name: /^(GOL|DEF|MEI|ATA)$/ }).map((cell) => cell.textContent);
   expect(new Set(positions)).toEqual(new Set(["GOL"]));
 });
@@ -58,7 +59,7 @@ test("filtering by position lists only players of that position", async () => {
 test("asking to buy a player puts the request on the board's desk until the window opens, and it can be withdrawn", async () => {
   const { engine } = await openMarket();
   const results = await screen.findByRole("table", { name: "Jogadores" });
-  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Divisão" }), "Série A");
+  await pickOption(screen.getByRole("combobox", { name: "Liga" }), "Série A");
   // A player with a fee: under contract past this season, neither on loan nor in his last six months.
   const priced = within(results).getAllByRole("row").find((row) => within(row).queryByRole("cell", { name: /^R\$/ }));
   const first = priced && within(priced).getByRole("button");
@@ -81,7 +82,7 @@ test("asking to buy a player puts the request on the board's desk until the wind
 /** The first listed player whose club asks a fee, picked in the list. */
 async function pickPricedPlayer(): Promise<string> {
   const results = await screen.findByRole("table", { name: "Jogadores" });
-  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Divisão" }), "Série B");
+  await pickOption(screen.getByRole("combobox", { name: "Liga" }), "Série B");
   const priced = within(results).getAllByRole("row").find((row) => within(row).queryByRole("cell", { name: /^R\$/ }));
   const button = priced && within(priced).getByRole("button");
   if (!button) throw new Error("no player listed with a fee");

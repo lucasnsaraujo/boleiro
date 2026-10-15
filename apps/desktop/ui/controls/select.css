@@ -1,0 +1,180 @@
+/* The Álbum select: a pill like every other filter, opening a card list that peels off it. */
+.select {
+  cursor: pointer;
+  transition:
+    box-shadow var(--t-fast) var(--e-out),
+    background-color var(--t-fast) var(--e-out);
+}
+
+.select b {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 800;
+}
+
+.select:hover:not(:disabled) {
+  box-shadow: inset 0 0 0 1.5px var(--ink-2);
+}
+
+.select.open {
+  box-shadow:
+    inset 0 0 0 2px var(--green),
+    0 0 0 4px color-mix(in srgb, var(--green) 18%, transparent);
+}
+
+.select:disabled {
+  cursor: default;
+  color: var(--mute);
+  opacity: 0.6;
+}
+
+.select-caret {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--mute);
+  transition: transform var(--t-base) var(--e-slap);
+}
+
+.select.open .select-caret {
+  transform: rotate(180deg);
+  color: var(--green);
+}
+
+.select-pop {
+  position: fixed;
+  inset: auto;
+  z-index: 60;
+  margin: 0;
+  padding: 6px;
+  border: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--r-m);
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--sh-lift);
+  transform-origin: 50% 0;
+  animation: select-in var(--t-base) var(--e-out) both;
+}
+
+.select-pop.above {
+  translate: 0 -100%;
+  transform-origin: 50% 100%;
+  animation-name: select-in-above;
+}
+
+.select-pop[data-state="closing"] {
+  pointer-events: none;
+  animation: select-out var(--t-fast) var(--e-peel) both;
+}
+
+.select-group + .select-group,
+.select-opt + .select-group {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--rule);
+}
+
+.select-group-name {
+  display: block;
+  padding: 6px 10px 4px 30px;
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.select-opt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 14px 0 30px;
+  border-radius: var(--r-s);
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  animation: select-opt-in var(--t-base) var(--e-out) both;
+  animation-delay: calc(var(--i, 0) * 14ms + 30ms);
+}
+
+.select-opt.on {
+  background: var(--green-l);
+  color: var(--green-d);
+}
+
+[data-theme="dark"] .select-opt.on {
+  color: var(--ink);
+}
+
+.select-opt[aria-selected="true"] {
+  font-weight: 800;
+}
+
+.select-opt > i {
+  position: absolute;
+  left: 10px;
+  font-size: 12px;
+  color: var(--green);
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.select-opt[aria-selected="true"] > i {
+  opacity: 1;
+  transform: none;
+  animation: select-check var(--t-slow) var(--e-slap) both;
+  animation-delay: 90ms;
+}
+
+@keyframes select-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96, 0.9);
+  }
+}
+
+@keyframes select-in-above {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96, 0.9);
+  }
+}
+
+@keyframes select-out {
+  to {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.98);
+  }
+}
+
+@keyframes select-opt-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes select-check {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-20deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .select-pop,
+  .select-pop.above,
+  .select-opt,
+  .select-opt[aria-selected="true"] > i {
+    animation: none;
+  }
+
+  .select-caret {
+    transition: none;
+  }
+}

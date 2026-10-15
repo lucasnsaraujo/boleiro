@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
-import { NO_FILTERS, searchMarket, windowStatus, type MarketFilters } from "./marketSearch.js";
+import { marketClubs, marketLeagues, marketNationalities, NO_FILTERS, searchMarket, strengthBounds, windowStatus, type MarketFilters } from "./marketSearch.js";
 
 const COACH = "sport-pe";
 const game = newGameFromFiles(5, { coachClubId: COACH }, bundledGameFiles);
@@ -38,6 +38,14 @@ describe("searching the market", () => {
     const serieC = search({ division: "C" });
     expect(serieC.length).toBeGreaterThan(0);
     expect(serieC.every((r) => r.clubId !== null && game.clubs[r.clubId]?.division === "C")).toBe(true);
+  });
+
+  test("the strength range spans the weakest to the strongest player the coach could look for, free agents included", () => {
+    const rows = search({});
+    const strengths = rows.map((r) => Math.round(r.strength));
+    expect(strengthBounds(game)).toEqual({ min: Math.min(...strengths), max: Math.max(...strengths) });
+    const free = { ...anyPlayerOf("vitoria-ba"), id: "free-1", strength: 99.4 };
+    expect(strengthBounds({ ...game, market: { ...game.market, freeAgents: { [free.id]: free } } }).max).toBe(99);
   });
 
   test("filters free agents, contracts in their last six months and bigger clubs' reserves who can be borrowed", () => {
@@ -87,6 +95,74 @@ describe("searching the market", () => {
     const rows = search({ clubId: "palmeiras-sp" }).filter((r) => r.status === null && r.price);
     expect(rows.some((r) => (r.price ?? 0) > r.value * 1.2)).toBe(true);
     expect(rows.every((r) => (r.price ?? 0) >= r.value * 0.99)).toBe(true);
+  });
+
+  test("filters by nationality, a player with two counting for either", () => {
+    const base = anyPlayerOf("santos-sp");
+    const dual = { ...base, nationalities: ["Brazil", "Italy"] };
+    const state = { ...game, players: { ...game.players, [dual.id]: dual } };
+    const italians = search({ nationality: "Italy" }, state);
+    expect(italians.map((r) => r.id)).toContain(dual.id);
+    expect(italians.every((r) => state.players[r.id]?.nationalities.includes("Italy"))).toBe(true);
+    const argentines = search({ nationality: "Argentina" });
+    expect(argentines.length).toBeGreaterThan(0);
+    expect(argentines.every((r) => game.players[r.id]?.nationalities.includes("Argentina"))).toBe(true);
+  });
+
+  test("filters by this season's goals in every competition and minutes played", () => {
+    const [scorer, starter] = Object.values(game.players).filter((p) => p.clubId === "gremio-rs");
+    if (!scorer || !starter) throw new Error("Grêmio needs players");
+    const history = { ...game.history, current: { ...game.history.current, goals: { "serie-a": { [scorer.id]: 4 }, "state-rs": { [scorer.id]: 3 } } } };
+    const played = { ...starter, condition: { ...starter.condition, seasonMinutes: 900 } };
+    const state = { ...game, history, players: { ...game.players, [played.id]: played } };
+    expect(search({ minGoals: 7 }, state).map((r) => r.id)).toEqual([scorer.id]);
+    expect(search({ minGoals: 8 }, state)).toEqual([]);
+    expect(search({ minMinutes: 900 }, state).map((r) => r.id)).toEqual([played.id]);
+    expect(search({ minGoals: 1, minMinutes: 1 }, state)).toEqual([]);
+  });
+
+  test("a free agent's minutes are from before he was released, maybe seasons ago, so the minutes filter counts none for him", () => {
+    const released = { ...anyPlayerOf("vitoria-ba"), id: "free-1" };
+    const free = { ...released, condition: { ...released.condition, seasonMinutes: 2000 } };
+    const state = { ...game, market: { ...game.market, freeAgents: { [free.id]: free } } };
+    expect(search({ minMinutes: 90 }, state)).toEqual([]);
+    expect(search({ status: "freeAgent" }, state).map((r) => r.id)).toEqual([free.id]);
+  });
+
+  test("filters combine: a league, a nationality and a position together", () => {
+    const rows = search({ division: "A", nationality: "Argentina", group: "MID" });
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every((r) => r.group === "MID" && r.clubId !== null && game.clubs[r.clubId]?.division === "A" && game.players[r.id]?.nationalities.includes("Argentina"))).toBe(true);
+    expect(rows.length).toBeLessThan(search({ division: "A", group: "MID" }).length);
+  });
+
+  test("offers the leagues by country, the clubs of the league chosen and the nationalities on the market in Portuguese", () => {
+    expect(marketLeagues(game)).toEqual([
+      { value: "A", label: "Série A", group: "Brasil" },
+      { value: "B", label: "Série B", group: "Brasil" },
+      { value: "C", label: "Série C", group: "Brasil" },
+      { value: "D", label: "Série D", group: "Brasil" },
+    ]);
+    const serieB = marketClubs(game, "B");
+    expect(serieB.length).toBe(Object.values(game.clubs).filter((c) => c.division === "B" && c.id !== COACH).length);
+    expect(serieB.every((option) => game.clubs[option.value]?.division === "B")).toBe(true);
+    expect(marketClubs(game, null).map((option) => option.value)).not.toContain(COACH);
+    expect(new Set(marketClubs(game, null).map((option) => option.group))).toEqual(new Set(["Série A", "Série B", "Série C", "Série D"]));
+
+    const nationalities = marketNationalities(game);
+    expect(nationalities).toContainEqual({ value: "Brazil", label: "Brasil" });
+    expect(nationalities).toContainEqual({ value: "Uruguay", label: "Uruguai" });
+    const odd = Object.values(game.players).slice(0, 6);
+    const named = (nationalities: string[]) => odd.map((p, i): [string, SimPlayer] => [p.id, { ...p, nationalities: [nationalities[i] ?? "Brazil"] }]);
+    const withOdd = { ...game, players: { ...game.players, ...Object.fromEntries(named(["England", "Korea, South", "Cote d'Ivoire", "DR Congo", "N", "A"])) } };
+    const odds = marketNationalities(withOdd);
+    expect(odds).toContainEqual({ value: "England", label: "Inglaterra" });
+    expect(odds).toContainEqual({ value: "Korea, South", label: "Coreia do Sul" });
+    expect(odds).toContainEqual({ value: "Cote d'Ivoire", label: "Costa do Marfim" });
+    expect(odds).toContainEqual({ value: "DR Congo", label: "RD Congo" });
+    expect(odds.some((option) => option.value.length < 2)).toBe(false);
+    const labels = nationalities.map((option) => option.label);
+    expect(labels).toEqual(labels.toSorted((a, b) => a.localeCompare(b, "pt-BR")));
   });
 
   test("returns the first rows and how many matched", () => {

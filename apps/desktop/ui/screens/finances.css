@@ -436,17 +436,9 @@
   flex: 1;
 }
 
-.fin-field select {
+.fin-field .select {
   height: 32px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: var(--r-pill);
-  background: var(--paper);
-  box-shadow: inset 0 0 0 1px var(--line-2);
-  font: inherit;
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--ink);
+  min-width: 0;
 }
 
 .fin-bank-form {

@@ -31,9 +31,9 @@ const TOAST_MS = 2600;
 // The menu bar belongs to the app, not to a screen: it is built once, the first time the shell mounts.
 let hasNativeMenu = false;
 
-/** Whether a dialog is up (a confirm, a sheet, the newspaper): the game's shortcuts wait until it closes, Escape closes it. */
+/** Whether a dialog (a confirm, a sheet, the newspaper) or a select's list is up: the game's shortcuts wait until it closes, Escape closes it. */
 function isDialogOpen(): boolean {
-  return document.querySelector('[role="dialog"], [role="alertdialog"]') !== null;
+  return document.querySelector('[role="dialog"], [role="alertdialog"], [role="combobox"][aria-expanded="true"]') !== null;
 }
 
 // On a Mac the menu's key equivalents take the F-keys and Command-S before the page sees them; clicked, entries without one still run under a dialog.
@@ -50,10 +50,10 @@ function playerOnScreen(pathname: string): string | undefined {
   return pathname.startsWith("/squad/") ? decodeURIComponent(pathname.slice("/squad/".length)) : undefined;
 }
 
-/** Whether the screen spends the market clock: the market's search and a player's page (the session leaves the coach's own players out); his offers tab is selling. */
+/** Whether the screen spends the market clock: the market's search, a club's squad and a player's page (the session leaves the coach's own players out); his offers tab is selling. */
 function spendsMarketTime(pathname: string, search: string): boolean {
   if (pathname === "/market") return new URLSearchParams(search).get("aba") !== "propostas";
-  return playerOnScreen(pathname) !== undefined;
+  return pathname.startsWith("/club/") || playerOnScreen(pathname) !== undefined;
 }
 
 /** The clock's time left as m:ss. */

@@ -7,6 +7,7 @@ import { ServicesContext, type Services } from "../app/ServicesContext.js";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { Tables } from "./Tables.js";
+import { optionNames, pickOption } from "../controls/pickOption.js";
 
 const closers: (() => void)[] = [];
 
@@ -108,17 +109,17 @@ test("the other state championships are one pick away under Outras ligas", async
   await userEvent.click(await screen.findByRole("tab", { name: "Outras ligas" }));
   expect(screen.getByRole("tab", { name: "Outras ligas" }).getAttribute("aria-selected")).toBe("true");
   const picker = screen.getByRole("combobox", { name: "Liga" });
-  const names = within(picker).getAllByRole("option").map((option) => option.textContent);
+  const names = await optionNames(picker);
   expect(names).not.toContain("Baiano");
   expect(names).toContain("Paulista");
-  await userEvent.selectOptions(picker, "Paulista");
+  await pickOption(picker, "Paulista");
   expect(screen.getByRole("tabpanel", { name: "Paulista" })).toBeTruthy();
 });
 
 test("South America's leagues are one pick away under Outras ligas, Argentina with both its divisions", async () => {
   openTables(await services());
   await userEvent.click(await screen.findByRole("tab", { name: "Outras ligas" }));
-  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Liga" }), "Argentina");
+  await pickOption(screen.getByRole("combobox", { name: "Liga" }), "Argentina");
   const panel = screen.getByRole("tabpanel", { name: "Argentina" });
   const top = within(panel).getByRole("table", { name: "Liga Profesional" });
   expect(within(top).getAllByRole("row")).toHaveLength(31);
@@ -129,7 +130,7 @@ test("South America's leagues are one pick away under Outras ligas, Argentina wi
 test("Europe's leagues are one pick away under Outras ligas, England with both its divisions", async () => {
   openTables(await services());
   await userEvent.click(await screen.findByRole("tab", { name: "Outras ligas" }));
-  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Liga" }), "Inglaterra");
+  await pickOption(screen.getByRole("combobox", { name: "Liga" }), "Inglaterra");
   const panel = screen.getByRole("tabpanel", { name: "Inglaterra" });
   const top = within(panel).getByRole("table", { name: "Premier League" });
   expect(within(top).getAllByRole("row")).toHaveLength(21);
@@ -141,7 +142,7 @@ test("Europe's leagues are one pick away under Outras ligas, England with both i
 test("the Champions League is one pick away under Outras ligas, its league phase one table of 36 and its later stages waiting for their draw", async () => {
   openTables(await services());
   await userEvent.click(await screen.findByRole("tab", { name: "Outras ligas" }));
-  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Liga" }), "Champions League");
+  await pickOption(screen.getByRole("combobox", { name: "Liga" }), "Champions League");
   const panel = screen.getByRole("tabpanel", { name: "Champions League" });
   const table = within(panel).getByRole("table", { name: "Fase de liga" });
   expect(within(table).getAllByRole("row")).toHaveLength(37);

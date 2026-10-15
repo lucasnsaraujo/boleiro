@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar as barOf, barDate, news, playLiveRound, startAtClub } from "./flows.js";
+import { bar as barOf, barDate, news, pickOption, playLiveRound, startAtClub } from "./flows.js";
 
 const SEASON = 2026;
 // A Série C club plays about 40 matches a year, and some presses of "Jogar rodada" stop early for news.
@@ -27,7 +27,7 @@ async function askForSigning(page: Page): Promise<string> {
   const bar = barOf(page);
   await bar.getByRole("link", { name: "Busca" }).click();
   await expect(page.getByText(/^Janela aberta até /)).toBeVisible();
-  await page.getByRole("combobox", { name: "Divisão" }).selectOption("Série D");
+  await pickOption(page.getByRole("combobox", { name: "Liga" }), "Série D");
   const priced = page.getByRole("table", { name: "Jogadores" }).getByRole("row").filter({ has: page.getByRole("cell", { name: /^R\$/ }) }).first();
   const name = (await priced.getByRole("button").textContent()) ?? "";
   expect(name).not.toBe("");

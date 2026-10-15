@@ -13,6 +13,7 @@ import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springTiming } from "../motion/springEasing.js";
 import { useFlip } from "../motion/useFlip.js";
+import { Select } from "../controls/Select.js";
 import { Bracket } from "../tables/Bracket.js";
 import { GroupCard, NextTieCard, type NextTie } from "../tables/BracketCards.js";
 import { uefaBracket, uefaLeaguePhase, uefaPlayoffs } from "../tables/uefaTables.js";
@@ -154,52 +155,20 @@ export function Tables() {
   const countryTables = country ? worldLeagueTables(state, country.id) : [];
   const countryZones = zoneKeys(countryTables);
   const picker = isOther && (
-    <label className="field tables-state">
-      <small>Liga</small>
-      <select
-        value={pick}
-        onChange={(event) => {
-          setOtherId(event.target.value);
-          setPickedId(event.target.value);
-        }}
-      >
-        <optgroup label="Estaduais">
-          {otherStates.map((c) => (
-            <option key={c.id} value={c.id}>
-              {competitionName(c)}
-            </option>
-          ))}
-        </optgroup>
-        {southAmerica.length > 0 && (
-          <optgroup label="América do Sul">
-            {southAmerica.map((c) => (
-              <option key={c.id} value={worldPick(c.id)}>
-                {c.name}
-              </option>
-            ))}
-          </optgroup>
-        )}
-        {uefaCups.length > 0 && (
-          <optgroup label="Copas europeias">
-            {uefaCups.map((c) => (
-              <option key={c.cup} value={uefaPick(c.cup)}>
-                {UEFA_NAMES[c.cup]}
-              </option>
-            ))}
-          </optgroup>
-        )}
-        {europe.length > 0 && (
-          <optgroup label="Europa">
-            {europe.map((c) => (
-              <option key={c.id} value={worldPick(c.id)}>
-                {c.name}
-              </option>
-            ))}
-          </optgroup>
-        )}
-      </select>
-      <i className="ph-bold ph-caret-down" aria-hidden="true" />
-    </label>
+    <Select
+      label="Liga"
+      value={pick ?? ""}
+      options={[
+        ...otherStates.map((c) => ({ value: c.id, label: competitionName(c), group: "Estaduais" })),
+        ...southAmerica.map((c) => ({ value: worldPick(c.id), label: c.name, group: "América do Sul" })),
+        ...uefaCups.map((c) => ({ value: uefaPick(c.cup), label: UEFA_NAMES[c.cup], group: "Copas europeias" })),
+        ...europe.map((c) => ({ value: worldPick(c.id), label: c.name, group: "Europa" })),
+      ]}
+      onChange={(value) => {
+        setOtherId(value);
+        setPickedId(value);
+      }}
+    />
   );
 
   return (
