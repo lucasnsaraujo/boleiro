@@ -11,12 +11,12 @@ import { musicFor, useSound } from "../sound/SoundProvider.js";
 import { useTheme } from "../theme/ThemeProvider.js";
 import { useCommands, useIsCommandAnswered, useRunCommand } from "./AppCommands.js";
 import { GameClockContext } from "./gameClock.js";
-import { installNativeMenu } from "./nativeMenu.js";
+import { installNativeMenu, MENU } from "./nativeMenu.js";
 import { hasMica, platformOf, windowChrome, windowsVersion } from "./platform.js";
 import { screenDirection } from "./screenDirection.js";
 import { NAV, navIndexOf, showsBar, type NavId } from "./screens.js";
 import { useServices } from "./ServicesContext.js";
-import { commandForKey, MATCH_COMMAND_IDS } from "./shortcuts.js";
+import { commandForKey, MATCH_COMMAND_IDS, type CommandId } from "./shortcuts.js";
 import { useAskBeforeDiscarding } from "./useAskBeforeDiscarding.js";
 import { isTyping } from "./useTypedWord.js";
 import "./shell.css";
@@ -34,6 +34,9 @@ let hasNativeMenu = false;
 function isDialogOpen(): boolean {
   return document.querySelector('[role="dialog"], [role="alertdialog"]') !== null;
 }
+
+// On a Mac the menu's key equivalents take the F-keys and Command-S before the page sees them; clicked, entries without one still run under a dialog.
+const MENU_SHORTCUT_IDS: ReadonlySet<CommandId> = new Set(MENU.flatMap(({ entries }) => entries.flatMap((entry) => ("command" in entry && entry.accelerator ? [entry.command] : []))));
 
 function windowTitle(pathname: string, clock: Clock | null): string {
   if (pathname === "/new-game") return "Boleiro · Nova carreira";
@@ -100,7 +103,7 @@ export function Shell() {
   useEffect(() => {
     if (hasNativeMenu || !isTauri() || PLATFORM !== "mac") return;
     hasNativeMenu = true;
-    void installNativeMenu((id) => !isDialogOpen() && runCommand(id));
+    void installNativeMenu((id) => (MENU_SHORTCUT_IDS.has(id) && isDialogOpen()) || runCommand(id));
   }, [runCommand]);
 
   const [toast, setToast] = useState<Toast | null>(null);
