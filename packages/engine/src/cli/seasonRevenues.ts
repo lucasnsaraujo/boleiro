@@ -35,9 +35,13 @@ export function clubSeasonsOf(before: GameState, after: GameState): ClubSeason[]
   });
 }
 
-/** Plays `seasons` whole seasons with no coach and returns each club's books for every season. */
-export function seasonRevenues(seed: number, seasons: number): { clubSeasons: ClubSeason[]; forcedSales: number; lateWageClosings: number; state: GameState } {
-  let state = loadNewGame(seed, { coachClubId: null });
+/** Plays `seasons` whole seasons with no coach (in a game of `options`) and returns each club's books for every season. */
+export function seasonRevenues(
+  seed: number,
+  seasons: number,
+  options: Omit<Parameters<typeof loadNewGame>[1], "coachClubId"> = {},
+): { clubSeasons: ClubSeason[]; forcedSales: number; lateWageClosings: number; state: GameState } {
+  let state = loadNewGame(seed, { ...options, coachClubId: null });
   const clubSeasons: ClubSeason[] = [];
   let forcedSales = 0;
   let lateWageClosings = 0;

@@ -493,8 +493,39 @@
 }
 
 .live-r[hidden],
-.live-group[hidden] {
+.live-group[hidden],
+.live-others[hidden] {
   display: none;
+}
+
+/* "Outras ligas": the competitions no human coach plays in, folded under one heading that opens them. */
+.live-others-toggle {
+  width: 100%;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.live-others-toggle .ph-caret-right {
+  transition: transform 220ms var(--expo-out);
+}
+
+.live-others-toggle[aria-expanded="true"] .ph-caret-right {
+  transform: rotate(90deg);
+}
+
+.live-others-toggle small {
+  order: 1;
+  font-weight: 700;
+  color: var(--mute);
+}
+
+.live-others-toggle:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
 }
 
 .live-r .std {

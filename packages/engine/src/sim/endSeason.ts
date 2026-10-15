@@ -12,6 +12,8 @@ import { startSeason } from "./startSeason.js";
 import { STATE_CHAMPIONSHIP } from "./stateChampionship.js";
 import { BRAZIL } from "./world/brazil.js";
 import { pyramidMoves } from "./world/pyramidMoves.js";
+import { formatsOf } from "./formats.js";
+import { mostRounds } from "./world/resultOnlyWorld.js";
 
 function leagueOf(state: GameState, division: Division): LeagueCompetition {
   const competition = Object.values(state.competitions).find((c) => c.kind === "league" && c.division === division && c.season === state.season);
@@ -73,7 +75,8 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
   );
   const season = state.season + 1;
   const random = randomStream(state.rngState);
-  const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false, state.economy.continentalStages !== undefined);
+  const gridRounds = mostRounds(Object.values(state.world ?? {}).flatMap((country) => country.leagues.map((league) => ({ clubCount: league.clubIds.length, legs: league.legs }))));
+  const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false, state.economy.continentalStages !== undefined, formatsOf(state), gridRounds);
   const outcomes = Object.fromEntries(
     Object.values(state.competitions).flatMap((competition) => (competition.kind === "league" ? [[competition.id, outcomeAt(competition.division)]] : [])),
   );

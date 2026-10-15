@@ -1,6 +1,8 @@
 import type { Division } from "@boleiro/data/players";
 import type { IsoDate, SeasonCalendar } from "./gameState.js";
+import type { UnifiedDates } from "./world/world.js";
 import { addDays, daysBetween } from "./dates.js";
+import { gameScales, knockoutDates, REALISTA, type Formats } from "./formats.js";
 
 // Date-bases of the CBF 2026 calendar (Trivela, https://trivela.com.br/brasil/calendario-do-futebol-brasileiro-2026/):
 // state championships 11 Jan–8 Mar with 11 dates, Série A 28 Jan–2 Dec, B 21 Mar–28 Nov,
@@ -48,7 +50,8 @@ export function inSeason(date2026: IsoDate, season: number): IsoDate {
   return addDays(shifted, shift > 3 ? shift - 7 : shift);
 }
 
-function pickDates(division: Division, count: number, season: number, reserved: readonly IsoDate[], continental: readonly IsoDate[]): IsoDate[] {
+/** `count` league dates over `division`'s window, kept off `reserved` and, for the divisions that keep clear of them, the continental days. */
+function pickDates(division: Division, count: number, season: number, reserved: readonly IsoDate[], continental: readonly IsoDate[], isClearOfContinental = CLEAR_OF_CONTINENTAL.has(division)): IsoDate[] {
   const [start, end] = LEAGUE_WINDOWS[division].map((date) => inSeason(date, season)) as [IsoDate, IsoDate];
   const span = daysBetween(start, end);
   const candidates: IsoDate[] = [];
@@ -56,7 +59,7 @@ function pickDates(division: Division, count: number, season: number, reserved: 
     const date = addDays(start, day);
     const restsFromReserved =
       reserved.every((other) => Math.abs(daysBetween(date, other)) >= MIN_DAYS_BETWEEN_GAMES) &&
-      (!CLEAR_OF_CONTINENTAL.has(division) || continental.every((other) => Math.abs(daysBetween(date, other)) >= MIN_DAYS_FROM_CONTINENTAL));
+      (!isClearOfContinental || continental.every((other) => Math.abs(daysBetween(date, other)) >= MIN_DAYS_FROM_CONTINENTAL));
     if (LEAGUE_WEEKDAYS.has(new Date(date).getUTCDay()) && restsFromReserved) candidates.push(date);
   }
   const picked: IsoDate[] = [];
@@ -79,16 +82,39 @@ function pickDates(division: Division, count: number, season: number, reserved: 
   return picked;
 }
 
-/** The season's dates; `continental` are the CONMEBOL cups' match days, in a game that plays them. */
-export function seasonCalendar(season: number, dateCounts: Record<Division, number>, continental: readonly IsoDate[] = []): SeasonCalendar {
+/** The Copa do Brasil's rounds with the dates `formats` plays of them. */
+const copaDoBrasilRounds = (season: number, formats: Formats) =>
+  COPA_DO_BRASIL_ROUNDS.map(({ name, dates }) => ({ name, dates: knockoutDates(name, dates, formats).map((date) => inSeason(date, season)) }));
+
+/** The Copa do Brasil's games per stage in its real format over those `formats` plays. */
+export const copaDoBrasilGameScales = (formats: Formats): number[] | undefined =>
+  gameScales(COPA_DO_BRASIL_ROUNDS.map((round) => round.dates.length), COPA_DO_BRASIL_ROUNDS.map(({ name, dates }) => knockoutDates(name, dates, formats).length));
+
+/**
+ * The season's dates; `continental` are the continental cups' match days, in a game that plays them.
+ * On the unified calendar every division's rounds follow one grid of `gridRounds` match days (at least
+ * as many as any league in the game plays) over Série A's window, every one of them clear of the
+ * continental days, so round k of every league falls on the same day.
+ */
+export function seasonCalendar(season: number, dateCounts: Record<Division, number>, continental: readonly IsoDate[] = [], formats: Formats = REALISTA, gridRounds = 0): SeasonCalendar {
   const stateChampionshipDates = STATE_CHAMPIONSHIP_DATES.map((date) => inSeason(date, season));
-  const copaDoBrasilRounds = COPA_DO_BRASIL_ROUNDS.map(({ name, dates }) => ({ name, dates: dates.map((date) => inSeason(date, season)) }));
-  const reserved = [...stateChampionshipDates, ...copaDoBrasilRounds.flatMap((round) => round.dates)];
+  const copaDoBrasil = copaDoBrasilRounds(season, formats);
+  const reserved = [...stateChampionshipDates, ...copaDoBrasil.flatMap((round) => round.dates)];
+  if (formats.calendar === "unified") {
+    const leagueGrid = pickDates("A", Math.max(gridRounds, ...Object.values(dateCounts)), season, reserved, continental, true);
+    const leagueDates = { A: leagueGrid.slice(0, dateCounts.A), B: leagueGrid.slice(0, dateCounts.B), C: leagueGrid.slice(0, dateCounts.C), D: leagueGrid.slice(0, dateCounts.D) };
+    return { season, stateChampionshipDates, copaDoBrasilRounds: copaDoBrasil, leagueDates, leagueGrid };
+  }
   const leagueDates = {
     A: pickDates("A", dateCounts.A, season, reserved, continental),
     B: pickDates("B", dateCounts.B, season, reserved, continental),
     C: pickDates("C", dateCounts.C, season, reserved, continental),
     D: pickDates("D", dateCounts.D, season, reserved, continental),
   };
-  return { season, stateChampionshipDates, copaDoBrasilRounds, leagueDates };
+  return { season, stateChampionshipDates, copaDoBrasilRounds: copaDoBrasil, leagueDates };
+}
+
+/** The days a result-only country plays on in a season of the unified calendar: the leagues' grid and the Copa do Brasil's midweeks; none on a real calendar. */
+export function unifiedDatesOf(calendar: SeasonCalendar): UnifiedDates | undefined {
+  return calendar.leagueGrid && { league: calendar.leagueGrid, cup: calendar.copaDoBrasilRounds.flatMap((round) => round.dates.slice(0, 1)) };
 }

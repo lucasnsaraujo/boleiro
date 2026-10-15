@@ -8,7 +8,7 @@ const club = (id: string, shortName: string) => ({ id, shortName, colours, stadi
 const round: LiveRound = {
   date: "2026-04-01",
   coachClubId: "bahia",
-  competitions: [{ id: "a", label: "Série A · 1ª rodada" }],
+  competitions: [{ id: "a", label: "Série A · 1ª rodada", hasHumanCoach: true }],
   matches: [
     {
       fixtureId: "other",

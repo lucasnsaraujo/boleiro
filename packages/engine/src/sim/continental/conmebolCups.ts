@@ -1,4 +1,5 @@
 import { CONTINENTAL_CUPS, type Competition, type ContinentalCompetition, type ContinentalCup, type Fixture, type IsoDate } from "../gameState.js";
+import { groupDates, knockoutDates, REALISTA, type Formats } from "../formats.js";
 import type { StageShape } from "../leagueFormats.js";
 import { inSeason } from "../seasonCalendar.js";
 import { groupStageAt, knockoutStageAt } from "../stageAt.js";
@@ -47,14 +48,22 @@ const SUL_AMERICANA = { stage1: 0, groups: 1, playoffs: 2, roundOf16: 3 } as con
 /** What a cup's next draw reads besides its own stages: the season's competitions and every fixture so far. */
 export type SeasonSoFar = { competitions: Readonly<Record<string, Competition>>; fixtures: readonly Fixture[] };
 
-export function cupStageDates(cup: ContinentalCup, season: number): IsoDate[][] {
-  return CUP_STAGES[cup].map((stage) => stage.dates.map((date) => inSeason(date, season)));
+/** The dates `formats` plays of a stage's real `dates`: some of the group days, or one match for a knockout round. */
+export const stageDatesIn = (name: string, dates: readonly IsoDate[], formats: Formats): IsoDate[] =>
+  name === "groups" ? groupDates(dates, formats) : knockoutDates(name, dates, formats);
+
+export function cupStageDates(cup: ContinentalCup, season: number, formats: Formats = REALISTA): IsoDate[][] {
+  return CUP_STAGES[cup].map((stage) => stageDatesIn(stage.name, stage.dates, formats).map((date) => inSeason(date, season)));
 }
 
-/** Every date of the season's CONMEBOL cups, which Brazil's leagues keep a day clear of. */
-export function continentalDates(season: number): IsoDate[] {
-  return CONTINENTAL_CUPS.flatMap((cup) => cupStageDates(cup, season).flat());
+/** Every date of the season's CONMEBOL cups. */
+export function conmebolDates(season: number, formats: Formats): IsoDate[] {
+  return CONTINENTAL_CUPS.flatMap((cup) => cupStageDates(cup, season, formats).flat());
 }
+
+const FULL_GROUP_DAYS = 6;
+/** Groups of four meet once when their stage has three match days, twice with six. */
+const groupLegs = (competition: ContinentalCompetition, index: number): 1 | 2 => ((competition.stageDates[index]?.length ?? FULL_GROUP_DAYS) < FULL_GROUP_DAYS ? 1 : 2);
 
 const fixturesOf = (competition: Competition, fixtures: readonly Fixture[], stage: number) =>
   fixtures.filter((f) => f.competitionId === competition.id && f.stage === stage);
@@ -131,7 +140,7 @@ function libertadoresStage(competition: ContinentalCompetition, season: SeasonSo
     case LIBERTADORES.stage3:
       return { kind: "knockout", ties: pairOff(winners(LIBERTADORES.stage2)) };
     case LIBERTADORES.groups:
-      return { kind: "groups", groups: drawGroups(competition, [...(competition.entries[index] ?? []), ...winners(LIBERTADORES.stage3)]), legs: 2 };
+      return { kind: "groups", groups: drawGroups(competition, [...(competition.entries[index] ?? []), ...winners(LIBERTADORES.stage3)]), legs: groupLegs(competition, index) };
     case LIBERTADORES.roundOf16: {
       const orders = groupOrders(competition, fixtures, LIBERTADORES.groups);
       const groupOf = groupIndexIn(orders);
@@ -170,7 +179,7 @@ function sulAmericanaStage(competition: ContinentalCompetition, season: SeasonSo
       return { kind: "knockout", ties: nationalTies(competition, competition.entries[index] ?? []) };
     case SUL_AMERICANA.groups: {
       const knockedOut = libertadores && libertadores.stages.length > LIBERTADORES.stage3 ? tiesOf(libertadores, fixtures, LIBERTADORES.stage3).map((t) => t.loserId) : [];
-      return { kind: "groups", groups: drawGroups(competition, [...(competition.entries[index] ?? []), ...knockedOut, ...winners(SUL_AMERICANA.stage1)]), legs: 2 };
+      return { kind: "groups", groups: drawGroups(competition, [...(competition.entries[index] ?? []), ...knockedOut, ...winners(SUL_AMERICANA.stage1)]), legs: groupLegs(competition, index) };
     }
     case SUL_AMERICANA.playoffs: {
       const orders = groupOrders(competition, fixtures, SUL_AMERICANA.groups);

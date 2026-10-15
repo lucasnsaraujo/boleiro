@@ -1,11 +1,15 @@
 import { beforeAll, expect, test } from "vitest";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
 import { createEngineSession } from "../engine/createEngineSession.js";
-import type { LiveRound } from "./liveRoundOf.js";
+import type { GameState } from "@boleiro/engine/sim/gameState";
+import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
+import { liveRoundOf, type LiveRound } from "./liveRoundOf.js";
 
 const CLUB = "flamengo-rj";
 // Enough play-ons to reach the coach's first match day.
 const MAX_STEPS = 20;
+// The keys a one-coach game with the world holds, to rebuild it from the session.
+const KEYS: (keyof GameState)[] = ["version", "packVersion", "seed", "rngState", "date", "season", "coachClubId", "clubs", "players", "calendar", "competitions", "fixtures", "economy", "finances", "mood", "coach", "boards", "discipline", "history", "market", "usualLineups", "world", "europe", "friendlies"];
 
 let kickOff: LiveRound;
 let changed: LiveRound;
@@ -76,4 +80,26 @@ test("the coach's side is asked about its red cards and injuries, and shows who 
   expect(shootout?.kickers).toHaveLength(11);
   expect(shootout?.isOverruled ? shootout.kickers.slice(0, 3) : order).toEqual(shootout?.kickers.slice(0, 3));
   expect(plan.squad.find((p) => p.id === shootout?.kickers.at(-1))?.group).toBe("GK");
+});
+
+test("only the competitions a human coach's club plays in open the round; the others go under Outras ligas", () => {
+  const coachCompetition = kickOff.matches.find((m) => m.fixtureId === kickOff.coach?.fixtureId)?.competitionId;
+  expect(kickOff.competitions.find((c) => c.id === coachCompetition)?.hasHumanCoach).toBe(true);
+  expect(kickOff.competitions.some((c) => !c.hasHumanCoach)).toBe(true);
+  for (const competition of kickOff.competitions.filter((c) => c.hasHumanCoach)) {
+    expect(kickOff.matches.some((m) => m.competitionId === competition.id && (m.homeId === CLUB || m.awayId === CLUB))).toBe(true);
+  }
+});
+
+test("a competition the coach's club reached from another cup, outside its entry list, still opens the round", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 4, choices: { coachClubId: CLUB } });
+  for (let step = 0; step < MAX_STEPS && session.apply({ type: "playToMatchDay" }).stop !== "matchDay"; step++);
+  const state = session.read(KEYS);
+  const fixture = state.fixtures.find((f) => f.date === state.date && (f.homeId === CLUB || f.awayId === CLUB));
+  const competition = fixture && state.competitions[fixture.competitionId];
+  if (!competition) throw new Error("the coach plays today");
+  const dropped = { ...state, competitions: { ...state.competitions, [competition.id]: { ...competition, clubIds: competition.clubIds.filter((id) => id !== CLUB) } } };
+  const round = liveRoundOf(startMatchDay(dropped, {}), 0);
+  expect(round.competitions.find((c) => c.id === competition.id)?.hasHumanCoach).toBe(true);
 });

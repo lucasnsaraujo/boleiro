@@ -35,6 +35,8 @@ import { turnOverAcademies } from "../youth/turnOverAcademies.js";
 import { isShootoutDue, settleShootout, shootoutSeed, shootoutWinnerOf } from "../settleShootout.js";
 import { runTransferDay } from "../transfers/runTransferDay.js";
 import { endWorldSeason, playWorldDay } from "../world/resultOnlyWorld.js";
+import { formatsOf } from "../formats.js";
+import { unifiedDatesOf } from "../seasonCalendar.js";
 import { coachOutcome } from "./coachOutcome.js";
 import type { CoachMatch, DayInProgress, LiveDay, MatchOutcome } from "./liveDay.js";
 import { onPitchAt, whoPlayed } from "./aiSubstitutions.js";
@@ -201,7 +203,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     events.push(...copinha.events);
   }
   if (state.world) next = { ...next, world: playWorldDay(state.world, state.date) };
-  if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date) };
+  if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state)) };
   if (next.date.slice(0, 4) !== String(state.season)) {
     const continentalField = seasonEndField(next);
     const academies = turnOverAcademies(closeSeasonHistory(next));
@@ -215,7 +217,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     // Bans still pending when a competition ends lapse with it.
     const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
     next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };
-    if (next.world) next = { ...next, world: endWorldSeason(next.world, next.season) };
+    if (next.world) next = { ...next, world: endWorldSeason(next.world, next.season, unifiedDatesOf(next.calendar)) };
     next = openContinentalCups(next, continentalField);
   }
   const market = runTransferDay(next, decisions.requests ?? [], (decisions.waiting ?? []).map((own) => own.requests ?? []));

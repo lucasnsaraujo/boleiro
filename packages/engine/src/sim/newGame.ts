@@ -22,9 +22,11 @@ import { tierOf } from "./finances/tierOf.js";
 import { openingContractUntil } from "./transfers/openingContractUntil.js";
 import { openingMarket } from "./transfers/openingMarket.js";
 import { startSeason } from "./startSeason.js";
-import { startCountry } from "./world/resultOnlyWorld.js";
+import { isRealista, REALISTA, type Formats } from "./formats.js";
+import { unifiedDatesOf } from "./seasonCalendar.js";
+import { mostRounds, startCountry } from "./world/resultOnlyWorld.js";
 import { SOUTH_AMERICA } from "./world/southAmerica.js";
-import type { CountryStructure, World, WorldClub } from "./world/world.js";
+import type { CountryStructure, UnifiedDates, World, WorldClub } from "./world/world.js";
 import { openAcademies } from "./youth/academy.js";
 
 /** A result-only country to start: its structure and its clubs level by level, top first. */
@@ -55,6 +57,8 @@ export type NewGameOptions = {
   hotSeat?: { coachName: string; otherCoaches: readonly { name: string; clubId: string }[] };
   /** Each coach's market time per transfer window, in seconds; left out, the market has no clock. */
   marketClockSeconds?: number;
+  /** The calendar and formats (Rápido, Realista or a custom mix); left out, Realista's. */
+  formats?: Formats;
 };
 
 /** The most human coaches one game takes, all on one computer (SPEC §14). */
@@ -81,13 +85,25 @@ function hashText(text: string): number {
 // A country's id names its save shard, which the desktop app keeps as a file; see `is_plain_name` in `apps/desktop/src-tauri/src/slots.rs`.
 const COUNTRY_ID = /^[a-z0-9-]{1,64}$/;
 
+/**
+ * The country as `formats` plays it: no level meeting more often than they allow, and on the unified
+ * calendar its season the calendar year, so it rolls over on 1 January with everyone.
+ */
+function inFormats(structure: CountryStructure, formats: Formats): CountryStructure {
+  if (isRealista(formats)) return structure;
+  const levels = structure.levels.map((level) => ({ ...level, legs: Math.min(level.legs, formats.leagueLegs) as 1 | 2 }));
+  const played = { ...structure, levels };
+  if (formats.calendar === "unified") delete played.rollover;
+  return played;
+}
+
 /** Each country gets a stream of its own, seeded from the game's seed and its id, so other countries listed or not don't change it. */
-function startWorld(countries: readonly CountryStart[], season: number, seed: number): World {
+function startWorld(countries: readonly CountryStart[], season: number, seed: number, unified?: UnifiedDates): World {
   const world: World = {};
   for (const { structure, levels } of countries) {
     if (!COUNTRY_ID.test(structure.id)) throw new Error(`invalid country id "${structure.id}": only lowercase letters, digits and dashes`);
     if (structure.id in world) throw new Error(`two countries have the id ${structure.id}`);
-    world[structure.id] = startCountry(structure, levels, season, (seed ^ WORLD_STREAM_SALT ^ hashText(structure.id)) >>> 0);
+    world[structure.id] = startCountry(structure, levels, season, (seed ^ WORLD_STREAM_SALT ^ hashText(structure.id)) >>> 0, unified);
   }
   return world;
 }
@@ -117,8 +133,10 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs, players, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, stateChampionships = true, midSeasonWindow = true, hotSeat, marketClockSeconds }: NewGameOptions,
+  { clubs, players, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, stateChampionships = true, midSeasonWindow = true, hotSeat, marketClockSeconds, formats = REALISTA }: NewGameOptions,
 ): GameState {
+  const countries = (world ?? []).map(({ structure, levels }) => ({ structure: inFormats(structure, formats), levels }));
+  const gridRounds = mostRounds(countries.flatMap(({ structure, levels }) => structure.levels.map((level, i) => ({ clubCount: levels[i]?.length ?? 0, legs: level.legs }))));
   const random = randomStream(seed);
   const traitRandom = randomStream(seed ^ TRAIT_STREAM_SALT);
   const contractRandom = randomStream(seed ^ CONTRACT_STREAM_SALT);
@@ -137,14 +155,14 @@ export function newGame(
       return { id, clubId, name, group, strength, ...(roles?.length ? { positions: [...roles] } : {}), contractUntil, ...openingProfile(player, `${season}-01-01`, traitRandom.next) };
     });
   const squadPlayers = [...dataPlayers, ...academyTopUp(clubs, dataPlayers, `${season}-01-01`, randomStream(seed ^ ACADEMY_STREAM_SALT).next)];
-  const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION, stateChampionships, playsContinentalCups(world ?? []));
+  const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION, stateChampionships, playsContinentalCups(countries), formats, gridRounds);
   const { economy, finances: boardFinances, wages } = openingFinances(clubsById, squadPlayers, competitions, fixtures, financeData, competitionMoney);
   const finances = (hotSeat?.otherCoaches ?? []).map((other) => other.clubId).reduce(withNewCoachRoom, withNewCoachRoom(boardFinances, coachClubId));
   const simPlayers = Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }]));
   const usualLineups = openingLineups(Object.keys(clubsById), squadsByClub(simPlayers), lineups, (row) => idOfRow.get(row));
   const market = openingMarket(seed);
-  const startedWorld = world?.length ? startWorld(world, season, seed) : null;
-  const europe = startedWorld && openingEuropeanCups(startedWorld, seed, season);
+  const startedWorld = countries.length ? startWorld(countries, season, seed, unifiedDatesOf(calendar)) : null;
+  const europe = startedWorld && openingEuropeanCups(startedWorld, seed, season, formats);
   const game = openingCoach({
     version: 4,
     packVersion,
@@ -169,6 +187,7 @@ export function newGame(
     ...(europe ? { europe } : {}),
     ...(stateChampionships ? {} : { playsStateChampionships: false as const }),
     ...(midSeasonWindow ? {} : { hasMidSeasonWindow: false as const }),
+    ...(isRealista(formats) ? {} : { formats }),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
   const withClock = marketClockSeconds === undefined ? game : { ...game, marketClockSeconds };
   const withAcademies = { ...withClock, youth: openAcademies(withClock) };

@@ -125,6 +125,7 @@ export function Round() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AdvanceResult | null>(null);
   const [isOnlyMine, setOnlyMine] = useState(false);
+  const [isOtherLeaguesOpen, setOtherLeaguesOpen] = useState(false);
   const [flashes, setFlashes] = useState<Record<string, Flash>>({});
   const [alerts, setAlerts] = useState<Record<string, Alert>>({});
   const [incident, setIncident] = useState<OpenIncident | null>(null);
@@ -489,6 +490,24 @@ export function Round() {
   const groups = round.competitions
     .map((competition) => ({ ...competition, rows: matches.filter((m) => m.competitionId === competition.id) }))
     .filter((group) => group.rows.length > 0);
+  // Competitions without a human coach fold under "Outras ligas"; with no human coach anywhere, nothing folds.
+  const isFolding = groups.some((group) => group.hasHumanCoach);
+  const openGroups = isFolding ? groups.filter((group) => group.hasHumanCoach) : groups;
+  const otherGroups = isFolding ? groups.filter((group) => !group.hasHumanCoach) : [];
+  const otherMatchCount = otherGroups.reduce((sum, group) => sum + group.rows.length, 0);
+  const groupSection = (group: (typeof groups)[number], isHidden: boolean) => (
+    <section key={group.id} className="live-group" aria-labelledby={`live-${group.id}`} hidden={isHidden}>
+      <h2 id={`live-${group.id}`} className="live-g">
+        <CompetitionLogo label={group.label} size={20} />
+        {group.label}
+      </h2>
+      <ul className="live-rows" aria-labelledby={`live-${group.id}`}>
+        {group.rows.map((m) => (
+          <MatchRow key={m.fixtureId} match={m} clubs={round.clubs} flash={flashes[m.fixtureId]} alert={alerts[m.fixtureId]} isHidden={isOnlyMine && !m.isHuman} />
+        ))}
+      </ul>
+    </section>
+  );
 
   return (
     <div className="live fills-screen" style={{ ["--flood" as string]: `${FLOOD_MS[resumeSpeed.current]}ms`, ["--box-flash" as string]: `${BOX_FLASH_MS}ms` }}>
@@ -545,19 +564,17 @@ export function Round() {
 
       <div className="live-list">
         {minute >= FULL_TIME && <MatchReport round={round} />}
-        {groups.map((group) => (
-          <section key={group.id} className="live-group" aria-labelledby={`live-${group.id}`} hidden={isOnlyMine && !group.rows.some((m) => m.isHuman)}>
-            <h2 id={`live-${group.id}`} className="live-g">
-              <CompetitionLogo label={group.label} size={20} />
-              {group.label}
-            </h2>
-            <ul className="live-rows" aria-labelledby={`live-${group.id}`}>
-              {group.rows.map((m) => (
-                <MatchRow key={m.fixtureId} match={m} clubs={round.clubs} flash={flashes[m.fixtureId]} alert={alerts[m.fixtureId]} isHidden={isOnlyMine && !m.isHuman} />
-              ))}
-            </ul>
-          </section>
-        ))}
+        {openGroups.map((group) => groupSection(group, isOnlyMine && !group.rows.some((m) => m.isHuman)))}
+        {otherGroups.length > 0 && (
+          <div className="live-others" hidden={isOnlyMine}>
+            <button type="button" className="live-g live-others-toggle" aria-expanded={isOtherLeaguesOpen} aria-controls="live-other-leagues" onClick={() => setOtherLeaguesOpen(!isOtherLeaguesOpen)}>
+              <i className="ph-bold ph-caret-right" aria-hidden="true" />
+              Outras ligas
+              <small>{otherMatchCount === 1 ? "1 jogo" : `${otherMatchCount} jogos`}</small>
+            </button>
+            <div id="live-other-leagues">{otherGroups.map((group) => groupSection(group, !isOtherLeaguesOpen))}</div>
+          </div>
+        )}
       </div>
 
       {isTableOpen && table && (

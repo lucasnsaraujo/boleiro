@@ -3,9 +3,9 @@ import type { IsoDate } from "../gameState.js";
 import { continentalPlaces } from "./continentalPlaces.js";
 import { pyramidMoves, type LevelExits } from "./pyramidMoves.js";
 import { cupFinal, openCup, playCupDay, type ResultOnlyCup } from "./resultOnlyCup.js";
-import { checkSquad, leagueMatches, leagueTable, openLeague, playLeagueDay } from "./resultOnlyLeague.js";
+import { checkSquad, leagueMatches, leagueTable, openLeague, playLeagueDay, roundsOf } from "./resultOnlyLeague.js";
 import { uefaPlaces } from "./uefaPlaces.js";
-import type { Country, CountryStructure, ResultOnlyLeague, World, WorldClub } from "./world.js";
+import type { Country, CountryStructure, ResultOnlyLeague, UnifiedDates, World, WorldClub } from "./world.js";
 
 function checkPyramid({ id, levels }: CountryStructure, sizes: readonly number[]): void {
   if (levels.length === 0) throw new Error(`${id}: no levels`);
@@ -19,22 +19,28 @@ function checkPyramid({ id, levels }: CountryStructure, sizes: readonly number[]
   });
 }
 
-/** The season's leagues, one per level, and the cup of a country that plays one; the cup draws after the leagues, so a country without one draws as before. */
-function openSeason(structure: CountryStructure, members: readonly string[][], season: number, random: () => number): Pick<Country, "leagues" | "cup"> {
+/**
+ * The season's leagues, one per level, and the cup of a country that plays one; the cup draws after the
+ * leagues, so a country without one draws as before. `unified` holds the unified calendar's days.
+ */
+function openSeason(structure: CountryStructure, members: readonly string[][], season: number, random: () => number, unified?: UnifiedDates): Pick<Country, "leagues" | "cup"> {
   const leagues = structure.levels.map((level, i) =>
-    openLeague(`${structure.id}-${i + 1}-${season}`, season, [...(members[i] ?? [])].sort(), level.legs, structure.window, random),
+    openLeague(`${structure.id}-${i + 1}-${season}`, season, [...(members[i] ?? [])].sort(), level.legs, structure.window, random, unified?.league),
   );
   if (!structure.hasCup) return { leagues };
   const levels = leagues.map((league) => league.clubIds);
-  return { leagues, cup: openCup(`${structure.id}-cup-${season}`, season, levels, structure.window, leagues.flatMap((league) => league.dates), random) };
+  return { leagues, cup: openCup(`${structure.id}-cup-${season}`, season, levels, structure.window, leagues.flatMap((league) => league.dates), random, unified?.cup) };
 }
 
-/** A result-only country at the start of `season`, `levels` holding its clubs level by level, top first. */
-export function startCountry(structure: CountryStructure, levels: readonly (readonly WorldClub[])[], season: number, seed: number): Country {
+/**
+ * A result-only country at the start of `season`, `levels` holding its clubs level by level, top first;
+ * on the unified calendar its season is the calendar year, filed on 1 January with Brazil's.
+ */
+export function startCountry(structure: CountryStructure, levels: readonly (readonly WorldClub[])[], season: number, seed: number, unified?: UnifiedDates): Country {
   checkPyramid(structure, levels.map((clubs) => clubs.length));
   for (const club of levels.flat()) checkSquad(club);
   const random = randomStream(seed);
-  const opened = openSeason(structure, levels.map((clubs) => clubs.map((club) => club.id)), season, random.next);
+  const opened = openSeason(structure, levels.map((clubs) => clubs.map((club) => club.id)), season, random.next, unified);
   const clubs = Object.fromEntries(levels.flat().map((club) => [club.id, club]));
   return { structure, clubs, ...opened, seasons: [], rngState: random.state() };
 }
@@ -78,7 +84,7 @@ export function playWorldDay(world: World, date: IsoDate): World {
 }
 
 /** Files a country's finished season, moves clubs through its pyramid and opens `season`. */
-function endCountrySeason(country: Country, season: number): Country {
+function endCountrySeason(country: Country, season: number, unified?: UnifiedDates): Country {
   const { structure } = country;
   const [top] = country.leagues;
   if (!top) throw new Error(`${structure.id}: no leagues to end`);
@@ -94,7 +100,7 @@ function endCountrySeason(country: Country, season: number): Country {
     country.leagues.flatMap((league, from) => league.clubIds.filter((id) => (moves.has(id) ? moves.get(id) : from) === i)),
   );
   const random = randomStream(country.rngState);
-  const opened = openSeason(structure, members, season, random.next);
+  const opened = openSeason(structure, members, season, random.next, unified);
   const cup = country.cup ? cupFinal(country.cup) : null;
   const record = {
     season: top.season,
@@ -110,7 +116,12 @@ function endCountrySeason(country: Country, season: number): Country {
   return { ...country, ...opened, seasons: [...country.seasons, record], rngState: random.state() };
 }
 
-/** Every result-only country rolled over to `season` on 1 January, but for those whose season crosses it. */
-export function endWorldSeason(world: World, season: number): World {
-  return Object.fromEntries(Object.entries(world).map(([id, country]) => [id, country.structure.rollover ? country : endCountrySeason(country, season)]));
+/** Every result-only country rolled over to `season` on 1 January, but for those whose season crosses it; `unified` holds the new season's unified calendar days. */
+export function endWorldSeason(world: World, season: number, unified?: UnifiedDates): World {
+  return Object.fromEntries(Object.entries(world).map(([id, country]) => [id, country.structure.rollover ? country : endCountrySeason(country, season, unified)]));
+}
+
+/** The most rounds any league of these pyramids plays, which the unified grid must hold. */
+export function mostRounds(levels: readonly { clubCount: number; legs: 1 | 2 }[]): number {
+  return Math.max(0, ...levels.map(({ clubCount, legs }) => roundsOf(clubCount, legs)));
 }
