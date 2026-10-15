@@ -118,3 +118,65 @@ test("two coaches at two clubs take their turns, each sets his eleven, a round p
   expect(rounds).toBeGreaterThan(0);
   expect(clockChecked).toBe(true);
 });
+
+test("during a hot-seat round Space opens the first coach's match, → moves to the second's, and a substitute dragged onto the pitch shows on the board", async ({ page }) => {
+  test.setTimeout(10 * 60_000);
+  await page.goto("/");
+  await startTwoCoaches(page);
+
+  let isDone = false;
+  for (let turn = 0; turn < MAX_TURNS && !isDone; turn++) {
+    const pass = page.getByRole("button", { name: /passar a vez/i });
+    const play = page.getByRole("button", { name: "Jogar rodada" });
+    await expect(pass.or(play)).toBeVisible();
+    if (await pass.isVisible()) {
+      const playsToday = (await pass.textContent())?.includes("Escalar");
+      await pass.click();
+      if (playsToday) await page.getByRole("dialog", { name: "Escalação" }).getByRole("button", { name: "Confirmar e passar a vez" }).click();
+      await takeTurn(page, "Bruno");
+      continue;
+    }
+    await play.click();
+    const sheet = page.getByRole("dialog", { name: "Escalação" });
+    const handOff = page.getByRole("heading", { name: /^Vez de / });
+    const live = page.locator(".live-list");
+    await expect(sheet.or(handOff).or(live)).toBeVisible({ timeout: 60_000 });
+    if (await handOff.isVisible()) {
+      await takeTurn(page, "Ana");
+      continue;
+    }
+    if (await sheet.isVisible()) await sheet.getByRole("button", { name: "Começar a rodada" }).click();
+    await expect(live).toBeVisible();
+    if ((await page.locator(".live-r.human").count()) < 2) {
+      await playRound(page);
+      await takeTurn(page, "Ana");
+      continue;
+    }
+
+    await page.keyboard.press(" ");
+    const lineup = page.getByRole("dialog", { name: "Escalação" });
+    const coaches = lineup.getByRole("group", { name: "Jogos dos técnicos" });
+    await expect(coaches).toContainText("Ana");
+    await expect(coaches).toContainText("1 de 2");
+    await page.keyboard.press("ArrowRight");
+    await expect(coaches).toContainText("Bruno");
+    await expect(lineup).toContainText("Palmeiras");
+
+    const bench = lineup.getByRole("list", { name: "Banco" });
+    const substitute = bench.locator("li.drag").first();
+    const onName = (await substitute.getByRole("button").getAttribute("aria-label")) ?? "";
+    const starter = lineup.getByRole("group", { name: "Titulares" }).getByRole("button").last();
+    const offName = (await starter.getAttribute("aria-label")) ?? "";
+    await substitute.dragTo(starter);
+    await expect(lineup.getByRole("group", { name: "Titulares" }).getByRole("button", { name: onName })).toBeVisible();
+    await lineup.getByRole("button", { name: "Voltar ao jogo" }).click();
+    await expect(lineup).toBeHidden();
+
+    const brunosRow = page.locator(".live-r.human", { hasText: `Entra ${onName}, sai ${offName}` });
+    await expect(brunosRow).toBeVisible();
+    await expect(brunosRow).toContainText("Palmeiras");
+    await expect(brunosRow.getByText("Troca")).toBeVisible();
+    isDone = true;
+  }
+  expect(isDone).toBe(true);
+});
