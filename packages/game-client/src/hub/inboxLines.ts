@@ -115,6 +115,18 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         const paid = competition(event.competitionId);
         return isOurs(event.clubId) ? [`${paid ? competitionName(paid) : "Copa do Brasil"}: prêmio de ${formatMoney(event.amount)}`, "good"] : null;
       }
+      case "friendlyPlayed": {
+        const { homeId, awayId, result, fee } = event.friendly;
+        if (!result || !(isOurs(homeId) || isOurs(awayId))) return null;
+        const score = `Amistoso: ${clubName(homeId)} ${result.homeGoals} x ${result.awayGoals} ${clubName(awayId)}`;
+        if (isOurs(awayId)) return [`${score}, cachê de ${formatMoney(fee)}`, "good"];
+        return [`${score}, bilheteria de ${formatMoney(event.gate)} e cachê pago de ${formatMoney(fee)}`, event.gate >= fee ? "neutral" : "bad"];
+      }
+      case "friendlyCalledOff": {
+        const { homeId, awayId } = event.friendly;
+        if (!(isOurs(homeId) || isOurs(awayId))) return null;
+        return [`Amistoso contra o ${clubName(isOurs(homeId) ? awayId : homeId)} cancelado: a data virou jogo oficial`, "neutral"];
+      }
       case "fansPressure":
         return isOurs(event.clubId) ? ["Torcida cobra o time", "bad"] : null;
       case "fansProtest":

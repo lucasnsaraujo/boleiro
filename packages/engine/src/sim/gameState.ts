@@ -5,6 +5,7 @@ import type { Player } from "../engine/match.js";
 import type { Board } from "./coach/boardExpectations.js";
 import type { Coach } from "./coach/coach.js";
 import type { Discipline, MatchCards } from "./discipline/discipline.js";
+import type { Friendly } from "./friendlies/friendlies.js";
 import type { History } from "./history/history.js";
 import type { ClubMood } from "./morale/clubMood.js";
 import type { PlayerProfile } from "./players/playerProfile.js";
@@ -196,4 +197,6 @@ export type GameState = {
   usualLineups?: Record<string, UsualLineup>;
   /** Countries played result-only, outside the full tier; a game of Brazil alone has none. */
   world?: World;
+  /** The coach's club's friendlies, booked and lately played; saves from before friendlies have none. */
+  friendlies?: Friendly[];
 };

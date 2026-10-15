@@ -52,6 +52,14 @@ describe("board and money", () => {
     expect(line({ ...closed, ledger: ledger(1_000_000, 3_000_000) })).toMatchObject({ text: "Fechamento de março: prejuízo de R$ 2 mi", tone: "bad" });
   });
 
+  test("a friendly reads as its score with the fee our club earned or paid", () => {
+    const friendly = { id: "x", date: game.date, homeId: "vitoria-ba", awayId: "bahia-ba", fee: 300_000, result: { homeGoals: 1, awayGoals: 2 } };
+    expect(line({ type: "friendlyPlayed", friendly, gate: 500_000 })).toMatchObject({ text: "Amistoso: Vitória 1 x 2 Bahia, cachê de R$ 300 mil", tone: "good" });
+    const hosting = { ...friendly, homeId: "bahia-ba", awayId: "vitoria-ba", result: { homeGoals: 0, awayGoals: 0 } };
+    expect(line({ type: "friendlyPlayed", friendly: hosting, gate: 500_000 })).toMatchObject({ text: "Amistoso: Bahia 0 x 0 Vitória, bilheteria de R$ 500 mil e cachê pago de R$ 300 mil", tone: "neutral" });
+    expect(line({ type: "friendlyCalledOff", friendly })).toMatchObject({ text: "Amistoso contra o Vitória cancelado: a data virou jogo oficial", tone: "neutral" });
+  });
+
   test("late wages and forced sales are bad news", () => {
     expect(line({ type: "wagesLate", clubId: "bahia-ba", owed: 4_000_000, months: 1 })).toMatchObject({ text: "Salários atrasados: R$ 4 mi em aberto", tone: "bad" });
     expect(line({ type: "forcedSale", clubId: "bahia-ba", playerId: own.id, buyerId: "vitoria-ba", fee: 900_000 })).toMatchObject({

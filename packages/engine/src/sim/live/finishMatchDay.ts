@@ -11,6 +11,7 @@ import { endSeason } from "../endSeason.js";
 import { closeMonth } from "../finances/closeMonth.js";
 import { payCopaPrizes } from "../finances/payCopaPrizes.js";
 import { recordMatchFinances } from "../finances/recordMatchFinances.js";
+import { playFriendlies } from "../friendlies/friendlies.js";
 import { releaseTicketPrice } from "../finances/setTicketPrice.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { closeSeasonHistory } from "../history/closeSeasonHistory.js";
@@ -126,6 +127,9 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   const prizes = payCopaPrizes(next, played);
   next = prizes.state;
   events.push(...prizes.events);
+  const friendlies = playFriendlies(next, state.date);
+  next = friendlies.state;
+  events.push(...friendlies.events);
   const closed = next.date.endsWith("-01") ? closeMonth(next, random.next) : { state: next, events: [] };
   events.push(...closed.events);
   const built = buildStadiums(closed.state, closed.state.date);
