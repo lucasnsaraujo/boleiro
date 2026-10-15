@@ -1,5 +1,6 @@
 import { randomStream } from "../../engine/random.js";
-import type { GameState } from "../gameState.js";
+import { asWaitingCoach, waitingCoachesOf } from "../coach/humanCoaches.js";
+import type { GameState, IsoDate } from "../gameState.js";
 import { unitHash } from "./coachMarket.js";
 import { coachMarketDay } from "./coachMarketDay.js";
 import type { CoachRequest } from "./coachRequest.js";
@@ -13,6 +14,7 @@ import { signFreeAgents } from "./signFreeAgents.js";
 import { signFromAbroad } from "./signFromAbroad.js";
 import { tradeBetweenClubs } from "./tradeBetweenClubs.js";
 import type { TransferEvent } from "./transferEvents.js";
+import type { CoachMarket } from "./transferMarket.js";
 import { isMarketDay, isWindowOpen } from "./transferWindows.js";
 
 type Step = (state: GameState, random: () => number) => { state: GameState; events: TransferEvent[] };
@@ -21,40 +23,65 @@ type Step = (state: GameState, random: () => number) => { state: GameState; even
  * Whether the coach's market has anything to do today: offers, counters and auctions to lapse or close,
  * listings to find buyers inside the window, or a market day for clubs to bid. Most days it has not.
  */
-function hasCoachBusiness(state: GameState): boolean {
-  const coach = state.market.coach;
+function hasCoachBusiness(coach: CoachMarket | undefined, coachClubId: string | null, date: IsoDate): boolean {
   const has = (entries: Record<string, unknown> | undefined) => !!entries && Object.keys(entries).length > 0;
   if (has(coach?.bids) || has(coach?.counters) || has(coach?.auctions)) return true;
-  return (has(coach?.listings) && isWindowOpen(state.date)) || (state.coachClubId !== null && isMarketDay(state.date));
+  return (has(coach?.listings) && isWindowOpen(date)) || (coachClubId !== null && isMarketDay(date));
 }
+
+/** The events that are a coach's own news rather than the market's: his board's answers and his business. */
+const isCoachNews = (event: TransferEvent) =>
+  event.type === "requestDecided" || event.type === "bidReceived" || event.type === "auctionClosed" || event.type === "counterOffered";
 
 /**
  * The transfer market's day, run at the start of `state.date`: loans and contracts that ended, the
  * coach's requests and his own business (offers, listings, auctions), then on market days Europe's bids
- * and the AI clubs' business. Draws come from the market's own random stream.
+ * and the AI clubs' business. Draws come from the market's own random stream. In a hot-seat game each
+ * waiting coach's requests (`waitingRequests`, in waiting order) and business run as if he sat in the
+ * seat; his own news comes back apart, in `waitingEvents`.
  */
-export function runTransferDay(state: GameState, requests: readonly CoachRequest[]): { state: GameState; events: TransferEvent[] } {
+export function runTransferDay(
+  state: GameState,
+  requests: readonly CoachRequest[],
+  waitingRequests: readonly (readonly CoachRequest[])[] = [],
+): { state: GameState; events: TransferEvent[]; waitingEvents: TransferEvent[][] } {
   const random = randomStream(state.market.rngState);
   let serial = 0;
   const nextId = () => `t${state.date}-${serial++}`;
-  const steps: Step[] = [];
-  if (Object.values(state.market.loans).some((loan) => loan.until < state.date)) steps.push((s) => returnLoans(s));
-  if (hasExpiries(state)) steps.push(expireContracts);
-  for (const request of requests) steps.push((s, r) => decideCoachRequest(s, request, r));
-  if (hasCoachBusiness(state)) {
+  const steps: { step: Step; waitingIndex?: number }[] = [];
+  const add = (...added: Step[]) => steps.push(...added.map((step) => ({ step })));
+  if (Object.values(state.market.loans).some((loan) => loan.until < state.date)) add((s) => returnLoans(s));
+  if (hasExpiries(state)) add(expireContracts);
+  for (const request of requests) add((s, r) => decideCoachRequest(s, request, r));
+  if (hasCoachBusiness(state.market.coach, state.coachClubId, state.date)) {
     // The coach's business draws from its own stream, salted with the day, so it never shifts the AI clubs' draws.
     const coachRandom = randomStream(Math.floor(unitHash(`${state.market.rngState}:${state.date}`) * 2 ** 32));
-    steps.push((s) => coachMarketDay(s, coachRandom.next));
+    add((s) => coachMarketDay(s, coachRandom.next));
   }
-  if (isMarketDay(state.date)) steps.push(europeBids, tradeBetweenClubs, (s, r) => signFromAbroad(s, r, nextId), lendYoungPlayers, signFreeAgents);
+  const waiting = waitingCoachesOf(state);
+  waiting.forEach((coach, waitingIndex) => {
+    for (const request of waitingRequests[waitingIndex] ?? []) {
+      steps.push({ step: (s, r) => asWaitingCoach(s, waitingIndex, (seated) => decideCoachRequest(seated, request, r)), waitingIndex });
+    }
+    if (!hasCoachBusiness(coach.market, coach.clubId, state.date)) return;
+    const waitingRandom = randomStream(Math.floor(unitHash(`${state.market.rngState}:${state.date}:${waitingIndex}`) * 2 ** 32));
+    steps.push({ step: (s) => asWaitingCoach(s, waitingIndex, (seated) => coachMarketDay(seated, waitingRandom.next)), waitingIndex });
+  });
+  if (isMarketDay(state.date)) add(europeBids, tradeBetweenClubs, (s, r) => signFromAbroad(s, r, nextId), lendYoungPlayers, signFreeAgents);
   // Most days nothing moves; the draft (a copy of every player) is only made when something can.
   let next = steps.length ? openDraft(state) : state;
   const events: TransferEvent[] = [];
-  for (const step of steps) {
+  const waitingEvents: TransferEvent[][] = waiting.map(() => []);
+  for (const { step, waitingIndex } of steps) {
     const done = step(next, random.next);
     next = done.state;
-    events.push(...done.events);
+    const own = waitingIndex === undefined ? undefined : waitingEvents[waitingIndex];
+    if (!own) events.push(...done.events);
+    else {
+      own.push(...done.events.filter(isCoachNews));
+      events.push(...done.events.filter((event) => !isCoachNews(event)));
+    }
   }
   const eurBrl = state.date.endsWith("-01") ? driftExchangeRate(next.market.eurBrl, random.next) : next.market.eurBrl;
-  return { state: { ...next, market: { ...next.market, eurBrl, rngState: random.state() } }, events };
+  return { state: { ...next, market: { ...next.market, eurBrl, rngState: random.state() } }, events, waitingEvents };
 }

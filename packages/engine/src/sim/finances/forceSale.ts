@@ -5,6 +5,7 @@ import { movePlayer } from "../transfers/movePlayer.js";
 import { valuePlayer } from "../transfers/valuePlayer.js";
 import { projectedRevenue } from "./setBoardBudget.js";
 import { tierOf } from "./tierOf.js";
+import { isHumanClub } from "../coach/humanCoaches.js";
 
 export type ForcedSale = { type: "forcedSale"; clubId: string; playerId: string; buyerId: string | null; fee: number };
 
@@ -34,7 +35,7 @@ export function forceSale(state: GameState, clubId: string, random: () => number
   const buyers = Object.values(state.clubs)
     .filter((club) => {
       const finance = state.finances[club.id];
-      if (!finance || club.id === clubId || club.id === state.coachClubId || finance.cash < fee) return false;
+      if (!finance || club.id === clubId || isHumanClub(state, club.id) || finance.cash < fee) return false;
       const gap = TIER_RANK[tierOf(club)] - TIER_RANK[tierOf(seller)];
       return gap < 0 || (gap === 0 && projectedRevenue(finance) > sellerRevenue);
     })

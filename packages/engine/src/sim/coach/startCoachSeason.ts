@@ -1,9 +1,12 @@
+import { addDays } from "../dates.js";
 import type { GameState } from "../gameState.js";
 import type { LeagueOutcome } from "../leagueFormats.js";
 import { boardExpectations, type BoardExpectationsSet, type Expectation } from "./boardExpectations.js";
 import { clubStatures } from "./clubStatures.js";
 import { GAP_SCALE } from "./judgeCoaches.js";
 import { offerJobs, type JobOffered } from "./offerJobs.js";
+import { asWaitingCoach, isHumanClub, waitingCoachesOf } from "./humanCoaches.js";
+import { recordCoachEvents } from "../history/recordDayEvents.js";
 
 export type CoachSeasonReviewed = {
   type: "coachSeasonReviewed";
@@ -68,11 +71,28 @@ function reviewCoach(state: GameState, outcomes: readonly LeagueOutcome[]): { st
  * The coach career at the turn of the year, after the new season's competitions open: the player's
  * coach is reviewed, every board sets its expectations, and pre-season coach changes open jobs.
  */
-export function startCoachSeason(state: GameState, outcomes: readonly LeagueOutcome[], random: () => number): { state: GameState; events: CoachSeasonEvent[] } {
+export function startCoachSeason(
+  state: GameState,
+  outcomes: readonly LeagueOutcome[],
+  random: () => number,
+): { state: GameState; events: CoachSeasonEvent[]; waitingEvents: CoachSeasonEvent[][] } {
   const reviewed = reviewCoach(state, outcomes);
   const set = boardExpectations(reviewed.state);
-  const next = { ...reviewed.state, boards: set.boards };
-  const vacancies = Object.keys(set.boards).sort().filter((id) => id !== next.coachClubId && random() < PRESEASON_CHANGE_CHANCE);
+  let next = { ...reviewed.state, boards: set.boards };
+  const vacancies = Object.keys(set.boards).sort().filter((id) => !isHumanClub(reviewed.state, id) && random() < PRESEASON_CHANGE_CHANCE);
   const offered = offerJobs(next, vacancies, random);
-  return { state: offered.state, events: [...reviewed.events, ...set.events, ...offered.events] };
+  next = offered.state;
+  // A waiting hot-seat coach is reviewed and hears of the open jobs as the one in the seat does.
+  const waitingEvents: CoachSeasonEvent[][] = [];
+  for (let index = 0; index < waitingCoachesOf(next).length; index++) {
+    const own = asWaitingCoach(next, index, (seated) => {
+      const review = reviewCoach(seated, outcomes);
+      const offers = offerJobs(review.state, vacancies, random);
+      const events = [...review.events, ...offers.events];
+      return { state: recordCoachEvents(offers.state, events, addDays(seated.date, -1)), events };
+    });
+    next = own.state;
+    waitingEvents.push(own.events);
+  }
+  return { state: next, events: [...reviewed.events, ...set.events, ...offered.events], waitingEvents };
 }

@@ -6,6 +6,7 @@ import { movePlayer } from "./movePlayer.js";
 import type { BidReceived, EuropeBid, PlayerMoved } from "./transferEvents.js";
 import { MIN_SQUAD } from "./tradeBetweenClubs.js";
 import { valuePlayer } from "./valuePlayer.js";
+import { isHumanClub } from "../coach/humanCoaches.js";
 
 // Europe is not simulated: it shows up as a buyer for young standouts. Brazil is the world's largest
 // exporter of players (FIFA Global Transfer Report 2023), but most leave for small leagues; these
@@ -44,6 +45,8 @@ export function europeBids(state: GameState, random: () => number): { state: Gam
   const targets = Object.values(state.players)
     .filter((p) => p.age <= MAX_AGE && p.strength >= MIN_STRENGTH && !state.market.loans[p.id])
     .filter((p) => p.condition.arrivedOn === null || p.condition.arrivedOn < settledBefore)
+    // A waiting hot-seat coach's players are his to sell, and he is not in the seat to answer.
+    .filter((p) => p.clubId === state.coachClubId || !isHumanClub(state, p.clubId))
     .sort((a, b) => a.id.localeCompare(b.id));
   for (const player of targets) {
     const youth = 1 + YOUTH_BONUS.perYear * Math.max(0, YOUTH_BONUS.belowAge - player.age);

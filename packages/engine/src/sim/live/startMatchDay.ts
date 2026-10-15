@@ -16,6 +16,7 @@ import { matchSetup, playingStrength, type CoachPlan } from "../players/matchSet
 import { drawMatchInjuries, recordMatchLoad } from "../players/recordMatchLoad.js";
 import { squadsByClub } from "../players/squadsByClub.js";
 import { settleShootout } from "../settleShootout.js";
+import { waitingCoachesOf } from "../coach/humanCoaches.js";
 import { coachOutcome } from "./coachOutcome.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
 import { kickOffTimeline, scorerStream } from "./matchTimeline.js";
@@ -48,6 +49,17 @@ function coachLineupOf(state: GameState, decisions: DayDecisions): SimPlayer[] |
   return chosen;
 }
 
+/** Each waiting hot-seat coach's plan for his club's match, by club: the eleven he picked on his turn and his tactics. */
+function waitingPlansOf(state: GameState, decisions: DayDecisions): Record<string, CoachPlan> {
+  const plans: Record<string, CoachPlan> = {};
+  waitingCoachesOf(state).forEach((waiting, index) => {
+    if (!waiting.clubId) return;
+    const own = decisions.waiting?.[index] ?? {};
+    plans[waiting.clubId] = { lineup: coachLineupOf({ ...state, coachClubId: waiting.clubId }, own), tactics: own.tactics ?? waiting.coach.tactics };
+  });
+  return plans;
+}
+
 /**
  * Kicks off today's matches: every match is drawn as advanceDay always drew it and gets its
  * timeline. The coach's match stays open for applyLiveChange until finishMatchDay; the others are
@@ -59,6 +71,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
   const events: DayEvent[] = [];
   const squad = squadsOf(state);
   const coach: CoachPlan = { lineup: coachLineupOf(state, decisions), tactics: decisions.tactics ?? state.coach.tactics };
+  const waiting = waitingPlansOf(state, decisions);
   const playedToday: SimPlayer[] = [];
   const cards = openDisciplineDay(state.discipline);
   const sheets: MatchSheets = {};
@@ -72,8 +85,9 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const suspended = cards.suspended(fixture.competitionId);
     const coachClubId = [fixture.homeId, fixture.awayId].find((id) => id === state.coachClubId);
     if (coachClubId) refuseSuspended(coach.lineup ?? [], suspended);
+    for (const clubId of [fixture.homeId, fixture.awayId]) refuseSuspended(waiting[clubId]?.lineup ?? [], suspended);
     const available = (clubId: string) => squad(clubId).filter((p) => !suspended.has(p.id));
-    const setup = matchSetup(state, fixture, available, coach);
+    const setup = matchSetup(state, fixture, available, coach, waiting);
     const cardRates = CARD_RATES[cardCompetitionOf(competition)];
     const bookings = drawCards(setup.homeLineup, setup.awayLineup, cardRates, random.next);
     const params = withoutCrowd(paramsForCompetition(competition), clubMood(state, fixture.homeId));
