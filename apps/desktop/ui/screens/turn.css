@@ -1,0 +1,140 @@
+/* The hot-seat hand-off: one sticker on the page, the turn order above it, nothing of the last coach's screens. */
+.turn {
+  position: relative;
+  height: 100%;
+  min-height: 560px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  justify-items: center;
+  padding: max(28px, var(--chrome-header)) 28px 36px;
+}
+
+.turn-order {
+  display: flex;
+  gap: 6px;
+  list-style: none;
+  font: 700 14px var(--f);
+  color: var(--mute);
+}
+
+.turn-order li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px 0 5px;
+  border-radius: var(--r-pill);
+  background: var(--paper-2);
+}
+
+.turn-order li.on {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--sh-sticker);
+}
+
+.turn-order-no {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  color: var(--ink-2);
+  font: 800 12px var(--f);
+}
+
+.turn-order li.on .turn-order-no {
+  background: var(--yellow);
+  color: var(--on-yellow);
+}
+
+.turn-order li.done .turn-order-no {
+  background: var(--green);
+  color: var(--on-green);
+}
+
+.turn-card {
+  align-self: center;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  max-width: 620px;
+}
+
+.turn-crest {
+  display: grid;
+  place-items: center;
+  width: 164px;
+  height: 164px;
+  margin-bottom: 26px;
+  font-size: 64px;
+  color: var(--mute);
+  animation: turn-stamp var(--t-stamp) var(--e-slap) both;
+}
+
+.turn-step {
+  animation: turn-rise var(--t-base) var(--e-out) 160ms both;
+}
+
+.turn-title {
+  margin-top: 8px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  animation: turn-rise var(--t-slow) var(--e-out) 220ms both;
+}
+
+.turn-club {
+  margin-top: 14px;
+  font: 600 17px var(--f);
+  color: var(--ink-2);
+  animation: turn-rise var(--t-slow) var(--e-out) 300ms both;
+}
+
+.turn-club b {
+  color: var(--green-d);
+}
+
+.turn-go {
+  margin-top: 30px;
+  animation: turn-rise var(--t-slow) var(--e-out) 380ms both;
+}
+
+.turn-hint {
+  margin-top: 12px;
+  font: 500 13px var(--f);
+  color: var(--mute);
+}
+
+@keyframes turn-stamp {
+  from {
+    opacity: 0;
+    transform: scale(1.35) rotate(-7deg);
+    box-shadow: var(--sh-lift);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(-2deg);
+  }
+}
+
+@keyframes turn-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .turn-crest,
+  .turn-step,
+  .turn-title,
+  .turn-club,
+  .turn-go {
+    animation: none;
+  }
+}

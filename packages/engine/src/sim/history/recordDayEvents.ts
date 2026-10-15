@@ -39,9 +39,21 @@ export function recordDayEvents(state: GameState, events: readonly DayEvent[], b
     // Signings from abroad have no seller to credit.
     if (fromId) history = recordTransfer(history, { ...transfer, fromId });
   }
+  history = recordedCoach(history, events, before.date);
+  return history === state.history ? state : { ...state, history };
+}
+
+function recordedCoach(history: History, events: readonly DayEvent[], date: string): History {
+  let next = history;
   for (const event of events) {
-    const coach = recordCoach(history.coach, event, before.date);
-    if (coach !== history.coach) history = { ...history, coach };
+    const coach = recordCoach(next.coach, event, date);
+    if (coach !== next.coach) next = { ...next, coach };
   }
+  return next;
+}
+
+/** Writes the career events of the coach in the seat into his record, as of `date`, the day they happened. */
+export function recordCoachEvents(state: GameState, events: readonly DayEvent[], date: string): GameState {
+  const history = recordedCoach(state.history, events, date);
   return history === state.history ? state : { ...state, history };
 }

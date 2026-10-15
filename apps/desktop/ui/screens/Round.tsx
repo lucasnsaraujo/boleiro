@@ -10,6 +10,7 @@ import { plateColours } from "../clubs/clubCatalog.js";
 import { clubFaceOf } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import type { AdvanceResult } from "@boleiro/game-client/engine/createEngineSession";
+import type { HotSeatView } from "@boleiro/game-client/hub/hotSeat";
 import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { useFlip } from "../motion/useFlip.js";
@@ -81,6 +82,7 @@ export function Round() {
   const [preMatch, setPreMatch] = useState<PreMatch | null>(null);
   const [round, setRound] = useState<LiveRound | null>(null);
   const [failure, setFailure] = useState<"noMatch" | "unreachable" | null>(null);
+  const [hotSeat, setHotSeat] = useState<HotSeatView | null>(null);
   const [minute, setMinute] = useState(0);
   const [speed, setSpeed] = useState<Speed>(0);
   const resumeSpeed = useRef<Running>(1);
@@ -107,7 +109,9 @@ export function Round() {
   useEffect(() => {
     let isCurrent = true;
     async function open() {
-      const live = await engine.liveRound();
+      const [live, seats] = await Promise.all([engine.liveRound(), engine.hotSeat()]);
+      if (!isCurrent) return;
+      setHotSeat(seats);
       if (live) {
         const at = Math.max(live.seenMinute, live.coach?.lastChangeMinute ?? 0);
         if (!isCurrent) return;
@@ -118,6 +122,15 @@ export function Round() {
         setIncident(incidentOf(live, at));
         // Back after a final whistle that didn't go through: no new minute will call it again.
         if (at >= FULL_TIME) void finish();
+        return;
+      }
+      // In a hot-seat game the last coach may have no match today while the others do: their round starts at once.
+      if (seats?.isLastTurn && !seats.coaches[seats.seated]?.playsToday) {
+        const started = await engine.apply({ type: "startRound" });
+        if (!isCurrent) return;
+        roundRef.current = started;
+        setRound(started);
+        setSpeed(resumeSpeed.current);
         return;
       }
       const [plan, { clubs, date }] = await Promise.all([engine.matchDayPlan(), engine.read(["clubs", "date"])]);
@@ -201,7 +214,13 @@ export function Round() {
     setBusy(true);
     setError(null);
     try {
-      const live = await engine.apply({ type: "startRound", ...kickOffOf(sheet, preMatch.plan.lineup, preMatch.plan.tactics) });
+      const chosen = kickOffOf(sheet, preMatch.plan.lineup, preMatch.plan.tactics);
+      if (hotSeat && !hotSeat.isLastTurn) {
+        await engine.apply({ type: "passTurn", ...chosen });
+        navigate("/turn");
+        return;
+      }
+      const live = await engine.apply({ type: "startRound", ...chosen });
       shownMinute.current = 0;
       roundRef.current = live;
       setRound(live);
@@ -331,7 +350,7 @@ export function Round() {
         lineup={plan.lineup}
         tactics={plan.tactics}
         mode={{ kind: "preMatch" }}
-        doneLabel="Começar a rodada"
+        doneLabel={hotSeat && !hotSeat.isLastTurn ? "Confirmar e passar a vez" : "Começar a rodada"}
         isBusy={isBusy}
         error={error}
         onDone={(sheet) => void kickOff(sheet)}
@@ -352,6 +371,8 @@ export function Round() {
   const coachMatch = round.matches.find((m) => m.fixtureId === coach?.fixtureId);
   const limits = coach && coachMatch && round.coachClubId ? liveLimits(coach, coachMatch.events, round.coachClubId, minute) : null;
   const isFinished = result !== null;
+  // After a hot-seat round the first coach in turn order takes the seat again, behind the hand-off screen.
+  const afterRound = hotSeat ? "/turn" : "/hub";
   // Rows Só meus jogos leaves out are hidden, not dropped, so they keep their state while out of sight.
   const groups = round.competitions
     .map((competition) => ({ ...competition, rows: matches.filter((m) => m.competitionId === competition.id) }))
@@ -375,9 +396,9 @@ export function Round() {
           table={table && <TableCard rows={table} clubs={round.clubs} coachClubId={round.coachClubId} onOpen={() => openSheet(setTableOpen)} />}
         >
           {isFinished ? (
-            <button className="btn y live-act" onClick={() => navigate("/hub")}>
+            <button className="btn y live-act" onClick={() => navigate(afterRound)}>
               <i className="ph-bold ph-arrow-left" aria-hidden="true" />
-              Voltar ao clube
+              {hotSeat ? "Próxima vez" : "Voltar ao clube"}
             </button>
           ) : minute >= FULL_TIME ? (
             error ? (
@@ -400,6 +421,12 @@ export function Round() {
         <header className="live-plain" data-tauri-drag-region>
           <h1>Rodada</h1>
           <span>{formatBarDate(round.date)}</span>
+          {isFinished && (
+            <button className="btn y live-act" onClick={() => navigate(afterRound)}>
+              <i className="ph-bold ph-arrow-left" aria-hidden="true" />
+              {hotSeat ? "Próxima vez" : "Voltar ao clube"}
+            </button>
+          )}
         </header>
       )}
       {error && !isLineupOpen && !incident && <p className="status error live-error">{error}</p>}
@@ -407,14 +434,14 @@ export function Round() {
       <div className="live-list">
         {minute >= FULL_TIME && <MatchReport round={round} />}
         {groups.map((group) => (
-          <section key={group.id} className="live-group" aria-labelledby={`live-${group.id}`} hidden={isOnlyMine && !group.rows.some((m) => m.isCoach)}>
+          <section key={group.id} className="live-group" aria-labelledby={`live-${group.id}`} hidden={isOnlyMine && !group.rows.some((m) => m.isHuman)}>
             <h2 id={`live-${group.id}`} className="live-g">
               <CompetitionLogo label={group.label} size={20} />
               {group.label}
             </h2>
             <ul className="live-rows" aria-labelledby={`live-${group.id}`}>
               {group.rows.map((m) => (
-                <MatchRow key={m.fixtureId} match={m} clubs={round.clubs} flash={flashes[m.fixtureId]} alert={alerts[m.fixtureId]} isHidden={isOnlyMine && !m.isCoach} />
+                <MatchRow key={m.fixtureId} match={m} clubs={round.clubs} flash={flashes[m.fixtureId]} alert={alerts[m.fixtureId]} isHidden={isOnlyMine && !m.isHuman} />
               ))}
             </ul>
           </section>
@@ -628,7 +655,7 @@ const isSameRow = (before: MatchRowProps, after: MatchRowProps) =>
   before.flash === after.flash &&
   before.alert === after.alert &&
   before.isHidden === after.isHidden &&
-  before.match.isCoach === after.match.isCoach &&
+  before.match.isHuman === after.match.isHuman &&
   before.match.score.home === after.match.score.home &&
   before.match.score.away === after.match.score.away &&
   before.match.reds.home === after.match.reds.home &&
@@ -642,7 +669,7 @@ const MatchRow = memo(function MatchRow({ match, clubs, flash, alert, isHidden }
   if (!home || !away) return null;
   const lead = (side: Side) => (side === "home" ? match.score.home > match.score.away : match.score.away > match.score.home);
   return (
-    <li className={match.isCoach ? "live-r human" : "live-r"} hidden={isHidden} aria-label={`${home.shortName} ${match.score.home} x ${match.score.away} ${away.shortName}`}>
+    <li className={match.isHuman ? "live-r human" : "live-r"} hidden={isHidden} aria-label={`${home.shortName} ${match.score.home} x ${match.score.away} ${away.shortName}`}>
       {flash && <i key={flash.count} className="flash" style={{ background: `linear-gradient(90deg, transparent 12%, ${flash.colour} 40%, transparent 95%)` }} />}
       <span className="std">{home.stadium}</span>
       <RowPlate club={home} red={match.reds.home > 0} />

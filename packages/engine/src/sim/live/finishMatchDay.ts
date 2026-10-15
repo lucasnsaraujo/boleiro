@@ -1,6 +1,7 @@
 import type { State } from "@boleiro/data/clubs";
 import { randomStream } from "../../engine/random.js";
-import type { DayEvent } from "../advanceDay.js";
+import type { DayEvent, DayResult, WaitingDecisions } from "../advanceDay.js";
+import { isHumanClub, waitingCoachesOf, type WaitingCoach } from "../coach/humanCoaches.js";
 import { coachCareerDay } from "../coach/coachCareerDay.js";
 import { seasonEndField } from "../continental/continentalField.js";
 import { openContinentalCups } from "../continental/openContinentalCups.js";
@@ -105,7 +106,7 @@ function withCoachMatch(live: LiveDay, coachMatch: CoachMatch): DayInProgress {
  * moods, the coach's career, the season's end and the transfer market. With no live changes this is
  * exactly advanceDay.
  */
-export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEvent[] } {
+export function finishMatchDay(live: LiveDay): DayResult {
   const { state, decisions } = live;
   const day = live.coachMatch ? withCoachMatch(live, live.coachMatch) : live.rest;
   const random = randomStream(day.rngState);
@@ -133,6 +134,7 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   const tactics = live.coachMatch?.tactics ?? decisions.tactics ?? state.coach.tactics;
   const coach = tactics === state.coach.tactics ? state.coach : { ...state.coach, tactics };
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: day.discipline, coach };
+  if (state.waitingCoaches) next = { ...next, waitingCoaches: withWaitingTactics(state.waitingCoaches, decisions.waiting ?? []) };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
   const bonuses = payTitleBonuses(next, recordMatches(next, played, day.sheets));
   next = bonuses.state;
@@ -154,10 +156,13 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   const reacted = reactToDay(built.state, played, closed.events, random.next);
   next = reacted.state;
   events.push(...reacted.events);
-  const career = coachCareerDay(next, played, decisions.acceptOffer, random.next);
+  const career = coachCareerDay(next, played, decisions.acceptOffer, random.next, (decisions.waiting ?? []).map((own) => own.acceptOffer));
   next = career.state;
+  const waitingEvents: DayEvent[][] = career.waitingEvents;
   // Friendlies the coach booked for a club he no longer runs are called off with his move.
   if (state.coachClubId && next.coachClubId !== state.coachClubId) next = dropCoachFriendlies(next, state.coachClubId);
+  const formerClubIds = leftClubIds(state, next);
+  for (const clubId of formerClubIds) next = dropCoachFriendlies(next, clubId);
   events.push(...career.events);
   next = { ...next, rngState: random.state() };
   if (state.world) next = { ...next, world: playWorldDay(state.world, state.date) };
@@ -169,6 +174,7 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
     const marked = { ...ended.state, history: recordStrengths(ended.state) };
     const coachRandom = randomStream(marked.rngState);
     const started = startCoachSeason(marked, Object.values(ended.outcomes), coachRandom.next);
+    started.waitingEvents.forEach((own, index) => waitingEvents[index]?.push(...own));
     events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...developed.events, ...started.events);
     // Bans still pending when a competition ends lapse with it.
     const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
@@ -176,7 +182,25 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
     if (next.world) next = { ...next, world: endWorldSeason(next.world, next.season) };
     next = openContinentalCups(next, continentalField);
   }
-  const market = runTransferDay(next, decisions.requests ?? []);
+  const market = runTransferDay(next, decisions.requests ?? [], (decisions.waiting ?? []).map((own) => own.requests ?? []));
   events.push(...market.events);
-  return { state: recordDayEvents(releaseTicketPrice(market.state, state.coachClubId), events, state), events };
+  market.waitingEvents.forEach((own, index) => waitingEvents[index]?.push(...own));
+  const released = leftClubIds(state, market.state).reduce(releaseTicketPrice, releaseTicketPrice(market.state, state.coachClubId));
+  const recorded = recordDayEvents(released, events, state);
+  return state.waitingCoaches ? { state: recorded, events, waitingEvents } : { state: recorded, events };
+}
+
+function withWaitingTactics(coaches: readonly WaitingCoach[], decisions: readonly WaitingDecisions[]): WaitingCoach[] {
+  return coaches.map((waiting, index) => {
+    const tactics = decisions[index]?.tactics;
+    return tactics ? { ...waiting, coach: { ...waiting.coach, tactics } } : waiting;
+  });
+}
+
+/** The clubs waiting hot-seat coaches ran at `before` and no longer run at `after`. */
+function leftClubIds(before: GameState, after: GameState): string[] {
+  return waitingCoachesOf(before).flatMap((waiting, index) => {
+    const now = waitingCoachesOf(after)[index];
+    return waiting.clubId && now?.clubId !== waiting.clubId && !isHumanClub(after, waiting.clubId) ? [waiting.clubId] : [];
+  });
 }

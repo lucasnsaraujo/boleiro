@@ -26,14 +26,16 @@ export function Market() {
   const [desk, setDesk] = useState<BoardDesk | null>(null);
   const [failed, setFailed] = useState(false);
   const [hasActionFailed, setActionFailed] = useState(false);
+  const [isOutOfTime, setOutOfTime] = useState(false);
 
   const load = useCallback(
     (isCurrent: () => boolean = () => true) =>
-      Promise.all([engine.read(MARKET_KEYS), engine.desk()]).then(
-        ([read, onDesk]) => {
+      Promise.all([engine.read(MARKET_KEYS), engine.desk(), engine.marketClock()]).then(
+        ([read, onDesk, clock]) => {
           if (!isCurrent()) return;
           setState(read);
           setDesk(onDesk);
+          setOutOfTime(clock?.leftSeconds === 0);
         },
         () => isCurrent() && setFailed(true),
       ),
@@ -73,7 +75,10 @@ export function Market() {
     }
   }
 
-  const ask = (request: CoachRequest) => void act(() => engine.apply({ type: "ask", request })).catch(() => undefined);
+  const ask = (request: CoachRequest) => {
+    // The clock may run out while the coach looks; the session refuses the signing, so the screen reads it again.
+    void act(() => engine.apply({ type: "ask", request })).catch(() => void load());
+  };
   const withdraw = (playerId: string) => void act(() => engine.apply({ type: "withdraw", playerId })).catch(() => undefined);
   const declineCounter = (playerId: string) => void act(() => engine.apply({ type: "declineCounter", playerId })).catch(() => undefined);
   const list = (playerId: string, way: SaleWay | null) => void act(() => engine.apply({ type: "listPlayer", playerId, way })).catch(() => undefined);
@@ -100,6 +105,12 @@ export function Market() {
       <span className={transferWindow.isOpen ? "market-window open" : "market-window"}>
         {transferWindow.isOpen ? `Janela aberta até ${formatDayMonth(transferWindow.date)}` : `Janela fechada · abre ${formatDayMonth(transferWindow.date)}`}
       </span>
+      {isOutOfTime && (
+        <span className="market-out-of-time">
+          <i className="ph-bold ph-timer" aria-hidden="true" />
+          Seu tempo de mercado acabou: contratações só na próxima janela
+        </span>
+      )}
       {board && (
         <span className="market-budget">
           Verba <b>{formatMoney(board.transferBudget)}</b>
@@ -117,7 +128,7 @@ export function Market() {
       )}
       {hasActionFailed && (
         <p className="toast" role="alert">
-          O pedido não chegou. Tente de novo.
+          {isOutOfTime ? "Seu tempo de mercado acabou nesta janela." : "O pedido não chegou. Tente de novo."}
         </p>
       )}
     </div>

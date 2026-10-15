@@ -6,7 +6,8 @@ import { inboxLines, type DayEvent, type InboxLine } from "./inboxLines.js";
 /** Why the days stopped: the coach's match, something he must see, or the day limit. */
 export type StopReason = "matchDay" | "jobOffer" | "fired" | "boardDecision" | "bidReceived" | "windowClosing" | "seasonEnd" | "idle";
 
-export type PlayDay = (state: GameState) => { state: GameState; events: DayEvent[] };
+/** One day played; `stop` is a reason the day must stop for someone else than the coach in the seat (a hot-seat coach waiting his turn). */
+export type PlayDay = (state: GameState) => { state: GameState; events: DayEvent[]; stop?: StopReason | null };
 export type PlayedDays = { state: GameState; news: InboxLine[]; stop: StopReason; daysPlayed: number };
 
 const WINDOW_WARNING = "Último dia para pedir reforços: a janela fecha amanhã";
@@ -43,16 +44,17 @@ export function stopReason(before: GameState, after: GameState, events: readonly
 
 /**
  * Plays days until the coach's next match day, stopping early when a day brings something he
- * must see. On a match day it plays nothing; otherwise it always plays at least one day.
+ * must see. On a match day it plays nothing; otherwise it always plays at least one day. In a
+ * hot-seat game `isMatchDay` asks for any human coach's match.
  */
-export function playToMatchDay(start: GameState, playDay: PlayDay, maxDays = MAX_DAYS): PlayedDays {
-  if (isCoachMatchDay(start)) return { state: start, news: [], stop: "matchDay", daysPlayed: 0 };
+export function playToMatchDay(start: GameState, playDay: PlayDay, maxDays = MAX_DAYS, isMatchDay: (state: GameState) => boolean = isCoachMatchDay): PlayedDays {
+  if (isMatchDay(start)) return { state: start, news: [], stop: "matchDay", daysPlayed: 0 };
   let state = start;
   const news: InboxLine[] = [];
   for (let day = 1; day <= maxDays; day++) {
     const played = playDay(state);
     news.push(...inboxLines(state, played.state, played.events));
-    const stop = stopReason(state, played.state, played.events);
+    const stop = stopReason(state, played.state, played.events) ?? played.stop ?? null;
     state = played.state;
     // The warning also goes out when another reason stops the days on the last day to ask.
     if (state.coachClubId && isLastDayToAsk(state.date)) news.push({ date: state.date, text: WINDOW_WARNING, tone: "neutral" });

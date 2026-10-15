@@ -73,7 +73,7 @@ export function Options() {
               </p>
               <p className="options-row-note">O escuro troca o papel por verde-noite.</p>
             </div>
-            <div className="seg options-seg" role="radiogroup" aria-labelledby="options-theme">
+            <div className="seg seg-radio" role="radiogroup" aria-labelledby="options-theme">
               {THEMES.map(({ setting, label }) => (
                 <label key={setting} className={theme.setting === setting ? "on" : undefined}>
                   <input type="radio" name="theme" checked={theme.setting === setting} onChange={() => theme.changeSetting(setting)} />

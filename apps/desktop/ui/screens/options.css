@@ -61,39 +61,6 @@
   color: var(--mute);
 }
 
-.options-seg label {
-  position: relative;
-  height: 28px;
-  padding: 0 12px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--r-pill);
-  font-weight: 700;
-  font-size: 12.5px;
-  color: var(--ink-2);
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background var(--t-base) var(--e-out),
-    color var(--t-base) var(--e-out);
-}
-
-.options-seg label.on {
-  background: var(--ink);
-  color: var(--card);
-}
-
-.options-seg input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.options-seg label:has(input:focus-visible) {
-  outline: 3px solid var(--yellow);
-  outline-offset: 2px;
-}
-
 .options-volume {
   display: flex;
   align-items: center;

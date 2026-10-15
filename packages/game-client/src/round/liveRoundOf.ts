@@ -1,6 +1,7 @@
 import type { Club } from "@boleiro/data/clubs";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import type { Tactics } from "@boleiro/engine/sim/coach/tactics";
+import { humanClubIds } from "@boleiro/engine/sim/coach/humanCoaches";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
 import type { Fixture, IsoDate } from "@boleiro/engine/sim/gameState";
 import { onPitchAt } from "@boleiro/engine/sim/live/aiSubstitutions";
@@ -59,6 +60,8 @@ export type LiveRound = {
   ratings: MatchRatings | null;
   /** The furthest minute of the round the screen has shown; changes can only come from it on. */
   seenMinute: number;
+  /** The clubs of a hot-seat game's other human coaches, whose matches show with the coach's; none in a one-coach game. */
+  otherHumanClubIds?: string[];
 };
 
 function tableOf(live: LiveDay, fixture: Fixture | undefined): RoundTable | null {
@@ -167,5 +170,6 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
   const ratings = ratingsOf(live, matches.find((m) => m.fixtureId === live.coachMatch?.fixtureId));
   for (const r of [...(ratings?.home ?? []), ...(ratings?.away ?? [])]) nameOf(r.playerId);
 
-  return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach, ratings, seenMinute };
+  const others = humanClubIds(state).filter((id) => id !== state.coachClubId);
+  return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach, ratings, seenMinute, ...(others.length ? { otherHumanClubIds: others } : {}) };
 }
