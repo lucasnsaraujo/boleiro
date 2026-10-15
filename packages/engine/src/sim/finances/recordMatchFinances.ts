@@ -43,13 +43,16 @@ function priceDemand(ratio: number): number {
 }
 
 /** How much the game's weight lifts the crowd: a knockout tie, more for a final; league and group games 1. */
-function stakesLift(state: GameState, fixture: GameWeight | undefined): number {
+function stakesLift(state: GateState, fixture: GameWeight | undefined): number {
   const competition = fixture && state.competitions[fixture.competitionId];
   if (!fixture || !competition) return 1;
   const isKnockout = competition.kind === "cup" || competition.stages[fixture.stage]?.kind === "knockout";
   if (!isKnockout) return 1;
   return fixture.stage === competition.stageDates.length - 1 ? FINAL_LIFT : KNOCKOUT_LIFT;
 }
+
+/** What the gate reads of the game. */
+export type GateState = Pick<GameState, "clubs" | "economy" | "competitions" | "mood">;
 
 /** Where a game sits in its competition, which sets its weight. */
 export type GameWeight = Pick<Fixture, "competitionId" | "stage">;
@@ -58,7 +61,7 @@ export type GameWeight = Pick<Fixture, "competitionId" | "stage">;
  * Paying crowd for a home match, from the club's usual crowd, form, opponent, rivalry, ticket price,
  * fan mood and seats; given the fixture, also from the game's weight.
  */
-export function attendance(state: GameState, home: ClubFinance, homeId: string, awayId: string, fixture?: GameWeight): number {
+export function attendance(state: GateState, home: ClubFinance, homeId: string, awayId: string, fixture?: GameWeight): number {
   const club = state.clubs[homeId];
   const visitor = state.clubs[awayId];
   if (!club) return 0;

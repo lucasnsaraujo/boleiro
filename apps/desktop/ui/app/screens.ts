@@ -7,6 +7,7 @@ export const SCREEN_PATHS = [
   "/tables",
   "/market",
   "/finances",
+  "/stadium",
   "/calendar",
   "/history",
   "/season-end",
@@ -25,7 +26,7 @@ export type ScreenPath = (typeof SCREEN_PATHS)[number];
 export const NAV = [
   { id: "agenda", label: "Agenda", icon: "calendar-dots", key: "F1", path: "/calendar", paths: [] },
   { id: "tabelas", label: "Tabelas", icon: "table", key: "F2", path: "/tables", paths: [] },
-  { id: "estadio", label: "Estádio", icon: "ticket", key: "F3", path: null, paths: [] },
+  { id: "estadio", label: "Estádio", icon: "ticket", key: "F3", path: "/stadium", paths: [] },
   { id: "base", label: "Base", icon: "plant", key: "F4", path: null, paths: [] },
   { id: "times", label: "Times", icon: "t-shirt", key: "F5", path: "/hub", paths: ["/finances", "/squad"] },
   { id: "busca", label: "Busca", icon: "magnifying-glass", key: "F6", path: "/market", paths: [] },

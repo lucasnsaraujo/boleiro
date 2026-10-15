@@ -47,7 +47,7 @@ export function freeCash(finance: Pick<ClubFinance, "cash" | "loans" | "wagesOwe
 }
 
 /** What the coach's board would answer to a request for `seats` new seats, without asking it. */
-export function boardAnswerToWorks(state: GameState, seats: number): WorksAnswer {
+export function boardAnswerToWorks(state: Pick<GameState, "coachClubId" | "clubs" | "finances" | "boards">, seats: number): WorksAnswer {
   const quote = worksQuote(seats);
   const clubId = state.coachClubId;
   const club = clubId ? state.clubs[clubId] : undefined;
@@ -72,14 +72,26 @@ export function requestStadiumWorks(state: GameState, seats: number): { state: G
   return { state: { ...state, finances: { ...state.finances, [clubId]: { ...finance, stadiumWorks } } }, answer };
 }
 
-/** The usual crowd once the new seats are open: what the fans wanted and the old stand couldn't hold. */
-function crowdWithSeats(state: GameState, clubId: string, capacity: number, finance: ClubFinance): number {
+type SeatsState = Pick<GameState, "clubs" | "finances" | "economy">;
+
+/**
+ * The club with `seats` more seats open: a bigger stadium, and a usual crowd that fills what the fans
+ * wanted and the old stands couldn't hold.
+ */
+export function withNewSeats<S extends SeatsState>(state: S, clubId: string, seats: number): S {
   const club = state.clubs[clubId];
-  if (!club) return finance.baseCrowd;
+  const finance = state.finances[clubId];
+  if (!club || !finance) return state;
+  const capacity = club.capacity + seats;
   const tier = tierOf(club);
   const fanbases = Object.values(state.clubs).filter((other) => tierOf(other) === tier).map((other) => other.fanbase);
   const wanted = crowdDemand(state.economy.matchday[tier].attendance, club.fanbase, median(fanbases));
-  return Math.max(finance.baseCrowd, Math.round(Math.min(SELLABLE_SHARE_OF_CAPACITY * capacity, wanted)));
+  const baseCrowd = Math.max(finance.baseCrowd, Math.round(Math.min(SELLABLE_SHARE_OF_CAPACITY * capacity, wanted)));
+  return {
+    ...state,
+    clubs: { ...state.clubs, [clubId]: { ...club, capacity } },
+    finances: { ...state.finances, [clubId]: { ...finance, baseCrowd } },
+  };
 }
 
 /**
@@ -89,8 +101,7 @@ function crowdWithSeats(state: GameState, clubId: string, capacity: number, fina
 export function buildStadiums(state: GameState, today: IsoDate): { state: GameState; events: StadiumOpened[] } {
   const building = Object.entries(state.finances).filter(([, finance]) => finance.stadiumWorks);
   if (!building.length) return { state, events: [] };
-  const finances = copyRecord(state.finances);
-  let clubs = state.clubs;
+  let next: GameState = { ...state, finances: copyRecord(state.finances) };
   const events: StadiumOpened[] = [];
   for (const [clubId, { stadiumWorks: works }] of building) {
     if (!works) continue;
@@ -98,20 +109,18 @@ export function buildStadiums(state: GameState, today: IsoDate): { state: GameSt
     const months = Math.max(1, Math.round(daysBetween(works.startedOn, works.opensOn) / DAYS_PER_MONTH));
     const installment = Math.round(works.cost / months);
     const due = opens ? works.cost - works.paid : today.endsWith("-01") ? Math.min(works.cost - works.paid, installment) : 0;
-    if (due > 0) bookMoneyInDraft(finances, clubId, { cost: "infrastructure", amount: due });
-    const paid = finances[clubId];
-    const club = clubs[clubId];
-    if (!paid || !club) continue;
+    if (due > 0) bookMoneyInDraft(next.finances, clubId, { cost: "infrastructure", amount: due });
+    const paid = next.finances[clubId];
+    if (!paid) continue;
     if (!opens) {
-      finances[clubId] = { ...paid, stadiumWorks: { ...works, paid: works.paid + due } };
+      next.finances[clubId] = { ...paid, stadiumWorks: { ...works, paid: works.paid + due } };
       continue;
     }
-    const capacity = club.capacity + works.seats;
-    clubs = { ...clubs, [clubId]: { ...club, capacity } };
-    const done: ClubFinance = { ...paid, baseCrowd: crowdWithSeats(state, clubId, capacity, paid) };
+    const done: ClubFinance = { ...paid };
     delete done.stadiumWorks;
-    finances[clubId] = done;
-    events.push({ type: "stadiumOpened", clubId, seats: works.seats, capacity });
+    next.finances[clubId] = done;
+    next = withNewSeats(next, clubId, works.seats);
+    events.push({ type: "stadiumOpened", clubId, seats: works.seats, capacity: next.clubs[clubId]?.capacity ?? 0 });
   }
-  return { state: { ...state, clubs, finances }, events };
+  return { state: next, events };
 }
