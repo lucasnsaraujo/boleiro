@@ -73,11 +73,26 @@ export function canPick(sheet: Sheet, mode: SheetMode, id: string): boolean {
   return subsLeft(sheet, mode) > 0 && !mode.sentOff.has(id) && !sheet.subs.some((s) => s.onId === id);
 }
 
-/** Whether this player may come on for the picked starter. */
-export function canBringOn(sheet: Sheet, mode: SheetMode, player: SquadPlayer): boolean {
-  if (!sheet.picked || sheet.lineup.includes(player.id)) return false;
+/** Whether this player may come on for some starter: off the eleven, fit, and on the bench with substitutions left. */
+export function canComeOn(sheet: Sheet, mode: SheetMode, player: SquadPlayer): boolean {
+  if (sheet.lineup.includes(player.id)) return false;
   if (mode.kind === "preMatch") return player.status === null;
   return subsLeft(sheet, mode) > 0 && mode.benchIds.has(player.id);
+}
+
+/** Whether this player may come on for the picked starter. */
+export function canBringOn(sheet: Sheet, mode: SheetMode, player: SquadPlayer): boolean {
+  return sheet.picked !== null && canComeOn(sheet, mode, player);
+}
+
+/** Whether this player may come on for the starter `offId`, as dropping him on the starter's sticker asks. */
+export function canSwapIn(sheet: Sheet, mode: SheetMode, offId: string, player: SquadPlayer): boolean {
+  return canPick(sheet, mode, offId) && canBringOn({ ...sheet, picked: offId }, mode, player);
+}
+
+/** The starter `offId` makes way for this player in one go, whoever was picked before. */
+export function swapIn(sheet: Sheet, mode: SheetMode, offId: string, player: SquadPlayer): Sheet {
+  return canSwapIn(sheet, mode, offId, player) ? bringOn({ ...sheet, picked: offId }, mode, player) : sheet;
 }
 
 export function pick(sheet: Sheet, mode: SheetMode, id: string): Sheet {

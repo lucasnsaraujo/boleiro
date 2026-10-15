@@ -21,6 +21,7 @@ export type Cue =
   | "card"
   | "redCard"
   | "injury"
+  | "substitution"
   | "click"
   | "confirm"
   | "title"
@@ -74,6 +75,8 @@ export const CUES: Record<Cue, CueSound> = {
   redCard: sfx(6, [layer("whistleShort"), layer("oehh", 0.3, 0.8)]),
   injury: sfx(5, [layer("oehh")]),
   card: sfx(4, [layer("whistleShort", 0, 0.8)]),
+  // The fourth official's two quick pips as the board goes up.
+  substitution: sfx(3, [layer("whistleShort", 0, 0.5), layer("whistleShort", 0.16, 0.4)]),
   otherGoal: sfx(2, [layer("goalDistant", 0, 0.45)]),
   click: synth("sfx", [{ note: 98, at: 0, length: 0.03, wave: "sine", gain: 0.08 }]),
   confirm: synth("sfx", [
