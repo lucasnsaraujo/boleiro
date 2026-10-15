@@ -56,8 +56,13 @@ function contrast(a: string, b: string): number {
 // WCAG AA for normal text.
 const READABLE = 4.5;
 
-/** Club-colour plate, the way Brasfoot paints names: the second colour on the first when it reads, else white or black. */
+/**
+ * Club-colour plate, the way Brasfoot paints names: the second colour on the first when it reads, else white or the
+ * album's ink. On a mid red or green neither quite reaches AA, and pure black does (white or black always clears 4.58:1).
+ */
 export function plateColours({ primary, secondary }: Club["colours"]): { background: string; text: string } {
   if (contrast(primary, secondary) >= READABLE) return { background: primary, text: secondary };
-  return { background: primary, text: contrast(primary, "#ffffff") >= contrast(primary, "#0a0a0a") ? "#ffffff" : "#0a0a0a" };
+  const clearest = (inks: readonly string[]) => inks.reduce((best, ink) => (contrast(primary, ink) > contrast(primary, best) ? ink : best));
+  const ink = clearest(["#ffffff", "#0a0a0a"]);
+  return { background: primary, text: contrast(primary, ink) >= READABLE ? ink : clearest(["#ffffff", "#000000"]) };
 }

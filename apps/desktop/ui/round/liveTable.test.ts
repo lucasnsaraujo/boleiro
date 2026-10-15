@@ -51,4 +51,6 @@ test("the short table keeps seven rows around the coach's club, sliding at eithe
   expect(shortTable(rows, "c10").map((r) => r.position)).toEqual([7, 8, 9, 10, 11, 12, 13]);
   expect(shortTable(rows, "c1").map((r) => r.position)).toEqual([1, 2, 3, 4, 5, 6, 7]);
   expect(shortTable(rows, "c20").map((r) => r.position)).toEqual([14, 15, 16, 17, 18, 19, 20]);
+  expect(shortTable(rows, "c10", 3).map((r) => r.position)).toEqual([9, 10, 11]);
+  expect(shortTable(rows, "c1", 3).map((r) => r.position)).toEqual([1, 2, 3]);
 });

@@ -1,9 +1,11 @@
-import { act, cleanup, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { useRunCommand } from "../app/AppCommands.js";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
+import type { CommandId } from "../app/shortcuts.js";
 import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
 import type { CommandResults, CommandType, GameCommand } from "@boleiro/game-client/engine/createEngineSession";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
@@ -247,4 +249,81 @@ test("a round whose final whistle didn't go through finishes when the coach come
   await userEvent.click(screen.getByRole("button", { name: "Tentar de novo" }));
   expect(await screen.findByRole("button", { name: "Voltar ao clube" })).toBeTruthy();
   expect(await given.engine.liveRound()).toBeNull();
+});
+
+let runCommand: (id: CommandId) => boolean = () => false;
+/** Reaches the commands the round registers, as the keyboard does through the shell. */
+function CommandProbe() {
+  runCommand = useRunCommand();
+  return null;
+}
+
+test("in the match, Space pauses and resumes, the number keys pick the speed and T opens the live table", async () => {
+  render(<CommandProbe />);
+  await kickOff(await onMatchDay());
+  const run = (id: CommandId) => act(() => void runCommand(id));
+  const pressed = () => within(screen.getByRole("group", { name: "Velocidade" })).getByRole("button", { pressed: true }).getAttribute("aria-label");
+  run("velocidade3");
+  expect(pressed()).toBe("4x");
+  run("pausar");
+  expect(pressed()).toBe("Pausar");
+  run("pausar");
+  expect(pressed()).toBe("4x");
+  run("velocidade1");
+  expect(pressed()).toBe("1x");
+  run("tabelaAoVivo");
+  expect(await screen.findByRole("dialog", { name: "Classificação" })).toBeTruthy();
+});
+
+test("the board lists every match of the round, and Só meus jogos leaves only the coach's", async () => {
+  await kickOff(await onMatchDay());
+  const rows = () => screen.getAllByRole("listitem").filter((row) => / \d+ x \d+ /.test(row.getAttribute("aria-label") ?? ""));
+  const everyMatch = rows().length;
+  expect(everyMatch).toBeGreaterThan(1);
+  await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
+  expect(rows()).toHaveLength(1);
+  expect(rows()[0]?.getAttribute("aria-label")).toContain("Bahia");
+  await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
+  expect(rows()).toHaveLength(everyMatch);
+});
+
+test("a paused round says Pausado beside the clock, and the label goes when it plays again", async () => {
+  await kickOff(await onMatchDay());
+  const cover = screen.getByRole("region", { name: "Seu jogo" });
+  expect(within(cover).queryByText("Pausado")).toBeNull();
+  await user().click(screen.getByRole("button", { name: "Pausar" }));
+  expect(within(cover).getByText("Pausado")).toBeTruthy();
+  await user().click(screen.getByRole("button", { name: "2x" }));
+  expect(within(cover).queryByText("Pausado")).toBeNull();
+});
+
+test("rows hidden by Só meus jogos come back as they were, so their old goals don't flash again", async () => {
+  await kickOff(await onMatchDay());
+  const other = screen.getAllByRole("listitem").find((row) => / \d+ x \d+ /.test(row.getAttribute("aria-label") ?? "") && !row.getAttribute("aria-label")?.includes("Bahia"));
+  expect(other).toBeDefined();
+  await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
+  await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
+  expect(other?.isConnected).toBe(true);
+});
+
+test("a goal's flash leaves its row once played, so Só meus jogos turned off doesn't play it again", async () => {
+  await kickOff(await onMatchDay());
+  const otherRows = () => screen.getAllByRole("listitem").filter((row) => / \d+ x \d+ /.test(row.getAttribute("aria-label") ?? "") && !row.getAttribute("aria-label")?.includes("Bahia"));
+  let scored: HTMLElement | undefined;
+  for (let minute = 0; minute < 90 && !scored; minute++) {
+    const paused = screen.getByRole("button", { name: "Pausar" });
+    if (paused.getAttribute("aria-pressed") === "true") fireEvent.click(screen.getByRole("button", { name: "1x" }));
+    play(1);
+    scored = otherRows().find((row) => within(row).queryByText("Gol"));
+  }
+  if (!scored) throw new Error("another match of the round has a goal");
+  const row = scored;
+  const celebration = () => [within(row).queryByText("Gol"), row.querySelector(".flash"), row.querySelector(".roll")];
+  expect(row.querySelector(".roll")).not.toBeNull();
+
+  await waitFor(() => expect(celebration()).toEqual([null, null, null]), { timeout: 3000 });
+  await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
+  await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
+  expect(row.hidden).toBe(false);
+  expect(celebration()).toEqual([null, null, null]);
 });

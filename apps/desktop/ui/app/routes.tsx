@@ -10,6 +10,7 @@ import { Offers } from "../screens/Offers.js";
 import { Options } from "../screens/Options.js";
 import { Round } from "../screens/Round.js";
 import { Sacked } from "../screens/Sacked.js";
+import { Saves } from "../screens/Saves.js";
 import { SeasonEnd } from "../screens/SeasonEnd.js";
 import { Player } from "../screens/Player.js";
 import { StartMenu } from "../screens/StartMenu.js";
@@ -31,6 +32,7 @@ const ELEMENTS: Record<ScreenPath, ReactElement> = {
   "/offers": <Offers />,
   "/sacked": <Sacked />,
   "/options": <Options />,
+  "/saves": <Saves />,
 };
 
 export const routes: RouteObject[] = [

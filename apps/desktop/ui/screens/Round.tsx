@@ -1,14 +1,15 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { memo, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router";
 import type { Club } from "@boleiro/data/clubs";
 import { FULL_TIME, HALF_TIME } from "@boleiro/engine/sim/live/matchTimeline";
+import { useCommands } from "../app/AppCommands.js";
 import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
-import { ClubPlate } from "../clubs/ClubPlate.js";
+import { plateColours } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import type { AdvanceResult } from "@boleiro/game-client/engine/createEngineSession";
-import { formatMatchDate } from "@boleiro/game-client/format/formatGameDate";
+import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { useFlip } from "../motion/useFlip.js";
 import { LineupSheet } from "../round/LineupSheet.js";
@@ -16,9 +17,12 @@ import { kickOffOf, liveChangeOf, liveLimits, type Sheet } from "../round/lineup
 import type { LiveRound, RoundClub, Side } from "@boleiro/game-client/round/liveRoundOf";
 import { liveTable, shortTable, type LiveTableRow } from "../round/liveTable.js";
 import type { MatchDayPlan } from "@boleiro/game-client/round/matchDayPlan";
-import { goalsBetween, pauseReason, roundAt, type EventKind, type MatchAt } from "../round/roundAt.js";
+import { goalsBetween, pauseReason, roundAt, scorersUntil, type EventKind, type MatchAt } from "../round/roundAt.js";
 import { crowdLevel, roundCues, thinCues } from "../sound/roundCues.js";
 import { useSound } from "../sound/SoundProvider.js";
+import copaDoBrasil from "../../../../design/mocks/img/competitions/copa-do-brasil.svg";
+import serieA from "../../../../design/mocks/img/competitions/serie-a.svg";
+import serieB from "../../../../design/mocks/img/competitions/serie-b.svg";
 import "./round.css";
 
 type Speed = 0 | 1 | 2 | 4;
@@ -28,13 +32,22 @@ const SPEEDS: readonly Running[] = [1, 2, 4];
 const MS_PER_MINUTE: Record<Running, number> = { 1: 660, 2: 330, 4: 110 };
 // A goal floods its row for less time when the clock runs faster, so goals a few minutes apart don't pile up.
 const FLOOD_MS: Record<Running, number> = { 1: 1500, 2: 1150, 4: 800 };
+// How long the scoring side's score box flashes; at 2x and 4x it outlasts the row's flood.
+const BOX_FLASH_MS = 1300;
+const COMPETITION_LOGOS = [
+  { prefix: "Série A", src: serieA },
+  { prefix: "Série B", src: serieB },
+  { prefix: "Copa do Brasil", src: copaDoBrasil },
+] as const;
+// The slip of the table on the cover: the coach's club between its neighbours.
+const TABLE_CARD_ROWS = 3;
 const EXPO_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 const NO_COLOURS = { primary: "#eef3e8", secondary: "#0a1a10" };
 /** The crowd quietens while the clock stands still: half-time, a pause, a sheet open. */
 const PAUSED_CROWD = 0.6;
 
 type PreMatch = { plan: MatchDayPlan; clubs: Readonly<Record<string, Club>>; date: string };
-/** A goal being celebrated on a row: the scoring club's colour, its side, and a count so each goal replays the animation. */
+/** A goal being celebrated on a row: the scoring club's colour, its side, and the round's goal count so each goal replays the animation. */
 type Flash = { colour: string; side: Side; count: number };
 
 export function Round() {
@@ -53,9 +66,10 @@ export function Round() {
   const [isBusy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AdvanceResult | null>(null);
-  const [competitionId, setCompetitionId] = useState<string | null>(null);
+  const [isOnlyMine, setOnlyMine] = useState(false);
   const [flashes, setFlashes] = useState<Record<string, Flash>>({});
   const [golCount, setGolCount] = useState(0);
+  const goalsCelebrated = useRef(0);
   const roundRef = useRef(round);
   const shownMinute = useRef(0);
   const isFinishing = useRef(false);
@@ -128,14 +142,18 @@ export function Round() {
     for (const cue of thinCues(roundCues(live, from, minute), resumeSpeed.current)) sound.play(cue);
     const goals = goalsBetween(live, from, minute);
     if (goals.length) {
-      setFlashes((current) => {
-        const next = { ...current };
-        for (const goal of goals) {
+      const celebrated = Object.fromEntries(
+        goals.map((goal) => {
           const colour = live.clubs[goal.clubId]?.colours.primary ?? NO_COLOURS.primary;
-          next[goal.fixtureId] = { colour, side: goal.side, count: (next[goal.fixtureId]?.count ?? 0) + 1 };
-        }
-        return next;
-      });
+          return [goal.fixtureId, { colour, side: goal.side, count: ++goalsCelebrated.current }];
+        }),
+      );
+      setFlashes((current) => ({ ...current, ...celebrated }));
+      // Once played, a flash leaves its row: a row Só meus jogos hid and shows again would otherwise replay it.
+      setTimeout(
+        () => setFlashes((current) => Object.fromEntries(Object.entries(current).filter(([fixtureId, flash]) => celebrated[fixtureId] !== flash))),
+        Math.max(FLOOD_MS[resumeSpeed.current], BOX_FLASH_MS),
+      );
       if (goals.some((goal) => goal.fixtureId === live.coach?.fixtureId && goal.clubId === live.coachClubId)) setGolCount((n) => n + 1);
     }
     const reason = pauseReason(live, minute);
@@ -204,6 +222,16 @@ export function Round() {
     setSpeed(next);
   }
 
+  // The match keys work only while the match can still be driven: kicked off, before the final whistle, no sheet open.
+  const isDrivable = round !== null && result === null && minute < FULL_TIME && !isLineupOpen && !isTableOpen;
+  useCommands({
+    pausar: isDrivable && (() => chooseSpeed(speed === 0 ? resumeSpeed.current : 0)),
+    velocidade1: isDrivable && (() => chooseSpeed(1)),
+    velocidade2: isDrivable && (() => chooseSpeed(2)),
+    velocidade3: isDrivable && (() => chooseSpeed(4)),
+    tabelaAoVivo: isDrivable && round.table !== null && (() => openSheet(setTableOpen)),
+  });
+
   const crowd = round && result === null && minute < FULL_TIME ? crowdLevel(round, minute) * (isRunning ? 1 : PAUSED_CROWD) : null;
   useEffect(() => sound.setCrowd(crowd), [sound, crowd]);
   useEffect(() => () => sound.setCrowd(null), [sound]);
@@ -217,15 +245,15 @@ export function Round() {
 
   if (failure) {
     return (
-      <>
+      <div className="live-missing">
         <h1 className="screen-title">{failure === "noMatch" ? "Nenhum jogo hoje" : "Rodada"}</h1>
         {failure === "unreachable" && <p className="status error">Não deu para abrir a rodada.</p>}
         <p className="status">
-          <Link to="/hub" className="btn-main">
+          <Link to="/hub" className="btn y">
             Voltar ao clube
           </Link>
         </p>
-      </>
+      </div>
     );
   }
 
@@ -249,14 +277,10 @@ export function Round() {
     );
   }
 
-  if (!round) return <p className="status">Abrindo a rodada…</p>;
+  if (!round) return <p className="status live-missing">Abrindo a rodada…</p>;
 
   const matches = roundAt(round, minute);
   const mine = matches.find((m) => m.isCoach);
-  const shown = competitionId ?? round.competitions[0]?.id ?? "";
-  const rows = matches.filter((m) => m.competitionId === shown);
-  const competition = round.competitions.find((c) => c.id === shown);
-  const goals = rows.reduce((sum, m) => sum + m.score.home + m.score.away, 0);
   const scores = new Map(matches.map((m) => [m.fixtureId, m.score]));
   const table = round.table && liveTable(round.table, scores);
   const coach = round.coach;
@@ -264,81 +288,72 @@ export function Round() {
   const limits = coach && coachMatch && round.coachClubId ? liveLimits(coach, coachMatch.events, round.coachClubId, minute) : null;
   const ownColours = round.coachClubId ? round.clubs[round.coachClubId]?.colours : undefined;
   const isFinished = result !== null;
+  // Rows Só meus jogos leaves out are hidden, not dropped, so they keep their state while out of sight.
+  const groups = round.competitions
+    .map((competition) => ({ ...competition, rows: matches.filter((m) => m.competitionId === competition.id) }))
+    .filter((group) => group.rows.length > 0);
 
   return (
-    <div className="round-screen" style={{ ["--flood" as string]: `${FLOOD_MS[resumeSpeed.current]}ms` }}>
-      {mine && (
-        <Band
+    <div className="live fills-screen" style={{ ["--flood" as string]: `${FLOOD_MS[resumeSpeed.current]}ms`, ["--box-flash" as string]: `${BOX_FLASH_MS}ms` }}>
+      {mine ? (
+        <Cover
+          round={round}
           match={mine}
-          clubs={round.clubs}
           label={round.competitions.find((c) => c.id === mine.competitionId)?.label ?? ""}
-          date={round.date}
           minute={minute}
           speed={speed}
           golCount={golCount}
           onSpeed={chooseSpeed}
+          isOnlyMine={isOnlyMine}
+          onOnlyMine={setOnlyMine}
           isFinished={isFinished}
           shootoutWinner={shootoutWinnerOf(result, mine.fixtureId, round.clubs)}
+          table={table && <TableCard rows={table} clubs={round.clubs} coachClubId={round.coachClubId} onOpen={() => openSheet(setTableOpen)} />}
         >
           {isFinished ? (
-            <button className="btn-main" onClick={() => navigate("/hub")}>
+            <button className="btn y live-act" onClick={() => navigate("/hub")}>
+              <i className="ph-bold ph-arrow-left" aria-hidden="true" />
               Voltar ao clube
             </button>
           ) : minute >= FULL_TIME ? (
             error ? (
-              <button className="btn-main" onClick={() => void finish()}>
+              <button className="btn y live-act" onClick={() => void finish()}>
                 Tentar de novo
               </button>
             ) : (
-              <button className="btn-main" disabled>
+              <button className="btn y live-act" disabled>
                 Encerrando…
               </button>
             )
           ) : (
-            <button className="btn-main" onClick={() => openSheet(setLineupOpen)}>
+            <button className="btn y live-act" onClick={() => openSheet(setLineupOpen)}>
+              <i className="ph-bold ph-strategy" aria-hidden="true" />
               Escalação <small>{limits?.subsLeft === 1 ? "1 troca" : `${limits?.subsLeft ?? 0} trocas`}</small>
             </button>
           )}
-        </Band>
+        </Cover>
+      ) : (
+        <header className="live-plain" data-tauri-drag-region>
+          <h1>Rodada</h1>
+          <span>{formatBarDate(round.date)}</span>
+        </header>
       )}
-      {error && !isLineupOpen && <p className="status error round-error">{error}</p>}
+      {error && !isLineupOpen && <p className="status error live-error">{error}</p>}
 
-      <div className={table ? "round-body" : "round-body no-table"}>
-        <section className="round-list" aria-labelledby="round-title">
-          <div className="group">
-            <h2 id="round-title">
-              {round.competitions.length > 1 ? (
-                <select className="others" aria-label="Competição" value={shown} onChange={(event) => setCompetitionId(event.target.value)}>
-                  {round.competitions.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                competition?.label
-              )}
+      <div className="live-list">
+        {groups.map((group) => (
+          <section key={group.id} className="live-group" aria-labelledby={`live-${group.id}`} hidden={isOnlyMine && !group.rows.some((m) => m.isCoach)}>
+            <h2 id={`live-${group.id}`} className="live-g">
+              <CompetitionLogo label={group.label} size={20} />
+              {group.label}
             </h2>
-            <span className="goals">{goals === 1 ? "1 gol" : `${goals} gols`}</span>
-          </div>
-          <ul className="rows" aria-labelledby="round-title">
-            {rows.map((m) => (
-              <MatchRow key={m.fixtureId} match={m} clubs={round.clubs} minute={minute} flash={flashes[m.fixtureId]} />
-            ))}
-          </ul>
-        </section>
-
-        {table && (
-          <aside className="table" aria-labelledby="table-title">
-            <div className="group">
-              <h2 id="table-title">Classificação</h2>
-              <button className="link" onClick={() => openSheet(setTableOpen)}>
-                Tabela completa
-              </button>
-            </div>
-            <TableRows rows={shortTable(table, round.coachClubId)} clubs={round.clubs} coachClubId={round.coachClubId} />
-          </aside>
-        )}
+            <ul className="live-rows" aria-labelledby={`live-${group.id}`}>
+              {group.rows.map((m) => (
+                <MatchRow key={m.fixtureId} match={m} clubs={round.clubs} flash={flashes[m.fixtureId]} isHidden={isOnlyMine && !m.isCoach} />
+              ))}
+            </ul>
+          </section>
+        ))}
       </div>
 
       {isTableOpen && table && (
@@ -365,16 +380,25 @@ export function Round() {
   );
 }
 
+/** The competition's real mark where the game has one: the Brasileirão's top two series and the Copa do Brasil. */
+function CompetitionLogo({ label, size }: { label: string; size: number }) {
+  const logo = COMPETITION_LOGOS.find(({ prefix }) => label.startsWith(prefix));
+  return logo ? <img className="crest" src={logo.src} height={size} alt="" /> : null;
+}
+
 function shootoutWinnerOf(result: AdvanceResult | null, fixtureId: string, clubs: Readonly<Record<string, RoundClub>>): string | null {
   const played = result?.events.find((e) => e.type === "matchPlayed" && e.fixture.id === fixtureId);
   const winnerId = played?.type === "matchPlayed" ? played.fixture.result?.penaltyWinnerId : undefined;
   return winnerId ? (clubs[winnerId]?.shortName ?? null) : null;
 }
 
-/** A score digit that rolls up into place when it changes. */
-function Digit({ value, className, flash }: { value: number; className: string; flash?: string }) {
-  const first = useRef(value);
-  const rolls = value !== first.current;
+/** A score digit that rolls up into place when it changes, and on the board stands still again once its row's goal has been celebrated. */
+function Digit({ value, className, flash, isSettled }: { value: number; className: string; flash?: string; isSettled?: boolean }) {
+  const [still, setStill] = useState(value);
+  useEffect(() => {
+    if (isSettled) setStill(value);
+  }, [isSettled]);
+  const rolls = value !== still;
   return (
     <span className={className} style={flash ? { ["--flash" as string]: flash } : undefined}>
       <span key={value} className={rolls ? "roll" : undefined}>
@@ -384,29 +408,27 @@ function Digit({ value, className, flash }: { value: number; className: string; 
   );
 }
 
+const EVENT_ICONS: Partial<Record<EventKind, string>> = { goal: "ph-fill ph-soccer-ball", injury: "ph-fill ph-first-aid", substitution: "ph-bold ph-arrows-left-right" };
+
 function EventMark({ kind }: { kind: EventKind }) {
-  if (kind === "goal") {
-    return (
-      <svg className="mk goal" viewBox="0 0 13 13" aria-hidden="true">
-        <circle cx="6.5" cy="6.5" r="5.6" fill="#eef3e8" />
-        <path d="M6.5 3.6l2.4 1.7-.9 2.8H5L4.1 5.3z" fill="#0a1a10" />
-      </svg>
-    );
-  }
-  return <i className={`mk ${kind}`} aria-hidden="true" />;
+  if (kind === "yellow") return <span className="yc" aria-hidden="true" />;
+  if (kind === "red") return <span className="rc" aria-hidden="true" />;
+  return <i className={`${EVENT_ICONS[kind] ?? ""} mk-${kind}`} aria-hidden="true" />;
 }
 
-type BandProps = {
+type CoverProps = {
+  round: LiveRound;
   match: MatchAt;
-  clubs: Readonly<Record<string, RoundClub>>;
   label: string;
-  date: string;
   minute: number;
   speed: Speed;
   golCount: number;
+  isOnlyMine: boolean;
   isFinished: boolean;
   shootoutWinner: string | null;
+  table: ReactNode;
   onSpeed: (speed: Speed) => void;
+  onOnlyMine: (isOnlyMine: boolean) => void;
   children: ReactNode;
 };
 
@@ -416,100 +438,171 @@ function clockNote(minute: number, speed: Speed, isFinished: boolean): string {
   return minute > HALF_TIME ? "2º tempo" : "1º tempo";
 }
 
-function Band({ match, clubs, label, date, minute, speed, golCount, isFinished, shootoutWinner, onSpeed, children }: BandProps) {
-  // The band builds itself only at kick-off, not when the coach comes back to a match under way.
+/** The coach's match as the cover of the round: the score between the two clubs' stickers, the clock and the controls over the pitch. */
+function Cover({ round, match, label, minute, speed, golCount, isOnlyMine, isFinished, shootoutWinner, table, onSpeed, onOnlyMine, children }: CoverProps) {
+  // The cover builds itself only at kick-off, not when the coach comes back to a match under way.
   const [isKickOff] = useState(minute === 0);
-  const home = clubs[match.homeId];
-  const away = clubs[match.awayId];
+  const home = round.clubs[match.homeId];
+  const away = round.clubs[match.awayId];
   if (!home || !away) return null;
-  const last = shootoutWinner ? `${shootoutWinner} nos pênaltis` : match.last && `${match.last.minute}' ${match.last.text}`;
+  const isStopped = isFinished || minute >= FULL_TIME;
+  const scorers = scorersUntil(round, match.fixtureId, minute);
+  const [competition, roundName] = label.split(" · ");
+  const side = (club: RoundClub, where: Side) => (
+    <div className={`stk live-tm ${where === "home" ? "h" : "a"}${club.id === round.coachClubId ? " you" : ""}`}>
+      {match.reds[where] > 0 && <span className="rc live-tm-red" aria-label="expulsão" />}
+      <Crest club={club} size={54} />
+      <b>{club.shortName}</b>
+      <small>{club.id === round.coachClubId ? "Seu time" : where === "home" ? "Mandante" : "Visitante"}</small>
+    </div>
+  );
   return (
-    <section className={isKickOff ? "band round-kickoff" : "band"} aria-label="Seu jogo">
+    <section className={isKickOff ? "live-cover round-kickoff" : "live-cover"} aria-label="Seu jogo">
       {golCount > 0 && (
         <div key={golCount} className="gol-sweep" aria-hidden="true">
           GOL
         </div>
       )}
-      <div className="band-top">
-        <p className="crumb">
-          <b>{label}</b> · {formatMatchDate(date)}
-        </p>
-        <div className="speed" role="group" aria-label="Velocidade">
-          <button aria-label="Pausar" aria-pressed={speed === 0} disabled={isFinished || minute >= FULL_TIME} onClick={() => onSpeed(0)}>
-            <svg viewBox="0 0 10 12" aria-hidden="true">
-              <rect width="3.5" height="12" />
-              <rect x="6.5" width="3.5" height="12" />
-            </svg>
-          </button>
-          {SPEEDS.map((s) => (
-            <button key={s} aria-pressed={speed === s} disabled={isFinished || minute >= FULL_TIME} onClick={() => onSpeed(s)}>
-              {s}x
+      <div className="live-ttl" data-tauri-drag-region>
+        <h1>
+          <CompetitionLogo label={label} size={30} />
+          {competition}
+          <span>{[roundName, formatBarDate(round.date)].filter(Boolean).join(" · ")}</span>
+        </h1>
+        <div className="live-tools">
+          {speed === 0 && !isFinished && minute < FULL_TIME && (
+            <span className="chip wait live-paused">
+              <i className="ph-fill ph-pause" aria-hidden="true" />
+              Pausado
+            </span>
+          )}
+          <div className="live-clock">
+            <span>{clockNote(minute, speed, isFinished)}</span>
+            <span className="live-track" aria-hidden="true">
+              <i style={{ transform: `scaleX(${Math.min(minute, FULL_TIME) / FULL_TIME})` }} />
+            </span>
+            <b aria-label="Minuto">{Math.min(minute, FULL_TIME)}'</b>
+          </div>
+          <div className="live-speed" role="group" aria-label="Velocidade">
+            <button aria-label="Pausar" aria-pressed={speed === 0} disabled={isStopped} onClick={() => onSpeed(0)}>
+              <i className="ph-fill ph-pause" aria-hidden="true" />
             </button>
-          ))}
+            {SPEEDS.map((s) => (
+              <button key={s} aria-label={`${s}x`} aria-pressed={speed === s} disabled={isStopped} onClick={() => onSpeed(s)}>
+                {s}×
+              </button>
+            ))}
+          </div>
+          <label className="live-mine">
+            Só meus jogos
+            <input type="checkbox" className="live-sw" checked={isOnlyMine} onChange={(event) => onOnlyMine(event.target.checked)} />
+          </label>
         </div>
       </div>
-      <div className="band-grid">
-        <div className="side home">
-          {match.reds.home > 0 && <i className="redc" aria-label="expulsão" />}
-          <ClubPlate club={home} />
-          <Crest club={home} size={54} />
+      <div className="live-feat">
+        <div className="live-stad">
+          <b>{home.stadium}</b>
+          {home.shortName} em casa
         </div>
-        <p className="score" aria-label={`${home.shortName} ${match.score.home} x ${match.score.away} ${away.shortName}`}>
-          <Digit value={match.score.home} className="digit" />
-          <span className="x">x</span>
-          <Digit value={match.score.away} className="digit" />
-        </p>
-        <div className="side away">
-          <Crest club={away} size={54} />
-          <ClubPlate club={away} />
-          {match.reds.away > 0 && <i className="redc" aria-label="expulsão" />}
+        <div className="live-mid">
+          <div className="live-duel">
+            {side(home, "home")}
+            <p className="live-sc" aria-label={`${home.shortName} ${match.score.home} x ${match.score.away} ${away.shortName}`}>
+              <Digit value={match.score.home} className="digit" />
+              <span className="x">×</span>
+              <Digit value={match.score.away} className="digit" />
+            </p>
+            {side(away, "away")}
+          </div>
+          <div className="live-evs">
+            {shootoutWinner ? (
+              <span className="last">{shootoutWinner} nos pênaltis</span>
+            ) : (
+              scorers.map((goal, index) => (
+                <span key={`${goal.minute}-${index}`} className={index === scorers.length - 1 ? "last" : undefined}>
+                  <i className="ph-fill ph-soccer-ball" aria-hidden="true" />
+                  {goal.name} {goal.minute}'
+                </span>
+              ))
+            )}
+          </div>
         </div>
-        <p className="clock">
-          <b aria-label="Minuto">{minute}'</b>
-          <span>{clockNote(minute, speed, isFinished)}</span>
-        </p>
-      </div>
-      <div className="band-foot">
-        <p className="venue">{home.stadium}</p>
-        <p className="lastev">{last}</p>
-        <div className="actions">{children}</div>
-      </div>
-      <div className="progress">
-        <i style={{ transform: `scaleX(${Math.min(minute, FULL_TIME) / FULL_TIME})` }} />
+        <div className="live-right">
+          {table}
+          {children}
+        </div>
       </div>
     </section>
   );
 }
 
-function MatchRow({ match, clubs, minute, flash }: { match: MatchAt; clubs: Readonly<Record<string, RoundClub>>; minute: number; flash: Flash | undefined }) {
+type MatchRowProps = { match: MatchAt; clubs: Readonly<Record<string, RoundClub>>; flash: Flash | undefined; isHidden: boolean };
+
+/** A row redraws only when its own match changes, so a whole round's board stays light at 4x. */
+const isSameRow = (before: MatchRowProps, after: MatchRowProps) =>
+  before.clubs === after.clubs &&
+  before.flash === after.flash &&
+  before.isHidden === after.isHidden &&
+  before.match.isCoach === after.match.isCoach &&
+  before.match.score.home === after.match.score.home &&
+  before.match.score.away === after.match.score.away &&
+  before.match.reds.home === after.match.reds.home &&
+  before.match.reds.away === after.match.reds.away &&
+  before.match.last?.minute === after.match.last?.minute &&
+  before.match.last?.text === after.match.last?.text;
+
+const MatchRow = memo(function MatchRow({ match, clubs, flash, isHidden }: MatchRowProps) {
   const home = clubs[match.homeId];
   const away = clubs[match.awayId];
   if (!home || !away) return null;
-  const red = <i className="redc" aria-label="expulsão" />;
+  const lead = (side: Side) => (side === "home" ? match.score.home > match.score.away : match.score.away > match.score.home);
   return (
-    <li className={match.isCoach ? "row mine" : "row"} aria-label={`${home.shortName} ${match.score.home} x ${match.score.away} ${away.shortName}`}>
-      {flash && <i key={flash.count} className="flash" style={{ background: flash.colour }} />}
-      <span className="t">{Math.min(minute, FULL_TIME)}'</span>
-      <span className="h">
-        {match.reds.home > 0 && red}
-        <ClubPlate club={home} size="row" />
-      </span>
-      <Digit value={match.score.home} className="round-box" flash={flash?.side === "home" ? flash.colour : undefined} />
-      <Digit value={match.score.away} className="round-box" flash={flash?.side === "away" ? flash.colour : undefined} />
-      <span className="a">
-        <ClubPlate club={away} size="row" />
-        {match.reds.away > 0 && red}
-      </span>
+    <li className={match.isCoach ? "live-r human" : "live-r"} hidden={isHidden} aria-label={`${home.shortName} ${match.score.home} x ${match.score.away} ${away.shortName}`}>
+      {flash && <i key={flash.count} className="flash" style={{ background: `linear-gradient(90deg, transparent 12%, ${flash.colour} 40%, transparent 95%)` }} />}
+      <span className="std">{home.stadium}</span>
+      <RowPlate club={home} red={match.reds.home > 0} />
+      <Digit value={match.score.home} className={lead("home") ? "sbox lead" : "sbox"} flash={flash?.side === "home" ? flash.colour : undefined} isSettled={!flash} />
+      <Digit value={match.score.away} className={lead("away") ? "sbox lead" : "sbox"} flash={flash?.side === "away" ? flash.colour : undefined} isSettled={!flash} />
+      <RowPlate club={away} red={match.reds.away > 0} />
       <span className="ev">
+        {flash && (
+          <span key={flash.count} className="gol">
+            Gol
+          </span>
+        )}
         {match.last && (
           <>
             <EventMark kind={match.last.kind} />
-            <span className="min">{match.last.minute}'</span>
             <span className="who">{match.last.text}</span>
+            <span className="mn">{match.last.minute}'</span>
           </>
         )}
       </span>
     </li>
+  );
+}, isSameRow);
+
+/** A club on the round board: its crest on a pill in its colours, as Brasfoot paints it. */
+function RowPlate({ club, red }: { club: RoundClub; red: boolean }) {
+  const { background, text } = plateColours(club.colours);
+  return (
+    <span className="plate" style={{ background, color: text }}>
+      <Crest club={club} size={17} />
+      <span className="nm">{club.shortName}</span>
+      {red && <span className="rc" aria-label="expulsão" />}
+    </span>
+  );
+}
+
+/** The coach's group as it would stand now, three rows around his club, over the button that opens it whole. */
+function TableCard({ rows, clubs, coachClubId, onOpen }: { rows: readonly LiveTableRow[]; clubs: Readonly<Record<string, RoundClub>>; coachClubId: string | null; onOpen: () => void }) {
+  return (
+    <div className="live-table">
+      <TableRows rows={shortTable(rows, coachClubId, TABLE_CARD_ROWS)} clubs={clubs} coachClubId={coachClubId} />
+      <button className="live-table-open" onClick={onOpen}>
+        Tabela completa
+      </button>
+    </div>
   );
 }
 
@@ -518,13 +611,15 @@ function TableSheet({ note, onClose, children }: { note: string; onClose: () => 
   const title = useDialogFocus<HTMLHeadingElement>(true, { isModal: true });
   return createPortal(
     <div className="sheet-wrap" onClick={(event) => event.target === event.currentTarget && onClose()}>
-      <aside className="tsheet" role="dialog" aria-modal="true" aria-labelledby="full-table-title">
+      <aside className="tsheet page" role="dialog" aria-modal="true" aria-labelledby="full-table-title">
         <header className="tsheet-head">
-          <h2 id="full-table-title" ref={title} tabIndex={-1}>
-            Classificação
-          </h2>
-          <span>{note}</span>
-          <button className="ghost" onClick={onClose}>
+          <div>
+            <h2 id="full-table-title" ref={title} tabIndex={-1}>
+              Classificação
+            </h2>
+            <span>{note}</span>
+          </div>
+          <button className="btn sm" onClick={onClose}>
             Fechar
           </button>
         </header>
@@ -543,8 +638,8 @@ function TableSheet({ note, onClose, children }: { note: string; onClose: () => 
   );
 }
 
-const ROSE = "rgba(111, 211, 138, 0.24)";
-const FELL = "rgba(240, 138, 122, 0.2)";
+const ROSE = "rgba(17, 132, 66, 0.2)";
+const FELL = "rgba(215, 50, 42, 0.16)";
 
 /** A table row slides to its new place, tinted green if it rose and red if it fell; with reduced motion only the tint fades. */
 function slideTableRow(row: HTMLElement, offset: number) {
@@ -569,21 +664,27 @@ function TableRows({ rows, clubs, coachClubId, isFull = false }: { rows: readonl
 
   return (
     <ol ref={list} className={isFull ? "trows full" : "trows"} aria-label={isFull ? "Tabela completa" : "Classificação ao vivo"}>
-      {rows.map((r) => (
-        <li key={r.clubId} data-flip={r.clubId} className={r.clubId === coachClubId ? "trow mine" : "trow"}>
-          <span className="p">{r.position}</span>
-          <span className="n">{clubs[r.clubId]?.shortName ?? r.clubId}</span>
-          {isFull && (
-            <>
-              <span className="g">{r.played}</span>
-              <span className="g">{r.wins}</span>
-            </>
-          )}
-          <span className="g">{r.goalDifference > 0 ? `+${r.goalDifference}` : r.goalDifference}</span>
-          {!isFull && <span className={r.move > 0 ? "mv up" : "mv down"}>{r.move > 0 ? `▲${r.move}` : r.move < 0 ? `▼${-r.move}` : ""}</span>}
-          <span className="pts">{r.points}</span>
-        </li>
-      ))}
+      {rows.map((r) => {
+        const club = clubs[r.clubId];
+        return (
+          <li key={r.clubId} data-flip={r.clubId} className={r.clubId === coachClubId ? "trow mine" : "trow"}>
+            <span className="p">{r.position}</span>
+            <span className="n">
+              {club && <Crest club={club} size={isFull ? 20 : 16} />}
+              {club?.shortName ?? r.clubId}
+            </span>
+            {isFull && (
+              <>
+                <span className="g">{r.played}</span>
+                <span className="g">{r.wins}</span>
+                <span className="g">{r.goalDifference > 0 ? `+${r.goalDifference}` : r.goalDifference}</span>
+              </>
+            )}
+            {!isFull && <span className={r.move > 0 ? "mv up" : "mv down"}>{r.move > 0 ? `▲${r.move}` : r.move < 0 ? `▼${-r.move}` : ""}</span>}
+            <span className="pts">{r.points}</span>
+          </li>
+        );
+      })}
     </ol>
   );
 }

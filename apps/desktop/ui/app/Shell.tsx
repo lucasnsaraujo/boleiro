@@ -9,14 +9,14 @@ import { slotLabel } from "@boleiro/game-client/saves/slotMeta";
 import { clubById } from "../clubs/clubCatalog.js";
 import { musicFor, useSound } from "../sound/SoundProvider.js";
 import { useTheme } from "../theme/ThemeProvider.js";
-import { useCommands, useRunCommand } from "./AppCommands.js";
+import { useCommands, useIsCommandAnswered, useRunCommand } from "./AppCommands.js";
 import { GameClockContext } from "./gameClock.js";
 import { installNativeMenu } from "./nativeMenu.js";
 import { hasMica, platformOf, windowChrome, windowsVersion } from "./platform.js";
 import { screenDirection } from "./screenDirection.js";
 import { NAV, navIndexOf, showsBar, type NavId } from "./screens.js";
 import { useServices } from "./ServicesContext.js";
-import { commandForKey } from "./shortcuts.js";
+import { commandForKey, MATCH_COMMAND_IDS } from "./shortcuts.js";
 import { isTyping } from "./useTypedWord.js";
 import "./shell.css";
 
@@ -42,6 +42,7 @@ export function Shell() {
   const { engine: sound, settings, changeSettings } = useSound();
   const { changeSetting } = useTheme();
   const runCommand = useRunCommand();
+  const isCommandAnswered = useIsCommandAnswered();
   useEffect(() => sound.playMusic(musicFor(pathname)), [sound, pathname]);
   const hasBar = showsBar(pathname, game.current !== null);
 
@@ -128,16 +129,40 @@ export function Shell() {
   });
 
   useEffect(() => {
+    // A control the coach reached with Tab, where Space presses it as keyboard users expect. A click focuses a control too,
+    // and Chromium then calls it :focus-visible on the next key, so that test alone would let Space re-press the last click.
+    let isTabbing = false;
+    let tabbedTo: EventTarget | null = null;
+    const onFocus = (event: FocusEvent) => {
+      tabbedTo = isTabbing ? event.target : null;
+    };
+    const onPointer = () => {
+      isTabbing = false;
+    };
     const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Tab") isTabbing = true;
       const command = commandForKey(event, PLATFORM);
       if (!command || event.defaultPrevented || (event.key.length === 1 && !event.metaKey && !event.ctrlKey && isTyping(event.target))) return;
-      // WebView2 keeps the browser's own F-keys (F5 reloads the app, F3 finds), so a game key never reaches them.
-      event.preventDefault();
-      runCommand(command);
+      if (event.key === " " && event.target === tabbedTo) return;
+      const isMatchKey = MATCH_COMMAND_IDS.some((id) => id === command);
+      // Holding a match key runs it once, but its repeats stay off the page too: Space would press the focused button on release and scroll the board.
+      if (isMatchKey && event.repeat) {
+        if (isCommandAnswered(command)) event.preventDefault();
+        return;
+      }
+      // WebView2 keeps the browser's own F-keys (F5 reloads the app, F3 finds), so a game key never reaches them even
+      // when no screen takes it; only the match keys (Space, digits) stay the page's off the round.
+      if (runCommand(command) || !isMatchKey) event.preventDefault();
     };
+    document.addEventListener("focusin", onFocus);
+    document.addEventListener("pointerdown", onPointer);
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [runCommand]);
+    return () => {
+      document.removeEventListener("focusin", onFocus);
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [runCommand, isCommandAnswered]);
 
   const active = navIndexOf(pathname);
   const chrome = isFullScreen ? "none" : CHROME;

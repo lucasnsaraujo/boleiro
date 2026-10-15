@@ -1,6 +1,9 @@
 import type { Platform } from "./platform.js";
 import { NAV, type NavId } from "./screens.js";
 
+/** What only the live round answers: the page keeps these keys (Space scrolls, digits type) on every other screen. */
+export const MATCH_COMMAND_IDS = ["pausar", "velocidade1", "velocidade2", "velocidade3", "tabelaAoVivo"] as const;
+
 /** Everything the bar, the keyboard and the native menu can ask the game to do. */
 export const COMMAND_IDS = [
   ...NAV.map(({ id }) => id),
@@ -12,6 +15,7 @@ export const COMMAND_IDS = [
   "temaClaro",
   "temaEscuro",
   "temaSistema",
+  ...MATCH_COMMAND_IDS,
 ] as const satisfies readonly string[];
 
 export type CommandId = (typeof COMMAND_IDS)[number];
@@ -22,9 +26,15 @@ const F_KEYS: ReadonlyMap<string, NavId> = new Map(NAV.map(({ key, id }) => [key
 const LETTERS: ReadonlyMap<string, CommandId> = new Map([
   ["e", "jogarRodada"],
   ["m", "mudo"],
+  [" ", "pausar"],
+  ["1", "velocidade1"],
+  ["2", "velocidade2"],
+  ["3", "velocidade3"],
+  ["t", "tabelaAoVivo"],
 ]);
+const KEY_NAMES: ReadonlyMap<string, string> = new Map([[" ", "Espaço"]]);
 
-/** The command a key press asks for: an F-key, a bare letter, or the platform's save chord. */
+/** The command a key press asks for: an F-key, a bare letter, digit or Space, or the platform's save chord. */
 export function commandForKey(event: Key, platform: Platform): CommandId | null {
   const fKey = F_KEYS.get(event.key);
   if (fKey) return fKey;
@@ -42,5 +52,5 @@ export function shortcutKeys(command: CommandId, platform: Platform): string[] {
   const nav = NAV.find(({ id }) => id === command);
   if (nav) return [nav.key];
   const letter = [...LETTERS].find(([, id]) => id === command)?.[0];
-  return letter ? [letter.toUpperCase()] : [];
+  return letter ? [KEY_NAMES.get(letter) ?? letter.toUpperCase()] : [];
 }

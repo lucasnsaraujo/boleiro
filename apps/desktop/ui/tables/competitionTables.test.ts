@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { Competition, CupCompetition, Fixture, GameState, LeagueCompetition, MatchResult } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
-import { coachCompetitions, competitionStages, defaultStage, groupTables, knockoutTies, topScorers, type TableRow } from "./competitionTables.js";
+import { coachCompetitions, competitionStages, defaultStage, groupTables, knockoutTies, openingCompetitionId, playedRounds, tableTabs, topScorers, type TableRow } from "./competitionTables.js";
 
 const game = newGameFromFiles(7, { coachClubId: "bahia-ba" }, bundledGameFiles);
 
@@ -22,6 +22,23 @@ describe("coachCompetitions", () => {
 
   test("a coach without a club sees the Série A and the Copa do Brasil", () => {
     expect(coachCompetitions({ ...game, coachClubId: null }).map((c) => c.id)).toEqual(["serie-a-2026", "copa-do-brasil-2026"]);
+  });
+});
+
+describe("tableTabs", () => {
+  test("are every national competition, then the coach's state championship, with the other states apart", () => {
+    const { tabs, otherStates } = tableTabs(game);
+    expect(tabs.map((c) => c.id)).toEqual(["serie-a-2026", "serie-b-2026", "serie-c-2026", "serie-d-2026", "copa-do-brasil-2026", "state-ba-2026"]);
+    expect(otherStates.map((c) => c.id)).not.toContain("state-ba-2026");
+    expect(otherStates.length).toBeGreaterThan(0);
+    expect(otherStates.every((c) => c.kind === "state" && c.season === 2026)).toBe(true);
+  });
+
+  test("a coach without a club finds every state championship among the others", () => {
+    const { tabs, otherStates } = tableTabs({ ...game, coachClubId: null });
+    const states = Object.values(game.competitions).filter((c) => c.kind === "state");
+    expect(tabs.map((c) => c.id)).toEqual(["serie-a-2026", "serie-b-2026", "serie-c-2026", "serie-d-2026", "copa-do-brasil-2026"]);
+    expect(otherStates).toHaveLength(states.length);
   });
 });
 
@@ -87,6 +104,52 @@ describe("groupTables zones", () => {
     const rows = groupTables(league, 0, fixtures).groups[0]?.rows ?? [];
     expect(rows[0]).toMatchObject({ clubId: first.homeId, position: 1, points: 3, goalDifference: 3, played: 1 });
     expect(rows.at(-1)).toMatchObject({ clubId: first.awayId, position: 20, zone: "relegation" });
+  });
+});
+
+describe("rounds of a group stage", () => {
+  const league = competition("serie-a-2026");
+  const roundDates = league.stages[0]?.kind === "groups" ? league.stages[0].dates : [];
+  const roundOf = (f: Fixture) => roundDates.indexOf(f.date) + 1;
+  /** Série A with its first `rounds` rounds played, every game won by `score(fixture)`. */
+  const playedThrough = (rounds: number, score: (f: Fixture) => MatchResult = () => ({ homeGoals: 1, awayGoals: 0 })): Fixture[] =>
+    game.fixtures.map((f) => (f.competitionId === league.id && roundOf(f) <= rounds ? { ...f, result: score(f) } : f));
+
+  test("counts the rounds played so far", () => {
+    expect(playedRounds(league, 0, game.fixtures)).toBe(0);
+    expect(playedRounds(league, 0, playedThrough(3))).toBe(3);
+  });
+
+  test("a table through an earlier round leaves the later games out", () => {
+    const rows = groupTables(league, 0, playedThrough(3), null, 2).groups[0]?.rows ?? [];
+    expect(rows.map((row) => row.played)).toEqual(repeat(2, 20));
+  });
+
+  test("each row carries the club's last five results, oldest first", () => {
+    const clubId = "bahia-ba";
+    // Bahia's goals minus the opponent's in rounds 1 to 6: win, draw, win, loss, loss, loss.
+    const margins = [2, 0, 1, -1, -3, -1];
+    const fixtures = playedThrough(6, (f) => {
+      const margin = margins[roundOf(f) - 1] ?? 0;
+      if (f.homeId === clubId) return { homeGoals: Math.max(0, margin), awayGoals: Math.max(0, -margin) };
+      if (f.awayId === clubId) return { homeGoals: Math.max(0, -margin), awayGoals: Math.max(0, margin) };
+      return { homeGoals: 0, awayGoals: 0 };
+    });
+    const bahia = groupTables(league, 0, fixtures).groups[0]?.rows.find((row) => row.clubId === clubId);
+    expect(bahia?.form).toEqual(["draw", "win", "loss", "loss", "loss"]);
+    const throughTwo = groupTables(league, 0, fixtures, null, 2).groups[0]?.rows.find((row) => row.clubId === clubId);
+    expect(throughTwo?.form).toEqual(["win", "draw"]);
+  });
+
+  test("each row tells the places gained or lost in the last round played", () => {
+    // Round 1 won by the home sides, round 2 by the away sides: the table turns over.
+    const fixtures = playedThrough(2, (f) => (roundOf(f) === 1 ? { homeGoals: 1, awayGoals: 0 } : { homeGoals: 0, awayGoals: 3 }));
+    const before = groupTables(league, 0, fixtures, null, 1).groups[0]?.rows ?? [];
+    const after = groupTables(league, 0, fixtures).groups[0]?.rows ?? [];
+    expect(before.map((row) => row.movement)).toEqual(repeat(0, 20));
+    const placeBefore = new Map(before.map((row) => [row.clubId, row.position]));
+    expect(after.map((row) => row.movement)).toEqual(after.map((row) => (placeBefore.get(row.clubId) ?? 0) - row.position));
+    expect(after.some((row) => row.movement > 0) && after.some((row) => row.movement < 0)).toBe(true);
   });
 });
 
@@ -179,5 +242,16 @@ describe("topScorers", () => {
       { playerId: second.id, name: second.name, clubId: second.clubId, goals: 5 },
       { playerId: first.id, name: first.name, clubId: first.clubId, goals: 2 },
     ]);
+  });
+});
+
+describe("openingCompetitionId", () => {
+  test("is the competition of the coach's next match", () => {
+    expect(openingCompetitionId(game, "copa-do-brasil-2026")).toBe("copa-do-brasil-2026");
+  });
+
+  test("with no match ahead is the first competition the coach's club plays, not the first tab", () => {
+    expect(tableTabs(game).tabs[0]?.id).toBe("serie-a-2026");
+    expect(openingCompetitionId(game, undefined)).toBe("state-ba-2026");
   });
 });

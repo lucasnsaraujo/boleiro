@@ -79,3 +79,14 @@ export function pauseReason(round: LiveRound, minute: number): "halfTime" | "ful
   );
   return needsCoach ? "coachMatch" : null;
 }
+
+/** Who scored in a match up to `minute`, in order, as the band lists them under the score. */
+export function scorersUntil(round: LiveRound, fixtureId: string, minute: number): { name: string; minute: number; side: Side }[] {
+  const match = round.matches.find((m) => m.fixtureId === fixtureId);
+  if (!match) return [];
+  return match.events.flatMap((event) =>
+    event.type === "goal" && event.minute <= minute
+      ? [{ name: round.names[event.playerId] ?? "Um jogador", minute: event.minute, side: event.clubId === match.homeId ? ("home" as const) : ("away" as const) }]
+      : [],
+  );
+}

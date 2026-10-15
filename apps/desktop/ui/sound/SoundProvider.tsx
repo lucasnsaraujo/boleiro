@@ -10,7 +10,7 @@ const SoundContext = createContext<Sound>({ engine: SILENT_SOUND, settings: DEFA
 
 export const useSound = (): Sound => useContext(SoundContext);
 
-const MENU_PATHS = new Set(["/", "/new-game", "/options"]);
+const MENU_PATHS = new Set(["/", "/new-game", "/options", "/saves"]);
 const SILENT_PATHS = new Set(["/round", "/season-end", "/sacked"]);
 
 /** The music under a screen: the theme on the menus, quiet music around the club, and none where the moment has its own sound. */

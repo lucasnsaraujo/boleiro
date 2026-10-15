@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useLayoutEffect, useRef } from "r
 import { COMMAND_IDS, type CommandId } from "./shortcuts.js";
 
 type Handler = () => void;
-type Commands = { run: (id: CommandId) => boolean; register: (id: CommandId, handler: Handler) => () => void };
+type Commands = { run: (id: CommandId) => boolean; isAnswered: (id: CommandId) => boolean; register: (id: CommandId, handler: Handler) => () => void };
 /** What each command does on this screen; `false` leaves it to another screen, or to nothing. */
 export type CommandHandlers = Partial<Record<CommandId, Handler | false>>;
 
@@ -13,6 +13,9 @@ function createCommands(): Commands {
       const handler = handlers.get(id)?.at(-1);
       handler?.();
       return handler !== undefined;
+    },
+    isAnswered(id) {
+      return (handlers.get(id)?.length ?? 0) > 0;
     },
     register(id, handler) {
       handlers.set(id, [...(handlers.get(id) ?? []), handler]);
@@ -30,6 +33,11 @@ const AppCommandsContext = createContext<Commands>(createCommands());
 /** Runs a command; false when no screen up now answers it. */
 export function useRunCommand(): (id: CommandId) => boolean {
   return useContext(AppCommandsContext).run;
+}
+
+/** Whether a screen up now answers a command, without running it. */
+export function useIsCommandAnswered(): (id: CommandId) => boolean {
+  return useContext(AppCommandsContext).isAnswered;
 }
 
 /** While mounted, each command in `handlers` runs its latest handler. */

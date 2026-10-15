@@ -36,6 +36,20 @@ test("saving is Command-S on a Mac and Ctrl-S elsewhere", () => {
   expect(commandForKey(press("s"), "windows")).toBeNull();
 });
 
+test("in a match, Space pauses, 1 to 3 pick the speed and T opens the live table", () => {
+  expect([" ", "1", "2", "3", "t", "T"].map((key) => commandForKey(press(key), "windows"))).toEqual([
+    "pausar",
+    "velocidade1",
+    "velocidade2",
+    "velocidade3",
+    "tabelaAoVivo",
+    "tabelaAoVivo",
+  ]);
+  expect(commandForKey(press("1", { metaKey: true }), "mac")).toBeNull();
+  expect(shortcutKeys("pausar", "mac")).toEqual(["Espaço"]);
+  expect(shortcutKeys("velocidade2", "mac")).toEqual(["2"]);
+});
+
 test("keys with no command do nothing", () => {
   expect(commandForKey(press("F12"), "mac")).toBeNull();
   expect(commandForKey(press("x"), "mac")).toBeNull();

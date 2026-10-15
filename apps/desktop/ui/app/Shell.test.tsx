@@ -9,6 +9,7 @@ import { unlockedFakeSound } from "../sound/fakeAudioContext.js";
 import { SoundProvider } from "../sound/SoundProvider.js";
 import { Options } from "../screens/Options.js";
 import { ServicesContext, type Services } from "./ServicesContext.js";
+import { useCommands } from "./AppCommands.js";
 import { Shell } from "./Shell.js";
 
 const closers: (() => void)[] = [];
@@ -81,6 +82,13 @@ test("a game key that does nothing on this screen still never reaches the browse
   expect(fireEvent.keyDown(document, { key: "F12" })).toBe(true);
 });
 
+test("a match key off the round is left to the page, so Space still presses buttons and scrolls", async () => {
+  open(await services(), "/hub");
+  await screen.findByRole("navigation", { name: "Telas" });
+  expect(fireEvent.keyDown(document, { key: " " })).toBe(true);
+  expect(fireEvent.keyDown(document, { key: "2" })).toBe(true);
+});
+
 test("there is no bar on the start menu or in a live round, and the F-keys can't leave a match", async () => {
   const router = open(await services(), "/round");
   expect(screen.queryByRole("navigation", { name: "Telas" })).toBeNull();
@@ -125,4 +133,67 @@ test("M mutes from any screen, but not while typing", async () => {
   field.remove();
   fireEvent.keyDown(document, { key: "M" });
   expect(mute).toHaveProperty("checked", false);
+});
+
+/** A stand-in round: Space pauses it, beside a speed button and the Só meus jogos switch. */
+function PausableRound({ onPause }: { onPause: () => void }) {
+  useCommands({ pausar: onPause });
+  return (
+    <>
+      <button>4x</button>
+      <label>
+        Só meus jogos
+        <input type="checkbox" />
+      </label>
+    </>
+  );
+}
+
+function openPausableRound(given: Services) {
+  let pauses = 0;
+  const router = createMemoryRouter([{ element: <Shell />, children: [{ path: "/round", element: <PausableRound onPause={() => pauses++} /> }] }], { initialEntries: ["/round"] });
+  render(
+    <ServicesContext value={given}>
+      <SoundProvider engine={unlockedFakeSound().engine} store={localStorage}>
+        <RouterProvider router={router} />
+      </SoundProvider>
+    </ServicesContext>,
+  );
+  return () => pauses;
+}
+
+test("Space still pauses the round after the coach clicks one of its buttons or its switch", async () => {
+  const pauses = openPausableRound(await services());
+  await userEvent.click(screen.getByRole("button", { name: "4x" }));
+  expect(fireEvent.keyDown(document.activeElement ?? document, { key: " " })).toBe(false);
+  expect(pauses()).toBe(1);
+  const mine = screen.getByRole("checkbox", { name: "Só meus jogos" });
+  await userEvent.click(mine);
+  expect(fireEvent.keyDown(mine, { key: " " })).toBe(false);
+  expect(pauses()).toBe(2);
+});
+
+test("Space on a control the coach reached with Tab presses that control instead of pausing", async () => {
+  const pauses = openPausableRound(await services());
+  await userEvent.tab();
+  expect(document.activeElement?.textContent).toBe("4x");
+  expect(fireEvent.keyDown(document.activeElement ?? document, { key: " " })).toBe(true);
+  expect(pauses()).toBe(0);
+});
+
+test("holding Space down pauses once, not once per key repeat", async () => {
+  const pauses = openPausableRound(await services());
+  fireEvent.keyDown(document.body, { key: " " });
+  fireEvent.keyDown(document.body, { key: " ", repeat: true });
+  fireEvent.keyDown(document.body, { key: " ", repeat: true });
+  expect(pauses()).toBe(1);
+});
+
+test("holding Space on a clicked button keeps the key repeats from pressing it or scrolling the board", async () => {
+  const pauses = openPausableRound(await services());
+  await userEvent.click(screen.getByRole("button", { name: "4x" }));
+  const button = document.activeElement ?? document;
+  expect(fireEvent.keyDown(button, { key: " " })).toBe(false);
+  expect(fireEvent.keyDown(button, { key: " ", repeat: true })).toBe(false);
+  expect(pauses()).toBe(1);
 });

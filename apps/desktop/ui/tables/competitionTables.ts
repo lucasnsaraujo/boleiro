@@ -1,4 +1,4 @@
-import type { Competition, Fixture, GameState, KnockoutStage, SeasonCalendar, StateCompetition } from "@boleiro/engine/sim/gameState";
+import type { Competition, Fixture, GameState, GroupStage, KnockoutStage, SeasonCalendar, StateCompetition } from "@boleiro/engine/sim/gameState";
 import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
 import { continentalQualifiers } from "@boleiro/engine/sim/finances/continentalQualifiers";
 import { competitionKey } from "@boleiro/engine/sim/history/history";
@@ -9,7 +9,9 @@ import { aggregate, tieResults } from "@boleiro/engine/sim/tieResults";
 
 export type ZoneKind = "libertadores" | "preLibertadores" | "sulAmericana" | "promotion" | "advance" | "relegation";
 export type ZoneKey = { zone: ZoneKind; label: string };
-export type TableRow = StandingRow & { position: number; zone: ZoneKind | null };
+export type Outcome = "win" | "draw" | "loss";
+/** `form` is the club's last five results, oldest first; `movement` the places it gained (negative: lost) in the last round. */
+export type TableRow = StandingRow & { position: number; zone: ZoneKind | null; form: Outcome[]; movement: number };
 export type GroupTable = { label: string | null; rows: TableRow[] };
 
 export type Leg = { fixtureId: string; date: string; homeId: string; awayId: string; homeGoals: number | null; awayGoals: number | null };
@@ -29,12 +31,32 @@ export type Scorer = { playerId: string; name: string; clubId: string; goals: nu
 
 const KIND_ORDER: Record<Competition["kind"], number> = { state: 0, league: 1, cup: 2 };
 
-/** The tabs of the tables screen: what the coach's club plays this season, or the Série A and the cup without a club. */
+/** What the coach's club plays this season, state championship first, or the Série A and the cup without a club. */
 export function coachCompetitions({ coachClubId, competitions, season }: Pick<GameState, "coachClubId" | "competitions" | "season">): Competition[] {
   const shown = (c: Competition) => (coachClubId ? c.clubIds.includes(coachClubId) : c.kind === "cup" || (c.kind === "league" && c.division === "A"));
   return Object.values(competitions)
     .filter((c) => c.season === season && shown(c))
     .sort((a, b) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind]);
+}
+
+const DIVISION_ORDER = ["A", "B", "C", "D"] as const;
+
+/** The tables open on the competition of the coach's next match, else on the first his club plays this season. */
+export function openingCompetitionId(state: Pick<GameState, "coachClubId" | "competitions" | "season">, nextCompetitionId: string | undefined): string | undefined {
+  return nextCompetitionId ?? coachCompetitions(state)[0]?.id;
+}
+
+/**
+ * The tables screen's tabs: the four national divisions, the cup and the state championship the coach's club plays.
+ * Every other state championship waits behind "Outras ligas".
+ */
+export function tableTabs(state: Pick<GameState, "coachClubId" | "competitions" | "season">): { tabs: Competition[]; otherStates: StateCompetition[] } {
+  const thisSeason = Object.values(state.competitions).filter((c) => c.season === state.season);
+  const leagues = DIVISION_ORDER.flatMap((division) => thisSeason.filter((c) => c.kind === "league" && c.division === division));
+  const cups = thisSeason.filter((c) => c.kind === "cup");
+  const ownState = coachCompetitions(state).filter((c): c is StateCompetition => c.kind === "state");
+  const otherStates = thisSeason.filter((c): c is StateCompetition => c.kind === "state" && !ownState.includes(c));
+  return { tabs: [...leagues, ...cups, ...ownState], otherStates };
 }
 
 const CUP_ROUND_NAMES: Record<string, string> = {
@@ -161,6 +183,34 @@ function zoning(competition: Competition, stage: number, groups: readonly string
 const stageFixturesOf = (competition: Competition, stage: number, fixtures: readonly Fixture[]) =>
   fixtures.filter((f) => f.competitionId === competition.id && f.stage === stage);
 
+/** The round of a group-stage game, counted from 1; 0 when its date is not one of the stage's rounds. */
+const roundOf = (shape: GroupStage, fixture: Fixture) => shape.dates.indexOf(fixture.date) + 1;
+
+const latestRound = (shape: GroupStage, stageFixtures: readonly Fixture[]) => Math.max(0, ...stageFixtures.filter((f) => f.result).map((f) => roundOf(shape, f)));
+
+/** The latest round of a group stage with a game played, 0 before the first. */
+export function playedRounds(competition: Competition, stage: number, fixtures: readonly Fixture[]): number {
+  const shape = competition.stages[stage];
+  return shape?.kind === "groups" ? latestRound(shape, stageFixturesOf(competition, stage, fixtures)) : 0;
+}
+
+const FORM_LENGTH = 5;
+
+function outcomeFor(clubId: string, { homeId, result }: Fixture): Outcome | null {
+  if (!result) return null;
+  const [scored, conceded] = homeId === clubId ? [result.homeGoals, result.awayGoals] : [result.awayGoals, result.homeGoals];
+  return scored > conceded ? "win" : scored === conceded ? "draw" : "loss";
+}
+
+/** The club's last five results in these games, oldest first. */
+function recentForm(clubId: string, stageFixtures: readonly Fixture[]): Outcome[] {
+  return stageFixtures
+    .filter((f) => f.result && (f.homeId === clubId || f.awayId === clubId))
+    .toSorted((a, b) => a.date.localeCompare(b.date))
+    .slice(-FORM_LENGTH)
+    .flatMap((f) => outcomeFor(clubId, f) ?? []);
+}
+
 const groupLetter = (index: number) => String.fromCharCode(65 + index);
 
 /** A group stage's tables as they stand, each row in its zone if the stage ended now. */
@@ -169,15 +219,28 @@ export function groupTables(
   stage: number,
   fixtures: readonly Fixture[],
   copa: CopaFinalists = null,
+  throughRound: number | null = null,
 ): { groups: GroupTable[]; zones: ZoneKey[] } {
   const shape = competition.stages[stage];
   if (shape?.kind !== "groups") return { groups: [], zones: [] };
-  const stageFixtures = stageFixturesOf(competition, stage, fixtures);
+  const stageFixtures = stageFixturesOf(competition, stage, fixtures).filter((f) => throughRound === null || roundOf(shape, f) <= throughRound);
   const { zoneOf, advanceLabel } = zoning(competition, stage, shape.groups, stageFixtures, copa);
-  const groups = shape.groups.map((group, g) => ({
-    label: shape.groups.length > 1 ? `Grupo ${groupLetter(g)}` : null,
-    rows: standings(group, stageFixtures, competition.drawOrder).map((row, i) => ({ ...row, position: i + 1, zone: zoneOf(row.clubId, i + 1, group.length) })),
-  }));
+  const lastRound = latestRound(shape, stageFixtures);
+  const beforeLastRound = stageFixtures.filter((f) => roundOf(shape, f) < lastRound);
+  const groups = shape.groups.map((group, g) => {
+    // Before the first round every club is level, so the first round moves nobody.
+    const placesBefore = lastRound > 1 ? standings(group, beforeLastRound, competition.drawOrder).map((row) => row.clubId) : [];
+    return {
+      label: shape.groups.length > 1 ? `Grupo ${groupLetter(g)}` : null,
+      rows: standings(group, stageFixtures, competition.drawOrder).map((row, i) => ({
+        ...row,
+        position: i + 1,
+        zone: zoneOf(row.clubId, i + 1, group.length),
+        form: recentForm(row.clubId, stageFixtures),
+        movement: lastRound > 1 ? placesBefore.indexOf(row.clubId) - i : 0,
+      })),
+    };
+  });
   const seen = new Set<ZoneKind>();
   const zones: ZoneKey[] = [];
   for (const row of groups.flatMap((g) => g.rows)) {
