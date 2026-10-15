@@ -95,6 +95,25 @@ class ScrapeWorldTest(unittest.TestCase):
         self.assertIn("no clubs on /x/startseite/wettbewerb/GB1", run.failures)
         self.assertFalse(league.exists())
 
+    def test_keeps_two_stadiums_with_the_same_name_and_different_capacities_apart(self) -> None:
+        arsenal = self.cache / tm_fetch.cache_name("/fc-arsenal/kader/verein/11/plus/1")
+        arsenal.write_text(arsenal.read_text().replace("Emirates Stadium", "Anfield"))
+        db = sqlite3.connect(":memory:")
+        scrape_tiny_world(db, self.cache, Offline())
+        grounds = db.execute(
+            "SELECT c.id, s.name, s.capacity FROM clubs c JOIN stadiums s ON s.snapshot_id = c.snapshot_id AND s.id = c.stadium_id ORDER BY c.id"
+        ).fetchall()
+        self.assertEqual(grounds, [("tm-11", "Anfield", 60704), ("tm-31", "Anfield", 61276)])
+
+    def test_two_clubs_sharing_a_ground_share_its_stadium_row(self) -> None:
+        liverpool = (self.cache / tm_fetch.cache_name("/fc-liverpool/kader/verein/31/plus/1")).read_text()
+        arsenal = self.cache / tm_fetch.cache_name("/fc-arsenal/kader/verein/11/plus/1")
+        arsenal.write_text(arsenal.read_text().replace("Emirates Stadium", "Anfield").replace("60.704", "61.276"))
+        db = sqlite3.connect(":memory:")
+        scrape_tiny_world(db, self.cache, Offline())
+        self.assertIn("61.276", liverpool)
+        self.assertEqual(db.execute("SELECT count(DISTINCT stadium_id), count(*) FROM clubs").fetchone(), (1, 2))
+
     def test_drops_a_facts_page_that_is_not_a_club_page_and_guesses_the_colours(self) -> None:
         facts = self.cache / tm_fetch.cache_name("/x/datenfakten/verein/31")
         facts.write_text("<html><body>Are you a robot?</body></html>")

@@ -109,12 +109,7 @@ class Scraper:
         club_id = self.known_club_ids.get(ref.tm_id, f"tm-{ref.tm_id}")
         self.club_ids[ref.tm_id] = club_id
         colours = self.colours(ref.tm_id)
-        stadium_slug = slugify(squad.stadium or "")
-        stadium_id = f"{stadium_slug}-{country.lower()}" if stadium_slug else f"tm-{ref.tm_id}-ground"
-        self.db.execute(
-            "INSERT OR IGNORE INTO stadiums VALUES (?, ?, ?, ?, NULL, ?, 'natural')",
-            (self.run.snapshot, stadium_id, squad.stadium or "", country.upper(), squad.capacity or 0),
-        )
+        stadium_id = self.stadium(ref, squad, country)
         primary, secondary = (colours + colours[:1])[:2] if colours else FALLBACK_COLOURS
         self.insert("clubs", club_id, self.club_seq, country.upper(), None, squad.name, squad.name, league_id, stadium_id,
                     primary, secondary, 0)
@@ -134,6 +129,23 @@ class Scraper:
         self.run.clubs += 1
         self.log(f"  {squad.name}: {len(squad.players)} players")
         return club_id
+
+    def stadium(self, ref: tm_pages.ClubRef, squad: tm_pages.Squad, country: str) -> str:
+        """The id of the club's ground: shared by clubs whose grounds have the same name, country and capacity."""
+        capacity = squad.capacity or 0
+        stadium_slug = slugify(squad.stadium or "")
+        if not stadium_slug:
+            stadium_id = f"tm-{ref.tm_id}-ground"
+        else:
+            stadium_id = f"{stadium_slug}-{country.lower()}"
+            found = self.db.execute("SELECT capacity FROM stadiums WHERE snapshot_id = ? AND id = ?", (self.run.snapshot, stadium_id)).fetchone()
+            if found and found[0] != capacity:
+                stadium_id = f"{stadium_id}-{capacity}"
+        self.db.execute(
+            "INSERT OR IGNORE INTO stadiums VALUES (?, ?, ?, ?, NULL, ?, 'natural')",
+            (self.run.snapshot, stadium_id, squad.stadium or "", country.upper(), capacity),
+        )
+        return stadium_id
 
     def guest_country(self, name: str) -> str:
         known = {country.name: country.id for country in tm_world.COUNTRIES}
