@@ -14,6 +14,8 @@ export type Coach = {
   offers: JobOffer[];
   /** Kept from match to match until the coach changes them. */
   tactics: Tactics;
+  /** The last day of the window the coach got for himself when he took a club outside the game's windows. */
+  personalWindowUntil?: IsoDate;
 };
 
 // guess: an unknown coach starts at the reputation of the smallest national clubs.

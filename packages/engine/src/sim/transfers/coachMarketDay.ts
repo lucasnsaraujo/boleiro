@@ -111,8 +111,8 @@ export function coachMarketDay(state: GameState, random: () => number): { state:
   }
 
   const pending = coachMarketOf(next);
-  const hasBusiness = Object.keys(pending.auctions).length > 0 || Object.keys(pending.listings).length > 0 || isMarketDay(state.date);
-  if (!isWindowOpen(state.date) || !next.coachClubId || !hasBusiness) return { state: next, events };
+  const hasBusiness = Object.keys(pending.auctions).length > 0 || Object.keys(pending.listings).length > 0 || isMarketDay(state, state.date);
+  if (!isWindowOpen(state, state.date) || !next.coachClubId || !hasBusiness) return { state: next, events };
   const view = marketView(next);
   const tier = view.tier(next.coachClubId);
   const valueOf = (player: SimPlayer) => valuePlayer(player, tier, state.date) * next.market.eurBrl;
@@ -139,7 +139,7 @@ export function coachMarketDay(state: GameState, random: () => number): { state:
     coach = { ...coach, bids: { ...coach.bids, [bid.playerId]: bid } };
     events.push({ type: "bidReceived", playerId: bid.playerId, buyerId: bid.buyerId, fee: bid.fee });
   };
-  const until = answerBy(state.date);
+  const until = answerBy(state, state.date);
   for (const [playerId, listing] of Object.entries(coach.listings).sort(([a], [b]) => a.localeCompare(b))) {
     const player = next.players[playerId];
     if (!player || coach.bids[playerId] || random() >= LISTING_DAILY_CHANCE[listing.mode]) continue;
@@ -150,7 +150,7 @@ export function coachMarketDay(state: GameState, random: () => number): { state:
     offer({ playerId, buyerId, fee: listing.price, feeEur: null, ceiling, isFinal: false, madeOn: state.date, until });
   }
 
-  if (isMarketDay(state.date)) {
+  if (isMarketDay(state, state.date)) {
     const squad = view.squad(next.coachClubId).filter((p) => !coach.listings[p.id] && !coach.auctions[p.id] && !coach.bids[p.id] && !next.market.loans[p.id]);
     for (const player of squad.sort((a, b) => a.id.localeCompare(b.id))) {
       if (random() >= UNASKED_BID_CHANCE) continue;

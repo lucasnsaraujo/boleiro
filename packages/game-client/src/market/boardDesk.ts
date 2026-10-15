@@ -1,7 +1,7 @@
 import { addDays } from "@boleiro/engine/sim/dates";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
-import { isWindowOpen } from "@boleiro/engine/sim/transfers/transferWindows";
+import { isWindowOpen, type CoachWindows } from "@boleiro/engine/sim/transfers/transferWindows";
 import type { DayEvent } from "../hub/inboxLines.js";
 import { needsWindow } from "./coachRequests.js";
 
@@ -25,8 +25,8 @@ export function withRequest(pending: readonly CoachRequest[], request: CoachRequ
  * The requests to hand the board today, and those that wait. The board decides the morning after,
  * so a request that needs the window waits until that morning falls inside it.
  */
-export function dueRequests(state: DeskState, pending: readonly CoachRequest[]): { due: CoachRequest[]; waiting: CoachRequest[] } {
-  const isOpenTomorrow = isWindowOpen(addDays(state.date, 1));
+export function dueRequests(state: DeskState & CoachWindows, pending: readonly CoachRequest[]): { due: CoachRequest[]; waiting: CoachRequest[] } {
+  const isOpenTomorrow = isWindowOpen(state, addDays(state.date, 1));
   const due: CoachRequest[] = [];
   const waiting: CoachRequest[] = [];
   for (const request of pending) (isOpenTomorrow || !needsWindow(state, request) ? due : waiting).push(request);

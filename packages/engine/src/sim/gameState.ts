@@ -218,6 +218,8 @@ export type GameState = {
   europe?: EuropeanCups;
   /** False when the game was started without the estaduais (a new-game option); left out, they are played. */
   playsStateChampionships?: false;
+  /** False when the game was started without the mid-season transfer window (a new-game option); left out, it opens. */
+  hasMidSeasonWindow?: false;
   /** The coach's club's friendlies, booked and lately played; saves from before friendlies have none. */
   friendlies?: Friendly[];
   /** The name of the coach in the seat, in a hot-seat game; a one-coach game keeps none. */

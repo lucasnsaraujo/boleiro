@@ -1,5 +1,5 @@
 import type { IsoDate } from "@boleiro/engine/sim/gameState";
-import { windowClosesOn } from "@boleiro/engine/sim/transfers/transferWindows";
+import { windowClosesOn, type CoachWindows } from "@boleiro/engine/sim/transfers/transferWindows";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 
 /** The time a coach has spent on the market screens in the transfer window that closes on `closesOn`. */
@@ -12,16 +12,19 @@ function spentIn(clock: MarketClock | null, closesOn: IsoDate): number {
   return clock?.closesOn === closesOn ? clock.spentSeconds : 0;
 }
 
-/** The clock on `date`; null in a game without the clock or with no window open. Each window starts the budget over. */
-export function marketClockView(clock: MarketClock | null, date: IsoDate, budgetSeconds: number | undefined): MarketClockView | null {
-  const closesOn = windowClosesOn(date);
+/**
+ * The clock on `date`; null in a game without the clock or with no window open for the coach. Each window,
+ * his own included, starts the budget over.
+ */
+export function marketClockView(clock: MarketClock | null, rules: CoachWindows, date: IsoDate, budgetSeconds: number | undefined): MarketClockView | null {
+  const closesOn = windowClosesOn(rules, date);
   if (budgetSeconds === undefined || closesOn === null) return null;
   return { budgetSeconds, leftSeconds: Math.max(0, budgetSeconds - spentIn(clock, closesOn)) };
 }
 
 /** The clock after `seconds` more on the market screens; it only runs while a window is open, and stops at the budget. */
-export function spendMarketTime(clock: MarketClock | null, date: IsoDate, budgetSeconds: number | undefined, seconds: number): MarketClock | null {
-  const closesOn = windowClosesOn(date);
+export function spendMarketTime(clock: MarketClock | null, rules: CoachWindows, date: IsoDate, budgetSeconds: number | undefined, seconds: number): MarketClock | null {
+  const closesOn = windowClosesOn(rules, date);
   if (budgetSeconds === undefined || closesOn === null) return clock;
   return { closesOn, spentSeconds: Math.min(budgetSeconds, spentIn(clock, closesOn) + Math.max(0, seconds)) };
 }
