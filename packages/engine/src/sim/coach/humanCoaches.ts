@@ -56,7 +56,7 @@ export function passTheSeat(state: GameState): GameState {
 }
 
 /** Swaps the coach in the seat with the waiting coach at `index`; swapping twice puts both back. */
-function swapSeat(state: GameState, index: number): GameState {
+export function swapSeat(state: GameState, index: number): GameState {
   const waiting = [...waitingCoachesOf(state)];
   const coach = waiting[index];
   if (!coach) throw new Error(`no waiting coach ${index}`);
