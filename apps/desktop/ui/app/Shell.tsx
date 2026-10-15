@@ -31,8 +31,9 @@ const TOAST_MS = 2600;
 let hasNativeMenu = false;
 
 /** Whether a dialog is up (a confirm, a sheet, the newspaper): the game's shortcuts wait until it closes, Escape closes it. */
+/** A dialog, or a select's open list, takes the keys while it is up. */
 function isDialogOpen(): boolean {
-  return document.querySelector('[role="dialog"], [role="alertdialog"]') !== null;
+  return document.querySelector('[role="dialog"], [role="alertdialog"], [role="combobox"][aria-expanded="true"]') !== null;
 }
 
 // On a Mac the menu's key equivalents take the F-keys and Command-S before the page sees them; clicked, entries without one still run under a dialog.

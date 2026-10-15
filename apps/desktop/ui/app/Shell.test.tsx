@@ -8,6 +8,7 @@ import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { unlockedFakeSound } from "../sound/fakeAudioContext.js";
 import { SoundProvider } from "../sound/SoundProvider.js";
+import { Select } from "../controls/Select.js";
 import { Options } from "../screens/Options.js";
 import { ServicesContext, type Services } from "./ServicesContext.js";
 import { useCommands, useRunCommand } from "./AppCommands.js";
@@ -265,6 +266,40 @@ test("while a dialog is up the game keys do nothing, and F5 still can't reload t
   expect(await given.slots.list()).toEqual([]);
 
   await userEvent.click(screen.getByRole("button", { name: "Fechar o jornal" }));
+  fireEvent.keyDown(document, { key: "F2" });
+  expect(await screen.findByRole("heading", { name: "tela /tables" })).toBeTruthy();
+});
+
+/** A screen with one of the game's selects, the way the market filters by position. */
+function ScreenWithSelect() {
+  const [group, setGroup] = useState("");
+  return (
+    <Select
+      label="Posição"
+      value={group}
+      options={[
+        { value: "", label: "Todas" },
+        { value: "GK", label: "Goleiro" },
+        { value: "MID", label: "Meio-campista" },
+      ]}
+      onChange={setGroup}
+    />
+  );
+}
+
+test("while a select's list is open the game keys do nothing, and letters jump in the list instead", async () => {
+  const given = await services();
+  const router = openShellWith(given, [{ path: "/hub", element: <ScreenWithSelect /> }, { path: "/tables", element: <h1>tela /tables</h1> }], "/hub");
+  const select = screen.getByRole("combobox", { name: "Posição" });
+  select.focus();
+  await userEvent.keyboard("{ArrowDown}");
+  expect(fireEvent.keyDown(select, { key: "F2" })).toBe(false);
+  await userEvent.keyboard("m");
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  expect(router.state.location.pathname).toBe("/hub");
+  expect(document.getElementById(select.getAttribute("aria-activedescendant") ?? "")?.textContent).toBe("Meio-campista");
+
+  await userEvent.keyboard("{Escape}");
   fireEvent.keyDown(document, { key: "F2" });
   expect(await screen.findByRole("heading", { name: "tela /tables" })).toBeTruthy();
 });
