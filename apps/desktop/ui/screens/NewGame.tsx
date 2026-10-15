@@ -17,10 +17,17 @@ import { clubPreviews, PREVIEW_KEYS, type ClubPreviews } from "../newGame/clubPr
 import "./newGame.css";
 
 type Choice = { mode: "club"; choice: ClubChoice } | { mode: "career" };
+/** A hot-seat coach after the first: his name and the club he takes. */
+type OtherCoach = { name: string; clubId: string | null };
 type Season = { date: string; boards: Readonly<Record<string, Board>>; previews: ClubPreviews };
 
 const DIVISIONS: readonly Division[] = ["A", "B", "C", "D"];
 const COACH_NAME_MAX = 40;
+/** Up to eight coaches share one computer (SPEC: local multiplayer). */
+const MAX_COACHES = 8;
+/** The market clock's choices, in minutes per coach per window; null runs no clock. */
+const CLOCK_MINUTES: readonly (number | null)[] = [null, 3, 5, 10];
+const DEFAULT_CLOCK_MINUTES = 5;
 // The first stickers of the grid are dealt one after another; past these, the rest land together.
 const DEALT_STICKERS = 20;
 
@@ -72,12 +79,37 @@ export function NewGame() {
   const [starting, setStarting] = useState(false);
   const [playsEstaduais, setPlaysEstaduais] = useState(true);
   const [failed, setFailed] = useState(false);
+  const [others, setOthers] = useState<OtherCoach[]>([]);
+  // Which coach the club grid picks for: 0 is the first, 1 on the others in turn order.
+  const [active, setActive] = useState(0);
+  const [clockMinutes, setClockMinutes] = useState<number | null>(DEFAULT_CLOCK_MINUTES);
 
   const choices = useMemo(() => clubChoices(CLUBS, season?.boards ?? null), [season]);
   const states = useMemo(() => statesOf(choices), [choices]);
   const shown = filterClubs(choices, filter);
   const pickedClubId = picked?.mode === "club" ? picked.choice.club.id : null;
-  const pickedChoice = choices.find(({ club }) => club.id === pickedClubId) ?? null;
+  const activeClubId = active === 0 ? pickedClubId : (others[active - 1]?.clubId ?? null);
+  const pickedChoice = choices.find(({ club }) => club.id === activeClubId) ?? null;
+  const isHotSeat = others.length > 0;
+  const coachNames = [coachName.trim(), ...others.map((other) => other.name.trim())];
+  /** The coach who took each club, by club, so no two coaches share one. */
+  const takenBy = new Map<string, number>([...(pickedClubId ? [[pickedClubId, 0] as const] : []), ...others.flatMap((other, index) => (other.clubId ? [[other.clubId, index + 1] as const] : []))]);
+  const isEveryoneReady = !isHotSeat || others.every((other) => other.name.trim() && other.clubId);
+
+  function setCoachCount(count: number) {
+    const next = Math.min(MAX_COACHES, Math.max(1, count));
+    setOthers((current) => (next - 1 < current.length ? current.slice(0, next - 1) : [...current, ...Array.from({ length: next - 1 - current.length }, () => ({ name: "", clubId: null }))]));
+    if (active > next - 1) setActive(next - 1);
+    // Every hot-seat coach takes a club: there is no starting without one with others at the table.
+    if (next > 1 && picked?.mode === "career") setPicked(null);
+  }
+
+  function pickClub(club: ClubChoice["club"]) {
+    const owner = takenBy.get(club.id);
+    if (owner !== undefined && owner !== active) return;
+    if (active === 0) setPicked({ mode: "club", choice: { club, goal: null } });
+    else setOthers((current) => current.map((other, index) => (index === active - 1 ? { ...other, clubId: club.id } : other)));
+  }
 
   useEffect(() => {
     let current = true;
@@ -107,8 +139,19 @@ export function NewGame() {
     setFailed(false);
     try {
       const coachClubId = picked.mode === "club" ? picked.choice.club.id : null;
-      await engine.apply({ type: "newGame", seed, choices: { coachClubId, careerMode: picked.mode === "career", stateChampionships: playsEstaduais } });
-      const opened = { slotId: slot.id, coachName: name };
+      const hotSeat = isHotSeat ? { coachName: name, otherCoaches: others.map((other) => ({ name: other.name.trim(), clubId: other.clubId ?? "" })) } : undefined;
+      await engine.apply({
+        type: "newGame",
+        seed,
+        choices: {
+          coachClubId,
+          careerMode: picked.mode === "career",
+          stateChampionships: playsEstaduais,
+          ...(hotSeat ? { hotSeat } : {}),
+          ...(clockMinutes === null ? {} : { marketClockSeconds: clockMinutes * 60 }),
+        },
+      });
+      const opened = { slotId: slot.id, coachName: listOfNames(coachNames) };
       await saveToSlot(engine, slots, slot.id, opened);
       game.current = opened;
       navigate("/hub");
@@ -119,7 +162,7 @@ export function NewGame() {
   }
 
   function requestStart() {
-    if (!target || !name || !picked) return;
+    if (!target || !name || !picked || !isEveryoneReady) return;
     if (target.meta) setConfirming(true);
     else void start(target);
   }
@@ -147,7 +190,52 @@ export function NewGame() {
               requestStart();
             }}
           >
-            <label className="career-new-name">
+            <div className="career-new-count">
+              <span className="lbl" id="coach-count-title">
+                Técnicos neste computador
+              </span>
+              <div className="career-new-stepper" role="group" aria-labelledby="coach-count-title">
+                <button type="button" className="btn sm" aria-label="Menos um técnico" disabled={!isHotSeat} onClick={() => setCoachCount(others.length)}>
+                  <i className="ph-bold ph-minus" aria-hidden="true" />
+                </button>
+                <output aria-live="polite">{others.length + 1}</output>
+                <button type="button" className="btn sm" aria-label="Mais um técnico" disabled={others.length + 1 >= MAX_COACHES} onClick={() => setCoachCount(others.length + 2)}>
+                  <i className="ph-bold ph-plus" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+            {isHotSeat && (
+              <ol className="career-new-coaches" aria-label="Técnicos, na ordem da vez">
+                {coachNames.map((_, index) => {
+                  const clubId = index === 0 ? pickedClubId : (others[index - 1]?.clubId ?? null);
+                  const club = clubId ? clubById(clubId) : undefined;
+                  return (
+                    <li key={index} className={index === active ? "career-new-coach on" : "career-new-coach"}>
+                      <span className="career-new-coach-no">{index + 1}</span>
+                      <input
+                        type="text"
+                        aria-label={`Nome do técnico ${index + 1}`}
+                        placeholder={`Técnico ${index + 1}`}
+                        maxLength={COACH_NAME_MAX}
+                        autoComplete="off"
+                        value={index === 0 ? coachName : (others[index - 1]?.name ?? "")}
+                        onFocus={() => setActive(index)}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          if (index === 0) setCoachName(value);
+                          else setOthers((current) => current.map((other, at) => (at === index - 1 ? { ...other, name: value } : other)));
+                        }}
+                      />
+                      <button type="button" className="career-new-coach-club" aria-label={`Escolher o time do técnico ${index + 1}`} aria-pressed={index === active} onClick={() => setActive(index)}>
+                        {club ? <Crest club={club} size={24} /> : <i className="ph-bold ph-shield" aria-hidden="true" />}
+                        <span>{club?.shortName ?? "Escolha o time"}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+            <label className="career-new-name" hidden={isHotSeat}>
               <span className="lbl">Nome</span>
               <span className="field">
                 <input
@@ -163,10 +251,11 @@ export function NewGame() {
               </span>
             </label>
 
-            <PickedCard picked={picked} />
+            {/* A hot-seat coach's row already says he has no club yet: the empty card would only push the page down. */}
+            {isHotSeat ? pickedChoice && <PickedCard picked={{ mode: "club", choice: pickedChoice }} /> : <PickedCard picked={picked} />}
             {pickedChoice && <ClubFacts choice={pickedChoice} season={season} />}
 
-            <div className="career-new-free">
+            <div className="career-new-free" hidden={isHotSeat}>
               <p>
                 <b id="career-mode-title">Começar sem clube</b>
                 <br />
@@ -188,6 +277,22 @@ export function NewGame() {
                 <span className="mute">{playsEstaduais ? "De janeiro a março, antes do Brasileirão." : "Sem estaduais, o ranking nacional dá as vagas da Copa do Brasil e da Série D."}</span>
               </p>
               <button type="button" className={playsEstaduais ? "sw on" : "sw"} aria-label="Estaduais" aria-pressed={playsEstaduais} onClick={() => setPlaysEstaduais(!playsEstaduais)} />
+            </div>
+
+            <div className="career-new-free career-new-clock">
+              <p>
+                <b id="market-clock-title">Relógio do mercado</b>
+                <br />
+                <span className="mute">{clockMinutes === null ? "Sem limite de tempo nas telas de compra." : `${clockMinutes} min por técnico em cada janela, só nas telas de compra.`}</span>
+              </p>
+              <div className="seg seg-radio" role="radiogroup" aria-labelledby="market-clock-title">
+                {CLOCK_MINUTES.map((minutes) => (
+                  <label key={minutes ?? "off"} className={clockMinutes === minutes ? "on" : undefined}>
+                    <input type="radio" name="market-clock" checked={clockMinutes === minutes} onChange={() => setClockMinutes(minutes)} />
+                    {minutes === null ? "Sem" : `${minutes} min`}
+                  </label>
+                ))}
+              </div>
             </div>
 
             <fieldset className="career-new-slots">
@@ -230,12 +335,15 @@ export function NewGame() {
                   </div>
                 </div>
               ) : (
-                <button ref={startButton} type="submit" className="btn go lg" disabled={!name || !target || !picked || starting}>
-                  {starting ? "Montando a temporada…" : "Começar carreira"}
+                <button ref={startButton} type="submit" className="btn go lg" disabled={!name || !target || !picked || !isEveryoneReady || starting}>
+                  {starting ? "Montando a temporada…" : isHotSeat ? "Começar jogo" : "Começar carreira"}
                   {!starting && <i className="ph-fill ph-play" aria-hidden="true" />}
                 </button>
               )}
-              <small>{season ? `A temporada ${season.date.slice(0, 4)} começa em ${formatGameDate(season.date)}.` : "Sorteando a temporada…"}</small>
+              <small>
+                {isHotSeat && `${others.length + 1} técnicos, na ordem da lista. `}
+                {season ? `A temporada ${season.date.slice(0, 4)} começa em ${formatGameDate(season.date)}.` : "Sorteando a temporada…"}
+              </small>
               {failed && <p className="status error">Não deu para criar o jogo.</p>}
             </div>
           </form>
@@ -244,7 +352,7 @@ export function NewGame() {
         <section className="page career-new-right" aria-labelledby="clubs-title">
           <div className="career-new-head">
             <h2 id="clubs-title" className="career-new-title">
-              Escolha seu time
+              {isHotSeat ? `Time de ${coachNames[active] || `Técnico ${active + 1}`}` : "Escolha seu time"}
             </h2>
             <label className="field">
               <small>Divisão</small>
@@ -283,16 +391,26 @@ export function NewGame() {
           <div className="career-new-grid">
             <ul className="career-new-clubs" aria-label="Clubes">
               {shown.map(({ club }, index) => {
-                const isMine = club.id === pickedClubId;
+                const isMine = club.id === activeClubId;
+                const owner = takenBy.get(club.id);
+                const ownerName = owner !== undefined && owner !== active ? coachNames[owner] || `Técnico ${owner + 1}` : null;
                 const preview = season?.previews[club.id];
                 const style: CSSProperties & Record<`--${string}`, string> = { "--deal": `${Math.min(index, DEALT_STICKERS) * 18}ms` };
                 return (
                   <li key={club.id} style={style}>
-                    <button className={isMine ? "stk career-new-club mine" : "stk career-new-club"} aria-label={club.shortName} aria-pressed={isMine} onClick={() => setPicked({ mode: "club", choice: { club, goal: null } })}>
+                    <button
+                      className={isMine ? "stk career-new-club mine" : ownerName ? "stk career-new-club taken" : "stk career-new-club"}
+                      aria-label={club.shortName}
+                      aria-pressed={isMine}
+                      disabled={ownerName !== null}
+                      onClick={() => pickClub(club)}
+                    >
                       <span className="career-new-no">{String(index + 1).padStart(2, "0")}</span>
                       <Crest club={club} size={48} />
                       <span className="career-new-club-name">{club.shortName}</span>
-                      <span className={isMine ? "career-new-club-meta yours" : "career-new-club-meta"}>{isMine ? "Seu time" : preview ? `Força ${preview.strength}` : "Força …"}</span>
+                      <span className={isMine ? "career-new-club-meta yours" : "career-new-club-meta"}>
+                        {isMine ? (isHotSeat ? `Time de ${coachNames[active] || `Técnico ${active + 1}`}` : "Seu time") : (ownerName ?? (preview ? `Força ${preview.strength}` : "Força …"))}
+                      </span>
                     </button>
                   </li>
                 );
@@ -311,6 +429,12 @@ export function NewGame() {
       </div>
     </div>
   );
+}
+
+/** The coaches' names as one line for the saves list: "Ana", "Ana e Bruno", "Ana, Bruno e Caio". */
+function listOfNames(names: readonly string[]): string {
+  if (names.length < 2) return names[0] ?? "";
+  return `${names.slice(0, -1).join(", ")} e ${names.at(-1) ?? ""}`;
 }
 
 function PickedCard({ picked }: { picked: Choice | null }) {

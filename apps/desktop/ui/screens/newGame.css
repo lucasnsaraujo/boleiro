@@ -199,6 +199,146 @@
   text-align: right;
 }
 
+/* Hot seat: how many coaches share the computer, then one row per coach in turn order. */
+.career-new-form [hidden] {
+  display: none;
+}
+
+.career-new-count {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.career-new-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.career-new-stepper .btn.sm {
+  width: 30px;
+  padding: 0;
+  justify-content: center;
+}
+
+.career-new-stepper output {
+  min-width: 22px;
+  text-align: center;
+  font-weight: 900;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.career-new-coaches {
+  margin-top: 10px;
+  display: grid;
+  gap: 6px;
+  list-style: none;
+}
+
+.career-new-coach {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 142px;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 4px 0 8px;
+  border-radius: var(--r-s);
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  transition: box-shadow var(--t-base) var(--e-out), background var(--t-base) var(--e-out);
+}
+
+.career-new-coach.on {
+  background: var(--card);
+  box-shadow: inset 0 0 0 2px var(--yellow), var(--sh-sticker);
+}
+
+.career-new-coach-no {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.career-new-coach.on .career-new-coach-no {
+  background: var(--yellow);
+  color: var(--on-yellow);
+}
+
+.career-new-coach input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.career-new-coach input::placeholder {
+  font-weight: 500;
+  color: var(--mute);
+}
+
+.career-new-coach-club {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: var(--r-s);
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  text-align: left;
+  overflow: hidden;
+}
+
+.career-new-coach-club span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.career-new-coach-club:hover {
+  background: var(--paper-2);
+}
+
+.career-new-coach-club i {
+  font-size: 18px;
+  color: var(--mute);
+}
+
+/* A club another coach took: still in its place, faded, with his name on it. */
+.career-new-club.taken {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.career-new-club.taken .career-new-club-meta {
+  font-weight: 800;
+  color: var(--ink-2);
+}
+
+/* The clock's four choices sit under its words: the left page is too narrow for both on one line. */
+.career-new-clock {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+.career-new-clock p {
+  flex: 1 1 100%;
+}
+
 /* Career mode: the album's toggle row, between the facts and where the game is saved. */
 .career-new-free {
   margin-top: 18px;
@@ -589,4 +729,16 @@
     opacity: 0.4;
     transform: rotate(-5deg) scale(1.08);
   }
+}
+
+.career-new-club.taken:hover {
+  transform: none;
+  box-shadow: var(--sh-sticker);
+}
+
+/* With career mode hidden for a hot-seat game, the estaduais row opens the toggles and takes the top rule. */
+.career-new-free[hidden] + .career-new-free {
+  margin-top: 18px;
+  padding: 12px 0;
+  border-top: 2px dotted var(--line-2);
 }

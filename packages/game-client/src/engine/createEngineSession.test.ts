@@ -271,6 +271,20 @@ function playAcademy() {
   return { recorded, ids: { promoted: promoted.id, released: released.id, sold: sold.id }, answers, copinha: days.events.find((event) => event.type === "copinhaPlayed") };
 }
 
+/** A hot-seat turn: the first coach spends time on the market and passes, the second plays on. */
+function playHotSeatTurn() {
+  const recorded = recordedSession();
+  recorded.apply({
+    type: "newGame",
+    seed: SEED,
+    choices: { coachClubId: CLUB, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "palmeiras-sp" }] }, marketClockSeconds: 300 },
+  });
+  recorded.apply({ type: "spendMarketTime", seconds: 30 });
+  recorded.apply({ type: "passTurn" });
+  recorded.apply({ type: "playToMatchDay" });
+  return { recorded };
+}
+
 let season: Season;
 let career: ReturnType<typeof playCareerStart>;
 let marketWindow: ReturnType<typeof playMarketWindow>;
@@ -392,8 +406,8 @@ test("the money commands survive JSON and replay alike from the same seed", () =
   expect(sha256(twin.session.save())).toBe(sha256(session.save()));
 });
 
-test("the season, career, market, money and academy logs between them send every kind of command", () => {
-  const logs = [season, career, marketWindow, money, academy].flatMap(({ recorded }) => recorded.applied);
+test("the season, career, market, money, academy and hot-seat logs between them send every kind of command", () => {
+  const logs = [season, career, marketWindow, money, academy, playHotSeatTurn()].flatMap(({ recorded }) => recorded.applied);
   const sent = new Set(logs.map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
@@ -419,6 +433,8 @@ test("the season, career, market, money and academy logs between them send every
     promoteProspect: true,
     releaseProspect: true,
     sellProspect: true,
+    passTurn: true,
+    spendMarketTime: true,
   };
   expect([...sent].sort()).toEqual(Object.keys(every).sort());
 });

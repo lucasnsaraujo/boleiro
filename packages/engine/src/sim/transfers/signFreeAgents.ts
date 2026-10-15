@@ -10,6 +10,7 @@ import { MIN_SQUAD } from "./tradeBetweenClubs.js";
 import type { PlayerMoved } from "./transferEvents.js";
 import { wageRateOf } from "./wageDemand.js";
 import { willingToJoin } from "./willingToJoin.js";
+import { isHumanClub } from "../coach/humanCoaches.js";
 
 // guess: a club tries up to fifteen free agents a market day.
 const TRIES = 15;
@@ -29,7 +30,7 @@ export function signFreeAgents(state: GameState, random: () => number): { state:
   for (const p of Object.values(state.market.freeAgents)) byGroup.get(p.group)?.push(p);
   for (const list of byGroup.values()) list.sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
   for (const clubId of Object.keys(state.finances).sort()) {
-    if (clubId === state.coachClubId) continue;
+    if (isHumanClub(state, clubId)) continue;
     const club = next.clubs[clubId];
     const finance = next.finances[clubId];
     if (!club || !finance) continue;

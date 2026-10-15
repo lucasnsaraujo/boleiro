@@ -15,6 +15,10 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.inbox();
     case "desk":
       return session.desk();
+    case "hotSeat":
+      return session.hotSeat();
+    case "marketClock":
+      return session.marketClock();
     case "save":
       return session.save();
     case "saveShards":

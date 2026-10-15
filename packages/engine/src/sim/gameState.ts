@@ -4,6 +4,7 @@ import type { Formation } from "../engine/formations.js";
 import type { Player } from "../engine/match.js";
 import type { Board } from "./coach/boardExpectations.js";
 import type { Coach } from "./coach/coach.js";
+import type { WaitingCoach } from "./coach/humanCoaches.js";
 import type { Discipline, MatchCards } from "./discipline/discipline.js";
 import type { Friendly } from "./friendlies/friendlies.js";
 import type { History } from "./history/history.js";
@@ -225,4 +226,10 @@ export type GameState = {
   friendlies?: Friendly[];
   /** Every national club's academy; a save from before academies opens them at its next season's turn. */
   youth?: Youth;
+  /** The name of the coach in the seat, in a hot-seat game; a one-coach game keeps none. */
+  coachName?: string;
+  /** The other human coaches of a hot-seat game, in turn order after the one in the seat; a one-coach game has none. */
+  waitingCoaches?: WaitingCoach[];
+  /** Each coach's market time per transfer window, in seconds; a game without the market clock has none. */
+  marketClockSeconds?: number;
 };

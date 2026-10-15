@@ -3,7 +3,7 @@ import type { CompetitionMoney } from "@boleiro/data/competition-money";
 import type { ClubLineup } from "@boleiro/data/dataPack";
 import type { Role, SquadPlayer } from "@boleiro/data/players";
 import { randomStream } from "../engine/random.js";
-import { openingCoach } from "./coach/openingCoach.js";
+import { openingCoach, openingWaitingCoach } from "./coach/openingCoach.js";
 import { openingField } from "./continental/continentalField.js";
 import { openContinentalCups } from "./continental/openContinentalCups.js";
 import { openingEuropeanCups } from "./continental/uefaCups.js";
@@ -49,7 +49,14 @@ export type NewGameOptions = {
   world?: readonly CountryStart[];
   /** False to start a game without the estaduais (SPEC §6's new-game option). */
   stateChampionships?: boolean;
+  /** A hot-seat game: the first coach's name, and the other human coaches in turn order, each at a club of his own. */
+  hotSeat?: { coachName: string; otherCoaches: readonly { name: string; clubId: string }[] };
+  /** Each coach's market time per transfer window, in seconds; left out, the market has no clock. */
+  marketClockSeconds?: number;
 };
+
+/** The most human coaches one game takes, all on one computer (SPEC §14). */
+export const MAX_HUMAN_COACHES = 8;
 
 const FIRST_SEASON = 2026;
 // Traits draw from their own stream so they don't reshuffle the fixtures a seed has always given.
@@ -108,7 +115,7 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs, players, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, stateChampionships = true }: NewGameOptions,
+  { clubs, players, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, stateChampionships = true, hotSeat, marketClockSeconds }: NewGameOptions,
 ): GameState {
   const random = randomStream(seed);
   const traitRandom = randomStream(seed ^ TRAIT_STREAM_SALT);
@@ -130,7 +137,7 @@ export function newGame(
   const squadPlayers = [...dataPlayers, ...academyTopUp(clubs, dataPlayers, `${season}-01-01`, randomStream(seed ^ ACADEMY_STREAM_SALT).next)];
   const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION, stateChampionships, playsContinentalCups(world ?? []));
   const { economy, finances: boardFinances, wages } = openingFinances(clubsById, squadPlayers, competitions, fixtures, financeData, competitionMoney);
-  const finances = withNewCoachRoom(boardFinances, coachClubId);
+  const finances = (hotSeat?.otherCoaches ?? []).map((other) => other.clubId).reduce(withNewCoachRoom, withNewCoachRoom(boardFinances, coachClubId));
   const simPlayers = Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }]));
   const usualLineups = openingLineups(Object.keys(clubsById), squadsByClub(simPlayers), lineups, (row) => idOfRow.get(row));
   const market = openingMarket(seed);
@@ -160,7 +167,20 @@ export function newGame(
     ...(europe ? { europe } : {}),
     ...(stateChampionships ? {} : { playsStateChampionships: false as const }),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
-  return withContinentalCups({ ...game, youth: openAcademies(game) }, competitionMoney);
+  const withClock = marketClockSeconds === undefined ? game : { ...game, marketClockSeconds };
+  const withAcademies = { ...withClock, youth: openAcademies(withClock) };
+  return withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat);
+}
+
+/** The game with its other human coaches waiting for their turns; a one-coach game stays as it is. */
+function withHotSeat(state: GameState, hotSeat: NewGameOptions["hotSeat"]): GameState {
+  if (!hotSeat) return state;
+  const clubIds = [state.coachClubId, ...hotSeat.otherCoaches.map((other) => other.clubId)];
+  if (clubIds.length > MAX_HUMAN_COACHES) throw new Error(`a game takes at most ${MAX_HUMAN_COACHES} coaches`);
+  if (new Set(clubIds).size !== clubIds.length) throw new Error("each coach needs a club of his own");
+  for (const other of hotSeat.otherCoaches) if (!(other.clubId in state.boards)) throw new Error(`no club ${other.clubId} for ${other.name}`);
+  const waitingCoaches = hotSeat.otherCoaches.map((other) => openingWaitingCoach(state, other.name, other.clubId));
+  return { ...state, coachName: hotSeat.coachName, waitingCoaches };
 }
 
 /** Whether the world holds all of South America, which the CONMEBOL cups need. */

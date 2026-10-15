@@ -1,7 +1,8 @@
+import { waitingCoachesOf } from "../coach/humanCoaches.js";
 import { attendance } from "../finances/recordMatchFinances.js";
 import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import { championOf } from "./championOf.js";
-import { competitionKey, type CompetitionKey, type PlayerAtClub } from "./history.js";
+import { competitionKey, type CoachRecord, type CompetitionKey, type PlayerAtClub } from "./history.js";
 import { updateClubRecords } from "./updateClubRecords.js";
 
 type Sides<T> = { home: T; away: T };
@@ -63,6 +64,9 @@ export function recordMatches(state: GameState, played: readonly Fixture[], shee
 
   const champions = { ...history.current.champions };
   const trophies = [...history.coach.trophies];
+  // Each waiting hot-seat coach wins his club's titles too, into his own record.
+  const waitingTrophies = new Map<string, CoachRecord["trophies"]>();
+  for (const waiting of waitingCoachesOf(state)) if (waiting.clubId) waitingTrophies.set(waiting.clubId, [...waiting.record.trophies]);
   const finishing = new Set(played.filter((f) => f.stage === (state.competitions[f.competitionId]?.stageDates.length ?? 0) - 1).map((f) => f.competitionId));
   for (const id of finishing) {
     const competition = state.competitions[id];
@@ -72,10 +76,16 @@ export function recordMatches(state: GameState, played: readonly Fixture[], shee
     if (!championId) continue;
     champions[key] = championId;
     if (championId === state.coachClubId) trophies.push({ season: state.season, competition: key, clubId: championId });
+    waitingTrophies.get(championId)?.push({ season: state.season, competition: key, clubId: championId });
   }
 
+  const waitingCoaches = state.waitingCoaches?.map((waiting) => {
+    const won = waiting.clubId ? waitingTrophies.get(waiting.clubId) : undefined;
+    return won && won.length > waiting.record.trophies.length ? { ...waiting, record: { ...waiting.record, trophies: won } } : waiting;
+  });
   return {
     ...state,
+    ...(waitingCoaches ? { waitingCoaches } : {}),
     history: {
       ...history,
       clubs,

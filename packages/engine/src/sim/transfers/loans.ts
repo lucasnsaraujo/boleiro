@@ -6,6 +6,7 @@ import { movePlayer } from "./movePlayer.js";
 import { isClubFull } from "./squadCap.js";
 import type { PlayerMoved } from "./transferEvents.js";
 import type { Loan } from "./transferMarket.js";
+import { isHumanClub } from "../coach/humanCoaches.js";
 
 // guess: clubs lend players up to 21 who are outside their 18 strongest, so they get minutes.
 export const LOAN_MAX_AGE = 21;
@@ -38,7 +39,7 @@ export function returnLoans(state: GameState): { state: GameState; events: Playe
     const borrower = player.clubId;
     const finance = next.finances[borrower];
     const starts = pickLineup([...view.squad(borrower)]).includes(player);
-    const buys = borrower !== state.coachClubId && loan.buyOption !== null && starts && finance
+    const buys = !isHumanClub(state, borrower) && loan.buyOption !== null && starts && finance
       && !boardRefusal(finance, view.bill(borrower), { upFront: loan.buyOption, wageChange: Math.round(player.wage * loan.lenderWageShare) });
     const moved = buys
       ? movePlayer({ ...next, players: { ...next.players, [playerId]: { ...player, clubId: loan.fromClubId } } },
@@ -55,9 +56,9 @@ export function lendYoungPlayers(state: GameState, random: () => number): { stat
   const events: PlayerMoved[] = [];
   let next = state;
   const view = marketView(next);
-  const borrowers = Object.keys(state.finances).filter((id) => id !== state.coachClubId && RANK[view.tier(id)] <= RANK.C).sort();
+  const borrowers = Object.keys(state.finances).filter((id) => !isHumanClub(state, id) && RANK[view.tier(id)] <= RANK.C).sort();
   for (const lenderId of Object.keys(state.finances).sort()) {
-    if (lenderId === state.coachClubId || RANK[view.tier(lenderId)] < RANK.B || random() >= LENDS_CHANCE) continue;
+    if (isHumanClub(state, lenderId) || RANK[view.tier(lenderId)] < RANK.B || random() >= LENDS_CHANCE) continue;
     const squad = view.squad(lenderId);
     const young = squad.filter((p) => p.age <= LOAN_MAX_AGE && !next.market.loans[p.id] && !next.market.preContracts[p.id] && isLoanable(p, squad));
     const player = young[Math.floor(random() * young.length)];

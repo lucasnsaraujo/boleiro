@@ -65,6 +65,8 @@ export function connectEngine(port: EngineWorker): EngineClient {
     turningPoint: () => send({ method: "turningPoint", args: [] }),
     inbox: () => send({ method: "inbox", args: [] }),
     desk: () => send({ method: "desk", args: [] }),
+    hotSeat: () => send({ method: "hotSeat", args: [] }),
+    marketClock: () => send({ method: "marketClock", args: [] }),
     save: () => send({ method: "save", args: [] }),
     saveShards: () => send({ method: "saveShards", args: [] }),
     read: (keys) => send({ method: "read", args: [keys] }),
