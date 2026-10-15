@@ -1,7 +1,7 @@
 import type { PositionGroup } from "../../engine/match.js";
 import { randomStream } from "../../engine/random.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
-import { tierOf } from "../finances/tierOf.js";
+import { divisionOf, tierOf } from "../finances/tierOf.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { academyPlayer, groupsToFill, MIN_SQUAD, professionalOf, readyProspect } from "../players/developPlayers.js";
 import { squadsByClub } from "../players/squadsByClub.js";
@@ -68,7 +68,7 @@ export function fillShortSquads(state: GameState): { state: GameState; events: (
       if (prospect) taken.add(prospect.id);
       const player = prospect
         ? professionalOf(prospect, club.id, firstWage(prospect, squad), state.date, random.next)
-        : inventedPlayer(academyPlayer(`g${state.date}-${club.id}-${i}`, club.id, club.division, group, state.date, random.next), squad);
+        : inventedPlayer(academyPlayer(`g${state.date}-${club.id}-${i}`, club.id, divisionOf(club), group, state.date, random.next), squad);
       next.players[player.id] = player;
       squad.push(player);
       playerIds.push(player.id);

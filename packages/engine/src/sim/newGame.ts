@@ -18,7 +18,7 @@ import type { Qualification } from "./copaDoBrasilEntrants.js";
 import { openingProfile } from "./players/openingProfile.js";
 import { squadsByClub } from "./players/squadsByClub.js";
 import { openingLineups } from "./players/usualLineups.js";
-import { tierOf } from "./finances/tierOf.js";
+import { divisionOf, tierOf } from "./finances/tierOf.js";
 import { openingContractUntil } from "./transfers/openingContractUntil.js";
 import { openingMarket } from "./transfers/openingMarket.js";
 import { startSeason } from "./startSeason.js";
@@ -130,7 +130,7 @@ function academyTopUp(clubs: readonly Club[], players: readonly Omit<SimPlayer, 
   const squads = new Map<string, Omit<SimPlayer, "wage">[]>();
   for (const p of players) squads.set(p.clubId, [...(squads.get(p.clubId) ?? []), p]);
   return clubs.flatMap((club) =>
-    groupsToFill(squads.get(club.id) ?? [], []).map((group, i) => academyPlayer(`a${date.slice(0, 4)}-${club.id}-${i}`, club.id, club.division, group, date, random)),
+    groupsToFill(squads.get(club.id) ?? [], []).map((group, i) => academyPlayer(`a${date.slice(0, 4)}-${club.id}-${i}`, club.id, divisionOf(club), group, date, random)),
   );
 }
 

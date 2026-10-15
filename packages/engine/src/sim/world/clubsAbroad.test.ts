@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { advanceDay } from "../advanceDay.js";
+import { seasonEndField, type ContinentalField } from "../continental/continentalField.js";
 import { RAPIDO, REALISTA } from "../formats.js";
 import type { GameState, LeagueCompetition } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
@@ -77,6 +78,11 @@ describe("a career at a club abroad", () => {
       expect(championship?.clubIds).toContain(record?.promoted[1]?.[0]);
     });
 
+    it("keeps the coach's squad at its level through the season's development", () => {
+      const bestEleven = (state: GameState) => Object.values(state.players).filter((p) => p.clubId === ARSENAL).map((p) => p.strength).sort((a, b) => b - a).slice(0, 11).reduce((sum, s) => sum + s, 0) / 11;
+      expect(bestEleven(next)).toBeGreaterThan(bestEleven(start) - 2);
+    });
+
     it("opens the next season with the moved clubs and, on 1 January, the places in UEFA's cups", () => {
       const [nextPremier, nextChampionship] = englishLeagues(next);
       const newYear = advanceDay(next, {}).state;
@@ -89,5 +95,28 @@ describe("a career at a club abroad", () => {
       expect(newYear.europe?.season).toBe(2027);
       for (const id of record?.continental["champions-league"] ?? []) expect(field.has(id)).toBe(true);
     });
+  });
+});
+
+describe("a career at a South American club abroad", () => {
+  const RIVER = "tm-209";
+  const river = loadNewGame(5, { coachClubId: RIVER, world, formats: RAPIDO });
+  const argentinesIn = (field: ContinentalField | null) => (field ? Object.entries(field.countries).filter(([, country]) => country === "ar").length : 0);
+
+  it("still sends its country's clubs to CONMEBOL's cups, each as Argentine", () => {
+    const libertadores = river.competitions["libertadores-2026"];
+    if (libertadores?.kind !== "continental") throw new Error("no Libertadores");
+    expect(Object.values(libertadores.countries).filter((country) => country === "ar").length).toBeGreaterThanOrEqual(5);
+    expect(argentinesIn(seasonEndField(river))).toBeGreaterThanOrEqual(12);
+  });
+});
+
+describe("a league abroad's clubs over the years", () => {
+  it("set their boards by club size, the five biggest aiming at least as high as any of the five smallest", () => {
+    const english = Object.values(start.clubs).filter((club) => club.abroad?.country === "gb-eng" && club.abroad.level === 0).toSorted((a, b) => b.fanbase - a.fanbase);
+    const targetOf = (id: string) => start.boards[id]?.targetPosition ?? 0;
+    const lowestBigAim = Math.max(...english.slice(0, 5).map((club) => targetOf(club.id)));
+    const highestSmallAim = Math.min(...english.slice(-5).map((club) => targetOf(club.id)));
+    expect(lowestBigAim).toBeLessThan(highestSmallAim);
   });
 });
