@@ -109,28 +109,7 @@
   font-size: 12.5px;
 }
 
-.market-filters input {
-  field-sizing: content;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-weight: 800;
-  color: var(--ink);
-  outline: 0;
-}
-
-.market-filters input[type="number"] {
-  width: 34px;
-  text-align: center;
-  appearance: textfield;
-}
-
-.market-filters input::placeholder {
-  color: var(--mute);
-  font-weight: 600;
-}
-
-.market-filters .field:focus-within {
+.market-filters .range:focus-within {
   box-shadow: inset 0 0 0 2px var(--ink);
 }
 

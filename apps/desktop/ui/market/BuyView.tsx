@@ -10,12 +10,13 @@ import { formatDayMonth, formatMonthYear } from "@boleiro/game-client/format/for
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import type { BoardDesk } from "@boleiro/game-client/market/boardDesk";
 import { requestOptions } from "@boleiro/game-client/market/coachRequests";
+import { RangeSlider } from "../controls/RangeSlider.js";
 import { Select } from "../controls/Select.js";
 import { Crest } from "../clubs/Crest.js";
 import { plateColours } from "../clubs/clubCatalog.js";
 import { POSITION_GROUP_NAMES, POSITION_NAMES } from "../format/playerLabels.js";
 import { BoardRequests } from "./BoardRequests.js";
-import { NO_FILTERS, searchMarket, type MarketFilters, type MarketRow, type MarketStatus, type Willingness } from "./marketSearch.js";
+import { NO_FILTERS, searchMarket, strengthBounds, type MarketFilters, type MarketRow, type MarketStatus, type Willingness } from "./marketSearch.js";
 import { MoneyStepper, roundStep } from "./MoneyStepper.js";
 import { offerAdvice } from "./offerAdvice.js";
 import { pendingText, requestTitle } from "./requestText.js";
@@ -39,8 +40,6 @@ const WILLING: Record<Willingness, string> = { yes: "Toparia vir", maybe: "Talve
 // guess: young is 23 or under, old 33 or over, as the approved mock colours ages.
 const YOUNG_AGE = 23;
 const OLD_AGE = 33;
-
-const asNumber = (value: string): number | null => (value.trim() === "" || Number.isNaN(Number(value)) ? null : Number(value));
 
 function situation(row: MarketRow): ReactNode {
   switch (row.status) {
@@ -82,6 +81,7 @@ export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDe
   const [chosenId, setChosenId] = useState<string | null>(null);
 
   const found = useMemo(() => searchMarket(state, filters, limit), [state, filters, limit]);
+  const bounds = useMemo(() => strengthBounds(state), [state]);
   const clubs = useMemo(
     () =>
       Object.values(state.clubs)
@@ -119,12 +119,13 @@ export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDe
             options={[{ value: "", label: "Todas" }, ...GROUPS.map((group) => ({ value: group, label: POSITION_NAMES[group] }))]}
             onChange={(value) => filter({ group: GROUPS.find((g) => g === value) ?? null })}
           />
-          <label className="field">
-            <small>Força</small>
-            <input type="number" min={1} max={99} aria-label="Força mínima" placeholder="de" value={filters.minStrength ?? ""} onChange={(e) => filter({ minStrength: asNumber(e.target.value) })} />
-            <span aria-hidden="true">–</span>
-            <input type="number" min={1} max={99} aria-label="Força máxima" placeholder="até" value={filters.maxStrength ?? ""} onChange={(e) => filter({ maxStrength: asNumber(e.target.value) })} />
-          </label>
+          <RangeSlider
+            label="Força"
+            min={bounds.min}
+            max={bounds.max}
+            value={[filters.minStrength ?? bounds.min, filters.maxStrength ?? bounds.max]}
+            onChange={([low, high]) => filter({ minStrength: low > bounds.min ? low : null, maxStrength: high < bounds.max ? high : null })}
+          />
           <Select
             label="Divisão"
             value={filters.division ?? ""}

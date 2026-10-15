@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
-import { NO_FILTERS, searchMarket, windowStatus, type MarketFilters } from "./marketSearch.js";
+import { NO_FILTERS, searchMarket, strengthBounds, windowStatus, type MarketFilters } from "./marketSearch.js";
 
 const COACH = "sport-pe";
 const game = newGameFromFiles(5, { coachClubId: COACH }, bundledGameFiles);
@@ -38,6 +38,14 @@ describe("searching the market", () => {
     const serieC = search({ division: "C" });
     expect(serieC.length).toBeGreaterThan(0);
     expect(serieC.every((r) => r.clubId !== null && game.clubs[r.clubId]?.division === "C")).toBe(true);
+  });
+
+  test("the strength range spans the weakest to the strongest player the coach could look for, free agents included", () => {
+    const rows = search({});
+    const strengths = rows.map((r) => Math.round(r.strength));
+    expect(strengthBounds(game)).toEqual({ min: Math.min(...strengths), max: Math.max(...strengths) });
+    const free = { ...anyPlayerOf("vitoria-ba"), id: "free-1", strength: 99.4 };
+    expect(strengthBounds({ ...game, market: { ...game.market, freeAgents: { [free.id]: free } } }).max).toBe(99);
   });
 
   test("filters free agents, contracts in their last six months and bigger clubs' reserves who can be borrowed", () => {

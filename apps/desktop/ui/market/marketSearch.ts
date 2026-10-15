@@ -71,6 +71,20 @@ export function windowStatus(date: IsoDate): { isOpen: boolean; date: IsoDate } 
   return next ? { isOpen: false, date: `${year}-${next.opens}` } : { isOpen: false, date: `${year + 1}-${TRANSFER_WINDOWS[0]?.opens ?? "01-01"}` };
 }
 
+/** The weakest and strongest rounded strength among other clubs' players and free agents: the strength range's ends. */
+export function strengthBounds(state: Pick<GameState, "coachClubId" | "players" | "market">): { min: number; max: number } {
+  let min = Infinity;
+  let max = -Infinity;
+  const take = (player: SimPlayer) => {
+    const strength = Math.round(player.strength);
+    min = Math.min(min, strength);
+    max = Math.max(max, strength);
+  };
+  for (const player of Object.values(state.players)) if (player.clubId !== state.coachClubId) take(player);
+  for (const player of Object.values(state.market.freeAgents)) take(player);
+  return min > max ? { min: 1, max: 99 } : { min, max };
+}
+
 /** Other clubs' players and free agents that match, strongest first: how many, and the first `limit` as rows. */
 export function searchMarket(state: MarketState, filters: MarketFilters, limit: number): { total: number; rows: MarketRow[] } {
   const { coachClubId, market, date } = state;

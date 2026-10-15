@@ -1,0 +1,97 @@
+/* A two-handle range inside a filter pill: low number, the track, high number. */
+.range {
+  gap: 8px;
+}
+
+.range-num {
+  min-width: 2ch;
+  text-align: center;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.range-track {
+  position: relative;
+  width: 104px;
+  height: 22px;
+  flex: none;
+  /* The handles overhang the track's ends by half their width. */
+  margin-inline: 6px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.range-track::before,
+.range-fill {
+  content: "";
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: var(--r-pill);
+}
+
+.range-track::before {
+  left: 0;
+  right: 0;
+  background: var(--line-2);
+}
+
+.range-fill {
+  background: var(--green);
+  transition:
+    left var(--t-fast) var(--e-out),
+    right var(--t-fast) var(--e-out);
+}
+
+.range-thumb {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow:
+    inset 0 0 0 2.5px var(--green),
+    0 2px 4px -1px rgba(20, 35, 26, 0.35);
+  cursor: grab;
+  transition:
+    left var(--t-fast) var(--e-out),
+    transform var(--t-base) var(--e-slap),
+    box-shadow var(--t-fast) var(--e-out);
+}
+
+.range-thumb:hover {
+  transform: scale(1.12);
+}
+
+.range-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.2);
+}
+
+.range-thumb:focus-visible {
+  outline: 0;
+  box-shadow:
+    inset 0 0 0 2.5px var(--green),
+    0 0 0 3px var(--yellow);
+}
+
+/* While dragging, the handle sticks to the pointer instead of easing after it. */
+.range-track:active .range-thumb,
+.range-track:active .range-fill {
+  transition-property: transform, box-shadow;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .range-thumb,
+  .range-fill {
+    transition: none;
+  }
+
+  .range-thumb:hover,
+  .range-thumb:active {
+    transform: none;
+  }
+}
