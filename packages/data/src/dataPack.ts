@@ -4,8 +4,9 @@ import { BASES, FIELDS as FINANCE_FIELDS, SIZES, type ClubFinances, type Divisio
 import { DIVISIONS, GROUPS, ROLES, type Role, type SquadPlayer } from "./players.js";
 
 /**
- * A club's eleven in its last real match: the formation as the source writes it ("4-2-3-1") and the
- * starters, keeper first, as rows of `DataPack.players`; null for a starter the squad doesn't list.
+ * A club's eleven in its last real match: the formation as the source writes it ("4-2-3-1", empty
+ * when the source gives none) and the starters, in the source's order, as rows of
+ * `DataPack.players`; null for a starter the squad doesn't list.
  */
 export type ClubLineup = { clubId: string; formation: string; starters: (number | null)[] };
 

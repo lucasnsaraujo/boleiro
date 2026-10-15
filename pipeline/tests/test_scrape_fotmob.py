@@ -6,7 +6,7 @@ import unittest
 
 import scrape_fotmob
 from positions import roles_of
-from scrape_fotmob import SquadMember, Team, TmPlayer
+from scrape_fotmob import SquadMember, Starter, Team, TmPlayer
 from tests.fixtures import FIXTURES
 
 
@@ -84,7 +84,12 @@ class MatchingTest(unittest.TestCase):
               TmPlayer("4", "Gabriel Silva", 20), TmPlayer("5", "Gabriel Souza", 21)]
         members = [SquadMember(10, "Leo Ortiz", 30, ("CB",)), SquadMember(11, "Pedro Guilherme", 29, ("ST",)),
                    SquadMember(12, "Arrascaeta", 32, ("CAM",)), SquadMember(13, "Gabriel", 20, ("CM",))]
-        self.assertEqual(scrape_fotmob.match_players(members, tm), {10: "1", 11: "2", 12: "3"})
+        self.assertEqual(scrape_fotmob.match_players(members, tm), ["1", "2", "3", None])
+
+    def test_matches_starters_fotmob_gives_the_same_id_each_to_their_own_player_and_never_to_one_already_taken(self) -> None:
+        tm = [TmPlayer("1", "Douglas", None), TmPlayer("2", "Ruan Costa", None), TmPlayer("3", "Pedro", None)]
+        starters = [Starter(0, "Douglas", 9), Starter(0, "Ruan Costa", 9), Starter(0, "Pedro", 9)]
+        self.assertEqual(scrape_fotmob.match_players(starters, tm, taken=["3"]), ["1", "2", None])
 
 
 class RolesTest(unittest.TestCase):

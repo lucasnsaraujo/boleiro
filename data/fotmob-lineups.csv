@@ -25,7 +25,7 @@ athletico-pr-pr,10273,3-4-2-1,0,11,743586,1400078,Mycael
 athletico-pr-pr,10273,3-4-2-1,1,33,1233473,1681911,Arthur Dias
 athletico-pr-pr,10273,3-4-2-1,2,35,570521,923698,Juan Aguirre
 athletico-pr-pr,10273,3-4-2-1,3,37,829969,1201038,Lucas Esquivel
-athletico-pr-pr,10273,3-4-2-1,4,62,231614,387499,Gilberto
+athletico-pr-pr,10273,3-4-2-1,4,62,1093864,387499,Gilberto
 athletico-pr-pr,10273,3-4-2-1,5,64,205179,319591,Jádson
 athletico-pr-pr,10273,3-4-2-1,6,66,10471,147729,Luiz Gustavo
 athletico-pr-pr,10273,3-4-2-1,7,68,131101,280758,Stiven Mendoza
@@ -364,7 +364,7 @@ athletic-mg,1221604,3-4-3,9,105,1226150,1605938,Max
 athletic-mg,1221604,3-4-3,10,107,1222625,1732667,Kauan Lindes
 nautico-pe,2369,4-2-3-1,0,11,27349,121848,Muriel
 nautico-pe,2369,4-2-3-1,1,32,268522,659758,Arnaldo
-nautico-pe,2369,4-2-3-1,2,34,,1462342,Léo Índio
+nautico-pe,2369,4-2-3-1,2,34,1091488,1462342,Léo Índio
 nautico-pe,2369,4-2-3-1,3,36,1082701,1481531,Gustavo Henrique
 nautico-pe,2369,4-2-3-1,4,38,250841,448256,Igor Fernandes
 nautico-pe,2369,4-2-3-1,5,64,524404,841882,Wenderson
@@ -582,7 +582,7 @@ amazonas-am,1340094,,7,2,,206482,Ignacio Panzariello
 amazonas-am,1340094,,8,3,125004,267893,Ronaldo
 amazonas-am,1340094,,9,3,530499,1054265,Vinícius Leite
 amazonas-am,1340094,,10,3,,1967842,Bernardo Daciolo
-caxias-rs,172206,,0,0,,1462422,Marcelo
+caxias-rs,172206,,0,0,698782,1462422,Marcelo
 caxias-rs,172206,,1,1,982663,1721679,André
 caxias-rs,172206,,2,1,373065,899215,Maurício Ribeiro
 caxias-rs,172206,,3,1,,1626730,Vitor Gabriel
@@ -607,7 +607,7 @@ ituano-sp,104823,,10,3,1094534,1741339,Gabriel Razera
 volta-redonda-rj,198135,,0,0,927645,1908902,Heitor Silva
 volta-redonda-rj,198135,,1,1,,1908896,João Victor
 volta-redonda-rj,198135,,2,1,,2174239,Bruno
-volta-redonda-rj,198135,,3,1,,0,Fabricio Aguiar de Oliveira
+volta-redonda-rj,198135,,3,1,1501874,0,Fabricio Aguiar de Oliveira
 volta-redonda-rj,198135,,4,1,,0,Henry Leonardo Vieira André
 volta-redonda-rj,198135,,5,1,722615,1613991,Alan
 volta-redonda-rj,198135,,6,2,,1668208,Caio Silva
@@ -745,7 +745,7 @@ porto-velho-ro,1236190,,5,2,244277,656548,Esquerdinha
 porto-velho-ro,1236190,,6,2,,320027,França
 porto-velho-ro,1236190,,7,2,,1706694,Lagoa
 porto-velho-ro,1236190,,8,2,,1028583,Gabriel Davis
-porto-velho-ro,1236190,,9,3,876303,0,Ruan Costa
+porto-velho-ro,1236190,,9,3,,0,Ruan Costa
 porto-velho-ro,1236190,,10,3,,1609471,Jeferson
 araguaina-to,197392,,0,0,,994440,Murillo
 araguaina-to,197392,,1,1,,1437493,Eduardo Leite
@@ -887,7 +887,7 @@ ceilandia-df,197654,,4,1,554996,905501,Sávio
 ceilandia-df,197654,,5,2,,1789236,Marcos Paulo da Silva Júnior
 ceilandia-df,197654,,6,2,979292,1790074,Cabralzinho
 ceilandia-df,197654,,7,2,,1724394,Lucas Silva
-ceilandia-df,197654,,8,2,873513,1604098,Cleyton Gonçalves Pereira
+ceilandia-df,197654,,8,2,,1604098,Cleyton Gonçalves Pereira
 ceilandia-df,197654,,9,3,,1092449,Johnatan Cardoso
 ceilandia-df,197654,,10,3,407653,1386139,Sandy
 mixto-mt,162173,,0,0,,1927716,Glaycon
@@ -1235,7 +1235,7 @@ retro-fc-brasil-pe,1116984,,0,0,374151,670774,Paulo Ricardo
 retro-fc-brasil-pe,1116984,,1,1,950555,1641702,João Rafael
 retro-fc-brasil-pe,1116984,,2,1,551656,1190115,Israel
 retro-fc-brasil-pe,1116984,,3,1,,1448039,Rayan
-retro-fc-brasil-pe,1116984,,4,1,530289,1298949,Luiz Henrique
+retro-fc-brasil-pe,1116984,,4,1,,1298949,Luiz Henrique
 retro-fc-brasil-pe,1116984,,5,2,,1904262,Gustavo Oliveira
 retro-fc-brasil-pe,1116984,,6,2,1095215,1736936,Diego
 retro-fc-brasil-pe,1116984,,7,2,1291694,1785806,Kevin Rivas
@@ -1814,16 +1814,16 @@ vasco-da-gama-ac,198608,,7,2,,1790854,Reginaldo Roxo Texeira Júnior
 vasco-da-gama-ac,198608,,8,2,,1932881,Henrry Torrez
 vasco-da-gama-ac,198608,,9,3,,1932833,Leonardo Santos Bezerra da Silva
 vasco-da-gama-ac,198608,,10,3,,1933302,Victor Hugo Ferreira da Silva
-boavista-rj,198132,5-3-2,0,11,870406,0,Lucas Anselmo Maticoli
-boavista-rj,198132,5-3-2,1,33,870406,0,Ryan Couto
+boavista-rj,198132,5-3-2,0,11,,0,Lucas Anselmo Maticoli
+boavista-rj,198132,5-3-2,1,33,,0,Ryan Couto
 boavista-rj,198132,5-3-2,2,35,,1078931,Bruno Jesus
-boavista-rj,198132,5-3-2,3,37,870406,0,André Prates
+boavista-rj,198132,5-3-2,3,37,,0,André Prates
 boavista-rj,198132,5-3-2,4,51,,1520610,Igor Franca
-boavista-rj,198132,5-3-2,5,59,870406,0,Rodolfo Tito de Moraes
-boavista-rj,198132,5-3-2,6,73,870406,0,Cesar Augusto Paiva Barbosa
+boavista-rj,198132,5-3-2,5,59,,0,Rodolfo Tito de Moraes
+boavista-rj,198132,5-3-2,6,73,,0,Cesar Augusto Paiva Barbosa
 boavista-rj,198132,5-3-2,7,75,870406,0,Fernando Vinicius dos Santos San
 boavista-rj,198132,5-3-2,8,77,644158,1030128,Lucas Silva
-boavista-rj,198132,5-3-2,9,104,870406,0,Juan Batista Gonçalves Lemes
+boavista-rj,198132,5-3-2,9,104,,0,Juan Batista Gonçalves Lemes
 boavista-rj,198132,5-3-2,10,106,99510,184092,Isael
 castanhal-pa,239703,,0,0,,202571,Tom
 castanhal-pa,239703,,1,1,,0,Guizão
@@ -1903,8 +1903,8 @@ north-mg,1860734,3-4-2-1,8,84,,470572,Bruno Lopes
 north-mg,1860734,3-4-2-1,9,86,,756593,Clayton
 north-mg,1860734,3-4-2-1,10,105,,1796045,Gabriel Rossetto
 itabirito-mg,1593280,4-2-3-1,0,11,,1344691,Vinicius
-itabirito-mg,1593280,4-2-3-1,1,32,1418000,0,Gleison Ferreira de Oliveira And
-itabirito-mg,1593280,4-2-3-1,2,34,1418000,0,Wallace
+itabirito-mg,1593280,4-2-3-1,1,32,,0,Gleison Ferreira de Oliveira And
+itabirito-mg,1593280,4-2-3-1,2,34,,0,Wallace
 itabirito-mg,1593280,4-2-3-1,3,36,,1350417,Felipe Camargo
 itabirito-mg,1593280,4-2-3-1,4,38,,322667,Bryan Garcia
 itabirito-mg,1593280,4-2-3-1,5,64,,1460504,Pedro Rodrigues
@@ -1913,26 +1913,26 @@ itabirito-mg,1593280,4-2-3-1,7,83,,1696046,Matheus Galdino
 itabirito-mg,1593280,4-2-3-1,8,85,1418000,0,Guilherme Batista Givigi
 itabirito-mg,1593280,4-2-3-1,9,87,,1244427,Luis Araujo
 itabirito-mg,1593280,4-2-3-1,10,115,,1137294,Romario
-monsoon-rs,1698776,4-2-3-1,0,11,978145,0,Igor Pavan
-monsoon-rs,1698776,4-2-3-1,1,32,978145,0,Gabriel de Oliveira de Camargo
+monsoon-rs,1698776,4-2-3-1,0,11,,0,Igor Pavan
+monsoon-rs,1698776,4-2-3-1,1,32,,0,Gabriel de Oliveira de Camargo
 monsoon-rs,1698776,4-2-3-1,2,34,978145,0,Yago Alves Santos
 monsoon-rs,1698776,4-2-3-1,3,36,,1043782,Ricardo Thalheimer
 monsoon-rs,1698776,4-2-3-1,4,38,,202217,Pará
 monsoon-rs,1698776,4-2-3-1,5,64,753792,1785149,Vinícius Garcia
-monsoon-rs,1698776,4-2-3-1,6,66,978145,0,Léo Hanna
-monsoon-rs,1698776,4-2-3-1,7,83,978145,0,Matheus Cândido
+monsoon-rs,1698776,4-2-3-1,6,66,,0,Léo Hanna
+monsoon-rs,1698776,4-2-3-1,7,83,,0,Matheus Cândido
 monsoon-rs,1698776,4-2-3-1,8,85,,1440063,Luan Ferreira
 monsoon-rs,1698776,4-2-3-1,9,87,,556465,Caio Rangel
 monsoon-rs,1698776,4-2-3-1,10,115,,1031361,Fabinho
 avenida-rs,197888,4-1-4-1,0,11,,1737563,Ronaldo
-avenida-rs,197888,4-1-4-1,1,32,724826,0,Cristian Lessa de Freitas
-avenida-rs,197888,4-1-4-1,2,34,724826,0,Rodrigo Milanez
+avenida-rs,197888,4-1-4-1,1,32,,0,Cristian Lessa de Freitas
+avenida-rs,197888,4-1-4-1,2,34,,0,Rodrigo Milanez
 avenida-rs,197888,4-1-4-1,3,36,,1653974,Matheus Santos
 avenida-rs,197888,4-1-4-1,4,38,,178039,Vinícius
 avenida-rs,197888,4-1-4-1,5,65,,1608422,Anderson Recife
 avenida-rs,197888,4-1-4-1,6,82,,1451140,Xandy
 avenida-rs,197888,4-1-4-1,7,84,724826,0,Emerson Júnior Rocha dos Santos
-avenida-rs,197888,4-1-4-1,8,86,724826,0,Ranisson
+avenida-rs,197888,4-1-4-1,8,86,,0,Ranisson
 avenida-rs,197888,4-1-4-1,9,88,,1912145,Adryel
 avenida-rs,197888,4-1-4-1,10,115,,1790918,Wellisson
 inter-de-santa-maria-rs,197884,4-2-3-1,0,11,,1660195,Iago Hass
@@ -1970,48 +1970,48 @@ jequie-ba,584242,,9,9,,0,Luiz Fernando Macedo dos Santos
 jequie-ba,584242,,10,9,,0,Walfrido Lourenço Alves de Araúj
 barcelona-ba,1322670,,0,0,,1467539,Pedro Antonio
 barcelona-ba,1322670,,1,0,,1235688,Kaique
-barcelona-ba,1322670,,2,9,866995,0,Carlos Richard Silva Ferreira
-barcelona-ba,1322670,,3,9,866995,0,João Gabriel Ramos de Souza
-barcelona-ba,1322670,,4,9,866995,0,Johnatan Lucas da Silva Vital
-barcelona-ba,1322670,,5,9,866995,0,Gianlucas Marques Santos
-barcelona-ba,1322670,,6,9,866995,0,Matheus Guimarães do Nascimento
-barcelona-ba,1322670,,7,9,866995,0,Elivélton Semeão da Silva
-barcelona-ba,1322670,,8,9,866995,0,Rhuan Allan Dourado Ribeiro
-barcelona-ba,1322670,,9,9,866995,0,Jeferson Neves Pereira
+barcelona-ba,1322670,,2,9,1400444,0,Carlos Richard Silva Ferreira
+barcelona-ba,1322670,,3,9,,0,João Gabriel Ramos de Souza
+barcelona-ba,1322670,,4,9,,0,Johnatan Lucas da Silva Vital
+barcelona-ba,1322670,,5,9,,0,Gianlucas Marques Santos
+barcelona-ba,1322670,,6,9,,0,Matheus Guimarães do Nascimento
+barcelona-ba,1322670,,7,9,,0,Elivélton Semeão da Silva
+barcelona-ba,1322670,,8,9,,0,Rhuan Allan Dourado Ribeiro
+barcelona-ba,1322670,,9,9,,0,Jeferson Neves Pereira
 barcelona-ba,1322670,,10,9,866995,0,Bremer Litierre Correia de Carva
 galicia-ba,512258,,0,2,,1608608,Rafael Mineiro
-galicia-ba,512258,,1,9,192851,0,Ivisson Ian Pita Conceição
-galicia-ba,512258,,2,9,192851,0,Luiz Carlos Conceição Silva Filh
-galicia-ba,512258,,3,9,192851,0,Mayron
-galicia-ba,512258,,4,9,192851,0,Tiago dos Santos Moreira
-galicia-ba,512258,,5,9,192851,0,João Gabriel dos Santos Sa Barre
-galicia-ba,512258,,6,9,192851,0,Gabriel Vieira de Oliveira
+galicia-ba,512258,,1,9,1501583,0,Ivisson Ian Pita Conceição
+galicia-ba,512258,,2,9,,0,Luiz Carlos Conceição Silva Filh
+galicia-ba,512258,,3,9,675046,0,Mayron
+galicia-ba,512258,,4,9,,0,Tiago dos Santos Moreira
+galicia-ba,512258,,5,9,,0,João Gabriel dos Santos Sa Barre
+galicia-ba,512258,,6,9,,0,Gabriel Vieira de Oliveira
 galicia-ba,512258,,7,9,192851,0,Alex Santos da Vitória
-galicia-ba,512258,,8,9,192851,0,João William Alves de Jesus
-galicia-ba,512258,,9,9,192851,0,Rafael Puridade dos Santos
-galicia-ba,512258,,10,9,192851,0,Lucas Araújo Santos
+galicia-ba,512258,,8,9,,0,João William Alves de Jesus
+galicia-ba,512258,,9,9,,0,Rafael Puridade dos Santos
+galicia-ba,512258,,10,9,,0,Lucas Araújo Santos
 bahia-de-feira-ba,197707,,0,0,,265687,Milton
 bahia-de-feira-ba,197707,,1,1,,1282065,Eduardo
 bahia-de-feira-ba,197707,,2,2,,750059,Wellington Cezar
-bahia-de-feira-ba,197707,,3,9,150852,0,Arthur da Silva Martins
-bahia-de-feira-ba,197707,,4,9,150852,0,Marquinho Carioca
-bahia-de-feira-ba,197707,,5,9,150852,0,Pedrão
-bahia-de-feira-ba,197707,,6,9,150852,0,José Luiz dos Santos Júnior
-bahia-de-feira-ba,197707,,7,9,150852,0,Alex Cazumba
-bahia-de-feira-ba,197707,,8,9,150852,0,Ronan Nunes Freitas da Cruz
+bahia-de-feira-ba,197707,,3,9,,0,Arthur da Silva Martins
+bahia-de-feira-ba,197707,,4,9,,0,Marquinho Carioca
+bahia-de-feira-ba,197707,,5,9,214069,0,Pedrão
+bahia-de-feira-ba,197707,,6,9,,0,José Luiz dos Santos Júnior
+bahia-de-feira-ba,197707,,7,9,,0,Alex Cazumba
+bahia-de-feira-ba,197707,,8,9,,0,Ronan Nunes Freitas da Cruz
 bahia-de-feira-ba,197707,,9,9,150852,0,Peterson
-bahia-de-feira-ba,197707,,10,9,150852,0,José Luciano da Silva Martins
+bahia-de-feira-ba,197707,,10,9,,0,José Luciano da Silva Martins
 jataiense-go,1232706,,0,1,,150769,Pedro Botelho
 jataiense-go,1232706,,1,1,,1257283,Kelvin
 jataiense-go,1232706,,2,2,,1641690,Emersonn Bastos
-jataiense-go,1232706,,3,9,1225158,0,Iury Marley Silva Dias
-jataiense-go,1232706,,4,9,1225158,0,Marcos Luiz Alves Tibúrcio Filho
+jataiense-go,1232706,,3,9,,0,Iury Marley Silva Dias
+jataiense-go,1232706,,4,9,,0,Marcos Luiz Alves Tibúrcio Filho
 jataiense-go,1232706,,5,9,1225158,0,Luis
-jataiense-go,1232706,,6,9,1225158,0,Assis
-jataiense-go,1232706,,7,9,1225158,0,Bruno do Valle
-jataiense-go,1232706,,8,9,1225158,0,Paulo Vinicius Silva Oliveira
-jataiense-go,1232706,,9,9,1225158,0,Gilvan Ferreira dos Santos
-jataiense-go,1232706,,10,9,1225158,0,Richard Cossoniche da Silva
+jataiense-go,1232706,,6,9,,0,Assis
+jataiense-go,1232706,,7,9,,0,Bruno do Valle
+jataiense-go,1232706,,8,9,,0,Paulo Vinicius Silva Oliveira
+jataiense-go,1232706,,9,9,,0,Gilvan Ferreira dos Santos
+jataiense-go,1232706,,10,9,,0,Richard Cossoniche da Silva
 anapolina-go,197770,,0,0,1093878,1209296,Jean
 anapolina-go,197770,,1,1,333198,543973,Donato
 anapolina-go,197770,,2,2,,1653480,Chaves Matheus

@@ -208,29 +208,32 @@ def _same_person(fotmob: str, tm: str) -> bool:
     return all(word in words for word in shorter)
 
 
-def match_players(members: Iterable[SquadMember | Starter], tm_players: list[TmPlayer]) -> dict[int, str]:
-    """FotMob player id -> Transfermarkt id within one club: the same plain name, else the only
-    Transfermarkt player whose name holds the other's words (age within a year when both are known)."""
+def match_players(members: list[SquadMember] | list[Starter], tm_players: list[TmPlayer], taken: Iterable[str] = ()) -> list[str | None]:
+    """Each member's Transfermarkt id within one club, in the members' order (None when unmatched):
+    the same plain name, else the only Transfermarkt player whose name holds the other's words (age
+    within a year when both are known). Ids in `taken` are already someone else's. Positions, not
+    FotMob ids, key the answer: FotMob gives some lower-league starters the id 0."""
     by_name: dict[str, list[TmPlayer]] = {}
     for player in tm_players:
         by_name.setdefault(plain(player.name), []).append(player)
-    matched: dict[int, str] = {}
-    taken: set[str] = set()
+    matched: list[str | None] = [None] * len(members)
+    used = set(taken)
     pending = []
-    for member in members:
+    for i, member in enumerate(members):
         same = by_name.get(plain(member.name), [])
-        if len(same) == 1 and same[0].tm_id not in taken:
-            matched[member.id] = same[0].tm_id
-            taken.add(same[0].tm_id)
+        if len(same) == 1 and same[0].tm_id not in used:
+            matched[i] = same[0].tm_id
+            used.add(same[0].tm_id)
         else:
-            pending.append(member)
-    for member in pending:
+            pending.append(i)
+    for i in pending:
+        member = members[i]
         age = member.age if isinstance(member, SquadMember) else None
-        candidates = [p for p in tm_players if p.tm_id not in taken and _same_person(member.name, p.name)
+        candidates = [p for p in tm_players if p.tm_id not in used and _same_person(member.name, p.name)
                       and (age is None or p.age is None or abs(age - p.age) <= 1)]
         if len(candidates) == 1:
-            matched[member.id] = candidates[0].tm_id
-            taken.add(candidates[0].tm_id)
+            matched[i] = candidates[0].tm_id
+            used.add(candidates[0].tm_id)
     return matched
 
 
@@ -294,9 +297,10 @@ def main() -> None:
                 continue
             members = squad(page.html)
             tm_players = tm_by_club.get(club_id, [])
-            tm_of = match_players(members, tm_players)
-            for member in members:
-                players.append({"club_id": club_id, "tm_id": tm_of.get(member.id, ""), "fotmob_id": member.id, "name": member.name,
+            tm_ids = match_players(members, tm_players)
+            tm_of = {member.id: tm_id for member, tm_id in zip(members, tm_ids) if tm_id and member.id}
+            for member, tm_id in zip(members, tm_ids):
+                players.append({"club_id": club_id, "tm_id": tm_id or "", "fotmob_id": member.id, "name": member.name,
                                 "positions": ",".join(member.positions)})
             lineup = last_lineup(page.html)
             match_id = last_match_id(page.html)
@@ -307,10 +311,12 @@ def main() -> None:
                 except FetchError as error:
                     failures.append(f"{club_id} last match: {error}")
             if lineup:
-                starter_tm = {**match_players(lineup.starters, tm_players), **{k: v for k, v in tm_of.items()}}
+                # A starter in the squad keeps the squad's match; the others are matched among the players left.
+                by_name = match_players(list(lineup.starters), tm_players, taken=tm_of.values())
+                starter_tm = [tm_of.get(starter.id) or by_name[i] or "" for i, starter in enumerate(lineup.starters)]
                 for slot, starter in enumerate(lineup.starters):
                     lineups.append({"club_id": club_id, "fotmob_team_id": team_id, "formation": lineup.formation, "slot": slot,
-                                    "fotmob_position_id": starter.position_id, "tm_id": starter_tm.get(starter.id, ""),
+                                    "fotmob_position_id": starter.position_id, "tm_id": starter_tm[slot],
                                     "fotmob_id": starter.id, "name": starter.name})
     except Blocked as error:
         print(f"stopped: {error}")
