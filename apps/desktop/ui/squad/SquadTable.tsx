@@ -1,9 +1,8 @@
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { Link } from "react-router";
-import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import { formatMonthYear } from "@boleiro/game-client/format/formatGameDate";
-import { POSITION_GROUP_NAMES, TRAIT_SHORT } from "../format/playerLabels.js";
+import { POSITION_BADGES, POSITION_GROUP_NAMES, TRAIT_SHORT } from "../format/playerLabels.js";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springTiming } from "../motion/springEasing.js";
 import { useFlip } from "../motion/useFlip.js";
@@ -22,14 +21,6 @@ const COLUMNS: readonly Column[] = [
   { title: "Car.", label: "Característica", sortKey: null, className: "l" },
   { title: "Idade", sortKey: "age", className: "" },
 ];
-
-/** Brasfoot's position letters, on the album's position colours. */
-const POSITION_BADGES: Record<PositionGroup, { letter: string; colour: string }> = {
-  GK: { letter: "G", colour: "G" },
-  DEF: { letter: "D", colour: "Z" },
-  MID: { letter: "M", colour: "M" },
-  ATT: { letter: "A", colour: "A" },
-};
 
 const BY_STRENGTH: SquadSort = { key: "strength", descending: true };
 // Damping ratio 0.94: the rows settle with weight and no visible overshoot.

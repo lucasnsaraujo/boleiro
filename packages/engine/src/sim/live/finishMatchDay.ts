@@ -28,6 +28,9 @@ import { clubMood } from "../morale/clubMood.js";
 import { reactToDay } from "../morale/reactToDay.js";
 import { openNextStage } from "../openNextStage.js";
 import { developPlayers } from "../players/developPlayers.js";
+import { copinhaDate, playCopinha } from "../youth/copinha.js";
+import { fillShortSquads } from "../youth/fillShortSquads.js";
+import { turnOverAcademies } from "../youth/turnOverAcademies.js";
 import { isShootoutDue, settleShootout, shootoutSeed, shootoutWinnerOf } from "../settleShootout.js";
 import { runTransferDay } from "../transfers/runTransferDay.js";
 import { endWorldSeason, playWorldDay } from "../world/resultOnlyWorld.js";
@@ -165,17 +168,23 @@ export function finishMatchDay(live: LiveDay): DayResult {
   for (const clubId of formerClubIds) next = dropCoachFriendlies(next, clubId);
   events.push(...career.events);
   next = { ...next, rngState: random.state() };
+  if (state.date === copinhaDate(state.season)) {
+    const copinha = playCopinha(next);
+    next = copinha.state;
+    events.push(...copinha.events);
+  }
   if (state.world) next = { ...next, world: playWorldDay(state.world, state.date) };
   if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date) };
   if (next.date.slice(0, 4) !== String(state.season)) {
     const continentalField = seasonEndField(next);
-    const developed = developPlayers(closeSeasonHistory(next));
+    const academies = turnOverAcademies(closeSeasonHistory(next));
+    const developed = developPlayers(academies.state);
     const ended = endSeason(developed.state);
     const marked = { ...ended.state, history: recordStrengths(ended.state) };
     const coachRandom = randomStream(marked.rngState);
     const started = startCoachSeason(marked, Object.values(ended.outcomes), coachRandom.next);
     started.waitingEvents.forEach((own, index) => waitingEvents[index]?.push(...own));
-    events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...developed.events, ...started.events);
+    events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...academies.events, ...developed.events, ...started.events);
     // Bans still pending when a competition ends lapse with it.
     const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
     next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };
@@ -185,7 +194,10 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const market = runTransferDay(next, decisions.requests ?? [], (decisions.waiting ?? []).map((own) => own.requests ?? []));
   events.push(...market.events);
   market.waitingEvents.forEach((own, index) => waitingEvents[index]?.push(...own));
-  const released = leftClubIds(state, market.state).reduce(releaseTicketPrice, releaseTicketPrice(market.state, state.coachClubId));
+  // A day the market moved nobody leaves the players as they were.
+  const filled = market.state.players !== next.players ? fillShortSquads(market.state) : { state: market.state, events: [] };
+  events.push(...filled.events);
+  const released = leftClubIds(state, filled.state).reduce(releaseTicketPrice, releaseTicketPrice(filled.state, state.coachClubId));
   const recorded = recordDayEvents(released, events, state);
   return state.waitingCoaches ? { state: recorded, events, waitingEvents } : { state: recorded, events };
 }

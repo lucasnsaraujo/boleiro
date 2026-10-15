@@ -13,14 +13,18 @@ import type { PlayerProfile } from "./players/playerProfile.js";
 import type { TransferMarket } from "./transfers/transferMarket.js";
 import type { EuropeanCups } from "./continental/uefaCups.js";
 import type { World } from "./world/world.js";
+import type { Youth } from "./youth/academy.js";
 
 export type IsoDate = string;
 
 /** A club's formation and the players it starts when they are fit. */
 export type UsualLineup = { formation: Formation; starters: string[] };
 
-/** `wage` is the monthly wage in BRL; the contract runs to the end of `contractUntil`. */
-export type SimPlayer = Player & { id: string; clubId: string; wage: number; contractUntil: IsoDate } & PlayerProfile;
+/**
+ * `wage` is the monthly wage in BRL; the contract runs to the end of `contractUntil`. A player who came
+ * up through an academy keeps his hidden `potential`, the strength he grows toward by his late twenties.
+ */
+export type SimPlayer = Player & { id: string; clubId: string; wage: number; contractUntil: IsoDate; potential?: number } & PlayerProfile;
 
 export type MatchResult = {
   homeGoals: number;
@@ -220,6 +224,8 @@ export type GameState = {
   playsStateChampionships?: false;
   /** The coach's club's friendlies, booked and lately played; saves from before friendlies have none. */
   friendlies?: Friendly[];
+  /** Every national club's academy; a save from before academies opens them at its next season's turn. */
+  youth?: Youth;
   /** The name of the coach in the seat, in a hot-seat game; a one-coach game keeps none. */
   coachName?: string;
   /** The other human coaches of a hot-seat game, in turn order after the one in the seat; a one-coach game has none. */
