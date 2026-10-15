@@ -11,8 +11,8 @@ import type { MarketClock } from "../market/marketClock.js";
 export type LiveRoundSave = { day: LiveDay; seenMinute: number };
 /** A waiting hot-seat coach's part of the session: his inbox, his board's desk, his turning points and his market clock. */
 export type SeatParts = { news: InboxLine[]; desk: BoardDesk; turningPoints: TurningPoint[]; clock: MarketClock | null };
-/** A hot-seat game's turn: the waiting coaches' parts in waiting order, the seated coach's place in turn order, and the elevens of those who passed. */
-export type SeatsSave = { waiting: SeatParts[]; seated: number; passed: Pick<LiveDay["decisions"], "lineup" | "tactics">[] };
+/** A hot-seat game's turn: the waiting coaches' parts in waiting order, the seated coach's place in turn order, and what those who passed left for the day. */
+export type SeatsSave = { waiting: SeatParts[]; seated: number; passed: Pick<LiveDay["decisions"], "lineup" | "tactics" | "acceptOffer">[] };
 /**
  * What a save holds: the sim's game, plus the session's own state the sim does not keep. A one-coach game has
  * no `seats`, and one without the market clock (or before it) no `clock`.

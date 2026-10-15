@@ -149,6 +149,7 @@ test("only the last coach of the turn plays the day, and the last coach can't pa
   const session = createEngineSession(bundledGameFiles);
   session.apply({ type: "newGame", seed: SEED, choices: twoCoaches });
   expect(() => session.apply({ type: "playToMatchDay" })).toThrow("before the last coach's turn");
+  expect(() => session.apply({ type: "advance", days: [{}] })).toThrow("before the last coach's turn");
   expect(() => session.apply({ type: "startRound" })).toThrow("before the last coach's turn");
   const next = session.apply({ type: "passTurn" });
   expect(seatedOf(next).name).toBe(BRUNO.name);

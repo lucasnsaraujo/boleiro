@@ -84,7 +84,9 @@ export function Round() {
   useEffect(() => {
     let isCurrent = true;
     async function open() {
-      const live = await engine.liveRound();
+      const [live, seats] = await Promise.all([engine.liveRound(), engine.hotSeat()]);
+      if (!isCurrent) return;
+      setHotSeat(seats);
       if (live) {
         const at = Math.max(live.seenMinute, live.coach?.lastChangeMinute ?? 0);
         if (!isCurrent) return;
@@ -96,9 +98,6 @@ export function Round() {
         if (at >= FULL_TIME) void finish();
         return;
       }
-      const seats = await engine.hotSeat();
-      if (!isCurrent) return;
-      setHotSeat(seats);
       // In a hot-seat game the last coach may have no match today while the others do: their round starts at once.
       if (seats?.isLastTurn && !seats.coaches[seats.seated]?.playsToday) {
         const started = await engine.apply({ type: "startRound" });

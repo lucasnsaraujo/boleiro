@@ -34,6 +34,8 @@ export type AdvanceResult = { date: IsoDate; events: DayEvent[] };
 export type PlayResult = { date: IsoDate; stop: StopReason; daysPlayed: number };
 /** The coach's eleven and tactics for kick-off; left out, the assistant's pick and his last tactics. */
 export type KickOff = Pick<DayDecisions, "lineup" | "tactics">;
+/** What a hot-seat coach leaves for the day when he passes his turn: his eleven and tactics, or the job offer he takes. */
+export type TurnChoice = Pick<DayDecisions, "lineup" | "tactics" | "acceptOffer">;
 
 /** What each command carries besides its `type`. */
 type CommandFields = {
@@ -70,7 +72,7 @@ type CommandFields = {
    * Ends the turn of a hot-seat coach who is not the last of it: his eleven and tactics wait for the
    * day, and the next coach in turn order takes the seat.
    */
-  passTurn: KickOff;
+  passTurn: TurnChoice;
   /**
    * The coach in the seat spent `seconds` more on the market screens; on a player's page (`playerId`)
    * only when the player is not his. The clock runs only in a game with it and inside a window.
@@ -151,7 +153,7 @@ export function createEngineSession(files: GameFiles) {
   /** The place in turn order of the hot-seat coach in the seat. */
   let seated = 0;
   /** The eleven and tactics of the hot-seat coaches who passed their turn, by place in turn order. */
-  let passed: KickOff[] = [];
+  let passed: TurnChoice[] = [];
 
   function underWay() {
     if (!live) throw new Error("no match day is under way");
@@ -202,14 +204,41 @@ export function createEngineSession(files: GameFiles) {
     while (seated !== 0) rotateSeat();
   }
 
-  /** Each waiting coach's decisions for the day: what he chose on his turn and his requests due today, which leave his desk. */
+  /** Each waiting coach's decisions for the day: what he chose on his turn and his requests due today. */
   function waitingDecisions(before: GameState): WaitingDecisions[] {
     return waiting.map((parts, index) => {
-      const { due, waiting: later } = dueRequests(swapSeat(before, index), parts.desk.pending);
-      waiting[index] = { ...parts, desk: { ...parts.desk, pending: later } };
+      const { due } = dueRequests(swapSeat(before, index), parts.desk.pending);
       const own = passed[(seated + 1 + index) % (waiting.length + 1)] ?? {};
       return due.length ? { ...own, requests: due } : own;
     });
+  }
+
+  /** Takes the requests a day handed each waiting coach's board off his desk, once the day is played. */
+  function dropSentRequests(decisions: readonly WaitingDecisions[] | undefined) {
+    waiting = waiting.map((parts, index) => {
+      const sent = new Set((decisions?.[index]?.requests ?? []).map((request) => request.playerId));
+      return sent.size ? { ...parts, desk: { ...parts.desk, pending: parts.desk.pending.filter((request) => !sent.has(request.playerId)) } } : parts;
+    });
+  }
+
+  /** Plays one day for every coach: the seated coach's `decisions` and each waiting coach's; his news and desk follow it. */
+  function playDay(before: GameState, decisions: DayDecisions): { day: DayResult; stop: StopReason | null } {
+    if (!waiting.length) return { day: advanceDay(before, decisions), stop: null };
+    const withWaiting = { ...decisions, waiting: waitingDecisions(before) };
+    const day = advanceDay(before, withWaiting);
+    dropSentRequests(withWaiting.waiting);
+    return { day, stop: tellWaitingCoaches(before, day) };
+  }
+
+  /** Runs `change`; if it throws, the waiting coaches' parts of the session go back to how they were. */
+  function keepingSeatsOnFailure<T>(change: () => T): T {
+    const before = waiting;
+    try {
+      return change();
+    } catch (error) {
+      waiting = before;
+      throw error;
+    }
   }
 
   /** The day `before` → `day` as each waiting coach lives it: his news, turning points and board notes; and the first reason it must stop for one of them. */
@@ -302,61 +331,65 @@ export function createEngineSession(files: GameFiles) {
     },
     /** If any day throws, the game stays where it was. */
     advance({ days }) {
-      let next = current();
-      const events: DayEvent[] = [];
-      const lines: InboxLine[] = [];
-      const points: TurningPoint[] = [];
-      let notes = desk;
-      for (const decisions of days) {
-        const day = advanceDay(next, waiting.length ? { ...decisions, waiting: waitingDecisions(next) } : decisions);
-        tellWaitingCoaches(next, day);
-        lines.push(...inboxLines(next, day.state, day.events));
-        points.push(...turningPointsOf(next, day.state, day.events));
-        notes = noted(notes, next, day);
-        next = day.state;
-        events.push(...day.events);
-      }
-      state = next;
-      desk = notes;
-      live = null;
-      addNews(lines);
-      turningPoints = [...turningPoints, ...points];
-      if (days.length) startTurnOver();
-      return { date: next.date, events };
+      refuseBeforeLastTurn("the days can't be played");
+      return keepingSeatsOnFailure(() => {
+        let next = current();
+        const events: DayEvent[] = [];
+        const lines: InboxLine[] = [];
+        const points: TurningPoint[] = [];
+        let notes = desk;
+        for (const decisions of days) {
+          const { day } = playDay(next, decisions);
+          lines.push(...inboxLines(next, day.state, day.events));
+          points.push(...turningPointsOf(next, day.state, day.events));
+          notes = noted(notes, next, day);
+          next = day.state;
+          events.push(...day.events);
+        }
+        state = next;
+        desk = notes;
+        live = null;
+        addNews(lines);
+        turningPoints = [...turningPoints, ...points];
+        if (days.length) startTurnOver();
+        return { date: next.date, events };
+      });
     },
     /**
      * The hub's "Jogar rodada": plays days with no decisions until the coach's next match day or
      * until something needs him, and starts the inbox over with what those days brought. On a match
      * day it plays nothing and the inbox stays. Each day hands the board the coach's requests that
-     * are due. If any day throws, the game stays where it was.
+     * are due. If any day throws, the game stays where it was. In a hot-seat game it stops at any
+     * human coach's match day or anything one of them must see.
      */
     playToMatchDay() {
       refuseBeforeLastTurn("the days can't be played");
-      const points: TurningPoint[] = [];
-      let notes = desk;
-      const isHotSeat = waiting.length > 0;
-      if (isHotSeat) waiting = waiting.map((parts) => ({ ...parts, news: [] }));
-      const played = playToMatchDay(
-        current(),
-        (before) => {
-          const { due, waiting: later } = dueRequests(before, notes.pending);
-          const decisions: DayDecisions = due.length ? { requests: due } : {};
-          const day = advanceDay(before, isHotSeat ? { ...decisions, waiting: waitingDecisions(before) } : decisions);
-          points.push(...turningPointsOf(before, day.state, day.events));
-          notes = noted({ ...notes, pending: later }, before, day);
-          return isHotSeat ? { ...day, stop: tellWaitingCoaches(before, day) } : day;
-        },
-        undefined,
-        isHotSeat ? isHumanMatchDay : isCoachMatchDay,
-      );
-      state = played.state;
-      desk = notes;
-      turningPoints = [...turningPoints, ...points];
-      if (played.daysPlayed > 0) {
-        news = played.news.slice(-INBOX_SIZE);
-        startTurnOver();
-      }
-      return { date: played.state.date, stop: played.stop, daysPlayed: played.daysPlayed };
+      return keepingSeatsOnFailure(() => {
+        const points: TurningPoint[] = [];
+        let notes = desk;
+        const isHotSeat = waiting.length > 0;
+        if (isHotSeat) waiting = waiting.map((parts) => ({ ...parts, news: [] }));
+        const played = playToMatchDay(
+          current(),
+          (before) => {
+            const { due, waiting: later } = dueRequests(before, notes.pending);
+            const { day, stop } = playDay(before, due.length ? { requests: due } : {});
+            points.push(...turningPointsOf(before, day.state, day.events));
+            notes = noted({ ...notes, pending: later }, before, day);
+            return { ...day, stop };
+          },
+          undefined,
+          isHotSeat ? isHumanMatchDay : isCoachMatchDay,
+        );
+        state = played.state;
+        desk = notes;
+        turningPoints = [...turningPoints, ...points];
+        if (played.daysPlayed > 0) {
+          news = played.news.slice(-INBOX_SIZE);
+          startTurnOver();
+        }
+        return { date: played.state.date, stop: played.stop, daysPlayed: played.daysPlayed };
+      });
     },
     /**
      * Kicks off the coach's match day. Every match is drawn now; the screen plays the timelines back.
@@ -394,6 +427,7 @@ export function createEngineSession(files: GameFiles) {
       addNews(inboxLines(before, day.state, day.events));
       turningPoints = [...turningPoints, ...turningPointsOf(before, day.state, day.events)];
       if (waiting.length) {
+        dropSentRequests(round.day.decisions.waiting);
         tellWaitingCoaches(before, day);
         startTurnOver();
       }
@@ -411,6 +445,7 @@ export function createEngineSession(files: GameFiles) {
     },
     /** Puts a request on the board's desk; it reaches the board on the next day played that it is due. */
     ask({ request }) {
+      current();
       if (isSigning(request) && clockView()?.leftSeconds === 0) throw new Error("the market clock has run out for this window");
       desk = { ...desk, pending: withRequest(desk.pending, request) };
       if (isInRound(request.playerId)) changeRoundRequests((requests) => withRequest(requests, request));
@@ -457,11 +492,11 @@ export function createEngineSession(files: GameFiles) {
       state = asked.state;
       return asked.answer;
     },
-    passTurn({ lineup, tactics }) {
+    passTurn({ lineup, tactics, acceptOffer }) {
       betweenDays("the turn can't pass");
       if (!waiting.length) throw new Error("a one-coach game has no turns to pass");
       if (seated === waiting.length) throw new Error("the last coach of the turn plays the day instead");
-      passed[seated] = { lineup, tactics };
+      passed[seated] = { lineup, tactics, acceptOffer };
       rotateSeat();
       const view = hotSeatView();
       if (!view) throw new Error("a hot-seat game lost its coaches");

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router";
+import { Link, Navigate } from "react-router";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import { formatBarDate, formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
@@ -64,35 +64,18 @@ export function Hub() {
 
   // A day that stops the coach early (a board answer, an offer) opens the paper on the news that stopped it.
   const seats = loaded?.seats ?? null;
-  const round = usePlayRound(
-    () =>
-      void load(() => true).then(() => {
-        clock.refresh();
-        setPaperOpen(true);
-      }),
-    seats !== null,
+  const round = usePlayRound(() =>
+    void load(() => true).then(() => {
+      clock.refresh();
+      setPaperOpen(true);
+    }),
   );
-  const navigate = useNavigate();
-  const [isPassing, setPassing] = useState(false);
   const seated = seats?.coaches[seats.seated];
   // A hot-seat coach before the last one sets his eleven or passes; the last one plays the day for everyone.
   const passes = seats !== null && !seats.isLastTurn;
-  async function passTurn() {
-    if (seated?.playsToday) {
-      navigate("/round");
-      return;
-    }
-    setPassing(true);
-    try {
-      await engine.apply({ type: "passTurn" });
-      navigate("/turn");
-    } catch {
-      setPassing(false);
-    }
-  }
-  const act = passes ? () => void passTurn() : () => void round.play();
+  const act = () => void round.play();
   const club = loaded?.state.coachClubId ? loaded.state.clubs[loaded.state.coachClubId] : undefined;
-  useCommands({ jogarRodada: loaded !== null && !round.isPlaying && !isPassing && act });
+  useCommands({ jogarRodada: loaded !== null && !round.isPlaying && act });
 
   if (missing || !open.current) {
     return (
@@ -169,7 +152,7 @@ export function Hub() {
 
         {!club && offers > 0 ? (
           <div className="hub-actions">
-            <button className="btn" onClick={act} disabled={round.isPlaying || isPassing}>
+            <button className="btn" onClick={act} disabled={round.isPlaying}>
               {passes ? "Passar a vez" : playRoundLabel(round.isPlaying, false)}
             </button>
             <Link className="btn y" to="/offers">
@@ -177,7 +160,7 @@ export function Hub() {
             </Link>
           </div>
         ) : (
-          <button className="btn y hub-play" onClick={act} disabled={round.isPlaying || isPassing} title="E">
+          <button className="btn y hub-play" onClick={act} disabled={round.isPlaying} title="E">
             <i className={passes ? (seated?.playsToday ? "ph-bold ph-strategy" : "ph-bold ph-arrow-bend-up-right") : club ? "ph-bold ph-soccer-ball" : "ph-bold ph-hourglass-medium"} aria-hidden="true" />
             {passes ? (seated?.playsToday ? "Escalar e passar a vez" : "Passar a vez") : playRoundLabel(round.isPlaying, club !== undefined)}
           </button>
