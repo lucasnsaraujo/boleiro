@@ -81,7 +81,7 @@ describe("organised supporters", () => {
   });
 
   it("sometimes turn violent after a defeat when protests go on, and the club is fined", () => {
-    const fined = violentDays.filter(({ events }) => ofType(events, "fansViolence").some((e) => e.fine > 0));
+    const fined = violentDays.filter(({ events }) => ofType(events, "fansViolence").some((e) => e.fine > 0) && ofType(events, "closedDoors").length === 0);
     expect(fined.length).toBeGreaterThan(0);
     expect(fined.length).toBeLessThan(violentDays.length / 2);
     for (const { before, state, events } of fined) {
@@ -93,14 +93,16 @@ describe("organised supporters", () => {
     }
   });
 
-  it("sometimes get the club's next home games played behind closed doors instead of a fine", () => {
-    const closed = violentDays.flatMap(({ state, events }) => ofType(events, "closedDoors").map((e) => ({ state, e })));
+  it("sometimes get the club's next home games played behind closed doors on top of a fine", () => {
+    const closed = violentDays.flatMap(({ state, events }) => ofType(events, "closedDoors").map((e) => ({ state, events, e })));
     expect(closed.length).toBeGreaterThan(0);
-    for (const { state, e } of closed) {
+    for (const { state, events, e } of closed) {
+      const [violence] = ofType(events, "fansViolence");
       expect(e.games).toBeGreaterThanOrEqual(1);
       expect(e.games).toBeLessThanOrEqual(10);
       expect(clubMood(state, host)).toMatchObject({ closedDoorGames: e.games, supporters: "violence" });
-      expect(state.finances[host]?.month.costs.fines).toBe(0);
+      expect(violence?.fine).toBeGreaterThan(0);
+      expect(state.finances[host]?.month.costs.fines).toBe(violence?.fine);
     }
   });
 
