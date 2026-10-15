@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { Link, useNavigate } from "react-router";
 import type { Division } from "@boleiro/data/players";
 import type { Board } from "@boleiro/engine/sim/coach/boardExpectations";
+import { RAPIDO, type Formats } from "@boleiro/engine/sim/formats";
 import { formatDayMonth, formatGameDate } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import { saveToSlot } from "@boleiro/game-client/saves/saveToSlot";
@@ -15,6 +16,7 @@ import { CLUBS, clubById } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { Select } from "../controls/Select.js";
 import { clubPreviews, PREVIEW_KEYS, type ClubPreviews } from "../newGame/clubPreview.js";
+import { CUSTOM_CHOICES, defaultFormatsMode, FORMATS_MODES, formatsOfMode, formatsSummary, type FormatsMode } from "../newGame/formatsChoice.js";
 import "./newGame.css";
 
 type Choice = { mode: "club"; choice: ClubChoice } | { mode: "career" };
@@ -38,16 +40,17 @@ function newSeed(): number {
 
 /**
  * Draws the season once with no coach, to show each board's goal and each squad. The real game then
- * starts from the same seed, so what the screen shows is what the coach gets.
+ * starts from the same seed and formats, so what the screen shows is what the coach gets.
  */
-function useDrawnSeason(seed: number): Season | null {
+function useDrawnSeason(seed: number, formats: Formats): Season | null {
   const { engine, game } = useServices();
   const [season, setSeason] = useState<Season | null>(null);
+  const formatsKey = JSON.stringify(formats);
   useEffect(() => {
     let current = true;
     game.current = null;
     engine
-      .apply({ type: "newGame", seed, choices: { coachClubId: null } })
+      .apply({ type: "newGame", seed, choices: { coachClubId: null, formats: JSON.parse(formatsKey) as Formats } })
       .then(() => engine.read([...PREVIEW_KEYS, "boards", "date"]))
       .then(
         (read) => current && setSeason({ date: read.date, boards: read.boards, previews: clubPreviews(read) }),
@@ -56,7 +59,7 @@ function useDrawnSeason(seed: number): Season | null {
     return () => {
       current = false;
     };
-  }, [engine, game, seed]);
+  }, [engine, game, seed, formatsKey]);
   return season;
 }
 
@@ -70,7 +73,9 @@ export function NewGame() {
   const { engine, slots, game } = useServices();
   const navigate = useNavigate();
   const [seed] = useState(newSeed);
-  const season = useDrawnSeason(seed);
+  // Null follows the number of coaches until the coach picks a mode himself.
+  const [pickedFormatsMode, setPickedFormatsMode] = useState<FormatsMode | null>(null);
+  const [customFormats, setCustomFormats] = useState<Formats>(RAPIDO);
   const [filter, setFilter] = useState<ClubFilter>({ query: "", division: null, state: null });
   const [picked, setPicked] = useState<Choice | null>(null);
   const [coachName, setCoachName] = useState("");
@@ -84,6 +89,15 @@ export function NewGame() {
   // Which coach the club grid picks for: 0 is the first, 1 on the others in turn order.
   const [active, setActive] = useState(0);
   const [clockMinutes, setClockMinutes] = useState<number | null>(DEFAULT_CLOCK_MINUTES);
+  const formatsMode = pickedFormatsMode ?? defaultFormatsMode(others.length + 1);
+  const formats = formatsOfMode(formatsMode, customFormats);
+  const season = useDrawnSeason(seed, formats);
+
+  function pickFormatsMode(mode: FormatsMode) {
+    // Personalizar starts from the mode the coach leaves.
+    if (mode === "personalizar" && formatsMode !== "personalizar") setCustomFormats(formats);
+    setPickedFormatsMode(mode);
+  }
 
   const choices = useMemo(() => clubChoices(CLUBS, season?.boards ?? null), [season]);
   const states = useMemo(() => statesOf(choices), [choices]);
@@ -148,6 +162,7 @@ export function NewGame() {
           coachClubId,
           careerMode: picked.mode === "career",
           stateChampionships: playsEstaduais,
+          formats,
           ...(hotSeat ? { hotSeat } : {}),
           ...(clockMinutes === null ? {} : { marketClockSeconds: clockMinutes * 60 }),
         },
@@ -294,6 +309,43 @@ export function NewGame() {
                   </label>
                 ))}
               </div>
+            </div>
+
+            <div className="career-new-free career-new-clock career-new-formats">
+              <p>
+                <b id="formats-title">Calendário e formatos</b>
+                <br />
+                <span className="mute">{formatsSummary(formatsMode, formats)}</span>
+              </p>
+              <div className="seg seg-radio" role="radiogroup" aria-labelledby="formats-title">
+                {FORMATS_MODES.map(({ mode, label }) => (
+                  <label key={mode} className={formatsMode === mode ? "on" : undefined}>
+                    <input type="radio" name="formats-mode" checked={formatsMode === mode} onChange={() => pickFormatsMode(mode)} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              {formatsMode === "personalizar" && (
+                <fieldset className="career-new-custom">
+                  <legend className="lbl">Mais opções</legend>
+                  {CUSTOM_CHOICES.map(({ key, title, options }) => (
+                    <div key={key} className="career-new-custom-row">
+                      <span id={`formats-${key}`}>{title}</span>
+                      <div className="seg seg-radio" role="radiogroup" aria-labelledby={`formats-${key}`}>
+                        {options.map((option) => {
+                          const isOn = customFormats[key] === option.value;
+                          return (
+                            <label key={option.value} className={isOn ? "on" : undefined}>
+                              <input type="radio" name={`formats-${key}`} checked={isOn} onChange={() => setCustomFormats({ ...customFormats, [key]: option.value })} />
+                              {option.label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </fieldset>
+              )}
             </div>
 
             <fieldset className="career-new-slots">

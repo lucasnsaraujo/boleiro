@@ -339,6 +339,35 @@
   flex: 1 1 100%;
 }
 
+/* Personalizar's choices, one per line, each title over its segments: the page fits no more side by side. */
+.career-new-custom {
+  flex: 1 1 100%;
+  margin: 2px 0 0;
+  padding: 10px 0 0;
+  border: 0;
+  border-top: 2px dotted var(--line-2);
+  display: grid;
+  gap: 8px;
+}
+
+.career-new-custom legend {
+  padding: 0;
+  margin-bottom: 2px;
+}
+
+.career-new-custom-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.career-new-custom-row > span {
+  flex: 0 0 128px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
 /* Career mode: the album's toggle row, between the facts and where the game is saved. */
 .career-new-free {
   margin-top: 18px;

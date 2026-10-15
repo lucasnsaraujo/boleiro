@@ -188,3 +188,31 @@ test("with the market clock off a game starts without one", async () => {
   await screen.findByText("Clube aberto", {}, { timeout: 10_000 });
   expect(await engine.read(["marketClockSeconds"])).toEqual({ marketClockSeconds: undefined });
 });
+
+test("one coach starts on Realista's calendars, and a game with a second coach switches to Rápido", async () => {
+  const { engine } = await openNewGame();
+  expect(screen.getByRole("radio", { name: "Realista" })).toHaveProperty("checked", true);
+  await userEvent.click(screen.getByRole("button", { name: "Mais um técnico" }));
+  expect(screen.getByRole("radio", { name: "Rápido" })).toHaveProperty("checked", true);
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico 1" }), "Ana");
+  await userEvent.click(clubList().getByRole("button", { name: "Flamengo" }));
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico 2" }), "Bruno");
+  await userEvent.click(clubList().getByRole("button", { name: "Palmeiras" }));
+  await userEvent.click(screen.getByRole("button", { name: "Começar jogo" }));
+  await screen.findByText("Clube aberto", {}, { timeout: 10_000 });
+  expect(await engine.read(["formats"])).toEqual({ formats: { calendar: "unified", leagueLegs: 2, continentalGroups: "groups-3", knockouts: "late-two-legs" } });
+});
+
+test("Personalizar opens more options and starts the game with the coach's own mix", async () => {
+  const { engine } = await openNewGame();
+  await userEvent.click(screen.getByRole("radio", { name: "Personalizar" }));
+  await userEvent.click(screen.getByRole("radio", { name: "1 turno" }));
+  await userEvent.click(screen.getByRole("radio", { name: "Jogo único" }));
+  await userEvent.click(clubList().getByRole("button", { name: "Bahia" }));
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico" }), "Rogério");
+  await userEvent.click(screen.getByRole("button", { name: "Começar carreira" }));
+  await screen.findByText("Clube aberto", {}, { timeout: 10_000 });
+  const { formats, calendar } = await engine.read(["formats", "calendar"]);
+  expect(formats).toEqual({ calendar: "real", leagueLegs: 1, continentalGroups: "league-phase", knockouts: "single" });
+  expect(calendar.leagueDates.A).toHaveLength(19);
+});
