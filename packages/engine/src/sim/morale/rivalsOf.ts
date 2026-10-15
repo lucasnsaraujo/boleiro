@@ -6,8 +6,13 @@ import type { Club } from "@boleiro/data/clubs";
 // without a curated list; smaller clubs get no rivals.
 const BIG_CLUBS_PER_STATE = 4;
 
+// Every gate asks for the rivals while the clubs change only between seasons, so each set of clubs is worked out once.
+const known = new WeakMap<Record<string, Club>, ReadonlyMap<string, ReadonlySet<string>>>();
+
 /** Each club's rivals: the other big-fanbase clubs of its state. */
-export function rivalsOf(clubs: Record<string, Club>): Map<string, ReadonlySet<string>> {
+export function rivalsOf(clubs: Record<string, Club>): ReadonlyMap<string, ReadonlySet<string>> {
+  const cached = known.get(clubs);
+  if (cached) return cached;
   const byState = new Map<string, Club[]>();
   for (const club of Object.values(clubs)) byState.set(club.state, [...(byState.get(club.state) ?? []), club]);
   const rivals = new Map<string, ReadonlySet<string>>();
@@ -19,5 +24,6 @@ export function rivalsOf(clubs: Record<string, Club>): Map<string, ReadonlySet<s
       .map((club) => club.id);
     for (const id of big) rivals.set(id, new Set(big.filter((other) => other !== id)));
   }
+  known.set(clubs, rivals);
   return rivals;
 }
