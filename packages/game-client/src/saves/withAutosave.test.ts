@@ -197,11 +197,12 @@ test("withdrawing a request is autosaved, so it stays off the desk after a reloa
 });
 
 test("closing a turning point is autosaved, so its screen does not come back after a reload", async () => {
-  // A seed whose season the coach sees through to its end, so the point waiting is the season's review.
   const { engine, slots } = await startGame(1);
   await engine.apply({ type: "advance", days: Array.from({ length: 365 }, () => ({})) });
-  expect(await engine.turningPoint()).toMatchObject({ kind: "seasonEnd" });
-  await engine.apply({ type: "closeTurningPoint" });
+  // The point waiting after a year is the season's review, or the sacking when the board fired the coach on the way.
+  expect((await engine.turningPoint())?.kind).toEqual(expect.toBeOneOf(["seasonEnd", "fired"]));
+  // A sacking leaves the season's review waiting behind it; the coach closes both.
+  for (let left = 2; left > 0 && (await engine.turningPoint()); left--) await engine.apply({ type: "closeTurningPoint" });
   await engine.apply({ type: "newGame", seed: 8, choices: { coachClubId: "bahia-ba" } });
   await engine.apply({ type: "load", save: await slots.read(AUTOSAVE_SLOT_ID) });
   expect(await engine.turningPoint()).toBeNull();
