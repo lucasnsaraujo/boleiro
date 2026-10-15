@@ -48,16 +48,22 @@ class RosterDiffTest(unittest.TestCase):
     def test_holds_back_a_player_who_may_have_moved_to_a_club_whose_page_failed(self) -> None:
         old = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka", "Odegaard"], "Liverpool": ["Salah"]})
         new = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka"], "Liverpool": ["Salah"]})
-        self.db.execute("INSERT INTO snapshot_failures VALUES (?, 'HTTP 503 on https://www.transfermarkt.com/x/kader/verein/1/plus/1')", (new,))
+        self.db.execute("INSERT INTO snapshot_failures VALUES (?, 'no clubs on /x/startseite/wettbewerb/GB2', 1)", (new,))
         changes = roster_diff.roster_changes(self.db, old, new)
         self.assertEqual(changes.departures, [])
         self.assertEqual(changes.unknown, [("Odegaard", "Arsenal")])
         self.assertIn("- Odegaard left Arsenal, or moved to a club whose page failed", roster_diff.markdown(changes))
 
-    def test_still_calls_a_player_gone_when_the_scrape_lost_only_pages_without_squads(self) -> None:
+    def test_still_calls_a_player_gone_when_the_scrape_lost_only_pages_without_club_squads(self) -> None:
         old = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka", "Odegaard"]})
         new = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka"]})
-        self.db.execute("INSERT INTO snapshot_failures VALUES (?, 'crest of tm-11: HTTP 503 on https://img.a.transfermarkt.technology/wappen/head/11.png')", (new,))
+        self.db.execute("INSERT INTO snapshot_failures VALUES (?, 'HTTP 503 on https://www.transfermarkt.com/brasilien/kader/verein/3439/plus/1', 0)", (new,))
+        self.assertEqual(roster_diff.roster_changes(self.db, old, new).departures, [("Odegaard", "Arsenal")])
+
+    def test_reads_a_database_from_before_scrapes_recorded_their_lost_pages(self) -> None:
+        self.db.execute("DROP TABLE snapshot_failures")
+        old = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka", "Odegaard"]})
+        new = snapshot(self.db, "transfermarkt", {"Arsenal": ["Saka"]})
         self.assertEqual(roster_diff.roster_changes(self.db, old, new).departures, [("Odegaard", "Arsenal")])
 
     def test_scrape_records_the_pages_it_could_not_get_in_its_snapshot(self) -> None:
@@ -65,7 +71,7 @@ class RosterDiffTest(unittest.TestCase):
             cache = Path(folder)
             saved_cache(cache)
             run = scrape_tiny_world(self.db, cache, Offline())
-        stored = [row[0] for row in self.db.execute("SELECT problem FROM snapshot_failures WHERE snapshot_id = ?", (run.snapshot,))]
+        stored = [row[0] for row in self.db.execute("SELECT problem FROM snapshot_failures WHERE snapshot_id = ? ORDER BY rowid", (run.snapshot,))]
         self.assertEqual(stored, run.failures)
         self.assertTrue(stored)
 

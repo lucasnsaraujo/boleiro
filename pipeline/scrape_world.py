@@ -36,6 +36,21 @@ FALLBACK_COLOURS = ("#FFFFFF", "#000000")
 FULL_SQUAD = 18
 
 
+def parses(read: Callable[[str], object]) -> Callable[[str], bool]:
+    """A page check: the page reads without `read` raising ValueError."""
+    def check(html: str) -> bool:
+        try:
+            read(html)
+        except ValueError:
+            return False
+        return True
+    return check
+
+
+def lists_clubs(html: str) -> bool:
+    return bool(tm_pages.participants(html))
+
+
 @dataclass
 class Run:
     snapshot: int
@@ -43,6 +58,7 @@ class Run:
     players: int = 0
     national_teams: int = 0
     failures: list[str] = field(default_factory=list)
+    club_failures: list[str] = field(default_factory=list)      # the failures whose page could hold clubs or a club's squad
     warnings: list[str] = field(default_factory=list)
 
 
@@ -58,31 +74,35 @@ class Scraper:
     club_seq: int = 0
     player_seq: int = 0
 
-    def page(self, path: str) -> str | None:
+    def fail(self, problem: str, holds_clubs: bool) -> None:
+        self.run.failures.append(problem)
+        if holds_clubs:
+            self.run.club_failures.append(problem)
+        self.log(f"  failed: {problem}")
+
+    def page(self, path: str, holds_clubs: bool, is_valid: Callable[[str], bool] | None = None) -> str | None:
         try:
-            return self.fetcher.page(path, self.max_age_days).html
+            return self.fetcher.page(path, self.max_age_days, is_valid).html
         except FetchError as error:
-            self.run.failures.append(str(error))
-            self.log(f"  failed: {error}")
+            self.fail(str(error), holds_clubs)
             return None
 
-    def squad(self, ref: tm_pages.ClubRef) -> tm_pages.Squad | None:
+    def squad(self, ref: tm_pages.ClubRef, is_club: bool) -> tm_pages.Squad | None:
         """A club's or national team's squad page; one that came back as something else is dropped from the cache."""
         path = f"/{ref.slug}/kader/verein/{ref.tm_id}/plus/1"
-        html = self.page(path)
+        html = self.page(path, is_club, parses(tm_pages.squad))
         if html is None:
             return None
         try:
             return tm_pages.squad(html)
         except ValueError as error:
-            self.drop(path, f"{error} on {path}")
+            self.drop(path, f"{error} on {path}", is_club)
             return None
 
-    def drop(self, path: str, problem: str) -> None:
+    def drop(self, path: str, problem: str, holds_clubs: bool) -> None:
         """Lists a page that came back as something else and removes it from the cache, so the next run asks again."""
         (self.fetcher.cache / cache_name(path)).unlink(missing_ok=True)
-        self.run.failures.append(problem)
-        self.log(f"  failed: {problem}")
+        self.fail(problem, holds_clubs)
 
     def insert(self, table: str, *values: object, verb: str = "INSERT") -> None:
         marks = ", ".join("?" for _ in range(len(values) + 1))
@@ -92,7 +112,8 @@ class Scraper:
         self.insert(table, *values, verb="INSERT OR IGNORE")
 
     def competition(self, competition_id: str, country: str | None, path: str, kind: str, tier: int | None, code: str | None) -> str | None:
-        html = self.page(path)
+        holds_clubs = kind != "cup"
+        html = self.page(path, holds_clubs, lists_clubs if holds_clubs else None)
         if html is None:
             return None
         name, _ = tm_pages.competition_header(html)
@@ -103,7 +124,7 @@ class Scraper:
         """Scrapes one club into the snapshot and returns its id; `country` None takes it from the page."""
         if ref.tm_id in self.club_ids:
             return self.club_ids[ref.tm_id]
-        squad = self.squad(ref)
+        squad = self.squad(ref, is_club=True)
         if squad is None:
             return None
         if country is None:
@@ -161,13 +182,13 @@ class Scraper:
 
     def colours(self, tm_id: str) -> list[str]:
         path = f"/x/datenfakten/verein/{tm_id}"
-        html = self.page(path)
+        html = self.page(path, False, parses(tm_pages.club_colours))
         if html is None:
             return []
         try:
             return tm_pages.club_colours(html)
         except ValueError as error:
-            self.drop(path, f"{error} on {path}")
+            self.drop(path, f"{error} on {path}", False)
             return []
 
     def crest(self, club_id: str, image: str) -> None:
@@ -175,7 +196,7 @@ class Scraper:
             file, url = self.fetcher.image(image, self.max_age_days * 4)
             width, height = png_size(file)
         except (FetchError, RuntimeError) as error:
-            self.run.failures.append(f"crest of {club_id}: {error}")
+            self.fail(f"crest of {club_id}: {error}", False)
             return
         path = file.resolve()
         stored = str(path.relative_to(ROOT)) if ROOT in path.parents else str(path)
@@ -207,7 +228,7 @@ class Scraper:
             clubs = tm_pages.participants(html) if html else []
             self.log(f" {league.code}: {len(clubs)} clubs")
             if html is not None and not clubs:
-                self.drop(league.clubs_page, f"no clubs on {league.clubs_page}")
+                self.drop(league.clubs_page, f"no clubs on {league.clubs_page}", True)
             for ref in clubs:
                 self.club(ref, country.id, league_id)
         if country.cup:
@@ -228,15 +249,15 @@ class Scraper:
     def national_teams(self, lists: Iterable[str]) -> None:
         refs: dict[str, tm_pages.ClubRef] = {}
         for path in lists:
-            html = self.page(path)
+            html = self.page(path, False, lists_clubs)
             teams = tm_pages.participants(html) if html else []
             if html is not None and not teams:
-                self.drop(path, f"no teams on {path}")
+                self.drop(path, f"no teams on {path}", False)
             for ref in teams:
                 refs.setdefault(ref.tm_id, ref)
         self.log(f"national teams: {len(refs)}")
         for seq, ref in enumerate(refs.values()):
-            squad = self.squad(ref)
+            squad = self.squad(ref, is_club=False)
             if squad is None:
                 continue
             team_id = slugify(squad.name)
@@ -280,7 +301,10 @@ def scrape_world(
     if club_world_cup:
         scraper.entries(club_world_cup, take_guests=True)
     scraper.national_teams(national_team_lists)
-    db.executemany("INSERT INTO snapshot_failures VALUES (?, ?)", [(snapshot, failure) for failure in scraper.run.failures])
+    db.executemany(
+        "INSERT INTO snapshot_failures VALUES (?, ?, ?)",
+        [(snapshot, failure, failure in scraper.run.club_failures) for failure in scraper.run.failures],
+    )
     return scraper.run
 
 

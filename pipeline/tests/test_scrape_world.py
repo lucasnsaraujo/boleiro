@@ -158,6 +158,25 @@ class ScrapeWorldTest(unittest.TestCase):
         self.assertEqual(short_squads(self.db, self.run.snapshot, minimum=25), [("Arsenal FC", "tm-11", 24)])
         self.assertEqual(short_squads(self.db, self.run.snapshot, minimum=24), [])
 
+    def test_keeps_the_cached_squad_when_its_refetch_comes_back_as_a_robot_check(self) -> None:
+        class RobotCheck:
+            status_code = 200
+            content = b"<html><body>Are you a robot?</body></html>"
+            headers: dict[str, str] = {}
+        db = sqlite3.connect(":memory:")
+        fetcher = tm_fetch.Fetcher(self.cache, log=lambda _: None, get=lambda _: RobotCheck(), sleep=lambda _: None)
+        scrape_world(db, fetcher, [ENGLAND], max_age_days=0, log=lambda _: None)
+        self.assertEqual(db.execute("SELECT id FROM clubs ORDER BY seq").fetchall(), [("tm-11",), ("tm-31",)])
+
+    def test_records_which_lost_pages_could_hold_clubs(self) -> None:
+        stored = "SELECT count(*) FROM snapshot_failures WHERE snapshot_id = ? AND holds_clubs = ?"
+        self.assertEqual(self.rows(stored, self.run.snapshot, 1), [(0,)])
+        self.assertEqual(self.rows(stored, self.run.snapshot, 0), [(len(self.run.failures),)])
+        (self.cache / tm_fetch.cache_name("/fc-arsenal/kader/verein/11/plus/1")).unlink()
+        db = sqlite3.connect(":memory:")
+        scrape_tiny_world(db, self.cache, Offline())
+        self.assertEqual(db.execute(stored, (1, 1)).fetchone(), (1,))
+
     def test_keeps_two_national_teams_with_the_same_name_apart(self) -> None:
         brazil = (self.cache / tm_fetch.cache_name("/brasilien/kader/verein/3439/plus/1")).read_text()
         (self.cache / tm_fetch.cache_name("/argentinien/kader/verein/3437/plus/1")).write_text(brazil)

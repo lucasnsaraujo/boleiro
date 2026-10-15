@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS snapshot_files (
 -- Pages a scrape could not get or read: its data may be missing what those pages hold.
 CREATE TABLE IF NOT EXISTS snapshot_failures (
   snapshot_id INTEGER NOT NULL REFERENCES snapshots(id),
-  problem TEXT NOT NULL                -- "HTTP 503 on https://www.transfermarkt.com/..."
+  problem TEXT NOT NULL,               -- "HTTP 503 on https://www.transfermarkt.com/..."
+  holds_clubs INTEGER NOT NULL         -- 1 for a league, participants or club squad page: clubs or players may be missing
 );
 
 CREATE TABLE IF NOT EXISTS countries (
