@@ -15,10 +15,10 @@ afterEach(() => {
   for (const close of closers.splice(0)) close();
 });
 
-async function openMarket(): Promise<Services> {
+async function openMarket(coachClubId = "sport-pe"): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "sport-pe" } });
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId } });
   const services: Services = { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
   const router = createMemoryRouter([{ path: "/market", element: <Market /> }], { initialEntries: ["/market"] });
   render(
@@ -63,4 +63,42 @@ test("asking to buy a player puts the request on the board's desk until the wind
   await userEvent.click(within(desk).getByRole("button", { name: "Retirar" }));
   expect(screen.getByText("Nenhum pedido à diretoria.")).toBeTruthy();
   expect((await engine.desk()).pending).toEqual([]);
+});
+
+/** The first listed player whose club asks a fee, picked in the list. */
+async function pickPricedPlayer(): Promise<string> {
+  const results = await screen.findByRole("table", { name: "Jogadores" });
+  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Divisão" }), "Série B");
+  const priced = within(results).getAllByRole("row").find((row) => within(row).queryByRole("cell", { name: /^R\$/ }));
+  const button = priced && within(priced).getByRole("button");
+  if (!button) throw new Error("no player listed with a fee");
+  await userEvent.click(button);
+  return button.textContent ?? "";
+}
+
+test("an offer under the club's price is a proposal, sent with the fee the coach set", async () => {
+  const { engine } = await openMarket();
+  const name = await pickPricedPlayer();
+  const chosen = screen.getByRole("region", { name });
+  await userEvent.click(within(chosen).getByRole("button", { name: "Diminuir oferta" }));
+  await userEvent.click(within(chosen).getByRole("button", { name: "Fazer proposta" }));
+  const [request] = (await engine.desk()).pending;
+  expect(request).toMatchObject({ kind: "sign" });
+  expect(request?.kind === "sign" && request.fee).toBeGreaterThan(0);
+  expect((await engine.read(["players"])).players[request?.playerId ?? ""]?.name).toBe(name);
+});
+
+test("a squad at the 35-player cap can't sign: the button is off and the panel says why", async () => {
+  await openMarket("sao-paulo-sp");
+  const name = await pickPricedPlayer();
+  const chosen = screen.getByRole("region", { name });
+  expect(within(chosen).getByText(/Elenco cheio: \d+ de 35 jogadores/)).toBeTruthy();
+  expect(within(chosen).getByRole("button", { name: "Comprar" })).toHaveProperty("disabled", true);
+});
+
+test("the Propostas tab shows the offers for the coach's own players and his players for sale", async () => {
+  await openMarket();
+  await userEvent.click(await screen.findByRole("tab", { name: "Propostas" }));
+  expect(await screen.findByRole("heading", { name: "Nenhuma proposta na mesa" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "À venda" })).toBeTruthy();
 });

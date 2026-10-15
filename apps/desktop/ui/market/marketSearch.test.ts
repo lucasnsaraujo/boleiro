@@ -75,6 +75,20 @@ describe("searching the market", () => {
     expect(share(freeRows)).toBeGreaterThan(share(palmeiras));
   });
 
+  test("can keep only players who would say yes or maybe", () => {
+    const serieD = newGameFromFiles(5, { coachClubId: "joinville-sc" }, bundledGameFiles);
+    const willing = search({ isWillingOnly: true }, serieD);
+    expect(willing.length).toBeGreaterThan(0);
+    expect(willing.length).toBeLessThan(search({}, serieD).length);
+    expect(willing.every((r) => r.willing !== "no")).toBe(true);
+  });
+
+  test("prices a club's starter above one of its reserves of the same value", () => {
+    const rows = search({ clubId: "palmeiras-sp" }).filter((r) => r.status === null && r.price);
+    expect(rows.some((r) => (r.price ?? 0) > r.value * 1.2)).toBe(true);
+    expect(rows.every((r) => (r.price ?? 0) >= r.value * 0.99)).toBe(true);
+  });
+
   test("returns the first rows and how many matched", () => {
     const { total, rows } = searchMarket(game, NO_FILTERS, 12);
     expect(rows).toHaveLength(12);
