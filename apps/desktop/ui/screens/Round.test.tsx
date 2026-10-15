@@ -327,3 +327,84 @@ test("a goal's flash leaves its row once played, so Só meus jogos turned off do
   expect(row.hidden).toBe(false);
   expect(celebration()).toEqual([null, null, null]);
 });
+
+test("a red card and an injury to the coach's side stop the round with a window of the assistant's substitutions, each one a switch", async () => {
+  const MINUTE = 4;
+  let sentOff = "";
+  let hurt = "";
+  const given = await onMatchDay((engine) => {
+    function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+    async function apply(command: GameCommand): Promise<unknown> {
+      const result = await engine.apply(command);
+      if (command.type !== "startRound" && command.type !== "changeLive") return result;
+      const round = result as CommandResults["startRound"];
+      const coach = round.coach;
+      const defender = coach?.squad.find((p) => coach.starters.includes(p.id) && p.group === "DEF");
+      const midfielder = coach?.squad.find((p) => coach.starters.includes(p.id) && p.group === "MID");
+      if (!coach || !defender || !midfielder) throw new Error("the coach starts a defender and a midfielder");
+      sentOff = defender.id;
+      hurt = midfielder.id;
+      const incidents = [
+        { type: "card", minute: MINUTE, clubId: "bahia-ba", playerId: defender.id, card: "red" },
+        { type: "injury", minute: MINUTE, clubId: "bahia-ba", playerId: midfielder.id, days: 18 },
+      ] as const;
+      const mine = (m: (typeof round.matches)[number]) => m.fixtureId === coach.fixtureId;
+      const matches = round.matches.map((m) => (mine(m) ? { ...m, events: [...incidents, ...m.events.filter((e) => e.minute !== MINUTE || e.type === "substitution")] } : m));
+      return { ...round, matches };
+    }
+    return { ...engine, apply };
+  });
+  const apply = vi.spyOn(given.engine, "apply");
+  await kickOff(given);
+  // A minute at a time, so the screen sees each minute the clock shows.
+  for (let minute = 0; minute < MINUTE + 2; minute++) play(1);
+
+  const window = await screen.findByRole("dialog", { name: /^Expulso:/ });
+  expect(shownMinute()).toBe(MINUTE);
+  expect(screen.getByRole("button", { name: "Pausar" })).toHaveProperty("ariaPressed", "true");
+  const round = await given.engine.liveRound();
+  const nameOf = (id: string) => round?.coach?.squad.find((p) => p.id === id)?.name ?? "";
+  expect(window.textContent).toContain(nameOf(sentOff));
+  expect(window.textContent).toContain(`${nameOf(hurt)} se machucou`);
+  expect(window.textContent).toContain("Fora de 2 a 3 semanas.");
+  const switches = within(window).getAllByRole("checkbox");
+  expect(switches).toHaveLength(2);
+  expect(within(window).getByRole("button", { name: "Fazer as 2 trocas" })).toBeTruthy();
+
+  await user().click(switches[0] as HTMLElement);
+  await user().click(within(window).getByRole("button", { name: "Fazer a troca" }));
+  await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  const sent = apply.mock.calls.flatMap(([command]) => (command.type === "changeLive" ? [command] : []));
+  expect(sent).toHaveLength(1);
+  expect(sent[0]).toMatchObject({ minute: MINUTE, change: { substitutions: [{ offId: hurt }] } });
+  expect(screen.getByRole("button", { name: "Pausar" })).toHaveProperty("ariaPressed", "false");
+});
+
+test("leaving the incident window as it is changes nothing and plays on", async () => {
+  const MINUTE = 3;
+  const given = await onMatchDay((engine) => {
+    function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+    async function apply(command: GameCommand): Promise<unknown> {
+      const result = await engine.apply(command);
+      if (command.type !== "startRound") return result;
+      const round = result as CommandResults["startRound"];
+      const coach = round.coach;
+      const forward = coach?.squad.find((p) => coach.starters.includes(p.id) && p.group === "ATT");
+      if (!coach || !forward) throw new Error("the coach starts a forward");
+      const injury = { type: "injury", minute: MINUTE, clubId: "bahia-ba", playerId: forward.id, days: 4 } as const;
+      return { ...round, matches: round.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [injury, ...m.events.filter((e) => e.minute !== MINUTE)] } : m)) };
+    }
+    return { ...engine, apply };
+  });
+  const apply = vi.spyOn(given.engine, "apply");
+  await kickOff(given);
+  // A minute at a time, so the screen sees each minute the clock shows.
+  for (let minute = 0; minute < MINUTE + 2; minute++) play(1);
+  const window = await screen.findByRole("dialog", { name: /^Machucou:/ });
+  expect(window.textContent).toContain("Fora de 4 dias.");
+  await user().click(within(window).getByRole("button", { name: "Deixar como está" }));
+  expect(screen.queryByRole("dialog")).toBeNull();
+  play(2);
+  expect(shownMinute()).toBeGreaterThan(MINUTE);
+  expect(apply.mock.calls.some(([command]) => command.type === "changeLive")).toBe(false);
+});

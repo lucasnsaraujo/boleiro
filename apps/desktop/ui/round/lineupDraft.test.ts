@@ -138,3 +138,9 @@ describe("during the match", () => {
     expect(liveChangeOf(openSheet(eleven, tactics), tactics)).toBeNull();
   });
 });
+
+test("each stoppage with substitutions uses one of the three, half-time none", () => {
+  const stopsAt = (events: MatchEvent[], minute: number) => liveLimits(coach, events, "bahia", minute).stopsLeft;
+  expect(stopsAt([], 10)).toBe(3);
+  expect(stopsAt([sub(45, "b2", "s5"), sub(60, "b3", "s9"), sub(60, "b4", "s10")], 70)).toBe(2);
+});
