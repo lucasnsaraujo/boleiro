@@ -22,8 +22,8 @@ function played(result: MatchResult, homeId = "bahia-ba", awayId = "vitoria-ba")
 }
 
 const ledger = (revenue: number, costs: number) => ({
-  revenue: { tickets: revenue, tv: 0, membership: 0, sponsorship: 0, otherIncome: 0, prizes: 0, playerSales: 0 },
-  costs: { wages: costs, transferFees: 0, signingFees: 0, agentFees: 0, infrastructure: 0, interest: 0, fines: 0 },
+  revenue: { tickets: revenue, tv: 0, membership: 0, sponsorship: 0, otherIncome: 0, prizes: 0, playerSales: 0, friendlies: 0 },
+  costs: { wages: costs, transferFees: 0, signingFees: 0, agentFees: 0, infrastructure: 0, interest: 0, fines: 0, friendlies: 0, bonuses: 0 },
 });
 
 describe("the coach's matches", () => {

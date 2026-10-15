@@ -25,6 +25,7 @@ const REVENUE_LABELS: Record<RevenueLine, string> = {
   otherIncome: "Outras receitas",
   prizes: "Prêmios",
   playerSales: "Venda de jogadores",
+  friendlies: "Cachês de amistosos",
 };
 
 const COST_LABELS: Record<CostLine, string> = {
@@ -35,6 +36,8 @@ const COST_LABELS: Record<CostLine, string> = {
   infrastructure: "Estrutura",
   interest: "Juros",
   fines: "Multas",
+  friendlies: "Cachês pagos",
+  bonuses: "Bichos",
 };
 
 function linesOf<L extends string>(lines: readonly L[], amounts: Record<L, number>, labels: Record<L, string>): StatementLine[] {
