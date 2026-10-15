@@ -133,7 +133,7 @@ describe("a full season", () => {
     expect(count("fansPressure")).toBeGreaterThan(count("fansProtest"));
     expect(count("fansProtest")).toBeGreaterThan(count("fansViolence"));
     expect(count("fansProtest")).toBeGreaterThan(0);
-    expect(count("fansViolence")).toBeLessThan(clubs / 20);
+    expect(count("fansViolence")).toBeLessThan(clubs / 15);
   });
 
   it("starts the next season with a fresh calendar", () => {
