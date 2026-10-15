@@ -1,8 +1,10 @@
 import type { Club } from "@boleiro/data/clubs";
+import type { PositionGroup } from "@boleiro/engine/engine/match";
 import type { Tactics } from "@boleiro/engine/sim/coach/tactics";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
 import type { Fixture, IsoDate } from "@boleiro/engine/sim/gameState";
 import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
+import { matchRatings, type PlayerRating } from "@boleiro/engine/sim/live/matchRatings";
 import type { MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import { fixtureLabel } from "../format/competitionName.js";
 import { squadOf, type SquadPlayer } from "./matchDayPlan.js";
@@ -28,6 +30,11 @@ export type CoachSide = {
   lastChangeMinute: number;
 };
 
+/** A player's 0–10 mark, with his position group for the screen to show. */
+export type RatedPlayer = PlayerRating & { group: PositionGroup };
+/** The mark of everyone who took part in the coach's match, as it stands after its last change. */
+export type MatchRatings = Record<Side, RatedPlayer[]>;
+
 /** A match day as the live round screen plays it back: every match's timeline and what the rows, the band and the table need. */
 export type LiveRound = {
   date: IsoDate;
@@ -39,6 +46,8 @@ export type LiveRound = {
   names: Record<string, string>;
   table: RoundTable | null;
   coach: CoachSide | null;
+  /** Marks for the coach's match, drawn from its whole timeline; the screen shows them only after the final whistle. */
+  ratings: MatchRatings | null;
   /** The furthest minute of the round the screen has shown; changes can only come from it on. */
   seenMinute: number;
 };
@@ -68,6 +77,22 @@ function coachSideOf(live: LiveDay, fixture: Fixture | undefined): CoachSide | n
     tactics: coachMatch.tactics,
     lastChangeMinute: coachMatch.lastChangeMinute,
   };
+}
+
+function ratingsOf(live: LiveDay, match: RoundMatch | undefined): MatchRatings | null {
+  const { coachMatch } = live;
+  if (!coachMatch || !match) return null;
+  const benches = [...coachMatch.bench, ...(coachMatch.opponentBench ?? [])];
+  const groups = new Map([...coachMatch.starters.home, ...coachMatch.starters.away, ...benches].map((p) => [p.id, p.group]));
+  const ratings = matchRatings(
+    {
+      home: { clubId: match.homeId, starters: coachMatch.starters.home, bench: benches },
+      away: { clubId: match.awayId, starters: coachMatch.starters.away, bench: benches },
+    },
+    match.events,
+  );
+  const withGroups = (rated: readonly PlayerRating[]) => rated.map((r) => ({ ...r, group: groups.get(r.playerId) ?? "MID" }));
+  return { home: withGroups(ratings.home), away: withGroups(ratings.away) };
 }
 
 /** The live round screen's view of a live day. */
@@ -120,6 +145,8 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
   }
   const coach = coachSideOf(live, coachFixture);
   for (const p of coach?.squad ?? []) names[p.id] = p.name;
+  const ratings = ratingsOf(live, matches.find((m) => m.fixtureId === live.coachMatch?.fixtureId));
+  for (const r of [...(ratings?.home ?? []), ...(ratings?.away ?? [])]) nameOf(r.playerId);
 
-  return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach, seenMinute };
+  return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach, ratings, seenMinute };
 }
