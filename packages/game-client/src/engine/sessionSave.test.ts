@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { EUROPE } from "@boleiro/engine/sim/world/europe";
 import { bundledGameFiles } from "./bundledGameFiles.js";
 import { createEngineSession } from "./createEngineSession.js";
 import { twoCountryGame } from "./twoCountryGame.js";
@@ -46,11 +47,11 @@ test("a live round keeps its day in a shard of its own, which the minutes shown 
   expect(Object.keys(session.saveShards()).sort()).toEqual(["game", "session"]);
 });
 
-test("a new game keeps each South American country in a shard of its own, next to the world's", () => {
+test("a new game keeps each South American and European country in a shard of its own, next to the world's", () => {
   const session = createEngineSession(bundledGameFiles);
   session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
-  const countries = ["ar", "bo", "cl", "co", "ec", "pe", "py", "uy", "ve"].map((id) => `country-${id}`);
-  expect(Object.keys(session.saveShards()).sort()).toEqual([...countries, "game", "session", "world"]);
+  const countries = ["ar", "bo", "cl", "co", "ec", "pe", "py", "uy", "ve", ...EUROPE.map((structure) => structure.id)].map((id) => `country-${id}`);
+  expect(Object.keys(session.saveShards()).sort()).toEqual([...countries, "game", "session", "world"].sort());
 });
 
 test("a world game saved in shards, again after days only one country played, loads back the same session", () => {
