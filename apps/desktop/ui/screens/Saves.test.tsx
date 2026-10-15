@@ -74,6 +74,66 @@ test("a picked save opens in the game, and the coach lands on his club", async (
   expect(given.game.current).toEqual({ slotId: "slot-1", coachName: "Abel" });
 });
 
+test("opening another save over a game with unsaved play asks first, and Descartar opens it", async () => {
+  const given = await services();
+  await saveToSlot(given.engine, given.slots, "slot-1", { slotId: "slot-1", coachName: "Abel" });
+  given.game.current = { slotId: "slot-2", coachName: "Tite", unsavedChanges: 1 };
+  openSaves(given);
+  await userEvent.click(await within(await slotsList()).findByRole("button", { name: /^Jogo 1 · Bahia/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Carregar este jogo" }));
+  const question = screen.getByRole("alertdialog", { name: "Salvar o jogo aberto?" });
+  expect(question.textContent).toContain("o que foi jogado desde o último save");
+  expect(given.game.current.slotId).toBe("slot-2");
+  await userEvent.click(within(question).getByRole("button", { name: "Descartar" }));
+  expect(await screen.findByText("Clube aberto")).toBeTruthy();
+  expect(given.game.current).toEqual({ slotId: "slot-1", coachName: "Abel" });
+});
+
+test("once Salvar agora has written the open game, opening another save asks nothing", async () => {
+  const given = await services();
+  await saveToSlot(given.engine, given.slots, "slot-1", { slotId: "slot-1", coachName: "Abel" });
+  given.game.current = { slotId: "slot-2", coachName: "Tite", unsavedChanges: 4 };
+  openSaves(given);
+  await userEvent.click(await screen.findByRole("button", { name: "Salvar agora" }));
+  await within(await slotsList()).findByRole("button", { name: /^Jogo 2 · Bahia/ });
+  await userEvent.click(within(await slotsList()).getByRole("button", { name: /^Jogo 1 · Bahia/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Carregar este jogo" }));
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(await screen.findByText("Clube aberto")).toBeTruthy();
+});
+
+test("Salvar e continuar writes the open game into its own slot before opening the other save", async () => {
+  const given = await services();
+  await saveToSlot(given.engine, given.slots, "slot-1", { slotId: "slot-1", coachName: "Abel" });
+  given.game.current = { slotId: "slot-2", coachName: "Tite", unsavedChanges: 1 };
+  openSaves(given);
+  await userEvent.click(await within(await slotsList()).findByRole("button", { name: /^Jogo 1 · Bahia/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Carregar este jogo" }));
+  await userEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Salvar e continuar" }));
+  expect(await screen.findByText("Clube aberto")).toBeTruthy();
+  expect((await given.slots.list()).map((meta) => [meta.id, meta.coachName])).toEqual(expect.arrayContaining([["slot-2", "Tite"]]));
+  expect(given.game.current).toEqual({ slotId: "slot-1", coachName: "Abel" });
+});
+
+test("Cancelar, or Escape, keeps the open game and hands focus back to Carregar este jogo", async () => {
+  const given = await services();
+  await saveToSlot(given.engine, given.slots, "slot-1", { slotId: "slot-1", coachName: "Abel" });
+  given.game.current = { slotId: "slot-2", coachName: "Tite", unsavedChanges: 1 };
+  openSaves(given);
+  await userEvent.click(await within(await slotsList()).findByRole("button", { name: /^Jogo 1 · Bahia/ }));
+  const load = screen.getByRole("button", { name: "Carregar este jogo" });
+  await userEvent.click(load);
+  await userEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Cancelar" }));
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(document.activeElement).toBe(load);
+  await userEvent.click(load);
+  expect(document.activeElement).toBe(screen.getByRole("heading", { name: "Salvar o jogo aberto?" }));
+  await userEvent.keyboard("{Escape}");
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(given.game.current.slotId).toBe("slot-2");
+  expect(await given.slots.list()).toHaveLength(1);
+});
+
 test("a save is deleted only after the coach confirms it", async () => {
   const given = await services();
   await saveToSlot(given.engine, given.slots, "slot-3", { slotId: "slot-3", coachName: "Tite" });

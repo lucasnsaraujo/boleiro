@@ -4,6 +4,7 @@ import { formatBarDate, formatDayMonth } from "@boleiro/game-client/format/forma
 import { loadFromSlot, saveToSlot } from "@boleiro/game-client/saves/saveToSlot";
 import { AUTOSAVE_SLOT_ID, GAME_SLOT_IDS, slotLabel, type SlotMeta } from "@boleiro/game-client/saves/slotMeta";
 import { useCommands } from "../app/AppCommands.js";
+import { useAskBeforeDiscarding } from "../app/useAskBeforeDiscarding.js";
 import { useGameClock } from "../app/gameClock.js";
 import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
@@ -34,6 +35,7 @@ export function Saves() {
   const [busy, setBusy] = useState<"saving" | "opening" | "removing" | null>(null);
   const [isConfirming, setConfirming] = useState(false);
   const slotList = useRef<HTMLUListElement>(null);
+  const { askBeforeDiscarding, question } = useAskBeforeDiscarding();
 
   const refresh = useCallback(
     (isCurrent: () => boolean = () => true) =>
@@ -194,7 +196,7 @@ export function Saves() {
             isBusy={busy !== null}
             isOpen={opened !== null && (picked.id === opened.slotId || (picked.id === AUTOSAVE_SLOT_ID && picked.gameSlotId === opened.slotId))}
             isConfirming={isConfirming}
-            onOpen={() => void open(picked)}
+            onOpen={() => askBeforeDiscarding(() => void open(picked))}
             onAsk={() => setConfirming(true)}
             onCancel={() => setConfirming(false)}
             onRemove={() => void remove(picked)}
@@ -203,6 +205,7 @@ export function Saves() {
           <p className="saves-none">{list.kind === "loading" ? "Lendo os jogos salvos…" : "Nenhum jogo salvo ainda."}</p>
         )}
       </aside>
+      {question}
     </div>
   );
 }

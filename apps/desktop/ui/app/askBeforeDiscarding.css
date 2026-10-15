@@ -1,0 +1,86 @@
+.discard-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  background: var(--veil);
+  animation: discard-veil-in var(--t-base) var(--e-out) both;
+}
+
+.discard {
+  position: relative;
+  width: min(500px, calc(100% - 80px));
+  padding: 30px 30px 22px;
+  border-radius: var(--r-m);
+  box-shadow: var(--sh-pop);
+  animation: discard-rise var(--t-slow) var(--e-out) both;
+}
+
+.discard-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 14px;
+  border-radius: 50%;
+  background: var(--yellow);
+  color: var(--on-yellow);
+  font-size: 22px;
+  transform: rotate(-8deg);
+}
+
+.discard h2 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+.discard h2:focus {
+  outline: none;
+}
+
+.discard p {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.discard-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.discard-acts .btn.flat {
+  margin-left: auto;
+}
+
+.discard .discard-where {
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+@keyframes discard-veil-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes discard-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .discard {
+    animation-name: discard-veil-in;
+  }
+}

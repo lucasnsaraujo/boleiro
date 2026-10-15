@@ -483,6 +483,12 @@
   background: var(--yellow-l);
 }
 
+/* The album's yellow ring, drawn inside the row so the scrolling squad page doesn't cut it. */
+.hub-table tbody tr:focus-visible {
+  outline-offset: -3px;
+  border-radius: 0;
+}
+
 /* In a narrow window a long name gives way first, cut with an ellipsis, and keeps its flags in view. */
 .hub-table .sq-name {
   display: flex;

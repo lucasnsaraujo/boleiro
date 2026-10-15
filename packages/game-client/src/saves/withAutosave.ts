@@ -10,28 +10,32 @@ import type { SlotStore } from "./slotStore.js";
 // every minute. Leaving mid-match then rewinds at most this far, and changes still can't go back before the minute saved.
 const LIVE_SAVE_EVERY_MINUTES = 15;
 
-/** Whether the game a command left behind is worth writing to the autosave slot. */
-const IS_SAVED_AFTER: { [T in CommandType]: (command: GameCommand<T>, result: CommandResults[T]) => boolean } = {
-  newGame: () => false,
-  load: () => false,
-  advance: ({ days }, { events }) => days.some((day) => day.acceptOffer !== undefined) || events.some((event) => event.type === "matchPlayed"),
+/** What the game a command left behind asks of the autosave: a write now, none though it moved on, or none since it did not. */
+type Outcome = "autosave" | "changed" | "unchanged";
+
+const OUTCOME_OF: { [T in CommandType]: (command: GameCommand<T>, result: CommandResults[T]) => Outcome } = {
+  // A new or loaded game takes the open one's place; whoever opens it on the screens starts it afresh, saved in its slot.
+  newGame: () => "unchanged",
+  load: () => "unchanged",
+  advance: ({ days }, { events }) => (days.some((day) => day.acceptOffer !== undefined) || events.some((event) => event.type === "matchPlayed") ? "autosave" : "changed"),
   // Days that stop for a job offer or the window may have no match anywhere; they still move the game on.
-  playToMatchDay: (_command, { daysPlayed }) => daysPlayed > 0,
-  startRound: () => true,
-  seeMinute: ({ minute }) => minute % LIVE_SAVE_EVERY_MINUTES === 0,
-  changeLive: () => true,
-  finishRound: () => true,
-  closeTurningPoint: () => true,
-  declineOffer: () => true,
-  ask: () => true,
-  withdraw: () => true,
+  playToMatchDay: (_command, { daysPlayed }) => (daysPlayed > 0 ? "autosave" : "unchanged"),
+  startRound: () => "autosave",
+  seeMinute: ({ minute }) => (minute % LIVE_SAVE_EVERY_MINUTES === 0 ? "autosave" : "changed"),
+  changeLive: () => "autosave",
+  finishRound: () => "autosave",
+  closeTurningPoint: () => "autosave",
+  declineOffer: () => "autosave",
+  ask: () => "autosave",
+  withdraw: () => "autosave",
 };
 
 /**
  * The engine, writing the autosave slot after every advance that played a round of matches or signed an offer, every
  * play-on that moved the game, every kick-off and live change of a live round and every quarter of an hour shown of
  * it, every live round's final whistle, every offer turned down, every request asked or withdrawn, and every turning point closed. Autosaves go one
- * at a time; those asked for while one is under way become a single save of the latest game.
+ * at a time; those asked for while one is under way become a single save of the latest game. Every change, autosaved
+ * or not, counts in the open game's unsaved changes.
  */
 export function withAutosave(engine: EngineClient, slots: SlotStore, game: CurrentGameRef): EngineClient {
   let lastSave: Promise<void> = Promise.resolve();
@@ -54,7 +58,10 @@ export function withAutosave(engine: EngineClient, slots: SlotStore, game: Curre
     ...engine,
     async apply(command) {
       const result = await engine.apply(command);
-      if (IS_SAVED_AFTER[command.type](command, result)) await autosave();
+      const outcome = OUTCOME_OF[command.type](command, result);
+      const open = game.current;
+      if (open && outcome !== "unchanged") open.unsavedChanges = (open.unsavedChanges ?? 0) + 1;
+      if (outcome === "autosave") await autosave();
       return result;
     },
   };

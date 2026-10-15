@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider } from "react-router";
@@ -125,4 +125,66 @@ test("deleting a slot asks first, and only a confirmed delete removes it", async
   await userEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Apagar" }));
   await screen.findByText("Nenhum jogo salvo.");
   expect(await given.slots.list()).toEqual([]);
+});
+
+test("over a game with unsaved play, Continuar, a career, a listed save and Novo jogo all ask before throwing it away", async () => {
+  const given = services();
+  await saveGame(given, "slot-1", "bahia-ba", "Renato", "2026-10-01T12:00:00Z");
+  await saveGame(given, "slot-2", "vitoria-ba", "Tite", "2026-10-09T12:00:00Z");
+  given.game.current = { slotId: "slot-3", coachName: "Abel", unsavedChanges: 1 };
+  openStartMenu(given);
+  const cancel = async () => {
+    const question = screen.getByRole("alertdialog", { name: "Salvar o jogo aberto?" });
+    await userEvent.click(within(question).getByRole("button", { name: "Cancelar" }));
+  };
+  await userEvent.click(await screen.findByRole("button", { name: "Continuar" }));
+  await cancel();
+  await userEvent.click(screen.getByRole("button", { name: /Bahia.*Jogo 1/ }));
+  await cancel();
+  await userEvent.click(screen.getByRole("link", { name: "Novo jogo" }));
+  await cancel();
+  await userEvent.click(screen.getByRole("button", { name: "Carregar jogo" }));
+  await userEvent.click(within(screen.getByRole("dialog", { name: "Jogos salvos" })).getByRole("button", { name: /^Bahia/ }));
+  await cancel();
+  expect(given.game.current).toEqual({ slotId: "slot-3", coachName: "Abel", unsavedChanges: 1 });
+  expect(screen.queryByText("Clube aberto")).toBeNull();
+  expect(screen.queryByText("Novo jogo aberto")).toBeNull();
+
+  await userEvent.click(within(screen.getByRole("dialog", { name: "Jogos salvos" })).getByRole("button", { name: /^Bahia/ }));
+  await userEvent.click(within(screen.getByRole("alertdialog", { name: "Salvar o jogo aberto?" })).getByRole("button", { name: "Descartar" }));
+  await screen.findByText("Clube aberto");
+  expect(given.game.current).toEqual({ slotId: "slot-1", coachName: "Renato" });
+});
+
+test("Novo jogo, once the coach drops the unsaved play, goes on to the new game", async () => {
+  const given = services();
+  given.game.current = { slotId: "slot-3", coachName: "Abel", unsavedChanges: 1 };
+  openStartMenu(given);
+  await userEvent.click(await screen.findByRole("link", { name: "Novo jogo" }));
+  await userEvent.click(within(screen.getByRole("alertdialog", { name: "Salvar o jogo aberto?" })).getByRole("button", { name: "Descartar" }));
+  expect(await screen.findByText("Novo jogo aberto")).toBeTruthy();
+});
+
+test("after a delete is confirmed, focus stays in the saves sheet instead of falling off the page", async () => {
+  const given = services();
+  await saveGame(given, "slot-1", "bahia-ba", "Renato", "2026-10-01T12:00:00Z");
+  await saveGame(given, "slot-2", "vitoria-ba", "Tite", "2026-10-09T12:00:00Z");
+  openStartMenu(given);
+  await userEvent.click(await screen.findByRole("button", { name: "Carregar jogo" }));
+  await userEvent.click(screen.getByRole("button", { name: "Apagar Jogo 1" }));
+  await userEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Apagar" }));
+  await waitFor(() => expect(screen.queryByRole("button", { name: "Apagar Jogo 1" })).toBeNull());
+  expect(document.activeElement).toBe(screen.getByRole("heading", { name: "Jogos salvos" }));
+});
+
+test("deleting the last save closes the sheet and leaves focus on Novo jogo, the one way on", async () => {
+  const given = services();
+  await saveGame(given, "slot-1", "bahia-ba", "Renato", "2026-10-01T12:00:00Z");
+  openStartMenu(given);
+  await userEvent.click(await screen.findByRole("button", { name: "Carregar jogo" }));
+  await userEvent.click(screen.getByRole("button", { name: "Apagar Jogo 1" }));
+  await userEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Apagar" }));
+  await screen.findByText("Nenhum jogo salvo.");
+  expect(screen.queryByRole("dialog", { name: "Jogos salvos" })).toBeNull();
+  expect(document.activeElement).toBe(screen.getByRole("link", { name: "Novo jogo" }));
 });

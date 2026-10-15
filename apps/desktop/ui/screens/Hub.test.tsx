@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider, type RouteObject } from "react-router";
@@ -126,6 +126,15 @@ test("the paper opens and closes from the dock", async () => {
   expect(screen.queryByText("Nada de novo por enquanto.")).toBeNull();
 });
 
+test("the open paper is a dialog named Jornal that takes focus and closes on Escape", async () => {
+  openHub(await services("bahia-ba"));
+  await userEvent.click(await screen.findByRole("button", { name: /^Jornal/ }));
+  const paper = screen.getByRole("dialog", { name: "Jornal" });
+  expect(document.activeElement).toBe(within(paper).getByRole("heading", { name: "Jornal" }));
+  await userEvent.keyboard("{Escape}");
+  expect(screen.queryByRole("dialog", { name: "Jornal" })).toBeNull();
+});
+
 test("a coach without a club waits for offers instead of playing a round", async () => {
   openHub(await services(null));
   expect(await screen.findByRole("heading", { name: "Sem clube" })).toBeTruthy();
@@ -212,6 +221,35 @@ test("the strongest player is on the sticker at first, and a click on a row puts
   const otherName = within(other).getByRole("link").textContent ?? "";
   expect(await screen.findByRole("region", { name: `Jogador: ${otherName}` })).toBeTruthy();
   expect(other.getAttribute("aria-current")).toBe("true");
+});
+
+test("the squad takes the keyboard: Tab stops on the picked row, the arrows move the pick, Enter and Space pick the focused row", async () => {
+  openHub(await services("bahia-ba"));
+  const table = await squadTable();
+  const rows = within(table).getAllByRole("row").slice(1);
+  const nameOf = (row: HTMLElement | undefined) => (row ? (within(row).getByRole("link").textContent ?? "") : "");
+  const picked = rows.find((row) => row.getAttribute("aria-current") === "true");
+  expect(rows.filter((row) => row.tabIndex === 0)).toEqual([picked]);
+
+  rows[0]?.focus();
+  await userEvent.keyboard("{Enter}");
+  expect(rows[0]?.getAttribute("aria-current")).toBe("true");
+  await userEvent.keyboard("{ArrowDown}");
+  expect(document.activeElement).toBe(rows[1]);
+  expect(rows[1]?.getAttribute("aria-current")).toBe("true");
+  expect(await screen.findByRole("region", { name: `Jogador: ${nameOf(rows[1])}` })).toBeTruthy();
+  expect(rows.filter((row) => row.tabIndex === 0)).toEqual([rows[1]]);
+  await userEvent.keyboard("{End}");
+  expect(document.activeElement).toBe(rows.at(-1));
+  await userEvent.keyboard("{ArrowDown}");
+  expect(document.activeElement).toBe(rows.at(-1));
+  await userEvent.keyboard("{Home}{ArrowUp}");
+  expect(document.activeElement).toBe(rows[0]);
+  expect(rows[0]?.getAttribute("aria-current")).toBe("true");
+
+  rows[2]?.focus();
+  expect(fireEvent.keyDown(rows[2] ?? table, { key: " " })).toBe(false);
+  expect(rows[2]?.getAttribute("aria-current")).toBe("true");
 });
 
 test("a player's name opens his screen, where the coach can ask to renew or sell him, and Voltar comes back to the hub", async () => {

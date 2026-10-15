@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { Link, useNavigate } from "react-router";
 import type { Club } from "@boleiro/data/clubs";
 import { formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
@@ -9,6 +9,7 @@ import icon from "../../../../design/logo/boleiro-icon-16.svg";
 import tauriConfig from "../../src-tauri/tauri.conf.json?raw";
 import { platformOf } from "../app/platform.js";
 import { useServices } from "../app/ServicesContext.js";
+import { useAskBeforeDiscarding } from "../app/useAskBeforeDiscarding.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { CLUBS, clubById } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
@@ -65,13 +66,19 @@ export function StartMenu() {
   const [opening, setOpening] = useState<string | null>(null);
   const [openFailed, setOpenFailed] = useState(false);
   const [isLoading, setLoading] = useState(false);
+  const { askBeforeDiscarding, question } = useAskBeforeDiscarding();
   const now = new Date();
+  // The saves sheet hands focus back to Carregar jogo, unless its last save went and took that button's use with it.
+  const fresh = useRef<HTMLAnchorElement>(null);
+  const afterSheet = useRef<HTMLElement | null>(null);
 
   async function refresh() {
     try {
       const list = await slots.list();
       setSaved({ kind: "ready", slots: list });
-      if (list.length === 0) setLoading(false);
+      if (list.length > 0) return;
+      afterSheet.current = fresh.current;
+      setLoading(false);
     } catch {
       setSaved({ kind: "failed" });
     }
@@ -88,7 +95,7 @@ export function StartMenu() {
     };
   }, [slots]);
 
-  async function open(meta: SlotMeta) {
+  async function load(meta: SlotMeta) {
     setOpening(meta.id);
     setOpenFailed(false);
     try {
@@ -100,6 +107,8 @@ export function StartMenu() {
       setOpening(null);
     }
   }
+
+  const open = (meta: SlotMeta) => askBeforeDiscarding(() => void load(meta));
 
   const list = saved.kind === "ready" ? saved.slots : [];
   const latest = list[0] ?? null;
@@ -151,7 +160,7 @@ export function StartMenu() {
                     </span>
                   </p>
                 </div>
-                <button className="btn go lobby-go" onClick={() => void open(latest)} disabled={opening !== null}>
+                <button className="btn go lobby-go" onClick={() => open(latest)} disabled={opening !== null}>
                   <i className="ph-fill ph-play" aria-hidden="true" />
                   {opening === latest.id ? "Abrindo…" : "Continuar"}
                 </button>
@@ -169,7 +178,7 @@ export function StartMenu() {
                   const club = clubOf(meta);
                   return (
                     <li key={meta.id}>
-                      <button className="lobby-row" onClick={() => void open(meta)} disabled={opening !== null}>
+                      <button className="lobby-row" onClick={() => open(meta)} disabled={opening !== null}>
                         <span className="lobby-row-crest">{club && <Crest club={club} size={28} />}</span>
                         <span>
                           <b>{club?.shortName ?? "Sem clube"}</b> <span className="mute">· {meta.coachName}</span>
@@ -194,7 +203,16 @@ export function StartMenu() {
           )}
           {openFailed && <p className="status error">Esse jogo salvo não abriu.</p>}
 
-          <Link to="/new-game" className={latest ? "slot lobby-fresh" : "slot lobby-fresh is-first"} aria-labelledby="fresh-title">
+          <Link
+            ref={fresh}
+            to="/new-game"
+            className={latest ? "slot lobby-fresh" : "slot lobby-fresh is-first"}
+            aria-labelledby="fresh-title"
+            onClick={(event) => {
+              event.preventDefault();
+              askBeforeDiscarding(() => navigate("/new-game"));
+            }}
+          >
             <span className="lobby-plus" aria-hidden="true">
               <i className="ph-bold ph-plus" />
             </span>
@@ -208,7 +226,14 @@ export function StartMenu() {
           </Link>
 
           <footer className="lobby-acts">
-            <button className="btn" onClick={() => setLoading(true)} disabled={list.length === 0}>
+            <button
+              className="btn"
+              onClick={() => {
+                afterSheet.current = null;
+                setLoading(true);
+              }}
+              disabled={list.length === 0}
+            >
               <i className="ph-bold ph-folder-open" aria-hidden="true" />
               Carregar jogo
             </button>
@@ -225,7 +250,8 @@ export function StartMenu() {
           </footer>
         </div>
       </div>
-      {isLoading && <SavedGames list={list} opening={opening} onOpen={(meta) => void open(meta)} onChanged={() => void refresh()} onClose={() => setLoading(false)} />}
+      {isLoading && <SavedGames list={list} opening={opening} onOpen={open} onChanged={() => void refresh()} onClose={() => setLoading(false)} returnTo={afterSheet} />}
+      {question}
     </div>
   );
 }
@@ -264,19 +290,29 @@ type SavedGamesProps = {
   onOpen: (meta: SlotMeta) => void;
   onChanged: () => void;
   onClose: () => void;
+  /** Where focus goes when the sheet closes, when not back to Carregar jogo. */
+  returnTo: RefObject<HTMLElement | null>;
 };
 
 /** Every save, autosave included, to open or delete; the saves screen will take its place. */
-function SavedGames({ list, opening, onOpen, onChanged, onClose }: SavedGamesProps) {
+function SavedGames({ list, opening, onOpen, onChanged, onClose, returnTo }: SavedGamesProps) {
   const { slots } = useServices();
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteFailed, setDeleteFailed] = useState(false);
-  // The sheet takes focus once, when it opens, and hands it back to Carregar jogo when it closes.
-  const title = useDialogFocus<HTMLHeadingElement>(true);
-  const confirmTitle = useDialogFocus<HTMLParagraphElement>(deleting !== null);
+  // The sheet takes focus once, when it opens, and hands it back when it closes.
+  const title = useDialogFocus<HTMLHeadingElement>(true, { returnTo });
+  // A cancelled delete hands focus back to its bin; a confirmed one takes the bin away with the save, so focus goes to the sheet's title.
+  const afterConfirm = useRef<HTMLElement | null>(null);
+  const confirmTitle = useDialogFocus<HTMLParagraphElement>(deleting !== null, { returnTo: afterConfirm });
   const now = new Date();
 
+  function askToDelete(id: string) {
+    afterConfirm.current = null;
+    setDeleting(id);
+  }
+
   async function remove(id: string) {
+    afterConfirm.current = title.current;
     setDeleting(null);
     setDeleteFailed(false);
     try {
@@ -324,7 +360,7 @@ function SavedGames({ list, opening, onOpen, onChanged, onClose }: SavedGamesPro
                     <small>salvo {savedWhen(meta.savedAt, now)}</small>
                   </span>
                 </button>
-                <button className="lobby-save-delete" aria-label={`Apagar ${label}`} title={`Apagar ${label}`} onClick={() => setDeleting(meta.id)}>
+                <button className="lobby-save-delete" aria-label={`Apagar ${label}`} title={`Apagar ${label}`} onClick={() => askToDelete(meta.id)}>
                   <i className="ph-bold ph-trash" aria-hidden="true" />
                 </button>
                 {deleting === meta.id && (

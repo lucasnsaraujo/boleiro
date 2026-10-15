@@ -11,12 +11,13 @@ import { musicFor, useSound } from "../sound/SoundProvider.js";
 import { useTheme } from "../theme/ThemeProvider.js";
 import { useCommands, useIsCommandAnswered, useRunCommand } from "./AppCommands.js";
 import { GameClockContext } from "./gameClock.js";
-import { installNativeMenu } from "./nativeMenu.js";
+import { installNativeMenu, MENU } from "./nativeMenu.js";
 import { hasMica, platformOf, windowChrome, windowsVersion } from "./platform.js";
 import { screenDirection } from "./screenDirection.js";
 import { NAV, navIndexOf, showsBar, type NavId } from "./screens.js";
 import { useServices } from "./ServicesContext.js";
-import { commandForKey, MATCH_COMMAND_IDS } from "./shortcuts.js";
+import { commandForKey, MATCH_COMMAND_IDS, type CommandId } from "./shortcuts.js";
+import { useAskBeforeDiscarding } from "./useAskBeforeDiscarding.js";
 import { isTyping } from "./useTypedWord.js";
 import "./shell.css";
 
@@ -28,6 +29,14 @@ const CHROME = windowChrome(PLATFORM, isTauri(), import.meta.env.DEV ? location.
 const TOAST_MS = 2600;
 // The menu bar belongs to the app, not to a screen: it is built once, the first time the shell mounts.
 let hasNativeMenu = false;
+
+/** Whether a dialog is up (a confirm, a sheet, the newspaper): the game's shortcuts wait until it closes, Escape closes it. */
+function isDialogOpen(): boolean {
+  return document.querySelector('[role="dialog"], [role="alertdialog"]') !== null;
+}
+
+// On a Mac the menu's key equivalents take the F-keys and Command-S before the page sees them; clicked, entries without one still run under a dialog.
+const MENU_SHORTCUT_IDS: ReadonlySet<CommandId> = new Set(MENU.flatMap(({ entries }) => entries.flatMap((entry) => ("command" in entry && entry.accelerator ? [entry.command] : []))));
 
 function windowTitle(pathname: string, clock: Clock | null): string {
   if (pathname === "/new-game") return "Boleiro · Nova carreira";
@@ -43,6 +52,7 @@ export function Shell() {
   const { changeSetting } = useTheme();
   const runCommand = useRunCommand();
   const isCommandAnswered = useIsCommandAnswered();
+  const { askBeforeDiscarding, question } = useAskBeforeDiscarding();
   useEffect(() => sound.playMusic(musicFor(pathname)), [sound, pathname]);
   const hasBar = showsBar(pathname, game.current !== null);
 
@@ -93,7 +103,7 @@ export function Shell() {
   useEffect(() => {
     if (hasNativeMenu || !isTauri() || PLATFORM !== "mac") return;
     hasNativeMenu = true;
-    void installNativeMenu((id) => void runCommand(id));
+    void installNativeMenu((id) => (MENU_SHORTCUT_IDS.has(id) && isDialogOpen()) || runCommand(id));
   }, [runCommand]);
 
   const [toast, setToast] = useState<Toast | null>(null);
@@ -120,7 +130,7 @@ export function Shell() {
   useCommands({
     ...Object.fromEntries(NAV.map(({ id, path }) => [id, path !== null && (hasBar || (id === "opcoes" && isLeavable)) && (() => navigate(path))])),
     inicio: isLeavable && (() => navigate("/")),
-    novoJogo: isLeavable && (() => navigate("/new-game")),
+    novoJogo: isLeavable && (() => askBeforeDiscarding(() => navigate("/new-game"))),
     salvar: hasBar && (() => void save()),
     mudo: () => changeSettings({ ...settings, isMuted: !settings.isMuted }),
     temaClaro: () => changeSetting("light"),
@@ -145,6 +155,10 @@ export function Shell() {
       if (!command || event.defaultPrevented || (event.key.length === 1 && !event.metaKey && !event.ctrlKey && isTyping(event.target))) return;
       if (event.key === " " && event.target === tabbedTo) return;
       const isMatchKey = MATCH_COMMAND_IDS.some((id) => id === command);
+      if (isDialogOpen()) {
+        if (!isMatchKey) event.preventDefault();
+        return;
+      }
       // Holding a match key runs it once, but its repeats stay off the page too: Space would press the focused button on release and scroll the board.
       if (isMatchKey && event.repeat) {
         if (isCommandAnswered(command)) event.preventDefault();
@@ -188,6 +202,7 @@ export function Shell() {
           <Outlet />
         </main>
         {chrome === "windows" && <CaptionButtons />}
+        {question}
         {toast && (
           <p key={toast.id} className={toast.isError ? "toast stk error" : "toast stk"} role="status">
             <i className={toast.isError ? "ph-bold ph-warning" : "ph-bold ph-floppy-disk"} aria-hidden="true" />

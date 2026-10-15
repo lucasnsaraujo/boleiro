@@ -143,6 +143,14 @@ test("a failed autosave still returns the round that was played", async () => {
   expect(events.some((event) => event.type === "matchPlayed")).toBe(true);
 });
 
+test("playing on when already on the match day adds no unsaved play", async () => {
+  const { engine, game } = await startGame();
+  await engine.apply({ type: "playToMatchDay" });
+  const unsaved = game.current?.unsavedChanges;
+  await engine.apply({ type: "playToMatchDay" });
+  expect(game.current?.unsavedChanges).toBe(unsaved);
+});
+
 test("with no game open on the screens nothing is autosaved", async () => {
   const { engine, slots, game, daysToFirstMatch } = await startGame();
   game.current = null;
@@ -232,4 +240,14 @@ test("an autosave of a world game writes the game and the countries that played,
   closers.push(closeReloaded);
   await reloaded.apply({ type: "load", save: await slots.read(AUTOSAVE_SLOT_ID) });
   expect(JSON.parse(await reloaded.save())).toEqual(JSON.parse(await engine.save()));
+});
+
+test("every change counts as unsaved play, autosaved or not, since the next game's autosave takes the same slot", async () => {
+  const { engine, slots, game, daysToFirstMatch } = await startGame();
+  expect(game.current?.unsavedChanges ?? 0).toBe(0);
+  await engine.apply({ type: "advance", days: [{}] });
+  expect(game.current?.unsavedChanges).toBe(1);
+  await engine.apply({ type: "advance", days: Array.from({ length: daysToFirstMatch }, () => ({})) });
+  expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID }]);
+  expect(game.current?.unsavedChanges).toBe(2);
 });
