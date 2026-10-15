@@ -133,7 +133,12 @@ export type ClubFinance = {
   stadiumWorks?: StadiumWorks;
   /** The coach's club's last home games, newest last; saves from before kept none. */
   homeGates?: HomeGate[];
+  /** The coach's fixed-term bank loan, if one is running; saves from before bank loans have none. */
+  bankLoan?: BankLoan;
 };
+
+/** A bank loan repaid in fixed monthly instalments at the monthly closing; `balance` is what is still owed. */
+export type BankLoan = { amount: number; balance: number; monthlyRate: number; instalment: number; instalmentsLeft: number; takenOn: IsoDate };
 
 /** Seats under construction, paid for in monthly instalments booked as infrastructure. */
 export type StadiumWorks = { seats: number; cost: number; paid: number; startedOn: IsoDate; opensOn: IsoDate };
