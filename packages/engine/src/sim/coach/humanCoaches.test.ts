@@ -8,7 +8,7 @@ import { humanClubIds, isHumanClub, passTheSeat, waitingCoachesOf } from "./huma
 
 const FIRST = "flamengo-rj";
 const SECOND = "palmeiras-sp";
-const twoCoaches = loadNewGame(5, { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }] } });
+const twoCoaches = loadNewGame(6, { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }] } });
 
 function advanceUntil(state: GameState, isDone: (state: GameState) => boolean): GameState {
   let current = state;
@@ -28,7 +28,7 @@ function weakestEleven(state: GameState, clubId: string): string[] {
 
 describe("hot-seat coaches", () => {
   it("leaves a one-coach game without waiting coaches, and passing the seat changes nothing", () => {
-    const alone = loadNewGame(5, { coachClubId: FIRST });
+    const alone = loadNewGame(6, { coachClubId: FIRST });
     expect(alone.waitingCoaches).toBeUndefined();
     expect(passTheSeat(alone)).toBe(alone);
     expect(humanClubIds(alone)).toEqual([FIRST]);
@@ -44,7 +44,7 @@ describe("hot-seat coaches", () => {
   });
 
   it("refuses two coaches at one club", () => {
-    expect(() => loadNewGame(5, { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: FIRST }] } })).toThrow();
+    expect(() => loadNewGame(6, { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: FIRST }] } })).toThrow();
   });
 
   it("passes the seat in turn order and comes back to the first coach as he left it", () => {
@@ -117,7 +117,7 @@ describe("hot-seat coaches", () => {
   });
 
   it("reviews a waiting coach at the turn of the year on the season just ended, not on the new board's target", () => {
-    let state = loadNewGame(2, { coachClubId: "bahia-ba", hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "cruzeiro-mg" }] } });
+    let state = loadNewGame(4, { coachClubId: "bahia-ba", hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "cruzeiro-mg" }] } });
     while (state.season === 2026) state = advanceDay(state, {}).state;
     const table = state.history.seasons.find((season) => season.season === 2026)?.tables.A ?? [];
     const [review] = waitingCoachesOf(state)[0]?.record.seasons ?? [];
