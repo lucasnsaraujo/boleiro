@@ -531,6 +531,38 @@
 .std-opts {
   display: flex;
   flex-direction: column;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+/* The fieldset's name for screen readers; the heading above already says it on screen. */
+.std-legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Each option's radio stays a real, keyboard-driven input; the card around it shows the choice. */
+.std-opt input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.std-opt {
+  position: relative;
+  cursor: pointer;
+}
+
+.std-error {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--red);
 }
 
 .std-opt {
@@ -550,7 +582,7 @@
   background: var(--yellow-l);
 }
 
-.std-opt:focus-visible {
+.std-opt:has(input:focus-visible) {
   outline: 3px solid var(--yellow);
   outline-offset: 2px;
 }

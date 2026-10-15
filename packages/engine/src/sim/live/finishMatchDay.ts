@@ -11,6 +11,7 @@ import { endSeason } from "../endSeason.js";
 import { closeMonth } from "../finances/closeMonth.js";
 import { payCopaPrizes } from "../finances/payCopaPrizes.js";
 import { recordMatchFinances } from "../finances/recordMatchFinances.js";
+import { releaseTicketPrice } from "../finances/setTicketPrice.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { closeSeasonHistory } from "../history/closeSeasonHistory.js";
 import { recordStrengths } from "../history/recordStrengths.js";
@@ -151,5 +152,5 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   }
   const market = runTransferDay(next, decisions.requests ?? []);
   events.push(...market.events);
-  return { state: recordDayEvents(market.state, events, state), events };
+  return { state: recordDayEvents(releaseTicketPrice(market.state, state.coachClubId), events, state), events };
 }

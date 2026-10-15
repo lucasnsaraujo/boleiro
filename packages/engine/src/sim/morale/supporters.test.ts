@@ -114,8 +114,9 @@ describe("organised supporters", () => {
     }
   });
 
+  const repeatDays = Array.from({ length: 160 }, (_, seed) => advanceDay(losing({ fans: 10, supporters: "violence" }, seed), {}).events);
+
   it("punish a repeat offender harder: up to R$ 198,000 or three to eight home games", () => {
-    const repeatDays = Array.from({ length: 160 }, (_, seed) => advanceDay(losing({ fans: 10, supporters: "violence" }, seed), {}).events);
     const fines = repeatDays.flatMap((events) => ofType(events, "fansViolence").filter((e) => e.fine > 0).map((e) => e.fine));
     const games = repeatDays.flatMap((events) => ofType(events, "closedDoors").map((e) => e.games));
     expect(Math.max(...fines)).toBeGreaterThan(100_000);
@@ -150,6 +151,10 @@ describe("crowd trouble after a derby defeat", () => {
     expect(defeats.length).toBeGreaterThan(200);
     expect(troubled.length).toBeGreaterThan(0);
     expect(troubled.length).toBeLessThan(defeats.length / 10);
+  });
+
+  it("punishes the club but leaves its happy supporters' step as it was", () => {
+    for (const { state } of troubled) expect(clubMood(state, host).supporters).toBe("calm");
   });
 
   it("never follows a derby the club didn't lose", () => {

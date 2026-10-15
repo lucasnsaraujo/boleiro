@@ -4,7 +4,7 @@ import { addDays } from "../dates.js";
 import type { GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
-import { requestStadiumWorks, worksQuote } from "./stadiumWorks.js";
+import { requestStadiumWorks, withNewSeats, worksQuote } from "./stadiumWorks.js";
 
 const CLUB = "santos-sp";
 const start = loadNewGame(5, { coachClubId: CLUB });
@@ -71,6 +71,11 @@ describe("a stadium expansion asked of the board", () => {
     expect(requestStadiumWorks(rich, 200_000).answer).toMatchObject({ approved: false, reason: "capacity" });
   });
 
+  it("is refused on a ground the club shares with another", () => {
+    const flamengo = loadNewGame(5, { coachClubId: "flamengo-rj" });
+    expect(requestStadiumWorks(flamengo, 2_000).answer).toMatchObject({ approved: false, reason: "shared" });
+  });
+
   it("refuses seat counts that aren't a positive whole number", () => {
     expect(() => requestStadiumWorks(rich, 0)).toThrow();
     expect(() => requestStadiumWorks(rich, 10.5)).toThrow();
@@ -101,6 +106,12 @@ describe("stadium works under way", () => {
   it("let a club that sold out fill some of its new seats", () => {
     const before = approved.finances[CLUB]?.baseCrowd ?? 0;
     expect(opened.state.finances[CLUB]?.baseCrowd).toBeGreaterThan(before);
+  });
+
+  it("leave the usual crowd of a club whose stands weren't full as it was", () => {
+    const halfFull = withFinance(start, { baseCrowd: 5_000 });
+    expect(withNewSeats(halfFull, CLUB, SEATS).finances[CLUB]?.baseCrowd).toBe(5_000);
+    expect(withNewSeats(halfFull, CLUB, SEATS).clubs[CLUB]?.capacity).toBe((start.clubs[CLUB]?.capacity ?? 0) + SEATS);
   });
 
   it("survive a save and load", () => {

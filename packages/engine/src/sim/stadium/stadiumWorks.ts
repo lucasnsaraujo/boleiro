@@ -10,8 +10,11 @@ export type StadiumOpened = { type: "stadiumOpened"; clubId: string; seats: numb
 /** What new seats would cost and how long they take to build. */
 export type WorksQuote = { seats: number; cost: number; months: number; installment: number };
 
-/** Why the board turns down works: some under way, past the biggest stadium, no trust in the coach, or no cash. */
-export type WorksRefusal = "building" | "capacity" | "trust" | "cash";
+/**
+ * Why the board turns down works: some under way, a ground the club shares (and so doesn't own), past
+ * the biggest stadium, no trust in the coach, or no cash.
+ */
+export type WorksRefusal = "building" | "shared" | "capacity" | "trust" | "cash";
 
 export type WorksAnswer = ({ approved: true } | { approved: false; reason: WorksRefusal }) & { quote: WorksQuote };
 
@@ -25,7 +28,7 @@ const BASE_MONTHS = 4;
 const SEATS_PER_MONTH = 1_250;
 const MAX_MONTHS = 40;
 const DAYS_PER_MONTH = 30;
-// guess: no Brazilian stadium holds more than the Maracanã's 78,838 seats; the board stops at 90,000.
+// guess: no Brazilian stadium holds more than the Maracanã (82,238 seats in the club data); the board stops at 90,000.
 const MAX_CAPACITY = 90_000;
 // guess: the board signs only with half of the bill in the bank (after loans and unpaid wages), the
 // rest coming from revenue during the works, and only for a coach it doesn't doubt (board pressure,
@@ -55,6 +58,7 @@ export function boardAnswerToWorks(state: Pick<GameState, "coachClubId" | "clubs
   if (!clubId || !club || !finance) throw new Error("the coach has no club to build for");
   const refuse = (reason: WorksRefusal): WorksAnswer => ({ approved: false, reason, quote });
   if (finance.stadiumWorks) return refuse("building");
+  if (Object.values(state.clubs).some((other) => other.id !== club.id && other.stadium === club.stadium)) return refuse("shared");
   if (club.capacity + seats > MAX_CAPACITY) return refuse("capacity");
   if ((state.boards[clubId]?.pressure ?? 0) > MAX_PRESSURE) return refuse("trust");
   if (freeCash(finance) < CASH_SHARE_UP_FRONT * quote.cost) return refuse("cash");
@@ -75,8 +79,8 @@ export function requestStadiumWorks(state: GameState, seats: number): { state: G
 type SeatsState = Pick<GameState, "clubs" | "finances" | "economy">;
 
 /**
- * The club with `seats` more seats open: a bigger stadium, and a usual crowd that fills what the fans
- * wanted and the old stands couldn't hold.
+ * The club with `seats` more seats open: a bigger stadium and, when the old stands were full, a usual
+ * crowd that fills what the fans wanted and the old stands couldn't hold.
  */
 export function withNewSeats<S extends SeatsState>(state: S, clubId: string, seats: number): S {
   const club = state.clubs[clubId];
@@ -86,7 +90,8 @@ export function withNewSeats<S extends SeatsState>(state: S, clubId: string, sea
   const tier = tierOf(club);
   const fanbases = Object.values(state.clubs).filter((other) => tierOf(other) === tier).map((other) => other.fanbase);
   const wanted = crowdDemand(state.economy.matchday[tier].attendance, club.fanbase, median(fanbases));
-  const baseCrowd = Math.max(finance.baseCrowd, Math.round(Math.min(SELLABLE_SHARE_OF_CAPACITY * capacity, wanted)));
+  const wasFull = finance.baseCrowd >= Math.floor(SELLABLE_SHARE_OF_CAPACITY * club.capacity);
+  const baseCrowd = wasFull ? Math.max(finance.baseCrowd, Math.round(Math.min(SELLABLE_SHARE_OF_CAPACITY * capacity, wanted))) : finance.baseCrowd;
   return {
     ...state,
     clubs: { ...state.clubs, [clubId]: { ...club, capacity } },

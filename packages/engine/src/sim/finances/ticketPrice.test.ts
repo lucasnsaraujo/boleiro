@@ -47,7 +47,7 @@ describe("the coach's ticket price", () => {
     expect(gates).toHaveLength(5);
     expect(gates.map((g) => g.date)).toEqual([...gates.map((g) => g.date)].sort());
     expect(Object.entries(state.finances).filter(([id, f]) => id !== CLUB && f.homeGates)).toEqual([]);
-  });
+  }, 30_000); // four months of days
 
   it("refuses prices outside the box or with cents", () => {
     const { min, max } = ticketPriceBounds(eve, CLUB);
@@ -64,6 +64,16 @@ describe("the coach's ticket price", () => {
     expect(loaded.finances[CLUB]?.homeGates).toBeUndefined();
     const next = homeGameEve(advanceDay(loaded, {}).state);
     expect(advanceDay(next, {}).state.finances[CLUB]?.homeGates).toHaveLength(1);
+  });
+
+  it("goes back to the assistant's price at the club he leaves", () => {
+    const priced = setTicketPrice(advanceDay(eve, {}).state, assistantTicketPrice(eve, CLUB) * 2);
+    const offer = { clubId: "bahia-ba", salary: 100_000, untilSeason: 2027, expiresOn: "2027-01-01" };
+    const offered: GameState = { ...priced, coach: { ...priced.coach, offers: [offer] } };
+    const moved = advanceDay(offered, { acceptOffer: "bahia-ba" }).state;
+    expect(moved.coachClubId).toBe("bahia-ba");
+    expect(moved.finances[CLUB]?.ticketPrice).toBe(assistantTicketPrice(moved, CLUB));
+    expect(moved.finances[CLUB]?.homeGates).toBeUndefined();
   });
 
   it("needs a club", () => {

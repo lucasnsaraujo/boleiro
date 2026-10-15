@@ -59,8 +59,8 @@ test("the assistant prices tickets until the coach takes over; a dearer ticket f
   expect(finances[CLUB]?.ticketPrice).toBe(economy.matchday.A.price + 50);
 });
 
-test("the board answers a request for new seats on the spot", async () => {
-  const engine = await startGame();
+test("the board answers a request for new seats on the spot, and approved the works start", async () => {
+  const engine = await startGame("palmeiras-sp");
   openStadium(engine);
   const user = userEvent.setup();
   const works = await screen.findByRole("region", { name: "Pedir obra à diretoria" });
@@ -69,7 +69,17 @@ test("the board answers a request for new seats on the spot", async () => {
   expect((await screen.findByRole("status")).textContent).toMatch(/^Diretoria aprovou/);
   expect(screen.getByRole("heading", { name: "Obra em andamento" })).toBeTruthy();
   const { finances } = await engine.read(["finances"]);
-  expect(finances[CLUB]?.stadiumWorks?.seats).toBe(2_000);
+  expect(finances["palmeiras-sp"]?.stadiumWorks?.seats).toBe(2_000);
+});
+
+test("the board turns down works on a ground the club shares, and says why", async () => {
+  openStadium(await startGame());
+  const user = userEvent.setup();
+  const works = await screen.findByRole("region", { name: "Pedir obra à diretoria" });
+  await user.click(within(works).getByRole("button", { name: "Enviar pedido" }));
+  expect((await screen.findByRole("status")).textContent).toBe("Diretoria recusou: o estádio não é só do clube, a obra não é com ela.");
+  await user.click(within(works).getByRole("radio", { name: /\+5\.000 lugares/ }));
+  expect(screen.queryByRole("status")).toBeNull();
 });
 
 test("without a club there is no stadium", async () => {

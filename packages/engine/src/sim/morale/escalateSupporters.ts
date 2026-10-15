@@ -35,21 +35,26 @@ const REPEAT_CASE = { fine: { min: 10_000, max: 198_000 }, closedGames: { min: 3
 // guess: a third of punished incidents are serious enough to cost home games instead of a fine.
 const CLOSED_DOORS_SHARE = 1 / 3;
 
-/** The court's verdict on disorder: home games behind closed doors or a fine, harder for a club already punished. */
+/**
+ * The court's verdict on disorder: home games behind closed doors or a fine, harder for a club already
+ * punished. Organised supporters who were protesting turn violent; trouble from an otherwise calm crowd
+ * leaves their step as it was.
+ */
 function punish(clubId: string, mood: ClubMood, random: () => number): Escalation {
   const ladder = mood.supporters === "violence" ? REPEAT_CASE : FIRST_CASE;
+  const supporters = mood.supporters === "protest" || mood.supporters === "violence" ? "violence" : mood.supporters;
   if (random() < CLOSED_DOORS_SHARE) {
     const { min, max } = ladder.closedGames;
     const games = min + Math.floor(random() * (max - min + 1));
     return {
-      mood: { ...mood, supporters: "violence", closedDoorGames: mood.closedDoorGames + games },
+      mood: { ...mood, supporters, closedDoorGames: mood.closedDoorGames + games },
       events: [{ type: "fansViolence", clubId, fine: 0 }, { type: "closedDoors", clubId, games }],
       fine: 0,
     };
   }
   const { min, max } = ladder.fine;
   const fine = Math.round(min + random() * (max - min));
-  return { mood: { ...mood, supporters: "violence" }, events: [{ type: "fansViolence", clubId, fine }], fine };
+  return { mood: { ...mood, supporters }, events: [{ type: "fansViolence", clubId, fine }], fine };
 }
 
 /** One step up or down the supporters' ladder, with disorder after a defeat while protests go on. */

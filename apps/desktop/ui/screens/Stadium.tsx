@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { WorksAnswer, WorksRefusal } from "@boleiro/engine/sim/stadium/stadiumWorks";
 import { formatDayMonth, formatRowDate } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
@@ -12,6 +12,7 @@ const seats = (n: number) => n.toLocaleString("pt-BR");
 
 const REFUSALS: Record<WorksRefusal, string> = {
   building: "já tem uma obra em andamento",
+  shared: "o estádio não é só do clube, a obra não é com ela",
   capacity: "passaria do tamanho do maior estádio do país",
   trust: "não confia no seu trabalho agora",
   cash: "quer metade da obra no caixa antes de assinar",
@@ -33,6 +34,8 @@ export function Stadium() {
   const [chosenSeats, setChosenSeats] = useState<number | null>(null);
   const [answer, setAnswer] = useState<WorksAnswer | null>(null);
   const [isBusy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const view = useMemo(() => state && stadiumView(state), [state]);
 
   const reload = useCallback(() => engine.read(STADIUM_KEYS).then(setState), [engine]);
 
@@ -49,7 +52,6 @@ export function Stadium() {
 
   if (failed) return <p className="status error">Nenhum jogo aberto.</p>;
   if (!state) return <p className="status">Abrindo o estádio…</p>;
-  const view = stadiumView(state);
   if (!view) {
     return (
       <>
@@ -62,34 +64,40 @@ export function Stadium() {
   const price = draft ?? view.price;
   const isAssistant = !(isManual ?? view.price !== view.assistantPrice);
 
-  async function applyPrice(next: number) {
+  /** Runs a command against the game; a refusal (during a round, say) shows instead of changing anything. */
+  async function run(command: () => Promise<void>) {
     setBusy(true);
+    setError(null);
     try {
-      await engine.apply({ type: "priceTickets", price: next });
+      await command();
       await reload();
-      setDraft(null);
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : String(failure));
     } finally {
       setBusy(false);
     }
   }
+
+  const applyPrice = (next: number, isByAssistant = false) =>
+    run(async () => {
+      await engine.apply({ type: "priceTickets", price: next });
+      setDraft(null);
+      if (isByAssistant) setManual(false);
+    });
 
   function toggleAssistant() {
-    if (isAssistant) {
-      setManual(true);
-      return;
-    }
-    setManual(false);
-    void applyPrice(view?.assistantPrice ?? price);
+    if (isAssistant) setManual(true);
+    else void applyPrice(view?.assistantPrice ?? price, true);
   }
 
-  async function askWorks(seatsAsked: number) {
-    setBusy(true);
-    try {
+  const askWorks = (seatsAsked: number) =>
+    run(async () => {
       setAnswer(await engine.apply({ type: "askStadiumWorks", seats: seatsAsked }));
-      await reload();
-    } finally {
-      setBusy(false);
-    }
+    });
+
+  function chooseWorks(seatsChosen: number) {
+    setChosenSeats(seatsChosen);
+    setAnswer(null);
   }
 
   return (
@@ -147,6 +155,11 @@ export function Stadium() {
               <b>{isAssistant ? `Ligado: R$ ${view.assistantPrice}, a média da divisão` : "Desligado: você decide"}</b>
             </span>
           </button>
+          {error && (
+            <p className="std-error" role="alert">
+              {error}
+            </p>
+          )}
           <button type="button" className="btn go std-go" disabled={isBusy || price === view.price} onClick={() => void applyPrice(price)}>
             <i className="ph-bold ph-ticket" aria-hidden="true" />
             Aplicar preço
@@ -156,7 +169,7 @@ export function Stadium() {
 
       <aside className="std-side">
         <LastGames view={view} />
-        <Works view={view} chosen={chosenSeats ?? view.options.find((o) => o.answer.approved)?.answer.quote.seats ?? view.options[0]?.answer.quote.seats ?? 0} onChoose={setChosenSeats} answer={answer} isBusy={isBusy} onAsk={(n) => void askWorks(n)} />
+        <Works view={view} chosen={chosenSeats ?? view.options.find((o) => o.answer.approved)?.answer.quote.seats ?? view.options[0]?.answer.quote.seats ?? 0} onChoose={chooseWorks} answer={answer} isBusy={isBusy} onAsk={(n) => void askWorks(n)} />
       </aside>
     </div>
   );
@@ -319,21 +332,23 @@ function Works({ view, chosen, onChoose, answer, isBusy, onAsk }: WorksProps) {
   return (
     <section className="stk std-obra" aria-labelledby="std-obra-title">
       <h2 id="std-obra-title">Pedir obra à diretoria</h2>
-      <div className="std-opts" role="radiogroup" aria-label="Tamanho da obra">
+      <fieldset className="std-opts">
+        <legend className="std-legend">Tamanho da obra</legend>
         {options.map(({ answer: verdict, gainPerGame }) => {
           const { seats: added, cost, months } = verdict.quote;
           return (
-            <button key={added} type="button" role="radio" aria-checked={added === chosen} className={added === chosen ? "std-opt on" : "std-opt"} onClick={() => onChoose(added)}>
+            <label key={added} className={added === chosen ? "std-opt on" : "std-opt"}>
+              <input type="radio" name="std-works" value={added} checked={added === chosen} onChange={() => onChoose(added)} />
               <b>+{seats(added)} lugares</b>
               <span>{months} meses de obra</span>
               <em>
                 {formatMoney(cost)}
                 <small>{gainPerGame > 0 ? `+${formatMoney(gainPerGame)}/jogo` : "sem ganho hoje"}</small>
               </em>
-            </button>
+            </label>
           );
         })}
-      </div>
+      </fieldset>
       {option && (
         <>
           <div className="std-ok">
