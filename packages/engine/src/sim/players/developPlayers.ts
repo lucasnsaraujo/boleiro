@@ -64,7 +64,7 @@ const RETIREMENT: readonly [minAge: number, chance: number][] = [
 
 // The 2026 squads have 24 players a club on average (data/players.csv). guess: no club drops
 // below 18, enough for an eleven plus injuries and rotation.
-const MIN_SQUAD = 18;
+export const MIN_SQUAD = 18;
 const YOUTH_MIN_AGE = 17;
 // guess: a youth player in a division with nobody to compare wages with earns about the 2026
 // national minimum wage, R$1,621 a month.
@@ -153,7 +153,7 @@ export function professionalOf(prospect: Prospect, clubId: string, wage: number,
 }
 
 /** The academy's best teenager at `group` old enough for the squad, if any; its 20-year-olds finish their last youth year. */
-function readyProspect(academy: readonly Prospect[], group: PositionGroup, taken: ReadonlySet<string>): Prospect | null {
+export function readyProspect(academy: readonly Prospect[], group: PositionGroup, taken: ReadonlySet<string>): Prospect | null {
   let best: Prospect | null = null;
   for (const p of academy) {
     if (taken.has(p.id) || p.group !== group || p.age < YOUTH_MIN_AGE || p.age >= YOUTH_MIN_AGE + YOUTH_AGES) continue;

@@ -5,6 +5,7 @@ import { developPlayers } from "../players/developPlayers.js";
 import { SQUAD_CAP } from "../transfers/squadCap.js";
 import { academySquad, LEAVING_AGE, scoutedStars, starsOf, YOUTH_AGES } from "./academy.js";
 import { copinhaRun, playCopinha } from "./copinha.js";
+import { fillShortSquads } from "./fillShortSquads.js";
 import { citiesOf } from "./hometowns.js";
 import { promoteProspect, releaseProspect, sellProspect } from "./moveProspect.js";
 import { turnOverAcademies } from "./turnOverAcademies.js";
@@ -118,6 +119,30 @@ describe("the academies at the season's turn", () => {
     const fromAcademy = newcomers.filter((p) => turned.youth?.prospects[p.id]);
     expect(fromAcademy.length).toBeGreaterThan(0);
     expect(fromAcademy.every((p) => p.potential !== undefined && !developed.state.youth?.prospects[p.id])).toBe(true);
+  });
+});
+
+describe("squads the market left short", () => {
+  const stateOnly = Object.values(start.clubs).find((c) => c.division === null);
+  if (!stateOnly) throw new Error("no state-only club");
+  const keepTwelve = (clubId: string) => new Set(Object.values(start.players).filter((p) => p.clubId === clubId).sort((a, b) => b.strength - a.strength).slice(0, 12).map((p) => p.id));
+  const kept = new Set([...keepTwelve(COACH), ...keepTwelve(stateOnly.id)]);
+  const thinned: GameState = { ...start, players: Object.fromEntries(Object.entries(start.players).filter(([id, p]) => (p.clubId !== COACH && p.clubId !== stateOnly.id) || kept.has(id))) };
+  const { state, events } = fillShortSquads(thinned);
+  const squadOf = (clubId: string) => Object.values(state.players).filter((p) => p.clubId === clubId);
+
+  it("tops every squad back up to 18, from the academy's teenagers where it has one", () => {
+    expect(squadOf(COACH)).toHaveLength(18);
+    expect(squadOf(stateOnly.id)).toHaveLength(18);
+    const fromAcademy = squadOf(COACH).filter((p) => start.youth?.prospects[p.id]);
+    expect(fromAcademy.length).toBeGreaterThan(0);
+    expect(fromAcademy.every((p) => p.age >= 17 && p.age <= 19 && !state.youth?.prospects[p.id])).toBe(true);
+    expect(events.filter((e) => e.type === "youthPromoted")).toHaveLength(12);
+  });
+
+  it("invents teenagers for a club without an academy, and leaves full squads alone", () => {
+    expect(squadOf(stateOnly.id).filter((p) => !start.players[p.id]).every((p) => p.potential === undefined && p.wage > 0)).toBe(true);
+    expect(fillShortSquads(start).state).toBe(start);
   });
 });
 

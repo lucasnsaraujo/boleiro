@@ -27,6 +27,7 @@ import { reactToDay } from "../morale/reactToDay.js";
 import { openNextStage } from "../openNextStage.js";
 import { developPlayers } from "../players/developPlayers.js";
 import { copinhaDate, playCopinha } from "../youth/copinha.js";
+import { fillShortSquads } from "../youth/fillShortSquads.js";
 import { turnOverAcademies } from "../youth/turnOverAcademies.js";
 import { settleShootout } from "../settleShootout.js";
 import { runTransferDay } from "../transfers/runTransferDay.js";
@@ -181,5 +182,7 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   }
   const market = runTransferDay(next, decisions.requests ?? []);
   events.push(...market.events);
-  return { state: recordDayEvents(releaseTicketPrice(market.state, state.coachClubId), events, state), events };
+  const filled = market.events.length ? fillShortSquads(market.state) : { state: market.state, events: [] };
+  events.push(...filled.events);
+  return { state: recordDayEvents(releaseTicketPrice(filled.state, state.coachClubId), events, state), events };
 }

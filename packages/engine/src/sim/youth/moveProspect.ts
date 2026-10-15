@@ -24,7 +24,7 @@ export type ProspectRefusal = "notYours" | "squadFull" | "noBuyer";
 const squadOf = (state: Pick<GameState, "players">, clubId: string) => Object.values(state.players).filter((p) => p.clubId === clubId);
 
 /** A kid's first professional wage: the squad's going rate for his strength, at least the minimum wage. */
-export const firstWage = (prospect: Prospect, squad: readonly SimPlayer[]) => Math.max(NO_SQUAD_WAGE, wageRateOf(squad)(prospect.strength));
+export const firstWage = (prospect: Pick<Prospect, "strength">, squad: readonly SimPlayer[]) => Math.max(NO_SQUAD_WAGE, wageRateOf(squad)(prospect.strength));
 
 const withoutProspect = (youth: Youth, id: string): Youth => ({ ...youth, prospects: Object.fromEntries(Object.entries(youth.prospects).filter(([key]) => key !== id)) });
 

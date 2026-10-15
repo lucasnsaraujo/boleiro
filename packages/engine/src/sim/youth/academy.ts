@@ -45,20 +45,20 @@ export const LEAVING_AGE = 21;
 
 // guess: an academy keeps 8 to 14 kids in the game's eyes (the best of each age), the biggest clubs the most.
 const ACADEMY_SIZE = { min: 8, max: 14 };
-// guess: a kid's potential centres a little above his club's division level, 3 points more at the
-// biggest club than at an average one, and spreads 5 points either way (one standard deviation).
-const POTENTIAL_ABOVE_LEVEL = 2;
+// guess: a kid's potential centres on his club's division level, 3 points more at the biggest club
+// than at an average one, and spreads 5 points either way (one standard deviation).
+const POTENTIAL_ABOVE_LEVEL = 0;
 const STATURE_EFFECT = 3;
 const POTENTIAL_SD = 5;
 /**
  * How far below his potential a kid plays at each age. guess: a 17-year-old is about 16 below, so a
- * Série A academy's average kid (potential ~74) plays at 58, ten below the Série A 17-year-olds of the
+ * Série A academy's average kid (potential ~72) plays at 56, twelve below the Série A 17-year-olds of the
  * 2026 squads; he closes most of the gap by 21 and the rest in the pros.
  */
 const GAP_BY_AGE: Record<number, number> = { 16: 20, 17: 16, 18: 12, 19: 9, 20: 7, 21: 5 };
 const GAP_SD = 2;
-// Stars by potential: Série D's level, C's, B's, A's and well above it.
-const STAR_FLOORS = [0, 55, 62, 69, 76] as const;
+// Stars by potential: below Série C's level (56), then C, B (63), A (72) and a Série A star's 80.
+const STAR_FLOORS = [0, 56, 63, 72, 80] as const;
 // guess: the scouts' first look is off by up to two stars; each season he spends there takes one off.
 const FIRST_SCOUT_SPAN = 2;
 const YOUTH_STREAM_SALT = 0x90d75;
