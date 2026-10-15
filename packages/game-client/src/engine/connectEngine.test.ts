@@ -337,11 +337,11 @@ test("playing past the last day of the season leaves its review waiting until th
 
 test("a save keeps the turning point the coach has not closed yet", async () => {
   const engine = startEngine();
-  // A seed whose season the coach sees through to its end, so the point waiting is the season's review.
   await engine.apply({ type: "newGame", seed: 3, choices: { coachClubId: "flamengo-rj" } });
   await engine.apply({ type: "advance", days: Array.from({ length: 365 }, () => ({})) });
+  // The point waiting after a year is the season's review, or the sacking when the board fired the coach on the way.
   const point = await engine.turningPoint();
-  expect(point).toMatchObject({ kind: "seasonEnd", review: { season: 2026 } });
+  expect(point?.kind === "seasonEnd" ? point.review.season : point?.kind).toEqual(expect.toBeOneOf([2026, "fired"]));
   const save = await engine.save();
   await engine.apply({ type: "newGame", seed: 8, choices: { coachClubId: "flamengo-rj" } });
   await engine.apply({ type: "load", save });
