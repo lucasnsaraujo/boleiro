@@ -29,7 +29,9 @@ export type FriendlyAnswer = { booked: true; friendly: Friendly } | { booked: fa
 export type FriendlyOffer = { hostId: string; date: IsoDate; fee: number };
 
 export type FriendlyPlayed = { type: "friendlyPlayed"; friendly: Friendly; gate: number };
-export type FriendlyCalledOff = { type: "friendlyCalledOff"; friendly: Friendly };
+/** Why a friendly is called off on its day: an official match took the date, the host can't pay the fee, or a club is gone. */
+export type CallOffReason = "fixture" | "cash" | "club";
+export type FriendlyCalledOff = { type: "friendlyCalledOff"; friendly: Friendly; reason: CallOffReason };
 export type FriendlyEvent = FriendlyPlayed | FriendlyCalledOff;
 
 // Flamengo, the club with the most fans, took a R$ 800 thousand fee to play a home game in Brasília
@@ -141,6 +143,12 @@ export function friendlyOffers(state: BookingState & Pick<GameState, "seed">): F
   return offers;
 }
 
+/** The game without the unplayed friendlies of `clubId`, the club the coach has just left. */
+export function dropCoachFriendlies(state: GameState, clubId: string): GameState {
+  const friendlies = state.friendlies?.filter((f) => f.result || (f.homeId !== clubId && f.awayId !== clubId));
+  return friendlies?.length === state.friendlies?.length ? state : { ...state, friendlies };
+}
+
 /** One friendly played: both sides at full strength in their usual shape, drawn on the friendly's own stream. */
 function playFriendly(state: GameState, friendly: Friendly): Friendly["result"] {
   const fixture: Fixture = { id: friendly.id, competitionId: "friendly", stage: 0, date: friendly.date, homeId: friendly.homeId, awayId: friendly.awayId, result: null };
@@ -152,7 +160,8 @@ function playFriendly(state: GameState, friendly: Friendly): Friendly["result"] 
 
 /**
  * Plays the friendlies set for `date`: the host keeps the gate at a friendly's crowd and pays the
- * visitor's fee. One the season's matches have since taken over is called off and no money moves.
+ * visitor's fee. One the season's matches have since taken over, or whose host can't pay the fee
+ * any more, is called off and no money moves.
  */
 export function playFriendlies(state: GameState, date: IsoDate): { state: GameState; events: FriendlyEvent[] } {
   const today = (state.friendlies ?? []).filter((f) => f.date === date && !f.result);
@@ -163,8 +172,10 @@ export function playFriendlies(state: GameState, date: IsoDate): { state: GameSt
   for (const friendly of today) {
     const clash = state.fixtures.some((f) => f.date === date && [f.homeId, f.awayId].some((id) => id === friendly.homeId || id === friendly.awayId));
     const home = finances[friendly.homeId];
-    if (clash || !home || !finances[friendly.awayId] || !state.clubs[friendly.homeId] || !state.clubs[friendly.awayId]) {
-      events.push({ type: "friendlyCalledOff", friendly });
+    const isGone = !home || !finances[friendly.awayId] || !state.clubs[friendly.homeId] || !state.clubs[friendly.awayId];
+    const reason: CallOffReason | null = isGone ? "club" : clash ? "fixture" : home.cash < friendly.fee ? "cash" : null;
+    if (reason || !home) {
+      events.push({ type: "friendlyCalledOff", friendly, reason: reason ?? "club" });
       done.set(friendly.id, null);
       continue;
     }

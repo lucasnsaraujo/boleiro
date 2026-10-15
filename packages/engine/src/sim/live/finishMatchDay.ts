@@ -12,7 +12,7 @@ import { closeMonth } from "../finances/closeMonth.js";
 import { payCopaPrizes } from "../finances/payCopaPrizes.js";
 import { payTitleBonuses } from "../finances/payTitleBonuses.js";
 import { recordMatchFinances } from "../finances/recordMatchFinances.js";
-import { playFriendlies } from "../friendlies/friendlies.js";
+import { dropCoachFriendlies, playFriendlies } from "../friendlies/friendlies.js";
 import { releaseTicketPrice } from "../finances/setTicketPrice.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { closeSeasonHistory } from "../history/closeSeasonHistory.js";
@@ -142,6 +142,8 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   events.push(...reacted.events);
   const career = coachCareerDay(next, played, decisions.acceptOffer, random.next);
   next = career.state;
+  // Friendlies the coach booked for a club he no longer runs are called off with his move.
+  if (state.coachClubId && next.coachClubId !== state.coachClubId) next = dropCoachFriendlies(next, state.coachClubId);
   events.push(...career.events);
   next = { ...next, rngState: random.state() };
   if (state.world) next = { ...next, world: playWorldDay(state.world, state.date) };

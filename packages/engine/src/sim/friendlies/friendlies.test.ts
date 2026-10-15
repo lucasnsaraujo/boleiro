@@ -4,7 +4,7 @@ import { addDays } from "../dates.js";
 import type { ClubFinance, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
-import { bookFriendly, freeFriendlyDates, friendlyFee, friendlyOffers } from "./friendlies.js";
+import { bookFriendly, dropCoachFriendlies, freeFriendlyDates, friendlyFee, friendlyOffers } from "./friendlies.js";
 
 const CLUB = "bahia-ba";
 const start = loadNewGame(5, { coachClubId: CLUB });
@@ -109,6 +109,22 @@ describe("a friendly", () => {
       expect(bookFriendly(start, offer.hostId, offer.date, false).answer.booked).toBe(true);
     }
     expect(friendlyOffers(start)).toEqual(offers);
+  });
+
+  it("is called off when the host can no longer pay the fee on the day", () => {
+    const opponent = "vitoria-ba";
+    const date = firstFree(start, opponent);
+    const { state } = bookFriendly(start, opponent, date, false);
+    const broke = { ...state, finances: { ...state.finances, [opponent]: { ...financeOf(state, opponent), cash: 0 } } };
+    const played = playUntil(broke, addDays(date, 1));
+    expect(played.events.find((e) => e.type === "friendlyCalledOff")).toMatchObject({ reason: "cash" });
+    expect(financeOf(played.state, CLUB).month.revenue.friendlies).toBe(0);
+  });
+
+  it("is dropped when the coach leaves the club before its day", () => {
+    const opponent = "vitoria-ba";
+    const { state } = bookFriendly(start, opponent, firstFree(start, opponent), true);
+    expect(dropCoachFriendlies(state, CLUB).friendlies).toEqual([]);
   });
 
   it("survives a save and load", () => {

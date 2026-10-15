@@ -127,7 +127,10 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
       case "friendlyCalledOff": {
         const { homeId, awayId } = event.friendly;
         if (!(isOurs(homeId) || isOurs(awayId))) return null;
-        return [`Amistoso contra o ${clubName(isOurs(homeId) ? awayId : homeId)} cancelado: a data virou jogo oficial`, "neutral"];
+        const against = `Amistoso contra o ${clubName(isOurs(homeId) ? awayId : homeId)} cancelado`;
+        if (event.reason === "fixture") return [`${against}: a data virou jogo oficial`, "neutral"];
+        if (event.reason === "cash") return [`${against}: o mandante ficou sem caixa para o cachê`, "bad"];
+        return [against, "neutral"];
       }
       case "fansPressure":
         return isOurs(event.clubId) ? ["Torcida cobra o time", "bad"] : null;

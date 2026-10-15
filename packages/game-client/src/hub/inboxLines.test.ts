@@ -57,7 +57,8 @@ describe("board and money", () => {
     expect(line({ type: "friendlyPlayed", friendly, gate: 500_000 })).toMatchObject({ text: "Amistoso: Vitória 1 x 2 Bahia, cachê de R$ 300 mil", tone: "good" });
     const hosting = { ...friendly, homeId: "bahia-ba", awayId: "vitoria-ba", result: { homeGoals: 0, awayGoals: 0 } };
     expect(line({ type: "friendlyPlayed", friendly: hosting, gate: 500_000 })).toMatchObject({ text: "Amistoso: Bahia 0 x 0 Vitória, bilheteria de R$ 500 mil e cachê pago de R$ 300 mil", tone: "neutral" });
-    expect(line({ type: "friendlyCalledOff", friendly })).toMatchObject({ text: "Amistoso contra o Vitória cancelado: a data virou jogo oficial", tone: "neutral" });
+    expect(line({ type: "friendlyCalledOff", friendly, reason: "fixture" })).toMatchObject({ text: "Amistoso contra o Vitória cancelado: a data virou jogo oficial", tone: "neutral" });
+    expect(line({ type: "friendlyCalledOff", friendly, reason: "cash" })).toMatchObject({ text: "Amistoso contra o Vitória cancelado: o mandante ficou sem caixa para o cachê", tone: "bad" });
   });
 
   test("a title bonus is the squad's bicho", () => {
