@@ -74,6 +74,8 @@ export function Select<T extends string>({ label, value, options, onChange, capt
     if (isDisabled || !options.length) return;
     setActive(Math.min(Math.max(at, 0), options.length - 1));
     setPhase("open");
+    // WebKit doesn't focus a clicked button, and the keys only reach a focused pill.
+    triggerRef.current?.focus();
   }
 
   function close() {
@@ -85,6 +87,8 @@ export function Select<T extends string>({ label, value, options, onChange, capt
     close();
     if (option && option.value !== value) onChange(option.value);
   }
+
+  const isSpelling = () => typed.current.text !== "" && Date.now() - typed.current.at <= TYPE_AHEAD_MS;
 
   /** The option a typed letter leads to: from the one after the cursor for a new letter, from the cursor while the word grows. */
   function typeAhead(letter: string, from: number): number | null {
@@ -135,8 +139,11 @@ export function Select<T extends string>({ label, value, options, onChange, capt
         case "PageUp":
           setActive(Math.max(active - PAGE, 0));
           return true;
-        case "Enter":
         case " ":
+          if (isSpelling()) setActive(typeAhead(" ", active) ?? active);
+          else pick(active);
+          return true;
+        case "Enter":
           pick(active);
           return true;
         case "Escape":

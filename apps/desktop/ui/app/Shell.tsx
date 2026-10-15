@@ -30,8 +30,7 @@ const TOAST_MS = 2600;
 // The menu bar belongs to the app, not to a screen: it is built once, the first time the shell mounts.
 let hasNativeMenu = false;
 
-/** Whether a dialog is up (a confirm, a sheet, the newspaper): the game's shortcuts wait until it closes, Escape closes it. */
-/** A dialog, or a select's open list, takes the keys while it is up. */
+/** Whether a dialog (a confirm, a sheet, the newspaper) or a select's list is up: the game's shortcuts wait until it closes, Escape closes it. */
 function isDialogOpen(): boolean {
   return document.querySelector('[role="dialog"], [role="alertdialog"], [role="combobox"][aria-expanded="true"]') !== null;
 }

@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, expect, test } from "vitest";
@@ -171,4 +171,25 @@ test("inside a label, picking an option leaves the list closed", async () => {
   await userEvent.click(screen.getByRole("option", { name: "3" }));
   expect(screen.queryByRole("listbox")).toBeNull();
   expect(screen.getByRole("combobox", { name: "Anos" }).textContent).toBe("3");
+});
+
+test("a click that opens the list puts focus on the pill, as WebKit doesn't focus a clicked button, so the keys work from there", async () => {
+  render(<Position />);
+  fireEvent.click(trigger());
+  expect(document.activeElement).toBe(trigger());
+  await userEvent.keyboard("{ArrowDown}{Enter}");
+  expect(picked()).toBe("GK");
+});
+
+test("a space typed while spelling a name is part of the search, not a pick", async () => {
+  const options: SelectOption<string>[] = [
+    { value: "", label: "Todos" },
+    { value: "sp", label: "São Bento" },
+    { value: "sl", label: "São Luiz" },
+  ];
+  render(<Position options={options} />);
+  trigger().focus();
+  await userEvent.keyboard("sao l");
+  expect(trigger().getAttribute("aria-expanded")).toBe("true");
+  expect(activeOption()).toBe("São Luiz");
 });
