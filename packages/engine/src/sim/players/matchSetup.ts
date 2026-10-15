@@ -30,7 +30,7 @@ type MatchClub = Pick<Club, "id" | "shortName" | "pitch"> & { state: State | nul
 /** A club as a match reads it; a guest from a result-only country plays on grass and has no Brazilian state. */
 export function matchClubOf(state: GameState, clubId: string): MatchClub | null {
   const club = state.clubs[clubId];
-  if (club) return club;
+  if (club) return { ...club, state: club.state ?? null };
   const guest = guestClubOf(state, clubId);
   return guest ? { id: guest.id, shortName: guest.name, pitch: "natural", state: null } : null;
 }

@@ -63,7 +63,8 @@ export function closeSeasonHistory(state: GameState): GameState {
     const key = competitionKey(competition.id);
     const championId = record.champions[key] ?? championOf(competition, fixtures);
     if (championId) record.champions[key] = championId;
-    if (competition.kind !== "league") continue;
+    // A league abroad files its season in its country's world record, not Brazil's division tables.
+    if (competition.kind !== "league" || competition.division === null) continue;
     const outcome = LEAGUE_FORMATS[competition.format].outcome(competition, fixtures);
     record.promoted[competition.division] = outcome.promotedIds;
     record.relegated[competition.division] = outcome.relegatedIds;

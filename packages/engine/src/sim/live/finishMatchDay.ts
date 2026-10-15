@@ -145,7 +145,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const events: DayEvent[] = [...day.events];
   let { fixtures } = day;
 
-  const clubStates: Record<string, State> = Object.fromEntries(Object.values(state.clubs).map((club) => [club.id, club.state]));
+  const clubStates: Record<string, State> = Object.fromEntries(Object.values(state.clubs).flatMap((club) => (club.state ? [[club.id, club.state]] : [])));
   const competitions = { ...state.competitions };
   const byCompetition = fixturesByCompetition(fixtures);
   for (const competition of Object.values(state.competitions)) {

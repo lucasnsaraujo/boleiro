@@ -153,10 +153,13 @@ export function openingFinances(
   const squads = new Map<string, Omit<SimPlayer, "wage">[]>();
   for (const player of players) squads.set(player.clubId, [...(squads.get(player.clubId) ?? []), player]);
   const strength = new Map([...squads].map(([id, squad]) => [id, squadStrength(squad)]));
-  const byTier = new Map<Tier, Club[]>();
-  for (const club of Object.values(clubs)) byTier.set(tierOf(club), [...(byTier.get(tierOf(club)) ?? []), club]);
-  const ascending = (tier: Tier) =>
-    (byTier.get(tier) ?? []).map((c) => c.id).sort((a, b) => (strength.get(a) ?? 0) - (strength.get(b) ?? 0) || a.localeCompare(b));
+  // A league abroad keeps its own ranks and crowds apart from the Brazilian division whose money it follows.
+  const groupOf = (club: Club): string => (club.abroad ? `${club.abroad.country}:${club.abroad.level}` : tierOf(club));
+  const byTier = new Map<string, Club[]>();
+  for (const club of Object.values(clubs)) byTier.set(groupOf(club), [...(byTier.get(groupOf(club)) ?? []), club]);
+  const ascending = (group: string) =>
+    (byTier.get(group) ?? []).map((c) => c.id).sort((a, b) => (strength.get(a) ?? 0) - (strength.get(b) ?? 0) || a.localeCompare(b));
+  const serieARows = [...data.clubs].sort((a, b) => operatingRevenue(moneyOf(a)) - operatingRevenue(moneyOf(b)) || a.clubId.localeCompare(b.clubId));
   const serieA = serieATv(economy, ascending("A").reverse(), (id) => clubs[id]?.fanbase ?? 0);
   const smallestSerieA = [...data.clubs].sort((a, b) => a.revenue.total - b.revenue.total)[0];
   const homeGames = expectedHomeGames(Object.values(competitions), fixtures);
@@ -164,16 +167,19 @@ export function openingFinances(
 
   const finances: Record<string, ClubFinance> = {};
   const wages: Record<string, number> = {};
-  for (const [tier, members] of byTier) {
-    const rankOf = new Map(ascending(tier).map((id, rank) => [id, rank]));
+  for (const [group, members] of byTier) {
+    const rankOf = new Map(ascending(group).map((id, rank) => [id, rank]));
     const medianFans = median(members.map((c) => c.fanbase));
     for (const club of members) {
-      const row = data.clubs.find((r) => r.clubId === club.id) ?? (tier === "A" ? smallestSerieA : undefined);
+      const tier = tierOf(club);
+      // guess: a club in a league abroad's top level keeps the books of the Série A club at its strength rank.
+      const abroadRow = club.abroad && tier === "A" ? serieARows[Math.round(((rankOf.get(club.id) ?? 0) / Math.max(1, members.length - 1)) * (serieARows.length - 1))] : undefined;
+      const row = data.clubs.find((r) => r.clubId === club.id) ?? abroadRow ?? (tier === "A" ? smallestSerieA : undefined);
       const base = row ? moneyOf(row) : moneyByRank(data, tier, rankOf.get(club.id) ?? 0, members.length);
       const { attendance, price } = economy.matchday[tier];
       const baseCrowd = Math.min(SELLABLE_SHARE_OF_CAPACITY * club.capacity, crowdDemand(attendance, club.fanbase, medianFans));
       const expectedTickets = Math.round(baseCrowd * price * (homeGames.get(club.id) ?? 0));
-      const tv = tier === "A" ? (serieA[club.id] ?? 0) : economy.tvPerClub[tier];
+      const tv = tier === "A" ? (serieA[club.id] ?? economy.tvPerClub.A) : economy.tvPerClub[tier];
       const revenue = operatingRevenue(base);
       const entryStage = cupEntryStage.get(club.id);
       const cupPrizes = entryStage === undefined ? 0 : expectedCopaPrize(economy.copaDoBrasil, entryStage, tier !== "A" && tier !== "B");

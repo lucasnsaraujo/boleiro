@@ -19,8 +19,9 @@ const TIER_ORDER = ["A", "B", "C", "D"];
 const tierRank = (club: Club) => (club.division ? TIER_ORDER.indexOf(club.division) : TIER_ORDER.length);
 
 // guess: the CBF national club ranking (RNC) is approximated by division, then fanbase.
+/** Brazil's clubs, best first: by division, then fanbase; clubs abroad have no place in it. */
 export function nationalRanking(clubs: readonly Club[]): string[] {
-  return [...clubs].sort((a, b) => tierRank(a) - tierRank(b) || b.fanbase - a.fanbase || a.id.localeCompare(b.id)).map((c) => c.id);
+  return clubs.filter((club) => !club.abroad).sort((a, b) => tierRank(a) - tierRank(b) || b.fanbase - a.fanbase || a.id.localeCompare(b.id)).map((c) => c.id);
 }
 
 /** The Copa do Brasil field: `clubIds` in ranking order and the clubs that join at each stage. */

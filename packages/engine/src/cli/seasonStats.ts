@@ -44,7 +44,7 @@ export function seasonStats({ before, after, fixtures, injuries, moves }: Season
     if (!competition || !result) continue;
     clubs.add(fixture.homeId).add(fixture.awayId);
     const goals = result.homeGoals + result.awayGoals;
-    if (competition.kind === "league") {
+    if (competition.kind === "league" && competition.division) {
       const tally = results[competition.division];
       tally.matches++;
       tally.goals += goals;

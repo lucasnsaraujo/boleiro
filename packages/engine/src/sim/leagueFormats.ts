@@ -4,6 +4,7 @@ import { seededTies } from "./seededTies.js";
 import { groupStageAt, knockoutStageAt } from "./stageAt.js";
 import { standings, type StandingRow } from "./standings.js";
 import { tieResults } from "./tieResults.js";
+import { roundsOf } from "./world/resultOnlyLeague.js";
 
 export type LeagueOutcome = {
   championId: string;
@@ -169,7 +170,21 @@ const serieD: LeagueFormat = {
 
 // Série A and B 2026: 20 clubs, double round robin of 38 rounds; A relegates 4; B promotes 4 and
 // relegates 4 (Band, https://www.band.com.br/nacional/brasil/ponte-preta-e-guarani-entenda-os-regulamentos-das-series-b-e-c-de-2026).
+// A league abroad in the full tier: a straight round robin (SPEC §6), with as many clubs going up
+// and down as its country's pyramid moves (`LeagueCompetition.abroad`).
+const roundRobin: LeagueFormat = {
+  stageDateCounts: (clubCount, legs) => [roundsOf(clubCount, legs)],
+  stageSizes: (clubCount) => [clubCount],
+  nextStage: (competition) => ({ kind: "groups", groups: [competition.clubIds], legs: competition.legs ?? 2 }),
+  outcome: (competition, fixtures) => {
+    const order = table(competition, competition.clubIds, fixtures);
+    const { level = 0, promoted = 0, relegated = 0 } = competition.abroad ?? {};
+    return { championId: order[0] ?? "", promotedIds: level > 0 ? order.slice(0, promoted) : [], relegatedIds: relegated ? order.slice(-relegated) : [] };
+  },
+};
+
 export const LEAGUE_FORMATS: Record<LeagueFormatId, LeagueFormat> = {
+  "round-robin": roundRobin,
   "serie-a": singleTable(4, 0),
   "serie-b": singleTable(4, 4),
   "serie-c": serieC,

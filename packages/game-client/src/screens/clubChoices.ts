@@ -54,5 +54,5 @@ export function filterClubs(choices: readonly ClubChoice[], { query, division, s
 }
 
 export function statesOf(choices: readonly ClubChoice[]): State[] {
-  return [...new Set(choices.map(({ club }) => club.state))].sort();
+  return [...new Set(choices.flatMap(({ club }) => (club.state ? [club.state] : [])))].sort();
 }

@@ -61,7 +61,8 @@ export type KnockoutStage = {
 
 export type Stage = GroupStage | KnockoutStage;
 
-export type LeagueFormatId = `serie-${Lowercase<Division>}`;
+/** Brazil's series, and the straight round robin a league abroad plays in the full tier. */
+export type LeagueFormatId = `serie-${Lowercase<Division>}` | "round-robin";
 
 type CompetitionBase = {
   id: string;
@@ -74,8 +75,14 @@ type CompetitionBase = {
   gameScales?: number[];
 };
 
-/** `legs` 1 when the game's formats play the league's round robin once. */
-export type LeagueCompetition = CompetitionBase & { kind: "league"; format: LeagueFormatId; division: Division; legs?: 1 };
+/**
+ * A level of a country's pyramid abroad played in the full tier: its country, level (0 the top), name,
+ * and how many of its clubs go up and down at the season's end.
+ */
+export type LeagueAbroad = { country: string; level: number; name: string; promoted: number; relegated: number };
+
+/** `legs` 1 when the game's formats play the league's round robin once; a league abroad has no division. */
+export type LeagueCompetition = CompetitionBase & { kind: "league"; format: LeagueFormatId; division: Division | null; legs?: 1; abroad?: LeagueAbroad };
 
 /** `clubIds` is the seeding order, best first. */
 export type StateCompetition = CompetitionBase & { kind: "state"; state: State };
