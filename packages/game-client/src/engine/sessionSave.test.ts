@@ -63,3 +63,18 @@ test("the shards of a game saved again match those of the same game saved fresh"
   fresh.apply({ type: "load", save: session.save() });
   expect(session.saveShards()).toEqual(fresh.saveShards());
 });
+
+test("a save from before positions loads with every player's positions and every club's usual lineup from the pack", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  const saved = JSON.parse(session.save());
+  const { usualLineups, players } = structuredClone(saved.game);
+  delete saved.game.usualLineups;
+  for (const player of Object.values<{ positions?: unknown }>(saved.game.players)) delete player.positions;
+
+  const old = createEngineSession(bundledGameFiles);
+  old.apply({ type: "load", save: JSON.stringify(saved) });
+  const loaded = old.read(["usualLineups", "players"]);
+  expect(loaded.usualLineups).toEqual(usualLineups);
+  expect(loaded.players).toEqual(players);
+});

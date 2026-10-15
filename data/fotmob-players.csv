@@ -1,0 +1,2152 @@
+club_id,tm_id,fotmob_id,name,positions
+abc-rn,68465,128109,Wallyson,CB
+abc-rn,225639,449680,Wellington,CB
+abc-rn,235863,498518,Thallyson,LWB
+abc-rn,103146,555299,Edson,CB
+abc-rn,363772,637581,Matheus Alves,GK
+abc-rn,432957,750090,Lima,CM
+abc-rn,671656,791342,Vitor Luiz,GK
+abc-rn,349366,800040,Wellington Reis,CDM
+abc-rn,739112,1130710,Cayo Tenório,RB
+abc-rn,740493,1133046,Geilson,RM
+abc-rn,977484,1343372,Rikelmi,CAM
+abc-rn,860788,1376131,Lucas Souza,CB
+abc-rn,576563,1451459,Dudu Mandai,LB
+abc-rn,637809,1644101,Jhosefer,CM
+abecat-ouvidorense-go,1074928,1713371,Alan Bald,CDM
+agua-santa-sp,68727,121882,Vanderlei,GK
+agua-santa-sp,,1473312,Thiago,ST
+agua-santa-sp,,1661219,Nicholas,LW
+agua-santa-sp,,1788084,Michel Bennech,CB
+aguia-de-maraba-pa,,1281564,Paulo Henrique,RW
+aguia-de-maraba-pa,,1282066,Wendel Araújo,CB
+aguia-de-maraba-pa,977534,1385960,Carlos Maia,"CDM,CM"
+aguia-de-maraba-pa,1007690,1461850,Bruno Limão,RB
+aguia-de-maraba-pa,,1608421,Tony Junior,"LW,RW"
+aguia-de-maraba-pa,1011525,1785133,Xandão,GK
+aguia-de-maraba-pa,883280,1789152,Weslley Santos,LW
+aguia-de-maraba-pa,,1796403,Cássio,LB
+aguia-de-maraba-pa,554020,1933398,Willian Daltro,CDM
+alagoinhas-ba,520787,866411,Ruan,LW
+alagoinhas-ba,870352,1347670,Jeferson,ST
+altos-pi,155115,268310,Airton,LB
+altos-pi,538228,268400,Rodolfo Potiguar,CM
+altos-pi,101252,1334349,Marllon,RW
+altos-pi,722439,1756873,Kiko,CDM
+amazonas-am,125004,267893,Ronaldo,ST
+amazonas-am,178941,268036,Joílson,CB
+amazonas-am,177009,304629,Geuvânio,ST
+amazonas-am,101294,304886,Cicinho,RB
+amazonas-am,540990,934722,Jhonny Lucas,CM
+amazonas-am,592364,942073,Alyson Vinícius,RB
+amazonas-am,547553,955577,João Lopes,GK
+amazonas-am,530499,1054265,Vinícius Leite,RW
+amazonas-am,437777,1274057,Marcondes,CB
+amazonas-am,,1401257,Felipe Pará,RM
+amazonas-am,873467,1461856,Axel,GK
+amazonas-am,735046,1641846,Victor Lube,GK
+amazonas-am,985073,1772734,Iverton,CB
+america-mg-mg,55338,98563,Willian,"ST,LW,CAM"
+america-mg-mg,113586,174066,Manoel,CB
+america-mg-mg,667411,267710,Gustavo,GK
+america-mg-mg,178942,268035,Bruno Brígido,GK
+america-mg-mg,195882,281240,Gonzalo Mastriani,"ST,LW"
+america-mg-mg,223024,314285,Fernando Elizari,CAM
+america-mg-mg,277713,496391,Alex Silva,"RB,RWB"
+america-mg-mg,206097,500455,Ricardo Silva,CB
+america-mg-mg,348262,579795,Barreto,"CDM,ST"
+america-mg-mg,421718,585911,Luca Sosa,CB
+america-mg-mg,393830,671925,Guilherme Parede,"LW,RW"
+america-mg-mg,382171,750911,Emerson,CB
+america-mg-mg,539365,883000,Jorge Jiménez,"CDM,CM"
+america-mg-mg,481272,935962,Rodrigo Piñeiro,LW
+america-mg-mg,543614,1047943,Alê,"CDM,CAM"
+america-mg-mg,638060,1053843,William,GK
+america-mg-mg,718307,1109137,Matías Segovia,"RW,CAM,RM,CM"
+america-mg-mg,659705,1174645,Paulo Victor,"ST,RW"
+america-mg-mg,554298,1180659,Eduardo Person,"CAM,CM,LW"
+america-mg-mg,495109,1242173,Tobías Ostchega,"LB,LM,LWB"
+america-mg-mg,875994,1409917,Felipe Amaral,"CDM,CM,CAM"
+america-mg-mg,983979,1462823,Cássio,GK
+america-mg-mg,1085182,1489198,Rafa Barcelos,CB
+america-mg-mg,980832,1605941,Fábio,RB
+america-mg-mg,869094,1772735,Gabriel Domingos,CAM
+america-mg-mg,,1785050,Filipe Dahora,RB
+america-mg-mg,902123,1928053,Heitor,CDM
+america-mg-mg,1259352,1928068,Otávio Gonçalves,CDM
+america-mg-mg,,1944604,Júlio,RW
+america-mg-mg,,1975888,Luidy,LB
+america-mg-mg,1463877,2152715,Marcelo Maçola,ST
+america-rj-rj,228049,498488,João Gabriel,GK
+america-rj-rj,288506,556465,Caio Rangel,"LW,RW"
+america-rj-rj,379877,654633,Luís Henrique,ST
+america-rj-rj,681508,1127773,Emerson Carioca,ST
+america-rj-rj,,1708910,Alex Moretti,CM
+america-rn-rn,67207,121957,Wellington Tanque,ST
+america-rn-rn,107259,171478,Souza,CAM
+america-rn-rn,,498661,Heliardo,ST
+america-rn-rn,375226,623885,Ricardo Lopes,ST
+america-rn-rn,435231,637572,Evandro,LB
+america-rn-rn,640202,1080274,Alisson Taddei,CAM
+america-rn-rn,490432,1121000,Galván,RW
+america-rn-rn,553684,1274429,Rafael Jansen,CB
+america-rn-rn,866842,1317231,Renzo,CB
+america-rn-rn,813201,1457938,Alexandre Aruá,CDM
+america-rn-rn,,1467684,Luccas Romário,LB
+america-se,,1132299,Wallace,CM
+anapolis-go,245778,500479,Fernando Viana,ST
+anapolis-go,814454,1343216,Samuel,RB
+anapolis-go,689820,1440965,Rafael Costa,CB
+anapolis-go,980806,1463497,Mila,CDM
+aparecidense-go,88649,159453,Raphael Luz,CAM
+aparecidense-go,682445,1462420,Mário Henrique,LB
+araguaina-to,,1523813,Thalyson do Nascimento Coimbra,CM
+asa-al,211094,363487,Higor Leite,CM
+asa-al,261365,452844,Michel Douglas,ST
+asa-al,511925,730492,Richard Franco,CDM
+asa-al,407842,760417,Léo Príncipe,RB
+asa-al,666850,1282376,Allef,CM
+asa-al,1082969,1495757,Wesley,LB
+asa-al,729257,1653429,Mattheus Silva,LWB
+athletic-mg,129119,265113,Sidimar,CB
+athletic-mg,265768,498604,Glauco,GK
+athletic-mg,273250,535786,Luan Polli,GK
+athletic-mg,325196,535900,Zeca,"LB,CB,RB,RM"
+athletic-mg,336697,570359,Philipe Sampaio,CB
+athletic-mg,340531,717260,Ronaldo Tavares,ST
+athletic-mg,347017,777043,Tony,GK
+athletic-mg,363173,797332,Carlinhos,ST
+athletic-mg,512127,908827,Fabrício Isidoro,CDM
+athletic-mg,,1215655,Jhonatan Silva,CB
+athletic-mg,800649,1256689,Gustavinho,CAM
+athletic-mg,668230,1276550,Lucas Belezi,CB
+athletic-mg,854606,1292408,Wilinton Aponzá,ST
+athletic-mg,900203,1320166,Yago Santos,CAM
+athletic-mg,961686,1354140,Dixon Vera,"LW,RW,CAM,ST"
+athletic-mg,873528,1356527,Gian Cabezas,"CDM,CM,CAM"
+athletic-mg,868085,1376166,Douglas Pelé,"RB,RWB,RM"
+athletic-mg,837444,1402320,Jhan Torres,CB
+athletic-mg,1074479,1438376,Kauan Rodrigues,"CAM,LW,CDM,CM,RW"
+athletic-mg,994588,1469119,Diogo Batista,"RB,RWB,RM"
+athletic-mg,980837,1481530,Felipe Negrucci,"CDM,CM"
+athletic-mg,1226150,1605938,Max,"RW,ST,CAM,LW"
+athletic-mg,1241278,1622637,Yarlen,RW
+athletic-mg,1136746,1669697,Gustavão,ST
+athletic-mg,1224595,1673758,Marcelo Henrique,"LB,CB"
+athletic-mg,,1675596,Caick,CM
+athletic-mg,752597,1710264,Pedro Oliveira,"CAM,CM"
+athletic-mg,1222625,1732667,Kauan Lindes,"LW,CDM,CAM"
+athletic-mg,1139255,1737574,Enzo,"LB,LM,LWB"
+athletic-mg,1082667,1741566,Eduardo,GK
+athletic-mg,1082637,1741569,Jota,"CM,CDM,CAM"
+athletic-mg,1367321,1786037,Assis,"RW,CAM"
+athletic-mg,1227001,1789979,João Miguel,"CDM,CM,CB"
+athletic-mg,1087844,1807909,Felipe Vieira,"CB,LB"
+athletic-mg,1096507,1888847,Alexandre Pena,"CDM,CAM"
+athletic-mg,977125,1931907,Bruninho,RW
+athletico-pr-pr,10471,147729,Luiz Gustavo,"CDM,CM"
+athletico-pr-pr,140811,265435,Santos,GK
+athletico-pr-pr,,280758,Steven Mendoza,"CAM,LWB,RM,RW,LM,ST"
+athletico-pr-pr,205179,319591,Jádson,"CDM,CM"
+athletico-pr-pr,,387499,Gilberto,"RWB,RB"
+athletico-pr-pr,403296,676470,Léo,CB
+athletico-pr-pr,570521,923698,Juan Aguirre,CB
+athletico-pr-pr,696719,929338,Gastón Benavídez,"RWB,CB,RM,RB,LB"
+athletico-pr-pr,580461,941671,Kevin Viveros,ST
+athletico-pr-pr,632246,1020113,Alejandro García,CAM
+athletico-pr-pr,649184,1053726,Carlos Terán,"CB,RB"
+athletico-pr-pr,829969,1201038,Lucas Esquivel,"CB,LWB,LB"
+athletico-pr-pr,711600,1269982,Bruno Zapelli,"CM,CAM,LW"
+athletico-pr-pr,585747,1281230,Juan Portilla,"CDM,CM"
+athletico-pr-pr,907649,1285541,Kerwin Vargas,RW
+athletico-pr-pr,869007,1320948,Renan Viana,ST
+athletico-pr-pr,883623,1385140,Renan Peixoto,ST
+athletico-pr-pr,743586,1400078,Mycael,GK
+athletico-pr-pr,1052819,1400079,Léo Derik,"LM,LWB,LB"
+athletico-pr-pr,1115489,1460476,Felipinho,"CM,CDM"
+athletico-pr-pr,1004728,1509713,Dudu Kogitzki,"CAM,CM,RW"
+athletico-pr-pr,1004738,1590303,João Cruz,"CAM,CM,LW"
+athletico-pr-pr,1071293,1604114,Jorge Rivaldo,ST
+athletico-pr-pr,1110658,1636609,Leozinho,"CAM,RW"
+athletico-pr-pr,1093926,1638937,Dantas,CB
+athletico-pr-pr,,1658902,Diogo Riquelme,CB
+athletico-pr-pr,1233473,1681911,Arthur Dias,CB
+athletico-pr-pr,,1697612,Nicolás Azambuja,ST
+athletico-pr-pr,231614,1815988,Gilberto,RWB
+athletico-pr-pr,,1927842,Bruno Baldini,CB
+athletico-pr-pr,1223243,1927904,Claudinho,LWB
+atletico-go-go,98930,42481,Vladimir,GK
+atletico-go-go,100124,172213,Geovane,LW
+atletico-go-go,139607,196824,Guilherme Marques,"CAM,CM,RW"
+atletico-go-go,261309,495321,David Terans,CAM
+atletico-go-go,298410,522770,João Pedro,ST
+atletico-go-go,285684,536653,Paulo Henrique,GK
+atletico-go-go,419120,728763,Paulo Vítor,GK
+atletico-go-go,401533,749387,Matheusinho,"RW,RM,LW,CAM"
+atletico-go-go,476337,800922,Yuri Silva,"LB,CB"
+atletico-go-go,347090,849499,Leandro Vilela,CDM
+atletico-go-go,599879,951066,Marrony,"CAM,LW,CM,ST"
+atletico-go-go,644210,1035342,Bruno José,RW
+atletico-go-go,612340,1051843,Gustavo Coutinho,ST
+atletico-go-go,681627,1100346,Warley,RB
+atletico-go-go,676034,1174317,Ewerthon,"RB,RW"
+atletico-go-go,678502,1222807,Guilherme Lopes,LB
+atletico-go-go,902135,1292459,Cristiano,"CDM,CM"
+atletico-go-go,752560,1296383,Gustavo Maia,LW
+atletico-go-go,739272,1336899,Adriano Martins,CB
+atletico-go-go,978004,1336917,Natã Felipe,RB
+atletico-go-go,981666,1350567,Junior Barreto,CB
+atletico-go-go,1042363,1393540,Léo Rosa,GK
+atletico-go-go,978036,1439755,Netinho,"CDM,CAM,CM"
+atletico-go-go,900540,1445304,Kahiser Lenis,LW
+atletico-go-go,739249,1460513,Léo Tocantins,RW
+atletico-go-go,1096866,1478310,Gustavo Daniel,LB
+atletico-go-go,675047,1526933,Peixoto,"CDM,CM,LM"
+atletico-go-go,,1638669,Marcão,CB
+atletico-go-go,867798,1736987,Tito,CB
+atletico-go-go,,1738371,Guilherme Henrique,CAM
+atletico-go-go,984512,1786140,Geovany Soares,"LW,RW,LM"
+atletico-go-go,,1854201,Klebert,CDM
+atletico-go-go,735650,1938613,Henrique Freitas,"CAM,RW"
+atletico-mg-mg,114937,174531,Dudu,"CAM,LW"
+atletico-mg-mg,175169,265116,Bernard,"CAM,LW,RW,ST,RM"
+atletico-mg-mg,106032,268171,Everson,GK
+atletico-mg-mg,149752,307070,Vitor Hugo,CB
+atletico-mg-mg,191614,322049,Fred,"CAM,CDM,CM"
+atletico-mg-mg,330085,544424,Gustavo Scarpa,"CAM,CDM,RW,RWB"
+atletico-mg-mg,362667,639061,Mateo Cassierra,ST
+atletico-mg-mg,379807,654045,Lyanco,CB
+atletico-mg-mg,421935,732294,Maycon,"CDM,CM"
+atletico-mg-mg,312678,750056,Léo Duarte,CB
+atletico-mg-mg,476352,793876,Renan Lodi,"LB,LWB"
+atletico-mg-mg,400960,832171,Alan Franco,"CDM,CM,RB,CB,RM,RWB"
+atletico-mg-mg,503052,834605,Tomás Cuello,"RW,CAM,LM,RWB,LW"
+atletico-mg-mg,450241,848593,Ángelo Preciado,"RB,RM,RWB"
+atletico-mg-mg,553459,902694,Igor Gomes,"CDM,CAM,CM,LW"
+atletico-mg-mg,555015,905494,Ruan Tressoldi,CB
+atletico-mg-mg,627226,1075046,Reinier,"ST,CAM"
+atletico-mg-mg,743951,1132940,Thiago Borbas,ST
+atletico-mg-mg,740295,1173565,Natanael,"RB,CB,RWB"
+atletico-mg-mg,897051,1274400,Alan Minda,"CAM,LW,ST,RW"
+atletico-mg-mg,749559,1363368,Victor Hugo,"CAM,RW,CM,CDM,RM,LW"
+atletico-mg-mg,997714,1391210,Alexsander,"CDM,CM"
+atletico-mg-mg,978121,1412963,Gabriel Delfim,GK
+atletico-mg-mg,857948,1434853,Kevin Castaño,"CDM,CM"
+atletico-mg-mg,1152154,1508514,Tomás Pérez,"CDM,CM"
+atletico-mg-mg,1124553,1736563,Robert,GK
+atletico-mg-mg,1355486,1804861,Vitão,CB
+atletico-mg-mg,1355484,1895006,Kauã Pascini,"LB,LWB"
+atletico-mg-mg,1410674,1898808,Mamady Cissé,"CDM,RW,CM"
+atletico-mg-mg,1365061,1928510,Cauã Soares,ST
+avai-sc,143817,268214,Léo Gamalho,ST
+avai-sc,214701,319972,Bruno Ferreira,GK
+avai-sc,65937,498426,Otávio,GK
+avai-sc,390695,693500,Allyson,CB
+avai-sc,425462,750057,Felipe Vizeu,ST
+avai-sc,476336,811221,Zé Ricardo,"CDM,CM,RM"
+avai-sc,468256,813810,Daniel Penha,"CAM,ST,RW,CM"
+avai-sc,514297,844220,Reynaldo,CB
+avai-sc,530385,847383,Igor Bohn,GK
+avai-sc,532828,962448,Jean Lucas,"LW,CAM,ST,LM"
+avai-sc,682134,1077350,Wallison,RB
+avai-sc,468320,1118169,Léo Chú,LW
+avai-sc,742023,1173475,Del Piage,CDM
+avai-sc,689521,1173653,Luiz Henrique,"CDM,CM,CAM"
+avai-sc,800177,1174629,Rildo,LW
+avai-sc,530032,1195556,Quaresma,LB
+avai-sc,681501,1245542,Wenderson,"CAM,LW,CM"
+avai-sc,973499,1347940,Douglas Teixeira,"LB,LM"
+avai-sc,1019701,1377995,Pedrão,CB
+avai-sc,767623,1419325,Gaspar,LM
+avai-sc,1012161,1460519,Jefferson,CB
+avai-sc,1116366,1474235,Paulo Vitor,"CDM,CM"
+avai-sc,1082852,1636514,Hyan,ST
+avai-sc,1226336,1637477,João Vitor,"RB,RM"
+avai-sc,1090822,1639467,Guilherme Aquino,CB
+avai-sc,997464,1653504,Pedro Cuiabá,CM
+avai-sc,1082235,1726399,Gabriel Cipriano,RW
+avai-sc,1095742,1928139,Gabriel Simples,"RB,CB"
+avai-sc,1275070,1928478,Caio Suassuna,ST
+avai-sc,,1929091,William Fernando,LM
+azuriz-pr,,1184040,Brunão,CB
+azuriz-pr,742091,1344691,Vinícius Dias,GK
+azuriz-pr,1103834,1448425,Jorginho,CM
+azuriz-pr,1220453,1653431,Marquinhos,RW
+bahia-ba,67144,124130,Léo Vieira,GK
+bahia-ba,122155,179083,Willian José,ST
+bahia-ba,52896,263937,Éverton Ribeiro,"CM,CAM"
+bahia-ba,205041,295103,Everaldo,ST
+bahia-ba,230014,322966,Guido Herrera,GK
+bahia-ba,373446,638782,David Duarte,CB
+bahia-ba,387925,812077,Ronaldo,GK
+bahia-ba,524446,844161,Kanu,CB
+bahia-ba,482144,902826,Michel Araújo,CM
+bahia-ba,578872,934675,Jean Lucas,"CM,CDM,CAM"
+bahia-ba,544259,937552,Ademir,"RW,RM"
+bahia-ba,625569,1020027,Nicolás Acevedo,"CM,RB,CDM"
+bahia-ba,633212,1028125,Erick,"CM,CDM"
+bahia-ba,727751,1116234,Caio Alexandre,"CM,CDM"
+bahia-ba,468304,1118194,Rodrigo Nestor,"CM,CAM,CDM,LM"
+bahia-ba,657746,1136409,Cristian Olivera,"RW,LW"
+bahia-ba,676035,1174329,Luciano Juba,LB
+bahia-ba,888493,1250658,Alejo Véliz,ST
+bahia-ba,984480,1338045,Mateo Sanabria,RW
+bahia-ba,936544,1340527,Erick Pulga,"LW,ST,RW,CAM"
+bahia-ba,534376,1343136,Marco Moreno,CB
+bahia-ba,980463,1355337,Marcos Victor,"CB,RB"
+bahia-ba,1084816,1462841,Zé Guilherme,LB
+bahia-ba,1036450,1515144,Lautaro López,"CM,CDM"
+bahia-ba,1241022,1617809,Román Gómez,"RB,CB"
+bahia-ba,1220468,1652050,Luiz Gustavo,CB
+bahia-ba,1220614,1664010,Ruan Pablo,RW
+bahia-ba,,1664778,Sidney,CDM
+bahia-ba,,1743199,Fred,RB
+bahia-ba,1423021,1784621,Kauê Furquim,RM
+bahia-ba,1328021,1790209,Dell,ST
+bangu-rj,1231051,1615071,Canhota,ST
+barra-sc,187212,267360,Matheus Kayser,ST
+barra-sc,214699,319670,Guilherme Lazaroni,LWB
+barra-sc,374091,832442,Cléo Silva,RW
+barra-sc,,1034657,Vinicius Popó,ST
+barra-sc,724670,1360199,Léo Duarte,RB
+barra-sc,1096266,1463349,Da Rocha,LB
+barra-sc,1094940,1481879,Renan Bernabé,ST
+barra-sc,550650,1486267,Vavá,CB
+barra-sc,549941,1503662,Jean Pierre,CB
+barra-sc,692777,1565720,Gabriel Silva,LW
+barra-sc,540645,1668015,Volpi,GK
+barra-sc,1325876,1818405,Gaudêncio,CM
+barra-sc,1116634,1908843,Lucas Vargas,ST
+betim-mg,26239,150769,Pedro Botelho,CB
+betim-mg,113336,183546,Alan Santos,CB
+betim-mg,216580,319928,Paulo Henrique,ST
+betim-mg,224863,322667,Bryan,LB
+betim-mg,503766,855323,Matheus Mascarenhas,LB
+betim-mg,813117,1194363,Vitinho,"CAM,CM"
+betim-mg,816132,1377994,Miticov,CDM
+betim-mg,928872,1653492,Riquelmy,CDM
+blumenau-sc,85965,171913,Glédson,GK
+blumenau-sc,,324711,Marcos Pedroso,LWB
+blumenau-sc,323879,824664,Vinícius Jaú,RW
+blumenau-sc,376135,845763,André Castro,CB
+blumenau-sc,547554,1034073,Marcão,CB
+blumenau-sc,739392,1181404,Foguinho,LM
+blumenau-sc,412681,1790918,Wellisson Almeida Nunes,ST
+blumenau-sc,,1912146,Jonathan Miranda da Silva Mendes,"CM,CAM"
+boavista-rj,425939,600849,Leandrinho,CDM
+boavista-rj,503218,834258,Diego Loureiro,GK
+boavista-rj,940145,1334431,Gabriel Tota,"ST,CAM"
+boavista-rj,729288,1572946,Fialho,LW
+botafogo-pb-pb,29091,37429,Nenê,"ST,CAM"
+botafogo-pb-pb,104544,132007,Saimon,CB
+botafogo-pb-pb,75111,177501,Felipe Azevedo,LW
+botafogo-pb-pb,202919,320531,Giovanni,RW
+botafogo-pb-pb,231009,388504,Diogo Mateus,RB
+botafogo-pb-pb,255754,459250,Lucas Cândido,CDM
+botafogo-pb-pb,270959,474131,Henrique Dourado,ST
+botafogo-pb-pb,,591584,Gustavo Santos,ST
+botafogo-pb-pb,374097,622119,Rodolfo,ST
+botafogo-pb-pb,592336,789846,Max Walef,GK
+botafogo-pb-pb,485705,792065,Thallyson,CDM
+botafogo-pb-pb,435234,793265,Diego Tavares,"RW,CAM,RM"
+botafogo-pb-pb,575375,1044831,Jonas Toró,LM
+botafogo-pb-pb,530388,1098097,Jhonata Varela,CDM
+botafogo-pb-pb,546214,1117104,Igor Morais,CB
+botafogo-pb-pb,,1227192,Patric Calmon,CB
+botafogo-pb-pb,838221,1235675,Dudu,LM
+botafogo-pb-pb,787709,1235994,Léo Pereira,RB
+botafogo-pb-pb,752561,1320167,Lucas Sena,RWB
+botafogo-pb-pb,676510,1339338,Igor Maduro,CM
+botafogo-pb-pb,979629,1350775,Yan Souto,RM
+botafogo-pb-pb,624870,1387179,Ed Carlos,CAM
+botafogo-pb-pb,976600,1437541,Kayon,LW
+botafogo-pb-pb,555564,1460447,Luiz Daniel,GK
+botafogo-pb-pb,727052,1460535,Octávio,"CB,CDM"
+botafogo-pb-pb,982553,1485167,Gustavo,CM
+botafogo-pb-pb,979612,1653501,Erick,RB
+botafogo-rj,126422,188652,Allan,"CDM,CM"
+botafogo-rj,169052,268394,Edenílson,"CAM,CDM,CM,RW"
+botafogo-rj,137745,304014,Marçal,"CB,LB"
+botafogo-rj,217111,360559,Hakim Ziyech,"RW,CAM"
+botafogo-rj,255755,428672,Alex Telles,"LB,LM,LWB"
+botafogo-rj,103381,614970,Tiquinho Soares,ST
+botafogo-rj,390638,670948,Arthur Cabral,ST
+botafogo-rj,477460,810487,Warleson,GK
+botafogo-rj,401535,846023,Gabriel Batista,GK
+botafogo-rj,466336,847910,Nahuel Ferraresi,CB
+botafogo-rj,523363,866415,Kaio Pantaleão,CB
+botafogo-rj,520492,891678,Paulinho,"LWB,LM"
+botafogo-rj,468249,905498,Vitinho,"RB,RM,RWB"
+botafogo-rj,592347,929219,Júnior Santos,"RW,ST"
+botafogo-rj,519731,931862,Danilo,"ST,RW,LW"
+botafogo-rj,808509,1181700,Danilo Santos,"CDM,CM,CAM"
+botafogo-rj,661133,1199960,Cristian Medina,"CDM,CAM,CM"
+botafogo-rj,668228,1262084,Matheus Martins,"LW,ST,RW"
+botafogo-rj,796973,1295307,Lucas Monzón,CB
+botafogo-rj,666541,1312637,Domingos Andrade,CM
+botafogo-rj,875332,1355636,Arthur Chaves,CB
+botafogo-rj,856047,1436176,Mateo Ponte,"RB,CB"
+botafogo-rj,874844,1474166,Lucas Villalba,"RW,RM"
+botafogo-rj,1112486,1474276,Jhoan Hernández,LB
+botafogo-rj,1074501,1477421,Cristhian Loor,GK
+botafogo-rj,1087334,1477851,Jordan Barrera,"LW,CM,CAM,RM,RW"
+botafogo-rj,1228194,1607035,Álvaro Montoro,"CAM,LW,LM,RW"
+botafogo-rj,1092623,1636444,Anthony,CB
+botafogo-rj,1279908,1690811,Wallace Davi,"CM,CDM"
+botafogo-rj,1095624,1734556,Kadu,RB
+botafogo-rj,,1741338,Gabriel,LB
+botafogo-rj,1364573,1761942,Huguinho,"CM,CDM"
+botafogo-rj,1127043,1793991,Gabriel Justino,CB
+botafogo-rj,1096605,1817873,Kauan Toledo,"LW,ST"
+botafogo-rj,,1817874,Marquinhos,CDM
+botafogo-rj,1464878,1817875,Kadir Barría,"ST,CAM"
+botafogo-rj,,1893753,Caio Valle,CAM
+botafogo-rj,,1899359,Arthur Izaque,ST
+botafogo-rj,,1899360,Arthur Novaes,CDM
+botafogo-rj,1568045,2087558,Lucas Emanuel,ST
+botafogo-sp-sp,224481,449837,Arthur Caíke,ST
+botafogo-sp-sp,225335,450002,Wallace,CB
+botafogo-sp-sp,407654,583764,Matheus Sales,CDM
+botafogo-sp-sp,419474,730760,Hygor,ST
+botafogo-sp-sp,411707,750438,Guilherme Queiróz,ST
+botafogo-sp-sp,402734,751532,Jefferson Nem,"RW,LW,CAM"
+botafogo-sp-sp,438923,753077,Leandro Maciel,"CDM,CM"
+botafogo-sp-sp,411563,762031,Rafael Gava,"CAM,CM,CDM"
+botafogo-sp-sp,147366,795212,Jonathan,"CB,RB"
+botafogo-sp-sp,525256,879585,Everton Morelli,"CAM,CDM,CM"
+botafogo-sp-sp,555017,905495,Ericson,CB
+botafogo-sp-sp,435170,937517,Patrick Brey,"LB,LWB"
+botafogo-sp-sp,788402,1172407,Gabriel Inocêncio,"RB,RWB,LB"
+botafogo-sp-sp,,1174841,Carlos Eduardo,CB
+botafogo-sp-sp,628522,1189602,Victor Souza,GK
+botafogo-sp-sp,527192,1259570,Felipe Vieira,LB
+botafogo-sp-sp,,1290658,Thiago Moraes,"RW,LW,CDM"
+botafogo-sp-sp,638722,1358147,Kelvin,"LW,CAM"
+botafogo-sp-sp,940479,1359528,Zé Hugo,RW
+botafogo-sp-sp,978269,1390279,Vilar,CB
+botafogo-sp-sp,894776,1391241,Marco Antônio,CDM
+botafogo-sp-sp,823508,1460428,Jordan,GK
+botafogo-sp-sp,1094414,1657941,Jadson,RB
+botafogo-sp-sp,1007070,1662452,Guilherme Mariano,CB
+botafogo-sp-sp,1097183,1776096,Yuri Felipe,CDM
+botafogo-sp-sp,744895,1791132,Márcio Maranhão,LW
+botafogo-sp-sp,816148,1895029,Wesley,"LW,ST"
+botafogo-sp-sp,997862,1908414,Darlan,CB
+botafogo-sp-sp,,1943129,Henrique Teles,LB
+botafogo-sp-sp,1223922,2347425,Pedrinho,"RB,RWB"
+bragantino-clube-do-para-pa,,1839976,Taygor,CB
+bragantino-sp,162883,215051,Eduardo Sasha,"ST,CAM"
+bragantino-sp,213606,319589,Gabriel,"CDM,CM"
+bragantino-sp,227671,409017,Tiago Volpi,GK
+bragantino-sp,400661,704019,Agustín Sant'Anna,RB
+bragantino-sp,468247,768389,Cleiton,GK
+bragantino-sp,351892,789877,Matheus Fernandes,"CDM,CM"
+bragantino-sp,406676,844510,Juninho Capixaba,LB
+bragantino-sp,550495,896256,Fernando,"LW,ST"
+bragantino-sp,564546,920420,Eduardo Santos,CB
+bragantino-sp,614328,960494,Eric Ramires,"CDM,CAM,CM"
+bragantino-sp,675178,1033279,Isidro Pitta,ST
+bragantino-sp,732899,1132936,Guzmán Rodríguez,CB
+bragantino-sp,,1137456,Praxedes,LW
+bragantino-sp,722457,1174680,Fabrício,GK
+bragantino-sp,816129,1209100,Vanderlan,LB
+bragantino-sp,680506,1212487,José Hurtado,RB
+bragantino-sp,880217,1231596,Alix,CB
+bragantino-sp,627230,1249293,Fabinho,"CDM,CM"
+bragantino-sp,816144,1256634,Lucas Barbosa,"RW,CAM,RM,LW"
+bragantino-sp,977465,1262152,Gustavo Marques,CB
+bragantino-sp,668234,1317192,Bruninho,CM
+bragantino-sp,668953,1372718,José Herrera,"RW,RM,LW,CAM,ST"
+bragantino-sp,881645,1375764,Ignacio Sosa,"CDM,CM"
+bragantino-sp,743593,1382475,Rodriguinho,"CDM,CAM,CM"
+bragantino-sp,975191,1407217,Henry Mosquera,"LW,LM"
+bragantino-sp,,1448300,Gustavinho,"CM,CDM,CAM"
+bragantino-sp,1082593,1638434,Vinicinho,LW
+bragantino-sp,1082602,1640270,Wallace Yan,"ST,CAM"
+bragantino-sp,1082625,1653801,Patrick,CDM
+bragantino-sp,,1669656,Marquinhos,CM
+bragantino-sp,1222308,1719148,Davi Gomes,RW
+bragantino-sp,,1777124,Yuri,LW
+bragantino-sp,,1786209,Cauê Santos,LB
+bragantino-sp,1311456,1926959,Ryan Augusto,RB
+bragantino-sp,,1946524,Jhuan Nunes,ST
+bragantino-sp,,1959873,Breno de Moraes,RB
+brasil-de-pelotas-rs,540948,789761,Edson,GK
+brasil-de-pelotas-rs,,857261,Douglas Santos,LW
+brasil-de-pelotas-rs,989456,1437478,Denis Germano,RW
+brasiliense-df,,114373,Apodi,RM
+brasiliense-df,53226,128033,David Braz,CB
+brasiliense-df,114514,179614,Marcelo Cirino,LW
+brasiliense-df,231039,396994,Marlone,CM
+brasiliense-df,,449835,Alan Costa,CB
+brasiliense-df,267464,498596,Fábio Sanches,CB
+brasiliense-df,312686,785391,Vançan,CM
+brasiliense-df,175395,864462,Genilson,CB
+brasiliense-df,351903,866182,Jean Pyerre,CAM
+brasiliense-df,265652,952036,Netinho,RB
+brasiliense-df,,1123291,Elyeser,CM
+brasiliense-df,,1175595,Victor Sallinas,CB
+brasiliense-df,520488,1430312,Wallace Pernambucano,ST
+brasiliense-df,815670,1627991,Vitor Marinho,RB
+brasiliense-df,,1797526,Hippólito Neto,"CAM,LM"
+brusque-sc,150601,264084,Héber,ST
+brusque-sc,232577,362196,Jonatan Lucca,CDM
+brusque-sc,294789,637713,Jeferson,RB
+brusque-sc,733338,729223,Matheus Nogueira,GK
+brusque-sc,428787,845736,João Pedro,RW
+brusque-sc,538225,950460,Álvaro,ST
+brusque-sc,542597,1048002,Marlyson,LW
+brusque-sc,739445,1174635,Raimar,LM
+brusque-sc,542615,1238035,Alisson Cassiano,CB
+brusque-sc,866884,1269872,Pedro Martins,"CDM,CM"
+brusque-sc,743830,1320947,Ataíde,RB
+brusque-sc,740294,1355491,Bernardo,CM
+brusque-sc,978057,1373167,Petterson,ST
+brusque-sc,994622,1402098,Cipriano,CB
+brusque-sc,980864,1433271,Ariel Palacio,CM
+brusque-sc,681690,1433895,Davi Gabriel,LM
+brusque-sc,869061,1460539,Gazão,CM
+brusque-sc,1100068,1461824,Macário,ST
+brusque-sc,,1463481,Arinze Clinton Udeh,ST
+brusque-sc,694495,1466588,João Maistro,CB
+brusque-sc,550224,1736931,Paulo Gianezini,GK
+brusque-sc,1091616,1738098,Rafael Milhorim,CB
+brusque-sc,1103839,1741337,Alex Paulino,CM
+brusque-sc,1095563,1804816,Ryan Santos,CB
+capital-df,175238,268457,Renan Luís,CM
+capital-df,155472,268575,Éder Lima,CB
+capital-df,213539,305712,Matheuzinho,RW
+capital-df,188959,309000,William Barbio,ST
+capital-df,,621526,Alison Mira,ST
+capital-df,,803028,Mateus Anderson,RW
+capital-df,429799,816012,Jori,GK
+capital-df,737668,1130862,Nicolás Lugano,RB
+capital-df,691837,1185335,Lessinho,LW
+capital-df,735569,1190108,Ítalo,RB
+capital-df,,1372924,Zé Mateus,CDM
+capital-df,,1440208,Deyzinho,RW
+capital-df,638925,1441885,Richardson,CB
+capital-df,797658,1613996,Tobinha,LW
+capital-df,,1643995,João Villela,LM
+capital-df,874318,1666493,Lucas Oliveira,CB
+capivariano-sp,,638653,Leandrinho,LW
+capivariano-sp,411865,703801,Guilherme,GK
+cascavel-pr,471994,776802,Geovane,CB
+cascavel-pr,,777188,Flávio Ramos,CB
+cascavel-pr,668515,1219688,André Luiz,GK
+cascavel-pr,,1503660,Zé Carlos,LW
+cascavel-pr,530386,1513005,Robinho,CM
+cascavel-pr,1092437,1605186,João Victor,LW
+castanhal-pa,491647,950025,Pedro Campos,LWB
+castanhal-pa,,1253525,Kevin Saucedo,CB
+caxias-rs,390370,676463,Ravanelli,CAM
+caxias-rs,340113,730355,Marcelo Freitas,CM
+caxias-rs,403540,813498,Ianson,CB
+caxias-rs,625373,970081,Vitinho,LB
+caxias-rs,369240,1053823,Salatiel,LW
+caxias-rs,538258,1350423,Diego Quirino,ST
+caxias-rs,980435,1393823,Jhonatan Ribeiro,LW
+caxias-rs,903050,1433269,João Lucas,RW
+ceara-ce,148231,201788,Lucas Mugni,CAM
+ceara-ce,106281,320026,Vina,CAM
+ceara-ce,145573,331759,Richardson,"CDM,CM"
+ceara-ce,265693,498729,Luiz Otávio,CB
+ceara-ce,248030,520530,Renzo López,ST
+ceara-ce,290388,554287,Rafael Ramos,"RB,RW,RM"
+ceara-ce,408850,657989,Caíque França,GK
+ceara-ce,375241,670806,Sánchez,"LB,LM,LWB"
+ceara-ce,381032,689080,Luizão,CB
+ceara-ce,375690,844505,Éder,CB
+ceara-ce,524568,844564,Bryan,"RB,LW,CAM,LB,CDM,RM"
+ceara-ce,159893,934515,Richard,GK
+ceara-ce,589911,943386,Wendel,ST
+ceara-ce,976522,1028612,Giovanni Pavani,"CDM,CM"
+ceara-ce,646404,1037548,Zanocelo,CDM
+ceara-ce,607093,1043436,Sávio,LB
+ceara-ce,553727,1127467,Saulo Mineiro,"ST,RW"
+ceara-ce,636741,1200386,Matheus Nogueira,GK
+ceara-ce,865028,1232260,Lenny Lobato,"RW,RM"
+ceara-ce,678853,1233129,Matheus Araújo,"LW,CAM"
+ceara-ce,874307,1350755,Thalisson,CB
+ceara-ce,995638,1356884,Nicolás Ferreira,"LW,LM,ST,RW"
+ceara-ce,982549,1441321,Lucca,ST
+ceara-ce,985345,1480127,Júlio César,"RB,CB,CDM,RM,CM"
+ceara-ce,1092001,1788181,Rian Santana,LW
+ceara-ce,1096082,1905640,Melk,"RW,CAM"
+ceara-ce,1223077,1905651,João Gabriel,"CDM,CM,CAM"
+ceara-ce,,1905653,Enzo,"RW,CAM"
+ceara-ce,,1905663,Gabriel Rocha,CB
+ceara-ce,1096081,1905708,Gilmar,CB
+cefat-tirol-ce,975898,1749251,Rayr Miller,GK
+ceilandia-df,873513,360509,Cleyton,CAM
+ceilandia-df,241354,387481,Romário,LB
+ceilandia-df,554996,905501,Sávio,RB
+ceilandia-df,653608,1173569,Henrique Vermudt,CB
+ceilandia-df,803432,1180575,Davi Araújo,CM
+central-pe,,265687,Milton,GK
+central-pe,203136,292265,Yuri Mamute,ST
+central-pe,,1282050,Felipe Jacaré,CAM
+central-pe,752565,1469454,Ruan,"LW,RW"
+central-pe,961613,1641686,Jackson Santos,LB
+chapecoense-sc,75471,160194,Yannick Bolasie,ST
+chapecoense-sc,93243,171985,Rafael Santos,GK
+chapecoense-sc,125513,202486,Giovanni Augusto,"CAM,ST"
+chapecoense-sc,292152,535799,Rafael Thyere,CB
+chapecoense-sc,346935,535888,Yago Felipe,"CDM,CAM,CM"
+chapecoense-sc,311182,581723,Kevin Ramírez,"RW,ST"
+chapecoense-sc,435163,754373,Bruno Pacheco,"LB,LM,LWB"
+chapecoense-sc,476362,802579,Dudu,RB
+chapecoense-sc,636507,816004,Victor Caetano,CB
+chapecoense-sc,514500,833990,Marcinho,"LW,CAM,RW,ST,LM"
+chapecoense-sc,598974,950459,Anderson,GK
+chapecoense-sc,550178,979414,Bruno Tubarão,"RB,RWB"
+chapecoense-sc,672202,1060636,Camilo,"CDM,CM"
+chapecoense-sc,670969,1068532,Heitor,"RB,RM"
+chapecoense-sc,736652,1130713,João Paulo,CB
+chapecoense-sc,662453,1130746,Dylan Borrero,RM
+chapecoense-sc,813108,1206576,Vinícius Balieiro,CM
+chapecoense-sc,671292,1216339,Bruno Matias,CDM
+chapecoense-sc,876343,1235079,Max,"CM,LM,CAM"
+chapecoense-sc,871650,1257284,Mancha,LB
+chapecoense-sc,802809,1283773,Maurício Garcez,"LW,ST"
+chapecoense-sc,722133,1383652,Rafael Carvalheira,"CDM,CM,RWB,RW"
+chapecoense-sc,731057,1433363,Fernando,"LB,LM,LWB,CM"
+chapecoense-sc,698784,1437480,Doma,CB
+chapecoense-sc,1118587,1456400,Franco Rossi,ST
+chapecoense-sc,1051322,1606408,Robert,"CAM,CM"
+chapecoense-sc,931677,1611193,Miguel Carvalho,"CAM,CM"
+chapecoense-sc,997465,1642126,Rubens,RW
+chapecoense-sc,,1660562,Gustavo Talles,RB
+chapecoense-sc,1082707,1681803,Kauan Faria,CB
+chapecoense-sc,1084629,1696054,David,CDM
+chapecoense-sc,646676,1736942,Matheus,GK
+chapecoense-sc,856990,1738040,Everton,"RB,RM,RWB"
+chapecoense-sc,978139,1738042,Gabriel Werner,GK
+chapecoense-sc,1102308,1946070,Túlio,ST
+cianorte-pr,278402,459653,Cristovam,RB
+cianorte-pr,,1305910,Luciano,CM
+cianorte-pr,,1509075,Tite,RW
+cianorte-pr,674690,1641697,Reifit,ST
+cianorte-pr,1094961,1683546,Paulo Roberto,RWB
+confianca-se,,10317,Bruno Silva,RM
+confianca-se,461224,793038,Weriton,RB
+confianca-se,519874,853995,Iago Silva,LW
+confianca-se,,865472,Patrick,"CAM,ST,RW"
+confianca-se,592310,936587,Madison,LB
+confianca-se,448859,1080206,Lucas Cunha,CB
+confianca-se,716388,1174782,Kelvyn,LB
+confianca-se,740376,1431261,Valdir Júnior,RB
+confianca-se,681495,1434529,Adryan,CM
+confianca-se,1083075,1439557,Gabriel Zeca,RM
+confianca-se,875895,1636391,Matheus Emiliano,GK
+confianca-se,,1640843,Enzo Rocha,LM
+confianca-se,530412,1641260,Alisson,CB
+confianca-se,638719,1660401,Eduardo Moura,CB
+corinthians-sp,149498,177503,Gabriel Paulista,CB
+corinthians-sp,123349,193177,Zakaria Labyad,LW
+corinthians-sp,135057,246414,André Carrillo,"CDM,CM,CAM,RW,RM"
+corinthians-sp,175792,251244,André Ramalho,CB
+corinthians-sp,141660,299215,Jesse Lingard,"ST,LW,CAM"
+corinthians-sp,167850,303824,Memphis Depay,"ST,CAM"
+corinthians-sp,213605,319599,Vitinho,LW
+corinthians-sp,208681,323352,Gustavo Henrique,CB
+corinthians-sp,268506,427877,Fabrizio Angileri,"LB,CB"
+corinthians-sp,219835,494241,Alex Santana,CM
+corinthians-sp,323934,637670,Matheus Pereira,"CDM,CM,CAM"
+corinthians-sp,385271,676625,Allan,CDM
+corinthians-sp,486078,775266,Charles,CDM
+corinthians-sp,546530,841656,Raniele,"CDM,CB,CM,RB"
+corinthians-sp,547443,890637,Pedro Raul,ST
+corinthians-sp,489893,892752,Yuri Alberto,ST
+corinthians-sp,574901,960887,Hugo Souza,GK
+corinthians-sp,565009,1093746,Rodrigo Garro,"CAM,CM,ST"
+corinthians-sp,670021,1130833,Matheus Bidu,"LB,LWB"
+corinthians-sp,594226,1174660,Matheuzinho,"RB,RWB"
+corinthians-sp,730708,1198558,Hugo,"LB,LWB"
+corinthians-sp,657743,1350024,Pedro Milans,RB
+corinthians-sp,1029227,1380775,Breno Bidon,"RW,LW,CDM,CAM,CM,LM,RM"
+corinthians-sp,766258,1395944,Kaio César,"RW,CAM"
+corinthians-sp,1082700,1503652,Kayke,"LW,LM"
+corinthians-sp,1005650,1503653,João Pedro,CB
+corinthians-sp,1005653,1511563,Kauê Camargo,GK
+corinthians-sp,1005656,1648043,Felipe Longo,GK
+corinthians-sp,1257133,1652599,Gui Negão,ST
+corinthians-sp,1257132,1744337,Dieguinho,RW
+corinthians-sp,1004739,1787797,Bahia,CDM
+corinthians-sp,1221818,1804815,André,"CDM,LW,CM,RW,CAM"
+corinthians-sp,,1812271,João Jacaré,RB
+corinthians-sp,1497709,1946522,Iago Machado,CB
+coritiba-pr,840431,118421,Gustavo,CM
+coritiba-pr,84695,150041,Maicon,CB
+coritiba-pr,72772,163824,Josué,CAM
+coritiba-pr,119434,184500,Rodrigo Moledo,CB
+coritiba-pr,,532456,Gabriel Leite,GK
+coritiba-pr,273442,535801,Tinga,RB
+coritiba-pr,346065,566112,Keno,LW
+coritiba-pr,362844,638652,Pedro Rocha,"ST,RW"
+coritiba-pr,346922,655294,Thiago Santos,CDM
+coritiba-pr,417084,750108,Keiller,GK
+coritiba-pr,538230,789790,Bruno Melo,"LB,CB"
+coritiba-pr,275381,798148,Fabricio Bustos,RB
+coritiba-pr,593382,858829,Jacy,CB
+coritiba-pr,530737,882625,Richard,CDM
+coritiba-pr,570522,927094,Sebastián Gómez,"CDM,CAM"
+coritiba-pr,587786,941736,Felipe Jonatan,"LB,LWB"
+coritiba-pr,598765,950286,Brian Ocampo,"LM,LW"
+coritiba-pr,462070,950599,Nicolás Fonseca,"CDM,CM"
+coritiba-pr,542598,1053847,Breno Lopes,"LW,CAM,ST,RW"
+coritiba-pr,638262,1085975,Rodrigo Rodrigues,ST
+coritiba-pr,704558,1174682,Fabinho,RW
+coritiba-pr,841263,1211858,Pedro Rangel,GK
+coritiba-pr,834443,1257285,Tiago Cóser,CB
+coritiba-pr,876874,1259119,Vini Paulista,"CDM,RW"
+coritiba-pr,895926,1354491,Joaquín Lavega,"RW,LW"
+coritiba-pr,1014555,1436239,Rodrigo Gelado,LB
+coritiba-pr,985351,1476480,Renato Marques,ST
+coritiba-pr,1090819,1509078,Lucas Ronier,"RW,LW"
+coritiba-pr,974488,1509085,Pedro Morisco,GK
+coritiba-pr,1090820,1590302,Éberth,ST
+coritiba-pr,1095547,1639466,Benassi,GK
+coritiba-pr,1365159,1764024,Lucas Taverna,RB
+coritiba-pr,1365157,1927900,Tissi,CDM
+coritiba-pr,1089181,2096660,Paulo Roberto,ST
+crac-go,311867,522767,Jefferson,CB
+crac-go,863104,1355497,Da Silva,CB
+crb-al,203643,298227,Léo Campos,LB
+crb-al,214312,304626,Pedro Castro,"CDM,CM,CAM"
+crb-al,240578,409188,Luiz Phellype,ST
+crb-al,256453,428671,Bressan,CB
+crb-al,191872,638749,Douglas Baggio,"RW,LW"
+crb-al,391497,673728,Lucas Lovat,"LB,LWB"
+crb-al,520430,673730,Kevin,"RB,RWB"
+crb-al,418530,750064,Danielzinho,"CAM,CM"
+crb-al,518723,866506,Luizão,"CDM,CM"
+crb-al,642689,933819,Mikael,ST
+crb-al,593071,1079328,Vitor Caetano,GK
+crb-al,591650,1127282,Ygor Catatau,"ST,LW"
+crb-al,544254,1130870,Fábio Alemão,CB
+crb-al,546253,1134034,Dadá Belmonte,"LW,LM"
+crb-al,742025,1173681,Guilherme Pato,RW
+crb-al,627214,1175819,Henri,CB
+crb-al,363811,1204392,Matheus Albino,GK
+crb-al,689737,1213449,De Lucca,"CM,CB,CDM"
+crb-al,634139,1225468,Hereda,RB
+crb-al,865572,1232090,Geovane,CAM
+crb-al,875339,1268757,João Neto,ST
+crb-al,898441,1284428,Darlisson,CB
+crb-al,638305,1284942,Thiaguinho,RW
+crb-al,730982,1333091,Crystopher,"CAM,CDM,CM"
+crb-al,982552,1356901,Estêvão,CAM
+crb-al,642570,1460508,Reverson,LB
+crb-al,548258,1463480,Vinicius Barata,RW
+crb-al,1083889,1490050,Lyncon,CB
+crb-al,1082769,1638938,Lucas Kallyel,CAM
+criciuma-sc,140541,202332,Luciano Castán,CB
+criciuma-sc,177680,240371,Rómulo Otero,"RW,CAM,LW"
+criciuma-sc,177534,263948,Bruno Alves,CB
+criciuma-sc,186408,268068,Nicolas,ST
+criciuma-sc,269467,450293,César Martins,CB
+criciuma-sc,405720,478416,Diego Gonçalves,"CAM,ST,LW"
+criciuma-sc,348769,604563,Marcelo Hermes,"LWB,LM,LB"
+criciuma-sc,349420,640410,Rodrigo,CB
+criciuma-sc,346923,641000,Waguininho,"ST,LW,RM,RWB"
+criciuma-sc,377799,658553,Airton,GK
+criciuma-sc,432967,749365,Marcinho,"RWB,RM,RB"
+criciuma-sc,375532,750441,Alisson,GK
+criciuma-sc,349826,792064,Jean Irmer,"CM,CDM"
+criciuma-sc,514298,835355,Yuri Tanque,ST
+criciuma-sc,520470,851632,Fellipe Mateus,"LW,CAM,CDM,CM"
+criciuma-sc,267849,876272,Romarinho,"LW,CAM,LM"
+criciuma-sc,540541,884063,Eduardo,"CM,CDM"
+criciuma-sc,544464,942855,Willean Lepo,"RM,RWB,LWB,RB,LM"
+criciuma-sc,711338,1098099,Jhonata Robert,"CAM,RW,CM"
+criciuma-sc,688684,1176041,Ronald,"CM,CDM"
+criciuma-sc,814268,1187271,Cauê,ST
+criciuma-sc,743588,1320957,Rômulo,CB
+criciuma-sc,,1380776,Léo Mana,RM
+criciuma-sc,738502,1463464,João Carlos,ST
+criciuma-sc,1033571,1469698,Kauã Moroso,GK
+criciuma-sc,,1734308,Gui Lobo,"CM,CDM"
+criciuma-sc,1349600,1734324,Ruan,CB
+criciuma-sc,1360738,1764022,Thales,ST
+criciuma-sc,1222017,1928323,Pedro,GK
+criciuma-sc,1222029,1933462,Thiaguinho,"CDM,CM"
+cruzeiro-mg,47592,20446,Fágner,RB
+cruzeiro-mg,50144,101584,Cássio,GK
+cruzeiro-mg,218118,346004,Lucas Silva,CDM
+cruzeiro-mg,240913,384587,Lucas Villalba,"CB,LB"
+cruzeiro-mg,242201,388605,Lucas Romero,"CDM,CM"
+cruzeiro-mg,236202,389202,Wanderson,LW
+cruzeiro-mg,225984,522651,Matheus Pereira,"CAM,ST"
+cruzeiro-mg,341705,580604,Gerson,"CDM,LW,CAM,CM,RW"
+cruzeiro-mg,341710,581920,William,RB
+cruzeiro-mg,406766,683709,Bruno Rodrigues,"ST,RW"
+cruzeiro-mg,432773,750046,Fabrício Bruno,CB
+cruzeiro-mg,471639,805540,Gabriel Rojas,"LB,LWB,LM"
+cruzeiro-mg,439072,840184,Matías Viña,LB
+cruzeiro-mg,512385,846369,Luis Sinisterra,LW
+cruzeiro-mg,552549,900043,Matheus Henrique,"CDM,CM"
+cruzeiro-mg,620477,964661,Kaio Jorge,ST
+cruzeiro-mg,703321,1090238,Gabriel Pec,"RW,CAM"
+cruzeiro-mg,744024,1185338,João Marcelo,CB
+cruzeiro-mg,668268,1255210,Marquinhos,RW
+cruzeiro-mg,856143,1285291,Luciano Rodríguez,"ST,RM,LW,LM"
+cruzeiro-mg,1007378,1372179,Wesley,"RM,LW,RW"
+cruzeiro-mg,1022342,1463167,Léo Aragão,GK
+cruzeiro-mg,1083207,1488554,Jonathan Jesus,CB
+cruzeiro-mg,936536,1560063,João Costa,"RW,LWB,RM,LM"
+cruzeiro-mg,1074584,1626714,Keny Arroyo,"RW,LW"
+cruzeiro-mg,1182665,1680191,Néiser Villarreal,ST
+cruzeiro-mg,1253814,1695248,Kaique Kenji,LW
+cruzeiro-mg,997947,1732742,Otávio,GK
+cruzeiro-mg,1365897,1733226,Zé Lucas,"CDM,CM"
+cruzeiro-mg,1388409,1759878,Kauã Moraes,"RB,LB"
+cruzeiro-mg,,1842711,Rayan Lelis,RW
+cruzeiro-mg,1360820,1843214,Felipe Morais,"CAM,LW"
+cs-sergipe-se,292353,500644,Victor Massaia,CB
+cs-sergipe-se,,670780,João Lucas,LB
+cs-sergipe-se,385648,944490,Thiago Santos,ST
+cs-sergipe-se,,1174636,Rafael Luiz,RB
+cs-sergipe-se,,1460448,Venícius,ST
+csa-al,97507,143510,Camacho,CDM
+csa-al,175183,263942,Dudú,RW
+csa-al,75378,268218,Rayan,CB
+csa-al,236952,498591,Ronaldo Mendes,CAM
+csa-al,375242,575397,Marcos Ytalo,RB
+csa-al,,837892,Fabrício Costa,CM
+csa-al,797734,1363147,Matheus Souza,ST
+csa-al,,1386261,Rafael Augusto,CB
+csa-al,874166,1613159,Ramon,CM
+csa-al,978278,1653541,Yago Oliveira,GK
+cse-al,54161,116550,Pedro Junior,ST
+cse-al,187697,267706,Jean Cléber,CM
+cse-al,156252,268581,John Lennon,RB
+cuiaba-mt,68408,13308,João Carlos,GK
+cuiaba-mt,136574,202329,Busatto,GK
+cuiaba-mt,14881,202408,Marcelo Carné,GK
+cuiaba-mt,218115,316285,Marcos Júnior,LW
+cuiaba-mt,169179,517292,Alan Empereur,CB
+cuiaba-mt,479587,670947,Raul,"CDM,CM,CB"
+cuiaba-mt,410183,793033,João Basso,CB
+cuiaba-mt,520484,832060,Luiz Otávio,CM
+cuiaba-mt,520456,841861,Wesley Dias,CDM
+cuiaba-mt,531916,896510,Pedro Henrique,ST
+cuiaba-mt,606716,977669,Pepê,"CDM,CM,RW,CAM,RM"
+cuiaba-mt,548298,1033153,Fábio Gomes,ST
+cuiaba-mt,686333,1069986,Vitor Mendes,CB
+cuiaba-mt,733578,1187576,Igor Inocêncio,"RB,RWB,LB"
+cuiaba-mt,537928,1209901,Rodrigo Rodrigues,"ST,LW,CAM,LM"
+cuiaba-mt,788362,1332383,Jean Dias,"CAM,LW,RW"
+cuiaba-mt,1035650,1387186,Eliel,"CAM,RW"
+cuiaba-mt,752558,1444321,Railan,"RWB,RB,RM"
+cuiaba-mt,1033501,1489569,Calebe,"CB,CM,CDM,CAM"
+cuiaba-mt,1100070,1636448,Eric Melo,"CB,LWB"
+cuiaba-mt,1223701,1640062,Kauan Cristtyan,"CAM,RWB"
+cuiaba-mt,1273512,1641251,Vinicius Peixoto,"ST,RW"
+cuiaba-mt,1223923,1673760,Luís Soares,CB
+cuiaba-mt,1096475,1691246,David Miguel,"CDM,CAM,CM,RM,LW"
+cuiaba-mt,980022,1713369,Ramon,LM
+cuiaba-mt,1268054,1785962,Lorenzo,LWB
+cuiaba-mt,868810,1796277,Weverson,LM
+decisao-pe,,1088155,Alexandre Melo,GK
+decisao-pe,,1211785,Victor Ramon,LB
+decisao-pe,,1369180,Leonardo Tiba Gomes dos Santos,ST
+decisao-pe,,1460463,Thiago Mina,CB
+decisao-pe,,1636608,Ruan Carlos,RW
+democrata-mg,983119,1039250,Pablo,"ST,RM"
+democrata-mg,646755,1339628,Bismarck,ST
+democrata-mg,407840,1436037,Márcio Jonatan,ST
+ferroviaria-es,112335,177143,Kieza,ST
+ferroviaria-sp,72438,188950,Ricardinho,"CM,CDM"
+ferroviaria-sp,333602,557993,Juninho,"LW,RW,CM"
+ferroviaria-sp,436833,790123,Felipe Rodrigues,RB
+ferroviaria-sp,521074,833981,Igor Henrique,"CDM,CM,CAM"
+ferroviaria-sp,554983,1023088,Douglas Skilo,"LW,CAM"
+ferroviaria-sp,650517,1057499,Dênis Júnior,GK
+ferroviaria-sp,731039,1130752,Lucas Rodrigues,RB
+ferroviaria-sp,658676,1320945,Vinícius Kauê,LB
+ferroviaria-sp,,1337373,Vinícius Faria,ST
+ferroviaria-sp,680596,1340934,Fábio Rampi,GK
+ferroviaria-sp,371992,1350639,Rhuan,LB
+ferroviaria-sp,530413,1350770,Albano,RW
+ferroviaria-sp,601030,1395963,Denilson,ST
+ferroviaria-sp,681509,1447978,Rafael Carrilho,"CM,CAM"
+ferroviaria-sp,982165,1459660,Zé Vitor,CB
+ferroviaria-sp,1092436,1462364,Fernandinho,CM
+ferroviaria-sp,1028587,1466888,Erik,CB
+ferroviaria-sp,,1528845,Fábio Fau,LB
+ferroviaria-sp,1101952,1642192,Vitor Barreto,CM
+ferroviaria-sp,799148,1653457,Gustavo Medina,CB
+ferroviaria-sp,1206598,1726383,Maranhão,ST
+ferroviaria-sp,981213,1734368,Alencar,"CM,CAM"
+ferroviario-ce,,1518950,Tiago Santana,CB
+figueirense-sc,170366,239221,Pablo Diogo,RB
+figueirense-sc,,239650,Douglas Bacelar,CB
+figueirense-sc,187759,268039,Anderson Conceição,CB
+figueirense-sc,149748,308103,Silvinho,RW
+figueirense-sc,285319,485810,Hyuri,CAM
+figueirense-sc,224047,493690,Ezequiel,RB
+figueirense-sc,349737,575316,Arthur Henrique,LWB
+figueirense-sc,594201,944514,Dudu,CM
+figueirense-sc,150479,1044211,Fabrício,GK
+figueirense-sc,697400,1083354,Breno,CM
+figueirense-sc,672618,1086407,Flávio,CDM
+figueirense-sc,351897,1089912,Renan Areias,CAM
+figueirense-sc,942580,1246597,Igor Bolt,LW
+figueirense-sc,816145,1251022,Jhonnathan,CB
+figueirense-sc,868893,1256754,Vitor Ricardo,RWB
+figueirense-sc,550475,1282382,João Marcos,RW
+figueirense-sc,698750,1357763,Igo Gabriel,GK
+figueirense-sc,1152256,1526623,Leonan,LB
+figueirense-sc,991852,1608611,Arthur Martins,ST
+figueirense-sc,1047465,1616630,Émerson Galego,ST
+figueirense-sc,1082825,1696053,Mailson,ST
+figueirense-sc,1101942,1737601,Santiago,CB
+figueirense-sc,973710,1925110,Choco,CDM
+figueirense-sc,1368261,1938803,Zé Carlos,ST
+flamengo-rj,79960,157865,Alex Sandro,LB
+flamengo-rj,145707,208077,Danilo,"CB,RB"
+flamengo-rj,102017,282775,Jorginho,CDM
+flamengo-rj,148928,309334,Saúl,CDM
+flamengo-rj,215616,335606,Erick Pulgar,CDM
+flamengo-rj,248410,438647,Giorgian de Arrascaeta,CAM
+flamengo-rj,188862,465614,Guillermo Varela,RB
+flamengo-rj,288431,523801,Léo Pereira,CB
+flamengo-rj,349585,578391,Ayrton Lucas,LB
+flamengo-rj,352324,616528,Agustín Rossi,GK
+flamengo-rj,353108,638778,Bruno Henrique,"ST,LW"
+flamengo-rj,432895,750067,Pedro,ST
+flamengo-rj,435485,750913,Luiz Araújo,RW
+flamengo-rj,397458,751198,Nicolás de la Cruz,CDM
+flamengo-rj,444523,766435,Lucas Paquetá,"CAM,CDM,CM,RW,ST"
+flamengo-rj,354145,784834,Jorge Carrascal,"RW,CAM,LW"
+flamengo-rj,476344,797908,Emerson Royal,RB
+flamengo-rj,428783,834240,Vitão,CB
+flamengo-rj,374136,845976,Léo Ortiz,CB
+flamengo-rj,610417,958283,Andrew,GK
+flamengo-rj,592735,980311,Gonzalo Plata,"RW,ST,LW,CAM"
+flamengo-rj,694928,1082941,Samuel Lino,"LW,CAM"
+flamengo-rj,974374,1353364,Anthony Valencia,"CAM,RWB,CDM,CM"
+flamengo-rj,1082543,1553517,Dyogo Alves,GK
+flamengo-rj,931007,1555059,Evertton Araújo,"CDM,CM"
+flamengo-rj,,1580960,João Victor,CB
+flamengo-rj,,1652600,Daniel Sales,RB
+flamengo-rj,,1735518,Joshua,LW
+flamengo-rj,,1838457,Douglas Telles,RW
+flamengo-rj,,1847357,Johnny Góes,LB
+flamengo-rj,1324003,1847899,Joaquín Freitas,"ST,RW"
+floresta-ce,170385,450285,Rafinha,ST
+floresta-ce,207506,659696,Bismark Ferreira,LM
+floresta-ce,432964,750095,Tiepo,GK
+floresta-ce,323875,762506,Caique,LM
+floresta-ce,441762,815359,Valdo,CB
+floresta-ce,578629,844737,Cedric,RB
+floresta-ce,468167,849502,Jhony Douglas,CDM
+floresta-ce,593654,1054266,Diego Matos,RB
+floresta-ce,728540,1182392,Danrley,CDM
+floresta-ce,546895,1227581,Nonato,CM
+floresta-ce,688773,1341001,Matheusinho,RW
+floresta-ce,722454,1362869,Marco Antônio,CB
+floresta-ce,215839,1395962,Afonso,CB
+floresta-ce,744318,1436043,Baianinho,"LW,RW,LWB"
+floresta-ce,978193,1462432,Islan,CB
+floresta-ce,976813,1653436,Buga,CM
+floresta-ce,1368750,1813638,Eduardo,CB
+fluminense-rj,80562,20276,Hulk,"ST,CAM"
+fluminense-rj,22415,30441,Fábio,GK
+fluminense-rj,29241,80562,Thiago Silva,CB
+fluminense-rj,54590,113616,Germán Cano,ST
+fluminense-rj,67920,127400,Ganso,CAM
+fluminense-rj,198250,307072,Samuel Xavier,RB
+fluminense-rj,212209,319637,Renê,LB
+fluminense-rj,229736,449684,Alisson,"CDM,CM"
+fluminense-rj,312294,495833,Yeferson Soteldo,"LW,LM"
+fluminense-rj,309193,501636,Jefferson Savarino,"LW,CAM,RW"
+fluminense-rj,,521338,Lucho Acosta,"CAM,ST"
+fluminense-rj,346766,535596,Guilherme Arana,"LB,LWB,LM"
+fluminense-rj,312314,536647,Otávio,CDM
+fluminense-rj,341701,591315,Igor Rabello,CB
+fluminense-rj,457533,840212,Agustín Canobbio,"RW,RM,LW"
+fluminense-rj,495689,847127,Julián Millán,CB
+fluminense-rj,590039,933810,Vitor Eudes,GK
+fluminense-rj,592344,941490,Guga,RB
+fluminense-rj,546172,951359,Nonato,"CDM,CM,CAM"
+fluminense-rj,624291,967692,Ignácio,CB
+fluminense-rj,628750,975901,Juan Pablo Freytes,CB
+fluminense-rj,745927,1109119,Kevin Serna,"LW,RW"
+fluminense-rj,662334,1117148,Marcelo Pitaluga,GK
+fluminense-rj,815558,1187836,Martinelli,"CDM,CM"
+fluminense-rj,856085,1224204,John Kennedy,ST
+fluminense-rj,984416,1336919,Rodrigo Castillo,ST
+fluminense-rj,982617,1354485,Hércules,"CDM,CM"
+fluminense-rj,,1440050,Stiven Jimenez,CM
+fluminense-rj,992534,1459748,Jhonny,"RB,RWB,RM"
+fluminense-rj,1124296,1559687,Matheus Reis,LW
+fluminense-rj,1119008,1559692,Júlio Fidelis,RB
+fluminense-rj,1141364,1639687,Jemmes,CB
+fluminense-rj,1219749,1697411,Riquelme,RW
+fluminense-rj,1219751,1739949,Léo Jance,RB
+fluminense-rj,,1746719,Vagno,LB
+fortaleza-ce,121986,202227,Lucas Sasha,"CDM,CM"
+fortaleza-ce,195810,303799,Bastos,CB
+fortaleza-ce,213368,304856,Pedro Henrique,"RW,LW,ST"
+fortaleza-ce,270420,498728,João Ricardo,GK
+fortaleza-ce,286772,535890,Vinícius Silvestre,GK
+fortaleza-ce,344626,575386,Lucas Crispim,CAM
+fortaleza-ce,422700,616168,Tomás Cardona,CB
+fortaleza-ce,366948,637726,Jailson,CM
+fortaleza-ce,349513,750063,Neris,CB
+fortaleza-ce,372013,751235,Luiz Fernando,"LW,ST,CAM,LM"
+fortaleza-ce,559602,923766,Chico da Costa,ST
+fortaleza-ce,480686,950153,Gabriel Fuentes,"LB,LWB"
+fortaleza-ce,592363,951629,Nathan Fogaça,ST
+fortaleza-ce,678376,1058316,Luan Freitas,CB
+fortaleza-ce,607210,1086537,Maílton,"RB,RWB"
+fortaleza-ce,728200,1107747,Juan Miritello,ST
+fortaleza-ce,818068,1221953,Magrão,GK
+fortaleza-ce,813048,1256627,Vitinho,"RW,CAM,RM"
+fortaleza-ce,802646,1320961,Pierre,"CM,CDM"
+fortaleza-ce,853529,1331904,Paulo Baya,"LW,LM"
+fortaleza-ce,907567,1347689,Juan Cantillo,ST
+fortaleza-ce,977463,1355637,Rodriguinho,"CAM,CM,RWB,LW"
+fortaleza-ce,697848,1362434,Welliton,"RW,RM,CAM"
+fortaleza-ce,863073,1362665,Gazal,CB
+fortaleza-ce,1083888,1459659,Paulinho,RB
+fortaleza-ce,959092,1462842,Ronald,"CM,CDM,CB"
+fortaleza-ce,1005642,1503651,Ryan Gustavo,"CDM,CM"
+fortaleza-ce,874699,1612209,Maurício Mucuri,"LWB,LB,RB"
+fortaleza-ce,869477,1623466,Rodrigo,"CDM,CM,CAM"
+fortaleza-ce,1221826,1685243,Kaio Henrique,LB
+fortaleza-ce,,1738395,Bruninho,CM
+fortaleza-ce,1082523,1744854,Lucca Prior,RW
+fortaleza-ce,1279322,1766354,Lucas Emanoel,ST
+fortaleza-ce,1386991,1909805,Kauã,CB
+galvez-ac,,1721153,Patrick Gama Thomaz,CDM
+gama-df,103743,177496,Henrique Almeida,ST
+gama-df,75380,179523,Luan,ST
+gama-df,227986,500600,Moisés Ribeiro,RM
+gama-df,432169,994437,Lucas Lourenço,CM
+gama-df,739260,1462843,De Paula,RW
+gama-df,740373,1523345,Renato Soares,CM
+gama-df,643367,1608049,David Lucas,CM
+gama-df,692934,1609369,Gabriel Galhardo,CM
+goias-go,118007,178056,Anselmo Ramon,ST
+goias-go,76139,268249,Thiago Rodrigues,GK
+goias-go,232847,360697,Lucas Lima,"CAM,RW,ST,CM"
+goias-go,299596,449639,Gegê,"LW,CDM,CAM"
+goias-go,271187,452019,Juninho,"CDM,CM"
+goias-go,258367,535693,Tadeu,GK
+goias-go,371025,646349,Ramon,CB
+goias-go,388236,666956,Rodrigo Soares,RB
+goias-go,373150,675000,Luiz Felipe,CB
+goias-go,442258,756082,Nicolas,LB
+goias-go,520629,769815,Filipe Machado,"CDM,CB,CM"
+goias-go,486175,845941,Esli García,ST
+goias-go,515068,846760,Lourenço,"CDM,CAM,RW"
+goias-go,594006,950456,Marcos Vinícius,"RB,RWB"
+goias-go,605893,955687,Lucas Ribeiro,CB
+goias-go,542483,1193658,Wellington Rato,RW
+goias-go,555672,1198559,Djalma Silva,LB
+goias-go,1022057,1372724,Pedrinho,LW
+goias-go,1083073,1459742,Cadu,"ST,LW"
+goias-go,1093922,1460502,Luisão,"CB,RB"
+goias-go,940124,1614065,Brayann,RWB
+goias-go,1092857,1676871,Jean Carlos,"RW,ST,LW"
+goias-go,688662,1723450,Felipe Clemente,ST
+goias-go,1115017,1727130,Kadu,"ST,LW,RW"
+goias-go,1257109,1743175,Lucas Rodrigues,"CDM,CAM"
+goias-go,1097843,1743176,Guilherme Baldória,CDM
+goiatuba-go,436580,754967,Thalles,CM
+goiatuba-go,479498,819726,Renato,CB
+goiatuba-go,801817,1176649,Daniel de Pauli,CM
+goiatuba-go,347181,1263368,Jean Silva,RW
+gremio-novorizontino-sp,126239,215424,Christian Ortíz,"LW,CAM"
+gremio-novorizontino-sp,177845,319973,Madson,"RB,CB"
+gremio-novorizontino-sp,161188,498459,Robson,ST
+gremio-novorizontino-sp,347285,532458,Renato Palm,CB
+gremio-novorizontino-sp,255928,575381,Jordi,GK
+gremio-novorizontino-sp,345401,583766,Nicolas Careca,"LW,LM"
+gremio-novorizontino-sp,353722,637564,Sander,"LB,CB"
+gremio-novorizontino-sp,349144,672094,Carlão,ST
+gremio-novorizontino-sp,435232,849498,Eduardo Brock,CB
+gremio-novorizontino-sp,555277,933054,Luís Oyama,"CDM,CM"
+gremio-novorizontino-sp,412685,957097,César Augusto,GK
+gremio-novorizontino-sp,538234,965278,Marlon,CM
+gremio-novorizontino-sp,689561,1074833,Vinícius Paiva,"LW,RW"
+gremio-novorizontino-sp,634737,1116650,Matheus Bianqui,"CDM,CM,RW"
+gremio-novorizontino-sp,740271,1131346,Juninho,"CAM,CDM"
+gremio-novorizontino-sp,740464,1188651,Jhilmar Lora,RB
+gremio-novorizontino-sp,859135,1238140,Léo Naldi,CDM
+gremio-novorizontino-sp,730938,1265039,Hélio Borges,RW
+gremio-novorizontino-sp,911994,1280332,Alexis Iván Alvariño,"RB,CB"
+gremio-novorizontino-sp,695238,1302812,Diego Mathias,RW
+gremio-novorizontino-sp,683337,1343058,Carlinhos,CB
+gremio-novorizontino-sp,867461,1414404,Rômulo,"CAM,ST,RW"
+gremio-novorizontino-sp,1128780,1461831,Gabriel Bahia,CB
+gremio-novorizontino-sp,1082968,1474211,Ronald Barcellos,"RW,ST"
+gremio-novorizontino-sp,936090,1612264,Patrick,"CB,LB"
+gremio-novorizontino-sp,1220181,1755928,Maykon Jesus,"LB,LW,LWB"
+gremio-novorizontino-sp,1093927,1759840,Tavinho,"RW,LW,RM"
+gremio-novorizontino-sp,1093928,1888822,Diego Galo,"LW,LM"
+gremio-novorizontino-sp,,1928975,Alemão,CB
+gremio-novorizontino-sp,,1967834,Reidiney,"RW,RM"
+gremio-rs,95732,169865,Martin Braithwaite,"ST,CAM"
+gremio-rs,75435,171929,Marcos Rocha,RB
+gremio-rs,145400,198053,Walter Kannemann,CB
+gremio-rs,69400,267826,Weverton,GK
+gremio-rs,285548,307438,Fabián Balbuena,CB
+gremio-rs,261988,443518,Filip Krovinović,"CDM,CAM,CM"
+gremio-rs,273438,570432,Danilo Barbosa,"CDM,CB"
+gremio-rs,373170,571461,Cristian Pavón,"RB,RW,LW,RM"
+gremio-rs,342024,581563,João Pedro,RB
+gremio-rs,373174,601605,Dodi,"CDM,CAM,CM"
+gremio-rs,448466,785716,Jovane Cabral,"LW,CAM"
+gremio-rs,436385,802174,Mathías Villasanti,"CAM,CM,CDM"
+gremio-rs,406675,863158,Marlon,LB
+gremio-rs,525287,866201,Carlos Vinícius,ST
+gremio-rs,423604,911296,Francis Amuzu,LW
+gremio-rs,371256,1039534,Tetê,RW
+gremio-rs,601011,1043824,Caio Paulista,"LB,LWB"
+gremio-rs,671572,1047658,Wagner Leonardo,CB
+gremio-rs,689211,1087773,Juan Nardoni,"CAM,CM,CDM"
+gremio-rs,633428,1130706,José Enamorado,"RW,ST,LW,CAM"
+gremio-rs,723853,1134464,Erick Noriega,"CDM,CM,CB"
+gremio-rs,743594,1175808,Matheus Nascimento,ST
+gremio-rs,878037,1248663,Gabriel Grando,GK
+gremio-rs,874223,1335761,Gustavo Martins,CB
+gremio-rs,959088,1634626,Thiago Beltrame,GK
+gremio-rs,1221317,1634629,Riquelme,CM
+gremio-rs,1092620,1636443,Diego Caito,"RB,RWB"
+gremio-rs,1219466,1652392,Wallace,CB
+gremio-rs,,1697972,Tiaguinho,"CDM,CAM"
+gremio-rs,,1754229,Bernardo Zortea,CDM
+gremio-rs,1355268,1793913,Luis Eduardo,CB
+gremio-rs,1260202,1888863,Roger,RW
+gremio-rs,1253927,1929749,Pedro Gabriel,"LB,LM"
+guapore-ro,262932,496957,Brayan Lucumí,LW
+guapore-ro,638586,1101505,Igor Goularte,CAM
+guarani-sp,71080,172169,Willian Farias,CDM
+guarani-sp,178940,268055,Lucca,ST
+guarani-sp,212199,319861,Rafael Donato,CB
+guarani-sp,340557,566389,Maurício Antônio,CB
+guarani-sp,142340,571635,Diego Torres,CAM
+guarani-sp,519854,853792,João Paulo,"CM,CAM"
+guarani-sp,627099,972181,Isaque,CAM
+guarani-sp,594549,1093066,Neto Costa,ST
+guarani-sp,733453,1133035,Mateus Claus,GK
+guarani-sp,704585,1195916,Kauã Jesus,CAM
+guarani-sp,553563,1216001,Éverton Brito,"RW,LW"
+guarani-sp,880248,1350768,Nathan Melo,CDM
+guarani-sp,871645,1386296,Raphael Rodrigues,RB
+guarani-sp,1115490,1460472,Edson Rogério,CB
+guarani-sp,,1463089,Rafael Freitas,LM
+guarani-sp,1097028,1463345,Rian,RB
+guarani-sp,1093267,1477765,Yan Henrique,RB
+guarani-sp,688661,1653468,Ynaiã,RM
+guarani-sp,868053,1654008,Igor,CDM
+guarani-sp,834774,1692292,Fred,GK
+guarani-sp,1141365,1741591,Carlos Eduardo,"CAM,CM"
+guarani-sp,1261165,1745022,Matheus Guilherme,CAM
+guarany-de-bage-rs,,638898,Silas,CAM
+guarany-de-bage-rs,548686,876278,Luiz Felipe,RW
+guarany-de-bage-rs,,1437529,Alberte,CB
+guarany-de-bage-rs,978120,1460504,Pedro Rodrigues,"ST,CDM"
+guarany-de-bage-rs,,1722306,Vitor Oliveira,LB
+humaita-ac,1202343,1614926,Rudwere,ST
+iape-ma,,449752,Lucielmo Palhano Soares,ST
+if-sao-joseense-pr,743550,1257313,Samuel Deuner,GK
+if-sao-joseense-pr,,1434539,Peninha,ST
+iguatu-ce,,1795916,Otacílio Marcos,ST
+imperatriz-ma,103147,268732,Welligton,GK
+inter-de-limeira-sp,62832,265267,Miguel Bianconi,ST
+inter-de-limeira-sp,131028,266066,Emerson Santos,CM
+inter-de-limeira-sp,265649,498312,Alemão,CB
+inter-de-limeira-sp,328758,535931,Ronaldo Henrique,CM
+inter-de-limeira-sp,336474,556756,Gabriel Dias,RB
+inter-de-limeira-sp,439455,791923,Gustavo Bochecha,RW
+inter-de-limeira-sp,527047,797335,Vidal,RB
+inter-de-limeira-sp,476365,802535,Renan Bragança,GK
+inter-de-limeira-sp,555629,816009,Robinho,RW
+inter-de-limeira-sp,578413,844513,Marco Antônio,LM
+inter-de-limeira-sp,523792,848747,Felipe Saraiva,LW
+inter-de-limeira-sp,592345,936589,Getúlio,RW
+inter-de-limeira-sp,844237,950187,Rafael Oller,RW
+inter-de-limeira-sp,,1132902,Zé Eduardo,ST
+inter-de-limeira-sp,752552,1175814,Vitor Leque,RW
+inter-de-limeira-sp,820800,1192445,João Victor,LB
+inter-de-limeira-sp,933879,1362450,Juan Tavares,LB
+inter-de-limeira-sp,739413,1368555,Gabriel Santiago,CAM
+inter-de-limeira-sp,1011996,1611192,Lucas Buchecha,CAM
+inter-de-limeira-sp,1087716,1625281,Nassom,LB
+inter-de-limeira-sp,683883,1651427,Robson,CB
+inter-de-limeira-sp,1101134,1656861,Fabrício Dias,CM
+inter-de-limeira-sp,688686,1678891,Heitor,LB
+inter-de-limeira-sp,1202403,1787520,Yan Silva,RB
+inter-de-limeira-sp,,1912145,Adryel Silva de Almeida,LW
+internacional-rs,45319,113668,Gabriel Mercado,CB
+internacional-rs,104505,172185,Alan Patrick,"CAM,ST,CM"
+internacional-rs,249730,402830,Guillermo Maripán,CB
+internacional-rs,251813,438825,Niclas Eliasson,RW
+internacional-rs,234523,474448,Antonio Sanabria,ST
+internacional-rs,277335,535599,Bruno Henrique,"CDM,CM"
+internacional-rs,264014,553476,Sergio Rochet,GK
+internacional-rs,294873,592922,Thiago Maia,"CDM,CM,CAM"
+internacional-rs,383638,658261,Juninho,"CB,LB"
+internacional-rs,405768,690362,Ronaldo,"CDM,CM"
+internacional-rs,468174,825641,Félix Torres,CB
+internacional-rs,534473,881609,Paulinho Paula,"CDM,CM"
+internacional-rs,371996,935036,Alerrandro,"ST,CAM"
+internacional-rs,657220,1028443,Rodrigo Villagra,"CM,CDM"
+internacional-rs,670965,1046082,Vitinho,"RM,RW,RWB,ST,CAM"
+internacional-rs,572042,1053727,Johan Carbonero,"ST,LW,CAM,RW,RM"
+internacional-rs,703322,1090263,Bruno Gomes,"RB,CB,CM,CDM"
+internacional-rs,719635,1104156,Alexandro Bernabéi,"LB,LM,LWB,CAM,LW"
+internacional-rs,798114,1174300,Calebe,"RM,RW"
+internacional-rs,741021,1174662,Matheus Bahia,"LB,LWB,LM"
+internacional-rs,829378,1200667,Braian Aguirre,"RB,RWB"
+internacional-rs,668265,1244631,Kayky,LW
+internacional-rs,834444,1260080,Victor Gabriel,CB
+internacional-rs,869437,1260081,Anthoni,GK
+internacional-rs,876739,1320958,Matheus Cunha,GK
+internacional-rs,1220010,1660394,Yago Noal,CAM
+internacional-rs,1355429,1749280,Raykkonen,RW
+internacional-rs,1220008,1804462,Allex,"CAM,LW,RWB"
+internacional-rs,,1829857,Alisson,LB
+internacional-rs,1312046,1836585,Benjamin Arhin,CDM
+internacional-rs,,1893746,João Victor,RW
+internacional-rs,,1899001,João Bezerra,ST
+internacional-rs,,1980894,Luiz Felipe,LB
+itabaiana-se,265837,498653,Ligger,CB
+itabaiana-se,202907,847299,Renatinho,CAM
+itabaiana-se,537622,861784,Rodrigo Alves,RW
+itabaiana-se,550894,1129843,Betão,CB
+itabaiana-se,1066523,1409613,Ricardo Cerqueira,RB
+itabaiana-se,519870,1460409,Manoel,LB
+itabaiana-se,680539,1473761,Luan Silva,ST
+itabaiana-se,726103,1619459,Cleiton,CAM
+itabaiana-se,748778,1712409,Denilson,CAM
+itabirito-mg,,130523,Serginho,"CDM,CM"
+itabirito-mg,,1897492,Kevlin,RB
+itabirito-mg,,1899990,Denzel,RB
+ituano-sp,54044,155015,Bruno Mezenga,ST
+ituano-sp,153065,265123,Fernando Canesin,CAM
+ituano-sp,349318,679562,Bruno Alves,LW
+ituano-sp,383373,749386,Xavier,RW
+ituano-sp,,860310,Léo Passos,ST
+ituano-sp,870416,1241547,Alason Carioca,LW
+ituano-sp,740404,1372925,Thassio,RM
+ituano-sp,823543,1466894,Wesley,GK
+ituano-sp,1096607,1488560,Richard,LB
+ituano-sp,570583,1489116,Lucas Wingert,GK
+ituano-sp,979984,1611569,Dal Pian,CM
+ituano-sp,,1639202,Marlon,LW
+ituano-sp,1089150,1639204,Lipe Gadol,CM
+ituano-sp,1096609,1656647,Lucas Soares Stefanello,CB
+ituano-sp,,1660848,Victor Reis,CM
+ivinhema-ms,,1701966,Gustavo Ribeiro,LW
+jacuipense-ba,542072,885579,Weverton,CB
+jacuipense-ba,,934246,Flavinho,ST
+jacuipense-ba,676044,1173527,Thiaguinho,CAM
+jacuipense-ba,,1343210,Alison,CM
+jacuipense-ba,642593,1433022,Vicente Reis,LWB
+jacuipense-ba,,1453086,Thiaguinho,ST
+jacuipense-ba,739418,1459691,Ruan Nascimento,LB
+jacuipense-ba,982646,1606619,William,LW
+jacuipense-ba,976599,1653451,Vinícius Amaral,CM
+jacuipense-ba,,1719160,Hugo Moura,RWB
+jacuipense-ba,1220392,1797949,Daniel,CDM
+jacuipense-ba,,1903999,Jhones,CB
+jacuipense-ba,889817,1904002,Marcelo,GK
+jacuipense-ba,680404,1904014,Railon,CB
+jequie-ba,,265269,Fábio,GK
+jequie-ba,,267707,Claudinei,CM
+jequie-ba,,1614740,Gabriel Carioca,CB
+jequie-ba,,1641853,Caíque Baiano,CB
+joinville-sc,,97658,Ytalo Santos,ST
+joinville-sc,175208,129506,Guti,CB
+joinville-sc,227462,322050,Mike,RW
+joinville-sc,258622,450014,Ítalo Melo,CM
+joinville-sc,322588,521943,Natanael,LB
+joinville-sc,294817,684967,Thiago Rodrigues,GK
+joinville-sc,443239,761587,Iago Dias,ST
+joinville-sc,,870727,Rickson,CM
+juazeirense-ba,93178,159888,Victor Ramos,CB
+juazeirense-ba,984055,1290140,Rafael Mandacaru,RB
+juazeirense-ba,866990,1749260,Bravo,ST
+juazeirense-ba,,1780240,Douglas Nathan,CM
+juventude-rs,55250,78911,Titi,CB
+juventude-rs,53922,92935,Alan Kardec,ST
+juventude-rs,167724,231683,Diogo Barbosa,"LM,LWB,LB"
+juventude-rs,167291,394585,Gabriel Pires,"CM,CDM,CAM"
+juventude-rs,291658,497400,Luis Amarilla,ST
+juventude-rs,75080,498326,Alan Ruschel,LB
+juventude-rs,101506,568920,Aderlan,"RM,RWB,RB"
+juventude-rs,363174,637668,Rodrigo Sam,CB
+juventude-rs,401539,749382,Messias,CB
+juventude-rs,432958,750088,Lucas Mineiro,"CDM,CM"
+juventude-rs,443338,793924,Alisson Safira,"ST,RW"
+juventude-rs,335984,796720,Manuel Castro,"RW,LW,RM,CAM"
+juventude-rs,512344,844089,Jandrei,GK
+juventude-rs,612496,974867,Marcos Paulo MP,"CAM,LW,ST"
+juventude-rs,806150,1041081,Gabriel Pinheiro,CB
+juventude-rs,685768,1069709,Allanzinho,CAM
+juventude-rs,439460,1088049,Raí Ramos,"RWB,RM"
+juventude-rs,662326,1111496,Patryck,"LWB,LM"
+juventude-rs,740273,1130901,Nathan,"RWB,RM"
+juventude-rs,892091,1254655,Mandaca,"CM,CDM,CAM,LW,LM"
+juventude-rs,592375,1261975,Pablo Roberto,"CM,LM"
+juventude-rs,978146,1334428,Raí,"CM,CAM,CDM,RW"
+juventude-rs,691861,1358662,Fábio Lima,"CAM,RW,ST"
+juventude-rs,978039,1366061,Marcos Paulo,"CB,LWB"
+juventude-rs,1010016,1459546,Juan Christian,LW
+juventude-rs,740287,1460458,Pedro Rocha,GK
+juventude-rs,1127817,1641851,Iba Ly,"CM,CDM"
+juventude-rs,203822,1653432,Ruan Carneiro,GK
+juventude-rs,,1653493,Luan Gonçalves,"CM,CDM,CB"
+juventude-rs,1096275,1666514,Davi Góes,CM
+juventude-rs,979677,1796136,Wadson,LWB
+juventude-rs,,1800649,Bernardo,CB
+lagarto-se,,672602,Rafael Dumas,CB
+lagarto-se,281438,747923,Yago Henrique,CDM
+lagarto-se,,787347,Willian Oliveira,CM
+lagarto-se,,924129,Jefferson  Baiano,ST
+lagarto-se,,1439521,Anderson Max,GK
+laguna-rn,75076,171229,Éverton Luiz,CM
+laguna-rn,233055,344045,Héctor Urrego,RB
+laguna-rn,349515,637569,Rômulo,ST
+londrina-pr,72451,121939,Nino Paraíba,"RM,RB,RWB"
+londrina-pr,68833,130560,Wallace,"CB,CDM"
+londrina-pr,164013,265619,Gilberto,ST
+londrina-pr,199472,288782,William Pottker,"ST,RW"
+londrina-pr,264343,444778,Pablo Dyego,"LW,RW"
+londrina-pr,296903,600100,Artur,"LB,LM"
+londrina-pr,375025,642764,Lucas Marques,"CDM,CM,CAM"
+londrina-pr,554431,795574,Victor Feitosa,CDM
+londrina-pr,438431,798592,Maurício Kozlinski,GK
+londrina-pr,476353,798767,Thalis,"CAM,CM"
+londrina-pr,483499,820656,Raí,"RW,LW"
+londrina-pr,458115,875673,Tárik,"CDM,CM"
+londrina-pr,580572,1057533,Weverton,RB
+londrina-pr,697401,1083351,Heron,"LB,CB"
+londrina-pr,742855,1174677,Gabriel Lacerda,CB
+londrina-pr,959171,1359383,André Dhominique,RB
+londrina-pr,1056019,1402099,João Tavares,"CAM,CM"
+londrina-pr,1056021,1402131,Geovane Meurer,CM
+londrina-pr,941369,1437503,Igor Bahia,ST
+londrina-pr,935978,1441765,João Vitor,"CAM,CM,CDM,RW"
+londrina-pr,643832,1460455,Luan Ribeiro,GK
+londrina-pr,1083669,1509629,Rafael Monteiro,LB
+londrina-pr,530286,1526931,Kevyn,LB
+londrina-pr,986798,1636520,Juninho,CM
+londrina-pr,662337,1653489,Guilherme Cachoeira,LW
+londrina-pr,752562,1666535,Guilherme Portuga,"CM,CAM,CDM"
+londrina-pr,1084070,1669655,Chumbinho,CAM
+londrina-pr,1124214,1720732,Kauê Leonardo,RB
+londrina-pr,1222362,1741917,Caio,CB
+londrina-pr,1090856,1748316,Vitinho,"RW,ST"
+londrina-pr,978241,1790950,Herbert,LW
+londrina-pr,1089147,1795346,Fellipinho,RW
+londrina-pr,1114595,1813977,João Andrade,RW
+luverdense-mt,347283,532449,Raul Prata,RM
+luverdense-mt,226404,536649,Bady,CDM
+luverdense-mt,796351,1625906,Wendel Barros,RW
+madureira-rj,186922,289257,Rodrigo Lindoso,CDM
+madureira-rj,135576,749374,Geovane Maranhão,ST
+madureira-rj,539221,945297,Celsinho,RB
+madureira-rj,972425,1357081,Juan Sánchez,RW
+madureira-rj,,1800472,Ricardo Oliveira,ST
+maguary-pe,261457,450286,Memo,CB
+maguary-pe,585347,947061,Philippe Costa,ST
+maguary-pe,574769,994444,Alejandro Santana Viniegra,CM
+maguary-pe,,1174301,Júlio Cesar,CAM
+maguary-pe,795305,1174324,Ítalo,RM
+maguary-pe,722616,1180896,Luiz Henrique,RW
+maguary-pe,,1460411,Arthur Edeson,CB
+maguary-pe,,1463347,Bruno Vinicius,CDM
+maguary-pe,793775,1529264,Rhuan,RB
+maguary-pe,1086449,1659668,Rychelmy,LM
+manauara-am,578866,794012,Pablo Pardal,CM
+manauara-am,468253,858828,Éverson,CB
+manauara-am,,1254707,Fernandinho,LW
+manauara-am,688876,1350417,Felipe Camargo,CB
+maracana-ce,988054,789855,Patuta,LW
+maracana-ce,975770,1383676,Wilker Sousa,CM
+maracana-ce,,1556413,Mateus Ramos,ST
+maranhao-ma,291342,498461,Pimentinha,ST
+maranhao-ma,865095,1312349,Maurício Maranhao,CM
+maranhao-ma,796349,1374350,Iran Sidny,CB
+maranhao-ma,,1473708,Felipe,LW
+marica-rj,74789,128862,Wellington,CDM
+marica-rj,140957,202702,Alex,ST
+marica-rj,269469,449640,Octávio,RW
+marica-rj,306709,510696,Luizinho,LW
+marica-rj,104590,638773,Rafael Forster,CB
+marica-rj,376373,652883,Rafael Carioca,"LWB,LB"
+marica-rj,356685,657542,Felipe Carvalho,CB
+marica-rj,,925835,Pedro Perlaza,RB
+marica-rj,590357,944108,Matheus Lira,"CDM,CM"
+marica-rj,554457,1034040,Marcelo,"CAM,CM"
+marica-rj,669869,1043427,Ronaldo,RB
+marica-rj,546894,1044263,Mauro Silva,CDM
+marica-rj,538110,1236296,Victor Pereira,CB
+marica-rj,860325,1242175,Caio Vitor,CAM
+marica-rj,609941,1723152,Jorge Pedra,CDM
+marica-rj,,1791321,Oliver,LW
+marica-rj,,1896729,Lucas Sibito,"RW,ST"
+marica-rj,,1914684,Luan,CB
+maringa-pr,140547,444738,Serginho,"CAM,LW"
+maringa-pr,363156,637571,Jesiel,CB
+maringa-pr,812937,1185320,Ronald Carvalho,CM
+maringa-pr,740500,1235681,Caíque Cálito,ST
+maringa-pr,740491,1267067,Kelvi,LB
+maringa-pr,906328,1291619,Paulinho,CDM
+maringa-pr,868952,1337207,Guilherme Pira,CAM
+maringa-pr,869062,1460543,Thiago Rosa,CB
+maringa-pr,411437,1462430,Wendel Lomar,CB
+maringa-pr,1084186,1463352,Danielzinho,CAM
+maringa-pr,976103,1474804,Edison Negueba,LW
+maringa-pr,1152257,1509079,Rafinha,LW
+maringa-pr,,1590258,Jhow Alecxander,CB
+maringa-pr,870653,1665458,Ronald Camarão,RW
+maringa-pr,1221539,1734153,Rai,RB
+maringa-pr,1022815,1736989,Lucas Bonifácio,CDM
+maringa-pr,979931,1755873,Gabriel Souza,RB
+maringa-pr,1373368,1791655,Wallace,CB
+mirassol-sp,110078,174062,Eduardo,"CAM,CM"
+mirassol-sp,143855,268225,Thomazella,GK
+mirassol-sp,225617,306512,Reinaldo,"LB,LWB,LM"
+mirassol-sp,234538,388503,Victor Luís,"LB,LM"
+mirassol-sp,269860,449785,Walter,GK
+mirassol-sp,258369,450003,Georgemy,GK
+mirassol-sp,276877,464982,Daniel Borges,RB
+mirassol-sp,277743,467733,Alex Muralha,GK
+mirassol-sp,305428,535592,Zé Roberto,ST
+mirassol-sp,329843,535930,Neto Moura,"CDM,CM"
+mirassol-sp,363794,637580,Carlos Eduardo,"RW,LW,ST"
+mirassol-sp,349166,642494,Chico,"CM,CDM,CAM"
+mirassol-sp,442818,813039,Fernandinho,"LW,ST,LM"
+mirassol-sp,636314,816000,Gustavo Silva,"ST,CAM,RW"
+mirassol-sp,626110,816015,João Victor,CB
+mirassol-sp,480274,844427,Shaylon,"CAM,CM,RW,RM"
+mirassol-sp,525510,850353,Elias,RB
+mirassol-sp,520457,872394,Gustavo Cazonatti,"CDM,CM"
+mirassol-sp,539203,896485,André Luís,ST
+mirassol-sp,592373,952235,Lucas Oliveira,CB
+mirassol-sp,480225,966413,Alesson,"LW,ST"
+mirassol-sp,794925,1032785,Edson Carioca,"RW,ST,LW"
+mirassol-sp,,1069975,José Aldo,"CDM,CM"
+mirassol-sp,688690,1116482,Igor Formiga,"RB,RM,RWB"
+mirassol-sp,871427,1121567,Bruno Santos,ST
+mirassol-sp,808507,1340247,Denilson,"CM,CDM"
+mirassol-sp,680681,1355858,Negueba,"RW,LW"
+mirassol-sp,592340,1379296,Willian Machado,CB
+mirassol-sp,742073,1388142,Wallisson,"CDM,CM"
+mirassol-sp,995883,1463482,Gabriel Knesowitsch,CB
+mirassol-sp,432157,1570656,Japa,"CM,CDM"
+mixto-mt,177381,292585,Jenison,ST
+mixto-mt,193135,319786,Jackson,CB
+mixto-mt,434052,750848,Luidy,RW
+mixto-mt,524602,816011,Romércio,CB
+mixto-mt,,858595,Dionathã,LW
+mixto-mt,,943402,Carlos Gabriel,LW
+mixto-mt,800848,1175809,Henrique Lordelo,CM
+mixto-mt,435254,1207771,Joazi,LB
+mixto-mt,547662,1381136,Gustavo Xuxa,CAM
+mixto-mt,,1652276,Yuji,LWB
+mixto-mt,1239956,1724795,Guilherme Cerqueira,CB
+monte-roraima-rr,163401,263264,Felipe Brisola,CM
+monte-roraima-rr,,1380694,Júnior Palmares,CAM
+monte-roraima-rr,722662,1451140,Xandy,"RW,LW"
+monte-roraima-rr,940144,1641684,Leozinho,RB
+nacional-am,,116140,Anderson Salles,CB
+nacional-am,120093,185637,Andrés Andrade,RM
+nacional-am,,305796,Hernane,ST
+nacional-am,218353,336991,Sassá,ST
+nacional-am,231177,338068,Caio Mancha,ST
+nacional-am,189482,462420,Kevin Mercado,LW
+nacional-am,399013,679855,Erick Varão,"CDM,RM"
+nacional-am,355149,751529,Mateus Müller,LB
+nacional-am,442790,763311,PH,CDM
+nacional-am,,937508,Caio,GK
+nacional-am,538233,940693,Fredson,CB
+nacional-am,677679,1174303,Michel,CB
+nacional-am,964596,1320213,Ryan,LB
+nacional-am,859160,1373890,Thiago Lopes,CB
+nacional-am,,1459658,Rodrigo,LM
+nacional-am,,1606206,Andson Cícero da Silva,CB
+nacional-am,982013,1659190,Cocote,RM
+nautico-marcilio-dias-sc,832313,1207306,Cesinha,CM
+nautico-marcilio-dias-sc,494841,1373889,Claudinho,CB
+nautico-marcilio-dias-sc,1006975,1892837,Garrinsha Estinphile,LW
+nautico-pe,53019,79273,Paulo Sérgio,ST
+nautico-pe,27349,121848,Muriel,GK
+nautico-pe,146020,202104,Vinícius,"RW,LW,ST,CAM"
+nautico-pe,102574,239279,Jean Carlos,"CAM,RW"
+nautico-pe,151505,319680,Auremir,CDM
+nautico-pe,203323,321587,Victor Andrade,LW
+nautico-pe,266070,391719,Gastón Guruceaga,GK
+nautico-pe,250841,448256,Igor Fernandes,"LB,CB"
+nautico-pe,329738,540105,Reginaldo,"RB,LB,RW"
+nautico-pe,373299,638764,Matheus Ribeiro,RB
+nautico-pe,268522,659758,Arnaldo,RB
+nautico-pe,524404,841882,Wenderson,"CDM,CM"
+nautico-pe,518080,845740,Júnior Todinho,"RW,LW"
+nautico-pe,671539,1213657,Benjamín Borasi,"LW,RM,RW,ST"
+nautico-pe,883285,1245739,Patricio Núñez,RW
+nautico-pe,719251,1274485,Derek,"ST,RW,LW"
+nautico-pe,552237,1390196,Mateus Silva,CB
+nautico-pe,1082832,1444010,Ryan,LB
+nautico-pe,877578,1460478,Luiz Felipe,"CDM,CM"
+nautico-pe,,1462342,Léo Índio,"CB,CM"
+nautico-pe,550891,1468784,Wanderson,CB
+nautico-pe,1082701,1481531,Gustavo Henrique,CB
+nautico-pe,1222898,1641852,Samuel,"CDM,CM"
+nautico-pe,1216411,1653469,Betão,CB
+nautico-pe,866830,1654088,Danielzinho,LW
+nautico-pe,976590,1723280,Maranhão,ST
+nautico-pe,987945,1741565,Gabriel Índio,CB
+noroeste-sp,124543,180321,Ronaldo Alves,CB
+noroeste-sp,186398,320072,Diogo Silva,GK
+noroeste-sp,268521,449672,Rodolfo,CDM
+noroeste-sp,271608,451473,Pacheco,RB
+noroeste-sp,283167,470572,Bruno Lopes,"LW,ST,LM,CAM"
+noroeste-sp,393835,661520,Thiago Lopes,CAM
+noroeste-sp,349447,939198,Rafael Silva,ST
+noroeste-sp,539370,940690,Lucas Costa,CB
+noroeste-sp,595010,953994,Maycon,CB
+noroeste-sp,593653,959548,Denner,CAM
+noroeste-sp,598975,959914,Matheus Teixeira,GK
+noroeste-sp,742126,1173729,Yuri Ferraz,"RB,RM"
+noroeste-sp,734281,1257288,Viní Guedes,CDM
+noroeste-sp,899025,1276082,Pedro Felipe,"LW,CAM"
+noroeste-sp,703319,1298949,Luiz Henrique,LB
+nova-iguacu-rj,382240,789793,João Paulo,CAM
+nova-iguacu-rj,371990,1018574,Patrick,CB
+nova-iguacu-rj,659886,1044927,Bill,LW
+nova-iguacu-rj,539219,1054261,Mota,GK
+nova-iguacu-rj,813039,1186358,Léo Muchacho,ST
+nova-iguacu-rj,718208,1233125,Pedro Lucas,LW
+nova-iguacu-rj,646771,1616243,Xandinho,RW
+nova-iguacu-rj,987576,1641850,Wender,LB
+nova-iguacu-rj,1092442,1708456,Lucas Cruz,"LW,CAM"
+nova-iguacu-rj,,1787530,Iago Lacerda,LW
+nova-iguacu-rj,974041,1927769,Guilherme Kayron,CB
+nova-iguacu-rj,994623,1927772,Davi,CB
+operario-ms,179001,268259,Luisinho,RM
+operario-ms,346870,613056,Jonas,CM
+operario-ms,378975,651190,Matheus Galdezani,LW
+operario-ms,138136,784364,Lucas Covolan,GK
+operario-ms,,1612197,Gabriel Biteco,RWB
+operario-pr-pr,68442,128083,Vágner,GK
+operario-pr-pr,148765,287902,Pablo,ST
+operario-pr-pr,262553,466215,Juan Zuluaga,RW
+operario-pr-pr,288496,535938,Boschilia,"CAM,CM,RW"
+operario-pr-pr,329845,543787,Aylon,"LW,RW,LM"
+operario-pr-pr,,623984,Hildeberto,"RW,LW,RM"
+operario-pr-pr,357091,646352,Maxwell,"LW,RW,LM,ST"
+operario-pr-pr,350766,755230,Maguinho,"RB,RM"
+operario-pr-pr,479211,787369,Elias Curzel,GK
+operario-pr-pr,484599,787400,Klaus,CB
+operario-pr-pr,395060,846028,Matheus Trindade,"CM,CDM,CB"
+operario-pr-pr,596586,930817,Moraes,"LB,LW"
+operario-pr-pr,412376,941735,Miranda,CB
+operario-pr-pr,594650,955583,Neto Paraíba,"CM,CDM,CAM"
+operario-pr-pr,663523,1017101,Joseph,CB
+operario-pr-pr,658664,1072282,Vinícius Mingotti,ST
+operario-pr-pr,599224,1080516,Ángel Torres,RW
+operario-pr-pr,729263,1118183,Pedro Vilhena,LW
+operario-pr-pr,628647,1129860,Caio Dantas,ST
+operario-pr-pr,538257,1130080,Índio,"CDM,CM,CB"
+operario-pr-pr,797235,1173560,Diego Monteiro,GK
+operario-pr-pr,816150,1206587,Doka,RB
+operario-pr-pr,626678,1280824,José Cuenú,CB
+operario-pr-pr,,1463487,Nicolas,LB
+operario-pr-pr,544469,1478360,Charles,CB
+operario-pr-pr,731531,1526680,Vinícius Diniz,"CDM,CAM,CM"
+operario-pr-pr,726096,1636571,Talles,GK
+operario-pr-pr,1100029,1671532,Gabriel Feliciano,LB
+operario-pr-pr,1223070,1696048,João Gabriel,RWB
+operario-pr-pr,,1721679,André Dantas,CB
+operario-pr-pr,1091710,1783322,Brenno,CDM
+operario-varzea-grandense-mt,1024601,1374931,Maicky,CM
+palmeiras-sp,53015,122023,Marcelo Lomba,GK
+palmeiras-sp,159372,230190,Felipe Anderson,"LW,CAM"
+palmeiras-sp,215390,274392,Gustavo Gómez,CB
+palmeiras-sp,270188,452269,Lucas Evangelista,"CDM,LW,CM"
+palmeiras-sp,203394,575779,Andreas Pereira,"CDM,CM,CAM"
+palmeiras-sp,364972,634868,Marlon Freitas,"CDM,CM"
+palmeiras-sp,379752,657969,Alexander Barboza,CB
+palmeiras-sp,458710,851514,Murilo,CB
+palmeiras-sp,428791,857176,Paulinho,ST
+palmeiras-sp,496268,861661,Joaquín Piquerez,"LB,LWB"
+palmeiras-sp,588989,1023030,Jhon Arias,"LW,CAM,RW,CM,LM,RM"
+palmeiras-sp,323929,1025386,Bruno,GK
+palmeiras-sp,653348,1043763,Khellven,"RB,RWB,LB"
+palmeiras-sp,641458,1043826,Carlos Miguel,GK
+palmeiras-sp,563692,1043908,Bruno Fuchs,CB
+palmeiras-sp,678439,1059490,Mauricio,"CAM,LW,RW,LM,ST,CM,RM"
+palmeiras-sp,745191,1132960,Ramón Sosa,"ST,RW,LW,CAM,LM"
+palmeiras-sp,707447,1137909,Emiliano Martínez,"CDM,CM,CB"
+palmeiras-sp,844797,1216079,José Manuel López,"ST,CAM"
+palmeiras-sp,943837,1339347,Vitor Roque,ST
+palmeiras-sp,849582,1358345,Agustín Giay,"RB,RWB"
+palmeiras-sp,851595,1483504,Jefté,LB
+palmeiras-sp,1253807,1658202,Benedetti,CB
+palmeiras-sp,1116605,1664247,Larson,CDM
+palmeiras-sp,1115722,1787794,Arthur,"LB,LWB"
+palmeiras-sp,1268048,1799734,Luis Pacheco,"CDM,LB"
+pantanal-ms,69641,139899,Jean Raphael,RB
+pantanal-ms,,422724,Maicon,RB
+pantanal-ms,167383,780609,Mateus da Silva,CM
+parnahyba-pi,925861,1302594,Raí Soares,RW
+parnahyba-pi,663086,1435377,Dadinha,RB
+paysandu-pa,520500,267688,Marcinho,CAM
+paysandu-pa,639135,535881,Jean Drosny,GK
+paysandu-pa,345473,643161,Nicolás Schiappacasse,ST
+paysandu-pa,379198,653140,Matheus Vargas,CM
+paysandu-pa,485554,789122,Bruno Bispo,CB
+paysandu-pa,421333,884537,Facundo Bonifazi,LB
+paysandu-pa,645897,1043760,Gabriel Mesquita,GK
+paysandu-pa,669392,1088138,Ítalo Carvalho,ST
+paysandu-pa,722456,1130923,Caio Mello,CDM
+paysandu-pa,745163,1211781,Gustavo Henrique,CB
+paysandu-pa,742120,1259117,Thayllon,RW
+paysandu-pa,658665,1262163,Kleiton Pego,LW
+paysandu-pa,931076,1294035,Lucas Cardoso,RW
+paysandu-pa,974381,1461855,Castro,CB
+paysandu-pa,684376,1462412,Edílson,RB
+paysandu-pa,874148,1636166,Renan Castro,LB
+paysandu-pa,1219743,1734451,Kaua Hinkel,RW
+paysandu-pa,723208,1736935,Radsley,CM
+paysandu-pa,1413775,1767261,Pedro Henrique,"CM,CDM"
+paysandu-pa,,1789185,Kukri,CDM
+paysandu-pa,1112483,1846062,Iarley,CB
+paysandu-pa,1507879,1925130,Brian Macapá,CDM
+penedense-al,1102310,1624453,Dávisson,RB
+piaui-pi,740167,1174309,Wallace,CM
+piaui-pi,742027,1449790,Adsson,CAM
+ponte-preta-sp,76135,265703,Élvis,"CAM,ST"
+ponte-preta-sp,347100,305846,Jonathan Cafú,RW
+ponte-preta-sp,271666,498624,Danilo Barcelos,"CB,CM,LB,CDM,RW,LW"
+ponte-preta-sp,271329,500605,Rodrigo Souza,"CDM,CM"
+ponte-preta-sp,355496,631754,Lucas Cunha,CB
+ponte-preta-sp,380483,667972,Karl,CM
+ponte-preta-sp,689975,1085677,Murilo,"CM,CDM,CAM"
+ponte-preta-sp,740299,1248916,André Lima,"CDM,CM,CAM"
+ponte-preta-sp,752724,1265991,David da Hora,"ST,LW,CAM"
+ponte-preta-sp,896860,1334351,Diego Porfírio,"LB,LWB"
+ponte-preta-sp,1032891,1384965,Kevyson,"LB,LWB,LM,CAM"
+ponte-preta-sp,1042361,1406477,Danilo Peu,ST
+ponte-preta-sp,,1459750,Jonathan,LB
+ponte-preta-sp,,1478296,Nicolas Silva,CAM
+ponte-preta-sp,,1525143,Emanuell Ferreira,CAM
+ponte-preta-sp,1174214,1532951,Sergio Palacios,"CB,RB"
+ponte-preta-sp,1090830,1550696,Brandão,ST
+ponte-preta-sp,1093758,1613176,Denis,"CAM,CDM"
+ponte-preta-sp,986954,1636515,Vinicius,GK
+ponte-preta-sp,,1766569,Miguel,LW
+ponte-preta-sp,938367,1795370,Gabriel Caran,CB
+ponte-preta-sp,,1800471,Gustavo Teles,"CM,CDM"
+ponte-preta-sp,1463940,1929040,Guilherme Viana,GK
+ponte-preta-sp,,1929042,João Damião,ST
+ponte-preta-sp,,1936789,Juan,"CM,RWB,CDM"
+ponte-preta-sp,,1936798,Gustavo Almeida,"CB,RB"
+ponte-preta-sp,,1936806,Julio,"RB,RM,RWB"
+ponte-preta-sp,1096542,1937502,Diego Leão,CB
+ponte-preta-sp,,2139754,Matheus Souza,LB
+ponte-preta-sp,,2175420,Ryan Andrade,RW
+porto-ba,1094906,1795344,Pedro Lima,RWB
+porto-velho-ro,,1482137,Yan Philippe,LW
+porto-vitoria-es,120237,177502,Reniê,CB
+porto-vitoria-es,374838,642841,Victor Rangel,ST
+porto-vitoria-es,370109,673611,Léo Baiano,CM
+porto-vitoria-es,550176,1128090,Gama,CM
+porto-vitoria-es,992306,1473309,Lucas Peres,LB
+porto-vitoria-es,1090824,1693773,Henrique Melo,CM
+portuguesa-rj,53965,115229,Guilherme Santos,LB
+portuguesa-rj,108621,171925,Lenon,RB
+portuguesa-rj,226367,498442,Alex Reinaldo,RB
+portuguesa-rj,216681,498452,Anderson Rosa,CAM
+portuguesa-rj,369283,637314,Bruno Mota,CAM
+portuguesa-rj,388588,664965,Jadson,CB
+portuguesa-rj,373186,750059,Wellington Cézar,CDM
+portuguesa-rj,531967,816005,Iacovelli,ST
+portuguesa-rj,766384,1036114,Romarinho,CAM
+portuguesa-rj,547688,1044275,Lohan,ST
+portuguesa-rj,979395,1127267,Guilherme Silveira,LW
+portuguesa-rj,,1350385,Douglas Borges,GK
+portuguesa-rj,1227761,1626468,Léo Cruz,CB
+portuguesa-rj,574773,1708336,Miguel,LW
+portuguesa-sp,56601,62358,Eric Botteghin,CB
+portuguesa-sp,193925,305798,Romarinho,CAM
+portuguesa-sp,405726,690363,Felipe Tontini,CAM
+portuguesa-sp,519885,884875,Salomão,LB
+portuguesa-sp,583064,938567,Thiaguinho,CM
+portuguesa-sp,548827,1033101,Lucas Hipólito,LB
+portuguesa-sp,670000,1047937,João Diogo,LW
+portuguesa-sp,823291,1194713,Igor Torres,RW
+portuguesa-sp,789856,1201330,Caio Roque,LB
+portuguesa-sp,,1459749,Everton Messias,RW
+portuguesa-sp,441108,1526293,Carlos Eduardo,CAM
+portuguesa-sp,936773,1653505,Eduardo Biazus,CB
+portuguesa-sp,894364,1786050,Thiago Rubim,LW
+pouso-alegre-mg,20400,122017,Thiago Braga,GK
+pouso-alegre-mg,110650,175643,Ricardo Bueno,ST
+pouso-alegre-mg,601577,957984,André Anderson,LW
+pouso-alegre-mg,795578,1235114,Bruno Oliveira,LM
+pouso-alegre-mg,698745,1433275,Vanderley,CB
+pouso-alegre-mg,1090825,1536004,Pedro Arthur,CAM
+pouso-alegre-mg,857428,1606407,Albert,CDM
+pouso-alegre-mg,1083672,1714741,Jhonatan Kauan,LW
+pouso-alegre-mg,,1786047,Victor Araújo,"CB,RB"
+primavera-mt,68804,172170,Renatinho,CM
+primavera-mt,,1461862,David Cruz,CB
+primavera-sp,112962,184826,Roger Carvalho,CB
+primavera-sp,206988,305002,Bruno Lima,CM
+primavera-sp,446408,758643,Yuri,CM
+primavera-sp,,855066,Matheus Anjos,CAM
+primavera-sp,371997,1072252,Marco Antônio,CAM
+primavera-sp,490410,1174664,Luiz Fernando,LW
+primavera-sp,738525,1463483,Guilherme Lacerda,CB
+primavera-sp,,1463495,Samuel,CM
+primavera-sp,1096543,1495361,João Gabriel,LB
+primavera-sp,1073549,1636339,Neto,RB
+primavera-sp,539950,1641681,Brunão,ST
+primavera-sp,1223833,1707132,Pablo,LB
+real-noroeste-cfc-es,,1527184,Joaquín Fernández,RW
+remo-pa,166032,319659,Marllon,CB
+remo-pa,265660,498595,Yago Pikachu,"RW,CAM"
+remo-pa,323452,535944,Zé Welison,CDM
+remo-pa,333159,576129,Patrick,"CDM,CM"
+remo-pa,358738,624459,Cristian Tassano,CB
+remo-pa,443721,670799,Marlon,"LB,LWB,CB"
+remo-pa,390368,671705,Vitor Bueno,"CAM,ST"
+remo-pa,484848,769769,Zé Ivaldo,CB
+remo-pa,490760,834641,Duplexe Tchamba,CB
+remo-pa,539135,882823,Léo Andrade,CB
+remo-pa,491599,887141,Antonio Galeano,"RW,LW,ST"
+remo-pa,412610,936701,Marcelo Rangel,GK
+remo-pa,585876,940855,Gabriel Taliari,"ST,CAM,LW,LM"
+remo-pa,600549,951710,Zé Ricardo,"CAM,CDM,CM,ST"
+remo-pa,603423,954252,Mayk,LB
+remo-pa,592346,981302,Gabriel Poveda,ST
+remo-pa,653349,1028126,Jáderson,RW
+remo-pa,726092,1041427,Jája Silva,"LW,RW,CAM"
+remo-pa,672292,1058103,João Lucas,RB
+remo-pa,686332,1069712,Edson Fernando,CDM
+remo-pa,663077,1097836,Leonel Picco,"CDM,CM"
+remo-pa,833886,1247327,Franco Catarozzi,RM
+remo-pa,617687,1247716,Matheus Alexandre,RB
+remo-pa,882916,1317541,Matheus Felipe,CB
+remo-pa,681494,1336663,Marcelinho,"RB,RW"
+remo-pa,738503,1460459,Eduardo Melo,ST
+remo-pa,555201,1463088,Ygor Vinhas,GK
+remo-pa,1091022,1471036,David Braga,CAM
+remo-pa,364257,1927896,Ivan,GK
+retro-fc-brasil-pe,76902,171899,Fernandinho,ST
+retro-fc-brasil-pe,226896,493232,Dankler,CB
+retro-fc-brasil-pe,476366,678910,Denílson,CB
+retro-fc-brasil-pe,530289,961073,Luiz Henrique,CDM
+retro-fc-brasil-pe,813109,1206580,Bruno Marques,ST
+retro-fc-brasil-pe,,1434521,Kady,CM
+retro-fc-brasil-pe,437791,1461853,Jefferson Paulino,GK
+retro-fc-brasil-pe,950555,1641702,João Rafael,LB
+retro-fc-brasil-pe,1095215,1736936,Diego,LW
+rio-branco-es,112239,185865,João Paulo,CDM
+rio-branco-es,148751,267911,Bruno Peres,RB
+rio-branco-es,255805,460261,Rafael Vaz,CB
+rio-branco-es,366645,638757,Alisson Farias,LM
+rio-branco-es,401532,688272,Geovane,CAM
+rio-branco-es,628222,975005,Rodrigo Carioca,RW
+rio-branco-es,,1284427,Matheus Mega,CB
+rio-branco-es,868154,1440971,Braga,RW
+rio-branco-es,,1709095,David José,ST
+sampaio-correa-ma,555462,1292600,Hugo Leonardo da Silva Moreira,LB
+sampaio-correa-ma,740406,1509190,Itambé,CB
+sampaio-correa-rj-rj,158843,323350,Elias,ST
+sampaio-correa-rj-rj,428876,735094,Paulo Victor,ST
+sampaio-correa-rj-rj,600708,951709,Luan Gama,"CAM,LM,LW,CDM"
+sampaio-correa-rj-rj,723546,1462431,Zé Carlos,GK
+sampaio-correa-rj-rj,978783,1469126,Gabriel Agú,"RW,CM"
+sampaio-correa-rj-rj,643833,1612210,Magno,CM
+sampaio-correa-rj-rj,743992,1624480,Octávio,"LW,RM,RW,LM"
+sampaio-correa-rj-rj,942122,1641691,Ewerton Potiguar,RM
+sampaio-correa-rj-rj,,1708008,Ryan Silva,RB
+sampaio-correa-rj-rj,855565,1708895,Walber,CAM
+sampaio-correa-rj-rj,1226151,1729749,Alexandre Souza,"CM,CAM"
+sampaio-correa-rj-rj,1039530,1729750,Daniel,CB
+sampaio-correa-rj-rj,643378,1899624,Guilherme,LB
+santa-catarina-sc,728558,1118184,Vinícius,GK
+santa-catarina-sc,,1173551,Ruan Oliveira,CAM
+santa-cruz-pe,68562,149584,Ariel Nahuelpán,ST
+santa-cruz-pe,150511,267895,Renato,ST
+santa-cruz-pe,193513,280139,Zé Mário,"LM,LB"
+santa-cruz-pe,210548,331750,Fabinho,CM
+santa-cruz-pe,272554,498733,Régis,CAM
+santa-cruz-pe,329847,535782,Eurico,CB
+santa-cruz-pe,347184,575401,Robinho,RW
+santa-cruz-pe,373301,638756,Silva,CDM
+santa-cruz-pe,451933,766430,Thiago Ennes,RB
+santa-cruz-pe,520088,823213,Tiago Marques,ST
+santa-cruz-pe,351895,844429,Andrey,CM
+santa-cruz-pe,388397,941635,Everaldo,LM
+santa-cruz-pe,323891,943241,Eron,ST
+santa-cruz-pe,419146,989438,Alex Ruan,LB
+santa-cruz-pe,689519,1114611,Gabriel Rodrigues,LM
+santa-cruz-pe,612706,1128937,Ronald,LW
+santa-cruz-pe,552892,1194055,Alex Sandro,ST
+santa-cruz-pe,792344,1226767,Léo Costa,CM
+santa-cruz-pe,552255,1236038,Arilson,CDM
+santa-cruz-pe,868060,1296384,Matheus Cadorini,ST
+santa-cruz-pe,978179,1446686,Edson,CB
+santa-cruz-pe,730935,1462414,Thiago Coelho,GK
+santa-cruz-pe,349501,1481716,Patrick Allan,CAM
+santa-cruz-pe,1175463,1563209,Cassiano,RW
+santa-cruz-pe,1144483,1640842,Matheus Melo,CM
+santos-sp,68290,19533,Neymar,"CAM,ST,LW"
+santos-sp,80444,184536,Philippe Coutinho,CAM
+santos-sp,210747,305713,Willian Arão,"CDM,CB,CM"
+santos-sp,198859,345905,João Schmidt,"CDM,CM"
+santos-sp,185966,400256,Rodinei,"RB,RW"
+santos-sp,244275,450848,Gabriel Barbosa,ST
+santos-sp,321239,528348,Everton,LW
+santos-sp,275412,535896,João Paulo,GK
+santos-sp,362842,654044,Arthur,"CDM,CM,CAM"
+santos-sp,387611,671606,Lima,CAM
+santos-sp,392487,687496,Thaciano,"ST,LW"
+santos-sp,411662,699694,Lucas Veríssimo,CB
+santos-sp,440377,751010,Gonzalo Escobar,LB
+santos-sp,347913,763386,Luan Peres,CB
+santos-sp,371009,796732,Rony,"ST,LW,RWB,CAM,RW,RM"
+santos-sp,552240,916348,Igor Vinícius,RB
+santos-sp,563812,925841,Christian Oliva,"CDM,CM"
+santos-sp,613873,959915,Álvaro Barreal,"LW,RW,LM,CAM,CM,LB"
+santos-sp,371247,982426,Gabriel Brazão,GK
+santos-sp,491704,1073365,Benjamín Rollheiser,"CAM,RW,ST"
+santos-sp,608216,1137671,Gabriel Menino,"RB,CM,RM"
+santos-sp,788361,1172406,Moisés,"LW,LM"
+santos-sp,907359,1272356,Diógenes,GK
+santos-sp,,1312459,Miguel Terceros,"RW,CAM,ST,LW"
+santos-sp,891672,1347933,Gustavo Caballero,"RW,LW,ST"
+santos-sp,,1572015,Nicola Profeta,CDM
+santos-sp,,1643966,João Pedro,GK
+santos-sp,1089958,1712138,Gabriel Bontempo,"RW,CM,CAM,CDM"
+santos-sp,1253844,1733364,Vinicius Lira,LB
+santos-sp,,1744831,Gustavo Henrique,"CDM,CM,RM"
+santos-sp,1256755,1797982,João Ananias,CB
+santos-sp,,1897624,Marcelo Tórrez,CB
+santos-sp,,1933452,Rafael Gonzaga,LB
+santos-sp,,1997442,Davizinho,RB
+sao-bernardo-sp,98511,162662,Felipe Garcia,ST
+sao-bernardo-sp,133118,267678,Hélder,CB
+sao-bernardo-sp,184109,267848,Mário Sérgio,"LB,LM"
+sao-bernardo-sp,539467,267918,Romisson,"CAM,CM,CDM,RW"
+sao-bernardo-sp,258254,449666,Jemerson,CB
+sao-bernardo-sp,286474,493692,Matheus Salustiano,CB
+sao-bernardo-sp,268572,500467,Foguinho,"CDM,CM"
+sao-bernardo-sp,323618,535584,Pará,"LB,LWB"
+sao-bernardo-sp,338861,558122,Hyoran,CAM
+sao-bernardo-sp,373432,559020,Júnior Oliveira,GK
+sao-bernardo-sp,346072,675917,Marcão,CDM
+sao-bernardo-sp,411663,699686,Augusto,CB
+sao-bernardo-sp,430761,738724,Lucas Fernandes,RM
+sao-bernardo-sp,468260,796803,Léo Jabá,ST
+sao-bernardo-sp,435239,841862,Rodrigo Andrade,CAM
+sao-bernardo-sp,538978,935288,Pedrinho,LW
+sao-bernardo-sp,605326,957550,Pedro Vitor,RW
+sao-bernardo-sp,490613,961500,Daniel Amorim,ST
+sao-bernardo-sp,612328,969835,Hugo Sanches,RB
+sao-bernardo-sp,157117,1173478,Alex Alves,GK
+sao-bernardo-sp,740162,1179045,Dudu Miraíma,"CM,CDM,CAM"
+sao-bernardo-sp,555374,1189948,Rodrigo Ferreira,"RB,RM,RWB"
+sao-bernardo-sp,725053,1225516,Wellington Manzoli,CB
+sao-bernardo-sp,787269,1233937,Fabrício Daniel,"RW,ST"
+sao-bernardo-sp,688896,1235078,Echaporã,"LW,RW"
+sao-bernardo-sp,570584,1292353,Léo Lang,GK
+sao-bernardo-sp,894531,1354537,Luizão,CB
+sao-bernardo-sp,688310,1357756,Lucas Lima,"CDM,CM"
+sao-bernardo-sp,975509,1616627,Lucas Rian,"LW,RW"
+sao-bernardo-sp,1362527,1944506,Daniel Davi,LW
+sao-jose-rs,55499,98217,Ivo,ST
+sao-jose-rs,524439,852115,Igor Cássio,RW
+sao-jose-rs,624630,968447,Andrey,"ST,LW"
+sao-jose-rs,553870,1043906,Gabriel Lima,CM
+sao-jose-rs,694528,1078931,Bruno Jesus,CB
+sao-jose-rs,,1359810,Tiago Pedra,CB
+sao-jose-rs,867906,1437429,Grafite,LW
+sao-jose-rs,817263,1448289,Zé Vitor,"CM,CDM"
+sao-jose-rs,975370,1521181,Michel Camargos,LW
+sao-jose-rs,,1653445,Evaristo,CM
+sao-jose-rs,1094459,1653465,Alex Peralta,GK
+sao-jose-rs,,1693414,Mateus Pureza,RB
+sao-jose-rs,1098733,1788074,Keverton,"CM,CDM"
+sao-jose-rs,1086376,1791635,Gustavo Bagatini,CM
+sao-jose-rs,731695,1792014,Diney,CB
+sao-luiz-rs,550227,1043782,Ricardo Thalheimer,CB
+sao-luiz-rs,978074,1614062,Válber Júnior,CAM
+sao-paulo-sp,72441,127374,Rafael Tolói,CB
+sao-paulo-sp,68097,127892,Rafael,GK
+sao-paulo-sp,112988,160627,Cédric Soares,"RB,RWB,RM"
+sao-paulo-sp,77100,215299,Lucas Moura,"CAM,ST"
+sao-paulo-sp,139867,342941,Robert Arboleda,CB
+sao-paulo-sp,223560,399130,Luciano,"ST,CAM"
+sao-paulo-sp,284727,469295,Jonathan Calleri,ST
+sao-paulo-sp,228433,487867,Wendell,"LB,LWB"
+sao-paulo-sp,292731,493553,Danielzinho,"CDM,CM,CAM,CB"
+sao-paulo-sp,257376,566425,Domingos Duarte,CB
+sao-paulo-sp,162812,575733,Cauly,"LW,CAM"
+sao-paulo-sp,378189,650009,Lucas Ramon,"RB,RWB"
+sao-paulo-sp,378871,658563,Carlos Coronel,GK
+sao-paulo-sp,381724,660846,Victor Sá,LW
+sao-paulo-sp,440658,754504,Artur,"RW,CAM,RM"
+sao-paulo-sp,258039,767716,Aurélio Buta,"RB,RM"
+sao-paulo-sp,540458,808159,Enzo Díaz,"LB,LWB"
+sao-paulo-sp,520468,845984,Iago Borduchi,"LB,LWB"
+sao-paulo-sp,468301,890205,Marcos Antônio,"CDM,CM,CAM,LM,RW"
+sao-paulo-sp,565232,919919,André Silva,"ST,CAM"
+sao-paulo-sp,546033,1082117,Sabino,CB
+sao-paulo-sp,,1098104,Ferreira,"LW,LM,ST"
+sao-paulo-sp,861852,1252913,Damián Bobadilla,"CDM,CM,CAM"
+sao-paulo-sp,892089,1313924,Pablo Maia,"CDM,CM"
+sao-paulo-sp,894532,1354542,Young,GK
+sao-paulo-sp,980825,1509611,Matheus Belém,CB
+sao-paulo-sp,811219,1578668,Newton,"CB,CDM,CM"
+sao-paulo-sp,1193867,1610952,Pedro Lima,"RB,RWB"
+sao-paulo-sp,,1686408,Juan Potes,CB
+sao-paulo-sp,1202387,1699022,Ryan Francisco,LW
+sao-paulo-sp,1269378,1744830,Lucca Marques,"LW,RW"
+sao-paulo-sp,1387007,1800648,Nicolas,LWB
+sao-paulo-sp,1219848,1894950,Igor Felisberto,RB
+sao-paulo-sp,1383716,1898791,Djhordney,CDM
+sao-paulo-sp,1221747,1950886,Luis Osorio,CB
+sao-paulo-sp,1095834,1997436,Gustavo Santana,CAM
+sao-raimundo-rr,,1246620,Rafael Carioca,ST
+serra-branca-pb,,148955,Marcelo Aparecido,CAM
+serra-branca-pb,75438,171928,Bruno Fuso,GK
+serra-branca-pb,,1134276,Jefferson Victor,ST
+serra-branca-pb,349815,1335266,Jadson,CB
+serra-branca-pb,,1462419,João Marcus,CB
+serra-branca-pb,867462,1607440,Kayan,CAM
+serra-branca-pb,979474,1610983,Lucas Souza,LW
+serra-branca-pb,975894,1614058,Dindê,CDM
+serra-branca-pb,,1619642,Diego Ceará,ST
+serra-branca-pb,688688,1651144,Rafinha,RB
+serra-branca-pb,,1666304,Anderson Ligeiro,LM
+sousa-pb,,943242,Hebert Cristian,CM
+sousa-pb,804880,1641692,Marcelo Duarte,CB
+sport-pe,75102,170166,Denis,GK
+sport-pe,257740,429753,Carlos de Pena,"CAM,LW,CM"
+sport-pe,252900,450868,Willian Oliveira,"CDM,CM"
+sport-pe,476339,492254,Benevenuto,CB
+sport-pe,392809,629937,Clayson,"LW,RW"
+sport-pe,432959,750084,Perotti,ST
+sport-pe,546217,844408,Thiago Couto,GK
+sport-pe,555016,905493,Brenno,GK
+sport-pe,,927070,Zé Marcos,CB
+sport-pe,520467,935034,Juan Alano,"CAM,RW,LW"
+sport-pe,350342,950835,Fernando Sobral,"CDM,CAM"
+sport-pe,635807,989457,Marlon Douglas,"LW,ST,RW"
+sport-pe,670968,1069976,Zé Gabriel,"CDM,CM"
+sport-pe,737821,1137664,Patrick de Paula,"CDM,CAM,CM"
+sport-pe,875338,1174634,Raí Lopes,LB
+sport-pe,800732,1227357,Diego Hernández,"CAM,RW,LM"
+sport-pe,867139,1233136,Biel,"CDM,CAM,CM"
+sport-pe,639751,1248050,Neto Pessoa,ST
+sport-pe,896338,1249296,Kervin Andrade,"LW,CM,CAM"
+sport-pe,594561,1252093,Dudu Teodora,"CAM,ST,RW,LM,RM"
+sport-pe,910216,1277901,Marcelo Ajul,"CB,RB"
+sport-pe,697845,1281562,Claudinho,RB
+sport-pe,965630,1320951,Habraão,CB
+sport-pe,798167,1368360,Felipinho,"LB,LWB,LM"
+sport-pe,695232,1372923,Chrystian Barletta,"RW,CAM"
+sport-pe,886688,1430300,Edson Lucas,LB
+sport-pe,1087725,1462416,Fábio Matheus,"CDM,CM"
+sport-pe,1089609,1483507,Kayky Almeida,"CB,LB"
+sport-pe,1083245,1738394,Murilo Rhikman,CM
+sport-pe,,1789715,Adriel,CM
+sport-pe,1355323,1904116,Augusto Pucci,"RB,RM"
+tocantinopolis-to,,268397,Rogério,ST
+tombense-mg,,1244240,Jefferson Renan,RW
+tombense-mg,,1419328,Felipinho,RW
+tombense-mg,,1462824,Diego Leandro,CDM
+tombense-mg,869471,1502809,Breno Roma,CB
+tombense-mg,,1638971,Wanderson Barros,CDM
+tombense-mg,,1736951,Jupi,ST
+tombense-mg,1368354,1736954,Luiz Felipe,ST
+tombense-mg,,1749282,Júlio César,ST
+trem-dc-ap,,1461857,Wander,CAM
+treze-pb,147407,577862,Thiago Alagoano,CM
+treze-pb,292409,664966,Buba,LM
+treze-pb,456551,790120,Fernandinho,LM
+treze-pb,538259,1189127,Jean Carlo,"RM,RW"
+treze-pb,,1736977,Felipe Santana,CB
+treze-pb,,1796038,Leonardo Felipe de Oliveira Azevedo,"CM,CAM"
+tuna-luso-brasileira-pa,,1359276,Alan Maia,LW
+uberlandia-mg,55378,196941,Kayke,ST
+uberlandia-mg,341120,583439,Marcos Calazans,RW
+uberlandia-mg,349161,613413,Tomas Bastos,"CAM,LW"
+uberlandia-mg,680673,1069695,Da Silva,ST
+uberlandia-mg,593070,1192442,Pablo Thomaz,ST
+uberlandia-mg,870405,1236702,Nathan,LB
+uberlandia-mg,555431,1238130,Jefferson Luís,GK
+uberlandia-mg,978617,1350700,Gabriel Ferreira,CB
+uberlandia-mg,640201,1393983,Diego Fumaça,CDM
+uberlandia-mg,663269,1448039,Rayan,CB
+uberlandia-mg,874502,1455563,Léo Reis,LW
+uberlandia-mg,979467,1462831,Max Miller,CB
+uberlandia-mg,1100830,1708445,Luis Felipe,LB
+uberlandia-mg,1169211,1717611,Rafael Conceição,"CAM,CDM"
+uberlandia-mg,735565,1737553,Marcelo,CB
+uberlandia-mg,1115724,1928071,Jhonatan Lima,ST
+uniao-rondonopolis-mt,607250,957201,Igor,RW
+vasco-da-gama-ac,1121876,1622643,Índio,CB
+vasco-rj,135617,339032,Thiago Mendes,"CDM,CAM,CM"
+vasco-rj,239294,543804,Jair,CDM
+vasco-rj,288415,577950,Léo Jardim,GK
+vasco-rj,364261,637718,Tchê Tchê,"CDM,CAM,RW,RB,CM"
+vasco-rj,373189,656526,David,"ST,LW"
+vasco-rj,430339,816753,José Rodríguez,"RB,LB"
+vasco-rj,474589,834032,Carlos Cuesta,CB
+vasco-rj,504882,834759,Claudio Spinelli,ST
+vasco-rj,438682,844493,Daniel Fuzato,GK
+vasco-rj,412366,856464,Brenner,"ST,LW,CAM,LM"
+vasco-rj,491705,949735,Facundo Colidio,"LW,ST,RW,CAM"
+vasco-rj,598629,951043,Bruno Duarte,"ST,CAM"
+vasco-rj,576026,958860,Santiago Sosa,"CDM,CM,CB"
+vasco-rj,670201,1045161,Lucas Piton,LB
+vasco-rj,643119,1174626,Riquelme,LWB
+vasco-rj,461937,1188608,Nuno Moreira,"RW,LW,CAM"
+vasco-rj,412594,1200802,Paulo Henrique,RB
+vasco-rj,663319,1205222,Marino Hinestroza,"RW,CAM"
+vasco-rj,809716,1224887,Lucas Freitas,CB
+vasco-rj,696693,1240979,Loide Augusto,"RW,LW"
+vasco-rj,868891,1255479,Adson,RW
+vasco-rj,742095,1288187,Gabriel Pereira,CB
+vasco-rj,991134,1342579,Alan Lescano,"CM,CAM,RM,RW"
+vasco-rj,957461,1353421,Andrés Gómez,"LW,RW"
+vasco-rj,958598,1360308,Robert Renan,CB
+vasco-rj,989455,1381731,Alan Saldivia,CB
+vasco-rj,974652,1433058,Johan Rojas,"CAM,ST"
+vasco-rj,1083966,1459657,Cauan Barros,"CDM,CM"
+vasco-rj,891353,1476545,Cuiabano,LB
+vasco-rj,862574,1478294,Mateus Carvalho,CM
+vasco-rj,1082692,1535528,Paulinho,LB
+vasco-rj,1083887,1635399,Pablo,GK
+vasco-rj,1083969,1641727,Guilherme Estrella,CM
+vasco-rj,,1658898,Bruno Lopes,ST
+vasco-rj,1221660,1708455,Walace Falcão,CB
+vasco-rj,,1744378,Lukas Zuccarello,RW
+vasco-rj,,1748487,Avellar,LM
+vasco-rj,,1946081,Jotavve Fonseca,RB
+vasco-rj,1221773,1950789,Ramon Rique,"CAM,CM,CDM"
+velo-clube-rioclarense-sp,,813864,Mateus Norton,CM
+velo-clube-rioclarense-sp,744904,1302080,Flávio,ST
+velo-clube-rioclarense-sp,613904,1339529,Sillas,LW
+velo-clube-rioclarense-sp,,1608422,Anderson Pinto Ferreira Barbosa,CDM
+velo-clube-rioclarense-sp,896863,1719154,Lucas Duni,ST
+vila-nova-go,100091,175644,Marquinhos Gabriel,"CAM,CM"
+vila-nova-go,184604,278723,Dellatorre,ST
+vila-nova-go,213619,323400,Rafa Silva,ST
+vila-nova-go,175383,449653,Helton Leite,GK
+vila-nova-go,281837,494029,Dodô,CAM
+vila-nova-go,554297,558006,Dalberson,GK
+vila-nova-go,346729,574664,Tiago Pagnussat,CB
+vila-nova-go,355471,614304,Jonathan Costa,CB
+vila-nova-go,519851,656372,André Luís,"ST,RW,LW"
+vila-nova-go,389942,765156,Hayner,RB
+vila-nova-go,477621,815946,Willian Formiga,"LB,CB"
+vila-nova-go,520480,849501,Igor Cariús,"LB,RB"
+vila-nova-go,537386,881154,Bruno Xavier,LW
+vila-nova-go,372046,887684,Lincoln,ST
+vila-nova-go,538107,960652,Willian Maranhão,"CDM,CM"
+vila-nova-go,646432,1033100,Higor Meritão,"CDM,CM"
+vila-nova-go,458251,1034321,Everton Galdino,"RW,ST"
+vila-nova-go,670940,1045975,Janderson,LW
+vila-nova-go,539183,1130889,Anderson Jesus,CB
+vila-nova-go,1129200,1346859,Ryan Lima,RW
+vila-nova-go,1015962,1366063,Nathan Camargo,"RB,CDM"
+vila-nova-go,922247,1376786,Dudu,"CDM,CB"
+vila-nova-go,921863,1406628,Douglas Mendes,CB
+vila-nova-go,868885,1446567,Emerson Urso,LW
+vila-nova-go,699824,1462413,João Vieira,"CDM,CM,CAM"
+vila-nova-go,1083674,1653507,Enzo,CDM
+vila-nova-go,1090843,1693772,Higor,LB
+vila-nova-go,999803,1791139,Breno,CB
+vila-nova-go,1367320,1935530,Gustavo Puskas,ST
+vitoria-ba,76191,186116,Osvaldo,LW
+vitoria-ba,74758,339125,Marinho,RW
+vitoria-ba,262851,427614,Emanuel Brítez,"CB,RB"
+vitoria-ba,323954,538540,Walace,CDM
+vitoria-ba,360526,632708,Emmanuel Martínez,"CM,CAM,CDM"
+vitoria-ba,365368,637585,Matheuzinho,"LW,CAM,RM,ST,RW"
+vitoria-ba,404321,679873,Renato Kayzer,"ST,LW"
+vitoria-ba,348354,693601,Tomás Pochettino,"CAM,LW,LM,RW"
+vitoria-ba,515638,864464,Erick,"RW,RM,RWB"
+vitoria-ba,552242,919212,Gabriel Baralhas,"CM,CDM"
+vitoria-ba,603122,954213,Cacá,"CB,RB"
+vitoria-ba,432166,966069,Luan Cândido,"CB,LB"
+vitoria-ba,577407,971433,Ignacio Laquintana,RW
+vitoria-ba,,1003378,Kike Saverio,RW
+vitoria-ba,613641,1010274,Jamerson,"LB,RB"
+vitoria-ba,608943,1031130,Lucas Silva,"LM,LW"
+vitoria-ba,646677,1033147,Riccieli,CB
+vitoria-ba,371250,1086044,Edu,CB
+vitoria-ba,657387,1165259,Fabiano Souza,"RB,RWB"
+vitoria-ba,663578,1174633,Ramon,"LB,LWB,LM"
+vitoria-ba,,1174974,Fabrício,ST
+vitoria-ba,607817,1178845,Camutanga,CB
+vitoria-ba,468332,1185179,Rúben Ismael,CDM
+vitoria-ba,887801,1255211,Nathan Mendes,RB
+vitoria-ba,645602,1281584,Lucas Arcanjo,GK
+vitoria-ba,555310,1350017,Caíque Gonçalves,"CM,CDM,CB,CAM"
+vitoria-ba,870778,1357732,Mateus Silva,"RB,RM,RWB"
+vitoria-ba,979994,1436124,Alex Bruno,ST
+vitoria-ba,691811,1461818,Dudu,CM
+vitoria-ba,,1529948,Alejandro Almaraz,CM
+vitoria-ba,1093951,1605930,Renê,ST
+vitoria-ba,1225755,1607054,Diego Tarzia,LW
+vitoria-ba,825780,1637669,Zé Vitor,"CM,CDM,CAM"
+vitoria-ba,1223829,1753486,Edenilson,RB
+vitoria-ba,,1797937,Wendell Sacramento,CDM
+vitoria-es,172454,263924,Maranhão,ST
+vitoria-es,,637588,Araújo,"CDM,CM"
+vitoria-es,533356,1242107,Diego Guerra,CB
+vitoria-es,546231,1298164,Foguete,RWB
+volta-redonda-rj,86917,166872,Fabrício,CB
+volta-redonda-rj,190543,274098,Dener,"CAM,CM,CDM"
+volta-redonda-rj,99500,319653,Wellington Silva,"RB,RM"
+volta-redonda-rj,443864,799270,Lucas Rocha,CB
+volta-redonda-rj,439796,1028585,Bruno Barra,"CDM,CB,CM"
+volta-redonda-rj,681813,1028616,Luciano Naninho,"ST,CM"
+volta-redonda-rj,547943,1187645,Rafael Furtado,ST
+volta-redonda-rj,871802,1244385,Marquinhos,"LW,RW"
+volta-redonda-rj,793778,1248449,Juninho Monteiro,LB
+volta-redonda-rj,796783,1335094,Du Fernandes,CDM
+volta-redonda-rj,638270,1362674,Wagninho,"CM,CDM"
+volta-redonda-rj,812482,1440968,Matheus Régis,LW
+volta-redonda-rj,539175,1460408,Pedro Costa,RB
+volta-redonda-rj,788194,1461820,Henrique Silva,CDM
+volta-redonda-rj,742092,1461821,Avelino,GK
+volta-redonda-rj,979440,1562434,Lucas Adell,CB
+volta-redonda-rj,722615,1613991,Alan,CB
+xv-de-piracicaba-sp,112062,172887,Júnior Caiçara,CDM
+xv-de-piracicaba-sp,168987,206689,Andrés Robles,CB
+xv-de-piracicaba-sp,,280971,Riçard Almeyda,CDM
+xv-de-piracicaba-sp,290250,500911,Thales Oleques,LB
+xv-de-piracicaba-sp,442820,629938,Paulo Marcelo,ST
+xv-de-piracicaba-sp,519877,833650,Dudu Vieira,CDM
+xv-de-piracicaba-sp,653419,846943,David Ribeiro,LW
+xv-de-piracicaba-sp,1090243,1460505,Carlos Manuel,CM
+xv-de-piracicaba-sp,794080,1636574,Erik Bessa,ST
+ypiranga-rs,226141,319927,Henrique,LW
+ypiranga-rs,228124,331653,Willian Gomes,CB
+ypiranga-rs,439782,814857,Marcelinho,LW
+ypiranga-rs,574903,1047669,Walce,CB
+ypiranga-rs,689507,1074863,Lucas Ramos,CAM
+ypiranga-rs,658871,1174632,Ramon,CAM
+ypiranga-rs,795619,1357761,Léo Rafael,"CDM,CAM"
+ypiranga-rs,867006,1409431,Dionísio,CDM
+ypiranga-rs,1007091,1461823,Léo Gobo,CB
+ypiranga-rs,682009,1462428,Robson,CM
+ypiranga-rs,,1641698,Dudu Dall'Agnol,LB
+ypiranga-rs,665217,1716108,Vinicius Charopem,ST

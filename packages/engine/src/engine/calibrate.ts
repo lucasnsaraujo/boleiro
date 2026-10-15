@@ -1,4 +1,5 @@
-import { loadTeams } from "@boleiro/data/players";
+import { loadNewGame } from "../sim/loadNewGame.js";
+import { fieldedTeams } from "../sim/players/fieldedTeams.js";
 import { FIRST_CURRENT_SEASON, realDivisionRates, realSerieARates, simulatedSeasonRates, type LeagueRates, type ResultRates } from "./calibration.js";
 import { CUP_SEASONS, realCupUpsets, simulatedCupUpsets, type CupUpsetGroup, type DivisionSquads } from "./cupUpsets.js";
 import { fitParams } from "./fitParams.js";
@@ -29,7 +30,9 @@ function cupError(simulated: CupUpsetGroup[], real: CupUpsetGroup[]): number {
   return total / matches;
 }
 
-const squads: DivisionSquads = { A: loadTeams("A"), B: loadTeams("B"), C: loadTeams("C"), D: loadTeams("D") };
+// Every club as its AI coach fields it on day one: its usual eleven in its formation, placed by position.
+const game = loadNewGame(1, { coachClubId: null });
+const squads: DivisionSquads = { A: fieldedTeams(game, "A"), B: fieldedTeams(game, "B"), C: fieldedTeams(game, "C"), D: fieldedTeams(game, "D") };
 
 const realA = realSerieARates();
 const fittedA = fitParams(CALIBRATED, ["baseGoals", "homeAdvantage", "strengthImpact", "lowScoreCorrelation"], (p) => marketError(simulatedSeasonRates(squads.A, p), realA));

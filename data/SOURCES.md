@@ -41,6 +41,14 @@ The baselines were checked against Copa do Brasil 2017–2025 matches between di
 
 How the game uses `age` and `nationality` (`packages/engine/src/sim/players/`): each season a player's strength follows the 2026 squads' mean strength by age within a division (about 4 below the division level at 17, 1 above from 27 to 31, 4 below at 38), and players leave at the rate each age group shrinks in this file (about 6% a year from 29, rising to 70% past 40). Players whose nationalities don't include Brazil count as foreign. Injury, fatigue and travel rates name their studies in the code; every other rate there is marked `guess`.
 
+## fotmob-players.csv and fotmob-lineups.csv
+
+From FotMob's public JSON (`/api/data/leagues`, `/api/data/teams`, `/api/data/matchDetails`) on 2026-10-14, by `pipeline/scrape_fotmob.py`: 185 of the game's 281 clubs: all 156 of Séries A–D (8 Série D clubs have no squad on FotMob, only their last eleven) and 29 state-only clubs from the state championships FotMob covers.
+
+- `fotmob-players.csv`: each player's positions as FotMob lists them, main first (`CB,LB`). `tm_id` is the Transfermarkt player of the same club with the same name, or the only one whose name holds the other's words (age within a year); empty where none or several fit. The game keeps Transfermarkt's position as the main one and adds FotMob's other roles (`pipeline/positions.py`).
+- `fotmob-lineups.csv`: each club's eleven in its last match. Séries A and B team pages give the formation and each starter's slot; for Séries C and D the last match's details list the starters only, so `formation` is empty and the game picks the formation those starters fit best. A club missing here plays the formation its squad fits best (`guess`).
+- Costs of playing out of position (`packages/engine/src/engine/formations.ts`, `match.ts`): 97% of a player's strength in one of his other positions (`guess`, the approved lineup mock's −3%), 85% anywhere else and 50% for a keeper outfield or an outfielder in goal (`guess`, the values the engine already used). Checked with `pnpm calibrate` on the elevens the game fields.
+
 ## Historical results
 
 | File | Source | Rebuilt by |

@@ -1,0 +1,2036 @@
+club_id,fotmob_team_id,formation,slot,fotmob_position_id,tm_id,fotmob_id,name
+flamengo-rj,9770,4-2-3-1,0,11,352324,616528,Agustín Rossi
+flamengo-rj,9770,4-2-3-1,1,32,188862,465614,Guillermo Varela
+flamengo-rj,9770,4-2-3-1,2,34,374136,845976,Léo Ortiz
+flamengo-rj,9770,4-2-3-1,3,36,288431,523801,Léo Pereira
+flamengo-rj,9770,4-2-3-1,4,38,79960,157865,Alex Sandro
+flamengo-rj,9770,4-2-3-1,5,64,215616,335606,Erick Pulgar
+flamengo-rj,9770,4-2-3-1,6,66,148928,309334,Saúl
+flamengo-rj,9770,4-2-3-1,7,83,354145,784834,Jorge Carrascal
+flamengo-rj,9770,4-2-3-1,8,85,444523,766435,Lucas Paquetá
+flamengo-rj,9770,4-2-3-1,9,87,694928,1082941,Samuel Lino
+flamengo-rj,9770,4-2-3-1,10,115,432895,750067,Pedro
+palmeiras-sp,10283,3-4-2-1,0,11,641458,1043826,Carlos Miguel
+palmeiras-sp,10283,3-4-2-1,1,33,458710,851514,Murilo
+palmeiras-sp,10283,3-4-2-1,2,35,215390,274392,Gustavo Gómez
+palmeiras-sp,10283,3-4-2-1,3,37,379752,657969,Alexander Barboza
+palmeiras-sp,10283,3-4-2-1,4,62,849582,1358345,Agustín Giay
+palmeiras-sp,10283,3-4-2-1,5,64,203394,575779,Andreas Pereira
+palmeiras-sp,10283,3-4-2-1,6,66,270188,452269,Lucas Evangelista
+palmeiras-sp,10283,3-4-2-1,7,68,496268,861661,Joaquín Piquerez
+palmeiras-sp,10283,3-4-2-1,8,84,844797,1216079,José López
+palmeiras-sp,10283,3-4-2-1,9,86,588989,1023030,Jhon Arias
+palmeiras-sp,10283,3-4-2-1,10,105,943837,1339347,Vitor Roque
+athletico-pr-pr,10273,3-4-2-1,0,11,743586,1400078,Mycael
+athletico-pr-pr,10273,3-4-2-1,1,33,1233473,1681911,Arthur Dias
+athletico-pr-pr,10273,3-4-2-1,2,35,570521,923698,Juan Aguirre
+athletico-pr-pr,10273,3-4-2-1,3,37,829969,1201038,Lucas Esquivel
+athletico-pr-pr,10273,3-4-2-1,4,62,1093864,387499,Gilberto
+athletico-pr-pr,10273,3-4-2-1,5,64,205179,319591,Jádson
+athletico-pr-pr,10273,3-4-2-1,6,66,10471,147729,Luiz Gustavo
+athletico-pr-pr,10273,3-4-2-1,7,68,131101,280758,Stiven Mendoza
+athletico-pr-pr,10273,3-4-2-1,8,84,1110658,1636609,Leozinho
+athletico-pr-pr,10273,3-4-2-1,9,86,1004738,1590303,João Cruz
+athletico-pr-pr,10273,3-4-2-1,10,105,580461,941671,Kevin Viveros
+fluminense-rj,9863,4-2-3-1,0,11,22415,30441,Fábio
+fluminense-rj,9863,4-2-3-1,1,32,198250,307072,Samuel Xavier
+fluminense-rj,9863,4-2-3-1,2,34,624291,967692,Ignácio
+fluminense-rj,9863,4-2-3-1,3,36,495689,847127,Julián Millán
+fluminense-rj,9863,4-2-3-1,4,38,346766,535596,Guilherme Arana
+fluminense-rj,9863,4-2-3-1,5,64,546172,951359,Nonato
+fluminense-rj,9863,4-2-3-1,6,66,815558,1187836,Martinelli
+fluminense-rj,9863,4-2-3-1,7,83,457533,840212,Agustín Canobbio
+fluminense-rj,9863,4-2-3-1,8,85,315169,521338,Luciano Acosta
+fluminense-rj,9863,4-2-3-1,9,87,312294,495833,Yeferson Soteldo
+fluminense-rj,9863,4-2-3-1,10,115,984416,1336919,Rodrigo Castillo
+bahia-ba,7877,4-3-3,0,11,387925,812077,Ronaldo
+bahia-ba,7877,4-3-3,1,32,980463,1355337,Marcos Victor
+bahia-ba,7877,4-3-3,2,34,373446,638782,David Duarte
+bahia-ba,7877,4-3-3,3,36,534376,1343136,Marco Moreno
+bahia-ba,7877,4-3-3,4,38,676035,1174329,Luciano Juba
+bahia-ba,7877,4-3-3,5,73,578872,934675,Jean Lucas
+bahia-ba,7877,4-3-3,6,75,727751,1116234,Caio Alexandre
+bahia-ba,7877,4-3-3,7,77,468304,1118194,Rodrigo Nestor
+bahia-ba,7877,4-3-3,8,103,657746,1136409,Cristian Olivera
+bahia-ba,7877,4-3-3,9,105,888493,1250658,Alejo Véliz
+bahia-ba,7877,4-3-3,10,107,936544,1340527,Erick Pulga
+cruzeiro-mg,9781,4-2-3-1,0,11,997947,1732742,Otávio
+cruzeiro-mg,9781,4-2-3-1,1,32,341710,581920,William
+cruzeiro-mg,9781,4-2-3-1,2,34,744024,1185338,João Marcelo
+cruzeiro-mg,9781,4-2-3-1,3,36,1083207,1488554,Jonathan Jesus
+cruzeiro-mg,9781,4-2-3-1,4,38,471639,805540,Gabriel Rojas
+cruzeiro-mg,9781,4-2-3-1,5,64,1365897,1733226,Zé Lucas
+cruzeiro-mg,9781,4-2-3-1,6,66,341705,580604,Gérson
+cruzeiro-mg,9781,4-2-3-1,7,83,1074584,1626714,Keny Arroyo
+cruzeiro-mg,9781,4-2-3-1,8,85,225984,522651,Matheus Pereira
+cruzeiro-mg,9781,4-2-3-1,9,87,1360820,1843214,Felipe Morais
+cruzeiro-mg,9781,4-2-3-1,10,115,620477,964661,Kaio Jorge
+atletico-mg-mg,10272,4-3-3,0,11,978121,1412963,Gabriel Delfim
+atletico-mg-mg,10272,4-3-3,1,32,740295,1173565,Natanael
+atletico-mg-mg,10272,4-3-3,2,34,312678,750056,Léo Duarte
+atletico-mg-mg,10272,4-3-3,3,36,149752,307070,Vitor Hugo
+atletico-mg-mg,10272,4-3-3,4,38,1355484,1895006,Kauã Pascini
+atletico-mg-mg,10272,4-3-3,5,73,857948,1434853,Kevin Castaño
+atletico-mg-mg,10272,4-3-3,6,75,400960,832171,Alan Franco
+atletico-mg-mg,10272,4-3-3,7,77,997714,1391210,Alexsander
+atletico-mg-mg,10272,4-3-3,8,103,749559,1363368,Victor Hugo
+atletico-mg-mg,10272,4-3-3,9,105,743951,1132940,Thiago Borbas
+atletico-mg-mg,10272,4-3-3,10,107,553459,902694,Igor Gomes
+santos-sp,8514,4-2-3-1,0,11,907359,1272356,Diógenes
+santos-sp,8514,4-2-3-1,1,32,185966,400256,Rodinei
+santos-sp,8514,4-2-3-1,2,34,411662,699694,Lucas Veríssimo
+santos-sp,8514,4-2-3-1,3,36,210747,305713,Willian Arão
+santos-sp,8514,4-2-3-1,4,38,440377,751010,Gonzalo Escobar
+santos-sp,8514,4-2-3-1,5,64,,1744831,Gustavo Henrique
+santos-sp,8514,4-2-3-1,6,66,563812,925841,Christian Oliva
+santos-sp,8514,4-2-3-1,7,83,1089958,1712138,Gabriel Bontempo
+santos-sp,8514,4-2-3-1,8,85,491704,1073365,Benjamín Rollheiser
+santos-sp,8514,4-2-3-1,9,87,321239,528348,Éverton
+santos-sp,8514,4-2-3-1,10,115,244275,450848,Gabriel Barbosa
+bragantino-sp,109705,4-2-3-1,0,11,227671,409017,Tiago Volpi
+bragantino-sp,109705,4-2-3-1,1,32,1311456,1926959,Ryan Augusto
+bragantino-sp,109705,4-2-3-1,2,34,977465,1262152,Gustavo Marques
+bragantino-sp,109705,4-2-3-1,3,36,732899,1132936,Guzmán Rodríguez
+bragantino-sp,109705,4-2-3-1,4,38,406676,844510,Juninho Capixaba
+bragantino-sp,109705,4-2-3-1,5,64,614328,960494,Ramires
+bragantino-sp,109705,4-2-3-1,6,66,627230,1249293,Fabinho
+bragantino-sp,109705,4-2-3-1,7,83,816144,1256634,Lucas Barbosa
+bragantino-sp,109705,4-2-3-1,8,85,1082602,1640270,Wallace Yan
+bragantino-sp,109705,4-2-3-1,9,87,550495,896256,Fernando
+bragantino-sp,109705,4-2-3-1,10,115,162883,215051,Eduardo Sasha
+sao-paulo-sp,10277,3-4-2-1,0,11,68097,127892,Rafael
+sao-paulo-sp,10277,3-4-2-1,1,33,811219,1578668,Newton
+sao-paulo-sp,10277,3-4-2-1,2,35,139867,342941,Robert Arboleda
+sao-paulo-sp,10277,3-4-2-1,3,37,546033,1082117,Sabino
+sao-paulo-sp,10277,3-4-2-1,4,62,378189,650009,Lucas Ramon
+sao-paulo-sp,10277,3-4-2-1,5,64,861852,1252913,Damián Bobadilla
+sao-paulo-sp,10277,3-4-2-1,6,66,1383716,1898791,Djhordney
+sao-paulo-sp,10277,3-4-2-1,7,68,520468,845984,Iago
+sao-paulo-sp,10277,3-4-2-1,8,84,440658,754504,Artur
+sao-paulo-sp,10277,3-4-2-1,9,86,1095834,1997436,Gustavo Santana
+sao-paulo-sp,10277,3-4-2-1,10,105,284727,469295,Jonathan Calleri
+coritiba-pr,9767,4-2-3-1,0,11,974488,1509085,Pedro Morisco
+coritiba-pr,9767,4-2-3-1,1,32,275381,798148,Fabricio Bustos
+coritiba-pr,9767,4-2-3-1,2,34,834443,1257285,Tiago
+coritiba-pr,9767,4-2-3-1,3,36,593382,858829,Jacy
+coritiba-pr,9767,4-2-3-1,4,38,587786,941736,Felipe Jonatan
+coritiba-pr,9767,4-2-3-1,5,64,346922,655294,Thiago Santos
+coritiba-pr,9767,4-2-3-1,6,66,570522,927094,Sebastián Gómez
+coritiba-pr,9767,4-2-3-1,7,83,362844,638652,Pedro Rocha
+coritiba-pr,9767,4-2-3-1,8,85,72772,163824,Josué
+coritiba-pr,9767,4-2-3-1,9,87,895926,1354491,Joaquín Lavega
+coritiba-pr,9767,4-2-3-1,10,115,1089181,2096660,Paulo Roberto
+vitoria-ba,7733,4-1-4-1,0,11,645602,1281584,Lucas Arcanjo
+vitoria-ba,7733,4-1-4-1,1,32,870778,1357732,Mateusinho
+vitoria-ba,7733,4-1-4-1,2,34,603122,954213,Cacá
+vitoria-ba,7733,4-1-4-1,3,36,432166,966069,Luan Cândido
+vitoria-ba,7733,4-1-4-1,4,38,613641,1010274,Jamerson
+vitoria-ba,7733,4-1-4-1,5,65,555310,1350017,Caíque
+vitoria-ba,7733,4-1-4-1,6,82,515638,864464,Erick
+vitoria-ba,7733,4-1-4-1,7,84,360526,632708,Emmanuel Martínez
+vitoria-ba,7733,4-1-4-1,8,86,365368,637585,Matheuzinho
+vitoria-ba,7733,4-1-4-1,9,88,608943,1031130,Lucas Silva
+vitoria-ba,7733,4-1-4-1,10,115,1093951,1605930,Renê
+botafogo-rj,8517,4-2-3-1,0,11,401535,846023,Gabriel Batista
+botafogo-rj,8517,4-2-3-1,1,32,468249,905498,Vitinho
+botafogo-rj,8517,4-2-3-1,2,34,466336,847910,Nahuel Ferraresi
+botafogo-rj,8517,4-2-3-1,3,36,137745,304014,Marçal
+botafogo-rj,8517,4-2-3-1,4,38,255755,428672,Alex Telles
+botafogo-rj,8517,4-2-3-1,5,64,808509,1181700,Danilo
+botafogo-rj,8517,4-2-3-1,6,66,126422,188652,Allan
+botafogo-rj,8517,4-2-3-1,7,83,217111,360559,Hakim Ziyech
+botafogo-rj,8517,4-2-3-1,8,85,661133,1199960,Cristian Medina
+botafogo-rj,8517,4-2-3-1,9,87,668228,1262084,Matheus Martins
+botafogo-rj,8517,4-2-3-1,10,115,390638,670948,Arthur Cabral
+vasco-rj,10276,4-2-3-1,0,11,288415,577950,Léo
+vasco-rj,10276,4-2-3-1,1,32,430339,816753,José Rodriguez
+vasco-rj,10276,4-2-3-1,2,34,989455,1381731,Alan Saldivia
+vasco-rj,10276,4-2-3-1,3,36,958598,1360308,Robert Renan
+vasco-rj,10276,4-2-3-1,4,38,670201,1045161,Lucas Piton
+vasco-rj,10276,4-2-3-1,5,64,239294,543804,Jair
+vasco-rj,10276,4-2-3-1,6,66,135617,339032,Thiago Mendes
+vasco-rj,10276,4-2-3-1,7,83,957461,1353421,Andrés Gómez
+vasco-rj,10276,4-2-3-1,8,85,991134,1342579,Alan Lescano
+vasco-rj,10276,4-2-3-1,9,87,491705,949735,Facundo Colidio
+vasco-rj,10276,4-2-3-1,10,115,373189,656526,David
+mirassol-sp,163782,4-3-3,0,11,269860,449785,Walter
+mirassol-sp,163782,4-3-3,1,32,688690,1116482,Igor Formiga
+mirassol-sp,163782,4-3-3,2,34,592373,952235,Lucas Oliveira
+mirassol-sp,163782,4-3-3,3,36,592340,1379296,Willian Machado
+mirassol-sp,163782,4-3-3,4,38,225617,306512,Reinaldo
+mirassol-sp,163782,4-3-3,5,73,808507,1340247,Denilson
+mirassol-sp,163782,4-3-3,6,75,329843,535930,Neto
+mirassol-sp,163782,4-3-3,7,77,349166,642494,Chico
+mirassol-sp,163782,4-3-3,8,103,636314,816000,Gustavo Silva
+mirassol-sp,163782,4-3-3,9,105,871427,1121567,Bruno Santos
+mirassol-sp,163782,4-3-3,10,107,480225,966413,Alesson
+corinthians-sp,9808,4-1-3-2,0,11,574901,960887,Hugo Souza
+corinthians-sp,9808,4-1-3-2,1,32,594226,1174660,Matheuzinho
+corinthians-sp,9808,4-1-3-2,2,34,149498,177503,Gabriel Paulista
+corinthians-sp,9808,4-1-3-2,3,36,208681,323352,Gustavo Henrique
+corinthians-sp,9808,4-1-3-2,4,38,670021,1130833,Bidu
+corinthians-sp,9808,4-1-3-2,5,65,546530,841656,Raniele
+corinthians-sp,9808,4-1-3-2,6,83,1029227,1380775,Breno Bidon
+corinthians-sp,9808,4-1-3-2,7,85,135057,246414,André Carrillo
+corinthians-sp,9808,4-1-3-2,8,87,1221818,1804815,André
+corinthians-sp,9808,4-1-3-2,9,104,489893,892752,Yuri Alberto
+corinthians-sp,9808,4-1-3-2,10,106,167850,303824,Memphis Depay
+internacional-rs,8702,3-4-2-1,0,11,869437,1260081,Anthoni
+internacional-rs,8702,3-4-2-1,1,33,703322,1090263,Bruno Gomes
+internacional-rs,8702,3-4-2-1,2,35,45319,113668,Gabriel Mercado
+internacional-rs,8702,3-4-2-1,3,37,383638,658261,Juninho
+internacional-rs,8702,3-4-2-1,4,62,829378,1200667,Braian Aguirre
+internacional-rs,8702,3-4-2-1,5,64,657220,1028443,Rodrigo Villagra
+internacional-rs,8702,3-4-2-1,6,66,294873,592922,Thiago Maia
+internacional-rs,8702,3-4-2-1,7,68,719635,1104156,Alexandro Bernabéi
+internacional-rs,8702,3-4-2-1,8,84,670965,1046082,Vitinho
+internacional-rs,8702,3-4-2-1,9,86,371996,935036,Alerrandro
+internacional-rs,8702,3-4-2-1,10,105,104505,172185,Alan Patrick
+gremio-rs,9769,4-3-3,0,11,69400,267826,Weverton
+gremio-rs,9769,4-3-3,1,32,1092620,1636443,Diego Caito
+gremio-rs,9769,4-3-3,2,34,1219466,1652392,Wallace
+gremio-rs,9769,4-3-3,3,36,145400,198053,Walter Kannemann
+gremio-rs,9769,4-3-3,4,38,406675,863158,Marlon
+gremio-rs,9769,4-3-3,5,73,261988,443518,Filip Krovinović
+gremio-rs,9769,4-3-3,6,75,273438,570432,Danilo
+gremio-rs,9769,4-3-3,7,77,436385,802174,Mathías Villasanti
+gremio-rs,9769,4-3-3,8,103,373170,571461,Cristian Pavón
+gremio-rs,9769,4-3-3,9,105,525287,866201,Carlos Vinícius
+gremio-rs,9769,4-3-3,10,107,423604,911296,Francis Amuzu
+remo-pa,1626,5-4-1,0,11,412610,936701,Marcelo
+remo-pa,1626,5-4-1,1,33,166032,319659,Marllon
+remo-pa,1626,5-4-1,2,35,323452,535944,Zé Welison
+remo-pa,1626,5-4-1,3,37,484848,769769,Zé Ivaldo
+remo-pa,1626,5-4-1,4,51,681494,1336663,Marcelinho
+remo-pa,1626,5-4-1,5,59,443721,670799,Marlon
+remo-pa,1626,5-4-1,6,72,265660,498595,Yago Pikachu
+remo-pa,1626,5-4-1,7,74,600549,951710,Zé Ricardo
+remo-pa,1626,5-4-1,8,76,333159,576129,Patrick
+remo-pa,1626,5-4-1,9,78,585876,940855,Bill
+remo-pa,1626,5-4-1,10,115,738503,1460459,Eduardo Melo
+chapecoense-sc,197693,4-2-3-1,0,11,598974,950459,Anderson
+chapecoense-sc,197693,4-2-3-1,1,32,476362,802579,Dudu
+chapecoense-sc,197693,4-2-3-1,2,34,1082707,1681803,Kauan
+chapecoense-sc,197693,4-2-3-1,3,36,736652,1130713,João Paulo
+chapecoense-sc,197693,4-2-3-1,4,38,435163,754373,Bruno Pacheco
+chapecoense-sc,197693,4-2-3-1,5,64,346935,535888,Yago
+chapecoense-sc,197693,4-2-3-1,6,66,671292,1216339,Bruno Matias
+chapecoense-sc,197693,4-2-3-1,7,83,514500,833990,Marcinho
+chapecoense-sc,197693,4-2-3-1,8,85,125513,202486,Giovanni Augusto
+chapecoense-sc,197693,4-2-3-1,9,87,802809,1283773,Maurício Garcez
+chapecoense-sc,197693,4-2-3-1,10,115,1102308,1946070,Túlio
+vila-nova-go,109706,4-2-3-1,0,11,175383,449653,Helton Leite
+vila-nova-go,109706,4-2-3-1,1,32,389942,765156,Hayner
+vila-nova-go,109706,4-2-3-1,2,34,921863,1406628,Douglas Mendes
+vila-nova-go,109706,4-2-3-1,3,36,355471,614304,Jonathan Costa
+vila-nova-go,109706,4-2-3-1,4,38,477621,815946,Willian
+vila-nova-go,109706,4-2-3-1,5,64,699824,1462413,João Vieira
+vila-nova-go,109706,4-2-3-1,6,66,922247,1376786,Dudu
+vila-nova-go,109706,4-2-3-1,7,83,458251,1034321,Everton
+vila-nova-go,109706,4-2-3-1,8,85,100091,175644,Marquinhos
+vila-nova-go,109706,4-2-3-1,9,87,670940,1045975,Janderson
+vila-nova-go,109706,4-2-3-1,10,115,184604,278723,Dellatorre
+gremio-novorizontino-sp,581838,4-2-3-1,0,11,255928,575381,Jordi
+gremio-novorizontino-sp,581838,4-2-3-1,1,32,177845,319973,Madson
+gremio-novorizontino-sp,581838,4-2-3-1,2,34,683337,1343058,Carlinhos
+gremio-novorizontino-sp,581838,4-2-3-1,3,36,936090,1612264,Patrick
+gremio-novorizontino-sp,581838,4-2-3-1,4,38,353722,637564,Sander
+gremio-novorizontino-sp,581838,4-2-3-1,5,64,740271,1131346,Juninho
+gremio-novorizontino-sp,581838,4-2-3-1,6,66,555277,933054,Luís Oyama
+gremio-novorizontino-sp,581838,4-2-3-1,7,83,1082968,1474211,Ronald Barcellos
+gremio-novorizontino-sp,581838,4-2-3-1,8,85,867461,1414404,Rômulo
+gremio-novorizontino-sp,581838,4-2-3-1,9,87,345401,583766,Careca
+gremio-novorizontino-sp,581838,4-2-3-1,10,115,349144,672094,Carlão
+juventude-rs,10274,3-4-3,0,11,512344,844089,Jandrei
+juventude-rs,10274,3-4-3,1,33,363174,637668,Rodrigo Sam
+juventude-rs,10274,3-4-3,2,35,401539,749382,Messias
+juventude-rs,10274,3-4-3,3,37,978039,1366061,Marcos Paulo
+juventude-rs,10274,3-4-3,4,72,439460,1088049,Raí Ramos
+juventude-rs,10274,3-4-3,5,74,978146,1334428,Raí
+juventude-rs,10274,3-4-3,6,76,167291,394585,Gabriel Pires
+juventude-rs,10274,3-4-3,7,78,167724,231683,Diogo Barbosa
+juventude-rs,10274,3-4-3,8,103,691861,1358662,Fábio Lima
+juventude-rs,10274,3-4-3,9,105,443338,793924,Alisson Safira
+juventude-rs,10274,3-4-3,10,107,612496,974867,Marcos Paulo MP
+fortaleza-ce,8287,4-3-3,0,11,270420,498728,João Ricardo
+fortaleza-ce,8287,4-3-3,1,32,607210,1086537,Maílton
+fortaleza-ce,8287,4-3-3,2,34,863073,1362665,Gazal
+fortaleza-ce,8287,4-3-3,3,36,422700,616168,Tomás Cardona
+fortaleza-ce,8287,4-3-3,4,38,874699,1612209,Maurício Mucuri
+fortaleza-ce,8287,4-3-3,5,73,121986,202227,Lucas Sasha
+fortaleza-ce,8287,4-3-3,6,75,959092,1462842,Ronald
+fortaleza-ce,8287,4-3-3,7,77,869477,1623466,Rodrigo
+fortaleza-ce,8287,4-3-3,8,103,907567,1347689,Juan Camilo Cantillo
+fortaleza-ce,8287,4-3-3,9,105,372013,751235,Luiz Fernando
+fortaleza-ce,8287,4-3-3,10,107,213368,304856,Pedro Henrique
+criciuma-sc,7729,4-4-2,0,11,377799,658553,Airton
+criciuma-sc,7729,4-4-2,1,32,544464,942855,Willean Lepo
+criciuma-sc,7729,4-4-2,2,34,269467,450293,César
+criciuma-sc,7729,4-4-2,3,36,140541,202332,Luciano Castán
+criciuma-sc,7729,4-4-2,4,38,348769,604563,Marcelo Hermes
+criciuma-sc,7729,4-4-2,5,72,346923,641000,Waguininho
+criciuma-sc,7729,4-4-2,6,74,688684,1176041,Ronald
+criciuma-sc,7729,4-4-2,7,76,,1734308,Gui Lobo
+criciuma-sc,7729,4-4-2,8,78,520470,851632,Fellipe Mateus
+criciuma-sc,7729,4-4-2,9,104,186408,268068,Nicolas
+criciuma-sc,7729,4-4-2,10,106,711338,1098099,Jhonata Robert
+atletico-go-go,165545,4-2-3-1,0,11,419120,728763,Paulo Vítor
+atletico-go-go,165545,4-2-3-1,1,32,676034,1174317,Ewerthon
+atletico-go-go,165545,4-2-3-1,2,34,981666,1350567,Junior Barreto
+atletico-go-go,165545,4-2-3-1,3,36,739272,1336899,Adriano Martins
+atletico-go-go,165545,4-2-3-1,4,38,678502,1222807,Guilherme Lopes
+atletico-go-go,165545,4-2-3-1,5,64,347090,849499,Leandro Vilela
+atletico-go-go,165545,4-2-3-1,6,66,675047,1526933,Peixoto
+atletico-go-go,165545,4-2-3-1,7,83,644210,1035342,Bruno José
+atletico-go-go,165545,4-2-3-1,8,85,978036,1439755,Netinho
+atletico-go-go,165545,4-2-3-1,9,87,984512,1786140,Geovany Soares
+atletico-go-go,165545,4-2-3-1,10,115,298410,522770,João Pedro
+crb-al,104821,4-1-4-1,0,11,593071,1079328,Vitor
+crb-al,104821,4-1-4-1,1,32,634139,1225468,Hereda
+crb-al,104821,4-1-4-1,2,34,1083889,1490050,Lyncon
+crb-al,104821,4-1-4-1,3,36,256453,428671,Bressan
+crb-al,104821,4-1-4-1,4,38,391497,673728,Lucas Lovat
+crb-al,104821,4-1-4-1,5,65,214312,304626,Pedro Castro
+crb-al,104821,4-1-4-1,6,82,638305,1284942,Thiaguinho
+crb-al,104821,4-1-4-1,7,84,730982,1333091,Crystopher
+crb-al,104821,4-1-4-1,8,86,418530,750064,Danielzinho
+crb-al,104821,4-1-4-1,9,88,546253,1134034,Dadá Belmonte
+crb-al,104821,4-1-4-1,10,115,642689,933819,Mikael
+sport-pe,6305,4-2-3-1,0,11,546217,844408,Thiago Couto
+sport-pe,6305,4-2-3-1,1,32,697845,1281562,Claudinho
+sport-pe,6305,4-2-3-1,2,34,476339,492254,Benevenuto
+sport-pe,6305,4-2-3-1,3,36,910216,1277901,Marcelo Ajul
+sport-pe,6305,4-2-3-1,4,38,886688,1430300,Edson
+sport-pe,6305,4-2-3-1,5,64,252900,450868,Willian
+sport-pe,6305,4-2-3-1,6,66,737821,1137664,Patrick de Paula
+sport-pe,6305,4-2-3-1,7,83,695232,1372923,Chrystian Barletta
+sport-pe,6305,4-2-3-1,8,85,520467,935034,Juan
+sport-pe,6305,4-2-3-1,9,87,257740,429753,Carlos de Pena
+sport-pe,6305,4-2-3-1,10,115,639751,1248050,Neto Pessôa
+goias-go,9862,4-1-4-1,0,11,258367,535693,Tadeu
+goias-go,9862,4-1-4-1,1,32,555672,1198559,Djalma
+goias-go,9862,4-1-4-1,2,34,373150,675000,Luiz Felipe
+goias-go,9862,4-1-4-1,3,36,605893,955687,Lucas Ribeiro
+goias-go,9862,4-1-4-1,4,38,442258,756082,Nicolas
+goias-go,9862,4-1-4-1,5,65,520629,769815,Machado
+goias-go,9862,4-1-4-1,6,82,232847,360697,Lucas Lima
+goias-go,9862,4-1-4-1,7,84,515068,846760,Lourenço
+goias-go,9862,4-1-4-1,8,86,1257109,1743175,Luquinhas
+goias-go,9862,4-1-4-1,9,88,1083073,1459742,Cadu
+goias-go,9862,4-1-4-1,10,115,688662,1723450,Felipe Clemente
+operario-pr-pr,197429,4-2-3-1,0,11,68442,128083,Vágner
+operario-pr-pr,197429,4-2-3-1,1,32,350766,755230,Maguinho
+operario-pr-pr,197429,4-2-3-1,2,34,412376,941735,Miranda
+operario-pr-pr,197429,4-2-3-1,3,36,663523,1017101,Joseph
+operario-pr-pr,197429,4-2-3-1,4,38,1100029,1671532,Gabriel Feliciano
+operario-pr-pr,197429,4-2-3-1,5,64,262553,466215,Juan Zuluaga
+operario-pr-pr,197429,4-2-3-1,6,66,395060,846028,Matheus Trindade
+operario-pr-pr,197429,4-2-3-1,7,83,,623984,Hildeberto
+operario-pr-pr,197429,4-2-3-1,8,85,594650,955583,Neto Paraíba
+operario-pr-pr,197429,4-2-3-1,9,87,729263,1118183,Pedro Vilhena
+operario-pr-pr,197429,4-2-3-1,10,115,628647,1129860,Caio Dantas
+cuiaba-mt,197815,3-4-2-1,0,11,68408,13308,João Carlos
+cuiaba-mt,197815,3-4-2-1,1,33,410183,793033,João Basso
+cuiaba-mt,197815,3-4-2-1,2,35,1033501,1489569,Calebe
+cuiaba-mt,197815,3-4-2-1,3,37,686333,1069986,Vitor Mendes
+cuiaba-mt,197815,3-4-2-1,4,62,733578,1187576,Igor Inocêncio
+cuiaba-mt,197815,3-4-2-1,5,64,479587,670947,Raul
+cuiaba-mt,197815,3-4-2-1,6,66,1096475,1691246,David Miguel
+cuiaba-mt,197815,3-4-2-1,7,68,1268054,1785962,Lorenzo
+cuiaba-mt,197815,3-4-2-1,8,84,1223701,1640062,Kauan Cristtyan
+cuiaba-mt,197815,3-4-2-1,9,86,788362,1332383,Jean Dias
+cuiaba-mt,197815,3-4-2-1,10,105,548298,1033153,Fábio Gomes
+sao-bernardo-sp,231931,5-4-1,0,11,157117,1173478,Alex Alves
+sao-bernardo-sp,231931,5-4-1,1,33,346072,675917,Marcão
+sao-bernardo-sp,231931,5-4-1,2,35,258254,449666,Jemerson
+sao-bernardo-sp,231931,5-4-1,3,37,411663,699686,Augusto
+sao-bernardo-sp,231931,5-4-1,4,51,555374,1189948,Rodrigo Ferreira
+sao-bernardo-sp,231931,5-4-1,5,59,323618,535584,Pará
+sao-bernardo-sp,231931,5-4-1,6,72,430761,738724,Lucas Fernandes
+sao-bernardo-sp,231931,5-4-1,7,74,688310,1357756,Lucas Lima
+sao-bernardo-sp,231931,5-4-1,8,76,740162,1179045,Dudu Miraíma
+sao-bernardo-sp,231931,5-4-1,9,78,538978,935288,Pedrinho
+sao-bernardo-sp,231931,5-4-1,10,115,98511,162662,Felipe Garcia
+athletic-mg,1221604,3-4-3,0,11,273250,535786,Luan Polli
+athletic-mg,1221604,3-4-3,1,33,,1215655,Jhonatan
+athletic-mg,1221604,3-4-3,2,35,668230,1276550,Lucas Belezi
+athletic-mg,1221604,3-4-3,3,37,837444,1402320,Jhan Torres
+athletic-mg,1221604,3-4-3,4,72,994588,1469119,Diogo Batista
+athletic-mg,1221604,3-4-3,5,74,1082637,1741569,Jota
+athletic-mg,1221604,3-4-3,6,76,1227001,1789979,João Miguel
+athletic-mg,1221604,3-4-3,7,78,1139255,1737574,Enzo
+athletic-mg,1221604,3-4-3,8,103,1074479,1438376,Kauan
+athletic-mg,1221604,3-4-3,9,105,1226150,1605938,Max
+athletic-mg,1221604,3-4-3,10,107,1222625,1732667,Kauan Lindes
+nautico-pe,2369,4-2-3-1,0,11,27349,121848,Muriel
+nautico-pe,2369,4-2-3-1,1,32,268522,659758,Arnaldo
+nautico-pe,2369,4-2-3-1,2,34,1091488,1462342,Léo Índio
+nautico-pe,2369,4-2-3-1,3,36,1082701,1481531,Gustavo Henrique
+nautico-pe,2369,4-2-3-1,4,38,250841,448256,Igor Fernandes
+nautico-pe,2369,4-2-3-1,5,64,524404,841882,Wenderson
+nautico-pe,2369,4-2-3-1,6,66,1222898,1641852,Samuel
+nautico-pe,2369,4-2-3-1,7,83,976590,1723280,Maranhão
+nautico-pe,2369,4-2-3-1,8,85,102574,239279,Jean
+nautico-pe,2369,4-2-3-1,9,87,146020,202104,Vinícius
+nautico-pe,2369,4-2-3-1,10,115,53019,79273,Paulo Sérgio
+ceara-ce,172341,4-2-3-1,0,11,159893,934515,Richard
+ceara-ce,172341,4-2-3-1,1,32,985345,1480127,Júlio César
+ceara-ce,172341,4-2-3-1,2,34,381032,689080,Luizão
+ceara-ce,172341,4-2-3-1,3,36,265693,498729,Luiz Otávio
+ceara-ce,172341,4-2-3-1,4,38,375241,670806,Sánchez
+ceara-ce,172341,4-2-3-1,5,64,1223077,1905651,João Gabriel
+ceara-ce,172341,4-2-3-1,6,66,646404,1037548,Zanocelo
+ceara-ce,172341,4-2-3-1,7,83,,1905653,Enzo
+ceara-ce,172341,4-2-3-1,8,85,678853,1233129,Matheus Araújo
+ceara-ce,172341,4-2-3-1,9,87,1096082,1905640,Melk
+ceara-ce,172341,4-2-3-1,10,115,553727,1127467,Saulo Mineiro
+botafogo-sp-sp,8355,3-4-3,0,11,628522,1189602,Victor Souza
+botafogo-sp-sp,8355,3-4-3,1,33,147366,795212,Jonathan
+botafogo-sp-sp,8355,3-4-3,2,35,555017,905495,Ericson
+botafogo-sp-sp,8355,3-4-3,3,37,978269,1390279,Vilar
+botafogo-sp-sp,8355,3-4-3,4,72,788402,1172407,Gabriel Inocêncio
+botafogo-sp-sp,8355,3-4-3,5,74,525256,879585,Everton Morelli
+botafogo-sp-sp,8355,3-4-3,6,76,407654,583764,Matheus Sales
+botafogo-sp-sp,8355,3-4-3,7,78,435170,937517,Patrick Brey
+botafogo-sp-sp,8355,3-4-3,8,103,411563,762031,Rafael Gava
+botafogo-sp-sp,8355,3-4-3,9,105,419474,730760,Hygor
+botafogo-sp-sp,8355,3-4-3,10,107,638722,1358147,Kelvin
+avai-sc,104822,4-1-4-1,0,11,214701,319972,Bruno
+avai-sc,104822,4-1-4-1,1,32,1226336,1637477,João Vitor
+avai-sc,104822,4-1-4-1,2,34,390695,693500,Allyson
+avai-sc,104822,4-1-4-1,3,36,1012161,1460519,Jefferson
+avai-sc,104822,4-1-4-1,4,38,973499,1347940,Douglas
+avai-sc,104822,4-1-4-1,5,65,476336,811221,Zé Ricardo
+avai-sc,104822,4-1-4-1,6,82,468256,813810,Daniel Penha
+avai-sc,104822,4-1-4-1,7,84,681501,1245542,Wenderson
+avai-sc,104822,4-1-4-1,8,86,689521,1173653,Luiz Henrique
+avai-sc,104822,4-1-4-1,9,88,532828,962448,Jean Lucas
+avai-sc,104822,4-1-4-1,10,115,1275070,1928478,Caio Suassuna
+londrina-pr,298660,4-1-4-1,0,11,643832,1460455,Luan Ribeiro
+londrina-pr,298660,4-1-4-1,1,32,1124214,1720732,Kauê Leonardo
+londrina-pr,298660,4-1-4-1,2,34,1222362,1741917,Caio
+londrina-pr,298660,4-1-4-1,3,36,68833,130560,Wallace
+londrina-pr,298660,4-1-4-1,4,38,697401,1083351,Heron
+londrina-pr,298660,4-1-4-1,5,65,458115,875673,Tárik
+londrina-pr,298660,4-1-4-1,6,82,1090856,1748316,Vitinho
+londrina-pr,298660,4-1-4-1,7,84,1056021,1402131,Geovane Meurer
+londrina-pr,298660,4-1-4-1,8,86,935978,1441765,João Vitor
+londrina-pr,298660,4-1-4-1,9,88,978241,1790950,Herbert
+londrina-pr,298660,4-1-4-1,10,115,199472,288782,William Pottker
+america-mg-mg,1757,4-2-3-1,0,11,178942,268035,Bruno Brígido
+america-mg-mg,1757,4-2-3-1,1,32,1085182,1489198,Rafa Barcelos
+america-mg-mg,1757,4-2-3-1,2,34,206097,500455,Ricardo Silva
+america-mg-mg,1757,4-2-3-1,3,36,421718,585911,Luca Sosa
+america-mg-mg,1757,4-2-3-1,4,38,495109,1242173,Tobías Ostchega
+america-mg-mg,1757,4-2-3-1,5,64,348262,579795,Barreto
+america-mg-mg,1757,4-2-3-1,6,66,539365,883000,Jorge Jiménez
+america-mg-mg,1757,4-2-3-1,7,83,659705,1174645,Paulo Victor
+america-mg-mg,1757,4-2-3-1,8,85,718307,1109137,Matías Segovia
+america-mg-mg,1757,4-2-3-1,9,87,,1975888,Luidy
+america-mg-mg,1757,4-2-3-1,10,115,55338,98563,Willian
+ponte-preta-sp,8630,3-4-2-1,0,11,986954,1636515,Vinicius
+ponte-preta-sp,8630,3-4-2-1,1,33,1174214,1532951,Sergio Palacios
+ponte-preta-sp,8630,3-4-2-1,2,35,938367,1795370,Gabriel Caran
+ponte-preta-sp,8630,3-4-2-1,3,37,,1936798,Gustavo Almeida
+ponte-preta-sp,8630,3-4-2-1,4,62,,1936789,Juan
+ponte-preta-sp,8630,3-4-2-1,5,64,271329,500605,Rodrigo Souza
+ponte-preta-sp,8630,3-4-2-1,6,66,1093758,1613176,Denis
+ponte-preta-sp,8630,3-4-2-1,7,68,271666,498624,Danilo
+ponte-preta-sp,8630,3-4-2-1,8,84,752724,1265991,David da Hora
+ponte-preta-sp,8630,3-4-2-1,9,86,1042361,1406477,Peu
+ponte-preta-sp,8630,3-4-2-1,10,105,1090830,1550696,Brandão
+maringa-pr,509487,,0,0,412684,1744859,Neto
+maringa-pr,509487,,1,1,812937,1185320,Ronald
+maringa-pr,509487,,2,1,1103170,1558071,Gabriel Santos
+maringa-pr,509487,,3,1,869062,1460543,Thiago Rosa
+maringa-pr,509487,,4,1,813119,1590258,Jonathan
+maringa-pr,509487,,5,2,1022815,1736989,Lucas Bonifácio
+maringa-pr,509487,,6,2,906328,1291619,Paulinho
+maringa-pr,509487,,7,2,910199,1658737,Adeílson Maranhão
+maringa-pr,509487,,8,3,870653,1665458,Ronald Camarão
+maringa-pr,509487,,9,3,740500,1235681,Caíque
+maringa-pr,509487,,10,3,976103,1474804,Edison Negueba
+santa-cruz-pe,9920,,0,0,730935,1462414,Thiago Coelho
+santa-cruz-pe,9920,,1,1,978179,1446686,Edson
+santa-cruz-pe,9920,,2,1,777872,1786136,Matheus Vinicius
+santa-cruz-pe,9920,,3,1,83757,193805,William Alves
+santa-cruz-pe,9920,,4,2,1093317,1653473,Pedro Favela
+santa-cruz-pe,9920,,5,2,,1236350,Willian Pontes
+santa-cruz-pe,9920,,6,2,373301,638756,Silva
+santa-cruz-pe,9920,,7,3,388397,941635,Everaldo
+santa-cruz-pe,9920,,8,3,323891,943241,Eron
+santa-cruz-pe,9920,,9,3,612706,1128937,Ronald
+santa-cruz-pe,9920,,10,3,150511,267895,Renato
+floresta-ce,899260,,0,0,555432,1462832,Dheimison
+floresta-ce,899260,,1,1,978193,1462432,Islan
+floresta-ce,899260,,2,1,1095529,1909588,João Victor
+floresta-ce,899260,,3,1,858268,1789874,Zulu
+floresta-ce,899260,,4,1,578629,844737,Cedric
+floresta-ce,899260,,5,1,323875,762506,Caíque
+floresta-ce,899260,,6,2,468167,849502,Jhony
+floresta-ce,899260,,7,2,1095706,1675595,Thálisson
+floresta-ce,899260,,8,2,546895,1227581,Nonato
+floresta-ce,899260,,9,3,170385,450285,Rafinha
+floresta-ce,899260,,10,3,724655,1936627,Rafa Marcos
+botafogo-pb-pb,197792,,0,0,838386,1477030,Leandro Mathias
+botafogo-pb-pb,197792,,1,1,727052,1460535,Octávio
+botafogo-pb-pb,197792,,2,1,787709,1235994,Léo Pereira
+botafogo-pb-pb,197792,,3,1,878732,1910619,Bull
+botafogo-pb-pb,197792,,4,1,104544,132007,Saimon
+botafogo-pb-pb,197792,,5,2,29091,37429,Nenê
+botafogo-pb-pb,197792,,6,2,1015973,1695283,Caio Garcia
+botafogo-pb-pb,197792,,7,2,485705,792065,Thallyson
+botafogo-pb-pb,197792,,8,3,374097,622119,Rodolfo
+botafogo-pb-pb,197792,,9,3,435234,793265,Diego Tavares
+botafogo-pb-pb,197792,,10,3,976600,1437541,Kayon
+ferroviaria-sp,581832,,0,0,650517,1057499,Júnior
+ferroviaria-sp,581832,,1,1,731039,1130752,Lucas Rodrigues
+ferroviaria-sp,581832,,2,1,982165,1459660,Zé Vitor
+ferroviaria-sp,581832,,3,1,740161,1785049,Carlão
+ferroviaria-sp,581832,,4,2,333602,557993,Juninho
+ferroviaria-sp,581832,,5,2,72438,188950,Ricardinho
+ferroviaria-sp,581832,,6,2,530413,1350770,Albano
+ferroviaria-sp,581832,,7,2,1423940,1781906,Eduardo Oliveira
+ferroviaria-sp,581832,,8,3,1206598,1726383,Maranhão
+ferroviaria-sp,581832,,9,3,1101952,1642192,Vitor Barreto
+ferroviaria-sp,581832,,10,3,981213,1734368,Alencar
+inter-de-limeira-sp,581840,,0,0,476365,802535,Renan
+inter-de-limeira-sp,581840,,1,1,1116407,1785776,Léo Paraíso
+inter-de-limeira-sp,581840,,2,1,935724,1472631,Lucas Santos
+inter-de-limeira-sp,581840,,3,1,688686,1678891,Heitor
+inter-de-limeira-sp,581840,,4,1,336474,556756,Gabriel Dias
+inter-de-limeira-sp,581840,,5,1,265649,498312,Alemão
+inter-de-limeira-sp,581840,,6,2,1101134,1656861,Fabrício Dias
+inter-de-limeira-sp,581840,,7,2,539369,1462835,Romarinho
+inter-de-limeira-sp,581840,,8,3,752552,1175814,Vitor
+inter-de-limeira-sp,581840,,9,3,62832,265267,Miguel Bianconi
+inter-de-limeira-sp,581840,,10,3,592345,936589,Getúlio
+brusque-sc,197692,,0,0,733338,729223,Matheus Nogueira
+brusque-sc,197692,,1,1,294789,637713,Jeferson
+brusque-sc,197692,,2,1,1091616,1738098,Rafael Milhorim
+brusque-sc,197692,,3,1,994622,1402098,Cipriano
+brusque-sc,197692,,4,1,694495,1466588,João Maistro
+brusque-sc,197692,,5,2,740294,1355491,Bernardo
+brusque-sc,197692,,6,2,428787,845736,João Pedro
+brusque-sc,197692,,7,2,869061,1460539,Gazão
+brusque-sc,197692,,8,3,,1790845,Adrianinho
+brusque-sc,197692,,9,3,978057,1373167,Petterson
+brusque-sc,197692,,10,3,542597,1048002,Marlyson
+paysandu-pa,6546,,0,0,639135,535881,Jean
+paysandu-pa,6546,,1,1,992997,1723147,Lucas Rodrigues
+paysandu-pa,6546,,2,1,,1472562,Pedro Carrerette
+paysandu-pa,6546,,3,1,974381,1461855,Castro
+paysandu-pa,6546,,4,1,485554,789122,Bruno Bispo
+paysandu-pa,6546,,5,1,684376,1462412,Edílson
+paysandu-pa,6546,,6,2,1100071,1605937,Pablo
+paysandu-pa,6546,,7,2,520500,267688,Marcinho
+paysandu-pa,6546,,8,2,722456,1130923,Caio
+paysandu-pa,6546,,9,3,669392,1088138,Ítalo
+paysandu-pa,6546,,10,3,658665,1262163,Kleiton
+ypiranga-rs,197885,,0,0,735085,1653487,Lucas Maticoli
+ypiranga-rs,197885,,1,1,550651,1909583,Cleiton
+ypiranga-rs,197885,,2,1,228124,331653,Willian
+ypiranga-rs,197885,,3,1,,1641698,Dudu Dall'Agnol
+ypiranga-rs,197885,,4,1,1007091,1461823,Léo Gobo
+ypiranga-rs,197885,,5,2,867006,1409431,Dionísio
+ypiranga-rs,197885,,6,2,658871,1174632,Ramon
+ypiranga-rs,197885,,7,2,689507,1074863,Lucas Ramos
+ypiranga-rs,197885,,8,3,439782,814857,Marcelinho
+ypiranga-rs,197885,,9,3,,265618,Alex Gonçalves
+ypiranga-rs,197885,,10,3,1365935,1909582,Pedro Lucas
+guarani-sp,7817,,0,0,,657989,Caíque França
+guarani-sp,7817,,1,1,340557,566389,Maurício Antônio
+guarani-sp,7817,,2,1,,614304,Jonathan Costa
+guarani-sp,7817,,3,1,,905500,Emerson
+guarani-sp,7817,,4,1,,802579,Dudu
+guarani-sp,7817,,5,2,71080,172169,Willian Farias
+guarani-sp,7817,,6,2,627099,972181,Isaque
+guarani-sp,7817,,7,2,519854,853792,João Paulo
+guarani-sp,7817,,8,3,,1726383,Maranhão
+guarani-sp,7817,,9,3,,1790950,Herbert
+guarani-sp,7817,,10,3,553563,1216001,Éverton
+figueirense-sc,8631,,0,0,150479,1044211,Fabrício
+figueirense-sc,8631,,1,1,868893,1256754,Vitor Ricardo
+figueirense-sc,8631,,2,1,1152256,1526623,Leonan
+figueirense-sc,8631,,3,1,816145,1251022,Jhonnathan
+figueirense-sc,8631,,4,1,349737,575316,Arthur
+figueirense-sc,8631,,5,2,594201,944514,Dudu
+figueirense-sc,8631,,6,2,697400,1083354,Breno
+figueirense-sc,8631,,7,2,1090851,1785153,Raynan
+figueirense-sc,8631,,8,3,1047465,1616630,Émerson Galego
+figueirense-sc,8631,,9,3,1082825,1696053,Mailson
+figueirense-sc,8631,,10,3,942580,1246597,Igor Bolt
+maranhao-ma,197781,,0,0,349452,1786127,Jean
+maranhao-ma,197781,,1,1,967167,1789183,Lucão
+maranhao-ma,197781,,2,1,,1790965,Tibúrcio
+maranhao-ma,197781,,3,2,982336,1786051,Jorge Rocha
+maranhao-ma,197781,,4,2,977562,1786056,Vagalume
+maranhao-ma,197781,,5,2,,1460406,Vander
+maranhao-ma,197781,,6,2,,1793366,Rosivan
+maranhao-ma,197781,,7,3,,1625911,André Luiz da Conceição Araújo
+maranhao-ma,197781,,8,3,978314,1606621,Luis Gustavo
+maranhao-ma,197781,,9,3,1004820,1653517,Will
+maranhao-ma,197781,,10,3,,1473708,Felipe
+amazonas-am,1340094,,0,0,873467,1461856,Axel
+amazonas-am,1340094,,1,1,776934,1910502,Ítalo Silva
+amazonas-am,1340094,,2,1,612161,1043786,Iury
+amazonas-am,1340094,,3,1,437777,1274057,Marcondes
+amazonas-am,1340094,,4,1,592364,942073,Alyson
+amazonas-am,1340094,,5,1,99667,319633,Diego Ivo
+amazonas-am,1340094,,6,2,540990,934722,Jhonny Lucas
+amazonas-am,1340094,,7,2,,206482,Ignacio Panzariello
+amazonas-am,1340094,,8,3,125004,267893,Ronaldo
+amazonas-am,1340094,,9,3,530499,1054265,Vinícius Leite
+amazonas-am,1340094,,10,3,,1967842,Bernardo Daciolo
+caxias-rs,172206,,0,0,698782,1462422,Marcelo
+caxias-rs,172206,,1,1,982663,1721679,André
+caxias-rs,172206,,2,1,373065,899215,Maurício Ribeiro
+caxias-rs,172206,,3,1,,1626730,Vitor Gabriel
+caxias-rs,172206,,4,1,403540,813498,Ianson
+caxias-rs,172206,,5,1,625373,970081,Vitinho
+caxias-rs,172206,,6,2,520623,855066,Matheus Anjos
+caxias-rs,172206,,7,2,984092,1795413,Matheus Nunes
+caxias-rs,172206,,8,3,285605,685466,Calyson
+caxias-rs,172206,,9,3,980435,1393823,Jhonatan Ribeiro
+caxias-rs,172206,,10,3,980005,1355635,Dentinho
+ituano-sp,104823,,0,0,346769,590496,Saulo
+ituano-sp,104823,,1,1,979984,1611569,Dal Pian
+ituano-sp,104823,,2,1,,1908776,Gabriel William
+ituano-sp,104823,,3,1,639729,1056178,Lucas Mota
+ituano-sp,104823,,4,1,,1908780,Leandro dos Santos Araujo
+ituano-sp,104823,,5,2,1096607,1488560,Richard
+ituano-sp,104823,,6,2,,1915180,Leozinho
+ituano-sp,104823,,7,2,,1516003,Vinicius
+ituano-sp,104823,,8,2,383373,749386,Xavier
+ituano-sp,104823,,9,3,870416,1241547,Alason Carioca
+ituano-sp,104823,,10,3,1094534,1741339,Gabriel Razera
+volta-redonda-rj,198135,,0,0,927645,1908902,Heitor Silva
+volta-redonda-rj,198135,,1,1,,1908896,João Victor
+volta-redonda-rj,198135,,2,1,,2174239,Bruno
+volta-redonda-rj,198135,,3,1,1501874,0,Fabricio Aguiar de Oliveira
+volta-redonda-rj,198135,,4,1,,0,Henry Leonardo Vieira André
+volta-redonda-rj,198135,,5,1,722615,1613991,Alan
+volta-redonda-rj,198135,,6,2,,1668208,Caio Silva
+volta-redonda-rj,198135,,7,2,439796,1028585,Bruno Barra
+volta-redonda-rj,198135,,8,2,1093625,1670627,Juninho
+volta-redonda-rj,198135,,9,2,1481673,1847352,Caetano
+volta-redonda-rj,198135,,10,3,871802,1244385,Marquinhos
+barra-sc,1320333,,0,0,540645,1668015,Volpi
+barra-sc,1320333,,1,1,,1791157,Adriel
+barra-sc,1320333,,2,1,550650,1486267,Vavá
+barra-sc,1320333,,3,1,555421,1279165,Éverton Alemão
+barra-sc,1320333,,4,1,638259,1796272,Augusto Potiguar
+barra-sc,1320333,,5,2,942096,127819,Marquinho
+barra-sc,1320333,,6,2,,1785189,Peçanha
+barra-sc,1320333,,7,2,,1474338,Natan
+barra-sc,1320333,,8,3,692777,1565720,Gabriel Silva
+barra-sc,1320333,,9,3,,1789996,Saymom
+barra-sc,1320333,,10,3,374091,832442,Cléo Silva
+anapolis-go,412808,,0,0,388356,0,Ravel
+anapolis-go,412808,,1,1,,1909575,Júlio Gouvêa
+anapolis-go,412808,,2,1,689820,1440965,Rafael Costa
+anapolis-go,412808,,3,1,977590,1785501,Carioca
+anapolis-go,412808,,4,1,863052,1795394,Vitinho
+anapolis-go,412808,,5,1,837528,1208007,Helder
+anapolis-go,412808,,6,2,814454,1343216,Samuel
+anapolis-go,412808,,7,2,,1636520,Juninho
+anapolis-go,412808,,8,2,936116,1785807,Gharib
+anapolis-go,412808,,9,3,,1445874,Matheus Lagoa
+anapolis-go,412808,,10,3,,1303874,Gonzalo
+itabaiana-se,197398,,0,0,261728,1736955,Jefferson
+itabaiana-se,197398,,1,1,1066523,1409613,Ricardo Cerqueira
+itabaiana-se,197398,,2,1,550894,1129843,Betão
+itabaiana-se,197398,,3,1,,1025602,Titto
+itabaiana-se,197398,,4,1,1082731,1736947,Júlio Henrique
+itabaiana-se,197398,,5,1,987594,1756871,Gustavo Fagundes
+itabaiana-se,197398,,6,2,978131,1653512,Dyego
+itabaiana-se,197398,,7,2,726103,1619459,Cleiton
+itabaiana-se,197398,,8,2,202907,847299,Renatinho
+itabaiana-se,197398,,9,3,865112,1433283,Everton Kanela
+itabaiana-se,197398,,10,3,537622,861784,Rodrigo Alves
+confianca-se,162167,,0,0,875895,1636391,Matheus Emiliano
+confianca-se,162167,,1,1,373256,638201,Ícaro
+confianca-se,162167,,2,1,843500,1223837,Mateus Ludke
+confianca-se,162167,,3,1,976293,1737546,Renilson
+confianca-se,162167,,4,1,,1712534,Matheus Julião
+confianca-se,162167,,5,1,740376,1431261,Valdir
+confianca-se,162167,,6,2,,865472,Patrick
+confianca-se,162167,,7,2,592310,936587,Madison
+confianca-se,162167,,8,2,1083075,1439557,Gabriel Zeca
+confianca-se,162167,,9,3,,1354168,Breiner Barbosa
+confianca-se,162167,,10,3,348266,602870,Maikon Aquino
+manauara-am,1608540,,0,0,1095809,554844,David
+manauara-am,1608540,,1,1,1010940,1653870,Fabrício
+manauara-am,1608540,,2,1,,1053841,Felippe
+manauara-am,1608540,,3,1,468253,858828,Éverson
+manauara-am,1608540,,4,1,740046,1795383,Paulinho
+manauara-am,1608540,,5,1,679082,0,Caio Ribeiro
+manauara-am,1608540,,6,2,681542,1072804,Luis Fernando
+manauara-am,1608540,,7,2,,1795390,Marinho
+manauara-am,1608540,,8,2,724679,1789203,Juninho
+manauara-am,1608540,,9,3,,1333095,Adriano Klein
+manauara-am,1608540,,10,3,,1935550,João Guilherme Nogueira
+nacional-am,197682,,0,0,225638,450004,Igor Rayan
+nacional-am,197682,,1,1,677679,1174303,Michel
+nacional-am,197682,,2,1,697801,1789960,Wendel
+nacional-am,197682,,3,1,964596,1320213,Ryan
+nacional-am,197682,,4,1,355149,751529,Mateus Müller
+nacional-am,197682,,5,1,538233,940693,Fredson
+nacional-am,197682,,6,2,399013,679855,Erick
+nacional-am,197682,,7,2,120093,185637,Andrés Andrade
+nacional-am,197682,,8,3,218353,336991,Sassá
+nacional-am,197682,,9,3,670020,1210148,Renanzinho
+nacional-am,197682,,10,3,,1936627,Rafa Marcos
+sao-raimundo-rr,197603,,0,0,,1944561,André Regly
+sao-raimundo-rr,197603,,1,1,,1925157,Guigui
+sao-raimundo-rr,197603,,2,1,858418,1787111,Cláudio Gabriel Reimão Gonçalves
+sao-raimundo-rr,197603,,3,1,,1940215,Vera Cruz
+sao-raimundo-rr,197603,,4,1,978457,1749284,Paulo Meneses
+sao-raimundo-rr,197603,,5,2,871756,1464115,Fininho
+sao-raimundo-rr,197603,,6,2,,1940209,Gerson Belão
+sao-raimundo-rr,197603,,7,2,,1787107,João Lucas da Silva Cardoso
+sao-raimundo-rr,197603,,8,2,871758,1787115,Ygor
+sao-raimundo-rr,197603,,9,2,,1934022,Thales Maciel de Oliveira
+sao-raimundo-rr,197603,,10,3,,1787125,Raylson Miranda Castro
+monte-roraima-rr,1918583,,0,0,,1940457,André
+monte-roraima-rr,1918583,,1,1,,1624045,Felipe Moreira
+monte-roraima-rr,1918583,,2,1,,1946087,Felipe Kauan
+monte-roraima-rr,1918583,,3,1,940144,1641684,Leozinho
+monte-roraima-rr,1918583,,4,1,,0,Romailson da Silva de Jesus
+monte-roraima-rr,1918583,,5,2,,1230426,Digão
+monte-roraima-rr,1918583,,6,2,739446,1789877,Léo
+monte-roraima-rr,1918583,,7,3,,1932827,Leandro Germano
+monte-roraima-rr,1918583,,8,3,,1673735,Luquinhas
+monte-roraima-rr,1918583,,9,3,722662,1451140,Xandy
+monte-roraima-rr,1918583,,10,3,,1377712,Matheus Taumaturgo
+manaus-am,512379,,0,0,,1792363,Eugênio
+manaus-am,512379,,1,1,,760290,Watson
+manaus-am,512379,,2,1,,1797501,Diego Mota
+manaus-am,512379,,3,1,,1994649,Guilherme
+manaus-am,512379,,4,1,,1935474,David Luís
+manaus-am,512379,,5,2,1094570,1934825,Wallace
+manaus-am,512379,,6,2,,1925117,Léo Pará
+manaus-am,512379,,7,2,,1925125,Felipe Sousa
+manaus-am,512379,,8,2,,1242126,João Felipe
+manaus-am,512379,,9,3,,1472566,Lucas Vieira da Silva
+manaus-am,512379,,10,3,,1795393,Állefe
+sampaio-rr,197604,,0,0,,1787109,Francys Farney de Sousa Gomes
+sampaio-rr,197604,,1,1,,1787111,Cláudio Gabriel Reimão Gonçalves
+sampaio-rr,197604,,2,1,1095617,1927922,Ely
+sampaio-rr,197604,,3,1,,1787117,Vitor da Silva e Silva
+sampaio-rr,197604,,4,1,,1927761,Rodolfo de Oliveira Barbosa
+sampaio-rr,197604,,5,1,569695,971627,Albert González
+sampaio-rr,197604,,6,2,,1230426,Digão
+sampaio-rr,197604,,7,2,,1787110,Ruan Barros Lima
+sampaio-rr,197604,,8,2,,1927759,Lucas Dorneles Martins
+sampaio-rr,197604,,9,2,,1787120,Rodrigo Gomes da Silva
+sampaio-rr,197604,,10,3,,1787125,Raylson Miranda Castro
+guapore-ro,1918576,,0,0,,1789795,José Augusto Pereira dos Santos
+guapore-ro,1918576,,1,1,,1925570,Lucas de Lima Paulino
+guapore-ro,1918576,,2,1,188516,268576,Marlon
+guapore-ro,1918576,,3,1,979802,1958509,Matheus Rodrigues
+guapore-ro,1918576,,4,1,1377736,1787723,Nathan da Silva de Sousa
+guapore-ro,1918576,,5,1,961839,1932443,Andreo Cunha da Silva
+guapore-ro,1918576,,6,2,902122,1946082,Diogo
+guapore-ro,1918576,,7,2,1022595,1932559,Edson Silva de Amorim
+guapore-ro,1918576,,8,2,605681,1931794,Patrick Felipe Justino Alves
+guapore-ro,1918576,,9,3,,1796929,Gabriel Cassimiro
+guapore-ro,1918576,,10,3,1083074,1665609,Will
+porto-velho-ro,1236190,,0,0,,1788096,Jonathan
+porto-velho-ro,1236190,,1,1,,1788081,João Victor
+porto-velho-ro,1236190,,2,1,,1903998,Aisley
+porto-velho-ro,1236190,,3,1,876303,0,Douglas
+porto-velho-ro,1236190,,4,1,1091881,1785805,Rikelmy
+porto-velho-ro,1236190,,5,2,244277,656548,Esquerdinha
+porto-velho-ro,1236190,,6,2,,320027,França
+porto-velho-ro,1236190,,7,2,,1706694,Lagoa
+porto-velho-ro,1236190,,8,2,,1028583,Gabriel Davis
+porto-velho-ro,1236190,,9,3,,0,Ruan Costa
+porto-velho-ro,1236190,,10,3,,1609471,Jeferson
+araguaina-to,197392,,0,0,,994440,Murillo
+araguaina-to,197392,,1,1,,1437493,Eduardo Leite
+araguaina-to,197392,,2,1,1284485,1789293,Gabriel William
+araguaina-to,197392,,3,1,,1931911,José Luiz
+araguaina-to,197392,,4,2,1386365,1796810,Kevin Freitas
+araguaina-to,197392,,5,2,,1789922,Douglas Pantera
+araguaina-to,197392,,6,2,,1523813,Thalyson
+araguaina-to,197392,,7,2,,1931790,Giovani
+araguaina-to,197392,,8,2,,1789934,José Elias Soares Noleto
+araguaina-to,197392,,9,3,1181680,1931750,Gabriel Viana
+araguaina-to,197392,,10,3,,1933438,Kennedy Balotelli
+independencia-ac,197384,,0,0,982338,1934723,Rafael Bretas
+independencia-ac,197384,,1,1,,1935507,Arthur Pangaro
+independencia-ac,197384,,2,1,589003,942666,Rafael França
+independencia-ac,197384,,3,1,692999,1934687,Ronaldo
+independencia-ac,197384,,4,1,1222652,1933863,João Monteiro
+independencia-ac,197384,,5,1,1413946,1933903,Diogo Correia
+independencia-ac,197384,,6,2,,1934713,Israel
+independencia-ac,197384,,7,2,1222013,1933774,Kauan Dalmoro
+independencia-ac,197384,,8,3,,1934690,Pitel
+independencia-ac,197384,,9,3,,1933901,Mateus
+independencia-ac,197384,,10,3,1015882,1933773,Caíque Gomes
+galvez-ac,422123,,0,0,,1958555,Kayllon Lima da Silva
+galvez-ac,422123,,1,1,731635,1789232,Diego Pereira
+galvez-ac,422123,,2,1,1558998,0,Arthur José da Silva
+galvez-ac,422123,,3,1,,1932569,Ruan Antunes da Silva
+galvez-ac,422123,,4,2,730954,1932567,Geovani Silva
+galvez-ac,422123,,5,2,631787,1174670,Marcos Júnior
+galvez-ac,422123,,6,2,,1994756,Juan Banguero Loboa
+galvez-ac,422123,,7,3,1008625,1932551,Daniego de Matos Silva
+galvez-ac,422123,,8,3,1001660,1790865,Alifi Filipe Oliveira Cavalcante
+galvez-ac,422123,,9,3,1379153,1967876,João Victor de Brito Gomes
+galvez-ac,422123,,10,3,,1932833,Leonardo Santos Bezerra da Silva
+humaita-ac,816426,,0,0,,1790885,Marcos Wilque Bezerra de Almeida
+humaita-ac,816426,,1,1,1497427,1932844,Lucas Monteiro da Silva
+humaita-ac,816426,,2,1,1505239,1946168,João Vitor Mendes de Oliveira
+humaita-ac,816426,,3,1,1222223,1945920,Ronald Vitor Viana Gomes
+humaita-ac,816426,,4,1,,1946094,Antônio Marcelo Oliveira Lima
+humaita-ac,816426,,5,2,,2029140,João Vitor Pereira de Souza
+humaita-ac,816426,,6,2,,1959919,Paulo Gabriel Gonçalves Abu
+humaita-ac,816426,,7,3,1394742,1991125,Alan Carneiro Furtado
+humaita-ac,816426,,8,3,1362674,1789271,Gustavo Pereira Donato
+humaita-ac,816426,,9,3,1432184,0,Gabriel Pereira Donato
+humaita-ac,816426,,10,3,1535004,1959920,Carlos Davi Gadelha da Silva
+gama-df,1756,,0,0,214142,1246019,Renan Rinaldi
+gama-df,1756,,1,1,227986,500600,Moisés Ribeiro
+gama-df,1756,,2,1,,1789874,Zulu
+gama-df,1756,,3,1,725077,1931968,Michel
+gama-df,1756,,4,1,,1675671,Gabriel Lima da Silva
+gama-df,1756,,5,1,,1682810,Darlan
+gama-df,1756,,6,2,692934,1609369,Gabriel Galhardo
+gama-df,1756,,7,2,740373,1523345,Renato Soares
+gama-df,1756,,8,2,,1236350,Willian Pontes
+gama-df,1756,,9,3,1006286,1789997,Kennedy
+gama-df,1756,,10,3,103743,177496,Henrique Almeida
+luverdense-mt,162171,,0,0,1237685,1790890,Cauã França
+luverdense-mt,162171,,1,1,,1789871,Thiago
+luverdense-mt,162171,,2,1,979481,1725966,Gustavo Silva
+luverdense-mt,162171,,3,1,519871,950213,Feliphe Gabriel
+luverdense-mt,162171,,4,1,347283,532449,Raul Prata
+luverdense-mt,162171,,5,2,1365536,1790893,Danilo Borges
+luverdense-mt,162171,,6,2,226404,536649,Bady
+luverdense-mt,162171,,7,2,1003423,1790912,Douglas Silva
+luverdense-mt,162171,,8,3,830367,1311681,Hítalo
+luverdense-mt,162171,,9,3,435486,750924,Pedro Bortoluzo
+luverdense-mt,162171,,10,3,796351,1625906,Wendel Barros
+brasiliense-df,5758,,0,0,,1785148,Jeferson Hermes
+brasiliense-df,5758,,1,1,265652,952036,Netinho
+brasiliense-df,5758,,2,1,175395,864462,Genílson
+brasiliense-df,5758,,3,1,53226,128033,David Braz
+brasiliense-df,5758,,4,1,312686,785391,Vançan
+brasiliense-df,5758,,5,2,792550,1200991,Tartá
+brasiliense-df,5758,,6,2,,1034345,Marcos Júnior
+brasiliense-df,5758,,7,2,,1613982,Regino Sousa
+brasiliense-df,5758,,8,3,114514,179614,Marcelo Cirino
+brasiliense-df,5758,,9,3,,1364487,Iury
+brasiliense-df,5758,,10,3,,978910,Matheusinho
+aparecidense-go,239122,,0,0,870143,1562970,Alan Gobetti
+aparecidense-go,239122,,1,1,,267852,Ivan
+aparecidense-go,239122,,2,1,682445,1462420,Mário Henrique
+aparecidense-go,239122,,3,1,,665151,Rafael Goiano
+aparecidense-go,239122,,4,1,,1612221,Jefferson
+aparecidense-go,239122,,5,2,,1946050,Kleberson Rodrigues Santos
+aparecidense-go,239122,,6,2,1366498,1749285,Lauro
+aparecidense-go,239122,,7,2,,1478311,Simioni
+aparecidense-go,239122,,8,2,,1710700,Carlos Bajé
+aparecidense-go,239122,,9,2,1074485,0,Guilherme Dourado Hayashida Carneiro
+aparecidense-go,239122,,10,3,,1940412,Luan
+primavera-mt,244236,,0,0,,1460551,Lucas Cardoso
+primavera-mt,244236,,1,1,,1928483,Dimitry
+primavera-mt,244236,,2,1,,1927903,Ricardo Correia França da Silva
+primavera-mt,244236,,3,1,,1461862,David Cruz
+primavera-mt,244236,,4,1,,1930279,Yuri Silva de Sousa
+primavera-mt,244236,,5,1,679982,1927929,Jordan Anselmo Cardoso
+primavera-mt,244236,,6,2,1463941,1928511,Luan Francisco de Oliveira
+primavera-mt,244236,,7,2,,1927928,Sampson Nunes da Silva
+primavera-mt,244236,,8,2,,1789786,Bryan Gabriel Amancio
+primavera-mt,244236,,9,2,,538524,Darlan
+primavera-mt,244236,,10,3,,1130925,Caique
+inhumas-go,1422139,,0,0,1367783,1959869,Wesley Barbosa Duarte
+inhumas-go,1422139,,1,1,,1946064,Bahia
+inhumas-go,1422139,,2,1,,1602805,Afonso Dinis Carneiro Martins
+inhumas-go,1422139,,3,1,363774,637575,Everton
+inhumas-go,1422139,,4,1,,1946071,Victor Gabriel Barbosa Peres
+inhumas-go,1422139,,5,1,,1945901,Luan Henrique Silva Ferreira
+inhumas-go,1422139,,6,2,,1797531,Jenilson Santos Carneiro
+inhumas-go,1422139,,7,2,1117358,1795418,Jonathan
+inhumas-go,1422139,,8,3,,1945936,Juan David Sánchez Mosquera
+inhumas-go,1422139,,9,3,1276789,1940233,Thiago Augusto Pinheiro de Carvalho Rocha
+inhumas-go,1422139,,10,3,,1940263,Walter Junior de Oliveira Lima
+capital-df,304653,,0,0,,1749294,Luan
+capital-df,304653,,1,1,874318,1666493,Lucas Oliveira
+capital-df,304653,,2,1,175238,268457,Renan
+capital-df,304653,,3,1,638925,1441885,Richardson
+capital-df,304653,,4,1,,1502299,Genilson Santos
+capital-df,304653,,5,2,,1372924,Zé Mateus
+capital-df,304653,,6,2,,1409725,Rodriguinho
+capital-df,304653,,7,3,213539,305712,Matheuzinho
+capital-df,304653,,8,3,797658,1613996,Tobinha
+capital-df,304653,,9,3,,0,Vanílson
+capital-df,304653,,10,3,188959,309000,William Barbio
+goiatuba-go,1320846,,0,0,112122,263908,Omar
+goiatuba-go,1320846,,1,1,422412,1940321,Fabio Sá
+goiatuba-go,1320846,,2,1,693176,1170441,Lucas Balardin
+goiatuba-go,1320846,,3,1,798105,1788031,Frank
+goiatuba-go,1320846,,4,1,479498,819726,Renato
+goiatuba-go,1320846,,5,1,,1790068,Euller
+goiatuba-go,1320846,,6,2,436580,754967,Thalles
+goiatuba-go,1320846,,7,2,1126160,1789771,Matheus Obina
+goiatuba-go,1320846,,8,2,801817,1176649,Daniel
+goiatuba-go,1320846,,9,3,,1786137,Vinícius Oliveira Melo da Hora
+goiatuba-go,1320846,,10,3,347181,1263368,Jean Silva
+ceilandia-df,197654,,0,0,,1789998,Edmar Sucuri
+ceilandia-df,197654,,1,1,,1433024,Danillo Ribeiro
+ceilandia-df,197654,,2,1,348095,637664,Danrlei
+ceilandia-df,197654,,3,1,,1792087,Carlos Henrique da Silva Júnior
+ceilandia-df,197654,,4,1,554996,905501,Sávio
+ceilandia-df,197654,,5,2,,1789236,Marcos Paulo da Silva Júnior
+ceilandia-df,197654,,6,2,979292,1790074,Cabralzinho
+ceilandia-df,197654,,7,2,,1724394,Lucas Silva
+ceilandia-df,197654,,8,2,,1604098,Cleyton Gonçalves Pereira
+ceilandia-df,197654,,9,3,,1092449,Johnatan Cardoso
+ceilandia-df,197654,,10,3,407653,1386139,Sandy
+mixto-mt,162173,,0,0,,1927716,Glaycon
+mixto-mt,162173,,1,1,435254,1207771,Joazi
+mixto-mt,162173,,2,1,,1785060,Indio
+mixto-mt,162173,,3,1,193135,319786,Jackson
+mixto-mt,162173,,4,1,,171977,Paes
+mixto-mt,162173,,5,2,,0,Flávio Henrique
+mixto-mt,162173,,6,2,,1462428,Robson
+mixto-mt,162173,,7,2,,1796108,Esquerdinha
+mixto-mt,162173,,8,2,,1652276,Yuji
+mixto-mt,162173,,9,3,,858595,Dionathã
+mixto-mt,162173,,10,3,,878258,Gabriel Justino
+uniao-rondonopolis-mt,197821,,0,0,,267824,Lúcio
+uniao-rondonopolis-mt,197821,,1,1,,665151,Rafael Goiano
+uniao-rondonopolis-mt,197821,,2,1,1094761,1945593,Jhuan Gabriel Almeida de Souza
+uniao-rondonopolis-mt,197821,,3,1,1095384,1640061,Renan
+uniao-rondonopolis-mt,197821,,4,1,347529,614949,Gilberto Alemao
+uniao-rondonopolis-mt,197821,,5,2,,1945426,Alexander Oliveira Gil
+uniao-rondonopolis-mt,197821,,6,2,,1917075,Mateus Alves da Silva
+uniao-rondonopolis-mt,197821,,7,2,870333,1261302,Lucas
+uniao-rondonopolis-mt,197821,,8,2,,0,Gustavo da Silveira Victorio
+uniao-rondonopolis-mt,197821,,9,3,,638503,Daniel Cruz
+uniao-rondonopolis-mt,197821,,10,3,,1088119,Nadson Mesquita
+operario-varzea-grandense-mt,197816,,0,0,371259,1795351,André Luiz
+operario-varzea-grandense-mt,197816,,1,1,,1623133,Alex Moreira
+operario-varzea-grandense-mt,197816,,2,1,,1662703,Roque Júnior
+operario-varzea-grandense-mt,197816,,3,1,,1936675,Matheus Carioca
+operario-varzea-grandense-mt,197816,,4,1,1006278,1934754,Ítalo Cauã
+operario-varzea-grandense-mt,197816,,5,1,,1934912,Felipe Hulk
+operario-varzea-grandense-mt,197816,,6,2,,1994750,João Sokolowski
+operario-varzea-grandense-mt,197816,,7,2,,1935533,Kaka
+operario-varzea-grandense-mt,197816,,8,3,,1777122,Gabriel Mineiro
+operario-varzea-grandense-mt,197816,,9,3,1219833,1935531,Wagner
+operario-varzea-grandense-mt,197816,,10,3,,1657941,Jadson
+trem-dc-ap,215633,,0,0,,1641846,Victor Lube
+trem-dc-ap,215633,,1,1,1094313,1723277,Leo Reis
+trem-dc-ap,215633,,2,1,,1789180,Welliton
+trem-dc-ap,215633,,3,1,597161,1931865,Rafael Baiano
+trem-dc-ap,215633,,4,1,520377,841860,Perema
+trem-dc-ap,215633,,5,2,538101,1800143,Alysson Barros
+trem-dc-ap,215633,,6,2,876879,1789941,Fábio Mucajá
+trem-dc-ap,215633,,7,2,,1789953,Wanderson
+trem-dc-ap,215633,,8,2,,1931928,Doutor
+trem-dc-ap,215633,,9,3,,1789940,Foguete
+trem-dc-ap,215633,,10,3,,1461857,Wander
+aguia-de-maraba-pa,162177,,0,0,,1660195,Iago Hass
+aguia-de-maraba-pa,162177,,1,1,1085273,1282066,Wendell
+aguia-de-maraba-pa,162177,,2,1,1078313,1933419,Victtor Chaves
+aguia-de-maraba-pa,162177,,3,1,,1720591,Dede
+aguia-de-maraba-pa,162177,,4,1,1007690,1461850,Bruno Limão
+aguia-de-maraba-pa,162177,,5,2,977534,1385960,Carlos Maia
+aguia-de-maraba-pa,162177,,6,2,,1028611,Felipe Pará
+aguia-de-maraba-pa,162177,,7,2,554020,1933398,Willian Daltro
+aguia-de-maraba-pa,162177,,8,3,883280,1789152,Weslley Santos
+aguia-de-maraba-pa,162177,,9,3,,1281564,Paulo Henrique
+aguia-de-maraba-pa,162177,,10,3,,1794922,Alex Silva
+imperatriz-ma,197782,,0,0,103147,268732,Welligton
+imperatriz-ma,197782,,1,1,,1920172,Vinícius
+imperatriz-ma,197782,,2,1,,1920171,Arthur Potiguar
+imperatriz-ma,197782,,3,2,214149,1604117,Felipe Macena
+imperatriz-ma,197782,,4,2,,1967798,Dieguinho
+imperatriz-ma,197782,,5,2,,1789671,João Araújo
+imperatriz-ma,197782,,6,2,940441,1792010,Wilson
+imperatriz-ma,197782,,7,3,,1789153,Wyldson
+imperatriz-ma,197782,,8,3,1094345,1910571,Ivan Dias Conceição
+imperatriz-ma,197782,,9,3,1128239,1946098,Victor Pereira
+imperatriz-ma,197782,,10,3,,950955,Ala
+tuna-luso-brasileira-pa,239707,,0,0,112908,0,Vinícius
+tuna-luso-brasileira-pa,239707,,1,1,,1794901,Vinícius Eduardo Mendes Fernandes
+tuna-luso-brasileira-pa,239707,,2,1,863090,1794915,Wesley
+tuna-luso-brasileira-pa,239707,,3,1,,1927825,Douglas
+tuna-luso-brasileira-pa,239707,,4,1,,1794925,Luã
+tuna-luso-brasileira-pa,239707,,5,2,,1714934,Otávio
+tuna-luso-brasileira-pa,239707,,6,2,547932,845993,Dieguinho
+tuna-luso-brasileira-pa,239707,,7,2,,1934820,Wanderlan Pereira
+tuna-luso-brasileira-pa,239707,,8,2,,504694,Gustavo Henrique
+tuna-luso-brasileira-pa,239707,,9,3,988443,1795379,Edgo
+tuna-luso-brasileira-pa,239707,,10,3,,1017096,Jayme
+tocantinopolis-to,197394,,0,0,,1460357,Heitor
+tocantinopolis-to,197394,,1,1,873468,1641849,Daelson
+tocantinopolis-to,197394,,2,1,1507627,1935514,Marcelo Henrique Nunes dos Santos
+tocantinopolis-to,197394,,3,1,,1787722,Milton Lucas Dias Pereira
+tocantinopolis-to,197394,,4,2,,1641848,Hitalo
+tocantinopolis-to,197394,,5,2,993713,1935503,Jackson Pereira dos Santos
+tocantinopolis-to,197394,,6,2,,1934704,Renan Vieira da Silva
+tocantinopolis-to,197394,,7,2,777325,1794929,Tiago Bagagem
+tocantinopolis-to,197394,,8,3,,1934698,Lucas Eduardo Gomes da Silva
+tocantinopolis-to,197394,,9,3,,1935513,Allan
+tocantinopolis-to,197394,,10,3,,1935515,Samuel Barbosa Costa
+oratorio-rc-ap,215629,,0,0,,1043705,Fernando
+oratorio-rc-ap,215629,,1,1,986810,1932816,Bruno Gabriel Almeida da Silva
+oratorio-rc-ap,215629,,2,1,1220546,1936769,Sanderson Trindade Nascimento
+oratorio-rc-ap,215629,,3,1,,1966166,Venilson Miranda Silva
+oratorio-rc-ap,215629,,4,2,,1970695,Luis Felipe Pereira da Silva
+oratorio-rc-ap,215629,,5,2,862600,1936780,Jari
+oratorio-rc-ap,215629,,6,3,697800,1935556,Diogo
+oratorio-rc-ap,215629,,7,3,,1789797,Lusivan Fernandes dos Santos
+oratorio-rc-ap,215629,,8,3,,1962189,Juan Matheus dos Santos Leite
+oratorio-rc-ap,215629,,9,3,604094,1044278,Daniel Alagoano
+oratorio-rc-ap,215629,,10,3,,1723145,Aldair
+iguatu-ce,584281,,0,0,1125230,0,Zé Rafael
+iguatu-ce,584281,,1,1,1227317,1946169,Miguel Holanda
+iguatu-ce,584281,,2,1,551594,1925140,Talisson Calcinha
+iguatu-ce,584281,,3,1,661883,1044293,Diguinho
+iguatu-ce,584281,,4,1,1094314,1796022,Melk
+iguatu-ce,584281,,5,2,,1785778,João Neto
+iguatu-ce,584281,,6,2,,1795996,Thalison
+iguatu-ce,584281,,7,2,,1660569,Caio
+iguatu-ce,584281,,8,2,555615,1796019,Rodrigo Correia
+iguatu-ce,584281,,9,3,,1795916,Otacílio Marcos
+iguatu-ce,584281,,10,3,,1925137,Matheus Lima
+maracana-ce,410825,,0,0,76185,267711,Douglas
+maracana-ce,410825,,1,1,1006283,1934810,Vinicius Oliveira
+maracana-ce,410825,,2,1,,1937498,Digão
+maracana-ce,410825,,3,1,,1678857,Pedro Henrique
+maracana-ce,410825,,4,1,975895,1663303,Guilherme
+maracana-ce,410825,,5,2,1109412,1934817,Robert
+maracana-ce,410825,,6,2,819408,1430318,Lincoln
+maracana-ce,410825,,7,2,,1789161,Jeferson Prill
+maracana-ce,410825,,8,2,988054,789855,Patuta
+maracana-ce,410825,,9,3,,1791768,Vinicius Canindé
+maracana-ce,410825,,10,3,,1749261,Testinha
+parnahyba-pi,197641,,0,0,604404,1653490,Léo
+parnahyba-pi,197641,,1,1,680585,1335758,Weslley
+parnahyba-pi,197641,,2,1,,1950869,Luis Henrique
+parnahyba-pi,197641,,3,1,,1800054,Luis Fernando
+parnahyba-pi,197641,,4,1,,1945970,Amilton Santana
+parnahyba-pi,197641,,5,1,,789851,Max Oliveira
+parnahyba-pi,197641,,6,2,,1945974,David Guilherme
+parnahyba-pi,197641,,7,2,101239,1797499,Bismarck
+parnahyba-pi,197641,,8,3,1100079,2031813,Gleryston da Costa
+parnahyba-pi,197641,,9,3,,1945976,Erick Alves
+parnahyba-pi,197641,,10,3,,1619463,Kleberson Cícero Fraga dos Santo
+sampaio-correa-ma,162176,,0,0,,844502,Deijair
+sampaio-correa-ma,162176,,1,1,555462,1292600,Hugo Leonardo
+sampaio-correa-ma,162176,,2,1,740406,1509190,Itambé
+sampaio-correa-ma,162176,,3,1,,1796469,Peu
+sampaio-correa-ma,162176,,4,1,541230,969837,Joécio
+sampaio-correa-ma,162176,,5,2,,1660435,Cavi
+sampaio-correa-ma,162176,,6,2,,1641848,Hitalo
+sampaio-correa-ma,162176,,7,2,,0,Esquerdinha
+sampaio-correa-ma,162176,,8,2,659728,1282059,Patrik
+sampaio-correa-ma,162176,,9,2,,1945977,Gean
+sampaio-correa-ma,162176,,10,3,,1800039,Warllem
+moto-ma,197778,,0,0,1377629,1946054,Kássio Henrique da Silva dos Santos
+moto-ma,197778,,1,1,,2027611,Marquinho Carioca
+moto-ma,197778,,2,1,,1449293,Rômullo de Jesus Penha Furtado
+moto-ma,197778,,3,1,646279,1039191,Victor Souza
+moto-ma,197778,,4,1,,1925597,Denilson
+moto-ma,197778,,5,2,542484,1282374,Valderrama
+moto-ma,197778,,6,2,,1946045,Joelberth Pereira Cruz
+moto-ma,197778,,7,2,899854,1925575,Patrick
+moto-ma,197778,,8,2,,1749257,Jair
+moto-ma,197778,,9,3,,0,Cosmo Henrique Fonseca da Conceição
+moto-ma,197778,,10,3,675217,1925596,William
+iape-ma,197777,,0,0,1362469,1933318,Claudyson Kennedy de Aguiar Pinheiro
+iape-ma,197777,,1,1,837026,1944628,Yan
+iape-ma,197777,,2,1,1096881,1933381,Luann Douglas Moraes Costa
+iape-ma,197777,,3,1,680617,1933317,Michael
+iape-ma,197777,,4,1,1362478,1933329,Icaro Alvaro Silva Machado
+iape-ma,197777,,5,2,640404,543980,Marcos Vinícius
+iape-ma,197777,,6,2,,1933327,Kerllon Raimundo Ferreira Maciel
+iape-ma,197777,,7,2,,1786130,Marcos Alexandre Oliveira dos Santos
+iape-ma,197777,,8,3,,449752,Lucielmo Palhano Soares
+iape-ma,197777,,9,3,1092863,1455613,Tagarela
+iape-ma,197777,,10,3,,1933323,Ronald Makalysten
+ferroviario-ce,197695,,0,0,837532,1208009,Sivaldo Júnior
+ferroviario-ce,197695,,1,1,,1792377,Pedrinho
+ferroviario-ce,197695,,2,1,,1420297,Iago
+ferroviario-ce,197695,,3,1,869063,1459654,Thomás Luciano
+ferroviario-ce,197695,,4,2,,1792356,Caio da Purificação Coelho Santos
+ferroviario-ce,197695,,5,2,,1792381,Lucas Black
+ferroviario-ce,197695,,6,2,1117627,1785786,Brayan
+ferroviario-ce,197695,,7,2,,1675595,Thálisson
+ferroviario-ce,197695,,8,3,76474,155624,Ciel
+ferroviario-ce,197695,,9,3,734980,1438426,Carlinhos
+ferroviario-ce,197695,,10,3,638218,1200655,Yair Mena
+piaui-pi,197640,,0,0,914027,921257,Pedro Paulo
+piaui-pi,197640,,1,1,737185,1790926,Bahia
+piaui-pi,197640,,2,1,,1602393,Leandro
+piaui-pi,197640,,3,1,,1789978,Jailson Tenório de Souza
+piaui-pi,197640,,4,1,,1653499,João Ramos
+piaui-pi,197640,,5,2,740167,1174309,Wallace
+piaui-pi,197640,,6,2,,1994635,Otávio
+piaui-pi,197640,,7,2,1073550,1904042,Dudu
+piaui-pi,197640,,8,3,,1434782,Adaílson
+piaui-pi,197640,,9,3,,1120734,Natan
+piaui-pi,197640,,10,3,,1723280,Maranhão
+fluminense-pi,1223501,,0,0,226735,1284938,Jerfesson
+fluminense-pi,1223501,,1,1,,1922717,Kelson
+fluminense-pi,1223501,,2,1,,1904048,Gabriel Pará
+fluminense-pi,1223501,,3,1,810311,1257283,Kelvin
+fluminense-pi,1223501,,4,1,,1789907,Gabriel Cardoso
+fluminense-pi,1223501,,5,2,1097223,1800057,Rian
+fluminense-pi,1223501,,6,2,1011198,1703868,Gabriel Vieira
+fluminense-pi,1223501,,7,2,,1797336,Danilo Xexéu
+fluminense-pi,1223501,,8,2,,1235023,Vitinho
+fluminense-pi,1223501,,9,3,,1625914,João Vitor
+fluminense-pi,1223501,,10,3,976288,1796797,Reny
+altos-pi,710764,,0,0,1100063,1934739,Allan
+altos-pi,710764,,1,1,,1796462,Tallyson
+altos-pi,710764,,2,1,550254,1616556,Geninho
+altos-pi,710764,,3,1,,1436163,Joaquín Ferreira
+altos-pi,710764,,4,1,,1257551,Pedro Vitor
+altos-pi,710764,,5,2,538228,268400,Rodolfo Potiguar
+altos-pi,710764,,6,2,950547,1934737,Gabriel China
+altos-pi,710764,,7,2,919549,0,Neko
+altos-pi,710764,,8,3,,1400133,Jefferson
+altos-pi,710764,,9,3,,1790923,Robinho
+altos-pi,710764,,10,3,965637,1664138,Guilherme Pires
+cefat-tirol-ce,1696139,,0,0,,1789902,Wilgne
+cefat-tirol-ce,1696139,,1,1,347263,1789884,Zé Augusto
+cefat-tirol-ce,1696139,,2,1,,1789887,Dieguinho
+cefat-tirol-ce,1696139,,3,1,,1932521,Ytalo
+cefat-tirol-ce,1696139,,4,1,554019,1749253,Jairo Silva
+cefat-tirol-ce,1696139,,5,1,,1044293,Diguinho
+cefat-tirol-ce,1696139,,6,2,,1638970,Filipe Claudino
+cefat-tirol-ce,1696139,,7,2,975738,1932817,Sidin
+cefat-tirol-ce,1696139,,8,3,,1932818,Felipe Hulk
+cefat-tirol-ce,1696139,,9,3,,1355739,Vinicius Rodrigues
+cefat-tirol-ce,1696139,,10,3,556177,1228041,Jeffinho
+atletico-cearense-ce,696928,,0,0,,1968793,Emerson
+atletico-cearense-ce,696928,,1,1,1558523,2038991,Gabriel Castro
+atletico-cearense-ce,696928,,2,1,,1791772,Xandy Alves
+atletico-cearense-ce,696928,,3,1,,1945504,Jhonatan Alvarado
+atletico-cearense-ce,696928,,4,2,,1967798,Dieguinho
+atletico-cearense-ce,696928,,5,2,,1943139,Márcio Victor
+atletico-cearense-ce,696928,,6,2,1535248,1945475,Wellington
+atletico-cearense-ce,696928,,7,2,,1945479,Leonardo
+atletico-cearense-ce,696928,,8,3,944271,1931742,William Wallace
+atletico-cearense-ce,696928,,9,3,,1945491,Guilherme
+atletico-cearense-ce,696928,,10,3,,1994563,Luan Cantanhede
+abc-rn,109708,,0,0,363772,637581,Matheus Alves
+abc-rn,109708,,1,1,225639,449680,Wellington
+abc-rn,109708,,2,1,576563,1451459,Dudu Mandai
+abc-rn,109708,,3,1,739112,1130710,Cayo Tenório
+abc-rn,109708,,4,2,637809,1644101,Jhosefer
+abc-rn,109708,,5,2,,1734217,Jonathan
+abc-rn,109708,,6,2,103146,555299,Edson
+abc-rn,109708,,7,3,,1437503,Igor Bahia
+abc-rn,109708,,8,3,,1174664,Luiz Fernando
+abc-rn,109708,,9,3,977484,1343372,Rikelmi
+abc-rn,109708,,10,3,68465,128109,Wallyson
+america-rn-rn,47387,,0,0,,802535,Renan
+america-rn-rn,47387,,1,1,725079,0,Guilherme Paraíba
+america-rn-rn,47387,,2,1,435231,637572,Evandro
+america-rn-rn,47387,,3,1,,1723147,Lucas Rodrigues
+america-rn-rn,47387,,4,1,640867,1101054,Ricardo Luz
+america-rn-rn,47387,,5,2,813201,1457938,Aruá
+america-rn-rn,47387,,6,2,640202,1080274,Alisson
+america-rn-rn,47387,,7,2,490432,1121000,Augusto Galván
+america-rn-rn,47387,,8,2,862595,1380602,Balotelli
+america-rn-rn,47387,,9,3,,1440968,Matheus Régis
+america-rn-rn,47387,,10,3,,1462836,Luiz Thiago
+maguary-pe,1426346,,0,0,1048798,1462825,Bruno Lopes
+maguary-pe,1426346,,1,1,1086449,1659668,Rychelmy
+maguary-pe,1426346,,2,1,1093487,1796528,Mateus Henrique
+maguary-pe,1426346,,3,1,981631,1796770,Guedes
+maguary-pe,1426346,,4,1,,1711000,Eduardo
+maguary-pe,1426346,,5,2,795305,1174324,Ítalo
+maguary-pe,1426346,,6,2,,0,Renato Henrique
+maguary-pe,1426346,,7,2,,1174301,Júlio César
+maguary-pe,1426346,,8,2,,1463347,Bruno
+maguary-pe,1426346,,9,3,585347,947061,Philippe
+maguary-pe,1426346,,10,3,,1927720,Kanu
+central-pe,169361,,0,0,,265687,Milton
+central-pe,169361,,1,1,,1017099,Lazarini
+central-pe,169361,,2,1,,268222,Hitalo Rogério
+central-pe,169361,,3,1,856976,1789875,Filipe Ramon
+central-pe,169361,,4,1,,1796272,Augusto Potiguar
+central-pe,169361,,5,2,,1282050,Felipe Jacaré
+central-pe,169361,,6,2,852923,1797571,Diego Viana
+central-pe,169361,,7,2,,1437408,Diego Aragão
+central-pe,169361,,8,3,203136,292265,Yuri Mamute
+central-pe,169361,,9,3,,1944497,Caio Vinícius
+central-pe,169361,,10,3,,1605961,Cesinha
+sousa-pb,197791,,0,0,,1670316,Moisés
+sousa-pb,197791,,1,1,1004063,0,Guizão
+sousa-pb,197791,,2,1,,1646545,Iranílson
+sousa-pb,197791,,3,1,858256,1797569,Fernando Ceará
+sousa-pb,197791,,4,1,129122,260953,Crystian
+sousa-pb,197791,,5,1,804880,1641692,Marcelo
+sousa-pb,197791,,6,2,,1282050,Felipe Jacaré
+sousa-pb,197791,,7,2,,1904269,Natalício
+sousa-pb,197791,,8,2,,1904270,Mateuzinho
+sousa-pb,197791,,9,2,,943242,Hebert
+sousa-pb,197791,,10,3,,1970692,Marcos Santos
+laguna-rn,1699616,,0,0,1151102,1796778,Dã Moroni Bravo de Souza
+laguna-rn,1699616,,1,1,,1653455,Francisco Davi da Silva Castro
+laguna-rn,1699616,,2,1,1239143,1927816,João Vitor Soares
+laguna-rn,1699616,,3,1,787310,1946097,Anderson Figueiredo Santos Júnior
+laguna-rn,1699616,,4,2,75076,171229,Éverton Luiz
+laguna-rn,1699616,,5,2,,1933389,Kayky da Conceição Silva Viana
+laguna-rn,1699616,,6,2,,1927822,Natan Aguiar da Silva
+laguna-rn,1699616,,7,2,,498498,Erivélton
+laguna-rn,1699616,,8,2,866894,1641726,Ferrugem
+laguna-rn,1699616,,9,3,,1932925,Danilo de Sales
+laguna-rn,1699616,,10,3,349515,637569,Rômulo
+treze-pb,197790,,0,0,376137,789794,Erivelton
+treze-pb,197790,,1,1,734277,1459693,John
+treze-pb,197790,,2,1,693177,1784641,Marquinhos
+treze-pb,197790,,3,1,,1991041,Matheus Barbosa
+treze-pb,197790,,4,1,,1654035,Natan
+treze-pb,197790,,5,2,654237,2027667,Giovane
+treze-pb,197790,,6,2,,2038762,Vinicius Michelon
+treze-pb,197790,,7,3,292409,664966,Buba
+treze-pb,197790,,8,3,545155,1795382,Vinícius Bala
+treze-pb,197790,,9,3,,1251506,Carlos Henrique
+treze-pb,197790,,10,3,867813,1734184,Dioran
+cs-sergipe-se,197403,,0,0,,897427,Filipe
+cs-sergipe-se,197403,,1,1,,670780,João Lucas
+cs-sergipe-se,197403,,2,1,292353,500644,Victor Massaia
+cs-sergipe-se,197403,,3,1,,1785501,Carioca
+cs-sergipe-se,197403,,4,1,,1174636,Rafael Luiz
+cs-sergipe-se,197403,,5,2,,1614963,Mauro Gabriel
+cs-sergipe-se,197403,,6,2,,1680022,Felipe Valdivia
+cs-sergipe-se,197403,,7,2,680296,1217313,Matheus Neris
+cs-sergipe-se,197403,,8,3,,1345039,Andrey
+cs-sergipe-se,197403,,9,3,,1796184,Zé Arthur
+cs-sergipe-se,197403,,10,3,753322,1653496,Lucas Mineiro
+serra-branca-pb,1421409,,0,0,75438,171928,Bruno Fuso
+serra-branca-pb,1421409,,1,1,1219681,1931822,Klayver
+serra-branca-pb,1421409,,2,1,540611,1791659,Cesinha
+serra-branca-pb,1421409,,3,1,,1462419,João Marcus
+serra-branca-pb,1421409,,4,1,711028,1791999,Bruno Oliveira
+serra-branca-pb,1421409,,5,2,977549,1791335,Clayton
+serra-branca-pb,1421409,,6,2,,1784937,Luis Otávio
+serra-branca-pb,1421409,,7,2,867462,1607440,Kayan
+serra-branca-pb,1421409,,8,2,626704,1227356,Dione
+serra-branca-pb,1421409,,9,3,,1134276,Jefferson
+serra-branca-pb,1421409,,10,3,645638,1737519,Orlando Júnior
+lagarto-se,299701,,0,0,1036121,1789262,Matheus Brandão
+lagarto-se,299701,,1,1,976620,1797525,Paulo Miranda
+lagarto-se,299701,,2,1,,1639733,Davi
+lagarto-se,299701,,3,2,1083083,1653444,Emanuel Pereira
+lagarto-se,299701,,4,2,281438,747923,Yago
+lagarto-se,299701,,5,2,,1935495,Diogo
+lagarto-se,299701,,6,2,,1935497,Maxsuel
+lagarto-se,299701,,7,2,1098570,1928481,Antônio Carlos
+lagarto-se,299701,,8,3,871664,1796172,Erik Gabriel
+lagarto-se,299701,,9,3,,1793362,Rhuann
+lagarto-se,299701,,10,3,,1936664,Bruno Martins
+retro-fc-brasil-pe,1116984,,0,0,374151,670774,Paulo Ricardo
+retro-fc-brasil-pe,1116984,,1,1,950555,1641702,João Rafael
+retro-fc-brasil-pe,1116984,,2,1,551656,1190115,Israel
+retro-fc-brasil-pe,1116984,,3,1,,1448039,Rayan
+retro-fc-brasil-pe,1116984,,4,1,,1298949,Luiz Henrique
+retro-fc-brasil-pe,1116984,,5,2,,1904262,Gustavo Oliveira
+retro-fc-brasil-pe,1116984,,6,2,1095215,1736936,Diego
+retro-fc-brasil-pe,1116984,,7,2,1291694,1785806,Kevin Rivas
+retro-fc-brasil-pe,1116984,,8,3,813109,1206580,Bruno Marques
+retro-fc-brasil-pe,1116984,,9,3,,1797915,Jhon
+retro-fc-brasil-pe,1116984,,10,3,,1339529,Sillas
+decisao-pe,584262,,0,0,,1791771,João Ciriaco
+decisao-pe,584262,,1,1,1095786,1945979,Gabriel Cardoso Leite
+decisao-pe,584262,,2,1,,1962220,Luiz Felipe de Oliveira Barroso
+decisao-pe,584262,,3,1,1084958,1796457,Wesley Lima Cruz
+decisao-pe,584262,,4,1,937345,1940167,Pedrão
+decisao-pe,584262,,5,1,,0,Cláudio Gustavo Costa de Oliveira
+decisao-pe,584262,,6,2,,1755944,João Vithor
+decisao-pe,584262,,7,2,,1944623,José Mauricio Rocha
+decisao-pe,584262,,8,3,,1943148,Rodrigo Leal
+decisao-pe,584262,,9,3,,1946070,Túlio
+decisao-pe,584262,,10,3,,1636608,Ruan Carlos
+csa-al,239132,,0,0,999801,1736975,Wellerson
+csa-al,239132,,1,1,981508,1785779,Ailton Santos
+csa-al,239132,,2,1,,1386261,Rafael Augusto
+csa-al,239132,,3,1,980613,1504892,Caio Hila
+csa-al,239132,,4,1,1102810,1785188,Félix Jorge
+csa-al,239132,,5,2,97507,143510,Camacho
+csa-al,239132,,6,2,500046,837892,Fabrício
+csa-al,239132,,7,2,995644,1935519,Kayllan
+csa-al,239132,,8,2,,1640842,Matheus Melo
+csa-al,239132,,9,2,175183,263942,Dudú
+csa-al,239132,,10,3,,1788181,Rian Santana
+juazeirense-ba,298336,,0,0,554310,1791996,Pedro Campanelli
+juazeirense-ba,298336,,1,1,906773,1271368,Felipe Vasconcelos
+juazeirense-ba,298336,,2,1,,1626785,Ze Romario
+juazeirense-ba,298336,,3,1,,1792012,Eduardo Rosado
+juazeirense-ba,298336,,4,2,984055,1290140,Rafael Mandacaru
+juazeirense-ba,298336,,5,2,,1797939,Wanderson Papaterra
+juazeirense-ba,298336,,6,2,,1433886,Reinaldo
+juazeirense-ba,298336,,7,3,,143901,Adriano Pardal
+juazeirense-ba,298336,,8,3,1029803,1797500,Wesley
+juazeirense-ba,298336,,9,3,,1719156,Diki
+juazeirense-ba,298336,,10,3,866990,1749260,Bravo
+asa-al,162164,,0,0,,1653542,Rafael
+asa-al,162164,,1,1,,1797572,Alysson Dutra
+asa-al,162164,,2,1,,1943160,Danilo Santos
+asa-al,162164,,3,1,863089,1789880,Paulinho
+asa-al,162164,,4,1,975835,1614000,Arthurzinho
+asa-al,162164,,5,2,792652,1368335,Sammuel
+asa-al,162164,,6,2,552689,1447985,Jailson
+asa-al,162164,,7,2,666850,1282376,Allef
+asa-al,162164,,8,2,744894,793252,Ferreira
+asa-al,162164,,9,3,261365,452844,Michel
+asa-al,162164,,10,3,,703800,Gustavinho
+jacuipense-ba,410824,,0,0,889817,1904002,Marcelo
+jacuipense-ba,410824,,1,1,,1636200,Talisca
+jacuipense-ba,410824,,2,1,,1903999,Jhones
+jacuipense-ba,410824,,3,1,642593,1433022,Vicente
+jacuipense-ba,410824,,4,1,542072,885579,Weverton
+jacuipense-ba,410824,,5,1,,1719160,Hugo Moura
+jacuipense-ba,410824,,6,2,976599,1653451,Vinícius Amaral
+jacuipense-ba,410824,,7,3,,1712435,Luan
+jacuipense-ba,410824,,8,3,,934246,Flavinho
+jacuipense-ba,410824,,9,3,676044,1173527,Thiaguinho
+jacuipense-ba,410824,,10,3,,1453086,Thiaguinho
+cse-al,197675,,0,0,242893,575324,Jéferson
+cse-al,197675,,1,1,,1736963,Dequinha
+cse-al,197675,,2,1,1030540,1946174,Samuel
+cse-al,197675,,3,1,,723037,Wanderson Lima
+cse-al,197675,,4,2,,1966174,José Anderson Horácio de Lima
+cse-al,197675,,5,2,,1925152,Celestino
+cse-al,197675,,6,2,,851246,Claudevan
+cse-al,197675,,7,2,187697,267706,Jean Cléber
+cse-al,197675,,8,3,,1925170,Thiaguinho
+cse-al,197675,,9,3,797661,1927853,Reninha
+cse-al,197675,,10,3,,1994653,Lisboa
+alagoinhas-ba,197706,,0,0,,1936785,Neto Barbosa
+alagoinhas-ba,197706,,1,1,,1950863,Cícero Matheus
+alagoinhas-ba,197706,,2,1,1558883,2039016,Edson
+alagoinhas-ba,197706,,3,1,1095763,1657943,Jefferson
+alagoinhas-ba,197706,,4,1,1558884,2039017,Vinicyus
+alagoinhas-ba,197706,,5,1,,2035294,Gabriel Souza
+alagoinhas-ba,197706,,6,1,,1936793,Guilherme Queiroz
+alagoinhas-ba,197706,,7,1,,2039018,Nascimento
+alagoinhas-ba,197706,,8,2,,1945900,João Lucas
+alagoinhas-ba,197706,,9,2,,2039019,João Paulo
+alagoinhas-ba,197706,,10,3,,2035219,Carlos Eduardo
+uberlandia-mg,197808,,0,0,1101830,703801,Guilherme
+uberlandia-mg,197808,,1,1,979467,1462831,Max Miller
+uberlandia-mg,197808,,2,1,997863,1535529,Samuel
+uberlandia-mg,197808,,3,1,663269,1448039,Rayan
+uberlandia-mg,197808,,4,1,1100830,1708445,Luis Felipe
+uberlandia-mg,197808,,5,2,349161,613413,Tomas Bastos
+uberlandia-mg,197808,,6,2,972900,844093,Evanderson
+uberlandia-mg,197808,,7,2,640201,1393983,Diego Fumaça
+uberlandia-mg,197808,,8,3,874502,1455563,Leonardo
+uberlandia-mg,197808,,9,3,341120,583439,Marcos Calazans
+uberlandia-mg,197808,,10,3,680673,1069695,Da Silva
+betim-mg,104815,,0,0,,921033,Michael
+betim-mg,104815,,1,1,,844443,Luis Salazar
+betim-mg,104815,,2,1,224863,322667,Bryan
+betim-mg,104815,,3,1,26239,150769,Pedro Botelho
+betim-mg,104815,,4,1,113336,183546,Alan Santos
+betim-mg,104815,,5,2,524567,844739,Jhemerson
+betim-mg,104815,,6,2,,1236038,Arilson
+betim-mg,104815,,7,2,928872,1653492,Riquelmy
+betim-mg,104815,,8,3,,1345037,Michael Paulista
+betim-mg,104815,,9,3,,1613986,Giovani
+betim-mg,104815,,10,3,,766864,Erick
+crac-go,197769,,0,0,,1793386,Cleriston
+crac-go,197769,,1,1,,653456,Marcílio
+crac-go,197769,,2,1,,1945888,Vitor Mota
+crac-go,197769,,3,1,,1433273,Joanderson
+crac-go,197769,,4,1,,1182943,Luan
+crac-go,197769,,5,1,311867,522767,Jefferson
+crac-go,197769,,6,2,,1658757,Dudu
+crac-go,197769,,7,2,,1242126,João Felipe
+crac-go,197769,,8,3,,1036226,Lorran
+crac-go,197769,,9,3,,1933446,Robinho
+crac-go,197769,,10,3,915858,1959962,Choco
+ivinhema-ms,197611,,0,0,982252,1931780,Neto Bonini
+ivinhema-ms,197611,,1,1,,1927930,Luan
+ivinhema-ms,197611,,2,1,,1938783,Michel
+ivinhema-ms,197611,,3,1,,1931739,Pedro Henrique
+ivinhema-ms,197611,,4,1,,1946085,Wellerson Uberaba
+ivinhema-ms,197611,,5,1,1424832,1800038,Bugarin
+ivinhema-ms,197611,,6,2,,1797531,Ninho
+ivinhema-ms,197611,,7,2,1098670,1931740,Ramires
+ivinhema-ms,197611,,8,3,,1946078,Robson
+ivinhema-ms,197611,,9,3,726574,1928460,Rodolfo
+ivinhema-ms,197611,,10,3,,1701966,Gustavo Ribeiro
+abecat-ouvidorense-go,1696742,,0,0,,1925559,Lucas Alves
+abecat-ouvidorense-go,1696742,,1,1,,905533,Marcos Moser
+abecat-ouvidorense-go,1696742,,2,1,,1410339,João Gabriel
+abecat-ouvidorense-go,1696742,,3,1,,1694845,Dionatan
+abecat-ouvidorense-go,1696742,,4,1,,1925557,Leonardo Alves
+abecat-ouvidorense-go,1696742,,5,1,,672602,Rafael Dumas
+abecat-ouvidorense-go,1696742,,6,2,,1945515,Leo Hanna
+abecat-ouvidorense-go,1696742,,7,2,,1925552,Pedro Privatti
+abecat-ouvidorense-go,1696742,,8,3,1109025,1790921,Marcos Vinícius
+abecat-ouvidorense-go,1696742,,9,3,,1282058,Ian Augusto
+abecat-ouvidorense-go,1696742,,10,3,,1187899,Jackson
+operario-ms,246244,,0,0,138136,784364,Lucas Covolan
+operario-ms,246244,,1,1,839996,1796463,Einstein
+operario-ms,246244,,2,1,840759,1463087,Titi
+operario-ms,246244,,3,1,,787052,Guilherme Thiago
+operario-ms,246244,,4,1,1091134,1785193,Breno
+operario-ms,246244,,5,2,346870,613056,Jonas
+operario-ms,246244,,6,2,378975,651190,Matheus Galdezani
+operario-ms,246244,,7,2,,1927797,Danilo Camargo
+operario-ms,246244,,8,2,179001,268259,Luisinho
+operario-ms,246244,,9,2,1005641,1796471,Zé Vitor
+operario-ms,246244,,10,3,,1959962,Choco
+democrata-mg,197805,,0,0,,1068550,Thúlio
+democrata-mg,197805,,1,1,,1717437,Rafael Klein
+democrata-mg,197805,,2,1,,1946039,Ivan
+democrata-mg,197805,,3,1,887271,1720451,Bryan
+democrata-mg,197805,,4,1,551652,1262647,Chico Bala
+democrata-mg,197805,,5,2,,1435480,Maurício Ferreira
+democrata-mg,197805,,6,2,1117359,1925329,Luiz Henrique
+democrata-mg,197805,,7,2,,0,Bernardo Diniz
+democrata-mg,197805,,8,3,1112242,1789788,Robert
+democrata-mg,197805,,9,3,,1334262,Willian Mococa
+democrata-mg,197805,,10,3,,1333231,Thomasel
+tombense-mg,414725,,0,0,555653,1035384,Douglas
+tombense-mg,414725,,1,1,,1796776,PH
+tombense-mg,414725,,2,1,,921207,Rony
+tombense-mg,414725,,3,1,,1736947,Júlio Henrique
+tombense-mg,414725,,4,1,,543973,Donato
+tombense-mg,414725,,5,2,,1790954,Ygor
+tombense-mg,414725,,6,2,,1653512,Dyego
+tombense-mg,414725,,7,2,,1653480,Matheus Chaves
+tombense-mg,414725,,8,3,,1136425,Cesinha
+tombense-mg,414725,,9,3,1368354,1736954,Luiz Felipe
+tombense-mg,414725,,10,3,,1938793,Juan Rocha
+vitoria-es,197666,,0,0,401528,750050,Lucão
+vitoria-es,197666,,1,1,546231,1298164,Foguete
+vitoria-es,197666,,2,1,228206,409028,Abuda
+vitoria-es,197666,,3,1,533356,1242107,Diego Guerra
+vitoria-es,197666,,4,1,1367707,1924725,Thiago Magatão
+vitoria-es,197666,,5,2,689745,1944637,João Paulo
+vitoria-es,197666,,6,2,,1940439,Gustavo Tonoli
+vitoria-es,197666,,7,2,552100,1925418,Thiago Ramos
+vitoria-es,197666,,8,2,,637588,Araújo
+vitoria-es,197666,,9,3,,1116298,Tony
+vitoria-es,197666,,10,3,172454,263924,Maranhão
+rio-branco-es,197659,,0,0,,319586,Andrey
+rio-branco-es,197659,,1,1,,1284427,Matheus Mega
+rio-branco-es,197659,,2,1,979482,0,Dudu
+rio-branco-es,197659,,3,1,255805,460261,Rafael Vaz
+rio-branco-es,197659,,4,1,,952208,Kaio Cristian
+rio-branco-es,197659,,5,2,,1934804,Alex Galo
+rio-branco-es,197659,,6,2,,1991114,Tenner
+rio-branco-es,197659,,7,2,,1791752,Breninho
+rio-branco-es,197659,,8,2,401532,688272,Geovane
+rio-branco-es,197659,,9,3,868154,1440971,Braga
+rio-branco-es,197659,,10,3,,1936650,Gui Mendes
+porto-ba,1694586,,0,0,,1282046,Thiago Santos
+porto-ba,1694586,,1,1,980903,1614722,Anderson Bandeira
+porto-ba,1694586,,2,1,,1786057,Franklin
+porto-ba,1694586,,3,1,,1696039,Léo Gama
+porto-ba,1694586,,4,1,1018610,1945885,Dijalma
+porto-ba,1694586,,5,2,1501580,1933292,Arthur
+porto-ba,1694586,,6,2,,1900658,Sandro
+porto-ba,1694586,,7,2,1094906,1795344,Pedro Lima
+porto-ba,1694586,,8,3,,1712435,Luan Rodrigues
+porto-ba,1694586,,9,3,1010297,1933312,Firmino
+porto-ba,1694586,,10,3,,1605961,Cesinha
+real-noroeste-cfc-es,298451,,0,0,1016637,1946093,João Victor
+real-noroeste-cfc-es,298451,,1,1,1362929,1945623,Felipe Affonso
+real-noroeste-cfc-es,298451,,2,1,697734,1945859,Ismael
+real-noroeste-cfc-es,298451,,3,1,1054087,1478890,Arthur Neves
+real-noroeste-cfc-es,298451,,4,1,1047639,1925147,Diego Hora
+real-noroeste-cfc-es,298451,,5,1,347847,1925172,Rômulo
+real-noroeste-cfc-es,298451,,6,2,711331,1447992,João
+real-noroeste-cfc-es,298451,,7,2,1503275,1945874,Savinho
+real-noroeste-cfc-es,298451,,8,3,1510134,1945875,Lucas Cezário
+real-noroeste-cfc-es,298451,,9,3,,1436366,Mayco Félix
+real-noroeste-cfc-es,298451,,10,3,142999,500584,Juninho Potiguar
+portuguesa-sp,6065,,0,0,,1025386,Bruno
+portuguesa-sp,6065,,1,1,,1637477,João Vitor
+portuguesa-sp,6065,,2,1,548827,1033101,Lucas Hipólito
+portuguesa-sp,6065,,3,1,56601,62358,Eric Botteghin
+portuguesa-sp,6065,,4,1,936773,1653505,Eduardo Biazus
+portuguesa-sp,6065,,5,2,583064,938567,Thiaguinho
+portuguesa-sp,6065,,6,2,,1666535,Guilherme Portuga
+portuguesa-sp,6065,,7,3,1084128,1171458,Guilherme
+portuguesa-sp,6065,,8,3,670000,1047937,João Diogo
+portuguesa-sp,6065,,9,3,823291,1194713,Igor Torres
+portuguesa-sp,6065,,10,3,,1044831,Jonas Toró
+agua-santa-sp,581842,,0,0,68727,121882,Vanderlei
+agua-santa-sp,581842,,1,1,,1235994,Léo Pereira
+agua-santa-sp,581842,,2,1,1228659,1708915,Willian Bahia
+agua-santa-sp,581842,,3,1,412364,1374930,Hiago
+agua-santa-sp,581842,,4,1,,1641260,Alisson
+agua-santa-sp,581842,,5,2,,1442439,Diogo Marzagão
+agua-santa-sp,581842,,6,2,977878,1469127,Cesinha
+agua-santa-sp,581842,,7,2,,1661219,Nicholas
+agua-santa-sp,581842,,8,2,,1433635,Jonatha
+agua-santa-sp,581842,,9,3,,1796045,Gabriel Rossetto
+agua-santa-sp,581842,,10,3,706740,1616557,Vitinho
+portuguesa-rj,581912,,0,0,1016841,1958495,Bruno
+portuguesa-rj,581912,,1,1,,940690,Lucas Costa
+portuguesa-rj,581912,,2,1,108621,171925,Lenon
+portuguesa-rj,581912,,3,1,628554,1789199,Carlos Henrique
+portuguesa-rj,581912,,4,1,53965,115229,Guilherme Santos
+portuguesa-rj,581912,,5,2,1227911,1927721,Henrique Rocha
+portuguesa-rj,581912,,6,2,216681,498452,Anderson
+portuguesa-rj,581912,,7,2,,1791168,Juninho
+portuguesa-rj,581912,,8,3,531967,816005,Iacovelli
+portuguesa-rj,581912,,9,3,527191,1432135,Uelber
+portuguesa-rj,581912,,10,3,,1433891,Elicley
+america-rj-rj,111689,,0,0,640408,1414652,Rhuan
+america-rj-rj,111689,,1,1,,1796043,João Simão
+america-rj-rj,111689,,2,1,645719,1934961,Arthur Vignoli
+america-rj-rj,111689,,3,1,1027027,0,Ryan Couto
+america-rj-rj,111689,,4,1,1381430,1930350,Júlio César
+america-rj-rj,111689,,5,1,,1958491,Marcelo Barros
+america-rj-rj,111689,,6,2,,150646,Felipe Manoel
+america-rj-rj,111689,,7,2,1100037,1436810,Henrique
+america-rj-rj,111689,,8,3,681508,1127773,Emerson Carioca
+america-rj-rj,111689,,9,3,,1950607,Fortunato
+america-rj-rj,111689,,10,3,554461,1131941,Luã Lúcio
+madureira-rj,111117,,0,0,1145195,1930351,Yan
+madureira-rj,111117,,1,1,1094977,1714907,Cauã
+madureira-rj,111117,,2,1,,1793997,Werley Capanema
+madureira-rj,111117,,3,1,504383,1796413,Leozão
+madureira-rj,111117,,4,1,554458,1033139,Daniel Felipe
+madureira-rj,111117,,5,2,,1958506,Júnior Santos
+madureira-rj,111117,,6,2,1094975,1724475,Wallace
+madureira-rj,111117,,7,2,588627,942224,Lucas Santos
+madureira-rj,111117,,8,2,1097080,1940320,Adriano
+madureira-rj,111117,,9,3,628531,1017088,João Carlos
+madureira-rj,111117,,10,3,1094974,1950602,Zarú
+pouso-alegre-mg,1221708,,0,0,20400,122017,Thiago Braga
+pouso-alegre-mg,1221708,,1,1,,172219,Bruno Silva
+pouso-alegre-mg,1221708,,2,1,,903068,Wesley
+pouso-alegre-mg,1221708,,3,1,,1786042,Lailton
+pouso-alegre-mg,1221708,,4,1,841910,1786047,Victao
+pouso-alegre-mg,1221708,,5,2,,1257314,Dudu
+pouso-alegre-mg,1221708,,6,2,,1611363,Wagner Manaus
+pouso-alegre-mg,1221708,,7,2,,1651815,Ryuta Takahashi
+pouso-alegre-mg,1221708,,8,2,1501063,1925563,Biel
+pouso-alegre-mg,1221708,,9,3,,1796045,Gabriel Rossetto
+pouso-alegre-mg,1221708,,10,3,,1345037,Michael Paulista
+xv-de-piracicaba-sp,297804,,0,0,,1940422,Pedro Augusto
+xv-de-piracicaba-sp,297804,,1,1,290250,500911,Thales
+xv-de-piracicaba-sp,297804,,2,1,112062,172887,Júnior Caiçara
+xv-de-piracicaba-sp,297804,,3,1,554980,1790953,Rennan Siqueira
+xv-de-piracicaba-sp,297804,,4,2,288502,680032,Gustavo Hebling
+xv-de-piracicaba-sp,297804,,5,2,1167393,1532168,Gabriel Chagas
+xv-de-piracicaba-sp,297804,,6,2,936124,1940431,João Victor
+xv-de-piracicaba-sp,297804,,7,2,519877,833650,Dudu Vieira
+xv-de-piracicaba-sp,297804,,8,2,1223735,1940435,Serginho
+xv-de-piracicaba-sp,297804,,9,3,689455,1257047,Josiel
+xv-de-piracicaba-sp,297804,,10,3,653419,846943,David Ribeiro
+noroeste-sp,163784,,0,0,186398,320072,Diogo Silva
+noroeste-sp,163784,,1,1,595010,953994,Maycon
+noroeste-sp,163784,,2,1,742126,1173729,Yuri Ferraz
+noroeste-sp,163784,,3,1,703319,1298949,Luiz Henrique
+noroeste-sp,163784,,4,1,124543,180321,Ronaldo Alves
+noroeste-sp,163784,,5,2,1096603,1940313,Igor
+noroeste-sp,163784,,6,2,734281,1257288,Guedes
+noroeste-sp,163784,,7,2,268521,449672,Rodolfo
+noroeste-sp,163784,,8,3,983300,1433891,Elicley
+noroeste-sp,163784,,9,3,,619767,Lucas
+noroeste-sp,163784,,10,3,283167,470572,Bruno Lopes
+velo-clube-rioclarense-sp,606359,,0,0,666798,1666577,Paulo Vitor
+velo-clube-rioclarense-sp,606359,,1,1,,1904766,Josue
+velo-clube-rioclarense-sp,606359,,2,1,,1226118,Felipe Alysson Batista da Silva
+velo-clube-rioclarense-sp,606359,,3,1,1220301,1932932,Timbó
+velo-clube-rioclarense-sp,606359,,4,1,307747,535586,Sérgio Raphael
+velo-clube-rioclarense-sp,606359,,5,2,,1710302,Matheus Firmino
+velo-clube-rioclarense-sp,606359,,6,2,,813864,Mateus Norton
+velo-clube-rioclarense-sp,606359,,7,2,,862134,Roberto Baggio
+velo-clube-rioclarense-sp,606359,,8,2,,1608422,Anderson Pinto Ferreira Barbosa
+velo-clube-rioclarense-sp,606359,,9,3,,1788036,Jhoninha
+velo-clube-rioclarense-sp,606359,,10,3,1096694,1837635,Vitinho
+sampaio-correa-rj-rj,581903,,0,0,723546,1462431,Zé Carlos
+sampaio-correa-rj-rj,581903,,1,1,539173,1796028,Lucas
+sampaio-correa-rj-rj,581903,,2,1,600708,951709,Luan
+sampaio-correa-rj-rj,581903,,3,1,,1938841,Ryan
+sampaio-correa-rj-rj,581903,,4,1,349622,0,Renan Diniz
+sampaio-correa-rj-rj,581903,,5,1,643378,1899624,Guilherme
+sampaio-correa-rj-rj,581903,,6,2,554462,1896968,Pablo
+sampaio-correa-rj-rj,581903,,7,2,1226151,1729749,Alexandre Souza
+sampaio-correa-rj-rj,581903,,8,2,978783,1469126,Gabriel Agú
+sampaio-correa-rj-rj,581903,,9,3,743992,1624480,Octávio
+sampaio-correa-rj-rj,581903,,10,3,158843,323350,Elias
+nova-iguacu-rj,238505,,0,0,539219,1054261,Mota
+nova-iguacu-rj,238505,,1,1,994623,1927772,Davi
+nova-iguacu-rj,238505,,2,1,,1958553,Rian
+nova-iguacu-rj,238505,,3,1,,1787515,Daniel Zavoli
+nova-iguacu-rj,238505,,4,1,1365739,1927767,Augusto Guse
+nova-iguacu-rj,238505,,5,1,,1787527,Kauã Santos
+nova-iguacu-rj,238505,,6,2,382240,789793,João Paulo
+nova-iguacu-rj,238505,,7,2,,1787530,Iago Lacerda
+nova-iguacu-rj,238505,,8,3,813039,1186358,Léo Muchacho
+nova-iguacu-rj,238505,,9,3,1092442,1708456,Lucas Cruz
+nova-iguacu-rj,238505,,10,3,646771,1616243,Xandinho
+marica-rj,1328537,,0,0,194367,1791746,Neguete
+marica-rj,1328537,,1,1,1092435,1791323,Marcelinho
+marica-rj,1328537,,2,1,669869,1043427,Ronaldo
+marica-rj,1328537,,3,1,356685,657542,Felipe Carvalho
+marica-rj,1328537,,4,1,1051269,1469455,Paulo César
+marica-rj,1328537,,5,2,609941,1723152,Jorge Pedra
+marica-rj,1328537,,6,2,590357,944108,Matheus Lira
+marica-rj,1328537,,7,2,306709,510696,Luizinho
+marica-rj,1328537,,8,2,554457,1034040,Marcelo
+marica-rj,1328537,,9,3,1097440,1932565,Vinicius Henrique
+marica-rj,1328537,,10,3,1163217,0,Rafael Café
+santa-catarina-sc,1697960,,0,0,351229,304617,Marcos
+santa-catarina-sc,1697960,,1,1,1129205,1791157,Adriel
+santa-catarina-sc,1697960,,2,1,906205,1790935,Zé Leandro
+santa-catarina-sc,1697960,,3,1,972426,1791174,Juninho
+santa-catarina-sc,1697960,,4,1,1366681,1790916,Matheus Coruja
+santa-catarina-sc,1697960,,5,2,,1792378,Negueba
+santa-catarina-sc,1697960,,6,2,977536,1734161,Mendes
+santa-catarina-sc,1697960,,7,2,,1284004,Clebinho
+santa-catarina-sc,1697960,,8,3,990595,1931755,Gui Nascimento
+santa-catarina-sc,1697960,,9,3,85312,265618,Alex Gonçalves
+santa-catarina-sc,1697960,,10,3,1095535,1737606,Renan
+cianorte-pr,197430,,0,0,,1933868,Luiz Fabiano
+cianorte-pr,197430,,1,1,1094961,1683546,Paulo
+cianorte-pr,197430,,2,1,1097208,0,Ramom
+cianorte-pr,197430,,3,1,1095642,1789774,Iago
+cianorte-pr,197430,,4,2,,1925430,Hiago Henrique
+cianorte-pr,197430,,5,2,1363822,2027587,Ygor Ortega
+cianorte-pr,197430,,6,2,1126735,1773482,Ibson
+cianorte-pr,197430,,7,2,,1611363,Wagner Manaus
+cianorte-pr,197430,,8,2,230492,500545,Dener
+cianorte-pr,197430,,9,3,1510697,1994287,Daniel Olashile Adisa
+cianorte-pr,197430,,10,3,,1927746,Crysthyan Lucas
+cascavel-pr,612190,,0,0,668515,1219688,André Luiz
+cascavel-pr,612190,,1,1,306764,512224,Ian Barreto
+cascavel-pr,612190,,2,1,,1636572,Borech
+cascavel-pr,612190,,3,1,471994,776802,Geovane
+cascavel-pr,612190,,4,1,99487,172136,Wagner Líbano
+cascavel-pr,612190,,5,2,,1950898,Fábio Silva
+cascavel-pr,612190,,6,2,530386,1513005,Robinho
+cascavel-pr,612190,,7,2,1092019,1785189,Peçanha
+cascavel-pr,612190,,8,2,1092437,1605186,João Victor
+cascavel-pr,612190,,9,3,,1503660,Zé Carlos
+cascavel-pr,612190,,10,3,825614,1463485,Cirilo
+sao-luiz-rs,197890,,0,0,555561,1789777,Gabriel Oliveira
+sao-luiz-rs,197890,,1,1,792508,1619458,Arlan
+sao-luiz-rs,197890,,2,1,,1462346,Márcio Duarte
+sao-luiz-rs,197890,,3,1,,1934709,Lucas Hian
+sao-luiz-rs,197890,,4,2,,1454312,Guilherme Escuro
+sao-luiz-rs,197890,,5,2,,1623127,Lucas Hulk
+sao-luiz-rs,197890,,6,2,,1358144,Uesley Heinemann
+sao-luiz-rs,197890,,7,2,,1373902,Marco
+sao-luiz-rs,197890,,8,2,,535945,Mauri
+sao-luiz-rs,197890,,9,3,,1633723,Thiago André
+sao-luiz-rs,197890,,10,3,,1946063,Nathan
+joinville-sc,197689,,0,0,294817,684967,Thiago Rodrigues
+joinville-sc,197689,,1,1,175208,129506,Guti
+joinville-sc,197689,,2,1,,0,Dudu
+joinville-sc,197689,,3,1,,1036219,Léo Rigo
+joinville-sc,197689,,4,2,,1892837,Garrinsha Estinphile
+joinville-sc,197689,,5,2,1076794,1653486,Felipinho
+joinville-sc,197689,,6,2,1221784,1789381,Alyson
+joinville-sc,197689,,7,2,,1346642,Thomaz
+joinville-sc,197689,,8,2,,1946160,Pablo Dias
+joinville-sc,197689,,9,2,,1605186,João Victor
+joinville-sc,197689,,10,3,,1946102,Erverson
+guarany-de-bage-rs,1320332,,0,0,,1649348,Thiago Gonçalves
+guarany-de-bage-rs,1320332,,1,1,,1788078,Talles
+guarany-de-bage-rs,1320332,,2,1,,1437529,Alberte
+guarany-de-bage-rs,1320332,,3,1,,1722306,Vitor Oliveira
+guarany-de-bage-rs,1320332,,4,2,,1940278,João Teixeira
+guarany-de-bage-rs,1320332,,5,2,,0,Paulinho
+guarany-de-bage-rs,1320332,,6,2,,1641690,Emersonn Bastos
+guarany-de-bage-rs,1320332,,7,2,,638898,Silas
+guarany-de-bage-rs,1320332,,8,2,978120,1460504,Pedro Rodrigues
+guarany-de-bage-rs,1320332,,9,3,,1790929,Robinho
+guarany-de-bage-rs,1320332,,10,3,,1608421,Tony Júnior
+blumenau-sc,1922597,,0,0,,1945431,Ariel
+blumenau-sc,1922597,,1,1,,324711,Marcos Pedroso
+blumenau-sc,1922597,,2,1,547554,1034073,Marcão
+blumenau-sc,1922597,,3,1,,1945369,João Vitor
+blumenau-sc,1922597,,4,1,,1946040,Jose Mendes de Sousa Neto
+blumenau-sc,1922597,,5,2,,1912146,Jonathan Miranda da Silva Mendes
+blumenau-sc,1922597,,6,2,1039551,1791997,Emerson Silva dos Santos
+blumenau-sc,1922597,,7,2,351155,923761,Álvaro
+blumenau-sc,1922597,,8,3,412681,1790918,Wellisson Almeida Nunes
+blumenau-sc,1922597,,9,3,1021109,1940437,Josué Silva de Freitas
+blumenau-sc,1922597,,10,3,323879,824664,Vinícius Jaú
+nautico-marcilio-dias-sc,162172,,0,0,532901,1966188,Diego Almeida
+nautico-marcilio-dias-sc,162172,,1,1,,629685,Reginaldo
+nautico-marcilio-dias-sc,162172,,2,1,980993,1722604,Bruno Boca
+nautico-marcilio-dias-sc,162172,,3,1,494841,1373889,Claudinho
+nautico-marcilio-dias-sc,162172,,4,1,942644,1653477,Wesley
+nautico-marcilio-dias-sc,162172,,5,2,1006975,1892837,Garrinsha Estinphile
+nautico-marcilio-dias-sc,162172,,6,2,832313,1207306,Cesinha
+nautico-marcilio-dias-sc,162172,,7,2,476354,812636,Roldan
+nautico-marcilio-dias-sc,162172,,8,2,985359,1938805,Guilherme Kanté
+nautico-marcilio-dias-sc,162172,,9,3,,1749262,Davi Torres
+nautico-marcilio-dias-sc,162172,,10,3,158488,211917,Manoel
+if-sao-joseense-pr,1320837,,0,0,743550,1257313,Samuel Deuner
+if-sao-joseense-pr,1320837,,1,1,,1958564,Antônio Thiel
+if-sao-joseense-pr,1320837,,2,1,,1741919,Pedro Henrique
+if-sao-joseense-pr,1320837,,3,1,,1737552,Raphael Carvalho
+if-sao-joseense-pr,1320837,,4,2,1083605,1797946,Felipe Vieira
+if-sao-joseense-pr,1320837,,5,2,627216,1090561,Kawan
+if-sao-joseense-pr,1320837,,6,2,,1434539,Peninha
+if-sao-joseense-pr,1320837,,7,2,680286,1925326,Caio Cesár
+if-sao-joseense-pr,1320837,,8,3,113048,173460,Patrick Leonardo
+if-sao-joseense-pr,1320837,,9,3,271353,645415,Niltinho
+if-sao-joseense-pr,1320837,,10,3,,614915,Juliano
+sao-jose-rs,197889,,0,0,,1340934,Fábio Rampi
+sao-jose-rs,197889,,1,1,975370,1521181,Michel
+sao-jose-rs,197889,,2,1,694528,1078931,Bruno Jesus
+sao-jose-rs,197889,,3,1,,1693414,Mateus Pureza
+sao-jose-rs,197889,,4,1,731695,1792014,Diney
+sao-jose-rs,197889,,5,2,817263,1448289,Zé Vitor
+sao-jose-rs,197889,,6,2,734282,1309376,Péricles
+sao-jose-rs,197889,,7,2,1098733,1788074,Keverton
+sao-jose-rs,197889,,8,3,867906,1437429,Grafite
+sao-jose-rs,197889,,9,3,624630,968447,Andrey
+sao-jose-rs,197889,,10,3,524439,852115,Igor Cássio
+brasil-de-pelotas-rs,162165,,0,0,733337,1265941,Davi Schneider
+brasil-de-pelotas-rs,162165,,1,1,,1944494,Yago Zamora
+brasil-de-pelotas-rs,162165,,2,1,874156,1785057,Otávio
+brasil-de-pelotas-rs,162165,,3,1,1363688,1789663,Yuri Farias
+brasil-de-pelotas-rs,162165,,4,1,177558,263131,Lula
+brasil-de-pelotas-rs,162165,,5,1,,1944493,Tiago Baiano
+brasil-de-pelotas-rs,162165,,6,2,,1944564,Júlio Simas
+brasil-de-pelotas-rs,162165,,7,2,1508114,1958505,Alan
+brasil-de-pelotas-rs,162165,,8,3,973570,1796276,Masson
+brasil-de-pelotas-rs,162165,,9,3,,1364487,Iury
+brasil-de-pelotas-rs,162165,,10,3,503234,839755,Gabriel Morbeck
+azuriz-pr,1223346,,0,0,742091,1344691,Vinícius
+azuriz-pr,1223346,,1,1,,1184040,Brunão
+azuriz-pr,1223346,,2,1,,1994644,Antonny Assis
+azuriz-pr,1223346,,3,1,739487,1310697,Reginaldo
+azuriz-pr,1223346,,4,1,,1826068,Guilherme
+azuriz-pr,1223346,,5,1,668261,1609042,Ary Garcia
+azuriz-pr,1223346,,6,1,,1798677,Daniel Bolt
+azuriz-pr,1223346,,7,2,1103834,1448425,Jorginho
+azuriz-pr,1223346,,8,3,1220453,1653431,Marquinhos
+azuriz-pr,1223346,,9,3,1527952,1967871,Kauã Giancler
+azuriz-pr,1223346,,10,3,1107299,1790932,Lucas Santos
+ferroviaria-es,197668,,0,0,,1787526,Pedro Zanette
+ferroviaria-es,197668,,1,1,,1927774,Wesley Dias
+ferroviaria-es,197668,,2,1,,649395,Willian Simões
+ferroviaria-es,197668,,3,1,,1282378,Vinicius Leandro
+ferroviaria-es,197668,,4,1,,1927738,Jairo
+ferroviaria-es,197668,,5,1,,1927732,Bahia
+ferroviaria-es,197668,,6,2,,0,Ruan Palmares Santos
+ferroviaria-es,197668,,7,2,,1927745,Jorge Mendes
+ferroviaria-es,197668,,8,2,,1641847,Mariano
+ferroviaria-es,197668,,9,3,823813,999712,Moura
+ferroviaria-es,197668,,10,3,112335,177143,Kieza
+bare-rr,197606,,0,0,,1463468,Vinícius
+bare-rr,197606,,1,1,,1460463,Thiago Mina
+bare-rr,197606,,2,1,,1795998,Airton
+bare-rr,197606,,3,1,,1932820,Anderson
+bare-rr,197606,,4,1,,1932878,Marcos Sérgio
+bare-rr,197606,,5,2,,1932523,Denilson
+bare-rr,197606,,6,2,,1478311,Simioni
+bare-rr,197606,,7,2,196040,282054,Danilo Pires
+bare-rr,197606,,8,3,867520,1787215,Kauan Muniz
+bare-rr,197606,,9,3,985734,1932433,Kakim
+bare-rr,197606,,10,3,,1904041,Guilherme Barrozo
+primavera-sp,581877,,0,0,1013893,1945431,Ariel
+primavera-sp,581877,,1,1,1241834,1932520,Gabriel Tobias
+primavera-sp,581877,,2,1,1084068,1676914,Kauan
+primavera-sp,581877,,3,1,738525,1463483,Guilherme Lacerda
+primavera-sp,581877,,4,1,1096543,1495361,João Gabriel
+primavera-sp,581877,,5,2,,1932558,Kauan Cunha
+primavera-sp,581877,,6,2,,1789990,Paulo Vinícius
+primavera-sp,581877,,7,2,371997,1072252,Marco Antônio
+primavera-sp,581877,,8,2,1276397,1654380,Tiaguinho
+primavera-sp,581877,,9,3,738984,1132902,Zé Eduardo
+primavera-sp,581877,,10,3,,1736953,Alisson Silva
+america-se,197401,,0,9,,1797525,Paulo Miranda
+america-se,197401,,1,9,,1796407,Felipe Recife
+america-se,197401,,2,9,,1788118,Wesley Sandro Lima de Jesus
+america-se,197401,,3,9,,1927933,Renato
+america-se,197401,,4,9,,1796182,Danielzinho
+america-se,197401,,5,9,,1930279,Yuri Silva de Sousa
+america-se,197401,,6,9,,1930284,Guilherme de Sousa Mendes de Sant'anna
+america-se,197401,,7,9,,1132299,Wallace
+america-se,197401,,8,9,,1928464,Dudu
+america-se,197401,,9,9,,319687,Piauí
+america-se,197401,,10,9,,1928481,Antônio Carlos Silva de Souza Júnior
+independente-ap,260017,,0,9,1084234,1932813,Fábio Linderberg de Souza
+independente-ap,260017,,1,9,,1790862,Sebastião Braga Farias
+independente-ap,260017,,2,9,871743,1931972,Tavinho
+independente-ap,260017,,3,9,,1789154,Cloves
+independente-ap,260017,,4,9,,653449,João Leonardo
+independente-ap,260017,,5,9,897943,1931942,Leandro
+independente-ap,260017,,6,9,,1931945,Caio
+independente-ap,260017,,7,9,,1931958,Rafael Freitas Rosa
+independente-ap,260017,,8,9,,1931928,Doutor
+independente-ap,260017,,9,9,,174064,Aleílson
+independente-ap,260017,,10,9,,1931825,Francisco Jonatas dos Santos Pereira
+ji-parana-ro,299123,,0,0,353202,610988,Rachoni
+ji-parana-ro,299123,,1,1,1029887,1930445,Isaías Oliveira
+ji-parana-ro,299123,,2,1,,1903998,Aisley
+ji-parana-ro,299123,,3,1,979392,1931789,Fugao
+ji-parana-ro,299123,,4,1,1006809,1931748,Wembley
+ji-parana-ro,299123,,5,1,555424,1931777,Zeca
+ji-parana-ro,299123,,6,2,1095536,1931794,Patrick Felipe
+ji-parana-ro,299123,,7,2,985962,1931783,PH
+ji-parana-ro,299123,,8,3,,1122648,Juan Palacios
+ji-parana-ro,299123,,9,3,,1605955,Lelo
+ji-parana-ro,299123,,10,3,,1797007,Marquinho Bala
+pantanal-ms,197614,,0,9,346051,670780,João Lucas
+pantanal-ms,197614,,1,9,,1933332,Max Eduardo Portilho Azevedo
+pantanal-ms,197614,,2,9,,1933373,Flay
+pantanal-ms,197614,,3,9,,1933312,Firmino
+pantanal-ms,197614,,4,9,564384,1334427,Henrique
+pantanal-ms,197614,,5,9,1507564,1933377,Yan Bertuci Sakimoto de Miranda
+pantanal-ms,197614,,6,9,,727158,Filipe Alves Viana
+pantanal-ms,197614,,7,9,378711,1933313,Gabriel Pereira
+pantanal-ms,197614,,8,9,167383,780609,Mateus da Silva
+pantanal-ms,197614,,9,9,,1933331,Luiz Felipe Santos da Cruz
+pantanal-ms,197614,,10,9,,1701966,Gustavo Ribeiro
+bragantino-clube-do-para-pa,297311,,0,9,,0,Edicleber Macedo dos Santos
+bragantino-clube-do-para-pa,297311,,1,9,,1927860,Leílton Rosário dos Santos
+bragantino-clube-do-para-pa,297311,,2,9,,0,Antônio Júnior da Silva Santos
+bragantino-clube-do-para-pa,297311,,3,9,,1927850,Matheus de Souza Lima
+bragantino-clube-do-para-pa,297311,,4,9,,1927845,Leandro José Lima da Silva
+bragantino-clube-do-para-pa,297311,,5,9,,1461857,Wander
+bragantino-clube-do-para-pa,297311,,6,9,,1663667,Túlio
+bragantino-clube-do-para-pa,297311,,7,9,212559,1927825,Douglas
+bragantino-clube-do-para-pa,297311,,8,9,,1927826,Vinicius Henrique da Costa Almeida
+bragantino-clube-do-para-pa,297311,,9,9,,1927831,Ediwileme Gonçalves Assunção
+bragantino-clube-do-para-pa,297311,,10,9,,1461848,Danilo Cirqueira Domingos
+vasco-da-gama-ac,198608,,0,0,53073,171912,Bruno
+vasco-da-gama-ac,198608,,1,1,1338293,1932841,Deivyd Luiz Silva da Cunha
+vasco-da-gama-ac,198608,,2,1,1505265,1932928,Jean Lucas Silva Teixeira
+vasco-da-gama-ac,198608,,3,1,1377737,1932836,Rafael Fernando Cantanhede Marinho
+vasco-da-gama-ac,198608,,4,1,1091490,1932896,Bruno Luiz Silva da Silva
+vasco-da-gama-ac,198608,,5,1,1510443,1932918,Oderaldo José da Silva Júnior
+vasco-da-gama-ac,198608,,6,2,,1932830,Samuel Alexandre de Melo de Souza
+vasco-da-gama-ac,198608,,7,2,,1790854,Reginaldo Roxo Texeira Júnior
+vasco-da-gama-ac,198608,,8,2,,1932881,Henrry Torrez
+vasco-da-gama-ac,198608,,9,3,,1932833,Leonardo Santos Bezerra da Silva
+vasco-da-gama-ac,198608,,10,3,,1933302,Victor Hugo Ferreira da Silva
+boavista-rj,198132,5-3-2,0,11,,0,Lucas Anselmo Maticoli
+boavista-rj,198132,5-3-2,1,33,,0,Ryan Couto
+boavista-rj,198132,5-3-2,2,35,,1078931,Bruno Jesus
+boavista-rj,198132,5-3-2,3,37,,0,André Prates
+boavista-rj,198132,5-3-2,4,51,,1520610,Igor Franca
+boavista-rj,198132,5-3-2,5,59,,0,Rodolfo Tito de Moraes
+boavista-rj,198132,5-3-2,6,73,,0,Cesar Augusto Paiva Barbosa
+boavista-rj,198132,5-3-2,7,75,870406,0,Fernando Vinicius dos Santos San
+boavista-rj,198132,5-3-2,8,77,644158,1030128,Lucas Silva
+boavista-rj,198132,5-3-2,9,104,,0,Juan Batista Gonçalves Lemes
+boavista-rj,198132,5-3-2,10,106,99510,184092,Isael
+castanhal-pa,239703,,0,0,,202571,Tom
+castanhal-pa,239703,,1,1,,0,Guizão
+castanhal-pa,239703,,2,1,1036581,1934785,Matheus Félix
+castanhal-pa,239703,,3,1,873522,1797002,Magnum
+castanhal-pa,239703,,4,1,,1934789,Gustavo Braga
+castanhal-pa,239703,,5,2,873469,1935523,Marcos Paulo
+castanhal-pa,239703,,6,2,975976,1789176,Romarinho
+castanhal-pa,239703,,7,2,1514902,1934783,Ricardinho
+castanhal-pa,239703,,8,2,,1936663,Edilove
+castanhal-pa,239703,,9,3,,1936638,Arian Taperaçu
+castanhal-pa,239703,,10,3,1378908,1936639,Dudu Black
+penedense-al,197677,,0,0,,1785494,Alexandre Silva
+penedense-al,197677,,1,1,,1927711,Victor Woellner
+penedense-al,197677,,2,1,,1927710,Marcelo Santos
+penedense-al,197677,,3,1,669214,575327,Edy
+penedense-al,197677,,4,1,,1785772,Henrique Capela
+penedense-al,197677,,5,2,147440,267733,Didira
+penedense-al,197677,,6,2,,1585707,Baranhas
+penedense-al,197677,,7,2,,171926,Dinda
+penedense-al,197677,,8,3,997075,1927713,Riquelme
+penedense-al,197677,,9,3,,1462418,Everson
+penedense-al,197677,,10,3,,1785505,Victor Santos
+porto-vitoria-es,1729665,,0,0,680683,1653542,Rafael
+porto-vitoria-es,1729665,,1,1,992306,1473309,Lucas Peres
+porto-vitoria-es,1729665,,2,1,,1796043,João Simão
+porto-vitoria-es,1729665,,3,1,,498518,Thallyson
+porto-vitoria-es,1729665,,4,1,,1079231,Kellyton
+porto-vitoria-es,1729665,,5,2,1090824,1693773,Henrique Melo
+porto-vitoria-es,1729665,,6,2,,0,Renato Henrique
+porto-vitoria-es,1729665,,7,2,,1710302,Matheus Firmino
+porto-vitoria-es,1729665,,8,2,550176,1128090,Gama
+porto-vitoria-es,1729665,,9,3,663067,1017165,Pedrinho
+porto-vitoria-es,1729665,,10,3,978279,1793448,Rian Felipe
+capital-to,728046,,0,9,,1934697,Pedro Henrique Ferreira da Silva
+capital-to,728046,,1,9,,1934698,Lucas Eduardo Gomes da Silva
+capital-to,728046,,2,9,,1933899,Rian
+capital-to,728046,,3,9,,1934701,Felipe Pereira Borges
+capital-to,728046,,4,9,,1936616,Rogério Zuim
+capital-to,728046,,5,9,,1934754,Ítalo Cauã Lima de Souza
+capital-to,728046,,6,9,,1933863,João Victor Monteiro de Jesus
+capital-to,728046,,7,9,1084813,1933864,Lucas Luiz da Silva
+capital-to,728046,,8,9,,1934768,Pablo Alves da Silva
+capital-to,728046,,9,9,,1934769,Rhaillam Sousa Araújo
+capital-to,728046,,10,9,,1934752,Mateus Jeferson Nascimento da Silva
+capivariano-sp,581830,4-2-3-1,0,11,411865,703801,Guilherme
+capivariano-sp,581830,4-2-3-1,1,32,,388504,Diogo
+capivariano-sp,581830,4-2-3-1,2,34,,1460535,Octavio
+capivariano-sp,581830,4-2-3-1,3,36,,1044249,Lucas Dias
+capivariano-sp,581830,4-2-3-1,4,38,,1462430,Wendel Lomar
+capivariano-sp,581830,4-2-3-1,5,64,,1290658,Thiago Moraes
+capivariano-sp,581830,4-2-3-1,6,66,,172219,Bruno Silva
+capivariano-sp,581830,4-2-3-1,7,83,,1436043,Baianinho
+capivariano-sp,581830,4-2-3-1,8,85,,1741591,Carlos Eduardo
+capivariano-sp,581830,4-2-3-1,9,87,,676463,Ravanelli
+capivariano-sp,581830,4-2-3-1,10,115,432170,1034657,Vinicius Popo
+bangu-rj,198133,4-2-3-1,0,11,,0,Bruno Rodrigues Fernandes
+bangu-rj,198133,4-2-3-1,1,32,,0,Carlos Eduardo da Silva Carlos
+bangu-rj,198133,4-2-3-1,2,34,,0,Jhonatas Gilberto da Silva
+bangu-rj,198133,4-2-3-1,3,36,,1734318,Kaik
+bangu-rj,198133,4-2-3-1,4,38,,1227346,Ricardo Sena
+bangu-rj,198133,4-2-3-1,5,64,,0,Diogo Corrêa dos Santos
+bangu-rj,198133,4-2-3-1,6,66,,0,Pedro Henrique Florentino de Oli
+bangu-rj,198133,4-2-3-1,7,83,,0,Douglas de Jesus Lima
+bangu-rj,198133,4-2-3-1,8,85,,1708895,Walber
+bangu-rj,198133,4-2-3-1,9,87,,510696,Luizinho
+bangu-rj,198133,4-2-3-1,10,115,769323,1896729,Lucas Sibito
+north-mg,1860734,3-4-2-1,0,11,,0,Rafael Magrão
+north-mg,1860734,3-4-2-1,1,33,,1242107,Diego Guerra
+north-mg,1860734,3-4-2-1,2,35,,1461823,Léo Gobo
+north-mg,1860734,3-4-2-1,3,37,,789122,Bruno Bispo
+north-mg,1860734,3-4-2-1,4,62,,1056178,Lucas Mota
+north-mg,1860734,3-4-2-1,5,64,,143510,Guilherme Camacho
+north-mg,1860734,3-4-2-1,6,66,,844093,Evanderson
+north-mg,1860734,3-4-2-1,7,68,,0,Rennan Fonseca Siqueira
+north-mg,1860734,3-4-2-1,8,84,,470572,Bruno Lopes
+north-mg,1860734,3-4-2-1,9,86,,756593,Clayton
+north-mg,1860734,3-4-2-1,10,105,,1796045,Gabriel Rossetto
+itabirito-mg,1593280,4-2-3-1,0,11,,1344691,Vinicius
+itabirito-mg,1593280,4-2-3-1,1,32,,0,Gleison Ferreira de Oliveira And
+itabirito-mg,1593280,4-2-3-1,2,34,,0,Wallace
+itabirito-mg,1593280,4-2-3-1,3,36,,1350417,Felipe Camargo
+itabirito-mg,1593280,4-2-3-1,4,38,,322667,Bryan Garcia
+itabirito-mg,1593280,4-2-3-1,5,64,,1460504,Pedro Rodrigues
+itabirito-mg,1593280,4-2-3-1,6,66,,130523,Serginho
+itabirito-mg,1593280,4-2-3-1,7,83,,1696046,Matheus Galdino
+itabirito-mg,1593280,4-2-3-1,8,85,1418000,0,Guilherme Batista Givigi
+itabirito-mg,1593280,4-2-3-1,9,87,,1244427,Luis Araujo
+itabirito-mg,1593280,4-2-3-1,10,115,,1137294,Romario
+monsoon-rs,1698776,4-2-3-1,0,11,,0,Igor Pavan
+monsoon-rs,1698776,4-2-3-1,1,32,,0,Gabriel de Oliveira de Camargo
+monsoon-rs,1698776,4-2-3-1,2,34,978145,0,Yago Alves Santos
+monsoon-rs,1698776,4-2-3-1,3,36,,1043782,Ricardo Thalheimer
+monsoon-rs,1698776,4-2-3-1,4,38,,202217,Pará
+monsoon-rs,1698776,4-2-3-1,5,64,753792,1785149,Vinícius Garcia
+monsoon-rs,1698776,4-2-3-1,6,66,,0,Léo Hanna
+monsoon-rs,1698776,4-2-3-1,7,83,,0,Matheus Cândido
+monsoon-rs,1698776,4-2-3-1,8,85,,1440063,Luan Ferreira
+monsoon-rs,1698776,4-2-3-1,9,87,,556465,Caio Rangel
+monsoon-rs,1698776,4-2-3-1,10,115,,1031361,Fabinho
+avenida-rs,197888,4-1-4-1,0,11,,1737563,Ronaldo
+avenida-rs,197888,4-1-4-1,1,32,,0,Cristian Lessa de Freitas
+avenida-rs,197888,4-1-4-1,2,34,,0,Rodrigo Milanez
+avenida-rs,197888,4-1-4-1,3,36,,1653974,Matheus Santos
+avenida-rs,197888,4-1-4-1,4,38,,178039,Vinícius
+avenida-rs,197888,4-1-4-1,5,65,,1608422,Anderson Recife
+avenida-rs,197888,4-1-4-1,6,82,,1451140,Xandy
+avenida-rs,197888,4-1-4-1,7,84,724826,0,Emerson Júnior Rocha dos Santos
+avenida-rs,197888,4-1-4-1,8,86,,0,Ranisson
+avenida-rs,197888,4-1-4-1,9,88,,1912145,Adryel
+avenida-rs,197888,4-1-4-1,10,115,,1790918,Wellisson
+inter-de-santa-maria-rs,197884,4-2-3-1,0,11,,1660195,Iago Hass
+inter-de-santa-maria-rs,197884,4-2-3-1,1,32,,0,Gerethes Cleucir Souza da Silva
+inter-de-santa-maria-rs,197884,4-2-3-1,2,34,,0,Júlio Gabriel Simas Vieira
+inter-de-santa-maria-rs,197884,4-2-3-1,3,36,,0,Marcus Vinícius Lima da Silva
+inter-de-santa-maria-rs,197884,4-2-3-1,4,38,,0,Wanderson Ronha Ferreira Porto
+inter-de-santa-maria-rs,197884,4-2-3-1,5,64,,0,Marco Antônio Freitas Gonçalves 
+inter-de-santa-maria-rs,197884,4-2-3-1,6,66,,1123289,Mossoró
+inter-de-santa-maria-rs,197884,4-2-3-1,7,83,,185864,Wilson Júnior
+inter-de-santa-maria-rs,197884,4-2-3-1,8,85,,0,Marcos Antonio da Silva
+inter-de-santa-maria-rs,197884,4-2-3-1,9,87,,1444045,João Felipe
+inter-de-santa-maria-rs,197884,4-2-3-1,10,115,,0,Inácio
+novo-hamburgo-rs,197883,4-2-3-1,0,11,,0,Omar Constante Reis Santos
+novo-hamburgo-rs,197883,4-2-3-1,1,32,477461,811217,Guilherme Mantuan
+novo-hamburgo-rs,197883,4-2-3-1,2,34,,816011,Romércio
+novo-hamburgo-rs,197883,4-2-3-1,3,36,665559,1462419,João Marcus
+novo-hamburgo-rs,197883,4-2-3-1,4,38,,1904766,Josue
+novo-hamburgo-rs,197883,4-2-3-1,5,64,,1385960,Carlos Maia
+novo-hamburgo-rs,197883,4-2-3-1,6,66,,0,Anderson Omar Lima da Rosa
+novo-hamburgo-rs,197883,4-2-3-1,7,83,,1221047,Rone
+novo-hamburgo-rs,197883,4-2-3-1,8,85,179373,261964,Leandro
+novo-hamburgo-rs,197883,4-2-3-1,9,87,,0,Allison Patrick
+novo-hamburgo-rs,197883,4-2-3-1,10,115,,0,Luam Henrique Pimentel Quintas
+jequie-ba,584242,,0,0,,265269,Fabio Szymonek
+jequie-ba,584242,,1,1,,1614740,Gabriel Carioca
+jequie-ba,584242,,2,1,,1641853,Caique Baiano
+jequie-ba,584242,,3,1,,1448001,William Mineiro
+jequie-ba,584242,,4,9,,0,Carlos Henrique Nascimento Santo
+jequie-ba,584242,,5,9,,0,Alessandro Scheppa
+jequie-ba,584242,,6,9,,0,Sérgio Iure Paulino dos Santos
+jequie-ba,584242,,7,9,,0,Jô
+jequie-ba,584242,,8,9,,0,Tiago Souza de Lima
+jequie-ba,584242,,9,9,,0,Luiz Fernando Macedo dos Santos
+jequie-ba,584242,,10,9,,0,Walfrido Lourenço Alves de Araúj
+barcelona-ba,1322670,,0,0,,1467539,Pedro Antonio
+barcelona-ba,1322670,,1,0,,1235688,Kaique
+barcelona-ba,1322670,,2,9,1400444,0,Carlos Richard Silva Ferreira
+barcelona-ba,1322670,,3,9,,0,João Gabriel Ramos de Souza
+barcelona-ba,1322670,,4,9,,0,Johnatan Lucas da Silva Vital
+barcelona-ba,1322670,,5,9,,0,Gianlucas Marques Santos
+barcelona-ba,1322670,,6,9,,0,Matheus Guimarães do Nascimento
+barcelona-ba,1322670,,7,9,,0,Elivélton Semeão da Silva
+barcelona-ba,1322670,,8,9,,0,Rhuan Allan Dourado Ribeiro
+barcelona-ba,1322670,,9,9,,0,Jeferson Neves Pereira
+barcelona-ba,1322670,,10,9,866995,0,Bremer Litierre Correia de Carva
+galicia-ba,512258,,0,2,,1608608,Rafael Mineiro
+galicia-ba,512258,,1,9,1501583,0,Ivisson Ian Pita Conceição
+galicia-ba,512258,,2,9,,0,Luiz Carlos Conceição Silva Filh
+galicia-ba,512258,,3,9,675046,0,Mayron
+galicia-ba,512258,,4,9,,0,Tiago dos Santos Moreira
+galicia-ba,512258,,5,9,,0,João Gabriel dos Santos Sa Barre
+galicia-ba,512258,,6,9,,0,Gabriel Vieira de Oliveira
+galicia-ba,512258,,7,9,192851,0,Alex Santos da Vitória
+galicia-ba,512258,,8,9,,0,João William Alves de Jesus
+galicia-ba,512258,,9,9,,0,Rafael Puridade dos Santos
+galicia-ba,512258,,10,9,,0,Lucas Araújo Santos
+bahia-de-feira-ba,197707,,0,0,,265687,Milton
+bahia-de-feira-ba,197707,,1,1,,1282065,Eduardo
+bahia-de-feira-ba,197707,,2,2,,750059,Wellington Cezar
+bahia-de-feira-ba,197707,,3,9,,0,Arthur da Silva Martins
+bahia-de-feira-ba,197707,,4,9,,0,Marquinho Carioca
+bahia-de-feira-ba,197707,,5,9,214069,0,Pedrão
+bahia-de-feira-ba,197707,,6,9,,0,José Luiz dos Santos Júnior
+bahia-de-feira-ba,197707,,7,9,,0,Alex Cazumba
+bahia-de-feira-ba,197707,,8,9,,0,Ronan Nunes Freitas da Cruz
+bahia-de-feira-ba,197707,,9,9,150852,0,Peterson
+bahia-de-feira-ba,197707,,10,9,,0,José Luciano da Silva Martins
+jataiense-go,1232706,,0,1,,150769,Pedro Botelho
+jataiense-go,1232706,,1,1,,1257283,Kelvin
+jataiense-go,1232706,,2,2,,1641690,Emersonn Bastos
+jataiense-go,1232706,,3,9,,0,Iury Marley Silva Dias
+jataiense-go,1232706,,4,9,,0,Marcos Luiz Alves Tibúrcio Filho
+jataiense-go,1232706,,5,9,1225158,0,Luis
+jataiense-go,1232706,,6,9,,0,Assis
+jataiense-go,1232706,,7,9,,0,Bruno do Valle
+jataiense-go,1232706,,8,9,,0,Paulo Vinicius Silva Oliveira
+jataiense-go,1232706,,9,9,,0,Gilvan Ferreira dos Santos
+jataiense-go,1232706,,10,9,,0,Richard Cossoniche da Silva
+anapolina-go,197770,,0,0,1093878,1209296,Jean
+anapolina-go,197770,,1,1,333198,543973,Donato
+anapolina-go,197770,,2,2,,1653480,Chaves Matheus
+anapolina-go,197770,,3,9,,0,Wadson Victor Nunes Damasceno
+anapolina-go,197770,,4,9,,0,Wesley Pinheiro Santos
+anapolina-go,197770,,5,9,,0,Erickson Iury de Oliveira Lima
+anapolina-go,197770,,6,9,,0,Felipe Alysson Batista da Silva
+anapolina-go,197770,,7,9,,0,Carlos Henrique dos Santos Costa
+anapolina-go,197770,,8,9,,0,Cesinha
+anapolina-go,197770,,9,9,,0,Eduardo dos Santos
+anapolina-go,197770,,10,9,,0,Baggio
+centro-oeste-go,1860737,,0,0,637993,994440,Murillo
+centro-oeste-go,1860737,,1,1,77624,141708,Moacir
+centro-oeste-go,1860737,,2,1,,1460549,Eliel
+centro-oeste-go,1860737,,3,2,,1462835,Romarinho
+centro-oeste-go,1860737,,4,2,,1214102,Indio
+centro-oeste-go,1860737,,5,3,,500479,Fernando Viana
+centro-oeste-go,1860737,,6,9,,0,Arlan de Santana Barros
+centro-oeste-go,1860737,,7,9,,0,Gustavo Henrique Ribeiro de Mora
+centro-oeste-go,1860737,,8,9,,0,Lucas da Silva Xavier
+centro-oeste-go,1860737,,9,9,,0,Felipe Correa Costa
+centro-oeste-go,1860737,,10,9,,0,Carlos Victor Pereira E Pereira

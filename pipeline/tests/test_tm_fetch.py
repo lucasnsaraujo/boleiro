@@ -133,6 +133,18 @@ class FetcherTest(unittest.TestCase):
                     pass
         self.assertEqual(len(network.urls), tm_fetch.BLOCKED_IN_A_ROW)
 
+    def test_asks_another_site_given_as_its_base_and_stops_when_that_site_keeps_refusing(self) -> None:
+        network = Recorder(Answer(200, b"{}"), *[Answer(429)] * tm_fetch.BLOCKED_IN_A_ROW)
+        pages = tm_fetch.Fetcher(self.cache, delay=2, log=lambda _: None, get=network.get, sleep=network.sleep, base="https://www.fotmob.com")
+        self.assertEqual(pages.page("/api/data/teams?id=9770", max_age_days=7).html, "{}")
+        self.assertEqual(network.urls, ["https://www.fotmob.com/api/data/teams?id=9770"])
+        with self.assertRaises(tm_fetch.Blocked):
+            for path in ("/a", "/b"):
+                try:
+                    pages.page(path, max_age_days=7)
+                except tm_fetch.FetchError:
+                    pass
+
     def test_a_good_answer_resets_the_count_of_refusals(self) -> None:
         refusals = [Answer(429)] * (tm_fetch.BLOCKED_IN_A_ROW - 1)
         network = Recorder(*refusals, Answer(200), *refusals, Answer(200))

@@ -1,5 +1,6 @@
 import type { Club, State } from "@boleiro/data/clubs";
 import type { Division } from "@boleiro/data/players";
+import type { Formation } from "../engine/formations.js";
 import type { Player } from "../engine/match.js";
 import type { Board } from "./coach/boardExpectations.js";
 import type { Coach } from "./coach/coach.js";
@@ -11,6 +12,9 @@ import type { TransferMarket } from "./transfers/transferMarket.js";
 import type { World } from "./world/world.js";
 
 export type IsoDate = string;
+
+/** A club's formation and the players it starts when they are fit. */
+export type UsualLineup = { formation: Formation; starters: string[] };
 
 /** `wage` is the monthly wage in BRL; the contract runs to the end of `contractUntil`. */
 export type SimPlayer = Player & { id: string; clubId: string; wage: number; contractUntil: IsoDate } & PlayerProfile;
@@ -170,6 +174,11 @@ export type GameState = {
   /** Champions, records, idols and the coach's career, kept across seasons. */
   history: History;
   market: TransferMarket;
+  /**
+   * Each club's usual formation and starters, from its last real match when the data has it; the AI
+   * coach picks in that formation. Saves from before positions have none until loaded (withPackPositions).
+   */
+  usualLineups?: Record<string, UsualLineup>;
   /** Countries played result-only, outside the full tier; a game of Brazil alone has none. */
   world?: World;
 };

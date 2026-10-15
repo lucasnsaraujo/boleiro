@@ -16,13 +16,13 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-async function startGame() {
+async function startGame(seed = 7) {
   const { engine: raw, close } = inMemoryEngine();
   closers.push(close);
   const slots = indexedDbSlots(new IDBFactory());
   const game: CurrentGameRef = { current: { slotId: "slot-1", coachName: "Tite" } };
   const engine = withAutosave(raw, slots, game);
-  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  await engine.apply({ type: "newGame", seed, choices: { coachClubId: "bahia-ba" } });
   const { calendar } = await engine.read(["calendar"]);
   const firstMatchDay = calendar.stateChampionshipDates[0] ?? "";
   return { engine, slots, game, daysToFirstMatch: Number(firstMatchDay.slice(8, 10)) - 1 };
@@ -197,7 +197,8 @@ test("withdrawing a request is autosaved, so it stays off the desk after a reloa
 });
 
 test("closing a turning point is autosaved, so its screen does not come back after a reload", async () => {
-  const { engine, slots } = await startGame();
+  // A seed whose season the coach sees through to its end, so the point waiting is the season's review.
+  const { engine, slots } = await startGame(1);
   await engine.apply({ type: "advance", days: Array.from({ length: 365 }, () => ({})) });
   expect(await engine.turningPoint()).toMatchObject({ kind: "seasonEnd" });
   await engine.apply({ type: "closeTurningPoint" });

@@ -260,6 +260,7 @@ export function Round() {
   if (preMatch) {
     const { plan, clubs } = preMatch;
     const vs = `${clubs[plan.homeId]?.shortName ?? ""} x ${clubs[plan.awayId]?.shortName ?? ""}`;
+    const opponent = clubs[plan.homeId === plan.clubId ? plan.awayId : plan.homeId];
     return (
       <LineupSheet
         sub={`${vs} · ${plan.label}`}
@@ -267,12 +268,13 @@ export function Round() {
         lineup={plan.lineup}
         tactics={plan.tactics}
         mode={{ kind: "preMatch" }}
-        colours={clubs[plan.clubId]?.colours ?? NO_COLOURS}
         doneLabel="Começar a rodada"
         isBusy={isBusy}
         error={error}
         onDone={(sheet) => void kickOff(sheet)}
         onLeave={() => navigate("/hub")}
+        onPickTeam={async (formation) => (await engine.matchDayPlan(formation)).lineup}
+        {...(opponent ? { opponent: { club: opponent, formation: plan.opponentFormation } } : {})}
       />
     );
   }
@@ -286,7 +288,6 @@ export function Round() {
   const coach = round.coach;
   const coachMatch = round.matches.find((m) => m.fixtureId === coach?.fixtureId);
   const limits = coach && coachMatch && round.coachClubId ? liveLimits(coach, coachMatch.events, round.coachClubId, minute) : null;
-  const ownColours = round.coachClubId ? round.clubs[round.coachClubId]?.colours : undefined;
   const isFinished = result !== null;
   // Rows Só meus jogos leaves out are hidden, not dropped, so they keep their state while out of sight.
   const groups = round.competitions
@@ -369,7 +370,6 @@ export function Round() {
           lineup={limits.onPitch}
           tactics={coach.tactics}
           mode={{ kind: "live", ...limits }}
-          colours={ownColours ?? NO_COLOURS}
           doneLabel="Voltar ao jogo"
           isBusy={isBusy}
           error={error}

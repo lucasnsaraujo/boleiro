@@ -91,6 +91,11 @@ export function bringOn(sheet: Sheet, mode: SheetMode, player: SquadPlayer): She
   return { lineup, tactics, subs, picked: null, history: remember(sheet) };
 }
 
+/** Before kick-off, the assistant's eleven in place of the coach's (Escalar time); undo brings the coach's back. */
+export function pickTeam(sheet: Sheet, lineup: readonly string[]): Sheet {
+  return { ...sheet, lineup: [...lineup], picked: null, history: remember(sheet) };
+}
+
 export function changeTactics(sheet: Sheet, change: Partial<Tactics>): Sheet {
   return { ...sheet, tactics: { ...sheet.tactics, ...change }, history: remember(sheet) };
 }

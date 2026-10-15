@@ -8,7 +8,10 @@ import { countCards, drawCards, sendOffMinutes } from "./discipline/drawCards.js
 import type { Fixture, GameState } from "./gameState.js";
 import { loadNewGame } from "./loadNewGame.js";
 import { isInjured } from "./players/isInjured.js";
+import { DEFAULT_TACTICS } from "./coach/tactics.js";
+import { engineTeam } from "./players/matchSetup.js";
 import { pickMatchLineup } from "./players/pickMatchLineup.js";
+import { formationOf, usualStartersOf } from "./players/usualLineups.js";
 
 const start = loadNewGame(11, { coachClubId: "flamengo-rj" });
 
@@ -48,10 +51,13 @@ describe("advanceDay", () => {
     const first = before.fixtures.find((f) => f.date === before.date);
     if (!first) throw new Error(`no Série ${division} game today`);
     const squad = (clubId: string) => Object.values(before.players).filter((p) => p.clubId === clubId);
-    const team = (clubId: string) => ({ name: clubId, players: squad(clubId) });
     const context = { date: before.date, pitch: before.clubs[first.homeId]?.pitch ?? "natural" };
+    // Each AI club fields its usual formation, placed by position.
+    const formation = (clubId: string) => formationOf(before, clubId, squad(clubId));
+    const eleven = (clubId: string) => pickMatchLineup(squad(clubId), context, formation(clubId), usualStartersOf(before, clubId));
+    const team = (clubId: string) => engineTeam(clubId, eleven(clubId), (p) => p.strength, { ...DEFAULT_TACTICS, formation: formation(clubId) });
     const random = randomStream(before.rngState).next;
-    const bookings = drawCards(pickMatchLineup(squad(first.homeId), context), pickMatchLineup(squad(first.awayId), context), CARD_RATES[division], random);
+    const bookings = drawCards(eleven(first.homeId), eleven(first.awayId), CARD_RATES[division], random);
     const goals = simulateMatch(team(first.homeId), team(first.awayId), random, paramsForDivision(division), sendOffMinutes(bookings, first.homeId));
     const expected = { ...goals, cards: countCards(bookings, first.homeId) };
     const played = advanceDay(before, {}).state.fixtures.find((f) => f.id === first.id);
@@ -80,7 +86,7 @@ describe("advanceDay", () => {
   it("plays the coach's chosen lineup instead of the automatic one", () => {
     const firstDate = start.calendar.leagueDates.A[0] ?? "";
     const before = advanceTo(start, firstDate);
-    const squad = Object.values(before.players).filter((p) => p.clubId === "flamengo-rj");
+    const squad = Object.values(before.players).filter((p) => p.clubId === "flamengo-rj" && !isInjured(p, firstDate));
     const byStrength = [...squad].sort((a, b) => a.strength - b.strength);
     const weakestKeeper = byStrength.filter((p) => p.group === "GK").slice(0, 1);
     const weakest = [...weakestKeeper, ...byStrength.filter((p) => p.group !== "GK").slice(0, 10)].map((p) => p.id);
