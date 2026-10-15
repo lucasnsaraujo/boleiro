@@ -7,6 +7,7 @@ import {
   competitionStages,
   defaultStage,
   groupTables,
+  knockoutBracket,
   knockoutTies,
   openingCompetitionId,
   playedRounds,
@@ -323,5 +324,17 @@ describe("CONMEBOL's cups and South America's leagues", () => {
       current: { ...flamengo.history.current, goals: { libertadores: { "tm-209#3": 2 } } },
     };
     expect(topScorers(libertadores, { history, players: flamengo.players }, 5)).toEqual([{ playerId: "tm-209#3", name: "Franco Armani", clubId: "tm-209", goals: 2 }]);
+  });
+
+  test("the Libertadores bracket runs from the round of 16 to the final, with empty places for the rounds not drawn yet", () => {
+    const sixteen = Array.from({ length: 16 }, (_, i) => `c${i}`);
+    const ties = Array.from({ length: 8 }, (_, i): [string, string] => [sixteen[2 * i] ?? "", sixteen[2 * i + 1] ?? ""]);
+    const knockout = { kind: "knockout" as const, ties, dates: ["2026-08-11", "2026-08-18"] };
+    const drawn: ContinentalCompetition = { ...libertadores, stages: [...libertadores.stages, knockout, knockout, { kind: "groups", groups: [], legs: 2, dates: [] }, knockout] };
+    const bracket = knockoutBracket(drawn, []);
+    expect(bracket.map((round) => [round.name, round.ties.length])).toEqual([["Oitavas", 8], ["Quartas", 4], ["Semifinal", 2], ["Final", 1]]);
+    expect(bracket[0]?.ties[3]?.clubIds).toEqual(["c6", "c7"]);
+    expect(bracket[1]?.ties.every((tie) => tie === null)).toBe(true);
+    expect(knockoutBracket(libertadores, [])).toEqual([]);
   });
 });

@@ -134,6 +134,21 @@ test("the Libertadores tab shows its first stage's ties between foreign clubs by
   expect(within(ties).queryByText(/^tm-/)).toBeNull();
 });
 
+test("from the round of 16 the Libertadores tab shows the whole bracket, a group table and the coach's next tie", async () => {
+  const given = await services();
+  const { date } = await given.engine.read(["date"]);
+  const days = Math.round((Date.parse("2026-08-12") - Date.parse(date)) / 86_400_000);
+  await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+  openTables(given);
+  await userEvent.click(await screen.findByRole("tab", { name: "Libertadores" }));
+  const stages = screen.getByRole("group", { name: "Fases" });
+  expect(within(stages).getByRole("button", { name: "Oitavas" }).getAttribute("aria-pressed")).toBe("true");
+  expect(screen.getByRole("group", { name: "Libertadores, mata-mata" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Final" })).toBeTruthy();
+  expect(screen.getByRole("table", { name: /^Grupo [A-H]$/ }).querySelectorAll("tbody tr")).toHaveLength(4);
+  expect(screen.getByRole("region", { name: "Seu clube" })).toBeTruthy();
+});
+
 test("a table before its first round has no round to step through", async () => {
   openTables(await services());
   await userEvent.click(await screen.findByRole("tab", { name: "Série A" }));

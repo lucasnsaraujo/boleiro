@@ -273,6 +273,11 @@ export function groupTables(
       })),
     };
   });
+  return { groups, zones: zoneKeys(groups, advanceLabel) };
+}
+
+/** The zones the tables' rows fall in, each once, in the zones' order; `advanceLabel` names where "advance" leads. */
+export function zoneKeys(groups: readonly GroupTable[], advanceLabel = ""): ZoneKey[] {
   const seen = new Set<ZoneKind>();
   const zones: ZoneKey[] = [];
   for (const row of groups.flatMap((g) => g.rows)) {
@@ -280,7 +285,7 @@ export function groupTables(
     seen.add(row.zone);
     zones.push({ zone: row.zone, label: row.zone === "advance" ? advanceLabel : ZONE_LABELS[row.zone] });
   }
-  return { groups, zones: zones.sort((a, b) => ZONE_ORDER.indexOf(a.zone) - ZONE_ORDER.indexOf(b.zone)) };
+  return zones.sort((a, b) => ZONE_ORDER.indexOf(a.zone) - ZONE_ORDER.indexOf(b.zone));
 }
 
 // Série D's semi-final stage lists the two semi-finals first, then the quarter-final losers' playoffs (packages/engine/src/sim/leagueFormats.ts).
@@ -366,5 +371,25 @@ export function worldLeagueTables(state: Pick<GameState, "world">, countryId: st
       label: structure?.name ?? league.id,
       rows: order.map((row, i) => ({ ...row, position: i + 1, zone: zoneOf(row.clubId), form: recentForm(row.clubId, fixtures), movement: 0 })),
     };
+  });
+}
+
+/** A knockout round of a bracket: a tie per place, null where the round is not drawn yet. */
+export type BracketRound = { stage: number; name: string; dates: string[]; ties: (TieView | null)[] };
+
+/**
+ * A continental cup's bracket from its round of 16 to its final once the round of 16 is drawn, each
+ * round half the ties of the one before; empty before then and for any other competition.
+ */
+export function knockoutBracket(competition: Competition, fixtures: readonly Fixture[]): BracketRound[] {
+  if (competition.kind !== "continental") return [];
+  const stages = CUP_STAGES[competition.cup];
+  const first = stages.findIndex((stage) => stage.name === "round-of-16");
+  if (first < 0 || competition.stages.length <= first) return [];
+  return stages.slice(first).map((stage, i) => {
+    const index = first + i;
+    const drawn = knockoutTies(competition, index, fixtures);
+    const places = 8 / 2 ** i;
+    return { stage: index, name: CONTINENTAL_STAGE_NAMES[stage.name] ?? stage.name, dates: competition.stageDates[index] ?? [], ties: Array.from({ length: places }, (_, tie) => drawn[tie] ?? null) };
   });
 }
