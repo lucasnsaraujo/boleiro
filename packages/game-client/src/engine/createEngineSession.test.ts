@@ -12,6 +12,8 @@ import { createEngineSession, type CommandResults, type CommandType, type GameCo
 
 const CLUB = "flamengo-rj";
 const SEED = 7;
+// The season test needs a coach the board keeps all year; on seed 7 he is sacked in March since bids wait for his answer.
+const SEASON_SEED = 8;
 // Enough steps for a season of play-ons and match days; a stuck loop fails instead of hanging.
 const MAX_STEPS = 400;
 
@@ -65,7 +67,7 @@ function ownPlayers(players: Record<string, SimPlayer>): SimPlayer[] {
 function playSeason(): Season {
   const recorded = recordedSession();
   const { session, apply } = recorded;
-  apply({ type: "newGame", seed: SEED, choices: { coachClubId: CLUB } });
+  apply({ type: "newGame", seed: SEASON_SEED, choices: { coachClubId: CLUB } });
 
   const { players, clubs, market } = session.read(["players", "clubs", "market"]);
   const signing = Object.values(players)
