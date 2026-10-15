@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "The main window: core APIs, plus what a window whose title bar is the game's own header needs (drag, minimise, maximise, close, title, theme). Saves go through the app's own slot commands.",
+  "description": "The main window: core APIs, plus what a window whose title bar is the game's own header needs (drag, minimise, maximise, close, title, theme, background colour). Saves go through the app's own slot commands.",
   "windows": ["main"],
   "permissions": [
     "core:default",
@@ -10,6 +10,8 @@
     "core:window:allow-toggle-maximize",
     "core:window:allow-close",
     "core:window:allow-set-title",
-    "core:window:allow-set-theme"
+    "core:window:allow-set-theme",
+    "core:window:allow-set-background-color",
+    "core:webview:allow-set-webview-background-color"
   ]
 }

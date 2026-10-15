@@ -109,29 +109,7 @@
   font-size: 12.5px;
 }
 
-.market-filters select,
-.market-filters input {
-  field-sizing: content;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-weight: 800;
-  color: var(--ink);
-  outline: 0;
-}
-
-.market-filters input[type="number"] {
-  width: 34px;
-  text-align: center;
-  appearance: textfield;
-}
-
-.market-filters input::placeholder {
-  color: var(--mute);
-  font-weight: 600;
-}
-
-.market-filters .field:focus-within {
+.market-filters .range:focus-within {
   box-shadow: inset 0 0 0 2px var(--ink);
 }
 
@@ -290,6 +268,13 @@
   align-items: center;
   gap: 7px;
   font-stretch: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.market-club:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .market-f {
@@ -1137,18 +1122,11 @@
   gap: 6px;
 }
 
-.market-add select {
+.market-add-pick {
   flex: 1;
   min-width: 0;
   height: 30px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: var(--r-pill);
-  background: var(--paper);
-  box-shadow: inset 0 0 0 1px var(--line-2);
-  font: inherit;
   font-size: 12.5px;
-  color: var(--ink);
 }
 
 .market-auction {

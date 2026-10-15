@@ -30,7 +30,7 @@ export const NAV = [
   { id: "estadio", label: "Estádio", icon: "ticket", key: "F3", path: "/stadium", paths: [] },
   { id: "base", label: "Base", icon: "plant", key: "F4", path: null, paths: [] },
   { id: "times", label: "Times", icon: "t-shirt", key: "F5", path: "/hub", paths: ["/finances", "/squad"] },
-  { id: "busca", label: "Busca", icon: "magnifying-glass", key: "F6", path: "/market", paths: [] },
+  { id: "busca", label: "Busca", icon: "magnifying-glass", key: "F6", path: "/market", paths: ["/club"] },
   { id: "tecnicos", label: "Técnicos", icon: "chalkboard-teacher", key: "F7", path: "/offers", paths: [] },
   { id: "historico", label: "Histórico", icon: "book-open-text", key: "F8", path: "/history", paths: [] },
   { id: "opcoes", label: "Opções", icon: "gear-six", key: "F9", path: "/options", paths: ["/saves"] },

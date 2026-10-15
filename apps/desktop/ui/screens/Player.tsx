@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
+import { Select } from "../controls/Select.js";
 import { useServices } from "../app/ServicesContext.js";
 import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
@@ -133,10 +134,10 @@ export function Player() {
           {status && <p className={`player-status ${card.status?.kind ?? ""}`}>{status}</p>}
         </div>
         {club && (
-          <div className="player-club">
+          <Link className="player-club" to={`/club/${club.id}`} aria-label={`Ver o elenco do ${club.shortName}`}>
             <Crest club={club} size={40} />
             <ClubPlate club={club} size="row" />
-          </div>
+          </Link>
         )}
       </section>
       <div className="player-facts">
@@ -263,13 +264,7 @@ function ContractActions({ state, playerId, name, desk, onAsk, onWithdraw }: Act
             </button>
             <label>
               por
-              <select aria-label="Anos" value={years} onChange={(e) => setYears(Number(e.target.value))}>
-                {RENEWAL_YEARS.map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
+              <Select label="Anos" caption={null} value={String(years)} options={RENEWAL_YEARS.map((n) => ({ value: String(n), label: String(n) }))} onChange={(value) => setYears(Number(value))} />
               {years === 1 ? "ano" : "anos"}
             </label>
           </span>
