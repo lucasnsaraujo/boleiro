@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BANK_LOAN_RATE_PER_MONTH, BANK_LOAN_TERMS, bankLoanLimit, bankLoanQuote, type BankLoanAnswer, type BankLoanRefusal } from "@boleiro/engine/sim/finances/bankLoan";
+import { BANK_LOAN_MIN_AMOUNT, BANK_LOAN_RATE_PER_MONTH, BANK_LOAN_TERMS, bankLoanLimit, bankLoanQuote, type BankLoanAnswer, type BankLoanRefusal } from "@boleiro/engine/sim/finances/bankLoan";
 import type { ClubFinance } from "@boleiro/engine/sim/gameState";
 import { formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
@@ -26,9 +26,9 @@ type Props = {
 /** The bank's offer on the finances screen: its limit and terms, or the loan the club is paying. */
 export function BankLoanCard({ finance, isBusy, onTake, onRepay }: Props) {
   const limit = bankLoanLimit(finance);
-  const step = roundStep(limit / 2);
+  const step = Math.max(BANK_LOAN_MIN_AMOUNT, roundStep(limit / 2));
   const [isOpen, setOpen] = useState(false);
-  const [amount, setAmount] = useState(() => Math.max(step, Math.round(limit / 2 / step) * step));
+  const [amount, setAmount] = useState(() => Math.max(BANK_LOAN_MIN_AMOUNT, Math.round(limit / 2 / step) * step));
   const [months, setMonths] = useState<number>(24);
   const [refusal, setRefusal] = useState<string | null>(null);
   const loan = finance.bankLoan;
@@ -93,10 +93,14 @@ export function BankLoanCard({ finance, isBusy, onTake, onRepay }: Props) {
         </div>
       ) : (
         <div className="fin-bank-form">
-          <MoneyStepper label="Valor" value={Math.min(amount, limit)} step={step} hint={`de até ${formatMoney(limit)}`} disabled={isBusy} onChange={(next) => setAmount(Math.min(limit, next))} />
+          <MoneyStepper label="Valor" value={Math.min(amount, limit)} step={step} min={Math.min(limit, BANK_LOAN_MIN_AMOUNT)} hint={`de até ${formatMoney(limit)}`} disabled={isBusy} onChange={(next) => setAmount(Math.min(limit, next))} />
           <div className="seg fin-terms" role="radiogroup" aria-label="Prazo">
             {BANK_LOAN_TERMS.map((term) => (
-              <span key={term} role="radio" aria-checked={months === term} tabIndex={0} className={months === term ? "on" : undefined} onClick={() => setMonths(term)} onKeyDown={(event) => (event.key === "Enter" || event.key === " ") && setMonths(term)}>
+              <span key={term} role="radio" aria-checked={months === term} tabIndex={0} className={months === term ? "on" : undefined} onClick={() => setMonths(term)} onKeyDown={(event) => {
+                  if (event.key !== "Enter" && event.key !== " ") return;
+                  event.preventDefault();
+                  setMonths(term);
+                }}>
                 {term}x
               </span>
             ))}

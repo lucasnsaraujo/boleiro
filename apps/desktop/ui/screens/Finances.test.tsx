@@ -87,12 +87,13 @@ test("a bank loan taken on the screen puts its money in the cash and shows what 
   await userEvent.click(within(bank).getByRole("button", { name: "Ver condições" }));
   await userEvent.click(within(bank).getByRole("radio", { name: "24x" }));
   await userEvent.click(within(bank).getByRole("button", { name: "Pegar empréstimo" }));
-  expect(await within(bank).findByText(/^24 parcelas de R\$/)).toBeTruthy();
+  await screen.findByRole("button", { name: "Quitar" });
+  const running = screen.getByRole("region", { name: "Empréstimo do banco" });
   const { finances } = await engine.read(["finances"]);
   const loan = finances["sport-pe"]?.bankLoan;
   if (!loan) throw new Error("no loan taken");
-  expect(within(bank).getByText(formatMoney(loan.balance))).toBeTruthy();
-  expect(within(bank).getByRole("button", { name: "Quitar" })).toBeTruthy();
+  expect(within(running).getByText(/^24 parcelas de R\$/)).toBeTruthy();
+  expect(running.textContent).toContain(`${formatMoney(loan.balance)}a pagar`);
 });
 
 test("a friendly booked on the screen is listed with its date and fee", async () => {

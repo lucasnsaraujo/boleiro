@@ -207,6 +207,7 @@ export function Finances() {
           <h2 id="offers-title">Propostas</h2>
           <FriendliesCard state={state} isBusy={isBusy} onBook={(opponentId, date, isHome) => run(() => engine.apply({ type: "bookFriendly", opponentId, date, isHome }))} />
           <BankLoanCard
+            key={finance.bankLoan ? "loan" : "offer"}
             finance={finance}
             isBusy={isBusy}
             onTake={(amount, months) => run(() => engine.apply({ type: "takeBankLoan", amount, months }))}

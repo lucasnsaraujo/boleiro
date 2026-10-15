@@ -110,10 +110,11 @@ function BookingForm({ state, isBusy, onBook, onClose }: { state: FriendlyState;
   );
   const [opponentId, setOpponentId] = useState(() => rivals[0]?.clubs[0]?.id ?? "");
   const [isHome, setHome] = useState(true);
-  const dates = useMemo(() => freeFriendlyDates(state).filter((date) => friendlyAnswer(state, opponentId, date, isHome).booked), [state, opponentId, isHome]);
+  const dates = useMemo(() => freeFriendlyDates(state).filter((d) => friendlyAnswer(state, opponentId, d, isHome).booked), [state, opponentId, isHome]);
   const [chosen, setChosen] = useState<IsoDate | null>(null);
   const date = chosen && dates.includes(chosen) ? chosen : (dates[0] ?? null);
-  const answer = date ? friendlyAnswer(state, opponentId, date, isHome) : null;
+  const free = useMemo(() => freeFriendlyDates(state), [state]);
+  const answer = date ? friendlyAnswer(state, opponentId, date, isHome) : free[0] ? friendlyAnswer(state, opponentId, free[0], isHome) : null;
   const opponent = state.clubs[opponentId];
 
   return (
@@ -135,7 +136,11 @@ function BookingForm({ state, isBusy, onBook, onClose }: { state: FriendlyState;
       <div className="fin-book-row">
         <div className="seg" role="radiogroup" aria-label="Mando">
           {[true, false].map((home) => (
-            <span key={String(home)} role="radio" aria-checked={isHome === home} tabIndex={0} className={isHome === home ? "on" : undefined} onClick={() => setHome(home)} onKeyDown={(event) => (event.key === "Enter" || event.key === " ") && setHome(home)}>
+            <span key={String(home)} role="radio" aria-checked={isHome === home} tabIndex={0} className={isHome === home ? "on" : undefined} onClick={() => setHome(home)} onKeyDown={(event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                setHome(home);
+              }}>
               {home ? "Em casa" : "Fora"}
             </span>
           ))}
@@ -152,9 +157,13 @@ function BookingForm({ state, isBusy, onBook, onClose }: { state: FriendlyState;
         </label>
       </div>
       <p>
-        {!answer?.booked || !opponent
-          ? "Nenhuma data livre para os dois nos próximos dois meses."
-          : isHome
+        {!answer || !opponent
+          ? "O clube não tem data livre nos próximos dois meses."
+          : !answer.booked
+            ? answer.reason === "busy" || answer.reason === "date"
+              ? "Nenhuma data livre para os dois nos próximos dois meses."
+              : `Não dá: ${REFUSALS[answer.reason]}.`
+            : isHome
             ? `Você paga ${formatMoney(answer.friendly.fee)} de cachê ao ${opponent.shortName} e fica com a bilheteria.`
             : `O ${opponent.shortName} paga ${formatMoney(answer.friendly.fee)} de cachê e fica com a bilheteria.`}
       </p>
