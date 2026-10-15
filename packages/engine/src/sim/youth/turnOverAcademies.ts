@@ -23,8 +23,8 @@ function aged(prospect: Prospect, random: () => number): Prospect {
 
 /**
  * The academies at the season's turn, on the first day of the new year before the squads turn over:
- * every kid ages a year and grows; each one reaching 21 is promoted if his club would keep him and
- * released otherwise (at the coach's club the assistant decides the ones the coach left); then the
+ * each kid about to turn 21 is promoted if his club would keep him (he ages with the squad) and
+ * released otherwise, every other kid ages a year and grows (at the coach's club the assistant decides the ones the coach left); then the
  * trials bring new 16-year-olds. A save from before academies opens them here instead.
  */
 export function turnOverAcademies(state: GameState): { state: GameState; events: YouthEvent[] } {
@@ -32,11 +32,16 @@ export function turnOverAcademies(state: GameState): { state: GameState; events:
   if (!state.youth) return { state: { ...state, youth: openAcademies({ ...state, season }) }, events: [] };
   const random = randomStream(state.youth.rngState);
   const events: YouthEvent[] = [];
-  const aging = Object.values(state.youth.prospects).map((p) => aged(p, random.next));
   const squads = squadsByClub(state.players);
   const promoted: Record<string, SimPlayer> = {};
-  for (const prospect of aging) {
-    if (prospect.age < LEAVING_AGE) continue;
+  const staying: Record<string, Prospect> = {};
+  for (const prospect of Object.values(state.youth.prospects)) {
+    if (prospect.age + 1 < LEAVING_AGE) {
+      const older = aged(prospect, random.next);
+      staying[older.id] = older;
+      continue;
+    }
+    // He joins the squad as he is; the squads' own turnover (developPlayers) ages and develops him with everyone.
     const squad = squads.get(prospect.clubId) ?? [];
     if (isWorthPromoting(state, prospect, squad)) {
       const player = professionalOf(prospect, prospect.clubId, firstWage(prospect, squad), state.date, random.next);
@@ -47,7 +52,6 @@ export function turnOverAcademies(state: GameState): { state: GameState; events:
       events.push({ type: "prospectReleased", prospectId: prospect.id, clubId: prospect.clubId, name: prospect.name });
     }
   }
-  const staying = Object.fromEntries(aging.filter((p) => p.age < LEAVING_AGE).map((p) => [p.id, p]));
   const next: GameState = { ...state, players: { ...state.players, ...promoted } };
 
   const statures = clubStatures(next);

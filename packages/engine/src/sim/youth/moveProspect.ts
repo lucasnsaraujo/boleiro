@@ -3,7 +3,9 @@ import { tierOf } from "../finances/tierOf.js";
 import { sellPlayer } from "../finances/sellPlayer.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { NO_SQUAD_WAGE, professionalOf, YOUTH_CONTRACT_YEARS } from "../players/developPlayers.js";
+import { isHumanClub } from "../coach/humanCoaches.js";
 import { recordTransfer } from "../history/recordTransfer.js";
+import { isWindowOpen } from "../transfers/transferWindows.js";
 import { squadsByClub } from "../players/squadsByClub.js";
 import { isClubFull } from "../transfers/squadCap.js";
 import { SQUAD_TARGET } from "../transfers/squadNeeds.js";
@@ -19,7 +21,7 @@ export type ProspectReleased = { type: "prospectReleased"; prospectId: string; c
 export type ProspectSold = { type: "prospectSold"; playerId: string; clubId: string; buyerId: string; fee: number };
 
 /** Why a coach's move on a prospect did not go through. */
-export type ProspectRefusal = "notYours" | "squadFull" | "noBuyer";
+export type ProspectRefusal = "notYours" | "squadFull" | "noBuyer" | "windowClosed";
 
 const squadOf = (state: Pick<GameState, "players">, clubId: string) => Object.values(state.players).filter((p) => p.clubId === clubId);
 
@@ -75,7 +77,8 @@ function buyerOf(state: GameState, prospect: Prospect): { buyerId: string; fee: 
   let best: { buyerId: string; fee: number; fans: number } | null = null;
   const squads = squadsByClub(state.players);
   for (const club of Object.values(state.clubs)) {
-    if (club.id === prospect.clubId || club.division === null) continue;
+    // Another human coach's club never buys behind his back.
+    if (club.id === prospect.clubId || club.division === null || isHumanClub(state, club.id)) continue;
     const squad = squads.get(club.id) ?? [];
     if (squad.length >= SQUAD_TARGET[tierOf(club)]) continue;
     if (!isWorthPromoting(state, { ...prospect, clubId: club.id }, squad)) continue;
@@ -87,11 +90,12 @@ function buyerOf(state: GameState, prospect: Prospect): { buyerId: string; fee: 
   return best && { buyerId: best.buyerId, fee: best.fee };
 }
 
-/** The coach sells a kid of his academy to the club that wants him most, at his market value; nobody may want him. */
+/** The coach sells a kid of his academy, inside a transfer window, to the club that wants him most at his market value; nobody may want him. */
 export function sellProspect(state: GameState, prospectId: string): { state: GameState; refusal: ProspectRefusal | null; sale?: ProspectSold } {
   const prospect = coachProspect(state, prospectId);
   const academies = state.youth;
   if (!prospect || !academies) return { state, refusal: "notYours" };
+  if (!isWindowOpen(state.date)) return { state, refusal: "windowClosed" };
   const buyer = buyerOf(state, prospect);
   if (!buyer) return { state, refusal: "noBuyer" };
   const sold = withYouthStream(state, (random) => {

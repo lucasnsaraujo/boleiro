@@ -87,6 +87,15 @@ describe("the academies at the season's turn", () => {
     expect(events.some((e) => e.type === "prospectReleased")).toBe(true);
   });
 
+  it("brings its graduates into the squads' own turnover at 20, so they start the new year at 21", () => {
+    const graduates = events.flatMap((e) => (e.type === "youthPromoted" ? [e.playerId] : []));
+    expect(graduates.every((id) => turned.players[id]?.age === YOUTH_AGES.max)).toBe(true);
+    const developed = developPlayers(turned).state;
+    const stillThere = graduates.filter((id) => developed.players[id]);
+    expect(stillThere.length).toBeGreaterThan(0);
+    expect(stillThere.every((id) => developed.players[id]?.age === LEAVING_AGE)).toBe(true);
+  });
+
   it("ages the kids who stay and holds trials that bring two to four 16-year-olds to each academy", () => {
     const stayed = prospects.filter((p) => p.age < YOUTH_AGES.max);
     expect(stayed.every((p) => turned.youth?.prospects[p.id]?.age === p.age + 1)).toBe(true);
@@ -125,10 +134,21 @@ describe("the academies at the season's turn", () => {
 describe("squads the market left short", () => {
   const stateOnly = Object.values(start.clubs).find((c) => c.division === null);
   if (!stateOnly) throw new Error("no state-only club");
-  const keepTwelve = (clubId: string) => new Set(Object.values(start.players).filter((p) => p.clubId === clubId).sort((a, b) => b.strength - a.strength).slice(0, 12).map((p) => p.id));
+  // Twelve outfielders each: both squads need a keeper among the six they lack.
+  const keepTwelve = (clubId: string) => new Set(Object.values(start.players).filter((p) => p.clubId === clubId && p.group !== "GK").sort((a, b) => b.strength - a.strength).slice(0, 12).map((p) => p.id));
   const kept = new Set([...keepTwelve(COACH), ...keepTwelve(stateOnly.id)]);
   const thinned: GameState = { ...start, players: Object.fromEntries(Object.entries(start.players).filter(([id, p]) => (p.clubId !== COACH && p.clubId !== stateOnly.id) || kept.has(id))) };
-  const { state, events } = fillShortSquads(thinned);
+  // A released keeper the state-only club can afford, and one far too good for it.
+  const released = Object.values(start.players).filter((p) => p.group === "GK" && p.clubId !== COACH && p.clubId !== stateOnly.id).sort((a, b) => a.strength - b.strength);
+  const cheap = released[0];
+  const great = released.at(-1);
+  if (!cheap || !great) throw new Error("no keepers");
+  const withFreeAgents: GameState = {
+    ...thinned,
+    players: Object.fromEntries(Object.entries(thinned.players).filter(([id]) => id !== cheap.id && id !== great.id)),
+    market: { ...thinned.market, freeAgents: { [cheap.id]: cheap, [great.id]: great } },
+  };
+  const { state, events } = fillShortSquads(withFreeAgents);
   const squadOf = (clubId: string) => Object.values(state.players).filter((p) => p.clubId === clubId);
 
   it("tops every squad back up to 18, from the academy's teenagers where it has one", () => {
@@ -137,7 +157,16 @@ describe("squads the market left short", () => {
     const fromAcademy = squadOf(COACH).filter((p) => start.youth?.prospects[p.id]);
     expect(fromAcademy.length).toBeGreaterThan(0);
     expect(fromAcademy.every((p) => p.age >= 17 && p.age <= 19 && !state.youth?.prospects[p.id])).toBe(true);
-    expect(events.filter((e) => e.type === "youthPromoted")).toHaveLength(12);
+    const kidsAt = (clubId: string) => events.flatMap((e) => (e.type === "squadToppedUp" && e.clubId === clubId ? e.playerIds : []));
+    expect(kidsAt(COACH)).toHaveLength(6);
+    expect(kidsAt(stateOnly.id)).toHaveLength(5);
+  });
+
+  it("re-signs a released player near an AI club's level before taking up kids, but never one far above it, and never for the coach", () => {
+    expect(state.players[cheap.id]?.clubId).toBe(stateOnly.id);
+    expect(events).toContainEqual(expect.objectContaining({ type: "playerMoved", kind: "freeAgent", playerId: cheap.id, toClubId: stateOnly.id }));
+    expect(state.market.freeAgents[great.id]).toBeDefined();
+    expect(squadOf(COACH).some((p) => p.id === cheap.id || p.id === great.id)).toBe(false);
   });
 
   it("invents teenagers for a club without an academy, and leaves full squads alone", () => {
@@ -150,6 +179,7 @@ describe("the coach's moves on his academy", () => {
   const kid = academyOf(start, COACH)[0];
   const otherKid = prospects.find((p) => p.clubId !== COACH);
   if (!kid || !otherKid) throw new Error("no kids");
+  const inWindow: GameState = { ...start, date: "2026-01-10" };
 
   it("promotes a kid into his squad on a first contract and out of the academy", () => {
     const { state, refusal } = promoteProspect(start, kid.id);
@@ -177,8 +207,12 @@ describe("the coach's moves on his academy", () => {
     expect(state.players[kid.id]).toBeUndefined();
   });
 
+  it("sells a kid only inside a transfer window", () => {
+    expect(sellProspect(start, kid.id).refusal).toBe("windowClosed");
+  });
+
   it("sells a kid to another club for a fee booked as a player sale", () => {
-    const sold = sellProspect(start, kid.id);
+    const sold = sellProspect(inWindow, kid.id);
     expect(sold.refusal).toBeNull();
     if (!sold.sale) throw new Error("no sale");
     expect(sold.sale.buyerId).not.toBe(COACH);
@@ -187,6 +221,15 @@ describe("the coach's moves on his academy", () => {
     expect(sold.state.finances[COACH]?.month.revenue.playerSales).toBe((start.finances[COACH]?.month.revenue.playerSales ?? 0) + sold.sale.fee);
     expect(sold.state.finances[sold.sale.buyerId]?.cash).toBe((start.finances[sold.sale.buyerId]?.cash ?? 0) - sold.sale.fee);
     expect(sold.state.youth?.prospects[kid.id]).toBeUndefined();
+  });
+
+  it("never sells to another human coach's club", () => {
+    const first = sellProspect(inWindow, kid.id).sale;
+    if (!first) throw new Error("no sale");
+    const hotSeat = loadNewGame(4, { coachClubId: COACH, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: first.buyerId }] } });
+    const again = sellProspect({ ...hotSeat, date: inWindow.date }, kid.id);
+    expect(again.state.players[kid.id]?.clubId).not.toBe(first.buyerId);
+    expect(again.state.finances[first.buyerId]?.cash).toBe(hotSeat.finances[first.buyerId]?.cash);
   });
 });
 
