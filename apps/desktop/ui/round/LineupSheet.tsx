@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import type { Club } from "@boleiro/data/clubs";
-import { FORMATIONS, type Formation } from "@boleiro/engine/engine/formations";
+import { FORMATION_NAMES, FORMATIONS, type Formation } from "@boleiro/engine/engine/formations";
 import type { Posture } from "@boleiro/engine/engine/match";
 import type { Tactics } from "@boleiro/engine/sim/coach/tactics";
+import type { SquadPlayer } from "@boleiro/game-client/round/matchDayPlan";
 import { useDialogFocus } from "../app/useDialogFocus.js";
+import { Crest } from "../clubs/Crest.js";
+import { benchHints, mainRole, placedStrength, placeStarters, ROLE_LETTER, ROLE_NAME, teamStrength, type PlacedStarter } from "./lineupBoard.js";
 import {
   bringOn,
   canBringOn,
@@ -13,26 +16,28 @@ import {
   lineupProblem,
   openSheet,
   pick,
+  pickTeam,
   subsLeft,
   undo,
   type Sheet,
   type SheetMode,
 } from "./lineupDraft.js";
-import type { SquadPlayer } from "@boleiro/game-client/round/matchDayPlan";
-import { pitchSpots } from "./pitchSpots.js";
 import "./lineupSheet.css";
 
-const FORMATION_NAMES = Object.keys(FORMATIONS) as Formation[];
 const POSTURES: readonly { value: Posture; label: string }[] = [
   { value: "defensive", label: "Defensiva" },
   { value: "balanced", label: "Equilibrada" },
   { value: "attacking", label: "Ofensiva" },
 ];
-const GROUP_LABEL: Record<SquadPlayer["group"], string> = { GK: "GOL", DEF: "DEF", MID: "MEI", ATT: "ATA" };
-const STATUS_LABEL = { injured: "machucado", suspended: "suspenso" } as const;
-const KEEPER_SHIRT = { primary: "#f2d03b", secondary: "#1a1600" };
-// Up to this long, the shirt label keeps the whole name; past it, the surname.
-const SHIRT_NAME_LENGTH = 13;
+const STATUS_LABEL = { injured: "Machucado", suspended: "Suspenso" } as const;
+// Up to this long, the sticker keeps the whole name; past it, the surname.
+const SHIRT_NAME_LENGTH = 12;
+// Below this much energy a player is marked tired, as the bench's energy bars turn amber and then red.
+const TIRED = 70;
+const RESTED = 85;
+
+/** The opponent's card: its club and the formation its coach plays. */
+export type Opponent = { club: Pick<Club, "id" | "shortName" | "colours">; formation: Formation };
 
 type Props = {
   sub: string;
@@ -40,13 +45,15 @@ type Props = {
   lineup: readonly string[];
   tactics: Tactics;
   mode: SheetMode;
-  colours: Club["colours"];
   doneLabel: string;
   isBusy: boolean;
   error: string | null;
   onDone: (sheet: Sheet) => void;
   /** Before kick-off, the way back to the hub. */
   onLeave?: () => void;
+  /** Before kick-off, the assistant's best eleven for a formation (Escalar time). */
+  onPickTeam?: (formation: Formation) => Promise<readonly string[]>;
+  opponent?: Opponent;
 };
 
 function shirtName(name: string): string {
@@ -57,14 +64,6 @@ function shirtName(name: string): string {
   return before && /^d[aeo]s?$/.test(before) ? `${before} ${last}` : last;
 }
 
-function Shirt({ colours }: { colours: Club["colours"] }) {
-  return (
-    <svg className="shirt" viewBox="0 0 40 40" aria-hidden="true">
-      <path d="M13 3l-9 5 3 9 5-2v22h16V15l5 2 3-9-9-5c-1 3-4 5-7 5s-6-2-7-5z" fill={colours.primary} stroke={colours.secondary} strokeWidth="2" />
-    </svg>
-  );
-}
-
 function hintOf(sheet: Sheet, mode: SheetMode, squad: readonly SquadPlayer[], problem: string | null): string {
   const picked = squad.find((p) => p.id === sheet.picked);
   if (picked) return `Sai ${picked.name}. Quem entra?`;
@@ -72,14 +71,52 @@ function hintOf(sheet: Sheet, mode: SheetMode, squad: readonly SquadPlayer[], pr
   return problem ?? "Toque num titular e depois em quem entra.";
 }
 
-/** The lineup sheet: shirts on the pitch, tactics and the bench, before kick-off or during the coach's match. */
-export function LineupSheet({ sub, squad, lineup, tactics, mode, colours, doneLabel, isBusy, error, onDone, onLeave }: Props) {
+const energyOf = (p: SquadPlayer) => Math.max(0, 100 - p.fatigue);
+const energyClass = (energy: number) => (energy < TIRED ? "en low" : energy < RESTED ? "en mid" : "en");
+const decimal = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+function Position({ player }: { player: SquadPlayer }) {
+  const role = mainRole(player);
+  return (
+    <span className={`pos ${ROLE_LETTER[role]}`} title={ROLE_NAME[role]}>
+      {ROLE_LETTER[role]}
+    </span>
+  );
+}
+
+function Energy({ player }: { player: SquadPlayer }) {
+  const energy = energyOf(player);
+  return (
+    <span className={energyClass(energy)} title={`Energia ${energy}%`}>
+      <i style={{ width: `${energy}%` }} />
+    </span>
+  );
+}
+
+/** The opponent's formation as dots on a small pitch, attacking down towards the coach's goal. */
+function MiniPitch({ formation }: { formation: Formation }) {
+  return (
+    <span className="lineup-mini" aria-hidden="true">
+      {FORMATIONS[formation].map((slot, i) => (
+        <i key={i} style={{ left: `${100 - slot.x}%`, top: `${100 - slot.y}%` }} />
+      ))}
+    </span>
+  );
+}
+
+/** The lineup: the eleven on the pitch where the formation puts them, tactics and the bench, before kick-off or during the coach's match. */
+export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, opponent }: Props) {
   const [sheet, setSheet] = useState(() => openSheet(lineup, tactics));
+  const [isPicking, setPicking] = useState(false);
   const title = useDialogFocus<HTMLHeadingElement>(true, { isModal: true });
   const byId = new Map(squad.map((p) => [p.id, p]));
   const starters = sheet.lineup.flatMap((id) => byId.get(id) ?? []);
-  const spots = pitchSpots(starters, sheet.tactics.formation);
+  const placed = placeStarters(starters, sheet.tactics.formation);
+  const strength = teamStrength(placed);
+  const assistant = mode.kind === "preMatch" ? teamStrength(placeStarters(lineup.flatMap((id) => byId.get(id) ?? []), tactics.formation)) : strength;
   const bench = squad.filter((p) => !sheet.lineup.includes(p.id));
+  const ready = bench.filter((p) => p.status === null);
+  const out = bench.filter((p) => p.status !== null);
   const problem = mode.kind === "preMatch" ? lineupProblem(sheet.lineup, squad) : null;
   const isLive = mode.kind === "live";
   const sentOff = isLive ? mode.sentOff : new Set<string>();
@@ -87,58 +124,135 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, colours, doneLa
   const cameOff = new Set([...(isLive ? mode.cameOff : []), ...sheet.subs.map((s) => s.offId)]);
   const takers = starters.filter((p) => p.group !== "GK" && !sentOff.has(p.id));
   const posture = POSTURES.find((p) => p.value === sheet.tactics.posture)?.label.toLowerCase() ?? "";
+  const order = new Map(placed.map((starter, i) => [starter.player.id, i]));
+  const hints = benchHints(bench, placed);
 
-  const tagOf = (p: SquadPlayer) => (p.status ? STATUS_LABEL[p.status] : cameOff.has(p.id) ? "saiu" : null);
+  async function pickBest() {
+    if (!onPickTeam) return;
+    setPicking(true);
+    try {
+      const best = await onPickTeam(sheet.tactics.formation);
+      setSheet((s) => pickTeam(s, best));
+    } finally {
+      setPicking(false);
+    }
+  }
+
+  const noteOf = (p: SquadPlayer): { text: string; className: string } | null => {
+    if (p.status) return { text: STATUS_LABEL[p.status], className: "note" };
+    if (cameOff.has(p.id)) return { text: "Saiu", className: "note" };
+    const hint = hints.get(p.id);
+    if (hint) return { text: hint, className: "chip" };
+    return energyOf(p) < TIRED ? { text: "Cansado", className: "note warn" } : null;
+  };
+
+  const benchRow = (p: SquadPlayer) => {
+    const note = noteOf(p);
+    const isIn = sheet.subs.some((s) => s.onId === p.id);
+    return (
+      <li key={p.id} className={p.status ? "out" : undefined}>
+        <button className={isIn ? "brow in" : "brow"} aria-label={p.name} disabled={!canBringOn(sheet, mode, p)} onClick={() => setSheet((s) => bringOn(s, mode, p))}>
+          <Position player={p} />
+          <span className="n">{p.name}</span>
+          <span className="s">{p.strength}</span>
+          <span className="e">
+            <Energy player={p} />
+            <small>{energyOf(p)}%</small>
+          </span>
+          <span className="t">{note && <span className={note.className}>{note.text}</span>}</span>
+        </button>
+      </li>
+    );
+  };
+
+  const sticker = (starter: PlacedStarter) => {
+    const { player: p, slot, cost } = starter;
+    const shown = placedStrength(starter);
+    const classes = ["pl", cost?.kind === "secondary" && "sec", cost?.kind === "improvised" && "imp", sheet.picked === p.id && "sel", hurt.has(p.id) && "hurt", sentOff.has(p.id) && "off"]
+      .filter(Boolean)
+      .join(" ");
+    return (
+      <button
+        key={p.id}
+        className={classes}
+        style={{ left: `${slot.x}%`, top: `${slot.y}%`, ["--lineup-order" as string]: order.get(p.id) ?? 0 }}
+        aria-label={p.name}
+        aria-pressed={sheet.picked === p.id}
+        disabled={!canPick(sheet, mode, p.id)}
+        onClick={() => setSheet((s) => pick(s, mode, p.id))}
+      >
+        <span className="pl-top">
+          <Position player={p} />
+          <b>
+            {sentOff.has(p.id) && <i className="lineup-red-mark" />}
+            {shirtName(p.name)}
+          </b>
+        </span>
+        <span className="pl-bottom">
+          <span className="f">
+            {shown}
+            {shown !== p.strength && <s>{p.strength}</s>}
+          </span>
+          <Energy player={p} />
+          <small>{energyOf(p)}%</small>
+        </span>
+        {cost && (
+          <span className={`pl-tag ${cost.kind}`}>
+            {cost.kind === "improvised" && <i className="ph-fill ph-warning" aria-hidden="true" />}
+            {cost.text}
+          </span>
+        )}
+      </button>
+    );
+  };
 
   return createPortal(
     <div className="sheet-wrap">
       <section className={isLive ? "lineup" : "lineup lineup-prematch"} role="dialog" aria-modal="true" aria-labelledby="lineup-title">
-        <header className="lineup-head">
-          <h2 id="lineup-title" ref={title} tabIndex={-1}>
-            Escalação
-          </h2>
-          <span className="lineup-sub">
-            {sub} · {sheet.tactics.formation} · {posture}
+        <div className="pitch" role="group" aria-label="Titulares">
+          <i className="mark out" />
+          <i className="mark half" />
+          <i className="mark circle" />
+          <i className="mark box top" />
+          <i className="mark six top" />
+          <i className="mark box bottom" />
+          <i className="mark six bottom" />
+          <span className="pitch-attack" aria-hidden="true">
+            <i className="ph-bold ph-arrow-up" />
+            Ataque
           </span>
-          {isLive && (
-            <span className="lineup-subs">
-              Trocas <b>{subsLeft(sheet, mode)}</b>
-            </span>
-          )}
-        </header>
+          {placed.map(sticker)}
+        </div>
 
-        <div className="pitch-col">
-          <div className="pitch" role="group" aria-label="Titulares">
-            <i className="mark half" />
-            <i className="mark circle" />
-            <i className="mark box-l" />
-            <i className="mark box-r" />
-            {starters.map((p, order) => {
-              const spot = spots.get(p.id) ?? { x: 50, y: 50 };
-              const classes = ["pitch-player", sheet.picked === p.id && "sel", hurt.has(p.id) && "hurt", sentOff.has(p.id) && "off"].filter(Boolean).join(" ");
-              return (
-                <button
-                  key={p.id}
-                  className={classes}
-                  style={{ left: `${spot.x}%`, top: `${spot.y}%`, ["--lineup-order" as string]: order }}
-                  aria-label={p.name}
-                  aria-pressed={sheet.picked === p.id}
-                  disabled={!canPick(sheet, mode, p.id)}
-                  onClick={() => setSheet((s) => pick(s, mode, p.id))}
-                >
-                  <Shirt colours={p.group === "GK" ? KEEPER_SHIRT : colours} />
-                  <span className="nm">
-                    {sentOff.has(p.id) && <i className="lineup-red-mark" />}
-                    {shirtName(p.name)}
-                    <span className="st">{p.strength}</span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+        <div className="lineup-col">
+          <header className="lineup-head">
+            <div>
+              <h2 id="lineup-title" ref={title} tabIndex={-1}>
+                Escalação
+              </h2>
+              <span className="lineup-sub">
+                {sub} · {sheet.tactics.formation} · {posture}
+              </span>
+            </div>
+            {isLive && (
+              <span className="lineup-subs">
+                Trocas <b>{subsLeft(sheet, mode)}</b>
+              </span>
+            )}
+            {opponent && !isLive && (
+              <div className="stk lineup-opp">
+                <Crest club={opponent.club} size={34} />
+                <div>
+                  <b>{opponent.club.shortName}</b>
+                  <small>{opponent.formation}</small>
+                </div>
+                <MiniPitch formation={opponent.formation} />
+              </div>
+            )}
+          </header>
 
           <div className="tactics">
-            <div>
+            <div className="lineup-field">
               <h3 id="formation-title">Formação</h3>
               <div className="lineup-seg" role="group" aria-labelledby="formation-title">
                 {FORMATION_NAMES.map((formation) => (
@@ -148,7 +262,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, colours, doneLa
                 ))}
               </div>
             </div>
-            <div>
+            <div className="lineup-field">
               <h3 id="posture-title">Postura</h3>
               <div className="lineup-seg" role="group" aria-labelledby="posture-title">
                 {POSTURES.map(({ value, label }) => (
@@ -158,7 +272,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, colours, doneLa
                 ))}
               </div>
             </div>
-            <div>
+            <div className="lineup-field">
               <h3 id="penalty-title">Pênalti</h3>
               <select
                 aria-labelledby="penalty-title"
@@ -177,52 +291,65 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, colours, doneLa
               </select>
             </div>
           </div>
-        </div>
 
-        <section className="bench" aria-labelledby="bench-title">
-          <div className="bench-head">
-            <h3 id="bench-title">Banco</h3>
-            <span>Fôlego</span>
-            <span>Força</span>
-          </div>
-          <ul aria-labelledby="bench-title">
-            {bench.map((p) => {
-              const tag = tagOf(p);
-              const isIn = sheet.subs.some((s) => s.onId === p.id);
-              const rest = 100 - p.fatigue;
-              return (
-                <li key={p.id}>
-                  <button className={isIn ? "brow in" : "brow"} aria-label={p.name} disabled={!canBringOn(sheet, mode, p)} onClick={() => setSheet((s) => bringOn(s, mode, p))}>
-                    <span className="g">{GROUP_LABEL[p.group]}</span>
-                    <span className="n">{p.name}</span>
-                    <span className="tag">{tag}</span>
-                    <span className={rest < 60 ? "fol low" : "fol"} title={`Fôlego ${rest}%`}>
-                      <i style={{ width: `${rest}%` }} />
-                    </span>
-                    <span className="s">{p.strength}</span>
-                  </button>
+          <section className="page bench" aria-labelledby="bench-title">
+            <div className="bench-head">
+              <span>P</span>
+              <h3 id="bench-title">
+                Reservas · {ready.length} de {bench.length}
+              </h3>
+              <span>F</span>
+              <span>Energia</span>
+            </div>
+            <ul aria-label="Banco">
+              {ready.map(benchRow)}
+              {out.length > 0 && (
+                <li className="bench-group" aria-hidden="true">
+                  Fora da lista
                 </li>
-              );
-            })}
-          </ul>
-        </section>
+              )}
+              {out.map(benchRow)}
+            </ul>
+          </section>
 
-        <footer className="lineup-foot">
-          <span className="hint" role="status">
-            {error ?? hintOf(sheet, mode, squad, problem)}
-          </span>
-          {onLeave && (
-            <button className="btn-quiet" onClick={onLeave}>
-              Voltar ao clube
+          <div className="lineup-hint-row">
+            <p className="lineup-hint" role="status">
+              {error ?? hintOf(sheet, mode, squad, problem)}
+            </p>
+            {onLeave && (
+              <button className="btn flat sm" onClick={onLeave}>
+                Voltar ao clube
+              </button>
+            )}
+            <button className="btn flat sm" disabled={sheet.history.length === 0} onClick={() => setSheet(undo)}>
+              Desfazer
             </button>
-          )}
-          <button className="ghost" disabled={sheet.history.length === 0} onClick={() => setSheet(undo)}>
-            Desfazer
-          </button>
-          <button className="btn-main" disabled={problem !== null || isBusy} onClick={() => onDone(sheet)}>
-            {doneLabel}
-          </button>
-        </footer>
+          </div>
+          <footer className="lineup-foot">
+            <div className="lineup-strength">
+              <span>Força do time</span>
+              <b>
+                {decimal(strength)}
+                {mode.kind === "preMatch" && Math.abs(strength - assistant) >= 0.05 && (
+                  <small className={strength < assistant ? "down" : "up"}>
+                    {strength < assistant ? "−" : "+"}
+                    {decimal(Math.abs(strength - assistant))} vs auxiliar
+                  </small>
+                )}
+              </b>
+            </div>
+            {onPickTeam && (
+              <button className="btn" title="O auxiliar escala os 11 melhores na formação" disabled={isPicking} onClick={() => void pickBest()}>
+                <i className="ph-bold ph-strategy" aria-hidden="true" />
+                Escalar time
+              </button>
+            )}
+            <button className="btn go lg lineup-done" disabled={problem !== null || isBusy} onClick={() => onDone(sheet)}>
+              {doneLabel}
+              <i className="ph-bold ph-caret-double-right" aria-hidden="true" />
+            </button>
+          </footer>
+        </div>
       </section>
     </div>,
     document.body,
