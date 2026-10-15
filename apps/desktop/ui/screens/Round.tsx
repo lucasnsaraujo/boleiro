@@ -14,9 +14,12 @@ import type { HotSeatView } from "@boleiro/game-client/hub/hotSeat";
 import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { useFlip } from "../motion/useFlip.js";
+import { hasOwnArrows } from "../round/hasOwnArrows.js";
+import { HotSeatPitches, MiniScore, type Seat } from "../round/HotSeatPitches.js";
 import { incidentAt, type Incident } from "../round/incident.js";
 import { IncidentWindow } from "../round/IncidentWindow.js";
 import { LineupSheet } from "../round/LineupSheet.js";
+import { LivePitch } from "../round/LivePitch.js";
 import { MatchReport } from "../round/MatchReport.js";
 import { kickOffOf, liveChangeOf, liveLimits, type Sheet } from "../round/lineupDraft.js";
 import type { LiveChange } from "@boleiro/engine/sim/live/applyLiveChange";
@@ -24,7 +27,9 @@ import type { CoachSide, HumanSide, LiveRound, RoundClub, Side } from "@boleiro/
 import { liveTable, shortTable, type LiveTableRow } from "../round/liveTable.js";
 import type { MatchDayPlan } from "@boleiro/game-client/round/matchDayPlan";
 import { goalsBetween, highlightsBetween, pauseReason, roundAt, scorersUntil, type EventKind, type Highlight, type MatchAt } from "../round/roundAt.js";
+import { useStickerLift } from "../round/useStickerLift.js";
 import type { Substitution } from "@boleiro/engine/sim/live/applyLiveChange";
+import type { Formation } from "@boleiro/engine/engine/formations";
 import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
 import { crowdLevel, roundCues, thinCues } from "../sound/roundCues.js";
 import { useSound } from "../sound/SoundProvider.js";
@@ -68,6 +73,11 @@ function coachedSides(round: LiveRound, hotSeat: HotSeatView | null): Coached[] 
   const order = hotSeat?.coaches.map((coach) => coach.clubId) ?? [];
   const place = (side: HumanSide) => (order.includes(side.clubId) ? order.indexOf(side.clubId) : order.length);
   return [...round.humanSides].sort((a, b) => place(a) - place(b)).map((side) => ({ clubId: side.clubId, coachName: side.coachName, side }));
+}
+
+/** Both sides' formations in a human coach's match: his as of his last change, and his rival's. */
+function formationsOf(side: CoachSide): Record<Side, Formation> {
+  return side.side === "home" ? { home: side.tactics.formation, away: side.rivalFormation } : { home: side.rivalFormation, away: side.tactics.formation };
 }
 
 /** An incident window waiting for a human coach: whose side, and what befell it. */
@@ -119,6 +129,8 @@ export function Round() {
   const wasRunning = useRef(false);
   // The club whose lineup is open over the round: the coach's, or in a hot-seat round any human coach's.
   const [lineupClubId, setLineupClubId] = useState<string | null>(null);
+  // In a hot-seat round, the human coach whose board is in focus: Space opens his match and the arrows move on from him.
+  const [focusClubId, setFocusClubId] = useState<string | null>(null);
   const isLineupOpen = lineupClubId !== null;
   const [isTableOpen, setTableOpen] = useState(false);
   const [isBusy, setBusy] = useState(false);
@@ -282,6 +294,7 @@ export function Round() {
   }
 
   function openLineup(clubId: string) {
+    setFocusClubId(clubId);
     openSheet((isOpen) => setLineupClubId(isOpen ? clubId : null));
   }
 
@@ -340,7 +353,9 @@ export function Round() {
     const place = order.findIndex((coached) => coached.clubId === clubId);
     const next = order[(place + step + order.length) % order.length];
     setError(null);
-    if (next) setLineupClubId(next.clubId);
+    if (!next) return;
+    setLineupClubId(next.clubId);
+    setFocusClubId(next.clubId);
   }
 
   function resumeIfRunning() {
@@ -403,14 +418,17 @@ export function Round() {
 
   // The match keys work only while the match can still be driven: kicked off, before the final whistle, no sheet open.
   const isDrivable = round !== null && result === null && minute < FULL_TIME && !isLineupOpen && !isTableOpen && incident === null;
-  // In a hot-seat round Space is the coaches' time-out: it stops the clock on the first human coach's match, and going back to the game runs it again.
-  const firstCoached = round?.humanSides ? coachedSides(round, hotSeat)[0] : undefined;
+  // In a hot-seat round every human coach has a board, in turn order; the arrows move the focus through them.
+  const boardCoaches = round?.humanSides ? coachedSides(round, hotSeat) : [];
+  const focus = Math.max(0, boardCoaches.findIndex((coached) => coached.clubId === focusClubId));
+  const focused = boardCoaches[focus];
+  // Space is the coaches' time-out: it stops the clock on the match of the coach in focus, the first one until the arrows move, and going back to the game runs it again.
   useCommands({
     pausar:
       isDrivable &&
       (() => {
-        if (!firstCoached) return chooseSpeed(speed === 0 ? resumeSpeed.current : 0);
-        openLineup(firstCoached.clubId);
+        if (!focused) return chooseSpeed(speed === 0 ? resumeSpeed.current : 0);
+        openLineup(focused.clubId);
         wasRunning.current = true;
       }),
     velocidade1: isDrivable && (() => chooseSpeed(1)),
@@ -422,6 +440,20 @@ export function Round() {
   const crowd = round && result === null && minute < FULL_TIME ? crowdLevel(round, minute) * (isRunning ? 1 : PAUSED_CROWD) : null;
   useEffect(() => sound.setCrowd(crowd), [sound, crowd]);
   useEffect(() => () => sound.setCrowd(null), [sound]);
+
+  // On the board ← and → step the focus; inside a window the arrows are the window's own.
+  const canStepBoards = boardCoaches.length > 1 && !isLineupOpen && !isTableOpen && incident === null;
+  useEffect(() => {
+    if (!canStepBoards) return;
+    const onKey = (event: KeyboardEvent) => {
+      const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+      if (!step || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || hasOwnArrows(event.target)) return;
+      event.preventDefault();
+      setFocusClubId(boardCoaches[(focus + step + boardCoaches.length) % boardCoaches.length]?.clubId ?? null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   useEffect(() => {
     if (!isTableOpen) return;
@@ -483,6 +515,10 @@ export function Round() {
   const lineupLimits = lineupSide ? limitsOf(lineupSide.side, lineupSide.clubId) : null;
   const incidentLimits = incident ? limitsOf(incident.side, incident.clubId) : null;
   const incidentMatch = incident && matches.find((m) => m.fixtureId === incident.side.fixtureId);
+  const seats: Seat[] = boardCoaches.flatMap(({ clubId, coachName, side }) => {
+    const match = matches.find((m) => m.fixtureId === side.fixtureId);
+    return match ? [{ clubId, coach: coachName ?? "", match, formations: formationsOf(side) }] : [];
+  });
   const isFinished = result !== null;
   // After a hot-seat round the first coach in turn order takes the seat again, behind the hand-off screen.
   const afterRound = hotSeat ? "/turn" : "/hub";
@@ -511,10 +547,16 @@ export function Round() {
 
   return (
     <div className="live fills-screen" style={{ ["--flood" as string]: `${FLOOD_MS[resumeSpeed.current]}ms`, ["--box-flash" as string]: `${BOX_FLASH_MS}ms` }}>
-      {mine ? (
+      {mine && coach ? (
         <Cover
           round={round}
           match={mine}
+          formations={formationsOf(coach)}
+          seats={seats}
+          focus={focus}
+          onFocus={(index) => setFocusClubId(seats[index]?.clubId ?? null)}
+          isRunning={isRunning}
+          msPerMinute={MS_PER_MINUTE[resumeSpeed.current]}
           label={round.competitions.find((c) => c.id === mine.competitionId)?.label ?? ""}
           minute={minute}
           speed={speed}
@@ -672,6 +714,14 @@ function EventMark({ kind }: { kind: EventKind }) {
 type CoverProps = {
   round: LiveRound;
   match: MatchAt;
+  formations: Record<Side, Formation>;
+  /** Every human coach's board in a hot-seat round; none in a one-coach game. */
+  seats: readonly Seat[];
+  focus: number;
+  onFocus: (index: number) => void;
+  /** Whether the clock runs: the pitch plays only while it does. */
+  isRunning: boolean;
+  msPerMinute: number;
   label: string;
   minute: number;
   speed: Speed;
@@ -691,15 +741,21 @@ function clockNote(minute: number, speed: Speed, isFinished: boolean): string {
   return minute > HALF_TIME ? "2º tempo" : "1º tempo";
 }
 
-/** The coach's match as the cover of the round: the score between the two clubs' stickers, the clock and the controls over the pitch. */
-function Cover({ round, match, label, minute, speed, golCount, isOnlyMine, isFinished, shootoutWinner, table, onSpeed, onOnlyMine, children }: CoverProps) {
+/**
+ * The coach's match as the cover of the round: the match playing on a little board, the score between the two
+ * clubs' stickers, the clock and the controls. While the ball is in play the stickers give way to a slim
+ * scoreboard above the board; a stop or a goal drops them back. In a hot-seat round every human coach gets a board.
+ */
+function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msPerMinute, label, minute, speed, golCount, isOnlyMine, isFinished, shootoutWinner, table, onSpeed, onOnlyMine, children }: CoverProps) {
   // The cover builds itself only at kick-off, not when the coach comes back to a match under way.
   const [isKickOff] = useState(minute === 0);
+  const isStopped = isFinished || minute >= FULL_TIME;
+  const { isLifted, isGoalHeld } = useStickerLift(match.score.home + match.score.away, isRunning && minute >= 1 && !isStopped);
   const home = round.clubs[match.homeId];
   const away = round.clubs[match.awayId];
   if (!home || !away) return null;
-  const isStopped = isFinished || minute >= FULL_TIME;
   const scorers = scorersUntil(round, match.fixtureId, minute);
+  const hasSeats = seats.length > 1;
   const [competition, roundName] = label.split(" · ");
   const side = (club: RoundClub, where: Side) => (
     <div className={`stk live-tm ${where === "home" ? "h" : "a"}${club.id === round.coachClubId ? " you" : ""}`}>
@@ -710,7 +766,7 @@ function Cover({ round, match, label, minute, speed, golCount, isOnlyMine, isFin
     </div>
   );
   return (
-    <section className={isKickOff ? "live-cover round-kickoff" : "live-cover"} aria-label="Seu jogo">
+    <section className={`live-cover has-pitch${hasSeats ? " has-seats" : ""}${isKickOff ? " round-kickoff" : ""}`} aria-label="Seu jogo">
       {golCount > 0 && (
         <div key={golCount} className="gol-sweep" aria-hidden="true">
           GOL
@@ -753,33 +809,45 @@ function Cover({ round, match, label, minute, speed, golCount, isOnlyMine, isFin
         </div>
       </div>
       <div className="live-feat">
-        <div className="live-stad">
-          <b>{home.stadium}</b>
-          {home.shortName} em casa
-        </div>
-        <div className="live-mid">
-          <div className="live-duel">
-            {side(home, "home")}
-            <p className="live-sc" aria-label={`${home.shortName} ${match.score.home} x ${match.score.away} ${away.shortName}`}>
-              <Digit value={match.score.home} className="digit" />
-              <span className="x">×</span>
-              <Digit value={match.score.away} className="digit" />
-            </p>
-            {side(away, "away")}
-          </div>
-          <div className="live-evs">
-            {shootoutWinner ? (
-              <span className="last">{shootoutWinner} nos pênaltis</span>
-            ) : (
-              scorers.map((goal, index) => (
-                <span key={`${goal.minute}-${index}`} className={index === scorers.length - 1 ? "last" : undefined}>
-                  <i className="ph-fill ph-soccer-ball" aria-hidden="true" />
-                  {goal.name} {goal.minute}'{goal.kind && GOAL_NOTES[goal.kind] ? ` (${GOAL_NOTES[goal.kind]})` : ""}
-                </span>
-              ))
-            )}
-          </div>
-        </div>
+        {hasSeats ? (
+          <HotSeatPitches seats={seats} focus={focus} onFocus={onFocus} round={round} minute={minute} isRunning={isRunning} msPerMinute={msPerMinute} />
+        ) : (
+          <>
+            <div className="live-stad">
+              <b>{home.stadium}</b>
+              {home.shortName} em casa
+            </div>
+            <div className={`live-mid${isLifted ? " is-lifted" : ""}${isGoalHeld ? " is-goal" : ""}`}>
+              <div className="live-pitch">
+                <LivePitch match={match} clubs={round.clubs} names={round.names} minute={minute} isRunning={isRunning} msPerMinute={msPerMinute} formations={formations} />
+              </div>
+              <div className="live-mini" aria-hidden="true">
+                <MiniScore home={home} away={away} score={match.score} />
+              </div>
+              <div className="live-duel">
+                {side(home, "home")}
+                <p className="live-sc" aria-label={`${home.shortName} ${match.score.home} x ${match.score.away} ${away.shortName}`}>
+                  <Digit value={match.score.home} className="digit" />
+                  <span className="x">×</span>
+                  <Digit value={match.score.away} className="digit" />
+                </p>
+                {side(away, "away")}
+              </div>
+              <div className="live-evs">
+                {shootoutWinner ? (
+                  <span className="last">{shootoutWinner} nos pênaltis</span>
+                ) : (
+                  scorers.map((goal, index) => (
+                    <span key={`${goal.minute}-${index}`} className={index === scorers.length - 1 ? "last" : undefined}>
+                      <i className="ph-fill ph-soccer-ball" aria-hidden="true" />
+                      {goal.name} {goal.minute}'{goal.kind && GOAL_NOTES[goal.kind] ? ` (${GOAL_NOTES[goal.kind]})` : ""}
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
+          </>
+        )}
         <div className="live-right">
           {table}
           {children}

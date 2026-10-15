@@ -1,0 +1,212 @@
+/* Hot seat: one board per human coach, each under its coach's name and score. */
+.has-seats .live-right {
+  align-self: start;
+}
+
+.live-seats {
+  grid-column: 1 / 3;
+  position: relative;
+  display: grid;
+  gap: 14px;
+  height: 232px;
+  margin-right: 14px;
+}
+
+.seat {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+}
+
+.seat .lp {
+  height: 100%;
+}
+
+.seat .lp-tilt {
+  top: 34px;
+}
+
+.seat-cap {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: 1;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 4px 3px 3px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.24);
+  color: #fff;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+.seat-coach {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.seat-coach.is-focus {
+  background: var(--yellow);
+  color: var(--on-yellow);
+}
+
+.seat-duel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 6px;
+  font-size: 12.5px;
+}
+
+.seat-duel b {
+  font-stretch: var(--semi);
+  font-weight: 900;
+}
+
+.seat-sc {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 2px;
+  padding: 1px 8px;
+  border-radius: 7px;
+  background: var(--card);
+  color: var(--ink);
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 15px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The × is an x-height glyph; lifted so its centre meets the digits' centre. */
+.seat-sc i {
+  translate: 0 -1.5px;
+  font-style: normal;
+  font-size: 11px;
+  color: var(--yellow-d);
+}
+
+/* Focus: the coach in focus full size, his neighbours small and faded at the sides (sized and placed inline). */
+.live-seats.is-focus {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.seat-viewport {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 70px, #000 calc(100% - 70px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 70px, #000 calc(100% - 70px), transparent 100%);
+}
+
+.seat-track {
+  position: relative;
+  height: 100%;
+}
+
+.is-focus .seat {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform, opacity;
+}
+
+.seat.is-away {
+  cursor: pointer;
+}
+
+/* Side by side, the coach the arrows are on gets a yellow line under his board. */
+.live-seats:not(.is-focus) .seat[aria-current="true"]::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: -6px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--yellow);
+  animation: seat-mark 360ms var(--e-out) both;
+}
+
+@keyframes seat-mark {
+  from {
+    opacity: 0;
+    transform: scaleX(0.3);
+  }
+}
+
+.seat-arrow {
+  flex: none;
+  align-self: center;
+  width: 36px;
+  height: 36px;
+  margin: 18px 4px 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.24);
+  color: #fff;
+  font-size: 15px;
+  transition:
+    background var(--t-fast) var(--e-out),
+    transform var(--t-fast) var(--e-out);
+}
+
+.seat-arrow:hover {
+  background: rgba(0, 0, 0, 0.36);
+}
+
+.seat-arrow:active {
+  transform: scale(0.92);
+}
+
+/* One dot per coach; a yellow pill slides to the one in focus. */
+.seat-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  display: flex;
+  gap: 8px;
+  transform: translateX(-50%);
+}
+
+.seat-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.seat-dots b {
+  position: absolute;
+  left: -4px;
+  top: 0;
+  width: 14px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--yellow);
+  transform: translateX(calc(var(--on) * 14px));
+  transition: transform 420ms var(--e-slap);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seat-track,
+  .is-focus .seat,
+  .seat-dots b {
+    transition: none !important;
+  }
+
+  .live-seats .seat::after {
+    animation: none;
+  }
+}
