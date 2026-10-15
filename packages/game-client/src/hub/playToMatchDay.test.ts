@@ -33,6 +33,10 @@ describe("stopReason", () => {
     expect(stop([{ type: "jobOffered", offer: { clubId: "vitoria-ba", salary: 1, untilSeason: 2026, expiresOn: "2026-01-20" } }])).toBe("jobOffer");
   });
 
+  test("a club's offer for one of his players stops, since it lapses in two days", () => {
+    expect(stop([{ type: "bidReceived", playerId: "p1", buyerId: "vitoria-ba", fee: 1_000_000 }])).toBe("bidReceived");
+  });
+
   test("the coach's own firing stops; another coach's does not", () => {
     const fired = { type: "coachFired", clubId: "bahia-ba", date: quiet.date, position: 18, targetPosition: 10 } as const;
     expect(stop([{ ...fired, isYou: true }])).toBe("fired");

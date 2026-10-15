@@ -139,6 +139,21 @@ describe("the squad", () => {
     });
     expect(lines({ type: "europeBid", playerId: own.id, clubId: "bahia-ba", feeEur: 1, fee: 20_000_000, accepted: true })).toEqual([]);
   });
+
+  test("an offer for one of his players asks for his answer, naming the buyer, or Europe", () => {
+    expect(line({ type: "bidReceived", playerId: own.id, buyerId: "vitoria-ba", fee: 20_000_000 })).toMatchObject({ text: `Proposta do Vitória por ${own.name}: R$ 20 mi. Responda no mercado` });
+    expect(line({ type: "bidReceived", playerId: own.id, buyerId: null, fee: 20_000_000 })).toMatchObject({ text: `Proposta da Europa por ${own.name}: R$ 20 mi. Responda no mercado` });
+  });
+
+  test("a counter to his offer says what the club asks, once, and an auction without bids is reported", () => {
+    expect(
+      lines(
+        { type: "requestDecided", request: { kind: "sign", playerId: other.id, fee: 1 }, approved: false, reason: "counterOffer" },
+        { type: "counterOffered", playerId: other.id, clubId: "vitoria-ba", fee: 20_000_000 },
+      ),
+    ).toEqual([expect.objectContaining({ text: `Vitória pede R$ 20 mi por ${other.name}` })]);
+    expect(line({ type: "auctionClosed", playerId: own.id, sold: false })).toMatchObject({ text: `Leilão de ${own.name} termina sem lances` });
+  });
 });
 
 describe("supporters", () => {

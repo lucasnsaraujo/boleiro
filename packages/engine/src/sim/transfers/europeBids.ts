@@ -1,8 +1,9 @@
 import { addDays } from "../dates.js";
 import type { GameState } from "../gameState.js";
+import { answerBy, coachMarketOf, withCoachMarket } from "./coachMarket.js";
 import { marketView } from "./marketView.js";
 import { movePlayer } from "./movePlayer.js";
-import type { EuropeBid, PlayerMoved } from "./transferEvents.js";
+import type { BidReceived, EuropeBid, PlayerMoved } from "./transferEvents.js";
 import { MIN_SQUAD } from "./tradeBetweenClubs.js";
 import { valuePlayer } from "./valuePlayer.js";
 
@@ -27,12 +28,19 @@ const SETTLING_DAYS = 365;
 // guess: Brazilian boards take nine European bids in ten at or above market value.
 const ACCEPT_CHANCE = 0.9;
 
-/** One market day of European bids for Brazilian standouts; accepted players leave the game. */
-export function europeBids(state: GameState, random: () => number): { state: GameState; events: (EuropeBid | PlayerMoved)[] } {
-  const events: (EuropeBid | PlayerMoved)[] = [];
+// guess: pushed by a counter-offer, a European club would go up to a quarter over its bid.
+const COUNTER_ROOM = 0.25;
+
+/**
+ * One market day of European bids for Brazilian standouts. AI boards take or turn down theirs at once,
+ * and accepted players leave the game; a bid for one of the coach's players waits for his answer.
+ */
+export function europeBids(state: GameState, random: () => number): { state: GameState; events: (EuropeBid | PlayerMoved | BidReceived)[] } {
+  const events: (EuropeBid | PlayerMoved | BidReceived)[] = [];
   const view = marketView(state);
   const settledBefore = addDays(state.date, -SETTLING_DAYS);
   let next = state;
+  let coach = coachMarketOf(state);
   const targets = Object.values(state.players)
     .filter((p) => p.age <= MAX_AGE && p.strength >= MIN_STRENGTH && !state.market.loans[p.id])
     .filter((p) => p.condition.arrivedOn === null || p.condition.arrivedOn < settledBefore)
@@ -45,6 +53,15 @@ export function europeBids(state: GameState, random: () => number): { state: Gam
     const value = valuePlayer(player, tier, state.date);
     const feeEur = Math.round(value * (BID_PREMIUM.min + BID_PREMIUM.spread * random()));
     const fee = Math.round(feeEur * state.market.eurBrl);
+    if (player.clubId === state.coachClubId) {
+      // Drawn in the place of an AI board's yes or no, so the AI clubs' business keeps its draws.
+      const ceiling = Math.round(fee * (1 + COUNTER_ROOM * random()));
+      if (coach.bids[player.id] || coach.auctions[player.id]) continue;
+      const bid = { playerId: player.id, buyerId: null, fee, feeEur, ceiling, isFinal: false, madeOn: state.date, until: answerBy(state.date) };
+      coach = { ...coach, bids: { ...coach.bids, [player.id]: bid } };
+      events.push({ type: "bidReceived", playerId: player.id, buyerId: null, fee });
+      continue;
+    }
     const accepted = view.squad(player.clubId).length > MIN_SQUAD && random() < ACCEPT_CHANCE;
     events.push({ type: "europeBid", playerId: player.id, clubId: player.clubId, feeEur, fee, accepted });
     if (!accepted) continue;
@@ -53,5 +70,5 @@ export function europeBids(state: GameState, random: () => number): { state: Gam
     view.record(player, null);
     events.push(moved.event);
   }
-  return { state: next, events };
+  return { state: coach === coachMarketOf(next) ? next : withCoachMarket(next, coach), events };
 }
