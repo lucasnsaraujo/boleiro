@@ -25,12 +25,15 @@ const IS_SAVED_AFTER: { [T in CommandType]: (command: GameCommand<T>, result: Co
   declineOffer: () => true,
   ask: () => true,
   withdraw: () => true,
+  listPlayer: () => true,
+  answerBid: () => true,
+  declineCounter: () => true,
 };
 
 /**
  * The engine, writing the autosave slot after every advance that played a round of matches or signed an offer, every
  * play-on that moved the game, every kick-off and live change of a live round and every quarter of an hour shown of
- * it, every live round's final whistle, every offer turned down, every request asked or withdrawn, and every turning point closed. Autosaves go one
+ * it, every live round's final whistle, every offer turned down, every request asked or withdrawn, every player listed, every club's offer answered, every counter turned down, and every turning point closed. Autosaves go one
  * at a time; those asked for while one is under way become a single save of the latest game.
  */
 export function withAutosave(engine: EngineClient, slots: SlotStore, game: CurrentGameRef): EngineClient {

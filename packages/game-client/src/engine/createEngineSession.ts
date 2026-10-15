@@ -7,7 +7,10 @@ import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
 import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
 import { newGameFromFiles, type GameFiles } from "@boleiro/engine/sim/loadNewGame";
 import type { NewGameOptions } from "@boleiro/engine/sim/newGame";
+import { answerBid, type BidAnswer, type BidOutcome } from "@boleiro/engine/sim/transfers/answerBid";
+import { coachMarketOf, withCoachMarket, withoutPlayer } from "@boleiro/engine/sim/transfers/coachMarket";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
+import { listPlayer, type SaleWay } from "@boleiro/engine/sim/transfers/listPlayer";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { playToMatchDay, type StopReason } from "../hub/playToMatchDay.js";
 import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
@@ -39,6 +42,11 @@ type CommandFields = {
   declineOffer: { clubId: string };
   ask: { request: CoachRequest };
   withdraw: { playerId: string };
+  /** Puts one of the coach's players up for sale or at auction, or takes him off the market with `way` null. */
+  listPlayer: { playerId: string; way: SaleWay | null };
+  answerBid: { playerId: string; answer: BidAnswer };
+  /** Turns down a selling club's counter to the coach's offer. */
+  declineCounter: { playerId: string };
 };
 
 export type CommandType = keyof CommandFields;
@@ -63,6 +71,9 @@ export type CommandResults = {
   declineOffer: undefined;
   ask: BoardDesk;
   withdraw: BoardDesk;
+  listPlayer: undefined;
+  answerBid: BidOutcome;
+  declineCounter: undefined;
 };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
@@ -101,6 +112,15 @@ export function createEngineSession(files: GameFiles) {
   function underWay() {
     if (!live) throw new Error("no match day is under way");
     return live;
+  }
+
+  /**
+   * The game, for a command that changes it outside a day. Refused during a round, whose final whistle
+   * rebuilds the game from the kick-off copy and would undo the change.
+   */
+  function betweenDays(refusal: string): GameState {
+    if (live) throw new Error(`${refusal} while a match day is under way`);
+    return current();
   }
 
   function current(): GameState {
@@ -245,8 +265,7 @@ export function createEngineSession(files: GameFiles) {
      * during a round, whose final whistle rebuilds the game from the kick-off copy and would undo it.
      */
     declineOffer({ clubId }) {
-      if (live) throw new Error("an offer can't be declined while a match day is under way");
-      state = declineOffer(current(), clubId);
+      state = declineOffer(betweenDays("an offer can't be declined"), clubId);
     },
     /** Puts a request on the board's desk; it reaches the board on the next day played that it is due. */
     ask({ request }) {
@@ -260,6 +279,21 @@ export function createEngineSession(files: GameFiles) {
       desk = { ...desk, pending: desk.pending.filter((r) => r.playerId !== playerId) };
       if (isInRound(playerId)) changeRoundRequests((requests) => requests.filter((r) => r.playerId !== playerId));
       return desk;
+    },
+    listPlayer({ playerId, way }) {
+      state = listPlayer(betweenDays("a player can't be listed"), playerId, way);
+    },
+    /** The coach's answer to a club's offer for one of his players; a sale it makes goes to the inbox. */
+    answerBid({ playerId, answer }) {
+      const before = betweenDays("an offer can't be answered");
+      const answered = answerBid(before, playerId, answer);
+      state = answered.state;
+      addNews(inboxLines(before, answered.state, answered.events));
+      return answered.outcome;
+    },
+    declineCounter({ playerId }) {
+      const game = betweenDays("a counter-offer can't be declined");
+      state = withCoachMarket(game, withoutPlayer(coachMarketOf(game), playerId));
     },
   };
 
