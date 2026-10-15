@@ -85,7 +85,9 @@ function hintOf(sheet: Sheet, mode: SheetMode, squad: readonly SquadPlayer[], pr
   return problem ?? "Toque num titular e depois em quem entra, ou arraste o reserva até ele.";
 }
 
-const isTypingIn = (target: EventTarget | null) => target instanceof HTMLElement && (target.matches("input, select, textarea") || target.isContentEditable);
+/** Whether the arrow keys belong to the control in focus: a field, a list to pick from or a slider. */
+const hasOwnArrows = (target: EventTarget | null) =>
+  target instanceof HTMLElement && (target.closest("input, select, textarea, [role='combobox'], [role='listbox'], [role='slider']") !== null || target.isContentEditable);
 
 const energyOf = (p: SquadPlayer) => Math.max(0, 100 - p.fatigue);
 const energyClass = (energy: number) => (energy < TIRED ? "en low" : energy < RESTED ? "en mid" : "en");
@@ -166,7 +168,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
     if (!coachStep) return;
     const onKey = (event: KeyboardEvent) => {
       const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
-      if (!step || event.defaultPrevented || event.repeat || isBusy || isTypingIn(event.target)) return;
+      if (!step || event.defaultPrevented || event.repeat || isBusy || hasOwnArrows(event.target)) return;
       event.preventDefault();
       coachStep.onStep(sheet, step);
     };

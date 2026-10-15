@@ -97,6 +97,9 @@ test("in a hot-seat round, Space stops the clock on the first coach's match and 
   expect(whoseMatch(sheet)).toBe(ANA.name);
   expect(within(sheet).getByText(/Flamengo/)).toBeTruthy();
 
+  // The arrows stay the penalty taker list's own while it has the focus.
+  fireEvent.keyDown(within(sheet).getByRole("combobox", { name: "Pênalti" }), { key: "ArrowRight" });
+  expect(whoseMatch(await lineup())).toBe(ANA.name);
   fireEvent.keyDown(window, { key: "ArrowRight" });
   await showsMatchOf(BRUNO.name);
   expect(within(await lineup()).getByText(/Palmeiras/)).toBeTruthy();
