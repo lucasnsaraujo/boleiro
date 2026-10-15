@@ -6,6 +6,7 @@ import { randomStream } from "../engine/random.js";
 import { openingCoach } from "./coach/openingCoach.js";
 import { openingField } from "./continental/continentalField.js";
 import { openContinentalCups } from "./continental/openContinentalCups.js";
+import { openingEuropeanCups } from "./continental/uefaCups.js";
 import { continentalStagesOf, withExpectedContinentalPrizes } from "./continental/payContinentalPrizes.js";
 import { newHistory } from "./history/history.js";
 import { recordStrengths } from "./history/recordStrengths.js";
@@ -132,6 +133,8 @@ export function newGame(
   const simPlayers = Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }]));
   const usualLineups = openingLineups(Object.keys(clubsById), squadsByClub(simPlayers), lineups, (row) => idOfRow.get(row));
   const market = openingMarket(seed);
+  const startedWorld = world?.length ? startWorld(world, season, seed) : null;
+  const europe = startedWorld && openingEuropeanCups(startedWorld, seed);
   const game = openingCoach({
     version: 4,
     packVersion,
@@ -152,7 +155,8 @@ export function newGame(
     history: recordStrengths({ season, players: simPlayers, market, history: newHistory(season, `${season}-01-01`, careerMode ? null : coachClubId) }),
     market,
     usualLineups,
-    ...(world?.length ? { world: startWorld(world, season, seed) } : {}),
+    ...(startedWorld ? { world: startedWorld } : {}),
+    ...(europe ? { europe } : {}),
     ...(stateChampionships ? {} : { playsStateChampionships: false as const }),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
   return withContinentalCups(game, competitionMoney);

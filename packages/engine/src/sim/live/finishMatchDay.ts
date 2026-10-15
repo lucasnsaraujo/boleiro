@@ -5,6 +5,7 @@ import { coachCareerDay } from "../coach/coachCareerDay.js";
 import { seasonEndField } from "../continental/continentalField.js";
 import { openContinentalCups } from "../continental/openContinentalCups.js";
 import { payContinentalPrizes } from "../continental/payContinentalPrizes.js";
+import { playEuropeDay } from "../continental/uefaCups.js";
 import { startCoachSeason } from "../coach/startCoachSeason.js";
 import { buildStadiums } from "../stadium/stadiumWorks.js";
 import { copyRecord } from "../copyRecord.js";
@@ -155,6 +156,7 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   events.push(...career.events);
   next = { ...next, rngState: random.state() };
   if (state.world) next = { ...next, world: playWorldDay(state.world, state.date) };
+  if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date) };
   if (next.date.slice(0, 4) !== String(state.season)) {
     const continentalField = seasonEndField(next);
     const developed = developPlayers(closeSeasonHistory(next));
