@@ -188,3 +188,12 @@ test("holding Space down pauses once, not once per key repeat", async () => {
   fireEvent.keyDown(document.body, { key: " ", repeat: true });
   expect(pauses()).toBe(1);
 });
+
+test("holding Space on a clicked button keeps the key repeats from pressing it or scrolling the board", async () => {
+  const pauses = openPausableRound(await services());
+  await userEvent.click(screen.getByRole("button", { name: "4x" }));
+  const button = document.activeElement ?? document;
+  expect(fireEvent.keyDown(button, { key: " " })).toBe(false);
+  expect(fireEvent.keyDown(button, { key: " ", repeat: true })).toBe(false);
+  expect(pauses()).toBe(1);
+});

@@ -9,7 +9,7 @@ import { slotLabel } from "@boleiro/game-client/saves/slotMeta";
 import { clubById } from "../clubs/clubCatalog.js";
 import { musicFor, useSound } from "../sound/SoundProvider.js";
 import { useTheme } from "../theme/ThemeProvider.js";
-import { useCommands, useRunCommand } from "./AppCommands.js";
+import { useCommands, useIsCommandAnswered, useRunCommand } from "./AppCommands.js";
 import { GameClockContext } from "./gameClock.js";
 import { installNativeMenu } from "./nativeMenu.js";
 import { hasMica, platformOf, windowChrome, windowsVersion } from "./platform.js";
@@ -42,6 +42,7 @@ export function Shell() {
   const { engine: sound, settings, changeSettings } = useSound();
   const { changeSetting } = useTheme();
   const runCommand = useRunCommand();
+  const isCommandAnswered = useIsCommandAnswered();
   useEffect(() => sound.playMusic(musicFor(pathname)), [sound, pathname]);
   const hasBar = showsBar(pathname, game.current !== null);
 
@@ -144,7 +145,11 @@ export function Shell() {
       if (!command || event.defaultPrevented || (event.key.length === 1 && !event.metaKey && !event.ctrlKey && isTyping(event.target))) return;
       if (event.key === " " && event.target === tabbedTo) return;
       const isMatchKey = MATCH_COMMAND_IDS.some((id) => id === command);
-      if (isMatchKey && event.repeat) return;
+      // Holding a match key runs it once, but its repeats stay off the page too: Space would press the focused button on release and scroll the board.
+      if (isMatchKey && event.repeat) {
+        if (isCommandAnswered(command)) event.preventDefault();
+        return;
+      }
       // WebView2 keeps the browser's own F-keys (F5 reloads the app, F3 finds), so a game key never reaches them even
       // when no screen takes it; only the match keys (Space, digits) stay the page's off the round.
       if (runCommand(command) || !isMatchKey) event.preventDefault();
@@ -157,7 +162,7 @@ export function Shell() {
       document.removeEventListener("pointerdown", onPointer);
       document.removeEventListener("keydown", onKey);
     };
-  }, [runCommand]);
+  }, [runCommand, isCommandAnswered]);
 
   const active = navIndexOf(pathname);
   const chrome = isFullScreen ? "none" : CHROME;
