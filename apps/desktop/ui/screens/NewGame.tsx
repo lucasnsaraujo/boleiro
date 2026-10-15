@@ -335,11 +335,14 @@ export function NewGame() {
                 </div>
               ) : (
                 <button ref={startButton} type="submit" className="btn go lg" disabled={!name || !target || !picked || !isEveryoneReady || starting}>
-                  {starting ? "Montando a temporada…" : isHotSeat ? `Começar com ${others.length + 1} técnicos` : "Começar carreira"}
+                  {starting ? "Montando a temporada…" : isHotSeat ? "Começar jogo" : "Começar carreira"}
                   {!starting && <i className="ph-fill ph-play" aria-hidden="true" />}
                 </button>
               )}
-              <small>{season ? `A temporada ${season.date.slice(0, 4)} começa em ${formatGameDate(season.date)}.` : "Sorteando a temporada…"}</small>
+              <small>
+                {isHotSeat && `${others.length + 1} técnicos, na ordem da lista. `}
+                {season ? `A temporada ${season.date.slice(0, 4)} começa em ${formatGameDate(season.date)}.` : "Sorteando a temporada…"}
+              </small>
               {failed && <p className="status error">Não deu para criar o jogo.</p>}
             </div>
           </form>

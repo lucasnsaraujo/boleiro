@@ -329,9 +329,14 @@
   color: var(--ink-2);
 }
 
-.career-new-clock .seg {
-  margin-left: auto;
-  flex-shrink: 0;
+/* The clock's four choices sit under its words: the left page is too narrow for both on one line. */
+.career-new-clock {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+.career-new-clock p {
+  flex: 1 1 100%;
 }
 
 /* Career mode: the album's toggle row, between the facts and where the game is saved. */

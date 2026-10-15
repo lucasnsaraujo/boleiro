@@ -17,7 +17,7 @@ async function startTwoCoaches(page: Page) {
   await page.getByRole("textbox", { name: "Nome do técnico 2" }).fill("Bruno");
   await clubs.getByRole("button", { name: "Palmeiras" }).click();
   await expect(page.getByRole("radio", { name: "5 min" })).toBeChecked();
-  await page.getByRole("button", { name: "Começar com 2 técnicos" }).click();
+  await page.getByRole("button", { name: "Começar jogo" }).click();
   await expect(page).toHaveURL(/#\/hub$/);
 }
 

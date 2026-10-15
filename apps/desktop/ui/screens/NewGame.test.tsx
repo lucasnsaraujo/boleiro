@@ -159,7 +159,7 @@ test("two coaches each name themselves and pick a club, and the game starts with
   await userEvent.click(clubList().getByRole("button", { name: "Flamengo" }));
   await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico 2" }), "Bruno");
   await userEvent.click(clubList().getByRole("button", { name: "Palmeiras" }));
-  await userEvent.click(screen.getByRole("button", { name: /Começar com 2 técnicos/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Começar jogo" }));
   await screen.findByText("Clube aberto", {}, { timeout: 10_000 });
   expect(await engine.hotSeat()).toMatchObject({ seated: 0, coaches: [{ name: "Ana", clubId: "flamengo-rj" }, { name: "Bruno", clubId: "palmeiras-sp" }] });
   expect(await engine.read(["marketClockSeconds"])).toEqual({ marketClockSeconds: 300 });
@@ -175,7 +175,7 @@ test("a club one coach took is closed to the others, and the game can't start un
   const flamengo = clubList().getByRole("button", { name: "Flamengo" });
   expect(flamengo.hasAttribute("disabled")).toBe(true);
   expect(flamengo.textContent).toContain("Ana");
-  expect(screen.getByRole("button", { name: /Começar com 2 técnicos/ }).hasAttribute("disabled")).toBe(true);
+  expect(screen.getByRole("button", { name: "Começar jogo" }).hasAttribute("disabled")).toBe(true);
 });
 
 test("with the market clock off a game starts without one", async () => {
