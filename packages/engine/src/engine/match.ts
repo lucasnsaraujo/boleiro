@@ -63,11 +63,13 @@ function average(values: number[]): number {
 }
 
 // guess: no study rates players away from their position. An outfielder plays another outfield
-// position at 85% of his strength; a keeper outfield, or an outfielder in goal, at half.
-const OUT_OF_POSITION = 0.85;
-const KEEPER_SWAP = 0.5;
+// position at 85% of his strength; a keeper outfield, or an outfielder in goal, at half. A player
+// placed by position (formations.ts) carries his `fit` instead.
+export const OUT_OF_POSITION = 0.85;
+export const KEEPER_SWAP = 0.5;
 
 function slotStrength(player: Player, slot: PositionGroup): number {
+  if (player.fit !== undefined) return player.strength * player.fit;
   if (slot === player.group) return player.strength;
   return player.strength * (slot === "GK" || player.group === "GK" ? KEEPER_SWAP : OUT_OF_POSITION);
 }

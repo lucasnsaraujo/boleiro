@@ -1,4 +1,5 @@
-import { FORMATION, type PositionGroup } from "../../engine/match.js";
+import type { Role } from "@boleiro/data/players";
+import { arrange, FORMATIONS, positionFit, SECONDARY_POSITION, type Formation } from "../../engine/formations.js";
 import type { SimPlayer } from "../gameState.js";
 import { effectiveStrength, type MatchContext } from "./effectiveStrength.js";
 import { fatigueOn } from "./fatigueOn.js";
@@ -9,22 +10,46 @@ import { isInjured } from "./isInjured.js";
 // (about 25 fatigue) then gives way to a fit backup up to 2.5 points weaker: rotation in
 // congested weeks, while a week's rest leaves the best eleven alone.
 const ROTATION_COST = 6;
-const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
+// guess: a coach sticks with his usual starters over a fit backup up to this many points stronger,
+// so a club opens the game with its real eleven and comes back to it after rotating.
+const USUAL_STARTER_BONUS = 5;
 
 /**
- * The AI coach's starting eleven: the engine's 4-4-2, or the `shape` asked for, filled by fit
- * players in order of the strength they would play at today, less a cost for fatigue they carry.
- * Injured players never start. A squad short in one position borrows the best remaining players
- * from the others.
+ * The AI coach's starting eleven in `formation`, in its slot order: fit players worth most in a slot,
+ * by the strength they would play at today less a cost for the fatigue they carry, times their fit
+ * in the slot (arrange). Injured players never start. A squad short in one position borrows the
+ * players who fit its slots best from the others.
  */
-export function pickMatchLineup(squad: readonly SimPlayer[], context: MatchContext, shape: Record<PositionGroup, number> = FORMATION): SimPlayer[] {
-  const score = (p: SimPlayer) => effectiveStrength(p, context) - (ROTATION_COST * fatigueOn(p, context.date)) / 100;
-  const ranked = squad
-    .filter((p) => !isInjured(p, context.date))
-    .map((player) => ({ player, score: score(player) }))
-    .sort((a, b) => b.score - a.score)
-    .map(({ player }) => player);
-  const lineup = GROUPS.flatMap((group) => ranked.filter((p) => p.group === group).slice(0, shape[group]));
-  const chosen = new Set(lineup);
-  return [...lineup, ...ranked.filter((p) => !chosen.has(p)).slice(0, 11 - lineup.length)];
+export function pickMatchLineup(squad: readonly SimPlayer[], context: MatchContext, formation: Formation = "4-4-2", usual: ReadonlySet<string> = new Set()): SimPlayer[] {
+  const fit = squad.filter((p) => !isInjured(p, context.date));
+  const score = new Map(
+    fit.map((p) => [p, effectiveStrength(p, context) - (ROTATION_COST * fatigueOn(p, context.date)) / 100 + (usual.has(p.id) ? USUAL_STARTER_BONUS : 0)]),
+  );
+  const pool = candidates(fit, formation, (p) => score.get(p) ?? 0);
+  return arrange(pool, formation, (p) => score.get(p) ?? 0).filter((p): p is SimPlayer => p !== null);
+}
+
+// Players per position kept as candidates beyond the slots the formation has for it.
+const SPARE_CANDIDATES = 2;
+
+/**
+ * The players worth arranging, in the squad's order: the best eleven, and for each position of the
+ * formation the best few who play it as one of theirs. Anyone else would only be improvised behind
+ * them, so leaving him out keeps arrange's work small: it runs for every club on every match day.
+ */
+function candidates(players: readonly SimPlayer[], formation: Formation, score: (player: SimPlayer) => number): SimPlayer[] {
+  const needs = new Map<Role, number>();
+  for (const slot of FORMATIONS[formation]) needs.set(slot.role, (needs.get(slot.role) ?? 0) + 1);
+  const kept = new Set<SimPlayer>();
+  const taken = new Map<Role, number>();
+  for (const player of [...players].sort((a, b) => score(b) - score(a))) {
+    let isWanted = kept.size < FORMATIONS[formation].length;
+    for (const [role, need] of needs) {
+      if (positionFit(player, role) < SECONDARY_POSITION || (taken.get(role) ?? 0) >= need + SPARE_CANDIDATES) continue;
+      taken.set(role, (taken.get(role) ?? 0) + 1);
+      isWanted = true;
+    }
+    if (isWanted) kept.add(player);
+  }
+  return players.filter((player) => kept.has(player));
 }
