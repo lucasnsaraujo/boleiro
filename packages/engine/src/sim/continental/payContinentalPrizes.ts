@@ -4,7 +4,7 @@ import { bookMoney } from "../finances/bookMoney.js";
 import type { PrizePaid } from "../finances/payCopaPrizes.js";
 import { OPENING_EUR_BRL } from "../transfers/openingMarket.js";
 import { tieResults } from "../tieResults.js";
-import { CUP_STAGES } from "./conmebolCups.js";
+import { CONMEBOL_CUPS, CUP_STAGES } from "./conmebolCups.js";
 import type { ContinentalField } from "./continentalField.js";
 
 // The game's stage names against competition-money's (CONMEBOL's 2026 prize table); a stage it
@@ -95,4 +95,29 @@ export function withExpectedContinentalPrizes(state: GameState, field: Continent
     };
   }
   return { ...state, finances };
+}
+
+/** The CONMEBOL prizes the club earned in the season's cups so far, in BRL at today's rate: each stage it played, its group wins and the final's prize. */
+export function continentalPrizesEarned(state: GameState, clubId: string): number {
+  const stages = state.economy.continentalStages;
+  if (!stages) return 0;
+  const brl = (usd: number) => Math.round(usd * state.economy.continental.usdBrl * (state.market.eurBrl / OPENING_EUR_BRL));
+  let usd = 0;
+  for (const competition of Object.values(state.competitions)) {
+    if (competition.kind !== "continental" || competition.cup === "recopa" || competition.season !== state.season) continue;
+    const prizes = stages[competition.cup];
+    const played = state.fixtures.filter((f) => f.competitionId === competition.id && f.result && (f.homeId === clubId || f.awayId === clubId));
+    for (const stage of new Set(played.map((f) => f.stage))) usd += prizes[PRIZE_OF_STAGE[CUP_STAGES[competition.cup][stage]?.name ?? ""] ?? ""] ?? 0;
+    for (const f of played) {
+      const result = f.result;
+      if (!result || competition.stages[f.stage]?.kind !== "groups") continue;
+      const scored = f.homeId === clubId ? result.homeGoals : result.awayGoals;
+      const conceded = f.homeId === clubId ? result.awayGoals : result.homeGoals;
+      if (scored > conceded) usd += prizes[GROUP_WIN] ?? 0;
+    }
+    const finalists = CONMEBOL_CUPS.finalists(competition, state.fixtures.filter((f) => f.competitionId === competition.id));
+    if (finalists?.championId === clubId) usd += prizes.champion ?? 0;
+    if (finalists?.runnerUpId === clubId) usd += prizes["runner-up"] ?? 0;
+  }
+  return brl(usd);
 }

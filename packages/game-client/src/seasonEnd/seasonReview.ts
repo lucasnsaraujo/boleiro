@@ -2,6 +2,7 @@ import type { Division } from "@boleiro/data/players";
 import type { DayEvent } from "../hub/inboxLines.js";
 import type { Expectation } from "@boleiro/engine/sim/coach/boardExpectations";
 import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
+import { continentalPrizesEarned } from "@boleiro/engine/sim/continental/payContinentalPrizes";
 import { continentalQualifiers } from "@boleiro/engine/sim/finances/continentalQualifiers";
 import { payCopaPrizes } from "@boleiro/engine/sim/finances/payCopaPrizes";
 import type { ClubFinance, GameState } from "@boleiro/engine/sim/gameState";
@@ -14,6 +15,8 @@ export type SeasonStarted = {
   history: Pick<History, "seasons">;
   coach: Pick<GameState["coach"], "reputation" | "contract">;
   finances: Readonly<Record<string, Pick<ClubFinance, "month">>>;
+  /** The new season's competitions; in a game that plays CONMEBOL's cups, they hold the places just won. */
+  competitions?: GameState["competitions"];
 };
 
 export type Placing = { division: Division; position: number; tableSize: number; move: "promoted" | "relegated" | null };
@@ -37,7 +40,7 @@ export type SeasonReview = {
   placing: Placing | null;
   titles: CompetitionKey[];
   continental: ContinentalPlace | null;
-  /** Copa do Brasil prizes over the season plus the continental money paid at the turn, in BRL. */
+  /** Copa do Brasil prizes over the season plus the continental money: paid at the turn, or earned in the cups when the game plays them; in BRL. */
   prizeMoney: number;
   verdict: BoardVerdict | null;
   champions: Record<CompetitionKey, string>;
@@ -56,6 +59,16 @@ function placingOf(record: History["seasons"][number], clubId: string): Placing 
     return { division, position, tableSize: table.length, move };
   }
   return null;
+}
+
+/** Where the club enters next season's CONMEBOL cups the turn drew, when the game plays them; undefined when it doesn't. */
+function drawnPlaceOf(started: SeasonStarted, season: number, clubId: string): ContinentalPlace | null | undefined {
+  const cups = Object.values(started.competitions ?? {}).flatMap((c) => (c.kind === "continental" && c.season === season ? [c] : []));
+  if (cups.length === 0) return undefined;
+  const libertadores = cups.find((c) => c.cup === "libertadores");
+  const stage = libertadores?.entries.findIndex((ids) => ids.includes(clubId)) ?? -1;
+  if (stage >= 0) return stage === libertadores?.entries.findLastIndex((ids) => ids.length > 0) ? "libertadores" : "preLibertadores";
+  return cups.some((c) => c.cup === "sul-americana" && c.clubIds.includes(clubId)) ? "sulAmericana" : null;
 }
 
 function continentalOf(ended: SeasonEnded, serieATable: readonly string[], clubId: string): ContinentalPlace | null {
@@ -107,13 +120,14 @@ export function seasonReview(ended: SeasonEnded, started: SeasonStarted, events:
   if (!clubId) return { season: record.season, clubId, placing: null, titles: [], continental: null, prizeMoney: 0, verdict: null, champions, hasLostJob: false };
   // December closed on the turn day and the month started over, so its prizes are the continental money the turn paid.
   const continentalMoney = started.finances[clubId]?.month.revenue.prizes ?? 0;
-  const prizeMoney = copaPrizesOf(ended, clubId) + continentalMoney;
+  const prizeMoney = copaPrizesOf(ended, clubId) + continentalMoney + continentalPrizesEarned(ended, clubId);
+  const drawn = drawnPlaceOf(started, record.season + 1, clubId);
   return {
     season: record.season,
     clubId,
     placing: placingOf(record, clubId),
     titles: Object.entries(champions).flatMap(([key, championId]) => (championId === clubId ? [key] : [])),
-    continental: continentalOf(ended, record.tables.A, clubId),
+    continental: drawn === undefined ? continentalOf(ended, record.tables.A, clubId) : drawn,
     prizeMoney,
     verdict: verdictOf(events, ended, started, clubId),
     champions,
