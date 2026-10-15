@@ -55,7 +55,11 @@ async function tourScreens(page: Page, club: string) {
   await expect(page.getByRole("listitem").filter({ hasText: /\d×\d/ }).first()).toBeVisible();
   await bar.getByRole("link", { name: "Opções" }).click();
   await page.getByRole("link", { name: "Abrir" }).click();
+  // The card is there since Novo jogo wrote the slot; the status says this press saved again.
+  const saved = page.getByRole("status").filter({ hasText: /^Salvo em Jogo \d\.$/ });
+  await expect(saved).toBeHidden();
   await page.getByRole("button", { name: "Salvar agora" }).click();
+  await expect(saved).toBeVisible();
   await expect(page.getByRole("list", { name: "Vagas" }).getByRole("button", { name: new RegExp(`^Jogo \\d · ${club}`) })).toBeVisible();
   await bar.getByRole("link", { name: "Times" }).click();
 }
