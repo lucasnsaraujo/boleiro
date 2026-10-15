@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar, pickOption, startAtClub } from "./flows.js";
+import { bar, leaveIncident, pickOption, startAtClub } from "./flows.js";
 
 const MAX_TURNS = 12;
 const MAX_STOPS = 40;
@@ -15,10 +15,10 @@ async function takeTurn(page: Page, coach: string) {
 async function playRound(page: Page, done: string) {
   const next = page.getByRole("button", { name: done });
   for (let stop = 0; stop < MAX_STOPS && !(await next.isVisible()); stop++) {
+    // A red card or an injury to a coach's side stops the round with its window over the board.
+    await leaveIncident(page);
     const fourX = page.getByRole("button", { name: "4x" });
     if (await fourX.isVisible()) await fourX.click();
-    const incident = page.getByRole("dialog", { name: /^(Expulso|Machucou):/ });
-    if (await incident.isVisible()) await incident.getByRole("button", { name: "Deixar como está" }).click();
     await expect(page.getByRole("button", { name: "Pausar" }).and(page.locator("[aria-pressed=true]")).or(next)).toBeVisible({ timeout: 30_000 });
   }
   await next.click();
@@ -91,7 +91,10 @@ test("a career at an English club plays a round live, then shows its league's ta
   await expect(page.getByText("Premier League").first()).toBeVisible();
   const play = page.getByRole("button", { name: "Jogar rodada" });
   const sheet = page.getByRole("dialog", { name: "Escalação" });
+  const paper = page.getByRole("dialog", { name: /Jornal|Notícias|Edição/ }).or(page.locator("#hub-paper"));
   for (let stop = 0; stop < MAX_TURNS && !(await sheet.isVisible()); stop++) {
+    // A day with news opens the hub's paper over the play button; the dock's paper button shuts it.
+    if (await paper.isVisible()) await page.getByRole("button", { name: /^Jornal/ }).click();
     await play.click();
     await expect(sheet.or(play)).toBeVisible({ timeout: 60_000 });
   }
