@@ -9,7 +9,7 @@ import { academySquad, LEAVING_AGE, scoutedStars, type Copinha } from "@boleiro/
 import { copinhaDate, copinhaRun } from "@boleiro/engine/sim/youth/copinha";
 import { copinhaRoundName } from "@boleiro/game-client/format/copinhaRoundName";
 
-export const YOUTH_KEYS = ["youth", "players", "clubs", "season", "date", "coachClubId"] as const;
+export const YOUTH_KEYS = ["youth", "players", "clubs", "season", "date", "coachClubId", "hasMidSeasonWindow", "coach"] as const;
 export type YouthState = Pick<GameState, (typeof YOUTH_KEYS)[number]>;
 
 /** The academy's age groups as the screen filters them. */
@@ -99,7 +99,7 @@ export function youthView(state: YouthState): YouthView | null {
     squadSize: squad.length,
     squadCap: SQUAD_CAP,
     copinha: copinhaNote(state.youth?.copinha, state, club.id),
-    isWindowOpen: isWindowOpen(state.date),
+    isWindowOpen: isWindowOpen(state, state.date),
     detailOf(id) {
       const prospect = state.youth?.prospects[id];
       if (!prospect || prospect.clubId !== club.id) return null;

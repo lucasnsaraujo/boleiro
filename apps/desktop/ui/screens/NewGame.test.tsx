@@ -97,6 +97,19 @@ test("the estaduais are on by default and switched off start a season without th
   expect(Object.values(competitions).some((c) => c.kind === "state")).toBe(false);
 });
 
+test("the mid-season window is on by default and switched off starts a game with only the window between seasons", async () => {
+  const { engine } = await openNewGame();
+  const midSeason = screen.getByRole("button", { name: "Janela no meio da temporada" });
+  expect(midSeason.getAttribute("aria-pressed")).toBe("true");
+  await userEvent.click(midSeason);
+  expect(midSeason.getAttribute("aria-pressed")).toBe("false");
+  await userEvent.click(clubList().getByRole("button", { name: "Bahia" }));
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico" }), "Rogério");
+  await userEvent.click(screen.getByRole("button", { name: "Começar carreira" }));
+  await screen.findByText("Clube aberto", {}, { timeout: 10_000 });
+  expect(await engine.read(["hasMidSeasonWindow"])).toEqual({ hasMidSeasonWindow: false });
+});
+
 test("career mode starts with no club and offers from small clubs", async () => {
   const { engine } = await openNewGame();
   await userEvent.click(screen.getByRole("button", { name: "Modo carreira" }));
