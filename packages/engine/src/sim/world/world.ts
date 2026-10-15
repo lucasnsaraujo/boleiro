@@ -1,5 +1,7 @@
 import type { IsoDate } from "../gameState.js";
-import type { LeaguePlace } from "./continentalPlaces.js";
+import type { CupFinal, LeaguePlace } from "./continentalPlaces.js";
+import type { ResultOnlyCup } from "./resultOnlyCup.js";
+import type { UefaAllocation } from "./uefaPlaces.js";
 
 /** A level of a result-only pyramid: a round-robin table. */
 type TableLevel = {
@@ -17,10 +19,16 @@ export type CountryStructure = {
   id: string;
   /** Top level first. */
   levels: TableLevel[];
-  /** First and last match day of the league season in the calendar year, as `MM-DD`. */
+  /** First and last match day of the league season, as `MM-DD`; a last day before the first falls in the next year. */
   window: [string, string];
-  /** No cup is played result-only, so every place comes from the top league's table. */
+  /** CONMEBOL's places, which all come from the top league's table. */
   continental: LeaguePlace<string>[];
+  /** For a season crossing the new year: the day, `MM-DD`, it is filed and the next opens, instead of 1 January. */
+  rollover?: string;
+  /** Its places in UEFA's league phases, from its top table and its cup. */
+  uefa?: UefaAllocation;
+  /** Whether it plays its national cup. */
+  hasCup?: boolean;
 };
 
 /**
@@ -52,6 +60,8 @@ type CountrySeason = {
   promoted: string[][];
   relegated: string[][];
   continental: Record<string, string[]>;
+  /** Its cup's final, when it plays one. */
+  cup?: CupFinal;
 };
 
 /** A result-only country in the game: its own random stream, so it plays and saves apart from the rest. */
@@ -60,6 +70,8 @@ export type Country = {
   clubs: Record<string, WorldClub>;
   /** This season's leagues, one per level, top first. */
   leagues: ResultOnlyLeague[];
+  /** This season's national cup, for a country that plays one. */
+  cup?: ResultOnlyCup;
   seasons: CountrySeason[];
   rngState: number;
 };

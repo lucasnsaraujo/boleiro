@@ -48,6 +48,15 @@ function teamOf(club: WorldClub): Team {
   return team;
 }
 
+/**
+ * A result-only match by the engine's score draw. guess: until each league has its own fit, every
+ * result-only match plays at Série A's calibration, a neutral-ground final with its home advantage too.
+ */
+export function scoreDraw(home: WorldClub, away: WorldClub, random: () => number): { homeGoals: number; awayGoals: number } {
+  const { homeGoals, awayGoals } = simulateMatch(teamOf(home), teamOf(away), random, CALIBRATED);
+  return { homeGoals, awayGoals };
+}
+
 /** Throws unless the club has a position for each strength, eleven players and a keeper, as the score draw needs. */
 export function checkSquad(club: WorldClub): void {
   const { id, positions, strengths } = club;
@@ -57,11 +66,16 @@ export function checkSquad(club: WorldClub): void {
   if ([...positions].some((letter) => !(letter in GROUP_OF))) throw new Error(`club ${id}: positions "${positions}" are not all G, D, M or A`);
 }
 
+/** The window's first and last day in `season`; a window ending before it starts ends in the next year. */
+export function windowDates(season: number, [first, last]: [string, string]): [IsoDate, IsoDate] {
+  return [`${season}-${first}`, `${last < first ? season + 1 : season}-${last}`];
+}
+
 /** `rounds` match days spread evenly over the window, its first and last days included. */
-function leagueDates(season: number, [first, last]: [string, string], rounds: number): IsoDate[] {
-  const start = `${season}-${first}`;
-  const span = daysBetween(start, `${season}-${last}`);
-  if (span < rounds - 1) throw new Error(`${rounds} rounds do not fit between ${start} and ${season}-${last}`);
+function leagueDates(season: number, window: [string, string], rounds: number): IsoDate[] {
+  const [start, end] = windowDates(season, window);
+  const span = daysBetween(start, end);
+  if (span < rounds - 1) throw new Error(`${rounds} rounds do not fit between ${start} and ${end}`);
   return Array.from({ length: rounds }, (_, i) => addDays(start, rounds > 1 ? Math.round((i * span) / (rounds - 1)) : 0));
 }
 
@@ -89,8 +103,7 @@ export function playLeagueDay(league: ResultOnlyLeague, date: IsoDate, clubOf: (
   if (round < 0 || league.results[2 * from] !== UNPLAYED) return league;
   let played = "";
   for (const [homeId, awayId] of pairs.slice(from, to)) {
-    // guess: until each league has its own fit, every result-only match plays at Série A's calibration.
-    const { homeGoals, awayGoals } = simulateMatch(teamOf(clubOf(homeId)), teamOf(clubOf(awayId)), random, CALIBRATED);
+    const { homeGoals, awayGoals } = scoreDraw(clubOf(homeId), clubOf(awayId), random);
     played += String.fromCharCode(ZERO_GOALS + homeGoals, ZERO_GOALS + awayGoals);
   }
   return { ...league, results: league.results.slice(0, 2 * from) + played + league.results.slice(2 * to) };
