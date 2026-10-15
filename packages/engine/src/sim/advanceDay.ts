@@ -15,6 +15,9 @@ import type { PlayerInjured } from "./players/recordMatchLoad.js";
 import type { StadiumOpened } from "./stadium/stadiumWorks.js";
 import type { CoachRequest } from "./transfers/coachRequest.js";
 import type { TransferEvent } from "./transfers/transferEvents.js";
+import type { CopinhaPlayed } from "./youth/copinha.js";
+import type { SquadToppedUp } from "./youth/fillShortSquads.js";
+import type { YouthEvent } from "./youth/turnOverAcademies.js";
 
 export type DayDecisions = {
   lineup?: readonly string[];
@@ -46,7 +49,10 @@ export type DayEvent =
   | SupporterEvent
   | StadiumOpened
   | CoachEvent
-  | TransferEvent;
+  | TransferEvent
+  | YouthEvent
+  | CopinhaPlayed
+  | SquadToppedUp;
 
 /** A day played: the game after it and its events; in a hot-seat game, each waiting coach's own news apart, in waiting order. */
 export type DayResult = { state: GameState; events: DayEvent[]; waitingEvents?: DayEvent[][] };

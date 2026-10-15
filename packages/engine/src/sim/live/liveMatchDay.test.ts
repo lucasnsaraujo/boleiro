@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { advanceDay } from "../advanceDay.js";
 import type { GameState } from "../gameState.js";
+import { waitingCoachesOf } from "../coach/humanCoaches.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { applyLiveChange } from "./applyLiveChange.js";
 import { finishMatchDay } from "./finishMatchDay.js";
@@ -259,5 +260,69 @@ describe("a live day saved by an older build", () => {
     const played = events.find((e) => e.type === "matchPlayed" && e.fixture.id === fixtureId);
     expect(played?.type === "matchPlayed" && played.fixture.result).toMatchObject({ homeGoals: 0, awayGoals: 0 });
     expect(played?.type === "matchPlayed" && played.fixture.result?.penaltyWinnerId).toBeOneOf([fixture.homeId, fixture.awayId]);
+  });
+});
+
+describe("a hot-seat live match day", () => {
+  const WAITING_CLUB = "palmeiras-sp";
+  const twoCoaches = loadNewGame(5, { coachClubId: COACH_CLUB, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: WAITING_CLUB }] } });
+  const plays = (date: string, clubId: string) => twoCoaches.fixtures.some((f) => f.date === date && (f.homeId === clubId || f.awayId === clubId));
+  const dates = [...new Set(twoCoaches.fixtures.map((f) => f.date))].sort();
+  const bothPlay = advanceTo(twoCoaches, dates.find((date) => plays(date, COACH_CLUB) && plays(date, WAITING_CLUB)) ?? "");
+  // A second coach at the club the first one meets on his first match day.
+  const firstMatch = start.fixtures.find((f) => f.date === coachMatchDate && (f.homeId === COACH_CLUB || f.awayId === COACH_CLUB));
+  const RIVAL_CLUB = firstMatch?.homeId === COACH_CLUB ? firstMatch.awayId : (firstMatch?.homeId ?? "");
+  const derby = loadNewGame(5, { coachClubId: COACH_CLUB, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: RIVAL_CLUB }] } });
+  const derbyDay = advanceTo(derby, coachMatchDate);
+  const matchOf = (live: LiveDay, clubId: string) => live.matches.find((m) => m.homeId === clubId || m.awayId === clubId);
+  const subsOf = (live: LiveDay, clubId: string) => matchOf(live, clubId)?.events.filter((e) => e.type === "substitution" && e.clubId === clubId) ?? [];
+  const openSideOf = (live: LiveDay, clubId: string) => {
+    const open = [live.coachMatch, ...(live.waitingMatches ?? [])].find((m) => m && [m.starters.home[0]?.clubId, m.starters.away[0]?.clubId].includes(clubId));
+    const side = open?.starters.home[0]?.clubId === clubId ? "home" : "away";
+    const isOwner = (open?.clubId ?? live.state.coachClubId) === clubId;
+    return { starters: open?.starters[side].filter((p) => p.group !== "GK") ?? [], bench: (isOwner ? open?.bench : open?.opponentBench)?.filter((p) => p.group !== "GK") ?? [] };
+  };
+  const subFor = (live: LiveDay, clubId: string) => {
+    const { starters, bench } = openSideOf(live, clubId);
+    return { offId: starters[0]?.id ?? "", onId: bench[0]?.id ?? "" };
+  };
+
+  it("leaves the waiting coach's side to him too: no substitution he did not make", () => {
+    expect(subsOf(startMatchDay(bothPlay, {}), WAITING_CLUB)).toEqual([]);
+  });
+
+  it("lets the waiting coach substitute in his own match, leaving every other match as it was", () => {
+    const live = startMatchDay(bothPlay, {});
+    const sub = subFor(live, WAITING_CLUB);
+    const changed = applyLiveChange(live, 60, { substitutions: [sub] }, WAITING_CLUB);
+    expect(subsOf(changed, WAITING_CLUB)).toEqual([{ type: "substitution", minute: 60, clubId: WAITING_CLUB, playerId: sub.onId, offId: sub.offId }]);
+    const others = (day: LiveDay) => day.matches.filter((m) => m !== matchOf(day, WAITING_CLUB));
+    expect(others(changed)).toEqual(others(live));
+    const { state } = finishMatchDay(changed);
+    const minutesPlayed = (id: string) => (state.players[id]?.condition.seasonMinutes ?? 0) - (bothPlay.players[id]?.condition.seasonMinutes ?? 0);
+    expect([minutesPlayed(sub.offId), minutesPlayed(sub.onId)]).toEqual([60, 30]);
+  });
+
+  it("keeps the waiting coach's live tactics for his next matches", () => {
+    const changed = applyLiveChange(startMatchDay(bothPlay, {}), 30, { formation: "5-3-2" }, WAITING_CLUB);
+    expect(waitingCoachesOf(finishMatchDay(changed).state)[0]?.coach.tactics.formation).toBe("5-3-2");
+  });
+
+  it("lets two coaches who play each other each change his own side, and neither gets an AI substitution", () => {
+    const live = startMatchDay(derbyDay, {});
+    expect(matchOf(live, COACH_CLUB)).toBe(matchOf(live, RIVAL_CLUB));
+    expect([...subsOf(live, COACH_CLUB), ...subsOf(live, RIVAL_CLUB)]).toEqual([]);
+    const ours = subFor(live, COACH_CLUB);
+    const theirs = subFor(live, RIVAL_CLUB);
+    const changed = applyLiveChange(applyLiveChange(live, 30, { substitutions: [ours] }, COACH_CLUB), 50, { substitutions: [theirs], posture: "attacking" }, RIVAL_CLUB);
+    expect(subsOf(changed, COACH_CLUB).map((e) => e.minute)).toEqual([30]);
+    expect(subsOf(changed, RIVAL_CLUB).map((e) => e.minute)).toEqual([50]);
+    expect(() => applyLiveChange(changed, 60, { substitutions: [{ offId: theirs.offId, onId: ours.onId }] }, RIVAL_CLUB)).toThrow();
+    const played = finishMatchDay(changed).state.fixtures.find((f) => f.id === matchOf(changed, COACH_CLUB)?.fixtureId);
+    expect(played?.result).not.toBeNull();
+  });
+
+  it("refuses a change for a club with no match today", () => {
+    expect(() => applyLiveChange(startMatchDay(bothPlay, {}), 30, { posture: "attacking" }, "santos-sp")).toThrow(/no match today/);
   });
 });

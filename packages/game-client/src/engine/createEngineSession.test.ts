@@ -13,8 +13,8 @@ import { createEngineSession, type CommandResults, type CommandType, type GameCo
 
 const CLUB = "flamengo-rj";
 const SEED = 7;
-// The season test needs a coach the board keeps all year; the board sacks him on seeds 1, 7 and 8 of today's engine.
-const SEASON_SEED = 2;
+// The season test needs a coach the board keeps all year; the board sacks him on seeds 1, 2, 7 and 8 of today's engine.
+const SEASON_SEED = 3;
 // Enough steps for a season of play-ons and match days; a stuck loop fails instead of hanging.
 const MAX_STEPS = 400;
 
@@ -251,6 +251,28 @@ function playMoney() {
   return { recorded, loan, friendly, played, cashBeforeRepay };
 }
 
+/** A new game's academy moves through commands, then the days to the Copinha. */
+function playAcademy() {
+  const recorded = recordedSession();
+  const { session, apply } = recorded;
+  apply({ type: "newGame", seed: SEED, choices: { coachClubId: CLUB } });
+  // Into the January window, where a kid can be sold.
+  apply({ type: "advance", days: Array.from({ length: 4 }, () => ({})) });
+  const { youth } = session.read(["youth"]);
+  const kids = Object.values(youth?.prospects ?? {});
+  const [promoted, released, sold] = kids.filter((p) => p.clubId === CLUB).sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+  const otherClubs = kids.find((p) => p.clubId !== CLUB);
+  if (!promoted || !released || !sold || !otherClubs) throw new Error("the academies have kids");
+  const answers = {
+    promoted: apply({ type: "promoteProspect", prospectId: promoted.id }),
+    released: apply({ type: "releaseProspect", prospectId: released.id }),
+    sold: apply({ type: "sellProspect", prospectId: sold.id }),
+    otherClubs: apply({ type: "promoteProspect", prospectId: otherClubs.id }),
+  };
+  const days = apply({ type: "advance", days: Array.from({ length: 22 }, () => ({})) });
+  return { recorded, ids: { promoted: promoted.id, released: released.id, sold: sold.id }, answers, copinha: days.events.find((event) => event.type === "copinhaPlayed") };
+}
+
 /** A hot-seat turn: the first coach spends time on the market and passes, the second plays on. */
 function playHotSeatTurn() {
   const recorded = recordedSession();
@@ -269,12 +291,14 @@ let season: Season;
 let career: ReturnType<typeof playCareerStart>;
 let marketWindow: ReturnType<typeof playMarketWindow>;
 let money: ReturnType<typeof playMoney>;
+let academy: ReturnType<typeof playAcademy>;
 
 beforeAll(() => {
   season = playSeason();
   career = playCareerStart();
   marketWindow = playMarketWindow();
   money = playMoney();
+  academy = playAcademy();
 }, 120_000);
 
 test("a season played through commands alone ends, turns the year and crowns a champion", () => {
@@ -384,8 +408,8 @@ test("the money commands survive JSON and replay alike from the same seed", () =
   expect(sha256(twin.session.save())).toBe(sha256(session.save()));
 });
 
-test("the season, career, market, money and hot-seat logs between them send every kind of command", () => {
-  const logs = [season, career, marketWindow, money, playHotSeatTurn()].flatMap(({ recorded }) => recorded.applied);
+test("the season, career, market, money, academy and hot-seat logs between them send every kind of command", () => {
+  const logs = [season, career, marketWindow, money, academy, playHotSeatTurn()].flatMap(({ recorded }) => recorded.applied);
   const sent = new Set(logs.map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
@@ -408,6 +432,9 @@ test("the season, career, market, money and hot-seat logs between them send ever
     takeBankLoan: true,
     repayBankLoan: true,
     bookFriendly: true,
+    promoteProspect: true,
+    releaseProspect: true,
+    sellProspect: true,
     passTurn: true,
     spendMarketTime: true,
   };
@@ -420,4 +447,54 @@ test("a command of a type the session doesn't know fails instead of reaching any
     const forged: GameCommand = JSON.parse(JSON.stringify({ type }));
     expect(() => session.apply(forged)).toThrow(`unknown command: ${type}`);
   }
+});
+
+test("a season through commands holds trials at every academy, forces out its 21-year-olds and leaves no club under 18 players", () => {
+  const opening = createEngineSession(bundledGameFiles);
+  opening.apply({ type: "newGame", seed: SEASON_SEED, choices: { coachClubId: CLUB } });
+  const before = Object.values(opening.read(["youth"]).youth?.prospects ?? {});
+  const { youth, players, clubs } = season.recorded.session.read(["youth", "players", "clubs"]);
+  const after = Object.values(youth?.prospects ?? {});
+
+  // Clubs that joined Série D at the turn open their academy at the next one.
+  const academyClubs = new Set(before.map((p) => p.clubId));
+  expect(academyClubs.size).toBeGreaterThan(100);
+  for (const clubId of academyClubs) {
+    const trialists = after.filter((p) => p.clubId === clubId && p.joinedSeason === 2027);
+    expect(trialists.length).toBeGreaterThanOrEqual(2);
+    expect(trialists.every((p) => p.age === 16)).toBe(true);
+  }
+  expect(after.every((p) => p.age <= 20)).toBe(true);
+  const leaving = before.filter((p) => p.age === 20);
+  expect(leaving.length).toBeGreaterThan(0);
+  for (const p of leaving) expect(youth?.prospects[p.id]).toBeUndefined();
+  expect(leaving.some((p) => players[p.id]?.clubId === p.clubId)).toBe(true);
+  expect(leaving.some((p) => !players[p.id])).toBe(true);
+
+  const squadSizes = new Map<string, number>();
+  for (const p of Object.values(players)) squadSizes.set(p.clubId, (squadSizes.get(p.clubId) ?? 0) + 1);
+  for (const club of Object.values(clubs)) expect(squadSizes.get(club.id) ?? 0).toBeGreaterThanOrEqual(18);
+});
+
+test("the coach promotes, releases and sells kids of his academy through commands, but not another club's", () => {
+  const { session } = academy.recorded;
+  const { players, youth } = session.read(["players", "youth"]);
+  expect(academy.answers).toMatchObject({ promoted: { refusal: null }, released: { refusal: null }, sold: { refusal: null }, otherClubs: { refusal: "notYours" } });
+  expect(players[academy.ids.promoted]?.clubId).toBe(CLUB);
+  expect(players[academy.ids.released]).toBeUndefined();
+  expect(players[academy.ids.sold]?.clubId).toBe(academy.answers.sold.sale?.buyerId);
+  for (const id of Object.values(academy.ids)) expect(youth?.prospects[id]).toBeUndefined();
+});
+
+test("the Copinha is played in January and its champion is kept with the academies", () => {
+  const { youth } = academy.recorded.session.read(["youth"]);
+  expect(academy.copinha).toEqual({ type: "copinhaPlayed", season: 2026, championId: youth?.copinha?.championId });
+});
+
+test("the academy's commands survive JSON and replay alike from the same seed", () => {
+  const { session, applied } = academy.recorded;
+  for (const { command } of applied) expect(JSON.parse(JSON.stringify(command))).toStrictEqual(command);
+  const twin = replay(applied);
+  expect(twin.results).toEqual(applied.map(({ result }) => result));
+  expect(sha256(twin.session.save())).toBe(sha256(session.save()));
 });

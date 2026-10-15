@@ -18,6 +18,7 @@ import { setTicketPrice } from "@boleiro/engine/sim/finances/setTicketPrice";
 import { repayBankLoan, takeBankLoan, type BankLoanAnswer } from "@boleiro/engine/sim/finances/bankLoan";
 import { bookFriendly, type FriendlyAnswer } from "@boleiro/engine/sim/friendlies/friendlies";
 import { requestStadiumWorks, type WorksAnswer } from "@boleiro/engine/sim/stadium/stadiumWorks";
+import { promoteProspect, releaseProspect, sellProspect, type ProspectRefusal, type ProspectSold } from "@boleiro/engine/sim/youth/moveProspect";
 import { eventsOfWaitingCoach, hotSeatViewOf, isHumanMatchDay, type HotSeatView } from "../hub/hotSeat.js";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { isCoachMatchDay, playToMatchDay, stopReason, type StopReason } from "../hub/playToMatchDay.js";
@@ -47,7 +48,8 @@ type CommandFields = {
   playToMatchDay: Record<never, never>;
   startRound: KickOff;
   seeMinute: { minute: number };
-  changeLive: { minute: number; change: LiveChange };
+  /** A change in a human coach's match: the seated coach's, or with `clubId` a waiting hot-seat coach's. */
+  changeLive: { minute: number; change: LiveChange; clubId?: string };
   finishRound: Record<never, never>;
   closeTurningPoint: Record<never, never>;
   declineOffer: { clubId: string };
@@ -68,6 +70,12 @@ type CommandFields = {
   repayBankLoan: Record<never, never>;
   /** Books a friendly for the coach's club against `opponentId` on `date`; the other club answers at once. */
   bookFriendly: { opponentId: string; date: IsoDate; isHome: boolean };
+  /** Moves a kid of the coach's academy into his squad. */
+  promoteProspect: { prospectId: string };
+  /** Lets a kid of the coach's academy go. */
+  releaseProspect: { prospectId: string };
+  /** Sells a kid of the coach's academy to the club that wants him most. */
+  sellProspect: { prospectId: string };
   /**
    * Ends the turn of a hot-seat coach who is not the last of it: his eleven and tactics wait for the
    * day, and the next coach in turn order takes the seat.
@@ -79,6 +87,9 @@ type CommandFields = {
    */
   spendMarketTime: { seconds: number; playerId?: string };
 };
+
+/** What a move on a kid of the academy answers: null when it went through, and the sale it made. */
+export type ProspectAnswer = { refusal: ProspectRefusal | null; sale?: ProspectSold };
 
 export type CommandType = keyof CommandFields;
 
@@ -110,6 +121,9 @@ export type CommandResults = {
   takeBankLoan: BankLoanAnswer;
   repayBankLoan: undefined;
   bookFriendly: FriendlyAnswer;
+  promoteProspect: ProspectAnswer;
+  releaseProspect: ProspectAnswer;
+  sellProspect: ProspectAnswer;
   passTurn: HotSeatView;
   spendMarketTime: MarketClockView | null;
 };
@@ -408,11 +422,11 @@ export function createEngineSession(files: GameFiles) {
       const round = underWay();
       round.seenMinute = Math.max(round.seenMinute, minute);
     },
-    /** The coach's change at `minute` of his match; the rest of his match is drawn again. */
-    changeLive({ minute, change }) {
+    /** A coach's change at `minute` of his match; the rest of his match is drawn again. */
+    changeLive({ minute, change, clubId }) {
       const round = underWay();
       if (minute < round.seenMinute) throw new Error(`a change can't come before minute ${round.seenMinute}`);
-      live = { day: applyLiveChange(round.day, minute, change), seenMinute: minute };
+      live = { day: applyLiveChange(round.day, minute, change, clubId), seenMinute: minute };
       return liveRoundOf(live.day, live.seenMinute);
     },
     /** The final whistle: records the day and adds the coach's results to the inbox. */
@@ -491,6 +505,21 @@ export function createEngineSession(files: GameFiles) {
       const asked = bookFriendly(betweenDays("a friendly can't be booked"), opponentId, date, isHome);
       state = asked.state;
       return asked.answer;
+    },
+    promoteProspect({ prospectId }) {
+      const moved = promoteProspect(betweenDays("a kid can't be promoted"), prospectId);
+      state = moved.state;
+      return { refusal: moved.refusal };
+    },
+    releaseProspect({ prospectId }) {
+      const moved = releaseProspect(betweenDays("a kid can't be released"), prospectId);
+      state = moved.state;
+      return { refusal: moved.refusal };
+    },
+    sellProspect({ prospectId }) {
+      const { state: sold, ...answer } = sellProspect(betweenDays("a kid can't be sold"), prospectId);
+      state = sold;
+      return answer;
     },
     passTurn({ lineup, tactics, acceptOffer }) {
       betweenDays("the turn can't pass");

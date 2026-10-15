@@ -317,14 +317,6 @@ function BarButton({ id, isActive }: { id: NavId; isActive: boolean }) {
   const item = NAV.find((nav) => nav.id === id);
   if (!item) return null;
   const icon = <i className={`${isActive ? "ph-fill" : "ph-bold"} ph-${item.icon}`} aria-hidden="true" />;
-  if (!item.path) {
-    return (
-      <a className="ic off" role="link" aria-disabled="true" title={`${item.label} · em breve`}>
-        {icon}
-        {item.label}
-      </a>
-    );
-  }
   return (
     <Link to={item.path} className={isActive ? "ic on" : "ic"} aria-current={isActive ? "page" : undefined} title={`${item.label} · ${item.key}`}>
       {isActive ? (

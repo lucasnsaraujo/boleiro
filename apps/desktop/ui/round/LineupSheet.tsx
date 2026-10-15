@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Club } from "@boleiro/data/clubs";
 import { FORMATION_NAMES, FORMATIONS, type Formation } from "@boleiro/engine/engine/formations";
@@ -8,21 +8,26 @@ import type { SquadPlayer } from "@boleiro/game-client/round/matchDayPlan";
 import { Select } from "../controls/Select.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { Crest } from "../clubs/Crest.js";
+import { useSound } from "../sound/SoundProvider.js";
 import { benchHints, mainRole, placedStrength, placeStarters, ROLE_LETTER, ROLE_NAME, teamStrength, type PlacedStarter } from "./lineupBoard.js";
 import {
   bringOn,
   canBringOn,
+  canComeOn,
   canPick,
+  canSwapIn,
   changeTactics,
   lineupProblem,
   openSheet,
   pick,
   pickTeam,
   subsLeft,
+  swapIn,
   undo,
   type Sheet,
   type SheetMode,
 } from "./lineupDraft.js";
+import { useBenchDrag, type BenchDrag } from "./useBenchDrag.js";
 import "./lineupSheet.css";
 
 const POSTURES: readonly { value: Posture; label: string }[] = [
@@ -40,6 +45,9 @@ const RESTED = 85;
 /** The opponent's card: its club and the formation its coach plays. */
 type Opponent = { club: Pick<Club, "id" | "shortName" | "colours">; formation: Formation };
 
+/** In a hot-seat round, whose match the sheet shows among the human coaches' and the way to the next one, with the sheet as it stands. */
+export type CoachStep = { name: string; place: number; count: number; onStep: (sheet: Sheet, step: 1 | -1) => void };
+
 type Props = {
   sub: string;
   squad: readonly SquadPlayer[];
@@ -55,6 +63,7 @@ type Props = {
   /** Before kick-off, the assistant's best eleven for a formation (Escalar time). */
   onPickTeam?: (formation: Formation) => Promise<readonly string[]>;
   opponent?: Opponent;
+  coachStep?: CoachStep;
 };
 
 function shirtName(name: string): string {
@@ -65,12 +74,20 @@ function shirtName(name: string): string {
   return before && /^d[aeo]s?$/.test(before) ? `${before} ${last}` : last;
 }
 
-function hintOf(sheet: Sheet, mode: SheetMode, squad: readonly SquadPlayer[], problem: string | null): string {
+function hintOf(sheet: Sheet, mode: SheetMode, squad: readonly SquadPlayer[], problem: string | null, drag: BenchDrag | null): string {
+  if (drag) {
+    const over = squad.find((p) => p.id === drag.overId);
+    return over ? `Sai ${over.name}, entra ${drag.player.name}.` : `Solte ${drag.player.name} sobre quem sai.`;
+  }
   const picked = squad.find((p) => p.id === sheet.picked);
   if (picked) return `Sai ${picked.name}. Quem entra?`;
   if (mode.kind === "live" && subsLeft(sheet, mode) === 0) return "Sem trocas.";
-  return problem ?? "Toque num titular e depois em quem entra.";
+  return problem ?? "Toque num titular e depois em quem entra, ou arraste o reserva até ele.";
 }
+
+/** Whether the arrow keys belong to the control in focus: a field, a list to pick from or a slider. */
+const hasOwnArrows = (target: EventTarget | null) =>
+  target instanceof HTMLElement && (target.closest("input, select, textarea, [role='combobox'], [role='listbox'], [role='slider']") !== null || target.isContentEditable);
 
 const energyOf = (p: SquadPlayer) => Math.max(0, 100 - p.fatigue);
 const energyClass = (energy: number) => (energy < TIRED ? "en low" : energy < RESTED ? "en mid" : "en");
@@ -106,8 +123,18 @@ function MiniPitch({ formation }: { formation: Formation }) {
 }
 
 /** The lineup: the eleven on the pitch where the formation puts them, tactics and the bench, before kick-off or during the coach's match. */
-export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, opponent }: Props) {
+export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, opponent, coachStep }: Props) {
   const [sheet, setSheet] = useState(() => openSheet(lineup, tactics));
+  // The substitute who just came on, whose sticker lands on the pitch.
+  const [justIn, setJustIn] = useState<string | null>(null);
+  const { engine: sound } = useSound();
+  const { drag, startDrag } = useBenchDrag({
+    canDrop: (offId, player) => canSwapIn(sheet, mode, offId, player),
+    onDrop: (offId, player) => {
+      setSheet((s) => swapIn(s, mode, offId, player));
+      cameOn(player);
+    },
+  });
   const [isPicking, setPicking] = useState(false);
   const [pickFailure, setPickFailure] = useState<string | null>(null);
   // The assistant's latest eleven and its formation: the team strength is compared against it.
@@ -130,6 +157,24 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
   const posture = POSTURES.find((p) => p.value === sheet.tactics.posture)?.label.toLowerCase() ?? "";
   const order = new Map(placed.map((starter, i) => [starter.player.id, i]));
   const hints = benchHints(bench, placed);
+
+  function cameOn(player: SquadPlayer) {
+    setJustIn(player.id);
+    sound.play("substitution");
+  }
+
+  // ← and → step through the human coaches' matches, taking this one's changes along.
+  useEffect(() => {
+    if (!coachStep) return;
+    const onKey = (event: KeyboardEvent) => {
+      const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+      if (!step || event.defaultPrevented || event.repeat || isBusy || hasOwnArrows(event.target)) return;
+      event.preventDefault();
+      coachStep.onStep(sheet, step);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   /** The assistant's eleven for the formation asked about; if the coach changed formation meanwhile, it is left out. */
   async function pickBest() {
@@ -159,9 +204,19 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
   const benchRow = (p: SquadPlayer) => {
     const note = noteOf(p);
     const isIn = sheet.subs.some((s) => s.onId === p.id);
+    const canDrag = canComeOn(sheet, mode, p);
+    const classes = [p.status && "out", canDrag && "drag", drag?.player.id === p.id && "lifted"].filter(Boolean).join(" ");
     return (
-      <li key={p.id} className={p.status ? "out" : undefined}>
-        <button className={isIn ? "brow in" : "brow"} aria-label={p.name} disabled={!canBringOn(sheet, mode, p)} onClick={() => setSheet((s) => bringOn(s, mode, p))}>
+      <li key={p.id} className={classes || undefined} onPointerDown={canDrag ? (event) => startDrag(event, p) : undefined}>
+        <button
+          className={isIn ? "brow in" : "brow"}
+          aria-label={p.name}
+          disabled={!canBringOn(sheet, mode, p)}
+          onClick={() => {
+            setSheet((s) => bringOn(s, mode, p));
+            cameOn(p);
+          }}
+        >
           <Position player={p} />
           <span className="n">{p.name}</span>
           <span className="s">{p.strength}</span>
@@ -178,12 +233,22 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
   const sticker = (starter: PlacedStarter) => {
     const { player: p, slot, cost } = starter;
     const shown = placedStrength(starter);
-    const classes = ["pl", cost?.kind === "secondary" && "sec", cost?.kind === "improvised" && "imp", sheet.picked === p.id && "sel", hurt.has(p.id) && "hurt", sentOff.has(p.id) && "off"]
+    const classes = [
+      "pl",
+      cost?.kind === "secondary" && "sec",
+      cost?.kind === "improvised" && "imp",
+      sheet.picked === p.id && "sel",
+      hurt.has(p.id) && "hurt",
+      sentOff.has(p.id) && "off",
+      drag?.overId === p.id && "drop",
+      justIn === p.id && "in",
+    ]
       .filter(Boolean)
       .join(" ");
     return (
       <button
         key={p.id}
+        data-starter={p.id}
         className={classes}
         style={{ left: `${slot.x}%`, top: `${slot.y}%`, ["--lineup-order" as string]: order.get(p.id) ?? 0 }}
         aria-label={p.name}
@@ -219,7 +284,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
   return createPortal(
     <div className="sheet-wrap">
       <section className={isLive ? "lineup" : "lineup lineup-prematch"} role="dialog" aria-modal="true" aria-labelledby="lineup-title">
-        <div className="pitch" role="group" aria-label="Titulares">
+        <div className={drag ? "pitch dragging" : "pitch"} role="group" aria-label="Titulares">
           <i className="mark out" />
           <i className="mark half" />
           <i className="mark circle" />
@@ -244,6 +309,22 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
                 {sub} · {sheet.tactics.formation} · {posture}
               </span>
             </div>
+            {coachStep && (
+              <div className="lineup-coach" role="group" aria-label="Jogos dos técnicos">
+                <button className="lineup-step" aria-label="Jogo anterior" disabled={isBusy} onClick={() => coachStep.onStep(sheet, -1)}>
+                  <i className="ph-bold ph-caret-left" aria-hidden="true" />
+                </button>
+                <span className="lineup-coach-who">
+                  <b>{coachStep.name}</b>
+                  <small>
+                    {coachStep.place} de {coachStep.count} · <kbd>←</kbd> <kbd>→</kbd>
+                  </small>
+                </span>
+                <button className="lineup-step" aria-label="Próximo jogo" disabled={isBusy} onClick={() => coachStep.onStep(sheet, 1)}>
+                  <i className="ph-bold ph-caret-right" aria-hidden="true" />
+                </button>
+              </div>
+            )}
             {isLive && (
               <span className="lineup-subs">
                 Trocas <b>{subsLeft(sheet, mode)}</b>
@@ -319,7 +400,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
 
           <div className="lineup-hint-row">
             <p className="lineup-hint" role="status">
-              {error ?? pickFailure ?? hintOf(sheet, mode, squad, problem)}
+              {error ?? pickFailure ?? hintOf(sheet, mode, squad, problem, drag)}
             </p>
             {onLeave && (
               <button className="btn flat sm" onClick={onLeave}>
@@ -356,6 +437,13 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
           </footer>
         </div>
       </section>
+      {drag && (
+        <div className={drag.overId ? "lineup-ghost over" : "lineup-ghost"} style={{ left: drag.x, top: drag.y }} aria-hidden="true">
+          <Position player={drag.player} />
+          <b>{shirtName(drag.player.name)}</b>
+          <span className="f">{drag.player.strength}</span>
+        </div>
+      )}
     </div>,
     document.body,
   );

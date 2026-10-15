@@ -205,3 +205,37 @@ test("a one-coach game has no turns to pass and no clock unless asked for one", 
   expect(JSON.parse(session.save())).not.toHaveProperty("seats");
   expect(JSON.parse(session.save())).not.toHaveProperty("clock");
 });
+
+test("a waiting coach substitutes live in his own match, and his change survives a save mid-round", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: SEED, choices: twoCoaches });
+  let anasSide = null;
+  for (let step = 0; step < 60 && !anasSide; step++) {
+    if (!session.hotSeat()?.isLastTurn) {
+      session.apply({ type: "passTurn" });
+      continue;
+    }
+    if (session.apply({ type: "playToMatchDay" }).daysPlayed > 0) continue;
+    const round = session.apply({ type: "startRound" });
+    anasSide = round.humanSides?.find((side) => side.clubId === ANA.clubId) ?? null;
+    if (!anasSide) session.apply({ type: "finishRound" });
+  }
+  if (!anasSide) throw new Error("Ana plays a round while Bruno sits");
+  expect(session.read(["coachClubId"]).coachClubId).toBe(BRUNO.clubId);
+  expect(anasSide).toMatchObject({ coachName: ANA.name, incidentHandling: "askCoach" });
+  const offId = anasSide.starters.at(-1) ?? "";
+  const onId = anasSide.benchIds[0] ?? "";
+  session.apply({ type: "seeMinute", minute: 40 });
+  const changed = session.apply({ type: "changeLive", minute: 40, change: { substitutions: [{ offId, onId }] }, clubId: ANA.clubId });
+  const anasMatch = changed.matches.find((m) => m.fixtureId === anasSide.fixtureId);
+  expect(anasMatch?.events).toContainEqual({ type: "substitution", minute: 40, clubId: ANA.clubId, playerId: onId, offId });
+  expect(changed.humanSides?.find((side) => side.clubId === ANA.clubId)?.lastChangeMinute).toBe(40);
+
+  const loaded = createEngineSession(bundledGameFiles);
+  loaded.apply({ type: "load", save: session.saveShards() });
+  expect(loaded.liveRound()).toEqual(session.liveRound());
+  const { history } = session.read(["history"]);
+  const appsBefore = history.players[ANA.clubId]?.[onId]?.apps ?? 0;
+  loaded.apply({ type: "finishRound" });
+  expect(loaded.read(["history"]).history.players[ANA.clubId]?.[onId]?.apps).toBe(appsBefore + 1);
+});

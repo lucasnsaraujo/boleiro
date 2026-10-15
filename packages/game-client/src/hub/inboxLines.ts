@@ -2,18 +2,20 @@ import { guestClubOf } from "@boleiro/engine/sim/continental/guestClubs";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { SQUAD_CAP } from "@boleiro/engine/sim/transfers/squadCap";
+import { copinhaRun } from "@boleiro/engine/sim/youth/copinha";
 import type { AdvanceResult } from "../engine/createEngineSession.js";
 import { competitionName } from "../format/competitionName.js";
 import { monthName } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
 import { boardGoal } from "../screens/clubChoices.js";
+import { copinhaRoundName } from "../format/copinhaRoundName.js";
 
 export type DayEvent = AdvanceResult["events"][number];
 export type InboxTone = "good" | "bad" | "neutral";
 /** One line of the hub's inbox, as a newspaper would print it. */
 export type InboxLine = { date: IsoDate; text: string; tone: InboxTone };
 
-export type NewsState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "competitions" | "market" | "world">;
+export type NewsState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "competitions" | "market" | "world" | "youth">;
 
 const REQUEST_NOUNS: Record<CoachRequest["kind"], string> = {
   sign: "a contratação",
@@ -112,6 +114,22 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         return isOurs(event.clubId) ? [`${event.name} se aposenta aos ${event.age} anos`, "neutral"] : null;
       case "youthPromoted":
         return isOurs(event.clubId) ? [`${playerName(event.playerId)} sobe da base`, "neutral"] : null;
+      case "prospectReleased":
+        return isOurs(event.clubId) ? [`${event.name} fez 21 anos e deixou a base, dispensado`, "neutral"] : null;
+      case "squadToppedUp":
+        return isOurs(event.clubId) ? [`Elenco completado com ${plural(event.playerIds.length, "garoto da base", "garotos da base")}`, "neutral"] : null;
+      case "youthTrialsHeld":
+        return isOurs(event.clubId) ? [`Peneira: ${plural(event.prospectIds.length, "garoto novo", "garotos novos")} na base`, "neutral"] : null;
+      case "copinhaPlayed": {
+        const copinha = after.youth?.copinha;
+        const ours = coachClubId && copinha ? copinhaRun(copinha, coachClubId) : null;
+        if (!ours || !coachClubId) return null;
+        if (ours.isChampion) return [`${clubName(coachClubId)} campeão da Copinha`, "good"];
+        const last = ours.matches.at(-1);
+        const winner = last && (last.penaltyWinnerId ?? (last.homeGoals > last.awayGoals ? last.homeId : last.awayId));
+        const by = winner && winner !== coachClubId ? ` pelo ${clubName(winner)}` : "";
+        return [`Copinha: base eliminada na ${copinhaRoundName(ours.lastRoundSize)}${by}`, "bad"];
+      }
       case "prizePaid": {
         const paid = competition(event.competitionId);
         return isOurs(event.clubId) ? [`${paid ? competitionName(paid) : "Copa do Brasil"}: prêmio de ${formatMoney(event.amount)}`, "good"] : null;
