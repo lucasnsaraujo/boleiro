@@ -29,13 +29,14 @@ class WorldCrestsTest(unittest.TestCase):
         self.db.close()
         self.folder.cleanup()
 
-    def test_writes_world_club_crests_as_webp_in_their_own_manifest(self) -> None:
+    def test_writes_world_club_crests_as_webp_without_the_256_px_box_in_their_own_manifest(self) -> None:
         out = self.root / "world"
-        manifest = build_assets.build(build_assets.world_crest_rows(self.db, self.world, set()), out, build_assets.WORLD_FORMATS)
+        manifest = build_assets.build(build_assets.world_crest_rows(self.db, self.world, set()), out, build_assets.WORLD_FORMATS, build_assets.WORLD_BOXES)
         liverpool = manifest["clubs"]["tm-31"]["crest"]
         self.assertEqual(manifest["images"][liverpool]["formats"], ["webp"])
+        self.assertEqual(manifest["images"][liverpool]["boxes"], [64, 128])
         name = liverpool.removeprefix("crest/")
-        self.assertEqual(sorted(path.name for path in (out / "assets" / "crest").iterdir()), [f"{name}-{box}.webp" for box in (128, 256, 64)])
+        self.assertEqual(sorted(path.name for path in (out / "assets" / "crest").iterdir()), [f"{name}-{box}.webp" for box in (128, 64)])
 
     def test_leaves_out_the_crest_of_a_club_the_brazil_import_has(self) -> None:
         self.db.execute("UPDATE images SET entity_id = 'arsenal' WHERE snapshot_id = ? AND entity_id = 'tm-31'", (self.world,))

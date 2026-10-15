@@ -1,3 +1,4 @@
+import { CONMEBOL_CUPS } from "../continental/conmebolCups.js";
 import { COPA_DO_BRASIL } from "../copaDoBrasil.js";
 import type { Competition, Fixture } from "../gameState.js";
 import { LEAGUE_FORMATS } from "../leagueFormats.js";
@@ -13,5 +14,7 @@ export function championOf(competition: Competition, fixtures: readonly Fixture[
       return STATE_CHAMPIONSHIP.placings(competition, fixtures)[0] ?? null;
     case "cup":
       return COPA_DO_BRASIL.finalists(competition, fixtures)?.championId ?? null;
+    case "continental":
+      return CONMEBOL_CUPS.finalists(competition, fixtures)?.championId ?? null;
   }
 }

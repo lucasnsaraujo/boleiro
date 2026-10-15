@@ -2,6 +2,9 @@ import type { State } from "@boleiro/data/clubs";
 import { randomStream } from "../../engine/random.js";
 import type { DayEvent } from "../advanceDay.js";
 import { coachCareerDay } from "../coach/coachCareerDay.js";
+import { seasonEndField } from "../continental/continentalField.js";
+import { openContinentalCups } from "../continental/openContinentalCups.js";
+import { payContinentalPrizes } from "../continental/payContinentalPrizes.js";
 import { startCoachSeason } from "../coach/startCoachSeason.js";
 import { buildStadiums } from "../stadium/stadiumWorks.js";
 import { copyRecord } from "../copyRecord.js";
@@ -111,14 +114,16 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
     const current = competition.stages.length - 1;
     const stageDone = own.filter((f) => f.stage === current).every((f) => f.result !== null);
     if (!stageDone || competition.stages.length >= competition.stageDates.length) continue;
-    const opened = openNextStage(competition, own, clubStates);
+    const opened = openNextStage(competition, own, clubStates, { competitions, fixtures });
     competitions[competition.id] = opened.competition;
     fixtures = [...fixtures, ...opened.fixtures];
     events.push({ type: "stageOpened", competitionId: competition.id, stage: current + 1 });
   }
 
-  const players = day.players.length ? copyRecord(state.players) : state.players;
-  for (const player of day.players) players[player.id] = player;
+  // A continental guest's players belong to the result-only tier, so their match load is not kept.
+  const ownPlayers = day.players.filter((player) => player.id in state.players);
+  const players = ownPlayers.length ? copyRecord(state.players) : state.players;
+  for (const player of ownPlayers) players[player.id] = player;
   const tactics = live.coachMatch?.tactics ?? decisions.tactics ?? state.coach.tactics;
   const coach = tactics === state.coach.tactics ? state.coach : { ...state.coach, tactics };
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: day.discipline, coach };
@@ -130,6 +135,9 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   const prizes = payCopaPrizes(next, played);
   next = prizes.state;
   events.push(...prizes.events);
+  const continentalPrizes = payContinentalPrizes(next, played);
+  next = continentalPrizes.state;
+  events.push(...continentalPrizes.events);
   const friendlies = playFriendlies(next, state.date);
   next = friendlies.state;
   events.push(...friendlies.events);
@@ -148,6 +156,7 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
   next = { ...next, rngState: random.state() };
   if (state.world) next = { ...next, world: playWorldDay(state.world, state.date) };
   if (next.date.slice(0, 4) !== String(state.season)) {
+    const continentalField = seasonEndField(next);
     const developed = developPlayers(closeSeasonHistory(next));
     const ended = endSeason(developed.state);
     const marked = { ...ended.state, history: recordStrengths(ended.state) };
@@ -158,6 +167,7 @@ export function finishMatchDay(live: LiveDay): { state: GameState; events: DayEv
     const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
     next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };
     if (next.world) next = { ...next, world: endWorldSeason(next.world, next.season) };
+    next = openContinentalCups(next, continentalField);
   }
   const market = runTransferDay(next, decisions.requests ?? []);
   events.push(...market.events);

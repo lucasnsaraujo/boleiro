@@ -2,12 +2,13 @@ import type { Role } from "@boleiro/data/players";
 import type { Formation } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import type { Tactics } from "@boleiro/engine/sim/coach/tactics";
+import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
 import { openDisciplineDay } from "@boleiro/engine/sim/discipline/recordCards";
 import type { Fixture, GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import type { MatchContext } from "@boleiro/engine/sim/players/effectiveStrength";
 import { fatigueOn } from "@boleiro/engine/sim/players/fatigueOn";
 import { isInjured } from "@boleiro/engine/sim/players/isInjured";
-import { playingStrength } from "@boleiro/engine/sim/players/matchSetup";
+import { matchClubOf, playingStrength } from "@boleiro/engine/sim/players/matchSetup";
 import { pickMatchLineup } from "@boleiro/engine/sim/players/pickMatchLineup";
 import { formationOf, usualStartersOf } from "@boleiro/engine/sim/players/usualLineups";
 import { fixtureLabel } from "../format/competitionName.js";
@@ -43,8 +44,8 @@ function coachFixtureToday(state: Pick<GameState, "date" | "coachClubId" | "fixt
   return fixture;
 }
 
-function matchContextOf(state: Pick<GameState, "clubs">, fixture: Fixture): MatchContext {
-  const home = state.clubs[fixture.homeId];
+function matchContextOf(state: GameState, fixture: Fixture): MatchContext {
+  const home = matchClubOf(state, fixture.homeId);
   if (!home) throw new Error(`fixture ${fixture.id} has an unknown club`);
   return { date: fixture.date, pitch: home.pitch };
 }
@@ -87,7 +88,8 @@ export function matchDayPlan(state: GameState, formation?: Formation): MatchDayP
   const label = competition ? fixtureLabel(competition, fixture) : "";
   const { homeId, awayId } = fixture;
   const opponentId = homeId === clubId ? awayId : homeId;
-  const opponentFormation = formationOf(state, opponentId, playersOf(state, opponentId));
+  const guest = guestClubOf(state, opponentId);
+  const opponentFormation = formationOf(state, opponentId, guest ? guestSquadOf(guest) : playersOf(state, opponentId));
   const squad = squadOf(state, clubId, fixture, playingStrength(state, clubId, context, available));
   return { fixtureId: fixture.id, clubId, homeId, awayId, label, squad, lineup, tactics, opponentFormation };
 }

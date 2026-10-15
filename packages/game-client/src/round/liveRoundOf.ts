@@ -1,5 +1,6 @@
 import type { Club } from "@boleiro/data/clubs";
 import type { Tactics } from "@boleiro/engine/sim/coach/tactics";
+import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
 import type { Fixture, IsoDate } from "@boleiro/engine/sim/gameState";
 import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
 import type { MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
@@ -8,6 +9,9 @@ import { squadOf, type SquadPlayer } from "./matchDayPlan.js";
 
 export type Side = "home" | "away";
 export type RoundClub = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
+
+// A continental guest whose pack gives no colours shows in plain white and black.
+const GUEST_COLOURS = { primary: "#FFFFFF", secondary: "#000000" };
 export type RoundMatch = { fixtureId: string; competitionId: string; homeId: string; awayId: string; events: MatchEvent[] };
 type RoundCompetition = { id: string; label: string };
 /** The coach's group of his competition: its clubs and every fixture of the stage, today's still unplayed. */
@@ -95,12 +99,18 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
   const clubs: Record<string, RoundClub> = {};
   for (const id of [...matches.flatMap((m) => [m.homeId, m.awayId]), ...(table?.clubIds ?? [])]) {
     const club = state.clubs[id];
+    const guest = club ? null : guestClubOf(state, id);
     if (club) clubs[id] = { id, shortName: club.shortName, colours: club.colours, stadium: club.stadium };
+    else if (guest) clubs[id] = { id, shortName: guest.name, colours: guest.colours ?? GUEST_COLOURS, stadium: "" };
   }
+  const guestPlayers = new Map(matches.flatMap((m) => [m.homeId, m.awayId]).flatMap((id) => {
+    const guest = guestClubOf(state, id);
+    return guest ? guestSquadOf(guest).map((p) => [p.id, p.name] as const) : [];
+  }));
   const names: Record<string, string> = {};
   const nameOf = (id: string) => {
-    const player = state.players[id];
-    if (player) names[id] = player.name;
+    const name = state.players[id]?.name ?? guestPlayers.get(id);
+    if (name) names[id] = name;
   };
   for (const m of matches) {
     for (const e of m.events) {

@@ -25,7 +25,7 @@ import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
 import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
 import { readStoredSave, splitGame, writeSessionSave, writeSessionShards, type SaveShards, type SplitGame, type StoredSave } from "./sessionSave.js";
 
-export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode">;
+export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode" | "stateChampionships">;
 export type GameSummary = Pick<GameState, "date" | "season" | "coachClubId">;
 export type AdvanceResult = { date: IsoDate; events: DayEvent[] };
 export type PlayResult = { date: IsoDate; stop: StopReason; daysPlayed: number };

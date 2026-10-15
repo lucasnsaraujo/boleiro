@@ -1,4 +1,5 @@
-import type { Competition, Fixture, GameState, GroupStage, KnockoutStage, SeasonCalendar, StateCompetition } from "@boleiro/engine/sim/gameState";
+import { CUP_STAGES } from "@boleiro/engine/sim/continental/conmebolCups";
+import { CONTINENTAL_CUPS, type Competition, type Fixture, type GameState, type GroupStage, type KnockoutStage, type SeasonCalendar, type StateCompetition } from "@boleiro/engine/sim/gameState";
 import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
 import { continentalQualifiers } from "@boleiro/engine/sim/finances/continentalQualifiers";
 import { competitionKey } from "@boleiro/engine/sim/history/history";
@@ -6,6 +7,8 @@ import { LEAGUE_FORMATS } from "@boleiro/engine/sim/leagueFormats";
 import { STATE_CHAMPIONSHIP } from "@boleiro/engine/sim/stateChampionship";
 import { standings, type StandingRow } from "@boleiro/engine/sim/standings";
 import { aggregate, tieResults } from "@boleiro/engine/sim/tieResults";
+import { continentalPlaces } from "@boleiro/engine/sim/world/continentalPlaces";
+import { leagueMatches } from "@boleiro/engine/sim/world/resultOnlyLeague";
 
 export type ZoneKind = "libertadores" | "preLibertadores" | "sulAmericana" | "promotion" | "advance" | "relegation";
 export type ZoneKey = { zone: ZoneKind; label: string };
@@ -29,14 +32,21 @@ export type CopaFinalists = { championId: string; runnerUpId: string } | null;
 export type StageTab = { index: number; name: string; isDrawn: boolean };
 export type Scorer = { playerId: string; name: string; clubId: string; goals: number };
 
-const KIND_ORDER: Record<Competition["kind"], number> = { state: 0, league: 1, cup: 2 };
+const KIND_ORDER: Record<Competition["kind"], number> = { state: 0, league: 1, cup: 2, continental: 3 };
+const cupOrder = (c: Competition) => (c.kind === "continental" ? CONTINENTAL_CUPS.indexOf(c.cup) : 0);
+const byKind = (a: Competition, b: Competition) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || cupOrder(a) - cupOrder(b);
+
+const clubsIn = (stage: Competition["stages"][number]) => (stage.kind === "groups" ? stage.groups.flat() : stage.ties.flat());
+
+/** Whether the club plays the competition: entered in it, or drawn into one of its stages, as a Libertadores club dropping into the Sul-Americana. */
+const isPlaying = (c: Competition, clubId: string) => c.clubIds.includes(clubId) || c.stages.some((stage) => clubsIn(stage).includes(clubId));
 
 /** What the coach's club plays this season, state championship first, or the Série A and the cup without a club. */
 export function coachCompetitions({ coachClubId, competitions, season }: Pick<GameState, "coachClubId" | "competitions" | "season">): Competition[] {
-  const shown = (c: Competition) => (coachClubId ? c.clubIds.includes(coachClubId) : c.kind === "cup" || (c.kind === "league" && c.division === "A"));
+  const shown = (c: Competition) => (coachClubId ? isPlaying(c, coachClubId) : c.kind === "cup" || (c.kind === "league" && c.division === "A"));
   return Object.values(competitions)
     .filter((c) => c.season === season && shown(c))
-    .sort((a, b) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind]);
+    .sort(byKind);
 }
 
 const DIVISION_ORDER = ["A", "B", "C", "D"] as const;
@@ -47,16 +57,19 @@ export function openingCompetitionId(state: Pick<GameState, "coachClubId" | "com
 }
 
 /**
- * The tables screen's tabs: the four national divisions, the cup and the state championship the coach's club plays.
- * Every other state championship waits behind "Outras ligas".
+ * The tables screen's tabs: the four national divisions, the cup, the Libertadores and Sul-Americana (and the Recopa
+ * when the coach's club plays it) and the state championship the coach's club plays. Every other state championship
+ * waits behind "Outras ligas", with South America's leagues.
  */
 export function tableTabs(state: Pick<GameState, "coachClubId" | "competitions" | "season">): { tabs: Competition[]; otherStates: StateCompetition[] } {
   const thisSeason = Object.values(state.competitions).filter((c) => c.season === state.season);
   const leagues = DIVISION_ORDER.flatMap((division) => thisSeason.filter((c) => c.kind === "league" && c.division === division));
   const cups = thisSeason.filter((c) => c.kind === "cup");
+  const isShownCup = (c: Competition) => c.kind === "continental" && (c.cup !== "recopa" || (state.coachClubId !== null && isPlaying(c, state.coachClubId)));
+  const continental = thisSeason.filter(isShownCup).sort(byKind);
   const ownState = coachCompetitions(state).filter((c): c is StateCompetition => c.kind === "state");
   const otherStates = thisSeason.filter((c): c is StateCompetition => c.kind === "state" && !ownState.includes(c));
-  return { tabs: [...leagues, ...cups, ...ownState], otherStates };
+  return { tabs: [...leagues, ...cups, ...continental, ...ownState], otherStates };
 }
 
 const CUP_ROUND_NAMES: Record<string, string> = {
@@ -71,6 +84,17 @@ const CUP_ROUND_NAMES: Record<string, string> = {
   final: "Final",
 };
 const KNOCKOUT_BY_CLUBS: Record<number, string> = { 16: "Oitavas", 8: "Quartas", 4: "Semifinal", 2: "Final" };
+const CONTINENTAL_STAGE_NAMES: Record<string, string> = {
+  "stage-1": "1ª fase",
+  "stage-2": "2ª fase",
+  "stage-3": "3ª fase",
+  groups: "Grupos",
+  playoffs: "Playoffs",
+  "round-of-16": "Oitavas",
+  "quarter-finals": "Quartas",
+  "semi-finals": "Semifinal",
+  final: "Final",
+};
 const LEAGUE_STAGE_NAMES: Record<string, readonly string[]> = {
   "serie-c": ["Primeira fase", "Quadrangular", "Final"],
   // The semi-finals share their stage with the quarter-final losers' playoffs.
@@ -91,6 +115,8 @@ function stageNames(competition: Competition, calendar: SeasonCalendar): string[
       const names = LEAGUE_STAGE_NAMES[competition.format] ?? [];
       return Array.from({ length: count }, (_, i) => names[i] ?? (count === 1 ? "Tabela" : `${i + 1}ª fase`));
     }
+    case "continental":
+      return CUP_STAGES[competition.cup].map((stage, i) => CONTINENTAL_STAGE_NAMES[stage.name] ?? `${i + 1}ª fase`);
   }
 }
 
@@ -98,8 +124,6 @@ function stageNames(competition: Competition, calendar: SeasonCalendar): string[
 export function competitionStages(competition: Competition, calendar: SeasonCalendar): StageTab[] {
   return stageNames(competition, calendar).map((name, index) => ({ index, name, isDrawn: index < competition.stages.length }));
 }
-
-const clubsIn = (stage: Competition["stages"][number]) => (stage.kind === "groups" ? stage.groups.flat() : stage.ties.flat());
 
 /** The stage the screen opens on: the latest one with the coach's club in it, else the latest drawn. */
 export function defaultStage(competition: Competition, coachClubId: string | null): number {
@@ -139,8 +163,16 @@ function stateRanking(competition: StateCompetition, groups: readonly string[][]
     .map(({ id }) => id);
 }
 
+// A Libertadores group sends two to the round of 16 and its third to the Sul-Americana's play-offs; a
+// Sul-Americana group its winner to the round of 16 and its runner-up to the play-offs.
+const CONTINENTAL_GROUP_ZONES: Record<string, Zoning> = {
+  libertadores: { zoneOf: (_, position) => (position <= 2 ? "advance" : position === 3 ? "sulAmericana" : null), advanceLabel: "Oitavas" },
+  "sul-americana": { zoneOf: (_, position) => (position <= 2 ? "advance" : null), advanceLabel: "Mata-mata" },
+};
+
 function zoning(competition: Competition, stage: number, groups: readonly string[][], stageFixtures: readonly Fixture[], copa: CopaFinalists): Zoning {
   if (competition.kind === "cup") return NO_ZONES;
+  if (competition.kind === "continental") return CONTINENTAL_GROUP_ZONES[competition.cup] ?? NO_ZONES;
   if (competition.kind === "state") {
     if (stage !== 0) return NO_ZONES;
     const through = STATE_CHAMPIONSHIP.stageSizes(competition.clubIds.length)[1] ?? 0;
@@ -241,6 +273,11 @@ export function groupTables(
       })),
     };
   });
+  return { groups, zones: zoneKeys(groups, advanceLabel) };
+}
+
+/** The zones the tables' rows fall in, each once, in the zones' order; `advanceLabel` names where "advance" leads. */
+export function zoneKeys(groups: readonly GroupTable[], advanceLabel = ""): ZoneKey[] {
   const seen = new Set<ZoneKind>();
   const zones: ZoneKey[] = [];
   for (const row of groups.flatMap((g) => g.rows)) {
@@ -248,7 +285,7 @@ export function groupTables(
     seen.add(row.zone);
     zones.push({ zone: row.zone, label: row.zone === "advance" ? advanceLabel : ZONE_LABELS[row.zone] });
   }
-  return { groups, zones: zones.sort((a, b) => ZONE_ORDER.indexOf(a.zone) - ZONE_ORDER.indexOf(b.zone)) };
+  return zones.sort((a, b) => ZONE_ORDER.indexOf(a.zone) - ZONE_ORDER.indexOf(b.zone));
 }
 
 // Série D's semi-final stage lists the two semi-finals first, then the quarter-final losers' playoffs (packages/engine/src/sim/leagueFormats.ts).
@@ -287,14 +324,72 @@ export function knockoutTies(competition: Competition, stage: number, fixtures: 
   return shape.ties.map((clubIds, tie) => ({ ...tieView(shape, tie, clubIds, stageFixtures), isPlayoff: isPlayoff(competition, stage, tie) }));
 }
 
+/** A continental guest's player, `<club>#<n>`, as his club's history names him. */
+function guestScorer(history: GameState["history"], playerId: string): { name: string; clubId: string } | null {
+  const [clubId = ""] = playerId.split("#");
+  const name = history.players[clubId]?.[playerId]?.name;
+  return name ? { name, clubId } : null;
+}
+
 /** The competition's top scorers this season, most goals first. */
 export function topScorers(competition: Competition, { history, players }: Pick<GameState, "history" | "players">, limit: number): Scorer[] {
   const goals = history.current.goals[competitionKey(competition.id)] ?? {};
   return Object.entries(goals)
     .flatMap(([playerId, count]) => {
-      const player = players[playerId];
+      const player = players[playerId] ?? guestScorer(history, playerId);
       return player ? [{ playerId, name: player.name, clubId: player.clubId, goals: count }] : [];
     })
     .sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name, "pt-BR"))
     .slice(0, limit);
+}
+
+const PLACE_ZONES: Record<string, ZoneKind> = {
+  libertadoresGroups: "libertadores",
+  libertadoresStage2: "preLibertadores",
+  libertadoresStage1: "preLibertadores",
+  sulAmericanaGroups: "sulAmericana",
+  sulAmericanaStage1: "sulAmericana",
+};
+
+/** A result-only country's league tables as they stand, top level first, each row in its CONMEBOL place, promotion or relegation. */
+export function worldLeagueTables(state: Pick<GameState, "world">, countryId: string): GroupTable[] {
+  const country = state.world?.[countryId];
+  if (!country) return [];
+  return country.leagues.map((league, level) => {
+    const structure = country.structure.levels[level];
+    const fixtures: Fixture[] = leagueMatches(league).map((match, i) => ({ ...match, id: String(i), competitionId: league.id, stage: 0 }));
+    const order = standings(league.clubIds, fixtures, league.drawOrder);
+    const ids = order.map((row) => row.clubId);
+    const places = level === 0 ? continentalPlaces(country.structure.continental, ids, null) : new Map<string, string[]>();
+    const promoted = level > 0 ? ids.slice(0, structure?.promoted ?? 0) : [];
+    const relegated = ids.slice(ids.length - (structure?.relegated ?? 0));
+    const zoneOf = (clubId: string): ZoneKind | null => {
+      for (const [entry, clubIds] of places) if (clubIds.includes(clubId)) return PLACE_ZONES[entry] ?? null;
+      return promoted.includes(clubId) ? "promotion" : relegated.includes(clubId) ? "relegation" : null;
+    };
+    return {
+      label: structure?.name ?? league.id,
+      rows: order.map((row, i) => ({ ...row, position: i + 1, zone: zoneOf(row.clubId), form: recentForm(row.clubId, fixtures), movement: 0 })),
+    };
+  });
+}
+
+/** A knockout round of a bracket: a tie per place, null where the round is not drawn yet. */
+export type BracketRound = { stage: number; name: string; dates: string[]; ties: (TieView | null)[] };
+
+/**
+ * A continental cup's bracket from its round of 16 to its final once the round of 16 is drawn, each
+ * round half the ties of the one before; empty before then and for any other competition.
+ */
+export function knockoutBracket(competition: Competition, fixtures: readonly Fixture[]): BracketRound[] {
+  if (competition.kind !== "continental") return [];
+  const stages = CUP_STAGES[competition.cup];
+  const first = stages.findIndex((stage) => stage.name === "round-of-16");
+  if (first < 0 || competition.stages.length <= first) return [];
+  return stages.slice(first).map((stage, i) => {
+    const index = first + i;
+    const drawn = knockoutTies(competition, index, fixtures);
+    const places = 8 / 2 ** i;
+    return { stage: index, name: CONTINENTAL_STAGE_NAMES[stage.name] ?? stage.name, dates: competition.stageDates[index] ?? [], ties: Array.from({ length: places }, (_, tie) => drawn[tie] ?? null) };
+  });
 }

@@ -70,6 +70,7 @@ export function NewGame() {
   const [slotId, setSlotId] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [playsEstaduais, setPlaysEstaduais] = useState(true);
   const [failed, setFailed] = useState(false);
 
   const choices = useMemo(() => clubChoices(CLUBS, season?.boards ?? null), [season]);
@@ -106,7 +107,7 @@ export function NewGame() {
     setFailed(false);
     try {
       const coachClubId = picked.mode === "club" ? picked.choice.club.id : null;
-      await engine.apply({ type: "newGame", seed, choices: { coachClubId, careerMode: picked.mode === "career" } });
+      await engine.apply({ type: "newGame", seed, choices: { coachClubId, careerMode: picked.mode === "career", stateChampionships: playsEstaduais } });
       const opened = { slotId: slot.id, coachName: name };
       await saveToSlot(engine, slots, slot.id, opened);
       game.current = opened;
@@ -178,6 +179,15 @@ export function NewGame() {
                 aria-pressed={picked?.mode === "career"}
                 onClick={() => setPicked(picked?.mode === "career" ? null : { mode: "career" })}
               />
+            </div>
+
+            <div className="career-new-free">
+              <p>
+                <b>Estaduais</b>
+                <br />
+                <span className="mute">{playsEstaduais ? "De janeiro a março, antes do Brasileirão." : "Sem estaduais, o ranking nacional dá as vagas da Copa do Brasil e da Série D."}</span>
+              </p>
+              <button type="button" className={playsEstaduais ? "sw on" : "sw"} aria-label="Estaduais" aria-pressed={playsEstaduais} onClick={() => setPlaysEstaduais(!playsEstaduais)} />
             </div>
 
             <fieldset className="career-new-slots">

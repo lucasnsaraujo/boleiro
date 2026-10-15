@@ -212,6 +212,13 @@
   border-bottom: 2px dotted var(--line-2);
 }
 
+/* The estaduais switch sits right under career mode's, one rule between them. */
+.career-new-free + .career-new-free {
+  margin-top: 0;
+  padding: 4px 0 8px;
+  border-top: 0;
+}
+
 .career-new-free b {
   font-weight: 800;
 }
@@ -294,7 +301,7 @@
 
 .career-new-go {
   margin-top: auto;
-  padding-top: 18px;
+  padding-top: 10px;
 }
 
 .career-new-go .btn.lg {

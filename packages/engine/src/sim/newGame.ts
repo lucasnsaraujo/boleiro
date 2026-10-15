@@ -4,6 +4,9 @@ import type { ClubLineup } from "@boleiro/data/dataPack";
 import type { Role, SquadPlayer } from "@boleiro/data/players";
 import { randomStream } from "../engine/random.js";
 import { openingCoach } from "./coach/openingCoach.js";
+import { openingField } from "./continental/continentalField.js";
+import { openContinentalCups } from "./continental/openContinentalCups.js";
+import { continentalStagesOf, withExpectedContinentalPrizes } from "./continental/payContinentalPrizes.js";
 import { newHistory } from "./history/history.js";
 import { recordStrengths } from "./history/recordStrengths.js";
 import { NEUTRAL_MOOD } from "./morale/clubMood.js";
@@ -19,6 +22,7 @@ import { openingContractUntil } from "./transfers/openingContractUntil.js";
 import { openingMarket } from "./transfers/openingMarket.js";
 import { startSeason } from "./startSeason.js";
 import { startCountry } from "./world/resultOnlyWorld.js";
+import { SOUTH_AMERICA } from "./world/southAmerica.js";
 import type { CountryStructure, World, WorldClub } from "./world/world.js";
 
 /** A result-only country to start: its structure and its clubs level by level, top first. */
@@ -41,6 +45,8 @@ export type NewGameOptions = {
   season?: number;
   /** Countries played result-only next to Brazil. */
   world?: readonly CountryStart[];
+  /** False to start a game without the estaduais (SPEC §6's new-game option). */
+  stateChampionships?: boolean;
 };
 
 const FIRST_SEASON = 2026;
@@ -100,7 +106,7 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs, players, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world }: NewGameOptions,
+  { clubs, players, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, stateChampionships = true }: NewGameOptions,
 ): GameState {
   const random = randomStream(seed);
   const traitRandom = randomStream(seed ^ TRAIT_STREAM_SALT);
@@ -120,13 +126,13 @@ export function newGame(
       return { id, clubId, name, group, strength, ...(roles?.length ? { positions: [...roles] } : {}), contractUntil, ...openingProfile(player, `${season}-01-01`, traitRandom.next) };
     });
   const squadPlayers = [...dataPlayers, ...academyTopUp(clubs, dataPlayers, `${season}-01-01`, randomStream(seed ^ ACADEMY_STREAM_SALT).next)];
-  const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION);
+  const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION, stateChampionships, playsContinentalCups(world ?? []));
   const { economy, finances: boardFinances, wages } = openingFinances(clubsById, squadPlayers, competitions, fixtures, financeData, competitionMoney);
   const finances = withNewCoachRoom(boardFinances, coachClubId);
   const simPlayers = Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }]));
   const usualLineups = openingLineups(Object.keys(clubsById), squadsByClub(simPlayers), lineups, (row) => idOfRow.get(row));
   const market = openingMarket(seed);
-  return openingCoach({
+  const game = openingCoach({
     version: 4,
     packVersion,
     seed,
@@ -147,5 +153,20 @@ export function newGame(
     market,
     usualLineups,
     ...(world?.length ? { world: startWorld(world, season, seed) } : {}),
+    ...(stateChampionships ? {} : { playsStateChampionships: false as const }),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
+  return withContinentalCups(game, competitionMoney);
+}
+
+/** Whether the world holds all of South America, which the CONMEBOL cups need. */
+function playsContinentalCups(world: readonly CountryStart[]): boolean {
+  return SOUTH_AMERICA.every((structure) => world.some((country) => country.structure.id === structure.id));
+}
+
+/** The game with CONMEBOL's cups when South America is in its world, their prizes kept in its economy. */
+function withContinentalCups(state: GameState, competitionMoney: CompetitionMoney): GameState {
+  const field = openingField(state);
+  if (!field) return state;
+  const withStages = { ...state, economy: { ...state.economy, continentalStages: continentalStagesOf(competitionMoney) } };
+  return openContinentalCups(withExpectedContinentalPrizes(withStages, field), field);
 }

@@ -1,8 +1,19 @@
 import manifestJson from "@boleiro/data/pack/assets.json?raw";
 import packClubs from "@boleiro/data/pack/brazil.pack.json.gz?gunzip&keys=format,clubs";
+import worldManifestJson from "@boleiro/data/pack/world/assets.json?raw";
+import argentina from "@boleiro/data/pack/world/ar.pack.json.gz?gunzip&keys=format,clubs";
+import bolivia from "@boleiro/data/pack/world/bo.pack.json.gz?gunzip&keys=format,clubs";
+import chile from "@boleiro/data/pack/world/cl.pack.json.gz?gunzip&keys=format,clubs";
+import colombia from "@boleiro/data/pack/world/co.pack.json.gz?gunzip&keys=format,clubs";
+import ecuador from "@boleiro/data/pack/world/ec.pack.json.gz?gunzip&keys=format,clubs";
+import peru from "@boleiro/data/pack/world/pe.pack.json.gz?gunzip&keys=format,clubs";
+import paraguay from "@boleiro/data/pack/world/py.pack.json.gz?gunzip&keys=format,clubs";
+import uruguay from "@boleiro/data/pack/world/uy.pack.json.gz?gunzip&keys=format,clubs";
+import venezuela from "@boleiro/data/pack/world/ve.pack.json.gz?gunzip&keys=format,clubs";
 import { imageFileOf, parseAssetManifest } from "@boleiro/data/assetManifest";
 import type { Club } from "@boleiro/data/clubs";
 import { parsePackClubs } from "@boleiro/data/dataPack";
+import { parseWorldPackClubs } from "@boleiro/data/worldPack";
 
 /**
  * Every club in the bundled data pack, for screens that only need names, colours and crests. Only
@@ -21,14 +32,43 @@ const CREST_FILES = import.meta.glob<string>("./crest/*.webp", {
   import: "default",
 });
 
+// South America's clubs, which the game plays result-only and meet Brazil's in CONMEBOL's cups: their
+// names, colours and crests, kept in 64 and 128 px only (pipeline/build_assets.py).
+const WORLD_ASSETS = parseAssetManifest(worldManifestJson);
+const WORLD_CREST_FILES = import.meta.glob<string>("./crest/*.webp", {
+  base: "../../../../packages/data/pack/world/assets/",
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+
+/** What a screen shows of a club: its name, colours, ground and, through its id, its crest. */
+export type ClubFace = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
+
+const WORLD_BY_ID = new Map<string, ClubFace>(
+  [argentina, bolivia, chile, colombia, ecuador, peru, paraguay, uruguay, venezuela]
+    .flatMap((text) => parseWorldPackClubs(text))
+    .map(({ id, shortName, colours, stadium }) => [id, { id, shortName, colours, stadium }]),
+);
+
+/** South America's clubs by id, for screens that list clubs the game's own `clubs` don't have. */
+export const WORLD_FACES: Readonly<Record<string, ClubFace>> = Object.fromEntries(WORLD_BY_ID);
+
 export function clubById(id: string): Club | null {
   return BY_ID.get(id) ?? null;
 }
 
-/** The club's crest in the smallest variant at least `size` device pixels tall or wide, or null when it has none. */
+/** A club in the game's own `clubs`, or one of South America's from the packs; null when neither has it. */
+export function clubFaceOf(clubs: Readonly<Record<string, ClubFace>>, id: string): ClubFace | null {
+  return clubs[id] ?? WORLD_BY_ID.get(id) ?? null;
+}
+
+/** The club's crest in the smallest variant at least `size` device pixels tall or wide (or the largest it has), or null when it has none. */
 export function crestUrlOf(clubId: string, size = 64): string | null {
   const file = imageFileOf(ASSETS, clubId, "crest", size, "webp");
-  return file ? (CREST_FILES[`./${file}`] ?? null) : null;
+  if (file) return CREST_FILES[`./${file}`] ?? null;
+  const worldFile = imageFileOf(WORLD_ASSETS, clubId, "crest", size, "webp");
+  return worldFile ? (WORLD_CREST_FILES[`./${worldFile}`] ?? null) : null;
 }
 
 /** Up to three letters for a generated crest: "Bahia" gives BAH, "São Paulo" SP, "Atlético-MG" AMG. */

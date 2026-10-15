@@ -9,6 +9,7 @@ import { useCommands } from "../app/AppCommands.js";
 import { useGameClock } from "../app/gameClock.js";
 import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
+import { clubFaceOf } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { clubMeters, jobSecurity, leagueStanding, nextMatch, type NextMatch } from "../hub/hubSelectors.js";
 import { ConfidenceMeter } from "../finances/ConfidenceMeter.js";
@@ -199,7 +200,7 @@ export function Hub() {
 }
 
 function NextMatchSticker({ next, state }: { next: NextMatch; state: HubState }) {
-  const opponent = state.clubs[next.opponentId];
+  const opponent = clubFaceOf(state.clubs, next.opponentId);
   if (!opponent) return null;
   return (
     <section className="stk hub-next" aria-label="Próximo jogo">

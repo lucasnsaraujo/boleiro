@@ -36,20 +36,27 @@ const COPA_DO_BRASIL_ROUNDS: { name: string; dates: IsoDate[] }[] = [
 
 const LEAGUE_WEEKDAYS = new Set([0, 3, 6]); // guess: Sunday, Wednesday and Saturday, the usual Brasileirão match days
 const MIN_DAYS_BETWEEN_GAMES = 3; // guess: two full rest days, the shortest gap CBF schedules in practice
+// guess: a Série A or B round keeps at least a day's rest from a continental match day, as CBF moves
+// the games of clubs in CONMEBOL's cups; only one or two clubs a round play both.
+const MIN_DAYS_FROM_CONTINENTAL = 2;
+const CLEAR_OF_CONTINENTAL = new Set<Division>(["A", "B"]);
 
-function inSeason(date2026: IsoDate, season: number): IsoDate {
+/** A 2026 date moved to `season`, on the same weekday within three days. */
+export function inSeason(date2026: IsoDate, season: number): IsoDate {
   const shifted = `${season}${date2026.slice(4)}`;
   const shift = (new Date(date2026).getUTCDay() - new Date(shifted).getUTCDay() + 7) % 7;
   return addDays(shifted, shift > 3 ? shift - 7 : shift);
 }
 
-function pickDates(division: Division, count: number, season: number, reserved: readonly IsoDate[]): IsoDate[] {
+function pickDates(division: Division, count: number, season: number, reserved: readonly IsoDate[], continental: readonly IsoDate[]): IsoDate[] {
   const [start, end] = LEAGUE_WINDOWS[division].map((date) => inSeason(date, season)) as [IsoDate, IsoDate];
   const span = daysBetween(start, end);
   const candidates: IsoDate[] = [];
   for (let day = 0; day <= span; day++) {
     const date = addDays(start, day);
-    const restsFromReserved = reserved.every((other) => Math.abs(daysBetween(date, other)) >= MIN_DAYS_BETWEEN_GAMES);
+    const restsFromReserved =
+      reserved.every((other) => Math.abs(daysBetween(date, other)) >= MIN_DAYS_BETWEEN_GAMES) &&
+      (!CLEAR_OF_CONTINENTAL.has(division) || continental.every((other) => Math.abs(daysBetween(date, other)) >= MIN_DAYS_FROM_CONTINENTAL));
     if (LEAGUE_WEEKDAYS.has(new Date(date).getUTCDay()) && restsFromReserved) candidates.push(date);
   }
   const picked: IsoDate[] = [];
@@ -72,15 +79,16 @@ function pickDates(division: Division, count: number, season: number, reserved: 
   return picked;
 }
 
-export function seasonCalendar(season: number, dateCounts: Record<Division, number>): SeasonCalendar {
+/** The season's dates; `continental` are the CONMEBOL cups' match days, in a game that plays them. */
+export function seasonCalendar(season: number, dateCounts: Record<Division, number>, continental: readonly IsoDate[] = []): SeasonCalendar {
   const stateChampionshipDates = STATE_CHAMPIONSHIP_DATES.map((date) => inSeason(date, season));
   const copaDoBrasilRounds = COPA_DO_BRASIL_ROUNDS.map(({ name, dates }) => ({ name, dates: dates.map((date) => inSeason(date, season)) }));
   const reserved = [...stateChampionshipDates, ...copaDoBrasilRounds.flatMap((round) => round.dates)];
   const leagueDates = {
-    A: pickDates("A", dateCounts.A, season, reserved),
-    B: pickDates("B", dateCounts.B, season, reserved),
-    C: pickDates("C", dateCounts.C, season, reserved),
-    D: pickDates("D", dateCounts.D, season, reserved),
+    A: pickDates("A", dateCounts.A, season, reserved, continental),
+    B: pickDates("B", dateCounts.B, season, reserved, continental),
+    C: pickDates("C", dateCounts.C, season, reserved, continental),
+    D: pickDates("D", dateCounts.D, season, reserved, continental),
   };
   return { season, stateChampionshipDates, copaDoBrasilRounds, leagueDates };
 }

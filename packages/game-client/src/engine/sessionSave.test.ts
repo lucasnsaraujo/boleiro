@@ -3,6 +3,9 @@ import { bundledGameFiles } from "./bundledGameFiles.js";
 import { createEngineSession } from "./createEngineSession.js";
 import { twoCountryGame } from "./twoCountryGame.js";
 
+// The app's files without South America, for a game of Brazil alone.
+const BRAZIL_ONLY = { ...bundledGameFiles, world: [] };
+
 function worldSession() {
   const session = createEngineSession(bundledGameFiles);
   session.apply({ type: "load", save: twoCountryGame() });
@@ -14,7 +17,7 @@ function playUntil(session: ReturnType<typeof createEngineSession>, date: string
 }
 
 test("a Brazil game in shards is its game shard and the session's own state, the same parts a whole save holds", () => {
-  const session = createEngineSession(bundledGameFiles);
+  const session = createEngineSession(BRAZIL_ONLY);
   session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
   session.apply({ type: "ask", request: { kind: "sign", playerId: "x" } });
   const shards = session.saveShards();
@@ -25,7 +28,7 @@ test("a Brazil game in shards is its game shard and the session's own state, the
 });
 
 test("a live round keeps its day in a shard of its own, which the minutes shown leave as it was", () => {
-  const session = createEngineSession(bundledGameFiles);
+  const session = createEngineSession(BRAZIL_ONLY);
   session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
   session.apply({ type: "playToMatchDay" });
   session.apply({ type: "startRound" });
@@ -41,6 +44,13 @@ test("a live round keeps its day in a shard of its own, which the minutes shown 
   expect(twin.liveRound()).toEqual(session.liveRound());
   session.apply({ type: "finishRound" });
   expect(Object.keys(session.saveShards()).sort()).toEqual(["game", "session"]);
+});
+
+test("a new game keeps each South American country in a shard of its own, next to the world's", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  const countries = ["ar", "bo", "cl", "co", "ec", "pe", "py", "uy", "ve"].map((id) => `country-${id}`);
+  expect(Object.keys(session.saveShards()).sort()).toEqual([...countries, "game", "session", "world"]);
 });
 
 test("a world game saved in shards, again after days only one country played, loads back the same session", () => {

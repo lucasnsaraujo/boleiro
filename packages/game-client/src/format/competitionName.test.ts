@@ -21,6 +21,8 @@ const copa: Competition = {
   stages: [{ kind: "knockout", ties: [], dates: ["2026-02-18"] }],
 };
 
+const libertadores: Competition = { ...base, id: "libertadores-2026", kind: "continental", cup: "libertadores", entries: [], countries: {}, stages: [] };
+
 function fixture(competition: Competition, date: string): Fixture {
   return { id: "f1", competitionId: competition.id, stage: 0, date, homeId: "a", awayId: "b", result: null };
 }
@@ -42,4 +44,11 @@ test("a knockout game only names the competition", () => {
 
 test("a competition kept in the history is named the way the fan says it", () => {
   expect(["serie-a", "serie-d", "copa-do-brasil", "state-sp", "state-rs"].map(competitionKeyName)).toEqual(["Série A", "Série D", "Copa do Brasil", "Paulista", "Gaúcho"]);
+});
+
+test("CONMEBOL's cups go by the names Brazilian fans give them", () => {
+  expect(competitionName(libertadores)).toBe("Libertadores");
+  expect(competitionName({ ...libertadores, cup: "sul-americana" })).toBe("Sul-Americana");
+  expect(competitionName({ ...libertadores, cup: "recopa" })).toBe("Recopa");
+  expect(["libertadores", "sul-americana", "recopa"].map(competitionKeyName)).toEqual(["Libertadores", "Sul-Americana", "Recopa"]);
 });

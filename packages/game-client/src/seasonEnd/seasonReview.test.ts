@@ -6,6 +6,7 @@ import { payCopaPrizes } from "@boleiro/engine/sim/finances/payCopaPrizes";
 import type { ClubFinance, Fixture, Ledger } from "@boleiro/engine/sim/gameState";
 import { newHistory, type SeasonRecord } from "@boleiro/engine/sim/history/history";
 import { loadNewGame } from "@boleiro/engine/sim/loadNewGame";
+import { loadSouthAmerica } from "@boleiro/engine/sim/world/loadSouthAmerica";
 import { seasonReview, type SeasonEnded, type SeasonStarted } from "./seasonReview.js";
 
 const serieA = Array.from({ length: 20 }, (_, i) => `a${i + 1}`);
@@ -121,5 +122,31 @@ describe("the end-of-season review", () => {
     expect(review.placing).toBeNull();
     expect(review.verdict).toBeNull();
     expect(review.champions).toMatchObject({ "serie-a": "a1", "copa-do-brasil": "a2" });
+  });
+
+  describe("in a game that plays CONMEBOL's cups", () => {
+    const southAmerica = loadNewGame(7, { coachClubId: "atletico-mg-mg", world: loadSouthAmerica(2026) });
+    const libertadores = southAmerica.competitions["libertadores-2026"];
+    if (libertadores?.kind !== "continental") throw new Error("no Libertadores");
+    const secondStage = { kind: "knockout" as const, ties: [["atletico-mg-mg", "tm-209"] as [string, string]], dates: ["2026-02-17", "2026-02-24"] };
+    const leg = (id: string, homeId: string, awayId: string): Fixture => ({ id, competitionId: libertadores.id, stage: 1, tie: 0, date: "2026-02-17", homeId, awayId, result: { homeGoals: 1, awayGoals: 0 } });
+    const endedWithCups: SeasonEnded = {
+      ...southAmerica,
+      competitions: { ...southAmerica.competitions, [libertadores.id]: { ...libertadores, stages: [...libertadores.stages, secondStage] } },
+      fixtures: [leg("l1", "tm-209", "atletico-mg-mg"), leg("l2", "atletico-mg-mg", "tm-209")],
+    };
+    const nextLibertadores = { ...libertadores, id: "libertadores-2027", season: 2027, entries: [[], [], [], ["atletico-mg-mg"]] };
+
+    it("counts the CONMEBOL prizes the club earned in the cups", () => {
+      const usd = southAmerica.economy.continentalStages?.libertadores["preliminary-2"] ?? 0;
+      const review = seasonReview(endedWithCups, started("atletico-mg-mg"), []);
+      expect(usd).toBeGreaterThan(0);
+      expect(review.prizeMoney).toBe(Math.round(usd * southAmerica.economy.continental.usdBrl));
+    });
+
+    it("names next season's place from the cups the turn drew", () => {
+      const turned = { ...started("atletico-mg-mg", {}, record({ tables: { A: ["x", ...serieA], B: serieB, C: [], D: [] } })), competitions: { [nextLibertadores.id]: nextLibertadores } };
+      expect(seasonReview(endedWithCups, turned, []).continental).toBe("libertadores");
+    });
   });
 });

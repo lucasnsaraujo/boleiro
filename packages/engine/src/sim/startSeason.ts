@@ -8,6 +8,7 @@ import { seasonCalendar } from "./seasonCalendar.js";
 import { shuffle } from "./shuffle.js";
 import { STATE_CHAMPIONSHIP } from "./stateChampionship.js";
 import { BRAZIL } from "./world/brazil.js";
+import { continentalDates } from "./continental/conmebolCups.js";
 
 /** The clubs joining the season's Copa do Brasil at each stage. */
 export const cupEntriesOf = (competitions: Record<string, Competition>): string[][] =>
@@ -15,8 +16,19 @@ export const cupEntriesOf = (competitions: Record<string, Competition>): string[
 
 export type SeasonStart = { calendar: SeasonCalendar; competitions: Record<string, Competition>; fixtures: Fixture[] };
 
-/** Opens every competition of the season. `qualification` is what last season's estaduais and leagues decided. */
-export function startSeason(season: number, clubs: Record<string, Club>, random: () => number, qualification: Qualification): SeasonStart {
+/**
+ * Opens every competition of the season. `qualification` is what last season's estaduais and leagues decided;
+ * without `playsStateChampionships` the estaduais are not played and their dates stay empty; with
+ * `playsContinentalCups` Brazil's leagues keep clear of CONMEBOL's match days.
+ */
+export function startSeason(
+  season: number,
+  clubs: Record<string, Club>,
+  random: () => number,
+  qualification: Qualification,
+  playsStateChampionships = true,
+  playsContinentalCups = false,
+): SeasonStart {
   const clubStates: Record<string, State> = Object.fromEntries(Object.values(clubs).map((club) => [club.id, club.state]));
   const levels = BRAZIL.levels.map((level) => {
     const members = Object.values(clubs).filter((club) => club.division === level.division).map((club) => club.id).sort();
@@ -24,7 +36,7 @@ export function startSeason(season: number, clubs: Record<string, Club>, random:
   });
   const dateCounts = new Map(levels.map((level) => [level.division, level.stageCounts.reduce((sum, n) => sum + n, 0)]));
   const total = (division: Division) => dateCounts.get(division) ?? 0;
-  const calendar = seasonCalendar(season, { A: total("A"), B: total("B"), C: total("C"), D: total("D") });
+  const calendar = seasonCalendar(season, { A: total("A"), B: total("B"), C: total("C"), D: total("D") }, playsContinentalCups ? continentalDates(season) : []);
   const competitions: Record<string, Competition> = {};
   const fixtures: Fixture[] = [];
   const open = (competition: Competition) => {
@@ -51,7 +63,7 @@ export function startSeason(season: number, clubs: Record<string, Club>, random:
     open(league);
   }
   const ranking = nationalRanking(Object.values(clubs));
-  for (const state of STATES) {
+  for (const state of playsStateChampionships ? STATES : []) {
     const inState = new Set(Object.values(clubs).filter((club) => club.state === state).map((club) => club.id));
     const seeding = [...(qualification.statePlacings[state] ?? []), ...ranking].filter((id, i, all) => inState.has(id) && all.indexOf(id) === i);
     if (seeding.length < 2) continue;

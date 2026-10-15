@@ -4,7 +4,7 @@ import type { ClubFinance, Fixture, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { saveGame } from "../saveGame.js";
 import { wageBillsOf } from "../transfers/wageBillsOf.js";
-import { attendance } from "./recordMatchFinances.js";
+import { attendance, recordMatchFinances } from "./recordMatchFinances.js";
 
 const start = loadNewGame(4, { coachClubId: null });
 const BUSY_DAY_FIXTURES = 10;
@@ -99,5 +99,22 @@ describe("a monthly closing with forced sales", () => {
     const sellers = events.flatMap((e) => (e.type === "forcedSale" ? [e.clubId] : []));
     expect(sellers).toEqual(expect.arrayContaining(brokeIds));
     expect(saveGame(broke)).toBe(saved);
+  });
+});
+
+describe("a continental match against a club from abroad", () => {
+  const fixture: Fixture = { id: "c", competitionId: "libertadores-2026", stage: 3, date: start.date, homeId: "palmeiras-sp", awayId: "tm-209", result: { homeGoals: 2, awayGoals: 0 } };
+  const after = recordMatchFinances(start, [fixture]);
+  const away: Fixture = { ...fixture, homeId: "tm-209", awayId: "palmeiras-sp" };
+
+  it("books the Brazilian host's gate and form though the guest keeps no accounts", () => {
+    expect(financeOf(after, "palmeiras-sp").month.revenue.tickets).toBeGreaterThan(financeOf(start, "palmeiras-sp").month.revenue.tickets);
+    expect(financeOf(after, "palmeiras-sp").recentPoints.at(-1)).toBe(3);
+  });
+
+  it("books a Brazilian visitor's form and no gate", () => {
+    const visited = recordMatchFinances(start, [away]);
+    expect(financeOf(visited, "palmeiras-sp").recentPoints.at(-1)).toBe(0);
+    expect(financeOf(visited, "palmeiras-sp").month.revenue.tickets).toBe(financeOf(start, "palmeiras-sp").month.revenue.tickets);
   });
 });

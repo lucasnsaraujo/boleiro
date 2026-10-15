@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
-import type { Club } from "@boleiro/data/clubs";
 import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
-import type { Competition, GameState } from "@boleiro/engine/sim/gameState";
+import type { Competition, Fixture, GameState } from "@boleiro/engine/sim/gameState";
 import { useServices } from "../app/ServicesContext.js";
+import { WORLD_FACES, type ClubFace } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { competitionName } from "@boleiro/game-client/format/competitionName";
 import { formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
@@ -12,15 +12,20 @@ import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springTiming } from "../motion/springEasing.js";
 import { useFlip } from "../motion/useFlip.js";
+import { Bracket } from "../tables/Bracket.js";
+import { GroupCard, NextTieCard, type NextTie } from "../tables/BracketCards.js";
 import {
   competitionStages,
   defaultStage,
   groupTables,
+  knockoutBracket,
   knockoutTies,
   openingCompetitionId,
   playedRounds,
   tableTabs,
   topScorers,
+  worldLeagueTables,
+  zoneKeys,
   type GroupTable,
   type Outcome,
   type TieView,
@@ -33,9 +38,24 @@ const copaFinalists = (competitions: readonly Competition[], fixtures: GameState
   return copa?.kind === "cup" ? COPA_DO_BRASIL.finalists(copa, fixtures) : null;
 };
 
-const TABLES_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions", "calendar", "history", "players"] as const;
+const TABLES_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions", "calendar", "history", "players", "world"] as const;
 type TablesState = Pick<GameState, (typeof TABLES_KEYS)[number]>;
-type Clubs = Readonly<Record<string, Club>>;
+type Clubs = Readonly<Record<string, ClubFace>>;
+
+// South America's countries the game plays result-only, as Brazilians name them.
+const COUNTRIES = [
+  { id: "ar", name: "Argentina" },
+  { id: "bo", name: "Bolívia" },
+  { id: "cl", name: "Chile" },
+  { id: "co", name: "Colômbia" },
+  { id: "ec", name: "Equador" },
+  { id: "py", name: "Paraguai" },
+  { id: "pe", name: "Peru" },
+  { id: "uy", name: "Uruguai" },
+  { id: "ve", name: "Venezuela" },
+];
+/** A country's leagues are picked under "Outras ligas" by this id, apart from the competitions'. */
+const worldPick = (countryId: string) => `world:${countryId}`;
 
 const SCORERS_SHOWN = 7;
 // Up to two groups fit one under the other; more get a picker.
@@ -68,24 +88,64 @@ export function Tables() {
     };
   }, [engine]);
 
-  const { tabs, otherStates } = useMemo(() => {
-    if (!state) return { tabs: [], otherStates: [] };
+  const { tabs, otherStates, countries, clubs } = useMemo(() => {
+    if (!state) return { tabs: [], otherStates: [], countries: [], clubs: WORLD_FACES };
     const found = tableTabs(state);
-    return { tabs: found.tabs, otherStates: found.otherStates.toSorted(byName) };
+    return {
+      tabs: found.tabs,
+      otherStates: found.otherStates.toSorted(byName),
+      countries: COUNTRIES.filter((country) => state.world?.[country.id]),
+      clubs: { ...WORLD_FACES, ...state.clubs },
+    };
   }, [state]);
 
   if (failed) return <p className="status error">Nenhum jogo aberto.</p>;
   if (!state) return <p className="status">Abrindo as tabelas…</p>;
 
   const all = [...tabs, ...otherStates];
+  const others = [...otherStates.map((c) => c.id), ...countries.map((c) => worldPick(c.id))];
   const nextId = nextMatch(state)?.fixture.competitionId;
-  const shown = all.find((c) => c.id === (pickedId ?? openingCompetitionId(state, nextId))) ?? tabs[0];
-  const isOther = otherStates.some((c) => c.id === shown?.id);
-  const openOthers = () => setPickedId(otherId ?? otherStates[0]?.id ?? null);
+  const pick = pickedId ?? openingCompetitionId(state, nextId);
+  const country = countries.find((c) => worldPick(c.id) === pick) ?? null;
+  const shown = country ? undefined : (all.find((c) => c.id === pick) ?? tabs[0]);
+  const isOther = country !== null || otherStates.some((c) => c.id === shown?.id);
+  const openOthers = () => setPickedId(otherId ?? others[0] ?? null);
   const view = shown ? (views[shown.id] ?? { stage: defaultStage(shown, state.coachClubId), round: null }) : null;
   const latestRound = shown && view ? playedRounds(shown, view.stage, state.fixtures) : 0;
   const round = Math.min(view?.round ?? latestRound, latestRound);
   const showView = (next: View) => shown && setViews({ ...views, [shown.id]: next });
+  const countryTables = country ? worldLeagueTables(state, country.id) : [];
+  const countryZones = zoneKeys(countryTables);
+  const picker = isOther && (
+    <label className="field tables-state">
+      <small>Liga</small>
+      <select
+        value={pick}
+        onChange={(event) => {
+          setOtherId(event.target.value);
+          setPickedId(event.target.value);
+        }}
+      >
+        <optgroup label="Estaduais">
+          {otherStates.map((c) => (
+            <option key={c.id} value={c.id}>
+              {competitionName(c)}
+            </option>
+          ))}
+        </optgroup>
+        {countries.length > 0 && (
+          <optgroup label="América do Sul">
+            {countries.map((c) => (
+              <option key={c.id} value={worldPick(c.id)}>
+                {c.name}
+              </option>
+            ))}
+          </optgroup>
+        )}
+      </select>
+      <i className="ph-bold ph-caret-down" aria-hidden="true" />
+    </label>
+  );
 
   return (
     <div className="tables fills-screen">
@@ -97,7 +157,7 @@ export function Tables() {
               {competitionName(c)}
             </button>
           ))}
-          {otherStates.length > 0 && (
+          {others.length > 0 && (
             <button role="tab" aria-selected={isOther} onClick={openOthers}>
               {OTHER_LEAGUES}
             </button>
@@ -112,44 +172,107 @@ export function Tables() {
           </button>
         </div>
       </header>
+      {country && (
+        <div className="tables-body" role="tabpanel" aria-label={country.name}>
+          <section className="tables-main">
+            <div className="tables-sub">{picker}</div>
+            <GroupStage key={country.id} name={country.name} groups={countryTables} clubs={clubs} coachClubId={state.coachClubId} />
+          </section>
+          <aside className="tables-side" key={country.id}>
+            {countryZones.length > 0 && <ZoneKeySticker zones={countryZones} groups={countryTables} />}
+          </aside>
+        </div>
+      )}
       {shown && view && (
         <CompetitionPanel
           competition={shown}
           state={state}
+          clubs={clubs}
           stage={view.stage}
           round={view.round === null ? null : round}
           onStage={(stage) => showView({ stage, round: null })}
-          picker={
-            isOther && (
-              <label className="field tables-state">
-                <small>Estadual</small>
-                <select
-                  value={shown.id}
-                  onChange={(event) => {
-                    setOtherId(event.target.value);
-                    setPickedId(event.target.value);
-                  }}
-                >
-                  {otherStates.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {competitionName(c)}
-                    </option>
-                  ))}
-                </select>
-                <i className="ph-bold ph-caret-down" aria-hidden="true" />
-              </label>
-            )
-          }
+          picker={picker}
         />
       )}
     </div>
   );
 }
 
-type PanelProps = { competition: Competition; state: TablesState; stage: number; round: number | null; onStage: (stage: number) => void; picker: ReactNode };
+type PanelProps = { competition: Competition; state: TablesState; clubs: Clubs; stage: number; round: number | null; onStage: (stage: number) => void; picker: ReactNode };
 
-/** The shown competition's stage: its table or ties, with its scorers and zones beside them. */
-function CompetitionPanel({ competition, state, stage, round, onStage, picker }: PanelProps) {
+type StageTab = ReturnType<typeof competitionStages>[number];
+
+/** The competition's stages as a segmented control; a stage not drawn yet can't be picked. */
+function StagePicker({ stages, stage, onStage }: { stages: StageTab[]; stage: number; onStage: (stage: number) => void }) {
+  return (
+    <div className="seg tables-seg" role="group" aria-label="Fases">
+      {stages.map((s) => (
+        <button key={s.index} aria-pressed={s.index === stage} disabled={!s.isDrawn} onClick={() => onStage(s.index)}>
+          {s.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// What winning the tie leads to, by the name of the round after it.
+const NEXT_ROUND: Record<string, string> = { Quartas: "quem passar joga as quartas", Semifinal: "quem passar joga a semifinal", Final: "quem passar joga a final" };
+
+/** The coach's next match in the cup, for the card under the bracket. */
+function nextTieOf(competition: Competition, fixtures: readonly Fixture[], stages: readonly StageTab[], clubs: Clubs, coachClubId: string | null): NextTie {
+  const own = fixtures.filter((f) => f.competitionId === competition.id && coachClubId !== null && (f.homeId === coachClubId || f.awayId === coachClubId));
+  const next = own.filter((f) => !f.result).toSorted((a, b) => a.date.localeCompare(b.date))[0];
+  if (!next) return { title: "Seu clube", sub: "mata-mata", none: own.length ? "Seu clube não tem mais jogos nesta copa." : "Seu clube não joga esta copa." };
+  const stageName = stages[next.stage]?.name ?? "";
+  const legs = fixtures.filter((f) => f.competitionId === competition.id && f.stage === next.stage && f.tie === next.tie).toSorted((a, b) => a.date.localeCompare(b.date));
+  const [first] = legs;
+  const isReturn = legs.length > 1 && first !== undefined && first.id !== next.id;
+  const firstLeg = isReturn && first.result ? `${clubs[first.homeId]?.shortName ?? first.homeId} ${first.result.homeGoals} × ${first.result.awayGoals} ${clubs[first.awayId]?.shortName ?? first.awayId}` : null;
+  const isFinal = next.stage === stages.length - 1;
+  return {
+    title: legs.length > 1 ? `${stageName}, ${isReturn ? "volta" : "ida"}` : stageName,
+    sub: isFinal ? "quem vencer é campeão" : (NEXT_ROUND[stages[next.stage + 1]?.name ?? ""] ?? "quem passar segue no mata-mata"),
+    homeId: next.homeId,
+    awayId: next.awayId,
+    date: next.date,
+    firstLeg,
+    isTwoLegged: legs.length > 1,
+  };
+}
+
+/** A continental cup from its round of 16: the whole bracket, the coach's group as it ended and his next tie. */
+function BracketPanel({ competition, state, clubs, stage, onStage, picker }: Omit<PanelProps, "round">) {
+  const stages = competitionStages(competition, state.calendar);
+  const name = competitionName(competition);
+  const groupsAt = competition.stages.findIndex((s) => s.kind === "groups");
+  const groups = groupsAt >= 0 ? groupTables(competition, groupsAt, state.fixtures).groups : [];
+  const group = groups.find((g) => g.rows.some((row) => row.clubId === state.coachClubId)) ?? groups[0];
+  return (
+    <div className="tables-body wide" role="tabpanel" aria-label={name}>
+      <section className="tables-main">
+        <div className="tables-sub">
+          {picker}
+          <StagePicker stages={stages} stage={stage} onStage={onStage} />
+          <h2 className="bk-title">
+            {name} {competition.season}
+            <span>mata-mata</span>
+          </h2>
+        </div>
+        <Bracket name={name} rounds={knockoutBracket(competition, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} />
+        <div className="bk-low">
+          {group && <GroupCard group={group} clubs={clubs} coachClubId={state.coachClubId} />}
+          <NextTieCard next={nextTieOf(competition, state.fixtures, stages, clubs, state.coachClubId)} clubs={clubs} />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/** The shown competition's stage: its table or ties, with its scorers and zones beside them; a continental cup's bracket from its round of 16. */
+function CompetitionPanel({ competition, state, clubs, stage, round, onStage, picker }: PanelProps) {
+  if (knockoutBracket(competition, state.fixtures).some((r) => r.stage === stage)) {
+    return <BracketPanel competition={competition} state={state} clubs={clubs} stage={stage} onStage={onStage} picker={picker} />;
+  }
   const stages = competitionStages(competition, state.calendar);
   const scorers = topScorers(competition, state, SCORERS_SHOWN);
   const name = competitionName(competition);
@@ -166,21 +289,13 @@ function CompetitionPanel({ competition, state, stage, round, onStage, picker }:
         {(stages.length > 1 || picker) && (
           <div className="tables-sub">
             {picker}
-            {stages.length > 1 && (
-              <div className="seg tables-seg" role="group" aria-label="Fases">
-                {stages.map((s) => (
-                  <button key={s.index} aria-pressed={s.index === stage} disabled={!s.isDrawn} onClick={() => onStage(s.index)}>
-                    {s.name}
-                  </button>
-                ))}
-              </div>
-            )}
+            {stages.length > 1 && <StagePicker stages={stages} stage={stage} onStage={onStage} />}
           </div>
         )}
         {table ? (
-          <GroupStage key={pageKey} name={name} groups={table.groups} clubs={state.clubs} coachClubId={state.coachClubId} />
+          <GroupStage key={pageKey} name={name} groups={table.groups} clubs={clubs} coachClubId={state.coachClubId} />
         ) : (
-          <TieList key={pageKey} name={stages[stage]?.name ?? name} ties={knockoutTies(competition, stage, state.fixtures)} clubs={state.clubs} coachClubId={state.coachClubId} />
+          <TieList key={pageKey} name={stages[stage]?.name ?? name} ties={knockoutTies(competition, stage, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} />
         )}
       </section>
       <aside className="tables-side" key={competition.id}>
@@ -191,7 +306,7 @@ function CompetitionPanel({ competition, state, stage, round, onStage, picker }:
           ) : (
             <ol aria-labelledby="scorers-title">
               {scorers.map((s, i) => {
-                const club = state.clubs[s.clubId];
+                const club = clubs[s.clubId];
                 return (
                   <li key={s.playerId} className={s.clubId === state.coachClubId ? "mine" : undefined}>
                     <span className="tables-rank">{i + 1}</span>

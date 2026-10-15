@@ -50,8 +50,9 @@ test("the Série A tab shows the whole table and its zones", async () => {
   await userEvent.click(await screen.findByRole("tab", { name: "Série A" }));
   const table = screen.getByRole("table", { name: "Série A" });
   expect(within(table).getAllByRole("row")).toHaveLength(21);
-  expect(screen.getByText("Libertadores")).toBeTruthy();
-  expect(screen.getByText("Rebaixamento")).toBeTruthy();
+  const zones = screen.getByRole("region", { name: "Vagas" });
+  expect(within(zones).getByText("Libertadores")).toBeTruthy();
+  expect(within(zones).getByText("Rebaixamento")).toBeTruthy();
 });
 
 test("the Copa do Brasil tab lists every round, with the drawn one's ties", async () => {
@@ -78,10 +79,20 @@ test("a coach without a club waits for offers from the tables instead of playing
   expect(screen.queryByRole("button", { name: "Jogar rodada" })).toBeNull();
 });
 
-test("every national division has a tab, next to the cup and the club's state championship", async () => {
+test("every national division has a tab, next to the cup, CONMEBOL's cups and the club's state championship", async () => {
   openTables(await services());
   await screen.findByRole("tab", { name: "Baiano" });
-  expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual(["Série A", "Série B", "Série C", "Série D", "Copa do Brasil", "Baiano", "Outras ligas"]);
+  expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+    "Série A",
+    "Série B",
+    "Série C",
+    "Série D",
+    "Copa do Brasil",
+    "Libertadores",
+    "Sul-Americana",
+    "Baiano",
+    "Outras ligas",
+  ]);
 });
 
 test("a picked tab keeps the keyboard focus", async () => {
@@ -96,12 +107,46 @@ test("the other state championships are one pick away under Outras ligas", async
   openTables(await services());
   await userEvent.click(await screen.findByRole("tab", { name: "Outras ligas" }));
   expect(screen.getByRole("tab", { name: "Outras ligas" }).getAttribute("aria-selected")).toBe("true");
-  const picker = screen.getByRole("combobox", { name: "Estadual" });
+  const picker = screen.getByRole("combobox", { name: "Liga" });
   const names = within(picker).getAllByRole("option").map((option) => option.textContent);
   expect(names).not.toContain("Baiano");
   expect(names).toContain("Paulista");
   await userEvent.selectOptions(picker, "Paulista");
   expect(screen.getByRole("tabpanel", { name: "Paulista" })).toBeTruthy();
+});
+
+test("South America's leagues are one pick away under Outras ligas, Argentina with both its divisions", async () => {
+  openTables(await services());
+  await userEvent.click(await screen.findByRole("tab", { name: "Outras ligas" }));
+  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Liga" }), "Argentina");
+  const panel = screen.getByRole("tabpanel", { name: "Argentina" });
+  const top = within(panel).getByRole("table", { name: "Liga Profesional" });
+  expect(within(top).getAllByRole("row")).toHaveLength(31);
+  expect(within(top).getByText("CA River Plate")).toBeTruthy();
+  expect(within(panel).getByRole("table", { name: "Primera Nacional" })).toBeTruthy();
+});
+
+test("the Libertadores tab shows its first stage's ties between foreign clubs by name", async () => {
+  openTables(await services());
+  await userEvent.click(await screen.findByRole("tab", { name: "Libertadores" }));
+  const ties = screen.getByRole("list", { name: "1ª fase" });
+  expect(within(ties).getAllByRole("listitem")).toHaveLength(3);
+  expect(within(ties).queryByText(/^tm-/)).toBeNull();
+});
+
+test("from the round of 16 the Libertadores tab shows the whole bracket, a group table and the coach's next tie", async () => {
+  const given = await services();
+  const { date } = await given.engine.read(["date"]);
+  const days = Math.round((Date.parse("2026-08-12") - Date.parse(date)) / 86_400_000);
+  await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+  openTables(given);
+  await userEvent.click(await screen.findByRole("tab", { name: "Libertadores" }));
+  const stages = screen.getByRole("group", { name: "Fases" });
+  expect(within(stages).getByRole("button", { name: "Oitavas" }).getAttribute("aria-pressed")).toBe("true");
+  expect(screen.getByRole("group", { name: "Libertadores, mata-mata" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Final" })).toBeTruthy();
+  expect(screen.getByRole("table", { name: /^Grupo [A-H]$/ }).querySelectorAll("tbody tr")).toHaveLength(4);
+  expect(screen.getByRole("region", { name: "Seu clube" })).toBeTruthy();
 });
 
 test("a table before its first round has no round to step through", async () => {

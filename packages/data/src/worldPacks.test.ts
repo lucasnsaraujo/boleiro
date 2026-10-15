@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { gunzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import { parseAssetManifest } from "./assetManifest.js";
+import { imageFileOf, parseAssetManifest } from "./assetManifest.js";
 
 // The world packs `pipeline/build_world_packs.py` writes from the latest Transfermarkt scrape, checked
 // for the data a career in any of their leagues needs. The game doesn't load them yet.
@@ -12,9 +12,9 @@ const NATIONAL_TEAMS = "national-teams.pack.json.gz";
 const brazilAssets = parseAssetManifest(readFileSync(join(PACK, "assets.json"), "utf8"));
 // The world scrape's crests for clubs Brazil's CSVs don't have, WebP only (pipeline/build_assets.py).
 const worldAssets = parseAssetManifest(readFileSync(join(WORLD, "assets.json"), "utf8"));
-// Bytes: today 16,548 and 14,872,404 (1,029 crests, 3 boxes, WebP). With Brazil's images
-// (assetBudget.test.ts) that is SPEC §4.3's ~25 MB for the v1 world, so the headroom is small.
-const WORLD_CREST_BUDGET = { largestFile: 20_000, total: 16_000_000 };
+// Bytes: today 10,550 and 7,357,534 (1,029 crests, 64 and 128 px boxes, WebP). assetBudget.test.ts holds
+// them together with Brazil's images to SPEC §4.3's ~25 MB for the v1 world.
+const WORLD_CREST_BUDGET = { largestFile: 13_000, total: 7_600_000 };
 const MIN_SQUAD = 11;
 const COLOUR = /^#[0-9A-F]{6}$/i;
 // Transfermarkt listed fewer than eleven players or no goalkeeper for these on 2026-10-14: Série D clubs
@@ -153,6 +153,11 @@ describe("the world packs", () => {
     const sizes = files.map((file) => statSync(file).size);
     expect(Math.max(...sizes)).toBeLessThanOrEqual(WORLD_CREST_BUDGET.largestFile);
     expect(sizes.reduce((sum, size) => sum + size, 0)).toBeLessThanOrEqual(WORLD_CREST_BUDGET.total);
+  });
+
+  it("serve a world crest's 128 px file where a 256 px one is asked for", () => {
+    const [clubId] = Object.keys(worldAssets.clubs);
+    expect(imageFileOf(worldAssets, clubId ?? "", "crest", 256, "webp")).toMatch(/-128\.webp$/);
   });
 
   it("give every club two colours and a source for every field", () => {
