@@ -16,6 +16,8 @@ export type LiveLimits = {
   minute: number;
   onPitch: string[];
   subsLeft: number;
+  /** Stoppages the coach may still make substitutions in; half-time does not use one. */
+  stopsLeft: number;
   sentOff: ReadonlySet<string>;
   hurt: ReadonlySet<string>;
   /** Players who may still come on. */
@@ -44,6 +46,7 @@ export function liveLimits(coach: CoachSide, events: readonly MatchEvent[], club
     minute,
     onPitch,
     subsLeft: minute >= FULL_TIME || !hasWindow ? 0 : MAX_SUBSTITUTIONS - made.length,
+    stopsLeft: MAX_WINDOWS - windows.size,
     sentOff: ofCoach("card"),
     hurt: ofCoach("injury"),
     benchIds: new Set(coach.benchIds.filter((id) => !cameOn.has(id))),

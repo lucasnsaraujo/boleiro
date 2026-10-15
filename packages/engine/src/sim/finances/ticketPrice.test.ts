@@ -17,6 +17,12 @@ function homeGameEve(state: GameState): GameState {
 }
 
 const eve = homeGameEve(start);
+/** The coach's board expects last place, so it never sacks him and his club stays his whatever the results. */
+function withPatientBoard(state: GameState): GameState {
+  const board = state.boards[CLUB];
+  if (!board) throw new Error("no board");
+  return { ...state, boards: { ...state.boards, [CLUB]: { ...board, targetPosition: board.tableSize } } };
+}
 const ticketsOf = (state: GameState) => state.finances[CLUB]?.month.revenue.tickets ?? 0;
 
 describe("the coach's ticket price", () => {
@@ -41,7 +47,7 @@ describe("the coach's ticket price", () => {
   });
 
   it("keeps only his own club's last five home games at the gate", () => {
-    let state = eve;
+    let state = withPatientBoard(eve);
     for (let day = 0; day < 120; day++) state = advanceDay(state, {}).state;
     const gates = state.finances[CLUB]?.homeGates ?? [];
     expect(gates).toHaveLength(5);

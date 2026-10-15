@@ -1,0 +1,342 @@
+/* The incident window: a card slapped over the paused round, the red card (or the medic's cross) stuck to its corner. */
+.inc-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: start center;
+  padding-top: 150px;
+  background: var(--veil);
+  animation: inc-veil 220ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+@keyframes inc-veil {
+  from {
+    background-color: transparent;
+  }
+}
+
+.inc-win {
+  position: relative;
+  width: min(664px, calc(100vw - 48px));
+  padding: 22px 26px 20px;
+  border-radius: 18px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--sh-pop);
+  animation: inc-stick var(--t-stamp) var(--e-slap) both;
+}
+
+@keyframes inc-stick {
+  from {
+    opacity: 0;
+    transform: rotate(-4deg) scale(1.12);
+  }
+}
+
+.inc-sticker {
+  position: absolute;
+  left: -22px;
+  top: -26px;
+  width: 66px;
+  height: 88px;
+  display: grid;
+  place-items: end center;
+  padding-bottom: 8px;
+  border-radius: 8px;
+  transform: rotate(-11deg);
+  box-shadow:
+    0 0 0 4px #fff,
+    0 10px 18px -8px rgba(20, 35, 26, 0.6);
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 15px;
+  animation: inc-card 640ms var(--e-slap) 120ms both;
+}
+
+.inc-sticker.red {
+  background: #d7322a;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.inc-sticker.hurt {
+  grid-template-rows: 1fr auto;
+  place-items: center;
+  padding: 10px 0 8px;
+  background: #fff;
+  color: #d7322a;
+}
+
+.inc-sticker.hurt i {
+  font-size: 34px;
+}
+
+/* The card comes in from above the window, spinning, and lands at its tilt. */
+@keyframes inc-card {
+  from {
+    opacity: 0;
+    transform: translate(-30px, -60px) rotate(-48deg) scale(1.4);
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+.inc-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding-left: 50px;
+}
+
+.inc-top h2 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  outline: none;
+}
+
+.inc-top h2 em {
+  font-style: normal;
+  color: var(--red);
+}
+
+.inc-top p {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.inc-score {
+  flex: none;
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.inc-sc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.inc-sc .sbox {
+  height: 26px;
+  min-width: 30px;
+  font-size: 14px;
+}
+
+.inc-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--mute);
+}
+
+.inc-fix {
+  margin-top: 18px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px 16px;
+  border-radius: var(--r-m);
+  background: var(--yellow-l);
+  color: var(--note-ink);
+  animation: inc-rise 420ms var(--e-out) 220ms both;
+}
+
+@keyframes inc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.inc-who {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: -2px;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--later);
+}
+
+.inc-chg b {
+  display: block;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.inc-arrows {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.inc-arrows span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.inc-arrows .o {
+  color: var(--red);
+}
+
+.inc-arrows .n {
+  color: var(--green);
+}
+
+.inc-chg p {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.inc-row {
+  margin-top: 12px;
+  padding: 12px 4px 4px;
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  border-top: 2px dotted var(--line-2);
+  animation: inc-rise 420ms var(--e-out) 300ms both;
+}
+
+.inc-ic {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--red-l);
+  color: var(--red);
+  font-size: 18px;
+}
+
+.inc-row b {
+  display: block;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.inc-row p {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.inc-none {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--mute);
+}
+
+.inc-swap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* The album's switch, green when on. */
+.inc-sw {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 24px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--paper-2);
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+  cursor: pointer;
+  transition: background var(--t-base) var(--e-out);
+}
+
+.inc-sw::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 0 rgba(20, 35, 26, 0.25);
+  transition: transform var(--t-base) var(--e-slap);
+}
+
+.inc-sw:checked {
+  background: var(--green);
+  box-shadow: none;
+}
+
+.inc-sw:checked::after {
+  transform: translateX(16px);
+}
+
+.inc-sw:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.inc-acts {
+  margin-top: 16px;
+  padding-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid var(--rule);
+}
+
+.inc-acts .btn.flat {
+  padding: 0 8px;
+}
+
+.inc-acts .inc-go {
+  margin-left: auto;
+  height: 44px;
+  padding: 0 20px;
+  font-size: 15px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inc-win,
+  .inc-sticker,
+  .inc-fix,
+  .inc-row {
+    animation: inc-fade 200ms ease-out both;
+  }
+
+  .inc-sw,
+  .inc-sw::after {
+    transition: none;
+  }
+}
+
+@keyframes inc-fade {
+  from {
+    opacity: 0;
+  }
+}
