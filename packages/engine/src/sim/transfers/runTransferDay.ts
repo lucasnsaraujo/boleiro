@@ -67,7 +67,12 @@ export function runTransferDay(
     const waitingRandom = randomStream(Math.floor(unitHash(`${state.market.rngState}:${state.date}:${waitingIndex}`) * 2 ** 32));
     steps.push({ step: (s) => asWaitingCoach(s, waitingIndex, (seated) => coachMarketDay(seated, waitingRandom.next)), waitingIndex });
   });
-  if (isMarketDay(state.date)) add(europeBids, tradeBetweenClubs, (s, r) => signFromAbroad(s, r, nextId), lendYoungPlayers, signFreeAgents);
+  if (isMarketDay(state.date)) {
+    add(europeBids, tradeBetweenClubs, (s, r) => signFromAbroad(s, r, nextId), lendYoungPlayers, signFreeAgents);
+    waiting.forEach((coach, waitingIndex) => {
+      if (coach.clubId) steps.push({ step: (s, r) => asWaitingCoach(s, waitingIndex, (seated) => europeBids(seated, r, coach.clubId ?? undefined)), waitingIndex });
+    });
+  }
   // Most days nothing moves; the draft (a copy of every player) is only made when something can.
   let next = steps.length ? openDraft(state) : state;
   const events: TransferEvent[] = [];

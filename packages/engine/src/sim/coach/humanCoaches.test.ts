@@ -100,7 +100,28 @@ describe("hot-seat coaches", () => {
     expect(waitingCoachesOf(state)[0]?.clubId).toBeNull();
     expect(news.some((e) => e.type === "coachFired" && e.isYou && e.clubId === SECOND)).toBe(true);
     expect(waitingCoachesOf(state)[0]?.record.firings.map((f) => f.clubId)).toEqual([SECOND]);
-    expect(state.history.coach.firings).toEqual([]);
-    expect(state.coachClubId).toBe(FIRST);
+    expect(state.history.coach.firings.map((f) => f.clubId)).not.toContain(SECOND);
+  });
+
+  it("hires a waiting coach at the club whose offer he took on his turn", () => {
+    const [bruno] = waitingCoachesOf(twoCoaches);
+    if (!bruno) throw new Error("the game has a waiting coach");
+    const offer = { clubId: "santos-sp", salary: 500_000, untilSeason: 2026, expiresOn: "2026-01-10" };
+    const offered: GameState = { ...twoCoaches, waitingCoaches: [{ ...bruno, coach: { ...bruno.coach, offers: [offer] } }] };
+    const day = advanceDay(offered, { waiting: [{ acceptOffer: "santos-sp" }] });
+    expect(waitingCoachesOf(day.state)[0]?.clubId).toBe("santos-sp");
+    expect(day.state.coachClubId).toBe(FIRST);
+    expect(day.waitingEvents?.[0]?.some((e) => e.type === "coachHired" && e.clubId === "santos-sp")).toBe(true);
+    expect(waitingCoachesOf(day.state)[0]?.record.stints.map((stint) => stint.clubId)).toEqual([SECOND, "santos-sp"]);
+  });
+
+  it("reviews a waiting coach at the turn of the year on the season just ended, not on the new board's target", () => {
+    let state = loadNewGame(1, { coachClubId: "bahia-ba", hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "cruzeiro-mg" }] } });
+    while (state.season === 2026) state = advanceDay(state, {}).state;
+    const table = state.history.seasons.find((season) => season.season === 2026)?.tables.A ?? [];
+    const [review] = waitingCoachesOf(state)[0]?.record.seasons ?? [];
+    expect(review?.clubId).toBe("cruzeiro-mg");
+    expect(review?.position).toBe(table.indexOf("cruzeiro-mg") + 1);
+    expect(review?.position).not.toBe(review?.targetPosition);
   });
 });

@@ -180,7 +180,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const market = runTransferDay(next, decisions.requests ?? [], (decisions.waiting ?? []).map((own) => own.requests ?? []));
   events.push(...market.events);
   market.waitingEvents.forEach((own, index) => waitingEvents[index]?.push(...own));
-  const released = [...formerClubIds, ...leftClubIds(next, market.state)].reduce(releaseTicketPrice, releaseTicketPrice(market.state, state.coachClubId));
+  const released = leftClubIds(state, market.state).reduce(releaseTicketPrice, releaseTicketPrice(market.state, state.coachClubId));
   const recorded = recordDayEvents(released, events, state);
   return state.waitingCoaches ? { state: recorded, events, waitingEvents } : { state: recorded, events };
 }

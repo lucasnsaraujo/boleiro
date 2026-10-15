@@ -33,10 +33,10 @@ const ACCEPT_CHANCE = 0.9;
 const COUNTER_ROOM = 0.25;
 
 /**
- * One market day of European bids for Brazilian standouts. AI boards take or turn down theirs at once,
+ * One market day of European bids for Brazilian standouts; with `onlyClubId`, for that club's players alone. AI boards take or turn down theirs at once,
  * and accepted players leave the game; a bid for one of the coach's players waits for his answer.
  */
-export function europeBids(state: GameState, random: () => number): { state: GameState; events: (EuropeBid | PlayerMoved | BidReceived)[] } {
+export function europeBids(state: GameState, random: () => number, onlyClubId?: string): { state: GameState; events: (EuropeBid | PlayerMoved | BidReceived)[] } {
   const events: (EuropeBid | PlayerMoved | BidReceived)[] = [];
   const view = marketView(state);
   const settledBefore = addDays(state.date, -SETTLING_DAYS);
@@ -45,8 +45,8 @@ export function europeBids(state: GameState, random: () => number): { state: Gam
   const targets = Object.values(state.players)
     .filter((p) => p.age <= MAX_AGE && p.strength >= MIN_STRENGTH && !state.market.loans[p.id])
     .filter((p) => p.condition.arrivedOn === null || p.condition.arrivedOn < settledBefore)
-    // A waiting hot-seat coach's players are his to sell, and he is not in the seat to answer.
-    .filter((p) => p.clubId === state.coachClubId || !isHumanClub(state, p.clubId))
+    // A waiting hot-seat coach's players are his to answer for: they get their bids in his own run (`onlyClubId`), seated as him.
+    .filter((p) => (onlyClubId === undefined ? p.clubId === state.coachClubId || !isHumanClub(state, p.clubId) : p.clubId === onlyClubId))
     .sort((a, b) => a.id.localeCompare(b.id));
   for (const player of targets) {
     const youth = 1 + YOUTH_BONUS.perYear * Math.max(0, YOUTH_BONUS.belowAge - player.age);
