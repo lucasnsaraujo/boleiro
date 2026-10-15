@@ -11,7 +11,7 @@ const ROLE_PLACE: Record<Role, string> = { goleiro: "no gol", lateral: "na later
 const GROUP_ROLE: Record<PositionGroup, Role> = { GK: "goleiro", DEF: "zagueiro", MID: "meia", ATT: "atacante" };
 
 /** What playing a starter where he stands costs: in one of his other positions, or out of them all. */
-export type PositionCost = { kind: "secondary" | "improvised"; text: string };
+type PositionCost = { kind: "secondary" | "improvised"; text: string };
 
 /** A starter where the formation puts him: his slot, the share of his strength he keeps there and what it costs. */
 export type PlacedStarter = { player: SquadPlayer; slot: Slot; fit: number; cost: PositionCost | null };

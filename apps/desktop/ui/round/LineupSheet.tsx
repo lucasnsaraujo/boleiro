@@ -37,7 +37,7 @@ const TIRED = 70;
 const RESTED = 85;
 
 /** The opponent's card: its club and the formation its coach plays. */
-export type Opponent = { club: Pick<Club, "id" | "shortName" | "colours">; formation: Formation };
+type Opponent = { club: Pick<Club, "id" | "shortName" | "colours">; formation: Formation };
 
 type Props = {
   sub: string;
@@ -108,12 +108,15 @@ function MiniPitch({ formation }: { formation: Formation }) {
 export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, opponent }: Props) {
   const [sheet, setSheet] = useState(() => openSheet(lineup, tactics));
   const [isPicking, setPicking] = useState(false);
+  const [pickFailure, setPickFailure] = useState<string | null>(null);
+  // The assistant's latest eleven and its formation: the team strength is compared against it.
+  const [assistantPick, setAssistantPick] = useState(() => ({ lineup, formation: tactics.formation }));
   const title = useDialogFocus<HTMLHeadingElement>(true, { isModal: true });
   const byId = new Map(squad.map((p) => [p.id, p]));
   const starters = sheet.lineup.flatMap((id) => byId.get(id) ?? []);
   const placed = placeStarters(starters, sheet.tactics.formation);
   const strength = teamStrength(placed);
-  const assistant = mode.kind === "preMatch" ? teamStrength(placeStarters(lineup.flatMap((id) => byId.get(id) ?? []), tactics.formation)) : strength;
+  const assistant = mode.kind === "preMatch" ? teamStrength(placeStarters(assistantPick.lineup.flatMap((id) => byId.get(id) ?? []), assistantPick.formation)) : strength;
   const bench = squad.filter((p) => !sheet.lineup.includes(p.id));
   const ready = bench.filter((p) => p.status === null);
   const out = bench.filter((p) => p.status !== null);
@@ -127,12 +130,18 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
   const order = new Map(placed.map((starter, i) => [starter.player.id, i]));
   const hints = benchHints(bench, placed);
 
+  /** The assistant's eleven for the formation asked about; if the coach changed formation meanwhile, it is left out. */
   async function pickBest() {
     if (!onPickTeam) return;
+    const { formation } = sheet.tactics;
     setPicking(true);
+    setPickFailure(null);
     try {
-      const best = await onPickTeam(sheet.tactics.formation);
-      setSheet((s) => pickTeam(s, best));
+      const best = await onPickTeam(formation);
+      setSheet((s) => (s.tactics.formation === formation ? pickTeam(s, best) : s));
+      setAssistantPick({ lineup: best, formation });
+    } catch {
+      setPickFailure("O auxiliar não conseguiu escalar o time. Tente de novo.");
     } finally {
       setPicking(false);
     }
@@ -314,7 +323,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
 
           <div className="lineup-hint-row">
             <p className="lineup-hint" role="status">
-              {error ?? hintOf(sheet, mode, squad, problem)}
+              {error ?? pickFailure ?? hintOf(sheet, mode, squad, problem)}
             </p>
             {onLeave && (
               <button className="btn flat sm" onClick={onLeave}>
