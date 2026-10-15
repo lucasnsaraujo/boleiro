@@ -153,9 +153,13 @@ test("during a hot-seat round Space opens the first coach's match, → moves to 
       continue;
     }
 
-    await page.keyboard.press(" ");
     const lineup = page.getByRole("dialog", { name: "Escalação" });
     const coaches = lineup.getByRole("group", { name: "Jogos dos técnicos" });
+    // The round takes its match keys a moment after it shows; inside the lineup Space is the sheet's own.
+    await expect(async () => {
+      if (!(await coaches.isVisible())) await page.keyboard.press(" ");
+      await expect(coaches).toBeVisible({ timeout: 1_000 });
+    }).toPass();
     await expect(coaches).toContainText("Ana");
     await expect(coaches).toContainText("1 de 2");
     await page.keyboard.press("ArrowRight");

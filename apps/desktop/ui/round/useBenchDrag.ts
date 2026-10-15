@@ -19,6 +19,16 @@ function starterAt(event: PointerEvent): string | null {
   return under?.closest<HTMLElement>("[data-starter]")?.dataset.starter ?? null;
 }
 
+/** The click a released drag sends to the row under the pointer is not a click on that row. */
+function swallowClick() {
+  const swallow = (event: MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+  };
+  window.addEventListener("click", swallow, { capture: true, once: true });
+  setTimeout(() => window.removeEventListener("click", swallow, { capture: true }), 0);
+}
+
 /** Drag and drop from the bench onto a starter's sticker, with pointer events so it works alike with a mouse, a pen and a finger. */
 export function useBenchDrag({ canDrop, onDrop }: Options) {
   const [drag, setDrag] = useState<BenchDrag | null>(null);
@@ -47,6 +57,7 @@ export function useBenchDrag({ canDrop, onDrop }: Options) {
       if (isLifted && e.type === "pointerup") {
         const starter = starterAt(e) ?? overId;
         if (starter && options.current.canDrop(starter, player)) options.current.onDrop(starter, player);
+        swallowClick();
       }
       finish();
     };

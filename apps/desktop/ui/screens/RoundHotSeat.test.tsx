@@ -59,6 +59,17 @@ function CommandProbe() {
 
 const play = vi.fn();
 
+/** Space, once the round has its match keys: the round takes them in an effect after it first shows. */
+async function pressSpace() {
+  await vi.waitFor(() => {
+    let isTaken = false;
+    act(() => {
+      isTaken = runCommand("pausar");
+    });
+    expect(isTaken).toBe(true);
+  });
+}
+
 function openRound(given: Services) {
   const router = createMemoryRouter([{ path: "/round", element: <Round /> }], { initialEntries: ["/round"] });
   render(
@@ -81,7 +92,7 @@ test("in a hot-seat round, Space stops the clock on the first coach's match and 
   openRound(given);
   await screen.findByRole("region", { name: "Seu jogo" });
 
-  act(() => void runCommand("pausar"));
+  await pressSpace();
   const sheet = await lineup();
   expect(whoseMatch(sheet)).toBe(ANA.name);
   expect(within(sheet).getByText(/Flamengo/)).toBeTruthy();
@@ -108,7 +119,7 @@ test("a substitute dragged from the bench onto a starter comes on in that coach'
   const apply = vi.spyOn(given.engine, "apply");
   openRound(given);
   await screen.findByRole("region", { name: "Seu jogo" });
-  act(() => void runCommand("pausar"));
+  await pressSpace();
   const sheet = await lineup();
 
   const benchRow = within(within(sheet).getByRole("list", { name: "Banco" })).getByRole("button", { name: on.name }).closest("li");
@@ -159,4 +170,19 @@ test("an injury in each human coach's match opens his window, one coach at a tim
   expect(second.textContent).toContain("Bruno · Palmeiras");
   await userEvent.click(within(second).getByRole("button", { name: "Deixar como está" }));
   expect(screen.queryByRole("dialog")).toBeNull();
+});
+
+test("when only one human coach plays today, his lineup opens without steps to other matches", async () => {
+  const { given } = await bothCoachesPlaying();
+  const { engine } = given;
+  const liveRound = async () => {
+    const round = await engine.liveRound();
+    return round && { ...round, humanSides: round.humanSides?.filter((side) => side.clubId === ANA.clubId) };
+  };
+  openRound({ ...given, engine: { ...engine, liveRound } });
+  await screen.findByRole("region", { name: "Seu jogo" });
+  await pressSpace();
+  const sheet = await lineup();
+  expect(within(sheet).getByText(/Flamengo/)).toBeTruthy();
+  expect(within(sheet).queryByRole("group", { name: "Jogos dos técnicos" })).toBeNull();
 });

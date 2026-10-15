@@ -81,10 +81,13 @@ type OpenIncident = Coached & { incident: Incident };
 function incidentOf(round: LiveRound, minute: number, hotSeat: HotSeatView | null, answered: ReadonlySet<string> = new Set()): OpenIncident | null {
   const reason = pauseReason(round, minute);
   if (reason !== "coachMatch" && reason !== "halfTime") return null;
-  for (const coached of coachedSides(round, hotSeat)) {
+  const sides = coachedSides(round, hotSeat);
+  for (const coached of sides) {
     const { side, clubId } = coached;
     const match = round.matches.find((m) => m.fixtureId === side.fixtureId);
-    if (side.incidentHandling !== "askCoach" || !match || side.lastChangeMinute === minute || answered.has(clubId)) continue;
+    // Two human coaches who meet share their match's last change, so it can't tell which of them answered.
+    const isShared = sides.filter((other) => other.side.fixtureId === side.fixtureId).length > 1;
+    if (side.incidentHandling !== "askCoach" || !match || (!isShared && side.lastChangeMinute === minute) || answered.has(clubId)) continue;
     const incident = incidentAt(side, match.events, clubId, liveLimits(side, match.events, clubId, minute));
     if (incident) return { ...coached, incident };
   }
@@ -129,6 +132,8 @@ export function Round() {
   const answered = useRef<{ minute: number; clubIds: Set<string> }>({ minute: -1, clubIds: new Set() });
   // Matches a human coach made substitutions in while a window covered the board; their rows call it out once it closes.
   const substituted = useRef(new Set<string>());
+  // A step to the next coach's match is on its way; key repeats faster than a render wait for it.
+  const isStepping = useRef(false);
   const [golCount, setGolCount] = useState(0);
   const goalsCelebrated = useRef(0);
   const roundRef = useRef(round);
@@ -324,8 +329,11 @@ export function Round() {
   /** In a hot-seat round, ← and → take the coach's changes and open the next human coach's match, in turn order. */
   async function stepCoach(sheet: Sheet, step: 1 | -1) {
     const clubId = lineupClubId;
-    if (!clubId || isBusy) return;
-    const sent = await sendSheet(clubId, sheet);
+    if (!clubId || isStepping.current) return;
+    isStepping.current = true;
+    const sent = await sendSheet(clubId, sheet).finally(() => {
+      isStepping.current = false;
+    });
     if (!sent) return;
     const order = coachedSides(sent, hotSeat);
     const place = order.findIndex((coached) => coached.clubId === clubId);
@@ -589,7 +597,7 @@ export function Round() {
           isBusy={isBusy}
           error={error}
           onDone={(sheet) => void backToMatch(sheet)}
-          {...(lineupSide.coachName
+          {...(lineupSide.coachName && coached.length > 1
             ? { coachStep: { name: lineupSide.coachName, place: coached.indexOf(lineupSide) + 1, count: coached.length, onStep: (sheet: Sheet, step: 1 | -1) => void stepCoach(sheet, step) } }
             : {})}
         />

@@ -91,7 +91,10 @@ function withCoachMatches(live: LiveDay, open: readonly CoachMatch[]): DayInProg
   const { state, rest } = live;
   let day: DayInProgress = { ...rest, events: [] };
   let eventsIndex = 0;
-  for (const coachMatch of [...open].sort((a, b) => a.eventsIndex - b.eventsIndex)) {
+  // Matches recorded at the same place in the day's events go in fixture order.
+  const place = new Map(rest.fixtures.map((fixture, index) => [fixture.id, index]));
+  const inOrder = [...open].sort((a, b) => a.eventsIndex - b.eventsIndex || (place.get(a.fixtureId) ?? 0) - (place.get(b.fixtureId) ?? 0));
+  for (const coachMatch of inOrder) {
     const events = live.matches.find((m) => m.fixtureId === coachMatch.fixtureId)?.events ?? [];
     const outcome = coachMatch.isChanged ? redrawnOutcome(state, coachMatch, events) : coachMatch.kickOff;
     const { competitionId } = outcome.fixture;
