@@ -54,10 +54,12 @@ function kickerOrder(side: ShootoutSide, strength: (p: SimPlayer) => number): { 
  * compares with the keeper. Stops as soon as one side can't be caught.
  */
 export function playShootout(home: ShootoutSide, away: ShootoutSide, strength: (p: SimPlayer) => number, random: () => number): { events: (ShootoutKick | OrderOverruled)[]; winnerId: string } {
+  // Law 10: a side with more players left reduces to the other's number, its last kickers left out.
+  const kickersEach = Math.min(home.onPitch.length, away.onPitch.length);
   const sides = [home, away].map((side, i) => {
     const { kickers, isOverruled } = kickerOrder(side, strength);
     const other = i === 0 ? away : home;
-    return { side, kickers, isOverruled, keeper: keeperOf(other.onPitch), scored: 0 };
+    return { side, kickers: kickers.slice(0, kickersEach), isOverruled, keeper: keeperOf(other.onPitch), scored: 0 };
   });
   const events: (ShootoutKick | OrderOverruled)[] = sides.flatMap(({ side, isOverruled }) => (isOverruled ? [{ type: "orderOverruled", minute: 90, clubId: side.clubId } as const] : []));
   const [h, a] = sides;

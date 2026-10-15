@@ -70,6 +70,17 @@ describe("a penalty shootout", () => {
     expect(first?.type === "shootoutKick" && first.playerId).toBe("home-0");
   });
 
+  it("leaves out of the larger side as many kickers as the other is short, so both cycle through the same number (Law 10)", () => {
+    const full = eleven("home", 70, 70);
+    const tenMen = eleven("away", 70, 70).slice(0, 10);
+    for (let seed = 0; seed < 200; seed++) {
+      const { events } = playShootout(side("home", full), side("away", tenMen), plain, stream(seed));
+      const kickers = events.flatMap((e) => (e.type === "shootoutKick" && e.clubId === "home" ? [e.playerId] : []));
+      expect(kickers).not.toContain("home-gk");
+      kickers.forEach((id, round) => expect(kickers.indexOf(id)).toBe(round % 10));
+    }
+  });
+
   it("puts its winner on the fixture's result", () => {
     const fixture: Fixture = { id: "f", competitionId: "copa", stage: 0, date: "2026-05-01", homeId: "home", awayId: "away", tie: 0, result: { homeGoals: 1, awayGoals: 1 } };
     const { fixture: settled, events } = settleShootout(fixture, 7, side("home", eleven("home", 70, 70)), side("away", eleven("away", 70, 70)), plain);
