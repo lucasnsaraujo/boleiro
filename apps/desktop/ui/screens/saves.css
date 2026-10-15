@@ -49,6 +49,10 @@
   list-style: none;
 }
 
+.saves-grid:focus {
+  outline: none;
+}
+
 .saves-grid > li {
   display: flex;
   min-height: 0;

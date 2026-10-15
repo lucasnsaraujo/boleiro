@@ -138,3 +138,15 @@ test("each game slot's number matches its name, and the autosave carries no numb
   expect(within(cards.getByRole("button", { name: /^Jogo 2 · Bahia/ })).getByText(/^\d\d$/).textContent).toBe("02");
   expect(cards.getAllByRole("listitem").map((card) => card.textContent?.match(/^\d\d/)?.[0] ?? null)).toEqual([null, "01", "02", "03"]);
 });
+
+test("after a delete is confirmed, focus lands on the list of saves instead of falling off the page", async () => {
+  const given = await services();
+  await saveToSlot(given.engine, given.slots, "slot-3", { slotId: "slot-3", coachName: "Tite" });
+  openSaves(given);
+  await userEvent.click(await within(await slotsList()).findByRole("button", { name: /^Jogo 3 · Bahia/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Apagar" }));
+  await userEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Apagar o Jogo 3" }));
+  expect(document.activeElement).toBe(screen.getByRole("list", { name: "Vagas" }));
+  await waitFor(async () => expect(await given.slots.list()).toEqual([]));
+  expect(document.activeElement).toBe(screen.getByRole("list", { name: "Vagas" }));
+});

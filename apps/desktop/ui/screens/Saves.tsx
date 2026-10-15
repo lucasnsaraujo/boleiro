@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { formatBarDate, formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import { loadFromSlot, saveToSlot } from "@boleiro/game-client/saves/saveToSlot";
@@ -33,6 +33,7 @@ export function Saves() {
   const [status, setStatus] = useState<Status>(null);
   const [busy, setBusy] = useState<"saving" | "opening" | "removing" | null>(null);
   const [isConfirming, setConfirming] = useState(false);
+  const slotList = useRef<HTMLUListElement>(null);
 
   const refresh = useCallback(
     (isCurrent: () => boolean = () => true) =>
@@ -83,6 +84,8 @@ export function Saves() {
   }
 
   async function remove(meta: SlotMeta) {
+    // The closing dialog hands focus back to Apagar, which stays disabled until the save is gone, so it would fall to the page.
+    slotList.current?.focus();
     setConfirming(false);
     if (busy) return;
     setBusy("removing");
@@ -123,7 +126,7 @@ export function Saves() {
         {list.kind === "failed" ? (
           <p className="status error">Não deu para ler os jogos salvos.</p>
         ) : (
-          <ul className="saves-grid" aria-label="Vagas" aria-busy={list.kind === "loading"}>
+          <ul ref={slotList} className="saves-grid" aria-label="Vagas" aria-busy={list.kind === "loading"} tabIndex={-1}>
             {SLOT_IDS.map((id) => {
               const meta = byId.get(id);
               const number = numberOf(id);
