@@ -438,9 +438,11 @@ test("a season through commands holds trials at every academy, forces out its 21
   const { youth, players, clubs } = season.recorded.session.read(["youth", "players", "clubs"]);
   const after = Object.values(youth?.prospects ?? {});
 
-  const nationalClubs = Object.values(clubs).filter((club) => club.division !== null);
-  for (const club of nationalClubs) {
-    const trialists = after.filter((p) => p.clubId === club.id && p.joinedSeason === 2027);
+  // Clubs that joined Série D at the turn open their academy at the next one.
+  const academyClubs = new Set(before.map((p) => p.clubId));
+  expect(academyClubs.size).toBeGreaterThan(100);
+  for (const clubId of academyClubs) {
+    const trialists = after.filter((p) => p.clubId === clubId && p.joinedSeason === 2027);
     expect(trialists.length).toBeGreaterThanOrEqual(2);
     expect(trialists.every((p) => p.age === 16)).toBe(true);
   }
