@@ -1,5 +1,8 @@
 import { createHash } from "node:crypto";
+import { addDays } from "@boleiro/engine/sim/dates";
 import type { SimPlayer } from "@boleiro/engine/sim/gameState";
+import type { BidOutcome } from "@boleiro/engine/sim/transfers/answerBid";
+import { sellerPrice } from "@boleiro/engine/sim/transfers/askingPrice";
 import { beforeAll, expect, test } from "vitest";
 import type { TurningPoint } from "../hub/turningPoints.js";
 import type { BoardAnswer } from "../market/boardDesk.js";
@@ -9,6 +12,8 @@ import { createEngineSession, type CommandResults, type CommandType, type GameCo
 
 const CLUB = "flamengo-rj";
 const SEED = 7;
+// The season test needs a coach the board keeps all year; on seed 7 he is sacked in March since bids wait for his answer.
+const SEASON_SEED = 8;
 // Enough steps for a season of play-ons and match days; a stuck loop fails instead of hanging.
 const MAX_STEPS = 400;
 
@@ -62,7 +67,7 @@ function ownPlayers(players: Record<string, SimPlayer>): SimPlayer[] {
 function playSeason(): Season {
   const recorded = recordedSession();
   const { session, apply } = recorded;
-  apply({ type: "newGame", seed: SEED, choices: { coachClubId: CLUB } });
+  apply({ type: "newGame", seed: SEASON_SEED, choices: { coachClubId: CLUB } });
 
   const { players, clubs, market } = session.read(["players", "clubs", "market"]);
   const signing = Object.values(players)
@@ -86,9 +91,16 @@ function playSeason(): Season {
   let firstMatch: Pick<Season, "lineup" | "kickOff" | "substitution" | "afterSubstitution"> | null = null;
   let hasReloaded = false;
   const turningPoints: TurningPoint[] = [];
+  /** Offers for his players wait for his answer as soon as he sees them: he takes Europe's, as the board used to on its own, and turns down the rest. */
+  const answerOffers = () => {
+    for (const bid of Object.values(session.read(["market"]).market.coach?.bids ?? {})) {
+      apply({ type: "answerBid", playerId: bid.playerId, answer: { kind: bid.buyerId === null ? "accept" : "decline" } });
+    }
+  };
 
   for (let step = 0; step < MAX_STEPS && session.read(["season"]).season === 2026; step++) {
     const { stop } = apply({ type: "playToMatchDay" });
+    answerOffers();
     const answers = session.desk().answers;
     if (!signingAnswer) {
       signingAnswer = answerFor(answers, signing.id);
@@ -112,10 +124,12 @@ function playSeason(): Season {
       apply({ type: "seeMinute", minute: 30 });
       const afterSubstitution = apply({ type: "changeLive", minute: 60, change: { substitutions: [substitution] } });
       apply({ type: "finishRound" });
+      answerOffers();
       firstMatch = { lineup, kickOff, substitution, afterSubstitution };
     } else if (stop === "matchDay") {
       apply({ type: "startRound" });
       apply({ type: "finishRound" });
+      answerOffers();
     }
 
     for (let point = session.turningPoint(); point; point = session.turningPoint()) {
@@ -176,12 +190,54 @@ function playCareerStart() {
   return { recorded, declined: declined.clubId, signed: signed.clubId };
 }
 
+/**
+ * The coach's own market in the January window: weak players listed cheap, one put at auction and
+ * taken off, an offer under a club's price that draws its counter, which he turns down, and the first
+ * club's offer for one of his players, which he counters and then settles.
+ */
+function playMarketWindow() {
+  const recorded = recordedSession();
+  const { session, apply } = recorded;
+  apply({ type: "newGame", seed: SEED, choices: { coachClubId: CLUB } });
+  apply({ type: "advance", days: Array.from({ length: 5 }, () => ({})) });
+  const { players, clubs, market, date } = session.read(["players", "clubs", "market", "date"]);
+  const own = ownPlayers(players);
+  for (const player of own.slice(0, 8)) apply({ type: "listPlayer", playerId: player.id, way: "cheap" });
+  const auctioned = own[8];
+  if (!auctioned) throw new Error("the coach's club has players");
+  apply({ type: "listPlayer", playerId: auctioned.id, way: "auction" });
+  apply({ type: "listPlayer", playerId: auctioned.id, way: null });
+
+  const target = Object.values(players)
+    .filter((p) => clubs[p.clubId]?.division === "B" && p.contractUntil > "2026-12-31" && !market.loans[p.id])
+    .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id))[0];
+  if (!target) throw new Error("a Série B club has a player to buy");
+  const sellerSquad = Object.values(players).filter((p) => p.clubId === target.clubId);
+  const price = sellerPrice(target, sellerSquad, "B", addDays(date, 1), market.eurBrl);
+  apply({ type: "advance", days: [{ requests: [{ kind: "sign", playerId: target.id, fee: Math.round(price * 0.8) }] }] });
+  const counter = session.read(["market"]).market.coach?.counters[target.id];
+  if (counter) apply({ type: "declineCounter", playerId: target.id });
+
+  const outcomes: BidOutcome[] = [];
+  for (let day = 0; day < 30 && !outcomes.length; day++) {
+    apply({ type: "advance", days: [{}] });
+    const [bid] = Object.values(session.read(["market"]).market.coach?.bids ?? {});
+    if (!bid) continue;
+    const answer = apply({ type: "answerBid", playerId: bid.playerId, answer: { kind: "counter", fee: Math.round(bid.fee * 1.05) } });
+    outcomes.push(answer);
+    if (answer === "finalOffer") outcomes.push(apply({ type: "answerBid", playerId: bid.playerId, answer: { kind: "accept" } }));
+  }
+  return { recorded, counter, outcomes, counterAfterDecline: session.read(["market"]).market.coach?.counters[target.id] };
+}
+
 let season: Season;
 let career: ReturnType<typeof playCareerStart>;
+let marketWindow: ReturnType<typeof playMarketWindow>;
 
 beforeAll(() => {
   season = playSeason();
   career = playCareerStart();
+  marketWindow = playMarketWindow();
 }, 120_000);
 
 test("a season played through commands alone ends, turns the year and crowns a champion", () => {
@@ -243,8 +299,27 @@ test("a career start, an offer turned down and another signed, replays alike fro
   expect(sha256(twin.session.save())).toBe(sha256(session.save()));
 });
 
-test("the season and career logs between them send every kind of command", () => {
-  const sent = new Set([...season.recorded.applied, ...career.recorded.applied].map(({ command }) => command.type));
+test("an offer under a club's price draws its counter, which the coach can turn down", () => {
+  expect(marketWindow.counter).toBeDefined();
+  expect(marketWindow.counterAfterDecline).toBeUndefined();
+});
+
+test("a club's offer for a listed player waits for the coach, and his counter settles it", () => {
+  const [first, second] = marketWindow.outcomes;
+  expect(["sold", "finalOffer", "walkedAway"]).toContain(first);
+  if (first === "finalOffer") expect(second).toBe("sold");
+});
+
+test("the market window's commands survive JSON and replay alike from the same seed", () => {
+  const { session, applied } = marketWindow.recorded;
+  for (const { command } of applied) expect(JSON.parse(JSON.stringify(command))).toStrictEqual(command);
+  const twin = replay(applied);
+  expect(twin.results).toEqual(applied.map(({ result }) => result));
+  expect(sha256(twin.session.save())).toBe(sha256(session.save()));
+});
+
+test("the season, career and market logs between them send every kind of command", () => {
+  const sent = new Set([...season.recorded.applied, ...career.recorded.applied, ...marketWindow.recorded.applied].map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
     load: true,
@@ -258,6 +333,9 @@ test("the season and career logs between them send every kind of command", () =>
     declineOffer: true,
     ask: true,
     withdraw: true,
+    listPlayer: true,
+    answerBid: true,
+    declineCounter: true,
   };
   expect([...sent].sort()).toEqual(Object.keys(every).sort());
 });

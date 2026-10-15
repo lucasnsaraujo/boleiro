@@ -37,6 +37,9 @@ const REFUSALS: Record<string, string> = {
   onLoan: "ele está emprestado",
   notAtClub: "ele não é mais do clube",
   notAvailable: "ele não está disponível",
+  squadFull: "o elenco já tem 35 jogadores",
+  offerTooLow: "o clube dele nem quis conversar com essa oferta",
+  counterOffer: "o clube dele fez uma contraproposta",
 };
 
 /** Why the board said no, in a few words. */
@@ -168,7 +171,17 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
       case "europeBid":
         if (!isOurs(event.clubId) || event.accepted) return null;
         return [`Proposta da Europa por ${playerName(event.playerId)} recusada: ${formatMoney(event.fee)}`, "neutral"];
+      case "bidReceived": {
+        const buyer = event.buyerId ? `do ${clubName(event.buyerId)}` : "da Europa";
+        return [`Proposta ${buyer} por ${playerName(event.playerId)}: ${formatMoney(event.fee)}. Responda no mercado`, "neutral"];
+      }
+      case "auctionClosed":
+        return event.sold ? null : [`Leilão de ${playerName(event.playerId)} termina sem lances`, "neutral"];
+      case "counterOffered":
+        return [`${clubName(event.clubId)} pede ${formatMoney(event.fee)} por ${playerName(event.playerId)}`, "neutral"];
       case "requestDecided": {
+        // The counter-offer's own line says what the club asks.
+        if (event.reason === "counterOffer") return null;
         const noun = REQUEST_NOUNS[event.request.kind];
         const player = playerName(event.request.playerId);
         if (event.approved) return [`Diretoria aprova ${noun} de ${player}`, "good"];

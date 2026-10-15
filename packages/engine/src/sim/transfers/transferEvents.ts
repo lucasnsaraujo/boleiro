@@ -24,5 +24,11 @@ export type PreContractSigned = { type: "preContractSigned"; playerId: string; f
 export type EuropeBid = { type: "europeBid"; playerId: string; clubId: string; feeEur: number; fee: number; accepted: boolean };
 /** The board's answer to one coach request; `reason` says why it refused. */
 export type RequestDecided = { type: "requestDecided"; request: CoachRequest; approved: boolean; reason: string | null };
+/** A club's offer for one of the coach's players, now waiting for his answer; `buyerId` null is a club abroad. */
+export type BidReceived = { type: "bidReceived"; playerId: string; buyerId: string | null; fee: number };
+/** One of the coach's auctions ended: sold to its best bid (a `playerMoved` comes with it), or without any. */
+export type AuctionClosed = { type: "auctionClosed"; playerId: string; sold: boolean };
+/** The seller's answer to an offer of the coach that was too low: it would sell for `fee`. */
+export type CounterOffered = { type: "counterOffered"; playerId: string; clubId: string; fee: number };
 
-export type TransferEvent = PlayerMoved | PlayerContractRenewed | PreContractSigned | EuropeBid | RequestDecided;
+export type TransferEvent = PlayerMoved | PlayerContractRenewed | PreContractSigned | EuropeBid | RequestDecided | BidReceived | AuctionClosed | CounterOffered;

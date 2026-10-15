@@ -1,5 +1,7 @@
 import { randomStream } from "../../engine/random.js";
 import type { GameState } from "../gameState.js";
+import { unitHash } from "./coachMarket.js";
+import { coachMarketDay } from "./coachMarketDay.js";
 import type { CoachRequest } from "./coachRequest.js";
 import { decideCoachRequest } from "./decideCoachRequest.js";
 import { driftExchangeRate } from "./driftExchangeRate.js";
@@ -11,14 +13,25 @@ import { signFreeAgents } from "./signFreeAgents.js";
 import { signFromAbroad } from "./signFromAbroad.js";
 import { tradeBetweenClubs } from "./tradeBetweenClubs.js";
 import type { TransferEvent } from "./transferEvents.js";
-import { isMarketDay } from "./transferWindows.js";
+import { isMarketDay, isWindowOpen } from "./transferWindows.js";
 
 type Step = (state: GameState, random: () => number) => { state: GameState; events: TransferEvent[] };
 
 /**
+ * Whether the coach's market has anything to do today: offers, counters and auctions to lapse or close,
+ * listings to find buyers inside the window, or a market day for clubs to bid. Most days it has not.
+ */
+function hasCoachBusiness(state: GameState): boolean {
+  const coach = state.market.coach;
+  const has = (entries: Record<string, unknown> | undefined) => !!entries && Object.keys(entries).length > 0;
+  if (has(coach?.bids) || has(coach?.counters) || has(coach?.auctions)) return true;
+  return (has(coach?.listings) && isWindowOpen(state.date)) || (state.coachClubId !== null && isMarketDay(state.date));
+}
+
+/**
  * The transfer market's day, run at the start of `state.date`: loans and contracts that ended, the
- * coach's requests, then on market days Europe's bids and the AI clubs' business. Draws come from
- * the market's own random stream.
+ * coach's requests and his own business (offers, listings, auctions), then on market days Europe's bids
+ * and the AI clubs' business. Draws come from the market's own random stream.
  */
 export function runTransferDay(state: GameState, requests: readonly CoachRequest[]): { state: GameState; events: TransferEvent[] } {
   const random = randomStream(state.market.rngState);
@@ -28,6 +41,11 @@ export function runTransferDay(state: GameState, requests: readonly CoachRequest
   if (Object.values(state.market.loans).some((loan) => loan.until < state.date)) steps.push((s) => returnLoans(s));
   if (hasExpiries(state)) steps.push(expireContracts);
   for (const request of requests) steps.push((s, r) => decideCoachRequest(s, request, r));
+  if (hasCoachBusiness(state)) {
+    // The coach's business draws from its own stream, salted with the day, so it never shifts the AI clubs' draws.
+    const coachRandom = randomStream(Math.floor(unitHash(`${state.market.rngState}:${state.date}`) * 2 ** 32));
+    steps.push((s) => coachMarketDay(s, coachRandom.next));
+  }
   if (isMarketDay(state.date)) steps.push(europeBids, tradeBetweenClubs, (s, r) => signFromAbroad(s, r, nextId), lendYoungPlayers, signFreeAgents);
   // Most days nothing moves; the draft (a copy of every player) is only made when something can.
   let next = steps.length ? openDraft(state) : state;

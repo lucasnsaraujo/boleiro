@@ -4,7 +4,7 @@ import { isWindowOpen } from "@boleiro/engine/sim/transfers/transferWindows";
 import { inboxLines, type DayEvent, type InboxLine } from "./inboxLines.js";
 
 /** Why the days stopped: the coach's match, something he must see, or the day limit. */
-export type StopReason = "matchDay" | "jobOffer" | "fired" | "boardDecision" | "windowClosing" | "seasonEnd" | "idle";
+export type StopReason = "matchDay" | "jobOffer" | "fired" | "boardDecision" | "bidReceived" | "windowClosing" | "seasonEnd" | "idle";
 
 export type PlayDay = (state: GameState) => { state: GameState; events: DayEvent[] };
 export type PlayedDays = { state: GameState; news: InboxLine[]; stop: StopReason; daysPlayed: number };
@@ -33,6 +33,8 @@ export function stopReason(before: GameState, after: GameState, events: readonly
   if (events.some((e) => e.type === "jobOffered")) return "jobOffer";
   const isBoardDecision = (e: DayEvent) => e.type === "requestDecided" || (e.type === "forcedSale" && e.clubId === before.coachClubId);
   if (events.some(isBoardDecision)) return "boardDecision";
+  // A club's offer for one of his players lapses in two days, so it can't wait for the next match.
+  if (events.some((e) => e.type === "bidReceived")) return "bidReceived";
   if (events.some((e) => e.type === "seasonEnded")) return "seasonEnd";
   if (isCoachMatchDay(after)) return "matchDay";
   if (after.coachClubId && isLastDayToAsk(after.date)) return "windowClosing";

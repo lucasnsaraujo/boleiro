@@ -1,10 +1,13 @@
 import type { Division } from "@boleiro/data/players";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { tierOf } from "@boleiro/engine/sim/finances/tierOf";
+import { addDays } from "@boleiro/engine/sim/dates";
 import type { GameState, IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
-import { isInPreContractWindow, ASKING_PREMIUM } from "@boleiro/engine/sim/transfers/tradeBetweenClubs";
-import { TRANSFER_WINDOWS } from "@boleiro/engine/sim/transfers/transferWindows";
+import { squadsByClub } from "@boleiro/engine/sim/players/squadsByClub";
+import { sellerPrice } from "@boleiro/engine/sim/transfers/askingPrice";
 import { valuePlayer } from "@boleiro/engine/sim/transfers/valuePlayer";
+import { isInPreContractWindow } from "@boleiro/engine/sim/transfers/tradeBetweenClubs";
+import { TRANSFER_WINDOWS } from "@boleiro/engine/sim/transfers/transferWindows";
 import { wageDemandAt, wageRateOf } from "@boleiro/engine/sim/transfers/wageDemand";
 import { willingToJoin } from "@boleiro/engine/sim/transfers/willingToJoin";
 import { isLendable, lineupsOf } from "@boleiro/game-client/market/coachRequests";
@@ -23,9 +26,11 @@ export type MarketFilters = {
   clubId: string | null;
   division: Division | null;
   status: MarketStatus | null;
+  /** Only players who would say yes or maybe to joining the coach's club. */
+  isWillingOnly: boolean;
 };
 
-export const NO_FILTERS: MarketFilters = { name: "", group: null, minStrength: null, maxStrength: null, clubId: null, division: null, status: null };
+export const NO_FILTERS: MarketFilters = { name: "", group: null, minStrength: null, maxStrength: null, clubId: null, division: null, status: null, isWillingOnly: false };
 
 export type MarketRow = {
   id: string;
@@ -36,10 +41,15 @@ export type MarketRow = {
   /** null for a free agent. */
   clubId: string | null;
   status: RowStatus;
-  /** The fee the board would pay in BRL: 0 for a free agent or a pre-contract, null when he can't be bought. */
+  /** What his club asks in BRL, by its need of him: 0 for a free agent or a pre-contract, null when he can't be bought. */
   price: number | null;
   /** The monthly wage he asks to join the coach's club. */
   wage: number;
+  /** Market value in BRL. */
+  value: number;
+  /** What he earns now, and until when; a free agent's is from the club he left. */
+  currentWage: number;
+  contractUntil: IsoDate;
   willing: Willingness;
 };
 
@@ -80,6 +90,13 @@ export function searchMarket(state: MarketState, filters: MarketFilters, limit: 
     return null;
   };
 
+  // As the board prices it: a free agent gets the club's going rate, anyone else asks for a raise.
+  const wageOf = (player: SimPlayer, free: boolean) => (free ? Math.max(1, rate(player.strength)) : wageDemandAt(player, rate));
+  const willingnessOf = (player: SimPlayer, free: boolean): Willingness => {
+    const chance = willingToJoin({ player, from: tierOfClub(player.clubId), to, wage: wageOf(player, free), unemployed: free });
+    return chance >= SURE_YES ? "yes" : chance >= LIKELY_NO ? "maybe" : "no";
+  };
+
   const matches = (player: SimPlayer, free: boolean): boolean => {
     const strength = Math.round(player.strength);
     if (filters.group && player.group !== filters.group) return false;
@@ -88,6 +105,7 @@ export function searchMarket(state: MarketState, filters: MarketFilters, limit: 
     if (filters.clubId && (free || player.clubId !== filters.clubId)) return false;
     if (filters.division && (free || state.clubs[player.clubId]?.division !== filters.division)) return false;
     if (name && !fold(player.name).includes(name)) return false;
+    if (filters.isWillingOnly && willingnessOf(player, free) === "no") return false;
     if (filters.status === "lendable") return !free && statusOf(player, false) === null && isLendable(state, player, lineupOf);
     return filters.status === null || statusOf(player, free) === filters.status;
   };
@@ -97,13 +115,13 @@ export function searchMarket(state: MarketState, filters: MarketFilters, limit: 
   for (const player of Object.values(market.freeAgents)) if (matches(player, true)) found.push({ player, free: true });
   found.sort((a, b) => b.player.strength - a.player.strength || a.player.name.localeCompare(b.player.name, "pt-BR"));
 
-  const rows = found.slice(0, limit).map(({ player, free }): MarketRow => {
+  const page = found.slice(0, limit);
+  const squads = page.length ? squadsByClub(state.players) : new Map<string, SimPlayer[]>();
+  const rows = page.map(({ player, free }): MarketRow => {
     const status = statusOf(player, free);
     const fromTier = tierOfClub(player.clubId);
-    const fee = status === "freeAgent" || status === "contractEnding" ? 0 : Math.round(valuePlayer(player, fromTier, date) * market.eurBrl * ASKING_PREMIUM);
-    // As the board prices it: a free agent gets the club's going rate, anyone else asks for a raise.
-    const wage = free ? Math.max(1, rate(player.strength)) : wageDemandAt(player, rate);
-    const chance = willingToJoin({ player, from: fromTier, to, wage, unemployed: free });
+    // The club decides the morning after an offer, so the price is tomorrow's.
+    const fee = status === "freeAgent" || status === "contractEnding" ? 0 : sellerPrice(player, squads.get(player.clubId) ?? [], fromTier, addDays(date, 1), market.eurBrl);
     return {
       id: player.id,
       name: player.name,
@@ -113,8 +131,11 @@ export function searchMarket(state: MarketState, filters: MarketFilters, limit: 
       clubId: free ? null : player.clubId,
       status: status === null && filters.status === "lendable" ? "lendable" : status,
       price: status === "onLoan" || status === "preContract" ? null : fee,
-      wage,
-      willing: chance >= SURE_YES ? "yes" : chance >= LIKELY_NO ? "maybe" : "no",
+      wage: wageOf(player, free),
+      value: Math.round(valuePlayer(player, fromTier, date) * market.eurBrl),
+      currentWage: player.wage,
+      contractUntil: player.contractUntil,
+      willing: willingnessOf(player, free),
     };
   });
   return { total: found.length, rows };
