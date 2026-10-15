@@ -17,13 +17,18 @@ function stageSizes(competition: Competition): number[] {
  * is a group or a knockout tie. guess: in leagues and state championships every club is equally
  * likely to reach a later stage (its share of the field that gets there); in the Copa do Brasil a
  * club wins each tie half the time, as expectedCopaPrize assumes, and is sure to play the stage it
- * enters at. On shorter formats each game counts for the real games it stands for (`gameScales`).
+ * enters at. On shorter formats each game counts for the real games it stands for (`gameScales`), half at each ground.
  */
 export function expectedHomeGames(competitions: readonly Competition[], fixtures: readonly Fixture[]): Map<string, number> {
   const games = new Map<string, number>();
   const add = (clubId: string, count: number) => games.set(clubId, (games.get(clubId) ?? 0) + count);
   const scales = new Map(competitions.map((competition) => [competition.id, competition.gameScales]));
-  for (const f of fixtures) add(f.homeId, scales.get(f.competitionId)?.[f.stage] ?? 1);
+  for (const f of fixtures) {
+    const scale = scales.get(f.competitionId)?.[f.stage] ?? 1;
+    // A game standing for several real ones counts half of them at each club's ground, as recordMatchFinances books them.
+    if (scale === 1) add(f.homeId, 1);
+    else for (const id of [f.homeId, f.awayId]) add(id, scale / 2);
+  }
   for (const competition of competitions) {
     const sizes = stageSizes(competition);
     competition.stageDates.forEach((dates, stage) => {
