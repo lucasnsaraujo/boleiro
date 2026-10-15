@@ -1,7 +1,7 @@
 import { beforeAll, expect, test } from "vitest";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
 import { createEngineSession } from "../engine/createEngineSession.js";
-import type { LiveRound } from "./liveRoundOf.js";
+import { playerStatsOf, type LiveRound } from "./liveRoundOf.js";
 
 const CLUB = "flamengo-rj";
 // Enough play-ons to reach the coach's first match day.
@@ -76,4 +76,22 @@ test("the coach's side is asked about its red cards and injuries, and shows who 
   expect(shootout?.kickers).toHaveLength(11);
   expect(shootout?.isOverruled ? shootout.kickers.slice(0, 3) : order).toEqual(shootout?.kickers.slice(0, 3));
   expect(plan.squad.find((p) => p.id === shootout?.kickers.at(-1))?.group).toBe("GK");
+});
+
+test("every match of the round shows each player's numbers as they stand at a minute, the substitute's from when he came on", () => {
+  for (const match of kickOff.matches) {
+    const half = playerStatsOf(match, 45);
+    const full = playerStatsOf(match, 90);
+    expect(Object.keys(half).length).toBeGreaterThanOrEqual(22);
+    for (const [id, stats] of Object.entries(half)) {
+      expect(stats.minutes).toBeLessThanOrEqual(45);
+      expect(full[id]?.passes).toBeGreaterThanOrEqual(stats.passes);
+      expect(full[id]?.shots).toBeGreaterThanOrEqual(stats.shots);
+    }
+  }
+  const coachMatch = changed.matches.find((m) => m.fixtureId === changed.coach?.fixtureId);
+  if (!coachMatch) throw new Error("the coach plays today");
+  expect(playerStatsOf(coachMatch, 60)[onId]).toBeUndefined();
+  expect(playerStatsOf(coachMatch, 90)[onId]?.minutes).toBe(30);
+  expect(playerStatsOf({ ...coachMatch, play: undefined }, 90)).toEqual({});
 });

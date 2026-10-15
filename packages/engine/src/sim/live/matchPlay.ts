@@ -82,6 +82,11 @@ const FORM_MISPLACED = 0.6;
 const FORM_FOULS = 0.4;
 const FORM_TACKLES = 0.25;
 
+// guess: the assistant calls a day bad from this form down (about one player in eight), once he
+// has watched the player for twenty minutes.
+const BAD_DAY_FORM = -0.5;
+const BAD_DAY_NOTICED_AFTER = 20;
+
 const PLAY_STREAM_SALT = 0x91a7;
 // Above this mean a count is drawn from the normal approximation, saving dozens of draws per player.
 const SMALL_MEAN = 12;
@@ -251,4 +256,13 @@ export function playerStatsAt(play: MatchPlay, events: readonly MatchEvent[], mi
     }
   }
   return stats;
+}
+
+/** The players the assistant points out as having a bad day, at the minute he notices: twenty minutes into their time on the pitch, if they are still on. */
+export function badDaysOf(play: MatchPlay, events: readonly MatchEvent[]): { playerId: string; clubId: string; minute: number }[] {
+  return [...spellsOf(play, events)].flatMap(([playerId, spell]) => {
+    const own = play.players[playerId];
+    const minute = spell.from + BAD_DAY_NOTICED_AFTER;
+    return own && own.form <= BAD_DAY_FORM && minute <= spell.to ? [{ playerId, clubId: own.clubId, minute }] : [];
+  });
 }

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { PositionGroup } from "../../engine/match.js";
 import type { SimPlayer } from "../gameState.js";
 import { freshCondition } from "../players/openingProfile.js";
-import { drawMatchPlay, playerStatsAt, type PlayerStats } from "./matchPlay.js";
+import { badDaysOf, drawMatchPlay, playerStatsAt, type PlayerStats } from "./matchPlay.js";
 import type { MatchEvent } from "./matchTimeline.js";
 
 const player = (id: string, clubId: string, group: PositionGroup): SimPlayer => ({
@@ -85,5 +85,19 @@ describe("a match's play", () => {
     expect(perMatch((s) => s.passes + s.misplacedPasses)).toBeLessThan(450);
     expect(perMatch((s) => s.tackles)).toBeGreaterThan(12);
     expect(perMatch((s) => s.fouls)).toBeGreaterThan(8);
+  });
+
+  it("has the assistant point out a player on a bad day once he has watched him for twenty minutes, and nobody else", () => {
+    const subs = [player("home-sub", "home", "ATT"), player("home-sub2", "home", "ATT")];
+    const formOf = (p: SimPlayer) => (p.id === "home-9" || p.id === "home-sub" || p.id === "home-8" ? -0.8 : p.id === "home-7" ? -0.3 : 0.2);
+    const play = drawMatchPlay(1, "f", starters, subs, formOf);
+    const events: MatchEvent[] = [
+      { type: "substitution", minute: 15, clubId: "home", playerId: "home-sub", offId: "home-8" },
+      { type: "substitution", minute: 60, clubId: "home", playerId: "home-sub2", offId: "home-9" },
+    ];
+    expect(badDaysOf(play, events)).toEqual([
+      { playerId: "home-9", clubId: "home", minute: 20 },
+      { playerId: "home-sub", clubId: "home", minute: 35 },
+    ]);
   });
 });
