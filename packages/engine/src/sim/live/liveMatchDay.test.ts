@@ -233,3 +233,31 @@ describe("match depth", () => {
     expect(allEvents.some(({ e }) => e.type === "substitution" && e.clubId === COACH_CLUB)).toBe(false);
   });
 });
+
+describe("a live day saved by an older build", () => {
+  it("still settles a level deciding leg on penalties when its changed timeline has no kicks", () => {
+    const changed = applyLiveChange(startMatchDay(matchDay, {}), 30, { posture: "defensive" });
+    const fixtureId = changed.coachMatch?.fixtureId ?? "";
+    const fixture = changed.state.fixtures.find((f) => f.id === fixtureId);
+    if (!fixture) throw new Error("the coach has a match");
+    // The coach's match made a one-leg cup final, played to a goalless draw with no shootout on its timeline.
+    const league = changed.state.competitions[fixture.competitionId];
+    if (!league) throw new Error("the coach's match has a competition");
+    const ties: [string, string][] = [[fixture.homeId, fixture.awayId]];
+    const cup = { ...league, id: "old-cup", stages: [{ kind: "knockout" as const, ties, dates: [fixture.date] }] };
+    const asCupFinal = { ...fixture, competitionId: "old-cup", stage: 0, tie: 0 };
+    const old: LiveDay = {
+      ...changed,
+      state: {
+        ...changed.state,
+        competitions: { ...changed.state.competitions, "old-cup": cup },
+        fixtures: changed.state.fixtures.map((f) => (f.id === fixtureId ? asCupFinal : f)),
+      },
+      matches: changed.matches.map((m) => (m.fixtureId === fixtureId ? { ...m, events: m.events.filter((e) => e.type !== "goal" && e.type !== "shootoutKick" && e.type !== "orderOverruled") } : m)),
+    };
+    const { events } = finishMatchDay(old);
+    const played = events.find((e) => e.type === "matchPlayed" && e.fixture.id === fixtureId);
+    expect(played?.type === "matchPlayed" && played.fixture.result).toMatchObject({ homeGoals: 0, awayGoals: 0 });
+    expect(played?.type === "matchPlayed" && played.fixture.result?.penaltyWinnerId).toBeOneOf([fixture.homeId, fixture.awayId]);
+  });
+});
