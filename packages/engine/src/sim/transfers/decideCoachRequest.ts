@@ -5,7 +5,7 @@ import { sellerPrice } from "./askingPrice.js";
 import { boardRefusal } from "./boardRefusal.js";
 import { coachMarketOf, withCoachMarket } from "./coachMarket.js";
 import type { CoachRequest } from "./coachRequest.js";
-import { isSquadFull } from "./squadCap.js";
+import { isClubFull } from "./squadCap.js";
 import type { Counter } from "./transferMarket.js";
 import { contractEnd } from "./expireContracts.js";
 import { LENDER_WAGE_SHARE, LOAN_MAX_AGE, loanUntil } from "./loans.js";
@@ -87,9 +87,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (own) return refuse(state, request, "alreadyAtClub");
       // The borrower can't sell what it doesn't own, and the owner can't sell a player it lent out.
       if (loan) return refuse(state, request, "onLoan");
-      // Players with a pre-contract here count too: they join when their contracts end, cap or not.
-      const joining = Object.values(state.market.preContracts).filter((clubId) => clubId === coachClubId).length;
-      if (isSquadFull(squad.length + joining)) return refuse(state, request, "squadFull");
+      if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
       const free = !state.players[player.id];
       const preContract = !free && isInPreContractWindow(player, state.date);
       if (!free && !preContract && !isWindowOpen(state.date)) return refuse(state, request, "windowClosed");
@@ -121,7 +119,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (!isWindowOpen(state.date)) return refuse(state, request, "windowClosed");
       const fee = Math.round(valuePlayer(player, view.tier(coachClubId), state.date) * state.market.eurBrl);
       const buyerId = Object.keys(state.finances)
-        .filter((id) => id !== coachClubId && !isSquadFull(view.squad(id).length))
+        .filter((id) => id !== coachClubId && !isClubFull(state, id, view.squad(id).length))
         .sort((a, b) => (state.clubs[b]?.fanbase ?? 0) - (state.clubs[a]?.fanbase ?? 0) || a.localeCompare(b))
         .find((id) => {
           const buyerFinance = state.finances[id];
@@ -147,7 +145,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
     }
     case "loanIn": {
       if (own || !state.players[player.id] || loan) return refuse(state, request, "notAvailable");
-      if (isSquadFull(squad.length)) return refuse(state, request, "squadFull");
+      if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
       if (!isWindowOpen(state.date)) return refuse(state, request, "windowClosed");
       if (RANK[view.tier(player.clubId)] <= RANK[view.tier(coachClubId)]) return refuse(state, request, "lenderNotBigger");
       if (pickLineup([...view.squad(player.clubId)]).includes(player)) return refuse(state, request, "lenderNeedsHim");

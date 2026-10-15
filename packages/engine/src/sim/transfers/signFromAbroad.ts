@@ -6,6 +6,7 @@ import { boardRefusal } from "./boardRefusal.js";
 import { contractEnd } from "./expireContracts.js";
 import { marketView } from "./marketView.js";
 import { movePlayer } from "./movePlayer.js";
+import { isClubFull } from "./squadCap.js";
 import type { PlayerMoved } from "./transferEvents.js";
 import { valuePlayer } from "./valuePlayer.js";
 import { goingRate } from "./wageDemand.js";
@@ -45,7 +46,7 @@ export function signFromAbroad(state: GameState, random: () => number, serial: (
     const finance = next.finances[clubId];
     if (clubId === state.coachClubId || !club || !finance || random() >= LOOKS_ABROAD[view.tier(clubId)]) continue;
     const squad = view.squad(clubId);
-    if (squad.length < 11) continue;
+    if (squad.length < 11 || isClubFull(next, clubId, squad.length)) continue;
     const starters = pickLineup([...squad]);
     const level = starters.reduce((sum, p) => sum + p.strength, 0) / starters.length;
     const nationality = nationalityOf(random);

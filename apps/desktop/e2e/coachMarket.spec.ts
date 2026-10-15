@@ -31,6 +31,19 @@ async function skipMatchDay(page: Page): Promise<void> {
   });
 }
 
+/** Tops the coach's squad up to `size` with copies of one of his players, through a save the worker loads back. */
+async function fillSquadTo(page: Page, size: number): Promise<void> {
+  await page.evaluate(async (size) => {
+    const engine = window.boleiroEngine;
+    if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
+    const save: { game: { coachClubId: string; players: Record<string, { id: string; clubId: string }> } } = JSON.parse(await engine.save());
+    const { coachClubId, players } = save.game;
+    const squad = Object.values(players).filter((p) => p.clubId === coachClubId);
+    for (let i = squad.length; i < size; i++) players[`filler-${i}`] = { ...squad[0], id: `filler-${i}`, clubId: coachClubId };
+    await engine.apply({ type: "load", save: JSON.stringify(save) });
+  }, size);
+}
+
 test("from a new game: list players, answer a club's offer, make an offer and get a counter-offer", async ({ page }) => {
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "bahia", club: "Bahia", coach: "Tite" });
@@ -87,7 +100,7 @@ test("from a new game: list players, answer a club's offer, make an offer and ge
   await expect(countered.getByRole("button", { name: /^Aceitar R\$/ })).toBeVisible();
 });
 
-test("a squad over the 35-player cap can't sign anyone: the market warns and the board refuses", async ({ page }) => {
+test("a squad at the 50-player cap can't sign anyone: the market warns and the board refuses", async ({ page }) => {
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "são paulo", club: "São Paulo", coach: "Tite" });
   const bar = barOf(page);
@@ -97,14 +110,15 @@ test("a squad over the 35-player cap can't sign anyone: the market warns and the
     await engine.apply({ type: "advance", days: Array.from({ length: 5 }, () => ({})) });
   });
   await skipMatchDay(page);
+  await fillSquadTo(page, 50);
   await bar.getByRole("link", { name: "Busca" }).click();
-  await expect(page.getByText(/^Elenco \d+\/35$/)).toBeVisible();
+  await expect(page.getByText("Elenco 50/50", { exact: true })).toBeVisible();
   await page.getByRole("combobox", { name: "Divisão" }).selectOption("Série B");
   const priced = page.getByRole("table", { name: "Jogadores" }).getByRole("row").filter({ has: page.getByRole("cell", { name: /^R\$/ }) }).first();
   const name = (await priced.getByRole("button").textContent()) ?? "";
   await priced.getByRole("button").click();
   const chosen = page.getByRole("region", { name });
-  await expect(chosen).toContainText(/Elenco cheio: \d+ de 35 jogadores/);
+  await expect(chosen).toContainText("Elenco cheio: 50 de 50 jogadores");
   await chosen.getByRole("button", { name: "Comprar" }).click();
 
   await bar.getByRole("link", { name: "Times" }).click();
@@ -112,5 +126,5 @@ test("a squad over the 35-player cap can't sign anyone: the market warns and the
   await page.getByRole("button", { name: "Jogar rodada" }).click();
   await expect(barDate(page)).not.toHaveText(before);
   await bar.getByRole("link", { name: "Busca" }).click();
-  await expect(page.getByRole("list", { name: "Pedidos à diretoria" })).toContainText(`Contratação de ${name}: recusada, o elenco já tem 35 jogadores`);
+  await expect(page.getByRole("list", { name: "Pedidos à diretoria" })).toContainText(`Contratação de ${name}: recusada, o elenco já tem 50 jogadores`);
 });

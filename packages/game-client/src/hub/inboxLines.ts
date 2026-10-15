@@ -1,5 +1,6 @@
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
+import { SQUAD_CAP } from "@boleiro/engine/sim/transfers/squadCap";
 import type { AdvanceResult } from "../engine/createEngineSession.js";
 import { competitionName } from "../format/competitionName.js";
 import { monthName } from "../format/formatGameDate.js";
@@ -37,7 +38,7 @@ const REFUSALS: Record<string, string> = {
   onLoan: "ele está emprestado",
   notAtClub: "ele não é mais do clube",
   notAvailable: "ele não está disponível",
-  squadFull: "o elenco já tem 35 jogadores",
+  squadFull: `o elenco já tem ${SQUAD_CAP} jogadores`,
   offerTooLow: "o clube dele nem quis conversar com essa oferta",
   counterOffer: "o clube dele fez uma contraproposta",
 };

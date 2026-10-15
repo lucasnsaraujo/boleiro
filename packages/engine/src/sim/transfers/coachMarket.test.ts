@@ -282,9 +282,9 @@ describe(`the ${SQUAD_CAP}-player cap`, () => {
   });
 
   it("keeps a full club from buying the coach's player even after he accepts its offer", () => {
-    const fullClub = Object.keys(windowOpen.finances).find((id) => squadOf(windowOpen, id).length >= SQUAD_CAP);
-    if (!fullClub) throw new Error("no club starts with a full squad");
-    const offered = withBid(windowOpen, { playerId: median.id, buyerId: fullClub });
+    let fullBuyer = windowOpen;
+    for (let i = squadOf(windowOpen, BUYER).length; i < SQUAD_CAP; i++) fullBuyer = withPlayer(fullBuyer, { ...median, clubId: BUYER, id: `buyer-filler-${i}` });
+    const offered = withBid(fullBuyer, { playerId: median.id, buyerId: BUYER });
     const { state, outcome } = answerBid(offered, median.id, { kind: "accept" });
     expect(outcome).toBe("walkedAway");
     expect(state.players[median.id]?.clubId).toBe(COACH);
