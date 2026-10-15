@@ -24,4 +24,10 @@ describe("a game that plays CONMEBOL's cups", () => {
   it("leaves the money of a club in no cup as it was", () => {
     expect(finance(southAmerica, "remo-pa")).toEqual(finance(brazil, "remo-pa"));
   });
+
+  it("are not played with only part of South America, whose places would leave the draws short", () => {
+    const argentinaAlone = loadNewGame(8, { coachClubId: null, world: loadSouthAmerica(2026).filter((country) => country.structure.id === "ar") });
+    expect(Object.values(argentinaAlone.competitions).some((c) => c.kind === "continental")).toBe(false);
+    expect(argentinaAlone.economy.continentalStages).toBeUndefined();
+  });
 });

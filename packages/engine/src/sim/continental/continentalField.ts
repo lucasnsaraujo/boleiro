@@ -6,7 +6,7 @@ import { standings } from "../standings.js";
 import { BRAZIL } from "../world/brazil.js";
 import { continentalPlaces, type ContinentalSlot, type CupFinal, type LeaguePlace } from "../world/continentalPlaces.js";
 import { leagueTable } from "../world/resultOnlyLeague.js";
-import type { ContinentalEntry } from "../world/southAmerica.js";
+import { SOUTH_AMERICA, type ContinentalEntry } from "../world/southAmerica.js";
 import type { World, WorldClub } from "../world/world.js";
 
 /**
@@ -60,8 +60,9 @@ function byRank(lists: readonly (readonly string[])[]): string[] {
   return Array.from({ length: longest }, (_, rank) => lists.flatMap((list) => (list[rank] === undefined ? [] : [list[rank]]))).flat();
 }
 
+/** The field from every country's places; null unless all of South America is in the game, as the draws need every country's clubs. */
 function fieldOf(countries: readonly CountryPlaces[], holders: Holders, countryOf: (id: string) => string | null): ContinentalField | null {
-  if (!countries.some((c) => c.country !== "br")) return null;
+  if (!SOUTH_AMERICA.every((structure) => countries.some((c) => c.country === structure.id))) return null;
   const at = (entry: ContinentalEntry) => countries.map((c) => c.places.get(entry) ?? []);
   const champions = [holders.libertadores, holders.sulAmericana].filter((id): id is string => id !== null);
   const libertadores = [byRank(at("libertadoresStage1")), byRank(at("libertadoresStage2")), [], [...champions, ...byRank(at("libertadoresGroups"))]];
