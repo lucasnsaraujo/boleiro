@@ -80,6 +80,23 @@ class WorldPacksTest(unittest.TestCase):
         build_world_packs.write(self.db, partial, out)
         self.assertTrue((out / "xx.pack.json.gz").exists())
 
+    def test_a_partial_scrape_leaves_out_the_countries_it_only_has_guest_clubs_of(self) -> None:
+        partial = scrape_tiny_world(self.db, self.root / "cache", Offline(), is_partial=True).snapshot
+        self.db.execute("INSERT INTO countries VALUES (?, 'ES', 'Spain')", (partial,))
+        self.db.execute("UPDATE clubs SET country_code = 'ES', league_id = NULL WHERE snapshot_id = ? AND id = 'tm-11'", (partial,))
+        self.assertEqual(sorted(build_world_packs.packs(self.db, partial)), ["gb-eng", "national-teams"])
+
+    def test_a_full_scrape_keeps_the_pack_of_a_country_whose_pages_all_failed(self) -> None:
+        out = self.root / "packs"
+        out.mkdir()
+        (out / "xx.pack.json.gz").write_bytes(b"old")
+        self.db.execute("INSERT INTO countries VALUES (?, 'XX', 'Nowhere')", (self.snapshot,))
+        self.db.execute("DELETE FROM national_teams WHERE snapshot_id = ?", (self.snapshot,))
+        (out / "national-teams.pack.json.gz").write_bytes(b"old")
+        build_world_packs.write(self.db, self.snapshot, out)
+        self.assertEqual((out / "xx.pack.json.gz").read_bytes(), b"old")
+        self.assertEqual((out / "national-teams.pack.json.gz").read_bytes(), b"old")
+
 
 if __name__ == "__main__":
     unittest.main()

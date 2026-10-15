@@ -4,8 +4,9 @@ Same layout as brazil.pack.json.gz (build_pack.py): gzipped JSON with a column p
 `packVersion` hashed from the content, and gzip's time zeroed, so the same snapshot always gives
 the same bytes. Files are `<country id>.pack.json.gz` ("gb-eng.pack.json.gz") and
 `national-teams.pack.json.gz`. Players carry no strength yet: the rating step comes later. A full
-world scrape's packs replace the folder's, so a country that left the world loses its pack; a
-partial scrape's (`transfermarkt-partial`, from `scrape_world.py --countries`) only overwrite their own.
+world scrape removes the pack of every country it doesn't have, so a country that left the world
+loses its pack (one whose pages all failed keeps its old one); a partial scrape (`transfermarkt-partial`, from `scrape_world.py --countries`) only
+writes the countries whose leagues it scraped.
 
 Usage: python pipeline/build_world_packs.py pipeline/boleiro.db <out dir> [snapshot id]
        (the latest full `transfermarkt` snapshot when the id is left out)
@@ -99,10 +100,18 @@ def national_teams_pack(db: sqlite3.Connection, snapshot: int) -> dict[str, obje
     }
 
 
+def is_full_world(db: sqlite3.Connection, snapshot: int) -> bool:
+    return db.execute("SELECT kind FROM snapshots WHERE id = ?", (snapshot,)).fetchone()[0] == "transfermarkt"
+
+
 def packs(db: sqlite3.Connection, snapshot: int) -> dict[str, dict[str, object]]:
-    """Pack name -> content, for every country with a club in the snapshot."""
+    """Pack name -> content, for every country with a club in the snapshot; in a partial one, only the countries
+    whose leagues it scraped, not those it only has a Club World Cup guest of."""
+    with_clubs = "SELECT country_code FROM clubs WHERE snapshot_id = ?"
+    if not is_full_world(db, snapshot):
+        with_clubs = "SELECT country_code FROM competitions WHERE snapshot_id = ? AND kind = 'league'"
     countries = db.execute(
-        "SELECT code, name FROM countries WHERE snapshot_id = ? AND code IN (SELECT country_code FROM clubs WHERE snapshot_id = ?) ORDER BY code",
+        f"SELECT code, name FROM countries WHERE snapshot_id = ? AND code IN ({with_clubs}) ORDER BY code",
         (snapshot, snapshot),
     ).fetchall()
     found = {row["code"].lower(): country_pack(db, snapshot, row["code"], row["name"]) for row in countries}
@@ -125,10 +134,12 @@ def write(db: sqlite3.Connection, snapshot: int, out: Path) -> dict[str, Path]:
         path = out / f"{name}.pack.json.gz"
         path.write_bytes(pack_bytes(name, content))
         written[name] = path
-    kind = db.execute("SELECT kind FROM snapshots WHERE id = ?", (snapshot,)).fetchone()[0]
-    if kind == "transfermarkt":
-        for stale in set(out.glob("*.pack.json.gz")) - set(written.values()):
-            stale.unlink()
+    if is_full_world(db, snapshot):
+        kept = {f"{code.lower()}.pack.json.gz" for (code,) in db.execute("SELECT code FROM countries WHERE snapshot_id = ?", (snapshot,))}
+        kept.add(f"{NATIONAL_TEAMS}.pack.json.gz")
+        for stale in out.glob("*.pack.json.gz"):
+            if stale.name not in kept:
+                stale.unlink()
     return written
 
 
