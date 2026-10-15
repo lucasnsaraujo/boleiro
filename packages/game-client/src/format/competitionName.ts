@@ -1,5 +1,5 @@
 import type { State } from "@boleiro/data/clubs";
-import type { Competition, Fixture } from "@boleiro/engine/sim/gameState";
+import type { Competition, ContinentalCup, Fixture } from "@boleiro/engine/sim/gameState";
 import type { CompetitionKey } from "@boleiro/engine/sim/history/history";
 
 const STATE_CHAMPIONSHIPS: Record<State, string> = {
@@ -32,7 +32,11 @@ const STATE_CHAMPIONSHIPS: Record<State, string> = {
   TO: "Tocantinense",
 };
 
-/** The competition as a fan names it: "Série A", "Paulista", "Copa do Brasil". */
+const CONTINENTAL_CUP_NAMES: Record<ContinentalCup, string> = { libertadores: "Libertadores", "sul-americana": "Sul-Americana", recopa: "Recopa" };
+
+const isContinentalCup = (key: string): key is ContinentalCup => key in CONTINENTAL_CUP_NAMES;
+
+/** The competition as a fan names it: "Série A", "Paulista", "Copa do Brasil", "Libertadores". */
 export function competitionName(competition: Competition): string {
   switch (competition.kind) {
     case "league":
@@ -41,6 +45,8 @@ export function competitionName(competition: Competition): string {
       return STATE_CHAMPIONSHIPS[competition.state];
     case "cup":
       return "Copa do Brasil";
+    case "continental":
+      return CONTINENTAL_CUP_NAMES[competition.cup];
   }
 }
 
@@ -51,6 +57,7 @@ function isState(code: string): code is State {
 /** A competition as the history keeps it, without the season: "serie-a", "copa-do-brasil", "state-sp". */
 export function competitionKeyName(key: CompetitionKey): string {
   if (key === "copa-do-brasil") return "Copa do Brasil";
+  if (isContinentalCup(key)) return CONTINENTAL_CUP_NAMES[key];
   const league = /^serie-([a-d])$/.exec(key)?.[1];
   if (league) return `Série ${league.toUpperCase()}`;
   const state = /^state-([a-z]{2})$/.exec(key)?.[1]?.toUpperCase();

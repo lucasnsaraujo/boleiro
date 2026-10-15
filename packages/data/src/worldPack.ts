@@ -2,7 +2,7 @@ import { GROUPS, type PositionGroup } from "./players.js";
 
 export type WorldPackLeague = { id: string; name: string; tier: number };
 
-export type WorldPackClub = { id: string; name: string; shortName: string; league: string | null; colours: { primary: string; secondary: string } };
+export type WorldPackClub = { id: string; name: string; shortName: string; league: string | null; stadium: string; colours: { primary: string; secondary: string } };
 
 /** A squad player as Transfermarkt lists him; the market value is null when it gives none. */
 export type WorldPackPlayer = { clubId: string; name: string; group: PositionGroup; age: number | null; marketValueEur: number | null };
@@ -48,10 +48,40 @@ function columnOf<T>(table: Table, path: string, key: string, rows: number | nul
   return values;
 }
 
-/** Decodes a country's world pack; throws on another format, a malformed column or a player of no club. */
-export function parseWorldPack(json: string): WorldPack {
+function packOf(json: string): Table {
   const pack: unknown = JSON.parse(json);
   if (!isTable(pack) || pack.format !== PACK_FORMAT) fail("format", String(PACK_FORMAT));
+  return pack;
+}
+
+function clubsOf(pack: Table): WorldPackClub[] {
+  const clubTable = tableOf(pack, "clubs");
+  const clubIds = columnOf(clubTable, "clubs", "id", null, isString);
+  const clubRows = clubIds.length;
+  const clubNames = columnOf(clubTable, "clubs", "name", clubRows, isString);
+  const shortNames = columnOf(clubTable, "clubs", "shortName", clubRows, isString);
+  const clubLeagues = columnOf(clubTable, "clubs", "league", clubRows, isStringOrNull);
+  const stadiums = columnOf(clubTable, "clubs", "stadium", clubRows, isStringOrNull);
+  const primary = columnOf(clubTable, "clubs", "primaryColour", clubRows, isString);
+  const secondary = columnOf(clubTable, "clubs", "secondaryColour", clubRows, isString);
+  return clubIds.map((id, row) => ({
+    id,
+    name: clubNames[row] ?? id,
+    shortName: shortNames[row] ?? id,
+    league: clubLeagues[row] ?? null,
+    stadium: stadiums[row] ?? "",
+    colours: { primary: primary[row] ?? "", secondary: secondary[row] ?? "" },
+  }));
+}
+
+/** The clubs alone, from a pack whose other tables may have been left out (`?gunzip&keys=format,clubs`). */
+export function parseWorldPackClubs(json: string): WorldPackClub[] {
+  return clubsOf(packOf(json));
+}
+
+/** Decodes a country's world pack; throws on another format, a malformed column or a player of no club. */
+export function parseWorldPack(json: string): WorldPack {
+  const pack = packOf(json);
   if (!isString(pack.packVersion)) fail("packVersion", "a version");
   const country = tableOf(pack, "country");
   if (!isString(country.id) || !isString(country.name)) fail("country", "an id and a name");
@@ -66,21 +96,9 @@ export function parseWorldPack(json: string): WorldPack {
     .flatMap((id, row) => (kinds[row] === "league" ? [{ id, name: names[row] ?? "", tier: tiers[row] ?? 0 }] : []))
     .sort((a, b) => a.tier - b.tier);
 
-  const clubTable = tableOf(pack, "clubs");
-  const clubIds = columnOf(clubTable, "clubs", "id", null, isString);
+  const clubs = clubsOf(pack);
+  const clubIds = clubs.map((club) => club.id);
   const clubRows = clubIds.length;
-  const clubNames = columnOf(clubTable, "clubs", "name", clubRows, isString);
-  const shortNames = columnOf(clubTable, "clubs", "shortName", clubRows, isString);
-  const clubLeagues = columnOf(clubTable, "clubs", "league", clubRows, isStringOrNull);
-  const primary = columnOf(clubTable, "clubs", "primaryColour", clubRows, isString);
-  const secondary = columnOf(clubTable, "clubs", "secondaryColour", clubRows, isString);
-  const clubs = clubIds.map((id, row) => ({
-    id,
-    name: clubNames[row] ?? id,
-    shortName: shortNames[row] ?? id,
-    league: clubLeagues[row] ?? null,
-    colours: { primary: primary[row] ?? "", secondary: secondary[row] ?? "" },
-  }));
 
   const playerTable = tableOf(pack, "players");
   const playerClubs = columnOf(playerTable, "players", "club", null, isNumber);

@@ -27,7 +27,7 @@ const championOf = (state: GameState, cup: ContinentalCompetition["cup"]) => {
 };
 
 describe("a season with South America", () => {
-  const start = loadNewGame(SEED, { coachClubId: null, world: loadSouthAmerica(2026, SEED) });
+  const start = loadNewGame(SEED, { coachClubId: null, world: loadSouthAmerica(2026) });
   const lastDay = playUntil(start, "2026-12-31");
   const next = playUntil(lastDay, "2027-01-01");
 

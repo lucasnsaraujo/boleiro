@@ -28,7 +28,7 @@ const INTERNATIONAL_TRIP_KM = 1_700;
 type MatchClub = Pick<Club, "id" | "shortName" | "pitch"> & { state: State | null };
 
 /** A club as a match reads it; a guest from a result-only country plays on grass and has no Brazilian state. */
-function matchClubOf(state: GameState, clubId: string): MatchClub | null {
+export function matchClubOf(state: GameState, clubId: string): MatchClub | null {
   const club = state.clubs[clubId];
   if (club) return club;
   const guest = guestClubOf(state, clubId);

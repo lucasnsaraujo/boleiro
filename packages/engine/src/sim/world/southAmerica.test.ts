@@ -4,7 +4,7 @@ import { checkSquad } from "./resultOnlyLeague.js";
 import { SOUTH_AMERICA, southAmericaStart } from "./southAmerica.js";
 
 const packs = SOUTH_AMERICA.map((structure) => loadWorldPack(structure.id));
-const start = southAmericaStart(packs, 2026, 1);
+const start = southAmericaStart(packs, 2026);
 
 describe("South America's result-only countries", () => {
   it("are the nine CONMEBOL countries besides Brazil, Argentina with its second division", () => {
