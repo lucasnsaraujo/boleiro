@@ -25,7 +25,7 @@ function roundWith(ours: MatchEvent[], other: MatchEvent[] = [], hasCoach = true
     ratings: null,
     seenMinute: 0,
     coach: hasCoach
-      ? { fixtureId: "ours", side: "away", starters: [], benchIds: [], squad: [], tactics: { formation: "4-4-2", posture: "balanced", penaltyTakerId: null }, lastChangeMinute: 0 }
+      ? { fixtureId: "ours", side: "away", starters: [], benchIds: [], squad: [], tactics: { formation: "4-4-2", posture: "balanced", penaltyTakerId: null }, lastChangeMinute: 0, incidentHandling: "askCoach", shootout: { kickers: [], isOverruled: false } }
       : null,
   };
 }

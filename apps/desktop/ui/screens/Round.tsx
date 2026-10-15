@@ -54,12 +54,13 @@ const PAUSED_CROWD = 0.6;
 
 type PreMatch = { plan: MatchDayPlan; clubs: Readonly<Record<string, Club>>; date: string };
 
-/** The red cards and injuries of the coach's side the round stopped on at `minute`, unless he has already answered them. */
+/** The red cards and injuries of the coach's side the round stopped on at `minute`, when the session asks him about them and he has not answered yet. */
 function incidentOf(round: LiveRound, minute: number): Incident | null {
   const reason = pauseReason(round, minute);
   const { coach, coachClubId } = round;
   const match = round.matches.find((m) => m.fixtureId === coach?.fixtureId);
-  if ((reason !== "coachMatch" && reason !== "halfTime") || !coach || !match || !coachClubId || coach.lastChangeMinute === minute) return null;
+  if (reason !== "coachMatch" && reason !== "halfTime") return null;
+  if (!coach || coach.incidentHandling !== "askCoach" || !match || !coachClubId || coach.lastChangeMinute === minute) return null;
   return incidentAt(coach, match.events, coachClubId, liveLimits(coach, match.events, coachClubId, minute));
 }
 /** A goal being celebrated on a row: the scoring club's colour, its side, and the round's goal count so each goal replays the animation. */

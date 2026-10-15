@@ -62,3 +62,18 @@ test("the round names every player its events mention: scorers, assistants and k
   expect(mentioned.some((id) => kickOff.matches.some((m) => m.events.some((e) => e.type === "goal" && e.assistId === id)))).toBe(true);
   for (const id of mentioned) expect(kickOff.names[id]).toBeTruthy();
 });
+
+test("the coach's side is asked about its red cards and injuries, and shows who would kick a shootout in his order", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 4, choices: { coachClubId: CLUB } });
+  for (let step = 0; step < MAX_STEPS && session.apply({ type: "playToMatchDay" }).stop !== "matchDay"; step++);
+  const plan = session.matchDayPlan();
+  const outfield = plan.lineup.filter((id) => plan.squad.find((p) => p.id === id)?.group !== "GK");
+  const order = outfield.slice(-3).reverse();
+  const round = session.apply({ type: "startRound", lineup: plan.lineup, tactics: { ...plan.tactics, kickerOrder: order } });
+  const shootout = round.coach?.shootout;
+  expect(round.coach?.incidentHandling).toBe("askCoach");
+  expect(shootout?.kickers).toHaveLength(11);
+  expect(shootout?.isOverruled ? shootout.kickers.slice(0, 3) : order).toEqual(shootout?.kickers.slice(0, 3));
+  expect(plan.squad.find((p) => p.id === shootout?.kickers.at(-1))?.group).toBe("GK");
+});

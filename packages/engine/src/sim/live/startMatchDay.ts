@@ -18,6 +18,7 @@ import { squadsByClub } from "../players/squadsByClub.js";
 import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
 import { aiBench, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
 import { coachOutcome } from "./coachOutcome.js";
+import { incidentHandling } from "./incidentHandling.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
 import { detailStream, FULL_TIME, inMatchOrder, kickOffTimeline, scorerStream } from "./matchTimeline.js";
 
@@ -99,7 +100,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
         awayId,
         ...setup,
         benches,
-        aiSides: { home: homeId !== coachClubId, away: awayId !== coachClubId },
+        aiSides: { home: incidentHandling(state, homeId) === "aiSubstitutions", away: incidentHandling(state, awayId) === "aiSubstitutions" },
         penaltyTakers: { home: takerOf(homeId), away: takerOf(awayId) },
         strength,
         tiredness: (p) => tirednessOn(p, state.date),

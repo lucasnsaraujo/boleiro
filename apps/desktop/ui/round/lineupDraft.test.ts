@@ -31,7 +31,7 @@ const eleven = starters.map((p) => p.id);
 const tactics: Tactics = { formation: "4-4-2", posture: "balanced", penaltyTakerId: "s10" };
 const preMatch: SheetMode = { kind: "preMatch" };
 
-const coach: CoachSide = { fixtureId: "f", side: "home", starters: eleven, benchIds: bench.map((p) => p.id), squad, tactics, lastChangeMinute: 0 };
+const coach: CoachSide = { fixtureId: "f", side: "home", starters: eleven, benchIds: bench.map((p) => p.id), squad, tactics, lastChangeMinute: 0, incidentHandling: "askCoach", shootout: { kickers: [], isOverruled: false } };
 const sub = (minute: number, onId: string, offId: string): MatchEvent => ({ type: "substitution", minute, clubId: "bahia", playerId: onId, offId });
 const live = (events: MatchEvent[], minute: number): SheetMode => ({ kind: "live", ...liveLimits(coach, events, "bahia", minute) });
 

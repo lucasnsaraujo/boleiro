@@ -40,8 +40,11 @@ export function isShootoutDue(state: Pick<GameState, "fixtures" | "competitions"
   return aggregate(played.homeId, legs) === aggregate(played.awayId, legs);
 }
 
-/** The order a side kicks in: the coach's when the squad follows it, then everyone else strongest first, the keeper last. */
-function kickerOrder(side: ShootoutSide, strength: (p: SimPlayer) => number): { kickers: SimPlayer[]; isOverruled: boolean } {
+/**
+ * The order a side kicks in: the coach's when the squad follows it, then everyone else strongest
+ * first, the keeper last. The squad overrules the coach's order when its morale is low.
+ */
+export function shootoutKickers(side: ShootoutSide, strength: (p: SimPlayer) => number): { kickers: SimPlayer[]; isOverruled: boolean } {
   const byStrength = [...side.onPitch].sort((a, b) => (a.group === "GK" ? 1 : 0) - (b.group === "GK" ? 1 : 0) || strength(b) - strength(a));
   if (!side.order?.length) return { kickers: byStrength, isOverruled: false };
   if (side.morale < LOW_MORALE) return { kickers: byStrength, isOverruled: true };
@@ -57,7 +60,7 @@ export function playShootout(home: ShootoutSide, away: ShootoutSide, strength: (
   // Law 10: a side with more players left reduces to the other's number, its last kickers left out.
   const kickersEach = Math.min(home.onPitch.length, away.onPitch.length);
   const sides = [home, away].map((side, i) => {
-    const { kickers, isOverruled } = kickerOrder(side, strength);
+    const { kickers, isOverruled } = shootoutKickers(side, strength);
     const other = i === 0 ? away : home;
     return { side, kickers: kickers.slice(0, kickersEach), isOverruled, keeper: keeperOf(other.onPitch), scored: 0 };
   });

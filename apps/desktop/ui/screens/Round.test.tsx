@@ -459,3 +459,23 @@ test("coming back to a round stopped on an incident opens its window again", asy
   expect(await screen.findByRole("dialog", { name: /^Machucou:/ })).toBeTruthy();
   expect(shownMinute()).toBe(MINUTE);
 });
+
+test("no window opens when the session leaves the coach's incidents to something else", async () => {
+  const MINUTE = 5;
+  const handledElsewhere = (engine: EngineClient): EngineClient => {
+    const injured = withIncidentAt(MINUTE, hurtForward(MINUTE))(engine);
+    function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+    async function apply(command: GameCommand): Promise<unknown> {
+      const result = await injured.apply(command);
+      if (command.type !== "startRound") return result;
+      const round = result as CommandResults["startRound"];
+      return round.coach ? { ...round, coach: { ...round.coach, incidentHandling: "aiSubstitutions" } } : round;
+    }
+    return { ...injured, apply };
+  };
+  const given = await onMatchDay(handledElsewhere);
+  await kickOff(given);
+  for (let minute = 0; minute < MINUTE + 2; minute++) play(1);
+  expect(shownMinute()).toBe(MINUTE);
+  expect(screen.queryByRole("dialog")).toBeNull();
+});
