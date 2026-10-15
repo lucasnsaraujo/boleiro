@@ -7,6 +7,7 @@ import { useCommands } from "../app/AppCommands.js";
 import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { plateColours } from "../clubs/clubCatalog.js";
+import { clubFaceOf } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import type { AdvanceResult } from "@boleiro/game-client/engine/createEngineSession";
 import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
@@ -259,8 +260,8 @@ export function Round() {
 
   if (preMatch) {
     const { plan, clubs } = preMatch;
-    const vs = `${clubs[plan.homeId]?.shortName ?? ""} x ${clubs[plan.awayId]?.shortName ?? ""}`;
-    const opponent = clubs[plan.homeId === plan.clubId ? plan.awayId : plan.homeId];
+    const vs = `${clubFaceOf(clubs, plan.homeId)?.shortName ?? ""} x ${clubFaceOf(clubs, plan.awayId)?.shortName ?? ""}`;
+    const opponent = clubFaceOf(clubs, plan.homeId === plan.clubId ? plan.awayId : plan.homeId);
     return (
       <LineupSheet
         sub={`${vs} · ${plan.label}`}

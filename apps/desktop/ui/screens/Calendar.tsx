@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import type { Club } from "@boleiro/data/clubs";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import { formatBarDate, formatDayMonth, formatRowDate, monthName } from "@boleiro/game-client/format/formatGameDate";
 import { useServices } from "../app/ServicesContext.js";
@@ -17,6 +16,7 @@ import {
   type UpcomingMatch,
   type WindowRibbon,
 } from "../calendar/calendarMonths.js";
+import { clubFaceOf, type ClubFace } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import "./calendar.css";
@@ -126,7 +126,7 @@ export function Calendar() {
             matches.length + windows.length === 0 ? null : (
               <ul key={month} className="agenda-entries" aria-label={capitalized(monthName(month))}>
                 {matches.map((match) => (
-                  <MatchChip key={match.fixtureId} match={match} opponent={state.clubs[match.opponentId]} isToday={match.date === state.date} />
+                  <MatchChip key={match.fixtureId} match={match} opponent={clubFaceOf(state.clubs, match.opponentId) ?? undefined} isToday={match.date === state.date} />
                 ))}
                 {windows.map((ribbon) => (
                   <WindowMark key={ribbon.opensOn} ribbon={ribbon} />
@@ -159,7 +159,7 @@ export function Calendar() {
             <h3 id="agenda-coming-title">Em seguida</h3>
             <ul>
               {following.map((match) => {
-                const opponent = state.clubs[match.opponentId];
+                const opponent = clubFaceOf(state.clubs, match.opponentId);
                 return (
                   <li key={match.fixtureId}>
                     <span className="agenda-coming-date">
@@ -184,7 +184,7 @@ export function Calendar() {
   );
 }
 
-function MatchChip({ match, opponent, isToday }: { match: PageMatch; opponent: Club | undefined; isToday: boolean }) {
+function MatchChip({ match, opponent, isToday }: { match: PageMatch; opponent: ClubFace | undefined; isToday: boolean }) {
   const { result } = match;
   // The coach's goals first, as the outcome letter reads.
   const score = result
@@ -244,7 +244,7 @@ function WindowMark({ ribbon }: { ribbon: WindowRibbon }) {
 
 function NextMatch({ match, state }: { match: UpcomingMatch; state: CalendarState }) {
   const coachClub = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
-  const opponent = state.clubs[match.opponentId];
+  const opponent = clubFaceOf(state.clubs, match.opponentId) ?? undefined;
   const [home, away] = match.isHome ? [coachClub, opponent] : [opponent, coachClub];
   const absences = matchAbsences(state, match);
   const isToday = match.date === state.date;

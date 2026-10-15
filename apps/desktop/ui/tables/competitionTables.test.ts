@@ -1,10 +1,23 @@
 import { describe, expect, test } from "vitest";
-import type { Competition, CupCompetition, Fixture, GameState, LeagueCompetition, MatchResult } from "@boleiro/engine/sim/gameState";
+import type { Competition, ContinentalCompetition, CupCompetition, Fixture, GameState, LeagueCompetition, MatchResult } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
-import { coachCompetitions, competitionStages, defaultStage, groupTables, knockoutTies, openingCompetitionId, playedRounds, tableTabs, topScorers, type TableRow } from "./competitionTables.js";
+import {
+  coachCompetitions,
+  competitionStages,
+  defaultStage,
+  groupTables,
+  knockoutTies,
+  openingCompetitionId,
+  playedRounds,
+  tableTabs,
+  topScorers,
+  worldLeagueTables,
+  type TableRow,
+} from "./competitionTables.js";
 
-const game = newGameFromFiles(7, { coachClubId: "bahia-ba" }, bundledGameFiles);
+// A game of Brazil alone, for the national competitions; South America's game is below.
+const game = newGameFromFiles(7, { coachClubId: "bahia-ba" }, { ...bundledGameFiles, world: [] });
 
 function competition(id: string): Competition {
   const found = game.competitions[id];
@@ -253,5 +266,62 @@ describe("openingCompetitionId", () => {
   test("with no match ahead is the first competition the coach's club plays, not the first tab", () => {
     expect(tableTabs(game).tabs[0]?.id).toBe("serie-a-2026");
     expect(openingCompetitionId(game, undefined)).toBe("state-ba-2026");
+  });
+});
+
+describe("CONMEBOL's cups and South America's leagues", () => {
+  const flamengo = newGameFromFiles(7, { coachClubId: "flamengo-rj" }, bundledGameFiles);
+  const libertadores = flamengo.competitions["libertadores-2026"];
+  if (libertadores?.kind !== "continental") throw new Error("no Libertadores");
+
+  test("the coach's club sees the cups it plays after Brazil's, the Libertadores and Sul-Americana tabs after the Copa do Brasil", () => {
+    expect(coachCompetitions(flamengo).map((c) => c.id)).toEqual(["state-rj-2026", "serie-a-2026", "copa-do-brasil-2026", "libertadores-2026", "recopa-2026"]);
+    expect(tableTabs(flamengo).tabs.map((c) => c.id)).toEqual([
+      "serie-a-2026",
+      "serie-b-2026",
+      "serie-c-2026",
+      "serie-d-2026",
+      "copa-do-brasil-2026",
+      "libertadores-2026",
+      "sul-americana-2026",
+      "recopa-2026",
+      "state-rj-2026",
+    ]);
+    expect(tableTabs({ ...flamengo, coachClubId: "bahia-ba" }).tabs.map((c) => c.id)).not.toContain("recopa-2026");
+  });
+
+  test("the Libertadores names its stages the way Brazilian fans do", () => {
+    expect(competitionStages(libertadores, flamengo.calendar).map((s) => s.name)).toEqual(["1ª fase", "2ª fase", "3ª fase", "Grupos", "Oitavas", "Quartas", "Semifinal", "Final"]);
+  });
+
+  test("a Libertadores group sends two to the round of 16 and its third to the Sul-Americana", () => {
+    const group = ["flamengo-rj", "tm-209", "tm-189", "tm-1418"];
+    const withGroups: ContinentalCompetition = { ...libertadores, stages: [...libertadores.stages, { kind: "groups", groups: [group], legs: 2, dates: ["2026-04-07"] }] };
+    const { groups, zones } = groupTables(withGroups, withGroups.stages.length - 1, []);
+    expect(zonesByPosition(groups[0]?.rows ?? [])).toEqual(["advance", "advance", "sulAmericana", null]);
+    expect(zones.map((z) => z.label)).toEqual(["Sul-Americana", "Oitavas"]);
+  });
+
+  test("Argentina's leagues stand in their pack's clubs with CONMEBOL's places, relegation and promotion", () => {
+    const [top, second] = worldLeagueTables(flamengo, "ar");
+    expect(top?.label).toBe("Liga Profesional");
+    expect(top?.rows).toHaveLength(30);
+    expect(zonesByPosition(top?.rows ?? [])).toEqual([
+      ...repeat("libertadores", 5),
+      "preLibertadores",
+      ...repeat("sulAmericana", 6),
+      ...repeat(null, 16),
+      ...repeat("relegation", 2),
+    ]);
+    expect(zonesByPosition(second?.rows ?? []).slice(0, 3)).toEqual(["promotion", "promotion", null]);
+  });
+
+  test("a guest's scorer counts in the cup's scorers under the name his club's pack gives him", () => {
+    const history: GameState["history"] = {
+      ...flamengo.history,
+      players: { ...flamengo.history.players, "tm-209": { "tm-209#3": { name: "Franco Armani", apps: 1, goals: 2 } } },
+      current: { ...flamengo.history.current, goals: { libertadores: { "tm-209#3": 2 } } },
+    };
+    expect(topScorers(libertadores, { history, players: flamengo.players }, 5)).toEqual([{ playerId: "tm-209#3", name: "Franco Armani", clubId: "tm-209", goals: 2 }]);
   });
 });

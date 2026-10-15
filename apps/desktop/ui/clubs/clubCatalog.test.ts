@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
-import { CLUBS, clubById, crestUrlOf, initialsOf, plateColours } from "./clubCatalog.js";
+import { CLUBS, clubById, clubFaceOf, crestUrlOf, initialsOf, plateColours } from "./clubCatalog.js";
 
 test("a club is found by id with its name, state and division", () => {
   expect(clubById("bahia-ba")).toMatchObject({ shortName: "Bahia", state: "BA", division: "A" });
@@ -13,6 +13,18 @@ test("every club with a crest file gets an image url, others get none", () => {
   const bahiaCrest = createHash("sha256").update(readFileSync(join(import.meta.dirname, "../../../../assets/crests/10010.png"))).digest("hex").slice(0, 16);
   expect(crestUrlOf("bahia-ba")).toMatch(new RegExp(`${bahiaCrest}-64.*\\.webp$`));
   expect(crestUrlOf("nobody")).toBeNull();
+});
+
+test("a South American club the game plays result-only has its pack name, colours and a 128 px crest at most", () => {
+  expect(clubFaceOf({}, "tm-209")).toEqual({ id: "tm-209", shortName: "CA River Plate", colours: { primary: "#FFFFFF", secondary: "#FF0000" }, stadium: "Mâs Monumental" });
+  expect(crestUrlOf("tm-209", 64)).toMatch(/-64[^/]*\.webp$/);
+  expect(crestUrlOf("tm-209", 256)).toMatch(/-128[^/]*\.webp$/);
+});
+
+test("a Brazilian club's face comes from the game's own clubs before the packs", () => {
+  const bahia = { id: "bahia-ba", shortName: "Bahia renamed", colours: { primary: "#000000", secondary: "#FFFFFF" }, stadium: "Fonte Nova" };
+  expect(clubFaceOf({ "bahia-ba": bahia }, "bahia-ba")).toBe(bahia);
+  expect(clubFaceOf({}, "nobody")).toBeNull();
 });
 
 test("initials take the first letters of a multi-word name and the first three of a single word", () => {

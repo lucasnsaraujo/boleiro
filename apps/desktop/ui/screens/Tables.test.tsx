@@ -50,8 +50,9 @@ test("the Série A tab shows the whole table and its zones", async () => {
   await userEvent.click(await screen.findByRole("tab", { name: "Série A" }));
   const table = screen.getByRole("table", { name: "Série A" });
   expect(within(table).getAllByRole("row")).toHaveLength(21);
-  expect(screen.getByText("Libertadores")).toBeTruthy();
-  expect(screen.getByText("Rebaixamento")).toBeTruthy();
+  const zones = screen.getByRole("region", { name: "Vagas" });
+  expect(within(zones).getByText("Libertadores")).toBeTruthy();
+  expect(within(zones).getByText("Rebaixamento")).toBeTruthy();
 });
 
 test("the Copa do Brasil tab lists every round, with the drawn one's ties", async () => {
@@ -78,10 +79,20 @@ test("a coach without a club waits for offers from the tables instead of playing
   expect(screen.queryByRole("button", { name: "Jogar rodada" })).toBeNull();
 });
 
-test("every national division has a tab, next to the cup and the club's state championship", async () => {
+test("every national division has a tab, next to the cup, CONMEBOL's cups and the club's state championship", async () => {
   openTables(await services());
   await screen.findByRole("tab", { name: "Baiano" });
-  expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual(["Série A", "Série B", "Série C", "Série D", "Copa do Brasil", "Baiano", "Outras ligas"]);
+  expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+    "Série A",
+    "Série B",
+    "Série C",
+    "Série D",
+    "Copa do Brasil",
+    "Libertadores",
+    "Sul-Americana",
+    "Baiano",
+    "Outras ligas",
+  ]);
 });
 
 test("a picked tab keeps the keyboard focus", async () => {
@@ -96,12 +107,31 @@ test("the other state championships are one pick away under Outras ligas", async
   openTables(await services());
   await userEvent.click(await screen.findByRole("tab", { name: "Outras ligas" }));
   expect(screen.getByRole("tab", { name: "Outras ligas" }).getAttribute("aria-selected")).toBe("true");
-  const picker = screen.getByRole("combobox", { name: "Estadual" });
+  const picker = screen.getByRole("combobox", { name: "Liga" });
   const names = within(picker).getAllByRole("option").map((option) => option.textContent);
   expect(names).not.toContain("Baiano");
   expect(names).toContain("Paulista");
   await userEvent.selectOptions(picker, "Paulista");
   expect(screen.getByRole("tabpanel", { name: "Paulista" })).toBeTruthy();
+});
+
+test("South America's leagues are one pick away under Outras ligas, Argentina with both its divisions", async () => {
+  openTables(await services());
+  await userEvent.click(await screen.findByRole("tab", { name: "Outras ligas" }));
+  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Liga" }), "Argentina");
+  const panel = screen.getByRole("tabpanel", { name: "Argentina" });
+  const top = within(panel).getByRole("table", { name: "Liga Profesional" });
+  expect(within(top).getAllByRole("row")).toHaveLength(31);
+  expect(within(top).getByText("CA River Plate")).toBeTruthy();
+  expect(within(panel).getByRole("table", { name: "Primera Nacional" })).toBeTruthy();
+});
+
+test("the Libertadores tab shows its first stage's ties between foreign clubs by name", async () => {
+  openTables(await services());
+  await userEvent.click(await screen.findByRole("tab", { name: "Libertadores" }));
+  const ties = screen.getByRole("list", { name: "1ª fase" });
+  expect(within(ties).getAllByRole("listitem")).toHaveLength(3);
+  expect(within(ties).queryByText(/^tm-/)).toBeNull();
 });
 
 test("a table before its first round has no round to step through", async () => {
