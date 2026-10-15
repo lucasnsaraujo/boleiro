@@ -2,7 +2,7 @@ import type { ClubMood } from "./clubMood.js";
 
 export type FansPressure = { type: "fansPressure"; clubId: string; fans: number };
 export type FansProtest = { type: "fansProtest"; clubId: string; fans: number; moraleLost: number };
-/** Fans caused disorder at a game; the sports court fined the club `fine` BRL (0 when it closed the doors instead). */
+/** Fans caused disorder at a game; the sports court fined the club `fine` BRL. */
 export type FansViolence = { type: "fansViolence"; clubId: string; fine: number };
 export type ClosedDoors = { type: "closedDoors"; clubId: string; games: number };
 export type SupporterEvent = FansPressure | FansProtest | FansViolence | ClosedDoors;
@@ -32,29 +32,29 @@ export const DERBY_TROUBLE_CHANCE = 0.04;
 // paid R$ 198,000 and lost six home games for the 2024 Copa do Brasil final, Sport lost eight.
 const FIRST_CASE = { fine: { min: 10_000, max: 100_000 }, closedGames: { min: 1, max: 3 } };
 const REPEAT_CASE = { fine: { min: 10_000, max: 198_000 }, closedGames: { min: 3, max: 8 } };
-// guess: a third of punished incidents are serious enough to cost home games instead of a fine.
+// guess: a third of punished incidents are serious enough to cost home games as well as the fine, as the
+// court ruled for Atlético-MG.
 const CLOSED_DOORS_SHARE = 1 / 3;
 
 /**
- * The court's verdict on disorder: home games behind closed doors or a fine, harder for a club already
+ * The court's verdict on disorder: a fine, plus home games behind closed doors for serious cases, harder for a club already
  * punished. Organised supporters who were protesting turn violent; trouble from an otherwise calm crowd
  * leaves their step as it was.
  */
 function punish(clubId: string, mood: ClubMood, random: () => number): Escalation {
   const ladder = mood.supporters === "violence" ? REPEAT_CASE : FIRST_CASE;
   const supporters = mood.supporters === "protest" || mood.supporters === "violence" ? "violence" : mood.supporters;
-  if (random() < CLOSED_DOORS_SHARE) {
-    const { min, max } = ladder.closedGames;
-    const games = min + Math.floor(random() * (max - min + 1));
-    return {
-      mood: { ...mood, supporters, closedDoorGames: mood.closedDoorGames + games },
-      events: [{ type: "fansViolence", clubId, fine: 0 }, { type: "closedDoors", clubId, games }],
-      fine: 0,
-    };
-  }
-  const { min, max } = ladder.fine;
-  const fine = Math.round(min + random() * (max - min));
-  return { mood: { ...mood, supporters }, events: [{ type: "fansViolence", clubId, fine }], fine };
+  const isSerious = random() < CLOSED_DOORS_SHARE;
+  const fine = Math.round(ladder.fine.min + random() * (ladder.fine.max - ladder.fine.min));
+  const violence: FansViolence = { type: "fansViolence", clubId, fine };
+  if (!isSerious) return { mood: { ...mood, supporters }, events: [violence], fine };
+  const { min, max } = ladder.closedGames;
+  const games = min + Math.floor(random() * (max - min + 1));
+  return {
+    mood: { ...mood, supporters, closedDoorGames: mood.closedDoorGames + games },
+    events: [violence, { type: "closedDoors", clubId, games }],
+    fine,
+  };
 }
 
 /** One step up or down the supporters' ladder, with disorder after a defeat while protests go on. */
