@@ -143,6 +143,25 @@ test("a failed autosave still returns the round that was played", async () => {
   expect(events.some((event) => event.type === "matchPlayed")).toBe(true);
 });
 
+test("a round whose autosave failed stays unsaved play", async () => {
+  const { engine: raw, close } = inMemoryEngine();
+  closers.push(close);
+  const broken = { ...indexedDbSlots(new IDBFactory()), write: () => Promise.reject(new Error("disk full")) };
+  const game: CurrentGameRef = { current: { slotId: "slot-1", coachName: "Tite" } };
+  const engine = withAutosave(raw, broken, game);
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  await engine.apply({ type: "playToMatchDay" });
+  expect(game.current?.hasUnsavedPlay).toBe(true);
+});
+
+test("playing on when already on the match day leaves no unsaved play", async () => {
+  const { engine, game } = await startGame();
+  await engine.apply({ type: "playToMatchDay" });
+  expect(game.current?.hasUnsavedPlay).toBe(false);
+  await engine.apply({ type: "playToMatchDay" });
+  expect(game.current?.hasUnsavedPlay).toBe(false);
+});
+
 test("with no game open on the screens nothing is autosaved", async () => {
   const { engine, slots, game, daysToFirstMatch } = await startGame();
   game.current = null;
@@ -232,4 +251,13 @@ test("an autosave of a world game writes the game and the countries that played,
   closers.push(closeReloaded);
   await reloaded.apply({ type: "load", save: await slots.read(AUTOSAVE_SLOT_ID) });
   expect(JSON.parse(await reloaded.save())).toEqual(JSON.parse(await engine.save()));
+});
+
+test("days the autosave skips leave the open game with unsaved play, until a played round is autosaved", async () => {
+  const { engine, game, daysToFirstMatch } = await startGame();
+  expect(game.current?.hasUnsavedPlay ?? false).toBe(false);
+  await engine.apply({ type: "advance", days: [{}] });
+  expect(game.current?.hasUnsavedPlay).toBe(true);
+  await engine.apply({ type: "advance", days: Array.from({ length: daysToFirstMatch }, () => ({})) });
+  expect(game.current?.hasUnsavedPlay).toBe(false);
 });
