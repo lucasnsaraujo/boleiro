@@ -13,7 +13,7 @@ import type { World } from "./world/world.js";
 
 export type IsoDate = string;
 
-/** A club's formation and the players it starts when they are fit, keeper first. */
+/** A club's formation and the players it starts when they are fit. */
 export type UsualLineup = { formation: Formation; starters: string[] };
 
 /** `wage` is the monthly wage in BRL; the contract runs to the end of `contractUntil`. */

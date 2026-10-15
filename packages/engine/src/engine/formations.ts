@@ -78,13 +78,6 @@ export function isFormation(name: string): name is Formation {
   return name in LINES;
 }
 
-/** Players per position group in the formation. */
-export function groupsOf(formation: Formation): Record<PositionGroup, number> {
-  const groups: Record<PositionGroup, number> = { GK: 0, DEF: 0, MID: 0, ATT: 0 };
-  for (const slot of FORMATIONS[formation]) groups[GROUP_OF_ROLE[slot.role]]++;
-  return groups;
-}
-
 /** The share of his strength a player plays at in a slot of this position: a player the data gives no positions plays his whole group as his own. */
 export function positionFit(player: Pick<Player, "group" | "positions">, role: Role): number {
   const group = GROUP_OF_ROLE[role];
@@ -100,11 +93,12 @@ const MAX_SWAP_ROUNDS = 10;
 const GAIN = 1e-9;
 
 /**
- * The formation's slots filled from `players`, at most one player per slot, so the eleven is worth
- * most (each player's `value` times his fit in his slot): first the pair worth most, then the next
- * among the players and slots left (ties keep the players' order, then the slots'), then any swap of
- * two slots' players, or of a slot's player for one left out, that adds worth, until none does. A
- * slot left empty (fewer players than slots) is null.
+ * The formation's slots filled from `players`, at most one player per slot, for an eleven worth as
+ * much as it can (each player's `value` times his fit in his slot): first the pair worth most, then
+ * the next among the players and slots left (ties keep the players' order, then the slots'), then
+ * any swap of two slots' players, or of a slot's player for one left out, that adds worth, until
+ * none does. That reaches the best eleven for the elevens AI picks hand it; on a whole squad it can
+ * fall a few points short of the best. A slot left empty (fewer players than slots) is null.
  */
 export function arrange<P extends Player>(players: readonly P[], formation: Formation, value: (player: P) => number = (p) => p.strength): (P | null)[] {
   const slots = FORMATIONS[formation];
@@ -179,7 +173,7 @@ export function inFormation<P extends Player>(lineup: readonly P[], formation: F
 }
 
 /** How much the best eleven of these players is worth in the formation: each one's strength times his fit in his slot. */
-export function formationWorth(players: readonly Player[], formation: Formation): number {
+function formationWorth(players: readonly Player[], formation: Formation): number {
   const slots = FORMATIONS[formation];
   return arrange(players, formation).reduce((sum, player, s) => {
     const slot = slots[s];

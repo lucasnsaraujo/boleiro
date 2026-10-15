@@ -2,11 +2,15 @@ import type { ClubLineup } from "@boleiro/data/dataPack";
 import { fittingFormation, isFormation, type Formation } from "../../engine/formations.js";
 import type { GameState, SimPlayer, UsualLineup } from "../gameState.js";
 
+// A real eleven tells its formation only when the squad still holds most of it: two or three
+// starters say nothing about the shape.
+const KNOWN_ELEVEN = 9;
+
 /**
  * Every club's usual lineup at the start of a game: its last real match where the data has one (its
  * starters by the ids `idOfRow` gives the data's player rows), in its formation when the game plays
- * it, else in the formation those starters fit best; a club the data has no match for plays the
- * formation its squad fits best (fittingFormation), with no usual starters.
+ * it, else in the formation those starters fit best when the squad holds most of them; otherwise the
+ * club plays the formation its whole squad fits best (fittingFormation).
  */
 export function openingLineups(
   clubIds: readonly string[],
@@ -20,11 +24,11 @@ export function openingLineups(
       const lineup = real.get(clubId);
       const starters = lineup?.starters.flatMap((row) => (row === null ? [] : (idOfRow(row) ?? []))) ?? [];
       if (lineup && isFormation(lineup.formation)) return [clubId, { formation: lineup.formation, starters }];
-      if (starters.length) {
+      if (starters.length >= KNOWN_ELEVEN) {
         const eleven = (squads.get(clubId) ?? []).filter((player) => starters.includes(player.id));
         return [clubId, { formation: fittingFormation(eleven), starters }];
       }
-      return [clubId, { formation: fittingFormation(squads.get(clubId) ?? []), starters: [] }];
+      return [clubId, { formation: fittingFormation(squads.get(clubId) ?? []), starters }];
     }),
   );
 }
