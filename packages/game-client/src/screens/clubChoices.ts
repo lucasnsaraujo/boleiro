@@ -43,16 +43,16 @@ function folded(text: string): string {
   return text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 }
 
-export function filterClubs(choices: readonly ClubChoice[], { query, division, state }: ClubFilter): ClubChoice[] {
+/** Whether the club's name or short name holds the query, ignoring case and accents. */
+export function matchesQuery(club: Pick<Club, "name" | "shortName">, query: string): boolean {
   const wanted = folded(query.trim());
-  return choices.filter(
-    ({ club }) =>
-      (division === null || club.division === division) &&
-      (state === null || club.state === state) &&
-      (wanted === "" || folded(club.name).includes(wanted) || folded(club.shortName).includes(wanted)),
-  );
+  return wanted === "" || folded(club.name).includes(wanted) || folded(club.shortName).includes(wanted);
+}
+
+export function filterClubs(choices: readonly ClubChoice[], { query, division, state }: ClubFilter): ClubChoice[] {
+  return choices.filter(({ club }) => (division === null || club.division === division) && (state === null || club.state === state) && matchesQuery(club, query));
 }
 
 export function statesOf(choices: readonly ClubChoice[]): State[] {
-  return [...new Set(choices.map(({ club }) => club.state))].sort();
+  return [...new Set(choices.flatMap(({ club }) => (club.state ? [club.state] : [])))].sort();
 }

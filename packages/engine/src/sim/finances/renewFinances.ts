@@ -82,7 +82,7 @@ export function renewFinances(
     // A price the coach set keeps its distance from the average; everyone else's stays on it.
     const ticketPrice = Math.round(economy.matchday[to].price * (finance.ticketPrice / economy.matchday[from].price));
     const baseCrowd = Math.round(finance.baseCrowd * crowdRatio);
-    const tv = to === "A" ? (serieATvs[id] ?? 0) : economy.tvPerClub[to];
+    const tv = to === "A" ? (serieATvs[id] ?? economy.tvPerClub.A) : economy.tvPerClub[to];
     const expectedTickets = Math.round(baseCrowd * ticketPrice * (homeGames.get(id) ?? 0));
     const entryStage = cupEntryStage.get(id);
     const copaPrizes = entryStage === undefined ? 0 : Math.round(expectedCopaPrize(economy.copaDoBrasil, entryStage, to !== "A" && to !== "B"));

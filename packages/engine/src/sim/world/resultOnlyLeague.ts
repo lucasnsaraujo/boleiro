@@ -79,7 +79,13 @@ function leagueDates(season: number, window: [string, string], rounds: number): 
   return Array.from({ length: rounds }, (_, i) => addDays(start, rounds > 1 ? Math.round((i * span) / (rounds - 1)) : 0));
 }
 
-/** A league's season with its fixture order and tie-break drawn, every match still to play. */
+/** Match days of a round robin of `clubCount` clubs meeting `legs` times. */
+export const roundsOf = (clubCount: number, legs: 1 | 2): number => (clubCount % 2 ? clubCount : clubCount - 1) * legs;
+
+/**
+ * A league's season with its fixture order and tie-break drawn, every match still to play: its rounds
+ * spread over its window, or on the first days of the unified calendar's `grid`.
+ */
 export function openLeague(
   id: string,
   season: number,
@@ -87,11 +93,14 @@ export function openLeague(
   legs: 1 | 2,
   window: [string, string],
   random: () => number,
+  grid?: readonly IsoDate[],
 ): ResultOnlyLeague {
   const order = shuffle(clubIds, random);
   const opened = { id, season, clubIds: order, legs, drawOrder: shuffle(order, random), dates: [], results: "" };
   const { pairs, roundStarts } = scheduleOf(opened);
-  return { ...opened, dates: leagueDates(season, window, roundStarts.length - 1), results: UNPLAYED.repeat(2 * pairs.length) };
+  const rounds = roundStarts.length - 1;
+  if (grid && grid.length < rounds) throw new Error(`${id}: ${rounds} rounds do not fit the grid's ${grid.length} days`);
+  return { ...opened, dates: grid ? grid.slice(0, rounds) : leagueDates(season, window, rounds), results: UNPLAYED.repeat(2 * pairs.length) };
 }
 
 /** The league with today's round drawn by the engine's score draw, or the same league when it has no round today. */

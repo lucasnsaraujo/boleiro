@@ -288,6 +288,20 @@ test("the board lists every match of the round, and Só meus jogos leaves only t
   expect(rows()).toHaveLength(everyMatch);
 });
 
+test("competitions without a human coach fold under Outras ligas, which opens them, and Só meus jogos hides it", async () => {
+  await kickOff(await onMatchDay());
+  const rows = () => screen.getAllByRole("listitem").filter((row) => / \d+ x \d+ /.test(row.getAttribute("aria-label") ?? ""));
+  const folded = rows().length;
+  const others = screen.getByRole("button", { name: /Outras ligas/ });
+  expect(others.getAttribute("aria-expanded")).toBe("false");
+  await user().click(others);
+  expect(others.getAttribute("aria-expanded")).toBe("true");
+  expect(rows().length).toBeGreaterThan(folded);
+  await user().click(screen.getByRole("checkbox", { name: "Só meus jogos" }));
+  expect(screen.queryByRole("button", { name: /Outras ligas/ })).toBeNull();
+  expect(rows()).toHaveLength(1);
+});
+
 test("a paused round says Pausado beside the clock, and the label goes when it plays again", async () => {
   await kickOff(await onMatchDay());
   const cover = screen.getByRole("region", { name: "Seu jogo" });

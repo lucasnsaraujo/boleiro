@@ -20,7 +20,8 @@
     "history": "tsx packages/engine/src/cli/history.ts",
     "season": "tsx packages/engine/src/cli/season.ts",
     "world:rates": "tsx packages/engine/src/cli/worldRates.ts",
-    "calibrate": "tsx packages/engine/src/engine/calibrate.ts"
+    "calibrate": "tsx packages/engine/src/engine/calibrate.ts",
+    "formats:money": "tsx packages/engine/src/cli/formatsMoney.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

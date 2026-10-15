@@ -79,10 +79,11 @@ function fieldOf(countries: readonly CountryPlaces[], holders: Holders, countryO
   };
 }
 
-/** Each club's country: "br" for the full tier's clubs, the result-only country's id for the others. */
+/** Each club's country: "br" for Brazil's clubs, its country's id for a club abroad or a result-only one. */
 export function countryOfClub(state: Pick<GameState, "clubs" | "world">): (id: string) => string | null {
   return (id) => {
-    if (state.clubs[id]) return "br";
+    const club = state.clubs[id];
+    if (club) return club.abroad?.country ?? "br";
     return Object.entries(state.world ?? {}).find(([, country]) => id in country.clubs)?.[0] ?? null;
   };
 }
@@ -105,7 +106,8 @@ export function openingField(state: Pick<GameState, "clubs" | "world">): Contine
   const world = state.world ?? {};
   const foreign = Object.entries(world).flatMap(([id, country]) => {
     const [top] = country.leagues;
-    const table = [...(top?.clubIds ?? [])].sort((a, b) => elevenAverage(country.clubs[b]) - elevenAverage(country.clubs[a]) || a.localeCompare(b));
+    const members = country.isFullTier ? Object.values(state.clubs).filter((club) => club.abroad?.country === id && club.abroad.level === 0).map((club) => club.id) : (top?.clubIds ?? []);
+    const table = [...members].sort((a, b) => elevenAverage(country.clubs[b]) - elevenAverage(country.clubs[a]) || a.localeCompare(b));
     return worldPlaces(id, world, table, held) ?? [];
   });
   return fieldOf([brazilPlaces(nationalRanking(Object.values(state.clubs)), null, held), ...foreign], holders, countryOf);
@@ -126,9 +128,13 @@ export function seasonEndField(state: GameState): ContinentalField | null {
   const cup = seasonCompetitions.find((c) => c.kind === "cup");
   const copa = cup?.kind === "cup" ? COPA_DO_BRASIL.finalists(cup, fixturesOf(cup.id)) : null;
   const world = state.world ?? {};
+  // A country in the full tier plays its top league as one of the game's own competitions.
+  const fullTierTop = (id: string) => seasonCompetitions.find((c) => c.kind === "league" && c.abroad?.country === id && c.abroad.level === 0);
   const foreign = Object.entries(world).flatMap(([id, country]) => {
     const [top] = country.leagues;
-    return (top && worldPlaces(id, world, leagueTable(top), held)) ?? [];
+    const league = country.isFullTier ? fullTierTop(id) : undefined;
+    const table = league ? standings(league.clubIds, fixturesOf(league.id), league.drawOrder).map((row) => row.clubId) : top && leagueTable(top);
+    return (table && worldPlaces(id, world, table, held)) ?? [];
   });
   return fieldOf([brazilPlaces(table, copa, held), ...foreign], holders, countryOfClub(state));
 }

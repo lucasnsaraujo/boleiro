@@ -1,24 +1,30 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Link, useNavigate } from "react-router";
 import type { Division } from "@boleiro/data/players";
+import type { Club } from "@boleiro/data/clubs";
 import type { Board } from "@boleiro/engine/sim/coach/boardExpectations";
+import { RAPIDO, type Formats } from "@boleiro/engine/sim/formats";
 import { formatDayMonth, formatGameDate } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import { TRANSFER_WINDOWS } from "@boleiro/engine/sim/transfers/transferWindows";
 import { saveToSlot } from "@boleiro/game-client/saves/saveToSlot";
 import { gameSlots, type GameSlot } from "@boleiro/game-client/saves/slotMeta";
-import { boardGoal, clubChoices, filterClubs, statesOf, type ClubChoice, type ClubFilter } from "@boleiro/game-client/screens/clubChoices";
+import { boardGoal, clubChoices, filterClubs, matchesQuery, statesOf, type ClubChoice, type ClubFilter } from "@boleiro/game-client/screens/clubChoices";
 import wordmark from "../../../../design/logo/boleiro-wordmark.svg";
 import wordmarkDark from "../../../../design/logo/boleiro-wordmark-dark.svg";
 import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
-import { CLUBS, clubById } from "../clubs/clubCatalog.js";
+import { CLUBS, CLUBS_ABROAD, clubById } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { Select } from "../controls/Select.js";
 import { clubPreviews, PREVIEW_KEYS, type ClubPreviews } from "../newGame/clubPreview.js";
+import { CUSTOM_CHOICES, defaultFormatsMode, FORMATS_MODES, formatsOfMode, formatsSummary, type FormatsMode } from "../newGame/formatsChoice.js";
+import { LEAGUES_ABROAD, leagueAbroadOf } from "../newGame/leaguesAbroad.js";
 import "./newGame.css";
 
-type Choice = { mode: "club"; choice: ClubChoice } | { mode: "career" };
+/** A club picked for the first coach: Brazil's with its board's goal, or one abroad, which has no board before the game starts. */
+type PickedClub = ClubChoice | { club: Club; goal: null };
+type Choice = { mode: "club"; choice: PickedClub } | { mode: "career" };
 /** A hot-seat coach after the first: his name and the club he takes. */
 type OtherCoach = { name: string; clubId: string | null };
 type Season = { date: string; boards: Readonly<Record<string, Board>>; previews: ClubPreviews };
@@ -44,16 +50,17 @@ function newSeed(): number {
 
 /**
  * Draws the season once with no coach, to show each board's goal and each squad. The real game then
- * starts from the same seed, so what the screen shows is what the coach gets.
+ * starts from the same seed and formats, so what the screen shows is what the coach gets.
  */
-function useDrawnSeason(seed: number): Season | null {
+function useDrawnSeason(seed: number, formats: Formats): Season | null {
   const { engine, game } = useServices();
   const [season, setSeason] = useState<Season | null>(null);
+  const formatsKey = JSON.stringify(formats);
   useEffect(() => {
     let current = true;
     game.current = null;
     engine
-      .apply({ type: "newGame", seed, choices: { coachClubId: null } })
+      .apply({ type: "newGame", seed, choices: { coachClubId: null, formats: JSON.parse(formatsKey) as Formats } })
       .then(() => engine.read([...PREVIEW_KEYS, "boards", "date"]))
       .then(
         (read) => current && setSeason({ date: read.date, boards: read.boards, previews: clubPreviews(read) }),
@@ -62,7 +69,7 @@ function useDrawnSeason(seed: number): Season | null {
     return () => {
       current = false;
     };
-  }, [engine, game, seed]);
+  }, [engine, game, seed, formatsKey]);
   return season;
 }
 
@@ -76,8 +83,12 @@ export function NewGame() {
   const { engine, slots, game } = useServices();
   const navigate = useNavigate();
   const [seed] = useState(newSeed);
-  const season = useDrawnSeason(seed);
+  // Null follows the number of coaches until the coach picks a mode himself.
+  const [pickedFormatsMode, setPickedFormatsMode] = useState<FormatsMode | null>(null);
+  const [customFormats, setCustomFormats] = useState<Formats>(RAPIDO);
   const [filter, setFilter] = useState<ClubFilter>({ query: "", division: null, state: null });
+  // A league abroad picked in the division filter, by the packs' id (`gb-eng-1`); null lists Brazil's clubs.
+  const [leagueAbroad, setLeagueAbroad] = useState<string | null>(null);
   const [picked, setPicked] = useState<Choice | null>(null);
   const [coachName, setCoachName] = useState("");
   const [saved, setSaved] = useState<GameSlot[] | null>(null);
@@ -91,13 +102,30 @@ export function NewGame() {
   // Which coach the club grid picks for: 0 is the first, 1 on the others in turn order.
   const [active, setActive] = useState(0);
   const [clockMinutes, setClockMinutes] = useState<number | null>(DEFAULT_CLOCK_MINUTES);
+  const pickedClubId = picked?.mode === "club" ? picked.choice.club.id : null;
+  const pickedFormatsModeOrDefault = pickedFormatsMode ?? defaultFormatsMode(others.length + 1);
+  // A club abroad brings its league into the full tier, which plays only on the unified calendar.
+  const hasClubAbroad = [pickedClubId, ...others.map((other) => other.clubId)].some((id) => id !== null && clubById(id)?.abroad);
+  const formatsMode = hasClubAbroad && pickedFormatsModeOrDefault === "realista" ? "rapido" : pickedFormatsModeOrDefault;
+  const formats = formatsOfMode(formatsMode, hasClubAbroad ? { ...customFormats, calendar: "unified" } : customFormats);
+  const season = useDrawnSeason(seed, formats);
+
+  function pickFormatsMode(mode: FormatsMode) {
+    // Personalizar starts from the mode the coach leaves.
+    if (mode === "personalizar" && formatsMode !== "personalizar") setCustomFormats(formats);
+    setPickedFormatsMode(mode);
+  }
 
   const choices = useMemo(() => clubChoices(CLUBS, season?.boards ?? null), [season]);
   const states = useMemo(() => statesOf(choices), [choices]);
-  const shown = filterClubs(choices, filter);
-  const pickedClubId = picked?.mode === "club" ? picked.choice.club.id : null;
+  const shown: PickedClub[] =
+    leagueAbroad === null
+      ? filterClubs(choices, filter)
+      : CLUBS_ABROAD.filter((club) => leagueAbroadOf(club)?.value === leagueAbroad && matchesQuery(club, filter.query)).map((club) => ({ club, goal: null }));
   const activeClubId = active === 0 ? pickedClubId : (others[active - 1]?.clubId ?? null);
   const pickedChoice = choices.find(({ club }) => club.id === activeClubId) ?? null;
+  const activeAbroad = activeClubId ? CLUBS_ABROAD.find((club) => club.id === activeClubId) : undefined;
+  const pickedCard: PickedClub | null = pickedChoice ?? (activeAbroad ? { club: activeAbroad, goal: null } : null);
   const isHotSeat = others.length > 0;
   const coachNames = [coachName.trim(), ...others.map((other) => other.name.trim())];
   /** The coach who took each club, by club, so no two coaches share one. */
@@ -112,7 +140,7 @@ export function NewGame() {
     if (next > 1 && picked?.mode === "career") setPicked(null);
   }
 
-  function pickClub(club: ClubChoice["club"]) {
+  function pickClub(club: Club) {
     const owner = takenBy.get(club.id);
     if (owner !== undefined && owner !== active) return;
     if (active === 0) setPicked({ mode: "club", choice: { club, goal: null } });
@@ -156,6 +184,7 @@ export function NewGame() {
           careerMode: picked.mode === "career",
           stateChampionships: playsEstaduais,
           ...(hasMidSeasonWindow ? {} : { midSeasonWindow: false }),
+          formats,
           ...(hotSeat ? { hotSeat } : {}),
           ...(clockMinutes === null ? {} : { marketClockSeconds: clockMinutes * 60 }),
         },
@@ -261,7 +290,7 @@ export function NewGame() {
             </label>
 
             {/* A hot-seat coach's row already says he has no club yet: the empty card would only push the page down. */}
-            {isHotSeat ? pickedChoice && <PickedCard picked={{ mode: "club", choice: pickedChoice }} /> : <PickedCard picked={picked} />}
+            {isHotSeat ? pickedCard && <PickedCard picked={{ mode: "club", choice: pickedCard }} /> : <PickedCard picked={picked} />}
             {pickedChoice && <ClubFacts choice={pickedChoice} season={season} />}
 
             <div className="career-new-free" hidden={isHotSeat}>
@@ -317,6 +346,44 @@ export function NewGame() {
                   </label>
                 ))}
               </div>
+            </div>
+
+            <div className="career-new-free career-new-clock career-new-formats">
+              <p>
+                <b id="formats-title">Calendário e formatos</b>
+                <br />
+                <span className="mute">{formatsSummary(formatsMode, formats)}</span>
+              </p>
+              <div className="seg seg-radio" role="radiogroup" aria-labelledby="formats-title">
+                {FORMATS_MODES.map(({ mode, label }) => (
+                  <label key={mode} className={formatsMode === mode ? "on" : undefined} title={hasClubAbroad && mode === "realista" ? "Um time de fora joga no calendário único" : undefined}>
+                    <input type="radio" name="formats-mode" checked={formatsMode === mode} disabled={hasClubAbroad && mode === "realista"} onChange={() => pickFormatsMode(mode)} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              {formatsMode === "personalizar" && (
+                <fieldset className="career-new-custom">
+                  <legend className="lbl">Mais opções</legend>
+                  {CUSTOM_CHOICES.map(({ key, title, options }) => (
+                    <div key={key} className="career-new-custom-row">
+                      <span id={`formats-${key}`}>{title}</span>
+                      <div className="seg seg-radio" role="radiogroup" aria-labelledby={`formats-${key}`}>
+                        {options.map((option) => {
+                          const isOn = formats[key] === option.value;
+                          const isLocked = hasClubAbroad && key === "calendar" && option.value === "real";
+                          return (
+                            <label key={option.value} className={isOn ? "on" : undefined} title={isLocked ? "Um time de fora joga no calendário único" : undefined}>
+                              <input type="radio" name={`formats-${key}`} checked={isOn} disabled={isLocked} onChange={() => setCustomFormats({ ...customFormats, [key]: option.value })} />
+                              {option.label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </fieldset>
+              )}
             </div>
 
             <fieldset className="career-new-slots">
@@ -380,9 +447,12 @@ export function NewGame() {
             </h2>
             <Select
               label="Divisão"
-              value={filter.division ?? ""}
-              options={[{ value: "", label: "Todas" }, ...DIVISIONS.map((division) => ({ value: division, label: `Série ${division}` }))]}
-              onChange={(value) => setFilter({ ...filter, division: DIVISIONS.find((division) => division === value) ?? null })}
+              value={leagueAbroad ?? filter.division ?? ""}
+              options={[{ value: "", label: "Todas" }, ...DIVISIONS.map((division) => ({ value: division, label: `Série ${division}` })), ...LEAGUES_ABROAD.map(({ value, label }) => ({ value, label }))]}
+              onChange={(value) => {
+                setLeagueAbroad(LEAGUES_ABROAD.some((league) => league.value === value) ? value : null);
+                setFilter({ ...filter, division: DIVISIONS.find((division) => division === value) ?? null });
+              }}
             />
             <Select
               label="Estado"
@@ -417,7 +487,7 @@ export function NewGame() {
                       <Crest club={club} size={48} />
                       <span className="career-new-club-name">{club.shortName}</span>
                       <span className={isMine ? "career-new-club-meta yours" : "career-new-club-meta"}>
-                        {isMine ? (isHotSeat ? `Time de ${coachNames[active] || `Técnico ${active + 1}`}` : "Seu time") : (ownerName ?? (preview ? `Força ${preview.strength}` : "Força …"))}
+                        {isMine ? (isHotSeat ? `Time de ${coachNames[active] || `Técnico ${active + 1}`}` : "Seu time") : (ownerName ?? (club.abroad ? (leagueAbroadOf(club)?.label.split(" · ")[0] ?? "") : preview ? `Força ${preview.strength}` : "Força …"))}
                       </span>
                     </button>
                   </li>
@@ -431,6 +501,7 @@ export function NewGame() {
             <span>
               {shown.length} {shown.length === 1 ? "time" : "times"}
               {filter.division && ` · Série ${filter.division}`}
+              {leagueAbroad && ` · ${LEAGUES_ABROAD.find((league) => league.value === leagueAbroad)?.label ?? ""}`}
             </span>
           </footer>
         </section>
@@ -473,9 +544,7 @@ function PickedCard({ picked }: { picked: Choice | null }) {
       <Crest club={club} size={70} />
       <div>
         <h3>{club.shortName}</h3>
-        <p>
-          {club.state} · {club.stadium}, {club.capacity.toLocaleString("pt-BR")} lugares
-        </p>
+        <p>{club.abroad ? [leagueAbroadOf(club)?.label, club.stadium].filter(Boolean).join(" · ") : `${club.state} · ${club.stadium}, ${club.capacity.toLocaleString("pt-BR")} lugares`}</p>
       </div>
     </div>
   );

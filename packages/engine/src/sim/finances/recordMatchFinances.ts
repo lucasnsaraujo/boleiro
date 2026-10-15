@@ -83,7 +83,26 @@ function withGate(finance: ClubFinance, fixture: Fixture, crowd: number, gate: n
   return { ...finance, homeGates: [...(finance.homeGates ?? []), game].slice(-HOME_GATES_KEPT) };
 }
 
-/** Books the home club's gate and both clubs' form for each fixture played today, in one copy of the finances map. */
+/** How many real games a game of this stage stands for in the season's money (`Competition.gameScales`). */
+export const gameScaleOf = (state: Pick<GameState, "competitions">, fixture: GameWeight): number => state.competitions[fixture.competitionId]?.gameScales?.[fixture.stage] ?? 1;
+
+/**
+ * The ticket money of a game a shorter format plays once for `scale` real games: half of them at each
+ * club's ground, so each side books the gate of its own home legs (the visitor as if it hosted the
+ * return), as the real format would have paid them.
+ */
+function scaledGates(draft: GameState, fixture: Fixture, scale: number): { home: number; away: number } {
+  const gateAt = (hostId: string, visitorId: string) => {
+    const host = draft.finances[hostId];
+    return host ? Math.round(attendance(draft, host, hostId, visitorId, fixture) * host.ticketPrice * (scale / 2)) : 0;
+  };
+  return { home: gateAt(fixture.homeId, fixture.awayId), away: gateAt(fixture.awayId, fixture.homeId) };
+}
+
+/**
+ * Books the home club's gate and both clubs' form for each fixture played today, in one copy of the
+ * finances map. On shorter formats a game counts for the real games it stands for (`gameScaleOf`).
+ */
 export function recordMatchFinances(state: GameState, played: readonly Fixture[]): GameState {
   if (!played.length) return state;
   const draft: GameState = { ...state, finances: copyRecord(state.finances) };
@@ -95,14 +114,17 @@ export function recordMatchFinances(state: GameState, played: readonly Fixture[]
     const away = finances[fixture.awayId];
     if (!fixture.result || (!home && !isGuest(fixture.homeId)) || (!away && !isGuest(fixture.awayId))) continue;
     const { homeGoals, awayGoals } = fixture.result;
+    const scale = gameScaleOf(state, fixture);
+    const scaled = scale === 1 ? null : scaledGates(draft, fixture, scale);
     if (home) {
       const crowd = attendance(draft, home, fixture.homeId, fixture.awayId, fixture);
       const gate = Math.round(crowd * home.ticketPrice);
       const kept = isHumanClub(state, fixture.homeId) ? withGate(home, fixture, crowd, gate) : home;
       finances[fixture.homeId] = withResult(kept, pointsFor(homeGoals, awayGoals));
-      bookMoneyInDraft(finances, fixture.homeId, { revenue: "tickets", amount: gate });
+      bookMoneyInDraft(finances, fixture.homeId, { revenue: "tickets", amount: scaled?.home ?? gate });
     }
     if (away) finances[fixture.awayId] = withResult(away, pointsFor(awayGoals, homeGoals));
+    if (away && scaled) bookMoneyInDraft(finances, fixture.awayId, { revenue: "tickets", amount: scaled.away });
   }
   return draft;
 }

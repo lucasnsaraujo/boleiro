@@ -1,4 +1,5 @@
 import { randomStream } from "../../engine/random.js";
+import { knockoutDates, REALISTA, spreadPick, type Formats } from "../formats.js";
 import type { IsoDate, MatchResult } from "../gameState.js";
 import { inSeason } from "../seasonCalendar.js";
 import { shuffle } from "../shuffle.js";
@@ -7,7 +8,9 @@ import { EUROPE } from "../world/europe.js";
 import { scoreDraw } from "../world/resultOnlyLeague.js";
 import { UEFA_CUPS, type UefaCup } from "../world/uefaPlaces.js";
 import type { World, WorldClub } from "../world/world.js";
+import { unifiedUefaCalendar, type UefaCalendar } from "./continentalDays.js";
 import { elevenAverage } from "./continentalField.js";
+import { drawGroupMatches } from "./groupStageDraw.js";
 import { drawLeaguePhase, LEAGUE_PHASE_CLUBS } from "./leaguePhaseDraw.js";
 
 export const KNOCKOUT_ROUNDS = ["playoffs", "round-of-16", "quarter-finals", "semi-finals", "final"] as const;
@@ -15,7 +18,7 @@ export type KnockoutRoundName = (typeof KNOCKOUT_ROUNDS)[number];
 
 /**
  * A knockout round as drawn: each tie's clubs, the better-placed one first, who hosts the second
- * leg. `results` holds each tie's legs in order, two characters a leg (goals from "0", home side
+ * leg (or the single match, when `dates` holds one). `results` holds each tie's legs in order, two characters a leg (goals from "0", home side
  * first), then its winner's side, "0" first club or "1" second; "-" for what is not played yet.
  */
 export type KnockoutRound = { name: KnockoutRoundName; dates: IsoDate[]; ties: [string, string][]; results: string };
@@ -23,7 +26,8 @@ export type KnockoutRound = { name: KnockoutRoundName; dates: IsoDate[]; ties: [
 /**
  * A season of the Champions League or Europa League in its league-phase format, played result-only.
  * `clubIds` are the 36 clubs pot by pot, `matches` the league phase's matchdays one after the other,
- * 18 a day, home club first, and `results` their scores, two characters each ("--" unplayed).
+ * 18 a day, home club first, and `results` their scores, two characters each ("--" unplayed). In a
+ * game whose formats play groups, the matches are nine groups' round robins, ranked as one table.
  */
 export type LeaguePhaseCup = {
   cup: UefaCup;
@@ -47,6 +51,8 @@ export type EuropeanCups = { season: number; cups: LeaguePhaseCup[]; superCup: S
 
 const FIRST_SEASON = 2026;
 const ROLLOVER = "07-01";
+// On the unified calendar UEFA's season is the calendar year, filed with everyone else's.
+const UNIFIED_ROLLOVER = "01-01";
 const MATCHDAY_SIZE = LEAGUE_PHASE_CLUBS / 2;
 const UNPLAYED = "-";
 const ZERO_GOALS = "0".charCodeAt(0);
@@ -106,12 +112,25 @@ const BRACKET = [1, 8, 4, 5, 2, 7, 3, 6];
 /** A date of the 2026/27 calendar on the same weekday in `season`'s. */
 const shifted = (date: IsoDate, season: number) => inSeason(date, Number(date.slice(0, 4)) + season - FIRST_SEASON);
 
+const FULL_GROUP_DAYS = 6;
+
+/** The cup's 2026 calendar under `formats`: the real one with the days and legs it plays, or the unified one. */
+function calendarOf(cup: UefaCup, formats: Formats): UefaCalendar {
+  if (formats.calendar === "unified") return unifiedUefaCalendar(cup, formats);
+  const { leaguePhase, knockout } = CALENDARS[cup];
+  const days = formats.continentalGroups === "league-phase" ? leaguePhase.length : formats.continentalGroups === "groups-3" ? FULL_GROUP_DAYS / 2 : FULL_GROUP_DAYS;
+  return {
+    leaguePhase: spreadPick(leaguePhase, days),
+    knockout: Object.fromEntries(Object.entries(knockout).map(([name, dates]) => [name, knockoutDates(name, dates, formats)])),
+    superCup: SUPER_CUP_DATE,
+  };
+}
+
 function clubsOf(world: World): Map<string, { club: WorldClub; country: string }> {
   return new Map(Object.entries(world).flatMap(([country, { clubs }]) => Object.values(clubs).map((club) => [club.id, { club, country }] as const)));
 }
 
-const legsOf = (name: KnockoutRoundName) => (name === "final" ? 1 : 2);
-const tieLength = (name: KnockoutRoundName) => 2 * legsOf(name) + 1;
+const tieLength = (round: Pick<KnockoutRound, "dates">) => 2 * round.dates.length + 1;
 const goalsAt = (code: string, at: number) => code.charCodeAt(at) - ZERO_GOALS;
 
 /** The cup's league phase as the clubs' matches, with their dates and scores once played. */
@@ -133,9 +152,9 @@ export type TieLeg = { date: IsoDate; homeId: string; awayId: string; result: Ma
 /** A knockout tie's legs, the second hosted by its first club, and its winner once decided. */
 export function knockoutTie(round: KnockoutRound, index: number): { clubIds: [string, string]; legs: TieLeg[]; winnerId: string | null; onPenalties: boolean } {
   const clubIds = round.ties[index] ?? ["", ""];
-  const length = tieLength(round.name);
+  const length = tieLength(round);
   const code = round.results.slice(index * length, (index + 1) * length);
-  const legCount = legsOf(round.name);
+  const legCount = round.dates.length;
   const legs = round.dates.map((date, leg): TieLeg => {
     const [homeId, awayId] = legCount === 2 && leg === 0 ? [clubIds[1], clubIds[0]] : clubIds;
     const isPlayed = code[2 * leg] !== UNPLAYED;
@@ -168,7 +187,7 @@ function byPlace(table: readonly string[], a: string, b: string): [string, strin
 }
 
 /** The cup's next knockout round, drawn from the league phase's table and the round before. */
-function nextRound(cup: LeaguePhaseCup): KnockoutRound {
+function nextRound(cup: LeaguePhaseCup, formats: Formats): KnockoutRound {
   const table = leaguePhaseTable(cup);
   const name = KNOCKOUT_ROUNDS[cup.knockout.length] ?? "final";
   const at = (place: number) => table[place - 1] ?? "";
@@ -182,8 +201,8 @@ function nextRound(cup: LeaguePhaseCup): KnockoutRound {
     const winners = winnersOf(previous);
     ties = Array.from({ length: winners.length / 2 }, (_, i) => byPlace(table, winners[2 * i] ?? "", winners[2 * i + 1] ?? ""));
   }
-  const dates = CALENDARS[cup.cup].knockout[name].map((date) => shifted(date, cup.season));
-  return { name, dates, ties, results: UNPLAYED.repeat(ties.length * tieLength(name)) };
+  const dates = (calendarOf(cup.cup, formats).knockout[name] ?? []).map((date) => shifted(date, cup.season));
+  return { name, dates, ties, results: UNPLAYED.repeat(ties.length * tieLength({ dates })) };
 }
 
 type ClubOf = (id: string) => WorldClub;
@@ -194,7 +213,7 @@ const score = (homeGoals: number, awayGoals: number) => String.fromCharCode(ZERO
 function playRoundDay(round: KnockoutRound, date: IsoDate, clubOf: ClubOf, random: () => number): KnockoutRound {
   const leg = round.dates.indexOf(date);
   if (leg < 0) return round;
-  const length = tieLength(round.name);
+  const length = tieLength(round);
   let results = "";
   round.ties.forEach((_, index) => {
     const tie = knockoutTie(round, index);
@@ -216,7 +235,7 @@ function playRoundDay(round: KnockoutRound, date: IsoDate, clubOf: ClubOf, rando
   return results === round.results ? round : { ...round, results };
 }
 
-function playCupDay(cup: LeaguePhaseCup, date: IsoDate, clubOf: ClubOf, random: () => number): LeaguePhaseCup {
+function playCupDay(cup: LeaguePhaseCup, date: IsoDate, clubOf: ClubOf, random: () => number, formats: Formats): LeaguePhaseCup {
   let next = cup;
   const matchday = cup.dates.indexOf(date);
   const from = matchday * MATCHDAY_SIZE;
@@ -236,34 +255,40 @@ function playCupDay(cup: LeaguePhaseCup, date: IsoDate, clubOf: ClubOf, random: 
   const isPhaseDone = !next.results.includes(UNPLAYED);
   const current = next.knockout.at(-1);
   const isDrawDue = isPhaseDone && (current ? isRoundDone(current) && current.name !== "final" : true);
-  return isDrawDue && next !== cup ? { ...next, knockout: [...next.knockout, nextRound(next)] } : next;
+  return isDrawDue && next !== cup ? { ...next, knockout: [...next.knockout, nextRound(next, formats)] } : next;
 }
 
-/** The league phase of `cup` drawn among `field`: pots by the clubs' best elevens, the strongest first. guess: UEFA seeds by club coefficients. */
-function openCup(cup: UefaCup, season: number, field: readonly string[], clubs: ReturnType<typeof clubsOf>, random: () => number): LeaguePhaseCup {
+/**
+ * The league phase of `cup` drawn among `field` (or its groups, as `formats` plays them): pots by the
+ * clubs' best elevens, the strongest first. guess: UEFA seeds by club coefficients.
+ */
+function openCup(cup: UefaCup, season: number, field: readonly string[], clubs: ReturnType<typeof clubsOf>, random: () => number, formats: Formats): LeaguePhaseCup {
   const strength = (id: string) => elevenAverage(clubs.get(id)?.club);
   const seeded = [...field].sort((a, b) => strength(b) - strength(a) || a.localeCompare(b));
   const countryOf = (id: string) => clubs.get(id)?.country ?? id;
-  const matches = drawLeaguePhase(seeded, countryOf, random).flat();
+  const { leaguePhase } = calendarOf(cup, formats);
+  const days = formats.continentalGroups === "league-phase" ? drawLeaguePhase(seeded, countryOf, random) : drawGroupMatches(seeded, countryOf, formats.continentalGroups === "groups-3" ? 1 : 2, random);
+  const matches = days.flat();
   return {
     cup,
     season,
     clubIds: seeded,
     countries: Object.fromEntries(seeded.map((id) => [id, countryOf(id)])),
     drawOrder: shuffle(seeded, random),
-    dates: CALENDARS[cup].leaguePhase.map((date) => shifted(date, season)),
+    dates: leaguePhase.map((date) => shifted(date, season)),
     matches,
     results: UNPLAYED.repeat(2 * matches.length),
     knockout: [],
   };
 }
 
-function openSeason(season: number, field: Record<UefaCup, string[]>, superCup: [string, string] | null, world: World, random: () => number): Omit<EuropeanCups, "winners" | "rngState"> {
+function openSeason(season: number, field: Record<UefaCup, string[]>, superCup: [string, string] | null, world: World, random: () => number, formats: Formats): Omit<EuropeanCups, "winners" | "rngState"> {
   const clubs = clubsOf(world);
+  const superCupDate = calendarOf("champions-league", formats).superCup;
   return {
     season,
-    cups: UEFA_CUPS.map((cup) => openCup(cup, season, field[cup], clubs, random)),
-    superCup: superCup && { season, date: shifted(SUPER_CUP_DATE, season), clubIds: superCup, result: UNPLAYED.repeat(3) },
+    cups: UEFA_CUPS.map((cup) => openCup(cup, season, field[cup], clubs, random, formats)),
+    superCup: superCup && { season, date: shifted(superCupDate, season), clubIds: superCup, result: UNPLAYED.repeat(3) },
   };
 }
 
@@ -275,12 +300,15 @@ const isWholeField = (field: Record<UefaCup, string[]>, world: World) => {
 // The draws come from a stream of their own, so opening the cups leaves the game's main stream as it was.
 const UEFA_STREAM_SALT = 0x0efa;
 
-/** The 2026/27 season of UEFA's cups on its real field; null for a game starting another season, or unless every European country is in the world. */
-export function openingEuropeanCups(world: World, seed: number, season: number): EuropeanCups | null {
+/**
+ * The 2026/27 season of UEFA's cups on its real field (on the unified calendar, the 2026 season);
+ * null for a game starting another season, or unless every European country is in the world.
+ */
+export function openingEuropeanCups(world: World, seed: number, season: number, formats: Formats = REALISTA): EuropeanCups | null {
   if (season !== FIRST_SEASON || !EUROPE.every((structure) => world[structure.id])) return null;
   if (!isWholeField(FIRST_FIELD, world)) return null;
   const random = randomStream((seed ^ UEFA_STREAM_SALT) >>> 0);
-  const opened = openSeason(FIRST_SEASON, FIRST_FIELD, FIRST_SUPER_CUP, world, random.next);
+  const opened = openSeason(FIRST_SEASON, FIRST_FIELD, FIRST_SUPER_CUP, world, random.next, formats);
   return { ...opened, winners: [], rngState: random.state() };
 }
 
@@ -316,11 +344,13 @@ export function superCupWinner(superCup: SuperCup | null): string | null {
 
 /**
  * Today's matches of UEFA's cups, played by the score draw on the result-only clubs of `world`; on 1
- * July after both finals (or after a season it could not field), the season's winners filed and the
- * next season opened on the places the countries filed that day. The same object on a day with nothing to do.
+ * July (1 January on the unified calendar) after both finals (or after a season it could not field),
+ * the season's winners filed and the next season opened on the places the countries filed last. The
+ * same object on a day with nothing to do.
  */
-export function playEuropeDay(europe: EuropeanCups, world: World, date: IsoDate): EuropeanCups {
-  const isRollover = date.slice(5) === ROLLOVER && Number(date.slice(0, 4)) > europe.season;
+export function playEuropeDay(europe: EuropeanCups, world: World, date: IsoDate, formats: Formats = REALISTA): EuropeanCups {
+  const rollover = formats.calendar === "unified" ? UNIFIED_ROLLOVER : ROLLOVER;
+  const isRollover = date.slice(5) === rollover && Number(date.slice(0, 4)) > europe.season;
   const isMatchDay = europe.superCup?.date === date || europe.cups.some((cup) => cup.dates.includes(date) || cup.knockout.at(-1)?.dates.includes(date));
   if (!isRollover && !isMatchDay) return europe;
   const clubs = clubsOf(world);
@@ -330,7 +360,7 @@ export function playEuropeDay(europe: EuropeanCups, world: World, date: IsoDate)
     return found.club;
   };
   const random = randomStream(europe.rngState);
-  const cups = europe.cups.map((cup) => playCupDay(cup, date, clubOf, random.next));
+  const cups = europe.cups.map((cup) => playCupDay(cup, date, clubOf, random.next, formats));
   const superCup = playSuperCup(europe.superCup, date, clubOf, random.next);
   let next: EuropeanCups = { ...europe, cups, superCup, rngState: random.state() };
   const [championsLeague, europaLeague] = cups.map(cupChampion);
@@ -339,7 +369,7 @@ export function playEuropeDay(europe: EuropeanCups, world: World, date: IsoDate)
     const season = Number(date.slice(0, 4));
     const field = fieldFromTables(world, season);
     const winners = champions ? [...europe.winners, { season: europe.season, championsLeague: champions[0], europaLeague: champions[1], superCup: superCupWinner(superCup) }] : europe.winners;
-    const opened = isWholeField(field, world) ? openSeason(season, field, champions, world, random.next) : { season, cups: [], superCup: null };
+    const opened = isWholeField(field, world) ? openSeason(season, field, champions, world, random.next, formats) : { season, cups: [], superCup: null };
     next = { ...opened, winners, rngState: random.state() };
   }
   const isChanged = next.superCup !== europe.superCup || next.cups.some((cup, i) => cup !== europe.cups[i]) || next.season !== europe.season || next.winners !== europe.winners;

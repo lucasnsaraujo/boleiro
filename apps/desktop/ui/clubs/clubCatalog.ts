@@ -70,8 +70,10 @@ const WORLD_CREST_FILES = import.meta.glob<string>("./crest/*.webp", {
 /** What a screen shows of a club: its name, colours, ground and, through its id, its crest. */
 export type ClubFace = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
 
+const WORLD_PACKS = [argentina, bolivia, chile, colombia, ecuador, peru, paraguay, uruguay, venezuela, armenia, austria, azerbaijan, belgium, bulgaria, cyprus, czechia, germany, spain, france, england, scotland, greece, croatia, hungary, israel, italy, netherlands, norway, poland, portugal, slovenia, slovakia, turkey, ukraine];
+
 const WORLD_BY_ID = new Map<string, ClubFace>(
-  [argentina, bolivia, chile, colombia, ecuador, peru, paraguay, uruguay, venezuela, armenia, austria, azerbaijan, belgium, bulgaria, cyprus, czechia, germany, spain, france, england, scotland, greece, croatia, hungary, israel, italy, netherlands, norway, poland, portugal, slovenia, slovakia, turkey, ukraine]
+  WORLD_PACKS
     .flatMap((text) => parseWorldPackClubs(text))
     .map(({ id, shortName, colours, stadium }) => [id, { id, shortName, colours, stadium }]),
 );
@@ -79,8 +81,24 @@ const WORLD_BY_ID = new Map<string, ClubFace>(
 /** South America's and Europe's clubs by id, for screens that list clubs the game's own `clubs` don't have. */
 export const WORLD_FACES: Readonly<Record<string, ClubFace>> = Object.fromEntries(WORLD_BY_ID);
 
+const LEAGUE_LEVEL = /^(.+)-(\d+)$/;
+
+/**
+ * South America's and Europe's league clubs as a coach can take them (the full tier then plays their
+ * country): each with its country and level, the pack's league `gb-eng-1` being England's top.
+ */
+export const CLUBS_ABROAD: readonly Club[] = WORLD_PACKS.flatMap((text) => parseWorldPackClubs(text)).flatMap(({ id, name, shortName, colours, stadium, league }) => {
+  const [, country, level] = LEAGUE_LEVEL.exec(league ?? "") ?? [];
+  if (!country || !level) return [];
+  const sources = { names: "transfermarkt", state: "", division: "", stadium: "transfermarkt", pitch: "", colours: "transfermarkt", fanbase: "" };
+  return [{ id, transfermarktId: id.replace(/^tm-/, ""), name, shortName, division: null, stadium, capacity: 0, pitch: "natural" as const, colours, fanbase: 0, abroad: { country, level: Number(level) - 1 }, sources }];
+});
+
+const ABROAD_BY_ID = new Map(CLUBS_ABROAD.map((club) => [club.id, club]));
+
+/** A club of Brazil's pack, or one abroad a coach can take; null when neither has it. */
 export function clubById(id: string): Club | null {
-  return BY_ID.get(id) ?? null;
+  return BY_ID.get(id) ?? ABROAD_BY_ID.get(id) ?? null;
 }
 
 /** A club in the game's own `clubs`, or one of South America's or Europe's from the packs; null when neither has it. */

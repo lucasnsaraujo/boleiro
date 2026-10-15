@@ -57,7 +57,9 @@ export function payContinentalPrizes(state: GameState, played: readonly Fixture[
     for (const clubId of [fixture.homeId, fixture.awayId]) if (isFirstMatch(clubId)) pay(clubId, competition.id, prizes[PRIZE_OF_STAGE[name] ?? ""]);
     if (stage.kind === "groups") {
       const { homeGoals, awayGoals } = fixture.result;
-      if (homeGoals !== awayGoals) pay(homeGoals > awayGoals ? fixture.homeId : fixture.awayId, competition.id, prizes[GROUP_WIN]);
+      // On shorter groups a win stands for the real games its group day stands for.
+      const winBonus = prizes[GROUP_WIN] === undefined ? undefined : prizes[GROUP_WIN] * (competition.gameScales?.[fixture.stage] ?? 1);
+      if (homeGoals !== awayGoals) pay(homeGoals > awayGoals ? fixture.homeId : fixture.awayId, competition.id, winBonus);
     }
     if (stage.kind === "knockout" && fixture.stage === competition.stageDates.length - 1 && fixture.date === stage.dates.at(-1)) {
       const [final] = tieResults(stage, [fixture]);

@@ -12,6 +12,10 @@ import { startSeason } from "./startSeason.js";
 import { STATE_CHAMPIONSHIP } from "./stateChampionship.js";
 import { BRAZIL } from "./world/brazil.js";
 import { pyramidMoves } from "./world/pyramidMoves.js";
+import { formatsOf } from "./formats.js";
+import { fileFullTierSeason, mostRounds, seasonMoves } from "./world/resultOnlyWorld.js";
+import { unifiedDatesOf } from "./seasonCalendar.js";
+import type { Country } from "./world/world.js";
 
 function leagueOf(state: GameState, division: Division): LeagueCompetition {
   const competition = Object.values(state.competitions).find((c) => c.kind === "league" && c.division === division && c.season === state.season);
@@ -68,19 +72,49 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
   const outsideNationalLeagues = (id: string) => nextDivision.get(id) === null;
   for (const id of serieDQualifiers(qualification.statePlacings, outsideNationalLeagues, BRAZIL.bottomLevelSize - stayingInBottom)) nextDivision.set(id, bottom);
 
+  const abroad = tablesAbroad(state);
+  const levelAbroad = new Map(abroad.flatMap(({ country, tables }) => [...seasonMoves(country.structure, tables).moves]));
   const clubs: Record<string, Club> = Object.fromEntries(
-    Object.values(state.clubs).map((club) => [club.id, { ...club, division: nextDivision.get(club.id) ?? null }]),
+    Object.values(state.clubs).map((club) => [club.id, { ...club, division: nextDivision.get(club.id) ?? null, ...movedAbroad(club, levelAbroad) }]),
   );
   const season = state.season + 1;
   const random = randomStream(state.rngState);
-  const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false, state.economy.continentalStages !== undefined);
+  const gridRounds = mostRounds(
+    Object.values(state.world ?? {}).flatMap(({ structure, leagues, isFullTier }) =>
+      isFullTier ? structure.levels.map((level, i) => ({ clubCount: Object.values(clubs).filter((club) => club.abroad?.country === structure.id && club.abroad.level === i).length, legs: level.legs })) : leagues.map((league) => ({ clubCount: league.clubIds.length, legs: league.legs })),
+    ),
+  );
+  const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false, state.economy.continentalStages !== undefined, formatsOf(state), gridRounds, abroad.map(({ country }) => country.structure));
   const outcomes = Object.fromEntries(
-    Object.values(state.competitions).flatMap((competition) => (competition.kind === "league" ? [[competition.id, outcomeAt(competition.division)]] : [])),
+    Object.values(state.competitions).flatMap((competition) => {
+      if (competition.kind !== "league") return [];
+      return [[competition.id, competition.division ? outcomeAt(competition.division) : LEAGUE_FORMATS[competition.format].outcome(competition, fixturesOf(state, competition.id))]];
+    }),
   );
   const finances = renewFinances(state, clubs, competitions, fixtures, [...byDivision.values()]);
   const players = driftWagesToCap(state.players, finances);
+  const unified = unifiedDatesOf(calendar);
+  const world = abroad.length && state.world ? { ...state.world, ...Object.fromEntries(abroad.map(({ country, tables }) => [country.structure.id, fileFullTierSeason(country, tables, season, unified)])) } : state.world;
   return {
-    state: { ...state, season, clubs, players, calendar, competitions, fixtures, finances, rngState: random.state() },
+    state: { ...state, season, clubs, players, calendar, competitions, fixtures, finances, rngState: random.state(), ...(world ? { world } : {}) },
     outcomes,
   };
+}
+
+/** Each full-tier country abroad with its leagues' final tables, top level first. */
+function tablesAbroad(state: GameState): { country: Country; tables: string[][] }[] {
+  return Object.values(state.world ?? {}).flatMap((country) => {
+    if (!country.isFullTier) return [];
+    const tables = country.structure.levels.map((_, level) => {
+      const league = Object.values(state.competitions).find((c) => c.kind === "league" && c.season === state.season && c.abroad?.country === country.structure.id && c.abroad.level === level);
+      return league ? standings(league.clubIds, fixturesOf(state, league.id), league.drawOrder).map((row) => row.clubId) : [];
+    });
+    return [{ country, tables }];
+  });
+}
+
+/** The club's next level abroad, when the season moved it. */
+function movedAbroad(club: Club, levelAbroad: ReadonlyMap<string, number | null>): Pick<Club, "abroad"> | null {
+  const level = levelAbroad.get(club.id);
+  return club.abroad && level !== undefined && level !== null ? { abroad: { ...club.abroad, level } } : null;
 }

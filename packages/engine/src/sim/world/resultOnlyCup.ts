@@ -45,7 +45,8 @@ function cupDates(season: number, window: [string, string], rounds: number, leag
 /**
  * The season's cup with every club of `levels` (top level first) drawn in. guess: only the clubs of
  * the leagues the game plays enter, while the real cups take in amateur clubs too; the byes that fill
- * the bracket to a power of two go to the top level's clubs first.
+ * the bracket to a power of two go to the top level's clubs first. On the unified calendar its rounds
+ * take the last of the shared `midweeks`, the final on the last.
  */
 export function openCup(
   id: string,
@@ -54,6 +55,7 @@ export function openCup(
   window: [string, string],
   leagueDates: readonly IsoDate[],
   random: () => number,
+  midweeks?: readonly IsoDate[],
 ): ResultOnlyCup {
   const entrants = levels.flat();
   if (entrants.length < 2) throw new Error(`${id}: a cup needs two clubs`);
@@ -64,7 +66,9 @@ export function openCup(
   const rest = shuffle(entrants.filter((club) => !seeded.includes(club)), random);
   const bracket = shuffle([...seeded.map((club) => [club, BYE]), ...Array.from({ length: rest.length / 2 }, (_, i) => [rest[2 * i] ?? BYE, rest[2 * i + 1] ?? BYE])], random).flat();
   const rounds = roundSizes(bracket).length;
-  return { id, season, bracket, dates: cupDates(season, window, rounds, leagueDates), results: UNPLAYED.repeat(size - 1) };
+  if (midweeks && midweeks.length < rounds) throw new Error(`${id}: ${rounds} rounds do not fit ${midweeks.length} midweeks`);
+  const dates = midweeks ? midweeks.slice(midweeks.length - rounds) : cupDates(season, window, rounds, leagueDates);
+  return { id, season, bracket, dates, results: UNPLAYED.repeat(size - 1) };
 }
 
 type CupMatch = { round: number; homeId: string; awayId: string; result: MatchResult | null; winnerId: string | null };

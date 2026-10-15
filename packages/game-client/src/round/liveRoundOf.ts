@@ -23,7 +23,8 @@ const ONCE_PLAYED = 0.5;
 const GUEST_COLOURS = { primary: "#FFFFFF", secondary: "#000000" };
 /** A match of the round: its timeline and, unless it kicked off before players had one, every player's form and play. */
 export type RoundMatch = { fixtureId: string; competitionId: string; homeId: string; awayId: string; events: MatchEvent[]; play?: MatchPlay };
-type RoundCompetition = { id: string; label: string };
+/** `hasHumanCoach`: a club of a human coach plays in it, so the round shows it open; the rest go under "Outras ligas". */
+type RoundCompetition = { id: string; label: string; hasHumanCoach: boolean };
 /** The coach's group of his competition: its clubs and every fixture of the stage, today's still unplayed. */
 export type RoundTable = { clubIds: string[]; fixtures: Fixture[]; drawOrder: string[] };
 
@@ -169,13 +170,17 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
   const counts = new Map<string, number>();
   for (const m of matches) counts.set(m.competitionId, (counts.get(m.competitionId) ?? 0) + 1);
   const isCoachs = (id: string) => id === coachFixture?.competitionId;
+  const humans = humanClubIds(state);
   const competitions = [...counts.keys()]
     .sort((a, b) => Number(isCoachs(b)) - Number(isCoachs(a)) || (counts.get(b) ?? 0) - (counts.get(a) ?? 0))
     .flatMap((id) => {
       const competition = state.competitions[id];
       const first = matches.find((m) => m.competitionId === id);
       const fixture = first && today.get(first.fixtureId);
-      return competition && fixture ? [{ id, label: fixtureLabel(competition, fixture) }] : [];
+      // A club can reach a cup from another one (Libertadores to Sul-Americana) without being in its entry list, so today's matches count too.
+      const isHumanToday = matches.some((m) => m.competitionId === id && (humans.includes(m.homeId) || humans.includes(m.awayId)));
+      const hasHumanCoach = isHumanToday || (competition?.clubIds.some((clubId) => humans.includes(clubId)) ?? false);
+      return competition && fixture ? [{ id, label: fixtureLabel(competition, fixture), hasHumanCoach }] : [];
     });
 
   const table = tableOf(live, coachFixture);
@@ -208,7 +213,7 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
   const ratings = ratingsOf(live, matches.find((m) => m.fixtureId === live.coachMatch?.fixtureId));
   for (const r of [...(ratings?.home ?? []), ...(ratings?.away ?? [])]) nameOf(r.playerId);
 
-  const others = humanClubIds(state).filter((id) => id !== state.coachClubId);
+  const others = humans.filter((id) => id !== state.coachClubId);
   if (!others.length) return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach, ratings, seenMinute };
   const humanSides = humanSidesOf(live, today, seenMinute);
   for (const p of humanSides.flatMap((side) => side.squad)) names[p.id] = p.name;

@@ -13,6 +13,7 @@ import type { PlayerProfile } from "./players/playerProfile.js";
 import type { TransferMarket } from "./transfers/transferMarket.js";
 import type { EuropeanCups } from "./continental/uefaCups.js";
 import type { World } from "./world/world.js";
+import type { Formats } from "./formats.js";
 import type { Youth } from "./youth/academy.js";
 
 export type IsoDate = string;
@@ -60,7 +61,8 @@ export type KnockoutStage = {
 
 export type Stage = GroupStage | KnockoutStage;
 
-export type LeagueFormatId = `serie-${Lowercase<Division>}`;
+/** Brazil's series, and the straight round robin a league abroad plays in the full tier. */
+export type LeagueFormatId = `serie-${Lowercase<Division>}` | "round-robin";
 
 type CompetitionBase = {
   id: string;
@@ -69,9 +71,18 @@ type CompetitionBase = {
   stages: Stage[];
   stageDates: IsoDate[][];
   drawOrder: string[];
+  /** Each stage's games in its real format over its games in this game's (`formats.gameScales`); absent when they are the same. */
+  gameScales?: number[];
 };
 
-export type LeagueCompetition = CompetitionBase & { kind: "league"; format: LeagueFormatId; division: Division };
+/**
+ * A level of a country's pyramid abroad played in the full tier: its country, level (0 the top), name,
+ * and how many of its clubs go up and down at the season's end.
+ */
+export type LeagueAbroad = { country: string; level: number; name: string; promoted: number; relegated: number };
+
+/** `legs` 1 when the game's formats play the league's round robin once; a league abroad has no division. */
+export type LeagueCompetition = CompetitionBase & { kind: "league"; format: LeagueFormatId; division: Division | null; legs?: 1; abroad?: LeagueAbroad };
 
 /** `clubIds` is the seeding order, best first. */
 export type StateCompetition = CompetitionBase & { kind: "state"; state: State };
@@ -96,6 +107,8 @@ export type SeasonCalendar = {
   stateChampionshipDates: IsoDate[];
   copaDoBrasilRounds: { name: string; dates: IsoDate[] }[];
   leagueDates: Record<Division, IsoDate[]>;
+  /** The unified calendar's match days, which every league's rounds follow from the first; a real calendar has none. */
+  leagueGrid?: IsoDate[];
 };
 
 /** Where a club plays: its national division, or only its state championship. */
@@ -234,4 +247,6 @@ export type GameState = {
   waitingCoaches?: WaitingCoach[];
   /** Each coach's market time per transfer window, in seconds; a game without the market clock has none. */
   marketClockSeconds?: number;
+  /** The calendar and formats chosen at new game; a game on Realista's, or saved before them, has none. */
+  formats?: Formats;
 };
