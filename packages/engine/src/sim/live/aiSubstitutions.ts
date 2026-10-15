@@ -136,7 +136,8 @@ export function aiSubstitutions(side: AiSide, events: readonly MatchEvent[], fro
     const { minute } = moment;
     if (made.length + subs.length >= MAX_SUBSTITUTIONS || !canUseWindow(minute)) continue;
     const onPitch = onPitchAt(side.starters, side.bench, all(), clubId, minute);
-    const canLeave = (p: SimPlayer) => lastInvolvement(all(), p.id) <= minute && (moment.reason === "hurt" || p.id !== moment.playerId);
+    const isSentOff = (p: SimPlayer) => all().some((e) => e.type === "card" && e.card !== "yellow" && e.playerId === p.id);
+    const canLeave = (p: SimPlayer) => !isSentOff(p) && lastInvolvement(all(), p.id) <= minute && (moment.reason === "hurt" || p.id !== moment.playerId);
     if (moment.reason === "hurt") {
       const hurt = onPitch.find((p) => p.id === moment.playerId);
       const on = hurt && (bestOf(freeBench().filter((p) => p.group === hurt.group)) ?? bestOf(freeBench()));
