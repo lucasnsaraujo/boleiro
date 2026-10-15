@@ -57,14 +57,20 @@ function isSeats(value: unknown): value is SeatsSave {
 
 function isSavedLive(value: unknown): value is SavedLive {
   if (!isRecord(value) || typeof value.seenMinute !== "number" || !isRecord(value.day)) return false;
-  const { decisions, matches, coachMatch, rest } = value.day;
-  return isRecord(decisions) && Array.isArray(matches) && (coachMatch === null || isRecord(coachMatch)) && isRecord(rest);
+  const { decisions, matches, coachMatch, waitingMatches, rest } = value.day;
+  return isRecord(decisions) && Array.isArray(matches) && (coachMatch === null || isRecord(coachMatch)) && (waitingMatches === undefined || Array.isArray(waitingMatches)) && isRecord(rest);
 }
 
 function savedLiveOf(live: LiveRoundSave | null): SavedLive | null {
   return (
     live && {
-      day: { decisions: live.day.decisions, matches: live.day.matches, coachMatch: live.day.coachMatch, rest: live.day.rest },
+      day: {
+        decisions: live.day.decisions,
+        matches: live.day.matches,
+        coachMatch: live.day.coachMatch,
+        ...(live.day.waitingMatches ? { waitingMatches: live.day.waitingMatches } : {}),
+        rest: live.day.rest,
+      },
       seenMinute: live.seenMinute,
     }
   );

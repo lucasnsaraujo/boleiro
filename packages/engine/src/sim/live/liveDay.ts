@@ -28,8 +28,13 @@ export type MatchOutcome = {
   sheet: MatchSheets[string];
 };
 
-/** What the coach's match needs to be redrawn after a change. */
+/**
+ * What a human coach's match needs to be redrawn after a change: the seated coach's, or in a
+ * hot-seat game a waiting coach's. When two human coaches meet, one open match serves both.
+ */
 export type CoachMatch = {
+  /** The club of the coach the match is open for; left out for the coach in the seat. */
+  clubId?: string;
   fixtureId: string;
   context: MatchContext;
   awayTravelKm: number;
@@ -38,8 +43,10 @@ export type CoachMatch = {
   starters: { home: SimPlayer[]; away: SimPlayer[] };
   /** The coach's players who may come on: fit, not suspended and not starting. */
   bench: SimPlayer[];
-  /** Who the AI opponent may bring on; missing in a match saved before AI substitutions. */
+  /** Who the opponent may bring on; missing in a match saved before AI substitutions. */
   opponentBench?: SimPlayer[];
+  /** When the opponent is another human coach, his tactics as of his last change; his side then gets no AI substitutions or posture. */
+  rivalTactics?: Tactics;
   /** The strength each player who may take part plays at today, by player id. */
   strengths: Record<string, number>;
   /** The coach's tactics as of his last change. */
@@ -70,5 +77,7 @@ export type LiveDay = {
   decisions: DayDecisions;
   matches: LiveMatch[];
   coachMatch: CoachMatch | null;
+  /** The matches of a hot-seat game's waiting coaches, open like the seated coach's; none in a one-coach game. */
+  waitingMatches?: CoachMatch[];
   rest: DayInProgress;
 };
