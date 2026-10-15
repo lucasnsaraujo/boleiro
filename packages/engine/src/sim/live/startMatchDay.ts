@@ -13,14 +13,17 @@ import { withoutCrowd } from "../morale/withoutCrowd.js";
 import { paramsForCompetition } from "../paramsForCompetition.js";
 import { isInjured } from "../players/isInjured.js";
 import { matchSetup, playingStrength, type CoachPlan } from "../players/matchSetup.js";
+import { fatigueOn } from "../players/fatigueOn.js";
 import { drawMatchInjuries, recordMatchLoad } from "../players/recordMatchLoad.js";
 import { squadsByClub } from "../players/squadsByClub.js";
 import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
 import { aiBench, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
 import { waitingCoachesOf } from "../coach/humanCoaches.js";
 import { coachOutcome } from "./coachOutcome.js";
+import { formOfTheDay, formStrength } from "./formOfTheDay.js";
 import { incidentHandling } from "./incidentHandling.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
+import { drawMatchPlay } from "./matchPlay.js";
 import { detailStream, FULL_TIME, inMatchOrder, kickOffTimeline, scorerStream } from "./matchTimeline.js";
 
 const LINEUP_SIZE = 11;
@@ -96,7 +99,14 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     if (coachClubId) refuseSuspended(coach.lineup ?? [], suspended);
     for (const clubId of [fixture.homeId, fixture.awayId]) refuseSuspended(waiting[clubId]?.lineup ?? [], suspended);
     const available = (clubId: string) => squad(clubId).filter((p) => !suspended.has(p.id));
-    const setup = matchSetup(state, fixture, available, coach, waiting);
+    const forms = new Map<string, number>();
+    const formOf = (p: SimPlayer) => {
+      let form = forms.get(p.id);
+      if (form === undefined) forms.set(p.id, (form = formOfTheDay(state.seed, fixture.id, p.id, { morale: clubMood(state, p.clubId).squad, fatigue: fatigueOn(p, state.date) })));
+      return form;
+    };
+    const formStrengthOf = (p: SimPlayer) => formStrength(formOf(p));
+    const setup = matchSetup(state, fixture, available, coach, waiting, formStrengthOf);
     const cardRates = CARD_RATES[cardCompetitionOf(competition)];
     const bookings = drawCards(setup.homeLineup, setup.awayLineup, cardRates, random.next);
     const params = withoutCrowd(paramsForCompetition(competition), clubMood(state, fixture.homeId));
@@ -113,7 +123,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
       if (cached !== undefined) return cached;
       let own = strengths.get(p.clubId);
       if (!own) strengths.set(p.clubId, (own = playingStrength(state, p.clubId, setup.context, available(p.clubId))));
-      const today = own(p);
+      const today = own(p) + formStrengthOf(p);
       known.set(p.id, today);
       return today;
     };
@@ -121,6 +131,8 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const isHuman = (clubId: string) => incidentHandling(state, clubId) === "askCoach";
     const benchOf = (clubId: string, lineup: readonly SimPlayer[]) => (isHuman(clubId) ? [] : aiBench(available(clubId), lineup, isFit));
     const benches = { home: benchOf(homeId, setup.homeLineup), away: benchOf(awayId, setup.awayLineup) };
+    const humanBench = (clubId: string, lineup: readonly SimPlayer[]) => available(clubId).filter((p) => isFit(p) && !lineup.includes(p));
+    const mayComeOn = (clubId: string, lineup: readonly SimPlayer[], bench: readonly SimPlayer[]) => (isHuman(clubId) ? humanBench(clubId, lineup) : bench);
     const takerOf = (clubId: string) => planOf(clubId)?.tactics.penaltyTakerId ?? null;
     const timeline = kickOffTimeline(
       {
@@ -149,7 +161,14 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
         ? { fixture: { ...fixture, result: score }, events: [] }
         : settleShootout({ ...fixture, result: score }, shootout, shootoutSide(homeId, setup.homeLineup, benches.home), shootoutSide(awayId, setup.awayLineup, benches.away), strength);
     const played = settled.fixture;
-    matches.push({ fixtureId: fixture.id, homeId, awayId, formations: setup.formations, events: inMatchOrder([...timeline.events, ...settled.events]) });
+    const play = drawMatchPlay(
+      state.seed,
+      fixture.id,
+      [...setup.homeLineup, ...setup.awayLineup],
+      [...mayComeOn(homeId, setup.homeLineup, benches.home), ...mayComeOn(awayId, setup.awayLineup, benches.away)],
+      formOf,
+    );
+    matches.push({ fixtureId: fixture.id, homeId, awayId, formations: setup.formations, events: inMatchOrder([...timeline.events, ...settled.events]), play });
     const lineups = timeline.played;
 
     // The seated coach's match opens for him; one between two waiting coaches, for the first of them.
@@ -164,12 +183,8 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
       );
       const coachLineup = ownerId === homeId ? setup.homeLineup : setup.awayLineup;
       const opponentId = ownerId === homeId ? awayId : homeId;
-      const humanBench = (clubId: string, lineup: readonly SimPlayer[]) => available(clubId).filter((p) => !isInjured(p, state.date) && !lineup.includes(p));
       const bench = humanBench(ownerId, coachLineup);
-      const strengthsOf = (clubId: string, players: readonly SimPlayer[]) => {
-        const strength = playingStrength(state, clubId, setup.context, available(clubId));
-        return players.map((p) => [p.id, strength(p)] as const);
-      };
+      const strengthsOf = (players: readonly SimPlayer[]) => players.map((p) => [p.id, strength(p)] as const);
       const opponentLineup = opponentId === homeId ? setup.homeLineup : setup.awayLineup;
       const rivalPlan = isHuman(opponentId) ? planOf(opponentId) : undefined;
       const opponentBench = rivalPlan ? humanBench(opponentId, opponentLineup) : opponentId === homeId ? benches.home : benches.away;
@@ -184,7 +199,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
         starters: { home: setup.homeLineup, away: setup.awayLineup },
         bench,
         opponentBench,
-        strengths: Object.fromEntries([...strengthsOf(ownerId, [...coachLineup, ...bench]), ...strengthsOf(opponentId, [...opponentLineup, ...opponentBench])]),
+        strengths: Object.fromEntries([...strengthsOf([...coachLineup, ...bench]), ...strengthsOf([...opponentLineup, ...opponentBench])]),
         tactics: ownerPlan.tactics,
         ...(rivalPlan ? { rivalTactics: rivalPlan.tactics } : {}),
         lastChangeMinute: 0,
