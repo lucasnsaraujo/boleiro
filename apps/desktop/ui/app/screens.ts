@@ -15,6 +15,7 @@ export const SCREEN_PATHS = [
   "/sacked",
   "/options",
   "/saves",
+  "/turn",
 ] as const;
 
 export type ScreenPath = (typeof SCREEN_PATHS)[number];
@@ -44,8 +45,8 @@ export function navIndexOf(pathname: string): number {
   return NAV.findIndex(({ path, paths }) => path === pathname || paths.some((other) => pathname === other || pathname.startsWith(`${other}/`)));
 }
 
-// The start menu, a new game, the live round and the turning points fill the window on their own.
-const WITHOUT_BAR: ReadonlySet<string> = new Set(["/", "/new-game", "/round", "/season-end", "/sacked"]);
+// The start menu, a new game, the live round, the turning points and the hot-seat hand-off fill the window on their own.
+const WITHOUT_BAR: ReadonlySet<string> = new Set(["/", "/new-game", "/round", "/season-end", "/sacked", "/turn"]);
 
 /** Whether the green bar sits over the screen: only inside an open game, and never over a moment that fills the window. */
 export function showsBar(pathname: string, isGameOpen: boolean): boolean {

@@ -6,7 +6,8 @@ export type EventKind = "goal" | "yellow" | "red" | "injury" | "substitution";
 export type ShownEvent = { kind: EventKind; minute: number; side: Side; text: string };
 export type Score = { home: number; away: number };
 /** One match at a minute of the round: the score so far, red cards and its latest event. */
-export type MatchAt = RoundMatch & { score: Score; reds: Score; last: ShownEvent | null; isCoach: boolean };
+/** A match at a minute; `isHuman` when the coach's or a hot-seat coach's club plays it. */
+export type MatchAt = RoundMatch & { score: Score; reds: Score; last: ShownEvent | null; isCoach: boolean; isHuman: boolean };
 
 type PlayerEvent = Exclude<MatchEvent, { type: "halfTime" } | { type: "fullTime" }>;
 
@@ -44,12 +45,14 @@ function matchAt(round: LiveRound, match: RoundMatch, minute: number): MatchAt {
     if (kind === "red") reds[side]++;
     last = { kind, minute: event.minute, side, text: eventText(event, round.names) };
   }
-  return { ...match, score, reds, last, isCoach: match.fixtureId === round.coach?.fixtureId };
+  const isCoach = match.fixtureId === round.coach?.fixtureId;
+  const isOtherHuman = round.otherHumanClubIds?.some((id) => id === match.homeId || id === match.awayId) ?? false;
+  return { ...match, score, reds, last, isCoach, isHuman: isCoach || isOtherHuman };
 }
 
-/** Every match of the round at `minute`, the coach's first. */
+/** Every match of the round at `minute`, the coach's first, then the other hot-seat coaches'. */
 export function roundAt(round: LiveRound, minute: number): MatchAt[] {
-  return round.matches.map((match) => matchAt(round, match, minute)).sort((a, b) => Number(b.isCoach) - Number(a.isCoach));
+  return round.matches.map((match) => matchAt(round, match, minute)).sort((a, b) => Number(b.isCoach) - Number(a.isCoach) || Number(b.isHuman) - Number(a.isHuman));
 }
 
 /** The goals scored after minute `from` up to minute `to`, in order. */

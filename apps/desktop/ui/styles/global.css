@@ -38,3 +38,37 @@ a {
     transition-property: opacity, color, background-color, border-color, box-shadow, outline-color !important;
   }
 }
+
+/* The album's pill switch (.seg) made of radio buttons: one label per choice, the picked one inked. */
+.seg-radio label {
+  position: relative;
+  height: 28px;
+  padding: 0 12px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--t-base) var(--e-out),
+    color var(--t-base) var(--e-out);
+}
+
+.seg-radio label.on {
+  background: var(--ink);
+  color: var(--card);
+}
+
+.seg-radio input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.seg-radio label:has(input:focus-visible) {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}

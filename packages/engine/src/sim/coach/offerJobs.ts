@@ -3,6 +3,7 @@ import type { GameState } from "../gameState.js";
 import { clubStatures } from "./clubStatures.js";
 import { OFFER_REACH, type JobOffer } from "./coach.js";
 import { coachSalary } from "./coachSalary.js";
+import { isHumanClub } from "./humanCoaches.js";
 
 export type JobOffered = { type: "jobOffered"; offer: JobOffer };
 
@@ -31,7 +32,8 @@ function offerFrom(state: GameState, clubId: string): JobOffer {
  */
 export function offerJobs(state: GameState, vacancies: readonly string[], random: () => number): { state: GameState; events: JobOffered[] } {
   const { coach, coachClubId } = state;
-  let offers = coach.offers.filter((offer) => offer.expiresOn >= state.date);
+  // A club another hot-seat coach has taken is no longer hiring.
+  let offers = coach.offers.filter((offer) => offer.expiresOn >= state.date && (offer.clubId === coachClubId || !isHumanClub(state, offer.clubId)));
   // Ranked only when a job is open or an idle coach hears from a club: most days need neither.
   let ranked: { statures: Map<string, number>; floor: number } | null = null;
   const rank = () => {
@@ -45,7 +47,7 @@ export function offerJobs(state: GameState, vacancies: readonly string[], random
     const stature = statures.get(clubId);
     return stature !== undefined && clubId in state.boards && stature <= coach.reputation + OFFER_REACH && stature >= floor;
   };
-  const isNew = (clubId: string) => clubId !== coachClubId && !offers.some((offer) => offer.clubId === clubId);
+  const isNew = (clubId: string) => !isHumanClub(state, clubId) && !offers.some((offer) => offer.clubId === clubId);
   const offering = vacancies.filter((id) => isWithinReach(id) && isNew(id));
   if (!coachClubId && !offers.length && !offering.length && random() < IDLE_OFFER_CHANCE_PER_DAY) {
     const reachable = [...rank().statures.keys()].filter((id) => isWithinReach(id) && isNew(id)).sort();

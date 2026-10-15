@@ -24,7 +24,12 @@ export type DayDecisions = {
   acceptOffer?: string;
   /** Transfer requests to the board, decided at the start of the next day. */
   requests?: readonly CoachRequest[];
+  /** Each waiting hot-seat coach's choices, made on his turn, in waiting order (`GameState.waitingCoaches`). */
+  waiting?: readonly WaitingDecisions[];
 };
+
+/** A waiting hot-seat coach's choices for the day: his eleven and tactics, the offer he takes and his requests. */
+export type WaitingDecisions = Omit<DayDecisions, "waiting">;
 
 export type DayEvent =
   | { type: "matchPlayed"; fixture: Fixture }
@@ -43,7 +48,10 @@ export type DayEvent =
   | CoachEvent
   | TransferEvent;
 
+/** A day played: the game after it and its events; in a hot-seat game, each waiting coach's own news apart, in waiting order. */
+export type DayResult = { state: GameState; events: DayEvent[]; waitingEvents?: DayEvent[][] };
+
 /** One day of the game: today's matches with no live changes, then everything else the day brings. */
-export function advanceDay(state: GameState, decisions: DayDecisions): { state: GameState; events: DayEvent[] } {
+export function advanceDay(state: GameState, decisions: DayDecisions): DayResult {
   return finishMatchDay(startMatchDay(state, decisions));
 }
