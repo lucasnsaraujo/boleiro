@@ -58,6 +58,11 @@ describe("match ratings", () => {
     expect(ratingOf(ratings, "away-9")).toBeLessThan(ratingOf(ratings, "away-8") ?? -Infinity);
   });
 
+  it("cost a taker the same for a penalty the keeper saves as for one he puts wide", () => {
+    const miss = (isSaved: boolean): MatchEvent[] => [{ type: "penaltyMiss", minute: 30, clubId: "away", playerId: "away-9", keeperId: "home-gk", isSaved }];
+    expect(ratingOf(matchRatings(sides(), miss(true)), "away-9")).toBe(ratingOf(matchRatings(sides(), miss(false)), "away-9"));
+  });
+
   it("rate a substitute who came on, and leave out the ones who stayed on the bench", () => {
     const sub = player("home-sub", "home", "ATT");
     const unused = player("home-unused", "home", "MID");

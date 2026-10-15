@@ -4,14 +4,14 @@ import { CARD_RATES } from "../discipline/cardRates.js";
 import type { SimPlayer } from "../gameState.js";
 import { FULL_TIME, type MatchEvent } from "./matchTimeline.js";
 
-export type Shot = { minute: number; isOnTarget: boolean };
+type Shot = { minute: number; isOnTarget: boolean };
 
 /**
  * What a player would do over the whole match in his form of the day, besides the timeline's goals
  * and cards: his shots that don't go in, tackles and fouls at their minutes, and his passes. He does
  * whatever falls while he is on the pitch.
  */
-export type PlayerPlay = {
+type PlayerPlay = {
   clubId: string;
   group: PositionGroup;
   /** His form of the day, from −1 (an awful day) to 1 (an inspired one). */
@@ -47,6 +47,8 @@ export type PlayerStats = {
   yellowCards: number;
   redCards: number;
   penaltiesMissed: number;
+  /** Of his missed penalties, the ones the keeper saved. */
+  penaltiesKeptOut: number;
   /** For whoever is in goal: shots on target he kept out, penalties included. */
   saves: number;
   penaltiesSaved: number;
@@ -82,7 +84,7 @@ const FORM_MISPLACED = 0.6;
 const FORM_FOULS = 0.4;
 const FORM_TACKLES = 0.25;
 
-// guess: the assistant calls a day bad from this form down (about one player in eight), once he
+// guess: the assistant calls a day bad from this form down (about 13% of players), once he
 // has watched the player for twenty minutes.
 const BAD_DAY_FORM = -0.5;
 const BAD_DAY_NOTICED_AFTER = 20;
@@ -171,6 +173,7 @@ const emptyStats = (own: PlayerPlay): PlayerStats => ({
   yellowCards: 0,
   redCards: 0,
   penaltiesMissed: 0,
+  penaltiesKeptOut: 0,
   saves: 0,
   penaltiesSaved: 0,
   conceded: 0,
@@ -239,7 +242,10 @@ export function playerStatsAt(play: MatchPlay, events: readonly MatchEvent[], mi
       if (taker) {
         taker.penaltiesMissed++;
         taker.shots++;
-        if (e.isSaved) taker.shotsOnTarget++;
+        if (e.isSaved) {
+          taker.shotsOnTarget++;
+          taker.penaltiesKeptOut++;
+        }
       }
       const keeper = stats[e.keeperId];
       if (keeper && e.isSaved) {

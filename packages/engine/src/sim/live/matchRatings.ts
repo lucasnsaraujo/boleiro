@@ -53,8 +53,9 @@ const LOWEST = 3;
 const HIGHEST = 10;
 
 function scoreOf(s: PlayerStats, margin: number, isCleanSheet: boolean): number {
-  const missed = s.shots - s.shotsOnTarget - s.penaltiesMissed;
-  const saved = s.shotsOnTarget - s.goals;
+  // Missed penalties cost their own price, so they leave the taker's other shots.
+  const missed = s.shots - s.shotsOnTarget - (s.penaltiesMissed - s.penaltiesKeptOut);
+  const saved = s.shotsOnTarget - s.goals - s.penaltiesKeptOut;
   return (
     (RESULT * margin * s.minutes) / FULL_TIME +
     GOAL * (s.goals - s.penaltyGoals) +

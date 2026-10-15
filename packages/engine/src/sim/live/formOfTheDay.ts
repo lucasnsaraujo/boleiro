@@ -1,11 +1,11 @@
 import { keyedStream } from "../../engine/random.js";
 
 /** What pulls a player's form going into a match: his morale (0 to 100) and his fatigue (100 is one full match's load). */
-export type FormPull = { morale: number; fatigue: number };
+type FormPull = { morale: number; fatigue: number };
 
 // guess: no public data measures day-to-day form. A player's form is a normal draw kept between
-// −1 (an awful day) and 1 (an inspired one); about one player in seven has a clearly bad day
-// (below −0.5) and as many a clearly good one.
+// −1 (an awful day) and 1 (an inspired one); about 13% of players have a clearly bad day (below
+// −0.5) and as many a clearly good one.
 const FORM_SD = 0.45;
 // guess: full morale lifts the mean form by a quarter, none sinks it as much; a full match's load
 // beyond what a player usually carries into a match sinks it by 0.3. Starters carry about 5 on
