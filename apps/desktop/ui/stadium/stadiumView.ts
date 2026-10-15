@@ -15,7 +15,9 @@ export type StadiumState = Pick<GameState, (typeof STADIUM_KEYS)[number]>;
 export const WORKS_SIZES = [2_000, 5_000, 10_000] as const;
 
 export type Forecast = { crowd: number; gate: number; share: number };
-export type Factor = { label: string; value: string; isUp: boolean };
+/** Which way a factor pushes the crowd from an ordinary game's. */
+export type Push = "up" | "down" | "none";
+export type Factor = { label: string; value: string; push: Push };
 export type WorksOption = { answer: WorksAnswer; gainPerGame: number };
 
 export type StadiumView = {
@@ -47,13 +49,13 @@ function weightOf(state: StadiumState, fixture: Fixture): string | null {
   return rivalsOf(state.clubs).get(fixture.homeId)?.has(fixture.awayId) ? "Clássico" : null;
 }
 
-function formWord(points: readonly number[]): { value: string; isUp: boolean } {
-  if (!points.length) return { value: "Sem jogos", isUp: true };
+function formWord(points: readonly number[]): { value: string; push: Push } {
+  if (!points.length) return { value: "Sem jogos", push: "none" };
   const wins = [...points].reverse().findIndex((p) => p !== 3);
   const streak = wins === -1 ? points.length : wins;
-  if (streak >= 2) return { value: `${streak} vitórias`, isUp: true };
+  if (streak >= 2) return { value: `${streak} vitórias`, push: "up" };
   const share = points.reduce((sum, p) => sum + p, 0) / (3 * points.length);
-  return { value: `${Math.round(share * 100)}% dos pontos`, isUp: share >= 0.5 };
+  return { value: `${Math.round(share * 100)}% dos pontos`, push: share > 0.5 ? "up" : share < 0.5 ? "down" : "none" };
 }
 
 /** The coach's stadium: the next home crowd at any price, the last gates and the works he can ask for; null without a club. */
@@ -90,10 +92,12 @@ export function stadiumView(state: StadiumState): StadiumView | null {
     factors: (price) => {
       const above = price / assistantPrice - 1;
       return [
-        { label: "Peso do jogo", value: weight ?? "Normal", isUp: weight !== null },
-        { label: "Moral da torcida", value: mood.closedDoorGames > 0 ? "Portões fechados" : `${Math.round(mood.fans)}%`, isUp: mood.fans >= 50 && mood.closedDoorGames === 0 },
+        { label: "Peso do jogo", value: weight ?? "Normal", push: weight ? "up" : "none" },
+        mood.closedDoorGames > 0
+          ? { label: "Moral da torcida", value: "Portões fechados", push: "down" }
+          : { label: "Moral da torcida", value: `${Math.round(mood.fans)}%`, push: mood.fans > 50 ? "up" : mood.fans < 50 ? "down" : "none" },
         { label: "Fase", ...form },
-        { label: "Preço", value: above === 0 ? "Na média" : `${above > 0 ? "+" : "−"}${Math.round(Math.abs(above) * 100)}%`, isUp: above <= 0 },
+        { label: "Preço", value: above === 0 ? "Na média" : `${above > 0 ? "+" : "−"}${Math.round(Math.abs(above) * 100)}%`, push: above < 0 ? "up" : above > 0 ? "down" : "none" },
       ];
     },
     lastGames: (finance.homeGates ?? []).toReversed().map((game) => {

@@ -137,8 +137,8 @@ export function Stadium() {
               {view.factors(price).map((factor) => (
                 <div key={factor.label}>
                   <dt>{factor.label}</dt>
-                  <dd className={factor.isUp ? "up" : "dn"}>
-                    <i className={`ph-bold ph-arrow-${factor.isUp ? "up" : "down"}`} aria-hidden="true" />
+                  <dd className={factor.push}>
+                    {factor.push !== "none" && <i className={`ph-bold ph-arrow-${factor.push}`} aria-hidden="true" />}
                     {factor.value}
                   </dd>
                 </div>
