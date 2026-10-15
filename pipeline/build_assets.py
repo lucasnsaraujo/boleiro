@@ -8,10 +8,10 @@ every image and which club uses it, read by packages/data/src/assetManifest.ts. 
 needs any more are removed. `images.path` is relative to the repo root, as import_csv.py writes it.
 
 The crests of the latest full world scrape's clubs that the import doesn't have go to their own manifest,
-`world/assets.json`, with their files under `world/assets/`: the app doesn't load the world yet, so
-its bundle (apps/desktop/ui/clubs/clubCatalog.ts) stays Brazil's. They come in WebP only, the format
-the app reads, which keeps the v1 world's images within SPEC §4.3's ~25 MB, and need the scrape's
-page cache (data/tm_cache) on disk.
+`world/assets.json`, with their files under `world/assets/`. They come in WebP only, the format the
+app reads, and in the 64 and 128 px boxes only: these clubs appear in results, tables and brackets,
+never large, and Transfermarkt's crests are 181 px tall at most. That keeps the v1 world's images
+within SPEC §4.3's ~25 MB. They need the scrape's page cache (data/tm_cache) on disk.
 
 Usage: .venv/bin/python pipeline/build_assets.py pipeline/boleiro.db packages/data/pack [snapshot id]
 """
@@ -36,6 +36,7 @@ HASH_LENGTH = 16
 # half the size of lossless WebP.
 FORMATS = {"webp": ("WEBP", {"quality": 80, "method": 6}), "avif": ("AVIF", {"quality": 60})}
 WORLD_FORMATS = ("webp",)
+WORLD_BOXES = (64, 128)
 CLUB_KEYS = {"crest": "crest", "scoreboard_crest": "scoreboardCrest"}
 
 
@@ -62,7 +63,7 @@ def world_crest_rows(db: sqlite3.Connection, snapshot: int, imported_clubs: set[
     return [row for row in rows if row["entity_id"] not in imported_clubs]
 
 
-def build(rows: list[sqlite3.Row], out: Path, formats: tuple[str, ...]) -> dict[str, object]:
+def build(rows: list[sqlite3.Row], out: Path, formats: tuple[str, ...], boxes: tuple[int, ...] = BOXES) -> dict[str, object]:
     images: dict[str, dict[str, object]] = {}
     clubs: dict[str, dict[str, str]] = {}
     written: set[Path] = set()
@@ -73,8 +74,8 @@ def build(rows: list[sqlite3.Row], out: Path, formats: tuple[str, ...]) -> dict[
         if key in images:
             continue
         source = Image.open(ROOT / row["path"]).convert("RGBA")
-        images[key] = {"kind": row["kind"], "width": row["width"], "height": row["height"], "boxes": list(BOXES), "formats": list(formats)}
-        for box in BOXES:
+        images[key] = {"kind": row["kind"], "width": row["width"], "height": row["height"], "boxes": list(boxes), "formats": list(formats)}
+        for box in boxes:
             variant = fitted(source, box)
             for extension in formats:
                 format_name, options = FORMATS[extension]
@@ -105,7 +106,7 @@ def main() -> None:
         write(manifest, out)
         if db.execute("SELECT 1 FROM snapshots WHERE kind = 'transfermarkt'").fetchone():
             world = world_crest_rows(db, latest_world_snapshot(db), {club for club, uses in manifest["clubs"].items() if "crest" in uses})
-            write(build(world, out / "world", WORLD_FORMATS), out / "world")
+            write(build(world, out / "world", WORLD_FORMATS, WORLD_BOXES), out / "world")
 
 
 if __name__ == "__main__":
