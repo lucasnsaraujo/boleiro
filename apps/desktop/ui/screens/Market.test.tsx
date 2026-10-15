@@ -88,12 +88,11 @@ test("an offer under the club's price is a proposal, sent with the fee the coach
   expect((await engine.read(["players"])).players[request?.playerId ?? ""]?.name).toBe(name);
 });
 
-test("a squad at the 35-player cap can't sign: the button is off and the panel says why", async () => {
+test("a squad at the 35-player cap is told why the board won't sign anyone", async () => {
   await openMarket("sao-paulo-sp");
+  expect(await screen.findByLabelText(/^Elenco \d+ de 35$/)).toBeTruthy();
   const name = await pickPricedPlayer();
-  const chosen = screen.getByRole("region", { name });
-  expect(within(chosen).getByText(/Elenco cheio: \d+ de 35 jogadores/)).toBeTruthy();
-  expect(within(chosen).getByRole("button", { name: "Comprar" })).toHaveProperty("disabled", true);
+  expect(within(screen.getByRole("region", { name })).getByText(/Elenco cheio: \d+ de 35 jogadores/)).toBeTruthy();
 });
 
 test("the Propostas tab shows the offers for the coach's own players and his players for sale", async () => {

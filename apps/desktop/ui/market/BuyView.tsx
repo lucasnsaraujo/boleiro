@@ -413,7 +413,7 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
                 <button className="btn flat" onClick={() => onDeclineCounter(row.id)}>
                   Recusar
                 </button>
-                <button className="btn go" disabled={isFull} onClick={() => onAsk({ kind: "sign", playerId: row.id, fee: counter.fee, wage })}>
+                <button className="btn go" onClick={() => onAsk({ kind: "sign", playerId: row.id, fee: counter.fee, wage })}>
                   Aceitar {formatMoney(counter.fee)}
                 </button>
               </div>
@@ -428,12 +428,12 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
           {!pending && !counter && (buy || loanIn) && (
             <div className="market-acts">
               {loanIn && (
-                <button className="btn" disabled={isFull} onClick={() => onAsk(loanIn.request)}>
+                <button className="btn" onClick={() => onAsk(loanIn.request)}>
                   {loanIn.label}
                 </button>
               )}
               {buy && (
-                <button className="btn go market-go" disabled={isFull} onClick={sign}>
+                <button className="btn go market-go" onClick={sign}>
                   <i className="ph-bold ph-paper-plane-tilt" aria-hidden="true" />
                   {hasFee && fee < (row.price ?? 0) ? "Fazer proposta" : buy.label}
                 </button>

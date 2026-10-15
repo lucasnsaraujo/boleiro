@@ -32,7 +32,7 @@ export type BidSheet = {
   contractUntil: IsoDate;
   /** The monthly wage he would earn at the buyer; null abroad. */
   newWage: number | null;
-  /** Whether he wants the move; a player always wants Europe. */
+  /** Whether he wants the move; a player always wants Europe, and one put up for sale goes. */
   wantsToGo: boolean;
 };
 
@@ -62,7 +62,8 @@ export function bidSheets(state: SellState): BidSheet[] {
   const lineup = pickLineup([...squad]);
   const tier = tierOf(state.clubs[coachClubId] ?? { division: null });
   const cash = state.finances[coachClubId]?.cash ?? 0;
-  return Object.values(coachMarketOf(state).bids)
+  const coach = coachMarketOf(state);
+  return Object.values(coach.bids)
     .filter((bid) => bid.until >= state.date && state.players[bid.playerId]?.clubId === coachClubId)
     .sort((a, b) => a.until.localeCompare(b.until) || b.fee - a.fee)
     .flatMap((bid): BidSheet[] => {
@@ -73,7 +74,8 @@ export function bidSheets(state: SellState): BidSheet[] {
       const successor = isStarter ? (without.find((p) => !lineup.some((q) => q.id === p.id)) ?? null) : null;
       const buyer = bid.buyerId ? state.clubs[bid.buyerId] : undefined;
       const newWage = bid.buyerId ? buyerWage(player, squadOf(state, bid.buyerId)) : null;
-      const wantsToGo = !buyer || newWage === null || willingToJoin({ player, from: tier, to: { tier: tierOf(buyer), fanbase: buyer.fanbase }, wage: newWage }) >= 0.5;
+      // A player the coach put up for sale knows he isn't wanted and goes.
+      const wantsToGo = !buyer || newWage === null || !!coach.listings[player.id] || willingToJoin({ player, from: tier, to: { tier: tierOf(buyer), fanbase: buyer.fanbase }, wage: newWage }) >= 0.5;
       return [
         {
           playerId: player.id,

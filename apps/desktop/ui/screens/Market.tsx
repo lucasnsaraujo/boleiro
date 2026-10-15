@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 import type { BidAnswer } from "@boleiro/engine/sim/transfers/answerBid";
-import { coachMarketOf } from "@boleiro/engine/sim/transfers/coachMarket";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import type { SaleWay } from "@boleiro/engine/sim/transfers/listPlayer";
 import { formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
@@ -9,6 +8,7 @@ import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import type { BoardDesk } from "@boleiro/game-client/market/boardDesk";
 import { useServices } from "../app/ServicesContext.js";
 import { boardSummary } from "../finances/financeSummary.js";
+import { bidSheets } from "../market/bidSheets.js";
 import { BuyView, MARKET_KEYS, type MarketState } from "../market/BuyView.js";
 import { windowStatus } from "../market/marketSearch.js";
 import { SellView } from "../market/SellView.js";
@@ -81,7 +81,7 @@ export function Market() {
 
   const transferWindow = windowStatus(state.date);
   const board = boardSummary(state);
-  const offers = Object.values(coachMarketOf(state).bids).filter((bid) => bid.until >= state.date).length;
+  const offers = bidSheets(state).length;
   const show = (next: Tab) => setParams(next === "busca" ? {} : { [TAB_PARAM]: next }, { replace: true });
 
   const tabs = (

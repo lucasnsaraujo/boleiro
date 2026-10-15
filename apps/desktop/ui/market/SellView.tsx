@@ -51,9 +51,11 @@ export function SellView({ state, tabs, onAnswer, onList }: Props) {
   const sheet = sheets.find((s) => s.playerId === pickedId) ?? sheets[0] ?? null;
   const buyerName = (s: Pick<BidSheet, "buyerId">) => (s.buyerId ? (state.clubs[s.buyerId]?.shortName ?? "O clube") : "O clube europeu");
 
+  /** A failed answer leaves the offer as it was; the screen around says it didn't go through. */
   async function answer(s: BidSheet, given: BidAnswer) {
-    const result = await onAnswer(s.playerId, given);
-    setOutcome(outcomeText(result, s.name, buyerName(s)));
+    setOutcome(null);
+    const result = await onAnswer(s.playerId, given).catch(() => null);
+    if (result) setOutcome(outcomeText(result, s.name, buyerName(s)));
   }
 
   return (

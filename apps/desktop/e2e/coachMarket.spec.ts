@@ -87,10 +87,17 @@ test("from a new game: list players, answer a club's offer, make an offer and ge
   await expect(countered.getByRole("button", { name: /^Aceitar R\$/ })).toBeVisible();
 });
 
-test("a squad over the 35-player cap can't sign anyone", async ({ page }) => {
+test("a squad over the 35-player cap can't sign anyone: the market warns and the board refuses", async ({ page }) => {
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "são paulo", club: "São Paulo", coach: "Tite" });
-  await barOf(page).getByRole("link", { name: "Busca" }).click();
+  const bar = barOf(page);
+  await page.evaluate(async () => {
+    const engine = window.boleiroEngine;
+    if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
+    await engine.apply({ type: "advance", days: Array.from({ length: 5 }, () => ({})) });
+  });
+  await skipMatchDay(page);
+  await bar.getByRole("link", { name: "Busca" }).click();
   await expect(page.getByText(/^Elenco \d+\/35$/)).toBeVisible();
   await page.getByRole("combobox", { name: "Divisão" }).selectOption("Série B");
   const priced = page.getByRole("table", { name: "Jogadores" }).getByRole("row").filter({ has: page.getByRole("cell", { name: /^R\$/ }) }).first();
@@ -98,5 +105,12 @@ test("a squad over the 35-player cap can't sign anyone", async ({ page }) => {
   await priced.getByRole("button").click();
   const chosen = page.getByRole("region", { name });
   await expect(chosen).toContainText(/Elenco cheio: \d+ de 35 jogadores/);
-  await expect(chosen.getByRole("button", { name: "Comprar" })).toBeDisabled();
+  await chosen.getByRole("button", { name: "Comprar" }).click();
+
+  await bar.getByRole("link", { name: "Times" }).click();
+  const before = (await barDate(page).textContent()) ?? "";
+  await page.getByRole("button", { name: "Jogar rodada" }).click();
+  await expect(barDate(page)).not.toHaveText(before);
+  await bar.getByRole("link", { name: "Busca" }).click();
+  await expect(page.getByRole("list", { name: "Pedidos à diretoria" })).toContainText(`Contratação de ${name}: recusada, o elenco já tem 35 jogadores`);
 });
