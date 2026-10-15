@@ -139,7 +139,9 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
       const competition = state.competitions[id];
       const first = matches.find((m) => m.competitionId === id);
       const fixture = first && today.get(first.fixtureId);
-      const hasHumanCoach = competition?.clubIds.some((clubId) => humans.includes(clubId)) ?? false;
+      // A club can reach a cup from another one (Libertadores to Sul-Americana) without being in its entry list, so today's matches count too.
+      const isHumanToday = matches.some((m) => m.competitionId === id && (humans.includes(m.homeId) || humans.includes(m.awayId)));
+      const hasHumanCoach = isHumanToday || (competition?.clubIds.some((clubId) => humans.includes(clubId)) ?? false);
       return competition && fixture ? [{ id, label: fixtureLabel(competition, fixture), hasHumanCoach }] : [];
     });
 
