@@ -37,6 +37,9 @@ const OUTCOME_OF: { [T in CommandType]: (command: GameCommand<T>, result: Comman
   takeBankLoan: (_command, { approved }) => (approved ? "autosave" : "unchanged"),
   repayBankLoan: () => "autosave",
   bookFriendly: (_command, { booked }) => (booked ? "autosave" : "unchanged"),
+  promoteProspect: (_command, { refusal }) => (refusal ? "unchanged" : "autosave"),
+  releaseProspect: (_command, { refusal }) => (refusal ? "unchanged" : "autosave"),
+  sellProspect: (_command, { refusal }) => (refusal ? "unchanged" : "autosave"),
   passTurn: () => "autosave",
   // The clock ticks every second on the market screens; the next autosave keeps it.
   spendMarketTime: (_command, clock) => (clock ? "changed" : "unchanged"),
@@ -45,7 +48,7 @@ const OUTCOME_OF: { [T in CommandType]: (command: GameCommand<T>, result: Comman
 /**
  * The engine, writing the autosave slot after every advance that played a round of matches or signed an offer, every
  * play-on that moved the game, every kick-off and live change of a live round and every quarter of an hour shown of
- * it, every live round's final whistle, every offer turned down, every request asked or withdrawn, every player listed, every club's offer answered, every counter turned down, every ticket price set, every stadium works the board approved, every bank loan taken or paid off, every friendly booked, every hot-seat turn passed, and every turning point closed. Autosaves go one
+ * it, every live round's final whistle, every offer turned down, every request asked or withdrawn, every player listed, every club's offer answered, every counter turned down, every ticket price set, every stadium works the board approved, every bank loan taken or paid off, every friendly booked, every hot-seat turn passed, every academy kid promoted, released or sold, and every turning point closed. Autosaves go one
  * at a time; those asked for while one is under way become a single save of the latest game. Every change, autosaved
  * or not, counts in the open game's unsaved changes.
  */

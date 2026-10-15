@@ -136,6 +136,29 @@ describe("the squad", () => {
     expect(line({ type: "playerContractRenewed", playerId: own.id, clubId: "bahia-ba", until: "2028-12-31", wage: 1 })).toMatchObject({ text: `${own.name} renova até 2028`, tone: "neutral" });
   });
 
+  test("the academy's trials, the kids it lets go at 21 and those who fill a short squad are plain news; other clubs' stay out", () => {
+    expect(line({ type: "youthTrialsHeld", clubId: "bahia-ba", prospectIds: ["k1", "k2", "k3"] })).toMatchObject({ text: "Peneira: 3 garotos novos na base", tone: "neutral" });
+    expect(line({ type: "prospectReleased", prospectId: "k1", clubId: "bahia-ba", name: "Kauã Pinheiro" })).toMatchObject({ text: "Kauã Pinheiro fez 21 anos e deixou a base, dispensado", tone: "neutral" });
+    expect(lines({ type: "youthTrialsHeld", clubId: "vitoria-ba", prospectIds: ["k9"] })).toEqual([]);
+    expect(line({ type: "squadToppedUp", clubId: "bahia-ba", playerIds: ["k1", "k2"] })).toMatchObject({ text: "Elenco completado com 2 garotos da base", tone: "neutral" });
+  });
+
+  test("the Copinha reads as the academy's run: the title, or the round and the club that knocked it out", () => {
+    const copinhaOf = (championId: string) => ({
+      season: 2026,
+      championId,
+      matches: [
+        { round: 0, homeId: "bahia-ba", awayId: "sport-pe", homeGoals: 2, awayGoals: 0 },
+        { round: 0, homeId: "vitoria-ba", awayId: "ceara-ce", homeGoals: 1, awayGoals: 1, penaltyWinnerId: "vitoria-ba" },
+        { round: 1, homeId: "bahia-ba", awayId: "vitoria-ba", homeGoals: 0, awayGoals: 1 },
+      ],
+    });
+    const after = (championId: string) => ({ ...game, youth: { rngState: 0, prospects: {}, copinha: copinhaOf(championId) } });
+    const copinha = (championId: string) => inboxLines(game, after(championId), [{ type: "copinhaPlayed", season: 2026, championId }])[0];
+    expect(copinha("vitoria-ba")).toMatchObject({ text: "Copinha: base eliminada na final pelo Vitória", tone: "bad" });
+    expect(copinha("bahia-ba")).toMatchObject({ text: "Bahia campeão da Copinha", tone: "good" });
+  });
+
   test("players arriving and leaving say how", () => {
     const move = { type: "playerMoved", playerId: own.id, name: own.name, fee: 3_000_000 } as const;
     expect(line({ ...move, kind: "transfer", fromClubId: "bahia-ba", toClubId: "vitoria-ba" })).toMatchObject({ text: `${own.name} vendido por R$ 3 mi (Vitória)`, tone: "neutral" });
