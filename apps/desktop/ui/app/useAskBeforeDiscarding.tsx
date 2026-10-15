@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { hasUnsavedPlay } from "@boleiro/game-client/saves/currentGame";
 import { saveToSlot } from "@boleiro/game-client/saves/saveToSlot";
 import { slotLabel } from "@boleiro/game-client/saves/slotMeta";
 import { useServices } from "./ServicesContext.js";
@@ -18,7 +19,7 @@ export function useAskBeforeDiscarding(): Asking {
   const [discard, setDiscard] = useState<(() => void) | null>(null);
 
   function askBeforeDiscarding(next: () => void) {
-    if (game.current?.hasUnsavedPlay) setDiscard(() => next);
+    if (hasUnsavedPlay(game.current)) setDiscard(() => next);
     else next();
   }
 
@@ -42,11 +43,12 @@ function DiscardQuestion({ onClose }: { onClose: (isDiscarding: boolean) => void
   const opened = game.current;
 
   async function saveAndGoOn() {
-    if (!opened) return onClose(true);
+    const current = game.current;
+    if (!current) return onClose(true);
     setSaving(true);
     setSaveFailed(false);
     try {
-      await saveToSlot(engine, slots, opened.slotId, opened);
+      await saveToSlot(engine, slots, current.slotId, current);
       onClose(true);
     } catch {
       setSaveFailed(true);

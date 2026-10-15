@@ -143,23 +143,12 @@ test("a failed autosave still returns the round that was played", async () => {
   expect(events.some((event) => event.type === "matchPlayed")).toBe(true);
 });
 
-test("a round whose autosave failed stays unsaved play", async () => {
-  const { engine: raw, close } = inMemoryEngine();
-  closers.push(close);
-  const broken = { ...indexedDbSlots(new IDBFactory()), write: () => Promise.reject(new Error("disk full")) };
-  const game: CurrentGameRef = { current: { slotId: "slot-1", coachName: "Tite" } };
-  const engine = withAutosave(raw, broken, game);
-  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
-  await engine.apply({ type: "playToMatchDay" });
-  expect(game.current?.hasUnsavedPlay).toBe(true);
-});
-
-test("playing on when already on the match day leaves no unsaved play", async () => {
+test("playing on when already on the match day adds no unsaved play", async () => {
   const { engine, game } = await startGame();
   await engine.apply({ type: "playToMatchDay" });
-  expect(game.current?.hasUnsavedPlay).toBe(false);
+  const unsaved = game.current?.unsavedChanges;
   await engine.apply({ type: "playToMatchDay" });
-  expect(game.current?.hasUnsavedPlay).toBe(false);
+  expect(game.current?.unsavedChanges).toBe(unsaved);
 });
 
 test("with no game open on the screens nothing is autosaved", async () => {
@@ -253,11 +242,12 @@ test("an autosave of a world game writes the game and the countries that played,
   expect(JSON.parse(await reloaded.save())).toEqual(JSON.parse(await engine.save()));
 });
 
-test("days the autosave skips leave the open game with unsaved play, until a played round is autosaved", async () => {
-  const { engine, game, daysToFirstMatch } = await startGame();
-  expect(game.current?.hasUnsavedPlay ?? false).toBe(false);
+test("every change counts as unsaved play, autosaved or not, since the next game's autosave takes the same slot", async () => {
+  const { engine, slots, game, daysToFirstMatch } = await startGame();
+  expect(game.current?.unsavedChanges ?? 0).toBe(0);
   await engine.apply({ type: "advance", days: [{}] });
-  expect(game.current?.hasUnsavedPlay).toBe(true);
+  expect(game.current?.unsavedChanges).toBe(1);
   await engine.apply({ type: "advance", days: Array.from({ length: daysToFirstMatch }, () => ({})) });
-  expect(game.current?.hasUnsavedPlay).toBe(false);
+  expect(await slots.list()).toMatchObject([{ id: AUTOSAVE_SLOT_ID }]);
+  expect(game.current?.unsavedChanges).toBe(2);
 });

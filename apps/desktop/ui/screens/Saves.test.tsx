@@ -77,7 +77,7 @@ test("a picked save opens in the game, and the coach lands on his club", async (
 test("opening another save over a game with unsaved play asks first, and Descartar opens it", async () => {
   const given = await services();
   await saveToSlot(given.engine, given.slots, "slot-1", { slotId: "slot-1", coachName: "Abel" });
-  given.game.current = { slotId: "slot-2", coachName: "Tite", hasUnsavedPlay: true };
+  given.game.current = { slotId: "slot-2", coachName: "Tite", unsavedChanges: 1 };
   openSaves(given);
   await userEvent.click(await within(await slotsList()).findByRole("button", { name: /^Jogo 1 · Bahia/ }));
   await userEvent.click(screen.getByRole("button", { name: "Carregar este jogo" }));
@@ -89,10 +89,23 @@ test("opening another save over a game with unsaved play asks first, and Descart
   expect(given.game.current).toEqual({ slotId: "slot-1", coachName: "Abel" });
 });
 
+test("once Salvar agora has written the open game, opening another save asks nothing", async () => {
+  const given = await services();
+  await saveToSlot(given.engine, given.slots, "slot-1", { slotId: "slot-1", coachName: "Abel" });
+  given.game.current = { slotId: "slot-2", coachName: "Tite", unsavedChanges: 4 };
+  openSaves(given);
+  await userEvent.click(await screen.findByRole("button", { name: "Salvar agora" }));
+  await within(await slotsList()).findByRole("button", { name: /^Jogo 2 · Bahia/ });
+  await userEvent.click(within(await slotsList()).getByRole("button", { name: /^Jogo 1 · Bahia/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Carregar este jogo" }));
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(await screen.findByText("Clube aberto")).toBeTruthy();
+});
+
 test("Salvar e continuar writes the open game into its own slot before opening the other save", async () => {
   const given = await services();
   await saveToSlot(given.engine, given.slots, "slot-1", { slotId: "slot-1", coachName: "Abel" });
-  given.game.current = { slotId: "slot-2", coachName: "Tite", hasUnsavedPlay: true };
+  given.game.current = { slotId: "slot-2", coachName: "Tite", unsavedChanges: 1 };
   openSaves(given);
   await userEvent.click(await within(await slotsList()).findByRole("button", { name: /^Jogo 1 · Bahia/ }));
   await userEvent.click(screen.getByRole("button", { name: "Carregar este jogo" }));
@@ -105,7 +118,7 @@ test("Salvar e continuar writes the open game into its own slot before opening t
 test("Cancelar, or Escape, keeps the open game and hands focus back to Carregar este jogo", async () => {
   const given = await services();
   await saveToSlot(given.engine, given.slots, "slot-1", { slotId: "slot-1", coachName: "Abel" });
-  given.game.current = { slotId: "slot-2", coachName: "Tite", hasUnsavedPlay: true };
+  given.game.current = { slotId: "slot-2", coachName: "Tite", unsavedChanges: 1 };
   openSaves(given);
   await userEvent.click(await within(await slotsList()).findByRole("button", { name: /^Jogo 1 · Bahia/ }));
   const load = screen.getByRole("button", { name: "Carregar este jogo" });

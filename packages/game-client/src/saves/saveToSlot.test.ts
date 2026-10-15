@@ -4,7 +4,8 @@ import type { EngineClient } from "../engine/connectEngine.js";
 import { inMemoryEngine } from "../engine/inMemoryEngine.js";
 import { indexedDbSlots } from "./indexedDbSlots.js";
 import { loadFromSlot, saveToSlot } from "./saveToSlot.js";
-import type { SlotMeta } from "./slotMeta.js";
+import type { CurrentGame } from "./currentGame.js";
+import { AUTOSAVE_SLOT_ID, type SlotMeta } from "./slotMeta.js";
 
 const closers: (() => void)[] = [];
 
@@ -27,6 +28,30 @@ test("saving lists the slot with the coach's name and the game's date, club and 
   expect(await slots.list()).toEqual([
     { id: "slot-1", gameSlotId: "slot-1", coachName: "Tite", savedAt: "2026-10-10T12:00:00.000Z", date: "2026-01-03", season: 2026, coachClubId: "bahia-ba", division: "A" },
   ]);
+});
+
+test("writing the open game into its own slot clears its unsaved play; the autosave and other slots don't", async () => {
+  const engine = startEngine();
+  const slots = indexedDbSlots(new IDBFactory());
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  const game: CurrentGame = { slotId: "slot-1", coachName: "Tite", unsavedChanges: 3 };
+  await saveToSlot(engine, slots, AUTOSAVE_SLOT_ID, game);
+  await saveToSlot(engine, slots, "slot-2", game);
+  expect(game.unsavedChanges).toBe(3);
+  await saveToSlot(engine, slots, "slot-1", game);
+  expect(game.unsavedChanges).toBe(0);
+});
+
+test("a failed write, or a change that comes back while the write is under way, stays unsaved play", async () => {
+  const engine = startEngine();
+  const slots = indexedDbSlots(new IDBFactory());
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  const game: CurrentGame = { slotId: "slot-1", coachName: "Tite", unsavedChanges: 1 };
+  await expect(saveToSlot(engine, { ...slots, write: () => Promise.reject(new Error("disk full")) }, "slot-1", game)).rejects.toThrow("disk full");
+  expect(game.unsavedChanges).toBe(1);
+  const write = slots.write.bind(slots);
+  await saveToSlot(engine, { ...slots, write: (...args) => ((game.unsavedChanges = 2), write(...args)) }, "slot-1", game);
+  expect(game.unsavedChanges).toBe(2);
 });
 
 test("loading a slot puts its game back in the engine", async () => {

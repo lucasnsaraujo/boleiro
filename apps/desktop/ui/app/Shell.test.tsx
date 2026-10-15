@@ -219,7 +219,7 @@ function MenuNewGame() {
 
 test("Novo jogo over a game with unsaved play asks first, and goes on once the coach drops it", async () => {
   const given = await services();
-  given.game.current = { slotId: "slot-2", coachName: "Tite", hasUnsavedPlay: true };
+  given.game.current = { slotId: "slot-2", coachName: "Tite", unsavedChanges: 1 };
   const router = openShellWith(given, [{ path: "/hub", element: <MenuNewGame /> }, { path: "/new-game", element: <h1>tela /new-game</h1> }], "/hub");
   await userEvent.click(screen.getByRole("button", { name: "Jogo › Novo jogo" }));
   const question = screen.getByRole("alertdialog", { name: "Salvar o jogo aberto?" });
@@ -228,7 +228,7 @@ test("Novo jogo over a game with unsaved play asks first, and goes on once the c
   expect(router.state.location.pathname).toBe("/new-game");
 });
 
-test("Novo jogo over a game the autosave holds whole goes straight on", async () => {
+test("Novo jogo over a game its own slot holds whole goes straight on", async () => {
   const router = openShellWith(await services(), [{ path: "/hub", element: <MenuNewGame /> }, { path: "/new-game", element: <h1>tela /new-game</h1> }], "/hub");
   await userEvent.click(screen.getByRole("button", { name: "Jogo › Novo jogo" }));
   expect(screen.queryByRole("alertdialog")).toBeNull();
