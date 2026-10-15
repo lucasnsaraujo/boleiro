@@ -57,6 +57,16 @@
   font-weight: 600;
 }
 
+/* Shots and passes sit at the row's end in small figures, like a box score's columns. */
+.rep-side .play {
+  flex: none;
+  margin-left: auto;
+  color: var(--ink-2);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 /* A mark as a score box: green for a great match, red for a poor one. */
 .rep .mark {
   flex: none;

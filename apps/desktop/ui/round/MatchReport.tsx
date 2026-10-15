@@ -1,6 +1,7 @@
 import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
+import { FULL_TIME } from "@boleiro/engine/sim/live/matchTimeline";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
-import type { LiveRound, Side } from "@boleiro/game-client/round/liveRoundOf";
+import { playerStatsOf, type LiveRound, type Side } from "@boleiro/game-client/round/liveRoundOf";
 import { Crest } from "../clubs/Crest.js";
 import "./matchReport.css";
 
@@ -20,7 +21,7 @@ const POOR = 5.5;
 
 const markClass = (rating: number) => (rating >= GREAT ? "mark great" : rating < POOR ? "mark poor" : "mark");
 
-/** The coach's match after the final whistle: its goals, how each went in and who set it up, and every player's mark. */
+/** The coach's match after the final whistle: its goals, how each went in and who set it up, and every player's mark, shots and passes. */
 export function MatchReport({ round }: { round: LiveRound }) {
   const match = round.matches.find((m) => m.fixtureId === round.coach?.fixtureId);
   const ratings = round.ratings;
@@ -28,6 +29,7 @@ export function MatchReport({ round }: { round: LiveRound }) {
   const nameOf = (id: string) => round.names[id] ?? "Um jogador";
   const best = [...ratings.home, ...ratings.away].reduce((top, r) => (r.rating > top.rating ? r : top), { playerId: "", rating: -1 });
   const goals = match.events.flatMap((e) => (e.type === "goal" ? [e] : []));
+  const stats = playerStatsOf(match, FULL_TIME);
 
   const side = (where: Side) => {
     const club = round.clubs[where === "home" ? match.homeId : match.awayId];
@@ -50,6 +52,7 @@ export function MatchReport({ round }: { round: LiveRound }) {
                     Craque
                   </span>
                 )}
+                {stats[r.playerId] && <PlayLine shots={stats[r.playerId]?.shots ?? 0} passes={stats[r.playerId]?.passes ?? 0} misplaced={stats[r.playerId]?.misplacedPasses ?? 0} />}
               </li>
           ))}
         </ol>
@@ -86,5 +89,14 @@ export function MatchReport({ round }: { round: LiveRound }) {
       </section>
       {side("away")}
     </div>
+  );
+}
+
+/** A player's shots and passes, as the newspaper's box score prints them: "2 fin · 31/36 p". */
+function PlayLine({ shots, passes, misplaced }: { shots: number; passes: number; misplaced: number }) {
+  return (
+    <span className="play" title={`${shots} finalizações, ${passes} de ${passes + misplaced} passes certos`}>
+      {shots} fin · {passes}/{passes + misplaced} p
+    </span>
   );
 }

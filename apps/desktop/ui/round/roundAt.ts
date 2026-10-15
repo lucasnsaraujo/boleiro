@@ -1,4 +1,5 @@
 import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
+import { badDaysOf } from "@boleiro/engine/sim/live/matchPlay";
 import { FULL_TIME, HALF_TIME, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import type { LiveRound, RoundMatch, Side } from "@boleiro/game-client/round/liveRoundOf";
 
@@ -82,18 +83,32 @@ export function goalsBetween(round: LiveRound, from: number, to: number): { fixt
   );
 }
 
-export type Highlight = { fixtureId: string; kind: "goal" | "penaltyMiss" | "red"; side: Side; clubId: string };
+/** A moment the board makes a show of; a player having a bad day comes with who he is. */
+export type Highlight =
+  | { fixtureId: string; kind: "goal" | "penaltyMiss" | "red"; side: Side; clubId: string }
+  | { fixtureId: string; kind: "badDay"; side: Side; clubId: string; playerId: string };
 
-/** The moments of a stretch of minutes the board makes a show of, in order: goals, missed penalties and red cards. */
+/**
+ * The moments of a stretch of minutes the board makes a show of, in order: goals, missed penalties
+ * and red cards, then the human coaches' players the assistant notices having a bad day.
+ */
 export function highlightsBetween(round: LiveRound, from: number, to: number): Highlight[] {
-  return round.matches.flatMap((match) =>
-    match.events.flatMap((event): Highlight[] => {
+  const humanClubIds = new Set([round.coachClubId, ...(round.otherHumanClubIds ?? [])]);
+  return round.matches.flatMap((match) => {
+    const sideOf = (clubId: string): Side => (clubId === match.homeId ? "home" : "away");
+    const moments = match.events.flatMap((event): Highlight[] => {
       if (!isPlayerEvent(event) || event.minute <= from || event.minute > to) return [];
       const kind = kindOf(event);
       if (kind !== "goal" && kind !== "penaltyMiss" && kind !== "red") return [];
-      return [{ fixtureId: match.fixtureId, kind, side: event.clubId === match.homeId ? "home" : "away", clubId: event.clubId }];
-    }),
-  );
+      return [{ fixtureId: match.fixtureId, kind, side: sideOf(event.clubId), clubId: event.clubId }];
+    });
+    const badDays = match.play
+      ? badDaysOf(match.play, match.events).flatMap(({ playerId, clubId, minute }): Highlight[] =>
+          humanClubIds.has(clubId) && minute > from && minute <= to ? [{ fixtureId: match.fixtureId, kind: "badDay", side: sideOf(clubId), clubId, playerId }] : [],
+        )
+      : [];
+    return [...moments, ...badDays];
+  });
 }
 
 const isIncidentOf = (e: MatchEvent, clubId: string) => (e.type === "injury" || (e.type === "card" && e.card !== "yellow")) && e.clubId === clubId;

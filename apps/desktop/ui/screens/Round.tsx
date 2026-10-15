@@ -95,12 +95,16 @@ function incidentOf(round: LiveRound, minute: number, hotSeat: HotSeatView | nul
 }
 /** A goal being celebrated on a row: the scoring club's colour, its side, and the round's goal count so each goal replays the animation. */
 type Flash = { colour: string; side: Side; count: number };
-/** A missed penalty, a red card or a human coach's substitution called out on its row with a chip, counted like goals so each replays. */
-type Alert = { kind: Exclude<Highlight["kind"], "goal"> | "substitution"; count: number };
+/**
+ * A missed penalty, a red card, a human coach's substitution or the assistant's word on a player
+ * having a bad day (`who`), called out on its row with a chip, counted like goals so each replays.
+ */
+type Alert = { kind: Exclude<Highlight["kind"], "goal"> | "substitution"; count: number; who?: string };
 const ALERT_CHIPS: Record<Alert["kind"], { label: string; className: string }> = {
   penaltyMiss: { label: "Pênalti", className: "pen" },
   red: { label: "Expulsão", className: "exp" },
   substitution: { label: "Troca", className: "sub" },
+  badDay: { label: "Dia ruim", className: "bad" },
 };
 // How the band notes a goal that did not come from open play.
 const GOAL_NOTES: Partial<Record<GoalKind, string>> = { penalty: "pên.", freeKick: "falta", olympic: "olímpico", ownGoal: "contra" };
@@ -235,7 +239,11 @@ export function Round() {
       if (goals.some((goal) => goal.fixtureId === live.coach?.fixtureId && goal.clubId === live.coachClubId)) setGolCount((n) => n + 1);
     }
     const called = Object.fromEntries(
-      highlightsBetween(live, from, minute).flatMap((h) => (h.kind === "goal" ? [] : [[h.fixtureId, { kind: h.kind, count: ++goalsCelebrated.current }] as const])),
+      highlightsBetween(live, from, minute).flatMap((h) => {
+        if (h.kind === "goal") return [];
+        const who = h.kind === "badDay" ? { who: live.names[h.playerId] ?? "Um jogador" } : {};
+        return [[h.fixtureId, { kind: h.kind, count: ++goalsCelebrated.current, ...who }] as const];
+      }),
     );
     if (Object.keys(called).length) {
       setAlerts((current) => ({ ...current, ...called }));
@@ -808,8 +816,9 @@ const MatchRow = memo(function MatchRow({ match, clubs, flash, alert, isHidden }
           </span>
         )}
         {alert && !flash && (
-          <span key={alert.count} className={`gol ${ALERT_CHIPS[alert.kind].className}`}>
+          <span key={alert.count} className={`gol ${ALERT_CHIPS[alert.kind].className}`} {...(alert.who ? { title: `Auxiliar: ${alert.who} está num dia ruim` } : {})}>
             {ALERT_CHIPS[alert.kind].label}
+            {alert.who && ` · ${alert.who}`}
           </span>
         )}
         {match.last && (

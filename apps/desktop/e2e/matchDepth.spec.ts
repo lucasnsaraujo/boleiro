@@ -7,7 +7,7 @@ const MAX_STOPS = 30;
 // Rounds to play until the coach's match has a goal set up by a team-mate; most have one.
 const MAX_ROUNDS = 6;
 
-test("after a live round the report shows each goal's scorer, assist and kind, and every player's mark", async ({ page }) => {
+test("after a live round the report shows each goal's scorer, assist and kind, and every player's mark, shots and passes", async ({ page }) => {
   test.setTimeout(6 * 60_000);
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Filipe" });
@@ -48,4 +48,5 @@ test("after a live round the report shows each goal's scorer, assist and kind, a
   await expect(goal).toContainText(/passe de \S+/);
   await expect(goal).toContainText(/Jogada|Cabeça|Pênalti|Falta|Olímpico|Contra/);
   await expect(report.getByText("Craque", { exact: true })).toBeVisible();
+  await expect(report.getByRole("region", { name: /^Notas / }).first().getByRole("listitem").first()).toContainText(/\d+ fin · \d+\/\d+ p$/);
 });
