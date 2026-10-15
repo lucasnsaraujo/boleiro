@@ -91,14 +91,25 @@ function drawGroups(competition: ContinentalCompetition, seeded: readonly string
   return groups;
 }
 
-/** Each of `hosts` against one of `visitors`, in draw order, never two clubs of the same group; the host plays the second leg at home. */
+/**
+ * Each of `hosts` against one of `visitors`, in draw order, never two clubs of the same group; the host
+ * plays the second leg at home. When picking each host's first eligible visitor would leave the last
+ * host its own group's club, the draw starts again from the next visitor, as a redrawn pot would.
+ */
 function crossTies(competition: ContinentalCompetition, hosts: readonly string[], visitors: readonly string[], groupOf: (id: string) => number): [string, string][] {
-  const left = drawn(competition, visitors);
-  return drawn(competition, hosts).map((host): [string, string] => {
-    const index = Math.max(0, left.findIndex((visitor) => groupOf(visitor) !== groupOf(host)));
-    const [visitor = ""] = left.splice(index, 1);
-    return [host, visitor];
-  });
+  const drawnHosts = drawn(competition, hosts);
+  const drawnVisitors = drawn(competition, visitors);
+  const attempt = (start: number): [string, string][] => {
+    const left = [...drawnVisitors.slice(start), ...drawnVisitors.slice(0, start)];
+    return drawnHosts.map((host): [string, string] => {
+      const index = Math.max(0, left.findIndex((visitor) => groupOf(visitor) !== groupOf(host)));
+      const [visitor = ""] = left.splice(index, 1);
+      return [host, visitor];
+    });
+  };
+  const isApart = (ties: readonly [string, string][]) => ties.every(([host, visitor]) => groupOf(host) < 0 || groupOf(host) !== groupOf(visitor));
+  const attempts = drawnVisitors.map((_, start) => attempt(start));
+  return attempts.find(isApart) ?? attempt(0);
 }
 
 const groupIndexIn = (groups: readonly (readonly string[])[]) => (id: string) => groups.findIndex((group) => group.includes(id));
