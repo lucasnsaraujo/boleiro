@@ -72,3 +72,36 @@ test("the board's answers are listed, and the primary action opens the market", 
   await userEvent.click(screen.getByRole("link", { name: "Ir ao mercado" }));
   expect(await screen.findByText("Mercado aberto")).toBeTruthy();
 });
+
+test("the board and the fans show as meters from 0 to 100", async () => {
+  openFinances(await startGame());
+  const board = await screen.findByRole("meter", { name: "Diretoria" });
+  expect(board.getAttribute("aria-valuenow")).toBe("50");
+  expect(screen.getByRole("meter", { name: "Torcida" }).getAttribute("aria-valuenow")).toMatch(/^\d+$/);
+});
+
+test("a bank loan taken on the screen puts its money in the cash and shows what is left to pay", async () => {
+  const engine = await startGame();
+  openFinances(engine);
+  const bank = await screen.findByRole("region", { name: "Empréstimo do banco" });
+  await userEvent.click(within(bank).getByRole("button", { name: "Ver condições" }));
+  await userEvent.click(within(bank).getByRole("radio", { name: "24x" }));
+  await userEvent.click(within(bank).getByRole("button", { name: "Pegar empréstimo" }));
+  expect(await within(bank).findByText(/^24 parcelas de R\$/)).toBeTruthy();
+  const { finances } = await engine.read(["finances"]);
+  const loan = finances["sport-pe"]?.bankLoan;
+  if (!loan) throw new Error("no loan taken");
+  expect(within(bank).getByText(formatMoney(loan.balance))).toBeTruthy();
+  expect(within(bank).getByRole("button", { name: "Quitar" })).toBeTruthy();
+});
+
+test("a friendly booked on the screen is listed with its date and fee", async () => {
+  openFinances(await startGame());
+  const friendlies = await screen.findByRole("region", { name: "Amistosos" });
+  await userEvent.click(within(friendlies).getByRole("button", { name: "Marcar amistoso" }));
+  await userEvent.selectOptions(within(friendlies).getByRole("combobox", { name: "Adversário" }), "nautico-pe");
+  await userEvent.click(within(friendlies).getByRole("button", { name: "Marcar" }));
+  const booked = await within(friendlies).findByRole("list", { name: "Amistosos marcados" });
+  expect(within(booked).getByText(/Náutico/)).toBeTruthy();
+  expect(within(booked).getByText(/R\$/)).toBeTruthy();
+});

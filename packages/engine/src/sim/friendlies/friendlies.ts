@@ -45,8 +45,8 @@ const REST_DAYS = 1;
 const BOOKING_DAYS = 60;
 // guess: a club with ten times the fans won't travel to the smaller ground (Brasfoot: a top club only visits a top club).
 const TRAVEL_FANBASE_RATIO = 10;
-// guess: the coach's inbox gets at most two invitations at a time.
-const OFFERS_SHOWN = 2;
+// guess: one invitation at a time, for the next free date a club wants the coach's club.
+const OFFERS_SHOWN = 1;
 // Friendlies draw from streams of their own, so the day's official results stay as they were.
 const FRIENDLY_STREAM_SALT = 0xf21e7d;
 // The screen shows the last few friendlies played.

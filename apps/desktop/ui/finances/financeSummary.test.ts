@@ -56,6 +56,12 @@ describe("the board's numbers", () => {
     });
   });
 
+  test("the debt adds the old debt, the overdraft, the bank loan still owed and wages owed", () => {
+    const bankLoan = { amount: 10_000_000, balance: 6_000_000, monthlyRate: 0.014, instalment: 480_000, instalmentsLeft: 13, takenOn: "2026-01-02" };
+    const debt = boardSummary(withFinance({ legacyDebt: 50_000_000, loans: 2_000_000, wagesOwed: 300_000, bankLoan }))?.debt;
+    expect(debt).toBe(58_300_000);
+  });
+
   test("late wages show what is owed and for how many months", () => {
     expect(boardSummary(withFinance({ wagesOwed: 900_000, lateWageMonths: 2 }))?.lateWages).toEqual({ owed: 900_000, months: 2 });
   });
