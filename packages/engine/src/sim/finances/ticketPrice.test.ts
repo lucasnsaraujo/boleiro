@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { advanceDay } from "../advanceDay.js";
 import type { GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { loadGame, saveGame } from "../saveGame.js";
 import { attendance } from "./recordMatchFinances.js";
 import { assistantTicketPrice, setTicketPrice, ticketPriceBounds } from "./setTicketPrice.js";
 
@@ -54,6 +55,15 @@ describe("the coach's ticket price", () => {
     expect(() => setTicketPrice(eve, max + 1)).toThrow();
     expect(() => setTicketPrice(eve, min + 0.5)).toThrow();
     expect(setTicketPrice(eve, max).finances[CLUB]?.ticketPrice).toBe(max);
+  });
+
+  it("plays on from a save written before ticket prices and gates were kept", () => {
+    const played = advanceDay(eve, {}).state;
+    const old = JSON.parse(saveGame(played), (key, value: unknown) => (key === "homeGates" || key === "stadiumWorks" ? undefined : value));
+    const loaded = loadGame(JSON.stringify(old));
+    expect(loaded.finances[CLUB]?.homeGates).toBeUndefined();
+    const next = homeGameEve(advanceDay(loaded, {}).state);
+    expect(advanceDay(next, {}).state.finances[CLUB]?.homeGates).toHaveLength(1);
   });
 
   it("needs a club", () => {
