@@ -1,16 +1,16 @@
 import { addDays } from "../dates.js";
 import type { GameState, IsoDate } from "../gameState.js";
 import type { CoachMarket } from "./transferMarket.js";
-import { windowClosesOn } from "./transferWindows.js";
+import { windowClosesOn, type CoachWindows } from "./transferWindows.js";
 
 const EMPTY: CoachMarket = { listings: {}, auctions: {}, bids: {}, counters: {} };
 // guess: a club waits two days for an answer (the approved mock: an offer on Sunday, answer by Tuesday).
 const DAYS_TO_ANSWER = 2;
 
 /** The last day the coach can answer an offer made on `date`: two days on, and never past the window. */
-export function answerBy(date: IsoDate): IsoDate {
+export function answerBy(rules: CoachWindows, date: IsoDate): IsoDate {
   const last = addDays(date, DAYS_TO_ANSWER);
-  const closes = windowClosesOn(date);
+  const closes = windowClosesOn(rules, date);
   return closes && closes < last ? closes : last;
 }
 

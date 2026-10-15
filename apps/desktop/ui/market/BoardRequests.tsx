@@ -7,7 +7,7 @@ import "./boardRequests.css";
 
 type Props = {
   desk: BoardDesk;
-  state: Pick<GameState, "date" | "coachClubId" | "players" | "market">;
+  state: Pick<GameState, "date" | "coachClubId" | "players" | "market" | "hasMidSeasonWindow" | "coach">;
   onWithdraw: (playerId: string) => void;
   /** How many answers to show, newest first, under the pending requests. */
   answers: number;

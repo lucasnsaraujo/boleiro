@@ -179,4 +179,16 @@ describe("the transfer window", () => {
     expect(windowStatus("2026-05-01")).toEqual({ isOpen: false, date: "2026-07-20" });
     expect(windowStatus("2026-10-01")).toEqual({ isOpen: false, date: "2027-01-05" });
   });
+
+  test("a game without the mid-season window opens next in January", () => {
+    const rules = { hasMidSeasonWindow: false as const, coach: {} };
+    expect(windowStatus("2026-05-01", rules)).toEqual({ isOpen: false, date: "2027-01-05" });
+    expect(windowStatus("2026-08-10", rules)).toEqual({ isOpen: false, date: "2027-01-05" });
+  });
+
+  test("a coach's own window is open until its last day, and says it is his", () => {
+    const rules = { hasMidSeasonWindow: false as const, coach: { personalWindowUntil: "2026-05-19" } };
+    expect(windowStatus("2026-05-12", rules)).toEqual({ isOpen: true, date: "2026-05-19", isOwn: true });
+    expect(windowStatus("2026-05-20", rules)).toEqual({ isOpen: false, date: "2027-01-05" });
+  });
 });

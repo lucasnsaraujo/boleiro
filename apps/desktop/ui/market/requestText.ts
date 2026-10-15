@@ -19,10 +19,10 @@ const NOUNS: Record<CoachRequest["kind"], { noun: string; feminine: boolean }> =
 export const requestTitle = (request: CoachRequest, name: string): string => `${NOUNS[request.kind].noun} de ${name}`;
 
 /** When the board will answer a request on its desk. */
-export function pendingText(state: Pick<GameState, "date" | "coachClubId" | "players" | "market">, request: CoachRequest): string {
+export function pendingText(state: Pick<GameState, "date" | "coachClubId" | "players" | "market" | "hasMidSeasonWindow" | "coach">, request: CoachRequest): string {
   if (dueRequests(state, [request]).due.length) return "A diretoria responde amanhã.";
   // Tomorrow is outside the window, so the window that matters is the next one after tomorrow.
-  return `Fica na mesa até a janela abrir, em ${formatDayMonth(windowStatus(addDays(state.date, 1)).date)}.`;
+  return `Fica na mesa até a janela abrir, em ${formatDayMonth(windowStatus(addDays(state.date, 1), state).date)}.`;
 }
 
 /** "Contratação de Zé: recusada, sem verba" */

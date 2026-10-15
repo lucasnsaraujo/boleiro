@@ -95,7 +95,7 @@ export function sellProspect(state: GameState, prospectId: string): { state: Gam
   const prospect = coachProspect(state, prospectId);
   const academies = state.youth;
   if (!prospect || !academies) return { state, refusal: "notYours" };
-  if (!isWindowOpen(state.date)) return { state, refusal: "windowClosed" };
+  if (!isWindowOpen(state, state.date)) return { state, refusal: "windowClosed" };
   const buyer = buyerOf(state, prospect);
   if (!buyer) return { state, refusal: "noBuyer" };
   const sold = withYouthStream(state, (random) => {
