@@ -215,7 +215,8 @@ class Scraper:
         html = self.competition(competition.id, None, competition.path, "continental", None, None)
         if html is None:
             return
-        for seq, ref in enumerate(tm_pages.participants(html)):
+        entrants = [ref for ref in tm_pages.participants(html) if ref.tm_id not in competition.withdrawn]
+        for seq, ref in enumerate(entrants):
             club_id = self.club_ids.get(ref.tm_id) or (self.club(ref, None, None) if take_guests else None)
             if club_id is None:
                 self.run.warnings.append(f"{competition.id}: {ref.name} ({ref.tm_id}) plays outside the scraped world")

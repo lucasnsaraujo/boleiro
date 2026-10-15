@@ -34,6 +34,7 @@ class Country:
 class Competition:
     id: str
     path: str
+    withdrawn: tuple[str, ...] = ()    # Transfermarkt ids its page still lists but that don't play in it
 
 
 def top(code: str) -> tuple[League, ...]:
@@ -96,8 +97,10 @@ DRAWS = (
     Competition("uefa-champions-league", "/x/teilnehmer/pokalwettbewerb/CL/saison_id/2026"),
     Competition("uefa-europa-league", "/x/teilnehmer/pokalwettbewerb/EL/saison_id/2026"),
 )
-# Its clubs from outside the world above get squads and no league.
-CLUB_WORLD_CUP = Competition("fifa-club-world-cup", "/x/teilnehmer/pokalwettbewerb/KLUB/saison_id/2024")
+# Its clubs from outside the world above get squads and no league. The page lists 33 clubs: FIFA
+# excluded León, and Club América (3631) lost the play-off for its place to LAFC, 2-1 after extra
+# time in Los Angeles on 31 May 2025 (Wikipedia, "2025 FIFA Club World Cup", Qualified teams).
+CLUB_WORLD_CUP = Competition("fifa-club-world-cup", "/x/teilnehmer/pokalwettbewerb/KLUB/saison_id/2024", withdrawn=("3631",))
 # National teams: the 2026 World Cup and both qualifying groups the game's countries come from.
 NATIONAL_TEAM_LISTS = (
     "/x/teilnehmer/pokalwettbewerb/FIWC/saison_id/2025",

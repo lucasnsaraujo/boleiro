@@ -6,7 +6,11 @@ import unittest
 from pathlib import Path
 
 import tm_fetch
-from tests.world_fixture import QUALIFIERS, Offline, saved_cache, scrape_tiny_world
+import tm_pages
+import tm_world
+from scrape_world import scrape_world
+from tests.fixtures import fixture
+from tests.world_fixture import ENGLAND,  QUALIFIERS, Offline, saved_cache, scrape_tiny_world
 
 
 class ScrapeWorldTest(unittest.TestCase):
@@ -135,6 +139,20 @@ class ScrapeWorldTest(unittest.TestCase):
         run = scrape_tiny_world(sqlite3.connect(":memory:"), self.cache, Offline())
         self.assertIn(f"no teams on {QUALIFIERS}", run.failures)
         self.assertFalse(listing.exists())
+
+    def test_leaves_out_a_club_its_competition_records_as_withdrawn(self) -> None:
+        cup = tm_world.Competition("cup", "/x/startseite/wettbewerb/GB1", withdrawn=("11",))
+        db = sqlite3.connect(":memory:")
+        fetcher = tm_fetch.Fetcher(self.cache, log=lambda _: None, get=Offline().get, sleep=lambda _: None)
+        scrape_world(db, fetcher, [ENGLAND], club_world_cup=cup, log=lambda _: None)
+        self.assertEqual(db.execute("SELECT club_id FROM competition_clubs WHERE competition_id = 'cup'").fetchall(), [("tm-31",)])
+
+    def test_the_club_world_cup_has_thirty_two_clubs(self) -> None:
+        refs = tm_pages.participants(fixture("participants-club-world-cup-2025"))
+        kept = [ref for ref in refs if ref.tm_id not in tm_world.CLUB_WORLD_CUP.withdrawn]
+        self.assertEqual(len(kept), 32)
+        self.assertIn("Los Angeles FC", [ref.name for ref in kept])
+        self.assertNotIn("CF América", [ref.name for ref in kept])
 
     def test_keeps_two_national_teams_with_the_same_name_apart(self) -> None:
         brazil = (self.cache / tm_fetch.cache_name("/brasilien/kader/verein/3439/plus/1")).read_text()
