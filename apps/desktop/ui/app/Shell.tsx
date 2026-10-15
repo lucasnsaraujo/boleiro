@@ -17,6 +17,7 @@ import { screenDirection } from "./screenDirection.js";
 import { NAV, navIndexOf, showsBar, type NavId } from "./screens.js";
 import { useServices } from "./ServicesContext.js";
 import { commandForKey, MATCH_COMMAND_IDS } from "./shortcuts.js";
+import { useAskBeforeDiscarding } from "./useAskBeforeDiscarding.js";
 import { isTyping } from "./useTypedWord.js";
 import "./shell.css";
 
@@ -43,6 +44,7 @@ export function Shell() {
   const { changeSetting } = useTheme();
   const runCommand = useRunCommand();
   const isCommandAnswered = useIsCommandAnswered();
+  const { askBeforeDiscarding, question } = useAskBeforeDiscarding();
   useEffect(() => sound.playMusic(musicFor(pathname)), [sound, pathname]);
   const hasBar = showsBar(pathname, game.current !== null);
 
@@ -120,7 +122,7 @@ export function Shell() {
   useCommands({
     ...Object.fromEntries(NAV.map(({ id, path }) => [id, path !== null && (hasBar || (id === "opcoes" && isLeavable)) && (() => navigate(path))])),
     inicio: isLeavable && (() => navigate("/")),
-    novoJogo: isLeavable && (() => navigate("/new-game")),
+    novoJogo: isLeavable && (() => askBeforeDiscarding(() => navigate("/new-game"))),
     salvar: hasBar && (() => void save()),
     mudo: () => changeSettings({ ...settings, isMuted: !settings.isMuted }),
     temaClaro: () => changeSetting("light"),
@@ -188,6 +190,7 @@ export function Shell() {
           <Outlet />
         </main>
         {chrome === "windows" && <CaptionButtons />}
+        {question}
         {toast && (
           <p key={toast.id} className={toast.isError ? "toast stk error" : "toast stk"} role="status">
             <i className={toast.isError ? "ph-bold ph-warning" : "ph-bold ph-floppy-disk"} aria-hidden="true" />

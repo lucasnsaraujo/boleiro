@@ -9,6 +9,7 @@ import icon from "../../../../design/logo/boleiro-icon-16.svg";
 import tauriConfig from "../../src-tauri/tauri.conf.json?raw";
 import { platformOf } from "../app/platform.js";
 import { useServices } from "../app/ServicesContext.js";
+import { useAskBeforeDiscarding } from "../app/useAskBeforeDiscarding.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { CLUBS, clubById } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
@@ -65,6 +66,7 @@ export function StartMenu() {
   const [opening, setOpening] = useState<string | null>(null);
   const [openFailed, setOpenFailed] = useState(false);
   const [isLoading, setLoading] = useState(false);
+  const { askBeforeDiscarding, question } = useAskBeforeDiscarding();
   const now = new Date();
 
   async function refresh() {
@@ -88,7 +90,7 @@ export function StartMenu() {
     };
   }, [slots]);
 
-  async function open(meta: SlotMeta) {
+  async function load(meta: SlotMeta) {
     setOpening(meta.id);
     setOpenFailed(false);
     try {
@@ -100,6 +102,8 @@ export function StartMenu() {
       setOpening(null);
     }
   }
+
+  const open = (meta: SlotMeta) => askBeforeDiscarding(() => void load(meta));
 
   const list = saved.kind === "ready" ? saved.slots : [];
   const latest = list[0] ?? null;
@@ -151,7 +155,7 @@ export function StartMenu() {
                     </span>
                   </p>
                 </div>
-                <button className="btn go lobby-go" onClick={() => void open(latest)} disabled={opening !== null}>
+                <button className="btn go lobby-go" onClick={() => open(latest)} disabled={opening !== null}>
                   <i className="ph-fill ph-play" aria-hidden="true" />
                   {opening === latest.id ? "Abrindo…" : "Continuar"}
                 </button>
@@ -169,7 +173,7 @@ export function StartMenu() {
                   const club = clubOf(meta);
                   return (
                     <li key={meta.id}>
-                      <button className="lobby-row" onClick={() => void open(meta)} disabled={opening !== null}>
+                      <button className="lobby-row" onClick={() => open(meta)} disabled={opening !== null}>
                         <span className="lobby-row-crest">{club && <Crest club={club} size={28} />}</span>
                         <span>
                           <b>{club?.shortName ?? "Sem clube"}</b> <span className="mute">· {meta.coachName}</span>
@@ -194,7 +198,15 @@ export function StartMenu() {
           )}
           {openFailed && <p className="status error">Esse jogo salvo não abriu.</p>}
 
-          <Link to="/new-game" className={latest ? "slot lobby-fresh" : "slot lobby-fresh is-first"} aria-labelledby="fresh-title">
+          <Link
+            to="/new-game"
+            className={latest ? "slot lobby-fresh" : "slot lobby-fresh is-first"}
+            aria-labelledby="fresh-title"
+            onClick={(event) => {
+              event.preventDefault();
+              askBeforeDiscarding(() => navigate("/new-game"));
+            }}
+          >
             <span className="lobby-plus" aria-hidden="true">
               <i className="ph-bold ph-plus" />
             </span>
@@ -225,7 +237,8 @@ export function StartMenu() {
           </footer>
         </div>
       </div>
-      {isLoading && <SavedGames list={list} opening={opening} onOpen={(meta) => void open(meta)} onChanged={() => void refresh()} onClose={() => setLoading(false)} />}
+      {isLoading && <SavedGames list={list} opening={opening} onOpen={open} onChanged={() => void refresh()} onClose={() => setLoading(false)} />}
+      {question}
     </div>
   );
 }

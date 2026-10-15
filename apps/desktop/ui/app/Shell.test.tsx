@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { IDBFactory } from "fake-indexeddb";
-import { createMemoryRouter, RouterProvider } from "react-router";
+import { createMemoryRouter, RouterProvider, type RouteObject } from "react-router";
 import { afterEach, expect, test } from "vitest";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
@@ -9,7 +9,7 @@ import { unlockedFakeSound } from "../sound/fakeAudioContext.js";
 import { SoundProvider } from "../sound/SoundProvider.js";
 import { Options } from "../screens/Options.js";
 import { ServicesContext, type Services } from "./ServicesContext.js";
-import { useCommands } from "./AppCommands.js";
+import { useCommands, useRunCommand } from "./AppCommands.js";
 import { Shell } from "./Shell.js";
 
 const closers: (() => void)[] = [];
@@ -196,4 +196,40 @@ test("holding Space on a clicked button keeps the key repeats from pressing it o
   expect(fireEvent.keyDown(button, { key: " " })).toBe(false);
   expect(fireEvent.keyDown(button, { key: " ", repeat: true })).toBe(false);
   expect(pauses()).toBe(1);
+});
+
+function openShellWith(given: Services, screens: RouteObject[], at: string) {
+  const router = createMemoryRouter([{ element: <Shell />, children: screens }], { initialEntries: [at] });
+  render(
+    <ServicesContext value={given}>
+      <SoundProvider engine={unlockedFakeSound().engine} store={localStorage}>
+        <RouterProvider router={router} />
+      </SoundProvider>
+    </ServicesContext>,
+  );
+  return router;
+}
+
+/** Jogo › Novo jogo in the native menu, which Command-N also runs. */
+function MenuNewGame() {
+  const run = useRunCommand();
+  return <button onClick={() => run("novoJogo")}>Jogo › Novo jogo</button>;
+}
+
+test("Novo jogo over a game with unsaved play asks first, and goes on once the coach drops it", async () => {
+  const given = await services();
+  given.game.current = { slotId: "slot-2", coachName: "Tite", hasUnsavedPlay: true };
+  const router = openShellWith(given, [{ path: "/hub", element: <MenuNewGame /> }, { path: "/new-game", element: <h1>tela /new-game</h1> }], "/hub");
+  await userEvent.click(screen.getByRole("button", { name: "Jogo › Novo jogo" }));
+  const question = screen.getByRole("alertdialog", { name: "Salvar o jogo aberto?" });
+  expect(router.state.location.pathname).toBe("/hub");
+  await userEvent.click(within(question).getByRole("button", { name: "Descartar" }));
+  expect(router.state.location.pathname).toBe("/new-game");
+});
+
+test("Novo jogo over a game the autosave holds whole goes straight on", async () => {
+  const router = openShellWith(await services(), [{ path: "/hub", element: <MenuNewGame /> }, { path: "/new-game", element: <h1>tela /new-game</h1> }], "/hub");
+  await userEvent.click(screen.getByRole("button", { name: "Jogo › Novo jogo" }));
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(router.state.location.pathname).toBe("/new-game");
 });
