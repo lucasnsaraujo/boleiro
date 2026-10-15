@@ -256,6 +256,8 @@ function playAcademy() {
   const recorded = recordedSession();
   const { session, apply } = recorded;
   apply({ type: "newGame", seed: SEED, choices: { coachClubId: CLUB } });
+  // Into the January window, where a kid can be sold.
+  apply({ type: "advance", days: Array.from({ length: 4 }, () => ({})) });
   const { youth } = session.read(["youth"]);
   const kids = Object.values(youth?.prospects ?? {});
   const [promoted, released, sold] = kids.filter((p) => p.clubId === CLUB).sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
@@ -267,7 +269,7 @@ function playAcademy() {
     sold: apply({ type: "sellProspect", prospectId: sold.id }),
     otherClubs: apply({ type: "promoteProspect", prospectId: otherClubs.id }),
   };
-  const days = apply({ type: "advance", days: Array.from({ length: 26 }, () => ({})) });
+  const days = apply({ type: "advance", days: Array.from({ length: 22 }, () => ({})) });
   return { recorded, ids: { promoted: promoted.id, released: released.id, sold: sold.id }, answers, copinha: days.events.find((event) => event.type === "copinhaPlayed") };
 }
 

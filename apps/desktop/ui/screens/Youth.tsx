@@ -13,7 +13,9 @@ const REFUSALS: Record<NonNullable<ProspectAnswer["refusal"]>, string> = {
   notYours: "ele não é mais da sua base",
   squadFull: "o elenco já está no limite de inscritos",
   noBuyer: "nenhum clube quis pagar o que ele vale",
+  windowClosed: "a janela de transferências está fechada",
 };
+const WINDOW_CLOSED = "Venda só com a janela de transferências aberta";
 const UNDER_17 = 17;
 
 type Move = "promote" | "sell" | "release";
@@ -90,7 +92,7 @@ function KidsTable({ kids, selectedId, onSelect }: { kids: readonly KidRow[]; se
                     Faz 21 na virada
                   </span>
                 ) : kid.isNew ? (
-                  <span className="yth-tg">Veio da peneira de {kid.joinedSeason - 1}</span>
+                  <span className="yth-tg">Novo na base</span>
                 ) : null}
               </td>
             </tr>
@@ -171,7 +173,7 @@ function KidCard({ view, kid, isBusy, onMove }: CardProps) {
             Promover ao profissional
           </button>
           <div className="yth-row">
-            <button type="button" className="btn sm" disabled={isBusy} onClick={() => onMove("sell", kid)}>
+            <button type="button" className="btn sm" disabled={isBusy || !view.isWindowOpen} title={view.isWindowOpen ? undefined : WINDOW_CLOSED} onClick={() => onMove("sell", kid)}>
               Vender
             </button>
             {isConfirmingRelease ? (
@@ -225,7 +227,7 @@ export function Youth() {
   }
 
   const shown = view.kids.filter((kid) => isInAgeGroup(kid, filter));
-  const selectedId = pickedId !== null && view.kids.some((kid) => kid.id === pickedId) ? pickedId : (shown[0]?.id ?? null);
+  const selectedId = pickedId !== null && shown.some((kid) => kid.id === pickedId) ? pickedId : (shown[0]?.id ?? null);
   const selected = selectedId === null ? null : view.detailOf(selectedId);
   const leaving = view.kids.filter((kid) => kid.isLeaving);
   const decision = leaving[0] ? view.detailOf(leaving[0].id) : null;
@@ -267,10 +269,18 @@ export function Youth() {
               <button type="button" className="btn sm" disabled={isBusy || view.squadSize >= view.squadCap} onClick={() => void move("promote", decision)}>
                 Promover
               </button>
-              <button type="button" className="btn sm" disabled={isBusy} onClick={() => void move("sell", decision)}>
+              <button type="button" className="btn sm" disabled={isBusy || !view.isWindowOpen} title={view.isWindowOpen ? undefined : WINDOW_CLOSED} onClick={() => void move("sell", decision)}>
                 Vender
               </button>
-              <button type="button" className="btn sm flat" disabled={isBusy} onClick={() => setPickedId(decision.id)}>
+              <button
+                type="button"
+                className="btn sm flat"
+                disabled={isBusy}
+                onClick={() => {
+                  setFilter("all");
+                  setPickedId(decision.id);
+                }}
+              >
                 Ver garoto
               </button>
             </div>

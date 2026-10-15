@@ -116,6 +116,8 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         return isOurs(event.clubId) ? [`${playerName(event.playerId)} sobe da base`, "neutral"] : null;
       case "prospectReleased":
         return isOurs(event.clubId) ? [`${event.name} fez 21 anos e deixou a base, dispensado`, "neutral"] : null;
+      case "squadToppedUp":
+        return isOurs(event.clubId) ? [`Elenco completado com ${plural(event.playerIds.length, "garoto da base", "garotos da base")}`, "neutral"] : null;
       case "youthTrialsHeld":
         return isOurs(event.clubId) ? [`Peneira: ${plural(event.prospectIds.length, "garoto novo", "garotos novos")} na base`, "neutral"] : null;
       case "copinhaPlayed": {

@@ -3,6 +3,7 @@ import type { PositionGroup } from "@boleiro/engine/engine/match";
 import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { NO_SQUAD_WAGE } from "@boleiro/engine/sim/players/developPlayers";
 import { SQUAD_CAP } from "@boleiro/engine/sim/transfers/squadCap";
+import { isWindowOpen } from "@boleiro/engine/sim/transfers/transferWindows";
 import { wageRateOf } from "@boleiro/engine/sim/transfers/wageDemand";
 import { academySquad, LEAVING_AGE, scoutedStars, type Copinha } from "@boleiro/engine/sim/youth/academy";
 import { copinhaDate, copinhaRun } from "@boleiro/engine/sim/youth/copinha";
@@ -26,7 +27,7 @@ export type KidRow = {
   strength: number;
   stars: { low: number; high: number };
   hometown: string;
-  /** Joined at the last trials. */
+  /** Joined the academy this season. */
   isNew: boolean;
   /** Turns 21 at the season's turn: he must go up, out or be sold before then. */
   isLeaving: boolean;
@@ -49,6 +50,8 @@ export type YouthView = {
   squadSize: number;
   squadCap: number;
   copinha: CopinhaNote;
+  /** A kid can be sold only inside a transfer window. */
+  isWindowOpen: boolean;
   detailOf: (id: string) => KidDetail | null;
 };
 
@@ -96,6 +99,7 @@ export function youthView(state: YouthState): YouthView | null {
     squadSize: squad.length,
     squadCap: SQUAD_CAP,
     copinha: copinhaNote(state.youth?.copinha, state, club.id),
+    isWindowOpen: isWindowOpen(state.date),
     detailOf(id) {
       const prospect = state.youth?.prospects[id];
       if (!prospect || prospect.clubId !== club.id) return null;

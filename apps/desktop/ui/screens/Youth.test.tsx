@@ -95,8 +95,28 @@ test("releasing asks for a second click, then the kid leaves the academy", async
   expect((await academyOf(engine)).some((p) => p.name === name)).toBe(false);
 });
 
-test("selling the picked kid names the buyer and the fee", async () => {
+test("a kid can be sold only inside a transfer window", async () => {
   openYouth(await startGame());
+  const card = await screen.findByRole("complementary", { name: /^Garoto: / });
+  expect(within(card).getByRole("button", { name: "Vender" }).hasAttribute("disabled")).toBe(true);
+});
+
+test("an age tab that hides the picked kid moves the card to its own best kid", async () => {
+  const engine = await startGame();
+  const kids = await academyOf(engine);
+  const bestYoung = kids.filter((p) => p.age <= 17).sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id))[0];
+  if (!bestYoung) throw new Error("the academy has a Sub-17 kid");
+  openYouth(engine);
+  const user = userEvent.setup();
+  await screen.findByRole("complementary", { name: /^Garoto: / });
+  await user.click(screen.getByRole("tab", { name: "Sub-17" }));
+  expect(screen.getByRole("complementary", { name: `Garoto: ${bestYoung.name}` })).toBeTruthy();
+});
+
+test("selling the picked kid in the window names the buyer and the fee", async () => {
+  const engine = await startGame();
+  await engine.apply({ type: "advance", days: Array.from({ length: 4 }, () => ({})) });
+  openYouth(engine);
   const user = userEvent.setup();
   const card = await screen.findByRole("complementary", { name: /^Garoto: / });
   await user.click(within(card).getByRole("button", { name: "Vender" }));
