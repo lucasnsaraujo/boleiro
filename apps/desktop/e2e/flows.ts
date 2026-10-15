@@ -91,6 +91,15 @@ async function pauseClock(page: Page) {
   }
 }
 
+/** Closes the window a red card or an injury of the coach's side opens, leaving his side as it is; whether there was one. */
+export async function leaveIncident(page: Page): Promise<boolean> {
+  const incident = page.getByRole("dialog", { name: /^(Expulso|Machucou):/ });
+  if (!(await incident.isVisible())) return false;
+  await incident.getByRole("button", { name: "Deixar como está" }).click();
+  await expect(incident).toBeHidden();
+  return true;
+}
+
 /**
  * Plays the live round at 4x until the result is in, stepping the paused page clock one match
  * minute at a time instead of waiting for it. Returns how many times the round stopped by itself
@@ -116,7 +125,7 @@ export async function playLiveRound(page: Page): Promise<number> {
       .toBe(true);
     if (await paused.isVisible()) {
       stops++;
-      await fourX.click();
+      if (!(await leaveIncident(page))) await fourX.click();
     }
   }
   await page.clock.resume();

@@ -19,20 +19,22 @@ import { payTitleBonuses } from "../finances/payTitleBonuses.js";
 import { recordMatchFinances } from "../finances/recordMatchFinances.js";
 import { dropCoachFriendlies, playFriendlies } from "../friendlies/friendlies.js";
 import { releaseTicketPrice } from "../finances/setTicketPrice.js";
-import type { Fixture, GameState } from "../gameState.js";
+import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import { closeSeasonHistory } from "../history/closeSeasonHistory.js";
 import { recordStrengths } from "../history/recordStrengths.js";
 import { recordDayEvents } from "../history/recordDayEvents.js";
 import { recordMatches } from "../history/recordMatches.js";
+import { clubMood } from "../morale/clubMood.js";
 import { reactToDay } from "../morale/reactToDay.js";
 import { openNextStage } from "../openNextStage.js";
 import { developPlayers } from "../players/developPlayers.js";
-import { settleShootout } from "../settleShootout.js";
+import { isShootoutDue, settleShootout, shootoutSeed, shootoutWinnerOf } from "../settleShootout.js";
 import { runTransferDay } from "../transfers/runTransferDay.js";
 import { endWorldSeason, playWorldDay } from "../world/resultOnlyWorld.js";
 import { coachOutcome } from "./coachOutcome.js";
 import type { CoachMatch, DayInProgress, LiveDay, MatchOutcome } from "./liveDay.js";
-import { FULL_TIME, type MatchEvent } from "./matchTimeline.js";
+import { onPitchAt, whoPlayed } from "./aiSubstitutions.js";
+import { FULL_TIME, scorersFor, type MatchEvent } from "./matchTimeline.js";
 
 function fixturesByCompetition(fixtures: readonly Fixture[]): Map<string, Fixture[]> {
   const byCompetition = new Map<string, Fixture[]>();
@@ -45,22 +47,24 @@ function fixturesByCompetition(fixtures: readonly Fixture[]): Map<string, Fixtur
 }
 
 /** Who played for each side and for how long, from the starters and the substitutions. */
-function playedBy(coachMatch: CoachMatch, events: readonly MatchEvent[], homeId: string) {
-  const byId = new Map([...coachMatch.starters.home, ...coachMatch.starters.away, ...coachMatch.bench].map((p) => [p.id, p]));
-  const minutes = new Map<string, number>();
-  const cameOn = new Map<string, number>();
-  const home = [...coachMatch.starters.home];
-  const away = [...coachMatch.starters.away];
-  for (const event of events) {
-    if (event.type !== "substitution") continue;
-    const on = byId.get(event.playerId);
-    if (!on) continue;
-    (event.clubId === homeId ? home : away).push(on);
-    minutes.set(event.offId, event.minute - (cameOn.get(event.offId) ?? 0));
-    cameOn.set(on.id, event.minute);
-    minutes.set(on.id, FULL_TIME - event.minute);
-  }
-  return { home, away, minutes };
+function playedBy(coachMatch: CoachMatch, events: readonly MatchEvent[], homeId: string, awayId: string) {
+  const benches = [...coachMatch.bench, ...(coachMatch.opponentBench ?? [])];
+  const home = whoPlayed(coachMatch.starters.home, benches, events, homeId);
+  const away = whoPlayed(coachMatch.starters.away, benches, events, awayId);
+  return { home: home.players, away: away.players, minutes: new Map([...home.minutes, ...away.minutes]) };
+}
+
+/**
+ * The winner of a shootout that is due but missing from the timeline: a live day saved before
+ * shootouts were kicked on it. Played from the coach's match stream, as that build settled it.
+ */
+function shootoutOfOldSave(state: GameState, coachMatch: CoachMatch, played: Fixture, events: readonly MatchEvent[], random: () => number): string | undefined {
+  if (!isShootoutDue(state, played)) return undefined;
+  const benches = [...coachMatch.bench, ...(coachMatch.opponentBench ?? [])];
+  const side = (clubId: string, starters: readonly SimPlayer[]) => ({ clubId, onPitch: onPitchAt(starters, benches, events, clubId, FULL_TIME + 1), morale: clubMood(state, clubId).squad });
+  const strength = (p: SimPlayer) => coachMatch.strengths[p.id] ?? p.strength;
+  const settled = settleShootout(played, shootoutSeed(random), side(played.homeId, coachMatch.starters.home), side(played.awayId, coachMatch.starters.away), strength);
+  return settled.fixture.result?.penaltyWinnerId;
 }
 
 /** The coach's match as its timeline ended after his changes, recorded on its own stream. */
@@ -72,10 +76,11 @@ function redrawnOutcome(state: GameState, coachMatch: CoachMatch, events: readon
   const goals = (clubId: string) => events.flatMap((e) => (e.type === "goal" && e.clubId === clubId ? [e.playerId] : []));
   const bookings: Booking[] = events.flatMap((e) => (e.type === "card" ? [{ playerId: e.playerId, clubId: e.clubId, card: e.card, minute: e.minute }] : []));
   const score = { homeGoals: goals(fixture.homeId).length, awayGoals: goals(fixture.awayId).length, cards: countCards(bookings, fixture.homeId) };
-  const played = settleShootout(state, { ...fixture, result: score }, random.next);
-  const { home, away, minutes } = playedBy(coachMatch, events, fixture.homeId);
+  const penaltyWinnerId = shootoutWinnerOf(events, fixture.homeId, fixture.awayId) ?? shootoutOfOldSave(state, coachMatch, { ...fixture, result: score }, events, random.next);
+  const played = { ...fixture, result: penaltyWinnerId ? { ...score, penaltyWinnerId } : score };
+  const { home, away, minutes } = playedBy(coachMatch, events, fixture.homeId, fixture.awayId);
   const injuries = new Map(events.flatMap((e) => (e.type === "injury" ? [[e.playerId, e.days] as const] : [])));
-  const scorers = { home: goals(fixture.homeId), away: goals(fixture.awayId) };
+  const scorers = { home: scorersFor(events, fixture.homeId), away: scorersFor(events, fixture.awayId) };
   const match = { played, context: coachMatch.context, awayTravelKm: coachMatch.awayTravelKm, lineups: { home, away }, minutes, bookings, injuries, scorers };
   return coachOutcome(state, competition, match, random.next);
 }

@@ -5,10 +5,14 @@ import { aiPosture, DEFAULT_TACTICS, type Tactics } from "../coach/tactics.js";
 import { drawCardsAfter } from "../discipline/drawCards.js";
 import type { SimPlayer } from "../gameState.js";
 import { scorersOf } from "../history/scorersOf.js";
+import { clubMood } from "../morale/clubMood.js";
 import { injuryLayoffDays, matchInjuryChance } from "../players/matchInjuryChance.js";
 import { engineTeam } from "../players/matchSetup.js";
+import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
+import { aiSubstitutions, MAX_SUBSTITUTION_WINDOWS, MAX_SUBSTITUTIONS, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
+import { describeGoals, drawPenaltyMisses, type GoalEvent, type GoalSide } from "./goalDetails.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
-import { FULL_TIME, HALF_TIME, goalMinuteWeights, inMatchOrder, sentOffMinute, type MatchEvent } from "./matchTimeline.js";
+import { drawMinute, FULL_TIME, HALF_TIME, goalMinuteWeights, inMatchOrder, sentOffMinute, type MatchEvent } from "./matchTimeline.js";
 
 export type Substitution = { offId: string; onId: string };
 
@@ -20,16 +24,13 @@ export type LiveChange = {
   penaltyTakerId?: string | null;
 };
 
-// IFAB Laws of the Game 2025/26, Law 3.1: up to five substitutes, used in at most three
-// opportunities during the match; substitutions at half-time do not use one.
-const MAX_SUBSTITUTIONS = 5;
-const MAX_SUBSTITUTION_WINDOWS = 3;
-
 type Side = "home" | "away";
+
+const benchOf = (coachMatch: CoachMatch, side: Side, coachSide: Side) => (side === coachSide ? coachMatch.bench : (coachMatch.opponentBench ?? []));
 
 /** Who is on the pitch for each side right after `minute`: the starters, swapped by substitutions, less anyone sent off. */
 function onPitch(coachMatch: CoachMatch, events: readonly MatchEvent[], side: Side, clubId: string): SimPlayer[] {
-  const byId = new Map([...coachMatch.starters[side], ...coachMatch.bench].map((p) => [p.id, p]));
+  const byId = new Map([...coachMatch.starters[side], ...coachMatch.bench, ...(coachMatch.opponentBench ?? [])].map((p) => [p.id, p]));
   let players = [...coachMatch.starters[side]];
   for (const event of events) {
     if (event.type !== "substitution" || event.clubId !== clubId) continue;
@@ -75,9 +76,10 @@ function poissonCount(mean: number, random: () => number): number {
 
 /**
  * The coach's match from `minute` on, drawn again with the elevens and tactics now on the pitch:
- * cards, injuries and goals, minute by minute. Each side's goals follow the engine's expected goals
- * for the whole match, spread by Série A's goal minutes and the ten-men effect; the AI side takes
- * the posture aiPosture gives it for the score at each minute.
+ * cards, injuries and goals, minute by minute, then the goals' kinds and assists, missed penalties
+ * and the AI side's substitutions. Each side's goals follow the engine's expected goals for the
+ * whole match, spread by Série A's goal minutes and the ten-men effect; the AI side takes the
+ * posture aiPosture gives it for the score at each minute.
  */
 function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEvent[], coachSide: Side, minute: number, random: () => number): MatchEvent[] {
   const clubIds = { home: match.homeId, away: match.awayId };
@@ -126,18 +128,58 @@ function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEv
   const weights = { home: goalMinuteWeights(reds("home"), reds("away"), minute), away: goalMinuteWeights(reds("away"), reds("home"), minute) };
   const score = { home: 0, away: 0 };
   for (const e of kept) if (e.type === "goal") score[e.clubId === clubIds.home ? "home" : "away"]++;
-  const goals: MatchEvent[] = [];
+  const drawn: GoalEvent[] = [];
   for (let at = minute + 1; at <= FULL_TIME; at++) {
     const lead = score[aiSide] - score[coachSide];
     const rates = expectedGoals(aiPosture(lead, at));
     for (const side of ["home", "away"] as const) {
       const count = poissonCount(rates[side] * (weights[side][at - 1] ?? 0), random);
       const scorers = elevens[side].filter((p) => (sentOffMinute(sofar, p.id) ?? Infinity) >= at && (injuredMinute.get(p.id) ?? Infinity) >= at);
-      for (const playerId of scorersOf(scorers, count, random)) goals.push({ type: "goal", minute: at, clubId: clubIds[side], playerId });
+      for (const playerId of scorersOf(scorers, count, random)) drawn.push({ type: "goal", minute: at, clubId: clubIds[side], playerId });
       score[side] += count;
     }
   }
-  return [...cards, ...injuries, ...goals];
+
+  const before = [...sofar, ...injuries];
+  const goalSide = (side: Side): GoalSide => ({
+    clubId: clubIds[side],
+    onPitch: (at) => onPitchAt(coachMatch.starters[side], benchOf(coachMatch, side, coachSide), before, clubIds[side], at),
+    penaltyTakerId: side === coachSide ? coachTactics.penaltyTakerId : null,
+  });
+  const sides = { home: goalSide("home"), away: goalSide("away") };
+  const goals = describeGoals(drawn, sides, strength, random);
+  const misses = drawPenaltyMisses(sides, strength, minute, () => drawMinute(goalMinuteWeights([], [], minute), random), random);
+  const allGoals = [...kept.filter((e): e is GoalEvent => e.type === "goal"), ...goals];
+  const goalDifferenceAt = (at: number) => allGoals.reduce((diff, g) => (g.minute < at ? diff + (g.clubId === clubIds[aiSide] ? 1 : -1) : diff), 0);
+  const aiSubs = aiSubstitutions(
+    { clubId: clubIds[aiSide], starters: coachMatch.starters[aiSide], bench: benchOf(coachMatch, aiSide, coachSide), tiredness: (p) => tirednessOn(p, coachMatch.context.date) },
+    [...before, ...goals, ...misses],
+    minute,
+    goalDifferenceAt,
+    random,
+  );
+  return [...cards, ...injuries, ...goals, ...misses, ...aiSubs];
+}
+
+/** The shootout of the coach's match when its new score sends it to penalties, played on the match's own stream. */
+function shootoutAfter(live: LiveDay, coachMatch: CoachMatch, match: LiveMatch, events: readonly MatchEvent[], coachSide: Side, random: () => number): MatchEvent[] {
+  const fixture = live.state.fixtures.find((f) => f.id === match.fixtureId);
+  if (!fixture) return [];
+  const goals = (clubId: string) => events.filter((e) => e.type === "goal" && e.clubId === clubId).length;
+  const result = { homeGoals: goals(match.homeId), awayGoals: goals(match.awayId) };
+  if (!isShootoutDue(live.state, { ...fixture, result })) return [];
+  const strength = (p: SimPlayer) => coachMatch.strengths[p.id] ?? p.strength;
+  const side = (s: Side) => {
+    const clubId = s === "home" ? match.homeId : match.awayId;
+    const order = s === coachSide ? coachMatch.tactics.kickerOrder : undefined;
+    return {
+      clubId,
+      onPitch: onPitchAt(coachMatch.starters[s], benchOf(coachMatch, s, coachSide), events, clubId, FULL_TIME + 1),
+      morale: clubMood(live.state, clubId).squad,
+      ...(order ? { order } : {}),
+    };
+  };
+  return settleShootout({ ...fixture, result }, shootoutSeed(random), side("home"), side("away"), strength).events;
 }
 
 /**
@@ -155,11 +197,12 @@ export function applyLiveChange(live: LiveDay, minute: number, change: LiveChang
   const match = live.matches.find((m) => m.fixtureId === coachMatch.fixtureId);
   if (!match) throw new Error(`coach's match ${coachMatch.fixtureId} has no timeline`);
   const coachSide: Side = match.homeId === clubId ? "home" : "away";
-  const kept = match.events.filter((e) => e.minute <= minute && e.type !== "halfTime" && e.type !== "fullTime");
+  const kept = match.events.filter((e) => e.minute <= minute && e.type !== "halfTime" && e.type !== "fullTime" && e.type !== "shootoutKick" && e.type !== "orderOverruled");
   const subs = change.substitutions ?? [];
   checkSubstitutions(coachMatch, kept, onPitch(coachMatch, kept, coachSide, clubId), clubId, minute, subs);
   const substitutions: MatchEvent[] = subs.map(({ offId, onId }) => ({ type: "substitution", minute, clubId, playerId: onId, offId }));
   const tactics: Tactics = {
+    ...coachMatch.tactics,
     formation: change.formation ?? coachMatch.tactics.formation,
     posture: change.posture ?? coachMatch.tactics.posture,
     penaltyTakerId: change.penaltyTakerId === undefined ? coachMatch.tactics.penaltyTakerId : change.penaltyTakerId,
@@ -168,7 +211,9 @@ export function applyLiveChange(live: LiveDay, minute: number, change: LiveChang
   const next: CoachMatch = { ...coachMatch, tactics, lastChangeMinute: minute, isChanged: true };
   const before = [...kept, ...substitutions];
   const after = redraw(next, match, before, coachSide, minute, random.next);
-  const events = inMatchOrder([...before, ...after, { type: "halfTime", minute: HALF_TIME }, { type: "fullTime", minute: FULL_TIME }]);
+  const played = [...before, ...after];
+  const shootout = shootoutAfter(live, next, match, played, coachSide, random.next);
+  const events = inMatchOrder([...played, { type: "halfTime", minute: HALF_TIME }, { type: "fullTime", minute: FULL_TIME }, ...shootout]);
   const formations = { ...match.formations, [coachSide]: tactics.formation };
   return {
     ...live,
