@@ -4,6 +4,7 @@ import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, expect, test } from "vitest";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
+import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { Market } from "./Market.js";
@@ -15,10 +16,22 @@ afterEach(() => {
   for (const close of closers.splice(0)) close();
 });
 
-async function openMarket(coachClubId = "sport-pe"): Promise<Services> {
+type SavedSquads = { game: { coachClubId: string; players: Record<string, { id: string; clubId: string }> } };
+
+/** Tops the coach's squad up to `size` with copies of one of his players, through a save loaded back. */
+async function fillSquadTo(engine: EngineClient, size: number): Promise<void> {
+  const save: SavedSquads = JSON.parse(await engine.save());
+  const { coachClubId, players } = save.game;
+  const squad = Object.values(players).filter((p) => p.clubId === coachClubId);
+  for (let i = squad.length; i < size; i++) players[`filler-${i}`] = { ...squad[0], id: `filler-${i}`, clubId: coachClubId };
+  await engine.apply({ type: "load", save: JSON.stringify(save) });
+}
+
+async function openMarket(coachClubId = "sport-pe", squadSize?: number): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
   await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId } });
+  if (squadSize !== undefined) await fillSquadTo(engine, squadSize);
   const services: Services = { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
   const router = createMemoryRouter([{ path: "/market", element: <Market /> }], { initialEntries: ["/market"] });
   render(
@@ -88,11 +101,11 @@ test("an offer under the club's price is a proposal, sent with the fee the coach
   expect((await engine.read(["players"])).players[request?.playerId ?? ""]?.name).toBe(name);
 });
 
-test("a squad at the 35-player cap is told why the board won't sign anyone", async () => {
-  await openMarket("sao-paulo-sp");
-  expect(await screen.findByLabelText(/^Elenco \d+ de 35$/)).toBeTruthy();
+test("a squad at the 50-player cap is told why the board won't sign anyone", async () => {
+  await openMarket("sao-paulo-sp", 50);
+  expect(await screen.findByLabelText("Elenco 50 de 50")).toBeTruthy();
   const name = await pickPricedPlayer();
-  expect(within(screen.getByRole("region", { name })).getByText(/Elenco cheio: \d+ de 35 jogadores/)).toBeTruthy();
+  expect(within(screen.getByRole("region", { name })).getByText("Elenco cheio: 50 de 50 jogadores. Venda ou empreste alguém antes de contratar.")).toBeTruthy();
 });
 
 test("the Propostas tab shows the offers for the coach's own players and his players for sale", async () => {

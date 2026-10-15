@@ -3,6 +3,7 @@ import type { GameState, SimPlayer } from "../gameState.js";
 import { boardRefusal } from "./boardRefusal.js";
 import { marketView } from "./marketView.js";
 import { movePlayer } from "./movePlayer.js";
+import { isClubFull } from "./squadCap.js";
 import type { PlayerMoved } from "./transferEvents.js";
 import type { Loan } from "./transferMarket.js";
 
@@ -63,6 +64,7 @@ export function lendYoungPlayers(state: GameState, random: () => number): { stat
     if (!player) continue;
     const start = Math.floor(random() * borrowers.length);
     const borrowerId = [...borrowers.slice(start), ...borrowers.slice(0, start)].find((id) => {
+      if (isClubFull(next, id, view.squad(id).length)) return false;
       const lineup = pickLineup([...view.squad(id)]);
       return lineup.some((p) => p.group === player.group && p.strength < player.strength);
     });

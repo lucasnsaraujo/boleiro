@@ -3,7 +3,7 @@ import { buyerWage, sellToBidder } from "./answerBid.js";
 import { boardRefusal } from "./boardRefusal.js";
 import { answerBy, coachMarketOf, unitHash, withCoachMarket, withoutPlayer } from "./coachMarket.js";
 import { marketView, type MarketView } from "./marketView.js";
-import { isSquadFull } from "./squadCap.js";
+import { isClubFull } from "./squadCap.js";
 import { REPLACEMENT_BAND, squadNeeds } from "./squadNeeds.js";
 import type { AuctionClosed, BidReceived, PlayerMoved } from "./transferEvents.js";
 import type { Bid, CoachMarket, ListingMode } from "./transferMarket.js";
@@ -36,7 +36,7 @@ const WAGE_MONTHS_UP_FRONT = 3;
 function canBuy(state: GameState, view: MarketView, player: SimPlayer, clubId: string, fee: number): boolean {
   const finance = state.finances[clubId];
   const squad = view.squad(clubId);
-  if (clubId === state.coachClubId || !finance || squad.length < 11 || isSquadFull(squad.length)) return false;
+  if (clubId === state.coachClubId || !finance || squad.length < 11 || isClubFull(state, clubId, squad.length)) return false;
   if (player.strength < squadNeeds(squad, view.tier(clubId)).level - REPLACEMENT_BAND.below) return false;
   const wage = buyerWage(player, squad);
   // guess: like the AI's own upgrades, the buyer counts on moving on its cheapest player at his

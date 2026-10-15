@@ -5,6 +5,7 @@ import { boardRefusal } from "./boardRefusal.js";
 import { contractEnd } from "./expireContracts.js";
 import { marketView, type MarketView } from "./marketView.js";
 import { movePlayer } from "./movePlayer.js";
+import { isClubFull } from "./squadCap.js";
 import { REPLACEMENT_BAND, SQUAD_TARGET, squadNeeds } from "./squadNeeds.js";
 import type { PlayerMoved, PreContractSigned } from "./transferEvents.js";
 import { valuePlayer } from "./valuePlayer.js";
@@ -58,7 +59,7 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
   const finance = state.finances[buyerId];
   const club = state.clubs[buyerId];
   const squad = view.squad(buyerId);
-  if (!finance || !club || squad.length < 11) return null;
+  if (!finance || !club || squad.length < 11 || isClubFull(state, buyerId, squad.length)) return null;
   const buyerTier = view.tier(buyerId);
   const needs = squadNeeds(squad, buyerTier);
   if (!needs.weakest) return null;

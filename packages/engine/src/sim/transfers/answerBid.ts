@@ -4,7 +4,7 @@ import { coachMarketOf, unitHash, withCoachMarket, withoutPlayer } from "./coach
 import { contractEnd } from "./expireContracts.js";
 import { marketView } from "./marketView.js";
 import { movePlayer, openDraft } from "./movePlayer.js";
-import { isSquadFull } from "./squadCap.js";
+import { isClubFull } from "./squadCap.js";
 import type { PlayerMoved } from "./transferEvents.js";
 import type { Bid } from "./transferMarket.js";
 import { goingRate } from "./wageDemand.js";
@@ -32,7 +32,7 @@ export function sellToBidder(state: GameState, bid: Bid, fee: number): { state: 
   const view = marketView(state);
   if (bid.buyerId === null) return movePlayer(draft, { playerId: player.id, kind: "abroad", toClubId: null, fee }, view.squad);
   const squad = view.squad(bid.buyerId);
-  if (isSquadFull(squad.length)) return null;
+  if (isClubFull(state, bid.buyerId, squad.length)) return null;
   // A command has no random stream; the contract's length is hashed from the player and the day instead.
   const until = contractEnd(Number(state.date.slice(0, 4)) + 1, () => unitHash(`${player.id}:${state.date}`));
   return movePlayer(draft, { playerId: player.id, kind: "transfer", toClubId: bid.buyerId, fee, contract: { wage: buyerWage(player, squad), until } }, view.squad);
