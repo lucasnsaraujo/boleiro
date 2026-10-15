@@ -68,7 +68,8 @@ export function friendlyFee(state: Pick<GameState, "clubs">, club: Club): number
   return Math.max(MIN_FEE, Math.round((TOP_FEE * share) / 10_000) * 10_000);
 }
 
-type BookingState = Pick<GameState, "date" | "season" | "fixtures" | "competitions" | "clubs" | "finances" | "friendlies" | "coachClubId">;
+/** What booking a friendly reads of the game. */
+export type BookingState = Pick<GameState, "date" | "season" | "fixtures" | "competitions" | "clubs" | "finances" | "friendlies" | "coachClubId">;
 
 /** Whether a club has nothing on `date` or a day either side: no fixture, no stage of its competitions, no friendly. */
 function isFree(state: BookingState, clubId: string, date: IsoDate): boolean {
@@ -121,7 +122,7 @@ export function bookFriendly(state: GameState, opponentId: string, date: IsoDate
  * Clubs inviting the coach's club to visit on its next free dates: one per date, picked among the
  * clubs free that day that can pay its fee, the same pick every time the screen asks.
  */
-export function friendlyOffers(state: GameState): FriendlyOffer[] {
+export function friendlyOffers(state: BookingState & Pick<GameState, "seed">): FriendlyOffer[] {
   const clubId = state.coachClubId;
   const club = clubId ? state.clubs[clubId] : undefined;
   if (!clubId || !club) return [];

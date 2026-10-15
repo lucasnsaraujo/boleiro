@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { addDays } from "@boleiro/engine/sim/dates";
+import { freeFriendlyDates, friendlyAnswer } from "@boleiro/engine/sim/friendlies/friendlies";
 import type { SimPlayer } from "@boleiro/engine/sim/gameState";
 import type { BidOutcome } from "@boleiro/engine/sim/transfers/answerBid";
 import { sellerPrice } from "@boleiro/engine/sim/transfers/askingPrice";
@@ -232,14 +233,34 @@ function playMarketWindow() {
   return { recorded, counter, outcomes, counterAfterDecline: session.read(["market"]).market.coach?.counters[target.id], stadiumAnswer };
 }
 
+/** The coach's money: a bank loan taken, a friendly booked at home and played, then the loan paid off. */
+function playMoney() {
+  const recorded = recordedSession();
+  const { session, apply } = recorded;
+  apply({ type: "newGame", seed: SEED, choices: { coachClubId: CLUB } });
+  const loan = apply({ type: "takeBankLoan", amount: 30_000_000, months: 24 });
+  const booking = session.read(["date", "season", "fixtures", "competitions", "clubs", "finances", "friendlies", "coachClubId"]);
+  const opponentId = "vasco-rj";
+  const date = freeFriendlyDates(booking).find((d) => friendlyAnswer(booking, opponentId, d, true).booked);
+  if (!date) throw new Error("Flamengo has a free date for a friendly");
+  const friendly = apply({ type: "bookFriendly", opponentId, date, isHome: true });
+  const days = apply({ type: "advance", days: Array.from({ length: 70 }, () => ({})) });
+  const played = days.events.find((event) => event.type === "friendlyPlayed");
+  const cashBeforeRepay = session.read(["finances"]).finances[CLUB]?.cash ?? 0;
+  apply({ type: "repayBankLoan" });
+  return { recorded, loan, friendly, played, cashBeforeRepay };
+}
+
 let season: Season;
 let career: ReturnType<typeof playCareerStart>;
 let marketWindow: ReturnType<typeof playMarketWindow>;
+let money: ReturnType<typeof playMoney>;
 
 beforeAll(() => {
   season = playSeason();
   career = playCareerStart();
   marketWindow = playMarketWindow();
+  money = playMoney();
 }, 120_000);
 
 test("a season played through commands alone ends, turns the year and crowns a champion", () => {
@@ -327,8 +348,30 @@ test("the market window's commands survive JSON and replay alike from the same s
   expect(sha256(twin.session.save())).toBe(sha256(session.save()));
 });
 
-test("the season, career and market logs between them send every kind of command", () => {
-  const sent = new Set([...season.recorded.applied, ...career.recorded.applied, ...marketWindow.recorded.applied].map(({ command }) => command.type));
+test("a bank loan taken through a command puts its money in the bank, and a later command pays it off", () => {
+  expect(money.loan).toMatchObject({ approved: true, loan: { amount: 30_000_000, balance: 30_000_000, instalmentsLeft: 24 } });
+  const { finances } = money.recorded.session.read(["finances"]);
+  expect(finances[CLUB]?.bankLoan).toBeUndefined();
+  expect(finances[CLUB]?.cash).toBeLessThan(money.cashBeforeRepay);
+});
+
+test("a friendly booked through a command is played on its day with its fee paid", () => {
+  expect(money.friendly).toMatchObject({ booked: true, friendly: { homeId: CLUB, awayId: "vasco-rj" } });
+  expect(money.played).toMatchObject({ type: "friendlyPlayed", friendly: { homeId: CLUB, awayId: "vasco-rj" } });
+  const inbox = money.recorded.session.inbox();
+  expect(inbox.some((line) => line.text.startsWith("Amistoso: Flamengo"))).toBe(true);
+});
+
+test("the money commands survive JSON and replay alike from the same seed", () => {
+  const { session, applied } = money.recorded;
+  for (const { command } of applied) expect(JSON.parse(JSON.stringify(command))).toStrictEqual(command);
+  const twin = replay(applied);
+  expect(twin.results).toEqual(applied.map(({ result }) => result));
+  expect(sha256(twin.session.save())).toBe(sha256(session.save()));
+});
+
+test("the season, career, market and money logs between them send every kind of command", () => {
+  const sent = new Set([...season.recorded.applied, ...career.recorded.applied, ...marketWindow.recorded.applied, ...money.recorded.applied].map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
     load: true,
@@ -347,6 +390,9 @@ test("the season, career and market logs between them send every kind of command
     declineCounter: true,
     priceTickets: true,
     askStadiumWorks: true,
+    takeBankLoan: true,
+    repayBankLoan: true,
+    bookFriendly: true,
   };
   expect([...sent].sort()).toEqual(Object.keys(every).sort());
 });
