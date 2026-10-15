@@ -63,6 +63,14 @@ test("the transfer windows open and close on their dates, and their months are m
   expect(months.filter((m) => m.hasWindow).map((m) => m.month)).toEqual([1, 2, 3, 7, 8, 9]);
 });
 
+test("a game without the mid-season window shows only the window between seasons", () => {
+  const withoutMidSeason = { ...game, hasMidSeasonWindow: false as const };
+  const months = calendarMonths(withoutMidSeason);
+  expect(months.flatMap((m) => m.entries.flatMap((e) => (e.kind === "window" ? [e.date] : [])))).toEqual(["2026-01-05", "2026-03-03"]);
+  expect(months.filter((m) => m.hasWindow).map((m) => m.month)).toEqual([1, 2, 3]);
+  expect(calendarPage(withoutMidSeason, "2026-07-20").months.flatMap((m) => m.windows)).toEqual([]);
+});
+
 test("a coach without a club still sees the windows, with no games", () => {
   const months = calendarMonths({ ...game, coachClubId: null });
   expect(months.flatMap((m) => matches(m.entries))).toEqual([]);

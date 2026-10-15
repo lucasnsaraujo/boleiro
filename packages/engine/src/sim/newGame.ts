@@ -52,6 +52,8 @@ export type NewGameOptions = {
   world?: readonly CountryStart[];
   /** False to start a game without the estaduais (SPEC §6's new-game option). */
   stateChampionships?: boolean;
+  /** False to start a game whose only transfer window is the one between seasons (SPEC §8's window options). */
+  midSeasonWindow?: boolean;
   /** A hot-seat game: the first coach's name, and the other human coaches in turn order, each at a club of his own. */
   hotSeat?: { coachName: string; otherCoaches: readonly { name: string; clubId: string }[] };
   /** Each coach's market time per transfer window, in seconds; left out, the market has no clock. */
@@ -146,7 +148,7 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, stateChampionships = true, hotSeat, marketClockSeconds, formats = REALISTA }: NewGameOptions,
+  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, stateChampionships = true, midSeasonWindow = true, hotSeat, marketClockSeconds, formats = REALISTA }: NewGameOptions,
 ): GameState {
   const countries = (world ?? []).map(({ structure, levels }) => ({ structure: inFormats(structure, formats), levels }));
   const fullTier = countriesOfHumans(countries, [coachClubId, ...(hotSeat?.otherCoaches ?? []).map((other) => other.clubId)], formats);
@@ -203,6 +205,7 @@ export function newGame(
     ...(startedWorld ? { world: startedWorld } : {}),
     ...(europe ? { europe } : {}),
     ...(stateChampionships ? {} : { playsStateChampionships: false as const }),
+    ...(midSeasonWindow ? {} : { hasMidSeasonWindow: false as const }),
     ...(isRealista(formats) ? {} : { formats }),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
   const withClock = marketClockSeconds === undefined ? game : { ...game, marketClockSeconds };

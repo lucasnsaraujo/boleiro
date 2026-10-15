@@ -1,7 +1,7 @@
 import { addDays } from "@boleiro/engine/sim/dates";
 import type { Fixture, GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import { isInjured } from "@boleiro/engine/sim/players/isInjured";
-import { TRANSFER_WINDOWS } from "@boleiro/engine/sim/transfers/transferWindows";
+import { transferWindowsOf } from "@boleiro/engine/sim/transfers/transferWindows";
 import { competitionName, fixtureLabel } from "@boleiro/game-client/format/competitionName";
 import { monthName } from "@boleiro/game-client/format/formatGameDate";
 
@@ -82,13 +82,14 @@ export function upcomingMatches(state: Pick<GameState, "date"> & MatchesState, c
     });
 }
 
-export function calendarMonths(state: Pick<GameState, "season"> & MatchesState): CalendarMonth[] {
+export function calendarMonths(state: Pick<GameState, "season" | "hasMidSeasonWindow"> & MatchesState): CalendarMonth[] {
   const entries: CalendarEntry[] = coachMatches(state);
-  for (const window of TRANSFER_WINDOWS) {
+  const transferWindows = transferWindowsOf(state);
+  for (const window of transferWindows) {
     entries.push({ kind: "window", date: `${state.season}-${window.opens}`, opens: true }, { kind: "window", date: `${state.season}-${window.closes}`, opens: false });
   }
   entries.sort((a, b) => a.date.localeCompare(b.date));
-  const windowMonths = new Set(TRANSFER_WINDOWS.flatMap(({ opens, closes }) => MONTHS.filter((m) => m >= Number(opens.slice(0, 2)) && m <= Number(closes.slice(0, 2)))));
+  const windowMonths = new Set(transferWindows.flatMap(({ opens, closes }) => MONTHS.filter((m) => m >= Number(opens.slice(0, 2)) && m <= Number(closes.slice(0, 2)))));
   return MONTHS.map((month) => ({ month, entries: entries.filter((e) => monthOf(e.date) === month), hasWindow: windowMonths.has(month) }));
 }
 
@@ -155,7 +156,7 @@ export function turnPage(season: number, start: IsoDate, pages: number): IsoDate
 }
 
 /** Five weeks of the season from `start`, a Monday. */
-export function calendarPage(state: Pick<GameState, "date" | "season"> & MatchesState, start: IsoDate): CalendarPage {
+export function calendarPage(state: Pick<GameState, "date" | "season" | "hasMidSeasonWindow"> & MatchesState, start: IsoDate): CalendarPage {
   const { date, season } = state;
   const days = Array.from({ length: PAGE_DAYS }, (_, index): CalendarDay => {
     const day = addDays(start, index);
@@ -175,7 +176,7 @@ export function calendarPage(state: Pick<GameState, "date" | "season"> & Matches
     return square ? [{ ...match, row: square.row, column: square.column }] : [];
   });
   const end = days.at(-1)?.date ?? start;
-  const windows = TRANSFER_WINDOWS.flatMap(({ opens, closes }): WindowRibbon[] => {
+  const windows = transferWindowsOf(state).flatMap(({ opens, closes }): WindowRibbon[] => {
     const opensOn = `${season}-${opens}`;
     const closesOn = `${season}-${closes}`;
     if (closesOn < start || opensOn > end) return [];

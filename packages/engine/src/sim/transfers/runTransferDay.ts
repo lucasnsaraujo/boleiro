@@ -15,7 +15,7 @@ import { signFromAbroad } from "./signFromAbroad.js";
 import { tradeBetweenClubs } from "./tradeBetweenClubs.js";
 import type { TransferEvent } from "./transferEvents.js";
 import type { CoachMarket } from "./transferMarket.js";
-import { isMarketDay, isWindowOpen } from "./transferWindows.js";
+import { isMarketDay, isWindowOpen, type CoachWindows } from "./transferWindows.js";
 
 type Step = (state: GameState, random: () => number) => { state: GameState; events: TransferEvent[] };
 
@@ -23,10 +23,10 @@ type Step = (state: GameState, random: () => number) => { state: GameState; even
  * Whether the coach's market has anything to do today: offers, counters and auctions to lapse or close,
  * listings to find buyers inside the window, or a market day for clubs to bid. Most days it has not.
  */
-function hasCoachBusiness(coach: CoachMarket | undefined, coachClubId: string | null, date: IsoDate): boolean {
+function hasCoachBusiness(coach: CoachMarket | undefined, coachClubId: string | null, rules: CoachWindows, date: IsoDate): boolean {
   const has = (entries: Record<string, unknown> | undefined) => !!entries && Object.keys(entries).length > 0;
   if (has(coach?.bids) || has(coach?.counters) || has(coach?.auctions)) return true;
-  return (has(coach?.listings) && isWindowOpen(date)) || (coachClubId !== null && isMarketDay(date));
+  return (has(coach?.listings) && isWindowOpen(rules, date)) || (coachClubId !== null && isMarketDay(rules, date));
 }
 
 /** The events that are a coach's own news rather than the market's: his board's answers and his business. */
@@ -53,7 +53,7 @@ export function runTransferDay(
   if (Object.values(state.market.loans).some((loan) => loan.until < state.date)) add((s) => returnLoans(s));
   if (hasExpiries(state)) add(expireContracts);
   for (const request of requests) add((s, r) => decideCoachRequest(s, request, r));
-  if (hasCoachBusiness(state.market.coach, state.coachClubId, state.date)) {
+  if (hasCoachBusiness(state.market.coach, state.coachClubId, state, state.date)) {
     // The coach's business draws from its own stream, salted with the day, so it never shifts the AI clubs' draws.
     const coachRandom = randomStream(Math.floor(unitHash(`${state.market.rngState}:${state.date}`) * 2 ** 32));
     add((s) => coachMarketDay(s, coachRandom.next));
@@ -63,11 +63,11 @@ export function runTransferDay(
     for (const request of waitingRequests[waitingIndex] ?? []) {
       steps.push({ step: (s, r) => asWaitingCoach(s, waitingIndex, (seated) => decideCoachRequest(seated, request, r)), waitingIndex });
     }
-    if (!hasCoachBusiness(coach.market, coach.clubId, state.date)) return;
+    if (!hasCoachBusiness(coach.market, coach.clubId, { ...state, coach: coach.coach }, state.date)) return;
     const waitingRandom = randomStream(Math.floor(unitHash(`${state.market.rngState}:${state.date}:${waitingIndex}`) * 2 ** 32));
     steps.push({ step: (s) => asWaitingCoach(s, waitingIndex, (seated) => coachMarketDay(seated, waitingRandom.next)), waitingIndex });
   });
-  if (isMarketDay(state.date)) {
+  if (isMarketDay(state, state.date)) {
     add(europeBids, tradeBetweenClubs, (s, r) => signFromAbroad(s, r, nextId), lendYoungPlayers, signFreeAgents);
     waiting.forEach((coach, waitingIndex) => {
       if (coach.clubId) steps.push({ step: (s, r) => asWaitingCoach(s, waitingIndex, (seated) => europeBids(seated, r, coach.clubId ?? undefined)), waitingIndex });

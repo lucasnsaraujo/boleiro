@@ -16,7 +16,7 @@ import { BoardRequests } from "../market/BoardRequests.js";
 import "./finances.css";
 
 const FINANCE_KEYS = [
-  "date", "season", "seed", "coachClubId", "clubs", "finances", "boards", "players", "market", "mood", "fixtures", "competitions", "friendlies",
+  "date", "season", "seed", "coachClubId", "clubs", "finances", "boards", "players", "market", "mood", "fixtures", "competitions", "friendlies", "hasMidSeasonWindow", "coach",
 ] as const;
 type FinanceState = Pick<GameState, (typeof FINANCE_KEYS)[number]>;
 

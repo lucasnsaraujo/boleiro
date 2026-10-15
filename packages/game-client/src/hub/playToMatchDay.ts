@@ -24,8 +24,8 @@ export function isCoachMatchDay({ date, coachClubId, fixtures }: Pick<GameState,
  * Requests are decided the morning after the coach makes them, so the last day to ask is the day
  * before the window's last day.
  */
-function isLastDayToAsk(date: string): boolean {
-  return isWindowOpen(addDays(date, 1)) && !isWindowOpen(addDays(date, 2));
+function isLastDayToAsk(state: GameState): boolean {
+  return isWindowOpen(state, addDays(state.date, 1)) && !isWindowOpen(state, addDays(state.date, 2));
 }
 
 /** Whether the day just played, from `before` to `after`, needs the coach before the game goes on. */
@@ -38,7 +38,7 @@ export function stopReason(before: GameState, after: GameState, events: readonly
   if (events.some((e) => e.type === "bidReceived")) return "bidReceived";
   if (events.some((e) => e.type === "seasonEnded")) return "seasonEnd";
   if (isCoachMatchDay(after)) return "matchDay";
-  if (after.coachClubId && isLastDayToAsk(after.date)) return "windowClosing";
+  if (after.coachClubId && isLastDayToAsk(after)) return "windowClosing";
   return null;
 }
 
@@ -57,7 +57,7 @@ export function playToMatchDay(start: GameState, playDay: PlayDay, maxDays = MAX
     const stop = stopReason(state, played.state, played.events) ?? played.stop ?? null;
     state = played.state;
     // The warning also goes out when another reason stops the days on the last day to ask.
-    if (state.coachClubId && isLastDayToAsk(state.date)) news.push({ date: state.date, text: WINDOW_WARNING, tone: "neutral" });
+    if (state.coachClubId && isLastDayToAsk(state)) news.push({ date: state.date, text: WINDOW_WARNING, tone: "neutral" });
     if (stop) return { state, news, stop, daysPlayed: day };
   }
   return { state, news, stop: "idle", daysPlayed: maxDays };

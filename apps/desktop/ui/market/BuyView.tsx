@@ -20,7 +20,7 @@ import { MoneyStepper, roundStep } from "./MoneyStepper.js";
 import { offerAdvice } from "./offerAdvice.js";
 import { pendingText, requestTitle } from "./requestText.js";
 
-export const MARKET_KEYS = ["date", "coachClubId", "clubs", "players", "market", "finances", "boards", "history"] as const;
+export const MARKET_KEYS = ["date", "coachClubId", "clubs", "players", "market", "finances", "boards", "history", "hasMidSeasonWindow", "coach"] as const;
 export type MarketState = Pick<GameState, (typeof MARKET_KEYS)[number]>;
 
 // The list stays short; "Ver mais" adds another page.

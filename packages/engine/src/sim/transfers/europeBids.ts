@@ -60,7 +60,7 @@ export function europeBids(state: GameState, random: () => number, onlyClubId?: 
       // Drawn in the place of an AI board's yes or no, so the AI clubs' business keeps its draws.
       const ceiling = Math.round(fee * (1 + COUNTER_ROOM * random()));
       if (coach.bids[player.id] || coach.auctions[player.id]) continue;
-      const bid = { playerId: player.id, buyerId: null, fee, feeEur, ceiling, isFinal: false, madeOn: state.date, until: answerBy(state.date) };
+      const bid = { playerId: player.id, buyerId: null, fee, feeEur, ceiling, isFinal: false, madeOn: state.date, until: answerBy(state, state.date) };
       coach = { ...coach, bids: { ...coach.bids, [player.id]: bid } };
       events.push({ type: "bidReceived", playerId: player.id, buyerId: null, fee });
       continue;

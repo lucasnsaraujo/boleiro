@@ -213,7 +213,7 @@ function ForSale({ state, rows, onList }: { state: SellState; rows: SaleRow[]; o
     .filter((p) => p.clubId === coach && !onMarket.has(p.id) && !state.market.loans[p.id])
     .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
   const [pick, setPick] = useState("");
-  const isOpen = isWindowOpen(state.date);
+  const isOpen = isWindowOpen(state, state.date);
   const chosen = squad.find((p) => p.id === pick)?.id ?? "";
   return (
     <section className="stk market-side-card" aria-labelledby="for-sale-title">

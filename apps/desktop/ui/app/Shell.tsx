@@ -2,12 +2,13 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import { isTauri } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import type { GameState } from "@boleiro/engine/sim/gameState";
-import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
+import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
+import { formatBarDate, formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import type { MarketClockView } from "@boleiro/game-client/market/marketClock";
 import { saveToSlot } from "@boleiro/game-client/saves/saveToSlot";
 import { slotLabel } from "@boleiro/game-client/saves/slotMeta";
 import { clubById } from "../clubs/clubCatalog.js";
+import { windowStatus } from "../market/marketSearch.js";
 import { musicFor, useSound } from "../sound/SoundProvider.js";
 import { useTheme } from "../theme/ThemeProvider.js";
 import { useCommands, useIsCommandAnswered, useRunCommand } from "./AppCommands.js";
@@ -22,7 +23,8 @@ import { useAskBeforeDiscarding } from "./useAskBeforeDiscarding.js";
 import { isTyping } from "./useTypedWord.js";
 import "./shell.css";
 
-type Clock = Pick<GameState, "date" | "season"> & { clubName: string | null; coachName: string | null };
+/** `ownWindowUntil`: the last day of the window the coach in the seat got for himself, while it runs. */
+type Clock = Pick<GameState, "date" | "season"> & { clubName: string | null; coachName: string | null; ownWindowUntil: IsoDate | null };
 type Toast = { id: number; text: string; isError: boolean };
 
 const PLATFORM = platformOf(navigator.userAgent);
@@ -90,10 +92,17 @@ export function Shell() {
       setClock(null);
       return;
     }
-    Promise.all([engine.read(["date", "season", "coachClubId", "coachName"]), engine.marketClock()]).then(
-      ([{ date, season, coachClubId, coachName }, market]) => {
+    Promise.all([engine.read(["date", "season", "coachClubId", "coachName", "coach", "hasMidSeasonWindow"]), engine.marketClock()]).then(
+      ([{ date, season, coachClubId, coachName, ...rules }, market]) => {
         if (read !== reads.current) return;
-        setClock({ date, season, clubName: coachClubId ? (clubById(coachClubId)?.shortName ?? null) : null, coachName: coachName ?? null });
+        const transferWindow = windowStatus(date, rules);
+        setClock({
+          date,
+          season,
+          clubName: coachClubId ? (clubById(coachClubId)?.shortName ?? null) : null,
+          coachName: coachName ?? null,
+          ownWindowUntil: coachClubId && transferWindow.isOwn ? transferWindow.date : null,
+        });
         setMarketClock(market);
       },
       () => read === reads.current && setClock(null),
@@ -222,6 +231,19 @@ export function Shell() {
             {NAV.map((item, index) => (
               <BarButton key={item.id} id={item.id} isActive={index === active} />
             ))}
+            {clock?.ownWindowUntil && (
+              <div
+                className="bar-clock bar-own-window"
+                role="status"
+                aria-label={`Sua janela de transferências, aberta até ${formatDayMonth(clock.ownWindowUntil)}`}
+                title="Só você contrata nesta janela, aberta quando assumiu o clube fora das janelas do jogo"
+                data-tauri-drag-region
+              >
+                <i className="ph-bold ph-door-open" aria-hidden="true" />
+                <b>até {formatDayMonth(clock.ownWindowUntil)}</b>
+                <span>Sua janela</span>
+              </div>
+            )}
             {marketClock && (
               <div
                 className={marketClock.leftSeconds === 0 ? "bar-clock out" : isClockRunning ? "bar-clock running" : "bar-clock"}
@@ -236,7 +258,7 @@ export function Shell() {
               </div>
             )}
             {clock && (
-              <div className={marketClock ? "bar-date beside-clock" : "bar-date"} data-tauri-drag-region>
+              <div className={marketClock || clock.ownWindowUntil ? "bar-date beside-clock" : "bar-date"} data-tauri-drag-region>
                 <b>{formatBarDate(clock.date)}</b>
                 <span>Temporada {clock.season}</span>
               </div>

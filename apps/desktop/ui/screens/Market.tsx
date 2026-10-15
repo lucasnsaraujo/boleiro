@@ -84,7 +84,7 @@ export function Market() {
   const list = (playerId: string, way: SaleWay | null) => void act(() => engine.apply({ type: "listPlayer", playerId, way })).catch(() => undefined);
   const answer = (playerId: string, given: BidAnswer) => act(() => engine.apply({ type: "answerBid", playerId, answer: given }));
 
-  const transferWindow = windowStatus(state.date);
+  const transferWindow = windowStatus(state.date, state);
   const board = boardSummary(state);
   const offers = bidSheets(state).length;
   const show = (next: Tab) => setParams(next === "busca" ? {} : { [TAB_PARAM]: next }, { replace: true });
@@ -103,7 +103,9 @@ export function Market() {
   const windowLine = (
     <p className="market-window-line">
       <span className={transferWindow.isOpen ? "market-window open" : "market-window"}>
-        {transferWindow.isOpen ? `Janela aberta até ${formatDayMonth(transferWindow.date)}` : `Janela fechada · abre ${formatDayMonth(transferWindow.date)}`}
+        {transferWindow.isOpen
+          ? `${transferWindow.isOwn ? "Sua janela" : "Janela"} aberta até ${formatDayMonth(transferWindow.date)}`
+          : `Janela fechada · abre ${formatDayMonth(transferWindow.date)}`}
       </span>
       {isOutOfTime && (
         <span className="market-out-of-time">
