@@ -50,10 +50,10 @@ function playerOnScreen(pathname: string): string | undefined {
   return pathname.startsWith("/squad/") ? decodeURIComponent(pathname.slice("/squad/".length)) : undefined;
 }
 
-/** Whether the screen spends the market clock: the market's search and a player's page (the session leaves the coach's own players out); his offers tab is selling. */
+/** Whether the screen spends the market clock: the market's search, a club's squad and a player's page (the session leaves the coach's own players out); his offers tab is selling. */
 function spendsMarketTime(pathname: string, search: string): boolean {
   if (pathname === "/market") return new URLSearchParams(search).get("aba") !== "propostas";
-  return playerOnScreen(pathname) !== undefined;
+  return pathname.startsWith("/club/") || playerOnScreen(pathname) !== undefined;
 }
 
 /** The clock's time left as m:ss. */

@@ -303,3 +303,16 @@ test("while a select's list is open the game keys do nothing, and letters jump i
   fireEvent.keyDown(document, { key: "F2" });
   expect(await screen.findByRole("heading", { name: "tela /tables" })).toBeTruthy();
 });
+
+test("a club's page, reached from the market's search, spends the market clock like the search does", async () => {
+  const { engine, close } = inMemoryEngine();
+  closers.push(close);
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba", marketClockSeconds: 300 } });
+  // The window opens on 5 January; the clock only runs while one is open.
+  await engine.apply({ type: "advance", days: [{}, {}, {}, {}] });
+  const given: Services = { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-2", coachName: "Tite" } } };
+  openShellWith(given, [{ path: "/club/:clubId", element: <h1>tela do clube</h1> }], "/club/palmeiras-sp");
+  const clock = await screen.findByRole("timer", { name: "Relógio do mercado: 5:00" });
+  expect(clock.className).toContain("running");
+  expect(await screen.findByRole("timer", { name: "Relógio do mercado: 4:59" }, { timeout: 3_000 })).toBeTruthy();
+});
