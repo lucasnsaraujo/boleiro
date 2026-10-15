@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router";
-import type { Division } from "@boleiro/data/players";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import { coachMarketOf } from "@boleiro/engine/sim/transfers/coachMarket";
@@ -16,12 +15,12 @@ import { Crest } from "../clubs/Crest.js";
 import { plateColours } from "../clubs/clubCatalog.js";
 import { POSITION_GROUP_NAMES, POSITION_NAMES } from "../format/playerLabels.js";
 import { BoardRequests } from "./BoardRequests.js";
-import { NO_FILTERS, searchMarket, strengthBounds, type MarketFilters, type MarketRow, type MarketStatus, type Willingness } from "./marketSearch.js";
+import { marketClubs, marketLeagues, marketNationalities, NO_FILTERS, searchMarket, strengthBounds, type MarketFilters, type MarketRow, type MarketStatus, type Willingness } from "./marketSearch.js";
 import { MoneyStepper, roundStep } from "./MoneyStepper.js";
 import { offerAdvice } from "./offerAdvice.js";
 import { pendingText, requestTitle } from "./requestText.js";
 
-export const MARKET_KEYS = ["date", "coachClubId", "clubs", "players", "market", "finances", "boards"] as const;
+export const MARKET_KEYS = ["date", "coachClubId", "clubs", "players", "market", "finances", "boards", "history"] as const;
 export type MarketState = Pick<GameState, (typeof MARKET_KEYS)[number]>;
 
 // The list stays short; "Ver mais" adds another page.
@@ -30,7 +29,9 @@ const DESK_ANSWERS = 3;
 
 const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
 const POSITION_SHORT: Record<PositionGroup, string> = { GK: "GOL", DEF: "DEF", MID: "MEI", ATT: "ATA" };
-const DIVISIONS: readonly Division[] = ["A", "B", "C", "D"];
+// The season's goals and minutes the coach can ask for at least: a scorer, a regular, a starter.
+const MIN_GOALS = [1, 3, 5, 10, 15] as const;
+const MIN_MINUTES = [90, 450, 900, 1800] as const;
 const STATUSES: readonly { value: MarketStatus; label: string }[] = [
   { value: "freeAgent", label: "Sem clube" },
   { value: "contractEnding", label: "Fim de contrato" },
@@ -82,13 +83,9 @@ export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDe
 
   const found = useMemo(() => searchMarket(state, filters, limit), [state, filters, limit]);
   const bounds = useMemo(() => strengthBounds(state), [state]);
-  const clubs = useMemo(
-    () =>
-      Object.values(state.clubs)
-        .filter((club) => club.id !== state.coachClubId && club.division !== null && (!filters.division || club.division === filters.division))
-        .sort((a, b) => a.shortName.localeCompare(b.shortName, "pt-BR")),
-    [state, filters.division],
-  );
+  const leagues = useMemo(() => marketLeagues(state), [state]);
+  const clubs = useMemo(() => marketClubs(state, filters.division), [state, filters.division]);
+  const nationalities = useMemo(() => marketNationalities(state), [state]);
   const squadSize = useMemo(() => Object.values(state.players).filter((p) => p.clubId === state.coachClubId).length, [state]);
   const chosen = found.rows.find((row) => row.id === chosenId) ?? found.rows[0] ?? null;
 
@@ -127,22 +124,35 @@ export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDe
             onChange={([low, high]) => filter({ minStrength: low > bounds.min ? low : null, maxStrength: high < bounds.max ? high : null })}
           />
           <Select
-            label="Divisão"
+            label="Liga"
             value={filters.division ?? ""}
-            options={[{ value: "", label: "Todas" }, ...DIVISIONS.map((division) => ({ value: division, label: `Série ${division}` }))]}
-            onChange={(value) => filter({ division: DIVISIONS.find((d) => d === value) ?? null, clubId: null })}
+            options={[{ value: "", label: "Todas" }, ...leagues]}
+            onChange={(value) => filter({ division: leagues.find((league) => league.value === value)?.value ?? null, clubId: null })}
           />
+          <Select label="Clube" value={filters.clubId ?? ""} options={[{ value: "", label: "Todos" }, ...clubs]} onChange={(value) => filter({ clubId: value || null })} />
           <Select
-            label="Clube"
-            value={filters.clubId ?? ""}
-            options={[{ value: "", label: "Todos" }, ...clubs.map((c) => ({ value: c.id, label: c.shortName }))]}
-            onChange={(value) => filter({ clubId: value || null })}
+            label="Nacionalidade"
+            value={filters.nationality ?? ""}
+            options={[{ value: "", label: "Todas" }, ...nationalities]}
+            onChange={(value) => filter({ nationality: value || null })}
           />
           <Select
             label="Situação"
             value={filters.status ?? ""}
             options={[{ value: "", label: "Todas" }, ...STATUSES]}
             onChange={(value) => filter({ status: STATUSES.find((s) => s.value === value)?.value ?? null })}
+          />
+          <Select
+            label="Gols"
+            value={String(filters.minGoals ?? "")}
+            options={[{ value: "", label: "Qualquer" }, ...MIN_GOALS.map((goals) => ({ value: String(goals), label: `${goals}+ na temporada` }))]}
+            onChange={(value) => filter({ minGoals: value ? Number(value) : null })}
+          />
+          <Select
+            label="Minutos"
+            value={String(filters.minMinutes ?? "")}
+            options={[{ value: "", label: "Qualquer" }, ...MIN_MINUTES.map((minutes) => ({ value: String(minutes), label: `${minutes.toLocaleString("pt-BR")}+ na temporada` }))]}
+            onChange={(value) => filter({ minMinutes: value ? Number(value) : null })}
           />
 
         </div>

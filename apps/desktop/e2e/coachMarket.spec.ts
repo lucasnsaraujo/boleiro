@@ -77,7 +77,7 @@ test("from a new game: list players, answer a club's offer, make an offer and ge
   }
 
   await page.getByRole("tab", { name: "Buscar" }).click();
-  await pickOption(page.getByRole("combobox", { name: "Divisão" }), "Série B");
+  await pickOption(page.getByRole("combobox", { name: "Liga" }), "Série B");
   const priced = page.getByRole("table", { name: "Jogadores" }).getByRole("row").filter({ has: page.getByRole("cell", { name: /^R\$/ }) }).first();
   const name = (await priced.getByRole("button").textContent()) ?? "";
   await priced.getByRole("button").click();
@@ -92,7 +92,7 @@ test("from a new game: list players, answer a club's offer, make an offer and ge
   await page.getByRole("button", { name: "Jogar rodada" }).click();
   await expect(barDate(page)).not.toHaveText(before);
   await bar.getByRole("link", { name: "Busca" }).click();
-  await pickOption(page.getByRole("combobox", { name: "Divisão" }), "Série B");
+  await pickOption(page.getByRole("combobox", { name: "Liga" }), "Série B");
   await page.getByRole("searchbox", { name: "Nome" }).fill(name);
   await page.getByRole("table", { name: "Jogadores" }).getByRole("button", { name, exact: true }).first().click();
   const countered = page.getByRole("region", { name });
@@ -113,7 +113,7 @@ test("a squad at the 50-player cap can't sign anyone: the market warns and the b
   await fillSquadTo(page, 50);
   await bar.getByRole("link", { name: "Busca" }).click();
   await expect(page.getByText("Elenco 50/50", { exact: true })).toBeVisible();
-  await pickOption(page.getByRole("combobox", { name: "Divisão" }), "Série B");
+  await pickOption(page.getByRole("combobox", { name: "Liga" }), "Série B");
   const priced = page.getByRole("table", { name: "Jogadores" }).getByRole("row").filter({ has: page.getByRole("cell", { name: /^R\$/ }) }).first();
   const name = (await priced.getByRole("button").textContent()) ?? "";
   await priced.getByRole("button").click();

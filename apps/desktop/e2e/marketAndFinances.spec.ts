@@ -8,7 +8,7 @@ test("from a new game, a signing asked in the market is answered when the window
   const bar = barOf(page);
   await bar.getByRole("link", { name: "Busca" }).click();
   await expect(page.getByText("Janela fechada · abre 5 jan")).toBeVisible();
-  await pickOption(page.getByRole("combobox", { name: "Divisão" }), "Série B");
+  await pickOption(page.getByRole("combobox", { name: "Liga" }), "Série B");
   // A player with a fee: under contract past this season, neither on loan nor in his last six months.
   const priced = page.getByRole("table", { name: "Jogadores" }).getByRole("row").filter({ has: page.getByRole("cell", { name: /^R\$/ }) }).first();
   const name = (await priced.getByRole("button").textContent()) ?? "";
