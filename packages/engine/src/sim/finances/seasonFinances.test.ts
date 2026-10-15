@@ -89,12 +89,14 @@ describe("club finances across a season change", () => {
     let cuts = 0;
     for (const clubId of Object.keys(after.clubs)) {
       // The drift runs on everyone who did not retire; contracts that ended are settled after it, the same day.
-      const drifted = Object.values(before.players).filter((p) => p.clubId === clubId && (after.players[p.id] || after.market.freeAgents[p.id]));
+      // A player sold at the month's closing, before the drift, drifts at his buyer.
+      const forcedSales = events.flatMap((e) => (e.type === "forcedSale" ? [e] : []));
+      const drifted = Object.values(before.players).filter((p) => p.clubId === clubId && !forcedSales.some((sale) => sale.playerId === p.id) && (after.players[p.id] || after.market.freeAgents[p.id]));
       const top = drifted.filter((p) => after.players[p.id]?.clubId === clubId).sort((a, b) => b.wage - a.wage)[0];
       if (!top) continue;
       const ratio = (after.players[top.id]?.wage ?? 0) / top.wage;
-      // Youth players join before the drift, so their wage before it is today's divided by the club's factor.
-      const youth = events.flatMap((e) => (e.type === "youthPromoted" && e.clubId === clubId ? [after.players[e.playerId]] : []));
+      // Youth players and forced-sale signings join before the drift, so their wage before it is today's divided by the club's factor.
+      const youth = events.flatMap((e) => ((e.type === "youthPromoted" && e.clubId === clubId) || (e.type === "forcedSale" && e.buyerId === clubId) ? [after.players[e.playerId]] : []));
       const bill = drifted.reduce((sum, p) => sum + p.wage, 0) + youth.reduce((sum, p) => sum + (p?.wage ?? 0) / ratio, 0);
       const cap = financeOf(after, clubId).wageCap;
       if (Math.abs(cap / bill - 1) < 0.05) continue;
