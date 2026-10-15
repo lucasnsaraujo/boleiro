@@ -148,22 +148,17 @@ body:has(.app[data-chrome="windows"][data-mica]) {
   transition: transform var(--t-base) var(--e-slap);
 }
 
-.bar .ic:not(.on, .off):hover {
+.bar .ic:not(.on):hover {
   color: #fff;
 }
 
-.bar .ic:not(.on, .off):hover i {
+.bar .ic:not(.on):hover i {
   transform: translateY(-2px) rotate(-6deg);
 }
 
-.bar .ic:not(.on, .off):active i {
+.bar .ic:not(.on):active i {
   transform: translateY(1px) scale(0.92);
   transition-duration: var(--t-fast);
-}
-
-.bar .ic.off {
-  color: rgba(255, 255, 255, 0.42);
-  cursor: default;
 }
 
 .bar .ic:focus-visible {

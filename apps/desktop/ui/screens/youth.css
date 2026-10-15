@@ -1,0 +1,436 @@
+/* Base: the approved youth mock (design/mocks/youth.html). */
+.youth {
+  height: 100%;
+  min-height: 0;
+  padding: 18px 14px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 14px;
+}
+
+.yth-top {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.yth-dec {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px 10px 14px;
+  border-radius: var(--r-m);
+  background: var(--card);
+  box-shadow: 0 0 0 2px var(--yellow-d), var(--sh-sticker);
+}
+
+.yth-dec.calm {
+  box-shadow: 0 0 0 1px var(--line-2), var(--sh-sticker);
+}
+
+.yth-ic {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--yellow);
+  color: var(--on-yellow);
+  display: grid;
+  place-items: center;
+  font-size: 19px;
+  flex: none;
+}
+
+.yth-dec.calm .yth-ic {
+  background: var(--paper-2);
+  color: var(--green);
+}
+
+.yth-dec b {
+  font-weight: 800;
+  font-size: 14px;
+  display: block;
+}
+
+.yth-dec span {
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.yth-bs {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+
+.yth-note {
+  width: 210px;
+  flex: none;
+  padding: 9px 12px;
+  font-size: 11.5px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.yth-note i {
+  font-size: 16px;
+  margin-top: 1px;
+}
+
+.yth-note.r {
+  transform: rotate(0.8deg);
+}
+
+.yth-list {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.yth-hd {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px 10px;
+}
+
+.yth-hd h1 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.yth-hd > span {
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.yth-hd .seg {
+  margin-left: auto;
+}
+
+.yth-msg {
+  margin: 0 16px 8px;
+  padding: 7px 12px;
+  border-radius: var(--r-s);
+  background: var(--paper-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  animation: yth-msg-in 260ms var(--e-out) both;
+}
+
+.yth-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.yth-tb thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.yth-tb td {
+  height: 36px;
+}
+
+.yth-tb th:first-child,
+.yth-tb td:first-child {
+  padding-left: 16px;
+}
+
+.yth-tb .yth-p {
+  width: 40px;
+}
+
+.yth-tb .yth-pot {
+  padding-left: 20px;
+}
+
+.yth-tb .yth-f {
+  font-weight: 800;
+}
+
+.yth-tb tbody tr {
+  cursor: pointer;
+}
+
+.yth-tb tbody tr:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+}
+
+.yth-stars {
+  display: inline-flex;
+  gap: 1px;
+  font-size: 14px;
+  vertical-align: -2px;
+}
+
+.yth-stars .s,
+.yth-stars .m {
+  color: var(--yellow-d);
+}
+
+.yth-stars .o {
+  color: var(--line);
+}
+
+.yth-stars.big {
+  font-size: 22px;
+  gap: 2px;
+}
+
+.yth-t21 {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--yellow);
+  color: var(--on-yellow);
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 10.5px;
+}
+
+.yth-tg {
+  font-stretch: 100%;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+/* The picked kid */
+.yth-kid {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.yth-kid.yth-empty {
+  justify-content: center;
+}
+
+.yth-face {
+  margin: -6px auto 0;
+  width: 210px;
+  padding: 8px 8px 10px;
+  background: #fff;
+  border-radius: 12px;
+  transform: rotate(2deg);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), 0 14px 22px -12px rgba(20, 35, 26, 0.55);
+  text-align: center;
+  color: #14231a;
+  position: relative;
+  animation: yth-stick 520ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.yth-ph {
+  height: 128px;
+  border-radius: 7px;
+  background: repeating-linear-gradient(180deg, var(--k1) 0 20px, var(--k2) 20px 40px);
+  display: grid;
+  place-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.yth-ph b {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 74px;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.25), 0 0 1px rgba(0, 0, 0, 0.6);
+}
+
+.yth-cr {
+  position: absolute;
+  left: 7px;
+  top: 7px;
+}
+
+.yth-sub {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10.5px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.yth-nm {
+  font-weight: 800;
+  font-size: 16px;
+  margin-top: 7px;
+}
+
+.yth-sb {
+  font-size: 11.5px;
+  color: #5c584b;
+}
+
+.yth-bd {
+  padding: 12px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  animation: yth-rise 360ms var(--e-out) 80ms both;
+}
+
+.yth-potbox {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 14px;
+  align-items: center;
+}
+
+.yth-big {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.yth-big small {
+  display: block;
+  font-stretch: 100%;
+  font-weight: 700;
+  font-size: 10.5px;
+  color: var(--mute);
+  margin-top: 3px;
+}
+
+.yth-potbox p {
+  font-size: 11.5px;
+  color: var(--mute);
+  margin-top: 3px;
+}
+
+.yth-potbox p b {
+  color: var(--ink-2);
+}
+
+.yth-kv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 10px;
+  font-size: 12px;
+  color: var(--mute);
+  padding-top: 10px;
+  border-top: 1px dotted var(--line-2);
+}
+
+.yth-kv dd {
+  color: var(--ink);
+  font-weight: 700;
+  text-align: right;
+}
+
+.yth-vs .lbl {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.yth-vs ul {
+  list-style: none;
+}
+
+.yth-vs li {
+  display: grid;
+  grid-template-columns: 22px auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  height: 28px;
+  font-size: 12.5px;
+  border-bottom: 1px dotted var(--line-2);
+}
+
+.yth-vs li:last-child {
+  border-bottom: 0;
+}
+
+.yth-vs li b {
+  font-weight: 700;
+}
+
+.yth-vs li > span:not(.pos) {
+  color: var(--mute);
+  font-size: 11.5px;
+}
+
+.yth-vs li em {
+  font-style: normal;
+  font-stretch: var(--semi);
+  font-weight: 900;
+}
+
+.yth-acts {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.yth-acts .go {
+  height: 46px;
+  font-size: 15px;
+}
+
+.yth-row {
+  display: flex;
+  gap: 8px;
+}
+
+.yth-row .btn {
+  flex: 1;
+}
+
+/* A new pick lands like a sticker pressed on the page; the card's body follows it in. */
+@keyframes yth-stick {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) rotate(-4deg) scale(1.06);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes yth-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes yth-msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yth-face,
+  .yth-bd,
+  .yth-msg {
+    animation: none;
+  }
+}

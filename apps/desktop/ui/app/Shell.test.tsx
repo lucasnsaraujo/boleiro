@@ -29,7 +29,7 @@ async function services(isOpen = true): Promise<Services> {
 }
 
 function open(given: Services, at: string) {
-  const screens = ["/", "/hub", "/tables", "/calendar", "/market", "/offers", "/history", "/finances", "/stadium", "/round"];
+  const screens = ["/", "/hub", "/tables", "/calendar", "/market", "/offers", "/history", "/finances", "/stadium", "/youth", "/round"];
   const router = createMemoryRouter(
     [
       {
@@ -49,11 +49,11 @@ function open(given: Services, at: string) {
   return router;
 }
 
-test("inside a game the bar has Brasfoot's nine buttons, the ones still to come disabled, and the game's day", async () => {
+test("inside a game the bar has Brasfoot's nine buttons, every one leading to its screen, and the game's day", async () => {
   open(await services(), "/hub");
   const bar = screen.getByRole("navigation", { name: "Telas" });
   expect(within(bar).getAllByRole("link").map((link) => link.textContent)).toEqual(["Agenda", "Tabelas", "Estádio", "Base", "Times", "Busca", "Técnicos", "Histórico", "Opções"]);
-  expect(within(bar).getByRole("link", { name: "Base" }).getAttribute("aria-disabled")).toBe("true");
+  expect(within(bar).getAllByRole("link").every((link) => link.getAttribute("aria-disabled") === null)).toBe(true);
   expect(within(bar).getByRole("link", { name: "Times" }).getAttribute("aria-current")).toBe("page");
   expect(await within(bar).findByText("Qui, 1 jan")).toBeTruthy();
   expect(within(bar).getByText("Temporada 2026")).toBeTruthy();
@@ -64,13 +64,14 @@ test("the finances light up Times, the screen they hang from", async () => {
   expect(screen.getByRole("link", { name: "Times" }).getAttribute("aria-current")).toBe("page");
 });
 
-test("the F-keys open the bar's screens, and the ones still to come do nothing", async () => {
+test("the F-keys open the bar's screens", async () => {
   const router = open(await services(), "/hub");
   fireEvent.keyDown(document, { key: "F2" });
   expect(await screen.findByRole("heading", { name: "tela /tables" })).toBeTruthy();
   expect(screen.getByRole("link", { name: "Tabelas" }).getAttribute("aria-current")).toBe("page");
   fireEvent.keyDown(document, { key: "F4" });
-  expect(router.state.location.pathname).toBe("/tables");
+  expect(await screen.findByRole("heading", { name: "tela /youth" })).toBeTruthy();
+  expect(router.state.location.pathname).toBe("/youth");
   fireEvent.keyDown(document, { key: "F3" });
   expect(await screen.findByRole("heading", { name: "tela /stadium" })).toBeTruthy();
   fireEvent.keyDown(document, { key: "F6" });

@@ -14,3 +14,11 @@ export const TRAIT_LONG: Record<Trait, string> = {
   poorOnArtificialTurf: "Rende menos na grama sintética",
   aggressive: "Faltoso, leva muito cartão",
 };
+
+/** Brasfoot's position letters, on the album's position colours. */
+export const POSITION_BADGES: Record<PositionGroup, { letter: string; colour: string }> = {
+  GK: { letter: "G", colour: "G" },
+  DEF: { letter: "D", colour: "Z" },
+  MID: { letter: "M", colour: "M" },
+  ATT: { letter: "A", colour: "A" },
+};
