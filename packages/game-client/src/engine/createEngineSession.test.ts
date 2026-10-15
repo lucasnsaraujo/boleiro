@@ -312,11 +312,11 @@ test("a club's offer for a listed player waits for the coach, and his counter se
   if (first === "finalOffer") expect(second).toBe("sold");
 });
 
-test("the coach's ticket price and the stadium works the board approved are in the game his commands leave", () => {
+test("the coach's ticket price is in the game his commands leave, and works on the ground he shares are refused", () => {
   const { finances } = marketWindow.recorded.session.read(["finances"]);
   expect(finances[CLUB]?.ticketPrice).toBe(60);
-  expect(marketWindow.stadiumAnswer).toMatchObject({ approved: true, quote: { seats: 2_000 } });
-  expect(finances[CLUB]?.stadiumWorks?.seats).toBe(2_000);
+  expect(marketWindow.stadiumAnswer).toMatchObject({ approved: false, reason: "shared", quote: { seats: 2_000 } });
+  expect(finances[CLUB]?.stadiumWorks).toBeUndefined();
 });
 
 test("the market window's commands survive JSON and replay alike from the same seed", () => {
