@@ -8,6 +8,7 @@ import { coachMarketOf, withCoachMarket } from "@boleiro/engine/sim/transfers/co
 import { listPlayer } from "@boleiro/engine/sim/transfers/listPlayer";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
 import { SellView } from "./SellView.js";
+import { pickOption } from "../controls/pickOption.js";
 
 afterEach(cleanup);
 
@@ -62,7 +63,7 @@ test("a listed player's price mode switches, and another player goes up for sale
   expect(within(listing).getByRole("button", { name: "Caro e lento" }).getAttribute("aria-pressed")).toBe("true");
   await userEvent.click(within(listing).getByRole("button", { name: "Barato e rápido" }));
   expect(onList).toHaveBeenCalledWith(listed.id, "cheap");
-  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Jogador para vender" }), sold.id);
+  await pickOption(screen.getByRole("combobox", { name: "Jogador para vender" }), (name) => name.startsWith(`${sold.name} · F`));
   await userEvent.click(screen.getByRole("button", { name: "Pôr à venda" }));
   expect(onList).toHaveBeenCalledWith(sold.id, "cheap");
 });

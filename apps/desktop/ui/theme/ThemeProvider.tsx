@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
+import tokens from "@boleiro/design-tokens/tokens.json";
 import { isTauri } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { loadThemeSetting, resolveTheme, saveThemeSetting, type ThemeSetting } from "./themeSetting.js";
 
 type ThemeContextValue = { setting: ThemeSetting; changeSetting: (setting: ThemeSetting) => void };
@@ -16,7 +18,7 @@ function isSystemDark(): boolean {
 
 /**
  * Prints the game on cream or night-green paper: `data-theme` on the root switches album.css, and in
- * the desktop app the window's own title bar follows the same choice.
+ * the desktop app the window's own title bar and background follow the same choice.
  */
 export function ThemeProvider({ store, children }: { store: Pick<Storage, "getItem" | "setItem">; children: ReactNode }) {
   const [setting, setSetting] = useState(() => loadThemeSetting(store));
@@ -30,10 +32,17 @@ export function ThemeProvider({ store, children }: { store: Pick<Storage, "getIt
     return () => query.removeEventListener("change", follow);
   }, []);
 
+  const theme = resolveTheme(setting, systemDark);
+
   // Before the first paint: the window's own background is cream, so a later effect flashes it at dark players.
   useLayoutEffect(() => {
-    document.documentElement.dataset.theme = resolveTheme(setting, systemDark);
-  }, [setting, systemDark]);
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
+  // Growing the window shows the native background until the page repaints the new area.
+  useEffect(() => {
+    if (isTauri()) void getCurrentWebviewWindow().setBackgroundColor(tokens.color[theme].paper);
+  }, [theme]);
 
   useEffect(() => {
     if (isTauri()) void getCurrentWindow().setTheme(setting === "system" ? null : setting);

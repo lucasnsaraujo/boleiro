@@ -8,6 +8,7 @@ import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import type { SlotMeta } from "@boleiro/game-client/saves/slotMeta";
 import { NewGame } from "./NewGame.js";
+import { pickOption } from "../controls/pickOption.js";
 
 const closers: (() => void)[] = [];
 
@@ -51,8 +52,8 @@ test("searching narrows the club list by name, ignoring accents", async () => {
 
 test("division and state filters narrow the club list together", async () => {
   await openNewGame();
-  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Divisão" }), "Série A");
-  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Estado" }), "BA");
+  await pickOption(screen.getByRole("combobox", { name: "Divisão" }), "Série A");
+  await pickOption(screen.getByRole("combobox", { name: "Estado" }), "BA");
   expect(clubList().getAllByRole("button")).toHaveLength(2);
   expect(clubList().getByRole("button", { name: "Bahia" })).toBeTruthy();
   expect(clubList().getByRole("button", { name: "Vitória" })).toBeTruthy();

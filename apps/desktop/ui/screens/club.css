@@ -1,0 +1,40 @@
+/* Another club's page: the hub's layout (hub.css), with its facts where the coach's money would be. */
+.club-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 10px 12px;
+}
+
+.club-facts > div + div {
+  padding-left: 10px;
+  border-left: 1px solid var(--rule);
+}
+
+.club-facts dt {
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.club-facts dd {
+  margin-top: 2px;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 19px;
+}
+
+.club-back {
+  flex: none;
+  align-self: flex-start;
+  text-decoration: none;
+}
+
+.club-missing {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 28px;
+}

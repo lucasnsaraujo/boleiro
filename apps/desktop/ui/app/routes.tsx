@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { Navigate, type RouteObject } from "react-router";
 import { Calendar } from "../screens/Calendar.js";
+import { Club } from "../screens/Club.js";
 import { Finances } from "../screens/Finances.js";
 import { History } from "../screens/History.js";
 import { Hub } from "../screens/Hub.js";
@@ -47,6 +48,7 @@ export const routes: RouteObject[] = [
       // The squad lives on the club screen now; the old address still leads to it.
       { path: "/squad", element: <Navigate to="/hub" replace /> },
       { path: "/squad/:playerId", element: <Player /> },
+      { path: "/club/:clubId", element: <Club /> },
     ],
   },
 ];

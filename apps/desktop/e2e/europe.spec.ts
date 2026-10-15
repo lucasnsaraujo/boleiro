@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar as barOf, startAtClub } from "./flows.js";
+import { bar as barOf, pickOption, startAtClub } from "./flows.js";
 
 /** Plays every day before `date` in the worker with no decisions, through the e2e build's engine hook. */
 async function playDaysBefore(page: Page, date: string) {
@@ -25,14 +25,14 @@ test("after Europe's first month the Champions League's league phase and the Pre
   await page.getByRole("tab", { name: "Outras ligas" }).click();
   const picker = page.getByRole("combobox", { name: "Liga" });
 
-  await picker.selectOption({ label: "Champions League" });
+  await pickOption(picker, "Champions League");
   const phase = page.getByRole("tabpanel", { name: "Champions League" }).getByRole("table", { name: "Fase de liga" });
   await expect(phase.getByRole("row")).toHaveCount(37);
   const leader = phase.getByRole("row").nth(1);
   await expect(leader.getByRole("cell").nth(3)).toHaveText("1");
   await expect(page.getByRole("region", { name: "Supercopa da UEFA" })).toContainText(/Paris Saint-Germain \d × \d Aston Villa/);
 
-  await picker.selectOption({ label: "Inglaterra" });
+  await pickOption(picker, "Inglaterra");
   const premierLeague = page.getByRole("tabpanel", { name: "Inglaterra" }).getByRole("table", { name: "Premier League" });
   await expect(premierLeague.getByRole("row")).toHaveCount(21);
   await expect(premierLeague.getByRole("row").nth(1).getByRole("cell").nth(3)).not.toHaveText("0");

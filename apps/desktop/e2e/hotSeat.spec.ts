@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar } from "./flows.js";
+import { bar, pickOption } from "./flows.js";
 
 // Turns until both coaches have set an eleven on a match day: a round or two of the estaduais.
 const MAX_TURNS = 20;
@@ -10,7 +10,7 @@ async function startTwoCoaches(page: Page) {
   await page.getByRole("link", { name: "Novo jogo" }).click();
   await page.getByRole("button", { name: "Mais um técnico" }).click();
   const clubs = page.getByRole("list", { name: "Clubes" });
-  await page.getByRole("combobox", { name: "Divisão" }).selectOption("Série A");
+  await pickOption(page.getByRole("combobox", { name: "Divisão" }), "Série A");
   await expect(clubs.getByRole("button", { name: "Flamengo" })).not.toContainText("…");
   await page.getByRole("textbox", { name: "Nome do técnico 1" }).fill("Ana");
   await clubs.getByRole("button", { name: "Flamengo" }).click();

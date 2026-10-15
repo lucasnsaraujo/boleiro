@@ -5,6 +5,7 @@ import { FORMATION_NAMES, FORMATIONS, type Formation } from "@boleiro/engine/eng
 import type { Posture } from "@boleiro/engine/engine/match";
 import type { Tactics } from "@boleiro/engine/sim/coach/tactics";
 import type { SquadPlayer } from "@boleiro/game-client/round/matchDayPlan";
+import { Select } from "../controls/Select.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { Crest } from "../clubs/Crest.js";
 import { useSound } from "../sound/SoundProvider.js";
@@ -362,21 +363,16 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
             </div>
             <div className="lineup-field">
               <h3 id="penalty-title">Pênalti</h3>
-              <select
-                aria-labelledby="penalty-title"
+              <Select
+                label="Pênalti"
+                caption={null}
                 value={sheet.tactics.penaltyTakerId ?? ""}
-                onChange={(event) => {
-                  const penaltyTakerId = event.target.value || null;
+                options={[{ value: "", label: "Automático" }, ...takers.map((p) => ({ value: p.id, label: p.name }))]}
+                onChange={(value) => {
+                  const penaltyTakerId = value || null;
                   setSheet((s) => changeTactics(s, { penaltyTakerId }));
                 }}
-              >
-                <option value="">Automático</option>
-                {takers.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           </div>
 

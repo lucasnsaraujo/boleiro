@@ -9,6 +9,7 @@ import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { Finances } from "./Finances.js";
+import { pickOption } from "../controls/pickOption.js";
 
 const closers: (() => void)[] = [];
 
@@ -100,7 +101,7 @@ test("a friendly booked on the screen is listed with its date and fee", async ()
   openFinances(await startGame());
   const friendlies = await screen.findByRole("region", { name: "Amistosos" });
   await userEvent.click(within(friendlies).getByRole("button", { name: "Marcar amistoso" }));
-  await userEvent.selectOptions(within(friendlies).getByRole("combobox", { name: "Adversário" }), "nautico-pe");
+  await pickOption(within(friendlies).getByRole("combobox", { name: "Adversário" }), "Náutico");
   await userEvent.click(within(friendlies).getByRole("button", { name: "Marcar" }));
   const booked = await within(friendlies).findByRole("list", { name: "Amistosos marcados" });
   expect(within(booked).getByText(/Náutico/)).toBeTruthy();

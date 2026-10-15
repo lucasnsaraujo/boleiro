@@ -12,6 +12,7 @@ import {
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import { formatBarDate, formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
+import { Select } from "../controls/Select.js";
 import { Crest } from "../clubs/Crest.js";
 
 export type FriendlyState = BookingState & Pick<GameState, "seed">;
@@ -119,20 +120,18 @@ function BookingForm({ state, isBusy, onBook, onClose }: { state: FriendlyState;
 
   return (
     <div className="fin-book-form">
-      <label className="fin-field">
-        <span className="lbl">Adversário</span>
-        <select value={opponentId} onChange={(event) => setOpponentId(event.target.value)} aria-label="Adversário">
-          {rivals.map(({ division, clubs }) => (
-            <optgroup key={division} label={`Série ${division}`}>
-              {clubs.map((club) => (
-                <option key={club.id} value={club.id}>
-                  {club.shortName}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-      </label>
+      <div className="fin-field">
+        <span className="lbl" aria-hidden="true">
+          Adversário
+        </span>
+        <Select
+          label="Adversário"
+          caption={null}
+          value={opponentId}
+          options={rivals.flatMap(({ division, clubs }) => clubs.map((club) => ({ value: club.id, label: club.shortName, group: `Série ${division}` })))}
+          onChange={setOpponentId}
+        />
+      </div>
       <div className="fin-book-row">
         <div className="seg" role="radiogroup" aria-label="Mando">
           {[true, false].map((home) => (
@@ -145,16 +144,12 @@ function BookingForm({ state, isBusy, onBook, onClose }: { state: FriendlyState;
             </span>
           ))}
         </div>
-        <label className="fin-field">
-          <span className="lbl">Data</span>
-          <select value={date ?? ""} onChange={(event) => setChosen(event.target.value)} aria-label="Data" disabled={!dates.length}>
-            {dates.map((d) => (
-              <option key={d} value={d}>
-                {formatBarDate(d)}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="fin-field">
+          <span className="lbl" aria-hidden="true">
+            Data
+          </span>
+          <Select label="Data" caption={null} value={date ?? ""} options={dates.map((d) => ({ value: d, label: formatBarDate(d) }))} onChange={setChosen} isDisabled={!dates.length} />
+        </div>
       </div>
       <p>
         {!answer || !opponent

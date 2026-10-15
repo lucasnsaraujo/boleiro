@@ -28,9 +28,27 @@ export type MarketFilters = {
   status: MarketStatus | null;
   /** Only players who would say yes or maybe to joining the coach's club. */
   isWillingOnly: boolean;
+  /** A nationality as the data names it ("Argentina"); a player with two matches either. */
+  nationality: string | null;
+  /** This season's goals, every competition together, at least. */
+  minGoals: number | null;
+  /** This season's minutes on the pitch, at least. */
+  minMinutes: number | null;
 };
 
-export const NO_FILTERS: MarketFilters = { name: "", group: null, minStrength: null, maxStrength: null, clubId: null, division: null, status: null, isWillingOnly: false };
+export const NO_FILTERS: MarketFilters = {
+  name: "",
+  group: null,
+  minStrength: null,
+  maxStrength: null,
+  clubId: null,
+  division: null,
+  status: null,
+  isWillingOnly: false,
+  nationality: null,
+  minGoals: null,
+  minMinutes: null,
+};
 
 export type MarketRow = {
   id: string;
@@ -53,11 +71,19 @@ export type MarketRow = {
   willing: Willingness;
 };
 
-export type MarketState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "market">;
+export type MarketState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "market" | "history">;
+
+/** A filter's choice as the market's selects list it. */
+export type FilterOption<T extends string> = { value: T; label: string; group?: string };
 
 // guess: above 60% the coach can count on a yes, under 35% he shouldn't.
 const SURE_YES = 0.6;
 const LIKELY_NO = 0.35;
+
+// Every player the full tier holds plays in Brazil; the other countries are played result-only, without players to sign.
+const COUNTRY = "Brasil";
+const DIVISIONS: readonly Division[] = ["A", "B", "C", "D"];
+const leagueName = (division: Division) => `Série ${division}`;
 
 const fold = (text: string) => text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 
@@ -69,6 +95,73 @@ export function windowStatus(date: IsoDate): { isOpen: boolean; date: IsoDate } 
   if (open) return { isOpen: true, date: `${year}-${open.closes}` };
   const next = TRANSFER_WINDOWS.find((w) => day < w.opens);
   return next ? { isOpen: false, date: `${year}-${next.opens}` } : { isOpen: false, date: `${year + 1}-${TRANSFER_WINDOWS[0]?.opens ?? "01-01"}` };
+}
+
+/** The leagues whose players are on the market, grouped by country. */
+export function marketLeagues(state: Pick<GameState, "clubs">): FilterOption<Division>[] {
+  const played = new Set(Object.values(state.clubs).map((club) => club.division));
+  return DIVISIONS.filter((division) => played.has(division)).map((division) => ({ value: division, label: leagueName(division), group: COUNTRY }));
+}
+
+/** The other clubs of a league, or of every league grouped by it, by name. */
+export function marketClubs(state: Pick<GameState, "clubs" | "coachClubId">, division: Division | null): FilterOption<string>[] {
+  return Object.values(state.clubs)
+    .filter((club) => club.id !== state.coachClubId && club.division !== null && (!division || club.division === division))
+    .sort((a, b) => (a.division ?? "").localeCompare(b.division ?? "") || a.shortName.localeCompare(b.shortName, "pt-BR"))
+    .map((club) => ({ value: club.id, label: club.shortName, group: division || !club.division ? undefined : leagueName(club.division) }));
+}
+
+// The data names countries in English, Transfermarkt's way; the language's own region names give most of them in
+// Portuguese, through their codes. These are the names Transfermarkt spells its own way, or that have no region code.
+const TRANSFERMARKT_NAMES: Record<string, string> = {
+  England: "Inglaterra",
+  Scotland: "Escócia",
+  Wales: "País de Gales",
+  "Northern Ireland": "Irlanda do Norte",
+  "Korea, South": "Coreia do Sul",
+  "Cote d'Ivoire": "Costa do Marfim",
+  "DR Congo": "RD Congo",
+  "Sao Tome and Principe": "São Tomé e Príncipe",
+  "St. Vincent & Grenadinen": "São Vicente e Granadinas",
+};
+const REGION_CODES = Array.from({ length: 26 * 26 }, (_, i) => String.fromCharCode(65 + Math.floor(i / 26), 65 + (i % 26)));
+let portugueseNames: Map<string, string> | null = null;
+
+function inPortuguese(country: string): string {
+  if (!portugueseNames) {
+    const english = new Intl.DisplayNames(["en"], { type: "region", fallback: "none" });
+    const portuguese = new Intl.DisplayNames(["pt-BR"], { type: "region", fallback: "none" });
+    portugueseNames = new Map(REGION_CODES.flatMap((code) => {
+      const from = english.of(code);
+      const to = portuguese.of(code);
+      return from && to ? [[from, to] as const] : [];
+    }));
+  }
+  return TRANSFERMARKT_NAMES[country] ?? portugueseNames.get(country) ?? country;
+}
+
+/** The nationalities among other clubs' players and free agents, named in Portuguese, alphabetically. */
+export function marketNationalities(state: Pick<GameState, "coachClubId" | "players" | "market">): FilterOption<string>[] {
+  const found = new Set<string>();
+  for (const player of Object.values(state.players)) if (player.clubId !== state.coachClubId) for (const n of player.nationalities) found.add(n);
+  for (const player of Object.values(state.market.freeAgents)) for (const n of player.nationalities) found.add(n);
+  // The data's "N/A", split at its slash like a second nationality, leaves single letters.
+  return [...found]
+    .filter((value) => value.length > 1).map((value) => ({ value, label: inPortuguese(value) })).sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
+}
+
+/** The weakest and strongest rounded strength among other clubs' players and free agents: the strength range's ends. */
+export function strengthBounds(state: Pick<GameState, "coachClubId" | "players" | "market">): { min: number; max: number } {
+  let min = Infinity;
+  let max = -Infinity;
+  const take = (player: SimPlayer) => {
+    const strength = Math.round(player.strength);
+    min = Math.min(min, strength);
+    max = Math.max(max, strength);
+  };
+  for (const player of Object.values(state.players)) if (player.clubId !== state.coachClubId) take(player);
+  for (const player of Object.values(state.market.freeAgents)) take(player);
+  return min > max ? { min: 1, max: 99 } : { min, max };
 }
 
 /** Other clubs' players and free agents that match, strongest first: how many, and the first `limit` as rows. */
@@ -97,8 +190,15 @@ export function searchMarket(state: MarketState, filters: MarketFilters, limit: 
     return chance >= SURE_YES ? "yes" : chance >= LIKELY_NO ? "maybe" : "no";
   };
 
+  const goalsByCompetition = Object.values(state.history.current.goals);
+  const seasonGoals = (playerId: string) => goalsByCompetition.reduce((sum, byPlayer) => sum + (byPlayer[playerId] ?? 0), 0);
+
   const matches = (player: SimPlayer, free: boolean): boolean => {
     const strength = Math.round(player.strength);
+    if (filters.nationality && !player.nationalities.includes(filters.nationality)) return false;
+    // A free agent keeps the minutes of the season he was released in, which may be long gone.
+    if (filters.minMinutes !== null && (free ? 0 : player.condition.seasonMinutes) < filters.minMinutes) return false;
+    if (filters.minGoals !== null && seasonGoals(player.id) < filters.minGoals) return false;
     if (filters.group && player.group !== filters.group) return false;
     if (filters.minStrength !== null && strength < filters.minStrength) return false;
     if (filters.maxStrength !== null && strength > filters.maxStrength) return false;
