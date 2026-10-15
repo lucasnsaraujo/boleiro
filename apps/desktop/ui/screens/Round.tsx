@@ -481,7 +481,7 @@ function Digit({ value, className, flash, isSettled }: { value: number; classNam
 
 const EVENT_ICONS: Partial<Record<EventKind, string>> = {
   goal: "ph-fill ph-soccer-ball",
-  penaltyMiss: "ph-bold ph-hand-palm",
+  penaltyMiss: "ph-bold ph-target",
   injury: "ph-fill ph-first-aid",
   substitution: "ph-bold ph-arrows-left-right",
 };

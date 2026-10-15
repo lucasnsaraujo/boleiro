@@ -572,7 +572,8 @@
   color: var(--mute);
 }
 
-.mk-injury {
+.mk-injury,
+.mk-penaltyMiss {
   color: var(--red);
 }
 
@@ -634,6 +635,19 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   animation: gol-slap var(--flood, 1500ms) var(--e-slap) both;
+}
+
+/* A missed penalty and a red card get a chip of their own colour, slapped on like the goal's. */
+.live-r .gol.pen {
+  max-width: 76px;
+  background: var(--yellow);
+  color: var(--on-yellow);
+}
+
+.live-r .gol.exp {
+  max-width: 76px;
+  background: #d7322a;
+  color: #fff;
 }
 
 @keyframes gol-slap {

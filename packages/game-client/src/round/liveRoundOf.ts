@@ -141,6 +141,8 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
     for (const e of m.events) {
       if ("playerId" in e) nameOf(e.playerId);
       if (e.type === "substitution") nameOf(e.offId);
+      if (e.type === "goal" && e.assistId) nameOf(e.assistId);
+      if (e.type === "penaltyMiss") nameOf(e.keeperId);
     }
   }
   const coach = coachSideOf(live, coachFixture);

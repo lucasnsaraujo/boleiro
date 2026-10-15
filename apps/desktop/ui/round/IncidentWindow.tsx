@@ -57,9 +57,9 @@ export function IncidentWindow({ incident, round, match, subsLeft, stopsLeft, is
     });
   }
 
-  const swapSwitch = (suggestion: Suggestion) => (
+  const swapSwitch = (suggestion: Suggestion, label: string) => (
     <label className="inc-swap">
-      Sai {nameOf(suggestion.offId)}, entra {nameOf(suggestion.onId)}
+      {label}
       <input type="checkbox" className="inc-sw" checked={chosen.has(suggestion.forId)} onChange={() => toggle(suggestion.forId)} />
     </label>
   );
@@ -122,7 +122,7 @@ export function IncidentWindow({ incident, round, match, subsLeft, stopsLeft, is
                 </div>
                 <p>{why(headline)}</p>
               </div>
-              {swapSwitch(headline)}
+              {swapSwitch(headline, "Fazer essa troca")}
             </>
           ) : (
             <div className="inc-chg">
@@ -142,7 +142,7 @@ export function IncidentWindow({ incident, round, match, subsLeft, stopsLeft, is
                 <b>{other.line}</b>
                 <p>{other.note}</p>
               </div>
-              {suggestion ? swapSwitch(suggestion) : <span className="inc-none">Sem troca</span>}
+              {suggestion ? swapSwitch(suggestion, `Sai ${nameOf(suggestion.offId)}, entra ${nameOf(suggestion.onId)}`) : <span className="inc-none">Sem troca</span>}
             </div>
           );
         })}

@@ -54,3 +54,11 @@ test("a scorer is rated above his side's quietest player", () => {
   const scorer = ratings.find((r) => r.playerId === goal.playerId)?.rating ?? 0;
   expect(scorer).toBeGreaterThan(Math.min(...ratings.map((r) => r.rating)));
 });
+
+test("the round names every player its events mention: scorers, assistants and keepers who face a penalty", () => {
+  const mentioned = kickOff.matches.flatMap((m) =>
+    m.events.flatMap((e) => (e.type === "goal" ? [e.playerId, ...(e.assistId ? [e.assistId] : [])] : e.type === "penaltyMiss" ? [e.playerId, e.keeperId] : [])),
+  );
+  expect(mentioned.some((id) => kickOff.matches.some((m) => m.events.some((e) => e.type === "goal" && e.assistId === id)))).toBe(true);
+  for (const id of mentioned) expect(kickOff.names[id]).toBeTruthy();
+});
