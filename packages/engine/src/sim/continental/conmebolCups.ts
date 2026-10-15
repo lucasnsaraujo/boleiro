@@ -1,4 +1,4 @@
-import type { Competition, ContinentalCompetition, ContinentalCup, Fixture, IsoDate } from "../gameState.js";
+import { CONTINENTAL_CUPS, type Competition, type ContinentalCompetition, type ContinentalCup, type Fixture, type IsoDate } from "../gameState.js";
 import type { StageShape } from "../leagueFormats.js";
 import { inSeason } from "../seasonCalendar.js";
 import { groupStageAt, knockoutStageAt } from "../stageAt.js";
@@ -13,27 +13,28 @@ type CupStage = { name: string; dates: IsoDate[] };
 // its group runners-up and the Libertadores' group thirds, two-leg ties and a single-match final;
 // the Recopa the two champions over two legs.
 // guess: dates on the usual CONMEBOL weeks, the Libertadores on Tuesdays and the Sul-Americana and
-// Recopa on Thursdays, days the Brazilian calendar never uses; the finals on a weekday too, though
-// CONMEBOL plays them on a Saturday at a neutral ground, because a Saturday may hold a Série A round.
+// Recopa on Thursdays, days the Brazilian calendar never uses, and clear of the weeks of the Copa do
+// Brasil's fixed Wednesdays; the finals on a weekday too, though CONMEBOL plays them on a Saturday at
+// a neutral ground, because a Saturday may hold a Série A round.
 export const CUP_STAGES: Record<ContinentalCup, readonly CupStage[]> = {
   libertadores: [
     { name: "stage-1", dates: ["2026-02-03", "2026-02-10"] },
     { name: "stage-2", dates: ["2026-02-17", "2026-02-24"] },
     { name: "stage-3", dates: ["2026-03-03", "2026-03-10"] },
-    { name: "groups", dates: ["2026-04-07", "2026-04-14", "2026-04-21", "2026-04-28", "2026-05-12", "2026-05-19"] },
+    { name: "groups", dates: ["2026-04-07", "2026-04-14", "2026-04-28", "2026-05-05", "2026-05-19", "2026-05-26"] },
     { name: "round-of-16", dates: ["2026-08-11", "2026-08-18"] },
     { name: "quarter-finals", dates: ["2026-09-15", "2026-09-22"] },
-    { name: "semi-finals", dates: ["2026-10-20", "2026-10-27"] },
+    { name: "semi-finals", dates: ["2026-10-13", "2026-10-20"] },
     { name: "final", dates: ["2026-11-24"] },
   ],
   // guess: the first stage's national ties are single matches at the better seed's ground.
   "sul-americana": [
     { name: "stage-1", dates: ["2026-03-19"] },
-    { name: "groups", dates: ["2026-04-09", "2026-04-16", "2026-04-23", "2026-04-30", "2026-05-14", "2026-05-21"] },
+    { name: "groups", dates: ["2026-04-09", "2026-04-16", "2026-04-30", "2026-05-07", "2026-05-21", "2026-05-28"] },
     { name: "playoffs", dates: ["2026-07-16", "2026-07-23"] },
     { name: "round-of-16", dates: ["2026-08-13", "2026-08-20"] },
     { name: "quarter-finals", dates: ["2026-09-17", "2026-09-24"] },
-    { name: "semi-finals", dates: ["2026-10-22", "2026-10-29"] },
+    { name: "semi-finals", dates: ["2026-10-15", "2026-10-22"] },
     { name: "final", dates: ["2026-11-19"] },
   ],
   recopa: [{ name: "final", dates: ["2026-02-19", "2026-02-26"] }],
@@ -48,6 +49,11 @@ export type SeasonSoFar = { competitions: Readonly<Record<string, Competition>>;
 
 export function cupStageDates(cup: ContinentalCup, season: number): IsoDate[][] {
   return CUP_STAGES[cup].map((stage) => stage.dates.map((date) => inSeason(date, season)));
+}
+
+/** Every date of the season's CONMEBOL cups, which Brazil's leagues keep a day clear of. */
+export function continentalDates(season: number): IsoDate[] {
+  return CONTINENTAL_CUPS.flatMap((cup) => cupStageDates(cup, season).flat());
 }
 
 const fixturesOf = (competition: Competition, fixtures: readonly Fixture[], stage: number) =>

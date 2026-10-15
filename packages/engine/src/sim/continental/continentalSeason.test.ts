@@ -50,6 +50,15 @@ describe("a season with South America", () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
+  it("gives every Brazilian club at least a day's rest between two matches, the cups' included", () => {
+    const datesOf = new Map<string, string[]>();
+    for (const f of lastDay.fixtures) for (const id of [f.homeId, f.awayId]) if (lastDay.clubs[id]) datesOf.set(id, [...(datesOf.get(id) ?? []), f.date]);
+    const backToBack = [...datesOf].flatMap(([id, dates]) =>
+      dates.toSorted().flatMap((date, i, sorted) => (i > 0 && Date.parse(date) - Date.parse(sorted[i - 1] ?? "") < 2 * 86_400_000 ? [`${id} ${date}`] : [])),
+    );
+    expect(backToBack).toEqual([]);
+  });
+
   it("drops the Libertadores' group thirds into the Sul-Americana play-offs", () => {
     const sulAmericana = cupOf(lastDay, "sul-americana");
     const playoffClubs = sulAmericana.stages[2]?.kind === "knockout" ? sulAmericana.stages[2].ties.map(([third]) => third) : [];

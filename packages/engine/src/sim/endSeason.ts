@@ -73,7 +73,7 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
   );
   const season = state.season + 1;
   const random = randomStream(state.rngState);
-  const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false);
+  const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false, state.economy.continentalStages !== undefined);
   const outcomes = Object.fromEntries(
     Object.values(state.competitions).flatMap((competition) => (competition.kind === "league" ? [[competition.id, outcomeAt(competition.division)]] : [])),
   );

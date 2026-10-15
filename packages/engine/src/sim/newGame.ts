@@ -22,6 +22,7 @@ import { openingContractUntil } from "./transfers/openingContractUntil.js";
 import { openingMarket } from "./transfers/openingMarket.js";
 import { startSeason } from "./startSeason.js";
 import { startCountry } from "./world/resultOnlyWorld.js";
+import { SOUTH_AMERICA } from "./world/southAmerica.js";
 import type { CountryStructure, World, WorldClub } from "./world/world.js";
 
 /** A result-only country to start: its structure and its clubs level by level, top first. */
@@ -125,7 +126,7 @@ export function newGame(
       return { id, clubId, name, group, strength, ...(roles?.length ? { positions: [...roles] } : {}), contractUntil, ...openingProfile(player, `${season}-01-01`, traitRandom.next) };
     });
   const squadPlayers = [...dataPlayers, ...academyTopUp(clubs, dataPlayers, `${season}-01-01`, randomStream(seed ^ ACADEMY_STREAM_SALT).next)];
-  const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION, stateChampionships);
+  const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION, stateChampionships, playsContinentalCups(world ?? []));
   const { economy, finances: boardFinances, wages } = openingFinances(clubsById, squadPlayers, competitions, fixtures, financeData, competitionMoney);
   const finances = withNewCoachRoom(boardFinances, coachClubId);
   const simPlayers = Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }]));
@@ -155,6 +156,11 @@ export function newGame(
     ...(stateChampionships ? {} : { playsStateChampionships: false as const }),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
   return withContinentalCups(game, competitionMoney);
+}
+
+/** Whether the world holds all of South America, which the CONMEBOL cups need. */
+function playsContinentalCups(world: readonly CountryStart[]): boolean {
+  return SOUTH_AMERICA.every((structure) => world.some((country) => country.structure.id === structure.id));
 }
 
 /** The game with CONMEBOL's cups when South America is in its world, their prizes kept in its economy. */
