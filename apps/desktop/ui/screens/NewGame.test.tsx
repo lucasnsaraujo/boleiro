@@ -216,3 +216,18 @@ test("Personalizar opens more options and starts the game with the coach's own m
   expect(formats).toEqual({ calendar: "real", leagueLegs: 1, continentalGroups: "league-phase", knockouts: "single" });
   expect(calendar.leagueDates.A).toHaveLength(19);
 });
+
+test("a club abroad is picked from its league in the division filter and starts on the unified calendar", async () => {
+  const { engine } = await openNewGame();
+  await pickOption(screen.getByRole("combobox", { name: "Divisão" }), "Premier League · Inglaterra");
+  await userEvent.click(clubList().getByRole("button", { name: "Arsenal FC" }));
+  expect(screen.getByRole("radio", { name: "Realista" })).toHaveProperty("disabled", true);
+  expect(screen.getByRole("radio", { name: "Rápido" })).toHaveProperty("checked", true);
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico" }), "Rogério");
+  await userEvent.click(screen.getByRole("button", { name: "Começar carreira" }));
+  await screen.findByText("Clube aberto", {}, { timeout: 30_000 });
+  const { coachClubId, formats, clubs } = await engine.read(["coachClubId", "formats", "clubs"]);
+  expect(coachClubId).toBe("tm-11");
+  expect(formats?.calendar).toBe("unified");
+  expect(clubs["tm-11"]?.abroad).toEqual({ country: "gb-eng", level: 0 });
+});

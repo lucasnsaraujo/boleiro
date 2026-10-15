@@ -40,7 +40,7 @@ const isContinentalCup = (key: string): key is ContinentalCup => key in CONTINEN
 export function competitionName(competition: Competition): string {
   switch (competition.kind) {
     case "league":
-      return `Série ${competition.division}`;
+      return competition.abroad ? competition.abroad.name : `Série ${competition.division}`;
     case "state":
       return STATE_CHAMPIONSHIPS[competition.state];
     case "cup":
