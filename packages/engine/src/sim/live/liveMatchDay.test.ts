@@ -172,3 +172,64 @@ describe("the coach's posture", () => {
     expect(attacking.against).toBeGreaterThan(1.2 * defensive.against);
   });
 });
+
+describe("match depth", () => {
+  // Goal kinds and assists draw from a stream keyed on the game's seed, so each day gets a seed of its own.
+  const days = Array.from({ length: 30 }, (_, seed) => startMatchDay({ ...matchDay, seed, rngState: seed }, {}));
+  const allEvents = days.flatMap((live) => live.matches.flatMap((m) => m.events.map((e) => ({ e, match: m, live }))));
+  const goals = allEvents.flatMap(({ e, match }) => (e.type === "goal" ? [{ goal: e, match }] : []));
+  const share = (count: number) => count / goals.length;
+
+  it("tells each goal's kind at about Série A's shares: penalties, headers, own goals and free kicks", () => {
+    const kind = (k: string) => goals.filter(({ goal }) => goal.kind === k).length;
+    expect(goals.length).toBeGreaterThan(600);
+    expect(goals.every(({ goal }) => goal.kind !== undefined)).toBe(true);
+    expect(share(kind("penalty"))).toBeGreaterThan(0.05);
+    expect(share(kind("penalty"))).toBeLessThan(0.13);
+    expect(share(kind("header"))).toBeGreaterThan(0.13);
+    expect(share(kind("header"))).toBeLessThan(0.23);
+    expect(kind("ownGoal")).toBeGreaterThan(0);
+    expect(kind("freeKick")).toBeGreaterThan(0);
+  });
+
+  it("credits most open-play goals with an assist by a team-mate, never the scorer himself", () => {
+    const openPlay = goals.filter(({ goal }) => goal.kind === "openPlay");
+    const assisted = openPlay.filter(({ goal }) => goal.assistId);
+    expect(assisted.length / openPlay.length).toBeGreaterThan(0.6);
+    expect(assisted.length / openPlay.length).toBeLessThan(0.85);
+    for (const { goal } of assisted) {
+      expect(goal.assistId).not.toBe(goal.playerId);
+      expect(matchDay.players[goal.assistId ?? ""]?.clubId).toBe(goal.clubId);
+    }
+  });
+
+  it("puts an own goal in by a player of the other side", () => {
+    for (const { goal, match } of goals.filter(({ goal }) => goal.kind === "ownGoal")) {
+      const opponentId = goal.clubId === match.homeId ? match.awayId : match.homeId;
+      expect(matchDay.players[goal.playerId]?.clubId).toBe(opponentId);
+    }
+  });
+
+  it("has CPU coaches make substitutions within Law 3: five at most, in three windows plus half-time", () => {
+    const sides = days.flatMap((live) =>
+      live.matches.flatMap((m) => [m.homeId, m.awayId].filter((id) => id !== COACH_CLUB).map((clubId) => m.events.filter((e) => e.type === "substitution" && e.clubId === clubId))),
+    );
+    for (const subs of sides) {
+      expect(subs.length).toBeLessThanOrEqual(5);
+      expect(new Set(subs.filter((s) => s.minute !== HALF_TIME).map((s) => s.minute)).size).toBeLessThanOrEqual(3);
+    }
+    const mean = sides.reduce((sum, subs) => sum + subs.length, 0) / sides.length;
+    expect(mean).toBeGreaterThan(3.5);
+  });
+
+  it("has a CPU coach replace a player hurt in the match", () => {
+    const hurt = allEvents.filter(({ e }) => e.type === "injury" && e.clubId !== COACH_CLUB && e.minute < FULL_TIME - 1);
+    const replaced = hurt.filter(({ e, match }) => match.events.some((s) => s.type === "substitution" && e.type === "injury" && s.offId === e.playerId && s.minute === e.minute));
+    expect(hurt.length).toBeGreaterThan(5);
+    expect(replaced.length / hurt.length).toBeGreaterThan(0.7);
+  });
+
+  it("leaves the coach's own side to him: no substitution he did not make", () => {
+    expect(allEvents.some(({ e }) => e.type === "substitution" && e.clubId === COACH_CLUB)).toBe(false);
+  });
+});

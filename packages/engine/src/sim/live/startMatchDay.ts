@@ -15,10 +15,11 @@ import { isInjured } from "../players/isInjured.js";
 import { matchSetup, playingStrength, type CoachPlan } from "../players/matchSetup.js";
 import { drawMatchInjuries, recordMatchLoad } from "../players/recordMatchLoad.js";
 import { squadsByClub } from "../players/squadsByClub.js";
-import { settleShootout } from "../settleShootout.js";
+import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
+import { aiBench, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
 import { coachOutcome } from "./coachOutcome.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
-import { kickOffTimeline, scorerStream } from "./matchTimeline.js";
+import { detailStream, FULL_TIME, inMatchOrder, kickOffTimeline, scorerStream } from "./matchTimeline.js";
 
 const LINEUP_SIZE = 11;
 // Goal minutes and redraws of the coach's match draw from streams of their own, so the day's
@@ -79,18 +80,56 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const params = withoutCrowd(paramsForCompetition(competition), clubMood(state, fixture.homeId));
     const goals = simulateMatch(setup.home, setup.away, random.next, params, sendOffMinutes(bookings, fixture.homeId));
     const score = { ...goals, cards: countCards(bookings, fixture.homeId) };
-    const played = settleShootout(state, { ...fixture, result: score }, random.next);
+    const shootout = isShootoutDue(state, { ...fixture, result: score }) ? shootoutSeed(random.next) : null;
     const injuries = drawMatchInjuries([...setup.homeLineup, ...setup.awayLineup], setup.context, random.next);
     const { homeId, awayId } = fixture;
-    const timeline = kickOffTimeline({ homeId, awayId, ...setup, goals, bookings, injuries }, timelineRandom, scorerStream(state.seed, fixture.id));
-    matches.push({ fixtureId: fixture.id, homeId, awayId, formations: setup.formations, events: timeline.events });
-    const lineups = { home: setup.homeLineup, away: setup.awayLineup };
+    const strengths = new Map<string, (p: SimPlayer) => number>();
+    const strength = (p: SimPlayer) => {
+      let own = strengths.get(p.clubId);
+      if (!own) strengths.set(p.clubId, (own = playingStrength(state, p.clubId, setup.context, available(p.clubId))));
+      return own(p);
+    };
+    const isFit = (p: SimPlayer) => !isInjured(p, state.date);
+    const benchOf = (clubId: string, lineup: readonly SimPlayer[]) => (clubId === coachClubId ? [] : aiBench(available(clubId), lineup, isFit));
+    const benches = { home: benchOf(homeId, setup.homeLineup), away: benchOf(awayId, setup.awayLineup) };
+    const takerOf = (clubId: string) => (clubId === coachClubId ? coach.tactics.penaltyTakerId : null);
+    const timeline = kickOffTimeline(
+      {
+        homeId,
+        awayId,
+        ...setup,
+        benches,
+        aiSides: { home: homeId !== coachClubId, away: awayId !== coachClubId },
+        penaltyTakers: { home: takerOf(homeId), away: takerOf(awayId) },
+        strength,
+        tiredness: (p) => tirednessOn(p, state.date),
+        goals,
+        bookings,
+        injuries,
+      },
+      timelineRandom,
+      scorerStream(state.seed, fixture.id),
+      detailStream(state.seed, fixture.id),
+    );
+    const shootoutSide = (clubId: string, lineup: readonly SimPlayer[], bench: readonly SimPlayer[]) => ({
+      clubId,
+      onPitch: onPitchAt(lineup, bench, timeline.events, clubId, FULL_TIME + 1),
+      morale: clubMood(state, clubId).squad,
+      ...(clubId === coachClubId && coach.tactics.kickerOrder ? { order: coach.tactics.kickerOrder } : {}),
+    });
+    const settled =
+      shootout === null
+        ? { fixture: { ...fixture, result: score }, events: [] }
+        : settleShootout({ ...fixture, result: score }, shootout, shootoutSide(homeId, setup.homeLineup, benches.home), shootoutSide(awayId, setup.awayLineup, benches.away), strength);
+    const played = settled.fixture;
+    matches.push({ fixtureId: fixture.id, homeId, awayId, formations: setup.formations, events: inMatchOrder([...timeline.events, ...settled.events]) });
+    const lineups = timeline.played;
 
     if (coachClubId) {
       const kickOff = coachOutcome(
         state,
         competition,
-        { played, context: setup.context, awayTravelKm: setup.awayTravelKm, lineups, minutes: new Map(), bookings, injuries, scorers: timeline.scorers },
+        { played, context: setup.context, awayTravelKm: setup.awayTravelKm, lineups, minutes: timeline.minutes, bookings, injuries, scorers: timeline.scorers },
         random.next,
       );
       const coachLineup = coachClubId === homeId ? setup.homeLineup : setup.awayLineup;
@@ -101,15 +140,17 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
         return players.map((p) => [p.id, strength(p)] as const);
       };
       const opponentLineup = opponentId === homeId ? setup.homeLineup : setup.awayLineup;
+      const opponentBench = opponentId === homeId ? benches.home : benches.away;
       coachMatch = {
         fixtureId: fixture.id,
         context: setup.context,
         awayTravelKm: setup.awayTravelKm,
         params,
         cardRates,
-        starters: lineups,
+        starters: { home: setup.homeLineup, away: setup.awayLineup },
         bench,
-        strengths: Object.fromEntries([...strengthsOf(coachClubId, [...coachLineup, ...bench]), ...strengthsOf(opponentId, opponentLineup)]),
+        opponentBench,
+        strengths: Object.fromEntries([...strengthsOf(coachClubId, [...coachLineup, ...bench]), ...strengthsOf(opponentId, [...opponentLineup, ...opponentBench])]),
         tactics: coach.tactics,
         lastChangeMinute: 0,
         rngState: state.rngState ^ COACH_MATCH_STREAM_SALT,
@@ -121,7 +162,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     }
 
     events.push({ type: "matchPlayed", fixture: played });
-    const load = recordMatchLoad({ ...setup, result: score }, injuries);
+    const load = recordMatchLoad({ ...setup, homeLineup: lineups.home, awayLineup: lineups.away, result: score }, injuries, timeline.minutes);
     playedToday.push(...load.players);
     events.push(...load.events);
     events.push(...cards.record(competition, played, bookings, (id) => state.players[id]?.clubId, random.next));
