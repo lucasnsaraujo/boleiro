@@ -109,6 +109,14 @@
   margin-top: 5px;
 }
 
+.hub-money .conf-top {
+  gap: 4px;
+}
+
+.hub-money .conf-top > b {
+  font-size: 12px;
+}
+
 .hub-money .meter > i {
   transform-origin: left;
 }
