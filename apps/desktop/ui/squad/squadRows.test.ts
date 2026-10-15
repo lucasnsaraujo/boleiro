@@ -19,6 +19,13 @@ describe("squadRows", () => {
     expect(rows.map((row) => row.id).sort()).toEqual(squad.map((p) => p.id).sort());
   });
 
+  test("lists another club's squad when asked for it", () => {
+    const palmeiras = Object.values(game.players).filter((p) => p.clubId === "palmeiras-sp");
+    expect(palmeiras.length).toBeGreaterThan(0);
+    expect(squadRows(game, "palmeiras-sp").map((row) => row.id).sort()).toEqual(palmeiras.map((p) => p.id).sort());
+    expect(squadRows({ ...game, coachClubId: null }, "palmeiras-sp")).toHaveLength(palmeiras.length);
+  });
+
   test("a coach without a club has no squad", () => {
     expect(squadRows({ ...game, coachClubId: null })).toEqual([]);
   });

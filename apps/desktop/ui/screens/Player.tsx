@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { Select } from "../controls/Select.js";
@@ -134,10 +134,10 @@ export function Player() {
           {status && <p className={`player-status ${card.status?.kind ?? ""}`}>{status}</p>}
         </div>
         {club && (
-          <div className="player-club">
+          <Link className="player-club" to={`/club/${club.id}`} aria-label={`Ver o elenco do ${club.shortName}`}>
             <Crest club={club} size={40} />
             <ClubPlate club={club} size="row" />
-          </div>
+          </Link>
         )}
       </section>
       <div className="player-facts">

@@ -197,10 +197,10 @@ export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDe
                       </td>
                       <td className="l">
                         {owner ? (
-                          <span className="market-club">
+                          <Link className="market-club" to={`/club/${owner.id}`}>
                             <Crest club={owner} size={18} />
                             {owner.shortName}
-                          </span>
+                          </Link>
                         ) : (
                           <span className="dim">Sem clube</span>
                         )}
@@ -293,7 +293,7 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
         <div className="market-chosen-who">
           <h2>{row.name}</h2>
           <p>
-            {POSITION_NAMES[row.group]} · {owner ? owner.shortName : "sem clube"} · {row.age} anos
+            {POSITION_NAMES[row.group]} · {owner ? <Link to={`/club/${owner.id}`}>{owner.shortName}</Link> : "sem clube"} · {row.age} anos
           </p>
         </div>
         <p className="market-chosen-f" aria-label={`Força ${Math.round(row.strength)}`}>

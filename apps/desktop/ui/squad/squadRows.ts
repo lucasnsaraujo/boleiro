@@ -68,15 +68,15 @@ export function statusText(status: PlayerStatus): string {
 
 export const SQUAD_KEYS = ["date", "season", "coachClubId", "clubs", "players", "discipline", "competitions", "fixtures", "history", "market"] as const;
 
-/** The coach's squad, one row per player. */
-export function squadRows(state: Pick<GameState, (typeof SQUAD_KEYS)[number]>): SquadRow[] {
-  const { coachClubId, date } = state;
-  const club = coachClubId ? state.clubs[coachClubId] : undefined;
-  if (!coachClubId || !club) return [];
-  const statusState = { ...state, discipline: liveDiscipline(state, coachClubId) };
+/** A club's squad, one row per player: the coach's own unless another club is named. */
+export function squadRows(state: Pick<GameState, (typeof SQUAD_KEYS)[number]>, clubId: string | null = state.coachClubId): SquadRow[] {
+  const { date } = state;
+  const club = clubId ? state.clubs[clubId] : undefined;
+  if (!clubId || !club) return [];
+  const statusState = { ...state, discipline: liveDiscipline(state, clubId) };
   const goalsByCompetition = Object.values(state.history.current.goals);
   return Object.values(state.players)
-    .filter((p) => p.clubId === coachClubId)
+    .filter((p) => p.clubId === clubId)
     .map((p) => {
       const fatigue = Math.round(fatigueOn(p, date));
       return {
