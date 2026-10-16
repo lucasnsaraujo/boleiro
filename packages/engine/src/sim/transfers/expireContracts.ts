@@ -1,6 +1,7 @@
 import { addDays } from "../dates.js";
 import { tierOf } from "../finances/tierOf.js";
 import type { GameState, SimPlayer } from "../gameState.js";
+import { squadsOfGame } from "../players/squadsByClub.js";
 import { SQUAD_TARGET } from "./squadNeeds.js";
 import { movePlayer } from "./movePlayer.js";
 import type { PlayerContractRenewed, PlayerMoved } from "./transferEvents.js";
@@ -21,7 +22,7 @@ export function contractEnd(year: number, random: () => number): string {
   return `${year + Math.floor(random() * NEW_CONTRACT_YEARS)}-12-31`;
 }
 
-// Most days reuse yesterday's player maps, so each map's earliest contract end is found once. Safe
+// Most days reuse yesterday's free agents, so each map's earliest contract end is found once. Safe
 // because a map is only edited in place as a fresh draft (openDraft), before any state holds it.
 const earliestEnds = new WeakMap<Record<string, SimPlayer>, string | null>();
 
@@ -37,10 +38,22 @@ function earliestEnd(players: Record<string, SimPlayer>): string | null {
   return earliest;
 }
 
+// The game's squads (squadsOfGame) carry over from day to day and a changed squad is a new array, so
+// each squad's earliest contract end is found once and a day only looks again at the squads it changed.
+const squadEnds = new WeakMap<readonly SimPlayer[], string>();
+
+function squadEnd(squad: readonly SimPlayer[]): string {
+  let earliest = squadEnds.get(squad);
+  if (earliest !== undefined) return earliest;
+  earliest = squad[0]?.contractUntil ?? "";
+  for (const player of squad) if (player.contractUntil < earliest) earliest = player.contractUntil;
+  squadEnds.set(squad, earliest);
+  return earliest;
+}
+
 /** Whether any contract ran out before today or any free agent has waited a year. */
 export function hasExpiries(state: GameState): boolean {
-  const players = earliestEnd(state.players);
-  if (players !== null && players < state.date) return true;
+  for (const squad of squadsOfGame(state).values()) if (squadEnd(squad) < state.date) return true;
   const freeAgents = earliestEnd(state.market.freeAgents);
   return freeAgents !== null && freeAgents < addDays(state.date, -FREE_AGENT_DAYS);
 }
