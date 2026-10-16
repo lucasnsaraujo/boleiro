@@ -1,5 +1,5 @@
 import { pickLineup } from "../../engine/match.js";
-import type { GameState, SimPlayer } from "../gameState.js";
+import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import { boardRefusal } from "./boardRefusal.js";
 import { marketView } from "./marketView.js";
 import { movePlayer } from "./movePlayer.js";
@@ -41,6 +41,23 @@ export function loanLimitOf(state: Pick<GameState, "players" | "market">, lender
   }
   if (between >= LOANS_BETWEEN_CLUBS) return "loanPairLimit";
   return player.age > LOAN_MAX_AGE && (lenderOut >= LOANS_OVER_AGE || borrowerIn >= LOANS_OVER_AGE) ? "loanLimit" : null;
+}
+
+/**
+ * `banned` with the players on loan at one side of the fixture from the club on the other. A Brazilian
+ * loan deal usually makes the borrower pay a fine to field him against his owner (São Paulo owed Cuiabá
+ * R$ 1 mi for six minutes of a loanee in 2025: https://www.portaltela.com/esporte/futebol/2025/10/13/sao-paulo-enfrenta-acao-por-divida-milionaria-envolvendo-jogador-da-base/).
+ * guess: every loan has the clause and no club pays it.
+ */
+export function withLoaneesFacingOwner(banned: ReadonlySet<string>, state: Pick<GameState, "players" | "market">, fixture: Pick<Fixture, "homeId" | "awayId">): ReadonlySet<string> {
+  let barred: Set<string> | null = null;
+  for (const playerId in state.market.loans) {
+    const owner = state.market.loans[playerId]?.fromClubId;
+    const borrower = state.players[playerId]?.clubId;
+    const facesOwner = (owner === fixture.homeId && borrower === fixture.awayId) || (owner === fixture.awayId && borrower === fixture.homeId);
+    if (facesOwner) (barred ??= new Set(banned)).add(playerId);
+  }
+  return barred ?? banned;
 }
 
 /** A loan to 31 December, or to 30 June when it starts in the first half of the year. */
