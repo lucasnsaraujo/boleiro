@@ -2,7 +2,7 @@ import { tierOf } from "../finances/tierOf.js";
 import type { GameState, SimPlayer, Tier } from "../gameState.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
 import { squadNeeds, type SquadNeeds } from "./squadNeeds.js";
-import { splitLoanWages } from "./wageBillsOf.js";
+import { splitLoanWages, squadWages } from "./wageBillsOf.js";
 
 /** Lookups the market needs many times a day, built once: squads, tiers, wage bills. */
 export type MarketView = {
@@ -22,7 +22,7 @@ const needsOfSquads = new WeakMap<readonly SimPlayer[], Partial<Record<Tier, Squ
 export function marketView(state: GameState): MarketView {
   const squads = new Map(squadsOfGame(state));
   const bills = new Map<string, number>();
-  for (const [clubId, squad] of squads) bills.set(clubId, squad.reduce((sum, p) => sum + p.wage, 0));
+  for (const [clubId, squad] of squads) bills.set(clubId, squadWages(squad));
   splitLoanWages(state, bills);
   return {
     squad: (clubId) => squads.get(clubId) ?? [],

@@ -1,10 +1,21 @@
-import type { GameState } from "../gameState.js";
+import type { GameState, SimPlayer } from "../gameState.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
+
+// The game's squads carry over from day to day and a changed squad is a new array, so each squad's
+// wages are added up once.
+const wagesOfSquads = new WeakMap<readonly SimPlayer[], number>();
+
+/** The sum of a squad's monthly wages in BRL. */
+export function squadWages(squad: readonly SimPlayer[]): number {
+  let wages = wagesOfSquads.get(squad);
+  if (wages === undefined) wagesOfSquads.set(squad, (wages = squad.reduce((sum, player) => sum + player.wage, 0)));
+  return wages;
+}
 
 /** Each club's monthly wage bill in BRL; a loaned player's wage is split with the club that lent him. */
 export function wageBillsOf(state: Pick<GameState, "players" | "market">): Map<string, number> {
   const bills = new Map<string, number>();
-  for (const [clubId, squad] of squadsOfGame(state)) bills.set(clubId, squad.reduce((sum, player) => sum + player.wage, 0));
+  for (const [clubId, squad] of squadsOfGame(state)) bills.set(clubId, squadWages(squad));
   return splitLoanWages(state, bills);
 }
 
