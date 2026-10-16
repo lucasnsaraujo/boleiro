@@ -51,7 +51,7 @@ test("a career at an MLS club plays its first round live, then finds MLS's two c
   await expect(page.getByRole("row").filter({ has: page.getByText("Los Angeles FC", { exact: true }) })).toHaveAttribute("aria-current", "true");
 });
 
-test("Flamengo, the 2025 Libertadores champion, finds the 2029 Club World Cup on its June calendar, its eight groups on the tables and then its bracket", async ({ page }) => {
+test("Flamengo, the 2025 Libertadores champion, finds the 2029 Super Mundial on its June calendar, its eight groups on the tables and then its bracket", async ({ page }) => {
   test.setTimeout(10 * 60_000);
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Filipe" });
@@ -60,10 +60,10 @@ test("Flamengo, the 2025 Libertadores champion, finds the 2029 Club World Cup on
 
   await bar(page).getByRole("link", { name: "Agenda" }).click();
   await page.getByRole("group", { name: "Meses" }).getByRole("button", { name: /^Junho/ }).click();
-  await expect(page.getByRole("list", { name: "Junho" })).toContainText("Mundial de Clubes");
+  await expect(page.getByRole("list", { name: "Junho" })).toContainText("Super Mundial");
 
   await bar(page).getByRole("link", { name: "Tabelas" }).click();
-  await page.getByRole("tab", { name: "Mundial de Clubes" }).click();
+  await page.getByRole("tab", { name: "Super Mundial" }).click();
   const stages = page.getByRole("group", { name: "Fases" });
   await expect(stages.getByRole("button", { name: "Grupos" })).toHaveAttribute("aria-pressed", "true");
   await expect(stages.getByRole("button", { name: "Oitavas" })).toBeDisabled();
@@ -74,7 +74,7 @@ test("Flamengo, the 2025 Libertadores champion, finds the 2029 Club World Cup on
   await playDaysBefore(page, `${EDITION}-06-26`);
   await bar(page).getByRole("link", { name: "Agenda" }).click();
   await bar(page).getByRole("link", { name: "Tabelas" }).click();
-  await page.getByRole("tab", { name: "Mundial de Clubes" }).click();
+  await page.getByRole("tab", { name: "Super Mundial" }).click();
   await stages.getByRole("button", { name: "Oitavas" }).click();
-  await expect(page.getByRole("group", { name: "Mundial de Clubes, mata-mata" }).getByLabel(/ x /)).toHaveCount(8);
+  await expect(page.getByRole("group", { name: "Super Mundial, mata-mata" }).getByLabel(/ x /)).toHaveCount(8);
 });

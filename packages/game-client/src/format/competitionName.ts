@@ -32,7 +32,14 @@ const STATE_CHAMPIONSHIPS: Record<State, string> = {
   TO: "Tocantinense",
 };
 
-const CONTINENTAL_CUP_NAMES: Record<ContinentalCup, string> = { libertadores: "Libertadores", "sul-americana": "Sul-Americana", recopa: "Recopa", "club-world-cup": "Mundial de Clubes" };
+// FIFA's yearly Intercontinental Cup goes by the Club World Cup's old name, its 32-club cup every four years by its Brazilian nickname.
+const CONTINENTAL_CUP_NAMES: Record<ContinentalCup, string> = {
+  libertadores: "Libertadores",
+  "sul-americana": "Sul-Americana",
+  recopa: "Recopa",
+  "club-world-cup": "Super Mundial",
+  "intercontinental-cup": "Mundial de Clubes",
+};
 
 const isContinentalCup = (key: string): key is ContinentalCup => key in CONTINENTAL_CUP_NAMES;
 
