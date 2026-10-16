@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { ClubFace } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
-import type { BracketRound, TieView } from "./competitionTables.js";
+import { lastPlayedLeg, type BracketRound, type TieView } from "./competitionTables.js";
 import "./bracket.css";
 
 type Clubs = Readonly<Record<string, ClubFace>>;
@@ -16,7 +16,8 @@ const FINAL_HEIGHT = 172;
 const CAPTION_HEIGHT = 22;
 const COLUMN_GAP = 14;
 
-type Props = { name: string; rounds: BracketRound[]; clubs: Clubs; coachClubId: string | null };
+/** With `onOpenMatch`, a tie with a game played opens its latest game's ficha. */
+type Props = { name: string; rounds: BracketRound[]; clubs: Clubs; coachClubId: string | null; onOpenMatch?: (matchRef: string) => void };
 
 /** Where each card sits: the left half's rounds run in from the left edge, the right half's from the right, the final in the middle. */
 function layoutOf(width: number, height: number) {
@@ -75,7 +76,14 @@ function LegLines({ tie, clubs }: { tie: TieView; clubs: Clubs }) {
   );
 }
 
-function TieCard({ tie, feeders, clubs, coachClubId, isSemi, style }: { tie: TieView | null; feeders: (TieView | null)[]; clubs: Clubs; coachClubId: string | null; isSemi: boolean; style: React.CSSProperties }) {
+/** A button over a played tie's whole card, under its text, that opens its latest game's ficha. */
+function TieOpener({ tie, clubs, onOpenMatch }: { tie: TieView; clubs: Clubs; onOpenMatch: ((matchRef: string) => void) | undefined }) {
+  const played = onOpenMatch && lastPlayedLeg(tie);
+  if (!played) return null;
+  return <button type="button" className="bk-open" aria-label={`Ficha do jogo: ${nameOf(clubs, played.homeId)} x ${nameOf(clubs, played.awayId)}`} onClick={() => onOpenMatch(played.fixtureId)} />;
+}
+
+function TieCard({ tie, feeders, clubs, coachClubId, isSemi, style, onOpenMatch }: { tie: TieView | null; feeders: (TieView | null)[]; clubs: Clubs; coachClubId: string | null; isSemi: boolean; style: React.CSSProperties; onOpenMatch: Props["onOpenMatch"] }) {
   const isMine = tie !== null && coachClubId !== null && tie.clubIds.includes(coachClubId);
   const className = `stk bk-tie${isSemi ? " semi" : ""}${isMine ? " mine" : ""}${tie ? "" : " pending"}`;
   if (!tie) {
@@ -92,6 +100,7 @@ function TieCard({ tie, feeders, clubs, coachClubId, isSemi, style }: { tie: Tie
   const shootoutWinner = tie.onPenalties && tie.winnerId ? nameOf(clubs, tie.winnerId) : null;
   return (
     <div className={className} style={style} aria-label={`${nameOf(clubs, tie.clubIds[0])} x ${nameOf(clubs, tie.clubIds[1])}`}>
+      <TieOpener tie={tie} clubs={clubs} onOpenMatch={onOpenMatch} />
       {shootoutWinner && <span className="bk-pens">{shootoutWinner} nos pênaltis</span>}
       <TieRows tie={tie} clubs={clubs} coachClubId={coachClubId} crest={isSemi ? 20 : 18} />
       {isSemi && <LegLines tie={tie} clubs={clubs} />}
@@ -103,7 +112,7 @@ function TieCard({ tie, feeders, clubs, coachClubId, isSemi, style }: { tie: Tie
  * The knockout bracket as the album pastes it: the round of 16 at both edges, the halves meeting at
  * the final in the middle, the coach's tie lifted in yellow.
  */
-export function Bracket({ name, rounds, clubs, coachClubId }: Props) {
+export function Bracket({ name, rounds, clubs, coachClubId, onOpenMatch }: Props) {
   const box = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   useLayoutEffect(() => {
@@ -147,6 +156,7 @@ export function Bracket({ name, rounds, clubs, coachClubId }: Props) {
               clubs={clubs}
               coachClubId={coachClubId}
               isSemi={column === 2}
+              onOpenMatch={onOpenMatch}
               style={{ left, top, width, minHeight: height }}
             />,
           );
@@ -176,6 +186,7 @@ export function Bracket({ name, rounds, clubs, coachClubId }: Props) {
         </div>
         <h3>Final</h3>
         <p>{finalDate ? `${formatBarDate(finalDate)} · jogo único` : "Jogo único"}</p>
+        {finalTie && <TieOpener tie={finalTie} clubs={clubs} onOpenMatch={onOpenMatch} />}
         {finalTie ? (
           <TieRows tie={finalTie} clubs={clubs} coachClubId={coachClubId} crest={20} />
         ) : (

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, use, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
 import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
 import type { Competition, Fixture, GameState } from "@boleiro/engine/sim/gameState";
@@ -14,6 +14,7 @@ import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springTiming } from "../motion/springEasing.js";
 import { useFlip } from "../motion/useFlip.js";
 import { Select } from "../controls/Select.js";
+import { useMatchFile } from "../matchPage/MatchFile.js";
 import { Bracket } from "../tables/Bracket.js";
 import { GroupCard, NextTieCard, type NextTie } from "../tables/BracketCards.js";
 import { uefaBracket, uefaLeaguePhase, uefaPlayoffs } from "../tables/uefaTables.js";
@@ -23,6 +24,7 @@ import {
   groupTables,
   knockoutBracket,
   knockoutTies,
+  lastPlayedLeg,
   openingCompetitionId,
   playedRounds,
   tableTabs,
@@ -99,6 +101,9 @@ const OTHER_LEAGUES = "Outras ligas";
 /** What the screen shows of a competition: its stage, and the round picked on the stepper (null: the latest). */
 type View = { stage: number; round: number | null };
 
+/** Opens a match's ficha from anywhere in the tables: a club's form marks are its last matches. */
+const OpenMatchContext = createContext<(matchRef: string) => void>(() => undefined);
+
 const byName = (a: Competition, b: Competition) => competitionName(a).localeCompare(competitionName(b), "pt-BR");
 
 export function Tables() {
@@ -110,6 +115,7 @@ export function Tables() {
   const [otherId, setOtherId] = useState<string | null>(null);
   const [views, setViews] = useState<Readonly<Record<string, View>>>({});
   const playRound = usePlayRound(() => navigate("/hub"));
+  const matchFile = useMatchFile();
 
   useEffect(() => {
     let current = true;
@@ -173,6 +179,7 @@ export function Tables() {
   );
 
   return (
+    <OpenMatchContext value={matchFile.open}>
     <div className="tables fills-screen">
       <h1 className="sr-only">Tabelas</h1>
       <header className="tables-head">
@@ -220,7 +227,9 @@ export function Tables() {
           picker={picker}
         />
       )}
+      {matchFile.file}
     </div>
+    </OpenMatchContext>
   );
 }
 
@@ -268,6 +277,7 @@ function nextTieOf(competition: Competition, fixtures: readonly Fixture[], stage
 
 /** A continental cup from its round of 16: the whole bracket, the coach's group as it ended and his next tie. */
 function BracketPanel({ competition, state, clubs, stage, onStage, picker }: Omit<PanelProps, "round">) {
+  const onOpenMatch = use(OpenMatchContext);
   const stages = competitionStages(competition, state.calendar);
   const name = competitionName(competition);
   const groupsAt = competition.stages.findIndex((s) => s.kind === "groups");
@@ -284,7 +294,7 @@ function BracketPanel({ competition, state, clubs, stage, onStage, picker }: Omi
             <span>mata-mata</span>
           </h2>
         </div>
-        <Bracket name={name} rounds={knockoutBracket(competition, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} />
+        <Bracket name={name} rounds={knockoutBracket(competition, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} onOpenMatch={onOpenMatch} />
         <div className="bk-low">
           {group && <GroupCard group={group} clubs={clubs} coachClubId={state.coachClubId} />}
           <NextTieCard next={nextTieOf(competition, state.fixtures, stages, clubs, state.coachClubId)} clubs={clubs} />
@@ -349,6 +359,7 @@ function UefaPanel({ cup, superCup, clubs, coachClubId, picker }: { cup: LeagueP
 
 /** The shown competition's stage: its table or ties, with its scorers and zones beside them; a continental cup's bracket from its round of 16. */
 function CompetitionPanel({ competition, state, clubs, stage, round, onStage, picker }: PanelProps) {
+  const onOpenMatch = use(OpenMatchContext);
   if (knockoutBracket(competition, state.fixtures).some((r) => r.stage === stage)) {
     return <BracketPanel competition={competition} state={state} clubs={clubs} stage={stage} onStage={onStage} picker={picker} />;
   }
@@ -374,7 +385,7 @@ function CompetitionPanel({ competition, state, clubs, stage, round, onStage, pi
         {table ? (
           <GroupStage key={pageKey} name={name} groups={table.groups} clubs={clubs} coachClubId={state.coachClubId} />
         ) : (
-          <TieList key={pageKey} name={stages[stage]?.name ?? name} ties={knockoutTies(competition, stage, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} />
+          <TieList key={pageKey} name={stages[stage]?.name ?? name} ties={knockoutTies(competition, stage, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} onOpenMatch={onOpenMatch} />
         )}
       </section>
       <aside className="tables-side" key={competition.id}>
@@ -515,6 +526,7 @@ function Movement({ places }: { places: number }) {
 }
 
 function StandingsTable({ label, group, clubs, coachClubId }: { label: string; group: GroupTable; clubs: Clubs; coachClubId: string | null }) {
+  const onOpenMatch = use(OpenMatchContext);
   const table = useRef<HTMLTableElement>(null);
   useFlip(table, group.rows.map((row) => row.clubId).join(), slideStandingsRow);
   return (
@@ -585,11 +597,18 @@ function StandingsTable({ label, group, clubs, coachClubId }: { label: string; g
               <td>{signed(row.goalDifference)}</td>
               <td className="l st-form">
                 <span className="form">
-                  {row.form.map((outcome, i) => (
-                    <i key={i} className={outcome} title={OUTCOMES[outcome].word}>
-                      {OUTCOMES[outcome].letter}
-                    </i>
-                  ))}
+                  {row.form.map((outcome, i) => {
+                    const ref = row.formRefs?.[i];
+                    return ref ? (
+                      <button key={i} type="button" className={outcome} title={`${OUTCOMES[outcome].word}: ver a ficha do jogo`} aria-label={`${OUTCOMES[outcome].word}, ficha do jogo`} onClick={() => onOpenMatch(ref)}>
+                        {OUTCOMES[outcome].letter}
+                      </button>
+                    ) : (
+                      <i key={i} className={outcome} title={OUTCOMES[outcome].word}>
+                        {OUTCOMES[outcome].letter}
+                      </i>
+                    );
+                  })}
                 </span>
               </td>
               <td className="st-mv">
@@ -618,7 +637,8 @@ function legLine(tie: TieView): string {
     .join(" · ");
 }
 
-function TieList({ name, ties, clubs, coachClubId }: { name: string; ties: TieView[]; clubs: Clubs; coachClubId: string | null }) {
+/** The cup's ties; with `onOpenMatch`, a tie with a game played opens its latest game's ficha. */
+function TieList({ name, ties, clubs, coachClubId, onOpenMatch }: { name: string; ties: TieView[]; clubs: Clubs; coachClubId: string | null; onOpenMatch?: (matchRef: string) => void }) {
   const side = (clubId: string, tie: TieView, home: boolean) => {
     const club = clubs[clubId];
     const outcome = tie.winnerId === null ? "" : tie.winnerId === clubId ? " won" : " lost";
@@ -636,8 +656,17 @@ function TieList({ name, ties, clubs, coachClubId }: { name: string; ties: TieVi
         {ties.map((tie) => {
           const [first, second] = tie.clubIds;
           const isMine = coachClubId !== null && tie.clubIds.includes(coachClubId);
+          const played = onOpenMatch && lastPlayedLeg(tie);
           return (
             <li key={`${first}-${second}`} className={isMine ? "tie mine" : "tie"}>
+              {played && (
+                <button
+                  type="button"
+                  className="tie-open"
+                  aria-label={`Ficha do jogo: ${clubs[played.homeId]?.shortName ?? played.homeId} x ${clubs[played.awayId]?.shortName ?? played.awayId}`}
+                  onClick={() => onOpenMatch(played.fixtureId)}
+                />
+              )}
               {side(first, tie, true)}
               <span className="tie-score">
                 <span className={tie.aggregate ? "sbox" : "sbox x"}>{tie.aggregate?.[0] ?? ""}</span>

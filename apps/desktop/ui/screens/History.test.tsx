@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider } from "react-router";
@@ -49,4 +49,21 @@ test("a career coach with offers on the table goes from his career to the offers
   expect(screen.queryByRole("tab", { name: "Clube" })).toBeNull();
   await userEvent.click(screen.getByRole("link", { name: "Ver propostas" }));
   expect(await screen.findByText("Propostas abertas")).toBeTruthy();
+});
+
+test("a record win of this season opens its match's ficha", async () => {
+  const given = await services("bahia-ba");
+  const { date } = await given.engine.read(["date"]);
+  const days = Math.round((Date.parse("2026-04-15") - Date.parse(date)) / 86_400_000);
+  await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+  const { history, clubs } = await given.engine.read(["history", "clubs"]);
+  const win = history.clubs["bahia-ba"]?.biggestWin;
+  if (!win) return expect.fail("Bahia has won a match by mid-April");
+  const opponent = clubs[win.opponentId]?.shortName ?? "";
+  const score = win.home ? `Bahia ${win.goalsFor} x ${win.goalsAgainst} ${opponent}` : `${opponent} ${win.goalsAgainst} x ${win.goalsFor} Bahia`;
+  openHistory(given);
+  await userEvent.click(await screen.findByRole("button", { name: /^Maior vitória: .*, ficha do jogo$/ }));
+  const panel = await screen.findByRole("dialog", { name: "Ficha do jogo" });
+  expect(within(panel).getByText("Encerrado")).toBeTruthy();
+  expect(within(panel).getByLabelText(score)).toBeTruthy();
 });

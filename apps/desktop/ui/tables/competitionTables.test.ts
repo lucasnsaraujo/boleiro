@@ -9,6 +9,7 @@ import {
   groupTables,
   knockoutBracket,
   knockoutTies,
+  lastPlayedLeg,
   openingCompetitionId,
   playedRounds,
   tableTabs,
@@ -155,6 +156,14 @@ describe("rounds of a group stage", () => {
     expect(throughTwo?.form).toEqual(["win", "draw"]);
   });
 
+  test("each form mark links the match it stands for, so the table opens its ficha", () => {
+    const clubId = "bahia-ba";
+    const fixtures = playedThrough(6);
+    const bahia = groupTables(league, 0, fixtures).groups[0]?.rows.find((row) => row.clubId === clubId);
+    const games = fixtures.filter((f) => f.result && (f.homeId === clubId || f.awayId === clubId)).toSorted((a, b) => a.date.localeCompare(b.date));
+    expect(bahia?.formRefs).toEqual(games.slice(-5).map((f) => f.id));
+  });
+
   test("each row tells the places gained or lost in the last round played", () => {
     // Round 1 won by the home sides, round 2 by the away sides: the table turns over.
     const fixtures = playedThrough(2, (f) => (roundOf(f) === 1 ? { homeGoals: 1, awayGoals: 0 } : { homeGoals: 0, awayGoals: 3 }));
@@ -196,6 +205,14 @@ describe("knockout ties and the cup bracket", () => {
       ["a", 2, 0, "b"],
     ]);
     expect(open).toMatchObject({ clubIds: ["c", "d"], aggregate: [0, 1], winnerId: null });
+  });
+
+  test("a tie's ficha opens on its return leg once played, on its first leg before that, and on none before a ball is kicked", () => {
+    const [decided, open] = knockoutTies(cup, 0, fixtures);
+    expect(decided && lastPlayedLeg(decided)?.fixtureId).toBe("a2");
+    expect(open && lastPlayedLeg(open)?.fixtureId).toBe("c1");
+    const [unplayed] = knockoutTies(cup, 0, fixtures.map((f) => ({ ...f, result: null })));
+    expect(unplayed && lastPlayedLeg(unplayed)).toBeUndefined();
   });
 
   test("a level tie goes to the club that won the shootout", () => {

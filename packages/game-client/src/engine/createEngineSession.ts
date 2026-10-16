@@ -27,6 +27,7 @@ import { isCoachMatchDay, playToMatchDay, stopReason, type StopReason } from "..
 import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
 import { boardNotes, dueRequests, EMPTY_DESK, withRequest, type BoardDesk } from "../market/boardDesk.js";
 import { isSigning, marketClockView, spendMarketTime, type MarketClock, type MarketClockView } from "../market/marketClock.js";
+import { matchPageOf, type MatchPage } from "../matchPage/matchPageOf.js";
 import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
 import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
 import { newspaperEditions, newspaperOf, type Edition, type EditionTitle } from "../newspaper/roundNewspaper.js";
@@ -165,6 +166,8 @@ export function createEngineSession(files: GameFiles) {
   let desk: BoardDesk = EMPTY_DESK;
   /** The coach's match day between kick-off and the final whistle, and the furthest minute the screen has shown of it. */
   let live: { day: LiveDay; seenMinute: number } | null = null;
+  /** The match day last finished, whose matches keep their real timelines on their pages until another day is played. */
+  let lastRound: LiveDay | null = null;
   /** Firings and season ends the coach has not closed the screen on yet, oldest first; saved with the game. */
   let turningPoints: TurningPoint[] = [];
   /** The game as last saved in shards, whose unchanged countries the next save reuses. */
@@ -202,6 +205,7 @@ export function createEngineSession(files: GameFiles) {
     news = [];
     desk = EMPTY_DESK;
     live = null;
+    lastRound = null;
     turningPoints = [];
     split = null;
     clock = null;
@@ -372,6 +376,7 @@ export function createEngineSession(files: GameFiles) {
         state = next;
         desk = notes;
         live = null;
+        if (days.length) lastRound = null;
         addNews(lines);
         turningPoints = [...turningPoints, ...points];
         if (days.length) startTurnOver();
@@ -408,6 +413,7 @@ export function createEngineSession(files: GameFiles) {
         desk = notes;
         turningPoints = [...turningPoints, ...points];
         if (played.daysPlayed > 0) {
+          lastRound = null;
           news = played.news.slice(-INBOX_SIZE);
           startTurnOver();
         }
@@ -423,6 +429,7 @@ export function createEngineSession(files: GameFiles) {
       const kickOff: DayDecisions = { lineup, tactics };
       const { due } = dueRequests(current(), desk.pending);
       const decisions = due.length ? { ...kickOff, requests: due } : kickOff;
+      lastRound = null;
       live = { day: startMatchDay(current(), waiting.length ? { ...decisions, waiting: waitingDecisions(current()) } : decisions), seenMinute: 0 };
       return liveRoundOf(live.day, live.seenMinute);
     },
@@ -445,6 +452,7 @@ export function createEngineSession(files: GameFiles) {
       const day = finishMatchDay(round.day);
       const sent = new Set((round.day.decisions.requests ?? []).map((request) => request.playerId));
       state = day.state;
+      lastRound = round.day;
       live = null;
       desk = noted({ ...desk, pending: desk.pending.filter((request) => !sent.has(request.playerId)) }, before, day);
       addNews(inboxLines(before, day.state, day.events));
@@ -574,6 +582,11 @@ export function createEngineSession(files: GameFiles) {
     /** The match day kicked off and not yet finished, if any. */
     liveRound(): LiveRound | null {
       return live && liveRoundOf(live.day, live.seenMinute);
+    },
+    /** The page of a match by its reference (a fixture id, or worldMatchRef for a league played result-only); null for one not played yet. */
+    matchPage(ref: string): MatchPage | null {
+      const day = live ? { day: live.day, isUnderWay: true } : lastRound ? { day: lastRound, isUnderWay: false } : null;
+      return matchPageOf(current(), ref, day);
     },
     /** The oldest firing or season end the coach has not seen through yet. */
     turningPoint(): TurningPoint | null {

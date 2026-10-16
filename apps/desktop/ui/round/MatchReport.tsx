@@ -4,6 +4,7 @@ import { FULL_TIME } from "@boleiro/engine/sim/live/matchTimeline";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { playerStatsOf, type LiveRound, type Side } from "@boleiro/game-client/round/liveRoundOf";
 import { Crest } from "../clubs/Crest.js";
+import { markClass } from "../matchPage/matchMarks.js";
 import "./matchReport.css";
 
 const KIND_LABELS: Record<GoalKind, string> = {
@@ -16,11 +17,6 @@ const KIND_LABELS: Record<GoalKind, string> = {
 };
 // The album's position badge letters: G goleiro, Z zaga, M meio, A ataque.
 const GROUP_LETTERS: Record<PositionGroup, string> = { GK: "G", DEF: "Z", MID: "M", ATT: "A" };
-// guess: newspaper marks read 7.5 and up as a great match and under 5.5 as a poor one.
-const GREAT = 7.5;
-const POOR = 5.5;
-
-const markClass = (rating: number) => (rating >= GREAT ? "mark great" : rating < POOR ? "mark poor" : "mark");
 
 /** The coach's match after the final whistle: its goals, how each went in and who set it up, and every player's mark, shots and passes. */
 export function MatchReport({ round }: { round: LiveRound }) {

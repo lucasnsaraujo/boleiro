@@ -201,3 +201,36 @@ test("the round stepper shows the table as it stood after an earlier round", asy
   expect(Math.max(...gamesPlayed())).toBe(1);
   expect(within(stepper).getByRole("button", { name: "Rodada anterior" })).toHaveProperty("disabled", true);
 });
+
+test("a played cup tie opens its last game's ficha", async () => {
+  const given = await services();
+  const { date } = await given.engine.read(["date"]);
+  const days = Math.round((Date.parse("2026-04-01") - Date.parse(date)) / 86_400_000);
+  await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+  openTables(given);
+  await userEvent.click(await screen.findByRole("tab", { name: "Copa do Brasil" }));
+  await userEvent.click(within(screen.getByRole("group", { name: "Fases" })).getByRole("button", { name: "1ª fase" }));
+  const ties = screen.getByRole("list", { name: "1ª fase" });
+  const [tie] = within(ties).getAllByRole("button", { name: /^Ficha do jogo: / });
+  if (!tie) return expect.fail("the first round has been played");
+  const [home, away] = (tie.getAttribute("aria-label") ?? "").replace("Ficha do jogo: ", "").split(" x ");
+  await userEvent.click(tie);
+  const panel = await screen.findByRole("dialog", { name: "Ficha do jogo" });
+  expect(within(panel).getByText("Encerrado")).toBeTruthy();
+  expect(within(panel).getByLabelText(new RegExp(`^${home} \\d+ x \\d+ ${away}$`))).toBeTruthy();
+});
+
+test("a played tie on the Libertadores bracket opens its last game's ficha", async () => {
+  const given = await services();
+  const { date } = await given.engine.read(["date"]);
+  const days = Math.round((Date.parse("2026-09-01") - Date.parse(date)) / 86_400_000);
+  await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+  openTables(given);
+  await userEvent.click(await screen.findByRole("tab", { name: "Libertadores" }));
+  const [tie] = within(screen.getByRole("group", { name: "Libertadores, mata-mata" })).getAllByRole("button", { name: /^Ficha do jogo: / });
+  if (!tie) return expect.fail("the round of 16 has been played");
+  const [home, away] = (tie.getAttribute("aria-label") ?? "").replace("Ficha do jogo: ", "").split(" x ");
+  await userEvent.click(tie);
+  const panel = await screen.findByRole("dialog", { name: "Ficha do jogo" });
+  expect(within(panel).getByLabelText(new RegExp(`^${home} \\d+ x \\d+ ${away}$`))).toBeTruthy();
+});
