@@ -27,6 +27,7 @@ import { closeSeasonHistory } from "../history/closeSeasonHistory.js";
 import { recordStrengths } from "../history/recordStrengths.js";
 import { recordDayEvents } from "../history/recordDayEvents.js";
 import { recordMatches } from "../history/recordMatches.js";
+import { recordElevens } from "../chemistry/recordElevens.js";
 import { clubMood } from "../morale/clubMood.js";
 import { reactToDay } from "../morale/reactToDay.js";
 import { openNextStage } from "../openNextStage.js";
@@ -170,7 +171,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: day.discipline, coach };
   if (state.waitingCoaches) next = { ...next, waitingCoaches: withWaitingTactics(state.waitingCoaches, decisions.waiting ?? [], (clubId) => liveTacticsOf(live, clubId)) };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
-  const bonuses = payTitleBonuses(next, recordMatches(next, played, day.sheets));
+  const bonuses = payTitleBonuses(next, recordMatches(recordElevens(next, played, day.sheets), played, day.sheets));
   next = bonuses.state;
   events.push(...bonuses.events);
   next = recordMatchFinances(next, played);

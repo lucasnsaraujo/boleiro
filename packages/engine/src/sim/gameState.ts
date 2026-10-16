@@ -16,6 +16,7 @@ import type { World } from "./world/world.js";
 import type { Formats } from "./formats.js";
 import type { Youth } from "./youth/academy.js";
 import type { EventMemory } from "./events/eventMemory.js";
+import type { ClubChemistry } from "./chemistry/chemistryOf.js";
 
 export type IsoDate = string;
 
@@ -252,4 +253,6 @@ export type GameState = {
   formats?: Formats;
   /** What the event engine remembers: past events, answers waiting, the newspaper's stories; a save from before events has none. */
   eventMemory?: EventMemory;
+  /** Each club's chemistry between matches, from its first match in the game; a save from before chemistry has none. */
+  chemistry?: Record<string, ClubChemistry>;
 };

@@ -2,6 +2,7 @@ import type { Club, State } from "@boleiro/data/clubs";
 import { inFormation, type Formation } from "../../engine/formations.js";
 import { guestClubOf } from "../continental/guestClubs.js";
 import type { Team } from "../../engine/match.js";
+import { chemistryOf, chemistryStrength } from "../chemistry/chemistryOf.js";
 import { DEFAULT_TACTICS, type Tactics } from "../coach/tactics.js";
 import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import { clubMood } from "../morale/clubMood.js";
@@ -38,11 +39,12 @@ export function matchClubOf(state: GameState, clubId: string): MatchClub | null 
 /** The coach's choices for his club's match: his eleven, or none to let the AI pick it in his formation. */
 export type CoachPlan = { lineup: readonly SimPlayer[] | null; tactics: Tactics };
 
-/** The strength each player of a club plays at in this match: effective strength plus morale. */
+/** The strength each player of a club plays at in this match: effective strength plus morale, times the club's chemistry. */
 export function playingStrength(state: GameState, clubId: string, context: MatchContext, squad: readonly SimPlayer[]): (player: SimPlayer) => number {
   const morale = clubMood(state, clubId).squad;
   const mostMinutes = Math.max(0, ...squad.map((p) => p.condition.seasonMinutes));
-  return (p) => Math.max(1, effectiveStrength(p, context) + moraleStrength(p, morale, mostMinutes, context.date));
+  const chemistry = chemistryStrength(chemistryOf(state, clubId, squad).value);
+  return (p) => Math.max(1, (effectiveStrength(p, context) + moraleStrength(p, morale, mostMinutes, context.date)) * chemistry);
 }
 
 /** An eleven as the engine sees it; with tactics, placed in their formation by position, with their posture, marking, play and penalty taker. */

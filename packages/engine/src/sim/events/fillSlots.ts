@@ -1,5 +1,5 @@
 /** The real names an event's text takes, by slot. */
-export type Slots = Record<"player" | "club" | "rival" | "age" | "position" | "stadium" | "coach", string>;
+export type Slots = Record<"player" | "teammate" | "club" | "rival" | "age" | "position" | "stadium" | "coach", string>;
 
 /**
  * The text with each `{slot}` replaced by its name, starting with a capital ("o técnico" opens a
