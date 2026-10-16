@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
+import { inMatchOrder } from "@boleiro/engine/sim/live/matchTimeline";
 import type { LiveRound } from "@boleiro/game-client/round/liveRoundOf";
-import { calloutsBetween, goalsBetween, highlightsBetween, pauseReason, roundAt, scorersUntil } from "./roundAt.js";
+import { calloutsBetween, goalsBetween, highlightsBetween, pauseReason, roundAt, scorersUntil, varCheckAt } from "./roundAt.js";
 
 const colours = { primary: "#000000", secondary: "#ffffff" };
 const club = (id: string, shortName: string) => ({ id, shortName, colours, stadium: `Estádio do ${shortName}` });
@@ -167,4 +168,36 @@ test("a row calls out one moment a stretch: a red card or missed penalty over th
   const noRed: LiveRound = { ...withPlay, matches: withPlay.matches.map((m) => ({ ...m, events: m.events.filter((e) => e.type !== "card") })) };
   expect(calloutsBetween(noRed, 15, 25)).toEqual([{ fixtureId: "ours", kind: "badDay", who: "Caio Alexandre, Jean Lucas" }]);
   expect(calloutsBetween(noRed, 25, 40)).toEqual([]);
+});
+
+test("stops for VAR changing a call in a human coach's match, not for a goal it confirms or another league's check", () => {
+  const withChecks: LiveRound = {
+    ...round,
+    matches: round.matches.map((m) => ({
+      ...m,
+      events: inMatchOrder([
+        ...m.events,
+        { type: "varCheck", minute: 31, clubId: "vit", playerId: "v9", decision: "goalStands", seconds: 60 },
+        { type: "varCheck", minute: 62, clubId: m.homeId, playerId: m.homeId === "vit" ? "v9" : "p1", decision: "goalRuledOut", seconds: 100 },
+      ]),
+    })),
+  };
+  expect(varCheckAt(withChecks, 31)).toBeNull();
+  expect(varCheckAt(withChecks, 62)).toMatchObject({ fixtureId: "ours", check: { decision: "goalRuledOut", playerId: "v9" } });
+  expect(varCheckAt(withChecks, 63)).toBeNull();
+  expect(roundAt(withChecks, 62).find((m) => m.fixtureId === "other")?.last).toMatchObject({ kind: "varCheck", text: "VAR anula o gol de Arrascaeta" });
+  expect(calloutsBetween(withChecks, 60, 62).map((c) => [c.fixtureId, c.kind])).toEqual([
+    ["other", "var"],
+    ["ours", "var"],
+  ]);
+});
+
+test("tells a wrong call that stood on the row's ticker", () => {
+  const wronged: LiveRound = {
+    ...round,
+    matches: round.matches.map((m) =>
+      m.fixtureId === "ours" ? { ...m, events: inMatchOrder([...m.events, { type: "wrongCall", minute: 70, clubId: "bahia", playerId: "b9", call: "penaltyNotGiven", againstId: "bahia" }]) } : m,
+    ),
+  };
+  expect(roundAt(wronged, 70).find((m) => m.fixtureId === "ours")?.last).toMatchObject({ kind: "wrongCall", text: "Pênalti em Everaldo não marcado" });
 });

@@ -16,6 +16,7 @@ import { clubMood } from "@boleiro/engine/sim/morale/clubMood";
 import { shootoutKickers } from "@boleiro/engine/sim/settleShootout";
 import { fixtureLabel } from "../format/competitionName.js";
 import { aiFormationOf, recentResultsOf, squadOf, type MatchResult, type SquadPlayer } from "./matchDayPlan.js";
+import { officialsOf, type Officials } from "./officialsOf.js";
 
 export type Side = "home" | "away";
 export type RoundClub = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
@@ -24,7 +25,7 @@ const ONCE_PLAYED = 0.5;
 // A continental guest whose pack gives no colours shows in plain white and black.
 const GUEST_COLOURS = { primary: "#FFFFFF", secondary: "#000000" };
 /** A match of the round: its timeline and, unless it kicked off before players had one, every player's form and play. */
-export type RoundMatch = { fixtureId: string; competitionId: string; homeId: string; awayId: string; events: MatchEvent[]; play?: MatchPlay };
+export type RoundMatch = { fixtureId: string; competitionId: string; homeId: string; awayId: string; events: MatchEvent[]; officials?: Officials; play?: MatchPlay };
 /** `hasHumanCoach`: a club of a human coach plays in it, so the round shows it open; the rest go under "Outras ligas". */
 type RoundCompetition = { id: string; label: string; hasHumanCoach: boolean };
 /** The coach's group of his competition: its clubs and every fixture of the stage, today's still unplayed. */
@@ -208,6 +209,7 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
     homeId: m.homeId,
     awayId: m.awayId,
     events: m.events,
+    officials: officialsOf(state, today.get(m.fixtureId)),
     ...(m.play ? { play: m.play } : {}),
   }));
 

@@ -1,9 +1,11 @@
 import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
+import type { VarCheck } from "@boleiro/engine/sim/referees/refereeCalls";
+import { VAR_WORDS, WRONG_CALL_WORDS } from "@boleiro/game-client/format/refereeCallWords";
 import { badDaysOf } from "@boleiro/engine/sim/live/matchPlay";
 import { FULL_TIME, HALF_TIME, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import type { LiveRound, RoundMatch, Side } from "@boleiro/game-client/round/liveRoundOf";
 
-export type EventKind = "goal" | "penaltyMiss" | "yellow" | "red" | "injury" | "substitution";
+export type EventKind = "goal" | "penaltyMiss" | "yellow" | "red" | "injury" | "substitution" | "varCheck" | "wrongCall";
 /** A match event as the rows and the band print it, like a radio ticker: "Gol de Arrascaeta". */
 export type ShownEvent = { kind: EventKind; minute: number; side: Side; text: string };
 export type Score = { home: number; away: number };
@@ -43,6 +45,10 @@ function eventText(event: PlayerEvent, names: Readonly<Record<string, string>>):
       return `${name} se machucou`;
     case "substitution":
       return `Entra ${name}, sai ${names[event.offId] ?? "um jogador"}`;
+    case "varCheck":
+      return VAR_WORDS[event.decision](name);
+    case "wrongCall":
+      return WRONG_CALL_WORDS[event.call](name);
   }
 }
 
@@ -85,12 +91,12 @@ export function goalsBetween(round: LiveRound, from: number, to: number): { fixt
 
 /** A moment the board makes a show of; a player having a bad day comes with who he is. */
 export type Highlight =
-  | { fixtureId: string; kind: "goal" | "penaltyMiss" | "red"; side: Side; clubId: string }
+  | { fixtureId: string; kind: "goal" | "penaltyMiss" | "red" | "var"; side: Side; clubId: string }
   | { fixtureId: string; kind: "badDay"; side: Side; clubId: string; playerId: string };
 
 /**
- * The moments of a stretch of minutes the board makes a show of, in order: goals, missed penalties
- * and red cards, then the human coaches' players the assistant notices having a bad day.
+ * The moments of a stretch of minutes the board makes a show of, in order: goals, missed penalties,
+ * red cards and VAR changing a call, then the human coaches' players the assistant notices having a bad day.
  */
 export function highlightsBetween(round: LiveRound, from: number, to: number): Highlight[] {
   const humanClubIds = new Set([round.coachClubId, ...(round.otherHumanClubIds ?? [])]);
@@ -98,6 +104,7 @@ export function highlightsBetween(round: LiveRound, from: number, to: number): H
     const sideOf = (clubId: string): Side => (clubId === match.homeId ? "home" : "away");
     const moments = match.events.flatMap((event): Highlight[] => {
       if (!isPlayerEvent(event) || event.minute <= from || event.minute > to) return [];
+      if (event.type === "varCheck") return event.decision === "goalStands" ? [] : [{ fixtureId: match.fixtureId, kind: "var", side: sideOf(event.clubId), clubId: event.clubId }];
       const kind = kindOf(event);
       if (kind !== "goal" && kind !== "penaltyMiss" && kind !== "red") return [];
       return [{ fixtureId: match.fixtureId, kind, side: sideOf(event.clubId), clubId: event.clubId }];
@@ -139,6 +146,20 @@ const isIncidentOf = (e: MatchEvent, clubId: string) => (e.type === "injury" || 
  * a coach in his match: a goal against the seated coach, or a red card or an injury to any human
  * coach's side.
  */
+/**
+ * The VAR check a human coach's match stops for at `minute`, if any: the round stands still while it
+ * runs. A check that only confirms a goal stops nothing.
+ */
+export function varCheckAt(round: LiveRound, minute: number): { fixtureId: string; check: VarCheck } | null {
+  const humanClubIds = new Set([round.coachClubId, ...(round.otherHumanClubIds ?? [])]);
+  for (const match of round.matches) {
+    if (!humanClubIds.has(match.homeId) && !humanClubIds.has(match.awayId)) continue;
+    const check = match.events.find((e): e is VarCheck => e.type === "varCheck" && e.minute === minute && e.decision !== "goalStands");
+    if (check) return { fixtureId: match.fixtureId, check };
+  }
+  return null;
+}
+
 export function pauseReason(round: LiveRound, minute: number): "halfTime" | "fullTime" | "coachMatch" | null {
   if (minute >= FULL_TIME) return "fullTime";
   if (minute === HALF_TIME) return "halfTime";
