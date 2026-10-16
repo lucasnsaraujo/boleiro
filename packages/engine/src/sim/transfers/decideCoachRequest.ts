@@ -87,6 +87,8 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (own) return refuse(state, request, "alreadyAtClub");
       // The borrower can't sell what it doesn't own, and the owner can't sell a player it lent out.
       if (loan) return refuse(state, request, "onLoan");
+      // Another coach's request or an AI club may have got there first, earlier the same day.
+      if (state.market.preContracts[player.id]) return refuse(state, request, "preContractSigned");
       if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
       const free = !state.players[player.id];
       const preContract = !free && isInPreContractWindow(player, state.date);

@@ -114,6 +114,16 @@ describe("contracts", () => {
     expect(joined.state.players[target.id]?.clubId).toBe(COACH);
     expect(joined.events).toContainEqual(expect.objectContaining({ type: "playerMoved", kind: "preContract", playerId: target.id, fee: 0 }));
   });
+
+  it("refuse a pre-contract with a player who already signed one with another club", () => {
+    const target = { ...serieBStandout(windowEve), contractUntil: addDays(windowEve.date, 120) };
+    const rival = Object.values(windowEve.clubs).find((c) => c.division === "A" && c.id !== COACH)?.id ?? "";
+    const signed = rich(withPlayer(windowEve, target));
+    const before = { ...signed, market: { ...signed.market, preContracts: { ...signed.market.preContracts, [target.id]: rival } } };
+    const { state, decision } = ask(before, { kind: "sign", playerId: target.id });
+    expect(decision).toMatchObject({ approved: false, reason: "preContractSigned" });
+    expect(state.market.preContracts[target.id]).toBe(rival);
+  });
 });
 
 describe("free agents", () => {
