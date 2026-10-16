@@ -45,7 +45,7 @@ const squadEnds = new WeakMap<readonly SimPlayer[], string>();
 function squadEnd(squad: readonly SimPlayer[]): string {
   let earliest = squadEnds.get(squad);
   if (earliest !== undefined) return earliest;
-  earliest = squad[0]?.contractUntil ?? "";
+  earliest = squad[0]?.contractUntil ?? "9999-12-31";
   for (const player of squad) if (player.contractUntil < earliest) earliest = player.contractUntil;
   squadEnds.set(squad, earliest);
   return earliest;
