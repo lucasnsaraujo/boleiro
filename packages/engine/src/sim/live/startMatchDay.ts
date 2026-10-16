@@ -17,7 +17,7 @@ import { isInjured } from "../players/isInjured.js";
 import { matchSetup, playingStrength, type CoachPlan } from "../players/matchSetup.js";
 import { fatigueOn } from "../players/fatigueOn.js";
 import { drawMatchInjuries, recordMatchLoad } from "../players/recordMatchLoad.js";
-import { squadsByClub } from "../players/squadsByClub.js";
+import { squadsOfGame } from "../players/squadsByClub.js";
 import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
 import { aiBench, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
 import { waitingCoachesOf } from "../coach/humanCoaches.js";
@@ -34,11 +34,10 @@ const LINEUP_SIZE = 11;
 const TIMELINE_STREAM_SALT = 0x71e11e;
 const COACH_MATCH_STREAM_SALT = 0xc0ac5;
 
-/** Club squads, indexed on first use: most days have no match and need none. A continental cup's guest from abroad brings its own. */
-function squadsOf(state: GameState): (clubId: string) => SimPlayer[] {
-  let squads: Map<string, SimPlayer[]> | null = null;
+/** Club squads, the game's shared ones (squadsOfGame). A continental cup's guest from abroad brings its own. */
+function squadsOf(state: GameState): (clubId: string) => readonly SimPlayer[] {
   return (clubId) => {
-    squads ??= squadsByClub(state.players);
+    const squads = squadsOfGame(state);
     const guest = squads.has(clubId) ? null : guestClubOf(state, clubId);
     return guest ? guestSquadOf(guest) : (squads.get(clubId) ?? []);
   };
