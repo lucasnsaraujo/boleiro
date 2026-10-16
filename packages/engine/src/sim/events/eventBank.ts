@@ -254,7 +254,7 @@ export const EVENT_BANK: readonly EventType[] = [
   {
     id: "dressing-room-fight",
     area: "squad",
-    weight: (scene) => (chemistryOf(scene.state, scene.clubId, scene.squad).value < LOW_CHEMISTRY ? 4 : 2),
+    weight: (scene) => (chemistryOf(scene.state, scene.clubId).value < LOW_CHEMISTRY ? 4 : 2),
     cooldownDays: 45,
     cast: (scene) => {
       if ((marginToday(scene) ?? 0) >= 0) return null;

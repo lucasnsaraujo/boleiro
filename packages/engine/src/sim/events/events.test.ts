@@ -148,7 +148,7 @@ describe("event engine", () => {
   });
 
   it("fills every text of the bank with real names", () => {
-    const slots = new Set(["player", "club", "rival", "age", "position", "stadium", "coach"]);
+    const slots = new Set(["player", "teammate", "club", "rival", "age", "position", "stadium", "coach"]);
     for (const type of EVENT_BANK) {
       const texts = [...type.texts.flatMap((t) => [t.headline, t.body]), type.setting ?? "", ...(type.choices ?? []).flatMap((c) => [c.label, c.detail ?? "", c.news ?? ""])];
       for (const text of texts) for (const [, slot] of text.matchAll(/\{(\w+)\}/g)) expect(slots, `${type.id}: {${slot}}`).toContain(slot);

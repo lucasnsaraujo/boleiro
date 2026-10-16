@@ -43,7 +43,7 @@ export type CoachPlan = { lineup: readonly SimPlayer[] | null; tactics: Tactics 
 export function playingStrength(state: GameState, clubId: string, context: MatchContext, squad: readonly SimPlayer[]): (player: SimPlayer) => number {
   const morale = clubMood(state, clubId).squad;
   const mostMinutes = Math.max(0, ...squad.map((p) => p.condition.seasonMinutes));
-  const chemistry = chemistryStrength(chemistryOf(state, clubId, squad).value);
+  const chemistry = chemistryStrength(chemistryOf(state, clubId).value);
   return (p) => Math.max(1, (effectiveStrength(p, context) + moraleStrength(p, morale, mostMinutes, context.date)) * chemistry);
 }
 
