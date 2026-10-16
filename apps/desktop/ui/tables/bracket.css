@@ -382,3 +382,29 @@
 .bk-q.no {
   background: var(--line-2);
 }
+
+/* A played tie opens its latest game's ficha: a button over the whole card, under its text. */
+.bk-open {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--e-out);
+}
+
+.bk-open:hover {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.bk-open:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Zero specificity, so a card's own absolute marks (the shoot-out pill, the trophy) keep their place. */
+:where(.bk-open ~ *) {
+  position: relative;
+  pointer-events: none;
+}

@@ -31,6 +31,8 @@ export type TieView = {
   onPenalties: boolean;
   isPlayoff: boolean;
 };
+/** The tie's latest leg with a score: the one its ficha opens on. */
+export const lastPlayedLeg = (tie: TieView): Leg | undefined => tie.legs.findLast((leg) => leg.homeGoals !== null && leg.awayGoals !== null);
 /** The Copa do Brasil's finalists once its final is played; they take the first continental places. */
 export type CopaFinalists = { championId: string; runnerUpId: string } | null;
 export type StageTab = { index: number; name: string; isDrawn: boolean };

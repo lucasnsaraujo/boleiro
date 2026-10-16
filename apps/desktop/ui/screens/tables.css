@@ -372,6 +372,34 @@
   background: var(--yellow-l);
 }
 
+/* A tie with a game played opens its latest game's ficha: a button over the whole row, under its text. */
+.tables .tie:has(.tie-open) {
+  position: relative;
+}
+
+.tables .tie-open {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--e-out);
+}
+
+.tables .tie-open:hover {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.tables .tie-open:focus-visible {
+  outline-offset: -2px;
+}
+
+.tables .tie-open ~ * {
+  position: relative;
+  pointer-events: none;
+}
+
 .tables .tie-side {
   display: flex;
   align-items: center;
