@@ -264,18 +264,22 @@ function scoreGrid(home: Team, away: Team, params: EngineParams, sendOffs: SendO
   const la =
     withTactics(rates.away * params.baseGoals * Math.exp(params.strengthImpact * saturate(a.attack - h.defense, params.gapSaturation)), away, home) +
     rates.away * penaltyTakerGoals(away);
+  // Every match of the game draws from a grid: each side's goal chances are worked out once, not per cell.
+  const homeChances = Array.from({ length: MAX_GOALS + 1 }, (_, goals) => poisson(lh, goals));
+  const awayChances = Array.from({ length: MAX_GOALS + 1 }, (_, goals) => poisson(la, goals));
   const grid: number[][] = [];
   let total = 0;
   for (let hg = 0; hg <= MAX_GOALS; hg++) {
     const row: number[] = [];
     for (let ag = 0; ag <= MAX_GOALS; ag++) {
-      const p = poisson(lh, hg) * poisson(la, ag) * lowScoreAdjustment(hg, ag, lh, la, params.lowScoreCorrelation);
+      const p = (homeChances[hg] ?? 0) * (awayChances[ag] ?? 0) * lowScoreAdjustment(hg, ag, lh, la, params.lowScoreCorrelation);
       row.push(p);
       total += p;
     }
     grid.push(row);
   }
-  return { grid: grid.map((row) => row.map((p) => p / total)), lh, la };
+  for (const row of grid) row.forEach((p, ag) => (row[ag] = p / total));
+  return { grid, lh, la };
 }
 
 /** Probability of each final score: [home goals][away goals], up to MAX_GOALS (10) each. */
