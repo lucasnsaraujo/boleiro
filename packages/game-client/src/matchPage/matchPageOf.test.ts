@@ -1,8 +1,10 @@
+import { REFEREE_ROSTER } from "@boleiro/data/refereeRoster";
 import { beforeAll, describe, expect, it } from "vitest";
 import { leagueMatches } from "@boleiro/engine/sim/world/resultOnlyLeague";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
 import { createEngineSession, type EngineSession } from "../engine/createEngineSession.js";
 import type { LiveRound } from "../round/liveRoundOf.js";
+import { officialsOf } from "../round/officialsOf.js";
 import { matchPageAt } from "./matchPageAt.js";
 import { worldMatchRef, type MatchPage } from "./matchPageOf.js";
 
@@ -35,6 +37,24 @@ beforeAll(() => {
 });
 
 describe("the match page of the round under way", () => {
+  it("names the referee of a competition the data covers, with VAR where it watches, and leaves the referee out where the data names none", () => {
+    const state = session.read(["seed", "competitions", "fixtures"]);
+    const isIn = (kind: string) => (f: (typeof state.fixtures)[number]) => {
+      const competition = state.competitions[f.competitionId];
+      return competition?.kind === "league" ? `league-${competition.division}` === kind : competition?.kind === "state" && `state-${competition.state}` === kind;
+    };
+    const serieA = state.fixtures.find(isIn("league-A"));
+    expect(REFEREE_ROSTER["br-A"]?.map((r) => r.name)).toContain(serieA && officialsOf(state, serieA).referee);
+    expect(serieA && officialsOf(state, serieA).hasVar).toBe(true);
+    const acre = state.fixtures.find(isIn("state-AC"));
+    expect(acre && officialsOf(state, acre)).toEqual({ referee: null, hasVar: false });
+
+    const page = openPage(session, coachFixtureId);
+    const fixture = state.fixtures.find((f) => f.id === coachFixtureId);
+    expect(page.officials).toEqual(officialsOf(state, fixture));
+    expect(round.matches.find((m) => m.fixtureId === coachFixtureId)?.officials).toEqual(page.officials);
+  });
+
   it("opens any match of the round on its real timeline, each with its own clubs, so the panel can swap between them", () => {
     for (const fixtureId of [coachFixtureId, otherFixtureId]) {
       const page = openPage(session, fixtureId);

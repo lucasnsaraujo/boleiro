@@ -180,7 +180,7 @@ describe("closed doors", () => {
   it("take away part of the home side's edge", () => {
     const goalDifference = (day: GameState) =>
       Array.from({ length: 60 }, (_, seed) => {
-        const result = advanceDay({ ...day, rngState: seed }, {}).state.fixtures.find((f) => f.id === game.id)?.result;
+        const result = advanceDay({ ...day, rngState: seed + 60 }, {}).state.fixtures.find((f) => f.id === game.id)?.result;
         return (result?.homeGoals ?? 0) - (result?.awayGoals ?? 0);
       }).reduce((sum, d) => sum + d, 0);
     expect(goalDifference(before)).toBeLessThan(goalDifference(leagueDay));

@@ -8,7 +8,7 @@ import { humanClubIds, isHumanClub, passTheSeat, waitingCoachesOf } from "./huma
 
 const FIRST = "flamengo-rj";
 const SECOND = "palmeiras-sp";
-const twoCoaches = loadNewGame(7, { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }] } });
+const twoCoaches = loadNewGame(11, { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }] } });
 
 function advanceUntil(state: GameState, isDone: (state: GameState) => boolean): GameState {
   let current = state;

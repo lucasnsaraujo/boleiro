@@ -51,6 +51,8 @@ function actionOf(event: MatchEvent, sideOf: (clubId: string) => Side, nameOf: (
     case "fullTime":
     case "shootoutKick":
     case "orderOverruled":
+    case "varCheck":
+    case "wrongCall":
       return null;
   }
 }

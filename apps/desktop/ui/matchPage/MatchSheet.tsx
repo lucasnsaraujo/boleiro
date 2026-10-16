@@ -1,12 +1,13 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { HALF_TIME } from "@boleiro/engine/sim/live/matchTimeline";
+import type { VarDecision, WrongCallKind } from "@boleiro/engine/sim/referees/refereeCalls";
 import { PRESSURE_MINUTES, type MatchView, type PageEvent } from "@boleiro/game-client/matchPage/matchPageAt";
 import type { MatchPage, PagePlayer } from "@boleiro/game-client/matchPage/matchPageOf";
 import type { Side } from "@boleiro/game-client/round/liveRoundOf";
 import { formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { Crest } from "../clubs/Crest.js";
-import { clockLabel, clubColours, EventMark, GoalNote, LiveChip, RollingDigit, StatBar, venueLine } from "./matchFileParts.js";
+import { clockLabel, clubColours, EventMark, GoalNote, LiveChip, RollingDigit, refereeLine, StatBar, venueLine } from "./matchFileParts.js";
 import { formatMark, markClass } from "./matchMarks.js";
 import { MatchPitch } from "./MatchPitch.js";
 import { headlineOf, reportOf } from "./matchStory.js";
@@ -83,7 +84,7 @@ export function MatchSheet({ page, view, isLeaving, onBack, onClose }: Props) {
       </header>
       <div className="mf-strip">
         <i className="ph-bold ph-ticket" aria-hidden="true" />
-        <span>{venueLine(page).join(" · ") || "Estádio não informado"}</span>
+        <span>{[...venueLine(page), refereeLine(page)].filter(Boolean).join(" · ") || "Estádio não informado"}</span>
         <span className="mf-date">{formatDayMonth(page.date)}</span>
         <LiveChip page={page} view={view} />
       </div>
@@ -142,6 +143,7 @@ function Summary({ page, view }: TabProps) {
     ["Estádio", page.venue.stadium],
     ["Público", page.venue.crowd ? new Intl.NumberFormat("pt-BR").format(page.venue.crowd) : null],
     ["Renda", gate],
+    ["Árbitro", page.officials.referee && `${page.officials.referee}${page.officials.yellowsPerMatch ? ` · ${page.officials.yellowsPerMatch.toLocaleString("pt-BR")} amarelos por jogo` : ""}`],
   ].filter((fact): fact is [string, string] => !!fact[1]);
   return (
     <>
@@ -277,8 +279,31 @@ function EventNote({ event, names }: { event: PageEvent; names: Readonly<Record<
       return <small>expulso</small>;
     case "yellow":
       return null;
+    case "varCheck":
+      return event.decision ? <small className="var">{VAR_NOTES[event.decision]}</small> : null;
+    case "wrongCall":
+      return event.call ? <small className="wrong">{WRONG_CALL_NOTES[event.call]}</small> : null;
   }
 }
+
+const VAR_NOTES: Record<VarDecision, string> = {
+  goalStands: "VAR confirma o gol",
+  goalRuledOut: "gol anulado pelo VAR",
+  goalAwarded: "gol validado pelo VAR",
+  penaltyAwarded: "pênalti marcado pelo VAR",
+  penaltyCancelled: "pênalti desmarcado pelo VAR",
+  redCardGiven: "vermelho após o VAR",
+  redCardCancelled: "vermelho retirado pelo VAR",
+};
+
+const WRONG_CALL_NOTES: Record<WrongCallKind, string> = {
+  goalShouldNotStand: "gol irregular validado",
+  goalWronglyRuledOut: "gol legal anulado",
+  penaltyWronglyGiven: "pênalti inexistente",
+  penaltyNotGiven: "pênalti não marcado",
+  redCardWronglyGiven: "expulsão injusta",
+  redCardNotGiven: "merecia o vermelho",
+};
 
 function Lineups({ page, view }: TabProps) {
   const name = (id: string) => page.names[id] ?? "Um jogador";

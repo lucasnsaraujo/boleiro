@@ -29,6 +29,8 @@ import { recordDayEvents } from "../history/recordDayEvents.js";
 import { recordMatches } from "../history/recordMatches.js";
 import { clubMood } from "../morale/clubMood.js";
 import { reactToDay } from "../morale/reactToDay.js";
+import { matchOfficials } from "../referees/matchOfficials.js";
+import { talkedAboutCalls, type RefereeCallEvent } from "../referees/refereeCalls.js";
 import { openNextStage } from "../openNextStage.js";
 import { developPlayers } from "../players/developPlayers.js";
 import { copinhaDate, playCopinha } from "../youth/copinha.js";
@@ -134,6 +136,20 @@ function liveTacticsOf(live: LiveDay, clubId: string): Tactics | undefined {
   return undefined;
 }
 
+/** The day's VAR changes and wrong calls that stood, match by match, for the papers and the dressing rooms. */
+function refereeCallsOf(live: LiveDay): RefereeCallEvent[] {
+  const talked = live.matches.flatMap((match) => talkedAboutCalls(match.events).map((call) => ({ fixtureId: match.fixtureId, call })));
+  if (!talked.length) return [];
+  const today = new Map(live.state.fixtures.filter((f) => f.date === live.state.date).map((f) => [f.id, f]));
+  return talked.flatMap(({ fixtureId, call }): RefereeCallEvent[] => {
+    const fixture = today.get(fixtureId);
+    const competition = fixture && live.state.competitions[fixture.competitionId];
+    if (!fixture || !competition) return [];
+    const referee = matchOfficials(live.state.seed, competition, fixture).referee?.name ?? null;
+    return [{ type: "refereeCall", fixtureId, competitionId: competition.id, referee, call }];
+  });
+}
+
 /**
  * Blows the final whistle on a live day and runs the rest of it: next stages, the history, money,
  * moods, the coach's career, the season's end and the transfer market. With no live changes this is
@@ -144,7 +160,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const open = openMatchesOf(live);
   const day = open.length ? withCoachMatches(live, open) : live.rest;
   const random = randomStream(day.rngState);
-  const events: DayEvent[] = [...day.events];
+  const events: DayEvent[] = [...day.events, ...refereeCallsOf(live)];
   let { fixtures } = day;
 
   const clubStates: Record<string, State> = Object.fromEntries(Object.values(state.clubs).flatMap((club) => (club.state ? [[club.id, club.state]] : [])));
