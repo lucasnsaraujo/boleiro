@@ -78,3 +78,12 @@ test("goals a minute apart at the fastest clock still each reach the net at thei
   expect(ballAt(script, at(22)).x).toBeLessThanOrEqual(0);
   expect(script.keys.every((key, i) => i === 0 || key.t > (script.keys[i - 1]?.t ?? 0))).toBe(true);
 });
+
+test("a goal in first-half stoppage time goes in at the end its side attacked in the first half, and the sides change ends for the second half's kick-off", () => {
+  const stoppage: PitchAction = { kind: "goal", minute: 45, side: "home", playerId: "h9", tag: "Everaldo", setPiece: null };
+  const script = playScript([stoppage, halfTime, awayGoal], "fixture-7", MS);
+  expect(ballAt(script, at(45)).x).toBeGreaterThanOrEqual(1);
+  const homeKeeper = (minute: number) => tokensAt(script, at(minute), lineups).find((token) => token.side === "home" && token.isKeeper);
+  expect(homeKeeper(45)?.x).toBeLessThan(0.5);
+  expect(homeKeeper(47)?.x).toBeGreaterThan(0.5);
+});

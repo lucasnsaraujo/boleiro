@@ -37,6 +37,8 @@ const DEAD_BALL_MS = 760;
 const CHANCE_EVERY_MS = 5200;
 // The shortest run-up a real action gets when the one before it leaves little room.
 const MIN_ATTACK_MS = 420;
+// First-half stoppage time is minute 45: the sides change ends half-way into it, before the second half's kick-off.
+const SECOND_HALF_MINUTE = HALF_TIME + 0.5;
 const POST = 0.054;
 const PITCH_LENGTH_M = 105;
 const SPOT_ALONG = 1 - 11 / PITCH_LENGTH_M;
@@ -63,8 +65,8 @@ const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
 const other = (side: Side): Side => (side === "home" ? "away" : "home");
 
 /** The goal a side attacks at a minute: home attacks the right goal in the first half. */
-export function attackDirection(side: Side, minute: number): 1 | -1 {
-  const isFirstHalf = minute < HALF_TIME;
+function attackDirection(side: Side, minute: number): 1 | -1 {
+  const isFirstHalf = minute < SECOND_HALF_MINUTE;
   return (side === "home") === isFirstHalf ? 1 : -1;
 }
 
@@ -216,7 +218,7 @@ export function playScript(actions: readonly PitchAction[], fixtureId: string, m
     const until = next ? next.t - ms(MIN_ATTACK_MS) : Infinity;
     if (anchor.kind === "halfTime") {
       fill(cursor, anchor.t - ms(KICKOFF_MS));
-      kickOff(Math.min(anchor.t + ms(KICKOFF_MS) * 0.5, until), "away");
+      kickOff(Math.min(Math.max(anchor.t + ms(KICKOFF_MS) * 0.5, SECOND_HALF_MINUTE * msPerMinute + ms(KICKOFF_MS) * 0.3), until), "away");
       cursor = Math.max(cursor, Math.min(anchor.t + ms(KICKOFF_MS), until));
       return;
     }
