@@ -94,3 +94,24 @@ test("a goal in first-half stoppage time goes in at the end its side attacked in
   expect(homeKeeper(45)?.x).toBeLessThan(0.5);
   expect(homeKeeper(47)?.x).toBeGreaterThan(0.5);
 });
+
+test("a goal a minute into the second half comes after the kick-off from the centre, with the ends already changed, at any clock speed", () => {
+  const early: PitchAction = { kind: "goal", minute: 46, side: "away", playerId: "a9", tag: "Kayzer", setPiece: null };
+  for (const ms of [660, 330, 110]) {
+    const script = playScript([halfTime, early], "fixture-8", ms);
+    const kickOff = script.keys.find((key) => key.shape === "kickoff" && key.t > 45 * ms);
+    expect(kickOff?.t).toBeGreaterThanOrEqual(45.5 * ms);
+    // Away attacks the right goal in the second half.
+    expect(ballAt(script, 46 * ms).x).toBeGreaterThanOrEqual(1);
+  }
+});
+
+test("a goal in first-half stoppage time is celebrated before the ends change for the second half", () => {
+  const stoppage: PitchAction = { kind: "goal", minute: 45, side: "away", playerId: "a9", tag: "Kayzer", setPiece: null };
+  const ms = 660;
+  const script = playScript([stoppage, halfTime], "fixture-9", ms);
+  const celebration = script.keys.find((key) => key.shape === "celebrate");
+  expect(celebration?.t).toBeGreaterThan(45 * ms);
+  expect(celebration?.t).toBeLessThan(45.5 * ms);
+  expect(script.secondHalfAt).toBe(45.5 * ms);
+});

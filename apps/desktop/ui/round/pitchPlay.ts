@@ -21,7 +21,8 @@ type BallKey = { t: number; x: number; y: number; h: number; kind: BallKind; sid
 type BeatKind = "shot" | "save" | "wide" | "goal" | "yellow" | "red" | "injury" | "substitution";
 /** A moment of the play: where it happened and, for a real action, the tag its player carries and who he is. */
 export type Beat = { t: number; kind: BeatKind; side: Side; x: number; y: number; tag: string | null; playerId: string | null };
-export type Script = { keys: BallKey[]; beats: Beat[]; msPerMinute: number };
+/** The ball's keys and the beats over presentation milliseconds, and when the sides change ends for the second half. */
+export type Script = { keys: BallKey[]; beats: Beat[]; msPerMinute: number; secondHalfAt: number };
 type Ball = { x: number; y: number; h: number; kind: BallKind; side: Side | null; shape: BallShape | undefined; nextAt: { x: number; y: number; t: number } | null };
 export type Token = { id: string; side: Side; isKeeper: boolean; x: number; y: number };
 /** Each side's formation and the players sent off so far, in the order they went. */
@@ -38,6 +39,8 @@ const DEAD_BALL_MS = 760;
 const CHANCE_EVERY_MS = 5200;
 // The shortest run-up a real action gets when the one before it leaves little room.
 const MIN_ATTACK_MS = 420;
+// The longest a strike's ball keeps moving after it, at 1x; with less room before the next action it all speeds up.
+const TAIL_MS = 1200;
 // First-half stoppage time is minute 45: the sides change ends half-way into it, before the second half's kick-off.
 const SECOND_HALF_MINUTE = HALF_TIME + 0.5;
 const POST = 0.054;
@@ -123,8 +126,10 @@ export function playScript(actions: readonly PitchAction[], fixtureId: string, m
     return { along: 0.72 + random() * 0.05, y: 0.28 + random() * 0.44 };
   }
 
-  /** Passes forward to a shooting spot, or the ball set down for a set piece, then the strike and where it ends, cut short at `until`. */
+  /** Passes forward to a shooting spot, or the ball set down for a set piece, then the strike and where it ends, all before `until`. */
   function attack(side: Side, from: number, at: number, strike: Strike, until = Infinity) {
+    // What the ball does after the strike, `oneX` ms after it at 1x, squeezed in proportion when `until` is close.
+    const afterAt = (oneX: number) => at + Math.min(ms(oneX), ((until - at) * oneX) / TAIL_MS);
     const after = (key: BallKey) => {
       if (key.t < until) push(key);
     };
@@ -161,18 +166,18 @@ export function playScript(actions: readonly PitchAction[], fixtureId: string, m
     beat(launch, "shot", side, goalX, shotY, strike);
     if (outcome === "goal") {
       push({ t: at, x: goalX, y: shotY, h: 0.01 + random() * 0.012, kind: strikeKind, side });
-      after({ t: at + ms(140), x: goalX + dir * 0.024, y: shotY + (shotY - 0.5) * 0.15, h: 0.006, kind: "roll", side });
-      after({ t: at + ms(420), x: goalX + dir * 0.02, y: shotY, h: 0, kind: "roll", side, shape: "celebrate" });
+      after({ t: afterAt(140), x: goalX + dir * 0.024, y: shotY + (shotY - 0.5) * 0.15, h: 0.006, kind: "roll", side });
+      after({ t: afterAt(420), x: goalX + dir * 0.02, y: shotY, h: 0, kind: "roll", side, shape: "celebrate" });
       beat(at, "goal", side, goalX, shotY, strike);
     } else if (outcome === "save") {
       push({ t: at, x: goalX - dir * 0.012, y: shotY, h: 0.008 + random() * 0.01, kind: strikeKind, side });
-      after({ t: at + ms(420), x: goalX - dir * (0.08 + random() * 0.05), y: clamp(shotY + (random() < 0.5 ? -1 : 1) * (0.14 + random() * 0.1), 0.08, 0.92), h: 0, kind: "air", side: other(side) });
+      after({ t: afterAt(420), x: goalX - dir * (0.08 + random() * 0.05), y: clamp(shotY + (random() < 0.5 ? -1 : 1) * (0.14 + random() * 0.1), 0.08, 0.92), h: 0, kind: "air", side: other(side) });
       beat(at, "save", side, goalX, shotY, strike);
     } else {
       push({ t: at, x: goalX + dir * 0.012, y: shotY, h: 0.02 + random() * 0.02, kind: strikeKind, side });
-      after({ t: at + ms(260), x: goalX + dir * 0.032, y: shotY + (shotY - 0.5) * 0.4, h: 0, kind: "roll", side });
+      after({ t: afterAt(260), x: goalX + dir * 0.032, y: shotY + (shotY - 0.5) * 0.4, h: 0, kind: "roll", side });
       beat(at, "wide", side, goalX, shotY, strike);
-      after({ t: at + ms(1100), x: goalX - dir * 0.05, y: 0.5, h: 0, kind: "roll", side: other(side) });
+      after({ t: afterAt(1100), x: goalX - dir * 0.05, y: 0.5, h: 0, kind: "roll", side: other(side) });
     }
     lastChanceAt = at;
   }
@@ -195,8 +200,9 @@ export function playScript(actions: readonly PitchAction[], fixtureId: string, m
     }
   }
 
-  function kickOff(at: number, side: Side) {
-    push({ t: at - ms(KICKOFF_MS) * 0.3, x: 0.5, y: 0.5, h: 0, kind: "roll", side, shape: "kickoff" });
+  /** The ball on the centre spot, the players lining up from `notBefore` at the earliest. */
+  function kickOff(at: number, side: Side, notBefore = 0) {
+    push({ t: Math.max(at - ms(KICKOFF_MS) * 0.3, notBefore), x: 0.5, y: 0.5, h: 0, kind: "roll", side, shape: "kickoff" });
     push({ t: at, x: 0.5, y: 0.5, h: 0, kind: "roll", side, shape: "kickoff" });
   }
 
@@ -213,21 +219,26 @@ export function playScript(actions: readonly PitchAction[], fixtureId: string, m
     })
     .sort((a, b) => a.t - b.t);
 
+  const secondHalfAt = SECOND_HALF_MINUTE * msPerMinute;
   let cursor = ms(KICKOFF_MS);
   anchors.forEach((anchor, index) => {
-    // A real action never runs into the next one: whatever follows it is cut short to leave the next its run-up.
+    // A real action never runs into the next one: whatever follows it is cut short to leave the next its run-up,
+    // and play before half-time ends by the change of ends.
     const next = anchors[index + 1];
-    const until = next ? next.t - ms(MIN_ATTACK_MS) : Infinity;
+    const until = !next ? Infinity : next.kind === "halfTime" ? secondHalfAt : next.t - ms(MIN_ATTACK_MS);
     if (anchor.kind === "halfTime") {
       fill(cursor, anchor.t - ms(KICKOFF_MS));
-      kickOff(Math.min(Math.max(anchor.t + ms(KICKOFF_MS) * 0.5, SECOND_HALF_MINUTE * msPerMinute + ms(KICKOFF_MS) * 0.3), until), "away");
-      cursor = Math.max(cursor, Math.min(anchor.t + ms(KICKOFF_MS), until));
+      // The second half kicks off once the ends have changed, and early enough to leave the next action its run-up.
+      const at = Math.min(Math.max(anchor.t + ms(KICKOFF_MS) * 0.5, secondHalfAt + ms(KICKOFF_MS) * 0.3), Math.max(until, secondHalfAt + 1));
+      kickOff(at, "away", secondHalfAt);
+      cursor = Math.max(cursor, at);
       return;
     }
     const start = Math.min(Math.max(cursor, anchor.t - ms(ATTACK_MS)), anchor.t - ms(MIN_ATTACK_MS));
     fill(cursor, start);
     attack(anchor.side, Math.max(start, last().t), anchor.t, anchor.strike, until);
-    if (anchor.strike.outcome !== "goal") {
+    // A strike just before half-time leaves the restart to the second half's kick-off.
+    if (anchor.strike.outcome !== "goal" || next?.kind === "halfTime") {
       cursor = Math.min(last().t + ms(200), until);
       return;
     }
@@ -243,7 +254,7 @@ export function playScript(actions: readonly PitchAction[], fixtureId: string, m
     beats.push({ t: action.minute * msPerMinute, kind, side: action.side, x: 0, y: 0, tag: action.tag, playerId: action.playerId });
   }
   beats.sort((a, b) => a.t - b.t);
-  return { keys, beats, msPerMinute };
+  return { keys, beats, msPerMinute, secondHalfAt };
 }
 
 const easeOut = (u: number) => 1 - (1 - u) ** 3;
