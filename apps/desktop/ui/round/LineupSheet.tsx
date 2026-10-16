@@ -27,6 +27,7 @@ import {
   type Sheet,
   type SheetMode,
 } from "./lineupDraft.js";
+import { hasOwnArrows } from "./hasOwnArrows.js";
 import { useBenchDrag, type BenchDrag } from "./useBenchDrag.js";
 import "./lineupSheet.css";
 
@@ -84,10 +85,6 @@ function hintOf(sheet: Sheet, mode: SheetMode, squad: readonly SquadPlayer[], pr
   if (mode.kind === "live" && subsLeft(sheet, mode) === 0) return "Sem trocas.";
   return problem ?? "Toque num titular e depois em quem entra, ou arraste o reserva até ele.";
 }
-
-/** Whether the arrow keys belong to the control in focus: a field, a list to pick from or a slider. */
-const hasOwnArrows = (target: EventTarget | null) =>
-  target instanceof HTMLElement && (target.closest("input, select, textarea, [role='combobox'], [role='listbox'], [role='slider']") !== null || target.isContentEditable);
 
 const energyOf = (p: SquadPlayer) => Math.max(0, 100 - p.fatigue);
 const energyClass = (energy: number) => (energy < TIRED ? "en low" : energy < RESTED ? "en mid" : "en");
