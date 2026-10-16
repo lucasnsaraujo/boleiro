@@ -5,6 +5,7 @@ import { loadNewGame } from "../loadNewGame.js";
 import { realCardsPerGame } from "./cardRates.js";
 import { cardsPerGame } from "./cardsPerGame.js";
 import type { PlayerDiscipline } from "./discipline.js";
+import { openDisciplineDay } from "./recordCards.js";
 import { yellowPhase } from "./yellowPhase.js";
 
 const start = loadNewGame(5, { coachClubId: "flamengo-rj" });
@@ -142,5 +143,30 @@ describe("yellow cards", () => {
     if (groups?.kind !== "groups") throw new Error("the estadual does not open with groups");
     const withKnockout = { ...stateChampionship, stages: [groups, { kind: "knockout" as const, ties: [], dates: [] }] };
     expect(yellowPhase(withKnockout, 0)).toBeLessThan(yellowPhase(withKnockout, 1));
+  });
+});
+
+describe("a day of card records", () => {
+  const [playerId] = Object.values(matchDay.players).filter((p) => p.clubId === flamengoGame.homeId || p.clubId === flamengoGame.awayId).map((p) => p.id);
+  if (!playerId) throw new Error("nobody plays the Flamengo game");
+  const clubOf = (id: string) => matchDay.players[id]?.clubId;
+  const sendOff = (day: ReturnType<typeof openDisciplineDay>) =>
+    day.record(serieA, flamengoGame, [{ playerId, clubId: clubOf(playerId) ?? "", card: "secondYellow", minute: 80 }], clubOf, () => 0);
+
+  it("bans a player sent off from the next day on and leaves the day before as it was", () => {
+    const today = openDisciplineDay(matchDay.discipline);
+    expect(today.suspended(serieA.id).has(playerId)).toBe(false);
+    sendOff(today);
+    expect(openDisciplineDay(today.discipline()).suspended(serieA.id).has(playerId)).toBe(true);
+    expect(openDisciplineDay(matchDay.discipline).suspended(serieA.id).has(playerId)).toBe(false);
+  });
+
+  it("ends a ban once its match is served", () => {
+    const banned = openDisciplineDay(matchDay.discipline);
+    sendOff(banned);
+    const serving = openDisciplineDay(banned.discipline());
+    expect(serving.suspended(serieA.id).has(playerId)).toBe(true);
+    serving.record(serieA, flamengoGame, [], clubOf, () => 0);
+    expect(openDisciplineDay(serving.discipline()).suspended(serieA.id).has(playerId)).toBe(false);
   });
 });
