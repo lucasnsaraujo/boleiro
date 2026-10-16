@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ContinentalCompetition, Fixture, GameState } from "../gameState.js";
-import { RAPIDO } from "../formats.js";
+import { RAPIDO, REALISTA } from "../formats.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { isNextStageReady, openNextStage } from "../openNextStage.js";
 import { OPENING_EUR_BRL } from "../transfers/openingMarket.js";
@@ -55,6 +55,22 @@ describe("the Intercontinental Cup of a game of the whole world", () => {
     expect(leagueDaysNextToIt(rapido)).toEqual([]);
     expect(rapido.calendar).toEqual(loadNewGame(SEED, { coachClubId: "flamengo-rj", world, formats: RAPIDO }).calendar);
     expect(start.calendar).toEqual(loadNewGame(SEED, { coachClubId: "flamengo-rj", world }).calendar);
+  });
+
+  it("falls on no day next to a Copa do Brasil round or a coached MLS, Liga MX or Saudi league's, in Realista and Rápido, a club abroad's on the unified calendar", () => {
+    const cupDaysNextToIt = (game: GameState) => {
+      const days = intercontinentalCupOf(game)?.stageDates.flat() ?? [];
+      const clashes = Object.values(game.competitions).flatMap((c) => (c.kind === "cup" || (c.kind === "league" && c.abroad) ? c.stageDates.flat() : []));
+      return clashes.filter((date) => days.some((day) => Math.abs(Date.parse(day) - Date.parse(date)) <= 86_400_000));
+    };
+    for (const formats of [REALISTA, RAPIDO]) {
+      expect(cupDaysNextToIt(loadNewGame(SEED, { coachClubId: "flamengo-rj", world, guests, formats }))).toEqual([]);
+      for (const coachClubId of ["tm-51828", "tm-3631", "tm-1114"]) {
+        const game = loadNewGame(SEED, { coachClubId, world, guests, formats: { ...formats, calendar: "unified" } });
+        expect(Object.values(game.competitions).some((c) => c.kind === "league" && c.abroad && c.clubIds.includes(coachClubId))).toBe(true);
+        expect(cupDaysNextToIt(game)).toEqual([]);
+      }
+    }
   });
 
   it("opens on the play-off, the AFC's club at home to the OFC's in an even year, CAF's waiting in the next round and CONCACAF's in the Derby", () => {
