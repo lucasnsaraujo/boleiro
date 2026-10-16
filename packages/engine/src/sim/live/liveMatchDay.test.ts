@@ -3,9 +3,13 @@ import { advanceDay } from "../advanceDay.js";
 import type { GameState } from "../gameState.js";
 import { waitingCoachesOf } from "../coach/humanCoaches.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { playingStrength } from "../players/matchSetup.js";
+import { squadsByClub } from "../players/squadsByClub.js";
 import { applyLiveChange } from "./applyLiveChange.js";
 import { finishMatchDay } from "./finishMatchDay.js";
+import { formStrength } from "./formOfTheDay.js";
 import type { LiveDay } from "./liveDay.js";
+import { playerStatsAt, type PlayerStats } from "./matchPlay.js";
 import { FULL_TIME, HALF_TIME } from "./matchTimeline.js";
 import { startMatchDay } from "./startMatchDay.js";
 
@@ -324,5 +328,68 @@ describe("a hot-seat live match day", () => {
 
   it("refuses a change for a club with no match today", () => {
     expect(() => applyLiveChange(startMatchDay(bothPlay, {}), 30, { posture: "attacking" }, "santos-sp")).toThrow(/no match today/);
+  });
+});
+
+describe("players' form and play", () => {
+  const live = startMatchDay(matchDay, {});
+  const seeded = Array.from({ length: 30 }, (_, seed) => startMatchDay({ ...matchDay, rngState: seed }, {}));
+  const finalStats = (day: LiveDay) => day.matches.map((m) => ({ match: m, stats: Object.values(m.play ? playerStatsAt(m.play, m.events, FULL_TIME) : {}) }));
+  const sideTotal = (stats: readonly PlayerStats[], clubId: string, pick: (s: PlayerStats) => number) => stats.filter((s) => s.clubId === clubId).reduce((sum, s) => sum + pick(s), 0);
+
+  it("are the same for the same save, and differ in another save", () => {
+    expect(startMatchDay(matchDay, {}).matches.map((m) => m.play)).toEqual(live.matches.map((m) => m.play));
+    const other = startMatchDay({ ...matchDay, seed: matchDay.seed + 1 }, {});
+    expect(other.matches.map((m) => m.play)).not.toEqual(live.matches.map((m) => m.play));
+  });
+
+  it("build every side's shots around its goals over many seeded matches, at about FotMob's rate", () => {
+    let sides = 0;
+    let shots = 0;
+    for (const { match, stats } of seeded.flatMap(finalStats)) {
+      for (const s of stats) {
+        expect(s.shots).toBeGreaterThanOrEqual(s.shotsOnTarget);
+        expect(s.shotsOnTarget).toBeGreaterThanOrEqual(s.goals);
+      }
+      for (const clubId of [match.homeId, match.awayId]) {
+        const goals = match.events.filter((e) => e.type === "goal" && e.clubId === clubId && e.kind !== "ownGoal").length;
+        expect(sideTotal(stats, clubId, (s) => s.goals)).toBe(goals);
+        expect(sideTotal(stats, clubId, (s) => s.shotsOnTarget)).toBeGreaterThanOrEqual(goals);
+        shots += sideTotal(stats, clubId, (s) => s.shots);
+        sides++;
+      }
+    }
+    expect(shots / sides).toBeGreaterThan(10);
+    expect(shots / sides).toBeLessThan(15);
+  });
+
+  it("book a player only for a foul, and leave the cards at their real rate", () => {
+    let cards = 0;
+    let sides = 0;
+    for (const { match, stats } of seeded.flatMap(finalStats)) {
+      for (const s of stats) expect(s.fouls).toBeGreaterThanOrEqual(s.yellowCards + s.redCards);
+      cards += match.events.filter((e) => e.type === "card").length;
+      sides += 2;
+    }
+    expect(cards / sides).toBeGreaterThan(2.2);
+    expect(cards / sides).toBeLessThan(3);
+  });
+
+  it("let a substitute bring his own form onto the pitch, in what he does and in his side's strength", () => {
+    const coachMatch = live.coachMatch;
+    const match = live.matches.find((m) => m.fixtureId === coachMatch?.fixtureId);
+    if (!coachMatch || !match?.play) throw new Error("the coach plays today");
+    const side = match.homeId === COACH_CLUB ? "home" : "away";
+    const off = coachMatch.starters[side].find((p) => p.group === "ATT") ?? coachMatch.starters[side][10];
+    const on = coachMatch.bench.find((p) => p.group === "ATT") ?? coachMatch.bench[0];
+    if (!off || !on) throw new Error("the coach has a forward to change");
+    const changed = applyLiveChange(live, 30, { substitutions: [{ offId: off.id, onId: on.id }] });
+    const after = changed.matches.find((m) => m.fixtureId === match.fixtureId);
+    const stats = after?.play ? playerStatsAt(after.play, after.events, FULL_TIME) : {};
+    expect(stats[on.id]).toMatchObject({ form: match.play.players[on.id]?.form, minutes: 60 });
+    expect(stats[off.id]).toMatchObject({ form: match.play.players[off.id]?.form, minutes: 30 });
+    const squad = squadsByClub(matchDay.players).get(COACH_CLUB) ?? [];
+    const base = playingStrength(matchDay, COACH_CLUB, coachMatch.context, squad);
+    for (const player of [on, off]) expect(coachMatch.strengths[player.id]).toBeCloseTo(base(player) + formStrength(match.play.players[player.id]?.form ?? 0), 9);
   });
 });

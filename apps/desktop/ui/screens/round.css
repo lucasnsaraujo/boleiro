@@ -688,6 +688,16 @@
   color: var(--paper);
 }
 
+/* The assistant's word on a human coach's player having a bad day, in the album's faded paper. */
+.live-r .gol.bad {
+  max-width: 150px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+
 @keyframes gol-slap {
   0% {
     opacity: 0;

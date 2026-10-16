@@ -8,6 +8,7 @@ import type { Fixture, IsoDate } from "@boleiro/engine/sim/gameState";
 import { onPitchAt } from "@boleiro/engine/sim/live/aiSubstitutions";
 import { incidentHandling, type IncidentHandling } from "@boleiro/engine/sim/live/incidentHandling";
 import type { CoachMatch, LiveDay } from "@boleiro/engine/sim/live/liveDay";
+import { playerStatsAt, type MatchPlay, type PlayerStats } from "@boleiro/engine/sim/live/matchPlay";
 import { matchRatings, type PlayerRating } from "@boleiro/engine/sim/live/matchRatings";
 import type { MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import { clubMood } from "@boleiro/engine/sim/morale/clubMood";
@@ -21,7 +22,8 @@ export type RoundClub = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
 const ONCE_PLAYED = 0.5;
 // A continental guest whose pack gives no colours shows in plain white and black.
 const GUEST_COLOURS = { primary: "#FFFFFF", secondary: "#000000" };
-export type RoundMatch = { fixtureId: string; competitionId: string; homeId: string; awayId: string; events: MatchEvent[] };
+/** A match of the round: its timeline and, unless it kicked off before players had one, every player's form and play. */
+export type RoundMatch = { fixtureId: string; competitionId: string; homeId: string; awayId: string; events: MatchEvent[]; play?: MatchPlay };
 /** `hasHumanCoach`: a club of a human coach plays in it, so the round shows it open; the rest go under "Outras ligas". */
 type RoundCompetition = { id: string; label: string; hasHumanCoach: boolean };
 /** The coach's group of his competition: its clubs and every fixture of the stage, today's still unplayed. */
@@ -144,9 +146,15 @@ function ratingsOf(live: LiveDay, match: RoundMatch | undefined): MatchRatings |
       away: { clubId: match.awayId, starters: coachMatch.starters.away, bench: benches },
     },
     match.events,
+    match.play,
   );
   const withGroups = (rated: readonly PlayerRating[]) => rated.map((r) => ({ ...r, group: groups.get(r.playerId) ?? "MID" }));
   return { home: withGroups(ratings.home), away: withGroups(ratings.away) };
+}
+
+/** What each player who has been on the pitch did in a match up to `minute`, with his form of the day; nobody in a match without a play. */
+export function playerStatsOf(match: RoundMatch, minute: number): Record<string, PlayerStats> {
+  return match.play ? playerStatsAt(match.play, match.events, minute) : {};
 }
 
 /** The live round screen's view of a live day. */
@@ -160,6 +168,7 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
     homeId: m.homeId,
     awayId: m.awayId,
     events: m.events,
+    ...(m.play ? { play: m.play } : {}),
   }));
 
   const counts = new Map<string, number>();
