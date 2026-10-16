@@ -1,19 +1,12 @@
 import { expect, test } from "vitest";
-import { advanceDay } from "@boleiro/engine/sim/advanceDay";
-import type { GameState } from "@boleiro/engine/sim/gameState";
 import { loadNewGame } from "@boleiro/engine/sim/loadNewGame";
 import { matchDayPlan } from "./matchDayPlan.js";
 
 const CLUB = "flamengo-rj";
 
-function toMatchDay(state: GameState): GameState {
-  const date = state.fixtures.find((f) => f.homeId === CLUB || f.awayId === CLUB)?.date ?? "";
-  let current = state;
-  while (current.date < date) current = advanceDay(current, {}).state;
-  return current;
-}
-
-const matchDay = toMatchDay(loadNewGame(5, { coachClubId: CLUB }));
+const start = loadNewGame(5, { coachClubId: CLUB });
+// The coach's first match day, as the plan reads it: only the date and the unplayed fixture matter.
+const matchDay = { ...start, date: start.fixtures.find((f) => f.homeId === CLUB || f.awayId === CLUB)?.date ?? start.date };
 
 test("the lineup sheet flags the coach's players one yellow from a ban in today's competition", () => {
   const fixture = matchDay.fixtures.find((f) => f.date === matchDay.date && (f.homeId === CLUB || f.awayId === CLUB));

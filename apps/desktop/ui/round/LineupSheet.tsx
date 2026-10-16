@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Club } from "@boleiro/data/clubs";
 import { FORMATION_NAMES, FORMATIONS, type Formation } from "@boleiro/engine/engine/formations";
-import type { Posture } from "@boleiro/engine/engine/match";
 import type { Tactics } from "@boleiro/engine/sim/coach/tactics";
 import type { SquadPlayer } from "@boleiro/game-client/round/matchDayPlan";
 import { Select } from "../controls/Select.js";
@@ -28,13 +27,10 @@ import {
   type SheetMode,
 } from "./lineupDraft.js";
 import { useBenchDrag, type BenchDrag } from "./useBenchDrag.js";
+import { MARKING_LABEL, PLAY_LABEL, POSTURE_LABEL, POSTURES } from "./tacticsLabels.js";
+import { TacticsPanel, type TacticsContext } from "./TacticsPanel.js";
 import "./lineupSheet.css";
 
-const POSTURES: readonly { value: Posture; label: string }[] = [
-  { value: "defensive", label: "Defensiva" },
-  { value: "balanced", label: "Equilibrada" },
-  { value: "attacking", label: "Ofensiva" },
-];
 const STATUS_LABEL = { injured: "Machucado", suspended: "Suspenso" } as const;
 // Up to this long, the sticker keeps the whole name; past it, the surname.
 const SHIRT_NAME_LENGTH = 12;
@@ -64,6 +60,8 @@ type Props = {
   onPickTeam?: (formation: Formation) => Promise<readonly string[]>;
   opponent?: Opponent;
   coachStep?: CoachStep;
+  /** What the tactics panel needs to open from the sheet. */
+  tacticsContext?: TacticsContext;
 };
 
 function shirtName(name: string): string {
@@ -123,7 +121,7 @@ function MiniPitch({ formation }: { formation: Formation }) {
 }
 
 /** The lineup: the eleven on the pitch where the formation puts them, tactics and the bench, before kick-off or during the coach's match. */
-export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, opponent, coachStep }: Props) {
+export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, opponent, coachStep, tacticsContext }: Props) {
   const [sheet, setSheet] = useState(() => openSheet(lineup, tactics));
   // The substitute who just came on, whose sticker lands on the pitch.
   const [justIn, setJustIn] = useState<string | null>(null);
@@ -136,6 +134,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
     },
   });
   const [isPicking, setPicking] = useState(false);
+  const [isTacticsOpen, setTacticsOpen] = useState(false);
   const [pickFailure, setPickFailure] = useState<string | null>(null);
   // The assistant's latest eleven and its formation: the team strength is compared against it.
   const [assistantPick, setAssistantPick] = useState(() => ({ lineup, formation: tactics.formation }));
@@ -154,7 +153,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
   const hurt = isLive ? mode.hurt : new Set<string>();
   const cameOff = new Set([...(isLive ? mode.cameOff : []), ...sheet.subs.map((s) => s.offId)]);
   const takers = starters.filter((p) => p.group !== "GK" && !sentOff.has(p.id));
-  const posture = POSTURES.find((p) => p.value === sheet.tactics.posture)?.label.toLowerCase() ?? "";
+  const posture = POSTURE_LABEL[sheet.tactics.posture].toLowerCase();
   const order = new Map(placed.map((starter, i) => [starter.player.id, i]));
   const hints = benchHints(bench, placed);
 
@@ -165,7 +164,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
 
   // ← and → step through the human coaches' matches, taking this one's changes along.
   useEffect(() => {
-    if (!coachStep) return;
+    if (!coachStep || isTacticsOpen) return;
     const onKey = (event: KeyboardEvent) => {
       const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
       if (!step || event.defaultPrevented || event.repeat || isBusy || hasOwnArrows(event.target)) return;
@@ -356,9 +355,9 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
             <div className="lineup-field">
               <h3 id="posture-title">Postura</h3>
               <div className="lineup-seg" role="group" aria-labelledby="posture-title">
-                {POSTURES.map(({ value, label }) => (
+                {POSTURES.map((value) => (
                   <button key={value} aria-pressed={sheet.tactics.posture === value} onClick={() => setSheet((s) => changeTactics(s, { posture: value }))}>
-                    {label}
+                    {POSTURE_LABEL[value]}
                   </button>
                 ))}
               </div>
@@ -376,6 +375,15 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
                 }}
               />
             </div>
+            {tacticsContext && (
+              <button className="btn sm lineup-tactics" onClick={() => setTacticsOpen(true)}>
+                <i className="ph-bold ph-strategy" aria-hidden="true" />
+                Tática
+                <small>
+                  {MARKING_LABEL[sheet.tactics.marking ?? "heavy"]} · {sheet.tactics.play ? PLAY_LABEL[sheet.tactics.play] : "Mista"}
+                </small>
+              </button>
+            )}
           </div>
 
           <section className="page bench" aria-labelledby="bench-title">
@@ -437,6 +445,16 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
           </footer>
         </div>
       </section>
+      {tacticsContext && isTacticsOpen && (
+        <TacticsPanel
+          context={tacticsContext}
+          eleven={starters.filter((p) => !sentOff.has(p.id))}
+          tactics={sheet.tactics}
+          isLive={isLive}
+          onChange={(next) => setSheet((s) => changeTactics(s, next))}
+          onClose={() => setTacticsOpen(false)}
+        />
+      )}
       {drag && (
         <div className={drag.overId ? "lineup-ghost over" : "lineup-ghost"} style={{ left: drag.x, top: drag.y }} aria-hidden="true">
           <Position player={drag.player} />

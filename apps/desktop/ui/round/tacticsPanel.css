@@ -1,0 +1,638 @@
+/* The approved tactics mock: the four dials on a page on the left, where the coach wins on the right. */
+.tac {
+  position: absolute;
+  inset: 44px 0 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 372px;
+  gap: 14px;
+  padding: 18px 14px 14px;
+  background: var(--paper);
+  border-top: var(--hairline);
+}
+
+/*
+ * The panel turns over the lineup like the next page of the album: the dials page slides in a little
+ * from the right while the side stickers follow a beat later, each dial row settling in turn.
+ */
+.tac-dials {
+  animation: tac-page-in 300ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.tac-side > * {
+  animation: tac-sticker-in 380ms cubic-bezier(0.34, 1.3, 0.5, 1) backwards;
+}
+
+.tac-side > :nth-child(1) {
+  animation-delay: 70ms;
+}
+
+.tac-side > :nth-child(2) {
+  animation-delay: 130ms;
+}
+
+.tac-dial {
+  animation: tac-row-in 260ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.tac-dial:nth-of-type(1) {
+  animation-delay: 40ms;
+}
+
+.tac-dial:nth-of-type(2) {
+  animation-delay: 75ms;
+}
+
+.tac-dial:nth-of-type(3) {
+  animation-delay: 110ms;
+}
+
+.tac-dial:nth-of-type(4) {
+  animation-delay: 145ms;
+}
+
+@keyframes tac-page-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+
+@keyframes tac-sticker-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) rotate(1.5deg);
+  }
+}
+
+@keyframes tac-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.tac-dials {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 18px 24px 16px;
+  overflow: hidden;
+}
+
+.tac-hd {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.tac-hd h2 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.tac-hd h2:focus {
+  outline: none;
+}
+
+.tac-hd p {
+  margin-left: auto;
+  font-size: 12.5px;
+  color: var(--mute);
+  text-align: right;
+}
+
+.tac-hd p b {
+  color: var(--ink);
+}
+
+.tac-dial {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 236px;
+  gap: 18px;
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.tac-dial:nth-of-type(4) {
+  border-bottom: 0;
+}
+
+.tac-dial .nm b {
+  display: block;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.tac-dial .nm span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--mute);
+}
+
+.tac-dial .ctl {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+}
+
+.tac-seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+
+.tac-seg button {
+  height: 30px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  font-weight: 700;
+  font-size: 12.5px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 160ms ease-out,
+    color 160ms ease-out,
+    box-shadow 160ms ease-out;
+}
+
+.tac-seg button:hover {
+  background: var(--paper-2);
+}
+
+.tac-seg button.sg {
+  box-shadow: inset 0 0 0 2px var(--yellow-d);
+  color: var(--ink);
+}
+
+.tac-seg button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--card);
+  animation: tac-press 220ms cubic-bezier(0.34, 1.6, 0.5, 1);
+}
+
+@keyframes tac-press {
+  from {
+    transform: scale(0.92);
+  }
+}
+
+.tac-seg button:focus-visible {
+  outline: 2px solid var(--yellow-d);
+  outline-offset: 2px;
+}
+
+.tac-dial .eff {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.tac-dial .eff > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tac-dial .eff b {
+  font-stretch: var(--semi);
+  font-weight: 900;
+}
+
+.tac-dial .eff .k {
+  color: var(--mute);
+}
+
+.tac-dial .eff .strong {
+  font-weight: 700;
+}
+
+.tac .up {
+  color: var(--green);
+}
+
+.tac .dn {
+  color: var(--red);
+}
+
+.tac-mk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tac-mk .scale {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  width: 84px;
+}
+
+.tac-mk .scale i {
+  height: 6px;
+  border-radius: 2px;
+  background: var(--paper-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: background 200ms ease-out;
+}
+
+.tac-mk .scale i.on {
+  background: var(--ink-2);
+  box-shadow: none;
+}
+
+.tac-mk .scale.c i.on {
+  background: var(--yellow-d);
+}
+
+/* The assistant's card: yellow note paper when he'd change the dial, a quiet outline when the coach agrees. */
+.tac-sug {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: var(--r-m);
+  background: var(--yellow-l);
+  animation: tac-note-in 240ms cubic-bezier(0.34, 1.4, 0.5, 1) backwards;
+}
+
+@keyframes tac-note-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) rotate(-1deg);
+  }
+}
+
+.tac-sug .who {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 11.5px;
+  color: var(--later);
+}
+
+.tac-sug b {
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.tac-sug p {
+  grid-column: 1 / -1;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--note-ink);
+}
+
+.tac-sug.same {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
+
+.tac-sug.same .who {
+  color: var(--green);
+}
+
+.tac-sug.same .who i {
+  animation: tac-check 360ms cubic-bezier(0.34, 1.8, 0.5, 1) 60ms backwards;
+}
+
+@keyframes tac-check {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+
+.tac-sug.same p {
+  color: var(--mute);
+}
+
+.tac-acts {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 2px dotted var(--line-2);
+}
+
+.tac-acts .n {
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.tac-acts .btn.y {
+  margin-left: auto;
+  height: 48px;
+  padding: 0 24px;
+  font-size: 16px;
+}
+
+/* Right: where the coach wins. */
+.tac-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.tac-cmp {
+  padding: 14px 16px;
+}
+
+.tac-cmp h3 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 17px;
+}
+
+.tac-cmp .vs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.tac-cmp .vs b {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.tac-lanes {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  height: 204px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: repeating-linear-gradient(90deg, #0e8442 0 37px, #0b7a3b 37px 74px);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .tac-lanes {
+  background: repeating-linear-gradient(90deg, #0a5e31 0 37px, #08532b 37px 74px);
+}
+
+.tac-lanes::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.tac-lane {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 22px 6px 12px;
+  color: #fff;
+}
+
+.tac-lane + .tac-lane {
+  border-left: 2px dashed rgba(255, 255, 255, 0.28);
+}
+
+.tac-lane .tt {
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.tac-lane .arr {
+  font-size: 18px;
+  opacity: 0.4;
+  transition: opacity 200ms ease-out;
+}
+
+.tac-lane.win .arr {
+  opacity: 0.9;
+  animation: tac-push 1.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes tac-push {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.tac-lane .duel {
+  width: 100%;
+  padding: 7px 8px 6px;
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--ink);
+  text-align: center;
+  box-shadow: 0 6px 12px -6px rgba(0, 0, 0, 0.6);
+  transition:
+    transform 320ms cubic-bezier(0.34, 1.5, 0.5, 1),
+    box-shadow 200ms ease-out;
+}
+
+.tac-lane .duel .sc {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 19px;
+  line-height: 1;
+}
+
+.tac-lane .duel .sc em {
+  margin: 0 3px;
+  font-style: normal;
+  font-size: 13px;
+  color: var(--line-2);
+}
+
+.tac-lane .duel small {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  font-size: 10.5px;
+  line-height: 1.25;
+  color: var(--mute);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tac-lane.win .duel {
+  box-shadow:
+    0 0 0 3px var(--yellow),
+    0 6px 12px -6px rgba(0, 0, 0, 0.6);
+  transform: rotate(-2deg);
+}
+
+.tac-lane .res {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 11px;
+}
+
+.tac-lane.win .res {
+  color: var(--yellow);
+}
+
+.tac-sec {
+  margin-top: 12px;
+}
+
+.tac-sec .sr {
+  display: grid;
+  grid-template-columns: 62px 30px 1fr 30px;
+  gap: 8px;
+  align-items: center;
+  height: 28px;
+  border-bottom: 1px dotted var(--line-2);
+  font-size: 12.5px;
+}
+
+.tac-sec .sr:last-child {
+  border-bottom: 0;
+}
+
+.tac-sec .sr .k {
+  color: var(--mute);
+}
+
+.tac-sec .sr b {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  text-align: center;
+}
+
+.tac-sec .sr .sb {
+  display: flex;
+  gap: 2px;
+  height: 8px;
+}
+
+.tac-sec .sr .sb i {
+  border-radius: 999px;
+  transition: flex-grow 380ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tac-sec .sr.hd {
+  height: 24px;
+  border-bottom: 2px solid var(--ink);
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.tac-sec .sr.hd .crest {
+  justify-self: center;
+}
+
+.tac-opp {
+  flex: 1;
+  padding: 12px 14px;
+}
+
+.tac-opp .t {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tac-opp .t b {
+  display: block;
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1.1;
+}
+
+.tac-opp .t span {
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.tac-opp dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 12px;
+  margin-top: 10px;
+  font-size: 12.5px;
+}
+
+.tac-opp dt {
+  color: var(--mute);
+}
+
+.tac-opp dd {
+  font-weight: 700;
+  text-align: right;
+}
+
+@media (max-height: 760px) {
+  .tac-dial {
+    padding: 8px 0;
+  }
+
+  .tac-lanes {
+    height: 170px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tac-dials,
+  .tac-side > *,
+  .tac-dial,
+  .tac-sug,
+  .tac-sug.same .who i,
+  .tac-seg button[aria-pressed="true"] {
+    animation: tac-row-in 1ms linear backwards;
+  }
+
+  .tac-lane.win .arr {
+    animation: none;
+  }
+
+  .tac-lane .duel,
+  .tac-sec .sr .sb i {
+    transition: none;
+  }
+}

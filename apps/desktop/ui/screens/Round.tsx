@@ -17,6 +17,7 @@ import { useFlip } from "../motion/useFlip.js";
 import { incidentAt, type Incident } from "../round/incident.js";
 import { IncidentWindow } from "../round/IncidentWindow.js";
 import { LineupSheet } from "../round/LineupSheet.js";
+import type { TacticsContext } from "../round/TacticsPanel.js";
 import { MatchReport } from "../round/MatchReport.js";
 import { kickOffOf, liveChangeOf, liveLimits, type Sheet } from "../round/lineupDraft.js";
 import type { LiveChange } from "@boleiro/engine/sim/live/applyLiveChange";
@@ -452,6 +453,7 @@ export function Round() {
     const { plan, clubs } = preMatch;
     const vs = `${clubFaceOf(clubs, plan.homeId)?.shortName ?? ""} x ${clubFaceOf(clubs, plan.awayId)?.shortName ?? ""}`;
     const opponent = clubFaceOf(clubs, plan.homeId === plan.clubId ? plan.awayId : plan.homeId);
+    const own = clubFaceOf(clubs, plan.clubId);
     return (
       <LineupSheet
         sub={`${vs} · ${plan.label}`}
@@ -466,6 +468,7 @@ export function Round() {
         onLeave={() => navigate("/hub")}
         onPickTeam={async (formation) => (await engine.matchDayPlan(formation)).lineup}
         {...(opponent ? { opponent: { club: opponent, formation: plan.opponentFormation } } : {})}
+        {...(own && opponent ? { tacticsContext: { club: own, opponentClub: opponent, opponent: plan.opponent, moment: plan.moment } } : {})}
       />
     );
   }
@@ -618,6 +621,7 @@ export function Round() {
           isBusy={isBusy}
           error={error}
           onDone={(sheet) => void backToMatch(sheet)}
+          {...tacticsContextOf(round, lineupSide.clubId, lineupSide.side, minute)}
           {...(lineupSide.coachName && coached.length > 1
             ? { coachStep: { name: lineupSide.coachName, place: coached.indexOf(lineupSide) + 1, count: coached.length, onStep: (sheet: Sheet, step: 1 | -1) => void stepCoach(sheet, step) } }
             : {})}
@@ -625,6 +629,18 @@ export function Round() {
       )}
     </div>
   );
+}
+
+/** The tactics panel's view of a human coach's live match: both clubs, the opponent on the pitch and the score at the minute shown. */
+function tacticsContextOf(round: LiveRound, clubId: string, side: CoachSide, minute: number): { tacticsContext?: TacticsContext } {
+  const match = round.matches.find((m) => m.fixtureId === side.fixtureId);
+  const opponentId = match && (side.side === "home" ? match.awayId : match.homeId);
+  const club = round.clubs[clubId];
+  const opponentClub = opponentId && round.clubs[opponentId];
+  if (!match || !club || !opponentClub) return {};
+  const goals = (id: string) => match.events.filter((e) => e.type === "goal" && e.minute <= minute && e.clubId === id).length;
+  const moment = { ...side.moment, minute, lead: goals(clubId) - goals(opponentClub.id) };
+  return { tacticsContext: { club, opponentClub, opponent: side.opponent, moment } };
 }
 
 /** A human coach's side in the round, by his club: the seated coach's, or a hot-seat coach's waiting for his turn. */

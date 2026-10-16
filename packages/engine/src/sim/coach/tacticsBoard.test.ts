@@ -32,7 +32,7 @@ describe("the assistant", () => {
     const own = side(eleven("a", FOUR_THREE_THREE, (i) => (i === 8 ? 85 : 70)), { formation: "4-3-3" });
     const board = tacticsBoard(own, side(eleven("b", FOUR_FOUR_TWO)), kickOff);
     expect(board.assistant.play.value).toBe("flanks");
-    expect(board.assistant.play.duel).toMatchObject({ lane: "left", attacker: "a8" });
+    expect(board.assistant.play.duel).toMatchObject({ lane: "left", attacker: { name: "a8", strength: 85 } });
     expect(board.lanes.find((l) => l.lane === "left")?.attack).toBeGreaterThan(board.lanes.find((l) => l.lane === "centre")?.attack ?? 0);
   });
 

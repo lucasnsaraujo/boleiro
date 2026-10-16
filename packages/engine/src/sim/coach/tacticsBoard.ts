@@ -1,6 +1,6 @@
 import type { Lane, Role } from "@boleiro/data/players";
 import { FORMATION_NAMES, type Formation } from "../../engine/formations.js";
-import { laneDuels, matchOdds, playEdges, type Marking, type Play, type Posture, type PositionGroup, type Team } from "../../engine/match.js";
+import { laneDuels, matchOdds, playEdges, type LaneDuel, type Marking, type Play, type Player, type Posture, type PositionGroup, type Team } from "../../engine/match.js";
 import { engineTeam } from "../players/matchSetup.js";
 import type { Tactics } from "./tactics.js";
 
@@ -11,8 +11,10 @@ export type BoardSide = { name: string; eleven: readonly BoardPlayer[]; tactics:
 export type MatchMoment = { isHome: boolean; minute: number; lead: number };
 
 export type Sectors = Record<Exclude<PositionGroup, "GK">, number>;
+/** A player as a lane duel names him: his strength in his slot. */
+export type DuelPlayer = { name: string; strength: number };
 /** One lane as the coach's side attacks down it: its attack there, the defence it meets, and the best player of each. */
-export type LaneView = { lane: Lane; attack: number; defense: number; attacker: string | null; defender: string | null };
+export type LaneView = { lane: Lane; attack: number; defense: number; attacker: DuelPlayer | null; defender: DuelPlayer | null };
 export type MarkingReason = { kind: "booked"; names: string[] } | { kind: "outgunned"; attack: number; defense: number } | { kind: "usual" };
 
 /** What the assistant would set, dial by dial, and why. */
@@ -90,13 +92,8 @@ function expectedPoints(own: Team, opponent: Team, moment: MatchMoment): number 
   return points;
 }
 
-const laneView = (duel: { lane: Lane; attack: number; defense: number; attacker: { name: string } | null; defender: { name: string } | null }): LaneView => ({
-  lane: duel.lane,
-  attack: duel.attack,
-  defense: duel.defense,
-  attacker: duel.attacker?.name ?? null,
-  defender: duel.defender?.name ?? null,
-});
+const duelPlayer = (player: Player | null): DuelPlayer | null => player && { name: player.name, strength: player.strength * (player.fit ?? 1) };
+const laneView = (duel: LaneDuel): LaneView => ({ lane: duel.lane, attack: duel.attack, defense: duel.defense, attacker: duelPlayer(duel.attacker), defender: duelPlayer(duel.defender) });
 
 /** The best of `options` by `worth`; the first of them on a tie. */
 function best<T>(options: readonly T[], worth: (option: T) => number): T {
