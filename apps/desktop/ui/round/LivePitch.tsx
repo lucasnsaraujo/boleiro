@@ -198,7 +198,8 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
 
   // The presentation clock: the round's minute plus how far into it the clock has run. The round's clock waits a
   // whole minute after every start or change of speed, so the board plays out the rest of the minute over that time.
-  const clock = useRef({ minute, tickAt: performance.now(), from: 0, frozen: 0, isRunning, msPerMinute });
+  // `overrun` is how far past a stop on a goal the board played on, in minutes, so a resume carries on from there.
+  const clock = useRef({ minute, tickAt: performance.now(), from: 0, frozen: 0, overrun: 0, isRunning, msPerMinute });
   useEffect(() => {
     const c = clock.current;
     const now = performance.now();
@@ -208,11 +209,16 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
       c.tickAt = now;
       c.from = 0;
       c.frozen = 0;
+      c.overrun = 0;
     }
     const isPlaying = isRunning && minute < FULL_TIME;
-    if (!isPlaying && c.isRunning) c.frozen = ran();
+    if (!isPlaying && c.isRunning) {
+      c.frozen = ran();
+      c.overrun = 0;
+    }
     if (isPlaying && (!c.isRunning || msPerMinute !== c.msPerMinute)) {
-      c.from = c.isRunning ? ran() : c.frozen;
+      c.from = c.isRunning ? ran() : c.frozen + c.overrun;
+      c.overrun = 0;
       c.tickAt = now;
     }
     c.isRunning = isPlaying;
@@ -238,7 +244,6 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
     const trail: Point[] = [];
     let lastT = -1;
     let lastFrame = performance.now();
-    let pausedOverrun = 0;
     let lean = "";
     let frame = 0;
     // The player carrying a tag, and until when on the frame clock.
@@ -263,11 +268,15 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
       const mpm = script.msPerMinute;
       if (reduced) return c.minute * mpm;
       if (c.isRunning) return (c.minute + c.from + (1 - c.from) * Math.min((now - c.tickAt) / c.msPerMinute, 0.999)) * mpm;
-      // Stopped right on a goal: the ball still finishes its way into the net.
+      // Stopped right on a goal: the ball still finishes its way into the net, short of the next minute and of the
+      // change of ends at half-time.
       const base = (c.minute + c.frozen) * mpm;
       const goal = strikeNear(script, base, 50);
-      if (goal?.kind === "goal") pausedOverrun = Math.min(pausedOverrun + (now - lastFrame), OVERRUN_MS);
-      return base + pausedOverrun;
+      if (goal?.kind === "goal") {
+        const room = Math.min(OVERRUN_MS, (0.999 - c.frozen) * mpm, base < script.secondHalfAt ? script.secondHalfAt - base - 1 : Infinity);
+        c.overrun = Math.min(c.overrun + (now - lastFrame) / mpm, Math.max(0, room) / mpm);
+      }
+      return base + c.overrun * mpm;
     }
 
     /** The tag over a player: in, held while he moves, then out. */
@@ -426,7 +435,6 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
         lean = nextLean;
         tilt.current.dataset.lean = lean;
       }
-      if (clock.current.isRunning) pausedOverrun = 0;
       frame = requestAnimationFrame(draw);
     }
     frame = requestAnimationFrame(draw);
