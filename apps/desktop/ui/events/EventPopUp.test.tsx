@@ -54,7 +54,7 @@ test("each answer shows what it moves, signed, with money in reais", () => {
 
 test("a number key picks an answer and Enter sends it once, even with the answer button focused", () => {
   const { onAnswer, dialog } = popUp();
-  const send = screen.getByRole("button", { name: "Responder", exact: true });
+  const send = screen.getByRole("button", { name: /^Responder$/ });
   expect(send).toHaveProperty("disabled", true);
   fireEvent.keyDown(dialog, { key: "2" });
   expect(screen.getByRole("radio", { name: /Recusar/ }).getAttribute("aria-checked")).toBe("true");
