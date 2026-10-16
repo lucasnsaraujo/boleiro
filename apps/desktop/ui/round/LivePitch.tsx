@@ -245,7 +245,6 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
     let tagged: { id: string; until: number } | null = null;
 
     const slap = springTiming({ stiffness: 520, damping: 22 });
-    const markEasing = slap.easing.startsWith("linear") ? slap.easing : "cubic-bezier(.34,1.56,.64,1)";
 
     // Depth changes far less often than position; writing it only on change keeps frames to transforms.
     const depths = new WeakMap<HTMLElement, number>();
@@ -372,7 +371,7 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
                   { opacity: 1, translate: "0 0", rotate: "-6deg", offset: 0.8 },
                   { opacity: 0, translate: "0 -6px", rotate: "-6deg" },
                 ],
-            { duration: 1500, easing: markEasing, fill: "both" },
+            { duration: 1500, easing: slap.easing, fill: "both" },
           );
         }
       }
