@@ -88,6 +88,16 @@ export function positionFit(player: Pick<Player, "group" | "positions">, role: R
   return positions.includes(role) ? SECONDARY_POSITION : OUT_OF_POSITION;
 }
 
+/** Each formation's distinct positions, and each slot's index among them. */
+const ROLES_OF: Record<Formation, { roles: readonly Role[]; roleOfSlot: Uint8Array }> = (() => {
+  const roles = {} as Record<Formation, { roles: readonly Role[]; roleOfSlot: Uint8Array }>;
+  for (const name of FORMATION_NAMES) {
+    const distinct = [...new Set(FORMATIONS[name].map((slot) => slot.role))];
+    roles[name] = { roles: distinct, roleOfSlot: Uint8Array.from(FORMATIONS[name], (slot) => distinct.indexOf(slot.role)) };
+  }
+  return roles;
+})();
+
 // Rounds of swaps after the first fill; an eleven settles in two or three.
 const MAX_SWAP_ROUNDS = 10;
 const GAIN = 1e-9;
@@ -101,27 +111,36 @@ const GAIN = 1e-9;
  * fall a few points short of the best. A slot left empty (fewer players than slots) is null.
  */
 export function arrange<P extends Player>(players: readonly P[], formation: Formation, value: (player: P) => number = (p) => p.strength): (P | null)[] {
-  const slots = FORMATIONS[formation];
-  const m = slots.length;
+  const { roles, roleOfSlot } = ROLES_OF[formation];
+  const m = roleOfSlot.length;
+  const n = players.length;
   // Worth of player p in slot s at [p * m + s]; an empty slot is -1 in `filled`. Runs for every
-  // eleven of every match, so it keeps to typed arrays.
-  const worth = new Float64Array(players.length * m);
-  players.forEach((player, p) => {
+  // eleven of every match, so it keeps to typed arrays and works out each fit once per role.
+  const worth = new Float64Array(n * m);
+  const fits = new Float64Array(roles.length);
+  for (let p = 0; p < n; p++) {
+    const player = players[p];
+    if (!player) continue;
     const playerValue = value(player);
-    const byRole = new Map<Role, number>();
-    slots.forEach((slot, s) => {
-      let fit = byRole.get(slot.role);
-      if (fit === undefined) byRole.set(slot.role, (fit = positionFit(player, slot.role)));
-      worth[p * m + s] = playerValue * fit;
-    });
-  });
+    for (let r = 0; r < roles.length; r++) fits[r] = positionFit(player, roles[r] ?? "meia");
+    for (let s = 0; s < m; s++) worth[p * m + s] = playerValue * (fits[roleOfSlot[s] ?? 0] ?? 0);
+  }
   const filled = new Int32Array(m).fill(-1);
-  const isPlaced = new Uint8Array(players.length);
-  for (let count = Math.min(players.length, m); count > 0; count--) {
+  const isPlaced = new Uint8Array(n);
+  // Each round takes the pair worth most, the first in player-then-slot order on a tie.
+  for (let count = Math.min(n, m); count > 0; count--) {
     let best = -1;
-    for (let pair = 0; pair < worth.length; pair++) {
-      if (isPlaced[Math.floor(pair / m)] || filled[pair % m] !== -1) continue;
-      if (best < 0 || (worth[pair] ?? 0) > (worth[best] ?? 0)) best = pair;
+    let bestWorth = 0;
+    for (let p = 0; p < n; p++) {
+      if (isPlaced[p]) continue;
+      for (let s = 0; s < m; s++) {
+        if (filled[s] !== -1) continue;
+        const pairWorth = worth[p * m + s] ?? 0;
+        if (best < 0 || pairWorth > bestWorth) {
+          best = p * m + s;
+          bestWorth = pairWorth;
+        }
+      }
     }
     filled[best % m] = Math.floor(best / m);
     isPlaced[Math.floor(best / m)] = 1;
@@ -190,8 +209,22 @@ function formationWorth(players: readonly Player[], formation: Formation): numbe
   }, 0);
 }
 
-/** The formation whose best eleven of these players is worth most; the earlier formation of FORMATION_NAMES on a tie. */
+// A club without a usual lineup (a continental guest from abroad) is fitted again at each of its matches.
+const fittings = new Map<string, Formation>();
+const FITTINGS_KEPT = 4096;
+
+/** The formation whose best eleven of these players is worth most; the earlier formation of FORMATION_NAMES on a tie. Remembered by the players' groups, positions and strengths. */
 export function fittingFormation(players: readonly Player[]): Formation {
+  const key = players.map((p) => `${p.group}/${p.positions?.join(",") ?? ""}/${p.strength}`).join(";");
+  const known = fittings.get(key);
+  if (known) return known;
+  const best = bestFormation(players);
+  if (fittings.size >= FITTINGS_KEPT) fittings.clear();
+  fittings.set(key, best);
+  return best;
+}
+
+function bestFormation(players: readonly Player[]): Formation {
   let best: Formation = "4-4-2";
   let bestWorth = -Infinity;
   for (const formation of FORMATION_NAMES) {

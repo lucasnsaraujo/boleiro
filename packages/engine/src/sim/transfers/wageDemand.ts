@@ -9,7 +9,8 @@ type Squad = readonly Pick<SimPlayer, "wage" | "strength">[];
 /** What a club pays for a given strength. */
 export type WageRate = (strength: number) => number;
 
-const median = (values: readonly number[]) => [...values].sort((a, b) => a - b)[values.length >> 1] ?? 0;
+// A typed array sorts numbers in numeric order without a comparator, the same order (wages and strengths are finite).
+const median = (values: readonly number[]) => Float64Array.from(values).sort()[values.length >> 1] ?? 0;
 
 /** The club's going rate: its median wage, scaled by strength like the opening wages. Sorts once, so reuse it. */
 export function wageRateOf(squad: Squad): WageRate {

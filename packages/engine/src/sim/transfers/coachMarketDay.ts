@@ -4,7 +4,7 @@ import { boardRefusal } from "./boardRefusal.js";
 import { answerBy, coachMarketOf, unitHash, withCoachMarket, withoutPlayer } from "./coachMarket.js";
 import { marketView, type MarketView } from "./marketView.js";
 import { isClubFull } from "./squadCap.js";
-import { REPLACEMENT_BAND, squadNeeds } from "./squadNeeds.js";
+import { REPLACEMENT_BAND } from "./squadNeeds.js";
 import type { AuctionClosed, BidReceived, PlayerMoved } from "./transferEvents.js";
 import type { Bid, CoachMarket, ListingMode } from "./transferMarket.js";
 import { isMarketDay, isWindowOpen } from "./transferWindows.js";
@@ -38,7 +38,7 @@ function canBuy(state: GameState, view: MarketView, player: SimPlayer, clubId: s
   const finance = state.finances[clubId];
   const squad = view.squad(clubId);
   if (isHumanClub(state, clubId) || !finance || squad.length < 11 || isClubFull(state, clubId, squad.length)) return false;
-  if (player.strength < squadNeeds(squad, view.tier(clubId)).level - REPLACEMENT_BAND.below) return false;
+  if (player.strength < view.needs(clubId).level - REPLACEMENT_BAND.below) return false;
   const wage = buyerWage(player, squad);
   // guess: like the AI's own upgrades, the buyer counts on moving on its cheapest player at his
   // position, so only the difference weighs on its wage cap (most boards sit right at theirs).

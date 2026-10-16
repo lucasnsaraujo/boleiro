@@ -1,6 +1,7 @@
 import { keyedStream } from "../../engine/random.js";
 import { humanClubIds, waitingCoachesOf } from "../coach/humanCoaches.js";
 import { addDays } from "../dates.js";
+import { squadsOfGame } from "../players/squadsByClub.js";
 import type { Fixture, GameState, IsoDate, SimPlayer } from "../gameState.js";
 import { applyEffects } from "./applyEffects.js";
 import { EVENT_BANK } from "./eventBank.js";
@@ -68,16 +69,6 @@ function serieAOf(clubs: GameState["clubs"]): readonly string[] {
   const ids = Object.values(clubs).flatMap((club) => (club.division === "A" ? [club.id] : []));
   serieAByClubs.set(clubs, ids);
   return ids;
-}
-
-/** The club's players. A for-in walk: Object.values would copy every player of the game first. */
-function squadOf(players: GameState["players"], clubId: string): SimPlayer[] {
-  const squad: SimPlayer[] = [];
-  for (const id in players) {
-    const player = players[id];
-    if (player?.clubId === clubId) squad.push(player);
-  }
-  return squad;
 }
 
 /** The memory with a record and a story added, stories older than the archive dropped. */
@@ -242,7 +233,7 @@ export function runEvents(state: GameState, date: IsoDate, played: readonly Fixt
     for (const chance of isHuman ? HUMAN_CHANCES : AI_CHANCES) {
       if (random() >= chance) continue;
       recall ??= recallOf(eventMemoryOf(next));
-      const squad = squadOf(next.players, clubId);
+      const squad = squadsOfGame(next).get(clubId) ?? [];
       const scene: EventScene = { state: next, clubId, date, played, squad, random };
       const drawn = drawEvent(scene, recall, bank, random);
       if (!drawn) continue;

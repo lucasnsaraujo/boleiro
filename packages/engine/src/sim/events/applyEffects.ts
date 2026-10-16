@@ -1,3 +1,4 @@
+import { withReplacedPlayers } from "../players/squadsByClub.js";
 import { addDays } from "../dates.js";
 import { bookMoney } from "../finances/bookMoney.js";
 import type { GameState, IsoDate } from "../gameState.js";
@@ -32,7 +33,9 @@ export function applyEffects(state: GameState, clubId: string, cast: Cast, effec
   if (effects.outDays && player) {
     const until = addDays(date, effects.outDays + 1);
     const { injuredUntil } = player.condition;
-    if (!injuredUntil || injuredUntil < until) next = { ...next, players: { ...next.players, [player.id]: { ...player, condition: { ...player.condition, injuredUntil: until } } } };
+    if (!injuredUntil || injuredUntil < until) {
+      next = { ...next, players: withReplacedPlayers(next.players, [{ ...player, condition: { ...player.condition, injuredUntil: until } }]) };
+    }
   }
   if (effects.rivalry && cast.rivalId) {
     const memory = eventMemoryOf(next);

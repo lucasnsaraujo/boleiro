@@ -9,7 +9,6 @@ import { payContinentalPrizes } from "../continental/payContinentalPrizes.js";
 import { latestChampionsLeagueWinner, playEuropeDay } from "../continental/uefaCups.js";
 import { startCoachSeason } from "../coach/startCoachSeason.js";
 import { buildStadiums } from "../stadium/stadiumWorks.js";
-import { copyRecord } from "../copyRecord.js";
 import { addDays } from "../dates.js";
 import { countCards, type Booking } from "../discipline/drawCards.js";
 import { endSeason } from "../endSeason.js";
@@ -34,6 +33,7 @@ import { matchOfficials } from "../referees/matchOfficials.js";
 import { talkedAboutCalls, type RefereeCallEvent } from "../referees/refereeCalls.js";
 import { isNextStageReady, openNextStage } from "../openNextStage.js";
 import { developPlayers } from "../players/developPlayers.js";
+import { withReplacedPlayers } from "../players/squadsByClub.js";
 import { copinhaDate, playCopinha } from "../youth/copinha.js";
 import { fillShortSquads } from "../youth/fillShortSquads.js";
 import { turnOverAcademies } from "../youth/turnOverAcademies.js";
@@ -164,16 +164,19 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const events: DayEvent[] = [...day.events, ...refereeCallsOf(live)];
   let { fixtures } = day;
 
-  const clubStates: Record<string, State> = Object.fromEntries(Object.values(state.clubs).flatMap((club) => (club.state ? [[club.id, club.state]] : [])));
+  // Only a day that ends a stage needs the clubs' states.
+  let clubStates: Record<string, State> | undefined;
   const competitions = { ...state.competitions };
   const byCompetition = fixturesByCompetition(fixtures);
   const championsLeague = latestChampionsLeagueWinner(state.europe);
   for (const competition of Object.values(state.competitions)) {
+    if (competition.stages.length >= competition.stageDates.length) continue;
     const own = byCompetition.get(competition.id) ?? [];
     const current = competition.stages.length - 1;
     const stageDone = own.filter((f) => f.stage === current).every((f) => f.result !== null);
     const season = { competitions, fixtures, championsLeague };
-    if (!stageDone || competition.stages.length >= competition.stageDates.length || !isNextStageReady(competition, season)) continue;
+    if (!stageDone || !isNextStageReady(competition, season)) continue;
+    clubStates ??= Object.fromEntries(Object.values(state.clubs).flatMap((club) => (club.state ? [[club.id, club.state]] : [])));
     const opened = openNextStage(competition, own, clubStates, season);
     competitions[competition.id] = opened.competition;
     fixtures = [...fixtures, ...opened.fixtures];
@@ -182,8 +185,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
 
   // A continental guest's players belong to the result-only tier, so their match load is not kept.
   const ownPlayers = day.players.filter((player) => player.id in state.players);
-  const players = ownPlayers.length ? copyRecord(state.players) : state.players;
-  for (const player of ownPlayers) players[player.id] = player;
+  const players = ownPlayers.length ? withReplacedPlayers(state.players, ownPlayers) : state.players;
   const tactics = live.coachMatch?.tactics ?? decisions.tactics ?? state.coach.tactics;
   const coach = tactics === state.coach.tactics ? state.coach : { ...state.coach, tactics };
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: day.discipline, coach };

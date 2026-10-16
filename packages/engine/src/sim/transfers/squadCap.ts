@@ -13,6 +13,7 @@ export const isSquadFull = (size: number): boolean => size >= SQUAD_CAP;
 /** Whether a club with `squadSize` players can't register one more, counting those due to join it on pre-contracts. */
 export function isClubFull(state: GameState, clubId: string, squadSize: number): boolean {
   let joining = 0;
-  for (const toClubId of Object.values(state.market.preContracts)) if (toClubId === clubId) joining++;
+  const { preContracts } = state.market;
+  for (const playerId in preContracts) if (preContracts[playerId] === clubId) joining++;
   return isSquadFull(squadSize + joining);
 }

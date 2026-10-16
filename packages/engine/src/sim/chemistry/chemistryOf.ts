@@ -1,4 +1,4 @@
-import { arrange, FORMATIONS, type Formation } from "../../engine/formations.js";
+import { arrange, FORMATION_NAMES, FORMATIONS, type Formation } from "../../engine/formations.js";
 import { waitingCoachesOf } from "../coach/humanCoaches.js";
 import { addDays, daysBetween } from "../dates.js";
 import { eventsOf } from "../events/eventMemory.js";
@@ -7,7 +7,7 @@ import { IDOL_APPS, IDOL_GOALS } from "../history/clubHistory.js";
 import { clubMood } from "../morale/clubMood.js";
 import { isInjured } from "../players/isInjured.js";
 import { pickMatchLineup } from "../players/pickMatchLineup.js";
-import { squadsByClub } from "../players/squadsByClub.js";
+import { squadsOfGame } from "../players/squadsByClub.js";
 import { formationOf, usualStartersOf } from "../players/usualLineups.js";
 
 /**
@@ -169,40 +169,43 @@ function goodPairs(state: GameState, clubId: string, eleven: readonly SimPlayer[
   return links;
 }
 
-// Elevens repeat from match to match, and placing one in its formation is the costly part of the map.
-const neighbourings = new Map<string, [string, string][]>();
-const NEIGHBOURINGS_KEPT = 4096;
+/** Each slot's slots within reach, nearest first, with their distances: the same for every eleven of a formation. */
+const REACH: Record<Formation, { slot: number; distance: number }[][]> = (() => {
+  const reach = {} as Record<Formation, { slot: number; distance: number }[][]>;
+  for (const name of FORMATION_NAMES) {
+    const slots = FORMATIONS[name];
+    reach[name] = slots.map((a, s) =>
+      slots
+        .flatMap((b, t) => (t === s ? [] : [{ slot: t, distance: Math.hypot(a.x - b.x, a.y - b.y) }]))
+        .filter(({ distance }) => distance <= NEIGHBOUR_DISTANCE)
+        .sort((x, y) => x.distance - y.distance),
+    );
+  }
+  return reach;
+})();
 
 /**
  * The pairs of the eleven who stand next to each other in its formation (arrange), each player with his
- * two nearest within reach, in id order; remembered by formation and eleven.
+ * two nearest within reach (the lower id first between two as near), in id order.
  */
 function neighboursOf(eleven: readonly SimPlayer[], formation: Formation): [string, string][] {
-  const key = `${formation}:${eleven.map((p) => `${p.id}/${p.positions?.join("") ?? p.group}/${p.strength}`).join(",")}`;
-  const known = neighbourings.get(key);
-  if (known) return known;
-  const slots = FORMATIONS[formation];
-  const placed = arrange(eleven, formation).flatMap((player, s) => {
-    const slot = slots[s];
-    return player && slot ? [{ id: player.id, x: slot.x, y: slot.y }] : [];
-  });
-  const pairs = new Map<string, [string, string]>();
-  for (const a of placed) {
-    const near = placed
-      .filter((b) => b !== a)
-      .map((b) => ({ b, distance: Math.hypot(a.x - b.x, a.y - b.y) }))
-      .filter(({ distance }) => distance <= NEIGHBOUR_DISTANCE)
-      .sort((x, y) => x.distance - y.distance || (x.b.id < y.b.id ? -1 : 1))
-      .slice(0, NEIGHBOURS);
-    for (const { b } of near) {
-      const ids: [string, string] = a.id < b.id ? [a.id, b.id] : [b.id, a.id];
-      pairs.set(ids.join("|"), ids);
+  const placed = arrange(eleven, formation);
+  const pairs = new Map<string, { ids: [string, string]; order: string }>();
+  REACH[formation].forEach((reach, s) => {
+    const a = placed[s];
+    if (!a) return;
+    const near: { id: string; distance: number }[] = [];
+    for (const { slot, distance } of reach) {
+      const b = placed[slot];
+      if (b) near.push({ id: b.id, distance });
     }
-  }
-  const sorted = [...pairs.values()].sort((x, y) => (x.join() < y.join() ? -1 : 1));
-  if (neighbourings.size >= NEIGHBOURINGS_KEPT) neighbourings.clear();
-  neighbourings.set(key, sorted);
-  return sorted;
+    near.sort((x, y) => x.distance - y.distance || (x.id < y.id ? -1 : 1));
+    for (const { id } of near.slice(0, NEIGHBOURS)) {
+      const ids: [string, string] = a.id < id ? [a.id, id] : [id, a.id];
+      pairs.set(ids.join("|"), { ids, order: ids.join() });
+    }
+  });
+  return [...pairs.values()].sort((x, y) => (x.order < y.order ? -1 : 1)).map(({ ids }) => ids);
 }
 
 const mainPosition = (player: SimPlayer) => player.positions?.[0] ?? player.group;
@@ -250,18 +253,11 @@ export function chemistryOf(state: GameState, clubId: string): Chemistry {
   let byClub = known.get(state);
   if (!byClub) known.set(state, (byClub = new Map()));
   let chemistry = byClub.get(clubId);
-  if (!chemistry) byClub.set(clubId, (chemistry = workOut(state, clubId, squadOf(state, clubId))));
+  if (!chemistry) byClub.set(clubId, (chemistry = workOut(state, clubId, squadsOfGame(state).get(clubId) ?? [])));
   return chemistry;
 }
 
 const known = new WeakMap<GameState, Map<string, Chemistry>>();
-const squads = new WeakMap<GameState["players"], Map<string, SimPlayer[]>>();
-
-function squadOf(state: GameState, clubId: string): SimPlayer[] {
-  let byClub = squads.get(state.players);
-  if (!byClub) squads.set(state.players, (byClub = squadsByClub(state.players)));
-  return byClub.get(clubId) ?? [];
-}
 
 const NEUTRAL: Omit<Chemistry, "formation"> = { value: NEUTRAL_CHEMISTRY, was: NEUTRAL_CHEMISTRY, reasons: [], eleven: [], captain: null, candidates: [], links: [] };
 
