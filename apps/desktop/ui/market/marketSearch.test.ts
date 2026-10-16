@@ -2,7 +2,8 @@ import { describe, expect, test } from "vitest";
 import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
-import { marketClubs, marketLeagues, marketNationalities, NO_FILTERS, searchMarket, strengthBounds, windowStatus, type MarketFilters } from "./marketSearch.js";
+import { NO_FILTERS, type MarketFilters } from "@boleiro/game-client/market/marketFilters";
+import { marketClubs, marketLeagues, marketNationalities, searchMarket, strengthBounds, windowStatus } from "./marketSearch.js";
 
 const COACH = "sport-pe";
 const game = newGameFromFiles(5, { coachClubId: COACH }, bundledGameFiles);

@@ -11,44 +11,11 @@ import { nextWindowOpensOn, windowClosesOn, type CoachWindows } from "@boleiro/e
 import { wageDemandAt, wageRateOf } from "@boleiro/engine/sim/transfers/wageDemand";
 import { willingToJoin } from "@boleiro/engine/sim/transfers/willingToJoin";
 import { isLendable, lineupsOf } from "@boleiro/game-client/market/coachRequests";
+import type { MarketFilters, MarketStatus } from "@boleiro/game-client/market/marketFilters";
 
-/** The statuses the market can be filtered by. */
-export type MarketStatus = "freeAgent" | "contractEnding" | "lendable";
 /** A row's status: the filterable ones, or why he can't be bought. */
 export type RowStatus = MarketStatus | "onLoan" | "preContract" | null;
 export type Willingness = "yes" | "maybe" | "no";
-
-export type MarketFilters = {
-  name: string;
-  group: PositionGroup | null;
-  minStrength: number | null;
-  maxStrength: number | null;
-  clubId: string | null;
-  division: Division | null;
-  status: MarketStatus | null;
-  /** Only players who would say yes or maybe to joining the coach's club. */
-  isWillingOnly: boolean;
-  /** A nationality as the data names it ("Argentina"); a player with two matches either. */
-  nationality: string | null;
-  /** This season's goals, every competition together, at least. */
-  minGoals: number | null;
-  /** This season's minutes on the pitch, at least. */
-  minMinutes: number | null;
-};
-
-export const NO_FILTERS: MarketFilters = {
-  name: "",
-  group: null,
-  minStrength: null,
-  maxStrength: null,
-  clubId: null,
-  division: null,
-  status: null,
-  isWillingOnly: false,
-  nationality: null,
-  minGoals: null,
-  minMinutes: null,
-};
 
 export type MarketRow = {
   id: string;
