@@ -3,7 +3,7 @@ import { E2E_SEED_KEY } from "./ui/newGame/worldSeed.js";
 
 const PORT = Number(process.env.E2E_PORT ?? 4173);
 // Every new game starts from this world, so a run never draws one that sacks the coach before the spec's point.
-const WORLD_SEED = process.env.E2E_WORLD_SEED ?? "21";
+const WORLD_SEED = process.env.E2E_WORLD_SEED ?? "25";
 
 export default defineConfig({
   testDir: "e2e",
