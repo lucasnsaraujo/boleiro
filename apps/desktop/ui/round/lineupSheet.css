@@ -896,3 +896,13 @@
     transition: none;
   }
 }
+
+.lineup-tactics {
+  align-self: flex-end;
+  gap: 6px;
+}
+
+.lineup-tactics small {
+  font-weight: 600;
+  color: var(--mute);
+}

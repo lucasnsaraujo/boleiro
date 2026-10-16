@@ -1,15 +1,25 @@
-import type { Player, PositionGroup } from "@boleiro/data/players";
+import type { Lane, Player, PositionGroup } from "@boleiro/data/players";
 import { NO_SEND_OFFS, sendOffRates, type SendOffs } from "./sendOffRates.js";
 
-export type { Player, PositionGroup };
+export type { Lane, Player, PositionGroup };
 
-export type Posture = "defensive" | "balanced" | "attacking";
+/** How far a side comes out: `defensive` parks the bus, `counter` sits deep and breaks. */
+export type Posture = "defensive" | "counter" | "balanced" | "attacking";
+/** How hard a side marks: the heavier, the fewer chances its opponent gets and the more cards it takes. */
+export type Marking = "light" | "heavy" | "veryHeavy";
+/** Where a side builds its attacks: through the middle or down the flanks. */
+export type Play = "middle" | "flanks";
 
-/** `posture` and `penaltyTaker` left out play as a balanced side whose best forward takes penalties. */
+/**
+ * `posture`, `marking` and `penaltyTaker` left out play as a balanced, heavy-marking side whose best
+ * forward takes penalties. `play` left out, or a side not placed in a formation, mixes both ways.
+ */
 export type Team = {
   name: string;
   players: Player[];
   posture?: Posture;
+  marking?: Marking;
+  play?: Play;
   penaltyTaker?: Player;
 };
 
@@ -85,12 +95,63 @@ function weightedRating(lineup: Player[], weights: Record<PositionGroup, number>
   return weightSum ? total / weightSum : average(lineup.map((p) => p.strength));
 }
 
+const ATTACK_WEIGHTS: Record<PositionGroup, number> = { GK: 0, DEF: 0.5, MID: 1, ATT: 1.5 };
+const DEFENSE_WEIGHTS: Record<PositionGroup, number> = { GK: 1.5, DEF: 1.5, MID: 1, ATT: 0.25 };
+
 export function teamRatings(team: Team): { attack: number; defense: number } {
   const lineup = pickLineup(team.players);
   return {
-    attack: weightedRating(lineup, { GK: 0, DEF: 0.5, MID: 1, ATT: 1.5 }),
-    defense: weightedRating(lineup, { GK: 1.5, DEF: 1.5, MID: 1, ATT: 0.25 }),
+    attack: weightedRating(lineup, ATTACK_WEIGHTS),
+    defense: weightedRating(lineup, DEFENSE_WEIGHTS),
   };
+}
+
+/** One third of the pitch as one side attacks down it: its attack there against the defence the other side has there, and the best player of each. */
+export type LaneDuel = { lane: Lane; attack: number; defense: number; attacker: Player | null; defender: Player | null };
+
+const LANES: readonly Lane[] = ["left", "centre", "right"];
+// Attacking down your left, you meet the defenders on their right.
+const FACING: Record<Lane, Lane> = { left: "right", centre: "centre", right: "left" };
+
+/** The players of one lane, rated with `weights` and the keeper left out; the side's whole rating when nobody stands there. */
+function laneRating(players: readonly Player[], weights: Record<PositionGroup, number>, whole: number): { rating: number; best: Player | null } {
+  let total = 0;
+  let weightSum = 0;
+  let best: Player | null = null;
+  let bestWorth = 0;
+  for (const player of players) {
+    const slot = player.slot ?? player.group;
+    const weight = slot === "GK" ? 0 : weights[slot];
+    const strength = slotStrength(player, slot);
+    total += strength * weight;
+    weightSum += weight;
+    if (weight > 0 && strength * weight > bestWorth) {
+      best = player;
+      bestWorth = strength * weight;
+    }
+  }
+  return { rating: weightSum ? total / weightSum : whole, best };
+}
+
+/** Left, centre and right as `attacking` attacks `defending`; null unless both sides stand in a formation. */
+export function laneDuels(attacking: Team, defending: Team): LaneDuel[] | null {
+  if (!attacking.players.length || !defending.players.length) return null;
+  if (![...attacking.players, ...defending.players].every((p) => p.lane)) return null;
+  const whole = { attack: teamRatings(attacking).attack, defense: teamRatings(defending).defense };
+  return LANES.map((lane) => {
+    const attack = laneRating(attacking.players.filter((p) => p.lane === lane), ATTACK_WEIGHTS, whole.attack);
+    const defense = laneRating(defending.players.filter((p) => p.lane === FACING[lane]), DEFENSE_WEIGHTS, whole.defense);
+    return { lane, attack: attack.rating, defense: defense.rating, attacker: attack.best, defender: defense.best };
+  });
+}
+
+/** How many points a side's attack beats the defence it meets through the middle and down the flanks (the two flanks' mean). */
+export function playEdges(duels: readonly LaneDuel[]): Record<Play, number> {
+  const edge = (lane: Lane) => {
+    const duel = duels.find((d) => d.lane === lane);
+    return duel ? duel.attack - duel.defense : 0;
+  };
+  return { middle: edge("centre"), flanks: (edge("left") + edge("right")) / 2 };
 }
 
 function saturate(gap: number, limit: number): number {
@@ -121,12 +182,51 @@ function withMissingPlayers(home: Team, away: Team, sendOffs: SendOffs): SendOff
 
 // guess: no study puts a number on a coach's posture. An attacking side creates 15% more and
 // allows 20% more, a defensive one creates 20% less and allows 15% less: each trades goal
-// difference for a different spread of results.
+// difference for a different spread of results. A side on the counter creates 8% less and allows
+// 10% less, and breaks 10% better into the space a side that attacks leaves.
 const POSTURE: Record<Posture, { scoring: number; conceding: number }> = {
   defensive: { scoring: 0.8, conceding: 0.85 },
+  counter: { scoring: 0.92, conceding: 0.9 },
   balanced: { scoring: 1, conceding: 1 },
   attacking: { scoring: 1.15, conceding: 1.2 },
 };
+const COUNTER_INTO_SPACE = 1.1;
+
+// guess: no public rate ties marking to chances or cards. Heavy marking is what the real card rates
+// already show; light marking allows 6% more and takes 30% fewer cards, very heavy allows 6% less and takes 45% more.
+const MARKING: Record<Marking, { opponentScoring: number; cards: number }> = {
+  light: { opponentScoring: 1.06, cards: 0.7 },
+  heavy: { opponentScoring: 1, cards: 1 },
+  veryHeavy: { opponentScoring: 0.94, cards: 1.45 },
+};
+
+/** How much a side's marking scales its own card rates. */
+export function markingCards(marking: Marking | undefined): number {
+  return MARKING[marking ?? "heavy"].cards;
+}
+
+// guess: each point the chosen way's edge has over the other way's is worth 1% of the side's
+// chances, up to 6%; a side that mixes both ways plays at the calibrated rate.
+const PLAY_PER_POINT = 0.01;
+const MAX_PLAY_POINTS = 6;
+
+/** How much where a side builds its attacks scales its chances against this defence. */
+function playFactor(team: Team, opponent: Team): number {
+  if (!team.play) return 1;
+  const duels = laneDuels(team, opponent);
+  if (!duels) return 1;
+  const edges = playEdges(duels);
+  const gain = edges[team.play] - edges[team.play === "middle" ? "flanks" : "middle"];
+  return 1 + PLAY_PER_POINT * Math.max(-MAX_PLAY_POINTS, Math.min(MAX_PLAY_POINTS, gain));
+}
+
+/** A side's scoring rate against `opponent` scaled by its posture, the opponent's posture and marking, and where it builds. */
+function withTactics(rate: number, team: Team, opponent: Team): number {
+  const own = team.posture ?? "balanced";
+  const other = opponent.posture ?? "balanced";
+  const intoSpace = own === "counter" && other === "attacking" ? COUNTER_INTO_SPACE : 1;
+  return rate * POSTURE[own].scoring * POSTURE[other].conceding * intoSpace * MARKING[opponent.marking ?? "heavy"].opponentScoring * playFactor(team, opponent);
+}
 
 // 212 penalties in the 760 Série A matches of 2024 and 2025, 166 of them scored: ESPN's public
 // match summaries (keyEvents "Penalty - Scored", "Saved", "Missed" and "Hit Woodwork").
@@ -157,15 +257,11 @@ function scoreGrid(home: Team, away: Team, params: EngineParams, sendOffs: SendO
   const h = teamRatings(home);
   const a = teamRatings(away);
   const rates = sendOffRates(withMissingPlayers(home, away, sendOffs));
-  const homePosture = POSTURE[home.posture ?? "balanced"];
-  const awayPosture = POSTURE[away.posture ?? "balanced"];
   const lh =
-    rates.home * params.baseGoals * Math.exp(params.homeAdvantage + params.strengthImpact * saturate(h.attack - a.defense, params.gapSaturation)) *
-      homePosture.scoring * awayPosture.conceding +
+    withTactics(rates.home * params.baseGoals * Math.exp(params.homeAdvantage + params.strengthImpact * saturate(h.attack - a.defense, params.gapSaturation)), home, away) +
     rates.home * penaltyTakerGoals(home);
   const la =
-    rates.away * params.baseGoals * Math.exp(params.strengthImpact * saturate(a.attack - h.defense, params.gapSaturation)) *
-      awayPosture.scoring * homePosture.conceding +
+    withTactics(rates.away * params.baseGoals * Math.exp(params.strengthImpact * saturate(a.attack - h.defense, params.gapSaturation)), away, home) +
     rates.away * penaltyTakerGoals(away);
   const grid: number[][] = [];
   let total = 0;

@@ -20,7 +20,11 @@ export type Player = {
   slot?: PositionGroup;
   /** The share of his strength he plays at in his slot of the formation; left out, the slot's group decides. */
   fit?: number;
+  /** The third of the pitch his slot stands in, seen attacking; left out for a player not placed in a formation. */
+  lane?: Lane;
 };
+
+export type Lane = "left" | "centre" | "right";
 
 export type SquadPlayer = Player & {
   clubId: string;

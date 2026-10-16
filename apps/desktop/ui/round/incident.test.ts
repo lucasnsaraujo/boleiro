@@ -35,7 +35,7 @@ const coach: CoachSide = {
   tactics: { formation: "4-4-2", posture: "balanced", penaltyTakerId: null },
   rivalFormation: "4-4-2",
   lastChangeMinute: 0,
-  incidentHandling: "askCoach", shootout: { kickers: [], isOverruled: false },
+  incidentHandling: "askCoach", shootout: { kickers: [], isOverruled: false }, opponent: { clubId: "rival", name: "Rival", starters: [], bench: [], formation: "4-4-2", rivalTactics: null, form: [] },
 };
 const at = (events: MatchEvent[], minute: number) => incidentAt(coach, events, CLUB, liveLimits(coach, events, CLUB, minute));
 

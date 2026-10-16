@@ -45,12 +45,19 @@ export function playingStrength(state: GameState, clubId: string, context: Match
   return (p) => Math.max(1, effectiveStrength(p, context) + moraleStrength(p, morale, mostMinutes, context.date));
 }
 
-/** An eleven as the engine sees it; with tactics, placed in their formation by position, with their posture and penalty taker. */
-export function engineTeam(name: string, lineup: readonly SimPlayer[], strength: (player: SimPlayer) => number, tactics?: Tactics): Team {
+/** An eleven as the engine sees it; with tactics, placed in their formation by position, with their posture, marking, play and penalty taker. */
+export function engineTeam<P extends Pick<SimPlayer, "id" | "name" | "group" | "positions">>(name: string, lineup: readonly P[], strength: (player: P) => number, tactics?: Tactics): Team {
   const players = lineup.map((p) => ({ name: p.name, group: p.group, strength: strength(p), ...(p.positions ? { positions: p.positions } : {}) }));
   if (!tactics) return { name, players };
   const taker = players[lineup.findIndex((p) => p.id === tactics.penaltyTakerId)];
-  return { name, players: inFormation(players, tactics.formation), posture: tactics.posture, ...(taker ? { penaltyTaker: taker } : {}) };
+  return {
+    name,
+    players: inFormation(players, tactics.formation),
+    posture: tactics.posture,
+    ...(tactics.marking ? { marking: tactics.marking } : {}),
+    ...(tactics.play ? { play: tactics.play } : {}),
+    ...(taker ? { penaltyTaker: taker } : {}),
+  };
 }
 
 /**

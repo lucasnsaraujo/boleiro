@@ -66,6 +66,16 @@ describe("a live match day", () => {
     expect(onTimeline.sort()).toEqual(injured.sort());
   });
 
+  it("books the coach's side by its marking from kick-off", () => {
+    const coachOnly = { ...matchDay, fixtures: matchDay.fixtures.filter((f) => f.date !== matchDay.date || f.homeId === COACH_CLUB || f.awayId === COACH_CLUB) };
+    const cards = (marking: "light" | "veryHeavy") =>
+      Array.from({ length: 150 }, (_, seed) => {
+        const live = startMatchDay({ ...coachOnly, rngState: seed }, { tactics: { ...coachOnly.coach.tactics, marking } });
+        return finishMatchDay(live).events.filter((e) => (e.type === "playerBooked" || e.type === "playerSentOff") && e.clubId === COACH_CLUB).length;
+      }).reduce((a, b) => a + b, 0);
+    expect(cards("veryHeavy")).toBeGreaterThan(1.6 * cards("light"));
+  });
+
   it("keeps the coach's tactics for his next matches", () => {
     const tactics = { formation: "5-3-2", posture: "defensive", penaltyTakerId: null } as const;
     const { state } = advanceDay(matchDay, { tactics });
@@ -106,6 +116,21 @@ describe("a live change", () => {
       }
     }
     expect(lateActs).toEqual([]);
+  });
+
+  it("keeps a new marking and play in the coach's tactics and draws the rest of his match with them", () => {
+    const changed = applyLiveChange(live, 30, { marking: "veryHeavy", play: "flanks" });
+    expect(changed.coachMatch?.tactics).toMatchObject({ marking: "veryHeavy", play: "flanks" });
+    expect(coachEvents(changed).filter((e) => e.minute <= 30)).toEqual(coachEvents(live).filter((e) => e.minute <= 30));
+    expect(finishMatchDay(changed).state.coach.tactics).toMatchObject({ marking: "veryHeavy", play: "flanks" });
+  });
+
+  it("books the coach's side more often the heavier it marks, from the minute he changes it", () => {
+    const coachOnly = { ...matchDay, fixtures: matchDay.fixtures.filter((f) => f.date !== matchDay.date || f.homeId === COACH_CLUB || f.awayId === COACH_CLUB) };
+    const cards = (marking: "light" | "veryHeavy") =>
+      Array.from({ length: 150 }, (_, seed) => coachEvents(applyLiveChange(startMatchDay({ ...coachOnly, rngState: seed }, {}), 0, { marking }))).flat()
+        .filter((e) => e.type === "card" && e.clubId === COACH_CLUB).length;
+    expect(cards("veryHeavy")).toBeGreaterThan(1.6 * cards("light"));
   });
 
   it("gives the same match for the same seed and the same changes at the same minutes", () => {

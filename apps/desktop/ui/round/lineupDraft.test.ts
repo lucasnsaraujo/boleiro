@@ -32,7 +32,7 @@ const eleven = starters.map((p) => p.id);
 const tactics: Tactics = { formation: "4-4-2", posture: "balanced", penaltyTakerId: "s10" };
 const preMatch: SheetMode = { kind: "preMatch" };
 
-const coach: CoachSide = { fixtureId: "f", side: "home", starters: eleven, benchIds: bench.map((p) => p.id), squad, tactics, rivalFormation: "4-4-2", lastChangeMinute: 0, incidentHandling: "askCoach", shootout: { kickers: [], isOverruled: false } };
+const coach: CoachSide = { fixtureId: "f", side: "home", starters: eleven, benchIds: bench.map((p) => p.id), squad, tactics, rivalFormation: "4-4-2", lastChangeMinute: 0, incidentHandling: "askCoach", shootout: { kickers: [], isOverruled: false }, opponent: { clubId: "rival", name: "Rival", starters: [], bench: [], formation: "4-4-2", rivalTactics: null, form: [] } };
 const sub = (minute: number, onId: string, offId: string): MatchEvent => ({ type: "substitution", minute, clubId: "bahia", playerId: onId, offId });
 const live = (events: MatchEvent[], minute: number): SheetMode => ({ kind: "live", ...liveLimits(coach, events, "bahia", minute) });
 
@@ -83,6 +83,11 @@ describe("before kick-off", () => {
     expect(kickOffOf(openSheet(eleven, tactics), eleven, tactics)).toEqual({});
     const changed = changeTactics(swap(openSheet(eleven, tactics), preMatch, "s9", bench[3] as SquadPlayer), { posture: "attacking" });
     expect(kickOffOf(changed, eleven, tactics)).toEqual({ lineup: changed.lineup, tactics: { ...tactics, posture: "attacking" } });
+  });
+
+  test("a new marking or play alone kicks off with the new tactics", () => {
+    const marked = changeTactics(openSheet(eleven, tactics), { marking: "veryHeavy", play: "flanks" });
+    expect(kickOffOf(marked, eleven, tactics)).toEqual({ lineup: eleven, tactics: { ...tactics, marking: "veryHeavy", play: "flanks" } });
   });
 
   test("undo walks back one change at a time", () => {
@@ -136,6 +141,7 @@ describe("during the match", () => {
     const mode = live([], 30);
     const sheet = changeTactics(swap(openSheet(eleven, tactics), mode, "s9", bench[3] as SquadPlayer), { posture: "defensive" });
     expect(liveChangeOf(sheet, tactics)).toEqual({ substitutions: [{ offId: "s9", onId: "b3" }], posture: "defensive" });
+    expect(liveChangeOf(changeTactics(openSheet(eleven, tactics), { marking: "light", play: "middle" }), tactics)).toEqual({ marking: "light", play: "middle" });
     expect(liveChangeOf(openSheet(eleven, tactics), tactics)).toBeNull();
   });
 });
