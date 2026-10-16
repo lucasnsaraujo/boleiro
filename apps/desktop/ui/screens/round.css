@@ -1121,14 +1121,14 @@
   left: 50%;
   top: 6px;
   z-index: 2;
-  translate: -50% 0;
   padding: 3px 4px 3px 7px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.3);
   color: #fff;
   white-space: nowrap;
   opacity: 0;
-  transform: translateY(26px) scale(1.7);
+  /* One transform, centring included: the build's minifier drops a translate set beside a transform. */
+  transform: translateX(-50%) translateY(26px) scale(1.7);
   pointer-events: none;
   transition:
     transform 360ms var(--e-in-out),
@@ -1137,7 +1137,7 @@
 
 .live-mid.is-lifted .live-mini {
   opacity: 1;
-  transform: none;
+  transform: translateX(-50%) translateY(0) scale(1);
   transition:
     transform 560ms var(--e-slap) 180ms,
     opacity 200ms linear 200ms;
@@ -1148,7 +1148,7 @@
   .has-pitch .live-mid.is-lifted .live-duel,
   .live-mini,
   .live-mid.is-lifted .live-mini {
-    transform: none;
+    transform: translateX(-50%);
     transition: opacity 200ms linear;
   }
 }
