@@ -101,7 +101,7 @@ export function EventPopUp({ event, club, rival, player, isBusy, answered, onAns
     </div>
   );
 
-  const close = (
+  const close = answered ? null : (
     <button className="ev-x" aria-label="Fechar e responder depois" onClick={onClose}>
       <i className="ph-bold ph-x" aria-hidden="true" />
     </button>
