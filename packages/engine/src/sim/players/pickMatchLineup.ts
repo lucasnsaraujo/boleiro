@@ -1,5 +1,5 @@
 import type { Role } from "@boleiro/data/players";
-import { arrange, FORMATIONS, positionFit, SECONDARY_POSITION, type Formation } from "../../engine/formations.js";
+import { arrange, FORMATION_NAMES, FORMATIONS, positionFit, SECONDARY_POSITION, type Formation } from "../../engine/formations.js";
 import type { SimPlayer } from "../gameState.js";
 import { effectiveStrength, type MatchContext } from "./effectiveStrength.js";
 import { fatigueOn } from "./fatigueOn.js";
@@ -32,24 +32,42 @@ export function pickMatchLineup(squad: readonly SimPlayer[], context: MatchConte
 // Players per position kept as candidates beyond the slots the formation has for it.
 const SPARE_CANDIDATES = 2;
 
+/** Each formation's positions and how many slots it has for each. */
+const NEEDS: Record<Formation, { roles: readonly Role[]; slots: readonly number[] }> = (() => {
+  const needs = {} as Record<Formation, { roles: readonly Role[]; slots: readonly number[] }>;
+  for (const name of FORMATION_NAMES) {
+    const roles = [...new Set(FORMATIONS[name].map((slot) => slot.role))];
+    needs[name] = { roles, slots: roles.map((role) => FORMATIONS[name].filter((slot) => slot.role === role).length) };
+  }
+  return needs;
+})();
+
 /**
  * The players worth arranging, in the squad's order: the best eleven, and for each position of the
  * formation the best few who play it as one of theirs. Anyone else would only be improvised behind
  * them, so leaving him out keeps arrange's work small: it runs for every club on every match day.
  */
 function candidates(players: readonly SimPlayer[], formation: Formation, score: (player: SimPlayer) => number): SimPlayer[] {
-  const needs = new Map<Role, number>();
-  for (const slot of FORMATIONS[formation]) needs.set(slot.role, (needs.get(slot.role) ?? 0) + 1);
-  const kept = new Set<SimPlayer>();
-  const taken = new Map<Role, number>();
-  for (const player of [...players].sort((a, b) => score(b) - score(a))) {
-    let isWanted = kept.size < FORMATIONS[formation].length;
-    for (const [role, need] of needs) {
-      if (positionFit(player, role) < SECONDARY_POSITION || (taken.get(role) ?? 0) >= need + SPARE_CANDIDATES) continue;
-      taken.set(role, (taken.get(role) ?? 0) + 1);
+  const { roles, slots } = NEEDS[formation];
+  const scores = players.map(score);
+  // Best first; players as good keep the squad's order.
+  const order = players.map((_, i) => i).sort((a, b) => (scores[b] ?? 0) - (scores[a] ?? 0) || a - b);
+  const isKept = new Uint8Array(players.length);
+  const taken = new Int32Array(roles.length);
+  let kept = 0;
+  for (const i of order) {
+    const player = players[i];
+    if (!player) continue;
+    let isWanted = kept < FORMATIONS[formation].length;
+    roles.forEach((role, r) => {
+      if (positionFit(player, role) < SECONDARY_POSITION || (taken[r] ?? 0) >= (slots[r] ?? 0) + SPARE_CANDIDATES) return;
+      taken[r] = (taken[r] ?? 0) + 1;
       isWanted = true;
+    });
+    if (isWanted) {
+      isKept[i] = 1;
+      kept++;
     }
-    if (isWanted) kept.add(player);
   }
-  return players.filter((player) => kept.has(player));
+  return players.filter((_, i) => isKept[i]);
 }
