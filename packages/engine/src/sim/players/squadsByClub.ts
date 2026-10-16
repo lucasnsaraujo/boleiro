@@ -26,6 +26,12 @@ export function squadsOfGame(state: Pick<GameState, "players">): ReadonlyMap<str
   return squads;
 }
 
+/** Lets a fresh copy of a players map (openDraft's) share the squads built for the map it copies. */
+export function shareSquads(players: GameState["players"], copy: GameState["players"]): void {
+  const squads = built.get(players);
+  if (squads) built.set(copy, squads);
+}
+
 /** Drops the squads built for a players map about to be edited in place (a draft's, see openDraft). */
 export function forgetSquads(players: GameState["players"]): void {
   built.delete(players);

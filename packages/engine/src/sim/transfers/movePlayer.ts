@@ -2,7 +2,7 @@ import { copyRecord } from "../copyRecord.js";
 import { bookMoney } from "../finances/bookMoney.js";
 import { paySigningCosts } from "../finances/paySigningCosts.js";
 import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
-import { forgetSquads } from "../players/squadsByClub.js";
+import { forgetSquads, shareSquads } from "../players/squadsByClub.js";
 import { reactToIdolSale } from "../morale/reactToIdolSale.js";
 import type { MoveKind, PlayerMoved } from "./transferEvents.js";
 import type { Loan } from "./transferMarket.js";
@@ -36,9 +36,11 @@ const monthsOf = (from: IsoDate, until: IsoDate) => Math.max(1, Math.round((Date
  */
 export function openDraft(state: GameState): GameState {
   const { market } = state;
+  const players = copyRecord(state.players);
+  shareSquads(state.players, players);
   return {
     ...state,
-    players: copyRecord(state.players),
+    players,
     market: { ...market, freeAgents: { ...market.freeAgents }, preContracts: { ...market.preContracts }, loans: { ...market.loans } },
   };
 }
