@@ -64,6 +64,14 @@ describe("the match page of the round under way", () => {
     expect(hurtAndReplaced).toBeGreaterThan(0);
   });
 
+  it("gives away no goal before its minute: while the round runs, no curiosity names a scorer of the match", () => {
+    for (const match of round.matches) {
+      const page = openPage(session, match.fixtureId);
+      const scorers = page.events.flatMap((e) => (e.type === "goal" ? [page.names[e.playerId] ?? e.playerId] : []));
+      for (const text of page.curiosities) for (const name of scorers) expect(text).not.toContain(name);
+    }
+  });
+
   it("follows the clock: the score counts the goals up to the minute shown, and the marks wait for the final whistle", () => {
     const page = openPage(session, otherFixtureId);
     const first = page.events.find((e) => e.type === "goal");

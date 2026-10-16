@@ -203,7 +203,8 @@ export function matchPageOf(state: GameState, ref: string, live: { day: LiveDay;
     state: { fixtures: located.season, history: before.history, season: state.season },
     fixture,
     score,
-    scorers: real ? [...scorersFor(story.events, fixture.homeId).map((playerId) => ({ playerId, clubId: fixture.homeId })), ...scorersFor(story.events, fixture.awayId).map((playerId) => ({ playerId, clubId: fixture.awayId }))] : null,
+    // While the match is played its timeline is drawn ahead of the clock: its scorers wait for the final whistle.
+    scorers: real && !isLive ? [...scorersFor(story.events, fixture.homeId).map((playerId) => ({ playerId, clubId: fixture.homeId })), ...scorersFor(story.events, fixture.awayId).map((playerId) => ({ playerId, clubId: fixture.awayId }))] : null,
     crowd: venue.crowd,
     competitionName: located.competition,
     clubName: (clubId) => clubOf(state, clubId).shortName,
