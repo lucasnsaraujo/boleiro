@@ -1,5 +1,5 @@
 import { CUP_STAGES } from "@boleiro/engine/sim/continental/conmebolCups";
-import { CONTINENTAL_CUPS, type Competition, type Fixture, type GameState, type GroupStage, type KnockoutStage, type SeasonCalendar, type StateCompetition } from "@boleiro/engine/sim/gameState";
+import { CONTINENTAL_CUPS, type Competition, type Fixture, type GameState, type GroupStage, type KnockoutStage, type LeagueFormatId, type SeasonCalendar, type StateCompetition } from "@boleiro/engine/sim/gameState";
 import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
 import { continentalQualifiers } from "@boleiro/engine/sim/finances/continentalQualifiers";
 import { competitionKey } from "@boleiro/engine/sim/history/history";
@@ -109,6 +109,17 @@ const LEAGUE_STAGE_NAMES: Record<string, readonly string[]> = {
   "serie-c": ["Primeira fase", "Quadrangular", "Final"],
   // The semi-finals share their stage with the quarter-final losers' playoffs.
   "serie-d": ["Grupos", "2ª fase", "3ª fase", "Oitavas", "Quartas", "Semifinal", "Final"],
+  // Each conference's play-offs, then the MLS Cup between their champions.
+  mls: ["Temporada regular", "Quartas", "Semifinal", "Final de conferência", "MLS Cup"],
+  // The Clausura from January and the Apertura from July, each with its liguilla.
+  "liga-mx": ["Clausura", "Quartas", "Semifinal", "Final", "Apertura", "Quartas", "Semifinal", "Final"],
+};
+// MLS's conferences, East first (packages/engine/src/sim/leagueFormats.ts).
+const LEAGUE_GROUP_NAMES: Partial<Record<LeagueFormatId, readonly string[]>> = { mls: ["Conferência Leste", "Conferência Oeste"] };
+// The tables whose top places go on to play-offs: MLS's conferences, and each Liga MX tournament to its liguilla.
+const PLAYOFF_TABLES: Partial<Record<LeagueFormatId, { stages: readonly number[]; label: string }>> = {
+  mls: { stages: [0], label: "Playoffs" },
+  "liga-mx": { stages: [0, 4], label: "Quartas" },
 };
 
 function stageNames(competition: Competition, calendar: SeasonCalendar): string[] {
@@ -223,6 +234,11 @@ function zoning(competition: Competition, stage: number, groups: readonly string
     const through = (sizes[1] ?? 0) / Math.max(1, groups.length);
     return { zoneOf: (_, position) => (position <= through ? "advance" : "relegation"), advanceLabel: "2ª fase" };
   }
+  const playoffs = PLAYOFF_TABLES[competition.format];
+  if (playoffs?.stages.includes(stage)) {
+    const through = (sizes[stage + 1] ?? 0) / Math.max(1, groups.length);
+    return { zoneOf: (_, position) => (position <= through ? "advance" : null), advanceLabel: playoffs.label };
+  }
   return NO_ZONES;
 }
 
@@ -285,7 +301,7 @@ export function groupTables(
     // Before the first round every club is level, so the first round moves nobody.
     const placesBefore = lastRound > 1 ? standings(group, beforeLastRound, competition.drawOrder).map((row) => row.clubId) : [];
     return {
-      label: shape.groups.length > 1 ? `Grupo ${groupLetter(g)}` : null,
+      label: shape.groups.length > 1 ? ((competition.kind === "league" && LEAGUE_GROUP_NAMES[competition.format]?.[g]) || `Grupo ${groupLetter(g)}`) : null,
       rows: standings(group, stageFixtures, competition.drawOrder).map((row, i) => ({
         ...row,
         position: i + 1,

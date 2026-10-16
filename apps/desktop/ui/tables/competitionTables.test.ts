@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { Competition, ContinentalCompetition, CupCompetition, Fixture, GameState, LeagueCompetition, MatchResult } from "@boleiro/engine/sim/gameState";
+import { RAPIDO } from "@boleiro/engine/sim/formats";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
 import {
@@ -355,5 +356,33 @@ describe("CONMEBOL's cups and South America's leagues", () => {
     expect(bracket[0]?.ties[3]?.clubIds).toEqual(["c6", "c7"]);
     expect(bracket[1]?.ties.every((tie) => tie === null)).toBe(true);
     expect(knockoutBracket(libertadores, [])).toEqual([]);
+  });
+});
+
+describe("MLS and Liga MX", () => {
+  // A league abroad is played on the unified calendar.
+  const leagueOf = (coachClubId: string, country: string): LeagueCompetition => {
+    const game = newGameFromFiles(7, { coachClubId, formats: RAPIDO }, bundledGameFiles);
+    const league = Object.values(game.competitions).find((c) => c.kind === "league" && c.abroad?.country === country && c.abroad.level === 0);
+    if (league?.kind !== "league") throw new Error(`no ${country} league`);
+    return league;
+  };
+  const calendar = newGameFromFiles(7, { coachClubId: "flamengo-rj" }, bundledGameFiles).calendar;
+
+  test("MLS plays its regular season in its Eastern and Western Conferences, its top eight on to the play-offs and the MLS Cup", () => {
+    const mls = leagueOf("tm-51828", "us");
+    expect(competitionStages(mls, calendar).map((s) => s.name)).toEqual(["Temporada regular", "Quartas", "Semifinal", "Final de conferência", "MLS Cup"]);
+    const { groups, zones } = groupTables(mls, 0, []);
+    expect(groups.map((g) => g.label)).toEqual(["Conferência Leste", "Conferência Oeste"]);
+    expect(zonesByPosition(groups[0]?.rows ?? [])).toEqual([...Array<string>(8).fill("advance"), ...Array<null>(7).fill(null)]);
+    expect(zones).toEqual([{ zone: "advance", label: "Playoffs" }]);
+  });
+
+  test("Liga MX plays a Clausura and an Apertura, each with its top eight on to the quarter-finals", () => {
+    const ligaMx = leagueOf("tm-2407", "mx");
+    expect(competitionStages(ligaMx, calendar).map((s) => s.name)).toEqual(["Clausura", "Quartas", "Semifinal", "Final", "Apertura", "Quartas", "Semifinal", "Final"]);
+    const { groups, zones } = groupTables(ligaMx, 0, []);
+    expect(zonesByPosition(groups[0]?.rows ?? [])).toEqual([...Array<string>(8).fill("advance"), ...Array<null>(10).fill(null)]);
+    expect(zones).toEqual([{ zone: "advance", label: "Quartas" }]);
   });
 });
