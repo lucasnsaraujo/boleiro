@@ -4,16 +4,18 @@ import { COPA_DO_BRASIL } from "../copaDoBrasil.js";
 import type { ContinentalCup, GameState } from "../gameState.js";
 import { standings } from "../standings.js";
 import { BRAZIL } from "../world/brazil.js";
+import { openingClubWorldCupField, seasonEndClubWorldCupField, type ClubWorldCupField } from "./clubWorldCupField.js";
 import { continentalPlaces, type ContinentalSlot, type CupFinal, type LeaguePlace } from "../world/continentalPlaces.js";
 import { leagueTable } from "../world/resultOnlyLeague.js";
 import { SOUTH_AMERICA, type ContinentalEntry } from "../world/southAmerica.js";
 import type { World, WorldClub } from "../world/world.js";
 
 /**
- * Who plays CONMEBOL's cups in a season: the clubs joining the Libertadores and the Sul-Americana at
- * each stage, best seed first, the Recopa's two champions, and each club's country.
+ * Who plays CONMEBOL's cups and the Club World Cup in a season: the clubs joining the Libertadores and
+ * the Sul-Americana at each stage, best seed first, the Recopa's two champions, the Club World Cup's
+ * field best seed first (none when the game can't field it), and each club's country.
  */
-export type ContinentalField = { libertadores: string[][]; sulAmericana: string[][]; recopa: string[]; countries: Record<string, string> };
+export type ContinentalField = { libertadores: string[][]; sulAmericana: string[][]; recopa: string[]; clubWorldCup: string[]; countries: Record<string, string> };
 
 /** Last season's Libertadores and Sul-Americana champions, who go straight to the Libertadores groups. */
 type Holders = { libertadores: string | null; sulAmericana: string | null };
@@ -61,7 +63,7 @@ function byRank(lists: readonly (readonly string[])[]): string[] {
 }
 
 /** The field from every country's places; null unless all of South America is in the game, as the draws need every country's clubs. */
-function fieldOf(countries: readonly CountryPlaces[], holders: Holders, countryOf: (id: string) => string | null): ContinentalField | null {
+function fieldOf(countries: readonly CountryPlaces[], holders: Holders, countryOf: (id: string) => string | null, clubWorldCup: ClubWorldCupField | null): ContinentalField | null {
   if (!SOUTH_AMERICA.every((structure) => countries.some((c) => c.country === structure.id))) return null;
   const at = (entry: ContinentalEntry) => countries.map((c) => c.places.get(entry) ?? []);
   const champions = [holders.libertadores, holders.sulAmericana].filter((id): id is string => id !== null);
@@ -72,10 +74,14 @@ function fieldOf(countries: readonly CountryPlaces[], holders: Holders, countryO
     libertadores,
     sulAmericana,
     recopa: holders.libertadores && holders.sulAmericana ? [holders.libertadores, holders.sulAmericana] : [],
-    countries: Object.fromEntries(everyone.flatMap((id) => {
-      const country = countryOf(id);
-      return country ? [[id, country]] : [];
-    })),
+    clubWorldCup: clubWorldCup?.clubIds ?? [],
+    countries: {
+      ...clubWorldCup?.countries,
+      ...Object.fromEntries(everyone.flatMap((id) => {
+        const country = countryOf(id);
+        return country ? [[id, country]] : [];
+      })),
+    },
   };
 }
 
@@ -96,7 +102,7 @@ export const elevenAverage = (club: WorldClub | undefined) => [...(club?.strengt
  * Libertadores groups and every country fills its places down a stand-in table: Brazil's national
  * ranking (division, then fanbase), each other country's top league by its best eleven's strength.
  */
-export function openingField(state: Pick<GameState, "clubs" | "world">): ContinentalField | null {
+export function openingField(state: Pick<GameState, "clubs" | "players" | "world" | "guests">): ContinentalField | null {
   const countryOf = countryOfClub(state);
   const holders: Holders = {
     libertadores: FIRST_HOLDERS.libertadores && countryOf(FIRST_HOLDERS.libertadores) ? FIRST_HOLDERS.libertadores : null,
@@ -110,10 +116,10 @@ export function openingField(state: Pick<GameState, "clubs" | "world">): Contine
     const table = [...members].sort((a, b) => elevenAverage(country.clubs[b]) - elevenAverage(country.clubs[a]) || a.localeCompare(b));
     return worldPlaces(id, world, table, held) ?? [];
   });
-  return fieldOf([brazilPlaces(nationalRanking(Object.values(state.clubs)), null, held), ...foreign], holders, countryOf);
+  return fieldOf([brazilPlaces(nationalRanking(Object.values(state.clubs)), null, held), ...foreign], holders, countryOf, openingClubWorldCupField(state));
 }
 
-/** Next season's field from the season just played: its CONMEBOL champions, Série A table and Copa do Brasil final, and each country's top table. */
+/** Next season's field from the season just played: its CONMEBOL champions, Série A table and Copa do Brasil final, each country's top table, and the Club World Cup's. */
 export function seasonEndField(state: GameState): ContinentalField | null {
   const seasonCompetitions = Object.values(state.competitions).filter((c) => c.season === state.season);
   const fixturesOf = (id: string) => state.fixtures.filter((f) => f.competitionId === id);
@@ -136,5 +142,5 @@ export function seasonEndField(state: GameState): ContinentalField | null {
     const table = league ? standings(league.clubIds, fixturesOf(league.id), league.drawOrder).map((row) => row.clubId) : top && leagueTable(top);
     return (table && worldPlaces(id, world, table, held)) ?? [];
   });
-  return fieldOf([brazilPlaces(table, copa, held), ...foreign], holders, countryOfClub(state));
+  return fieldOf([brazilPlaces(table, copa, held), ...foreign], holders, countryOfClub(state), seasonEndClubWorldCupField(state));
 }

@@ -27,6 +27,7 @@ import { unifiedDatesOf } from "./seasonCalendar.js";
 import { clubsAbroad } from "./world/clubsAbroad.js";
 import { mostRounds, startCountry } from "./world/resultOnlyWorld.js";
 import { SOUTH_AMERICA } from "./world/southAmerica.js";
+import type { Guests } from "./world/guests.js";
 import type { CountryStructure, UnifiedDates, World, WorldClub } from "./world/world.js";
 import { openAcademies } from "./youth/academy.js";
 
@@ -50,6 +51,8 @@ export type NewGameOptions = {
   season?: number;
   /** Countries played result-only next to Brazil. */
   world?: readonly CountryStart[];
+  /** The Club World Cup's clubs from countries without a league in the game; with the whole world, the cup is played. */
+  guests?: Guests;
   /** False to start a game without the estaduais (SPEC §6's new-game option). */
   stateChampionships?: boolean;
   /** False to start a game whose only transfer window is the one between seasons (SPEC §8's window options). */
@@ -148,7 +151,7 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, stateChampionships = true, midSeasonWindow = true, hotSeat, marketClockSeconds, formats = REALISTA }: NewGameOptions,
+  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, guests, stateChampionships = true, midSeasonWindow = true, hotSeat, marketClockSeconds, formats = REALISTA }: NewGameOptions,
 ): GameState {
   const countries = (world ?? []).map(({ structure, levels }) => ({ structure: inFormats(structure, formats), levels }));
   const fullTier = countriesOfHumans(countries, [coachClubId, ...(hotSeat?.otherCoaches ?? []).map((other) => other.clubId)], formats);
@@ -208,6 +211,7 @@ export function newGame(
     market,
     usualLineups,
     ...(startedWorld ? { world: startedWorld } : {}),
+    ...(startedWorld && guests ? { guests } : {}),
     ...(europe ? { europe } : {}),
     ...(stateChampionships ? {} : { playsStateChampionships: false as const }),
     ...(midSeasonWindow ? {} : { hasMidSeasonWindow: false as const }),
@@ -234,7 +238,7 @@ function playsContinentalCups(world: readonly CountryStart[]): boolean {
   return SOUTH_AMERICA.every((structure) => world.some((country) => country.structure.id === structure.id));
 }
 
-/** The game with CONMEBOL's cups when South America is in its world, their prizes kept in its economy. */
+/** The game with CONMEBOL's cups when South America is in its world, their prizes kept in its economy; with the whole world, the Club World Cup too. */
 function withContinentalCups(state: GameState, competitionMoney: CompetitionMoney): GameState {
   const field = openingField(state);
   if (!field) return state;

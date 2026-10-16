@@ -1,9 +1,10 @@
 import type { CompetitionMoney } from "@boleiro/data/competition-money";
-import type { Economy, Fixture, GameState } from "../gameState.js";
+import type { ContinentalCompetition, Economy, Fixture, GameState } from "../gameState.js";
 import { bookMoney } from "../finances/bookMoney.js";
 import type { PrizePaid } from "../finances/payCopaPrizes.js";
 import { OPENING_EUR_BRL } from "../transfers/openingMarket.js";
 import { tieResults } from "../tieResults.js";
+import { clubWorldCupPrizes } from "./clubWorldCup.js";
 import { CONMEBOL_CUPS, CUP_STAGES } from "./conmebolCups.js";
 import type { ContinentalField } from "./continentalField.js";
 
@@ -20,6 +21,11 @@ const PRIZE_OF_STAGE: Record<string, string> = {
   "semi-finals": "semi-final",
 };
 const GROUP_WIN = "group-win";
+const GROUP_DRAW = "group-draw";
+
+/** The cup's prizes for the club in USD by stage: CONMEBOL's table, or FIFA's, whose participation goes by confederation. */
+const prizesFor = (stages: NonNullable<Economy["continentalStages"]>, competition: ContinentalCompetition, clubId: string): Record<string, number> =>
+  competition.cup === "club-world-cup" ? clubWorldCupPrizes(competition, clubId) : competition.cup === "recopa" ? {} : stages[competition.cup];
 
 /** CONMEBOL's prizes in USD by stage, as the economy keeps them for a game that plays the cups. */
 export function continentalStagesOf(money: CompetitionMoney): NonNullable<Economy["continentalStages"]> {
@@ -28,10 +34,10 @@ export function continentalStagesOf(money: CompetitionMoney): NonNullable<Econom
 }
 
 /**
- * Pays today's CONMEBOL prizes, in BRL at today's rate (the dollar moves with the market's euro):
- * a club's prize for a stage on its first match in it, the group stage's bonus for each win
- * (guess: CONMEBOL pays it per group win), and the final's prizes once the final is played.
- * Only clubs with finances, Brazil's, are paid.
+ * Pays today's CONMEBOL and Club World Cup prizes, in BRL at today's rate (the dollar moves with the
+ * market's euro): a club's prize for a stage on its first match in it, the group stage's bonus for each
+ * win (guess: CONMEBOL pays it per group win) and, at the Club World Cup, each draw, and the final's
+ * prizes once the final is played. Only clubs with finances, Brazil's and a full-tier country's, are paid.
  */
 export function payContinentalPrizes(state: GameState, played: readonly Fixture[]): { state: GameState; events: PrizePaid[] } {
   const stages = state.economy.continentalStages;
@@ -48,24 +54,30 @@ export function payContinentalPrizes(state: GameState, played: readonly Fixture[
   for (const fixture of played) {
     const competition = state.competitions[fixture.competitionId];
     if (competition?.kind !== "continental" || competition.cup === "recopa" || !fixture.result) continue;
-    const prizes = stages[competition.cup];
+    const prizesOf = (clubId: string) => prizesFor(stages, competition, clubId);
     const stage = competition.stages[fixture.stage];
     const name = CUP_STAGES[competition.cup][fixture.stage]?.name ?? "";
     if (!stage) continue;
     const isFirstMatch = (clubId: string) =>
       !state.fixtures.some((f) => f.competitionId === competition.id && f.stage === fixture.stage && f.result && f.id !== fixture.id && (f.homeId === clubId || f.awayId === clubId));
-    for (const clubId of [fixture.homeId, fixture.awayId]) if (isFirstMatch(clubId)) pay(clubId, competition.id, prizes[PRIZE_OF_STAGE[name] ?? ""]);
+    for (const clubId of [fixture.homeId, fixture.awayId]) if (isFirstMatch(clubId)) pay(clubId, competition.id, prizesOf(clubId)[PRIZE_OF_STAGE[name] ?? ""]);
     if (stage.kind === "groups") {
       const { homeGoals, awayGoals } = fixture.result;
-      // On shorter groups a win stands for the real games its group day stands for.
-      const winBonus = prizes[GROUP_WIN] === undefined ? undefined : prizes[GROUP_WIN] * (competition.gameScales?.[fixture.stage] ?? 1);
-      if (homeGoals !== awayGoals) pay(homeGoals > awayGoals ? fixture.homeId : fixture.awayId, competition.id, winBonus);
+      // On shorter groups a result stands for the real games its group day stands for.
+      const bonus = (clubId: string, line: string) => {
+        const prize = prizesOf(clubId)[line];
+        return prize === undefined ? undefined : prize * (competition.gameScales?.[fixture.stage] ?? 1);
+      };
+      if (homeGoals !== awayGoals) {
+        const winnerId = homeGoals > awayGoals ? fixture.homeId : fixture.awayId;
+        pay(winnerId, competition.id, bonus(winnerId, GROUP_WIN));
+      } else for (const clubId of [fixture.homeId, fixture.awayId]) pay(clubId, competition.id, bonus(clubId, GROUP_DRAW));
     }
     if (stage.kind === "knockout" && fixture.stage === competition.stageDates.length - 1 && fixture.date === stage.dates.at(-1)) {
       const [final] = tieResults(stage, [fixture]);
       if (!final) continue;
-      pay(final.winnerId, competition.id, prizes.champion);
-      pay(final.loserId, competition.id, prizes["runner-up"]);
+      pay(final.winnerId, competition.id, prizesOf(final.winnerId).champion);
+      pay(final.loserId, competition.id, prizesOf(final.loserId)["runner-up"]);
     }
   }
   return { state: next, events };
@@ -99,7 +111,7 @@ export function withExpectedContinentalPrizes(state: GameState, field: Continent
   return { ...state, finances };
 }
 
-/** The CONMEBOL prizes the club earned in the season's cups so far, in BRL at today's rate: each stage it played, its group wins and the final's prize. */
+/** The CONMEBOL and Club World Cup prizes the club earned in the season's cups so far, in BRL at today's rate: each stage it played, its group results and the final's prize. */
 export function continentalPrizesEarned(state: GameState, clubId: string): number {
   const stages = state.economy.continentalStages;
   if (!stages) return 0;
@@ -107,7 +119,7 @@ export function continentalPrizesEarned(state: GameState, clubId: string): numbe
   let usd = 0;
   for (const competition of Object.values(state.competitions)) {
     if (competition.kind !== "continental" || competition.cup === "recopa" || competition.season !== state.season) continue;
-    const prizes = stages[competition.cup];
+    const prizes = prizesFor(stages, competition, clubId);
     const played = state.fixtures.filter((f) => f.competitionId === competition.id && f.result && (f.homeId === clubId || f.awayId === clubId));
     for (const stage of new Set(played.map((f) => f.stage))) usd += prizes[PRIZE_OF_STAGE[CUP_STAGES[competition.cup][stage]?.name ?? ""] ?? ""] ?? 0;
     for (const f of played) {
@@ -116,6 +128,7 @@ export function continentalPrizesEarned(state: GameState, clubId: string): numbe
       const scored = f.homeId === clubId ? result.homeGoals : result.awayGoals;
       const conceded = f.homeId === clubId ? result.awayGoals : result.homeGoals;
       if (scored > conceded) usd += prizes[GROUP_WIN] ?? 0;
+      if (scored === conceded) usd += prizes[GROUP_DRAW] ?? 0;
     }
     const finalists = CONMEBOL_CUPS.finalists(competition, state.fixtures.filter((f) => f.competitionId === competition.id));
     if (finalists?.championId === clubId) usd += prizes.champion ?? 0;

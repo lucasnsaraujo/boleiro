@@ -5,6 +5,7 @@ import { inSeason } from "../seasonCalendar.js";
 import { groupStageAt, knockoutStageAt } from "../stageAt.js";
 import { standings } from "../standings.js";
 import { tieResults, type TieResult } from "../tieResults.js";
+import { CLUB_WORLD_CUP_STAGES, clubWorldCupStage } from "./clubWorldCup.js";
 
 type CupStage = { name: string; dates: IsoDate[] };
 
@@ -39,6 +40,7 @@ export const CUP_STAGES: Record<ContinentalCup, readonly CupStage[]> = {
     { name: "final", dates: ["2026-11-19"] },
   ],
   recopa: [{ name: "final", dates: ["2026-02-19", "2026-02-26"] }],
+  "club-world-cup": CLUB_WORLD_CUP_STAGES,
 };
 
 const GROUP_COUNT = 8;
@@ -56,7 +58,7 @@ export function cupStageDates(cup: ContinentalCup, season: number, formats: Form
   return CUP_STAGES[cup].map((stage) => stageDatesIn(stage.name, stage.dates, formats).map((date) => inSeason(date, season)));
 }
 
-/** Every date of the season's CONMEBOL cups. */
+/** Every date of the season's CONMEBOL cups and Club World Cup. */
 export function conmebolDates(season: number, formats: Formats): IsoDate[] {
   return CONTINENTAL_CUPS.flatMap((cup) => cupStageDates(cup, season, formats).flat());
 }
@@ -196,7 +198,7 @@ function sulAmericanaStage(competition: ContinentalCompetition, season: SeasonSo
 }
 
 export const CONMEBOL_CUPS = {
-  /** The draw of the cup's next stage, from its own results and, for the Sul-Americana, the Libertadores'. */
+  /** The draw of the cup's next stage, from its own results and, for the Sul-Americana, the Libertadores'; the Club World Cup's too. */
   nextStage(competition: ContinentalCompetition, season: SeasonSoFar): StageShape {
     const index = competition.stages.length;
     switch (competition.cup) {
@@ -206,6 +208,8 @@ export const CONMEBOL_CUPS = {
         return sulAmericanaStage(competition, season, index);
       case "recopa":
         return { kind: "knockout", ties: pairOff(competition.entries[0] ?? []) };
+      case "club-world-cup":
+        return clubWorldCupStage(competition, season.fixtures);
     }
   },
 

@@ -12,6 +12,7 @@ import type { ClubMood } from "./morale/clubMood.js";
 import type { PlayerProfile } from "./players/playerProfile.js";
 import type { TransferMarket } from "./transfers/transferMarket.js";
 import type { EuropeanCups } from "./continental/uefaCups.js";
+import type { Guests } from "./world/guests.js";
 import type { World } from "./world/world.js";
 import type { Formats } from "./formats.js";
 import type { Youth } from "./youth/academy.js";
@@ -91,12 +92,12 @@ export type StateCompetition = CompetitionBase & { kind: "state"; state: State }
 /** `clubIds` is the ranking order, best first; `entries[stage]` are the clubs that join at that stage. */
 export type CupCompetition = CompetitionBase & { kind: "cup"; entries: string[][] };
 
-/** CONMEBOL's club cups the game plays. */
-export const CONTINENTAL_CUPS = ["libertadores", "sul-americana", "recopa"] as const;
+/** CONMEBOL's club cups the game plays, and FIFA's Club World Cup. */
+export const CONTINENTAL_CUPS = ["libertadores", "sul-americana", "recopa", "club-world-cup"] as const;
 export type ContinentalCup = (typeof CONTINENTAL_CUPS)[number];
 
 /**
- * A CONMEBOL cup: `entries[stage]` are the clubs that join at that stage, best seed first, and
+ * A CONMEBOL cup or the Club World Cup: `entries[stage]` are the clubs that join at that stage, best seed first, and
  * `countries` names each club's country ("br", "ar", ...), which the draws keep apart.
  */
 export type ContinentalCompetition = CompetitionBase & { kind: "continental"; cup: ContinentalCup; entries: string[][]; countries: Record<string, string> };
@@ -232,6 +233,8 @@ export type GameState = {
   usualLineups?: Record<string, UsualLineup>;
   /** Countries played result-only, outside the full tier; a game of Brazil alone has none. */
   world?: World;
+  /** The Club World Cup's clubs from countries without a league in the game; a game without the cup, or saved before it, has none. */
+  guests?: Guests;
   /** UEFA's cups, played result-only when all of Europe is in the world; a game without it, or saved before it, has none. */
   europe?: EuropeanCups;
   /** False when the game was started without the estaduais (a new-game option); left out, they are played. */
