@@ -56,43 +56,6 @@
   color: var(--on-yellow);
 }
 
-.seat-duel {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding-right: 6px;
-  font-size: 12.5px;
-}
-
-.seat-duel b {
-  font-stretch: var(--semi);
-  font-weight: 900;
-}
-
-.seat-sc {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin: 0 2px;
-  padding: 1px 8px;
-  border-radius: 7px;
-  background: var(--card);
-  color: var(--ink);
-  font-stretch: var(--wide);
-  font-weight: 900;
-  font-size: 15px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-/* The × is an x-height glyph; lifted so its centre meets the digits' centre. */
-.seat-sc i {
-  translate: 0 -1.5px;
-  font-style: normal;
-  font-size: 11px;
-  color: var(--yellow-d);
-}
-
 /* Focus: the coach in focus full size, his neighbours small and faded at the sides (sized and placed inline). */
 .live-seats.is-focus {
   display: flex;
@@ -105,8 +68,8 @@
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 70px, #000 calc(100% - 70px), transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0, #000 70px, #000 calc(100% - 70px), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
 }
 
 .seat-track {

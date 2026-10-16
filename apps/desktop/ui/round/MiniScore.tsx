@@ -1,14 +1,14 @@
 import type { RoundClub } from "@boleiro/game-client/round/liveRoundOf";
 import { Crest } from "../clubs/Crest.js";
-import "./hotSeat.css";
+import "./miniScore.css";
 
 /** Crest, short name and score of both sides on one slim line. */
 export function MiniScore({ home, away, score }: { home: RoundClub; away: RoundClub; score: { home: number; away: number } }) {
   return (
-    <span className="seat-duel">
+    <span className="mini-score">
       <Crest club={home} size={18} />
       <b>{home.shortName}</b>
-      <span className="seat-sc">
+      <span className="mini-sc">
         <MiniDigit value={score.home} />
         <i>×</i>
         <MiniDigit value={score.away} />
