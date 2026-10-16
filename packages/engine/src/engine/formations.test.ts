@@ -103,4 +103,14 @@ describe("fittingFormation", () => {
     expect(fittingFormation(squad(lines({ lateral: 2, zagueiro: 2, meia: 3, atacante: 3 })))).toBe("4-3-3");
     expect(fittingFormation(squad(lines({ lateral: 2, zagueiro: 3, meia: 3, atacante: 2 })))).toBe("5-3-2");
   });
+
+  it("fits the same players again once their strengths change", () => {
+    const squad = (spareMidfielder: number, spareForward: number): Player[] => [
+      ...eleven({ GK: 1, DEF: 4, MID: 3, ATT: 2 }),
+      { name: "spareMID", group: "MID", strength: spareMidfielder },
+      { name: "spareATT", group: "ATT", strength: spareForward },
+    ];
+    expect(fittingFormation(squad(40, 90))).toBe("4-3-3");
+    expect(fittingFormation(squad(90, 40))).toBe("4-4-2");
+  });
 });
