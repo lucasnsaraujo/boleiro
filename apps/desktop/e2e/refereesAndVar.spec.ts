@@ -36,7 +36,7 @@ test("a live round stands still while VAR checks the coach's match, stamps the d
   const minute = band.getByLabel("Minuto");
   const paused = page.getByRole("button", { name: "Pausar", pressed: true, disabled: false });
   await page.getByRole("button", { name: "4x" }).click();
-  // Goals against the coach and red cards stop the round on the way; it goes on at 4x after each.
+  // Red cards stop the round on the way; it goes on at 4x after each.
   await expect(async () => {
     if (await paused.isVisible()) {
       if (!(await leaveIncident(page))) await page.getByRole("button", { name: "4x" }).click();
