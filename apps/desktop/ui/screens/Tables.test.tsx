@@ -285,3 +285,15 @@ test("the Mundial de Clubes heading names it once, its logo beside the name", as
   const heading = screen.getByRole("heading", { name: /^Mundial de Clubes 2026/ });
   expect(heading.querySelector("img")?.getAttribute("src")).toMatch(/intercontinental-cup/);
 });
+
+test("a Super Mundial semi-final on the bracket is played at MetLife, not at the first club's ground", async () => {
+  const given = await services("flamengo-rj", CLUB_WORLD_CUP_SEASON);
+  const { date } = await given.engine.read(["date"]);
+  const days = Math.round((Date.parse("2029-07-06") - Date.parse(date)) / 86_400_000);
+  await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+  openTables(given);
+  await userEvent.click(await screen.findByRole("tab", { name: "Super Mundial" }));
+  await userEvent.click(within(screen.getByRole("group", { name: "Fases" })).getByRole("button", { name: "Final" }));
+  const bracket = screen.getByRole("group", { name: "Super Mundial, mata-mata" });
+  expect(within(bracket).getAllByText(/Jogo único/).map((line) => line.textContent)).toEqual(expect.arrayContaining([expect.stringMatching(/ · MetLife Stadium$/)]));
+});

@@ -63,7 +63,7 @@ function LegLines({ tie, clubs }: { tie: TieView; clubs: Clubs }) {
   return (
     <div className="bk-legs">
       {tie.legs.map((leg, i) => {
-        const ground = clubs[leg.homeId]?.stadium;
+        const ground = leg.ground ?? clubs[leg.homeId]?.stadium;
         const played = leg.homeGoals !== null && leg.awayGoals !== null;
         return (
           <p key={leg.fixtureId}>

@@ -929,8 +929,8 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
         ) : (
           <>
             <div className="live-stad">
-              <b>{home.stadium}</b>
-              {home.shortName} em casa
+              <b>{match.ground ?? home.stadium}</b>
+              {match.ground ? "Campo neutro" : `${home.shortName} em casa`}
               {(match.officials?.referee || match.officials?.hasVar) && (
                 <div className="live-ref">
                   {match.officials.hasVar && <em>VAR</em>}
@@ -1004,7 +1004,7 @@ const MatchRow = memo(function MatchRow({ match, clubs, flash, alert, isHidden, 
     <li className={match.isHuman ? "live-r human" : "live-r"} hidden={isHidden} aria-label={`${home.shortName} ${match.score.home} x ${match.score.away} ${away.shortName}`}>
       {flash && <i key={flash.count} className="flash" style={{ background: `linear-gradient(90deg, transparent 12%, ${flash.colour} 40%, transparent 95%)` }} />}
       <button type="button" className="live-open" aria-label={`Ficha do jogo: ${home.shortName} x ${away.shortName}`} onClick={() => onOpen(match.fixtureId)} />
-      <span className="std">{home.stadium}</span>
+      <span className="std">{match.ground ?? home.stadium}</span>
       <RowPlate club={home} red={match.reds.home > 0} />
       <Digit value={match.score.home} className={lead("home") ? "sbox lead" : "sbox"} flash={flash?.side === "home" ? flash.colour : undefined} isSettled={!flash} />
       <Digit value={match.score.away} className={lead("away") ? "sbox lead" : "sbox"} flash={flash?.side === "away" ? flash.colour : undefined} isSettled={!flash} />

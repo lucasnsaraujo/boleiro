@@ -45,6 +45,8 @@ test("Flamengo, the 2026 Libertadores champion, finds the Mundial de Clubes on i
   await bar(page).getByRole("link", { name: "Agenda" }).click();
   await page.getByRole("group", { name: "Meses" }).getByRole("button", { name: /^Dezembro/ }).click();
   await expect(page.getByRole("list", { name: "Dezembro" })).toContainText("Mundial de Clubes");
+  // The Derby is in Qatar, at no club's ground.
+  await expect(page.getByRole("region", { name: /^Mundial de Clubes/ })).toContainText("Estádio Ahmad bin Ali");
   await bar(page).getByRole("link", { name: "Tabelas" }).click();
   await page.getByRole("tab", { name: "Mundial de Clubes" }).click();
   await expect(ladder.getByLabel(/Flamengo/)).toHaveClass(/mine/);
@@ -60,7 +62,9 @@ test("Flamengo, the 2026 Libertadores champion, finds the Mundial de Clubes on i
     await expect(sheet.or(play)).toBeVisible({ timeout: 60_000 });
   }
   await sheet.getByRole("button", { name: "Começar a rodada" }).click();
-  await expect(page.locator(".live-list").locator(".live-group", { has: page.getByRole("heading", { name: /Mundial de Clubes/ }) }).locator(".live-r.human")).toBeVisible();
+  const derby = page.locator(".live-list").locator(".live-group", { has: page.getByRole("heading", { name: /Mundial de Clubes/ }) }).locator(".live-r.human");
+  await expect(derby).toBeVisible();
+  await expect(derby).toContainText("Estádio Ahmad bin Ali");
   await playLiveRound(page);
 
   await bar(page).getByRole("link", { name: "Tabelas" }).click();

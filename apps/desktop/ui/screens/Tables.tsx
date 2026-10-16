@@ -2,6 +2,7 @@ import { createContext, use, useEffect, useMemo, useRef, useState, type ReactNod
 import { Link, useNavigate } from "react-router";
 import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
 import type { Competition, Fixture, GameState } from "@boleiro/engine/sim/gameState";
+import { neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
 import { superCupScore, superCupWinner, type LeaguePhaseCup, type SuperCup } from "@boleiro/engine/sim/continental/uefaCups";
 import { useServices } from "../app/ServicesContext.js";
 import { WORLD_FACES, type ClubFace } from "../clubs/clubCatalog.js";
@@ -299,6 +300,7 @@ function nextTieOf(competition: Competition, fixtures: readonly Fixture[], stage
     homeId: next.homeId,
     awayId: next.awayId,
     date: next.date,
+    ground: neutralGround(competition, next),
     firstLeg,
     isTwoLegged: legs.length > 1,
   };
