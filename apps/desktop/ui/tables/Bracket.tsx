@@ -15,6 +15,7 @@ const FINAL_WIDTH = 188;
 const FINAL_HEIGHT = 172;
 const CAPTION_HEIGHT = 22;
 const COLUMN_GAP = 14;
+const CAPTION_SPREAD = 80;
 
 /** With `onOpenMatch`, a tie with a game played opens its latest game's ficha; `mark` is the cup's logo, on the final's medallion. */
 type Props = { name: string; rounds: BracketRound[]; clubs: Clubs; coachClubId: string | null; mark?: string | null; onOpenMatch?: (matchRef: string) => void };
@@ -289,8 +290,9 @@ export function LadderBracket({ name, rounds, clubs, coachClubId, mark, onOpenMa
     for (const { round, left, centreY, width, height } of placed) {
       const top = centreY - height / 2;
       const isSemi = round === challenger;
+      // A round's name may run wider than its card, so its caption spreads over the gaps either side.
       captions.push(
-        <span key={`cap-${round.stage}`} className="bk-cap" style={{ left, width, top: top - CAPTION_HEIGHT }}>
+        <span key={`cap-${round.stage}`} className="bk-cap bk-cap-wide" style={{ left: left - CAPTION_SPREAD / 2, width: width + CAPTION_SPREAD, top: top - CAPTION_HEIGHT }}>
           {round.name}
         </span>,
       );

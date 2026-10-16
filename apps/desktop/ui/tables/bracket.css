@@ -33,6 +33,10 @@
   color: var(--mute);
 }
 
+.bk-cap-wide {
+  white-space: nowrap;
+}
+
 .bk-tie {
   position: absolute;
   padding: 5px 7px;
