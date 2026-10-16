@@ -16,10 +16,10 @@ afterEach(() => {
   for (const close of closers.splice(0)) close();
 });
 
-async function services(coachClubId: string | null = "bahia-ba"): Promise<Services> {
+async function services(coachClubId: string | null = "bahia-ba", seed = 7): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId, careerMode: coachClubId === null } });
+  await engine.apply({ type: "newGame", seed, choices: { coachClubId, careerMode: coachClubId === null } });
   return { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
 }
 
@@ -203,7 +203,7 @@ test("the round stepper shows the table as it stood after an earlier round", asy
 });
 
 test("a played cup tie opens its last game's ficha", async () => {
-  const given = await services();
+  const given = await services("bahia-ba", 8);
   const { date } = await given.engine.read(["date"]);
   const days = Math.round((Date.parse("2026-04-01") - Date.parse(date)) / 86_400_000);
   await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
