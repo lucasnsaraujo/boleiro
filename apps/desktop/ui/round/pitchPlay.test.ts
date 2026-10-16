@@ -122,3 +122,23 @@ test("with real shots to play, the board makes up no chances of its own: every s
   const strikes = script.beats.filter((beat) => beat.kind === "shot");
   expect(strikes.map((beat) => beat.tag)).toEqual(["Everaldo", "Matheuzinho chuta pra fora", "Kayzer"]);
 });
+
+test("a goal and a missed shot in the same minute both play: the miss first, the goal at its minute, at any clock speed", () => {
+  const miss: PitchAction = { kind: "chance", minute: 30, side: "home", playerId: "h10", tag: "Matheuzinho chuta pra fora", outcome: "wide", setPiece: null };
+  const goal: PitchAction = { kind: "goal", minute: 30, side: "away", playerId: "a9", tag: "Kayzer", setPiece: null };
+  for (const ms of [660, 110]) {
+    const script = playScript([goal, miss, halfTime], "fixture-11", ms, { isMakingUpChances: false });
+    const outcomes = script.beats.filter((beat) => beat.kind === "wide" || beat.kind === "goal");
+    expect(outcomes.map((beat) => beat.kind)).toEqual(["wide", "goal"]);
+    expect(outcomes[0]?.t).toBeLessThan(30 * ms);
+    expect(outcomes[1]?.t).toBe(30 * ms);
+    // Away attacks the left goal in the first half.
+    expect(ballAt(script, 30 * ms).x).toBeLessThanOrEqual(0);
+  }
+});
+
+test("an early goal in the first half gets its kick-off from the centre though nothing else happens before the break", () => {
+  const script = playScript([homeGoal, halfTime], "fixture-12", 660, { isMakingUpChances: false });
+  const restart = script.keys.find((key) => key.shape === "kickoff" && key.t > 10 * 660);
+  expect(restart?.t).toBeLessThan(45 * 660);
+});

@@ -136,6 +136,10 @@ export function playScript(actions: readonly PitchAction[], fixtureId: string, m
     const after = (key: BallKey) => {
       if (key.t < until) push(key);
     };
+    // The run-up never reaches the strike itself, however little room the action before left it.
+    const before = (key: BallKey) => {
+      if (key.t < at) push(key);
+    };
     const dir = attackDirection(side, minuteAt(at));
     const goalX = dir > 0 ? 1 : 0;
     const toX = (along: number) => (dir > 0 ? along : 1 - along);
@@ -145,7 +149,7 @@ export function playScript(actions: readonly PitchAction[], fixtureId: string, m
     const dead = setPiece ? deadBallSpot(setPiece) : null;
     const shootFrom = dead ?? (isCross ? { along: 0.92 + random() * 0.03, y: 0.44 + random() * 0.12 } : { along: 0.8 + random() * 0.07, y: 0.3 + random() * 0.4 });
     const prev = last();
-    push({ t: from + ms(80), x: prev.x, y: prev.y, h: 0, kind: "roll", side });
+    before({ t: from + ms(80), x: prev.x, y: prev.y, h: 0, kind: "roll", side });
     const buildEnd = dead ? launch - ms(DEAD_BALL_MS) - ms(120) : isCross ? launch - ms(520) : launch - ms(90);
     const startAlong = dir > 0 ? prev.x : 1 - prev.x;
     const passes = Math.max(2, Math.round((buildEnd - from) / ms(560)));
@@ -155,14 +159,14 @@ export function playScript(actions: readonly PitchAction[], fixtureId: string, m
       const u = i / passes;
       const along = lerp(startAlong, buildTo.along, u * u * (3 - 2 * u));
       const y = isCross ? lerp(prev.y, wing, u) + (random() - 0.5) * 0.08 * (1 - u) : lerp(prev.y, buildTo.y, u) + (random() - 0.5) * 0.22 * (1 - u);
-      push({ t: lerp(from + ms(80), buildEnd, u), x: toX(along), y: clamp(y, 0.06, 0.94), h: 0, kind: "roll", side });
+      before({ t: lerp(from + ms(80), buildEnd, u), x: toX(along), y: clamp(y, 0.06, 0.94), h: 0, kind: "roll", side });
     }
     if (dead) {
       // The ball is set down and the taker stands over it: still until the strike.
-      push({ t: launch - ms(DEAD_BALL_MS), x: toX(dead.along), y: dead.y, h: 0, kind: "roll", side, shape: "deadBall" });
-      push({ t: launch, x: toX(dead.along), y: dead.y, h: 0, kind: "roll", side, shape: "deadBall" });
-    } else if (isCross) push({ t: launch - ms(40), x: toX(shootFrom.along), y: shootFrom.y, h: 0.012, kind: "air", side });
-    else push({ t: launch, x: toX(shootFrom.along + 0.012), y: shootFrom.y, h: 0, kind: "roll", side });
+      before({ t: launch - ms(DEAD_BALL_MS), x: toX(dead.along), y: dead.y, h: 0, kind: "roll", side, shape: "deadBall" });
+      before({ t: launch, x: toX(dead.along), y: dead.y, h: 0, kind: "roll", side, shape: "deadBall" });
+    } else if (isCross) before({ t: launch - ms(40), x: toX(shootFrom.along), y: shootFrom.y, h: 0.012, kind: "air", side });
+    else before({ t: launch, x: toX(shootFrom.along + 0.012), y: shootFrom.y, h: 0, kind: "roll", side });
     const shotY = outcome === "wide" ? 0.5 + (random() < 0.5 ? -1 : 1) * (POST + 0.02 + random() * 0.04) : 0.5 + (random() - 0.5) * POST * 1.3;
     // Free kicks and corners curl in over the wall; everything else is struck low and hard.
     const strikeKind: BallKind = setPiece === "freeKick" || setPiece === "corner" ? "air" : "shot";
@@ -209,18 +213,22 @@ export function playScript(actions: readonly PitchAction[], fixtureId: string, m
     push({ t: at, x: 0.5, y: 0.5, h: 0, kind: "roll", side, shape: "kickoff" });
   }
 
-  const anchors: Anchor[] = actions
-    .flatMap((action): Anchor[] => {
-      const t = action.minute * msPerMinute;
-      if (action.kind === "halfTime") return [{ t, kind: "halfTime" }];
-      if (action.kind === "goal") return [{ t, kind: "strike", side: action.side, strike: { outcome: "goal", tag: action.tag, playerId: action.playerId, setPiece: action.setPiece } }];
-      if (action.kind === "chance") {
-        const outcome = action.outcome === "saved" ? "save" : "wide";
-        return [{ t, kind: "strike", side: action.side, strike: { outcome, tag: action.tag, playerId: action.playerId, setPiece: action.setPiece } }];
-      }
-      return [];
-    })
-    .sort((a, b) => a.t - b.t);
+  // Strikes in the same minute share its second half: the misses first, a goal right on the minute the round
+  // celebrates it. Never earlier, so minute 46's strikes still come after the change of ends.
+  const strikes = actions.flatMap((action): { minute: number; side: Side; strike: Strike }[] => {
+    if (action.kind !== "goal" && action.kind !== "chance") return [];
+    const outcome = action.kind === "goal" ? "goal" : action.outcome === "saved" ? "save" : "wide";
+    return [{ minute: action.minute, side: action.side, strike: { outcome, tag: action.tag, playerId: action.playerId, setPiece: action.setPiece } }];
+  });
+  const isGoal = (strike: Strike) => strike.outcome === "goal";
+  const strikeAnchors = [...new Set(strikes.map((s) => s.minute))].flatMap((minute) => {
+    const inMinute = strikes.filter((s) => s.minute === minute).sort((a, b) => Number(isGoal(a.strike)) - Number(isGoal(b.strike)));
+    return inMinute.map((s, k): Anchor => ({ t: (minute - (inMinute.length - 1 - k) / (2 * inMinute.length)) * msPerMinute, kind: "strike", side: s.side, strike: s.strike }));
+  });
+  const anchors: Anchor[] = [
+    ...strikeAnchors,
+    ...actions.flatMap((action): Anchor[] => (action.kind === "halfTime" ? [{ t: action.minute * msPerMinute, kind: "halfTime" }] : [])),
+  ].sort((a, b) => a.t - b.t || Number(a.kind === "halfTime") - Number(b.kind === "halfTime"));
 
   const secondHalfAt = SECOND_HALF_MINUTE * msPerMinute;
   let cursor = ms(KICKOFF_MS);
@@ -240,8 +248,8 @@ export function playScript(actions: readonly PitchAction[], fixtureId: string, m
     const start = Math.min(Math.max(cursor, anchor.t - ms(ATTACK_MS)), anchor.t - ms(MIN_ATTACK_MS));
     fill(cursor, start);
     attack(anchor.side, Math.max(start, last().t), anchor.t, anchor.strike, until);
-    // A strike just before half-time leaves the restart to the second half's kick-off.
-    if (anchor.strike.outcome !== "goal" || next?.kind === "halfTime") {
+    // A goal too close to half-time for a restart leaves it to the second half's kick-off.
+    if (anchor.strike.outcome !== "goal" || (next?.kind === "halfTime" && anchor.t + ms(CELEBRATE_MS + KICKOFF_MS) > next.t)) {
       cursor = Math.min(last().t + ms(200), until);
       return;
     }
