@@ -14,6 +14,7 @@ const NOUNS: Record<CoachRequest["kind"], { noun: string; feminine: boolean }> =
   renew: { noun: "Renovação", feminine: true },
   loanIn: { noun: "Empréstimo", feminine: false },
   loanOut: { noun: "Empréstimo", feminine: false },
+  recall: { noun: "Volta antecipada", feminine: true },
 };
 
 /** "Venda de Zé" */

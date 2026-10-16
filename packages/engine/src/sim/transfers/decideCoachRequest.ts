@@ -177,6 +177,13 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       const until = loanUntil(state.date);
       return approve(state, request, { playerId: player.id, kind: "loan", toClubId: coachClubId, fee: 0, loan: { fromClubId: player.clubId, until, lenderWageShare: LENDER_WAGE_SHARE, buyOption } });
     }
+    case "recall": {
+      if (loan?.fromClubId !== coachClubId) return refuse(state, request, "notAtClub");
+      // guess: a loan deal lets the lender call the player back, as Brazilian loans usually do; he must be registered again, so only in a window.
+      if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
+      if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
+      return approve(state, request, { playerId: player.id, kind: "loanReturn", toClubId: coachClubId, fee: 0 });
+    }
     case "loanOut": {
       if (!own || loan) return refuse(state, request, "notAtClub");
       if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");

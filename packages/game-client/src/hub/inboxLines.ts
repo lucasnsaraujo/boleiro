@@ -25,6 +25,7 @@ const REQUEST_NOUNS: Record<CoachRequest["kind"], string> = {
   renew: "a renovação",
   loanIn: "o empréstimo",
   loanOut: "o empréstimo",
+  recall: "a volta antecipada",
 };
 
 const REFUSALS: Record<string, string> = {

@@ -71,6 +71,12 @@ describe("the requests the coach can make for a player", () => {
     expect(requestOptions({ ...state, market: { ...state.market, loans: { [loanee.id]: { ...clause, buyOption: null } } } }, loanee.id)).toEqual([]);
   });
 
+  test("a player the coach lent out can be called back", () => {
+    const lent = { ...firstOf(COACH), clubId: "vitoria-ba" };
+    const loans = { [lent.id]: { fromClubId: COACH, until: "2026-06-30", lenderWageShare: 0.5, buyOption: null } };
+    expect(requestOptions({ ...withPlayer(game, lent), market: { ...game.market, loans } }, lent.id)).toEqual([{ label: "Chamar de volta", request: { kind: "recall", playerId: lent.id } }]);
+  });
+
   test("an own player who signed a pre-contract elsewhere can't be renewed", () => {
     const leaving = { ...firstOf(COACH), age: 30 };
     const state = { ...withPlayer(game, leaving), market: { ...game.market, preContracts: { [leaving.id]: "palmeiras-sp" } } };

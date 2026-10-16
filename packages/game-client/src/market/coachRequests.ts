@@ -46,6 +46,7 @@ export function requestOptions(state: RequestState, playerId: string, years = DE
   const player = state.players[playerId];
   if (!player) return [];
   const loan = market.loans[playerId];
+  if (loan?.fromClubId === coachClubId) return [{ label: "Chamar de volta", request: { kind: "recall", playerId } }];
   // A loanee here can only be bought, through his purchase clause.
   if (loan) return player.clubId === coachClubId && loan.buyOption !== null ? [{ label: "Comprar", request: { kind: "sign", playerId } }] : [];
   if (player.clubId === coachClubId) {

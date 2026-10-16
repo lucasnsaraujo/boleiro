@@ -163,6 +163,18 @@ describe("loans", () => {
     expect(back.state.market.loans[youngster.id]).toBeUndefined();
   });
 
+  it("bring a lent player back early when the coach recalls him inside a window, and not outside one", () => {
+    const youngster = { ...(squadOf(windowEve, COACH).sort((a, b) => a.strength - b.strength)[0] ?? serieBStandout(windowEve)), age: 19 };
+    const lent = ask(withPlayer(windowEve, youngster), { kind: "loanOut", playerId: youngster.id }).state;
+    const borrower = lent.players[youngster.id]?.clubId ?? "";
+    expect(ask({ ...lent, date: "2026-04-10" }, { kind: "recall", playerId: youngster.id }).decision).toMatchObject({ approved: false, reason: "windowClosed" });
+    const { state, decision, events } = ask(lent, { kind: "recall", playerId: youngster.id });
+    expect(decision.approved).toBe(true);
+    expect(state.players[youngster.id]?.clubId).toBe(COACH);
+    expect(state.market.loans[youngster.id]).toBeUndefined();
+    expect(events).toContainEqual(expect.objectContaining({ type: "playerMoved", kind: "loanReturn", fromClubId: borrower, toClubId: COACH, fee: 0 }));
+  });
+
   it("borrow a reserve from a bigger club with a purchase clause the coach can trigger", () => {
     const smallCoach = rich({ ...windowEve, coachClubId: "sport-pe" });
     const lender = Object.values(smallCoach.clubs).find((c) => c.division === "A" && c.id !== "sport-pe")?.id ?? "";

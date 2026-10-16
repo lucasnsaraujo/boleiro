@@ -4,7 +4,8 @@
  * with `fee` it is an offer of that many BRL to his club, and with `wage` the monthly wage offered him.
  * `payClause` pays a player's release clause to his club, which can't refuse it; `wage` is the wage offered him.
  * `sell` puts one of his players up for the best Brazilian offer. `renew` extends a contract by `years`.
- * `loanIn` borrows a player from a bigger club; `loanOut` lends a young player to a lower division.
+ * `loanIn` borrows a player from a bigger club; `loanOut` lends a young player to a lower division;
+ * `recall` calls back a player the coach lent out before his loan ends.
  */
 export type CoachRequest =
   | { kind: "sign"; playerId: string; fee?: number; wage?: number }
@@ -12,4 +13,5 @@ export type CoachRequest =
   | { kind: "sell"; playerId: string }
   | { kind: "renew"; playerId: string; years: number }
   | { kind: "loanIn"; playerId: string }
-  | { kind: "loanOut"; playerId: string };
+  | { kind: "loanOut"; playerId: string }
+  | { kind: "recall"; playerId: string };
