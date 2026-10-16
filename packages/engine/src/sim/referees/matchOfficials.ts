@@ -32,9 +32,11 @@ const SERIE_D_VAR_TIES = 8;
 // guess: a competition is refereed by name only when the data has five of its referees or more; fewer
 // would send the same few to every match (the crawl found one Série D referee and no Série C one).
 const MIN_ROSTER = 5;
-// The top leagues abroad the referee data covers all play with VAR. guess: a league abroad without
-// referee data (the lower levels, the smaller countries) is left without VAR, as the data says nothing.
-const EUROPE = new Set(["gb-eng", "es", "it", "de", "fr", "pt", "nl"]);
+// The top leagues abroad the referee data covers all play with VAR, and so do the Saudi Pro League,
+// MLS and Liga MX, though the data names none of their referees. guess: those three step in as
+// Europe's do, under the same IFAB protocol; a league abroad without referee data otherwise (the lower
+// levels, the smaller countries) is left without VAR, as the data says nothing.
+const EUROPE = new Set(["gb-eng", "es", "it", "de", "fr", "pt", "nl", "sa", "us", "mx"]);
 
 /** The referee roster's key for a competition: "br-A", "br-cup", "br-state-SP", "libertadores", "gb-eng-0". */
 function rosterKeyOf(competition: Competition): string {
