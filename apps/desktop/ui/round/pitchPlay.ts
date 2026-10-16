@@ -78,8 +78,11 @@ function attackDirection(side: Side, minute: number): 1 | -1 {
 type Strike = { outcome: "goal" | "save" | "wide"; tag: string | null; playerId: string | null; setPiece: SetPiece | null };
 type Anchor = { t: number; kind: "strike"; side: Side; strike: Strike } | { t: number; kind: "halfTime" };
 
-/** A match's ball and its beats, laid out over presentation milliseconds at the clock's current speed. */
-export function playScript(actions: readonly PitchAction[], fixtureId: string, msPerMinute: number): Script {
+/**
+ * A match's ball and its beats, laid out over presentation milliseconds at the clock's current speed. Without
+ * the players' real shots (`isMakingUpChances`), the board makes up chances of its own between the real actions.
+ */
+export function playScript(actions: readonly PitchAction[], fixtureId: string, msPerMinute: number, { isMakingUpChances = true } = {}): Script {
   const random = mulberry(hashOf(fixtureId));
   const pace = clamp(msPerMinute / ONE_X_MS_PER_MINUTE, PACE_FLOOR, 1);
   const ms = (oneX: number) => oneX * pace;
@@ -186,7 +189,7 @@ export function playScript(actions: readonly PitchAction[], fixtureId: string, m
   function fill(from: number, to: number) {
     let t = from;
     while (to - t > ms(400)) {
-      const isChanceDue = t - lastChanceAt > ms(CHANCE_EVERY_MS) * (0.7 + random() * 0.6) && to - t > ms(ATTACK_MS) + ms(600);
+      const isChanceDue = isMakingUpChances && t - lastChanceAt > ms(CHANCE_EVERY_MS) * (0.7 + random() * 0.6) && to - t > ms(ATTACK_MS) + ms(600);
       if (isChanceDue) {
         const side = last().side ?? "home";
         const end = t + ms(ATTACK_MS) * (0.8 + random() * 0.3);

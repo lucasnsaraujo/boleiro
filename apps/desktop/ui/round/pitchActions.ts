@@ -1,4 +1,5 @@
 import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
+import { missedShotsOf } from "@boleiro/engine/sim/live/matchPlay";
 import type { MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import type { RoundMatch, Side } from "@boleiro/game-client/round/liveRoundOf";
 
@@ -55,14 +56,28 @@ function actionOf(event: MatchEvent, sideOf: (clubId: string) => Side, nameOf: (
 }
 
 /**
- * What the live pitch plays of a match: every real event of its ninety minutes as a pitch action, in the
- * timeline's order. The passes and the build-up around them are the board's own presentation.
+ * What the live pitch plays of a match: every real event of its ninety minutes as a pitch action and, when the
+ * match has its players' play, every shot that doesn't go in, all in minute order. The passes and the build-up
+ * around them are the board's own presentation.
  */
 export function pitchActionsOf(match: RoundMatch, names: Readonly<Record<string, string>>): PitchAction[] {
   const sideOf = (clubId: string): Side => (clubId === match.homeId ? "home" : "away");
   const nameOf = (playerId: string) => names[playerId] ?? "Um jogador";
-  return match.events.flatMap((event) => {
+  const events = match.events.flatMap((event) => {
     const action = actionOf(event, sideOf, nameOf);
     return action ? [action] : [];
   });
+  const shots = (match.play ? missedShotsOf(match.play, match.events) : []).map(
+    ({ minute, clubId, playerId, isOnTarget }): PitchAction => ({
+      kind: "chance",
+      minute,
+      side: sideOf(clubId),
+      playerId,
+      tag: isOnTarget ? `${nameOf(playerId)} chuta, o goleiro defende` : `${nameOf(playerId)} chuta pra fora`,
+      outcome: isOnTarget ? "saved" : "wide",
+      setPiece: null,
+    }),
+  );
+  // Minute 45 is first-half stoppage time: its shots come before the half-time whistle.
+  return [...events, ...shots].sort((a, b) => a.minute - b.minute || Number(a.kind === "halfTime") - Number(b.kind === "halfTime"));
 }

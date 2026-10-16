@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import type { MatchPlay } from "@boleiro/engine/sim/live/matchPlay";
 import type { RoundMatch } from "@boleiro/game-client/round/liveRoundOf";
 import { pitchActionsOf } from "./pitchActions.js";
 
@@ -56,4 +57,22 @@ test("the shootout after full time and the squad overruling the coach are not pl
     ],
   };
   expect(pitchActionsOf(shootout, names)).toEqual([]);
+});
+
+test("with the match's play, every shot that doesn't go in is a chance at its minute under its player's name, saved when on target", () => {
+  const play: MatchPlay = {
+    starters: ["b9", "v10"],
+    players: {
+      b9: { clubId: "bahia", group: "ATT", form: 0, shots: [{ minute: 12, isOnTarget: true }], tackles: [], fouls: [], passes: 20, misplaced: 2 },
+      v10: { clubId: "vit", group: "MID", form: -1, shots: [{ minute: 8, isOnTarget: false }, { minute: 45, isOnTarget: false }], tackles: [], fouls: [], passes: 30, misplaced: 9 },
+    },
+  };
+  const played: RoundMatch = { ...match, events: [{ type: "goal", minute: 10, clubId: "bahia", playerId: "b9" }, { type: "halfTime", minute: 45 }], play };
+  expect(pitchActionsOf(played, names)).toEqual([
+    { kind: "chance", minute: 8, side: "home", playerId: "v10", tag: "Matheuzinho chuta pra fora", outcome: "wide", setPiece: null },
+    { kind: "goal", minute: 10, side: "away", playerId: "b9", tag: "Everaldo", setPiece: null },
+    { kind: "chance", minute: 12, side: "away", playerId: "b9", tag: "Everaldo chuta, o goleiro defende", outcome: "saved", setPiece: null },
+    { kind: "chance", minute: 45, side: "home", playerId: "v10", tag: "Matheuzinho chuta pra fora", outcome: "wide", setPiece: null },
+    { kind: "halfTime", minute: 45 },
+  ]);
 });

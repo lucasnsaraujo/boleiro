@@ -169,8 +169,10 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
   const svgId = `lp-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   // The round hands the board a fresh copy of the match every minute; its timeline only changes with the match.
-  const actions = useMemo(() => pitchActionsOf(match, names), [match.events, match.homeId, names]);
-  const script = useMemo(() => playScript(actions, match.fixtureId, msPerMinute), [actions, match.fixtureId, msPerMinute]);
+  const actions = useMemo(() => pitchActionsOf(match, names), [match.events, match.play, match.homeId, names]);
+  // A match with its players' play has real shots to show; one without gets made-up chances between its events.
+  const hasPlay = match.play !== undefined;
+  const script = useMemo(() => playScript(actions, match.fixtureId, msPerMinute, { isMakingUpChances: !hasPlay }), [actions, match.fixtureId, msPerMinute, hasPlay]);
   const home = clubs[match.homeId];
   const away = clubs[match.awayId];
   const kits = useMemo(() => (home && away ? kitsOf(home, away) : null), [home, away]);

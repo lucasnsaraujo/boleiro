@@ -115,3 +115,10 @@ test("a goal in first-half stoppage time is celebrated before the ends change fo
   expect(celebration?.t).toBeLessThan(45.5 * ms);
   expect(script.secondHalfAt).toBe(45.5 * ms);
 });
+
+test("with real shots to play, the board makes up no chances of its own: every strike carries a name", () => {
+  const shot: PitchAction = { kind: "chance", minute: 30, side: "home", playerId: "h10", tag: "Matheuzinho chuta pra fora", outcome: "wide", setPiece: null };
+  const script = playScript([homeGoal, shot, halfTime, awayGoal], "fixture-10", MS, { isMakingUpChances: false });
+  const strikes = script.beats.filter((beat) => beat.kind === "shot");
+  expect(strikes.map((beat) => beat.tag)).toEqual(["Everaldo", "Matheuzinho chuta pra fora", "Kayzer"]);
+});
