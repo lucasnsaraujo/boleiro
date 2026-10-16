@@ -1,4 +1,4 @@
-import type { IsoDate } from "../gameState.js";
+import type { IsoDate, LeagueFormatId } from "../gameState.js";
 import type { CupFinal, LeaguePlace } from "./continentalPlaces.js";
 import type { ResultOnlyCup } from "./resultOnlyCup.js";
 import type { UefaAllocation } from "./uefaPlaces.js";
@@ -12,6 +12,8 @@ type TableLevel = {
   promoted: number;
   /** Bottom clubs going down a level; the level below promotes as many, and the bottom level relegates none. */
   relegated: number;
+  /** The real format it plays once in the full tier; left out, the straight round robin it plays result-only. */
+  format?: LeagueFormatId;
 };
 
 /** A country the result-only tier plays: its league pyramid and how it qualifies for the continent. */

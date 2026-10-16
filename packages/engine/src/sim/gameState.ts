@@ -62,8 +62,8 @@ export type KnockoutStage = {
 
 export type Stage = GroupStage | KnockoutStage;
 
-/** Brazil's series, and the straight round robin a league abroad plays in the full tier. */
-export type LeagueFormatId = `serie-${Lowercase<Division>}` | "round-robin";
+/** Brazil's series, the straight round robin a league abroad plays in the full tier, and the real formats of MLS and Liga MX. */
+export type LeagueFormatId = `serie-${Lowercase<Division>}` | "round-robin" | "mls" | "liga-mx";
 
 type CompetitionBase = {
   id: string;

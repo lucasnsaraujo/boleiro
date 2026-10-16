@@ -13,26 +13,28 @@ import type { CountryStructure } from "./world/world.js";
 import { gameScales, REALISTA, type Formats } from "./formats.js";
 
 /**
- * A country's leagues in the full tier, one per level of its pyramid: a round robin of the clubs at
- * that level, its rounds on the unified grid's first days.
+ * A country's leagues in the full tier, one per level of its pyramid in the level's real format (a
+ * round robin when it has none), its stages on the unified grid's days from the first.
  */
 function leaguesAbroad(country: CountryStructure, clubs: Record<string, Club>, season: number, calendar: SeasonCalendar, random: () => number): LeagueCompetition[] {
   const grid = calendar.leagueGrid;
   if (!grid) throw new Error(`${country.id}: a league abroad needs the unified calendar`);
   return country.levels.map((level, index) => {
     const members = Object.values(clubs).filter((club) => club.abroad?.country === country.id && club.abroad.level === index).map((club) => club.id).sort();
-    const [rounds = 0] = LEAGUE_FORMATS["round-robin"].stageDateCounts(members.length, level.legs);
+    const format = level.format ?? "round-robin";
+    let offset = 0;
+    const stageDates = LEAGUE_FORMATS[format].stageDateCounts(members.length, level.legs).map((count) => grid.slice(offset, (offset += count)));
     const clubIds = shuffle(members, random);
     return {
       id: `${country.id}-${index + 1}-${season}`,
       kind: "league",
-      format: "round-robin",
+      format,
       division: null,
       abroad: { country: country.id, level: index, name: level.name, promoted: index > 0 ? level.promoted : 0, relegated: level.relegated },
       season,
       clubIds,
       stages: [],
-      stageDates: [grid.slice(0, rounds)],
+      stageDates,
       drawOrder: shuffle(clubIds, random),
       ...(level.legs === 1 ? { legs: 1 as const } : {}),
     };

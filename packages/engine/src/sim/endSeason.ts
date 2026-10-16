@@ -5,7 +5,7 @@ import { driftWagesToCap } from "./finances/driftWagesToCap.js";
 import { renewFinances } from "./finances/renewFinances.js";
 import { nationalRanking, type Qualification } from "./copaDoBrasilEntrants.js";
 import type { GameState, LeagueCompetition } from "./gameState.js";
-import { LEAGUE_FORMATS, type LeagueOutcome } from "./leagueFormats.js";
+import { finalOrderOf, LEAGUE_FORMATS, type LeagueOutcome } from "./leagueFormats.js";
 import { serieDQualifiers } from "./serieDQualifiers.js";
 import { standings } from "./standings.js";
 import { startSeason } from "./startSeason.js";
@@ -81,7 +81,9 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
   const random = randomStream(state.rngState);
   const gridRounds = mostRounds(
     Object.values(state.world ?? {}).flatMap(({ structure, leagues, isFullTier }) =>
-      isFullTier ? structure.levels.map((level, i) => ({ clubCount: Object.values(clubs).filter((club) => club.abroad?.country === structure.id && club.abroad.level === i).length, legs: level.legs })) : leagues.map((league) => ({ clubCount: league.clubIds.length, legs: league.legs })),
+      isFullTier
+        ? structure.levels.map((level, i) => ({ clubCount: Object.values(clubs).filter((club) => club.abroad?.country === structure.id && club.abroad.level === i).length, legs: level.legs, ...(level.format ? { format: level.format } : {}) }))
+        : leagues.map((league) => ({ clubCount: league.clubIds.length, legs: league.legs })),
     ),
   );
   const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false, state.economy.continentalStages !== undefined, formatsOf(state), gridRounds, abroad.map(({ country }) => country.structure));
@@ -107,7 +109,7 @@ function tablesAbroad(state: GameState): { country: Country; tables: string[][] 
     if (!country.isFullTier) return [];
     const tables = country.structure.levels.map((_, level) => {
       const league = Object.values(state.competitions).find((c) => c.kind === "league" && c.season === state.season && c.abroad?.country === country.structure.id && c.abroad.level === level);
-      return league ? standings(league.clubIds, fixturesOf(state, league.id), league.drawOrder).map((row) => row.clubId) : [];
+      return league?.kind === "league" ? finalOrderOf(league, fixturesOf(state, league.id)) : [];
     });
     return [{ country, tables }];
   });

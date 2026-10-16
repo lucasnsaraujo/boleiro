@@ -15,12 +15,14 @@ export type LeagueOutcome = {
 export type StageShape = Omit<GroupStage, "dates"> | Omit<KnockoutStage, "dates">;
 
 export type LeagueFormat = {
-  /** `legs` is how often the game's formats let a round robin meet; only a straight table reads it. */
+  /** `legs` is how often the game's formats let a round robin meet: a straight table's, MLS's conferences, Liga MX's liguilla ties. */
   stageDateCounts: (clubCount: number, legs: 1 | 2) => number[];
   /** Clubs playing each stage. */
   stageSizes: (clubCount: number) => number[];
   nextStage: (competition: LeagueCompetition, fixtures: readonly Fixture[], clubStates: Record<string, State>) => StageShape;
   outcome: (competition: LeagueCompetition, fixtures: readonly Fixture[]) => LeagueOutcome;
+  /** The season's final order, champion first, when it is not the table of every match (a league with play-offs). */
+  finalOrder?: (competition: LeagueCompetition, fixtures: readonly Fixture[]) => string[];
 };
 
 const stageOf = (fixtures: readonly Fixture[], index: number) => fixtures.filter((f) => f.stage === index);
@@ -183,11 +185,117 @@ const roundRobin: LeagueFormat = {
   },
 };
 
+
+// MLS 2026: 30 clubs in an Eastern and a Western Conference of 15, the Supporters' Shield to the best
+// record, conference play-offs to the MLS Cup at the finalist with more points (MLS, https://www.mlssoccer.com/competition/).
+// The game plays it shorter: each conference a double round robin (28 games, against the real 34 with
+// some across conferences), then its top eight in single-match quarter-finals (1st hosts 8th), semi-finals
+// and final, without MLS's wild-card games and best-of-three first round. The conferences meet twice
+// whatever the game's formats, as MLS's result-only round robin of all 30 already meets once.
+const MLS_EAST = new Set([
+  "tm-51663", "tm-78435", "tm-432", "tm-51772", "tm-813", "tm-2440", "tm-69261", "tm-4078",
+  "tm-63966", "tm-626", "tm-40058", "tm-623", "tm-45604", "tm-25467", "tm-11141",
+]);
+const PLAYOFF_PLACES = 8;
+const MLS_STAGES = { conferences: 0, final: 4 } as const;
+
+const conferencesOf = (clubIds: readonly string[]) => [clubIds.filter((id) => MLS_EAST.has(id)), clubIds.filter((id) => !MLS_EAST.has(id))];
+
+/** Each conference's table after its round robin, East first. */
+function conferenceTables(competition: LeagueCompetition, fixtures: readonly Fixture[]): string[][] {
+  const played = stageOf(fixtures, MLS_STAGES.conferences);
+  return groupStageAt(competition, MLS_STAGES.conferences).groups.map((group) => table(competition, group, played));
+}
+
+const placeIn = (order: readonly string[]) => (a: string, b: string) => order.indexOf(a) - order.indexOf(b);
+
+/** The round's winners paired in bracket order (first tie's winner against the last's), the better seed first. */
+function bracketTies(winners: readonly string[], seeds: readonly string[]): [string, string][] {
+  const half = winners.length / 2;
+  return winners.slice(0, half).map((id, i): [string, string] => {
+    const pair = [id, winners[winners.length - 1 - i] ?? ""].sort(placeIn(seeds));
+    return [pair[0] ?? "", pair[1] ?? ""];
+  });
+}
+
+const mls: LeagueFormat = {
+  stageDateCounts: (clubCount) => [roundsOf(Math.ceil(clubCount / 2), 2), 1, 1, 1, 1],
+  stageSizes: (clubCount) => [clubCount, 2 * PLAYOFF_PLACES, PLAYOFF_PLACES, 4, 2],
+  nextStage: (competition, fixtures) => {
+    const index = competition.stages.length;
+    if (index === MLS_STAGES.conferences) return { kind: "groups", groups: conferencesOf(competition.clubIds), legs: 2 };
+    const conferences = conferenceTables(competition, fixtures);
+    if (index === 1) return { kind: "knockout", ties: conferences.flatMap((order) => seededTies(order.slice(0, PLAYOFF_PLACES))) };
+    const winners = tieResults(knockoutStageAt(competition, index - 1), stageOf(fixtures, index - 1)).map((r) => r.winnerId);
+    if (index === MLS_STAGES.final) {
+      const overall = table(competition, competition.clubIds, stageOf(fixtures, MLS_STAGES.conferences));
+      const [first = "", second = ""] = [...winners].sort(placeIn(overall));
+      return { kind: "knockout", ties: [[first, second]] };
+    }
+    const perConference = winners.length / 2;
+    return {
+      kind: "knockout",
+      ties: conferences.flatMap((order, c) => bracketTies(winners.slice(c * perConference, (c + 1) * perConference), order)),
+    };
+  },
+  outcome: (competition, fixtures) => ({ championId: knockoutWinner(competition, fixtures, MLS_STAGES.final), promotedIds: [], relegatedIds: [] }),
+  finalOrder: (competition, fixtures) => {
+    const champion = knockoutWinner(competition, fixtures, MLS_STAGES.final);
+    const overall = table(competition, competition.clubIds, stageOf(fixtures, MLS_STAGES.conferences));
+    return [champion, ...overall.filter((id) => id !== champion)];
+  },
+};
+
+// Liga MX 2026: 18 clubs play two tournaments a year, the Clausura from January and the Apertura from
+// July, each a single round robin and a liguilla of two-leg ties to its own champion; relegation is
+// suspended (Liga MX, https://ligamx.net/cancha/reglamento). The game plays the liguilla of the top eight
+// (1st against 8th, reseeded semi-finals), without the play-in for 7th to 10th; ties level on aggregate
+// go to penalties, where the real liguilla sends the better seed through. It files the Apertura's
+// champion as the season's. With the league met once, each liguilla tie is one match.
+const LIGA_MX_TOURNAMENT = 4;
+
+function ligaMxStage(competition: LeagueCompetition, fixtures: readonly Fixture[]): StageShape {
+  const index = competition.stages.length;
+  const tournament = index < LIGA_MX_TOURNAMENT ? 0 : LIGA_MX_TOURNAMENT;
+  const round = index - tournament;
+  if (round === 0) {
+    const order = tournament === 0 ? competition.clubIds : [...competition.clubIds].reverse();
+    return { kind: "groups", groups: [order], legs: 1 };
+  }
+  const seeds = table(competition, competition.clubIds, stageOf(fixtures, tournament));
+  if (round === 1) return { kind: "knockout", ties: seededTies(seeds.slice(0, PLAYOFF_PLACES)) };
+  const winners = tieResults(knockoutStageAt(competition, index - 1), stageOf(fixtures, index - 1)).map((r) => r.winnerId);
+  return { kind: "knockout", ties: seededTies([...winners].sort(placeIn(seeds))) };
+}
+
+const ligaMx: LeagueFormat = {
+  stageDateCounts: (clubCount, legs) => {
+    const tournament = roundsOf(clubCount, 1);
+    return [tournament, legs, legs, legs, tournament, legs, legs, legs];
+  },
+  stageSizes: (clubCount) => [clubCount, PLAYOFF_PLACES, 4, 2, clubCount, PLAYOFF_PLACES, 4, 2],
+  nextStage: ligaMxStage,
+  outcome: (competition, fixtures) => ({ championId: knockoutWinner(competition, fixtures, 2 * LIGA_MX_TOURNAMENT - 1), promotedIds: [], relegatedIds: [] }),
+  finalOrder: (competition, fixtures) => {
+    const champion = knockoutWinner(competition, fixtures, 2 * LIGA_MX_TOURNAMENT - 1);
+    const tournaments = fixtures.filter((f) => f.stage === 0 || f.stage === LIGA_MX_TOURNAMENT);
+    return [champion, ...table(competition, competition.clubIds, tournaments).filter((id) => id !== champion)];
+  },
+};
+
 export const LEAGUE_FORMATS: Record<LeagueFormatId, LeagueFormat> = {
   "round-robin": roundRobin,
   "serie-a": singleTable(4, 0),
   "serie-b": singleTable(4, 4),
   "serie-c": serieC,
   "serie-d": serieD,
+  mls,
+  "liga-mx": ligaMx,
 };
+
+/** The league's final order, champion first: its format's, or the table of all its matches. */
+export function finalOrderOf(competition: LeagueCompetition, fixtures: readonly Fixture[]): string[] {
+  const { finalOrder } = LEAGUE_FORMATS[competition.format];
+  return finalOrder ? finalOrder(competition, fixtures) : table(competition, competition.clubIds, fixtures);
+}
 

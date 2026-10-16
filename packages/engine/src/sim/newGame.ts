@@ -155,7 +155,12 @@ export function newGame(
   const abroad = fullTier.map(clubsAbroad);
   const clubs = abroad.length ? [...brazilClubs, ...abroad.flatMap((country) => country.clubs)] : brazilClubs;
   const players = abroad.length ? [...brazilPlayers, ...abroad.flatMap((country) => country.players)] : brazilPlayers;
-  const gridRounds = mostRounds(countries.flatMap(({ structure, levels }) => structure.levels.map((level, i) => ({ clubCount: levels[i]?.length ?? 0, legs: level.legs }))));
+  const isFullTier = (id: string) => fullTier.some((country) => country.structure.id === id);
+  const gridRounds = mostRounds(
+    countries.flatMap(({ structure, levels }) =>
+      structure.levels.map((level, i) => ({ clubCount: levels[i]?.length ?? 0, legs: level.legs, ...(level.format && isFullTier(structure.id) ? { format: level.format } : {}) })),
+    ),
+  );
   const random = randomStream(seed);
   const traitRandom = randomStream(seed ^ TRAIT_STREAM_SALT);
   const contractRandom = randomStream(seed ^ CONTRACT_STREAM_SALT);
