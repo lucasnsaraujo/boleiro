@@ -17,9 +17,10 @@ export type EventDayEvent = EventHappened | EventAnswered;
 // Events draw from a stream of their own per day and club, so the day's other draws stay as they were.
 const EVENT_SALT = 0x5e17e5;
 // guess: a human coach's club gets an event about once a week and a half, and sometimes a second one the
-// same day, which goes to the newspaper; a Série A club the AI runs gets one about once a month.
+// same day, which goes to the newspaper; a Série A club the AI runs gets one about every seven weeks,
+// enough to fill the paper without slowing a season down.
 const HUMAN_CHANCES = [0.1, 0.03] as const;
-const AI_CHANCES = [0.03] as const;
+const AI_CHANCES = [0.02] as const;
 // An event waits for the coach until his club's next match, which the days played on stop at; the
 // assistant answers it after that match. guess: off-season, with no match booked, it waits two weeks.
 const ANSWER_DAYS_WITHOUT_MATCH = 14;
@@ -53,6 +54,27 @@ function slotsOf(state: GameState, clubId: string, cast: Cast): Slots {
 }
 
 const POSITION_WORDS: Record<SimPlayer["group"], string> = { GK: "goleiro", DEF: "defensor", MID: "meia", ATT: "atacante" };
+
+// The clubs change only between seasons, so each set of clubs is looked through once.
+const serieAByClubs = new WeakMap<GameState["clubs"], readonly string[]>();
+
+function serieAOf(clubs: GameState["clubs"]): readonly string[] {
+  const known = serieAByClubs.get(clubs);
+  if (known) return known;
+  const ids = Object.values(clubs).flatMap((club) => (club.division === "A" ? [club.id] : []));
+  serieAByClubs.set(clubs, ids);
+  return ids;
+}
+
+/** The club's players. A for-in walk: Object.values would copy every player of the game first. */
+function squadOf(players: GameState["players"], clubId: string): SimPlayer[] {
+  const squad: SimPlayer[] = [];
+  for (const id in players) {
+    const player = players[id];
+    if (player?.clubId === clubId) squad.push(player);
+  }
+  return squad;
+}
 
 /** The memory with a record and a story added, stories older than the archive dropped. */
 function remember(memory: EventMemory, record: EventRecord, story: NewsItem | null): EventMemory {
@@ -202,7 +224,7 @@ export function runEvents(state: GameState, date: IsoDate, played: readonly Fixt
   let next = lapsed.state;
   const events = [...lapsed.events];
   const humans = new Set(humanClubIds(state));
-  const clubIds = [...new Set([...humans, ...Object.values(state.clubs).flatMap((club) => (club.division === "A" ? [club.id] : []))])].sort();
+  const clubIds = [...new Set([...humans, ...serieAOf(state.clubs)])].sort();
   let recall: Recall | null = null;
   for (const clubId of clubIds) {
     const random = keyedStream(state.seed ^ EVENT_SALT, `${date}:${clubId}`);
@@ -211,7 +233,7 @@ export function runEvents(state: GameState, date: IsoDate, played: readonly Fixt
     for (const chance of isHuman ? HUMAN_CHANCES : AI_CHANCES) {
       if (random() >= chance) continue;
       recall ??= recallOf(eventMemoryOf(next));
-      const squad = Object.values(next.players).filter((player) => player.clubId === clubId);
+      const squad = squadOf(next.players, clubId);
       const scene: EventScene = { state: next, clubId, date, played, squad, random };
       const drawn = drawEvent(scene, recall, bank, random);
       if (!drawn) continue;
