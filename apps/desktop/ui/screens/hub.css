@@ -302,10 +302,12 @@
 }
 
 /* The dock: Finanças and the club's other desks; the ones still to come are greyed out. */
+/* The dock stays at the column's foot, under the paper, whatever sits above it. */
 .hub-dock {
   display: flex;
   align-items: center;
   gap: 4px;
+  margin-top: auto;
   padding: 2px 2px 0;
 }
 
