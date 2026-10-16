@@ -20,6 +20,7 @@ import { Select } from "../controls/Select.js";
 import { clubPreviews, PREVIEW_KEYS, type ClubPreviews } from "../newGame/clubPreview.js";
 import { CUSTOM_CHOICES, defaultFormatsMode, FORMATS_MODES, formatsOfMode, formatsSummary, type FormatsMode } from "../newGame/formatsChoice.js";
 import { LEAGUES_ABROAD, leagueAbroadOf } from "../newGame/leaguesAbroad.js";
+import { worldSeed } from "../newGame/worldSeed.js";
 import "./newGame.css";
 
 /** A club picked for the first coach: Brazil's with its board's goal, or one abroad, which has no board before the game starts. */
@@ -43,10 +44,6 @@ const windowSpan = (window: (typeof TRANSFER_WINDOWS)[number] | undefined) =>
   window ? `${formatDayMonth(`2000-${window.opens}`)} a ${formatDayMonth(`2000-${window.closes}`)}` : "";
 // The first stickers of the grid are dealt one after another; past these, the rest land together.
 const DEALT_STICKERS = 20;
-
-function newSeed(): number {
-  return crypto.getRandomValues(new Uint32Array(1))[0] ?? 0;
-}
 
 /**
  * Draws the season once with no coach, to show each board's goal and each squad. The real game then
@@ -82,7 +79,7 @@ function slotSummary(slot: GameSlot): string {
 export function NewGame() {
   const { engine, slots, game } = useServices();
   const navigate = useNavigate();
-  const [seed] = useState(newSeed);
+  const [seed] = useState(() => worldSeed(localStorage, import.meta.env.VITE_E2E === "1"));
   // Null follows the number of coaches until the coach picks a mode himself.
   const [pickedFormatsMode, setPickedFormatsMode] = useState<FormatsMode | null>(null);
   const [customFormats, setCustomFormats] = useState<Formats>(RAPIDO);
