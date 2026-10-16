@@ -203,7 +203,7 @@
 }
 
 .mf-incidents small.wrong {
-  color: #d7322a;
+  color: var(--red);
   font-weight: 800;
 }
 

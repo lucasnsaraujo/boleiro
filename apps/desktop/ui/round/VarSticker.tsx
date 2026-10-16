@@ -1,4 +1,4 @@
-import type { VarCheck, VarDecision } from "@boleiro/engine/sim/referees/refereeCalls";
+import { reviewLength, type VarCheck, type VarDecision } from "@boleiro/engine/sim/referees/refereeCalls";
 import "./varSticker.css";
 
 /** Where a VAR check stands on the board: under review, with its decision stamped on, or peeling off as play restarts. */
@@ -25,13 +25,6 @@ const STAMPS: Record<VarDecision, { text: string; isAgainst: boolean }> = {
   redCardGiven: { text: "Vermelho!", isAgainst: false },
   redCardCancelled: { text: "Vermelho retirado", isAgainst: true },
 };
-
-/** "1 min 40 s", "48 s": how long the check stopped the match. */
-function reviewLength(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds % 60;
-  return minutes ? `${minutes} min${rest ? ` ${rest} s` : ""}` : `${rest} s`;
-}
 
 /** The yellow sticker slapped on the cover while VAR reviews a human coach's match: what it checks, then the decision stamped across it. */
 export function VarSticker({ check, phase, name, club }: { check: VarCheck; phase: VarPhase; name: string; club: string }) {

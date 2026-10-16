@@ -256,7 +256,37 @@ export function Round() {
     shownMinute.current = minute;
     engine.apply({ type: "seeMinute", minute }).catch(() => undefined);
     for (const cue of thinCues(roundCues(live, from, minute), resumeSpeed.current)) sound.play(cue);
+    // A VAR check holds back what it rules on: its match's goal or red card waits for the decision.
+    const held = varCheckAt(live, minute);
+    const isHeldBack = (fixtureId: string) => held?.fixtureId === fixtureId;
     const goals = goalsBetween(live, from, minute);
+    celebrate(live, goals.filter((goal) => !isHeldBack(goal.fixtureId)));
+    const called = Object.fromEntries(
+      calloutsBetween(live, from, minute).map(({ fixtureId, kind, who }) => [fixtureId, { kind, count: ++goalsCelebrated.current, ...(who ? { who } : {}) }] as const),
+    );
+    if (Object.keys(called).length) {
+      setAlerts((current) => ({ ...current, ...called }));
+      setTimeout(() => setAlerts((current) => Object.fromEntries(Object.entries(current).filter(([fixtureId, alert]) => called[fixtureId] !== alert))), FLOOD_MS[resumeSpeed.current]);
+    }
+    const reason = pauseReason(live, minute);
+    if (reason === "halfTime" || reason === "coachMatch") pause();
+    const incidentNow = incidentOf(live, minute, hotSeat);
+    const finishNow = () => {
+      if (reason === "fullTime") void finish();
+    };
+    if (!held) {
+      setIncident(incidentNow);
+      finishNow();
+      return;
+    }
+    holdForVar(held, () => {
+      celebrate(live, goals.filter((goal) => isHeldBack(goal.fixtureId)));
+      setIncident(incidentNow);
+    }, finishNow);
+  }, [minute]);
+
+  /** Rolls each scoring row's digit and sweeps it in the scorer's colour; the coach's own goal sweeps GOL across the cover. */
+  function celebrate(live: LiveRound, goals: ReturnType<typeof goalsBetween>) {
     if (goals.length) {
       const celebrated = Object.fromEntries(
         goals.map((goal) => {
@@ -272,32 +302,28 @@ export function Round() {
       );
       if (goals.some((goal) => goal.fixtureId === live.coach?.fixtureId && goal.clubId === live.coachClubId)) setGolCount((n) => n + 1);
     }
-    const called = Object.fromEntries(
-      calloutsBetween(live, from, minute).map(({ fixtureId, kind, who }) => [fixtureId, { kind, count: ++goalsCelebrated.current, ...(who ? { who } : {}) }] as const),
-    );
-    if (Object.keys(called).length) {
-      setAlerts((current) => ({ ...current, ...called }));
-      setTimeout(() => setAlerts((current) => Object.fromEntries(Object.entries(current).filter(([fixtureId, alert]) => called[fixtureId] !== alert))), FLOOD_MS[resumeSpeed.current]);
-    }
-    const reason = pauseReason(live, minute);
-    if (reason === "halfTime" || reason === "coachMatch") pause();
-    const held = varCheckAt(live, minute);
-    if (held) holdForVar(held);
-    setIncident(incidentOf(live, minute, hotSeat));
-    if (reason === "fullTime") void finish();
-  }, [minute]);
+  }
 
-  /** Stands the round still while VAR checks a human coach's match: the check, its decision, then play again. */
-  function holdForVar(held: Omit<VarHold, "phase">) {
+  /**
+   * Stands the round still while VAR checks a human coach's match: the check, then its decision
+   * (`onDecided`), then play again (`onDone`; a check at the final whistle ends the round only then).
+   */
+  function holdForVar(held: Omit<VarHold, "phase">, onDecided: () => void, onDone: () => void) {
     varTimers.current.forEach((timer) => clearTimeout(timer));
     const pace = resumeSpeed.current;
     const checking = VAR_CHECK_MS[pace] * Math.min(1.2, Math.max(0.6, held.check.seconds / AVERAGE_CHECK_SECONDS));
     const decided = checking + VAR_DECIDED_MS[pace];
     setVarHold({ ...held, phase: "checking" });
     varTimers.current = [
-      window.setTimeout(() => setVarHold((current) => current && { ...current, phase: "decided" }), checking),
+      window.setTimeout(() => {
+        setVarHold((current) => current && { ...current, phase: "decided" });
+        onDecided();
+      }, checking),
       window.setTimeout(() => setVarHold((current) => current && { ...current, phase: "leaving" }), decided),
-      window.setTimeout(() => setVarHold(null), decided + VAR_PEEL_MS),
+      window.setTimeout(() => {
+        setVarHold(null);
+        onDone();
+      }, decided + VAR_PEEL_MS),
     ];
   }
 
@@ -819,7 +845,9 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
   const home = round.clubs[match.homeId];
   const away = round.clubs[match.awayId];
   if (!home || !away) return null;
-  const scorers = scorersUntil(round, match.fixtureId, minute);
+  // The goal VAR is checking shows under the score once the decision is in.
+  const isChecking = varHold?.phase === "checking" && varHold.fixtureId === match.fixtureId;
+  const scorers = scorersUntil(round, match.fixtureId, isChecking ? minute - 1 : minute);
   const hasSeats = seats.length > 1;
   const [competition, roundName] = label.split(" · ");
   const side = (club: RoundClub, where: Side) => (
@@ -890,10 +918,10 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
             <div className="live-stad">
               <b>{home.stadium}</b>
               {home.shortName} em casa
-              {match.officials?.referee && (
+              {(match.officials?.referee || match.officials?.hasVar) && (
                 <div className="live-ref">
                   {match.officials.hasVar && <em>VAR</em>}
-                  Árbitro {match.officials.referee}
+                  {match.officials.referee && `Árbitro ${match.officials.referee}`}
                 </div>
               )}
             </div>

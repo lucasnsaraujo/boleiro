@@ -6,7 +6,7 @@ import { CARD_RATES } from "../discipline/cardRates.js";
 import { drawCards } from "../discipline/drawCards.js";
 import type { Competition, Fixture, SimPlayer, Stage } from "../gameState.js";
 import { freshCondition } from "../players/openingProfile.js";
-import { matchOfficials, refereedCardRates, rosterKeyOf, type MatchOfficials } from "./matchOfficials.js";
+import { matchOfficials, refereedCardRates, type MatchOfficials } from "./matchOfficials.js";
 
 const base = { id: "c", season: 2026, clubIds: [], stageDates: [], drawOrder: [] };
 const league = (division: "A" | "B" | "C" | "D", stages: Stage[] = []): Competition => ({ ...base, stages, kind: "league", format: `serie-${division.toLowerCase() as Lowercase<typeof division>}`, division });
@@ -50,10 +50,9 @@ describe("a match's officials", () => {
   });
 
   it("makes the competition's referees, as often as each one referees, as strict as its real card rates on average", () => {
-    const key = rosterKeyOf(league("A"));
     const fixtures = Array.from({ length: 4000 }, (_, i) => fixture(0, `f${i}`));
     const mean = fixtures.reduce((sum, f) => sum + matchOfficials(3, league("A"), f).strictness, 0) / fixtures.length;
-    expect(REFEREE_ROSTER[key]?.length).toBeGreaterThan(1);
+    expect(REFEREE_ROSTER["br-A"]?.length).toBeGreaterThan(1);
     expect(mean).toBeGreaterThan(0.97);
     expect(mean).toBeLessThan(1.03);
   });

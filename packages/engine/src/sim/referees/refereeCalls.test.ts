@@ -14,8 +14,10 @@ const eleven = (clubId: string) => [
   player(`${clubId}-gk`, clubId, "GK"),
   ...Array.from({ length: 10 }, (_, i) => player(`${clubId}-${i}`, clubId, i < 4 ? "DEF" : i < 8 ? "MID" : "ATT")),
 ];
-const home = { clubId: "home", onPitch: () => eleven("home") };
-const away = { clubId: "away", onPitch: () => eleven("away") };
+// A side changes its whole eleven at half-time, so a call must name whoever is on at its minute.
+const elevenAt = (clubId: string) => (minute: number) => (minute <= 45 ? eleven(clubId) : eleven(clubId).map((p) => ({ ...p, id: `${p.id}-2h` })));
+const home = { clubId: "home", onPitch: elevenAt("home") };
+const away = { clubId: "away", onPitch: elevenAt("away") };
 const MATCHES = 4000;
 
 /** A match's goals, penalties and straight reds at Série A's rates per match: 2.49, 0.28 and 0.18. */
@@ -89,14 +91,32 @@ describe("the referee's calls", () => {
     }
   });
 
-  it("names players on the pitch, of the side the call is about, and makes wrong calls cost the side named", () => {
-    for (const { calls } of season(NO_VAR).slice(0, 500)) {
-      for (const call of calls) {
-        expect(call.playerId.startsWith(`${call.clubId}-`)).toBe(true);
-        if (call.type === "wrongCall" && call.call === "goalWronglyRuledOut") expect(call.againstId).toBe(call.clubId);
-        if (call.type === "wrongCall" && call.call === "goalShouldNotStand") expect(call.againstId).not.toBe(call.clubId);
-      }
+  it("names a player on the pitch at the call's minute, of the side the call is about, and makes a wrong call cost the right side", () => {
+    const calls = [...season(NO_VAR), ...season(VAR)].flatMap((m) => m.calls);
+    const costsNamedSide: Record<string, boolean> = {
+      goalWronglyRuledOut: true,
+      penaltyNotGiven: true,
+      redCardWronglyGiven: true,
+      goalShouldNotStand: false,
+      penaltyWronglyGiven: false,
+      redCardNotGiven: false,
+    };
+    // The calls on something that did not happen (a goal ruled out, a claim waved away) pick their player; the others name the drawn event's.
+    const isAdded = (c: RefereeCall) =>
+      c.type === "varCheck" ? ["goalRuledOut", "penaltyCancelled", "redCardCancelled"].includes(c.decision) : ["goalWronglyRuledOut", "penaltyNotGiven", "redCardNotGiven"].includes(c.call);
+    expect(calls.filter(isAdded).length).toBeGreaterThan(1000);
+    for (const call of calls) {
+      const side = call.clubId === "home" ? home : away;
+      if (isAdded(call)) expect(side.onPitch(call.minute).map((p) => p.id)).toContain(call.playerId);
+      if (call.type === "wrongCall") expect(call.againstId === call.clubId, call.call).toBe(costsNamedSide[call.call]);
     }
+    // A red card waved away or taken back names a defender far more often than a forward, a ruled-out goal the reverse.
+    const groupOf = (c: RefereeCall) => eleven(c.clubId).find((p) => c.playerId.startsWith(p.id))?.group;
+    const share = (picked: RefereeCall[], group: PositionGroup) => picked.filter((c) => groupOf(c) === group).length / picked.length;
+    const reds = calls.filter((c) => (c.type === "wrongCall" && c.call === "redCardNotGiven") || (c.type === "varCheck" && c.decision === "redCardCancelled"));
+    const ruledOut = calls.filter((c) => c.type === "varCheck" && c.decision === "goalRuledOut");
+    expect(share(reds, "DEF")).toBeGreaterThan(share(reds, "ATT"));
+    expect(share(ruledOut, "ATT")).toBeGreaterThan(share(ruledOut, "DEF"));
   });
 
   it("tells the same calls for the same seed, other calls for another", () => {

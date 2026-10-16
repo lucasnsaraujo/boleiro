@@ -111,7 +111,7 @@
 }
 
 .varstk-stamp.against {
-  background: #d7322a;
+  background: var(--red);
 }
 
 .varstk-stamp b {

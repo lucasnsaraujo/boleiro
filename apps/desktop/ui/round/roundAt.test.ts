@@ -187,6 +187,24 @@ test("stops for VAR changing a call in a human coach's match, not for a goal it 
   expect(varCheckAt(withChecks, 63)).toBeNull();
   expect(roundAt(withChecks, 62).find((m) => m.fixtureId === "other")?.last).toMatchObject({ kind: "varCheck", text: "VAR anula o gol de Arrascaeta" });
   expect(roundAt(withChecks, 62, "ours").find((m) => m.fixtureId === "ours")?.last).toMatchObject({ kind: "varCheck", text: "VAR revisando o lance" });
+  const awarded: LiveRound = {
+    ...round,
+    matches: round.matches.map((m) =>
+      m.fixtureId === "ours"
+        ? {
+            ...m,
+            events: inMatchOrder([
+              ...m.events,
+              { type: "goal", minute: 70, clubId: "bahia", playerId: "b9" },
+              { type: "varCheck", minute: 70, clubId: "bahia", playerId: "b9", decision: "goalAwarded", seconds: 100 },
+            ]),
+          }
+        : m,
+    ),
+  };
+  const scoreOf = (underReview: string | null) => roundAt(awarded, 70, underReview).find((m) => m.fixtureId === "ours")?.score;
+  expect(scoreOf("ours")).toEqual({ home: 1, away: 1 });
+  expect(scoreOf(null)).toEqual({ home: 1, away: 2 });
   expect(roundAt(withChecks, 63, "ours").find((m) => m.fixtureId === "ours")?.last?.text).toBe("VAR anula o gol de Renato Kayzer");
   expect(calloutsBetween(withChecks, 60, 62).map((c) => [c.fixtureId, c.kind])).toEqual([
     ["other", "var"],

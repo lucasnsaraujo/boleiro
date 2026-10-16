@@ -6,7 +6,7 @@ import { addDays } from "../dates.js";
 import type { Fixture, GameState, IsoDate } from "../gameState.js";
 import type { MatchSheets } from "../history/recordMatches.js";
 import { rivalsOf } from "../morale/rivalsOf.js";
-import type { VarDecision, WrongCallKind } from "../referees/refereeCalls.js";
+import { reviewLength, type VarDecision, type WrongCallKind } from "../referees/refereeCalls.js";
 import { eventMemoryOf, type NewsItem, type NewsKind } from "./eventMemory.js";
 
 // The newspaper's stories draw their wording from a stream of their own per day and story.
@@ -84,9 +84,6 @@ const CONTROVERSIES: readonly Variant[] = [
   (n) => ({ headline: `${n.against} reclama de ${n.by}`, body: `${n.what} No vestiário, o ${n.against} saiu falando em erro grave.` }),
   (n) => ({ headline: `Polêmica: ${n.against} prejudicado pela arbitragem`, body: `${n.what} ${n.blame}` }),
 ];
-
-/** "1 min 40 s", "48 s". */
-const reviewLength = (seconds: number) => (seconds >= 60 ? `${Math.floor(seconds / 60)} min${seconds % 60 ? ` ${seconds % 60} s` : ""}` : `${seconds} s`);
 
 function scoreLine(state: GameState, fixture: Fixture): string {
   const name = (id: string) => state.clubs[id]?.shortName ?? id;

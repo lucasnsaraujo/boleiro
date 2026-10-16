@@ -17,7 +17,7 @@ export type VarCheck = { type: "varCheck"; minute: number; clubId: string; playe
 export type WrongCallKind = "goalShouldNotStand" | "goalWronglyRuledOut" | "penaltyWronglyGiven" | "penaltyNotGiven" | "redCardWronglyGiven" | "redCardNotGiven";
 
 /** A wrong call: `playerId` (of `clubId`) is the player in it, `againstId` the side it cost. */
-export type WrongCall = { type: "wrongCall"; minute: number; clubId: string; playerId: string; call: WrongCallKind; againstId: string };
+type WrongCall = { type: "wrongCall"; minute: number; clubId: string; playerId: string; call: WrongCallKind; againstId: string };
 
 export type RefereeCall = VarCheck | WrongCall;
 
@@ -27,13 +27,20 @@ export type RefereeCall = VarCheck | WrongCall;
  */
 export type RefereeCallEvent = { type: "refereeCall"; fixtureId: string; competitionId: string; referee: string | null; call: RefereeCall };
 
+/** "1 min 40 s", "48 s": how long a VAR check stopped the match. */
+export function reviewLength(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return minutes ? `${minutes} min${rest ? ` ${rest} s` : ""}` : `${rest} s`;
+}
+
 /** The calls of a match worth talking about: every wrong call that stood and every VAR check that changed a decision. */
 export function talkedAboutCalls(events: readonly MatchEvent[]): RefereeCall[] {
   return events.filter((e): e is RefereeCall => e.type === "wrongCall" || (e.type === "varCheck" && e.decision !== "goalStands"));
 }
 
 /** One side of a match as the referee sees it: who is on the pitch at each minute. */
-export type CallSide = { clubId: string; onPitch: (minute: number) => readonly SimPlayer[] };
+type CallSide = { clubId: string; onPitch: (minute: number) => readonly SimPlayer[] };
 
 type Eligible = "goal" | "penalty" | "straightRed";
 

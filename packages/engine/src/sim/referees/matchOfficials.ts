@@ -4,8 +4,6 @@ import { COPA_DO_BRASIL_ENTRY_STAGES } from "../copaDoBrasil.js";
 import type { CardRates } from "../discipline/cardRates.js";
 import type { Competition, Fixture } from "../gameState.js";
 
-export type { RefereeProfile };
-
 /** Where a competition's video assistant referee works like Brazil's or like Europe's: how often it steps in and for how long. */
 export type VarStyle = "brazil" | "europe";
 
@@ -39,7 +37,7 @@ const MIN_ROSTER = 5;
 const EUROPE = new Set(["gb-eng", "es", "it", "de", "fr", "pt", "nl"]);
 
 /** The referee roster's key for a competition: "br-A", "br-cup", "br-state-SP", "libertadores", "gb-eng-0". */
-export function rosterKeyOf(competition: Competition): string {
+function rosterKeyOf(competition: Competition): string {
   switch (competition.kind) {
     case "league":
       if (competition.abroad) return `${competition.abroad.country}-${competition.abroad.level}`;

@@ -63,12 +63,15 @@ function matchAt(round: LiveRound, match: RoundMatch, minute: number, underRevie
     if (event.minute > minute) break;
     if (!isPlayerEvent(event)) continue;
     const side: Side = event.clubId === match.homeId ? "home" : "away";
+    // A check still running at this minute keeps its decision to itself: the goal or red card it rules on counts once it ends.
+    if (event.minute === minute && match.fixtureId === underReview) {
+      last = { kind: "varCheck", minute, side, text: "VAR revisando o lance" };
+      continue;
+    }
     const kind = kindOf(event);
     if (kind === "goal") score[side]++;
     if (kind === "red") reds[side]++;
-    // A check still running at this minute keeps its decision to itself.
-    const isUnderReview = event.type === "varCheck" && event.minute === minute && match.fixtureId === underReview;
-    last = { kind, minute: event.minute, side, text: isUnderReview ? "VAR revisando o lance" : eventText(event, round.names) };
+    last = { kind, minute: event.minute, side, text: eventText(event, round.names) };
   }
   const isCoach = match.fixtureId === round.coach?.fixtureId;
   const isOtherHuman = round.otherHumanClubIds?.some((id) => id === match.homeId || id === match.awayId) ?? false;
@@ -147,11 +150,6 @@ export function calloutsBetween(round: LiveRound, from: number, to: number): Cal
 const isIncidentOf = (e: MatchEvent, clubId: string) => (e.type === "injury" || (e.type === "card" && e.card !== "yellow")) && e.clubId === clubId;
 
 /**
- * Why the round stops by itself at `minute`: half-time, the final whistle, or something that needs
- * a coach in his match: a goal against the seated coach, or a red card or an injury to any human
- * coach's side.
- */
-/**
  * The VAR check a human coach's match stops for at `minute`, if any: the round stands still while it
  * runs. A check that only confirms a goal stops nothing.
  */
@@ -165,6 +163,11 @@ export function varCheckAt(round: LiveRound, minute: number): { fixtureId: strin
   return null;
 }
 
+/**
+ * Why the round stops by itself at `minute`: half-time, the final whistle, or something that needs
+ * a coach in his match: a goal against the seated coach, or a red card or an injury to any human
+ * coach's side.
+ */
 export function pauseReason(round: LiveRound, minute: number): "halfTime" | "fullTime" | "coachMatch" | null {
   if (minute >= FULL_TIME) return "fullTime";
   if (minute === HALF_TIME) return "halfTime";

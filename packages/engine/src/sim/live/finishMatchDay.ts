@@ -136,11 +136,6 @@ function liveTacticsOf(live: LiveDay, clubId: string): Tactics | undefined {
   return undefined;
 }
 
-/**
- * Blows the final whistle on a live day and runs the rest of it: next stages, the history, money,
- * moods, the coach's career, the season's end and the transfer market. With no live changes this is
- * exactly advanceDay.
- */
 /** The day's VAR changes and wrong calls that stood, match by match, for the papers and the dressing rooms. */
 function refereeCallsOf(live: LiveDay): RefereeCallEvent[] {
   const talked = live.matches.flatMap((match) => talkedAboutCalls(match.events).map((call) => ({ fixtureId: match.fixtureId, call })));
@@ -155,6 +150,11 @@ function refereeCallsOf(live: LiveDay): RefereeCallEvent[] {
   });
 }
 
+/**
+ * Blows the final whistle on a live day and runs the rest of it: next stages, the history, money,
+ * moods, the coach's career, the season's end and the transfer market. With no live changes this is
+ * exactly advanceDay.
+ */
 export function finishMatchDay(live: LiveDay): DayResult {
   const { state, decisions } = live;
   const open = openMatchesOf(live);

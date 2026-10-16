@@ -8,10 +8,11 @@ import { Crest } from "../clubs/Crest.js";
 
 const THOUSANDS = new Intl.NumberFormat("pt-BR");
 
-/** "Árbitro Wilton Pereira Sampaio · VAR", when the data names the match's referee; null when it doesn't. */
+/** "Árbitro Wilton Pereira Sampaio · VAR", or "Com VAR" when the data names no referee; null when it knows neither. */
 export function refereeLine(page: MatchPage): string | null {
   const { referee, hasVar } = page.officials;
-  return referee ? `Árbitro ${referee}${hasVar ? " · VAR" : ""}` : null;
+  if (!referee) return hasVar ? "Com VAR" : null;
+  return `Árbitro ${referee}${hasVar ? " · VAR" : ""}`;
 }
 
 /** "Público 61.233 · Renda R$ 4,8 mi", for a match whose crowd is known. */
