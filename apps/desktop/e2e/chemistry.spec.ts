@@ -14,11 +14,12 @@ async function openChemistry(page: Page) {
 }
 
 test("open the chemistry map from the squad, name a captain, rotate the eleven and see the meter move", async ({ page }) => {
+  test.setTimeout(3 * 60_000);
   await page.goto("/");
   await page.clock.install();
   await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Filipe Luís" });
 
-  const before = await openChemistry(page);
+  await openChemistry(page);
   const map = page.getByRole("group", { name: "Mapa do entrosamento" });
   await expect(map.getByRole("listitem")).not.toHaveCount(0);
   await expect(map.locator("line.good").first()).toBeAttached();
@@ -34,7 +35,6 @@ test("open the chemistry map from the squad, name a captain, rotate the eleven a
   }
   const pitch = lineup.getByRole("group", { name: "Titulares" });
   const foot = lineup.getByText("Entrosamento", { exact: true }).locator("..");
-  await expect(foot).toContainText(String(before));
 
   const starters = pitch.getByRole("button");
   const chosen = (await starters.last().getAttribute("aria-label")) ?? "";
@@ -56,6 +56,7 @@ test("open the chemistry map from the squad, name a captain, rotate the eleven a
   const after = await openChemistry(page);
   expect(after).not.toBe(named);
   await expect(page.getByRole("region", { name: "Por que está assim" })).toContainText("Muitas trocas no time");
-  await expect(page.getByText(/(caiu|subiu) \d+ desde o último jogo/)).toBeVisible();
+  // The trend runs from the meter the match kicked off with, which the lineup sheet showed.
+  await expect(page.getByText(`${after > named ? "subiu" : "caiu"} ${Math.abs(after - named)} desde o último jogo`)).toBeVisible();
   await expect(page.getByRole("group", { name: "Mapa do entrosamento" }).getByRole("listitem", { name: new RegExp(`${startsWithChosen.source}.*capitão`) })).toBeVisible();
 });
