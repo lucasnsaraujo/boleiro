@@ -4,7 +4,8 @@ import { createEngineSession } from "../engine/createEngineSession.js";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import { finishMatchDay } from "@boleiro/engine/sim/live/finishMatchDay";
 import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
-import { liveRoundOf, playerStatsOf, type LiveRound } from "./liveRoundOf.js";
+import { liveRoundOf, playerStatsOf, tacticsViewAt, type LiveRound } from "./liveRoundOf.js";
+import type { MatchDayPlan } from "./matchDayPlan.js";
 
 const CLUB = "flamengo-rj";
 // Enough play-ons to reach the coach's first match day.
@@ -12,6 +13,7 @@ const MAX_STEPS = 20;
 // The keys a one-coach game with the world holds, to rebuild it from the session.
 const KEYS: (keyof GameState)[] = ["version", "packVersion", "seed", "rngState", "date", "season", "coachClubId", "clubs", "players", "calendar", "competitions", "fixtures", "economy", "finances", "mood", "coach", "boards", "discipline", "history", "market", "usualLineups", "world", "europe", "friendlies"];
 
+let plan: MatchDayPlan;
 let kickOff: LiveRound;
 let changed: LiveRound;
 let opponentFormation: string;
@@ -21,7 +23,8 @@ beforeAll(() => {
   const session = createEngineSession(bundledGameFiles);
   session.apply({ type: "newGame", seed: 4, choices: { coachClubId: CLUB } });
   for (let step = 0; step < MAX_STEPS && session.apply({ type: "playToMatchDay" }).stop !== "matchDay"; step++);
-  opponentFormation = session.matchDayPlan().opponentFormation;
+  plan = session.matchDayPlan();
+  opponentFormation = plan.opponentFormation;
   kickOff = session.apply({ type: "startRound" });
   const coach = kickOff.coach;
   const bench = coach?.benchIds[0];
@@ -44,6 +47,40 @@ test("the coach's match rates every starter of both sides from 3 to 10, in tenth
     expect(Number.isInteger(Math.round(rating * 10))).toBe(true);
     expect(kickOff.names[playerId]).toBeTruthy();
   }
+});
+
+test("the plan before kick-off brings the opponent's likely eleven and its coach's tactics for the tactics board", () => {
+  expect(plan.opponent.eleven).toHaveLength(11);
+  expect(plan.opponent.eleven.filter((p) => p.group === "GK")).toHaveLength(1);
+  expect(plan.opponent.tactics).toMatchObject({ formation: plan.opponentFormation, posture: "balanced" });
+  expect(plan.moment).toEqual({ isHome: plan.homeId === CLUB, minute: 0, lead: 0 });
+});
+
+test("the tactics view of the coach's live match reads the opponent on the pitch and the score at any minute", () => {
+  const coach = kickOff.coach;
+  const match = kickOff.matches.find((m) => m.fixtureId === coach?.fixtureId);
+  if (!coach || !match) throw new Error("the coach has a match");
+  const opponentId = coach.side === "home" ? match.awayId : match.homeId;
+  const ownId = coach.side === "home" ? match.homeId : match.awayId;
+  const sub = match.events.find((e) => e.type === "substitution" && e.clubId === opponentId);
+  if (!sub || sub.type !== "substitution") return expect.fail("the opponent makes a substitution on this seed");
+  const ids = (minute: number) => tacticsViewAt(kickOff, coach, minute).opponent.eleven.map((p) => p.id);
+  expect(ids(sub.minute - 1)).toContain(sub.offId);
+  expect(ids(sub.minute)).toContain(sub.playerId);
+  expect(ids(sub.minute)).not.toContain(sub.offId);
+  const goalsBy = (clubId: string) => match.events.filter((e) => e.type === "goal" && e.minute <= 80 && e.clubId === clubId).length;
+  expect(tacticsViewAt(kickOff, coach, 80).moment).toEqual({ isHome: coach.side === "home", minute: 80, lead: goalsBy(ownId) - goalsBy(opponentId) });
+});
+
+test("an AI opponent losing late attacks in the tactics view, as it does in the match", () => {
+  const coach = kickOff.coach;
+  if (!coach) throw new Error("the coach has a match");
+  const late = { ...coach, opponent: { ...coach.opponent, rivalTactics: null } };
+  const losing = { ...kickOff, matches: kickOff.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [] } : m)) };
+  expect(tacticsViewAt(losing, late, 30).opponent.tactics.posture).toBe("balanced");
+  const ownGoal = { type: "goal" as const, minute: 10, clubId: coach.side === "home" ? losing.matches.find((m) => m.fixtureId === coach.fixtureId)?.homeId ?? "" : losing.matches.find((m) => m.fixtureId === coach.fixtureId)?.awayId ?? "", playerId: coach.starters[1] ?? "" };
+  const behind = { ...losing, matches: losing.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [ownGoal] } : m)) };
+  expect(tacticsViewAt(behind, late, 70).opponent.tactics.posture).toBe("attacking");
 });
 
 test("a substitute the coach brings on is rated after the change", () => {

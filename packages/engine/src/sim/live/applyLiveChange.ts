@@ -1,8 +1,8 @@
 import type { Formation } from "../../engine/formations.js";
-import { matchOdds, type Posture, type Team } from "../../engine/match.js";
+import { matchOdds, type Marking, type Play, type Posture, type Team } from "../../engine/match.js";
 import { randomStream } from "../../engine/random.js";
 import { aiPosture, DEFAULT_TACTICS, type Tactics } from "../coach/tactics.js";
-import { drawCardsAfter } from "../discipline/drawCards.js";
+import { drawCardsAfter, markedCardRates } from "../discipline/drawCards.js";
 import type { SimPlayer } from "../gameState.js";
 import { scorersOf } from "../history/scorersOf.js";
 import { clubMood } from "../morale/clubMood.js";
@@ -21,6 +21,8 @@ export type LiveChange = {
   substitutions?: readonly Substitution[];
   formation?: Formation;
   posture?: Posture;
+  marking?: Marking;
+  play?: Play;
   penaltyTakerId?: string | null;
 };
 
@@ -97,9 +99,12 @@ function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEv
   // As at kick-off, an injured player does nothing more in the match: no card, no goal.
   const playing = (side: Side) => elevens[side].filter((p) => sentOffMinute(kept, p.id) === undefined && !hurt.has(p.id));
 
+  const aiSide: Side = coachSide === "home" ? "away" : "home";
+  const markingOf = (side: Side) => (side === coachSide ? coachMatch.tactics : coachMatch.rivalTactics)?.marking;
+  const cardRates = markedCardRates(coachMatch.cardRates, { home: markingOf("home"), away: markingOf("away") });
   const booked = new Set(kept.flatMap((e) => (e.type === "card" && e.card === "yellow" ? [e.playerId] : [])));
   // A redrawn card comes after the change, never at its minute, so it can't book a player before he comes on.
-  const cards: MatchEvent[] = drawCardsAfter(minute, playing("home"), playing("away"), coachMatch.cardRates, booked, random).map((b) => ({
+  const cards: MatchEvent[] = drawCardsAfter(minute, playing("home"), playing("away"), cardRates, booked, random).map((b) => ({
     type: "card",
     ...b,
     minute: Math.max(b.minute, minute + 1),
@@ -117,7 +122,6 @@ function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEv
   });
   const injuredMinute = new Map([...kept, ...injuries].flatMap((e) => (e.type === "injury" ? [[e.playerId, e.minute] as const] : [])));
 
-  const aiSide: Side = coachSide === "home" ? "away" : "home";
   // A side's penalty taker only takes them while he is on the pitch.
   const onPitchTaker = (side: Side, tactics: Tactics): Tactics => {
     const isOn = playing(side).some((p) => p.id === tactics.penaltyTakerId);
@@ -204,8 +208,8 @@ function openMatchOf(live: LiveDay, clubId: string): CoachMatch | undefined {
 }
 
 /**
- * A human coach changes his side at `minute` of his match: substitutions, formation, posture or
- * penalty taker. Everything up to that minute stays; the rest of his match is drawn again. The day's
+ * A human coach changes his side at `minute` of his match: substitutions, formation, posture,
+ * marking, play or penalty taker. Everything up to that minute stays; the rest of his match is drawn again. The day's
  * other matches are untouched. Changes come in minute order. The coach is the one in the seat unless
  * `clubId` names a hot-seat coach waiting for his turn.
  */
@@ -232,6 +236,8 @@ export function applyLiveChange(live: LiveDay, minute: number, change: LiveChang
     ...before,
     formation: change.formation ?? before.formation,
     posture: change.posture ?? before.posture,
+    ...(change.marking ?? before.marking ? { marking: change.marking ?? before.marking } : {}),
+    ...(change.play ?? before.play ? { play: change.play ?? before.play } : {}),
     penaltyTakerId: change.penaltyTakerId === undefined ? before.penaltyTakerId : change.penaltyTakerId,
   };
   const random = randomStream(coachMatch.rngState);
