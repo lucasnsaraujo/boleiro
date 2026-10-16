@@ -14,6 +14,8 @@ import { payContinentalPrizes } from "./payContinentalPrizes.js";
 const world = [...loadSouthAmerica(2026), ...loadEurope(2026), ...loadMarketLeagues(2026)];
 const guests = loadGuests(2026);
 const SEED = 7;
+// FIFA's first edition after 2025, which the game's first Club World Cup is.
+const EDITION = 2029;
 
 // FIFA's 2025 field (Wikipedia, "2025 FIFA Club World Cup", Qualified teams), by Transfermarkt and the game's ids.
 const FIELD_2025 = [
@@ -34,10 +36,16 @@ const confederationsIn = (competition: ContinentalCompetition, ids: readonly str
 const count = <T,>(values: readonly T[]) => values.reduce((counts, value) => counts.set(value, (counts.get(value) ?? 0) + 1), new Map<T, number>());
 
 describe("the Club World Cup of a game of the whole world", () => {
-  const start = loadNewGame(SEED, { coachClubId: "flamengo-rj", world, guests });
+  const start = loadNewGame(SEED, { coachClubId: "flamengo-rj", world, guests, season: EDITION });
   const cup = clubWorldCupOf(start);
 
-  it("opens in the first season on FIFA's 2025 field, 12 clubs from Europe, 6 from South America, 5 from North America, 4 each from Asia and Africa, 1 from Oceania", () => {
+  it("is played every four years from 2029, as FIFA's, and not in the seasons between", () => {
+    const playedIn = (season: number) => clubWorldCupOf(loadNewGame(SEED, { coachClubId: "flamengo-rj", world, guests, season })) !== undefined;
+    expect([2026, 2027, 2028, 2029, 2030, 2033].filter(playedIn)).toEqual([2029, 2033]);
+    expect(loadNewGame(SEED, { coachClubId: "flamengo-rj", world, guests }).fixtures.filter((f) => f.competitionId.startsWith("club-world-cup"))).toEqual([]);
+  });
+
+  it("opens in an edition year that starts the game on FIFA's 2025 field, 12 clubs from Europe, 6 from South America, 5 from North America, 4 each from Asia and Africa, 1 from Oceania", () => {
     expect(cup?.clubIds.toSorted()).toEqual(FIELD_2025.toSorted());
     expect(cup && Object.fromEntries(count(confederationsIn(cup, cup.clubIds)))).toEqual({ uefa: 12, conmebol: 6, concacaf: 5, afc: 4, caf: 4, ofc: 1 });
   });
@@ -54,11 +62,11 @@ describe("the Club World Cup of a game of the whole world", () => {
   });
 
   it("is played in June and July: three group days a week apart, then single matches from the round of 16 to the final", () => {
-    expect(cup?.stageDates).toEqual([["2026-06-02", "2026-06-09", "2026-06-16"], ["2026-06-23"], ["2026-06-30"], ["2026-07-07"], ["2026-07-12"]]);
+    expect(cup?.stageDates).toEqual([["2029-06-05", "2029-06-12", "2029-06-19"], ["2029-06-26"], ["2029-07-03"], ["2029-07-10"], ["2029-07-15"]]);
     const groupGames = start.fixtures.filter((f) => f.competitionId === cup?.id);
     expect(groupGames).toHaveLength(48);
     const flamengo = groupGames.filter((f) => f.homeId === "flamengo-rj" || f.awayId === "flamengo-rj").map((f) => f.date);
-    expect(flamengo).toEqual(["2026-06-02", "2026-06-09", "2026-06-16"]);
+    expect(flamengo).toEqual(["2029-06-05", "2029-06-12", "2029-06-19"]);
   });
 
   it("keeps Brazil's Série A clear of its days, as of CONMEBOL's", () => {
@@ -69,19 +77,19 @@ describe("the Club World Cup of a game of the whole world", () => {
   });
 
   it("keeps the same days on the unified calendar, every league's grid clear of them", () => {
-    const rapido = loadNewGame(SEED, { coachClubId: "flamengo-rj", world, guests, formats: RAPIDO });
+    const rapido = loadNewGame(SEED, { coachClubId: "flamengo-rj", world, guests, formats: RAPIDO, season: EDITION });
     const days = clubWorldCupOf(rapido)?.stageDates;
     expect(days).toEqual(cup?.stageDates);
     expect(rapido.calendar.leagueGrid?.filter((date) => days?.flat().includes(date))).toEqual([]);
   });
 
   it("draws the same groups from the same seed", () => {
-    const again = clubWorldCupOf(loadNewGame(SEED, { coachClubId: "flamengo-rj", world, guests }));
+    const again = clubWorldCupOf(loadNewGame(SEED, { coachClubId: "flamengo-rj", world, guests, season: EDITION }));
     expect(again?.stages).toEqual(cup?.stages);
   });
 
   it("is not played in a game without its guests, as in one saved before them", () => {
-    expect(clubWorldCupOf(loadNewGame(SEED, { coachClubId: "flamengo-rj", world }))).toBeUndefined();
+    expect(clubWorldCupOf(loadNewGame(SEED, { coachClubId: "flamengo-rj", world, season: EDITION }))).toBeUndefined();
   });
 
   it("pays a Brazilian club FIFA's South American participation on its first match and two million dollars a win", () => {
@@ -97,11 +105,11 @@ describe("the Club World Cup of a game of the whole world", () => {
 });
 
 describe("the next Club World Cup's field", () => {
-  const start = loadNewGame(SEED, { coachClubId: null, world, guests });
+  const start = loadNewGame(SEED, { coachClubId: null, world, guests, season: EDITION - 1 });
   const filed = (country: string, championId: string): GameState["world"] => {
     const found = start.world?.[country];
     if (!found) throw new Error(`no ${country}`);
-    return { [country]: { ...found, seasons: [{ season: 2026, champions: [championId], promoted: [[]], relegated: [[]], continental: {} }] } };
+    return { [country]: { ...found, seasons: [{ season: EDITION - 1, champions: [championId], promoted: [[]], relegated: [[]], continental: {} }] } };
   };
   const champions = { ...start.history.current.champions, libertadores: "bahia-ba" };
   const state: GameState = {
@@ -111,6 +119,12 @@ describe("the next Club World Cup's field", () => {
   };
   const field = seasonEndField(state);
   const clubIds = field?.clubWorldCup ?? [];
+
+  it("is drawn only at the end of the season before an edition", () => {
+    const edition = loadNewGame(SEED, { coachClubId: null, world, guests, season: EDITION });
+    expect(seasonEndField(edition)?.clubWorldCup).toEqual([]);
+    expect(seasonEndField(loadNewGame(SEED, { coachClubId: null, world, guests }))?.clubWorldCup).toEqual([]);
+  });
 
   it("takes the last four Libertadores and Champions League winners and the season's MLS, Liga MX and Saudi champions", () => {
     expect(clubIds).toHaveLength(32);
@@ -129,7 +143,7 @@ describe("the next Club World Cup's field", () => {
     const strongMexico = world.map((country) =>
       country.structure.id === "mx" ? { ...country, levels: country.levels.map((level) => level.map((club) => ({ ...club, strengths: club.strengths.map((s) => s + 30) }))) } : country,
     );
-    const mexicoFirst = loadNewGame(SEED, { coachClubId: null, world: strongMexico, guests });
+    const mexicoFirst = loadNewGame(SEED, { coachClubId: null, world: strongMexico, guests, season: EDITION - 1 });
     const next = seasonEndField({ ...mexicoFirst, history: state.history, world: { ...mexicoFirst.world, ...filed("us", "tm-40058"), ...filed("mx", "tm-3631"), ...filed("sa", "tm-18544") } });
     const northAmerica = (next?.clubWorldCup ?? []).filter((id) => confederationOf(next?.countries[id] ?? "") === "concacaf");
     expect(Object.fromEntries(count(northAmerica.map((id) => next?.countries[id])))).toEqual({ us: 3, mx: 2 });

@@ -102,7 +102,7 @@ export const elevenAverage = (club: WorldClub | undefined) => [...(club?.strengt
  * Libertadores groups and every country fills its places down a stand-in table: Brazil's national
  * ranking (division, then fanbase), each other country's top league by its best eleven's strength.
  */
-export function openingField(state: Pick<GameState, "clubs" | "players" | "world" | "guests">): ContinentalField | null {
+export function openingField(state: Pick<GameState, "season" | "clubs" | "players" | "world" | "guests">): ContinentalField | null {
   const countryOf = countryOfClub(state);
   const holders: Holders = {
     libertadores: FIRST_HOLDERS.libertadores && countryOf(FIRST_HOLDERS.libertadores) ? FIRST_HOLDERS.libertadores : null,

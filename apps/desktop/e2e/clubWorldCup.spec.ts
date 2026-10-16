@@ -2,15 +2,22 @@ import { expect, test, type Page } from "@playwright/test";
 import { bar, playLiveRound, startAtClub } from "./flows.js";
 
 const MAX_PRESSES = 12;
+// FIFA's first Club World Cup after 2025; the game plays one every four years from it.
+const EDITION = 2029;
 
-/** Plays every day before `date` in the worker with no decisions, through the e2e build's engine hook. */
+/** Plays every day before `date` in the worker with no decisions, through the e2e build's engine hook, a season at a time. */
 async function playDaysBefore(page: Page, date: string) {
   await page.evaluate(async (until) => {
     const engine = window.boleiroEngine;
     if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
-    const { date: today } = await engine.read(["date"]);
-    const days = Math.round((Date.parse(until) - Date.parse(today)) / 86_400_000);
-    await engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+    for (;;) {
+      const { date: today } = await engine.read(["date"]);
+      const yearEnd = `${today.slice(0, 4)}-12-31`;
+      const stop = until < yearEnd ? until : yearEnd;
+      const days = Math.round((Date.parse(stop) - Date.parse(today)) / 86_400_000) + (stop === until ? 0 : 1);
+      if (days <= 0) return;
+      await engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+    }
   }, date);
 }
 
@@ -39,10 +46,12 @@ test("a career at an MLS club plays its first round live, then finds MLS's two c
   await expect(page.getByRole("row").filter({ has: page.getByText("Los Angeles FC", { exact: true }) })).toHaveAttribute("aria-current", "true");
 });
 
-test("Flamengo finds the Club World Cup on its June calendar, its eight groups on the tables and then its bracket", async ({ page }) => {
-  test.setTimeout(10 * 60_000);
+test("Flamengo, the 2025 Libertadores champion, finds the 2029 Club World Cup on its June calendar, its eight groups on the tables and then its bracket", async ({ page }) => {
+  test.setTimeout(15 * 60_000);
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Filipe" });
+  // The seasons up to the edition's are played in the worker.
+  await playDaysBefore(page, `${EDITION}-01-02`);
 
   await bar(page).getByRole("link", { name: "Agenda" }).click();
   await page.getByRole("group", { name: "Meses" }).getByRole("button", { name: /^Junho/ }).click();
@@ -57,7 +66,7 @@ test("Flamengo finds the Club World Cup on its June calendar, its eight groups o
   await expect(page.getByRole("row").filter({ has: page.getByText("Flamengo", { exact: true }) })).toHaveAttribute("aria-current", "true");
 
   // The months up to the round of 16 are played in the worker.
-  await playDaysBefore(page, "2026-06-23");
+  await playDaysBefore(page, `${EDITION}-06-26`);
   await bar(page).getByRole("link", { name: "Agenda" }).click();
   await bar(page).getByRole("link", { name: "Tabelas" }).click();
   await page.getByRole("tab", { name: "Mundial de Clubes" }).click();

@@ -20,25 +20,31 @@ const clubWorldCupOf = (state: GameState, season = state.season): ContinentalCom
   return found?.kind === "continental" ? found : undefined;
 };
 
-describe("a season of the v1 world", () => {
-  const start = loadNewGame(7, { coachClubId: "flamengo-rj", world, guests });
+/** Plays the season to its end: its last day, the next season's first, the Club World Cup prizes paid in USD and the CPU seconds it took. */
+function playSeason(first: GameState) {
   // CPU time, not wall time: other test files run in parallel processes and would inflate a wall clock.
   const started = process.cpuUsage();
-  let state = start;
+  let state = first;
   const paidUsd = new Map<string, number>();
-  let next: GameState | null = null;
-  while (!next) {
+  for (;;) {
     const rate = state.economy.continental.usdBrl * (state.market.eurBrl / OPENING_EUR_BRL);
     const day = advanceDay(state, {});
     for (const event of day.events) {
       if (event.type === "prizePaid" && event.competitionId.startsWith("club-world-cup")) paidUsd.set(event.clubId, (paidUsd.get(event.clubId) ?? 0) + event.amount / rate);
     }
-    if (day.events.some((e) => e.type === "seasonEnded")) next = day.state;
-    else state = day.state;
+    if (day.events.some((e) => e.type === "seasonEnded")) {
+      const used = process.cpuUsage(started);
+      return { lastDay: state, next: day.state, paidUsd, seconds: (used.user + used.system) / 1e6 };
+    }
+    state = day.state;
   }
-  const used = process.cpuUsage(started);
-  const seconds = (used.user + used.system) / 1e6;
-  const lastDay = state;
+}
+
+// The season before FIFA's 2029 edition, which the game's titles draw, then the edition's.
+describe("two seasons of the v1 world", () => {
+  const start = loadNewGame(7, { coachClubId: "flamengo-rj", world, guests, season: 2028 });
+  const before = playSeason(start);
+  const { lastDay, next, paidUsd, seconds } = playSeason(before.next);
   const cup = clubWorldCupOf(lastDay);
   const played = lastDay.fixtures.filter((f) => f.competitionId === cup?.id);
 
@@ -48,7 +54,7 @@ describe("a season of the v1 world", () => {
     expect(clubs).toBeLessThan(1400);
   });
 
-  it("plays its season within ten seconds", () => {
+  it("plays a season with the Club World Cup within ten seconds", () => {
     expect(seconds).toBeLessThan(10);
   });
 
@@ -62,7 +68,7 @@ describe("a season of the v1 world", () => {
     expect(groups[1]).toContain(first?.[1]);
     const champion = cup && CONMEBOL_CUPS.finalists(cup, played)?.championId;
     expect(champion).toEqual(expect.any(String));
-    expect(next?.history.seasons.at(-1)?.champions["club-world-cup"]).toBe(champion);
+    expect(next.history.seasons.at(-1)?.champions["club-world-cup"]).toBe(champion);
   });
 
   it("pays each Brazilian club FIFA's prizes for its results and the rounds it reached", () => {
@@ -85,23 +91,27 @@ describe("a season of the v1 world", () => {
     }
   });
 
-  it("opens next season's Club World Cup from the game's titles: the Libertadores, MLS and Liga MX champions among its 32", () => {
-    const libertadores = Object.values(lastDay.competitions).find((c) => c.kind === "continental" && c.cup === "libertadores" && c.season === 2026);
-    const libertadoresChampion = libertadores?.kind === "continental" ? CONMEBOL_CUPS.finalists(libertadores, lastDay.fixtures.filter((f) => f.competitionId === libertadores.id))?.championId : undefined;
-    const nextCup = next && clubWorldCupOf(next);
+  it("opens the edition from the season before's titles: the Libertadores, MLS and Liga MX champions among its 32", () => {
+    expect(clubWorldCupOf(before.lastDay)).toBeUndefined();
+    const libertadores = Object.values(before.lastDay.competitions).find((c) => c.kind === "continental" && c.cup === "libertadores" && c.season === 2028);
+    const libertadoresChampion = libertadores?.kind === "continental" ? CONMEBOL_CUPS.finalists(libertadores, before.lastDay.fixtures.filter((f) => f.competitionId === libertadores.id))?.championId : undefined;
+    const nextCup = clubWorldCupOf(before.next);
     expect(nextCup?.clubIds).toHaveLength(32);
     expect(nextCup?.clubIds).toContain(libertadoresChampion);
-    for (const country of ["us", "mx"]) expect(nextCup?.clubIds).toContain(next?.world?.[country]?.seasons.at(-1)?.champions[0]);
+    for (const country of ["us", "mx"]) expect(nextCup?.clubIds).toContain(before.next.world?.[country]?.seasons.at(-1)?.champions[0]);
   });
 
-  it("carries a game saved before the Club World Cup into its next season without one", () => {
-    const withoutGuests: GameState = { ...lastDay };
+  it("plays none in the season after an edition", () => {
+    expect(clubWorldCupOf(next)).toBeUndefined();
+  });
+
+  it("carries a game saved before the Club World Cup into an edition year without one", () => {
+    const withoutGuests: GameState = { ...before.lastDay };
     delete withoutGuests.guests;
-    const competitions = Object.fromEntries(Object.entries(lastDay.competitions).filter(([, c]) => c.kind !== "continental" || c.cup !== "club-world-cup"));
-    const old = loadGame(saveGame({ ...withoutGuests, competitions, fixtures: lastDay.fixtures.filter((f) => !f.competitionId.startsWith("club-world-cup")) }));
+    const old = loadGame(saveGame(withoutGuests));
     const turned = advanceDay(old, {}).state;
-    expect(turned.season).toBe(2027);
+    expect(turned.season).toBe(2029);
     expect(clubWorldCupOf(turned)).toBeUndefined();
-    expect(Object.values(turned.competitions).some((c) => c.kind === "continental" && c.cup === "libertadores" && c.season === 2027)).toBe(true);
+    expect(Object.values(turned.competitions).some((c) => c.kind === "continental" && c.cup === "libertadores" && c.season === 2029)).toBe(true);
   });
 });

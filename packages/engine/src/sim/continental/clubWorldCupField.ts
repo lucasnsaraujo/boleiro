@@ -2,15 +2,16 @@ import type { GameState } from "../gameState.js";
 import { finalOrderOf } from "../leagueFormats.js";
 import { leagueMatches, leagueTable } from "../world/resultOnlyLeague.js";
 import type { WorldClub } from "../world/world.js";
-import { CLUB_WORLD_CUP_PLACES, CONFEDERATIONS, confederationOf, type Confederation } from "./clubWorldCup.js";
+import { CLUB_WORLD_CUP_PLACES, CONFEDERATIONS, confederationOf, isClubWorldCupSeason, type Confederation } from "./clubWorldCup.js";
 import { CONMEBOL_CUPS } from "./conmebolCups.js";
 import { cupChampion, leaguePhaseTable } from "./uefaCups.js";
 
 /** The Club World Cup's clubs, best seed first, and each one's country. */
 export type ClubWorldCupField = { clubIds: string[]; countries: Record<string, string> };
 
-// FIFA's 2025 field (Wikipedia, "2025 FIFA Club World Cup", Qualified teams), which opens the game's
-// first season: no game state holds the titles and rankings it came from.
+// FIFA's 2025 field (Wikipedia, "2025 FIFA Club World Cup", Qualified teams), which opens an edition
+// that starts a game, as no game state holds the titles and rankings it came from; later editions keep
+// its clubs where the game holds none of a confederation's titles or rankings.
 const FIRST_FIELD = [
   "tm-631", "tm-418", "tm-281", "tm-27", "tm-583", "tm-46", "tm-720", "tm-294", "tm-16", "tm-506", "tm-13", "tm-409",
   "palmeiras-sp", "flamengo-rj", "fluminense-rj", "botafogo-rj", "tm-209", "tm-189",
@@ -64,9 +65,9 @@ function seededField(state: Pick<GameState, "clubs" | "players" | "world" | "gue
   return { clubIds: seeded, countries: Object.fromEntries(seeded.map((id) => [id, countries[id] ?? ""])) };
 }
 
-/** FIFA's 2025 field, for the game's first season. */
-export function openingClubWorldCupField(state: Pick<GameState, "clubs" | "players" | "world" | "guests">): ClubWorldCupField | null {
-  return state.guests ? seededField(state, FIRST_FIELD) : null;
+/** FIFA's 2025 field, for a game whose first season plays an edition. */
+export function openingClubWorldCupField(state: Pick<GameState, "season" | "clubs" | "players" | "world" | "guests">): ClubWorldCupField | null {
+  return state.guests && isClubWorldCupSeason(state.season) ? seededField(state, FIRST_FIELD) : null;
 }
 
 /** The league's champion this season once its matches are played, else the last one its country filed. */
@@ -106,16 +107,15 @@ function championsLeagueRanking(state: GameState): string[] {
  * Next season's field from the game state at this season's end, per confederation: its champions
  * first, whatever their country (the last four Libertadores and Champions League winners; as stand-ins
  * for the cups the game doesn't play, CONCACAF's from MLS's and Liga MX's champions and the AFC's
- * from Saudi Arabia's), then its ranking at no more than two clubs a country, then the clubs it sent
- * this season; CONCACAF's last place, FIFA's host's, to the strongest MLS club of those left out; then
- * the clubs it sent past the cap when it would leave places empty. guess: the rankings are the season's
- * Libertadores and the Champions League as it stands, the furthest first, for FIFA's four-year club
- * rankings; the other confederations keep their clubs. Null unless the season played a Club World Cup
- * to carry places from.
+ * from Saudi Arabia's), then its ranking at no more than two clubs a country, then FIFA's 2025 clubs
+ * strongest first; CONCACAF's last place, FIFA's host's, to the strongest MLS club of those left out;
+ * then the 2025 clubs past the cap when it would leave places empty. guess: the rankings are the
+ * season's Libertadores and the Champions League as it stands, the furthest first, for FIFA's four-year
+ * club rankings. Null unless next season plays an edition and the game has the cup's guests.
  */
 export function seasonEndClubWorldCupField(state: GameState): ClubWorldCupField | null {
-  const current = Object.values(state.competitions).find((c) => c.kind === "continental" && c.cup === "club-world-cup" && c.season === state.season);
-  if (current?.kind !== "continental") return null;
+  if (!state.guests || !isClubWorldCupSeason(state.season + 1)) return null;
+  const earlier = byStrength(state, FIRST_FIELD.filter((id) => countryOf(state, id)));
   const confederation = (id: string): Confederation | null => {
     const country = countryOf(state, id);
     return country ? confederationOf(country) : null;
@@ -156,13 +156,11 @@ export function seasonEndClubWorldCupField(state: GameState): ClubWorldCupField 
     };
     for (const id of champions[name]) if (id) take(id, true);
     for (const id of rankings[name]) take(id, false);
-    for (const id of current.clubIds) take(id, false);
-    if (isHost) {
-      const [host] = byStrength(state, current.clubIds.filter((id) => !picked.includes(id) && countryOf(state, id) === HOST.country));
-      if (host) take(host, true, places);
-    }
-    // Places a country's cap left empty go to the clubs it sent this season.
-    for (const id of current.clubIds) take(id, true, places);
+    for (const id of earlier) take(id, false);
+    const host = earlier.find((id) => !picked.includes(id) && countryOf(state, id) === HOST.country);
+    if (isHost && host) take(host, true, places);
+    // Places a country's cap left empty go to the 2025 clubs past it.
+    for (const id of earlier) take(id, true, places);
     return picked;
   });
   return seededField(state, field);

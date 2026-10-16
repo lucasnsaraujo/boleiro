@@ -4,7 +4,9 @@ import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, expect, test } from "vitest";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
+import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
+import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { Tables } from "./Tables.js";
 import { optionNames, pickOption } from "../controls/pickOption.js";
@@ -16,10 +18,19 @@ afterEach(() => {
   for (const close of closers.splice(0)) close();
 });
 
-async function services(coachClubId: string | null = "bahia-ba"): Promise<Services> {
+// FIFA's first Club World Cup after 2025, which a game started that season plays.
+const CLUB_WORLD_CUP_SEASON = 2029;
+
+/** The engine with a new game, in another first season than the app's through a save loaded back. */
+async function services(coachClubId: string | null = "bahia-ba", season?: number): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId, careerMode: coachClubId === null } });
+  const choices = { coachClubId, careerMode: coachClubId === null };
+  await engine.apply({ type: "newGame", seed: 7, choices });
+  if (season !== undefined) {
+    const save: object = JSON.parse(await engine.save());
+    await engine.apply({ type: "load", save: JSON.stringify({ ...save, game: newGameFromFiles(7, { ...choices, season }, bundledGameFiles) }) });
+  }
   return { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
 }
 
@@ -80,8 +91,8 @@ test("a coach without a club waits for offers from the tables instead of playing
   expect(screen.queryByRole("button", { name: "Jogar rodada" })).toBeNull();
 });
 
-test("every national division has a tab, next to the cup, CONMEBOL's cups, the Club World Cup and the club's state championship", async () => {
-  openTables(await services());
+test("every national division has a tab, next to the cup, CONMEBOL's cups, the Club World Cup in its year and the club's state championship", async () => {
+  openTables(await services("bahia-ba", CLUB_WORLD_CUP_SEASON));
   await screen.findByRole("tab", { name: "Baiano" });
   expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
     "Série A",
@@ -237,9 +248,9 @@ test("a played tie on the Libertadores bracket opens its last game's ficha", asy
 });
 
 test("a Club World Cup semi-final on the bracket is one match, not a first leg", async () => {
-  const given = await services("flamengo-rj");
+  const given = await services("flamengo-rj", CLUB_WORLD_CUP_SEASON);
   const { date } = await given.engine.read(["date"]);
-  const days = Math.round((Date.parse("2026-07-10") - Date.parse(date)) / 86_400_000);
+  const days = Math.round((Date.parse("2029-07-13") - Date.parse(date)) / 86_400_000);
   await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
   openTables(given);
   await userEvent.click(await screen.findByRole("tab", { name: "Mundial de Clubes" }));

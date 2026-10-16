@@ -10,9 +10,8 @@ export type Confederation = (typeof CONFEDERATIONS)[number];
 // FIFA's 2025 format (Wikipedia, "2025 FIFA Club World Cup"): 32 clubs, 12 from UEFA, 6 from CONMEBOL,
 // 4 each from CONCACAF, the AFC and CAF, 1 from the OFC and 1 for the host, which the game gives to
 // CONCACAF's, the 2025 host's; eight groups of four meeting once, the top two into single-match
-// knockout rounds, no third place. FIFA plays it every four years; the game plays it every season so
-// a career meets it. guess: one round a week on the Libertadores' Tuesday from the week after its
-// groups, the final on a Sunday as FIFA's was, and the same days on every calendar and format.
+// knockout rounds, no third place. guess: one round a week on the Libertadores' Tuesday from the week
+// after its groups, the final on a Sunday as FIFA's was, and the same days on every calendar and format.
 export const CLUB_WORLD_CUP_STAGES: { name: string; dates: IsoDate[] }[] = [
   { name: "groups", dates: ["2026-06-02", "2026-06-09", "2026-06-16"] },
   { name: "round-of-16", dates: ["2026-06-23"] },
@@ -20,6 +19,12 @@ export const CLUB_WORLD_CUP_STAGES: { name: string; dates: IsoDate[] }[] = [
   { name: "semi-finals", dates: ["2026-07-07"] },
   { name: "final", dates: ["2026-07-12"] },
 ];
+
+// FIFA plays it every four years, the 2025 edition's next in 2029.
+const EDITIONS = { first: 2029, every: 4 };
+
+/** Whether the season plays a Club World Cup: FIFA's editions from 2029, every four years. */
+export const isClubWorldCupSeason = (season: number): boolean => season >= EDITIONS.first && (season - EDITIONS.first) % EDITIONS.every === 0;
 
 export const CLUB_WORLD_CUP_PLACES: Record<Confederation, number> = { uefa: 12, conmebol: 6, concacaf: 5, afc: 4, caf: 4, ofc: 1 };
 
