@@ -38,6 +38,8 @@ const REFUSALS: Record<string, string> = {
   lenderNotBigger: "o clube dele não é maior que o nosso",
   lenderNeedsHim: "o clube dele não libera",
   tooOld: "velho demais para empréstimo",
+  loanLimit: "a FIFA limita a seis os emprestados acima de 21 anos",
+  loanPairLimit: "a FIFA limita a três os empréstimos entre os mesmos clubes",
   preContractSigned: "ele já assinou pré-contrato",
   alreadyAtClub: "ele já joga aqui",
   onLoan: "ele está emprestado",

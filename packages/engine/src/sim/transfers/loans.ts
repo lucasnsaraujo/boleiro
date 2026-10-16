@@ -17,6 +17,32 @@ export const LENDER_WAGE_SHARE = 0.5;
 const LENDS_CHANCE = 0.25;
 const RANK = { A: 4, B: 3, C: 2, D: 1, state: 0 } as const;
 
+// FIFA RSTP art. 10 (in force since July 2022, six from 2024/25): a club holds at most six professionals
+// over 21 loaned out and six loaned in at a time, and at most three loaned between the same two clubs,
+// any age. https://digitalhub.fifa.com/m/785652de48694c8c/original/Explanatory-Notes-on-the-New-Loan-Provisions-in-the-Regulations-on-the-Status-and-Transfer-of-Players.pdf
+// guess: FIFA left domestic loans to each association; the game applies the same limits at home, and
+// has no club-trained exemption.
+const LOANS_OVER_AGE = 6;
+const LOANS_BETWEEN_CLUBS = 3;
+
+/** Which of FIFA's loan limits lending `player` from `lenderId` to `borrowerId` would break, if any. */
+export function loanLimitOf(state: Pick<GameState, "players" | "market">, lenderId: string, borrowerId: string, player: Pick<SimPlayer, "age">): "loanLimit" | "loanPairLimit" | null {
+  let between = 0;
+  let lenderOut = 0;
+  let borrowerIn = 0;
+  for (const playerId in state.market.loans) {
+    const loan = state.market.loans[playerId];
+    const loanee = state.players[playerId];
+    if (!loan || !loanee) continue;
+    if (loan.fromClubId === lenderId && loanee.clubId === borrowerId) between++;
+    if (loanee.age <= LOAN_MAX_AGE) continue;
+    if (loan.fromClubId === lenderId) lenderOut++;
+    if (loanee.clubId === borrowerId) borrowerIn++;
+  }
+  if (between >= LOANS_BETWEEN_CLUBS) return "loanPairLimit";
+  return player.age > LOAN_MAX_AGE && (lenderOut >= LOANS_OVER_AGE || borrowerIn >= LOANS_OVER_AGE) ? "loanLimit" : null;
+}
+
 /** A loan to 31 December, or to 30 June when it starts in the first half of the year. */
 export function loanUntil(date: string): string {
   return date.slice(5) < "07-01" ? `${date.slice(0, 4)}-06-30` : `${date.slice(0, 4)}-12-31`;
@@ -65,7 +91,7 @@ export function lendYoungPlayers(state: GameState, random: () => number): { stat
     if (!player) continue;
     const start = Math.floor(random() * borrowers.length);
     const borrowerId = [...borrowers.slice(start), ...borrowers.slice(0, start)].find((id) => {
-      if (isClubFull(next, id, view.squad(id).length)) return false;
+      if (isClubFull(next, id, view.squad(id).length) || loanLimitOf(next, lenderId, id, player)) return false;
       const lineup = pickLineup([...view.squad(id)]);
       return lineup.some((p) => p.group === player.group && p.strength < player.strength);
     });

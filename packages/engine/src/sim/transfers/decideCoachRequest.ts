@@ -9,7 +9,7 @@ import { isClubFull } from "./squadCap.js";
 import type { Counter } from "./transferMarket.js";
 import { contractEnd } from "./expireContracts.js";
 import { releaseClauseOf } from "./releaseClause.js";
-import { LENDER_WAGE_SHARE, LOAN_MAX_AGE, loanUntil } from "./loans.js";
+import { LENDER_WAGE_SHARE, LOAN_MAX_AGE, loanLimitOf, loanUntil } from "./loans.js";
 import { marketView, type MarketView } from "./marketView.js";
 import { movePlayer, type Transfer } from "./movePlayer.js";
 import { ASKING_PREMIUM, isInPreContractWindow, MIN_SQUAD } from "./tradeBetweenClubs.js";
@@ -167,6 +167,8 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       if (RANK[view.tier(player.clubId)] <= RANK[view.tier(coachClubId)]) return refuse(state, request, "lenderNotBigger");
       if (pickLineup([...view.squad(player.clubId)]).includes(player)) return refuse(state, request, "lenderNeedsHim");
+      const limit = loanLimitOf(state, player.clubId, coachClubId, player);
+      if (limit) return refuse(state, request, limit);
       const share = Math.round(player.wage * (1 - LENDER_WAGE_SHARE));
       const refused = boardRefusal(finance, bill, { upFront: 0, wageChange: share });
       if (refused) return refuse(state, request, refused);
@@ -180,7 +182,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       if (player.age > LOAN_MAX_AGE) return refuse(state, request, "tooOld");
       const borrowerId = Object.keys(state.finances).sort().find((id) =>
-        RANK[view.tier(id)] < RANK[view.tier(coachClubId)] && pickLineup([...view.squad(id)]).some((p) => p.group === player.group && p.strength < player.strength));
+        RANK[view.tier(id)] < RANK[view.tier(coachClubId)] && !loanLimitOf(state, coachClubId, id, player) && pickLineup([...view.squad(id)]).some((p) => p.group === player.group && p.strength < player.strength));
       if (!borrowerId) return refuse(state, request, "noBorrower");
       return approve(state, request, { playerId: player.id, kind: "loan", toClubId: borrowerId, fee: 0, loan: { fromClubId: coachClubId, until: loanUntil(state.date), lenderWageShare: LENDER_WAGE_SHARE, buyOption: null } });
     }
