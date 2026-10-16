@@ -4,6 +4,7 @@ import { scoringFactor } from "../../engine/sendOffRates.js";
 import type { Booking } from "../discipline/drawCards.js";
 import type { SimPlayer } from "../gameState.js";
 import { scorersOf } from "../history/scorersOf.js";
+import type { RefereeCall } from "../referees/refereeCalls.js";
 import type { OrderOverruled, ShootoutKick } from "../settleShootout.js";
 import { aiSubstitutions, onPitchAt, whoPlayed } from "./aiSubstitutions.js";
 import { describeGoals, drawPenaltyMisses, type GoalEvent, type GoalSide, type PenaltyMiss } from "./goalDetails.js";
@@ -17,6 +18,7 @@ export type MatchEvent =
   | { type: "substitution"; minute: number; clubId: string; playerId: string; offId: string }
   | { type: "halfTime"; minute: typeof HALF_TIME }
   | { type: "fullTime"; minute: typeof FULL_TIME }
+  | RefereeCall
   | OrderOverruled
   | ShootoutKick;
 
@@ -83,6 +85,8 @@ const RANK: Record<MatchEvent["type"], number> = {
   penaltyMiss: 0,
   card: 0,
   injury: 0,
+  varCheck: 0.5,
+  wrongCall: 0.5,
   halfTime: 1,
   substitution: 2,
   fullTime: 3,
@@ -90,9 +94,12 @@ const RANK: Record<MatchEvent["type"], number> = {
   shootoutKick: 5,
 };
 
+// VAR gives a penalty or a red card before it is taken or shown, and checks a goal after it goes in.
+const rankOf = (e: MatchEvent) => (e.type === "varCheck" && (e.decision === "penaltyAwarded" || e.decision === "redCardGiven") ? -0.5 : RANK[e.type]);
+
 /** Events in the order they happened; substitutions at minute 45 are made at half-time, a shootout comes after full time. */
 export function inMatchOrder(events: readonly MatchEvent[]): MatchEvent[] {
-  return [...events].sort((a, b) => a.minute - b.minute || RANK[a.type] - RANK[b.type]);
+  return [...events].sort((a, b) => a.minute - b.minute || rankOf(a) - rankOf(b));
 }
 
 export const sentOffMinute = (events: readonly MatchEvent[], playerId: string): number | undefined =>

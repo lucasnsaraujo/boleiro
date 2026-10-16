@@ -6,6 +6,8 @@ import { CARD_RATES, cardCompetitionOf } from "../discipline/cardRates.js";
 import { countCards, drawCards, markedCardRates, sendOffMinutes } from "../discipline/drawCards.js";
 import { openDisciplineDay } from "../discipline/recordCards.js";
 import { refuseSuspended } from "../discipline/suspendedPlayers.js";
+import { matchOfficials, refereedCardRates } from "../referees/matchOfficials.js";
+import { withRefereeCalls } from "../referees/refereeCalls.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import type { MatchSheets } from "../history/recordMatches.js";
 import { clubMood } from "../morale/clubMood.js";
@@ -107,7 +109,8 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     };
     const formStrengthOf = (p: SimPlayer) => formStrength(formOf(p));
     const setup = matchSetup(state, fixture, available, coach, waiting, formStrengthOf);
-    const cardRates = CARD_RATES[cardCompetitionOf(competition)];
+    const officials = matchOfficials(state.seed, competition, fixture);
+    const cardRates = refereedCardRates(CARD_RATES[cardCompetitionOf(competition)], officials);
     const markingOf = (clubId: string) => planOf(clubId)?.tactics.marking;
     const bookings = drawCards(setup.homeLineup, setup.awayLineup, markedCardRates(cardRates, { home: markingOf(fixture.homeId), away: markingOf(fixture.awayId) }), random.next);
     const params = withoutCrowd(paramsForCompetition(competition), clubMood(state, fixture.homeId));
@@ -169,7 +172,15 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
       [...mayComeOn(homeId, setup.homeLineup, benches.home), ...mayComeOn(awayId, setup.awayLineup, benches.away)],
       formOf,
     );
-    matches.push({ fixtureId: fixture.id, homeId, awayId, formations: setup.formations, events: inMatchOrder([...timeline.events, ...settled.events]), play });
+    const callSide = (clubId: string, lineup: readonly SimPlayer[], bench: readonly SimPlayer[]) => ({ clubId, onPitch: (minute: number) => onPitchAt(lineup, bench, timeline.events, clubId, minute) });
+    const told = withRefereeCalls(inMatchOrder([...timeline.events, ...settled.events]), {
+      seed: state.seed,
+      fixtureId: fixture.id,
+      officials,
+      home: callSide(homeId, setup.homeLineup, benches.home),
+      away: callSide(awayId, setup.awayLineup, benches.away),
+    });
+    matches.push({ fixtureId: fixture.id, homeId, awayId, formations: setup.formations, events: told, play });
     const lineups = timeline.played;
 
     // The seated coach's match opens for him; one between two waiting coaches, for the first of them.
