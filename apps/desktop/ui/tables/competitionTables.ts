@@ -181,6 +181,7 @@ function stateRanking(competition: StateCompetition, groups: readonly string[][]
 const CONTINENTAL_GROUP_ZONES: Record<string, Zoning> = {
   libertadores: { zoneOf: (_, position) => (position <= 2 ? "advance" : position === 3 ? "sulAmericana" : null), advanceLabel: "Oitavas" },
   "sul-americana": { zoneOf: (_, position) => (position <= 2 ? "advance" : null), advanceLabel: "Mata-mata" },
+  "club-world-cup": { zoneOf: (_, position) => (position <= 2 ? "advance" : null), advanceLabel: "Oitavas" },
 };
 
 function zoning(competition: Competition, stage: number, groups: readonly string[][], stageFixtures: readonly Fixture[], copa: CopaFinalists): Zoning {

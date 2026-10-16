@@ -38,8 +38,17 @@ import venezuela from "@boleiro/data/pack/world/ve.pack.json.gz?gunzip";
 import saudiArabia from "@boleiro/data/pack/world/sa.pack.json.gz?gunzip";
 import unitedStates from "@boleiro/data/pack/world/us.pack.json.gz?gunzip";
 import mexico from "@boleiro/data/pack/world/mx.pack.json.gz?gunzip";
+import emirates from "@boleiro/data/pack/world/ae.pack.json.gz?gunzip";
+import egypt from "@boleiro/data/pack/world/eg.pack.json.gz?gunzip";
+import japan from "@boleiro/data/pack/world/jp.pack.json.gz?gunzip";
+import korea from "@boleiro/data/pack/world/kr.pack.json.gz?gunzip";
+import morocco from "@boleiro/data/pack/world/ma.pack.json.gz?gunzip";
+import newZealand from "@boleiro/data/pack/world/nz.pack.json.gz?gunzip";
+import tunisia from "@boleiro/data/pack/world/tn.pack.json.gz?gunzip";
+import southAfrica from "@boleiro/data/pack/world/za.pack.json.gz?gunzip";
 import type { GameFiles } from "@boleiro/engine/sim/loadNewGame";
 import { europeStart } from "@boleiro/engine/sim/world/europe";
+import { guestsStart } from "@boleiro/engine/sim/world/guests";
 import { marketLeaguesStart } from "@boleiro/engine/sim/world/marketLeagues";
 import { southAmericaStart } from "@boleiro/engine/sim/world/southAmerica";
 
@@ -50,9 +59,11 @@ const EUROPE_PACKS = [
   croatia, ukraine, poland, norway, slovakia, slovenia, hungary, bulgaria, cyprus, armenia, israel, azerbaijan,
 ].map((text) => parseWorldPack(text));
 const MARKET_PACKS = [saudiArabia, unitedStates, mexico].map((text) => parseWorldPack(text));
+const GUEST_PACKS = [emirates, egypt, japan, korea, morocco, newZealand, tunisia, southAfrica].map((text) => parseWorldPack(text));
 
-/** Brazil's pack and the result-only countries of South America, Europe and the market leagues, as a new game in the app plays them. */
+/** Brazil's pack, the result-only countries of South America, Europe and the market leagues, and the Club World Cup's guests, as a new game in the app plays them. */
 export const bundledGameFiles: GameFiles = {
   ...parsePack(pack),
   world: [...southAmericaStart(SOUTH_AMERICA_PACKS, FIRST_SEASON), ...europeStart(EUROPE_PACKS, FIRST_SEASON), ...marketLeaguesStart(MARKET_PACKS, FIRST_SEASON)],
+  guests: guestsStart(GUEST_PACKS, FIRST_SEASON),
 };

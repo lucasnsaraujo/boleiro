@@ -80,7 +80,7 @@ test("a coach without a club waits for offers from the tables instead of playing
   expect(screen.queryByRole("button", { name: "Jogar rodada" })).toBeNull();
 });
 
-test("every national division has a tab, next to the cup, CONMEBOL's cups and the club's state championship", async () => {
+test("every national division has a tab, next to the cup, CONMEBOL's cups, the Club World Cup and the club's state championship", async () => {
   openTables(await services());
   await screen.findByRole("tab", { name: "Baiano" });
   expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
@@ -91,6 +91,7 @@ test("every national division has a tab, next to the cup, CONMEBOL's cups and th
     "Copa do Brasil",
     "Libertadores",
     "Sul-Americana",
+    "Mundial de Clubes",
     "Baiano",
     "Outras ligas",
   ]);

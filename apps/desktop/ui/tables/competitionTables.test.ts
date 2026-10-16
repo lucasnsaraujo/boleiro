@@ -292,8 +292,8 @@ describe("CONMEBOL's cups and South America's leagues", () => {
   const libertadores = flamengo.competitions["libertadores-2026"];
   if (libertadores?.kind !== "continental") throw new Error("no Libertadores");
 
-  test("the coach's club sees the cups it plays after Brazil's, the Libertadores and Sul-Americana tabs after the Copa do Brasil", () => {
-    expect(coachCompetitions(flamengo).map((c) => c.id)).toEqual(["state-rj-2026", "serie-a-2026", "copa-do-brasil-2026", "libertadores-2026", "recopa-2026"]);
+  test("the coach's club sees the cups it plays after Brazil's, the Libertadores, Sul-Americana and Club World Cup tabs after the Copa do Brasil", () => {
+    expect(coachCompetitions(flamengo).map((c) => c.id)).toEqual(["state-rj-2026", "serie-a-2026", "copa-do-brasil-2026", "libertadores-2026", "recopa-2026", "club-world-cup-2026"]);
     expect(tableTabs(flamengo).tabs.map((c) => c.id)).toEqual([
       "serie-a-2026",
       "serie-b-2026",
@@ -303,6 +303,7 @@ describe("CONMEBOL's cups and South America's leagues", () => {
       "libertadores-2026",
       "sul-americana-2026",
       "recopa-2026",
+      "club-world-cup-2026",
       "state-rj-2026",
     ]);
     expect(tableTabs({ ...flamengo, coachClubId: "bahia-ba" }).tabs.map((c) => c.id)).not.toContain("recopa-2026");
