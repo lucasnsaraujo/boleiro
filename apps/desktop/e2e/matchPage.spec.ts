@@ -12,14 +12,24 @@ async function playDaysBefore(page: Page, date: string) {
   }, date);
 }
 
+/** Plays on from the hub to the coach's next match day and kicks the round off; a day with news opens the paper over the play button. */
+async function toKickOff(page: Page) {
+  const play = page.getByRole("button", { name: "Jogar rodada" });
+  const lineup = page.getByRole("dialog", { name: "Escalação" });
+  const paper = page.getByRole("dialog", { name: "Jornal" });
+  for (let day = 0; day < 10 && !(await lineup.isVisible()); day++) {
+    if (await paper.isVisible()) await page.getByRole("button", { name: /^Jornal/ }).click();
+    await play.click();
+    await expect(lineup.or(play)).toBeVisible({ timeout: 60_000 });
+  }
+  await lineup.getByRole("button", { name: "Começar a rodada" }).click();
+}
+
 test("a match on the live board opens in the panel, Ver ficha completa opens its tabs, and the round plays on to the end", async ({ page }) => {
   test.setTimeout(3 * 60_000);
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Tite" });
-  await page.getByRole("button", { name: "Jogar rodada" }).click();
-  const lineup = page.getByRole("dialog", { name: "Escalação" });
-  await expect(lineup).toBeVisible({ timeout: 30_000 });
-  await lineup.getByRole("button", { name: "Começar a rodada" }).click();
+  await toKickOff(page);
   await expect(page.getByRole("region", { name: "Seu jogo" })).toBeVisible();
 
   const rows = page.getByRole("button", { name: /^Ficha do jogo: / });
@@ -69,7 +79,7 @@ test("a played match opens from the calendar and from a table's form marks, and 
   await page.getByRole("tab", { name: "Outras ligas" }).click();
   await pickOption(page.getByRole("combobox", { name: "Liga" }), "Argentina");
   const leader = page.getByRole("tabpanel", { name: "Argentina" }).getByRole("row").nth(1);
-  await leader.getByRole("button", { name: /^vitória, ficha do jogo$/ }).first().click();
+  await leader.getByRole("button", { name: /^Vitória, ficha do jogo$/ }).first().click();
   const goals = panel.getByRole("list", { name: "Gols" }).getByRole("listitem");
   await expect(goals.first()).toBeVisible();
   for (const goal of await goals.all()) await expect(goal).toHaveText(/\S+.*\d+'/);
