@@ -38,7 +38,6 @@ const INBOX_LINES = 7;
 const LATER = [
   { label: "Patrocínio", icon: "handshake", title: "Patrocínios" },
   { label: "Auxiliar", icon: "user-switch", title: "Auxiliar técnico" },
-  { label: "Entrosamento", icon: "users-three", title: "Entrosamento" },
 ] as const;
 
 export function Hub() {
@@ -247,6 +246,17 @@ export function Hub() {
               {label}
             </span>
           ))}
+          {club ? (
+            <Link to="/chemistry" className="hub-dock-item" title="Entrosamento">
+              <i className="ph-bold ph-users-three" aria-hidden="true" />
+              Entrosamento
+            </Link>
+          ) : (
+            <span className="hub-dock-item off" aria-disabled="true" title="Sem clube, sem entrosamento">
+              <i className="ph-bold ph-users-three" aria-hidden="true" />
+              Entrosamento
+            </span>
+          )}
           <button className="hub-dock-item" aria-expanded={isPaperOpen} aria-controls="hub-paper" title="Jornal" onClick={() => setPaperOpen(!isPaperOpen)}>
             <i className="ph-bold ph-newspaper" aria-hidden="true" />
             Jornal

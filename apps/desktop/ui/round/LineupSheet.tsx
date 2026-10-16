@@ -63,7 +63,12 @@ type Props = {
   coachStep?: CoachStep;
   /** What the tactics panel needs to open from the sheet. */
   tacticsContext?: TacticsContext;
+  /** Before kick-off, the club's chemistry meter and its captain, whom the coach can change. */
+  chemistry?: Captaincy;
 };
+
+/** The club's chemistry meter, its captain, the assistant's pick for the armband, and how the coach names another. */
+export type Captaincy = { value: number; captainId: string | null; suggestedId: string | null; onName: (playerId: string) => Promise<number> };
 
 function shirtName(name: string): string {
   if (name.length <= SHIRT_NAME_LENGTH) return name;
@@ -118,8 +123,11 @@ function MiniPitch({ formation }: { formation: Formation }) {
 }
 
 /** The lineup: the eleven on the pitch where the formation puts them, tactics and the bench, before kick-off or during the coach's match. */
-export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, opponent, coachStep, tacticsContext }: Props) {
+export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, opponent, coachStep, tacticsContext, chemistry }: Props) {
   const [sheet, setSheet] = useState(() => openSheet(lineup, tactics));
+  const [captainId, setCaptainId] = useState(chemistry?.captainId ?? null);
+  const [captainFailure, setCaptainFailure] = useState<string | null>(null);
+  const [chemistryValue, setChemistryValue] = useState(chemistry?.value ?? 0);
   // The substitute who just came on, whose sticker lands on the pitch.
   const [justIn, setJustIn] = useState<string | null>(null);
   const { engine: sound } = useSound();
@@ -173,6 +181,20 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
   });
 
   /** The assistant's eleven for the formation asked about; if the coach changed formation meanwhile, it is left out. */
+  /** Hands the armband to `playerId` at once; the meter follows his standing. */
+  async function nameCaptain(playerId: string) {
+    if (!chemistry || !playerId) return;
+    const before = captainId;
+    setCaptainId(playerId);
+    setCaptainFailure(null);
+    try {
+      setChemistryValue(await chemistry.onName(playerId));
+    } catch {
+      setCaptainId(before);
+      setCaptainFailure("O capitão não mudou. Tente de novo.");
+    }
+  }
+
   async function pickBest() {
     if (!onPickTeam) return;
     const { formation } = sheet.tactics;
@@ -252,6 +274,11 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
         disabled={!canPick(sheet, mode, p.id)}
         onClick={() => setSheet((s) => pick(s, mode, p.id))}
       >
+        {p.id === captainId && (
+          <span className="pl-cap" title="Capitão">
+            C
+          </span>
+        )}
         <span className="pl-top">
           <Position player={p} />
           <b>
@@ -372,6 +399,18 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
                 }}
               />
             </div>
+            {chemistry && (
+              <div className="lineup-field">
+                <h3 id="captain-title">Capitão</h3>
+                <Select
+                  label="Capitão"
+                  caption={null}
+                  value={captainId ?? ""}
+                  options={squad.map((p) => ({ value: p.id, label: p.id === chemistry.suggestedId ? `${p.name} · sugestão do auxiliar` : p.name }))}
+                  onChange={(value) => void nameCaptain(value)}
+                />
+              </div>
+            )}
             {tacticsContext && (
               <button className="btn sm lineup-tactics" onClick={() => setTacticsOpen(true)}>
                 <i className="ph-bold ph-strategy" aria-hidden="true" />
@@ -405,7 +444,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
 
           <div className="lineup-hint-row">
             <p className="lineup-hint" role="status">
-              {error ?? pickFailure ?? hintOf(sheet, mode, squad, problem, drag)}
+              {error ?? pickFailure ?? captainFailure ?? hintOf(sheet, mode, squad, problem, drag)}
             </p>
             {onLeave && (
               <button className="btn flat sm" onClick={onLeave}>
@@ -429,6 +468,12 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
                 )}
               </b>
             </div>
+            {chemistry && (
+              <div className="lineup-strength lineup-chemistry">
+                <span>Entrosamento</span>
+                <b>{chemistryValue}</b>
+              </div>
+            )}
             {onPickTeam && (
               <button className="btn" title="O auxiliar escala os 11 melhores na formação" disabled={isPicking} onClick={() => void pickBest()}>
                 <i className="ph-bold ph-strategy" aria-hidden="true" />

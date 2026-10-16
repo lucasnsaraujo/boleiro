@@ -310,12 +310,28 @@ function playEvents() {
   return { recorded, pending, answered, before, after, inbox };
 }
 
+/** Names the coach's least likely captain, plays to the next match day and saves. */
+function playCaptain() {
+  const recorded = recordedSession();
+  const { session, apply } = recorded;
+  apply({ type: "newGame", seed: SEED, choices: { coachClubId: CLUB } });
+  const before = session.chemistry();
+  const kid = before?.candidates.at(-1);
+  if (!before || !kid) throw new Error("the coach's club has a chemistry screen");
+  apply({ type: "nameCaptain", playerId: kid.playerId });
+  const named = session.chemistry();
+  apply({ type: "playToMatchDay" });
+  const plan = session.matchDayPlan();
+  return { recorded, before, kid, named, plan, save: session.save() };
+}
+
 let season: Season;
 let career: ReturnType<typeof playCareerStart>;
 let marketWindow: ReturnType<typeof playMarketWindow>;
 let money: ReturnType<typeof playMoney>;
 let academy: ReturnType<typeof playAcademy>;
 let events: ReturnType<typeof playEvents>;
+let captain: ReturnType<typeof playCaptain>;
 
 beforeAll(() => {
   season = playSeason();
@@ -324,7 +340,35 @@ beforeAll(() => {
   money = playMoney();
   academy = playAcademy();
   events = playEvents();
+  captain = playCaptain();
 }, 120_000);
+
+test("the coach names a captain: the chemistry screen and the lineup sheet show him, a save keeps him, and the meter pays for his lack of standing", () => {
+  const { before, kid, named, plan, save } = captain;
+  expect(before.captain?.isNamed).toBe(false);
+  expect(named?.captain).toMatchObject({ playerId: kid.playerId, isNamed: true });
+  expect(named?.value ?? 100).toBeLessThan(before.value);
+  expect(plan.chemistry.captainId).toBe(kid.playerId);
+  expect(plan.chemistry.suggestedCaptainId).toBe(before.candidates[0]?.playerId);
+  const reloaded = createEngineSession(bundledGameFiles);
+  reloaded.apply({ type: "load", save: JSON.parse(save) });
+  expect(reloaded.chemistry()?.captain?.playerId).toBe(kid.playerId);
+});
+
+test("the chemistry screen draws the eleven in its formation with lines between known players", () => {
+  const page = captain.before;
+  expect(page.players.filter((p) => !p.isReserve)).toHaveLength(11);
+  for (const link of page.links) for (const id of link.playerIds) expect(page.players.map((p) => p.id)).toContain(id);
+  expect(page.links.some((link) => link.kind === "good")).toBe(true);
+  expect(page.reasons.reduce((sum, r) => sum + r.points, 50)).toBe(page.value);
+});
+
+test("a captain from another club is refused", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: SEED, choices: { coachClubId: CLUB } });
+  const other = Object.values(session.read(["players"]).players).find((p) => p.clubId !== CLUB);
+  expect(() => session.apply({ type: "nameCaptain", playerId: other?.id ?? "" })).toThrow();
+});
 
 test("an event that asks the coach waits for his answer, the answer lands, and the log replays alike", () => {
   const { pending, answered, before, after, recorded, inbox } = events;
@@ -452,7 +496,7 @@ test("the money commands survive JSON and replay alike from the same seed", () =
 });
 
 test("the season, career, market, money, academy and hot-seat logs between them send every kind of command", () => {
-  const logs = [season, career, marketWindow, money, academy, events, playHotSeatTurn()].flatMap(({ recorded }) => recorded.applied);
+  const logs = [season, career, marketWindow, money, academy, events, captain, playHotSeatTurn()].flatMap(({ recorded }) => recorded.applied);
   const sent = new Set(logs.map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
@@ -482,6 +526,7 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     spendMarketTime: true,
     answerEvent: true,
     handToAssistant: true,
+    nameCaptain: true,
   };
   expect([...sent].sort()).toEqual(Object.keys(every).sort());
 });
