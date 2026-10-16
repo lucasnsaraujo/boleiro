@@ -164,14 +164,17 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const events: DayEvent[] = [...day.events, ...refereeCallsOf(live)];
   let { fixtures } = day;
 
-  const clubStates: Record<string, State> = Object.fromEntries(Object.values(state.clubs).flatMap((club) => (club.state ? [[club.id, club.state]] : [])));
+  // Only a day that ends a stage needs the clubs' states.
+  let clubStates: Record<string, State> | undefined;
   const competitions = { ...state.competitions };
   const byCompetition = fixturesByCompetition(fixtures);
   for (const competition of Object.values(state.competitions)) {
+    if (competition.stages.length >= competition.stageDates.length) continue;
     const own = byCompetition.get(competition.id) ?? [];
     const current = competition.stages.length - 1;
     const stageDone = own.filter((f) => f.stage === current).every((f) => f.result !== null);
-    if (!stageDone || competition.stages.length >= competition.stageDates.length) continue;
+    if (!stageDone) continue;
+    clubStates ??= Object.fromEntries(Object.values(state.clubs).flatMap((club) => (club.state ? [[club.id, club.state]] : [])));
     const opened = openNextStage(competition, own, clubStates, { competitions, fixtures });
     competitions[competition.id] = opened.competition;
     fixtures = [...fixtures, ...opened.fixtures];
