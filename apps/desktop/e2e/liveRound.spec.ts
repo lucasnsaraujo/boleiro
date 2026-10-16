@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { backToStart, leaveIncident, news, savedGames, startAtClub } from "./flows.js";
 
 const MAX_PRESSES = 5;
-// Half-time and every goal against, red card or injury of the coach's side stop the clock.
+// Half-time and every red card or injury of the coach's side stop the clock; a goal never does.
 const MAX_STOPS = 30;
 
 test("from the hub, set the lineup, play the round live with a substitution, and land back on the hub with the result saved", async ({ page }) => {

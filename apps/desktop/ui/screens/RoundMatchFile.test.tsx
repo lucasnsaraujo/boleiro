@@ -75,7 +75,7 @@ test("the panel follows the round as it runs: a goal on the board lands in the p
   await user().click(screen.getByRole("button", { name: `Ficha do jogo: ${home} x ${away}` }));
   expect(within(await panel()).getByLabelText(`${home} 0 x 0 ${away}`)).toBeTruthy();
   const scored = goal.clubId === match.homeId ? `${home} 1 x 0 ${away}` : `${home} 0 x 1 ${away}`;
-  // The clock stops by itself on the coach's goals and incidents: keep it going until the goal's minute is shown.
+  // The clock stops by itself on the coach's incidents: keep it going until the goal's minute is shown.
   for (let step = 0; step < 30 && !within(screen.getByRole("dialog", { name: "Ficha do jogo" })).queryByLabelText(scored); step++) {
     play(goal.minute);
     const resume = screen.queryByRole("button", { name: "1x" });
