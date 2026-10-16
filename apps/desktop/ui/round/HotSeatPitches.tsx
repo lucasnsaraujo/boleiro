@@ -66,7 +66,8 @@ export function HotSeatPitches({ seats, focus, onFocus, round, minute, isRunning
     const isWrapping = Math.abs(place - before) > 1;
     return {
       width: focusWidth,
-      transform: `translate3d(${viewport / 2 - focusWidth / 2 + place * (focusWidth + SEAT_GAP_PX)}px, 0, 0) scale(${place === 0 ? 1 : 0.84})`,
+      // Scaled after the move, so a neighbour's shrink also pulls it in toward the board in focus.
+      transform: `scale(${place === 0 ? 1 : 0.84}) translate3d(${viewport / 2 - focusWidth / 2 + place * (focusWidth + SEAT_GAP_PX)}px, 0, 0)`,
       opacity: place === 0 ? 1 : Math.abs(place) > 1 ? 0 : 0.42,
       transition: isWrapping || isReduced ? "none" : `transform ${SLIDE.duration}ms ${SLIDE.easing}, opacity 420ms var(--e-out)`,
     };
