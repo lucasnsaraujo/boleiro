@@ -218,6 +218,10 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         return event.sold ? null : [`Leilão de ${playerName(event.playerId)} termina sem lances`, "neutral"];
       case "counterOffered":
         return [`${clubName(event.clubId)} pede ${formatMoney(event.fee)} por ${playerName(event.playerId)}`, "neutral"];
+      case "eventHappened":
+        return !event.asksCoach && isOurs(event.clubId) ? [event.headline, "neutral"] : null;
+      case "eventAnswered":
+        return isOurs(event.clubId) ? [event.byAssistant ? `O auxiliar respondeu: ${event.headline}` : event.headline, "neutral"] : null;
       case "requestDecided": {
         // The counter-offer's own line says what the club asks.
         if (event.reason === "counterOffer") return null;
