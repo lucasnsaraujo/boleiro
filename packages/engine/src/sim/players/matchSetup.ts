@@ -46,7 +46,7 @@ export function playingStrength(state: GameState, clubId: string, context: Match
 }
 
 /** An eleven as the engine sees it; with tactics, placed in their formation by position, with their posture, marking, play and penalty taker. */
-export function engineTeam(name: string, lineup: readonly SimPlayer[], strength: (player: SimPlayer) => number, tactics?: Tactics): Team {
+export function engineTeam<P extends Pick<SimPlayer, "id" | "name" | "group" | "positions">>(name: string, lineup: readonly P[], strength: (player: P) => number, tactics?: Tactics): Team {
   const players = lineup.map((p) => ({ name: p.name, group: p.group, strength: strength(p), ...(p.positions ? { positions: p.positions } : {}) }));
   if (!tactics) return { name, players };
   const taker = players[lineup.findIndex((p) => p.id === tactics.penaltyTakerId)];
