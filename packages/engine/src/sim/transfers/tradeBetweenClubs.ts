@@ -32,10 +32,10 @@ type Pools = Record<PositionGroup, SimPlayer[]>;
 
 function poolsOf(state: GameState): Pools {
   const pools: Pools = { GK: [], DEF: [], MID: [], ATT: [] };
-  for (const p of Object.values(state.players)) {
-    if (state.market.loans[p.id] || state.market.preContracts[p.id]) continue;
-    pools[p.group].push(p);
-  }
+  // Loans and pre-contracts are few: a set of their players beats two lookups per player of the game.
+  const { loans, preContracts } = state.market;
+  const tied = new Set([...Object.keys(loans).filter((id) => loans[id]), ...Object.keys(preContracts).filter((id) => preContracts[id])]);
+  for (const p of Object.values(state.players)) if (!tied.has(p.id)) pools[p.group].push(p);
   for (const pool of Object.values(pools)) pool.sort((a, b) => a.strength - b.strength || a.id.localeCompare(b.id));
   return pools;
 }
