@@ -35,8 +35,12 @@ import turkey from "@boleiro/data/pack/world/tr.pack.json.gz?gunzip";
 import ukraine from "@boleiro/data/pack/world/ua.pack.json.gz?gunzip";
 import uruguay from "@boleiro/data/pack/world/uy.pack.json.gz?gunzip";
 import venezuela from "@boleiro/data/pack/world/ve.pack.json.gz?gunzip";
+import saudiArabia from "@boleiro/data/pack/world/sa.pack.json.gz?gunzip";
+import unitedStates from "@boleiro/data/pack/world/us.pack.json.gz?gunzip";
+import mexico from "@boleiro/data/pack/world/mx.pack.json.gz?gunzip";
 import type { GameFiles } from "@boleiro/engine/sim/loadNewGame";
 import { europeStart } from "@boleiro/engine/sim/world/europe";
+import { marketLeaguesStart } from "@boleiro/engine/sim/world/marketLeagues";
 import { southAmericaStart } from "@boleiro/engine/sim/world/southAmerica";
 
 const FIRST_SEASON = 2026;
@@ -45,9 +49,10 @@ const EUROPE_PACKS = [
   england, spain, italy, germany, france, portugal, netherlands, turkey, belgium, scotland, austria, greece, czechia,
   croatia, ukraine, poland, norway, slovakia, slovenia, hungary, bulgaria, cyprus, armenia, israel, azerbaijan,
 ].map((text) => parseWorldPack(text));
+const MARKET_PACKS = [saudiArabia, unitedStates, mexico].map((text) => parseWorldPack(text));
 
-/** Brazil's pack and the result-only countries of South America and Europe, as a new game in the app plays them. */
+/** Brazil's pack and the result-only countries of South America, Europe and the market leagues, as a new game in the app plays them. */
 export const bundledGameFiles: GameFiles = {
   ...parsePack(pack),
-  world: [...southAmericaStart(SOUTH_AMERICA_PACKS, FIRST_SEASON), ...europeStart(EUROPE_PACKS, FIRST_SEASON)],
+  world: [...southAmericaStart(SOUTH_AMERICA_PACKS, FIRST_SEASON), ...europeStart(EUROPE_PACKS, FIRST_SEASON), ...marketLeaguesStart(MARKET_PACKS, FIRST_SEASON)],
 };

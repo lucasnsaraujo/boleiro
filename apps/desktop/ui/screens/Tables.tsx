@@ -87,6 +87,12 @@ const EUROPE = [
   { id: "il", name: "Israel" },
   { id: "az", name: "Azerbaijão" },
 ];
+// The market leagues, as Brazilians name their countries.
+const MARKET_LEAGUES = [
+  { id: "sa", name: "Arábia Saudita" },
+  { id: "us", name: "Estados Unidos" },
+  { id: "mx", name: "México" },
+];
 const UEFA_NAMES: Record<LeaguePhaseCup["cup"], string> = { "champions-league": "Champions League", "europa-league": "Europa League" };
 /** A UEFA cup is picked under "Outras ligas" by this id. */
 const uefaPick = (cup: LeaguePhaseCup["cup"]) => `uefa:${cup}`;
@@ -128,8 +134,8 @@ export function Tables() {
     };
   }, [engine]);
 
-  const { tabs, otherStates, southAmerica, europe, clubs } = useMemo(() => {
-    if (!state) return { tabs: [], otherStates: [], southAmerica: [], europe: [], clubs: WORLD_FACES };
+  const { tabs, otherStates, southAmerica, europe, markets, clubs } = useMemo(() => {
+    if (!state) return { tabs: [], otherStates: [], southAmerica: [], europe: [], markets: [], clubs: WORLD_FACES };
     const found = tableTabs(state);
     return {
       tabs: found.tabs,
@@ -137,6 +143,7 @@ export function Tables() {
       // A country in the full tier shows its leagues with the game's own tables, not as a result-only one.
       southAmerica: SOUTH_AMERICA.filter((country) => state.world?.[country.id] && !state.world[country.id]?.isFullTier),
       europe: EUROPE.filter((country) => state.world?.[country.id] && !state.world[country.id]?.isFullTier),
+      markets: MARKET_LEAGUES.filter((country) => state.world?.[country.id] && !state.world[country.id]?.isFullTier),
       clubs: { ...WORLD_FACES, ...state.clubs },
     };
   }, [state]);
@@ -145,7 +152,7 @@ export function Tables() {
   if (!state) return <p className="status">Abrindo as tabelas…</p>;
 
   const all = [...tabs, ...otherStates];
-  const countries = [...southAmerica, ...europe];
+  const countries = [...southAmerica, ...europe, ...markets];
   const uefaCups = state.europe?.cups ?? [];
   const others = [...otherStates.map((c) => c.id), ...countries.map((c) => worldPick(c.id)), ...uefaCups.map((c) => uefaPick(c.cup))];
   const nextId = nextMatch(state)?.fixture.competitionId;
@@ -170,6 +177,7 @@ export function Tables() {
         ...southAmerica.map((c) => ({ value: worldPick(c.id), label: c.name, group: "América do Sul" })),
         ...uefaCups.map((c) => ({ value: uefaPick(c.cup), label: UEFA_NAMES[c.cup], group: "Copas europeias" })),
         ...europe.map((c) => ({ value: worldPick(c.id), label: c.name, group: "Europa" })),
+        ...markets.map((c) => ({ value: worldPick(c.id), label: c.name, group: "Ásia e América do Norte" })),
       ]}
       onChange={(value) => {
         setOtherId(value);
