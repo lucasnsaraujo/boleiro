@@ -65,6 +65,13 @@ describe("the newspaper's account of a match", () => {
     expect(story(page).report[0]).toBe("Palmeiras vence Flamengo por 2 a 0 no Maracanã.");
   });
 
+  it("credits a draw to whoever scored its last goal, and leaves the score to the report", () => {
+    const page = pageOf([goal(3, "pal", "roque"), goal(72, "fla", "pedro")]);
+    expect(story(page).headline).toBe("Pedro garante o empate");
+    expect(story(page).report[0]).toBe("Flamengo e Palmeiras empatam em 1 a 1 no Maracanã.");
+    expect(story(pageOf([])).report[0]).toBe("Nenhum gol no Maracanã.");
+  });
+
   it("tells the goals in order, with their minutes, kinds and passes, and the table move", () => {
     const { report } = story(pageOf([goal(23, "fla", "pedro", "header", "arrasca"), goal(51, "pal", "roque", "penalty"), goal(88, "fla", "bh")]));
     expect(report).toEqual([

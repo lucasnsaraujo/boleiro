@@ -39,7 +39,12 @@ export function headlineOf(page: MatchPage, view: MatchView): string {
   const [topScorer, most] = [...tally].reduce<[string, number]>((best, entry) => (entry[1] > best[1] ? entry : best), ["", 0]);
   if (most >= HAT_TRICK) return `${name(topScorer)} faz ${COUNT_WORDS[most] ?? most}`;
   const winner = winnerOf(page, view);
-  if (!winner) return view.score.home === 0 ? `${club("home")} e ${club("away")} ficam no 0 a 0` : `${club("home")} e ${club("away")} empatam em ${view.score.home} a ${view.score.away}`;
+  if (!winner) {
+    if (view.score.home === 0) return `${club("home")} e ${club("away")} ficam no 0 a 0`;
+    const equaliser = goalsOf(view).at(-1);
+    if (equaliser && equaliser.goalKind !== "ownGoal") return `${name(equaliser.playerId)} garante o empate`;
+    return `${club("home")} e ${club("away")} empatam em ${view.score.home} a ${view.score.away}`;
+  }
   if (view.score.home === view.score.away) return `${club(winner)} passa nos pênaltis`;
   const margin = Math.abs(view.score.home - view.score.away);
   const away = winner === "away" ? " fora de casa" : "";
@@ -67,8 +72,9 @@ export function reportOf(page: MatchPage, view: MatchView): string[] {
   let lead: string;
   if (!view.isOver) lead = `${club("home")} e ${club("away")} estão em campo${where}: ${view.score.home} a ${view.score.away} aos ${view.minute}'.`;
   else if (!winner || view.score.home === view.score.away) {
-    const draw = view.score.home === 0 ? `ficam no 0 a 0${where}` : `empatam em ${view.score.home} a ${view.score.away}${where}`;
-    lead = `${club("home")} e ${club("away")} ${draw}${winner ? `, e ${club(winner)} passa nos pênaltis` : ""}.`;
+    // A goalless draw's headline already says 0 a 0: its report starts from where it was played.
+    const draw = view.score.home === 0 ? `Nenhum gol${where || " no jogo"}` : `${club("home")} e ${club("away")} empatam em ${view.score.home} a ${view.score.away}${where}`;
+    lead = `${draw}${winner ? `, e ${club(winner)} passa nos pênaltis` : ""}.`;
   } else {
     const [own, against] = winner === "home" ? [view.score.home, view.score.away] : [view.score.away, view.score.home];
     const place = page[winner].place;
