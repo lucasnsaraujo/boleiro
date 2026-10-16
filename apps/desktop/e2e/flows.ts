@@ -103,7 +103,8 @@ export async function leaveIncident(page: Page): Promise<boolean> {
 /**
  * Plays the live round at 4x until the result is in, stepping the paused page clock one match
  * minute at a time instead of waiting for it. Returns how many times the round stopped by itself
- * before full time.
+ * before full time. The test must install the page clock before the round starts: a timer the page
+ * set before the install keeps real time, and the fake clearInterval can't stop it.
  */
 export async function playLiveRound(page: Page): Promise<number> {
   const band = page.getByRole("region", { name: "Seu jogo" });
