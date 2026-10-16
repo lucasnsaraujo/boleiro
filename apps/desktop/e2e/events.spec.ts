@@ -72,11 +72,15 @@ test("an event pinned in the hub opens, the coach's answer moves the club's mete
   await expect.poll(async () => JSON.stringify(await meterValues(page))).not.toBe(JSON.stringify(before));
   await expect(await news(page)).toContainText(outcomeHeadline);
 
-  // The archive needs a second match day of the coach's.
+  // The paper leads with the coach's match from his first one on; the archive needs a second.
   await page.evaluate(async () => {
     const engine = window.boleiroEngine;
     if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
-    while ((await engine.newspaperEditions()).length < 2) {
+    const hasTwoMatchEditions = async () => {
+      const [, older] = await engine.newspaperEditions();
+      return !!older && !!(await engine.newspaper())?.match && !!(await engine.newspaper(older.date))?.match;
+    };
+    while (!(await hasTwoMatchEditions())) {
       const { stop, daysPlayed } = await engine.apply({ type: "playToMatchDay" });
       if (stop === "matchDay" && daysPlayed === 0) {
         await engine.apply({ type: "startRound" });
