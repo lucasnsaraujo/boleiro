@@ -7,7 +7,7 @@ import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 export type MapPlayer = { id: string; name: string; strength: number; x: number; y: number; isReserve: boolean; isCaptain: boolean };
 
 /** A line of "Por que está assim": what moves the meter, the players behind it, and its points. */
-export type ReasonLine = { kind: ChemistryReason["kind"]; title: string; detail: string; points: number };
+type ReasonLine = { kind: ChemistryReason["kind"]; title: string; detail: string; points: number };
 
 /** A line of the map, with the tag a pair fighting over a place or a fight carries. */
 export type MapLink = ChemistryLink & { tag: string | null };

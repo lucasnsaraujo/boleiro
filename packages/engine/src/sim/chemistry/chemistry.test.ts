@@ -7,7 +7,7 @@ import { loadNewGame } from "../loadNewGame.js";
 import { isInjured } from "../players/isInjured.js";
 import { playingStrength } from "../players/matchSetup.js";
 import { loadGame, saveGame } from "../saveGame.js";
-import { chemistryOf, type Chemistry } from "./chemistryOf.js";
+import { chemistryOf, chemistryStrength, type Chemistry } from "./chemistryOf.js";
 import { nameCaptain } from "./nameCaptain.js";
 
 const CLUB = "flamengo-rj";
@@ -130,12 +130,15 @@ describe("team chemistry", () => {
   });
 
   it("keeps the named captain until he leaves the club", () => {
-    const squad = squadOf(steady);
-    const named = nameCaptain(steady, CLUB, squad[3]?.id ?? "");
-    expect(chemistryOf(advanceDay(named, {}).state, CLUB).captain?.playerId).toBe(squad[3]?.id);
-    const gone = { ...named, players: { ...named.players, [squad[3]?.id ?? ""]: { ...(squad[3] as SimPlayer), clubId: "palmeiras-sp" } } };
+    const captain = squadOf(steady)[3];
+    if (!captain) throw new Error("a short squad");
+    const named = nameCaptain(steady, CLUB, captain.id);
+    expect(chemistryOf(advanceDay(named, {}).state, CLUB).captain?.playerId).toBe(captain.id);
+    const gone = { ...named, players: { ...named.players, [captain.id]: { ...captain, clubId: "palmeiras-sp" } } };
     expect(chemistryOf(gone, CLUB).captain).toMatchObject({ isNamed: false });
-    expect(chemistryOf(gone, CLUB).captain?.playerId).not.toBe(squad[3]?.id);
+    expect(chemistryOf(gone, CLUB).captain?.playerId).not.toBe(captain.id);
+    const played = advanceDay(toMatchDay(gone), {}).state;
+    expect(played.chemistry?.[CLUB]?.captainId).toBeUndefined();
   });
 
   it("refuses a captain from another club", () => {
@@ -143,7 +146,13 @@ describe("team chemistry", () => {
     expect(() => nameCaptain(steady, CLUB, other?.id ?? "")).toThrow();
   });
 
-  it("moves strength by at most 3% either way", () => {
+  it("moves strength by 3% at most, at the meter's ends", () => {
+    expect(chemistryStrength(100)).toBeCloseTo(1.03, 10);
+    expect(chemistryStrength(0)).toBeCloseTo(0.97, 10);
+    expect(chemistryStrength(50)).toBe(1);
+  });
+
+  it("moves a club's players by its meter, within 3% either way", () => {
     const context = { date: steady.date, pitch: "natural" as const };
     const squad = squadOf(steady);
     const neutralState: GameState = { ...steady, chemistry: {} };
@@ -201,12 +210,22 @@ describe("chemistry and events", () => {
     expect(start.players[cast?.teammateId ?? ""]?.clubId).toBe(CLUB);
   });
 
+  it("counts two players who fought twice as one bad pair", () => {
+    const [a = "", b = ""] = chemistryOf(start, CLUB).eleven;
+    const log = [
+      { typeId: "dressing-room-fight", date: start.date, clubId: CLUB, playerId: a, teammateId: b },
+      { typeId: "dressing-room-fight", date: start.date, clubId: CLUB, playerId: b, teammateId: a },
+    ];
+    const fought = chemistryOf({ ...start, eventMemory: { log, pending: {}, news: [], rivalry: {} } }, CLUB);
+    expect(fought.links.filter((link) => link.kind === "fight")).toHaveLength(1);
+  });
+
   it("turns two players who fought into a bad pair", () => {
     const chemistry = chemistryOf(start, CLUB);
     const [a = "", b = ""] = chemistry.eleven;
     const log = [{ typeId: "dressing-room-fight", date: start.date, clubId: CLUB, playerId: a, teammateId: b, choice: 1 }];
     const fought = chemistryOf({ ...start, eventMemory: { log, pending: {}, news: [], rivalry: {} } }, CLUB);
-    expect(fought.links).toContainEqual(expect.objectContaining({ kind: "fight", playerIds: [a, b] }));
+    expect(fought.links).toContainEqual(expect.objectContaining({ kind: "fight", playerIds: [a, b].sort() }));
     expect(fought.value).toBeLessThan(chemistry.value);
   });
 

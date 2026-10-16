@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Club } from "@boleiro/data/clubs";
 import { FORMATION_NAMES, FORMATIONS, type Formation } from "@boleiro/engine/engine/formations";
@@ -68,7 +68,7 @@ type Props = {
 };
 
 /** The club's chemistry meter, its captain, the assistant's pick for the armband, and how the coach names another. */
-export type Captaincy = { value: number; captainId: string | null; suggestedId: string | null; onName: (playerId: string) => Promise<number> };
+type Captaincy = { value: number; captainId: string | null; suggestedId: string | null; onName: (playerId: string) => Promise<number> };
 
 function shirtName(name: string): string {
   if (name.length <= SHIRT_NAME_LENGTH) return name;
@@ -128,6 +128,8 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
   const [captainId, setCaptainId] = useState(chemistry?.captainId ?? null);
   const [captainFailure, setCaptainFailure] = useState<string | null>(null);
   const [chemistryValue, setChemistryValue] = useState(chemistry?.value ?? 0);
+  // The captain asked for last: an answer for an earlier pick that lands after it is dropped.
+  const latestCaptain = useRef(captainId);
   // The substitute who just came on, whose sticker lands on the pitch.
   const [justIn, setJustIn] = useState<string | null>(null);
   const { engine: sound } = useSound();
@@ -180,21 +182,24 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  /** The assistant's eleven for the formation asked about; if the coach changed formation meanwhile, it is left out. */
   /** Hands the armband to `playerId` at once; the meter follows his standing. */
   async function nameCaptain(playerId: string) {
     if (!chemistry || !playerId) return;
     const before = captainId;
     setCaptainId(playerId);
     setCaptainFailure(null);
+    latestCaptain.current = playerId;
     try {
-      setChemistryValue(await chemistry.onName(playerId));
+      const value = await chemistry.onName(playerId);
+      if (latestCaptain.current === playerId) setChemistryValue(value);
     } catch {
+      if (latestCaptain.current !== playerId) return;
       setCaptainId(before);
       setCaptainFailure("O capitão não mudou. Tente de novo.");
     }
   }
 
+  /** The assistant's eleven for the formation asked about; if the coach changed formation meanwhile, it is left out. */
   async function pickBest() {
     if (!onPickTeam) return;
     const { formation } = sheet.tactics;
@@ -236,7 +241,14 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
           }}
         >
           <Position player={p} />
-          <span className="n">{p.name}</span>
+          <span className="n">
+            {p.name}
+            {p.id === captainId && (
+              <span className="brow-cap" title="Capitão">
+                C
+              </span>
+            )}
+          </span>
           <span className="s">{p.strength}</span>
           <span className="e">
             <Energy player={p} />

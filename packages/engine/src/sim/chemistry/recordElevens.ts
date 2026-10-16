@@ -34,7 +34,9 @@ export function recordElevens(state: GameState, played: readonly Fixture[], shee
     const settled = Math.min(SETTLED_LIMIT, Math.max(-SETTLED_LIMIT, (before?.settled ?? 0) + kept - NEUTRAL_KEPT));
     const was = chemistryOf(kickOff, clubId).value;
     const record: ClubChemistry = { eleven, settled, steadyGames: kept >= STEADY_KEPT ? (before?.steadyGames ?? 0) + 1 : 0, kept, was };
-    chemistry[clubId] = before?.captainId === undefined ? record : { ...record, captainId: before.captainId };
+    // A named captain who left the club gives the armband back to the assistant's pick.
+    const captainId = before?.captainId;
+    chemistry[clubId] = captainId !== undefined && state.players[captainId]?.clubId === clubId ? { ...record, captainId } : record;
   }
   return { ...state, chemistry };
 }

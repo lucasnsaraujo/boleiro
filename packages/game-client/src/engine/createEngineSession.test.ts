@@ -351,7 +351,7 @@ test("the coach names a captain: the chemistry screen and the lineup sheet show 
   expect(plan.chemistry.captainId).toBe(kid.playerId);
   expect(plan.chemistry.suggestedCaptainId).toBe(before.candidates[0]?.playerId);
   const reloaded = createEngineSession(bundledGameFiles);
-  reloaded.apply({ type: "load", save: JSON.parse(save) });
+  reloaded.apply({ type: "load", save });
   expect(reloaded.chemistry()?.captain?.playerId).toBe(kid.playerId);
 });
 

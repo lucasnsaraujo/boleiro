@@ -265,7 +265,7 @@ export const EVENT_BANK: readonly EventType[] = [
     setting: "No vestiário, depois do jogo",
     texts: [
       { headline: "Briga no vestiário do {club}", body: "{player} e {teammate} trocaram empurrões depois da derrota. A porta estava aberta e a imprensa ouviu tudo." },
-      { headline: "{player} discute com {teammate} após derrota", body: "Começou com uma cobrança sobre o gol sofrido e só parou quando o capitão entrou no meio." },
+      { headline: "{player} discute com {teammate} após derrota", body: "Começou com uma cobrança sobre o gol sofrido e só parou quando o resto do elenco entrou no meio." },
     ],
     choices: [
       { label: "Multar os dois", detail: "Regra é regra", effects: { morale: -2, board: 2 } },

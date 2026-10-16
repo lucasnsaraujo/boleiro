@@ -31,7 +31,7 @@ export type ChemistryReason =
 /** A line on the relationship map: a pair that gets on, two players after one place, or two who fought. */
 export type ChemistryLink = { kind: "good" | "rival" | "fight"; playerIds: [string, string]; weight: number };
 
-export type CaptainView = { playerId: string; standing: number; isNamed: boolean };
+type CaptainView = { playerId: string; standing: number; isNamed: boolean };
 
 /**
  * A club's chemistry (entrosamento) today: the 0–100 meter, the meter before its last match, why it is
@@ -51,7 +51,7 @@ export type Chemistry = {
   links: ChemistryLink[];
 };
 
-export const NEUTRAL_CHEMISTRY = 50;
+const NEUTRAL_CHEMISTRY = 50;
 // guess: the spec's bound. A meter of 100 adds 3% to every starter's strength, 0 takes 3% off.
 const MAX_STRENGTH_SHARE = 0.03;
 // guess: `settled` runs between these, about four matches with the same eleven from neutral to the top.
@@ -234,7 +234,8 @@ function fightPairs(state: GameState, clubId: string, squad: readonly SimPlayer[
   for (const record of eventsOf(state, { typeId: "dressing-room-fight", clubId, since })) {
     const { playerId, teammateId } = record;
     if (!playerId || !teammateId || !inSquad.has(playerId) || !inSquad.has(teammateId)) continue;
-    links.set(`${playerId}|${teammateId}`, { kind: "fight", playerIds: [playerId, teammateId], weight: 1 });
+    const ids: [string, string] = playerId < teammateId ? [playerId, teammateId] : [teammateId, playerId];
+    links.set(ids.join("|"), { kind: "fight", playerIds: ids, weight: 1 });
   }
   return [...links.values()];
 }

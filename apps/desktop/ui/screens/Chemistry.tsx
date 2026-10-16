@@ -94,7 +94,7 @@ export function Chemistry() {
         <section className="stk chem-why" aria-labelledby="chem-why-title">
           <h2 id="chem-why-title">Por que está assim</h2>
           {page.reasons.length === 0 ? (
-            <p className="chem-why-none">Nada mexe no entrosamento por enquanto: o time ainda não jogou.</p>
+            <p className="chem-why-none">Nada mexe no entrosamento agora: o time está no ponto neutro.</p>
           ) : (
             <ul>
               {page.reasons.map((reason, index) => (
@@ -114,7 +114,7 @@ export function Chemistry() {
       <section className="page chem-map" aria-labelledby="chem-map-title">
         <header>
           <h2 id="chem-map-title">Quem se dá com quem</h2>
-          <span>Titulares do {page.formation} e reservas ligados a eles</span>
+          <span>Time do {page.formation} e reservas ligados</span>
           <div className="chem-legend">
             <span>
               <i className="good" />

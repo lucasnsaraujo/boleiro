@@ -440,6 +440,11 @@
   white-space: nowrap;
 }
 
+/* The night page's red is too light for white type on a tag. */
+[data-theme="dark"] .chem-tag {
+  background: color-mix(in srgb, var(--red) 62%, #000);
+}
+
 @keyframes chem-slap {
   from {
     opacity: 0;
