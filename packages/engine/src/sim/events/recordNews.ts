@@ -32,24 +32,24 @@ const SIGNINGS: readonly Variant[] = [
 ];
 const SALES_ABROAD: readonly Variant[] = [
   (n) => ({ headline: `${n.player} deixa o ${n.from} rumo ao exterior`, body: `A venda rende ${n.fee} ao ${n.from}.` }),
-  (n) => ({ headline: `${n.from} vende ${n.player} para fora`, body: `Negócio de ${n.fee}. O ${n.from} perde um titular.` }),
+  (n) => ({ headline: `${n.from} vende ${n.player} para fora`, body: `Negócio de ${n.fee}. O ${n.from} faz caixa.` }),
 ];
 const SACKINGS: readonly Variant[] = [
   (n) => ({ headline: `${n.club} demite o técnico`, body: `A diretoria não esperou mais: o ${n.club} é ${n.position}º e a meta era ficar entre os ${n.target}.` }),
   (n) => ({ headline: `Cai o técnico do ${n.club}`, body: `${n.position}º lugar, longe da meta. O ${n.club} procura substituto.` }),
 ];
 const YOUR_SACKING: readonly Variant[] = [
-  (n) => ({ headline: `${n.club} demite ${n.coach}`, body: `O anúncio saiu depois da meia-noite. O ${n.club} é ${n.position}º e a meta era ficar entre os ${n.target}.` }),
+  (n) => ({ headline: `${n.club} demite ${n.coach}`, body: `O ${n.club} é ${n.position}º e a meta era ficar entre os ${n.target}.` }),
 ];
 const UPSETS: readonly Variant[] = [
   (n) => ({ headline: `Zebra: ${n.winner} bate o ${n.loser}`, body: `${n.score}. Ninguém apostava no ${n.winner}.` }),
   (n) => ({ headline: `${n.winner} surpreende o ${n.loser}`, body: `${n.score}, resultado que mexe com ${n.where}.` }),
 ];
 const DERBIES: readonly Variant[] = [
-  (n) => ({ headline: `${n.winner} vence o clássico contra o ${n.loser}`, body: `${n.score}. A torcida do ${n.winner} vai cobrar essa por muito tempo.` }),
+  (n) => ({ headline: `${n.winner} vence o clássico contra o ${n.loser}`, body: `${n.score}. A torcida do ${n.winner} vai lembrar dessa por muito tempo.` }),
   (n) => ({ headline: `Clássico é do ${n.winner}`, body: `${n.score}. O ${n.loser} ouve a provocação até o próximo encontro.` }),
 ];
-const DERBY_DRAWS: readonly Variant[] = [(n) => ({ headline: `${n.home} e ${n.away} empatam o clássico`, body: `${n.score}. Ninguém sai de cabeça baixa, ninguém sai satisfeito.` })];
+const DERBY_DRAWS: readonly Variant[] = [(n) => ({ headline: `${n.home} e ${n.away} empatam o clássico`, body: `${n.score}. O clássico fica sem dono desta vez.` })];
 const WINS: readonly Variant[] = [
   (n) => ({ headline: `${n.winner} vence o ${n.loser}`, body: `${n.score}. ${n.goals}` }),
   (n) => ({ headline: `${n.winner} passa pelo ${n.loser}`, body: `${n.score}. ${n.goals}` }),

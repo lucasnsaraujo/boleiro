@@ -4,7 +4,7 @@ import { clubMood } from "../morale/clubMood.js";
 import { rivalsOf } from "../morale/rivalsOf.js";
 import { isInjured } from "../players/isInjured.js";
 import { tierOf } from "../finances/tierOf.js";
-import type { Cast } from "./eventMemory.js";
+import { eventMemoryOf, rivalryKey, type Cast } from "./eventMemory.js";
 import type { EventScene, EventType } from "./eventType.js";
 
 // Every number below is a guess: event sizes are judged against what a match moves (a win moves
@@ -14,7 +14,7 @@ import type { EventScene, EventType } from "./eventType.js";
 const fit = (scene: EventScene) => scene.squad.filter((player) => !isInjured(player, scene.date));
 const pickFrom = <T>(scene: EventScene, items: readonly T[]): T | undefined => items[Math.floor(scene.random() * items.length)];
 const playerCast = (player: SimPlayer | undefined): Cast | null => (player ? { playerId: player.id } : null);
-const byStrength = (players: readonly SimPlayer[]) => [...players].sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+const byStrength = (players: readonly SimPlayer[]) => [...players].sort((a, b) => b.strength - a.strength || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 const finance = (scene: EventScene) => scene.state.finances[scene.clubId];
 const wageBill = (scene: EventScene) => scene.squad.reduce((sum, player) => sum + player.wage, 0);
 const wageOf = (scene: EventScene, cast: Cast) => (cast.playerId ? (scene.state.players[cast.playerId]?.wage ?? 0) : 0);
@@ -43,6 +43,14 @@ function playedRivalToday(scene: EventScene): boolean {
   const today = playedToday(scene);
   const opponent = today && (today.homeId === scene.clubId ? today.awayId : today.homeId);
   return !!opponent && (rivalsOf(scene.state.clubs).get(scene.clubId)?.has(opponent) ?? false);
+}
+
+// guess: every five points of heat between two clubs (rivalryKey) make their rivalry events one weight more likely.
+const HEAT_PER_WEIGHT = 5;
+
+/** How much the heat the event's rivalry built up adds to its odds. */
+function heatOf(scene: EventScene, cast: Cast): number {
+  return cast.rivalId ? (eventMemoryOf(scene.state).rivalry[rivalryKey(scene.clubId, cast.rivalId)] ?? 0) / HEAT_PER_WEIGHT : 0;
 }
 
 /** A rival of the club: the one it played today when it did, else any of them. */
@@ -105,7 +113,7 @@ export const EVENT_BANK: readonly EventType[] = [
     setting: "Na sala do técnico",
     texts: [
       { headline: "{player} quer sair do {club}", body: "“Não estou jogando. Quero ser negociado na próxima janela.”" },
-      { headline: "{player} pede para ser negociado", body: "“Respeito o senhor, mas preciso jogar. Meu empresário já tem clube interessado.”" },
+      { headline: "{player} pede para ser negociado", body: "“Respeito o senhor, mas preciso jogar. Se não for aqui, quero ir para onde eu jogue.”" },
     ],
     choices: [
       { label: "Prometer chances nos próximos jogos", detail: "Ele fica e espera a vez", effects: { morale: 2 } },
@@ -197,7 +205,7 @@ export const EVENT_BANK: readonly EventType[] = [
         effects: (scene) => ({ morale: 4, fans: 6, money: round((finance(scene)?.baseCrowd ?? 0) * (finance(scene)?.ticketPrice ?? 0) * 0.2) }),
         news: "{club} prepara a despedida de {player}",
       },
-      { label: "Pedir mais um ano", detail: "Renova pelo mesmo salário", effects: (scene, cast) => ({ morale: 2, fans: 3, board: -5, money: -round(wageOf(scene, cast) * 12) }), news: "{player} adia a aposentadoria a pedido do técnico" },
+      { label: "Pedir mais um ano", detail: "Mais um ano de salário na folha", effects: (scene, cast) => ({ morale: 2, fans: 3, board: -5, money: -round(wageOf(scene, cast) * 12) }), news: "{player} adia a aposentadoria a pedido do técnico" },
       { label: "Chamar para ser seu auxiliar em janeiro", detail: "Ele aprende o ofício ao seu lado", effects: (scene, cast) => ({ morale: 3, fans: 4, board: 1, money: -round(wageOf(scene, cast) * 3) }), news: "{player} vai ser auxiliar no {club}" },
     ],
   },
@@ -299,7 +307,7 @@ export const EVENT_BANK: readonly EventType[] = [
     cooldownDays: 30,
     cast: (scene) => ((marginToday(scene) ?? 0) >= 3 ? {} : null),
     texts: [
-      { headline: "Goleada vira festa no vestiário do {club}", body: "Teve pagode, banho de água gelada no roupeiro e foto com o troféu de melhor em campo." },
+      { headline: "Goleada vira festa no vestiário do {club}", body: "Teve pagode, banho de água gelada no roupeiro e até o presidente desceu para cumprimentar o grupo." },
       { headline: "Vestiário em festa depois da goleada", body: "O elenco do {club} saiu do estádio cantando. Faz tempo que o grupo não ria assim." },
     ],
     effects: { morale: 2 },
@@ -311,8 +319,8 @@ export const EVENT_BANK: readonly EventType[] = [
     cooldownDays: 60,
     cast: (scene) => playerCast(pickFrom(scene, fit(scene))),
     texts: [
-      { headline: "Surto de gripe no {club}", body: "{player} e mais dois jogadores ficaram em casa. O clube isolou o grupo no CT." },
-      { headline: "Virose espalha pelo elenco do {club}", body: "{player} foi o primeiro a cair. O médico pediu reforço no álcool em gel." },
+      { headline: "Surto de gripe no {club}", body: "{player} acordou com febre e ficou em casa. O médico teme que a gripe pegue o resto do grupo." },
+      { headline: "Virose se espalha pelo elenco do {club}", body: "{player} foi o primeiro a cair. O médico pediu reforço no álcool em gel." },
     ],
     effects: { outDays: 3, morale: -2 },
   },
@@ -346,7 +354,7 @@ export const EVENT_BANK: readonly EventType[] = [
     cooldownDays: 60,
     cast: (scene) => ((board(scene)?.pressure ?? 0) < -0.25 && (board(scene)?.games ?? 0) >= 5 ? {} : null),
     texts: [
-      { headline: "Presidente do {club} elogia o trabalho de {coach}", body: "“O projeto é de longo prazo. Ele fica até o fim do contrato, no mínimo.”" },
+      { headline: "Presidente do {club} prestigia o técnico", body: "“O projeto é de longo prazo. Ele fica até o fim do contrato, no mínimo.”" },
       { headline: "{coach} é prestigiado pela diretoria do {club}", body: "O presidente visitou o CT, almoçou com a comissão técnica e falou em renovação." },
     ],
     effects: { board: 2, morale: 1 },
@@ -478,7 +486,7 @@ export const EVENT_BANK: readonly EventType[] = [
       { headline: "Ingresso caro esvazia o {stadium}", body: "A torcida diz que não dá para pagar o que o {club} cobra. A organizada fala em boicote." },
     ],
     choices: [
-      { label: "Pedir à diretoria uma promoção para sócios", detail: "Metade do preço no próximo jogo", effects: (scene) => ({ fans: 3, money: -round((finance(scene)?.baseCrowd ?? 0) * (finance(scene)?.ticketPrice ?? 0) * 0.1) }) },
+      { label: "Pedir à diretoria uma promoção para sócios", detail: "A diretoria banca o desconto no próximo jogo", effects: (scene) => ({ fans: 3, money: -round((finance(scene)?.baseCrowd ?? 0) * (finance(scene)?.ticketPrice ?? 0) * 0.1) }) },
       { label: "Defender o preço", detail: "O clube precisa da receita", effects: { fans: -3, board: 2 } },
       { label: "Não comentar", effects: { fans: -1 } },
     ],
@@ -487,13 +495,13 @@ export const EVENT_BANK: readonly EventType[] = [
   {
     id: "rival-provocation",
     area: "fans",
-    weight: (scene) => (playedRivalToday(scene) ? 4 : 0.3),
+    weight: (scene, cast) => (playedRivalToday(scene) ? 4 : 0.3) + heatOf(scene, cast),
     cooldownDays: 45,
     cast: rivalCast,
     setting: "Nas redes sociais",
     texts: [
       { headline: "Torcida do {rival} provoca o {club}", body: "Um outdoor perto do {stadium} lembra o último clássico. A torcida quer resposta." },
-      { headline: "{rival} provoca nas redes", body: "O perfil oficial do {rival} postou uma piada com o {club}. Seus jogadores viram." },
+      { headline: "{rival} provoca nas redes", body: "O perfil oficial do {rival} postou uma piada com o {club}. O elenco viu." },
     ],
     choices: [
       { label: "Responder na mesma moeda", detail: "A torcida adora, a diretoria nem tanto", effects: { fans: 4, board: -2, rivalry: 5 }, news: "{coach} responde à provocação do {rival}" },
@@ -507,7 +515,7 @@ export const EVENT_BANK: readonly EventType[] = [
     id: "press-rival",
     area: "press",
     look: "press",
-    weight: (scene) => (playedRivalToday(scene) ? 4 : 0.6),
+    weight: (scene, cast) => (playedRivalToday(scene) ? 4 : 0.6) + heatOf(scene, cast),
     cooldownDays: 21,
     cast: rivalCast,
     setting: "Coletiva no CT",
@@ -532,7 +540,7 @@ export const EVENT_BANK: readonly EventType[] = [
     setting: "Coletiva depois do jogo",
     texts: [
       { headline: "Coletiva: o cargo em jogo", body: "“Mais uma derrota. O senhor se sente ameaçado no cargo?”" },
-      { headline: "Coletiva: cobrança depois da derrota", body: "“A torcida pediu a sua saída no fim do jogo. O que o senhor responde?”" },
+      { headline: "Coletiva: cobrança depois da derrota", body: "“Mais um jogo sem vitória. O que o senhor diz ao torcedor?”" },
     ],
     choices: [
       { label: "“A responsabilidade é minha. O grupo está comigo.”", effects: { morale: 3, board: -1, fans: 1 } },

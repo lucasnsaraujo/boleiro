@@ -10,8 +10,11 @@ import { fillSlots, type Slots } from "./fillSlots.js";
 
 /** An event happened at a club; `asksCoach` when it waits for a human coach's answer as a pop-up. */
 export type EventHappened = { type: "eventHappened"; clubId: string; typeId: string; headline: string; asksCoach: boolean };
-/** A human coach's club answered an event: the coach himself, or his assistant (`byAssistant`). */
-export type EventAnswered = { type: "eventAnswered"; clubId: string; typeId: string; choice: number; byAssistant: boolean; headline: string };
+/**
+ * A human coach's club answered an event: the coach himself, or his assistant (`byAssistant`). `topic`
+ * is the event's own headline, `answer` the answer's words and `headline` what the paper prints of it.
+ */
+export type EventAnswered = { type: "eventAnswered"; clubId: string; typeId: string; choice: number; byAssistant: boolean; topic: string; answer: string; headline: string };
 export type EventDayEvent = EventHappened | EventAnswered;
 
 // Events draw from a stream of their own per day and club, so the day's other draws stay as they were.
@@ -110,21 +113,21 @@ export function answerEvent(state: GameState, clubId: string, choice: number | n
   const picked = choice ?? pending.assistantChoice;
   const left = Object.fromEntries(Object.entries(eventMemoryOf(state).pending).filter(([id]) => id !== clubId));
   const settled = settle(withMemory(state, (memory) => ({ ...memory, pending: left })), pending, picked, bank.find((type) => type.id === pending.typeId), date);
-  return { state: settled.state, event: { type: "eventAnswered", clubId, typeId: pending.typeId, choice: picked, byAssistant: choice === null, headline: settled.headline } };
+  const answer = pending.choices[picked]?.label ?? "";
+  return { state: settled.state, event: { type: "eventAnswered", clubId, typeId: pending.typeId, choice: picked, byAssistant: choice === null, topic: pending.headline, answer, headline: settled.headline } };
 }
 
 /** What the log says about one club, built once for the clubs that draw an event today. */
-type Recall = { lastAt: Map<string, IsoDate>; players: Set<string>; seasons: Set<string> };
+type Recall = { lastAt: Map<string, IsoDate>; players: Set<string> };
 
 function recallOf(memory: EventMemory): Recall {
-  const recall: Recall = { lastAt: new Map(), players: new Set(), seasons: new Set() };
+  const recall: Recall = { lastAt: new Map(), players: new Set() };
   const pending = Object.values(memory.pending);
   for (const record of [...memory.log, ...pending]) {
     const key = `${record.typeId}:${record.clubId}`;
     const last = recall.lastAt.get(key);
     if (!last || last < record.date) recall.lastAt.set(key, record.date);
     if (record.playerId) recall.players.add(`${record.typeId}:${record.playerId}`);
-    recall.seasons.add(`${record.typeId}:${record.clubId}:${record.date.slice(0, 4)}`);
   }
   return recall;
 }
@@ -133,7 +136,6 @@ function isAllowed(type: EventType, clubId: string, cast: Cast, date: IsoDate, r
   const last = recall.lastAt.get(`${type.id}:${clubId}`);
   if (last && last > addDays(date, -type.cooldownDays)) return false;
   if (type.once === "player" && cast.playerId && recall.players.has(`${type.id}:${cast.playerId}`)) return false;
-  if (type.once === "season" && recall.seasons.has(`${type.id}:${clubId}:${date.slice(0, 4)}`)) return false;
   return true;
 }
 
@@ -193,8 +195,10 @@ function happen(state: GameState, scene: EventScene, drawn: { type: EventType; c
     };
     if (asksCoach) return { state: withMemory(state, (memory) => ({ ...memory, pending: { ...memory.pending, [clubId]: pending } })), events: [happened] };
     const settled = settle(state, pending, pending.assistantChoice, type, date);
-    const answered: EventAnswered = { type: "eventAnswered", clubId, typeId: type.id, choice: pending.assistantChoice, byAssistant: true, headline: settled.headline };
-    return { state: settled.state, events: [happened, ...(humanClubIds(state).includes(clubId) ? [answered] : [])] };
+    const answer = pending.choices[pending.assistantChoice]?.label ?? "";
+    const answered: EventAnswered = { type: "eventAnswered", clubId, typeId: type.id, choice: pending.assistantChoice, byAssistant: true, topic: headline, answer, headline: settled.headline };
+    // A human coach's club hears of it once, as the assistant's answer.
+    return { state: settled.state, events: [humanClubIds(state).includes(clubId) ? answered : happened] };
   }
   const story: NewsItem = { date, kind: "event", clubIds: [clubId, ...(cast.rivalId ? [cast.rivalId] : [])], headline, body };
   const remembered = withMemory(state, (memory) => remember(memory, record, story));
@@ -205,7 +209,7 @@ function happen(state: GameState, scene: EventScene, drawn: { type: EventType; c
 function answerLapsed(state: GameState, date: IsoDate): Resolved {
   let next = state;
   const events: EventDayEvent[] = [];
-  for (const pending of Object.values(eventMemoryOf(state).pending).sort((a, b) => a.clubId.localeCompare(b.clubId))) {
+  for (const pending of Object.values(eventMemoryOf(state).pending).sort((a, b) => (a.clubId < b.clubId ? -1 : 1))) {
     if (pending.expiresOn > date) continue;
     const answered = answerEvent(next, pending.clubId, null, EVENT_BANK, date);
     next = answered.state;

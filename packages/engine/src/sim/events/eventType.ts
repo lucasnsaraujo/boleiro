@@ -18,7 +18,7 @@ export type EventText = { headline: string; body: string };
 /**
  * One kind of event. `cast` is its precondition: who it is about, or null when the game rules it out
  * today. It then competes with the other possible events by `weight`, and can't come back to the same
- * club for `cooldownDays`; `once` keeps it to one time per player (a career's) or per club and season.
+ * club for `cooldownDays`; `once` keeps it to one time per player in a career.
  * An event with `choices` asks the coach (a pop-up); one without just happens, with its `effects`.
  */
 export type EventType = {
@@ -27,7 +27,7 @@ export type EventType = {
   look?: "press";
   weight: ByCast<number>;
   cooldownDays: number;
-  once?: "player" | "season";
+  once?: "player";
   cast: (scene: EventScene) => Cast | null;
   texts: readonly EventText[];
   /** Where it reaches the coach, as the pop-up's first line. */

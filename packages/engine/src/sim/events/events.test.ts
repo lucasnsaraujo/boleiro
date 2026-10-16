@@ -134,8 +134,9 @@ describe("event engine", () => {
   it("lets the assistant answer at once the areas the coach handed him", () => {
     const handed = { ...start, coach: { ...start.coach, assistantAreas: ["players" as const] } };
     const ran = runDays(handed, 200, [askingType("handed")]);
-    expect(ran.days.some(({ events }) => events.some((e) => e.type === "eventHappened" && e.clubId === CLUB))).toBe(true);
-    expect(ran.days.some(({ events }) => events.some((e) => e.type === "eventHappened" && e.asksCoach))).toBe(false);
+    expect(ran.days.some(({ events }) => events.some((e) => e.type === "eventAnswered" && e.clubId === CLUB && e.byAssistant))).toBe(true);
+    expect(ran.days.some(({ events }) => events.some((e) => e.type === "eventHappened" && e.clubId === CLUB))).toBe(false);
+    expect(pendingEventOf(ran.state, CLUB)).toBeNull();
   });
 
   it("draws the same events from the same game and leaves the game's own stream alone", () => {
@@ -166,6 +167,17 @@ describe("event engine", () => {
     const withPlayer = eventsOf(named.state, { clubId: CLUB }).findLast((record) => record.playerId);
     const playerName = withPlayer?.playerId ? named.state.players[withPlayer.playerId]?.name : undefined;
     expect(playerName && eventMemoryOf(named.state).news.some((item) => item.headline.includes(playerName) || item.body.includes(playerName))).toBe(true);
+  });
+
+  it("makes a rivalry's events likelier as its heat builds up", () => {
+    const rivalId = AI_CLUB;
+    const scene = (state: GameState) => ({ state, clubId: CLUB, squad: [], date: start.date, played: [], random: () => 0 });
+    const heated: GameState = { ...start, eventMemory: { log: [], pending: {}, news: [], rivalry: { [rivalryKey(CLUB, rivalId)]: 20 } } };
+    for (const id of ["rival-provocation", "press-rival"]) {
+      const type = EVENT_BANK.find((t) => t.id === id);
+      if (!type || typeof type.weight !== "function") throw new Error(`${id} weighs by its rivalry`);
+      expect(type.weight(scene(heated), { rivalId })).toBeGreaterThan(type.weight(scene(start), { rivalId }));
+    }
   });
 
   it("offers a press conference whose answers move morale, board, fans and rivalry", () => {
