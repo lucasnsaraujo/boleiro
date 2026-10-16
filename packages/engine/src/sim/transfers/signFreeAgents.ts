@@ -5,7 +5,7 @@ import { contractEnd } from "./expireContracts.js";
 import { marketView } from "./marketView.js";
 import { movePlayer } from "./movePlayer.js";
 import { isClubFull } from "./squadCap.js";
-import { REPLACEMENT_BAND, SQUAD_TARGET, squadNeeds } from "./squadNeeds.js";
+import { REPLACEMENT_BAND, SQUAD_TARGET } from "./squadNeeds.js";
 import { MIN_SQUAD } from "./tradeBetweenClubs.js";
 import type { PlayerMoved } from "./transferEvents.js";
 import { wageRateOf } from "./wageDemand.js";
@@ -37,7 +37,7 @@ export function signFreeAgents(state: GameState, random: () => number): { state:
     for (let size = view.squad(clubId).length; size < SQUAD_TARGET[view.tier(clubId)]; size++) {
       const squad = view.squad(clubId);
       if (isClubFull(next, clubId, squad.length)) break;
-      const { level, thinnest } = squadNeeds(squad, view.tier(clubId));
+      const { level, thinnest } = view.needs(clubId);
       const rate = wageRateOf(squad);
       const medianWage = [...squad.map((p) => p.wage)].sort((a, b) => a - b)[squad.length >> 1] ?? 0;
       // Only free agents near the club's level; below that it waits for its own youth.

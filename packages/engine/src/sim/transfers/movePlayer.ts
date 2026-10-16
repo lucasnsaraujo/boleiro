@@ -2,6 +2,7 @@ import { copyRecord } from "../copyRecord.js";
 import { bookMoney } from "../finances/bookMoney.js";
 import { paySigningCosts } from "../finances/paySigningCosts.js";
 import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
+import { moveInSquads, shareSquads } from "../players/squadsByClub.js";
 import { reactToIdolSale } from "../morale/reactToIdolSale.js";
 import type { MoveKind, PlayerMoved } from "./transferEvents.js";
 import type { Loan } from "./transferMarket.js";
@@ -35,9 +36,11 @@ const monthsOf = (from: IsoDate, until: IsoDate) => Math.max(1, Math.round((Date
  */
 export function openDraft(state: GameState): GameState {
   const { market } = state;
+  const players = copyRecord(state.players);
+  shareSquads(state.players, players);
   return {
     ...state,
-    players: copyRecord(state.players),
+    players,
     market: { ...market, freeAgents: { ...market.freeAgents }, preContracts: { ...market.preContracts }, loans: { ...market.loans } },
   };
 }
@@ -80,16 +83,19 @@ export function movePlayer(
   Reflect.deleteProperty(market.freeAgents, playerId);
   Reflect.deleteProperty(market.preContracts, playerId);
   Reflect.deleteProperty(market.loans, playerId);
+  let joined: SimPlayer | undefined;
   if (kind === "released") market.freeAgents[playerId] = player;
   else if (toClubId) {
-    players[playerId] = {
+    joined = {
       ...player,
       clubId: toClubId,
       wage: contract?.wage ?? player.wage,
       contractUntil: contract?.until ?? player.contractUntil,
       condition: { ...player.condition, arrivedOn: state.date },
     };
+    players[playerId] = joined;
   }
+  moveInSquads(players, atClub, joined);
   if (loan) market.loans[playerId] = loan;
   return { state: next, event: { type: "playerMoved", kind, playerId, name: player.name, fromClubId, toClubId, fee } };
 }

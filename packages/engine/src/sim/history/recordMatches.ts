@@ -1,4 +1,5 @@
 import { waitingCoachesOf } from "../coach/humanCoaches.js";
+import { copyRecord } from "../copyRecord.js";
 import { attendance } from "../finances/recordMatchFinances.js";
 import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import { championOf } from "./championOf.js";
@@ -25,12 +26,12 @@ export function recordMatches(state: GameState, played: readonly Fixture[], shee
   const ownGoals = new Map<CompetitionKey, Record<string, number>>();
   const playersAt = (clubId: string) => {
     let own = ownPlayers.get(clubId);
-    if (!own) ownPlayers.set(clubId, (own = players[clubId] = { ...players[clubId] }));
+    if (!own) ownPlayers.set(clubId, (own = players[clubId] = copyRecord(players[clubId] ?? {})));
     return own;
   };
   const goalsIn = (key: CompetitionKey) => {
     let own = ownGoals.get(key);
-    if (!own) ownGoals.set(key, (own = goals[key] = { ...goals[key] }));
+    if (!own) ownGoals.set(key, (own = goals[key] = copyRecord(goals[key] ?? {})));
     return own;
   };
 

@@ -8,7 +8,7 @@ import { openDisciplineDay } from "../discipline/recordCards.js";
 import { refuseSuspended } from "../discipline/suspendedPlayers.js";
 import { matchOfficials, refereedCardRates } from "../referees/matchOfficials.js";
 import { withRefereeCalls } from "../referees/refereeCalls.js";
-import type { GameState, SimPlayer } from "../gameState.js";
+import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import type { MatchSheets } from "../history/recordMatches.js";
 import { clubMood } from "../morale/clubMood.js";
 import { withoutCrowd } from "../morale/withoutCrowd.js";
@@ -17,7 +17,7 @@ import { isInjured } from "../players/isInjured.js";
 import { matchSetup, playingStrength, type CoachPlan } from "../players/matchSetup.js";
 import { fatigueOn } from "../players/fatigueOn.js";
 import { drawMatchInjuries, recordMatchLoad } from "../players/recordMatchLoad.js";
-import { squadsByClub } from "../players/squadsByClub.js";
+import { squadsOfGame } from "../players/squadsByClub.js";
 import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
 import { aiBench, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
 import { waitingCoachesOf } from "../coach/humanCoaches.js";
@@ -34,11 +34,10 @@ const LINEUP_SIZE = 11;
 const TIMELINE_STREAM_SALT = 0x71e11e;
 const COACH_MATCH_STREAM_SALT = 0xc0ac5;
 
-/** Club squads, indexed on first use: most days have no match and need none. A continental cup's guest from abroad brings its own. */
-function squadsOf(state: GameState): (clubId: string) => SimPlayer[] {
-  let squads: Map<string, SimPlayer[]> | null = null;
+/** Club squads, the game's shared ones (squadsOfGame). A continental cup's guest from abroad brings its own. */
+function squadsOf(state: GameState): (clubId: string) => readonly SimPlayer[] {
   return (clubId) => {
-    squads ??= squadsByClub(state.players);
+    const squads = squadsOfGame(state);
     const guest = squads.has(clubId) ? null : guestClubOf(state, clubId);
     return guest ? guestSquadOf(guest) : (squads.get(clubId) ?? []);
   };
@@ -92,8 +91,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
   const waitingMatches: CoachMatch[] = [];
   const planOf = (clubId: string): CoachPlan | undefined => (clubId === state.coachClubId ? coach : waiting[clubId]);
 
-  const fixtures = state.fixtures.map((fixture) => {
-    if (fixture.date !== state.date || fixture.result) return fixture;
+  const playFixture = (fixture: Fixture): Fixture => {
     const competition = state.competitions[fixture.competitionId];
     if (!competition) throw new Error(`fixture ${fixture.id} has no competition ${fixture.competitionId}`);
     const suspended = cards.suspended(fixture.competitionId);
@@ -232,7 +230,13 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     events.push(...cards.record(competition, played, bookings, (id) => state.players[id]?.clubId, random.next));
     sheets[played.id] = { ...lineups, scorers: timeline.scorers };
     return played;
-  });
+  };
+  // The season's fixtures are thousands and a day has a few dozen, so only today's are played.
+  const fixtures = state.fixtures.slice();
+  for (let i = 0; i < fixtures.length; i++) {
+    const fixture = fixtures[i];
+    if (fixture && fixture.date === state.date && !fixture.result) fixtures[i] = playFixture(fixture);
+  }
 
   return {
     state,

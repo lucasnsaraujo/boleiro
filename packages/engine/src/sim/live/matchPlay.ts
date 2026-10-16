@@ -110,7 +110,19 @@ function count(mean: number, random: () => number): number {
 }
 
 const minuteOf = (random: () => number) => 1 + Math.floor(random() * FULL_TIME);
-const minutesOf = (mean: number, random: () => number) => Array.from({ length: count(mean, random) }, () => minuteOf(random)).sort((a, b) => a - b);
+
+/** `count(mean)` minutes of the match in order. Drawn for every player of every match, so it sorts as it draws. */
+function minutesOf(mean: number, random: () => number): number[] {
+  const minutes: number[] = [];
+  for (let left = count(mean, random); left > 0; left--) {
+    const minute = minuteOf(random);
+    let i = minutes.length;
+    minutes.push(minute);
+    for (; i > 0 && (minutes[i - 1] ?? 0) > minute; i--) minutes[i] = minutes[i - 1] ?? 0;
+    minutes[i] = minute;
+  }
+  return minutes;
+}
 
 /** One player's play over the whole match, drawn from a stream of his own. */
 function playOf(player: SimPlayer, form: number, random: () => number): PlayerPlay {

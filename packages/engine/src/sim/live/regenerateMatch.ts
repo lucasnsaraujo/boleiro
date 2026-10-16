@@ -8,7 +8,7 @@ import type { Fixture, GameState, MatchResult, SimPlayer } from "../gameState.js
 import { clubMood } from "../morale/clubMood.js";
 import { isInjured } from "../players/isInjured.js";
 import { matchSetup } from "../players/matchSetup.js";
-import { squadsByClub } from "../players/squadsByClub.js";
+import { squadsOfGame } from "../players/squadsByClub.js";
 import { matchOfficials } from "../referees/matchOfficials.js";
 import { withRefereeCalls } from "../referees/refereeCalls.js";
 import { aiBench, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
@@ -72,12 +72,9 @@ function bookingsOf(lineup: readonly SimPlayer[], count: CardCount, secondYellow
  * same streams as the live match did, so a side that lines up the same names the same scorers.
  */
 export function regenerateMatch(state: GameState, fixture: Fixture & { result: MatchResult }): RegeneratedMatch {
-  let squads: Map<string, SimPlayer[]> | null = null;
-  const squadOf = (clubId: string) => {
+  const squadOf = (clubId: string): readonly SimPlayer[] => {
     const guest = state.clubs[clubId] ? null : guestClubOf(state, clubId);
-    if (guest) return guestSquadOf(guest);
-    squads ??= squadsByClub(state.players);
-    return squads.get(clubId) ?? [];
+    return guest ? guestSquadOf(guest) : (squadsOfGame(state).get(clubId) ?? []);
   };
   const setup = matchSetup(state, fixture, squadOf, { lineup: null, tactics: state.coach.tactics });
   const isFit = (p: SimPlayer) => !isInjured(p, fixture.date);

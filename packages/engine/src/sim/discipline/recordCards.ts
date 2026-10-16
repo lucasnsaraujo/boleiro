@@ -1,3 +1,4 @@
+import { copyRecord } from "../copyRecord.js";
 import type { Competition, Fixture } from "../gameState.js";
 import type { Discipline, DisciplineEvent, PlayerDiscipline } from "./discipline.js";
 import type { Booking } from "./drawCards.js";
@@ -83,6 +84,16 @@ export type DisciplineDay = {
   discipline: () => Discipline;
 };
 
+// A day edits its own copy of a competition's records, so records a game holds never change and each
+// one's banned players are found once: most competitions play on few days.
+const bannedIn = new WeakMap<Readonly<Records>, readonly string[]>();
+
+function bannedOf(records: Readonly<Records>): readonly string[] {
+  let banned = bannedIn.get(records);
+  if (!banned) bannedIn.set(records, (banned = Object.keys(records).filter((id) => (records[id]?.bans ?? 0) > 0)));
+  return banned;
+}
+
 /** A day of card records: each competition's records are copied once, at its first match of the day. */
 export function openDisciplineDay(discipline: Discipline): DisciplineDay {
   const drafts = new Map<string, Draft>();
@@ -90,8 +101,8 @@ export function openDisciplineDay(discipline: Discipline): DisciplineDay {
   const draftOf = (competitionId: string): Draft => {
     const known = drafts.get(competitionId);
     if (known) return known;
-    const records: Records = { ...discipline[competitionId] };
-    const draft = { records, banned: new Set(Object.keys(records).filter((id) => (records[id]?.bans ?? 0) > 0)) };
+    const held = discipline[competitionId];
+    const draft = { records: held ? copyRecord(held) : {}, banned: new Set(held ? bannedOf(held) : []) };
     drafts.set(competitionId, draft);
     return draft;
   };

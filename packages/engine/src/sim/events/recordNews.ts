@@ -25,7 +25,9 @@ const PER_DAY: Record<Exclude<NewsKind, "event" | "match">, number> = { signing:
 
 type Variant = (names: Record<string, string>) => { headline: string; body: string };
 
-const millions = (fee: number) => `R$ ${(fee / 1_000_000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mi`;
+// toLocaleString would build this formatter again for every fee.
+const MILLIONS = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
+const millions = (fee: number) => `R$ ${MILLIONS.format(fee / 1_000_000)} mi`;
 
 const SIGNINGS: readonly Variant[] = [
   (n) => ({ headline: `${n.to} contrata ${n.player}`, body: `${n.player} chega do ${n.from}${n.fee}.` }),
