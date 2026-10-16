@@ -490,3 +490,28 @@
     transform: translateY(10px) rotate(-1deg);
   }
 }
+
+/* A played match opens its ficha: a button over the whole chip, under its text. */
+.agenda-open {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.agenda-match:has(> .agenda-open) {
+  transition:
+    transform var(--t-fast) var(--e-out),
+    box-shadow var(--t-fast) var(--e-out);
+}
+
+.agenda-match:has(> .agenda-open:hover) {
+  transform: translateY(-2px) rotate(-0.6deg);
+  box-shadow: var(--sh-lift);
+}
+
+.agenda-match:has(> .agenda-open) > :not(.agenda-open) {
+  pointer-events: none;
+}

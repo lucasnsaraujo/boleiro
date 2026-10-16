@@ -506,3 +506,19 @@ test("no window opens when the session leaves the coach's incidents to something
   expect(shownMinute()).toBe(MINUTE);
   expect(screen.queryByRole("dialog")).toBeNull();
 });
+
+test("an incident on the coach's match takes over from an open ficha, which comes back once the window shuts", async () => {
+  const MINUTE = 6;
+  const given = await onMatchDay(withIncidentAt(MINUTE, hurtForward(MINUTE)));
+  await kickOff(given);
+  const [row] = screen.getAllByRole("button", { name: /^Ficha do jogo: / });
+  if (!row) return expect.fail("the board lists the round's matches");
+  await user().click(row);
+  await user().click(within(await screen.findByRole("dialog", { name: "Ficha do jogo" })).getByRole("button", { name: /Ver ficha completa/ }));
+  await screen.findByRole("dialog", { name: "Ficha completa" });
+  for (let minute = 0; minute < MINUTE + 2; minute++) play(1);
+  const window = await screen.findByRole("dialog", { name: /^Machucou:/ });
+  expect(screen.queryByRole("dialog", { name: "Ficha completa" })).toBeNull();
+  await user().click(within(window).getByRole("button", { name: "Deixar como está" }));
+  expect(await screen.findByRole("dialog", { name: "Ficha completa" })).toBeTruthy();
+});
