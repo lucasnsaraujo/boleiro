@@ -1,4 +1,4 @@
-import { copyRecord } from "../copyRecord.js";
+import { withReplacedPlayers } from "../players/squadsByClub.js";
 import { addDays } from "../dates.js";
 import { bookMoney } from "../finances/bookMoney.js";
 import type { GameState, IsoDate } from "../gameState.js";
@@ -34,9 +34,7 @@ export function applyEffects(state: GameState, clubId: string, cast: Cast, effec
     const until = addDays(date, effects.outDays + 1);
     const { injuredUntil } = player.condition;
     if (!injuredUntil || injuredUntil < until) {
-      const players = copyRecord(next.players);
-      players[player.id] = { ...player, condition: { ...player.condition, injuredUntil: until } };
-      next = { ...next, players };
+      next = { ...next, players: withReplacedPlayers(next.players, [{ ...player, condition: { ...player.condition, injuredUntil: until } }]) };
     }
   }
   if (effects.rivalry && cast.rivalId) {

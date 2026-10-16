@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { advanceDay } from "../advanceDay.js";
+import type { SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { movePlayer, openDraft } from "../transfers/movePlayer.js";
-import { squadsOfGame } from "./squadsByClub.js";
+import { squadsByClub, squadsOfGame, withReplacedPlayers } from "./squadsByClub.js";
 
 const start = loadNewGame(5, { coachClubId: null });
 const ids = (squad: readonly { id: string }[] | undefined) => (squad ?? []).map((p) => p.id);
@@ -40,5 +41,23 @@ describe("a game's shared squads", () => {
     }
     const players = Object.values(state.players);
     for (const [clubId, squad] of squadsOfGame(state)) expect(squad).toEqual(players.filter((p) => p.clubId === clubId));
+  });
+});
+
+describe("a players map with some players replaced", () => {
+  const before = squadsOfGame(start);
+  const [keeper, outfielder] = before.get("santos-sp") ?? [];
+  if (!keeper || !outfielder) throw new Error("Santos has no players");
+  const tired = (player: SimPlayer): SimPlayer => ({ ...player, condition: { ...player.condition, injuredUntil: "2026-03-01" } });
+  const players = withReplacedPlayers(start.players, [tired(keeper), tired(outfielder)]);
+
+  it("has the squads a fresh build of it has", () => {
+    expect(squadsOfGame({ players })).toEqual(squadsByClub(players));
+    expect(squadsOfGame({ players }).get("santos-sp")).toContain(players[keeper.id]);
+  });
+
+  it("leaves the squads of the map it copied as they were", () => {
+    expect(squadsOfGame(start).get("santos-sp")).toContain(keeper);
+    expect(start.players[keeper.id]).toBe(keeper);
   });
 });

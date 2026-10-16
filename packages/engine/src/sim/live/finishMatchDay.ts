@@ -9,7 +9,6 @@ import { payContinentalPrizes } from "../continental/payContinentalPrizes.js";
 import { playEuropeDay } from "../continental/uefaCups.js";
 import { startCoachSeason } from "../coach/startCoachSeason.js";
 import { buildStadiums } from "../stadium/stadiumWorks.js";
-import { copyRecord } from "../copyRecord.js";
 import { addDays } from "../dates.js";
 import { countCards, type Booking } from "../discipline/drawCards.js";
 import { endSeason } from "../endSeason.js";
@@ -34,6 +33,7 @@ import { matchOfficials } from "../referees/matchOfficials.js";
 import { talkedAboutCalls, type RefereeCallEvent } from "../referees/refereeCalls.js";
 import { openNextStage } from "../openNextStage.js";
 import { developPlayers } from "../players/developPlayers.js";
+import { withReplacedPlayers } from "../players/squadsByClub.js";
 import { copinhaDate, playCopinha } from "../youth/copinha.js";
 import { fillShortSquads } from "../youth/fillShortSquads.js";
 import { turnOverAcademies } from "../youth/turnOverAcademies.js";
@@ -180,8 +180,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
 
   // A continental guest's players belong to the result-only tier, so their match load is not kept.
   const ownPlayers = day.players.filter((player) => player.id in state.players);
-  const players = ownPlayers.length ? copyRecord(state.players) : state.players;
-  for (const player of ownPlayers) players[player.id] = player;
+  const players = ownPlayers.length ? withReplacedPlayers(state.players, ownPlayers) : state.players;
   const tactics = live.coachMatch?.tactics ?? decisions.tactics ?? state.coach.tactics;
   const coach = tactics === state.coach.tactics ? state.coach : { ...state.coach, tactics };
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: day.discipline, coach };
