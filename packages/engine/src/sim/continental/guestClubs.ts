@@ -12,9 +12,11 @@ const RESTED_SINCE = "2000-01-01";
 const clubsByWorld = new WeakMap<World, Map<string, WorldClub>>();
 const squads = new WeakMap<WorldClub, SimPlayer[]>();
 
-/** A club of a result-only country, by id, when it meets the full tier in a continental cup; null for any other id. */
-export function guestClubOf(state: Pick<GameState, "world">, clubId: string): WorldClub | null {
-  const { world } = state;
+/** A club of a result-only country, or a Club World Cup guest, by id, when it meets the full tier in a continental cup; null for any other id. */
+export function guestClubOf(state: Pick<GameState, "world" | "guests">, clubId: string): WorldClub | null {
+  const { world, guests } = state;
+  const guest = guests && Object.values(guests).flat().find((club) => club.id === clubId);
+  if (guest) return guest;
   if (!world) return null;
   let clubs = clubsByWorld.get(world);
   if (!clubs) {

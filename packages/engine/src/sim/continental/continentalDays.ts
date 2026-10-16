@@ -51,9 +51,9 @@ export function unifiedUefaCalendar(cup: keyof typeof UNIFIED, formats: Formats)
   return { leaguePhase: firstPhase, knockout: Object.fromEntries(Object.entries(knockout).map(([name, dates]) => [name, stageDatesIn(name, dates, formats)])), superCup };
 }
 
-/** Every continental match day of the season, which the leagues keep a day clear of: CONMEBOL's, and on the unified calendar UEFA's too. */
-export function continentalDates(season: number, formats: Formats): IsoDate[] {
-  const conmebol = conmebolDates(season, formats);
+/** Every continental match day of the season, which the leagues keep a day clear of: CONMEBOL's, the Club World Cup's when the season plays it, and on the unified calendar UEFA's too. */
+export function continentalDates(season: number, formats: Formats, playsClubWorldCup: boolean): IsoDate[] {
+  const conmebol = conmebolDates(season, formats, playsClubWorldCup);
   if (formats.calendar !== "unified") return conmebol;
   const uefa = (["champions-league", "europa-league"] as const).flatMap((cup) => {
     const calendar = unifiedUefaCalendar(cup, formats);

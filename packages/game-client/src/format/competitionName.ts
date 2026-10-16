@@ -32,7 +32,7 @@ const STATE_CHAMPIONSHIPS: Record<State, string> = {
   TO: "Tocantinense",
 };
 
-const CONTINENTAL_CUP_NAMES: Record<ContinentalCup, string> = { libertadores: "Libertadores", "sul-americana": "Sul-Americana", recopa: "Recopa" };
+const CONTINENTAL_CUP_NAMES: Record<ContinentalCup, string> = { libertadores: "Libertadores", "sul-americana": "Sul-Americana", recopa: "Recopa", "club-world-cup": "Mundial de Clubes" };
 
 const isContinentalCup = (key: string): key is ContinentalCup => key in CONTINENTAL_CUP_NAMES;
 

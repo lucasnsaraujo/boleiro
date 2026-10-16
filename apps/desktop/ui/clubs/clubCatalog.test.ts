@@ -71,3 +71,8 @@ test("every club in the pack has plate text that reaches 4.5:1 against its plate
   const unreadable = CLUBS.map((club) => ({ id: club.id, ...plateColours(club.colours) })).filter(({ background, text }) => wcagContrast(background, text) < 4.5);
   expect(unreadable).toEqual([]);
 });
+
+test("a Club World Cup guest from a country without a league in the game has its pack name and a crest", () => {
+  expect(clubFaceOf({}, "tm-11391")?.shortName).toBe("Auckland City FC");
+  expect(crestUrlOf("tm-11391", 64)).toMatch(/-64[^/]*\.webp$/);
+});

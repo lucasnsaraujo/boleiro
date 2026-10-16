@@ -35,11 +35,12 @@ export function countriesStart(structures: readonly CountryStructure[], packs: r
     if (!pack) throw new Error(`no world pack for ${structure.id}`);
     if (pack.leagues.length < structure.levels.length) throw new Error(`${structure.id}: the pack has ${pack.leagues.length} leagues`);
     const random = randomStream((season ^ ACADEMY_STREAM_SALT) >>> 0).next;
-    const levels = structure.levels.map((_, level) =>
-      pack.clubs
-        .filter((club) => club.league === pack.leagues[level]?.id)
-        .map((club) => worldClubOf(club, pack.players.filter((p) => p.clubId === club.id), season, random)),
-    );
+    const levels = structure.levels.map((_, level) => worldClubsOf(pack, pack.clubs.filter((club) => club.league === pack.leagues[level]?.id), season, random));
     return { structure, levels };
   });
+}
+
+/** The pack's `clubs` with their squads, a club's academy filling it from `random` (its own stream for the season unless given). */
+export function worldClubsOf(pack: WorldPack, clubs: readonly WorldPackClub[], season: number, random = randomStream((season ^ ACADEMY_STREAM_SALT) >>> 0).next): WorldClub[] {
+  return clubs.map((club) => worldClubOf(club, pack.players.filter((p) => p.clubId === club.id), season, random));
 }

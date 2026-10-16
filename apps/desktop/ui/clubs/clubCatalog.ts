@@ -35,6 +35,17 @@ import slovenia from "@boleiro/data/pack/world/si.pack.json.gz?gunzip&keys=forma
 import slovakia from "@boleiro/data/pack/world/sk.pack.json.gz?gunzip&keys=format,clubs";
 import turkey from "@boleiro/data/pack/world/tr.pack.json.gz?gunzip&keys=format,clubs";
 import ukraine from "@boleiro/data/pack/world/ua.pack.json.gz?gunzip&keys=format,clubs";
+import saudiArabia from "@boleiro/data/pack/world/sa.pack.json.gz?gunzip&keys=format,clubs";
+import unitedStates from "@boleiro/data/pack/world/us.pack.json.gz?gunzip&keys=format,clubs";
+import mexico from "@boleiro/data/pack/world/mx.pack.json.gz?gunzip&keys=format,clubs";
+import emirates from "@boleiro/data/pack/world/ae.pack.json.gz?gunzip&keys=format,clubs";
+import egypt from "@boleiro/data/pack/world/eg.pack.json.gz?gunzip&keys=format,clubs";
+import japan from "@boleiro/data/pack/world/jp.pack.json.gz?gunzip&keys=format,clubs";
+import korea from "@boleiro/data/pack/world/kr.pack.json.gz?gunzip&keys=format,clubs";
+import morocco from "@boleiro/data/pack/world/ma.pack.json.gz?gunzip&keys=format,clubs";
+import newZealand from "@boleiro/data/pack/world/nz.pack.json.gz?gunzip&keys=format,clubs";
+import tunisia from "@boleiro/data/pack/world/tn.pack.json.gz?gunzip&keys=format,clubs";
+import southAfrica from "@boleiro/data/pack/world/za.pack.json.gz?gunzip&keys=format,clubs";
 import { imageFileOf, parseAssetManifest } from "@boleiro/data/assetManifest";
 import type { Club } from "@boleiro/data/clubs";
 import { parsePackClubs } from "@boleiro/data/dataPack";
@@ -57,8 +68,8 @@ const CREST_FILES = import.meta.glob<string>("./crest/*.webp", {
   import: "default",
 });
 
-// South America's and Europe's clubs, which the game plays result-only, South America's meeting Brazil's in CONMEBOL's cups: their
-// names, colours and crests, kept in 64 and 128 px only (pipeline/build_assets.py).
+// The world's clubs, which the game plays result-only (South America's meeting Brazil's in CONMEBOL's cups), and the Club World
+// Cup's guests from countries without a league in the game: their names, colours and crests, kept in 64 and 128 px only (pipeline/build_assets.py).
 const WORLD_ASSETS = parseAssetManifest(worldManifestJson);
 const WORLD_CREST_FILES = import.meta.glob<string>("./crest/*.webp", {
   base: "../../../../packages/data/pack/world/assets/",
@@ -70,7 +81,11 @@ const WORLD_CREST_FILES = import.meta.glob<string>("./crest/*.webp", {
 /** What a screen shows of a club: its name, colours, ground and, through its id, its crest. */
 export type ClubFace = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
 
-const WORLD_PACKS = [argentina, bolivia, chile, colombia, ecuador, peru, paraguay, uruguay, venezuela, armenia, austria, azerbaijan, belgium, bulgaria, cyprus, czechia, germany, spain, france, england, scotland, greece, croatia, hungary, israel, italy, netherlands, norway, poland, portugal, slovenia, slovakia, turkey, ukraine];
+const WORLD_PACKS = [
+  argentina, bolivia, chile, colombia, ecuador, peru, paraguay, uruguay, venezuela, armenia, austria, azerbaijan, belgium, bulgaria, cyprus, czechia, germany, spain,
+  france, england, scotland, greece, croatia, hungary, israel, italy, netherlands, norway, poland, portugal, slovenia, slovakia, turkey, ukraine,
+  saudiArabia, unitedStates, mexico, emirates, egypt, japan, korea, morocco, newZealand, tunisia, southAfrica,
+];
 
 const WORLD_BY_ID = new Map<string, ClubFace>(
   WORLD_PACKS
@@ -78,14 +93,15 @@ const WORLD_BY_ID = new Map<string, ClubFace>(
     .map(({ id, shortName, colours, stadium }) => [id, { id, shortName, colours, stadium }]),
 );
 
-/** South America's and Europe's clubs by id, for screens that list clubs the game's own `clubs` don't have. */
+/** The world's clubs by id, for screens that list clubs the game's own `clubs` don't have. */
 export const WORLD_FACES: Readonly<Record<string, ClubFace>> = Object.fromEntries(WORLD_BY_ID);
 
 const LEAGUE_LEVEL = /^(.+)-(\d+)$/;
 
 /**
- * South America's and Europe's league clubs as a coach can take them (the full tier then plays their
- * country): each with its country and level, the pack's league `gb-eng-1` being England's top.
+ * The world's league clubs as a coach can take them (the full tier then plays their country): each
+ * with its country and level, the pack's league `gb-eng-1` being England's top; the Club World Cup's
+ * guests have no league.
  */
 export const CLUBS_ABROAD: readonly Club[] = WORLD_PACKS.flatMap((text) => parseWorldPackClubs(text)).flatMap(({ id, name, shortName, colours, stadium, league }) => {
   const [, country, level] = LEAGUE_LEVEL.exec(league ?? "") ?? [];
@@ -101,7 +117,7 @@ export function clubById(id: string): Club | null {
   return BY_ID.get(id) ?? ABROAD_BY_ID.get(id) ?? null;
 }
 
-/** A club in the game's own `clubs`, or one of South America's or Europe's from the packs; null when neither has it. */
+/** A club in the game's own `clubs`, or one of the world's from the packs; null when neither has it. */
 export function clubFaceOf(clubs: Readonly<Record<string, ClubFace>>, id: string): ClubFace | null {
   return clubs[id] ?? WORLD_BY_ID.get(id) ?? null;
 }
