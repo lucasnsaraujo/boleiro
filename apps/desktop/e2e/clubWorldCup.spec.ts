@@ -78,3 +78,17 @@ test("Flamengo, the 2025 Libertadores champion, finds the 2029 Super Mundial on 
   await stages.getByRole("button", { name: "Oitavas" }).click();
   await expect(page.getByRole("group", { name: "Super Mundial, mata-mata" }).getByLabel(/ x /)).toHaveCount(8);
 });
+
+test("in a Super Mundial year every competition tab of the tables fits on one line at 1280 by 800", async ({ page }) => {
+  await page.goto("/");
+  await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Filipe" });
+  await startOverIn(page, EDITION);
+  await bar(page).getByRole("link", { name: "Tabelas" }).click();
+  const tabs = page.getByRole("tablist", { name: "Competições" }).getByRole("tab");
+  await expect(tabs.filter({ hasText: "Super Mundial" })).toBeVisible();
+  const tops = await tabs.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().top));
+  expect(new Set(tops).size).toBe(1);
+  const right = await tabs.last().evaluate((el) => el.getBoundingClientRect().right);
+  const play = await page.getByRole("button", { name: "Jogar rodada" }).evaluate((el) => el.getBoundingClientRect().left);
+  expect(right).toBeLessThan(play);
+});
