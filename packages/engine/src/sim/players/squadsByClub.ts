@@ -18,10 +18,15 @@ const built = new WeakMap<GameState["players"], ReadonlyMap<string, readonly Sim
 /**
  * The game's squads (squadsByClub), built once per players map and shared by every reader: a game
  * changes its players by making a new map, so a map a game holds is never edited. A draft's map is
- * edited in place (openDraft), so a draft's squads come from squadsByClub instead.
+ * edited in place (openDraft), so whatever edits one calls forgetSquads first.
  */
 export function squadsOfGame(state: Pick<GameState, "players">): ReadonlyMap<string, readonly SimPlayer[]> {
   let squads = built.get(state.players);
   if (!squads) built.set(state.players, (squads = squadsByClub(state.players)));
   return squads;
+}
+
+/** Drops the squads built for a players map about to be edited in place (a draft's, see openDraft). */
+export function forgetSquads(players: GameState["players"]): void {
+  built.delete(players);
 }

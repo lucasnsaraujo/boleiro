@@ -24,6 +24,14 @@ describe("a game's shared squads", () => {
     expect(ids(squadsOfGame(start).get("flamengo-rj"))).toContain(playerId);
   });
 
+  it("show a move made in a draft to a reader of that draft", () => {
+    const draft = openDraft(start);
+    squadsOfGame(draft);
+    movePlayer(draft, { playerId, kind: "transfer", toClubId: "palmeiras-sp", fee: 0 });
+    expect(ids(squadsOfGame(draft).get("palmeiras-sp"))).toContain(playerId);
+    expect(ids(squadsOfGame(draft).get("flamengo-rj"))).not.toContain(playerId);
+  });
+
   it("follow the players from one day to the next", () => {
     let state = moved;
     for (let day = 0; day < 40; day++) {
