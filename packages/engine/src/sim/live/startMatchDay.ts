@@ -8,7 +8,7 @@ import { openDisciplineDay } from "../discipline/recordCards.js";
 import { refuseSuspended } from "../discipline/suspendedPlayers.js";
 import { matchOfficials, refereedCardRates } from "../referees/matchOfficials.js";
 import { withRefereeCalls } from "../referees/refereeCalls.js";
-import type { GameState, SimPlayer } from "../gameState.js";
+import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import type { MatchSheets } from "../history/recordMatches.js";
 import { clubMood } from "../morale/clubMood.js";
 import { withoutCrowd } from "../morale/withoutCrowd.js";
@@ -91,8 +91,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
   const waitingMatches: CoachMatch[] = [];
   const planOf = (clubId: string): CoachPlan | undefined => (clubId === state.coachClubId ? coach : waiting[clubId]);
 
-  const fixtures = state.fixtures.map((fixture) => {
-    if (fixture.date !== state.date || fixture.result) return fixture;
+  const playFixture = (fixture: Fixture): Fixture => {
     const competition = state.competitions[fixture.competitionId];
     if (!competition) throw new Error(`fixture ${fixture.id} has no competition ${fixture.competitionId}`);
     const suspended = cards.suspended(fixture.competitionId);
@@ -231,7 +230,13 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     events.push(...cards.record(competition, played, bookings, (id) => state.players[id]?.clubId, random.next));
     sheets[played.id] = { ...lineups, scorers: timeline.scorers };
     return played;
-  });
+  };
+  // The season's fixtures are thousands and a day has a few dozen, so only today's are played.
+  const fixtures = state.fixtures.slice();
+  for (let i = 0; i < fixtures.length; i++) {
+    const fixture = fixtures[i];
+    if (fixture && fixture.date === state.date && !fixture.result) fixtures[i] = playFixture(fixture);
+  }
 
   return {
     state,
