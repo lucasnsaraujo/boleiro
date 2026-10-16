@@ -19,6 +19,12 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.hotSeat();
     case "marketClock":
       return session.marketClock();
+    case "pendingEvent":
+      return session.pendingEvent();
+    case "newspaper":
+      return session.newspaper(...request.args);
+    case "newspaperEditions":
+      return session.newspaperEditions();
     case "save":
       return session.save();
     case "saveShards":

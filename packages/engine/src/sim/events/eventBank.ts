@@ -38,6 +38,13 @@ const recentPoints = (scene: EventScene) => finance(scene)?.recentPoints ?? [];
 const lastGames = (scene: EventScene, count: number) => recentPoints(scene).slice(-count);
 const isRun = (scene: EventScene, count: number, points: number) => lastGames(scene, count).length === count && lastGames(scene, count).every((p) => p === points);
 
+/** Whether the club played one of its rivals today. */
+function playedRivalToday(scene: EventScene): boolean {
+  const today = playedToday(scene);
+  const opponent = today && (today.homeId === scene.clubId ? today.awayId : today.homeId);
+  return !!opponent && (rivalsOf(scene.state.clubs).get(scene.clubId)?.has(opponent) ?? false);
+}
+
 /** A rival of the club: the one it played today when it did, else any of them. */
 function rivalCast(scene: EventScene): Cast | null {
   const rivals = [...(rivalsOf(scene.state.clubs).get(scene.clubId) ?? [])].sort();
@@ -480,8 +487,8 @@ export const EVENT_BANK: readonly EventType[] = [
   {
     id: "rival-provocation",
     area: "fans",
-    weight: (scene) => (playedToday(scene) ? 2 : 0.5),
-    cooldownDays: 30,
+    weight: (scene) => (playedRivalToday(scene) ? 4 : 0.3),
+    cooldownDays: 45,
     cast: rivalCast,
     setting: "Nas redes sociais",
     texts: [
@@ -500,7 +507,7 @@ export const EVENT_BANK: readonly EventType[] = [
     id: "press-rival",
     area: "press",
     look: "press",
-    weight: (scene) => (playedToday(scene) ? 2 : 0.6),
+    weight: (scene) => (playedRivalToday(scene) ? 4 : 0.6),
     cooldownDays: 21,
     cast: rivalCast,
     setting: "Coletiva no CT",
