@@ -113,6 +113,7 @@ export async function playLiveRound(page: Page): Promise<number> {
   const paused = page.getByRole("button", { name: "Pausar", pressed: true, disabled: false });
   const fourX = page.getByRole("button", { name: "4x" });
   const minute = band.getByLabel("Minuto");
+  const varCheck = band.getByRole("status").filter({ hasText: "VAR checando" });
   await expect(band).toBeVisible();
   await pauseClock(page);
   await fourX.click();
@@ -122,7 +123,8 @@ export async function playLiveRound(page: Page): Promise<number> {
     const before = await minute.textContent();
     await page.clock.runFor(FOUR_X_MINUTE_MS);
     await expect
-      .poll(async () => (await minute.textContent()) !== before || (await paused.or(finishing).or(back).count()) > 0, { intervals: [0, 20, 50, 100] })
+      // A VAR check stands the clock still for a few seconds of its own; the steps run it down.
+      .poll(async () => (await minute.textContent()) !== before || (await paused.or(finishing).or(back).or(varCheck).count()) > 0, { intervals: [0, 20, 50, 100] })
       .toBe(true);
     if (await paused.isVisible()) {
       stops++;

@@ -238,6 +238,27 @@
   font-size: 16px;
 }
 
+/* The referee under the stadium, with a VAR chip where VAR watches the match. */
+.live-ref {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 11.5px;
+  opacity: 0.9;
+}
+
+.live-ref em {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+  font-style: normal;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
 .live-mid {
   display: flex;
   flex-direction: column;
@@ -686,6 +707,13 @@
   max-width: 76px;
   background: var(--ink);
   color: var(--paper);
+}
+
+/* VAR changing a call, in its dark chip with the yellow of the review sticker. */
+.live-r .gol.var {
+  background: #14231a;
+  color: var(--yellow);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 /* The assistant's word on a human coach's player having a bad day, in the album's faded paper. */

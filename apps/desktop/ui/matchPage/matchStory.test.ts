@@ -37,6 +37,7 @@ function pageOf(events: MatchEvent[], change: Partial<MatchPage> = {}): MatchPag
     ratings: {},
     names: { pedro: "Pedro", arrasca: "Arrascaeta", roque: "Vitor Roque", bh: "Bruno Henrique" },
     venue: { stadium: "Maracanã", crowd: 61233, gate: 4_800_000 },
+    officials: { referee: null, hasVar: false },
     meetings: [],
     curiosities: [],
     ...change,

@@ -12,6 +12,7 @@ import { DEFAULT_TACTICS } from "./coach/tactics.js";
 import { engineTeam } from "./players/matchSetup.js";
 import { pickMatchLineup } from "./players/pickMatchLineup.js";
 import { formationOf, usualStartersOf } from "./players/usualLineups.js";
+import { matchOfficials, refereedCardRates } from "./referees/matchOfficials.js";
 
 const start = loadNewGame(11, { coachClubId: "flamengo-rj" });
 
@@ -57,7 +58,11 @@ describe("advanceDay", () => {
     const eleven = (clubId: string) => pickMatchLineup(squad(clubId), context, formation(clubId), usualStartersOf(before, clubId));
     const team = (clubId: string) => engineTeam(clubId, eleven(clubId), (p) => p.strength, { ...DEFAULT_TACTICS, formation: formation(clubId) });
     const random = randomStream(before.rngState).next;
-    const bookings = drawCards(eleven(first.homeId), eleven(first.awayId), CARD_RATES[division], random);
+    const competition = before.competitions[first.competitionId];
+    if (!competition) throw new Error(`no competition for ${first.id}`);
+    // The match's referee scales its cards: a strict one books more.
+    const rates = refereedCardRates(CARD_RATES[division], matchOfficials(before.seed, competition, first));
+    const bookings = drawCards(eleven(first.homeId), eleven(first.awayId), rates, random);
     const goals = simulateMatch(team(first.homeId), team(first.awayId), random, paramsForDivision(division), sendOffMinutes(bookings, first.homeId));
     const expected = { ...goals, cards: countCards(bookings, first.homeId) };
     const played = advanceDay(before, {}).state.fixtures.find((f) => f.id === first.id);

@@ -9,7 +9,9 @@ import { clubMood } from "../morale/clubMood.js";
 import { isInjured } from "../players/isInjured.js";
 import { matchSetup } from "../players/matchSetup.js";
 import { squadsByClub } from "../players/squadsByClub.js";
-import { aiBench, tirednessOn } from "./aiSubstitutions.js";
+import { matchOfficials } from "../referees/matchOfficials.js";
+import { withRefereeCalls } from "../referees/refereeCalls.js";
+import { aiBench, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
 import { formOfTheDay } from "./formOfTheDay.js";
 import { drawMatchPlay, type MatchPlay } from "./matchPlay.js";
 import { detailStream, FULL_TIME, kickOffTimeline, scorerStream, type MatchEvent } from "./matchTimeline.js";
@@ -112,5 +114,14 @@ export function regenerateMatch(state: GameState, fixture: Fixture & { result: M
   const play = drawMatchPlay(state.seed, fixture.id, [...setup.homeLineup, ...setup.awayLineup], [...benches.home, ...benches.away], (p) =>
     formOfTheDay(state.seed, fixture.id, p.id, pullOf(p)),
   );
-  return { formations: setup.formations, starters: { home: setup.homeLineup, away: setup.awayLineup }, benches, events: timeline.events, play };
+  const officials = competition ? matchOfficials(state.seed, competition, fixture) : { referee: null, strictness: 1, var: null };
+  const callSide = (clubId: string, lineup: readonly SimPlayer[], bench: readonly SimPlayer[]) => ({ clubId, onPitch: (minute: number) => onPitchAt(lineup, bench, timeline.events, clubId, minute) });
+  const events = withRefereeCalls(timeline.events, {
+    seed: state.seed,
+    fixtureId: fixture.id,
+    officials,
+    home: callSide(fixture.homeId, setup.homeLineup, benches.home),
+    away: callSide(fixture.awayId, setup.awayLineup, benches.away),
+  });
+  return { formations: setup.formations, starters: { home: setup.homeLineup, away: setup.awayLineup }, benches, events, play };
 }

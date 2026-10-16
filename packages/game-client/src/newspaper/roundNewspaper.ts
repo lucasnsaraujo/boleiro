@@ -33,14 +33,23 @@ export type Edition = {
 /** An edition in the archive list: its day, what it was about and its lead's headline. */
 export type EditionTitle = { date: IsoDate; label: string; headline: string };
 
-const KICKERS: Record<NewsKind, string> = { match: "", event: "Bastidores", signing: "Mercado", sacking: "Técnico", upset: "Zebra", rivalry: "Rivalidade" };
+const KICKERS: Record<NewsKind, string> = {
+  match: "",
+  event: "Bastidores",
+  signing: "Mercado",
+  sacking: "Técnico",
+  upset: "Zebra",
+  rivalry: "Rivalidade",
+  var: "VAR",
+  controversy: "Arbitragem",
+};
 // The paper's side column fits five stories at 1280x800 (mock design/mocks/newspaper.html), and the lead's
 // columns a few more.
 const SIDE_STORIES = 8;
 // The results row holds the round's ten games of a 20-club league.
 const RESULTS = 10;
 // The coach's own news first, then the beats in the mock's order.
-const SIDE_ORDER: readonly NewsKind[] = ["upset", "sacking", "signing", "rivalry", "event"];
+const SIDE_ORDER: readonly NewsKind[] = ["upset", "controversy", "var", "sacking", "signing", "rivalry", "event"];
 
 const isAbout = (item: NewsItem, clubId: string | null) => clubId !== null && item.clubIds.includes(clubId);
 
