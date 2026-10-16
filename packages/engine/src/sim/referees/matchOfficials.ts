@@ -84,9 +84,22 @@ const bookingRate = (referee: RefereeProfile) => (referee.leagueYellowsPerMatch 
  * come from another league (a Série B referee working in Série A), so each is read against his own.
  */
 function strictnessIn(roster: readonly RefereeProfile[], referee: RefereeProfile): number {
-  const matches = roster.reduce((sum, r) => sum + r.matches, 0);
-  const mean = roster.reduce((sum, r) => sum + bookingRate(r) * r.matches, 0) / matches;
+  const { mean } = weightsOf(roster);
   return mean > 0 ? bookingRate(referee) / mean : 1;
+}
+
+// A season draws officials for thousands of matches from the same few rosters.
+const ROSTER_WEIGHTS = new WeakMap<readonly RefereeProfile[], { matches: number; mean: number }>();
+
+/** A roster's matches in all, and its booking rate weighted by matches. */
+function weightsOf(roster: readonly RefereeProfile[]): { matches: number; mean: number } {
+  let known = ROSTER_WEIGHTS.get(roster);
+  if (!known) {
+    const matches = roster.reduce((sum, r) => sum + r.matches, 0);
+    known = { matches, mean: roster.reduce((sum, r) => sum + bookingRate(r) * r.matches, 0) / matches };
+    ROSTER_WEIGHTS.set(roster, known);
+  }
+  return known;
 }
 
 /**
@@ -97,7 +110,7 @@ export function matchOfficials(seed: number, competition: Competition, fixture: 
   const roster = REFEREE_ROSTER[rosterKeyOf(competition)] ?? [];
   const style = varStyleOf(competition, fixture);
   if (roster.length < MIN_ROSTER) return { referee: null, strictness: 1, var: style };
-  let roll = keyedStream(seed ^ OFFICIALS_STREAM_SALT, fixture.id)() * roster.reduce((sum, r) => sum + r.matches, 0);
+  let roll = keyedStream(seed ^ OFFICIALS_STREAM_SALT, fixture.id)() * weightsOf(roster).matches;
   const referee = roster.find((r) => (roll -= r.matches) < 0) ?? roster[roster.length - 1];
   if (!referee) return { referee: null, strictness: 1, var: style };
   return { referee, strictness: strictnessIn(roster, referee), var: style };
