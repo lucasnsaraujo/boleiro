@@ -269,19 +269,23 @@ export function Round() {
       setTimeout(() => setAlerts((current) => Object.fromEntries(Object.entries(current).filter(([fixtureId, alert]) => called[fixtureId] !== alert))), FLOOD_MS[resumeSpeed.current]);
     }
     const reason = pauseReason(live, minute);
-    if (reason === "halfTime" || reason === "coachMatch") pause();
     const incidentNow = incidentOf(live, minute, hotSeat);
+    // The round stops with the window it stops for, after a VAR check's decision: a speed picked in between would leave the window over a clock that looks running.
+    const stopNow = () => {
+      if (reason === "halfTime" || reason === "coachMatch") pause();
+      setIncident(incidentNow);
+    };
     const finishNow = () => {
       if (reason === "fullTime") void finish();
     };
     if (!held) {
-      setIncident(incidentNow);
+      stopNow();
       finishNow();
       return;
     }
     holdForVar(held, () => {
       celebrate(live, goals.filter((goal) => isHeldBack(goal.fixtureId)));
-      setIncident(incidentNow);
+      stopNow();
     }, finishNow);
   }, [minute]);
 
