@@ -23,6 +23,9 @@ export const INTERCONTINENTAL_CUP_STAGES: { name: string; dates: IsoDate[] }[] =
 
 const STAGES = { playOff: 0, africanAsianPacificCup: 1, derbyOfTheAmericas: 2, challengerCup: 3, final: 4 } as const;
 
+/** Whether FIFA lists the Libertadores' winner first in the season's Derby of the Americas: in even years, CONCACAF's club in odd ones (Botafogo–Pachuca in 2024, Cruz Azul–Flamengo in 2025). */
+export const isLibertadoresFirstInDerby = (season: number): boolean => season % 2 === 0;
+
 /** The stage the season's Libertadores winner joins at. */
 export const DERBY_OF_THE_AMERICAS = STAGES.derbyOfTheAmericas;
 
@@ -65,7 +68,7 @@ export function intercontinentalCupStage(competition: ContinentalCompetition, fi
     case STAGES.derbyOfTheAmericas: {
       const southAmerican = later.libertadores ?? "";
       const northAmerican = entrant(STAGES.derbyOfTheAmericas);
-      return competition.season % 2 === 0 ? tie(southAmerican, northAmerican) : tie(northAmerican, southAmerican);
+      return isLibertadoresFirstInDerby(competition.season) ? tie(southAmerican, northAmerican) : tie(northAmerican, southAmerican);
     }
     case STAGES.challengerCup:
       return tie(winnerOf(competition, fixtures, STAGES.derbyOfTheAmericas), winnerOf(competition, fixtures, STAGES.africanAsianPacificCup));

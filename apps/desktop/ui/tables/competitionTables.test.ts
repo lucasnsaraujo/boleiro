@@ -335,6 +335,13 @@ describe("CONMEBOL's cups and South America's leagues", () => {
     ]);
   });
 
+  test("the Mundial de Clubes' Derby of the Americas lists first the club FIFA does: the Libertadores' champion in even years, CONCACAF's in odd ones", () => {
+    const odd = newGameFromFiles(7, { coachClubId: "flamengo-rj", season: 2027 }, bundledGameFiles);
+    const mundial = odd.competitions["intercontinental-cup-2027"];
+    if (mundial?.kind !== "continental") throw new Error("no Mundial de Clubes");
+    expect(intercontinentalLadder(mundial, odd.fixtures)[2]?.places).toEqual([{ clubId: mundial.entries[2]?.[0] }, { title: "Libertadores" }]);
+  });
+
   test("the Libertadores names its stages the way Brazilian fans do", () => {
     expect(competitionStages(libertadores, flamengo.calendar).map((s) => s.name)).toEqual(["1ª fase", "2ª fase", "3ª fase", "Grupos", "Oitavas", "Quartas", "Semifinal", "Final"]);
   });

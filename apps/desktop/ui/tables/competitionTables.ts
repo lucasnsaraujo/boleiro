@@ -1,4 +1,5 @@
 import { CUP_STAGES } from "@boleiro/engine/sim/continental/conmebolCups";
+import { isLibertadoresFirstInDerby } from "@boleiro/engine/sim/continental/intercontinentalCup";
 import { CONTINENTAL_CUPS, type Competition, type Fixture, type GameState, type GroupStage, type KnockoutStage, type LeagueFormatId, type SeasonCalendar, type StateCompetition } from "@boleiro/engine/sim/gameState";
 import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
 import { continentalQualifiers } from "@boleiro/engine/sim/finances/continentalQualifiers";
@@ -462,7 +463,7 @@ export function intercontinentalLadder(competition: Competition, fixtures: reado
   const places: [LadderPlace, LadderPlace][] = [
     [entrant(0), entrant(0, 1)],
     [entrant(1), { from: 0 }],
-    [{ title: "Libertadores" }, entrant(2)],
+    isLibertadoresFirstInDerby(competition.season) ? [{ title: "Libertadores" }, entrant(2)] : [entrant(2), { title: "Libertadores" }],
     [{ from: 2 }, { from: 1 }],
     [{ title: "Champions League" }, { from: 3 }],
   ];
