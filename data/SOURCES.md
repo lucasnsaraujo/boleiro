@@ -33,6 +33,17 @@ One row per club, built by `pipeline/fetch_crests.py`. The images ship inside th
 
 All files are recompressed losslessly with `oxipng`, which keeps the folder at about 8.5 MB.
 
+## assets/competitions/
+
+The logos of FIFA's two club cups, which the app shows on their tables. Like the crests, they ship inside the app and are not licensed.
+
+| File | Source |
+|---|---|
+| `intercontinental-cup.webp` | The FIFA Intercontinental Cup logo, [File:FIFA_Intercontinental_Cup_logo.svg](https://en.wikipedia.org/wiki/File:FIFA_Intercontinental_Cup_logo.svg) on the English Wikipedia, its 500 px render fetched on 2026-10-16. The game calls the cup Mundial de Clubes. |
+| `club-world-cup.webp` | The FIFA Club World Cup 2025 logo, [File:2025_FIFA_Club_World_Cup.svg](https://commons.wikimedia.org/wiki/File:2025_FIFA_Club_World_Cup.svg) on Wikimedia Commons (credited to FIFA), its 500 px render fetched on 2026-10-16. The game calls the cup Super Mundial. |
+
+Both were scaled to 160 px wide and saved as WebP with `cwebp -q 90`.
+
 ## players.csv
 
 `club_id` links each player to `clubs.csv`. Strength starts from a division baseline (A 72, B 63, C 56, D 49). State-only clubs start at 42, one step below Série D (`guess`, keeping the roughly 7-point gap between divisions). They have no Sofascore stats, so their strength moves only with market value and age.

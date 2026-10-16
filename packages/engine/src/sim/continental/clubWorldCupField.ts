@@ -4,7 +4,7 @@ import { leagueMatches, leagueTable } from "../world/resultOnlyLeague.js";
 import type { WorldClub } from "../world/world.js";
 import { CLUB_WORLD_CUP_PLACES, CONFEDERATIONS, confederationOf, isClubWorldCupSeason, type Confederation } from "./clubWorldCup.js";
 import { CONMEBOL_CUPS } from "./conmebolCups.js";
-import { cupChampion, leaguePhaseTable } from "./uefaCups.js";
+import { CHAMPIONS_LEAGUE_BEFORE, cupChampion, leaguePhaseTable } from "./uefaCups.js";
 
 /** The Club World Cup's clubs, best seed first, and each one's country. */
 export type ClubWorldCupField = { clubIds: string[]; countries: Record<string, string> };
@@ -12,7 +12,7 @@ export type ClubWorldCupField = { clubIds: string[]; countries: Record<string, s
 // FIFA's 2025 field (Wikipedia, "2025 FIFA Club World Cup", Qualified teams), which opens an edition
 // that starts a game, as no game state holds the titles and rankings it came from; later editions keep
 // its clubs where the game holds none of a confederation's titles or rankings.
-const FIRST_FIELD = [
+export const FIRST_FIELD = [
   "tm-631", "tm-418", "tm-281", "tm-27", "tm-583", "tm-46", "tm-720", "tm-294", "tm-16", "tm-506", "tm-13", "tm-409",
   "palmeiras-sp", "flamengo-rj", "fluminense-rj", "botafogo-rj", "tm-209", "tm-189",
   "tm-2407", "tm-9636", "tm-4035", "tm-51828", "tm-69261",
@@ -21,10 +21,8 @@ const FIRST_FIELD = [
   "tm-11391",
 ];
 
-// The real winners before the game's first season, newest last: the Libertadores' 2022 to 2025
-// (CONMEBOL) and the Champions League's 2021/22 to 2025/26 (UEFA), filed under the year a season starts.
+// The Libertadores' real winners before the game's first season, newest last: 2022 to 2025 (CONMEBOL).
 const LIBERTADORES_BEFORE = ["flamengo-rj", "fluminense-rj", "botafogo-rj", "flamengo-rj"];
-const CHAMPIONS_LEAGUE_BEFORE = ["tm-418", "tm-281", "tm-418", "tm-583", "tm-583"];
 // FIFA's window: the champions of the last four seasons qualify.
 const CHAMPION_SEASONS = 4;
 const COUNTRY_CAP = 2;
@@ -32,7 +30,7 @@ const COUNTRY_CAP = 2;
 const HOST = { confederation: "concacaf", country: "us" } as const;
 
 /** A club's country, as the draws need it: Brazil's, a country's abroad or in the world, or a guest's. */
-function countryOf(state: Pick<GameState, "clubs" | "world" | "guests">, id: string): string | null {
+export function countryOf(state: Pick<GameState, "clubs" | "world" | "guests">, id: string): string | null {
   const club = state.clubs[id];
   if (club) return club.abroad?.country ?? "br";
   const inWorld = Object.entries(state.world ?? {}).find(([, country]) => id in country.clubs)?.[0];
@@ -50,7 +48,7 @@ function strengthOf(state: Pick<GameState, "clubs" | "players" | "world" | "gues
 }
 
 /** The clubs by strength, strongest first. */
-function byStrength(state: Pick<GameState, "clubs" | "players" | "world" | "guests">, clubIds: readonly string[]): string[] {
+export function byStrength(state: Pick<GameState, "clubs" | "players" | "world" | "guests">, clubIds: readonly string[]): string[] {
   const squads = new Map<string, number[]>();
   for (const player of Object.values(state.players)) if (clubIds.includes(player.clubId)) squads.set(player.clubId, [...(squads.get(player.clubId) ?? []), player.strength]);
   const strength = new Map(clubIds.map((id) => [id, strengthOf(state, id, squads)]));
@@ -71,7 +69,7 @@ export function openingClubWorldCupField(state: Pick<GameState, "season" | "club
 }
 
 /** The league's champion this season once its matches are played, else the last one its country filed. */
-function latestChampion(state: GameState, country: string): string | null {
+export function latestChampion(state: GameState, country: string): string | null {
   const found = state.world?.[country];
   if (!found) return null;
   const league = Object.values(state.competitions).find((c) => c.kind === "league" && c.season === state.season && c.abroad?.country === country && c.abroad.level === 0);

@@ -4,6 +4,10 @@ import { addDays } from "../dates.js";
 import type { ClubFinance, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
+import { loadEurope } from "../world/loadEurope.js";
+import { loadGuests } from "../world/loadGuests.js";
+import { loadMarketLeagues } from "../world/loadMarketLeagues.js";
+import { loadSouthAmerica } from "../world/loadSouthAmerica.js";
 import { bookFriendly, dropCoachFriendlies, freeFriendlyDates, friendlyFee, friendlyOffers } from "./friendlies.js";
 
 const CLUB = "bahia-ba";
@@ -131,5 +135,26 @@ describe("a friendly", () => {
     const opponent = "juazeirense-ba";
     const { state } = bookFriendly(start, opponent, firstFree(start, opponent), true);
     expect(loadGame(saveGame(state))).toStrictEqual(state);
+  });
+
+  it("is refused on and next to a stage of a competition the club was drawn into without entering it", () => {
+    const cup = Object.values(start.competitions).find((c) => c.kind === "cup");
+    if (!cup) throw new Error("no cup");
+    const dates = cup.stageDates.at(-1) ?? [];
+    const drawn = { ...cup, clubIds: cup.clubIds.filter((id) => id !== CLUB), stages: [{ kind: "knockout" as const, ties: [[CLUB, "vitoria-ba"] as [string, string]], dates }] };
+    const state = { ...start, date: addDays(dates[0] ?? "", -30), competitions: { ...start.competitions, [cup.id]: drawn } };
+    const near = new Set(dates.flatMap((d) => [addDays(d, -1), d, addDays(d, 1)]));
+    expect(freeFriendlyDates(state).filter((d) => near.has(d))).toEqual([]);
+  });
+
+  it("is refused on and next to the Mundial de Clubes' December days for a club still able to win the season's Libertadores", () => {
+    const world = [...loadSouthAmerica(2026), ...loadEurope(2026), ...loadMarketLeagues(2026)];
+    const game = loadNewGame(5, { coachClubId: "flamengo-rj", world, guests: loadGuests(2026) });
+    const october = { ...game, date: "2026-10-20" };
+    const december = ["2026-12-08", "2026-12-09", "2026-12-10", "2026-12-11", "2026-12-12", "2026-12-13", "2026-12-15", "2026-12-16", "2026-12-17"];
+    expect(freeFriendlyDates(october).filter((d) => december.includes(d))).toEqual([]);
+    const outsider = { ...october, coachClubId: "juazeirense-ba" };
+    expect(freeFriendlyDates(outsider)).toEqual(expect.arrayContaining(["2026-12-09"]));
+    expect(bookFriendly(outsider, "flamengo-rj", "2026-12-09", false).answer).toMatchObject({ booked: false, reason: "busy" });
   });
 });

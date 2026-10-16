@@ -539,14 +539,17 @@
   gap: 10px;
 }
 
-@media (max-width: 1179px) {
-  .tables-body {
-    grid-template-columns: minmax(0, 1fr) 250px;
-  }
-
+/* Up to a 1366-wide screen the tabs close up, so a FIFA cup year's twelve fit beside the play button at 1280. */
+@media (max-width: 1365px) {
   .tables-tabs > button {
     padding: 0 10px;
     font-size: 12.5px;
+  }
+}
+
+@media (max-width: 1179px) {
+  .tables-body {
+    grid-template-columns: minmax(0, 1fr) 250px;
   }
 
   .tables-round b {

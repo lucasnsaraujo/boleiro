@@ -19,6 +19,9 @@ function nextStageShape(competition: Competition, fixtures: readonly Fixture[], 
   }
 }
 
+/** Whether the competition's next stage can be drawn once its current one is played: a continental cup's may wait for another cup's final. */
+export const isNextStageReady = (competition: Competition, season: SeasonSoFar): boolean => competition.kind !== "continental" || CONMEBOL_CUPS.isNextStageReady(competition, season);
+
 /**
  * The competition with its next stage drawn, and that stage's fixtures. `fixtures` are its own;
  * `season` is everything played so far, which a continental cup's draw may read from another cup.

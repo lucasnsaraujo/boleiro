@@ -111,7 +111,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const cardRates = refereedCardRates(CARD_RATES[cardCompetitionOf(competition)], officials);
     const markingOf = (clubId: string) => planOf(clubId)?.tactics.marking;
     const bookings = drawCards(setup.homeLineup, setup.awayLineup, markedCardRates(cardRates, { home: markingOf(fixture.homeId), away: markingOf(fixture.awayId) }), random.next);
-    const params = withoutCrowd(paramsForCompetition(competition), clubMood(state, fixture.homeId));
+    const params = withoutCrowd(paramsForCompetition(competition, fixture.stage), clubMood(state, fixture.homeId));
     const goals = simulateMatch(setup.home, setup.away, random.next, params, sendOffMinutes(bookings, fixture.homeId));
     const score = { ...goals, cards: countCards(bookings, fixture.homeId) };
     const shootout = isShootoutDue(state, { ...fixture, result: score }) ? shootoutSeed(random.next) : null;

@@ -7,6 +7,7 @@ import { bookMoneyInDraft } from "./bookMoney.js";
 import { SELLABLE_SHARE_OF_CAPACITY } from "./openingFinances.js";
 import { tierOf } from "./tierOf.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
+import { isOnNeutralGround } from "../continental/neutralGrounds.js";
 
 // guess: football ticket demand is usually reported as inelastic, around -0.3 to -0.6; not checked
 // against a Brazilian study.
@@ -115,8 +116,13 @@ export function recordMatchFinances(state: GameState, played: readonly Fixture[]
     if (!fixture.result || (!home && !isGuest(fixture.homeId)) || (!away && !isGuest(fixture.awayId))) continue;
     const { homeGoals, awayGoals } = fixture.result;
     const scale = gameScaleOf(state, fixture);
-    const scaled = scale === 1 ? null : scaledGates(draft, fixture, scale);
-    if (home) {
+    // FIFA, not the clubs, keeps the gate of a match on a neutral ground.
+    const competition = state.competitions[fixture.competitionId];
+    const isNeutral = competition !== undefined && isOnNeutralGround(competition, fixture.stage);
+    const scaled = scale === 1 || isNeutral ? null : scaledGates(draft, fixture, scale);
+    if (home && isNeutral) {
+      finances[fixture.homeId] = withResult(home, pointsFor(homeGoals, awayGoals));
+    } else if (home) {
       const crowd = attendance(draft, home, fixture.homeId, fixture.awayId, fixture);
       const gate = Math.round(crowd * home.ticketPrice);
       const kept = isHumanClub(state, fixture.homeId) ? withGate(home, fixture, crowd, gate) : home;

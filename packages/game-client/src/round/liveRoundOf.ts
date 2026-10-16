@@ -2,6 +2,7 @@ import type { Club } from "@boleiro/data/clubs";
 import type { Formation } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { aiPosture, DEFAULT_TACTICS, type Tactics } from "@boleiro/engine/sim/coach/tactics";
+import { neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
 import type { BoardPlayer, BoardSide, MatchMoment } from "@boleiro/engine/sim/coach/tacticsBoard";
 import { humanClubIds, waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
@@ -24,8 +25,8 @@ export type RoundClub = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
 const ONCE_PLAYED = 0.5;
 // A continental guest whose pack gives no colours shows in plain white and black.
 const GUEST_COLOURS = { primary: "#FFFFFF", secondary: "#000000" };
-/** A match of the round: its timeline and, unless it kicked off before players had one, every player's form and play. */
-export type RoundMatch = { fixtureId: string; competitionId: string; homeId: string; awayId: string; events: MatchEvent[]; officials?: Officials; play?: MatchPlay };
+/** A match of the round: its timeline and, unless it kicked off before players had one, every player's form and play; `ground` names a neutral ground. */
+export type RoundMatch = { fixtureId: string; competitionId: string; homeId: string; awayId: string; ground?: string; events: MatchEvent[]; officials?: Officials; play?: MatchPlay };
 /** `hasHumanCoach`: a club of a human coach plays in it, so the round shows it open; the rest go under "Outras ligas". */
 type RoundCompetition = { id: string; label: string; hasHumanCoach: boolean };
 /** The coach's group of his competition: its clubs and every fixture of the stage, today's still unplayed. */
@@ -203,15 +204,21 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
   const { state } = live;
   const today = new Map(state.fixtures.filter((f) => f.date === state.date).map((f) => [f.id, f]));
   const coachFixture = live.coachMatch ? today.get(live.coachMatch.fixtureId) : undefined;
-  const matches: RoundMatch[] = live.matches.map((m) => ({
-    fixtureId: m.fixtureId,
-    competitionId: today.get(m.fixtureId)?.competitionId ?? "",
-    homeId: m.homeId,
-    awayId: m.awayId,
-    events: m.events,
-    officials: officialsOf(state, today.get(m.fixtureId)),
-    ...(m.play ? { play: m.play } : {}),
-  }));
+  const matches: RoundMatch[] = live.matches.map((m) => {
+    const fixture = today.get(m.fixtureId);
+    const competition = fixture && state.competitions[fixture.competitionId];
+    const ground = fixture && competition ? neutralGround(competition, fixture) : null;
+    return {
+      fixtureId: m.fixtureId,
+      competitionId: fixture?.competitionId ?? "",
+      homeId: m.homeId,
+      awayId: m.awayId,
+      ...(ground ? { ground } : {}),
+      events: m.events,
+      officials: officialsOf(state, fixture),
+      ...(m.play ? { play: m.play } : {}),
+    };
+  });
 
   const counts = new Map<string, number>();
   for (const m of matches) counts.set(m.competitionId, (counts.get(m.competitionId) ?? 0) + 1);

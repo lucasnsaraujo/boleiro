@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { advanceDay } from "../advanceDay.js";
 import { CONMEBOL_CUPS } from "../continental/conmebolCups.js";
+import { latestChampionsLeagueWinner } from "../continental/uefaCups.js";
 import type { ContinentalCompetition, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
@@ -42,7 +43,7 @@ function playSeason(first: GameState) {
 
 // The season before FIFA's 2029 edition, which the game's titles draw, then the edition's.
 describe("two seasons of the v1 world", () => {
-  const start = loadNewGame(7, { coachClubId: "flamengo-rj", world, guests, season: 2028 });
+  const start = loadNewGame(8, { coachClubId: "flamengo-rj", world, guests, season: 2028 });
   const before = playSeason(start);
   const { lastDay, next, paidUsd, seconds } = playSeason(before.next);
   const cup = clubWorldCupOf(lastDay);
@@ -99,6 +100,21 @@ describe("two seasons of the v1 world", () => {
     expect(nextCup?.clubIds).toHaveLength(32);
     expect(nextCup?.clubIds).toContain(libertadoresChampion);
     for (const country of ["us", "mx"]) expect(nextCup?.clubIds).toContain(before.next.world?.[country]?.seasons.at(-1)?.champions[0]);
+  });
+
+  it("plays the Intercontinental Cup in both seasons, the Club World Cup's too: five matches, the Libertadores' winner in the Derby of the Americas, the latest Champions League winner in the final, its champion filed", () => {
+    for (const { lastDay: day, next: after } of [before, { lastDay, next }]) {
+      const intercontinental = Object.values(day.competitions).find((c) => c.kind === "continental" && c.cup === "intercontinental-cup" && c.season === day.season);
+      if (intercontinental?.kind !== "continental") throw new Error(`no Intercontinental Cup in ${day.season}`);
+      const own = day.fixtures.filter((f) => f.competitionId === intercontinental.id);
+      expect(own.map((f) => f.date)).toEqual(intercontinental.stageDates.flat());
+      expect(own.every((f) => f.result)).toBe(true);
+      const libertadores = Object.values(day.competitions).find((c) => c.kind === "continental" && c.cup === "libertadores" && c.season === day.season);
+      const libertadoresChampion = libertadores?.kind === "continental" ? CONMEBOL_CUPS.finalists(libertadores, day.fixtures.filter((f) => f.competitionId === libertadores.id))?.championId : undefined;
+      expect(knockoutStageAt(intercontinental, 2).ties[0]).toContain(libertadoresChampion);
+      expect(knockoutStageAt(intercontinental, 4).ties[0]?.[0]).toBe(latestChampionsLeagueWinner(day.europe));
+      expect(after.history.seasons.at(-1)?.champions["intercontinental-cup"]).toBe(CONMEBOL_CUPS.finalists(intercontinental, own)?.championId);
+    }
   });
 
   it("plays none in the season after an edition", () => {

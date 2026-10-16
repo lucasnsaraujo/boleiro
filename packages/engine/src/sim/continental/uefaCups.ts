@@ -181,6 +181,16 @@ export function cupChampion(cup: LeaguePhaseCup): string | null {
   return final && isRoundDone(final) ? (winnersOf(final)[0] ?? null) : null;
 }
 
+// The real Champions League winners before the game's first season, newest last: 2021/22 to 2025/26,
+// filed under the year a season starts.
+export const CHAMPIONS_LEAGUE_BEFORE = ["tm-418", "tm-281", "tm-418", "tm-583", "tm-583"];
+
+/** The latest Champions League winner: the season's once its final is played and before it is filed, else the last one filed, else the last real one. */
+export function latestChampionsLeagueWinner(europe: EuropeanCups | undefined): string | null {
+  const cup = europe?.cups.find((c) => c.cup === "champions-league");
+  return (cup && cupChampion(cup)) ?? europe?.winners.at(-1)?.championsLeague ?? CHAMPIONS_LEAGUE_BEFORE.at(-1) ?? null;
+}
+
 /** The two clubs ordered by league-phase place, the better first. */
 function byPlace(table: readonly string[], a: string, b: string): [string, string] {
   return table.indexOf(a) <= table.indexOf(b) ? [a, b] : [b, a];

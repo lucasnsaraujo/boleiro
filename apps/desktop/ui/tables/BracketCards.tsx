@@ -76,7 +76,7 @@ export function GroupCard({ group, clubs, coachClubId }: { group: GroupTable; cl
 
 /** The coach's next continental match with its first leg when it is a return, or why there is none. */
 export type NextTie =
-  | { title: string; sub: string; homeId: string; awayId: string; date: string; firstLeg: string | null; isTwoLegged: boolean }
+  | { title: string; sub: string; homeId: string; awayId: string; date: string; ground: string | null; firstLeg: string | null; isTwoLegged: boolean }
   | { title: string; sub: string; none: string };
 
 export function NextTieCard({ next, clubs }: { next: NextTie; clubs: Clubs }) {
@@ -108,10 +108,10 @@ export function NextTieCard({ next, clubs }: { next: NextTie; clubs: Clubs }) {
         <dl>
           <dt>Quando</dt>
           <dd>{formatBarDate(next.date)}</dd>
-          {home?.stadium && (
+          {(next.ground ?? home?.stadium) && (
             <>
               <dt>Onde</dt>
-              <dd>{home.stadium}</dd>
+              <dd>{next.ground ?? home?.stadium}</dd>
             </>
           )}
           {next.firstLeg && (
