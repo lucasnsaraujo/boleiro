@@ -51,6 +51,7 @@ function slotsOf(state: GameState, clubId: string, cast: Cast): Slots {
     coach: coachNameOf(state, clubId) ?? "o técnico",
     rival: cast.rivalId ? (state.clubs[cast.rivalId]?.shortName ?? cast.rivalId) : "",
     player: player?.name ?? "",
+    teammate: cast.teammateId ? (state.players[cast.teammateId]?.name ?? "") : "",
     age: player ? String(player.age) : "",
     position: player ? POSITION_WORDS[player.group] : "",
   };
@@ -94,7 +95,11 @@ function settle(state: GameState, pending: PendingEvent, picked: number, type: E
   const answer = pending.choices[picked];
   if (!answer) throw new Error(`event ${pending.typeId} has no answer ${picked}`);
   const { clubId } = pending;
-  const cast: Cast = { ...(pending.playerId ? { playerId: pending.playerId } : {}), ...(pending.rivalId ? { rivalId: pending.rivalId } : {}) };
+  const cast: Cast = {
+    ...(pending.playerId ? { playerId: pending.playerId } : {}),
+    ...(pending.teammateId ? { teammateId: pending.teammateId } : {}),
+    ...(pending.rivalId ? { rivalId: pending.rivalId } : {}),
+  };
   const news = type?.choices?.[picked]?.news;
   const headline = news ? fillSlots(news, slotsOf(state, clubId, cast)) : pending.headline;
   const record: EventRecord = { typeId: pending.typeId, date: pending.date, clubId, ...cast, choice: picked };

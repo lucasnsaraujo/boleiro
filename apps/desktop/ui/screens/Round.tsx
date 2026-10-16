@@ -561,6 +561,15 @@ export function Round() {
         onDone={(sheet) => void kickOff(sheet)}
         onLeave={() => navigate("/hub")}
         onPickTeam={async (formation) => (await engine.matchDayPlan(formation)).lineup}
+        chemistry={{
+          value: plan.chemistry.value,
+          captainId: plan.chemistry.captainId,
+          suggestedId: plan.chemistry.suggestedCaptainId,
+          onName: async (playerId) => {
+            await engine.apply({ type: "nameCaptain", playerId });
+            return (await engine.chemistry())?.value ?? plan.chemistry.value;
+          },
+        }}
         {...(opponent ? { opponent: { club: opponent, formation: plan.opponentFormation } } : {})}
         {...(own && opponent ? { tacticsContext: { club: own, opponentClub: opponent, opponent: plan.opponent, opponentForm: plan.opponentForm, moment: plan.moment } } : {})}
       />

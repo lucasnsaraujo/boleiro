@@ -402,3 +402,13 @@ test("the event waiting for the coach and the round's newspaper come across the 
   expect((await engine.newspaper())?.lead?.headline).toEqual(expect.any(String));
   expect((await engine.newspaperEditions()).length).toBeGreaterThan(0);
 }, 120_000);
+
+test("the chemistry screen and naming a captain go through the worker", async () => {
+  const engine = startEngine();
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  const page = await engine.chemistry();
+  expect(page?.clubId).toBe("bahia-ba");
+  const last = page?.candidates.at(-1)?.playerId ?? "";
+  await engine.apply({ type: "nameCaptain", playerId: last });
+  expect((await engine.chemistry())?.captain).toMatchObject({ playerId: last, isNamed: true });
+});

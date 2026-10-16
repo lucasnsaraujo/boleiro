@@ -9,6 +9,8 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.matchDayPlan(...request.args);
     case "liveRound":
       return session.liveRound();
+    case "chemistry":
+      return session.chemistry();
     case "matchPage":
       return session.matchPage(...request.args);
     case "turningPoint":
