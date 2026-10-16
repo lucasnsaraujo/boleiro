@@ -16,6 +16,7 @@ const KEYS: (keyof GameState)[] = ["version", "packVersion", "seed", "rngState",
 let plan: MatchDayPlan;
 let kickOff: LiveRound;
 let changed: LiveRound;
+let opponentFormation: string;
 let onId: string;
 
 beforeAll(() => {
@@ -23,6 +24,7 @@ beforeAll(() => {
   session.apply({ type: "newGame", seed: 4, choices: { coachClubId: CLUB } });
   for (let step = 0; step < MAX_STEPS && session.apply({ type: "playToMatchDay" }).stop !== "matchDay"; step++);
   plan = session.matchDayPlan();
+  opponentFormation = plan.opponentFormation;
   kickOff = session.apply({ type: "startRound" });
   const coach = kickOff.coach;
   const bench = coach?.benchIds[0];
@@ -158,6 +160,10 @@ test("a competition the coach's club reached from another cup, outside its entry
   const dropped = { ...state, competitions: { ...state.competitions, [competition.id]: { ...competition, clubIds: competition.clubIds.filter((id) => id !== CLUB) } } };
   const round = liveRoundOf(startMatchDay(dropped, {}), 0);
   expect(round.competitions.find((c) => c.id === competition.id)?.hasHumanCoach).toBe(true);
+});
+
+test("the coach's side knows the formation his opponent plays, the one his lineup sheet showed before kick-off", () => {
+  expect(kickOff.coach?.rivalFormation).toBe(opponentFormation);
 });
 
 test("a round saved before players had a form of the day still rates everyone and ends as it would have", () => {

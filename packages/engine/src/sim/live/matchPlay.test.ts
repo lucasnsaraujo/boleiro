@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { PositionGroup } from "../../engine/match.js";
 import type { SimPlayer } from "../gameState.js";
 import { freshCondition } from "../players/openingProfile.js";
-import { badDaysOf, drawMatchPlay, playerStatsAt, type PlayerStats } from "./matchPlay.js";
+import { badDaysOf, drawMatchPlay, missedShotsOf, playerStatsAt, type PlayerStats } from "./matchPlay.js";
 import type { MatchEvent } from "./matchTimeline.js";
 
 const player = (id: string, clubId: string, group: PositionGroup): SimPlayer => ({
@@ -99,5 +99,33 @@ describe("a match's play", () => {
       { playerId: "home-9", clubId: "home", minute: 20 },
       { playerId: "home-sub", clubId: "home", minute: 35 },
     ]);
+  });
+});
+
+describe("the shots of a match that don't go in", () => {
+  const bench = [player("home-sub", "home", "ATT")];
+
+  it("are every starter's, in minute order, each with its player's club", () => {
+    const play = drawMatchPlay(1, "fixture-shots", starters, bench, () => 0);
+    const shots = missedShotsOf(play, []);
+    const starterShots = starters.reduce((sum, p) => sum + (play.players[p.id]?.shots.length ?? 0), 0);
+    expect(shots).toHaveLength(starterShots);
+    expect(shots.map((s) => s.minute)).toEqual([...shots.map((s) => s.minute)].sort((a, b) => a - b));
+    expect(shots.every((s) => s.clubId === play.players[s.playerId]?.clubId)).toBe(true);
+    expect(shots.some((s) => s.playerId === "home-sub")).toBe(false);
+  });
+
+  it("fall only while their player is on the pitch: a substitute's after he comes on, the man he replaced's before", () => {
+    const fixture = FIXTURES.find((id) => {
+      const players = drawMatchPlay(1, id, starters, bench, () => 0).players;
+      return players["home-9"]?.shots.some((s) => s.minute > 45) && players["home-sub"]?.shots.some((s) => s.minute > 45);
+    });
+    const play = drawMatchPlay(1, fixture ?? "", starters, bench, () => 0);
+    const sub: MatchEvent = { type: "substitution", minute: 45, clubId: "home", playerId: "home-sub", offId: "home-9" };
+    const shots = missedShotsOf(play, [sub]);
+    expect(shots.filter((s) => s.playerId === "home-9").every((s) => s.minute <= 45)).toBe(true);
+    const subs = shots.filter((s) => s.playerId === "home-sub");
+    expect(subs.length).toBeGreaterThan(0);
+    expect(subs.every((s) => s.minute > 45)).toBe(true);
   });
 });

@@ -276,6 +276,19 @@ test("in the match, Space pauses and resumes, the number keys pick the speed and
   expect(await screen.findByRole("dialog", { name: "Classificação" })).toBeTruthy();
 });
 
+test("the coach's match plays on a board in the band; while the clock runs the score stickers lift off it, and a pause drops them back", async () => {
+  await kickOff(await onMatchDay());
+  const band = screen.getByRole("region", { name: "Seu jogo" });
+  const stickers = () => band.querySelector(".live-mid");
+  expect(band.querySelectorAll(".lp")).toHaveLength(1);
+  expect(stickers()?.classList.contains("is-lifted")).toBe(false);
+  await user().click(screen.getByRole("button", { name: "1x" }));
+  play(2);
+  expect(stickers()?.classList.contains("is-lifted")).toBe(true);
+  await user().click(screen.getByRole("button", { name: "Pausar" }));
+  expect(stickers()?.classList.contains("is-lifted")).toBe(false);
+});
+
 test("the board lists every match of the round, and Só meus jogos leaves only the coach's", async () => {
   await kickOff(await onMatchDay());
   const rows = () => screen.getAllByRole("listitem").filter((row) => / \d+ x \d+ /.test(row.getAttribute("aria-label") ?? ""));

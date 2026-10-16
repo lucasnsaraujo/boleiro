@@ -1,7 +1,7 @@
 import type { Club } from "@boleiro/data/clubs";
+import type { Formation } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { aiPosture, DEFAULT_TACTICS, type Tactics } from "@boleiro/engine/sim/coach/tactics";
-import type { Formation } from "@boleiro/engine/engine/formations";
 import type { BoardPlayer, BoardSide, MatchMoment } from "@boleiro/engine/sim/coach/tacticsBoard";
 import { humanClubIds, waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
@@ -15,7 +15,7 @@ import type { MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import { clubMood } from "@boleiro/engine/sim/morale/clubMood";
 import { shootoutKickers } from "@boleiro/engine/sim/settleShootout";
 import { fixtureLabel } from "../format/competitionName.js";
-import { recentResultsOf, squadOf, type MatchResult, type SquadPlayer } from "./matchDayPlan.js";
+import { aiFormationOf, recentResultsOf, squadOf, type MatchResult, type SquadPlayer } from "./matchDayPlan.js";
 
 export type Side = "home" | "away";
 export type RoundClub = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
@@ -38,6 +38,8 @@ export type CoachSide = {
   benchIds: string[];
   squad: SquadPlayer[];
   tactics: Tactics;
+  /** The formation the other side plays: a human rival's as of his last change, else its AI coach's. */
+  rivalFormation: Formation;
   lastChangeMinute: number;
   /** Whether the screen asks the coach about his side's red cards and injuries, or something else answers them. */
   incidentHandling: IncidentHandling;
@@ -124,6 +126,7 @@ function sideOf(live: LiveDay, open: CoachMatch, clubId: string, fixture: Fixtur
     benchIds: bench.map((p) => p.id),
     squad: squadOf(state, clubId, fixture, (p) => open.strengths[p.id] ?? p.strength),
     tactics,
+    rivalFormation: (isOwner ? open.rivalTactics : open.tactics)?.formation ?? aiFormationOf(state, side === "home" ? fixture.awayId : fixture.homeId),
     lastChangeMinute: open.lastChangeMinute,
     incidentHandling: incidentHandling(state, clubId),
     shootout: { kickers: shootout.kickers.map((p) => p.id), isOverruled: shootout.isOverruled },
