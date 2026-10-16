@@ -1,10 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import type { Formation } from "@boleiro/engine/engine/formations";
-import type { LiveRound, RoundClub, Side } from "@boleiro/game-client/round/liveRoundOf";
-import { Crest } from "../clubs/Crest.js";
+import type { LiveRound, Side } from "@boleiro/game-client/round/liveRoundOf";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springTiming } from "../motion/springEasing.js";
 import { LivePitch } from "./LivePitch.js";
+import { MiniScore } from "./MiniScore.js";
 import type { MatchAt } from "./roundAt.js";
 import { SEAT_GAP_PX, seatLayoutOf } from "./seatLayout.js";
 import "./hotSeat.css";
@@ -137,32 +137,5 @@ export function HotSeatPitches({ seats, focus, onFocus, round, minute, isRunning
         <i className="ph-bold ph-caret-right" aria-hidden="true" />
       </button>
     </div>
-  );
-}
-
-/** Crest, short name and score of both sides on one slim line. */
-export function MiniScore({ home, away, score }: { home: RoundClub; away: RoundClub; score: { home: number; away: number } }) {
-  return (
-    <span className="seat-duel">
-      <Crest club={home} size={18} />
-      <b>{home.shortName}</b>
-      <span className="seat-sc">
-        <MiniDigit value={score.home} />
-        <i>×</i>
-        <MiniDigit value={score.away} />
-      </span>
-      <b>{away.shortName}</b>
-      <Crest club={away} size={18} />
-    </span>
-  );
-}
-
-function MiniDigit({ value }: { value: number }) {
-  return (
-    <span className="digit">
-      <span key={value} className="roll">
-        {value}
-      </span>
-    </span>
   );
 }

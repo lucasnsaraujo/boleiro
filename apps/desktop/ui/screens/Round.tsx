@@ -15,12 +15,13 @@ import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { useFlip } from "../motion/useFlip.js";
 import { hasOwnArrows } from "../round/hasOwnArrows.js";
-import { HotSeatPitches, MiniScore, type Seat } from "../round/HotSeatPitches.js";
+import { HotSeatPitches, type Seat } from "../round/HotSeatPitches.js";
 import { incidentAt, type Incident } from "../round/incident.js";
 import { IncidentWindow } from "../round/IncidentWindow.js";
 import { LineupSheet } from "../round/LineupSheet.js";
 import { LivePitch } from "../round/LivePitch.js";
 import { MatchReport } from "../round/MatchReport.js";
+import { MiniScore } from "../round/MiniScore.js";
 import { kickOffOf, liveChangeOf, liveLimits, type Sheet } from "../round/lineupDraft.js";
 import type { LiveChange } from "@boleiro/engine/sim/live/applyLiveChange";
 import type { CoachSide, HumanSide, LiveRound, RoundClub, Side } from "@boleiro/game-client/round/liveRoundOf";
@@ -447,7 +448,7 @@ export function Round() {
     if (!canStepBoards) return;
     const onKey = (event: KeyboardEvent) => {
       const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
-      if (!step || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || hasOwnArrows(event.target)) return;
+      if (!step || event.defaultPrevented || event.repeat || event.metaKey || event.ctrlKey || event.altKey || hasOwnArrows(event.target)) return;
       event.preventDefault();
       setFocusClubId(boardCoaches[(focus + step + boardCoaches.length) % boardCoaches.length]?.clubId ?? null);
     };
