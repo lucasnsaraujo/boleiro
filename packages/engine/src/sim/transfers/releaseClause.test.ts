@@ -69,3 +69,17 @@ describe("a release clause", () => {
     expect(ask(broke, { kind: "payClause", playerId: star.id }).decision).toMatchObject({ approved: false, reason: "transferBudget" });
   });
 });
+
+describe("a release clause in a hot-seat game", () => {
+  it("takes a player from another human coach's club, who has no say either", () => {
+    const rival = "palmeiras-sp";
+    let game = loadNewGame(4, { coachClubId: COACH, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: rival }] } });
+    while (game.date < "2026-01-05") game = advanceDay(game, {}).state;
+    const star = squadOf(game, rival).sort((a, b) => b.strength - a.strength)[0];
+    if (!star) throw new Error("no Palmeiras player");
+    const cheap = rich({ ...game, players: { ...game.players, [star.id]: { ...star, wage: 20_000 } } });
+    const { state, decision } = ask(cheap, { kind: "payClause", playerId: star.id });
+    expect(decision).toMatchObject({ approved: true });
+    expect(state.players[star.id]?.clubId).toBe(COACH);
+  });
+});
