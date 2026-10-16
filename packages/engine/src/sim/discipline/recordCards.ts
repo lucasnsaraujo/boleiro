@@ -3,7 +3,7 @@ import type { Discipline, DisciplineEvent, PlayerDiscipline } from "./discipline
 import type { Booking } from "./drawCards.js";
 import { yellowPhase } from "./yellowPhase.js";
 
-const YELLOWS_PER_BAN = 3;
+export const YELLOWS_PER_BAN = 3;
 // A red card bans the player from the competition's next match whatever the court decides (RGC CBF
 // art. 60, as quoted by FPF-PE, https://www.fpf-pe.com.br/assets/uploads/170837049013.pdf). A second
 // yellow ends there. guess: the sports court (STJD) adds one more match for half of straight reds;

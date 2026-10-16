@@ -1,9 +1,11 @@
 import type { Role } from "@boleiro/data/players";
 import type { Formation } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
-import type { Tactics } from "@boleiro/engine/sim/coach/tactics";
+import { DEFAULT_TACTICS, type Tactics } from "@boleiro/engine/sim/coach/tactics";
+import type { BoardSide, MatchMoment } from "@boleiro/engine/sim/coach/tacticsBoard";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
-import { openDisciplineDay } from "@boleiro/engine/sim/discipline/recordCards";
+import { openDisciplineDay, YELLOWS_PER_BAN } from "@boleiro/engine/sim/discipline/recordCards";
+import { yellowPhase } from "@boleiro/engine/sim/discipline/yellowPhase";
 import type { Fixture, GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import type { MatchContext } from "@boleiro/engine/sim/players/effectiveStrength";
 import { fatigueOn } from "@boleiro/engine/sim/players/fatigueOn";
@@ -17,9 +19,19 @@ export type PlayerStatus = "injured" | "suspended" | null;
 
 /**
  * One of the coach's players as the lineup sheet shows him: his positions (main first; none when the
- * data has none, and then his group is his position), today's strength, fatigue from 0 to 100, and why he can't play.
+ * data has none, and then his group is his position), today's strength, fatigue from 0 to 100, why he
+ * can't play, and whether one more yellow in today's competition bans him.
  */
-export type SquadPlayer = { id: string; name: string; group: PositionGroup; positions?: readonly Role[]; strength: number; fatigue: number; status: PlayerStatus };
+export type SquadPlayer = {
+  id: string;
+  name: string;
+  group: PositionGroup;
+  positions?: readonly Role[];
+  strength: number;
+  fatigue: number;
+  status: PlayerStatus;
+  isOneYellowFromBan?: boolean;
+};
 
 /** What the lineup sheet opens with before kick-off: the squad, the eleven the assistant would pick in the coach's formation (keeper first, in its slots' order), and his tactics. */
 export type MatchDayPlan = {
@@ -33,6 +45,9 @@ export type MatchDayPlan = {
   tactics: Tactics;
   /** The formation the opponent's coach plays. */
   opponentFormation: Formation;
+  /** The opponent's likely eleven and its coach's tactics, for the tactics board. */
+  opponent: BoardSide;
+  moment: MatchMoment;
 };
 
 const GROUP_ORDER: Record<PositionGroup, number> = { GK: 0, DEF: 1, MID: 2, ATT: 3 };
@@ -59,9 +74,26 @@ function playersOf(state: Pick<GameState, "players">, clubId: string): SimPlayer
   return squad;
 }
 
+/** Whether one more yellow in the fixture's competition bans each player. */
+function isOneYellowFromBanIn(state: Pick<GameState, "discipline" | "competitions">, fixture: Fixture): (playerId: string) => boolean {
+  const competition = state.competitions[fixture.competitionId];
+  const records = state.discipline[fixture.competitionId] ?? {};
+  const phase = competition ? yellowPhase(competition, fixture.stage) : 0;
+  return (playerId) => {
+    const record = records[playerId];
+    return record !== undefined && record.phase >= phase && record.yellows === YELLOWS_PER_BAN - 1;
+  };
+}
+
 /** The coach's squad for today's match, goalkeepers first and strongest first within each position. */
-export function squadOf(state: Pick<GameState, "date" | "players" | "discipline">, clubId: string, fixture: Fixture, strengthOf: (player: SimPlayer) => number): SquadPlayer[] {
+export function squadOf(
+  state: Pick<GameState, "date" | "players" | "discipline" | "competitions">,
+  clubId: string,
+  fixture: Fixture,
+  strengthOf: (player: SimPlayer) => number,
+): SquadPlayer[] {
   const suspended = openDisciplineDay(state.discipline).suspended(fixture.competitionId);
+  const isOneYellowFromBan = isOneYellowFromBanIn(state, fixture);
   return playersOf(state, clubId)
     .map((p) => ({
       id: p.id,
@@ -71,6 +103,7 @@ export function squadOf(state: Pick<GameState, "date" | "players" | "discipline"
       strength: Math.round(strengthOf(p)),
       fatigue: Math.round(Math.min(100, fatigueOn(p, state.date))),
       status: isInjured(p, state.date) ? ("injured" as const) : suspended.has(p.id) ? ("suspended" as const) : null,
+      ...(isOneYellowFromBan(p.id) ? { isOneYellowFromBan: true } : {}),
     }))
     .sort((a, b) => GROUP_ORDER[a.group] - GROUP_ORDER[b.group] || b.strength - a.strength);
 }
@@ -89,7 +122,18 @@ export function matchDayPlan(state: GameState, formation?: Formation): MatchDayP
   const { homeId, awayId } = fixture;
   const opponentId = homeId === clubId ? awayId : homeId;
   const guest = guestClubOf(state, opponentId);
-  const opponentFormation = formationOf(state, opponentId, guest ? guestSquadOf(guest) : playersOf(state, opponentId));
+  const opponentSquad = (guest ? guestSquadOf(guest) : playersOf(state, opponentId)).filter((p) => !suspended.has(p.id));
+  const opponentFormation = formationOf(state, opponentId, opponentSquad);
   const squad = squadOf(state, clubId, fixture, playingStrength(state, clubId, context, available));
-  return { fixtureId: fixture.id, clubId, homeId, awayId, label, squad, lineup, tactics, opponentFormation };
+  const opponentStrength = playingStrength(state, opponentId, context, opponentSquad);
+  const opponentEleven = pickMatchLineup(opponentSquad, context, opponentFormation, usualStartersOf(state, opponentId)).map((p) => ({
+    id: p.id,
+    name: p.name,
+    group: p.group,
+    ...(p.positions ? { positions: p.positions } : {}),
+    strength: opponentStrength(p),
+  }));
+  const opponent: BoardSide = { name: matchClubOf(state, opponentId)?.shortName ?? opponentId, eleven: opponentEleven, tactics: { ...DEFAULT_TACTICS, formation: opponentFormation } };
+  const moment: MatchMoment = { isHome: homeId === clubId, minute: 0, lead: 0 };
+  return { fixtureId: fixture.id, clubId, homeId, awayId, label, squad, lineup, tactics, opponentFormation, opponent, moment };
 }

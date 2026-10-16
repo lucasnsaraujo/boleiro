@@ -141,7 +141,8 @@ export function lineupProblem(lineup: readonly string[], squad: readonly SquadPl
  */
 export function kickOffOf(sheet: Sheet, planned: readonly string[], tactics: Tactics): KickOff {
   const isSameEleven = sheet.lineup.length === planned.length && sheet.lineup.every((id) => planned.includes(id));
-  const isSameTactics = (Object.keys(tactics) as (keyof Tactics)[]).every((key) => sheet.tactics[key] === tactics[key]);
+  const keys = new Set([...Object.keys(tactics), ...Object.keys(sheet.tactics)] as (keyof Tactics)[]);
+  const isSameTactics = [...keys].every((key) => sheet.tactics[key] === tactics[key]);
   if (isSameEleven && isSameTactics) return {};
   return { lineup: sheet.lineup, ...(isSameTactics ? {} : { tactics: sheet.tactics }) };
 }
@@ -152,6 +153,8 @@ export function liveChangeOf(sheet: Sheet, tactics: Tactics): LiveChange | null 
     ...(sheet.subs.length ? { substitutions: sheet.subs } : {}),
     ...(sheet.tactics.formation !== tactics.formation ? { formation: sheet.tactics.formation } : {}),
     ...(sheet.tactics.posture !== tactics.posture ? { posture: sheet.tactics.posture } : {}),
+    ...(sheet.tactics.marking !== tactics.marking && sheet.tactics.marking ? { marking: sheet.tactics.marking } : {}),
+    ...(sheet.tactics.play !== tactics.play && sheet.tactics.play ? { play: sheet.tactics.play } : {}),
     ...(sheet.tactics.penaltyTakerId !== tactics.penaltyTakerId ? { penaltyTakerId: sheet.tactics.penaltyTakerId } : {}),
   };
   return Object.keys(change).length ? change : null;
