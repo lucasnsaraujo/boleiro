@@ -1,4 +1,4 @@
-import { GROUP_OF_ROLE, type Role } from "@boleiro/data/players";
+import { GROUP_OF_ROLE, type Lane, type Role } from "@boleiro/data/players";
 import { KEEPER_SWAP, OUT_OF_POSITION, type Player, type PositionGroup } from "./match.js";
 
 /**
@@ -152,23 +152,32 @@ export function arrange<P extends Player>(players: readonly P[], formation: Form
   return Array.from(filled, (p) => (p < 0 ? null : (players[p] ?? null)));
 }
 
+// A slot this close to a touchline plays down that flank; the rest play through the middle.
+const FLANK_X = 30;
+
+/** The third of the pitch a slot stands in. */
+export function laneOf(slot: Slot): Lane {
+  if (slot.x < FLANK_X) return "left";
+  return slot.x > 100 - FLANK_X ? "right" : "centre";
+}
+
 /**
- * The eleven, in its own order, each with his slot's group and the share of his strength he plays at
- * there (arrange). A player beyond the formation's slots keeps his own group.
+ * The eleven, in its own order, each with his slot's group, its lane and the share of his strength he
+ * plays at there (arrange). A player beyond the formation's slots keeps his own group and plays through the middle.
  */
-export function inFormation<P extends Player>(lineup: readonly P[], formation: Formation): (P & { slot: PositionGroup; fit: number })[] {
+export function inFormation<P extends Player>(lineup: readonly P[], formation: Formation): (P & { slot: PositionGroup; fit: number; lane: Lane })[] {
   const slots = FORMATIONS[formation];
   // An eleven already in slot order with everyone in his main position can't be placed better: no arranging.
   const isInPlace = lineup.length === slots.length && lineup.every((player, s) => slots[s] && positionFit(player, slots[s].role) === 1);
-  if (isInPlace) return lineup.map((player, s) => ({ ...player, slot: GROUP_OF_ROLE[slots[s]?.role ?? "meia"], fit: 1 }));
-  const at = new Map<P, Role>();
+  if (isInPlace) return lineup.map((player, s) => ({ ...player, slot: GROUP_OF_ROLE[slots[s]?.role ?? "meia"], fit: 1, lane: slots[s] ? laneOf(slots[s]) : "centre" }));
+  const at = new Map<P, Slot>();
   arrange(lineup, formation).forEach((player, s) => {
     const slot = slots[s];
-    if (player && slot) at.set(player, slot.role);
+    if (player && slot) at.set(player, slot);
   });
   return lineup.map((player) => {
-    const role = at.get(player);
-    return role ? { ...player, slot: GROUP_OF_ROLE[role], fit: positionFit(player, role) } : { ...player, slot: player.group, fit: 1 };
+    const slot = at.get(player);
+    return slot ? { ...player, slot: GROUP_OF_ROLE[slot.role], fit: positionFit(player, slot.role), lane: laneOf(slot) } : { ...player, slot: player.group, fit: 1, lane: "centre" as const };
   });
 }
 

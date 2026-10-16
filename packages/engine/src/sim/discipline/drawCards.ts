@@ -1,3 +1,4 @@
+import { markingCards, type Marking } from "../../engine/match.js";
 import type { SimPlayer } from "../gameState.js";
 import { AGGRESSIVE_SHARE } from "../players/openingProfile.js";
 import type { CardCount, MatchCards } from "./discipline.js";
@@ -53,6 +54,12 @@ function sideCards(
     }
   }
   return bookings;
+}
+
+/** The card rates of a match with each side's marking: heavy, or none, keeps the real rates. */
+export function markedCardRates(rates: CardRates, marking: { home?: Marking; away?: Marking }): CardRates {
+  const scaled = (count: CardCount, factor: number): CardCount => (factor === 1 ? count : { yellows: count.yellows * factor, reds: count.reds * factor });
+  return { ...rates, home: scaled(rates.home, markingCards(marking.home)), away: scaled(rates.away, markingCards(marking.away)) };
 }
 
 /** Every card in a match, drawn before kick-off so the engine can play the sendings-off. */

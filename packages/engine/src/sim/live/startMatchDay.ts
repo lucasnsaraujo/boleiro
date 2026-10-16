@@ -3,7 +3,7 @@ import { keyedStream, randomStream } from "../../engine/random.js";
 import type { DayDecisions, DayEvent } from "../advanceDay.js";
 import { guestClubOf, guestSquadOf } from "../continental/guestClubs.js";
 import { CARD_RATES, cardCompetitionOf } from "../discipline/cardRates.js";
-import { countCards, drawCards, sendOffMinutes } from "../discipline/drawCards.js";
+import { countCards, drawCards, markedCardRates, sendOffMinutes } from "../discipline/drawCards.js";
 import { openDisciplineDay } from "../discipline/recordCards.js";
 import { refuseSuspended } from "../discipline/suspendedPlayers.js";
 import type { GameState, SimPlayer } from "../gameState.js";
@@ -108,7 +108,8 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const formStrengthOf = (p: SimPlayer) => formStrength(formOf(p));
     const setup = matchSetup(state, fixture, available, coach, waiting, formStrengthOf);
     const cardRates = CARD_RATES[cardCompetitionOf(competition)];
-    const bookings = drawCards(setup.homeLineup, setup.awayLineup, cardRates, random.next);
+    const markingOf = (clubId: string) => planOf(clubId)?.tactics.marking;
+    const bookings = drawCards(setup.homeLineup, setup.awayLineup, markedCardRates(cardRates, { home: markingOf(fixture.homeId), away: markingOf(fixture.awayId) }), random.next);
     const params = withoutCrowd(paramsForCompetition(competition), clubMood(state, fixture.homeId));
     const goals = simulateMatch(setup.home, setup.away, random.next, params, sendOffMinutes(bookings, fixture.homeId));
     const score = { ...goals, cards: countCards(bookings, fixture.homeId) };
