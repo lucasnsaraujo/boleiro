@@ -64,10 +64,10 @@ test("the goals of a stretch of minutes come with the side that scored", () => {
   ]);
 });
 
-test("the round stops by itself at half-time, at the final whistle, and when the coach's side concedes, loses a man or gets hurt", () => {
+test("the round stops by itself at half-time, at the final whistle, and when the coach's side gets hurt, but never for a goal", () => {
   expect(pauseReason(round, 10)).toBeNull();
   expect(pauseReason(round, 20)).toBeNull();
-  expect(pauseReason(round, 30)).toBe("coachMatch");
+  expect(pauseReason(round, 30)).toBeNull();
   expect(pauseReason(round, 45)).toBe("halfTime");
   expect(pauseReason(round, 50)).toBe("coachMatch");
   expect(pauseReason(round, 90)).toBe("fullTime");

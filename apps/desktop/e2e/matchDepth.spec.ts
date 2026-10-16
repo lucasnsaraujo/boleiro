@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { leaveIncident, startAtClub } from "./flows.js";
 
 const MAX_PRESSES = 5;
-// A round stops at half-time and at every goal against, red card or injury of the coach's side.
+// A round stops at half-time and at every red card or injury of the coach's side; a goal never stops it.
 const MAX_STOPS = 30;
 // Rounds to play until the coach's match has a goal set up by a team-mate; most have one.
 const MAX_ROUNDS = 6;
