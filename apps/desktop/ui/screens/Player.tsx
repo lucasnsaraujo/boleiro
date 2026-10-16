@@ -14,6 +14,7 @@ import { DEFAULT_RENEWAL_YEARS, requestOptions } from "@boleiro/game-client/mark
 import { pendingText, requestTitle } from "../market/requestText.js";
 import { playerCard, type PlayerCard } from "../squad/playerCard.js";
 import { statusText } from "../squad/squadRows.js";
+import { WatchToggle } from "../controls/WatchToggle.js";
 import "./player.css";
 
 const PLAYER_KEYS = ["date", "season", "coachClubId", "clubs", "players", "discipline", "competitions", "fixtures", "history", "market", "hasMidSeasonWindow", "coach"] as const;
@@ -76,15 +77,17 @@ export function Player() {
   const { engine } = useServices();
   const [state, setState] = useState<PlayerState | null>(null);
   const [desk, setDesk] = useState<BoardDesk | null>(null);
+  const [watchList, setWatchList] = useState<readonly string[]>([]);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let current = true;
-    Promise.all([engine.read(PLAYER_KEYS), engine.desk()]).then(
-      ([read, onDesk]) => {
+    Promise.all([engine.read(PLAYER_KEYS), engine.desk(), engine.scouting()]).then(
+      ([read, onDesk, scouting]) => {
         if (!current) return;
         setState(read);
         setDesk(onDesk);
+        setWatchList(scouting.watchList);
       },
       () => current && setFailed(true),
     );
@@ -117,6 +120,9 @@ export function Player() {
   const nextClub = card.contract.leavesForId ? state.clubs[card.contract.leavesForId] : undefined;
   const goals = card.season.goals.reduce((sum, g) => sum + g.goals, 0);
   const status = statusText(card.status);
+  const isWatched = watchList.includes(card.id);
+  const isLentByCoach = card.contract.loan?.fromClubId === state.coachClubId;
+  const watch = () => void engine.apply({ type: "watchPlayer", playerId: card.id, isWatched: !isWatched }).then((scouting) => setWatchList(scouting.watchList));
 
   return (
     <div className="player">
@@ -133,6 +139,9 @@ export function Player() {
           </p>
           {status && <p className={`player-status ${card.status?.kind ?? ""}`}>{status}</p>}
         </div>
+        {!card.isCoachsPlayer && state.coachClubId && (
+          <WatchToggle isWatched={isWatched} onToggle={watch} />
+        )}
         {club && (
           <Link className="player-club" to={`/club/${club.id}`} aria-label={`Ver o elenco do ${club.shortName}`}>
             <Crest club={club} size={40} />
@@ -215,7 +224,7 @@ export function Player() {
         </section>
       </div>
       <StrengthHistory marks={card.strengthBySeason} />
-      {card.isCoachsPlayer && (
+      {(card.isCoachsPlayer || isLentByCoach) && (
         <ContractActions
           state={state}
           playerId={card.id}
@@ -238,7 +247,7 @@ type ActionsProps = {
   onWithdraw: () => void;
 };
 
-/** Renovar, Vender and Emprestar go to the board's desk; a request already there can be withdrawn. */
+/** Renovar, Vender and Emprestar, or Chamar de volta for a player lent out, go to the board's desk; a request already there can be withdrawn. */
 function ContractActions({ state, playerId, name, desk, onAsk, onWithdraw }: ActionsProps) {
   const [years, setYears] = useState<number>(DEFAULT_RENEWAL_YEARS);
   const pending = desk.pending.find((request) => request.playerId === playerId);

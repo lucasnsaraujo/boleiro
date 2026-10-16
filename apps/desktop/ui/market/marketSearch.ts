@@ -5,6 +5,7 @@ import { addDays } from "@boleiro/engine/sim/dates";
 import type { GameState, IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { squadsByClub } from "@boleiro/engine/sim/players/squadsByClub";
 import { sellerPrice } from "@boleiro/engine/sim/transfers/askingPrice";
+import { releaseClauseOf } from "@boleiro/engine/sim/transfers/releaseClause";
 import { valuePlayer } from "@boleiro/engine/sim/transfers/valuePlayer";
 import { isInPreContractWindow } from "@boleiro/engine/sim/transfers/tradeBetweenClubs";
 import { nextWindowOpensOn, windowClosesOn, type CoachWindows } from "@boleiro/engine/sim/transfers/transferWindows";
@@ -32,6 +33,10 @@ export type MarketRow = {
   wage: number;
   /** Market value in BRL. */
   value: number;
+  /** What paying his release clause costs in BRL; null for a free agent, a loanee or one who signed elsewhere. */
+  clause: number | null;
+  /** On the coach's watch list. */
+  isWatched: boolean;
   /** What he earns now, and until when; a free agent's is from the club he left. */
   currentWage: number;
   contractUntil: IsoDate;
@@ -132,8 +137,8 @@ export function strengthBounds(state: Pick<GameState, "coachClubId" | "players" 
   return min > max ? { min: 1, max: 99 } : { min, max };
 }
 
-/** Other clubs' players and free agents that match, strongest first: how many, and the first `limit` as rows. */
-export function searchMarket(state: MarketState, filters: MarketFilters, limit: number): { total: number; rows: MarketRow[] } {
+/** Other clubs' players and free agents that match, strongest first: how many, and the first `limit` as rows. `watched` is the coach's watch list. */
+export function searchMarket(state: MarketState, filters: MarketFilters, limit: number, watched: ReadonlySet<string> = new Set()): { total: number; rows: MarketRow[] } {
   const { coachClubId, market, date } = state;
   const lineupOf = lineupsOf(state.players);
   const name = fold(filters.name.trim());
@@ -145,6 +150,7 @@ export function searchMarket(state: MarketState, filters: MarketFilters, limit: 
 
   const statusOf = (player: SimPlayer, free: boolean): RowStatus => {
     if (free) return "freeAgent";
+    if (market.loans[player.id]?.fromClubId === coachClubId) return "lentOut";
     if (market.loans[player.id]) return "onLoan";
     if (market.preContracts[player.id]) return "preContract";
     if (isInPreContractWindow(player, date)) return "contractEnding";
@@ -163,6 +169,7 @@ export function searchMarket(state: MarketState, filters: MarketFilters, limit: 
 
   const matches = (player: SimPlayer, free: boolean): boolean => {
     const strength = Math.round(player.strength);
+    if (filters.isWatchedOnly && !watched.has(player.id)) return false;
     if (filters.nationality && !player.nationalities.includes(filters.nationality)) return false;
     // A free agent keeps the minutes of the season he was released in, which may be long gone.
     if (filters.minMinutes !== null && (free ? 0 : player.condition.seasonMinutes) < filters.minMinutes) return false;
@@ -198,9 +205,11 @@ export function searchMarket(state: MarketState, filters: MarketFilters, limit: 
       strength: player.strength,
       clubId: free ? null : player.clubId,
       status: status === null && filters.status === "lendable" ? "lendable" : status,
-      price: status === "onLoan" || status === "preContract" ? null : fee,
+      price: status === "onLoan" || status === "lentOut" || status === "preContract" ? null : fee,
       wage: wageOf(player, free),
       value: Math.round(valuePlayer(player, fromTier, date) * market.eurBrl),
+      clause: status === "freeAgent" || status === "onLoan" || status === "lentOut" || status === "preContract" ? null : releaseClauseOf(player),
+      isWatched: watched.has(player.id),
       currentWage: player.wage,
       contractUntil: player.contractUntil,
       willing: willingnessOf(player, free),

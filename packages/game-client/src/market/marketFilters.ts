@@ -2,7 +2,7 @@ import type { PositionGroup } from "@boleiro/engine/engine/match";
 import type { Division } from "@boleiro/data/players";
 
 /** The statuses the market can be filtered by. */
-export type MarketStatus = "freeAgent" | "contractEnding" | "lendable";
+export type MarketStatus = "freeAgent" | "contractEnding" | "lendable" | "lentOut";
 export type MarketFilters = {
   name: string;
   group: PositionGroup | null;
