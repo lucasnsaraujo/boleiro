@@ -5,6 +5,7 @@ import type { PrizePaid } from "../finances/payCopaPrizes.js";
 import { OPENING_EUR_BRL } from "../transfers/openingMarket.js";
 import { tieResults } from "../tieResults.js";
 import { clubWorldCupPrizes } from "./clubWorldCup.js";
+import { intercontinentalCupPrizes } from "./intercontinentalCup.js";
 import { CONMEBOL_CUPS, CUP_STAGES } from "./conmebolCups.js";
 import type { ContinentalField } from "./continentalField.js";
 
@@ -22,10 +23,22 @@ const PRIZE_OF_STAGE: Record<string, string> = {
 };
 const GROUP_WIN = "group-win";
 const GROUP_DRAW = "group-draw";
+/** A cup's prize for the clubs a knockout round puts out, as FIFA's Intercontinental Cup pays by place. */
+const knockedOutIn = (stage: string) => `knocked-out:${stage}`;
 
-/** The cup's prizes for the club in USD by stage: CONMEBOL's table, or FIFA's, whose participation goes by confederation. */
-const prizesFor = (stages: NonNullable<Economy["continentalStages"]>, competition: ContinentalCompetition, clubId: string): Record<string, number> =>
-  competition.cup === "club-world-cup" ? clubWorldCupPrizes(competition, clubId) : competition.cup === "recopa" ? {} : stages[competition.cup];
+/** The cup's prizes for the club in USD by stage: CONMEBOL's table, the Club World Cup's, whose participation goes by confederation, or the Intercontinental Cup's by place. */
+function prizesFor(stages: NonNullable<Economy["continentalStages"]>, competition: ContinentalCompetition, clubId: string): Record<string, number> {
+  switch (competition.cup) {
+    case "club-world-cup":
+      return clubWorldCupPrizes(competition, clubId);
+    case "intercontinental-cup":
+      return intercontinentalCupPrizes();
+    case "recopa":
+      return {};
+    default:
+      return stages[competition.cup];
+  }
+}
 
 /** CONMEBOL's prizes in USD by stage, as the economy keeps them for a game that plays the cups. */
 export function continentalStagesOf(money: CompetitionMoney): NonNullable<Economy["continentalStages"]> {
@@ -34,10 +47,11 @@ export function continentalStagesOf(money: CompetitionMoney): NonNullable<Econom
 }
 
 /**
- * Pays today's CONMEBOL and Club World Cup prizes, in BRL at today's rate (the dollar moves with the
- * market's euro): a club's prize for a stage on its first match in it, the group stage's bonus for each
- * win (guess: CONMEBOL pays it per group win) and, at the Club World Cup, each draw, and the final's
- * prizes once the final is played. Only clubs with finances, Brazil's and a full-tier country's, are paid.
+ * Pays today's CONMEBOL and FIFA prizes, in BRL at today's rate (the dollar moves with the market's
+ * euro): a club's prize for a stage on its first match in it, the group stage's bonus for each win
+ * (guess: CONMEBOL pays it per group win) and, at the Club World Cup, each draw, the Intercontinental
+ * Cup's to each round's loser, and the final's prizes once the final is played. Only clubs with
+ * finances, Brazil's and a full-tier country's, are paid.
  */
 export function payContinentalPrizes(state: GameState, played: readonly Fixture[]): { state: GameState; events: PrizePaid[] } {
   const stages = state.economy.continentalStages;
@@ -73,11 +87,15 @@ export function payContinentalPrizes(state: GameState, played: readonly Fixture[
         pay(winnerId, competition.id, bonus(winnerId, GROUP_WIN));
       } else for (const clubId of [fixture.homeId, fixture.awayId]) pay(clubId, competition.id, bonus(clubId, GROUP_DRAW));
     }
-    if (stage.kind === "knockout" && fixture.stage === competition.stageDates.length - 1 && fixture.date === stage.dates.at(-1)) {
+    if (stage.kind !== "knockout" || fixture.tie === undefined || fixture.date !== stage.dates.at(-1)) continue;
+    if (fixture.stage === competition.stageDates.length - 1) {
       const [final] = tieResults(stage, [fixture]);
       if (!final) continue;
       pay(final.winnerId, competition.id, prizesOf(final.winnerId).champion);
       pay(final.loserId, competition.id, prizesOf(final.loserId)["runner-up"]);
+    } else {
+      const tie = tieResults(stage, next.fixtures.filter((f) => f.competitionId === competition.id && f.stage === fixture.stage))[fixture.tie];
+      if (tie) pay(tie.loserId, competition.id, prizesOf(tie.loserId)[knockedOutIn(name)]);
     }
   }
   return { state: next, events };
@@ -111,7 +129,7 @@ export function withExpectedContinentalPrizes(state: GameState, field: Continent
   return { ...state, finances };
 }
 
-/** The CONMEBOL and Club World Cup prizes the club earned in the season's cups so far, in BRL at today's rate: each stage it played, its group results and the final's prize. */
+/** The CONMEBOL and FIFA prizes the club earned in the season's cups so far, in BRL at today's rate: each stage it played, its group results, the round it went out at and the final's prize. */
 export function continentalPrizesEarned(state: GameState, clubId: string): number {
   const stages = state.economy.continentalStages;
   if (!stages) return 0;
@@ -121,7 +139,13 @@ export function continentalPrizesEarned(state: GameState, clubId: string): numbe
     if (competition.kind !== "continental" || competition.cup === "recopa" || competition.season !== state.season) continue;
     const prizes = prizesFor(stages, competition, clubId);
     const played = state.fixtures.filter((f) => f.competitionId === competition.id && f.result && (f.homeId === clubId || f.awayId === clubId));
-    for (const stage of new Set(played.map((f) => f.stage))) usd += prizes[PRIZE_OF_STAGE[CUP_STAGES[competition.cup][stage]?.name ?? ""] ?? ""] ?? 0;
+    for (const stage of new Set(played.map((f) => f.stage))) {
+      const name = CUP_STAGES[competition.cup][stage]?.name ?? "";
+      usd += prizes[PRIZE_OF_STAGE[name] ?? ""] ?? 0;
+      const knockout = competition.stages[stage];
+      const isOut = knockout?.kind === "knockout" && stage < competition.stageDates.length - 1 && played.filter((f) => f.stage === stage).length === knockout.dates.length;
+      if (isOut && tieResults(knockout, state.fixtures.filter((f) => f.competitionId === competition.id && f.stage === stage)).some((tie) => tie.loserId === clubId)) usd += prizes[knockedOutIn(name)] ?? 0;
+    }
     for (const f of played) {
       const result = f.result;
       if (!result || competition.stages[f.stage]?.kind !== "groups") continue;

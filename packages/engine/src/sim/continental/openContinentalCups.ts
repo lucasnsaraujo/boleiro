@@ -9,7 +9,7 @@ import type { ContinentalField } from "./continentalField.js";
 // The draws come from a stream of their own, so opening the cups leaves the game's main stream as it was.
 const DRAW_STREAM_SALT = 0xc0b1e;
 
-/** The game with the season's CONMEBOL cups and Club World Cup opened on the field: competitions, first-stage fixtures and their draws. */
+/** The game with the season's CONMEBOL and FIFA cups opened on the field: competitions, first-stage fixtures and their draws. */
 export function openContinentalCups(state: GameState, field: ContinentalField | null): GameState {
   if (!field) return state;
   const random = randomStream((state.seed ^ DRAW_STREAM_SALT ^ state.season) >>> 0).next;
@@ -20,6 +20,7 @@ export function openContinentalCups(state: GameState, field: ContinentalField | 
     { cup: "sul-americana", entries: field.sulAmericana, drawn: [...field.sulAmericana.flat(), ...libertadoresClubs] },
     { cup: "recopa", entries: [field.recopa], drawn: field.recopa },
     { cup: "club-world-cup", entries: [field.clubWorldCup], drawn: field.clubWorldCup },
+    { cup: "intercontinental-cup", entries: field.intercontinentalCup, drawn: field.intercontinentalCup.flat() },
   ];
   const competitions = { ...state.competitions };
   const fixtures = [...state.fixtures];

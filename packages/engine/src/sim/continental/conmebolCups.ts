@@ -6,6 +6,7 @@ import { groupStageAt, knockoutStageAt } from "../stageAt.js";
 import { standings } from "../standings.js";
 import { tieResults, type TieResult } from "../tieResults.js";
 import { CLUB_WORLD_CUP_STAGES, clubWorldCupStage } from "./clubWorldCup.js";
+import { INTERCONTINENTAL_CUP_STAGES, intercontinentalCupStage, isIntercontinentalStageReady, type LaterEntrants } from "./intercontinentalCup.js";
 
 type CupStage = { name: string; dates: IsoDate[] };
 
@@ -41,14 +42,15 @@ export const CUP_STAGES: Record<ContinentalCup, readonly CupStage[]> = {
   ],
   recopa: [{ name: "final", dates: ["2026-02-19", "2026-02-26"] }],
   "club-world-cup": CLUB_WORLD_CUP_STAGES,
+  "intercontinental-cup": INTERCONTINENTAL_CUP_STAGES,
 };
 
 const GROUP_COUNT = 8;
 const LIBERTADORES = { stage1: 0, stage2: 1, stage3: 2, groups: 3, roundOf16: 4 } as const;
 const SUL_AMERICANA = { stage1: 0, groups: 1, playoffs: 2, roundOf16: 3 } as const;
 
-/** What a cup's next draw reads besides its own stages: the season's competitions and every fixture so far. */
-export type SeasonSoFar = { competitions: Readonly<Record<string, Competition>>; fixtures: readonly Fixture[] };
+/** What a cup's next draw reads besides its own stages: the season's competitions, every fixture so far and the latest Champions League winner. */
+export type SeasonSoFar = { competitions: Readonly<Record<string, Competition>>; fixtures: readonly Fixture[]; championsLeague?: string | null };
 
 /** The dates `formats` plays of a stage's real `dates`: some of the group days, or one match for a knockout round. */
 export const stageDatesIn = (name: string, dates: readonly IsoDate[], formats: Formats): IsoDate[] =>
@@ -58,9 +60,12 @@ export function cupStageDates(cup: ContinentalCup, season: number, formats: Form
   return CUP_STAGES[cup].map((stage) => stageDatesIn(stage.name, stage.dates, formats).map((date) => inSeason(date, season)));
 }
 
-/** Every date of the season's CONMEBOL cups and, when `playsClubWorldCup`, the Club World Cup's. */
+/**
+ * Every date of the season's CONMEBOL cups and, when `playsClubWorldCup`, the Club World Cup's. The
+ * Intercontinental Cup's are left out: they fall on days its clubs' leagues already keep clear.
+ */
 export function conmebolDates(season: number, formats: Formats, playsClubWorldCup: boolean): IsoDate[] {
-  return CONTINENTAL_CUPS.filter((cup) => playsClubWorldCup || cup !== "club-world-cup").flatMap((cup) => cupStageDates(cup, season, formats).flat());
+  return CONTINENTAL_CUPS.filter((cup) => cup !== "intercontinental-cup" && (playsClubWorldCup || cup !== "club-world-cup")).flatMap((cup) => cupStageDates(cup, season, formats).flat());
 }
 
 const FULL_GROUP_DAYS = 6;
@@ -197,8 +202,20 @@ function sulAmericanaStage(competition: ContinentalCompetition, season: SeasonSo
   }
 }
 
+/** The season's Libertadores winner once its final is played, and the latest Champions League one. */
+function laterEntrants(competition: ContinentalCompetition, season: SeasonSoFar): LaterEntrants {
+  const libertadores = libertadoresOf(competition, season);
+  const fixtures = libertadores ? season.fixtures.filter((f) => f.competitionId === libertadores.id) : [];
+  return { libertadores: (libertadores && CONMEBOL_CUPS.finalists(libertadores, fixtures)?.championId) ?? null, championsLeague: season.championsLeague ?? null };
+}
+
 export const CONMEBOL_CUPS = {
-  /** The draw of the cup's next stage, from its own results and, for the Sul-Americana, the Libertadores'; the Club World Cup's too. */
+  /** Whether the cup's next stage can be drawn: the Intercontinental Cup's Derby of the Americas waits for the Libertadores' final. */
+  isNextStageReady(competition: ContinentalCompetition, season: SeasonSoFar): boolean {
+    return competition.cup !== "intercontinental-cup" || isIntercontinentalStageReady(competition, laterEntrants(competition, season));
+  },
+
+  /** The draw of the cup's next stage, from its own results and, for the Sul-Americana, the Libertadores'; FIFA's cups' too. */
   nextStage(competition: ContinentalCompetition, season: SeasonSoFar): StageShape {
     const index = competition.stages.length;
     switch (competition.cup) {
@@ -210,6 +227,8 @@ export const CONMEBOL_CUPS = {
         return { kind: "knockout", ties: pairOff(competition.entries[0] ?? []) };
       case "club-world-cup":
         return clubWorldCupStage(competition, season.fixtures);
+      case "intercontinental-cup":
+        return intercontinentalCupStage(competition, season.fixtures, laterEntrants(competition, season));
     }
   },
 
