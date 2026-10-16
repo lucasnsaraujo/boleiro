@@ -33,6 +33,35 @@ describe("a game's shared squads", () => {
     expect(ids(squadsOfGame(draft).get("flamengo-rj"))).not.toContain(playerId);
   });
 
+  it("follow every kind of move in a draft as a fresh build of it does", () => {
+    const draft = openDraft(start);
+    const at = (clubId: string, index: number) => ids(squadsOfGame(draft).get(clubId))[index] ?? "";
+    const moves = [
+      { playerId: at("santos-sp", 3), kind: "transfer", toClubId: "palmeiras-sp", fee: 0 },
+      { playerId: at("santos-sp", 0), kind: "transfer", toClubId: "gremio-rs", fee: 0 },
+      { playerId: at("gremio-rs", 5), kind: "released", toClubId: null, fee: 0 },
+      { playerId: at("palmeiras-sp", 2), kind: "abroad", toClubId: null, fee: 0 },
+    ] as const;
+    for (const move of moves) {
+      squadsOfGame(draft);
+      movePlayer(draft, move);
+      expect([...squadsOfGame(draft)]).toEqual([...squadsByClub(draft.players)]);
+    }
+    const [released] = Object.keys(draft.market.freeAgents);
+    movePlayer(draft, { playerId: released ?? "", kind: "freeAgent", toClubId: "santos-sp", fee: 0 });
+    expect([...squadsOfGame(draft)]).toEqual([...squadsByClub(draft.players)]);
+  });
+
+  it("put a club after another once its first player leaves a draft, as a fresh build does", () => {
+    const [first, second] = squadsOfGame(start).get("santos-sp") ?? [];
+    const [other] = squadsOfGame(start).get("palmeiras-sp") ?? [];
+    if (!first || !second || !other) throw new Error("Santos or Palmeiras has no players");
+    const draft = openDraft({ ...start, players: { [first.id]: first, [other.id]: other, [second.id]: second } });
+    squadsOfGame(draft);
+    movePlayer(draft, { playerId: first.id, kind: "abroad", toClubId: null, fee: 0 });
+    expect([...squadsOfGame(draft).keys()]).toEqual(["palmeiras-sp", "santos-sp"]);
+  });
+
   it("follow the players from one day to the next", () => {
     let state = moved;
     for (let day = 0; day < 40; day++) {

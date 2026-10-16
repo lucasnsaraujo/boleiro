@@ -38,6 +38,30 @@ export function forgetSquads(players: GameState["players"]): void {
   built.delete(players);
 }
 
+const isIndexKey = (id: string) => /^\d+$/.test(id);
+
+/**
+ * Moves a player in the squads built for a players map just edited in place (a draft's, see
+ * openDraft): `before` has left the map and `after` has been added as its last key. When the move
+ * would shift a club's place among the squads (its first player left), the squads are dropped.
+ */
+export function moveInSquads(players: GameState["players"], before: SimPlayer | undefined, after: SimPlayer | undefined): void {
+  const squads = built.get(players);
+  if (!squads) return;
+  built.delete(players);
+  if (after && isIndexKey(after.id)) return;
+  const next = new Map(squads);
+  if (before) {
+    const squad = next.get(before.clubId) ?? [];
+    const index = squad.indexOf(before);
+    if (index < 0 || (index === 0 && squad.length > 1)) return;
+    if (squad.length === 1) next.delete(before.clubId);
+    else next.set(before.clubId, squad.filter((p) => p !== before));
+  }
+  if (after) next.set(after.clubId, [...(next.get(after.clubId) ?? []), after]);
+  built.set(players, next);
+}
+
 /**
  * A copy of the players map with some players replaced by new versions of themselves at the same
  * club (a match's load, an injury). The copy keeps the squads built for the map, with only the

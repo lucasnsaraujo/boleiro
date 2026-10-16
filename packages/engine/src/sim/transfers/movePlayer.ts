@@ -2,7 +2,7 @@ import { copyRecord } from "../copyRecord.js";
 import { bookMoney } from "../finances/bookMoney.js";
 import { paySigningCosts } from "../finances/paySigningCosts.js";
 import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
-import { forgetSquads, shareSquads } from "../players/squadsByClub.js";
+import { moveInSquads, shareSquads } from "../players/squadsByClub.js";
 import { reactToIdolSale } from "../morale/reactToIdolSale.js";
 import type { MoveKind, PlayerMoved } from "./transferEvents.js";
 import type { Loan } from "./transferMarket.js";
@@ -79,21 +79,23 @@ export function movePlayer(
 
   // The draft's own maps are edited in place; see openDraft.
   const { players, market } = next;
-  forgetSquads(players);
   Reflect.deleteProperty(players, playerId);
   Reflect.deleteProperty(market.freeAgents, playerId);
   Reflect.deleteProperty(market.preContracts, playerId);
   Reflect.deleteProperty(market.loans, playerId);
+  let joined: SimPlayer | undefined;
   if (kind === "released") market.freeAgents[playerId] = player;
   else if (toClubId) {
-    players[playerId] = {
+    joined = {
       ...player,
       clubId: toClubId,
       wage: contract?.wage ?? player.wage,
       contractUntil: contract?.until ?? player.contractUntil,
       condition: { ...player.condition, arrivedOn: state.date },
     };
+    players[playerId] = joined;
   }
+  moveInSquads(players, atClub, joined);
   if (loan) market.loans[playerId] = loan;
   return { state: next, event: { type: "playerMoved", kind, playerId, name: player.name, fromClubId, toClubId, fee } };
 }
