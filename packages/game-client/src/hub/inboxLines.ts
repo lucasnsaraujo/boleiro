@@ -2,11 +2,13 @@ import { WRONG_CALL_WORDS } from "../format/refereeCallWords.js";
 import { guestClubOf } from "@boleiro/engine/sim/continental/guestClubs";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
+import { squadsOfGame } from "@boleiro/engine/sim/players/squadsByClub";
 import { SQUAD_CAP } from "@boleiro/engine/sim/transfers/squadCap";
+import { isInPreContractWindow } from "@boleiro/engine/sim/transfers/tradeBetweenClubs";
 import { copinhaRun } from "@boleiro/engine/sim/youth/copinha";
 import type { AdvanceResult } from "../engine/createEngineSession.js";
 import { competitionName } from "../format/competitionName.js";
-import { monthName } from "../format/formatGameDate.js";
+import { formatDayMonth, monthName } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
 import { boardGoal } from "../screens/clubChoices.js";
 import { copinhaRoundName } from "../format/copinhaRoundName.js";
@@ -244,8 +246,21 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
     }
   }
 
-  return events.flatMap((event) => {
+  const lines = events.flatMap((event) => {
     const found = lineOf(event);
     return found ? [{ date: before.date, text: found[0], tone: found[1] }] : [];
   });
+  return [...lines, ...preContractWarnings(before, after)];
+}
+
+/** The coach's players who entered the last six months of their contract that day, when any club may sign them to a pre-contract. */
+function preContractWarnings(before: NewsState, after: NewsState): InboxLine[] {
+  if (!after.coachClubId || after.coachClubId !== before.coachClubId || after.date === before.date) return [];
+  return (squadsOfGame(after).get(after.coachClubId) ?? [])
+    .filter((p) => !after.market.preContracts[p.id] && !after.market.loans[p.id] && isInPreContractWindow(p, after.date) && !isInPreContractWindow(p, before.date))
+    .map((p) => ({
+      date: before.date,
+      text: `${p.name} entra nos últimos seis meses de contrato (até ${formatDayMonth(p.contractUntil)}): outros clubes já podem assinar pré-contrato com ele`,
+      tone: "bad",
+    }));
 }

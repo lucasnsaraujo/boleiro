@@ -173,6 +173,18 @@ describe("the squad", () => {
     expect(lines({ ...move, kind: "transfer", fromClubId: "vitoria-ba", toClubId: "juazeirense-ba" })).toEqual([]);
   });
 
+  test("a player entering his contract's last six months is a warning that other clubs may now sign him for free", () => {
+    const ending = (until: string) => ({ ...game, players: { ...game.players, [own.id]: { ...own, contractUntil: until } } });
+    const today = { ...ending("2026-07-23"), date: "2026-01-20" };
+    const tomorrow = { ...today, date: "2026-01-21" };
+    expect(inboxLines(today, tomorrow, [])).toEqual([
+      { date: "2026-01-20", text: `${own.name} entra nos últimos seis meses de contrato (até 23 jul): outros clubes já podem assinar pré-contrato com ele`, tone: "bad" },
+    ]);
+    expect(inboxLines({ ...today, date: "2026-01-19" }, today, [])).toEqual([]);
+    const signed = { ...tomorrow, market: { ...tomorrow.market, preContracts: { [own.id]: "vitoria-ba" } } };
+    expect(inboxLines(today, signed, [])).toEqual([]);
+  });
+
   test("pre-contracts and Europe's refused bids are reported; an accepted bid shows up as the sale", () => {
     expect(line({ type: "preContractSigned", playerId: own.id, fromClubId: "bahia-ba", toClubId: "vitoria-ba" })).toMatchObject({ text: `${own.name} assina pré-contrato com Vitória`, tone: "bad" });
     expect(line({ type: "preContractSigned", playerId: other.id, fromClubId: "vitoria-ba", toClubId: "bahia-ba" })).toMatchObject({ text: `${other.name} assina pré-contrato com Bahia`, tone: "good" });
