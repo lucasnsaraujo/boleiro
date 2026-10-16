@@ -56,10 +56,14 @@ test("a record win of this season opens its match's ficha", async () => {
   const { date } = await given.engine.read(["date"]);
   const days = Math.round((Date.parse("2026-04-15") - Date.parse(date)) / 86_400_000);
   await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+  const { history, clubs } = await given.engine.read(["history", "clubs"]);
+  const win = history.clubs["bahia-ba"]?.biggestWin;
+  if (!win) return expect.fail("Bahia has won a match by mid-April");
+  const opponent = clubs[win.opponentId]?.shortName ?? "";
+  const score = win.home ? `Bahia ${win.goalsFor} x ${win.goalsAgainst} ${opponent}` : `${opponent} ${win.goalsAgainst} x ${win.goalsFor} Bahia`;
   openHistory(given);
-  const record = await screen.findByRole("button", { name: /^Maior vitória: .*, ficha do jogo$/ });
-  await userEvent.click(record);
+  await userEvent.click(await screen.findByRole("button", { name: /^Maior vitória: .*, ficha do jogo$/ }));
   const panel = await screen.findByRole("dialog", { name: "Ficha do jogo" });
   expect(within(panel).getByText("Encerrado")).toBeTruthy();
-  expect(within(panel).getByLabelText(/^Bahia \d+ x \d+ |^.+ \d+ x \d+ Bahia$/)).toBeTruthy();
+  expect(within(panel).getByLabelText(score)).toBeTruthy();
 });

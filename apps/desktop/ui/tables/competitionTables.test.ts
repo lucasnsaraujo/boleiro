@@ -9,6 +9,7 @@ import {
   groupTables,
   knockoutBracket,
   knockoutTies,
+  lastPlayedLeg,
   openingCompetitionId,
   playedRounds,
   tableTabs,
@@ -204,6 +205,14 @@ describe("knockout ties and the cup bracket", () => {
       ["a", 2, 0, "b"],
     ]);
     expect(open).toMatchObject({ clubIds: ["c", "d"], aggregate: [0, 1], winnerId: null });
+  });
+
+  test("a tie's ficha opens on its return leg once played, on its first leg before that, and on none before a ball is kicked", () => {
+    const [decided, open] = knockoutTies(cup, 0, fixtures);
+    expect(decided && lastPlayedLeg(decided)?.fixtureId).toBe("a2");
+    expect(open && lastPlayedLeg(open)?.fixtureId).toBe("c1");
+    const [unplayed] = knockoutTies(cup, 0, fixtures.map((f) => ({ ...f, result: null })));
+    expect(unplayed && lastPlayedLeg(unplayed)).toBeUndefined();
   });
 
   test("a level tie goes to the club that won the shootout", () => {
