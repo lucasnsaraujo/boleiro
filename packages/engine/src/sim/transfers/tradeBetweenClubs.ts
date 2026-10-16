@@ -100,7 +100,11 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
     if (!preContract && RANK[sellerTier] >= RANK[buyerTier] && starters(player.clubId).has(player.id)) continue;
     const fee = preContract ? 0 : Math.round(valuePlayer(player, sellerTier, state.date) * state.market.eurBrl * ASKING_PREMIUM);
     const wage = wageDemandAt(player, (rate ??= wageRateOf(squad)));
-    const released = squad.length >= SQUAD_TARGET[buyerTier] ? (releasable ??= releasableOf()) : null;
+    let released: SimPlayer | null = null;
+    if (squad.length >= SQUAD_TARGET[buyerTier]) {
+      if (releasable === undefined) releasable = releasableOf();
+      released = releasable;
+    }
     const cost = { upFront: fee + 2 * wage, wageChange: wage - (released?.wage ?? 0) };
     if (boardRefusal(finance, view.bill(buyerId), cost)) continue;
     if (random() >= willingToJoin({ player, from: sellerTier, to: { tier: buyerTier, fanbase: club.fanbase }, wage })) continue;
