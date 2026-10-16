@@ -330,8 +330,8 @@ function BracketPanel({ competition, state, clubs, stage, onStage, picker }: Omi
   );
 }
 
-/** The Intercontinental Cup, at every stage: its whole ladder and the coach's next tie in it. */
-function LadderPanel({ competition, state, clubs, stage, onStage, picker }: Omit<PanelProps, "round">) {
+/** The Intercontinental Cup, at every stage: its whole ladder, every round at once, and the coach's next tie in it. */
+function LadderPanel({ competition, state, clubs, picker }: Omit<PanelProps, "round" | "stage" | "onStage">) {
   const onOpenMatch = use(OpenMatchContext);
   const stages = competitionStages(competition, state.calendar);
   const name = competitionName(competition);
@@ -340,7 +340,6 @@ function LadderPanel({ competition, state, clubs, stage, onStage, picker }: Omit
       <section className="tables-main">
         <div className="tables-sub">
           {picker}
-          <StagePicker stages={stages} stage={stage} onStage={onStage} />
           <BracketTitle competition={competition} />
         </div>
         <LadderBracket name={name} rounds={intercontinentalLadder(competition, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} mark={competitionMarkOf(competition)} onOpenMatch={onOpenMatch} />
@@ -409,7 +408,7 @@ function UefaPanel({ cup, superCup, clubs, coachClubId, picker }: { cup: LeagueP
 function CompetitionPanel({ competition, state, clubs, stage, round, onStage, picker }: PanelProps) {
   const onOpenMatch = use(OpenMatchContext);
   if (intercontinentalLadder(competition, state.fixtures).length > 0) {
-    return <LadderPanel competition={competition} state={state} clubs={clubs} stage={stage} onStage={onStage} picker={picker} />;
+    return <LadderPanel competition={competition} state={state} clubs={clubs} picker={picker} />;
   }
   if (knockoutBracket(competition, state.fixtures).some((r) => r.stage === stage)) {
     return <BracketPanel competition={competition} state={state} clubs={clubs} stage={stage} onStage={onStage} picker={picker} />;

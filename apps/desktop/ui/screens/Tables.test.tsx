@@ -271,3 +271,10 @@ test("the Mundial de Clubes tab shows its logo and its ladder from the play-off,
   expect(within(ladder).getByText("Campeão da Champions")).toBeTruthy();
 });
 
+
+test("the Mundial de Clubes ladder shows every round at once, with no round picker that would change nothing", async () => {
+  openTables(await services("flamengo-rj"));
+  await userEvent.click(await screen.findByRole("tab", { name: "Mundial de Clubes" }));
+  expect(screen.getByRole("group", { name: "Mundial de Clubes, mata-mata" })).toBeTruthy();
+  expect(screen.queryByRole("group", { name: "Fases" })).toBeNull();
+});
