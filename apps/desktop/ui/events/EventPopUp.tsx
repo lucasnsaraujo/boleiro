@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import type { Club } from "@boleiro/data/clubs";
 import type { Effects, EventArea, PendingEvent } from "@boleiro/engine/sim/events/eventMemory";
 import type { EventAnswered } from "@boleiro/engine/sim/events/runEvents";
-import type { SimPlayer } from "@boleiro/engine/sim/gameState";
+import type { IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { formatBarDate, formatMonthYear } from "@boleiro/game-client/format/formatGameDate";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { Crest } from "../clubs/Crest.js";
@@ -18,7 +18,11 @@ type Props = {
   club: Club;
   rival: Club | null;
   player: SimPlayer | null;
+  today: IsoDate;
+  /** Where the coach's club stands, under the reporter's question ("Flamengo · 2º lugar · 3 pts"). */
+  standing: string | null;
   isBusy: boolean;
+  hasFailed: boolean;
   /** The coach's answer once it went through; the window then shows what it did. */
   answered: EventAnswered | null;
   onAnswer: (choice: number | null) => void;
@@ -29,13 +33,15 @@ type Props = {
  * The event that waits for the coach, stuck over the hub: who it is about, what they said, and the
  * answers with what each moves. A press conference gets the sponsor wall and the reporter's question.
  */
-export function EventPopUp({ event, club, rival, player, isBusy, answered, onAnswer, onClose }: Props) {
+export function EventPopUp({ event, club, rival, player, today, standing, isBusy, hasFailed, answered, onAnswer, onClose }: Props) {
   const title = useDialogFocus<HTMLHeadingElement>(true, { isModal: true });
   const [chosen, setChosen] = useState<number | null>(null);
   const isPress = event.look === "press";
 
   function onKeyDown(key: KeyboardEvent) {
-    if (key.key === "Escape") onClose();
+    // A focused button answers Enter with its own click.
+    if (key.key === "Enter" && key.target instanceof HTMLButtonElement) return;
+    if (key.key === "Escape" && !isBusy) onClose();
     const number = Number(key.key);
     if (!answered && number >= 1 && number <= event.choices.length) setChosen(number - 1);
     if (key.key === "Enter" && !answered && chosen !== null && !isBusy) onAnswer(chosen);
@@ -89,7 +95,9 @@ export function EventPopUp({ event, club, rival, player, isBusy, answered, onAns
     </div>
   ) : (
     <div className="ev-foot">
-      <p>{isPress && rival ? <>Rivalidade com o <b>{rival.shortName}</b></> : expiryText(event)}</p>
+      <p className={hasFailed ? "ev-failed" : undefined} role={hasFailed ? "alert" : undefined}>
+        {hasFailed ? "A resposta não saiu. Tente de novo." : isPress && rival ? <>Rivalidade com o <b>{rival.shortName}</b></> : expiryText(event, today)}
+      </p>
       <button className="btn flat" onClick={() => onAnswer(null)} disabled={isBusy}>
         <i className="ph-bold ph-user-switch" aria-hidden="true" />
         {isPress ? "O auxiliar responde" : "Deixa com o auxiliar"}
@@ -102,7 +110,7 @@ export function EventPopUp({ event, club, rival, player, isBusy, answered, onAns
   );
 
   const close = answered ? null : (
-    <button className="ev-x" aria-label="Fechar e responder depois" onClick={onClose}>
+    <button className="ev-x" aria-label="Fechar e responder depois" onClick={onClose} disabled={isBusy}>
       <i className="ph-bold ph-x" aria-hidden="true" />
     </button>
   );
@@ -126,10 +134,10 @@ export function EventPopUp({ event, club, rival, player, isBusy, answered, onAns
           </div>
           <div className="ev-ctx">
             <b>
-              <i className="ph-fill ph-circle" aria-hidden="true" />
-              Ao vivo
+              <i className="ph-fill ph-microphone" aria-hidden="true" />
+              Coletiva
             </b>
-            {event.setting} · {formatBarDate(event.date)}
+            {event.setting}
           </div>
           {close}
           <div className="ev-question">
@@ -144,7 +152,7 @@ export function EventPopUp({ event, club, rival, player, isBusy, answered, onAns
               <h2 id="event-title" ref={title} tabIndex={-1}>
                 {event.body}
               </h2>
-              <small>{event.headline}</small>
+              <small>{standing ?? event.headline}</small>
             </div>
           </div>
           {choices}

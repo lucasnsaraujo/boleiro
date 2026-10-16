@@ -35,8 +35,9 @@ export function effectCells(effects: Effects, isPress: boolean): EffectCell[] {
 
 const WEEKDAY = new Intl.DateTimeFormat("pt-BR", { weekday: "long", timeZone: "UTC" });
 
-/** When the assistant takes over: "Sem resposta até quarta (21 out), o auxiliar decide." */
-export function expiryText(event: Pick<PendingEvent, "expiresOn">): string {
+/** When the assistant takes over: "Sem resposta até quarta (21 out), o auxiliar decide.", or "até o jogo de hoje" on `today`. */
+export function expiryText(event: Pick<PendingEvent, "expiresOn">, today: IsoDate): string {
+  if (event.expiresOn <= today) return "Sem resposta até o jogo de hoje, o auxiliar decide.";
   const day = WEEKDAY.format(new Date(`${event.expiresOn}T00:00:00Z`)).replace("-feira", "");
   return `Sem resposta até ${day} (${formatDayMonth(event.expiresOn)}), o auxiliar decide.`;
 }

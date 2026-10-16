@@ -334,6 +334,8 @@ test("an event that asks the coach waits for his answer, the answer lands, and t
   if (effects.morale) expect(mood(after)?.squad).not.toBe(mood(before)?.squad);
   if (effects.fans) expect(mood(after)?.fans).not.toBe(mood(before)?.fans);
   if (effects.money) expect(after.finances[CLUB]?.cash).toBe((before.finances[CLUB]?.cash ?? 0) + effects.money);
+  if (effects.board) expect(after.boards[CLUB]?.pressure).not.toBe(before.boards[CLUB]?.pressure);
+  if (effects.morale || effects.fans || effects.board || effects.money) expect(after).not.toEqual(before);
   expect(recorded.session.pendingEvent()?.date ?? null).not.toBe(pending.date);
   expect(recorded.session.read(["coach"]).coach.assistantAreas).toEqual(["press"]);
   expect(inbox.some((line) => line.text === answered.headline)).toBe(true);

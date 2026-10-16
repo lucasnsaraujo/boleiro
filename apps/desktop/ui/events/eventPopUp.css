@@ -391,6 +391,11 @@
   color: var(--mute);
 }
 
+.ev-foot p.ev-failed {
+  color: var(--red);
+  font-weight: 700;
+}
+
 .ev-foot p b {
   color: var(--ink);
 }
@@ -478,14 +483,7 @@
 }
 
 .ev-ctx b i {
-  font-size: 8px;
-  animation: ev-live 1.4s var(--e-in-out) infinite;
-}
-
-@keyframes ev-live {
-  50% {
-    opacity: 0.25;
-  }
+  font-size: 10px;
 }
 
 .ev-press .ev-x {
@@ -587,8 +585,7 @@
   .ev-stamp,
   .ev-bubble,
   .ev-done p,
-  .ev-choice.on .ev-fx span,
-  .ev-ctx b i {
+  .ev-choice.on .ev-fx span {
     animation: none;
   }
 }

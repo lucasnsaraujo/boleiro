@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Navigate } from "react-router";
 import type { PendingEvent } from "@boleiro/engine/sim/events/eventMemory";
 import type { EventAnswered } from "@boleiro/engine/sim/events/runEvents";
@@ -52,6 +52,9 @@ export function Hub() {
   const [openEvent, setOpenEvent] = useState<PendingEvent | null>(null);
   const [answered, setAnswered] = useState<EventAnswered | null>(null);
   const [isAnswering, setAnswering] = useState(false);
+  const [hasAnswerFailed, setAnswerFailed] = useState(false);
+  /** The event the pop-up shows; an answer that lands after it closed is dropped. */
+  const shownEvent = useRef<PendingEvent | null>(null);
 
   const load = useCallback(
     (isCurrent: () => boolean) =>
@@ -86,16 +89,29 @@ export function Hub() {
   useCommands({ jogarRodada: loaded !== null && !round.isPlaying && openEvent === null && act });
 
   async function answer(choice: number | null) {
+    if (isAnswering) return;
+    const asked = shownEvent.current;
     setAnswering(true);
+    setAnswerFailed(false);
     try {
-      setAnswered(await engine.apply({ type: "answerEvent", choice }));
+      const result = await engine.apply({ type: "answerEvent", choice });
+      if (shownEvent.current === asked) setAnswered(result);
       await load(() => true);
+    } catch {
+      setAnswerFailed(true);
     } finally {
       setAnswering(false);
     }
   }
 
+  function openEventPopUp(event: PendingEvent) {
+    shownEvent.current = event;
+    setAnswerFailed(false);
+    setOpenEvent(event);
+  }
+
   function closeEvent() {
+    shownEvent.current = null;
     setOpenEvent(null);
     setAnswered(null);
   }
@@ -191,7 +207,7 @@ export function Hub() {
         {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
 
         {club && loaded.event && selectedId === null ? (
-          <EventNote key={`${loaded.event.typeId}:${loaded.event.date}`} event={loaded.event} onOpen={() => loaded.event && setOpenEvent(loaded.event)} />
+          <EventNote key={`${loaded.event.typeId}:${loaded.event.date}`} event={loaded.event} today={state.date} onOpen={() => loaded.event && openEventPopUp(loaded.event)} />
         ) : club && shown ? (
           <PlayerSticker key={shown.id} state={state} row={shown} club={club} />
         ) : (
@@ -203,7 +219,10 @@ export function Hub() {
             club={club}
             rival={openEvent.rivalId ? (state.clubs[openEvent.rivalId] ?? null) : null}
             player={openEvent.playerId ? (state.players[openEvent.playerId] ?? null) : null}
+            today={state.date}
+            standing={standing ? `${club.shortName} · ${standing.position}º lugar · ${standing.points} pts` : null}
             isBusy={isAnswering}
+            hasFailed={hasAnswerFailed}
             answered={answered}
             onAnswer={(choice) => void answer(choice)}
             onClose={closeEvent}
