@@ -1,6 +1,7 @@
 import type { Formation } from "@boleiro/engine/engine/formations";
 import { advanceDay, type DayDecisions, type DayEvent, type DayResult, type WaitingDecisions } from "@boleiro/engine/sim/advanceDay";
 import { declineOffer } from "@boleiro/engine/sim/coach/declineOffer";
+import { nameCaptain } from "@boleiro/engine/sim/chemistry/nameCaptain";
 import { pendingEventOf, type EventArea, type PendingEvent } from "@boleiro/engine/sim/events/eventMemory";
 import { answerEvent, type EventAnswered } from "@boleiro/engine/sim/events/runEvents";
 import { passTheSeat, swapSeat, waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
@@ -27,6 +28,7 @@ import { isCoachMatchDay, playToMatchDay, stopReason, type StopReason } from "..
 import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
 import { boardNotes, dueRequests, EMPTY_DESK, withRequest, type BoardDesk } from "../market/boardDesk.js";
 import { isSigning, marketClockView, spendMarketTime, type MarketClock, type MarketClockView } from "../market/marketClock.js";
+import { chemistryPage, type ChemistryPage } from "../chemistry/chemistryPage.js";
 import { matchPageOf, type MatchPage } from "../matchPage/matchPageOf.js";
 import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
 import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
@@ -95,6 +97,8 @@ type CommandFields = {
   answerEvent: { choice: number | null };
   /** From now on the assistant answers the events of `area` for the coach in the seat (`isHanded`), or stops doing it. */
   handToAssistant: { area: EventArea; isHanded: boolean };
+  /** The coach in the seat hands the armband to one of his players. */
+  nameCaptain: { playerId: string };
 };
 
 /** What a move on a kid of the academy answers: null when it went through, and the sale it made. */
@@ -137,6 +141,7 @@ export type CommandResults = {
   spendMarketTime: MarketClockView | null;
   answerEvent: EventAnswered;
   handToAssistant: undefined;
+  nameCaptain: undefined;
 };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
@@ -562,6 +567,11 @@ export function createEngineSession(files: GameFiles) {
       const areas = (game.coach.assistantAreas ?? []).filter((own) => own !== area);
       state = { ...game, coach: { ...game.coach, assistantAreas: isHanded ? [...areas, area] : areas } };
     },
+    nameCaptain({ playerId }) {
+      const game = betweenDays("a captain can't be named");
+      if (!game.coachClubId) throw new Error("a coach without a club names no captain");
+      state = nameCaptain(game, game.coachClubId, playerId);
+    },
     spendMarketTime({ seconds, playerId }) {
       const game = current();
       const isOwnPlayer = playerId !== undefined && game.coachClubId !== null && game.players[playerId]?.clubId === game.coachClubId;
@@ -579,6 +589,10 @@ export function createEngineSession(files: GameFiles) {
     /** The lineup sheet before kick-off on the coach's match day; with a formation, the assistant's eleven in it. */
     matchDayPlan(formation?: Formation): MatchDayPlan {
       return matchDayPlan(current(), formation);
+    },
+    /** The chemistry screen of the seated coach's club; null without a club. */
+    chemistry(): ChemistryPage | null {
+      return chemistryPage(current());
     },
     /** The match day kicked off and not yet finished, if any. */
     liveRound(): LiveRound | null {

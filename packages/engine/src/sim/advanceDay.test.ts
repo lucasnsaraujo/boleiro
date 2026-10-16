@@ -3,6 +3,7 @@ import { simulateMatch } from "../engine/match.js";
 import { paramsForDivision } from "../engine/paramsForDivision.js";
 import { randomStream } from "../engine/random.js";
 import { advanceDay } from "./advanceDay.js";
+import { chemistryOf, chemistryStrength } from "./chemistry/chemistryOf.js";
 import { CARD_RATES } from "./discipline/cardRates.js";
 import { countCards, drawCards, sendOffMinutes } from "./discipline/drawCards.js";
 import type { Fixture, GameState } from "./gameState.js";
@@ -47,7 +48,7 @@ describe("advanceDay", () => {
       const competition = reached.competitions[f.competitionId];
       return f.date === reached.date && !(competition?.kind === "league" && competition.division === division);
     };
-    // Fresh players and moods, so the engine sees each player's plain strength.
+    // Fresh players and moods, so the engine sees each player's plain strength times his club's chemistry.
     const before = { ...reached, players: start.players, mood: start.mood, fixtures: reached.fixtures.filter((f) => !isOtherLeagueToday(f)) };
     const first = before.fixtures.find((f) => f.date === before.date);
     if (!first) throw new Error(`no Série ${division} game today`);
@@ -56,7 +57,8 @@ describe("advanceDay", () => {
     // Each AI club fields its usual formation, placed by position.
     const formation = (clubId: string) => formationOf(before, clubId, squad(clubId));
     const eleven = (clubId: string) => pickMatchLineup(squad(clubId), context, formation(clubId), usualStartersOf(before, clubId));
-    const team = (clubId: string) => engineTeam(clubId, eleven(clubId), (p) => p.strength, { ...DEFAULT_TACTICS, formation: formation(clubId) });
+    const chemistry = (clubId: string) => chemistryStrength(chemistryOf(before, clubId).value);
+    const team = (clubId: string) => engineTeam(clubId, eleven(clubId), (p) => p.strength * chemistry(clubId), { ...DEFAULT_TACTICS, formation: formation(clubId) });
     const random = randomStream(before.rngState).next;
     const competition = before.competitions[first.competitionId];
     if (!competition) throw new Error(`no competition for ${first.id}`);

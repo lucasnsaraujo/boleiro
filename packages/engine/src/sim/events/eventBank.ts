@@ -1,3 +1,4 @@
+import { chemistryOf } from "../chemistry/chemistryOf.js";
 import { addDays } from "../dates.js";
 import type { Fixture, SimPlayer } from "../gameState.js";
 import { clubMood } from "../morale/clubMood.js";
@@ -44,6 +45,9 @@ function playedRivalToday(scene: EventScene): boolean {
   const opponent = today && (today.homeId === scene.clubId ? today.awayId : today.homeId);
   return !!opponent && (rivalsOf(scene.state.clubs).get(scene.clubId)?.has(opponent) ?? false);
 }
+
+// guess: a squad whose chemistry is this low fights twice as often after a defeat.
+const LOW_CHEMISTRY = 40;
 
 // guess: every five points of heat between two clubs (rivalryKey) make their rivalry events one weight more likely.
 const HEAT_PER_WEIGHT = 5;
@@ -250,13 +254,18 @@ export const EVENT_BANK: readonly EventType[] = [
   {
     id: "dressing-room-fight",
     area: "squad",
-    weight: 2,
+    weight: (scene) => (chemistryOf(scene.state, scene.clubId).value < LOW_CHEMISTRY ? 4 : 2),
     cooldownDays: 45,
-    cast: (scene) => ((marginToday(scene) ?? 0) < 0 ? playerCast(pickFrom(scene, fit(scene).filter((p) => p.age >= 24))) : null),
+    cast: (scene) => {
+      if ((marginToday(scene) ?? 0) >= 0) return null;
+      const player = pickFrom(scene, fit(scene).filter((p) => p.age >= 24));
+      const teammate = player && pickFrom(scene, fit(scene).filter((p) => p.id !== player.id));
+      return player && teammate ? { playerId: player.id, teammateId: teammate.id } : null;
+    },
     setting: "No vestiário, depois do jogo",
     texts: [
-      { headline: "Briga no vestiário do {club}", body: "{player} e um companheiro trocaram empurrões depois da derrota. A porta estava aberta e a imprensa ouviu tudo." },
-      { headline: "{player} discute com companheiro após derrota", body: "Começou com uma cobrança sobre o gol sofrido e só parou quando o capitão entrou no meio." },
+      { headline: "Briga no vestiário do {club}", body: "{player} e {teammate} trocaram empurrões depois da derrota. A porta estava aberta e a imprensa ouviu tudo." },
+      { headline: "{player} discute com {teammate} após derrota", body: "Começou com uma cobrança sobre o gol sofrido e só parou quando o resto do elenco entrou no meio." },
     ],
     choices: [
       { label: "Multar os dois", detail: "Regra é regra", effects: { morale: -2, board: 2 } },

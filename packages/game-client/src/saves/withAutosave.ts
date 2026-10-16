@@ -45,6 +45,7 @@ const OUTCOME_OF: { [T in CommandType]: (command: GameCommand<T>, result: Comman
   spendMarketTime: (_command, clock) => (clock ? "changed" : "unchanged"),
   answerEvent: () => "autosave",
   handToAssistant: () => "autosave",
+  nameCaptain: () => "autosave",
 };
 
 /**

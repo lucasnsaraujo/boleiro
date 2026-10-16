@@ -3,6 +3,7 @@ import type { Formation } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { DEFAULT_TACTICS, type Tactics } from "@boleiro/engine/sim/coach/tactics";
 import type { BoardSide, MatchMoment } from "@boleiro/engine/sim/coach/tacticsBoard";
+import { chemistryOf } from "@boleiro/engine/sim/chemistry/chemistryOf";
 import { waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
 import { openDisciplineDay, YELLOWS_PER_BAN } from "@boleiro/engine/sim/discipline/recordCards";
@@ -51,6 +52,8 @@ export type MatchDayPlan = {
   /** The opponent's last five results in any competition, oldest first. */
   opponentForm: MatchResult[];
   moment: MatchMoment;
+  /** The club's chemistry meter, its captain and the assistant's pick for the armband. */
+  chemistry: { value: number; captainId: string | null; suggestedCaptainId: string | null };
 };
 
 export type MatchResult = "win" | "draw" | "loss";
@@ -167,5 +170,7 @@ export function matchDayPlan(state: GameState, formation?: Formation): MatchDayP
   };
   const moment: MatchMoment = { isHome: homeId === clubId, minute: 0, lead: 0 };
   const opponentForm = recentResultsOf(state.fixtures, opponentId);
-  return { fixtureId: fixture.id, clubId, homeId, awayId, label, squad, lineup, tactics, opponentFormation, opponent, opponentForm, moment };
+  const own = chemistryOf(state, clubId);
+  const chemistry = { value: own.value, captainId: own.captain?.playerId ?? null, suggestedCaptainId: own.candidates[0]?.playerId ?? null };
+  return { fixtureId: fixture.id, clubId, homeId, awayId, label, squad, lineup, tactics, opponentFormation, opponent, opponentForm, moment, chemistry };
 }

@@ -62,6 +62,7 @@ export function connectEngine(port: EngineWorker): EngineClient {
     apply,
     matchDayPlan: (...args) => send({ method: "matchDayPlan", args }),
     liveRound: () => send({ method: "liveRound", args: [] }),
+    chemistry: () => send({ method: "chemistry", args: [] }),
     matchPage: (...args) => send({ method: "matchPage", args }),
     turningPoint: () => send({ method: "turningPoint", args: [] }),
     inbox: () => send({ method: "inbox", args: [] }),

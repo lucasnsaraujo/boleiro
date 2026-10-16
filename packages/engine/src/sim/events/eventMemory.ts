@@ -13,8 +13,8 @@ export type EventArea = "players" | "squad" | "board" | "fans" | "press";
 /** One answer of an event as the coach reads it. */
 export type EventChoice = { label: string; detail?: string; effects: Effects };
 
-/** Who an event is about, besides its club: one of its players, a rival club. */
-export type Cast = { playerId?: string; rivalId?: string };
+/** Who an event is about, besides its club: one of its players, a teammate of his, a rival club. */
+export type Cast = { playerId?: string; teammateId?: string; rivalId?: string };
 
 /** One event that happened, as the game remembers it: its type, day, club, cast and the answer taken. */
 export type EventRecord = Cast & { typeId: string; date: IsoDate; clubId: string; choice?: number };

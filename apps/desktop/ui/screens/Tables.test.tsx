@@ -19,10 +19,10 @@ afterEach(() => {
 // FIFA's first Club World Cup after 2025, which a game started that season plays.
 const CLUB_WORLD_CUP_SEASON = 2029;
 
-async function services(coachClubId: string | null = "bahia-ba", season?: number): Promise<Services> {
+async function services(coachClubId: string | null = "bahia-ba", season?: number, seed = 7): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId, careerMode: coachClubId === null, ...(season === undefined ? {} : { season }) } });
+  await engine.apply({ type: "newGame", seed, choices: { coachClubId, careerMode: coachClubId === null, ...(season === undefined ? {} : { season }) } });
   return { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
 }
 
@@ -207,7 +207,7 @@ test("the round stepper shows the table as it stood after an earlier round", asy
 });
 
 test("a played cup tie opens its last game's ficha", async () => {
-  const given = await services();
+  const given = await services("bahia-ba", undefined, 8);
   const { date } = await given.engine.read(["date"]);
   const days = Math.round((Date.parse("2026-04-01") - Date.parse(date)) / 86_400_000);
   await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
