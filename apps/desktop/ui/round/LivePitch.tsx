@@ -166,7 +166,8 @@ type Props = {
 export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute, formations, caption, isQuiet = false }: Props) {
   const tilt = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
-  const actions = useMemo(() => pitchActionsOf(match, names), [match, names]);
+  // The round hands the board a fresh copy of the match every minute; its timeline only changes with the match.
+  const actions = useMemo(() => pitchActionsOf(match, names), [match.events, match.homeId, names]);
   const script = useMemo(() => playScript(actions, match.fixtureId, msPerMinute), [actions, match.fixtureId, msPerMinute]);
   const home = clubs[match.homeId];
   const away = clubs[match.awayId];
