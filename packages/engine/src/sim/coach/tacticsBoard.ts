@@ -50,6 +50,8 @@ const MAX_GOALS = 10;
 const BOOKED_FOR_LIGHT = 2;
 // guess: their attack this many points over the coach's defence calls for marking very heavy.
 const OUTGUNNED_BY = 4;
+// A posture has to add this many expected points over the coach's own to be worth suggesting.
+const WORTH_CHANGING = 0.01;
 
 const teamOf = (side: BoardSide, tactics: Tactics): Team => engineTeam(side.name, side.eleven, (p) => p.strength, tactics);
 
@@ -112,7 +114,8 @@ function best<T>(options: readonly T[], worth: (option: T) => number): T {
 /**
  * Both sides' sectors, the lanes the coach's side attacks down, what his posture does to the chances,
  * and the assistant's plan for the four dials. The plan rests on the eleven, the opponent and the
- * moment only, never on the coach's own dials, so following it in everything leaves nothing to change.
+ * moment, never on the coach's own dials (bar keeping his posture when another adds next to nothing),
+ * so following it in everything leaves nothing to change.
  */
 export function tacticsBoard(own: BoardSide, opponent: BoardSide, moment: MatchMoment): TacticsBoard {
   const them = teamOf(opponent, opponent.tactics);
@@ -147,7 +150,8 @@ export function tacticsBoard(own: BoardSide, opponent: BoardSide, moment: MatchM
         : { value: "heavy", reason: { kind: "usual" } };
 
   const plan = (posture: Posture): Tactics => ({ ...neutral, formation, posture, marking: marking.value, play });
-  const posture = best(POSTURES, (p) => pointsWith(plan(p)));
+  const top = best(POSTURES, (p) => pointsWith(plan(p)));
+  const posture = pointsWith(plan(top)) - pointsWith(plan(own.tactics.posture)) < WORTH_CHANGING ? own.tactics.posture : top;
   const assistant: AssistantPlan = {
     formation: { value: formation, sectors: plannedSectors },
     posture: { value: posture, points: pointsWith(plan(posture)), currentPoints: pointsWith(plan(own.tactics.posture)) },

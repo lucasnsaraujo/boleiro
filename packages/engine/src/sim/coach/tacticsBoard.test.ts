@@ -19,6 +19,16 @@ describe("the tactics board", () => {
     expect(board.sectors.opponent).toEqual({ DEF: 70, MID: 70, ATT: 70 });
   });
 
+  it("sends the coach's left flank at the opponent's right-back", () => {
+    // In a 4-4-2 the fifth slot is the right-back.
+    const opponent = side(eleven("b", FOUR_FOUR_TWO, (i) => (i === 4 ? 50 : 70)));
+    const lanes = tacticsBoard(side(eleven("a", FOUR_FOUR_TWO)), opponent, kickOff).lanes;
+    const left = lanes.find((l) => l.lane === "left");
+    const right = lanes.find((l) => l.lane === "right");
+    expect(left?.defense).toBeLessThan(right?.defense ?? 0);
+    expect(right?.defender?.name).not.toBe("b4");
+  });
+
   it("shows how the chosen posture moves both sides' chances against balanced", () => {
     const board = tacticsBoard(side(eleven("a", FOUR_FOUR_TWO), { posture: "attacking" }), side(eleven("b", FOUR_FOUR_TWO)), kickOff);
     expect(board.postureChances.own).toBeCloseTo(1.15, 6);
@@ -47,6 +57,17 @@ describe("the assistant", () => {
   it("gives the posture with the most points it expects, and those points beside the coach's own", () => {
     const board = tacticsBoard(side(eleven("a", FOUR_FOUR_TWO), { posture: "attacking" }), side(eleven("b", FOUR_FOUR_TWO)), kickOff);
     expect(board.assistant.posture.points).toBeGreaterThanOrEqual(board.assistant.posture.currentPoints);
+  });
+
+  it("leaves the coach's posture alone when another would add less than a hundredth of a point", () => {
+    const strong = eleven("a", FOUR_FOUR_TWO, () => 78);
+    const weak = side(eleven("b", FOUR_FOUR_TWO, () => 48));
+    for (const posture of ["defensive", "counter", "balanced", "attacking"] as const) {
+      for (const moment of [kickOff, { isHome: true, minute: 45, lead: 1 }, { isHome: false, minute: 70, lead: 2 }]) {
+        const { value, points, currentPoints } = tacticsBoard(side(strong, { posture }), weak, moment).assistant.posture;
+        if (value !== posture) expect(points - currentPoints).toBeGreaterThanOrEqual(0.01);
+      }
+    }
   });
 
   it("marks light when two starters are a yellow from a ban, naming them", () => {
