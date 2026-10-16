@@ -7,7 +7,8 @@
   --tilt: -3deg;
   position: absolute;
   left: 50%;
-  top: 74px;
+  /* Under the duel, so the score it may change stays in sight above it. */
+  top: 184px;
   z-index: 6;
   display: flex;
   align-items: center;
@@ -92,11 +93,11 @@
   animation-delay: 300ms;
 }
 
-/* The decision: a stamp in ink across the sticker's right end, tilted against it. */
+/* The decision: a stamp slapped over the sticker's lower right corner, tilted against it. */
 .varstk-stamp {
   position: absolute;
-  right: -18px;
-  top: 50%;
+  right: -30px;
+  bottom: -26px;
   display: grid;
   justify-items: center;
   gap: 2px;
@@ -105,7 +106,7 @@
   background: var(--green);
   color: #fff;
   box-shadow: 0 0 0 3px var(--yellow), 0 10px 18px -8px rgba(20, 35, 26, 0.6);
-  transform: translateY(-50%) rotate(7deg);
+  transform: rotate(7deg);
   animation: varstk-stamp 520ms var(--e-slap) both;
 }
 
@@ -204,7 +205,7 @@
 
 @keyframes varstk-stamp {
   from {
-    transform: translateY(-50%) rotate(-8deg) scale(1.9);
+    transform: rotate(-8deg) scale(1.9);
     opacity: 0;
   }
   55% {

@@ -543,7 +543,7 @@ export function Round() {
 
   if (!round) return <p className="status live-missing">Abrindo a rodada…</p>;
 
-  const matches = roundAt(round, minute);
+  const matches = roundAt(round, minute, varHold?.phase === "checking" ? varHold.fixtureId : null);
   const mine = matches.find((m) => m.isCoach);
   const scores = new Map(matches.map((m) => [m.fixtureId, m.score]));
   const table = round.table && liveTable(round.table, scores);

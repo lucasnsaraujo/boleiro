@@ -55,7 +55,7 @@ function eventText(event: PlayerEvent, names: Readonly<Record<string, string>>):
 const isPlayerEvent = (event: MatchEvent): event is PlayerEvent =>
   event.type !== "halfTime" && event.type !== "fullTime" && event.type !== "shootoutKick" && event.type !== "orderOverruled";
 
-function matchAt(round: LiveRound, match: RoundMatch, minute: number): MatchAt {
+function matchAt(round: LiveRound, match: RoundMatch, minute: number, underReview: string | null): MatchAt {
   const score = { home: 0, away: 0 };
   const reds = { home: 0, away: 0 };
   let last: ShownEvent | null = null;
@@ -66,16 +66,21 @@ function matchAt(round: LiveRound, match: RoundMatch, minute: number): MatchAt {
     const kind = kindOf(event);
     if (kind === "goal") score[side]++;
     if (kind === "red") reds[side]++;
-    last = { kind, minute: event.minute, side, text: eventText(event, round.names) };
+    // A check still running at this minute keeps its decision to itself.
+    const isUnderReview = event.type === "varCheck" && event.minute === minute && match.fixtureId === underReview;
+    last = { kind, minute: event.minute, side, text: isUnderReview ? "VAR revisando o lance" : eventText(event, round.names) };
   }
   const isCoach = match.fixtureId === round.coach?.fixtureId;
   const isOtherHuman = round.otherHumanClubIds?.some((id) => id === match.homeId || id === match.awayId) ?? false;
   return { ...match, score, reds, last, isCoach, isHuman: isCoach || isOtherHuman };
 }
 
-/** Every match of the round at `minute`, the coach's first, then the other hot-seat coaches'. */
-export function roundAt(round: LiveRound, minute: number): MatchAt[] {
-  return round.matches.map((match) => matchAt(round, match, minute)).sort((a, b) => Number(b.isCoach) - Number(a.isCoach) || Number(b.isHuman) - Number(a.isHuman));
+/**
+ * Every match of the round at `minute`, the coach's first, then the other hot-seat coaches'. The
+ * match whose VAR check the round stands still for (`underReview`) doesn't tell the decision yet.
+ */
+export function roundAt(round: LiveRound, minute: number, underReview: string | null = null): MatchAt[] {
+  return round.matches.map((match) => matchAt(round, match, minute, underReview)).sort((a, b) => Number(b.isCoach) - Number(a.isCoach) || Number(b.isHuman) - Number(a.isHuman));
 }
 
 /** The goals scored after minute `from` up to minute `to`, in order. */

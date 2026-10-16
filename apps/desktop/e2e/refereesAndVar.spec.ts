@@ -30,8 +30,7 @@ test("a live round stands still while VAR checks the coach's match, stamps the d
   const check = await kickOffBeforeVarCheck(page);
   const band = page.getByRole("region", { name: "Seu jogo" });
   await expect(band).toBeVisible();
-  await expect(band.getByText(/^Árbitro /)).toBeVisible();
-  await expect(band.locator(".live-ref em")).toHaveText("VAR");
+  await expect(band.locator(".live-ref")).toHaveText(/^VARÁrbitro \S+ \S+/);
 
   const sticker = band.getByRole("status").filter({ hasText: "VAR checando" });
   const minute = band.getByLabel("Minuto");

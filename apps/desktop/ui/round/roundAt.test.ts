@@ -186,6 +186,8 @@ test("stops for VAR changing a call in a human coach's match, not for a goal it 
   expect(varCheckAt(withChecks, 62)).toMatchObject({ fixtureId: "ours", check: { decision: "goalRuledOut", playerId: "v9" } });
   expect(varCheckAt(withChecks, 63)).toBeNull();
   expect(roundAt(withChecks, 62).find((m) => m.fixtureId === "other")?.last).toMatchObject({ kind: "varCheck", text: "VAR anula o gol de Arrascaeta" });
+  expect(roundAt(withChecks, 62, "ours").find((m) => m.fixtureId === "ours")?.last).toMatchObject({ kind: "varCheck", text: "VAR revisando o lance" });
+  expect(roundAt(withChecks, 63, "ours").find((m) => m.fixtureId === "ours")?.last?.text).toBe("VAR anula o gol de Renato Kayzer");
   expect(calloutsBetween(withChecks, 60, 62).map((c) => [c.fixtureId, c.kind])).toEqual([
     ["other", "var"],
     ["ours", "var"],
