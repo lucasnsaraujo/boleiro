@@ -57,13 +57,14 @@ const MAX_GOALS = 10;
 
 export function pickLineup<P extends Player>(players: readonly P[]): P[] {
   const byStrength = [...players].sort((a, b) => b.strength - a.strength);
-  const lineup: P[] = [];
-  for (const [group, count] of Object.entries(FORMATION) as [PositionGroup, number][]) {
-    lineup.push(...byStrength.filter((p) => p.group === group).slice(0, count));
-  }
+  // One walk down the squad fills each group's places, strongest first.
+  const placed: Record<PositionGroup, P[]> = { GK: [], DEF: [], MID: [], ATT: [] };
+  for (const p of byStrength) if (placed[p.group].length < FORMATION[p.group]) placed[p.group].push(p);
+  const lineup = (Object.keys(FORMATION) as PositionGroup[]).flatMap((group) => placed[group]);
   const missing = 11 - lineup.length;
   if (missing > 0) {
-    lineup.push(...byStrength.filter((p) => !lineup.includes(p)).slice(0, missing));
+    const picked = new Set(lineup);
+    lineup.push(...byStrength.filter((p) => !picked.has(p)).slice(0, missing));
   }
   return lineup;
 }
