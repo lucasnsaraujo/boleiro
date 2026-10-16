@@ -8,6 +8,7 @@ export type SetPiece = "penalty" | "freeKick" | "corner";
 /**
  * Something real the live pitch plays at its minute, with the short tag its player carries for a moment:
  * a goal, a chance that comes to nothing, a card, an injury, a substitution, the half-time whistle.
+ * `playerId` is whose token it shows on; for a substitution, the player going off, whose token turns over.
  */
 export type PitchAction =
   | { kind: "goal"; minute: number; side: Side; playerId: string; tag: string; setPiece: SetPiece | null }
@@ -43,7 +44,7 @@ function actionOf(event: MatchEvent, sideOf: (clubId: string) => Side, nameOf: (
     case "injury":
       return { kind: "injury", minute: event.minute, side: sideOf(event.clubId), playerId: event.playerId, tag: `${nameOf(event.playerId)} se machucou` };
     case "substitution":
-      return { kind: "substitution", minute: event.minute, side: sideOf(event.clubId), playerId: event.playerId, tag: `Entra ${nameOf(event.playerId)}, sai ${nameOf(event.offId)}` };
+      return { kind: "substitution", minute: event.minute, side: sideOf(event.clubId), playerId: event.offId, tag: `Entra ${nameOf(event.playerId)}, sai ${nameOf(event.offId)}` };
     case "halfTime":
       return { kind: "halfTime", minute: event.minute };
     case "fullTime":

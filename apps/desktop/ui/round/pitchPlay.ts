@@ -15,16 +15,17 @@ import type { PitchAction, SetPiece } from "./pitchActions.js";
  * near one, `h` the ball's height in pitch lengths.
  */
 
-export type BallKind = "roll" | "air" | "shot";
-export type BallShape = "kickoff" | "celebrate" | "deadBall";
-export type BallKey = { t: number; x: number; y: number; h: number; kind: BallKind; side: Side | null; shape?: BallShape };
-export type BeatKind = "shot" | "save" | "wide" | "goal" | "yellow" | "red" | "injury" | "substitution";
+type BallKind = "roll" | "air" | "shot";
+type BallShape = "kickoff" | "celebrate" | "deadBall";
+type BallKey = { t: number; x: number; y: number; h: number; kind: BallKind; side: Side | null; shape?: BallShape };
+type BeatKind = "shot" | "save" | "wide" | "goal" | "yellow" | "red" | "injury" | "substitution";
 /** A moment of the play: where it happened and, for a real action, the tag its player carries and who he is. */
 export type Beat = { t: number; kind: BeatKind; side: Side; x: number; y: number; tag: string | null; playerId: string | null };
 export type Script = { keys: BallKey[]; beats: Beat[]; msPerMinute: number };
-export type Ball = { x: number; y: number; h: number; kind: BallKind; side: Side | null; shape: BallShape | undefined; nextAt: { x: number; y: number; t: number } | null };
+type Ball = { x: number; y: number; h: number; kind: BallKind; side: Side | null; shape: BallShape | undefined; nextAt: { x: number; y: number; t: number } | null };
 export type Token = { id: string; side: Side; isKeeper: boolean; x: number; y: number };
-export type Lineups = Record<Side, { formation: Formation; sentOff: number }>;
+/** Each side's formation and the players sent off so far, in the order they went. */
+export type Lineups = Record<Side, { formation: Formation; sentOff: readonly string[] }>;
 
 // Durations at 1x; faster clocks shorten them, down to PACE_FLOOR of their length.
 const ONE_X_MS_PER_MINUTE = 660;
@@ -40,6 +41,7 @@ const MIN_ATTACK_MS = 420;
 // First-half stoppage time is minute 45: the sides change ends half-way into it, before the second half's kick-off.
 const SECOND_HALF_MINUTE = HALF_TIME + 0.5;
 const POST = 0.054;
+const OUTFIELD = 10;
 const PITCH_LENGTH_M = 105;
 const SPOT_ALONG = 1 - 11 / PITCH_LENGTH_M;
 
@@ -304,9 +306,9 @@ export function tokensAt(script: Script, t: number, lineups: Lineups): Token[] {
     const ballAlong = dir > 0 ? ball.x : 1 - ball.x;
     const hasBall = possession === side;
     const slots = FORMATIONS[lineups[side].formation];
-    const drop = lineups[side].sentOff;
+    const gone = new Set(sentOffSlots(lineups[side].sentOff).values());
     slots.forEach((slot, index) => {
-      if (index > 0 && index >= slots.length - drop) return;
+      if (gone.has(index)) return;
       const depth = (100 - slot.y) / 100;
       const lane = slot.x / 100;
       const id = `${side}-${index}`;
@@ -372,8 +374,29 @@ export function tokensAt(script: Script, t: number, lineups: Lineups): Token[] {
   return tokens;
 }
 
-/** The token a real action happened to: one of its side's outfielders, picked by the player's id so the same player keeps the same token. */
-export function tokenOfPlayer(tokens: readonly Token[], side: Side, playerId: string): Token | null {
-  const outfield = tokens.filter((token) => token.side === side && !token.isKeeper);
-  return outfield[hashOf(playerId) % Math.max(1, outfield.length)] ?? null;
+/** The outfield slot each sent-off player stood in: his own by his id, or the next one along when a team-mate sent off before him holds it. */
+function sentOffSlots(sentOff: readonly string[]): Map<string, number> {
+  const slots = new Map<string, number>();
+  const taken = new Set<number>();
+  for (const playerId of sentOff) {
+    let slot = 1 + (hashOf(playerId) % OUTFIELD);
+    for (let i = 0; i < OUTFIELD && taken.has(slot); i++) slot = 1 + (slot % OUTFIELD);
+    slots.set(playerId, slot);
+    taken.add(slot);
+  }
+  return slots;
+}
+
+/**
+ * The token a player's real actions show on, picked by his id so the same player keeps the same token: a sent-off
+ * player keeps his, and anyone whose token went with a sent-off team-mate gets the next one still on the pitch.
+ */
+export function tokenIdOf(side: Side, playerId: string, sentOff: readonly string[]): string {
+  const slots = sentOffSlots(sentOff);
+  const own = slots.get(playerId);
+  if (own !== undefined) return `${side}-${own}`;
+  const gone = new Set(slots.values());
+  let slot = 1 + (hashOf(playerId) % OUTFIELD);
+  for (let i = 0; i < OUTFIELD && gone.has(slot); i++) slot = 1 + (slot % OUTFIELD);
+  return `${side}-${slot}`;
 }

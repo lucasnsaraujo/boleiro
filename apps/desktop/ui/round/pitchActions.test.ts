@@ -31,7 +31,7 @@ test("every goal, card, injury, substitution and missed penalty becomes a pitch 
     { kind: "halfTime", minute: 45 },
     { kind: "goal", minute: 52, side: "home", playerId: "v9", tag: "Renato Kayzer, de pênalti", setPiece: "penalty" },
     { kind: "injury", minute: 60, side: "away", playerId: "b2", tag: "Gilberto se machucou" },
-    { kind: "substitution", minute: 61, side: "away", playerId: "b14", tag: "Entra Cauly, sai Gilberto" },
+    { kind: "substitution", minute: 61, side: "away", playerId: "b2", tag: "Entra Cauly, sai Gilberto" },
     { kind: "card", minute: 70, side: "away", playerId: "b14", tag: "Expulso: Cauly", card: "red" },
     { kind: "chance", minute: 80, side: "away", playerId: "b9", tag: "Everaldo bate, Lucas Arcanjo defende", outcome: "saved", setPiece: "penalty" },
   ]);

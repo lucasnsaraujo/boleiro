@@ -1,13 +1,13 @@
 import { expect, test } from "vitest";
 import type { PitchAction } from "./pitchActions.js";
-import { ballAt, beatsBetween, playScript, tokensAt } from "./pitchPlay.js";
+import { ballAt, beatsBetween, playScript, tokenIdOf, tokensAt } from "./pitchPlay.js";
 
 const MS = 110;
 const at = (minute: number) => minute * MS;
 const homeGoal: PitchAction = { kind: "goal", minute: 10, side: "home", playerId: "h9", tag: "Everaldo", setPiece: null };
 const awayGoal: PitchAction = { kind: "goal", minute: 60, side: "away", playerId: "a9", tag: "Kayzer", setPiece: null };
 const halfTime: PitchAction = { kind: "halfTime", minute: 45 };
-const lineups = { home: { formation: "4-4-2", sentOff: 0 }, away: { formation: "4-3-3", sentOff: 0 } } as const;
+const lineups = { home: { formation: "4-4-2", sentOff: [] }, away: { formation: "4-3-3", sentOff: [] } } as const;
 
 test("a goal's ball crosses the line of the goal its side attacks at the goal's minute, and the sides swap ends at half-time", () => {
   const script = playScript([homeGoal, halfTime, awayGoal], "fixture-1", MS);
@@ -56,13 +56,20 @@ test("cards, injuries and substitutions happen on the board at their minute, to 
   ]);
 });
 
-test("each side lines up in its formation, and a red card takes one of its players off the board", () => {
+test("each side lines up in its formation, and a red card takes off the token the carded player's actions showed on", () => {
   const script = playScript([halfTime], "fixture-5", MS);
   const full = tokensAt(script, at(20), lineups);
   expect(full.filter((token) => token.side === "home")).toHaveLength(11);
-  const down = tokensAt(script, at(20), { ...lineups, away: { formation: "4-3-3", sentOff: 1 } });
+  const his = tokenIdOf("away", "a4", []);
+  expect(full.some((token) => token.id === his)).toBe(true);
+  const down = tokensAt(script, at(20), { ...lineups, away: { formation: "4-3-3", sentOff: ["a4"] } });
   expect(down.filter((token) => token.side === "away")).toHaveLength(10);
+  expect(down.some((token) => token.id === his)).toBe(false);
   expect(down.filter((token) => token.side === "away" && token.isKeeper)).toHaveLength(1);
+  // Once he is off, his card still shows where he stood, and a team-mate who'd share his token gets the next one.
+  expect(tokenIdOf("away", "a4", ["a4"])).toBe(his);
+  const mates = ["a1", "a2", "a3", "a5", "a6", "a7", "a8", "a9", "a10", "a11", "a12", "a13", "a14"];
+  expect(mates.map((id) => tokenIdOf("away", id, ["a4"]))).not.toContain(his);
 });
 
 test("goals a minute apart at the fastest clock still each reach the net at their own minute", () => {

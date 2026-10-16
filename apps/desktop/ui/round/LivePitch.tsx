@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Formation } from "@boleiro/engine/engine/formations";
 import { FULL_TIME } from "@boleiro/engine/sim/live/matchTimeline";
 import type { RoundClub, RoundMatch, Side } from "@boleiro/game-client/round/liveRoundOf";
@@ -6,7 +6,7 @@ import { plateColours } from "../clubs/clubCatalog.js";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springTiming } from "../motion/springEasing.js";
 import { pitchActionsOf } from "./pitchActions.js";
-import { ballAt, beatsBetween, playScript, strikeNear, tokenOfPlayer, tokensAt, type Beat, type Lineups, type Token } from "./pitchPlay.js";
+import { ballAt, beatsBetween, playScript, strikeNear, tokenIdOf, tokensAt, type Beat, type Lineups, type Token } from "./pitchPlay.js";
 import "./livePitch.css";
 
 // The board: a pitch with a run-off around it, seen from the near touchline and a little above.
@@ -165,6 +165,8 @@ type Props = {
  */
 export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute, formations, caption, isQuiet = false }: Props) {
   const tilt = useRef<HTMLDivElement>(null);
+  // Two coaches who meet each get a board of the same match: the board's SVG ids must still differ.
+  const svgId = `lp-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   // The round hands the board a fresh copy of the match every minute; its timeline only changes with the match.
   const actions = useMemo(() => pitchActionsOf(match, names), [match.events, match.homeId, names]);
@@ -172,7 +174,7 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
   const home = clubs[match.homeId];
   const away = clubs[match.awayId];
   const kits = useMemo(() => (home && away ? kitsOf(home, away) : null), [home, away]);
-  const sentOff = (side: Side) => actions.filter((a) => a.kind === "card" && a.card === "red" && a.minute <= minute && a.side === side).length;
+  const sentOff = (side: Side) => actions.flatMap((a) => (a.kind === "card" && a.card === "red" && a.minute <= minute && a.side === side ? [a.playerId] : []));
   const lineups: Lineups = { home: { formation: formations.home, sentOff: sentOff("home") }, away: { formation: formations.away, sentOff: sentOff("away") } };
   const lineupsRef = useRef(lineups);
   lineupsRef.current = lineups;
@@ -194,19 +196,25 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
   const g = size && size.width > 0 ? geometryOf(size.width, size.height, MAX_WIDTH) : null;
   const goals = useMemo(() => (g ? [goalParts(g, 0), goalParts(g, 1)] : null), [g?.width, g?.height, g?.near]);
 
-  // The presentation clock: the round's minute plus how far into it the clock has run.
-  const clock = useRef({ minute, tickAt: performance.now(), frozen: 0, isRunning, msPerMinute });
+  // The presentation clock: the round's minute plus how far into it the clock has run. The round's clock waits a
+  // whole minute after every start or change of speed, so the board plays out the rest of the minute over that time.
+  const clock = useRef({ minute, tickAt: performance.now(), from: 0, frozen: 0, isRunning, msPerMinute });
   useEffect(() => {
     const c = clock.current;
     const now = performance.now();
+    const ran = () => c.from + (1 - c.from) * Math.min((now - c.tickAt) / c.msPerMinute, 0.999);
     if (minute !== c.minute) {
       c.minute = minute;
       c.tickAt = now;
+      c.from = 0;
       c.frozen = 0;
     }
     const isPlaying = isRunning && minute < FULL_TIME;
-    if (!isPlaying && c.isRunning) c.frozen = Math.min((now - c.tickAt) / c.msPerMinute, 0.999);
-    if (isPlaying && !c.isRunning) c.tickAt = now - c.frozen * msPerMinute;
+    if (!isPlaying && c.isRunning) c.frozen = ran();
+    if (isPlaying && (!c.isRunning || msPerMinute !== c.msPerMinute)) {
+      c.from = c.isRunning ? ran() : c.frozen;
+      c.tickAt = now;
+    }
     c.isRunning = isPlaying;
     c.msPerMinute = msPerMinute;
   }, [minute, isRunning, msPerMinute]);
@@ -239,6 +247,14 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
     const slap = springTiming({ stiffness: 520, damping: 22 });
     const markEasing = slap.easing.startsWith("linear") ? slap.easing : "cubic-bezier(.34,1.56,.64,1)";
 
+    // Depth changes far less often than position; writing it only on change keeps frames to transforms.
+    const depths = new WeakMap<HTMLElement, number>();
+    const setDepth = (el: HTMLElement, z: number) => {
+      if (depths.get(el) === z) return;
+      depths.set(el, z);
+      el.style.zIndex = String(z);
+    };
+
     const place = (el: HTMLElement | null, p: Point, extra = "") => {
       if (el) el.style.transform = `translate3d(${p.u.toFixed(2)}px, ${p.v.toFixed(2)}px, 0) scale(${p.scale.toFixed(3)})${extra}`;
     };
@@ -247,7 +263,7 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
       const c = clock.current;
       const mpm = script.msPerMinute;
       if (reduced) return c.minute * mpm;
-      if (c.isRunning) return (c.minute + Math.min((now - c.tickAt) / mpm, 0.999)) * mpm;
+      if (c.isRunning) return (c.minute + c.from + (1 - c.from) * Math.min((now - c.tickAt) / c.msPerMinute, 0.999)) * mpm;
       // Stopped right on a goal: the ball still finishes its way into the net.
       const base = (c.minute + c.frozen) * mpm;
       const goal = strikeNear(script, base, 50);
@@ -262,15 +278,14 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
       if (!el || !(label instanceof HTMLElement) || !beat.tag || isQuietRef.current) return;
       const side = tokens.filter((t) => t.side === beat.side && !t.isKeeper);
       // The shooter is whoever stands on the ball as he strikes it; anyone else is found by his id.
-      const who =
-        beat.kind === "shot"
-          ? side.reduce<Token | null>((best, t) => (!best || Math.hypot(t.x - ball.x, t.y - ball.y) < Math.hypot(best.x - ball.x, best.y - ball.y) ? t : best), null)
-          : tokenOfPlayer(tokens, beat.side, beat.playerId ?? beat.tag);
-      if (!who) return;
+      const shooter =
+        beat.kind === "shot" ? side.reduce<Token | null>((best, t) => (!best || Math.hypot(t.x - ball.x, t.y - ball.y) < Math.hypot(best.x - ball.x, best.y - ball.y) ? t : best), null) : null;
+      const id = shooter?.id ?? (beat.playerId && tokenIdOf(beat.side, beat.playerId, lineupsRef.current[beat.side].sentOff));
+      if (!id) return;
       label.textContent = beat.tag;
       el.dataset.side = beat.side;
       el.dataset.kind = beat.kind;
-      tagged = { id: who.id, until: now + TAG_MS };
+      tagged = { id, until: now + TAG_MS };
       label.getAnimations().forEach((a) => a.cancel());
       label.animate(
         reduced
@@ -284,8 +299,8 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
         { duration: TAG_MS, easing: "cubic-bezier(.16,1,.3,1)", fill: "both" },
       );
       if (beat.kind === "substitution" && !reduced) {
-        // The player who comes on turns over like a sticker, back side then face.
-        tokenEls.current.get(who.id)?.lastElementChild?.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)", offset: 0.5 }, { transform: "scaleX(1)" }], { duration: 520, easing: "cubic-bezier(.65,0,.35,1)" });
+        // The player going off turns over like a sticker into the one coming on.
+        tokenEls.current.get(id)?.lastElementChild?.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)", offset: 0.5 }, { transform: "scaleX(1)" }], { duration: 520, easing: "cubic-bezier(.65,0,.35,1)" });
       }
     }
 
@@ -341,8 +356,8 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
         tilt.current?.animate([{ translate: "0 0" }, { translate: "0 3px", offset: 0.12 }, { translate: "0 0" }], { duration: 520, easing: "cubic-bezier(.34,1.56,.64,1)" });
       }
       if ((beat.kind === "yellow" || beat.kind === "red" || beat.kind === "injury") && markEl.current) {
-        const pick = tokenOfPlayer(tokens, beat.side, beat.playerId ?? "");
-        const at = pick && positions.get(pick.id);
+        // A red card's player has just left the board; his card shows where he stood.
+        const at = beat.playerId ? positions.get(tokenIdOf(beat.side, beat.playerId, lineupsRef.current[beat.side].sentOff)) : undefined;
         if (at) {
           const mark = markEl.current;
           mark.dataset.kind = beat.kind;
@@ -378,7 +393,7 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
         if (el) {
           const pt = project(geo, p.x, p.y);
           place(el, pt);
-          el.style.zIndex = String(10 + Math.round(pt.depth * 1000));
+          setDepth(el, 10 + Math.round(pt.depth * 1000));
         }
       }
       const target = ballAt(script, T);
@@ -391,16 +406,16 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
       place(ballShadowEl.current, ground, ` scale(${(1 - Math.min(ball.h * 14, 0.55)).toFixed(3)})`);
       if (ballShadowEl.current) ballShadowEl.current.style.opacity = (0.55 - Math.min(ball.h * 8, 0.3)).toFixed(2);
       place(ballEl.current, air);
-      if (ballEl.current) ballEl.current.style.zIndex = String(12 + Math.round(ground.depth * 1000));
+      if (ballEl.current) setDepth(ballEl.current, 12 + Math.round(ground.depth * 1000));
       trail.unshift(air);
       trail.length = Math.min(trail.length, 6);
       const isFast = !reduced && (target.kind === "shot" || target.kind === "air");
       trailEls.current.forEach((el, i) => {
-        const p = trail[(i + 1) * 1];
+        const p = trail[i + 1];
         if (!el || !p) return;
         place(el, p);
         el.style.opacity = isFast ? (0.34 - i * 0.075).toFixed(2) : "0";
-        el.style.zIndex = String(11 + Math.round(ground.depth * 1000));
+        setDepth(el, 11 + Math.round(ground.depth * 1000));
       });
       if (lastT >= 0 && T > lastT) for (const beat of beatsBetween(script, lastT, T)) fire(beat, tokens, target, now);
       lastT = T;
@@ -447,27 +462,27 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
           <>
             <svg className="lp-board" width={g.width} height={g.height}>
               <defs>
-                <filter id={`lp-blur-${match.fixtureId}`} x="-10%" y="-40%" width="120%" height="180%">
+                <filter id={`${svgId}-blur`} x="-10%" y="-40%" width="120%" height="180%">
                   <feGaussianBlur stdDeviation="7" />
                 </filter>
-                <radialGradient id={`lp-vignette-${match.fixtureId}`} cx="50%" cy="62%" r="62%">
+                <radialGradient id={`${svgId}-vignette`} cx="50%" cy="62%" r="62%">
                   <stop offset="55%" stopColor="#000" stopOpacity="0" />
                   <stop offset="100%" stopColor="#000" stopOpacity="0.32" />
                 </radialGradient>
-                <linearGradient id={`lp-light-${match.fixtureId}`} x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id={`${svgId}-light`} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0" stopColor="#000" stopOpacity="0.22" />
                   <stop offset="0.45" stopColor="#000" stopOpacity="0" />
                   <stop offset="1" stopColor="#fff" stopOpacity="0.07" />
                 </linearGradient>
               </defs>
-              <path className="lp-shadow" d={corners} transform={`translate(0 ${THICKNESS + 5})`} filter={`url(#lp-blur-${match.fixtureId})`} />
+              <path className="lp-shadow" d={corners} transform={`translate(0 ${THICKNESS + 5})`} filter={`url(#${svgId}-blur)`} />
               <path className="lp-front" d={front} />
               <path className="lp-run" d={corners} />
               {stripes.map((d, i) => (
                 <path key={i} className={i % 2 ? "lp-stripe b" : "lp-stripe a"} d={d} />
               ))}
-              <path d={corners} fill={`url(#lp-light-${match.fixtureId})`} />
-              <path d={corners} fill={`url(#lp-vignette-${match.fixtureId})`} />
+              <path d={corners} fill={`url(#${svgId}-light)`} />
+              <path d={corners} fill={`url(#${svgId}-vignette)`} />
               <path className="lp-lines" d={markings(g)} />
               <path className="lp-bevel" d={pathOf(g, [[-RUN_X, 1 + RUN_Y], [1 + RUN_X, 1 + RUN_Y]])} />
               {goals.map((goal, end) => (
