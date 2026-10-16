@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, use, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
 import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
 import type { Competition, Fixture, GameState } from "@boleiro/engine/sim/gameState";
@@ -14,6 +14,7 @@ import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springTiming } from "../motion/springEasing.js";
 import { useFlip } from "../motion/useFlip.js";
 import { Select } from "../controls/Select.js";
+import { useMatchFile } from "../matchPage/MatchFile.js";
 import { Bracket } from "../tables/Bracket.js";
 import { GroupCard, NextTieCard, type NextTie } from "../tables/BracketCards.js";
 import { uefaBracket, uefaLeaguePhase, uefaPlayoffs } from "../tables/uefaTables.js";
@@ -99,6 +100,9 @@ const OTHER_LEAGUES = "Outras ligas";
 /** What the screen shows of a competition: its stage, and the round picked on the stepper (null: the latest). */
 type View = { stage: number; round: number | null };
 
+/** Opens a match's ficha from anywhere in the tables: a club's form marks are its last matches. */
+const OpenMatchContext = createContext<(matchRef: string) => void>(() => undefined);
+
 const byName = (a: Competition, b: Competition) => competitionName(a).localeCompare(competitionName(b), "pt-BR");
 
 export function Tables() {
@@ -110,6 +114,7 @@ export function Tables() {
   const [otherId, setOtherId] = useState<string | null>(null);
   const [views, setViews] = useState<Readonly<Record<string, View>>>({});
   const playRound = usePlayRound(() => navigate("/hub"));
+  const matchFile = useMatchFile();
 
   useEffect(() => {
     let current = true;
@@ -173,6 +178,7 @@ export function Tables() {
   );
 
   return (
+    <OpenMatchContext value={matchFile.open}>
     <div className="tables fills-screen">
       <h1 className="sr-only">Tabelas</h1>
       <header className="tables-head">
@@ -220,7 +226,9 @@ export function Tables() {
           picker={picker}
         />
       )}
+      {matchFile.file}
     </div>
+    </OpenMatchContext>
   );
 }
 
@@ -515,6 +523,7 @@ function Movement({ places }: { places: number }) {
 }
 
 function StandingsTable({ label, group, clubs, coachClubId }: { label: string; group: GroupTable; clubs: Clubs; coachClubId: string | null }) {
+  const onOpenMatch = use(OpenMatchContext);
   const table = useRef<HTMLTableElement>(null);
   useFlip(table, group.rows.map((row) => row.clubId).join(), slideStandingsRow);
   return (
@@ -585,11 +594,18 @@ function StandingsTable({ label, group, clubs, coachClubId }: { label: string; g
               <td>{signed(row.goalDifference)}</td>
               <td className="l st-form">
                 <span className="form">
-                  {row.form.map((outcome, i) => (
-                    <i key={i} className={outcome} title={OUTCOMES[outcome].word}>
-                      {OUTCOMES[outcome].letter}
-                    </i>
-                  ))}
+                  {row.form.map((outcome, i) => {
+                    const ref = row.formRefs?.[i];
+                    return ref ? (
+                      <button key={i} type="button" className={outcome} title={`${OUTCOMES[outcome].word}: ver a ficha do jogo`} aria-label={`${OUTCOMES[outcome].word}, ficha do jogo`} onClick={() => onOpenMatch(ref)}>
+                        {OUTCOMES[outcome].letter}
+                      </button>
+                    ) : (
+                      <i key={i} className={outcome} title={OUTCOMES[outcome].word}>
+                        {OUTCOMES[outcome].letter}
+                      </i>
+                    );
+                  })}
                 </span>
               </td>
               <td className="st-mv">

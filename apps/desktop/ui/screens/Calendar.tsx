@@ -19,6 +19,7 @@ import {
 import { clubFaceOf, type ClubFace } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
+import { useMatchFile } from "../matchPage/MatchFile.js";
 import "./calendar.css";
 
 const CALENDAR_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions", "players", "discipline", "hasMidSeasonWindow"] as const;
@@ -48,6 +49,7 @@ export function Calendar() {
   const [failed, setFailed] = useState(false);
   const [turn, setTurn] = useState<Turn | null>(null);
   const round = usePlayRound(() => navigate("/hub"));
+  const matchFile = useMatchFile();
 
   useEffect(() => {
     let current = true;
@@ -126,7 +128,7 @@ export function Calendar() {
             matches.length + windows.length === 0 ? null : (
               <ul key={month} className="agenda-entries" aria-label={capitalized(monthName(month))}>
                 {matches.map((match) => (
-                  <MatchChip key={match.fixtureId} match={match} opponent={clubFaceOf(state.clubs, match.opponentId) ?? undefined} isToday={match.date === state.date} />
+                  <MatchChip key={match.fixtureId} match={match} opponent={clubFaceOf(state.clubs, match.opponentId) ?? undefined} isToday={match.date === state.date} onOpen={matchFile.open} />
                 ))}
                 {windows.map((ribbon) => (
                   <WindowMark key={ribbon.opensOn} ribbon={ribbon} />
@@ -180,11 +182,12 @@ export function Calendar() {
           </section>
         )}
       </aside>
+      {matchFile.file}
     </div>
   );
 }
 
-function MatchChip({ match, opponent, isToday }: { match: PageMatch; opponent: ClubFace | undefined; isToday: boolean }) {
+function MatchChip({ match, opponent, isToday, onOpen }: { match: PageMatch; opponent: ClubFace | undefined; isToday: boolean; onOpen: (fixtureId: string) => void }) {
   const { result } = match;
   // The coach's goals first, as the outcome letter reads.
   const score = result
@@ -192,6 +195,7 @@ function MatchChip({ match, opponent, isToday }: { match: PageMatch; opponent: C
     : "";
   return (
     <li className={result ? `agenda-match played ${result.outcome}` : "agenda-match"} style={{ gridRow: match.row, gridColumn: match.column }}>
+      {result && <button type="button" className="agenda-open" aria-label={`Ficha do jogo contra ${opponent?.shortName ?? match.opponentId}`} onClick={() => onOpen(match.fixtureId)} />}
       <span className="sr-only">{isToday ? "Hoje" : formatRowDate(match.date)}, </span>
       <span className="agenda-match-crest" aria-hidden="true">
         {opponent && <Crest club={opponent} size={22} />}

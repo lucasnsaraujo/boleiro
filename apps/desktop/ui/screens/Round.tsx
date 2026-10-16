@@ -17,6 +17,7 @@ import { useFlip } from "../motion/useFlip.js";
 import { incidentAt, type Incident } from "../round/incident.js";
 import { IncidentWindow } from "../round/IncidentWindow.js";
 import { LineupSheet } from "../round/LineupSheet.js";
+import { MatchFile } from "../matchPage/MatchFile.js";
 import { MatchReport } from "../round/MatchReport.js";
 import { kickOffOf, liveChangeOf, liveLimits, type Sheet } from "../round/lineupDraft.js";
 import type { LiveChange } from "@boleiro/engine/sim/live/applyLiveChange";
@@ -130,6 +131,8 @@ export function Round() {
   const [result, setResult] = useState<AdvanceResult | null>(null);
   const [isOnlyMine, setOnlyMine] = useState(false);
   const [isOtherLeaguesOpen, setOtherLeaguesOpen] = useState(false);
+  // The match whose ficha is open over the board; the clock keeps running under it.
+  const [fileRef, setFileRef] = useState<string | null>(null);
   const [flashes, setFlashes] = useState<Record<string, Flash>>({});
   const [alerts, setAlerts] = useState<Record<string, Alert>>({});
   const [incident, setIncident] = useState<OpenIncident | null>(null);
@@ -487,6 +490,12 @@ export function Round() {
   const lineupLimits = lineupSide ? limitsOf(lineupSide.side, lineupSide.clubId) : null;
   const incidentLimits = incident ? limitsOf(incident.side, incident.clubId) : null;
   const incidentMatch = incident && matches.find((m) => m.fixtureId === incident.side.fixtureId);
+  // On a human coach's own match the ficha offers his substitutions through his lineup sheet.
+  const fileCoach = result === null ? coached.find((c) => c.side.fixtureId === fileRef) : undefined;
+  const substituteFromFile = (clubId: string) => {
+    setFileRef(null);
+    openLineup(clubId);
+  };
   const isFinished = result !== null;
   // After a hot-seat round the first coach in turn order takes the seat again, behind the hand-off screen.
   const afterRound = hotSeat ? "/turn" : "/hub";
@@ -507,7 +516,7 @@ export function Round() {
       </h2>
       <ul className="live-rows" aria-labelledby={`live-${group.id}`}>
         {group.rows.map((m) => (
-          <MatchRow key={m.fixtureId} match={m} clubs={round.clubs} flash={flashes[m.fixtureId]} alert={alerts[m.fixtureId]} isHidden={isOnlyMine && !m.isHuman} />
+          <MatchRow key={m.fixtureId} match={m} clubs={round.clubs} flash={flashes[m.fixtureId]} alert={alerts[m.fixtureId]} isHidden={isOnlyMine && !m.isHuman} onOpen={setFileRef} />
         ))}
       </ul>
     </section>
@@ -605,6 +614,8 @@ export function Round() {
           onSubstitute={(substitutions) => void substituteFromIncident(substitutions)}
         />
       )}
+
+      <MatchFile matchRef={fileRef} minute={minute} version={round} onClose={() => setFileRef(null)} {...(fileCoach ? { onSubstitute: () => substituteFromFile(fileCoach.clubId) } : {})} />
 
       {lineupSide && lineupLimits && (
         <LineupSheet
@@ -793,7 +804,7 @@ function Cover({ round, match, label, minute, speed, golCount, isOnlyMine, isFin
   );
 }
 
-type MatchRowProps = { match: MatchAt; clubs: Readonly<Record<string, RoundClub>>; flash: Flash | undefined; alert: Alert | undefined; isHidden: boolean };
+type MatchRowProps = { match: MatchAt; clubs: Readonly<Record<string, RoundClub>>; flash: Flash | undefined; alert: Alert | undefined; isHidden: boolean; onOpen: (fixtureId: string) => void };
 
 /** A row redraws only when its own match changes, so a whole round's board stays light at 4x. */
 const isSameRow = (before: MatchRowProps, after: MatchRowProps) =>
@@ -801,6 +812,7 @@ const isSameRow = (before: MatchRowProps, after: MatchRowProps) =>
   before.flash === after.flash &&
   before.alert === after.alert &&
   before.isHidden === after.isHidden &&
+  before.onOpen === after.onOpen &&
   before.match.isHuman === after.match.isHuman &&
   before.match.score.home === after.match.score.home &&
   before.match.score.away === after.match.score.away &&
@@ -809,7 +821,7 @@ const isSameRow = (before: MatchRowProps, after: MatchRowProps) =>
   before.match.last?.minute === after.match.last?.minute &&
   before.match.last?.text === after.match.last?.text;
 
-const MatchRow = memo(function MatchRow({ match, clubs, flash, alert, isHidden }: MatchRowProps) {
+const MatchRow = memo(function MatchRow({ match, clubs, flash, alert, isHidden, onOpen }: MatchRowProps) {
   const home = clubs[match.homeId];
   const away = clubs[match.awayId];
   if (!home || !away) return null;
@@ -817,6 +829,7 @@ const MatchRow = memo(function MatchRow({ match, clubs, flash, alert, isHidden }
   return (
     <li className={match.isHuman ? "live-r human" : "live-r"} hidden={isHidden} aria-label={`${home.shortName} ${match.score.home} x ${match.score.away} ${away.shortName}`}>
       {flash && <i key={flash.count} className="flash" style={{ background: `linear-gradient(90deg, transparent 12%, ${flash.colour} 40%, transparent 95%)` }} />}
+      <button type="button" className="live-open" aria-label={`Ficha do jogo: ${home.shortName} x ${away.shortName}`} onClick={() => onOpen(match.fixtureId)} />
       <span className="std">{home.stadium}</span>
       <RowPlate club={home} red={match.reds.home > 0} />
       <Digit value={match.score.home} className={lead("home") ? "sbox lead" : "sbox"} flash={flash?.side === "home" ? flash.colour : undefined} isSettled={!flash} />

@@ -288,12 +288,16 @@
   vertical-align: middle;
 }
 
-.tables .form i {
+.tables .form i,
+.tables .form button {
   width: 16px;
   height: 16px;
   display: grid;
   place-items: center;
+  padding: 0;
+  border: 0;
   border-radius: 4px;
+  font-family: inherit;
   font-style: normal;
   font-stretch: var(--semi);
   font-weight: 900;
@@ -301,20 +305,33 @@
   color: #fff;
 }
 
-.tables .form i.win {
+/* A form mark that opens its match lifts like a sticker under the pointer. */
+.tables .form button {
+  cursor: pointer;
+  transition:
+    transform var(--t-fast) var(--e-out),
+    box-shadow var(--t-fast) var(--e-out);
+}
+
+.tables .form button:hover {
+  transform: translateY(-2px) scale(1.12);
+  box-shadow: 0 3px 0 var(--edge);
+}
+
+.tables .form .win {
   background: var(--green);
 }
 
-.tables .form i.draw {
+.tables .form .draw {
   background: var(--line-2);
   color: #14231a;
 }
 
-.tables .form i.loss {
+.tables .form .loss {
   background: var(--red);
 }
 
-[data-theme="dark"] .form i.draw {
+[data-theme="dark"] .form .draw {
   color: var(--ink);
 }
 

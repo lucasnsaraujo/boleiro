@@ -10,13 +10,15 @@ import { aggregate, tieResults } from "@boleiro/engine/sim/tieResults";
 import { continentalPlaces } from "@boleiro/engine/sim/world/continentalPlaces";
 import { cupFinal } from "@boleiro/engine/sim/world/resultOnlyCup";
 import { leagueMatches } from "@boleiro/engine/sim/world/resultOnlyLeague";
+import { worldMatchRef } from "@boleiro/game-client/matchPage/matchPageOf";
 import { uefaPlaces } from "@boleiro/engine/sim/world/uefaPlaces";
 
 export type ZoneKind = "libertadores" | "preLibertadores" | "sulAmericana" | "championsLeague" | "europaLeague" | "promotion" | "advance" | "playoff" | "relegation";
 export type ZoneKey = { zone: ZoneKind; label: string };
 export type Outcome = "win" | "draw" | "loss";
 /** `form` is the club's last five results, oldest first; `movement` the places it gained (negative: lost) in the last round. */
-export type TableRow = StandingRow & { position: number; zone: ZoneKind | null; form: Outcome[]; movement: number };
+/** `formRefs` are the match pages of `form`'s games, in its order; a table whose games have no page leaves them out. */
+export type TableRow = StandingRow & { position: number; zone: ZoneKind | null; form: Outcome[]; formRefs?: string[]; movement: number };
 export type GroupTable = { label: string | null; rows: TableRow[] };
 
 export type Leg = { fixtureId: string; date: string; homeId: string; awayId: string; homeGoals: number | null; awayGoals: number | null };
@@ -243,13 +245,21 @@ function outcomeFor(clubId: string, { homeId, result }: Pick<Fixture, "homeId" |
   return scored > conceded ? "win" : scored === conceded ? "draw" : "loss";
 }
 
-/** The club's last five results in these games, oldest first. */
-export function recentForm(clubId: string, stageFixtures: readonly Pick<Fixture, "homeId" | "awayId" | "date" | "result">[]): Outcome[] {
-  return stageFixtures
+function lastPlayed<F extends Pick<Fixture, "homeId" | "awayId" | "date" | "result">>(clubId: string, fixtures: readonly F[]): F[] {
+  return fixtures
     .filter((f) => f.result && (f.homeId === clubId || f.awayId === clubId))
     .toSorted((a, b) => a.date.localeCompare(b.date))
-    .slice(-FORM_LENGTH)
-    .flatMap((f) => outcomeFor(clubId, f) ?? []);
+    .slice(-FORM_LENGTH);
+}
+
+/** The club's last five results in these games, oldest first. */
+export function recentForm(clubId: string, stageFixtures: readonly Pick<Fixture, "homeId" | "awayId" | "date" | "result">[]): Outcome[] {
+  return lastPlayed(clubId, stageFixtures).flatMap((f) => outcomeFor(clubId, f) ?? []);
+}
+
+/** The ids of the games `recentForm` reads, in its order. */
+function recentRefs(clubId: string, stageFixtures: readonly Pick<Fixture, "id" | "homeId" | "awayId" | "date" | "result">[]): string[] {
+  return lastPlayed(clubId, stageFixtures).map((f) => f.id);
 }
 
 const groupLetter = (index: number) => String.fromCharCode(65 + index);
@@ -278,6 +288,7 @@ export function groupTables(
         position: i + 1,
         zone: zoneOf(row.clubId, i + 1, group.length),
         form: recentForm(row.clubId, stageFixtures),
+        formRefs: recentRefs(row.clubId, stageFixtures),
         movement: lastRound > 1 ? placesBefore.indexOf(row.clubId) - i : 0,
       })),
     };
@@ -368,7 +379,7 @@ export function worldLeagueTables(state: Pick<GameState, "world">, countryId: st
   if (!country) return [];
   return country.leagues.map((league, level) => {
     const structure = country.structure.levels[level];
-    const fixtures: Fixture[] = leagueMatches(league).map((match, i) => ({ ...match, id: String(i), competitionId: league.id, stage: 0 }));
+    const fixtures: Fixture[] = leagueMatches(league).map((match, i) => ({ ...match, id: worldMatchRef(countryId, level, i), competitionId: league.id, stage: 0 }));
     const order = standings(league.clubIds, fixtures, league.drawOrder);
     const ids = order.map((row) => row.clubId);
     const { uefa } = country.structure;
@@ -386,7 +397,7 @@ export function worldLeagueTables(state: Pick<GameState, "world">, countryId: st
     };
     return {
       label: structure?.name ?? league.id,
-      rows: order.map((row, i) => ({ ...row, position: i + 1, zone: zoneOf(row.clubId), form: recentForm(row.clubId, fixtures), movement: 0 })),
+      rows: order.map((row, i) => ({ ...row, position: i + 1, zone: zoneOf(row.clubId), form: recentForm(row.clubId, fixtures), formRefs: recentRefs(row.clubId, fixtures), movement: 0 })),
     };
   });
 }
