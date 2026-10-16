@@ -57,6 +57,7 @@ export function engineTeam(name: string, lineup: readonly SimPlayer[], strength:
  * Both elevens for a fixture played today on the home club's pitch. AI clubs pick with
  * pickMatchLineup in their usual formation; the coach's club plays the coach's eleven, or the AI's
  * pick in his formation, and so does each waiting hot-seat coach's club with his plan in `waiting`, by club. Every eleven plays placed in its formation by position (inFormation).
+ * `formStrengthOf` adds the strength points each player's form of the day gives or takes.
  */
 export function matchSetup(
   state: GameState,
@@ -64,6 +65,7 @@ export function matchSetup(
   squadOf: (clubId: string) => readonly SimPlayer[],
   coach: CoachPlan,
   waiting: Readonly<Record<string, CoachPlan>> = {},
+  formStrengthOf: (player: SimPlayer) => number = () => 0,
 ): MatchSetup {
   const homeClub = matchClubOf(state, fixture.homeId);
   const awayClub = matchClubOf(state, fixture.awayId);
@@ -73,8 +75,10 @@ export function matchSetup(
   const tacticsOf = (clubId: string): Tactics => planOf(clubId)?.tactics ?? { ...DEFAULT_TACTICS, formation: formationOf(state, clubId, squadOf(clubId)) };
   const lineupOf = (clubId: string, tactics: Tactics, lineup = planOf(clubId)?.lineup) =>
     lineup ? [...lineup] : pickMatchLineup(squadOf(clubId), context, tactics.formation, usualStartersOf(state, clubId));
-  const team = (clubId: string, name: string, lineup: readonly SimPlayer[], tactics: Tactics): Team =>
-    engineTeam(name, lineup, playingStrength(state, clubId, context, squadOf(clubId)), tactics);
+  const team = (clubId: string, name: string, lineup: readonly SimPlayer[], tactics: Tactics): Team => {
+    const strength = playingStrength(state, clubId, context, squadOf(clubId));
+    return engineTeam(name, lineup, (p) => strength(p) + formStrengthOf(p), tactics);
+  };
   const homeTactics = tacticsOf(homeClub.id);
   const awayTactics = tacticsOf(awayClub.id);
   const homeLineup = lineupOf(homeClub.id, homeTactics);

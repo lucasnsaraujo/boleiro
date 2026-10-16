@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import type { LiveRound } from "@boleiro/game-client/round/liveRoundOf";
-import { goalsBetween, highlightsBetween, pauseReason, roundAt, scorersUntil } from "./roundAt.js";
+import { calloutsBetween, goalsBetween, highlightsBetween, pauseReason, roundAt, scorersUntil } from "./roundAt.js";
 
 const colours = { primary: "#000000", secondary: "#ffffff" };
 const club = (id: string, shortName: string) => ({ id, shortName, colours, stadium: `Estádio do ${shortName}` });
@@ -147,4 +147,24 @@ test("the highlights of a stretch of minutes are its goals, missed penalties and
     { fixtureId: "ours", kind: "goal", side: "away", clubId: "bahia" },
     { fixtureId: "ours", kind: "red", side: "home", clubId: "vit" },
   ]);
+});
+
+test("the assistant calls out a human coach's player having a bad day, at the minute he notices it, and nobody of the AI's", () => {
+  const playerPlay = (clubId: string, form: number) => ({ clubId, group: "MID" as const, form, shots: [], tackles: [], fouls: [], passes: 40, misplaced: 10 });
+  const play = { starters: ["b8", "b7", "v8"], players: { b8: playerPlay("bahia", -0.8), b7: playerPlay("bahia", 0.4), v8: playerPlay("vit", -0.9) } };
+  const withPlay: LiveRound = { ...round, matches: round.matches.map((m) => (m.fixtureId === "ours" ? { ...m, play } : m)) };
+  expect(highlightsBetween(withPlay, 15, 25).filter((h) => h.kind === "badDay")).toEqual([{ fixtureId: "ours", kind: "badDay", side: "away", clubId: "bahia", playerId: "b8" }]);
+  expect(highlightsBetween(withPlay, 20, 90).filter((h) => h.kind === "badDay")).toEqual([]);
+  expect(highlightsBetween(round, 0, 90).filter((h) => h.kind === "badDay")).toEqual([]);
+});
+
+test("a row calls out one moment a stretch: a red card or missed penalty over the assistant's word, and every player he notices together", () => {
+  const playerPlay = (form: number) => ({ clubId: "bahia", group: "MID" as const, form, shots: [], tackles: [], fouls: [], passes: 40, misplaced: 10 });
+  const play = { starters: ["b8", "b7", "b6"], players: { b8: playerPlay(-0.8), b7: playerPlay(-0.6), b6: playerPlay(0.3) } };
+  const names = { ...round.names, b8: "Caio Alexandre", b7: "Jean Lucas" };
+  const withPlay: LiveRound = { ...round, names, matches: round.matches.map((m) => (m.fixtureId === "ours" ? { ...m, play } : m)) };
+  expect(calloutsBetween(withPlay, 15, 25)).toEqual([{ fixtureId: "ours", kind: "red" }]);
+  const noRed: LiveRound = { ...withPlay, matches: withPlay.matches.map((m) => ({ ...m, events: m.events.filter((e) => e.type !== "card") })) };
+  expect(calloutsBetween(noRed, 15, 25)).toEqual([{ fixtureId: "ours", kind: "badDay", who: "Caio Alexandre, Jean Lucas" }]);
+  expect(calloutsBetween(noRed, 25, 40)).toEqual([]);
 });

@@ -7,6 +7,7 @@ import type { Discipline, PlayerDiscipline } from "../discipline/discipline.js";
 import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import type { MatchSheets } from "../history/recordMatches.js";
 import type { MatchContext } from "../players/effectiveStrength.js";
+import type { MatchPlay } from "./matchPlay.js";
 import type { MatchEvent } from "./matchTimeline.js";
 
 /** One of today's matches as the live round shows it: who plays in which shape, and everything that happens, in order. */
@@ -16,6 +17,8 @@ export type LiveMatch = {
   awayId: string;
   formations: { home: Formation; away: Formation };
   events: MatchEvent[];
+  /** Each player's form and play; missing in a match saved before players had a form of the day. */
+  play?: MatchPlay;
 };
 
 /** What one played match adds to the day: its result, events, players' load, card records and team sheet. */

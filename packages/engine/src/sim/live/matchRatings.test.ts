@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { PositionGroup } from "../../engine/match.js";
-import type { SimPlayer } from "../gameState.js";
+import { advanceDay } from "../advanceDay.js";
+import type { GameState, SimPlayer } from "../gameState.js";
+import { loadNewGame } from "../loadNewGame.js";
 import { freshCondition } from "../players/openingProfile.js";
+import { drawMatchPlay } from "./matchPlay.js";
 import { matchRatings, type RatedSide } from "./matchRatings.js";
 import type { MatchEvent } from "./matchTimeline.js";
+import { startMatchDay } from "./startMatchDay.js";
 
 const player = (id: string, clubId: string, group: PositionGroup): SimPlayer => ({
   id, name: id, group, strength: 70, clubId, wage: 0, contractUntil: "2027-12-31", age: 25, nationalities: ["Brazil"], trait: null, condition: freshCondition("2026-01-01"),
@@ -54,6 +58,11 @@ describe("match ratings", () => {
     expect(ratingOf(ratings, "away-9")).toBeLessThan(ratingOf(ratings, "away-8") ?? -Infinity);
   });
 
+  it("cost a taker the same for a penalty the keeper saves as for one he puts wide", () => {
+    const miss = (isSaved: boolean): MatchEvent[] => [{ type: "penaltyMiss", minute: 30, clubId: "away", playerId: "away-9", keeperId: "home-gk", isSaved }];
+    expect(ratingOf(matchRatings(sides(), miss(true)), "away-9")).toBe(ratingOf(matchRatings(sides(), miss(false)), "away-9"));
+  });
+
   it("rate a substitute who came on, and leave out the ones who stayed on the bench", () => {
     const sub = player("home-sub", "home", "ATT");
     const unused = player("home-unused", "home", "MID");
@@ -79,5 +88,43 @@ describe("match ratings", () => {
     ];
     const ratings = matchRatings(sides([player("home-sub", "home", "DEF")]), events);
     expect(ratingOf(ratings, "home-1")).toBeLessThan(ratingOf(ratings, "home-sub") ?? -Infinity);
+  });
+
+  it("follow what a player did: the same player rates lower on a day he misses and misplaces more", () => {
+    const starters = [...eleven("home"), ...eleven("away")];
+    const mean = (form: number) => {
+      const marks = Array.from({ length: 200 }, (_, i) => ratingOf(matchRatings(sides(), [], drawMatchPlay(1, `f${i}`, starters, [], () => form)), "home-9") ?? 0);
+      return marks.reduce((sum, mark) => sum + mark, 0) / marks.length;
+    };
+    expect(mean(-1)).toBeLessThan(mean(1) - 0.3);
+  });
+
+  it("spread like FotMob's Série A ratings for each position over many seeded matches", () => {
+    // FotMob's single-match ratings of 267 Série A players, by usual position (matchRatings.ts).
+    const fotmob: Record<PositionGroup, { mean: number; sd: number }> = { GK: { mean: 7.11, sd: 1.02 }, DEF: { mean: 6.77, sd: 0.77 }, MID: { mean: 6.96, sd: 0.69 }, ATT: { mean: 6.67, sd: 0.74 } };
+    let state: GameState = loadNewGame(3, { coachClubId: null });
+    const marks: Record<PositionGroup, number[]> = { GK: [], DEF: [], MID: [], ATT: [] };
+    while (marks.GK.length < 400) {
+      const live = startMatchDay(state, {});
+      for (const match of live.matches) {
+        const play = match.play;
+        if (!play) throw new Error("every match kicks off with its play");
+        const players = Object.keys(play.players).flatMap((id) => state.players[id] ?? []);
+        const startersOf = (clubId: string) => players.filter((p) => p.clubId === clubId && play.starters.includes(p.id));
+        const bench = players.filter((p) => !play.starters.includes(p.id));
+        const rated = matchRatings({ home: { clubId: match.homeId, starters: startersOf(match.homeId), bench }, away: { clubId: match.awayId, starters: startersOf(match.awayId), bench } }, match.events, play);
+        for (const { playerId, rating } of [...rated.home, ...rated.away]) {
+          const group = state.players[playerId]?.group;
+          if (group) marks[group].push(rating);
+        }
+      }
+      state = advanceDay(state, {}).state;
+    }
+    for (const group of ["GK", "DEF", "MID", "ATT"] as const) {
+      const mean = marks[group].reduce((sum, mark) => sum + mark, 0) / marks[group].length;
+      const sd = Math.sqrt(marks[group].reduce((sum, mark) => sum + (mark - mean) ** 2, 0) / marks[group].length);
+      expect(Math.abs(mean - fotmob[group].mean), group).toBeLessThan(0.15);
+      expect(Math.abs(sd - fotmob[group].sd), group).toBeLessThan(0.15);
+    }
   });
 });

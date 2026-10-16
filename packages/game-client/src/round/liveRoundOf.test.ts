@@ -2,8 +2,9 @@ import { beforeAll, expect, test } from "vitest";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
 import { createEngineSession } from "../engine/createEngineSession.js";
 import type { GameState } from "@boleiro/engine/sim/gameState";
+import { finishMatchDay } from "@boleiro/engine/sim/live/finishMatchDay";
 import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
-import { liveRoundOf, type LiveRound } from "./liveRoundOf.js";
+import { liveRoundOf, playerStatsOf, type LiveRound } from "./liveRoundOf.js";
 
 const CLUB = "flamengo-rj";
 // Enough play-ons to reach the coach's first match day.
@@ -82,6 +83,24 @@ test("the coach's side is asked about its red cards and injuries, and shows who 
   expect(plan.squad.find((p) => p.id === shootout?.kickers.at(-1))?.group).toBe("GK");
 });
 
+test("every match of the round shows each player's numbers as they stand at a minute, the substitute's from when he came on", () => {
+  for (const match of kickOff.matches) {
+    const half = playerStatsOf(match, 45);
+    const full = playerStatsOf(match, 90);
+    expect(Object.keys(half).length).toBeGreaterThanOrEqual(22);
+    for (const [id, stats] of Object.entries(half)) {
+      expect(stats.minutes).toBeLessThanOrEqual(45);
+      expect(full[id]?.passes).toBeGreaterThanOrEqual(stats.passes);
+      expect(full[id]?.shots).toBeGreaterThanOrEqual(stats.shots);
+    }
+  }
+  const coachMatch = changed.matches.find((m) => m.fixtureId === changed.coach?.fixtureId);
+  if (!coachMatch) throw new Error("the coach plays today");
+  expect(playerStatsOf(coachMatch, 60)[onId]).toBeUndefined();
+  expect(playerStatsOf(coachMatch, 90)[onId]?.minutes).toBe(30);
+  expect(playerStatsOf({ ...coachMatch, play: undefined }, 90)).toEqual({});
+});
+
 test("only the competitions a human coach's club plays in open the round; the others go under Outras ligas", () => {
   const coachCompetition = kickOff.matches.find((m) => m.fixtureId === kickOff.coach?.fixtureId)?.competitionId;
   expect(kickOff.competitions.find((c) => c.id === coachCompetition)?.hasHumanCoach).toBe(true);
@@ -102,4 +121,16 @@ test("a competition the coach's club reached from another cup, outside its entry
   const dropped = { ...state, competitions: { ...state.competitions, [competition.id]: { ...competition, clubIds: competition.clubIds.filter((id) => id !== CLUB) } } };
   const round = liveRoundOf(startMatchDay(dropped, {}), 0);
   expect(round.competitions.find((c) => c.id === competition.id)?.hasHumanCoach).toBe(true);
+});
+
+test("a round saved before players had a form of the day still rates everyone and ends as it would have", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 4, choices: { coachClubId: CLUB } });
+  for (let step = 0; step < MAX_STEPS && session.apply({ type: "playToMatchDay" }).stop !== "matchDay"; step++);
+  const live = startMatchDay(session.read(KEYS), {});
+  const old = { ...live, matches: live.matches.map((match) => ({ ...match, play: undefined })) };
+  const round = liveRoundOf(old, 90);
+  expect(round.ratings?.home.length).toBeGreaterThanOrEqual(11);
+  expect(round.matches.every((m) => m.play === undefined)).toBe(true);
+  expect(finishMatchDay(old)).toEqual(finishMatchDay(live));
 });
