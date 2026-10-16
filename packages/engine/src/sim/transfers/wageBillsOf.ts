@@ -1,9 +1,10 @@
 import type { GameState } from "../gameState.js";
+import { squadsOfGame } from "../players/squadsByClub.js";
 
 /** Each club's monthly wage bill in BRL; a loaned player's wage is split with the club that lent him. */
 export function wageBillsOf(state: Pick<GameState, "players" | "market">): Map<string, number> {
   const bills = new Map<string, number>();
-  for (const player of Object.values(state.players)) bills.set(player.clubId, (bills.get(player.clubId) ?? 0) + player.wage);
+  for (const [clubId, squad] of squadsOfGame(state)) bills.set(clubId, squad.reduce((sum, player) => sum + player.wage, 0));
   return splitLoanWages(state, bills);
 }
 

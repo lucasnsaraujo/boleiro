@@ -4,7 +4,7 @@ import { isHumanClub } from "../coach/humanCoaches.js";
 import { divisionOf, tierOf } from "../finances/tierOf.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { academyPlayer, groupsToFill, MIN_SQUAD, professionalOf, readyProspect } from "../players/developPlayers.js";
-import { squadsByClub } from "../players/squadsByClub.js";
+import { squadsOfGame } from "../players/squadsByClub.js";
 import { contractEnd } from "../transfers/expireContracts.js";
 import { movePlayer, openDraft } from "../transfers/movePlayer.js";
 import { REPLACEMENT_BAND, squadNeeds } from "../transfers/squadNeeds.js";
@@ -31,7 +31,7 @@ const inventedPlayer = (kid: Omit<SimPlayer, "wage">, squad: readonly SimPlayer[
  */
 export function fillShortSquads(state: GameState): { state: GameState; events: (SquadToppedUp | PlayerMoved)[] } {
   if (!state.youth) return { state, events: [] };
-  const squads = squadsByClub(state.players);
+  const squads = squadsOfGame(state);
   const short = Object.values(state.clubs).filter((club) => (squads.get(club.id)?.length ?? 0) < MIN_SQUAD);
   if (!short.length) return { state, events: [] };
   const academies = new Map<string, Prospect[]>();

@@ -7,7 +7,7 @@ import { IDOL_APPS, IDOL_GOALS } from "../history/clubHistory.js";
 import { clubMood } from "../morale/clubMood.js";
 import { isInjured } from "../players/isInjured.js";
 import { pickMatchLineup } from "../players/pickMatchLineup.js";
-import { squadsByClub } from "../players/squadsByClub.js";
+import { squadsOfGame } from "../players/squadsByClub.js";
 import { formationOf, usualStartersOf } from "../players/usualLineups.js";
 
 /**
@@ -253,18 +253,11 @@ export function chemistryOf(state: GameState, clubId: string): Chemistry {
   let byClub = known.get(state);
   if (!byClub) known.set(state, (byClub = new Map()));
   let chemistry = byClub.get(clubId);
-  if (!chemistry) byClub.set(clubId, (chemistry = workOut(state, clubId, squadOf(state, clubId))));
+  if (!chemistry) byClub.set(clubId, (chemistry = workOut(state, clubId, squadsOfGame(state).get(clubId) ?? [])));
   return chemistry;
 }
 
 const known = new WeakMap<GameState, Map<string, Chemistry>>();
-const squads = new WeakMap<GameState["players"], Map<string, SimPlayer[]>>();
-
-function squadOf(state: GameState, clubId: string): SimPlayer[] {
-  let byClub = squads.get(state.players);
-  if (!byClub) squads.set(state.players, (byClub = squadsByClub(state.players)));
-  return byClub.get(clubId) ?? [];
-}
 
 const NEUTRAL: Omit<Chemistry, "formation"> = { value: NEUTRAL_CHEMISTRY, was: NEUTRAL_CHEMISTRY, reasons: [], eleven: [], captain: null, candidates: [], links: [] };
 
