@@ -10,9 +10,10 @@ import { formatMonthYear } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import { championRoll, clubPast, coachCareer, rollKeys, scorerRoll, type CareerStint } from "../history/historySelectors.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
+import { useMatchFile } from "../matchPage/MatchFile.js";
 import "./history.css";
 
-const HISTORY_KEYS = ["season", "coachClubId", "clubs", "history", "coach"] as const;
+const HISTORY_KEYS = ["season", "coachClubId", "clubs", "history", "coach", "fixtures"] as const;
 type HistoryState = Pick<GameState, (typeof HISTORY_KEYS)[number]>;
 type Clubs = Readonly<Record<string, Club>>;
 
@@ -93,7 +94,15 @@ export function History() {
   );
 }
 
+/** The fixture of a record match, while its season's games are still kept: this season's only. */
+function recordFixtureId(state: HistoryState, clubId: string, mark: MatchMark | null): string | null {
+  if (!mark || mark.season !== state.season) return null;
+  const [homeId, awayId] = mark.home ? [clubId, mark.opponentId] : [mark.opponentId, clubId];
+  return state.fixtures.find((f) => f.result && f.date === mark.date && f.homeId === homeId && f.awayId === awayId)?.id ?? null;
+}
+
 function ClubPanel({ state, clubId }: { state: HistoryState; clubId: string }) {
+  const matchFile = useMatchFile();
   const club = state.clubs[clubId];
   const past = clubPast(state, clubId);
   const titleCount = past.titles.reduce((sum, t) => sum + t.seasons.length, 0);
@@ -155,8 +164,8 @@ function ClubPanel({ state, clubId }: { state: HistoryState; clubId: string }) {
               Recordes
             </h3>
             <dl className="history-records">
-              <RecordLine term="Maior vitória" mark={matchText(past.records.biggestWin, state.clubs)} />
-              <RecordLine term="Maior derrota" mark={matchText(past.records.biggestLoss, state.clubs)} />
+              <RecordLine term="Maior vitória" mark={matchText(past.records.biggestWin, state.clubs)} matchRef={recordFixtureId(state, clubId, past.records.biggestWin)} onOpen={matchFile.open} />
+              <RecordLine term="Maior derrota" mark={matchText(past.records.biggestLoss, state.clubs)} matchRef={recordFixtureId(state, clubId, past.records.biggestLoss)} onOpen={matchFile.open} />
               <RecordLine term="Maior público" mark={crowdText(past.records.biggestCrowd, state.clubs)} />
               <RecordLine term="Maior venda" mark={transferText(past.records.recordSale, state.clubs, "para")} />
               <RecordLine term="Maior contratação" mark={transferText(past.records.recordSigning, state.clubs, "de")} />
@@ -183,18 +192,27 @@ function ClubPanel({ state, clubId }: { state: HistoryState; clubId: string }) {
           </section>
         </div>
       </div>
+      {matchFile.file}
     </>
   );
 }
 
 type RecordText = { main: string; detail: string } | null;
 
-function RecordLine({ term, mark }: { term: string; mark: RecordText }) {
+/** A record's line; a record match still on this season's calendar opens its ficha. */
+function RecordLine({ term, mark, matchRef = null, onOpen }: { term: string; mark: RecordText; matchRef?: string | null; onOpen?: (matchRef: string) => void }) {
+  const main = mark ? mark.main : "–";
   return (
     <div>
       <dt>{term}</dt>
       <dd>
-        {mark ? mark.main : "–"}
+        {matchRef && onOpen ? (
+          <button type="button" className="history-record-open" aria-label={`${term}: ${main}, ficha do jogo`} onClick={() => onOpen(matchRef)}>
+            {main}
+          </button>
+        ) : (
+          main
+        )}
         {mark && <small>{mark.detail}</small>}
       </dd>
     </div>

@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider } from "react-router";
@@ -49,4 +49,17 @@ test("a career coach with offers on the table goes from his career to the offers
   expect(screen.queryByRole("tab", { name: "Clube" })).toBeNull();
   await userEvent.click(screen.getByRole("link", { name: "Ver propostas" }));
   expect(await screen.findByText("Propostas abertas")).toBeTruthy();
+});
+
+test("a record win of this season opens its match's ficha", async () => {
+  const given = await services("bahia-ba");
+  const { date } = await given.engine.read(["date"]);
+  const days = Math.round((Date.parse("2026-04-15") - Date.parse(date)) / 86_400_000);
+  await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+  openHistory(given);
+  const record = await screen.findByRole("button", { name: /^Maior vitória: .*, ficha do jogo$/ });
+  await userEvent.click(record);
+  const panel = await screen.findByRole("dialog", { name: "Ficha do jogo" });
+  expect(within(panel).getByText("Encerrado")).toBeTruthy();
+  expect(within(panel).getByLabelText(/^Bahia \d+ x \d+ |^.+ \d+ x \d+ Bahia$/)).toBeTruthy();
 });
