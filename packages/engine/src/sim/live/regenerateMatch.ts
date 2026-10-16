@@ -30,6 +30,8 @@ const MINUTES_STREAM_SALT = 0x5e7e11;
 const CARDS_STREAM_SALT = 0xca7d5;
 // A form drawn without the day's mood and load: a neutral morale and a rested player.
 const NEUTRAL_PULL = { morale: 50, fatigue: 5 };
+// Far beyond any player's tiredness (fatigue up to 100, plus age).
+const FRESH_SUBSTITUTE = 1_000;
 
 /**
  * The cards a side really got (`count`), given to its players: each yellow to a different player at
@@ -78,6 +80,7 @@ export function regenerateMatch(state: GameState, fixture: Fixture & { result: M
   const setup = matchSetup(state, fixture, squadOf, { lineup: null, tactics: state.coach.tactics });
   const isFit = (p: SimPlayer) => !isInjured(p, fixture.date);
   const benches = { home: aiBench(squadOf(fixture.homeId), setup.homeLineup, isFit), away: aiBench(squadOf(fixture.awayId), setup.awayLineup, isFit) };
+  const starters = new Set([...setup.homeLineup, ...setup.awayLineup].map((p) => p.id));
   const competition = state.competitions[fixture.competitionId];
   const rates: CardRates = competition ? CARD_RATES[cardCompetitionOf(competition)] : CARD_RATES.A;
   const cardsRandom = keyedStream(state.seed ^ CARDS_STREAM_SALT, fixture.id);
@@ -95,7 +98,8 @@ export function regenerateMatch(state: GameState, fixture: Fixture & { result: M
       aiSides: { home: true, away: true },
       penaltyTakers: { home: null, away: null },
       strength: (p) => p.strength,
-      tiredness: (p) => tirednessOn(p, fixture.date),
+      // A substitute counts as fresher than any starter, so a side with no fatigue on record (a club abroad) never takes off the man it just sent on.
+      tiredness: (p) => tirednessOn(p, fixture.date) - (starters.has(p.id) ? 0 : FRESH_SUBSTITUTE),
       goals: { homeGoals: fixture.result.homeGoals, awayGoals: fixture.result.awayGoals },
       bookings,
       injuries: new Map(),

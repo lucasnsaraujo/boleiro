@@ -36,6 +36,24 @@ describe("a played match told again from its fixture's seed", () => {
     expect(regenerateMatch(played, first).events).not.toEqual(regenerateMatch(played, { ...second, homeId: first.homeId, awayId: first.awayId }).events);
   });
 
+  it("takes off a substitute in the change it sent him on in only when every starter on the pitch still has a part to play later", () => {
+    for (const fixture of fixtures) {
+      const story = regenerateMatch(played, fixture);
+      const { events } = story;
+      const subs = events.flatMap((e) => (e.type === "substitution" ? [e] : []));
+      const cameOnAt = new Map(subs.map((e) => [e.playerId, e.minute]));
+      const actsAfter = (playerId: string, minute: number) =>
+        events.some((e) => e.minute > minute && "playerId" in e && (e.playerId === playerId || (e.type === "goal" && e.assistId === playerId)));
+      for (const sub of subs.filter((e) => cameOnAt.get(e.offId) === e.minute)) {
+        const side = sub.clubId === fixture.homeId ? "home" : "away";
+        const free = onPitchAt(story.starters[side], story.benches[side], events, sub.clubId, sub.minute).filter(
+          (p) => p.group !== "GK" && !cameOnAt.has(p.id) && !actsAfter(p.id, sub.minute),
+        );
+        expect(free.map((p) => p.id)).toEqual([]);
+      }
+    }
+  });
+
   it("credits each goal to a player on the pitch for the scoring side as its minute begins, and lines up eleven a side", () => {
     for (const fixture of fixtures) {
       const story = regenerateMatch(played, fixture);
