@@ -33,7 +33,8 @@ import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
 import { newspaperEditions, newspaperOf, type Edition, type EditionTitle } from "../newspaper/roundNewspaper.js";
 import { readStoredSave, splitGame, writeSessionSave, writeSessionShards, type SaveShards, type SeatParts, type SplitGame, type StoredSave } from "./sessionSave.js";
 
-export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode" | "stateChampionships" | "midSeasonWindow" | "hotSeat" | "marketClockSeconds" | "formats">;
+/** What a new game is started with; the app's new-game screen leaves `season` out, for the first season. */
+export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode" | "stateChampionships" | "midSeasonWindow" | "hotSeat" | "marketClockSeconds" | "formats" | "season">;
 export type GameSummary = Pick<GameState, "date" | "season" | "coachClubId">;
 export type AdvanceResult = { date: IsoDate; events: DayEvent[] };
 export type PlayResult = { date: IsoDate; stop: StopReason; daysPlayed: number };

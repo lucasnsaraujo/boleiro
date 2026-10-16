@@ -4,9 +4,7 @@ import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, expect, test } from "vitest";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
-import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
-import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { Tables } from "./Tables.js";
 import { optionNames, pickOption } from "../controls/pickOption.js";
@@ -21,16 +19,10 @@ afterEach(() => {
 // FIFA's first Club World Cup after 2025, which a game started that season plays.
 const CLUB_WORLD_CUP_SEASON = 2029;
 
-/** The engine with a new game, in another first season than the app's through a save loaded back. */
 async function services(coachClubId: string | null = "bahia-ba", season?: number): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  const choices = { coachClubId, careerMode: coachClubId === null };
-  await engine.apply({ type: "newGame", seed: 7, choices });
-  if (season !== undefined) {
-    const save: object = JSON.parse(await engine.save());
-    await engine.apply({ type: "load", save: JSON.stringify({ ...save, game: newGameFromFiles(7, { ...choices, season }, bundledGameFiles) }) });
-  }
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId, careerMode: coachClubId === null, ...(season === undefined ? {} : { season }) } });
   return { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
 }
 

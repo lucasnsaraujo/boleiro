@@ -5,20 +5,25 @@ const MAX_PRESSES = 12;
 // FIFA's first Club World Cup after 2025; the game plays one every four years from it.
 const EDITION = 2029;
 
-/** Plays every day before `date` in the worker with no decisions, through the e2e build's engine hook, a season at a time. */
+/** Plays every day before `date` in the worker with no decisions, through the e2e build's engine hook. */
 async function playDaysBefore(page: Page, date: string) {
   await page.evaluate(async (until) => {
     const engine = window.boleiroEngine;
     if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
-    for (;;) {
-      const { date: today } = await engine.read(["date"]);
-      const yearEnd = `${today.slice(0, 4)}-12-31`;
-      const stop = until < yearEnd ? until : yearEnd;
-      const days = Math.round((Date.parse(stop) - Date.parse(today)) / 86_400_000) + (stop === until ? 0 : 1);
-      if (days <= 0) return;
-      await engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
-    }
+    const { date: today } = await engine.read(["date"]);
+    const days = Math.round((Date.parse(until) - Date.parse(today)) / 86_400_000);
+    await engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
   }, date);
+}
+
+/** Starts the coach's game over in `season` from the same world, through the e2e build's engine hook. */
+async function startOverIn(page: Page, season: number) {
+  await page.evaluate(async (first) => {
+    const engine = window.boleiroEngine;
+    if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
+    const { seed, coachClubId } = await engine.read(["seed", "coachClubId"]);
+    await engine.apply({ type: "newGame", seed, choices: { coachClubId, season: first } });
+  }, season);
 }
 
 test("a career at an MLS club plays its first round live, then finds MLS's two conferences on the tables", async ({ page }) => {
@@ -47,11 +52,11 @@ test("a career at an MLS club plays its first round live, then finds MLS's two c
 });
 
 test("Flamengo, the 2025 Libertadores champion, finds the 2029 Club World Cup on its June calendar, its eight groups on the tables and then its bracket", async ({ page }) => {
-  test.setTimeout(15 * 60_000);
+  test.setTimeout(10 * 60_000);
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Filipe" });
-  // The seasons up to the edition's are played in the worker.
-  await playDaysBefore(page, `${EDITION}-01-02`);
+  // The app starts every game in 2026, so the game starts over in the edition's season.
+  await startOverIn(page, EDITION);
 
   await bar(page).getByRole("link", { name: "Agenda" }).click();
   await page.getByRole("group", { name: "Meses" }).getByRole("button", { name: /^Junho/ }).click();
