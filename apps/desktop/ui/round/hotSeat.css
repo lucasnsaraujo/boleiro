@@ -125,26 +125,6 @@
   cursor: pointer;
 }
 
-/* Side by side, the coach the arrows are on gets a yellow line under his board. */
-.live-seats:not(.is-focus) .seat[aria-current="true"]::after {
-  content: "";
-  position: absolute;
-  left: 18%;
-  right: 18%;
-  bottom: -6px;
-  height: 3px;
-  border-radius: 3px;
-  background: var(--yellow);
-  animation: seat-mark 360ms var(--e-out) both;
-}
-
-@keyframes seat-mark {
-  from {
-    opacity: 0;
-    transform: scaleX(0.3);
-  }
-}
-
 .seat-arrow {
   flex: none;
   align-self: center;
@@ -204,9 +184,5 @@
   .is-focus .seat,
   .seat-dots b {
     transition: none !important;
-  }
-
-  .live-seats .seat::after {
-    animation: none;
   }
 }
