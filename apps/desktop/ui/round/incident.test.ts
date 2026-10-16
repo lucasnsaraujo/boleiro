@@ -33,6 +33,7 @@ const coach: CoachSide = {
   benchIds: squad.slice(11).map((p) => p.id),
   squad,
   tactics: { formation: "4-4-2", posture: "balanced", penaltyTakerId: null },
+  rivalFormation: "4-4-2",
   lastChangeMinute: 0,
   incidentHandling: "askCoach", shootout: { kickers: [], isOverruled: false },
 };

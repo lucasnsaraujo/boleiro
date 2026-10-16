@@ -189,3 +189,28 @@ test("when only one human coach plays today, his lineup opens without steps to o
   expect(within(sheet).getByText(/Flamengo/)).toBeTruthy();
   expect(within(sheet).queryByRole("group", { name: "Jogos dos técnicos" })).toBeNull();
 });
+
+test("each human coach's match plays on a board of its own, and ← → move the focus through them in turn order, which Space then opens", async () => {
+  const { given } = await bothCoachesPlaying();
+  openRound(given);
+  const band = await screen.findByRole("region", { name: "Seu jogo" });
+  const board = (coach: string) => within(band).getByRole("region", { name: new RegExp(`^${coach}: `) });
+  expect(board(ANA.name).getAttribute("aria-current")).toBe("true");
+  expect(board(BRUNO.name).getAttribute("aria-current")).toBeNull();
+  expect(board(BRUNO.name).getAttribute("aria-label")).toMatch(/Palmeiras/);
+
+  fireEvent.keyDown(window, { key: "ArrowRight" });
+  expect(board(BRUNO.name).getAttribute("aria-current")).toBe("true");
+  fireEvent.keyDown(window, { key: "ArrowRight" });
+  expect(board(ANA.name).getAttribute("aria-current")).toBe("true");
+  fireEvent.keyDown(window, { key: "ArrowLeft" });
+  expect(board(BRUNO.name).getAttribute("aria-current")).toBe("true");
+
+  await pressSpace();
+  expect(whoseMatch(await lineup())).toBe(BRUNO.name);
+  // Inside the window the arrows are the window's: they step its match, and the board in focus follows.
+  fireEvent.keyDown(window, { key: "ArrowRight" });
+  await showsMatchOf(ANA.name);
+  await userEvent.click(within(await lineup()).getByRole("button", { name: "Voltar ao jogo" }));
+  expect(board(ANA.name).getAttribute("aria-current")).toBe("true");
+});

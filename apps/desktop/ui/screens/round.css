@@ -1047,3 +1047,118 @@
     opacity: 1;
   }
 }
+
+/* The live pitch: the band grows by 74 px so the board's goals and boxes sit clear of the score stickers. */
+.live-cover.has-pitch {
+  height: 296px;
+}
+
+.live-cover.has-pitch::before,
+.live-cover.has-pitch::after {
+  display: none;
+}
+
+.has-pitch .live-mid {
+  position: relative;
+}
+
+.has-pitch .live-duel,
+.has-pitch .live-evs {
+  position: relative;
+  z-index: 1;
+}
+
+.live-pitch {
+  position: absolute;
+  z-index: 0;
+  left: -8px;
+  right: -8px;
+  top: 44px;
+  height: 192px;
+}
+
+.live-pitch .lp {
+  height: 100%;
+}
+
+/* The stickers float over the board: a deeper shadow lifts them off it. */
+.has-pitch .live-tm {
+  box-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.12),
+    0 14px 22px -10px rgba(0, 0, 0, 0.55);
+}
+
+.has-pitch .gol-sweep {
+  z-index: 1;
+}
+
+/*
+ * While the ball is in play the stickers shrink away and a slim scoreboard sits over the stands, above the far
+ * touchline; a stop, a goal or the whistle drops them back, slapped in like at kick-off.
+ */
+.has-pitch .live-duel {
+  transform-origin: 50% 0;
+  transition:
+    transform 640ms var(--e-slap),
+    opacity 180ms linear;
+}
+
+/* At a goal they wait for the ball to reach the net before they drop. */
+.has-pitch .live-mid.is-goal .live-duel,
+.has-pitch .live-mid.is-goal .live-evs {
+  transition-delay: 420ms;
+}
+
+.has-pitch .live-mid.is-lifted .live-duel {
+  transform: translateY(-10px) scale(0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 520ms var(--e-in-out),
+    opacity 200ms linear 220ms;
+}
+
+.has-pitch .live-evs {
+  transition: opacity 240ms var(--e-out);
+}
+
+.has-pitch .live-mid.is-lifted .live-evs {
+  opacity: 0;
+}
+
+.live-mini {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  z-index: 2;
+  padding: 3px 4px 3px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  white-space: nowrap;
+  opacity: 0;
+  /* One transform, centring included: the build's minifier drops a translate set beside a transform. */
+  transform: translateX(-50%) translateY(26px) scale(1.7);
+  pointer-events: none;
+  transition:
+    transform 360ms var(--e-in-out),
+    opacity 140ms linear;
+}
+
+.live-mid.is-lifted .live-mini {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+  transition:
+    transform 560ms var(--e-slap) 180ms,
+    opacity 200ms linear 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .has-pitch .live-duel,
+  .has-pitch .live-mid.is-lifted .live-duel,
+  .live-mini,
+  .live-mid.is-lifted .live-mini {
+    transform: translateX(-50%);
+    transition: opacity 200ms linear;
+  }
+}

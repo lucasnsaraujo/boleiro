@@ -155,6 +155,20 @@ function spellsOf(play: MatchPlay, events: readonly MatchEvent[]): Map<string, {
   return spells;
 }
 
+/** A shot that doesn't go in: who took it, for which club, at what minute, and whether it was on target. */
+export type MissedShot = Shot & { playerId: string; clubId: string };
+
+/** Every shot of the match that doesn't go in, taken while its player was on the pitch, in minute order. */
+export function missedShotsOf(play: MatchPlay, events: readonly MatchEvent[]): MissedShot[] {
+  const spells = spellsOf(play, events);
+  return [...spells]
+    .flatMap(([playerId, spell]) => {
+      const own = play.players[playerId];
+      return (own?.shots ?? []).filter((s) => spell.from < s.minute && s.minute <= spell.to).map((s) => ({ ...s, playerId, clubId: own?.clubId ?? "" }));
+    })
+    .sort((a, b) => a.minute - b.minute);
+}
+
 const emptyStats = (own: PlayerPlay): PlayerStats => ({
   clubId: own.clubId,
   group: own.group,
