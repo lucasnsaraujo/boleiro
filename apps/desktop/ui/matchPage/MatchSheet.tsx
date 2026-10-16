@@ -225,9 +225,11 @@ function Incidents({ page, view }: TabProps) {
           <ol>
             {half.events.map((e, index) => (
               <li key={`${e.minute}-${e.kind}-${e.playerId}-${index}`} className={`${e.side} k-${e.kind}`}>
+                {/* Each side reads outward from the minute: the home side's mark sits next to it on the right, the away side's on the left. */}
                 <span className="who">
-                  <EventMark event={e} />
+                  {e.side === "away" && <EventMark event={e} />}
                   <b>{name(e.playerId)}</b> <EventNote event={e} names={page.names} />
+                  {e.side === "home" && <EventMark event={e} />}
                 </span>
                 <span className="mn">{e.minute}'</span>
               </li>

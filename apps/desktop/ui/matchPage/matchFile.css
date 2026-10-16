@@ -1050,11 +1050,11 @@
 }
 
 .mf-incidents li.k-goal.home {
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--home) 22%, transparent));
+  background: linear-gradient(90deg, transparent 8%, color-mix(in srgb, var(--home) 24%, transparent) 50%, transparent 50%);
 }
 
 .mf-incidents li.k-goal.away {
-  background: linear-gradient(270deg, transparent, color-mix(in srgb, var(--away) 22%, transparent));
+  background: linear-gradient(270deg, transparent 8%, color-mix(in srgb, var(--away) 24%, transparent) 50%, transparent 50%);
 }
 
 .mf-incidents .who {
@@ -1076,7 +1076,6 @@
 
 .mf-incidents .home .who {
   grid-column: 1;
-  flex-direction: row-reverse;
   justify-self: end;
 }
 
