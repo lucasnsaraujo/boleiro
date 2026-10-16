@@ -1,5 +1,6 @@
 import { randomStream } from "../../engine/random.js";
-import type { IsoDate } from "../gameState.js";
+import type { IsoDate, LeagueFormatId } from "../gameState.js";
+import { LEAGUE_FORMATS } from "../leagueFormats.js";
 import { continentalPlaces } from "./continentalPlaces.js";
 import { pyramidMoves, type LevelExits } from "./pyramidMoves.js";
 import { cupFinal, openCup, playCupDay, type ResultOnlyCup } from "./resultOnlyCup.js";
@@ -144,7 +145,9 @@ export function endWorldSeason(world: World, season: number, unified?: UnifiedDa
   return Object.fromEntries(Object.entries(world).map(([id, country]) => [id, country.structure.rollover || country.isFullTier ? country : endCountrySeason(country, season, unified)]));
 }
 
-/** The most rounds any league of these pyramids plays, which the unified grid must hold. */
-export function mostRounds(levels: readonly { clubCount: number; legs: 1 | 2 }[]): number {
-  return Math.max(0, ...levels.map(({ clubCount, legs }) => roundsOf(clubCount, legs)));
+/** The most match days any league of these pyramids plays, which the unified grid must hold: a round robin's rounds, or all the stages of the format a full-tier level plays. */
+export function mostRounds(levels: readonly { clubCount: number; legs: 1 | 2; format?: LeagueFormatId }[]): number {
+  const daysOf = ({ clubCount, legs, format }: (typeof levels)[number]) =>
+    format ? LEAGUE_FORMATS[format].stageDateCounts(clubCount, legs).reduce((sum, days) => sum + days, 0) : roundsOf(clubCount, legs);
+  return Math.max(0, ...levels.map(daysOf));
 }

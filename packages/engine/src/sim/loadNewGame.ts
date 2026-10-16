@@ -1,11 +1,12 @@
 import { loadPack, type DataPack } from "@boleiro/data/dataPack";
 import type { GameState } from "./gameState.js";
 import { newGame, type CountryStart, type NewGameOptions } from "./newGame.js";
+import type { Guests } from "./world/guests.js";
 
 type DataOptions = keyof DataPack;
 
 /** The decoded data pack (`packages/data/pack/`), as the browser bundles it or Node reads it, and the world a new game plays around Brazil. */
-export type GameFiles = DataPack & { world?: readonly CountryStart[] };
+export type GameFiles = DataPack & { world?: readonly CountryStart[]; guests?: Guests };
 
 export function loadNewGame(seed: number, options: Omit<NewGameOptions, DataOptions>): GameState {
   return newGame(seed, { ...options, ...loadPack() });

@@ -39,6 +39,15 @@ describe("a match's officials", () => {
     expect(matchOfficials(1, abroad("gb-eng", 1), fixture(0)).var).toBeNull();
   });
 
+  it("brings VAR to the Saudi, MLS and Liga MX top flights, which play with it, though the data names none of their referees", () => {
+    const topFlight = (country: string): Competition => ({ ...base, stages: [], kind: "league", division: null, format: "round-robin", abroad: { country, level: 0, name: "x", promoted: 0, relegated: 0 } });
+    for (const country of ["sa", "us", "mx"]) {
+      const officials = matchOfficials(1, topFlight(country), fixture(0));
+      expect(officials.referee).toBeNull();
+      expect(officials.var).toBe("europe");
+    }
+  });
+
   it("names a real referee of the competition, the same one for the same seed, and none where the data has none", () => {
     const names = new Set(REFEREE_ROSTER["br-A"]?.map((r) => r.name));
     const fixtures = Array.from({ length: 200 }, (_, i) => fixture(0, `f${i}`));

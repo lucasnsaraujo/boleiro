@@ -16,10 +16,13 @@ afterEach(() => {
   for (const close of closers.splice(0)) close();
 });
 
-async function services(coachClubId: string | null = "bahia-ba", seed = 7): Promise<Services> {
+// FIFA's first Club World Cup after 2025, which a game started that season plays.
+const CLUB_WORLD_CUP_SEASON = 2029;
+
+async function services(coachClubId: string | null = "bahia-ba", season?: number, seed = 7): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.apply({ type: "newGame", seed, choices: { coachClubId, careerMode: coachClubId === null } });
+  await engine.apply({ type: "newGame", seed, choices: { coachClubId, careerMode: coachClubId === null, ...(season === undefined ? {} : { season }) } });
   return { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
 }
 
@@ -80,8 +83,8 @@ test("a coach without a club waits for offers from the tables instead of playing
   expect(screen.queryByRole("button", { name: "Jogar rodada" })).toBeNull();
 });
 
-test("every national division has a tab, next to the cup, CONMEBOL's cups and the club's state championship", async () => {
-  openTables(await services());
+test("every national division has a tab, next to the cup, CONMEBOL's cups, the Club World Cup in its year and the club's state championship", async () => {
+  openTables(await services("bahia-ba", CLUB_WORLD_CUP_SEASON));
   await screen.findByRole("tab", { name: "Baiano" });
   expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
     "Série A",
@@ -91,6 +94,7 @@ test("every national division has a tab, next to the cup, CONMEBOL's cups and th
     "Copa do Brasil",
     "Libertadores",
     "Sul-Americana",
+    "Mundial de Clubes",
     "Baiano",
     "Outras ligas",
   ]);
@@ -203,7 +207,7 @@ test("the round stepper shows the table as it stood after an earlier round", asy
 });
 
 test("a played cup tie opens its last game's ficha", async () => {
-  const given = await services("bahia-ba", 8);
+  const given = await services("bahia-ba", undefined, 8);
   const { date } = await given.engine.read(["date"]);
   const days = Math.round((Date.parse("2026-04-01") - Date.parse(date)) / 86_400_000);
   await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
@@ -233,4 +237,17 @@ test("a played tie on the Libertadores bracket opens its last game's ficha", asy
   await userEvent.click(tie);
   const panel = await screen.findByRole("dialog", { name: "Ficha do jogo" });
   expect(within(panel).getByLabelText(new RegExp(`^${home} \\d+ x \\d+ ${away}$`))).toBeTruthy();
+});
+
+test("a Club World Cup semi-final on the bracket is one match, not a first leg", async () => {
+  const given = await services("flamengo-rj", CLUB_WORLD_CUP_SEASON);
+  const { date } = await given.engine.read(["date"]);
+  const days = Math.round((Date.parse("2029-07-13") - Date.parse(date)) / 86_400_000);
+  await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+  openTables(given);
+  await userEvent.click(await screen.findByRole("tab", { name: "Mundial de Clubes" }));
+  await userEvent.click(within(screen.getByRole("group", { name: "Fases" })).getByRole("button", { name: "Final" }));
+  const bracket = screen.getByRole("group", { name: "Mundial de Clubes, mata-mata" });
+  expect(within(bracket).getAllByText(/^Jogo único/)).toHaveLength(2);
+  expect(within(bracket).queryByText(/^Ida/)).toBeNull();
 });
