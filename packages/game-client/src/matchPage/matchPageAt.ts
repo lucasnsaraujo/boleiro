@@ -1,16 +1,27 @@
 import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
 import { playerStatsAt, type PlayerStats } from "@boleiro/engine/sim/live/matchPlay";
 import { FULL_TIME, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
+import type { VarDecision, WrongCallKind } from "@boleiro/engine/sim/referees/refereeCalls";
 import type { Side } from "../round/liveRoundOf.js";
 import type { MatchPage } from "./matchPageOf.js";
 
-export type PageEventKind = "goal" | "penaltyMiss" | "yellow" | "red" | "injury" | "substitution";
+export type PageEventKind = "goal" | "penaltyMiss" | "yellow" | "red" | "injury" | "substitution" | "varCheck" | "wrongCall";
 
 /**
  * Something a player did, as the page lists it: `otherId` is who set a goal up, who went off for a
- * substitute, or the keeper who faced a penalty.
+ * substitute, or the keeper who faced a penalty; a VAR check carries its `decision`, a wrong call that stood its `call`.
  */
-export type PageEvent = { kind: PageEventKind; minute: number; side: Side; playerId: string; otherId?: string; goalKind?: GoalKind; isSaved?: boolean };
+export type PageEvent = {
+  kind: PageEventKind;
+  minute: number;
+  side: Side;
+  playerId: string;
+  otherId?: string;
+  goalKind?: GoalKind;
+  isSaved?: boolean;
+  decision?: VarDecision;
+  call?: WrongCallKind;
+};
 
 export type StatKey = "possession" | "shots" | "onTarget" | "passes" | "tackles" | "fouls" | "cards" | "saves";
 export type StatLine = { key: StatKey; label: string; home: number; away: number };
@@ -35,10 +46,16 @@ const PRESSURE_WEIGHTS = { shot: 1, onTarget: 0.6, goal: 1.2, pass: 0.03 };
 // Each spell leans on its neighbours, so a lone shot reads as a wave rather than a spike.
 const SMOOTHING = [0.25, 0.5, 0.25];
 
-type PlayerEvent = Extract<MatchEvent, { type: "goal" | "penaltyMiss" | "card" | "injury" | "substitution" }>;
+type PlayerEvent = Extract<MatchEvent, { type: "goal" | "penaltyMiss" | "card" | "injury" | "substitution" | "varCheck" | "wrongCall" }>;
 
 const isPlayerEvent = (event: MatchEvent): event is PlayerEvent =>
-  event.type === "goal" || event.type === "penaltyMiss" || event.type === "card" || event.type === "injury" || event.type === "substitution";
+  event.type === "goal" ||
+  event.type === "penaltyMiss" ||
+  event.type === "card" ||
+  event.type === "injury" ||
+  event.type === "substitution" ||
+  event.type === "varCheck" ||
+  event.type === "wrongCall";
 
 function pageEvent(event: PlayerEvent, homeId: string): PageEvent {
   const base = { minute: event.minute, side: event.clubId === homeId ? ("home" as const) : ("away" as const), playerId: event.playerId };
@@ -53,6 +70,10 @@ function pageEvent(event: PlayerEvent, homeId: string): PageEvent {
       return { ...base, kind: "injury" };
     case "substitution":
       return { ...base, kind: "substitution", otherId: event.offId };
+    case "varCheck":
+      return { ...base, kind: "varCheck", decision: event.decision };
+    case "wrongCall":
+      return { ...base, kind: "wrongCall", call: event.call };
   }
 }
 

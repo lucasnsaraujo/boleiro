@@ -1,0 +1,251 @@
+/*
+ * The VAR sticker: slapped onto the cover at a tilt while the check runs, the monitor scanning and the
+ * dots ticking; the decision stamps across it with an overshoot, the disc answers a beat later, and the
+ * sticker peels off up and away as play restarts.
+ */
+.varstk {
+  --tilt: -3deg;
+  position: absolute;
+  left: 50%;
+  /* Under the duel, so the score it may change stays in sight above it. */
+  top: 184px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px 12px 14px;
+  border-radius: 16px;
+  background: var(--yellow);
+  color: var(--on-yellow);
+  box-shadow: var(--sh-pop);
+  white-space: nowrap;
+  transform: translateX(-50%) rotate(var(--tilt));
+  transform-origin: 30% 60%;
+  animation: varstk-stick var(--t-stamp) var(--e-slap) both;
+}
+
+.varstk-disc {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #14231a;
+  color: var(--yellow);
+  font-size: 24px;
+  animation: varstk-pop 380ms var(--e-slap) 140ms both;
+}
+
+/* A thin line sweeps the monitor top to bottom, like the replay being scrubbed. */
+.varstk-scan {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0 44%, rgba(255, 214, 0, 0.55) 50%, transparent 56% 100%);
+  transform: translateY(-60%);
+  animation: varstk-scan 1100ms var(--e-in-out) 300ms infinite;
+}
+
+.varstk-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.varstk h2 {
+  display: flex;
+  align-items: baseline;
+  font-stretch: 118%;
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  animation: varstk-rise 420ms var(--e-out) 180ms both;
+}
+
+.varstk p {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #4a3f12;
+  animation: varstk-rise 420ms var(--e-out) 260ms both;
+}
+
+.varstk-dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 4px;
+}
+
+.varstk-dots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: varstk-dot 900ms var(--e-in-out) infinite;
+}
+
+.varstk-dots i:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.varstk-dots i:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+/* The decision: a stamp slapped over the sticker's lower right corner, tilted against it. */
+.varstk-stamp {
+  position: absolute;
+  right: -30px;
+  bottom: -26px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 7px 14px 6px;
+  border-radius: 10px;
+  background: var(--green);
+  color: #fff;
+  box-shadow: 0 0 0 3px var(--yellow), 0 10px 18px -8px rgba(20, 35, 26, 0.6);
+  transform: rotate(7deg);
+  animation: varstk-stamp 520ms var(--e-slap) both;
+}
+
+.varstk-stamp.against {
+  background: var(--red);
+}
+
+.varstk-stamp b {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 19px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.varstk-stamp small {
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* Once decided, the review stops: the scan and the dots freeze and the copy steps back behind the stamp. */
+.varstk.is-decided .varstk-scan,
+.varstk.is-leaving .varstk-scan,
+.varstk.is-decided .varstk-dots,
+.varstk.is-leaving .varstk-dots {
+  animation: none;
+  opacity: 0;
+}
+
+.varstk.is-decided .varstk-copy {
+  opacity: 0.55;
+  transition: opacity var(--t-slow) var(--e-out) 120ms;
+}
+
+.varstk.is-decided .varstk-disc {
+  animation: varstk-knock 420ms var(--e-slap) 160ms both;
+}
+
+.varstk.is-leaving {
+  animation: varstk-peel 380ms var(--e-peel) both;
+}
+
+/* The cover's duel steps back under the sticker while the check runs. */
+.live-cover.is-var .live-duel,
+.live-cover.is-var .live-evs,
+.live-cover.is-var .live-pitch {
+  filter: saturate(0.7);
+  opacity: 0.55;
+  transition:
+    opacity var(--t-slow) var(--e-out),
+    filter var(--t-slow) var(--e-out);
+}
+
+@keyframes varstk-stick {
+  from {
+    transform: translateX(-50%) rotate(-9deg) scale(1.25);
+    opacity: 0;
+  }
+}
+
+@keyframes varstk-pop {
+  from {
+    transform: scale(0.4) rotate(-30deg);
+  }
+}
+
+@keyframes varstk-rise {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+}
+
+@keyframes varstk-scan {
+  to {
+    transform: translateY(60%);
+  }
+}
+
+@keyframes varstk-dot {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+@keyframes varstk-stamp {
+  from {
+    transform: rotate(-8deg) scale(1.9);
+    opacity: 0;
+  }
+  55% {
+    opacity: 1;
+  }
+}
+
+/* The stamp lands and knocks the disc a little, the way a sticker shifts when slapped next to. */
+@keyframes varstk-knock {
+  40% {
+    transform: rotate(-12deg) scale(0.92);
+  }
+}
+
+@keyframes varstk-peel {
+  to {
+    transform: translateX(-50%) translateY(-18px) rotate(-8deg) scale(0.94);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .varstk,
+  .varstk.is-leaving,
+  .varstk-disc,
+  .varstk h2,
+  .varstk p,
+  .varstk-stamp,
+  .varstk.is-decided .varstk-disc {
+    animation: round-fade-in 200ms ease-out both;
+  }
+
+  .varstk.is-leaving {
+    animation: none;
+    opacity: 0;
+    transition: opacity 200ms ease-out;
+  }
+
+  .varstk-scan,
+  .varstk-dots i {
+    animation: none;
+  }
+}

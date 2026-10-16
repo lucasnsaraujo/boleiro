@@ -559,6 +559,29 @@ export const EVENT_BANK: readonly EventType[] = [
     assistantChoice: 2,
   },
   {
+    id: "press-referee",
+    area: "press",
+    look: "press",
+    weight: 6,
+    cooldownDays: 7,
+    // A wrong call that went against the club today made the paper (recordNews runs before the events).
+    cast: (scene) => {
+      const story = eventMemoryOf(scene.state).news.find((item) => item.kind === "controversy" && item.date === scene.date && item.clubIds[0] === scene.clubId);
+      return story ? (story.clubIds[1] && story.clubIds[1] !== scene.clubId ? { rivalId: story.clubIds[1] } : {}) : null;
+    },
+    setting: "Coletiva depois do jogo",
+    texts: [
+      { headline: "Coletiva: a arbitragem na pauta", body: "“O lance de hoje vai ser discutido a semana inteira. O {club} foi prejudicado?”" },
+      { headline: "Coletiva: o erro do árbitro", body: "“As imagens mostram que o árbitro errou contra o {club}. O que o senhor achou?”" },
+    ],
+    choices: [
+      { label: "“Fomos roubados. Isso precisa acabar.”", detail: "A torcida adora, a CBF anota", effects: { fans: 4, morale: 2, board: -2 }, news: "{coach} detona a arbitragem: “Fomos roubados”" },
+      { label: "“Vamos pedir o áudio do VAR à CBF.”", effects: { fans: 2, board: 1 }, news: "{club} pede à CBF o áudio da arbitragem" },
+      { label: "“Erro faz parte. A gente tem que fazer a nossa parte.”", effects: { board: 2, fans: -2, morale: -1 } },
+    ],
+    assistantChoice: 1,
+  },
+  {
     id: "tv-interview",
     area: "press",
     weight: 1,

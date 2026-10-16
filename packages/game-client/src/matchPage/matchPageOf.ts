@@ -13,6 +13,7 @@ import { standings } from "@boleiro/engine/sim/standings";
 import { leagueMatches } from "@boleiro/engine/sim/world/resultOnlyLeague";
 import { competitionName, fixtureLabel } from "../format/competitionName.js";
 import type { RoundClub } from "../round/liveRoundOf.js";
+import { officialsOf, type Officials } from "../round/officialsOf.js";
 import { curiositiesOf } from "./curiositiesOf.js";
 
 /** A player as the match page shows him: enough to place him on the pitch in his side's formation. */
@@ -48,6 +49,8 @@ export type MatchPage = {
   ratings: Record<string, number>;
   names: Record<string, string>;
   venue: { stadium: string | null; crowd: number | null; gate: number | null };
+  /** The referee, when the data names one for the competition, and whether VAR watches the match. */
+  officials: Officials;
   meetings: Meeting[];
   curiosities: string[];
 };
@@ -232,6 +235,7 @@ export function matchPageOf(state: GameState, ref: string, live: { day: LiveDay;
     ratings,
     names,
     venue,
+    officials: officialsOf(state, fixture),
     meetings: meetingsOf(located),
     curiosities,
   };

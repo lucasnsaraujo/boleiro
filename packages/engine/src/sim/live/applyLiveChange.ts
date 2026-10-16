@@ -8,6 +8,8 @@ import { scorersOf } from "../history/scorersOf.js";
 import { clubMood } from "../morale/clubMood.js";
 import { injuryLayoffDays, matchInjuryChance } from "../players/matchInjuryChance.js";
 import { engineTeam } from "../players/matchSetup.js";
+import { matchOfficials } from "../referees/matchOfficials.js";
+import { withRefereeCalls } from "../referees/refereeCalls.js";
 import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
 import { aiSubstitutions, MAX_SUBSTITUTION_WINDOWS, MAX_SUBSTITUTIONS, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
 import { describeGoals, drawPenaltyMisses, type GoalEvent, type GoalSide } from "./goalDetails.js";
@@ -201,6 +203,18 @@ function shootoutAfter(live: LiveDay, coachMatch: CoachMatch, match: LiveMatch, 
   return settleShootout({ ...fixture, result }, shootoutSeed(random), side("home"), side("away"), strength).events;
 }
 
+/** What the referee's calls of the coach's match need: its officials, and who is on the pitch for each side at each minute. */
+function refereeOf(live: LiveDay, coachMatch: CoachMatch, match: LiveMatch, events: readonly MatchEvent[], coachSide: Side) {
+  const fixture = live.state.fixtures.find((f) => f.id === match.fixtureId);
+  const competition = fixture && live.state.competitions[fixture.competitionId];
+  const officials = fixture && competition ? matchOfficials(live.state.seed, competition, fixture) : { referee: null, strictness: 1, var: null };
+  const side = (s: Side) => {
+    const clubId = s === "home" ? match.homeId : match.awayId;
+    return { clubId, onPitch: (minute: number) => onPitchAt(coachMatch.starters[s], benchOf(coachMatch, s, coachSide), events, clubId, minute) };
+  };
+  return { seed: live.state.seed, fixtureId: match.fixtureId, officials, home: side("home"), away: side("away") };
+}
+
 /** The open match a human coach's club plays today: the seated coach's, or a waiting coach's in a hot-seat game. */
 function openMatchOf(live: LiveDay, clubId: string): CoachMatch | undefined {
   const plays = (open: CoachMatch) => live.matches.some((m) => m.fixtureId === open.fixtureId && (m.homeId === clubId || m.awayId === clubId));
@@ -227,7 +241,9 @@ export function applyLiveChange(live: LiveDay, minute: number, change: LiveChang
   const isRival = changingSide !== ownerSide;
   const before = isRival ? coachMatch.rivalTactics : coachMatch.tactics;
   if (!before) throw new Error(`${clubId} has no coach in match ${coachMatch.fixtureId}`);
-  const kept = match.events.filter((e) => e.minute <= minute && e.type !== "halfTime" && e.type !== "fullTime" && e.type !== "shootoutKick" && e.type !== "orderOverruled");
+  // The referee's calls are told again over the whole new timeline; they never shape what is drawn.
+  const isReplayed = (e: MatchEvent) => e.type !== "halfTime" && e.type !== "fullTime" && e.type !== "shootoutKick" && e.type !== "orderOverruled" && e.type !== "varCheck" && e.type !== "wrongCall";
+  const kept = match.events.filter((e) => e.minute <= minute && isReplayed(e));
   const subs = change.substitutions ?? [];
   const bench = benchOf(coachMatch, changingSide, ownerSide);
   checkSubstitutions(coachMatch, kept, onPitch(coachMatch, kept, changingSide, clubId), bench, clubId, minute, subs);
@@ -246,7 +262,8 @@ export function applyLiveChange(live: LiveDay, minute: number, change: LiveChang
   const after = redraw(next, match, sofar, ownerSide, minute, random.next);
   const played = [...sofar, ...after];
   const shootout = shootoutAfter(live, next, match, played, ownerSide, random.next);
-  const events = inMatchOrder([...played, { type: "halfTime", minute: HALF_TIME }, { type: "fullTime", minute: FULL_TIME }, ...shootout]);
+  const timeline = inMatchOrder([...played, { type: "halfTime", minute: HALF_TIME }, { type: "fullTime", minute: FULL_TIME }, ...shootout]);
+  const events = withRefereeCalls(timeline, refereeOf(live, next, match, timeline, ownerSide));
   const formations = { ...match.formations, [changingSide]: tactics.formation };
   const redrawn: CoachMatch = { ...next, rngState: random.state() };
   const matches = live.matches.map((m) => (m === match ? { ...match, formations, events } : m));

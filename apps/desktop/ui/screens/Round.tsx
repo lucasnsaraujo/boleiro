@@ -26,10 +26,12 @@ import { MatchReport } from "../round/MatchReport.js";
 import { MiniScore } from "../round/MiniScore.js";
 import { kickOffOf, liveChangeOf, liveLimits, type Sheet } from "../round/lineupDraft.js";
 import type { LiveChange } from "@boleiro/engine/sim/live/applyLiveChange";
+import type { VarCheck } from "@boleiro/engine/sim/referees/refereeCalls";
 import { tacticsViewAt, type CoachSide, type HumanSide, type LiveRound, type RoundClub, type Side } from "@boleiro/game-client/round/liveRoundOf";
 import { liveTable, shortTable, type LiveTableRow } from "../round/liveTable.js";
 import type { MatchDayPlan } from "@boleiro/game-client/round/matchDayPlan";
-import { calloutsBetween, goalsBetween, pauseReason, roundAt, scorersUntil, type Callout, type EventKind, type MatchAt } from "../round/roundAt.js";
+import { calloutsBetween, goalsBetween, pauseReason, roundAt, scorersUntil, varCheckAt, type Callout, type EventKind, type MatchAt } from "../round/roundAt.js";
+import { VarSticker, type VarPhase } from "../round/VarSticker.js";
 import { useStickerLift } from "../round/useStickerLift.js";
 import type { Substitution } from "@boleiro/engine/sim/live/applyLiveChange";
 import type { Formation } from "@boleiro/engine/engine/formations";
@@ -118,7 +120,18 @@ const ALERT_CHIPS: Record<Alert["kind"], { label: string; className: string }> =
   red: { label: "Expulsão", className: "exp" },
   substitution: { label: "Troca", className: "sub" },
   badDay: { label: "Dia ruim", className: "bad" },
+  var: { label: "VAR", className: "var" },
 };
+/**
+ * A VAR check a human coach's match stands still for. guess: the board shows a check of 1 min 40 s
+ * (Brazil's average) for 3.2 s at 1×, shorter at the faster speeds and for a shorter check, then holds
+ * the decision for a beat before the sticker peels off and the clock runs again.
+ */
+type VarHold = { fixtureId: string; check: VarCheck; phase: VarPhase };
+const VAR_CHECK_MS: Record<Running, number> = { 1: 3200, 2: 2400, 4: 1600 };
+const VAR_DECIDED_MS: Record<Running, number> = { 1: 1700, 2: 1400, 4: 1100 };
+const VAR_PEEL_MS = 380;
+const AVERAGE_CHECK_SECONDS = 100;
 // How the band notes a goal that did not come from open play.
 const GOAL_NOTES: Partial<Record<GoalKind, string>> = { penalty: "pên.", freeKick: "falta", olympic: "olímpico", ownGoal: "contra" };
 
@@ -150,6 +163,8 @@ export function Round() {
   const [flashes, setFlashes] = useState<Record<string, Flash>>({});
   const [alerts, setAlerts] = useState<Record<string, Alert>>({});
   const [incident, setIncident] = useState<OpenIncident | null>(null);
+  const [varHold, setVarHold] = useState<VarHold | null>(null);
+  const varTimers = useRef<number[]>([]);
   // The clubs whose incident window was left at the minute the round stands on, so the next coach's opens.
   const answered = useRef<{ minute: number; clubIds: Set<string> }>({ minute: -1, clubIds: new Set() });
   // Matches a human coach made substitutions in while a window covered the board; their rows call it out once it closes.
@@ -205,7 +220,8 @@ export function Round() {
     };
   }, [engine]);
 
-  const isRunning = round !== null && speed > 0 && !isLineupOpen && !isTableOpen && incident === null && minute < FULL_TIME;
+  const isRunning = round !== null && speed > 0 && !isLineupOpen && !isTableOpen && incident === null && varHold === null && minute < FULL_TIME;
+  useEffect(() => () => varTimers.current.forEach((timer) => clearTimeout(timer)), []);
   useEffect(() => {
     if (!isRunning || speed === 0) return;
     const tick = setInterval(() => setMinute((m) => Math.min(FULL_TIME, m + 1)), MS_PER_MINUTE[speed]);
@@ -240,7 +256,37 @@ export function Round() {
     shownMinute.current = minute;
     engine.apply({ type: "seeMinute", minute }).catch(() => undefined);
     for (const cue of thinCues(roundCues(live, from, minute), resumeSpeed.current)) sound.play(cue);
+    // A VAR check holds back what it rules on: its match's goal or red card waits for the decision.
+    const held = varCheckAt(live, minute);
+    const isHeldBack = (fixtureId: string) => held?.fixtureId === fixtureId;
     const goals = goalsBetween(live, from, minute);
+    celebrate(live, goals.filter((goal) => !isHeldBack(goal.fixtureId)));
+    const called = Object.fromEntries(
+      calloutsBetween(live, from, minute).map(({ fixtureId, kind, who }) => [fixtureId, { kind, count: ++goalsCelebrated.current, ...(who ? { who } : {}) }] as const),
+    );
+    if (Object.keys(called).length) {
+      setAlerts((current) => ({ ...current, ...called }));
+      setTimeout(() => setAlerts((current) => Object.fromEntries(Object.entries(current).filter(([fixtureId, alert]) => called[fixtureId] !== alert))), FLOOD_MS[resumeSpeed.current]);
+    }
+    const reason = pauseReason(live, minute);
+    if (reason === "halfTime" || reason === "coachMatch") pause();
+    const incidentNow = incidentOf(live, minute, hotSeat);
+    const finishNow = () => {
+      if (reason === "fullTime") void finish();
+    };
+    if (!held) {
+      setIncident(incidentNow);
+      finishNow();
+      return;
+    }
+    holdForVar(held, () => {
+      celebrate(live, goals.filter((goal) => isHeldBack(goal.fixtureId)));
+      setIncident(incidentNow);
+    }, finishNow);
+  }, [minute]);
+
+  /** Rolls each scoring row's digit and sweeps it in the scorer's colour; the coach's own goal sweeps GOL across the cover. */
+  function celebrate(live: LiveRound, goals: ReturnType<typeof goalsBetween>) {
     if (goals.length) {
       const celebrated = Object.fromEntries(
         goals.map((goal) => {
@@ -256,18 +302,30 @@ export function Round() {
       );
       if (goals.some((goal) => goal.fixtureId === live.coach?.fixtureId && goal.clubId === live.coachClubId)) setGolCount((n) => n + 1);
     }
-    const called = Object.fromEntries(
-      calloutsBetween(live, from, minute).map(({ fixtureId, kind, who }) => [fixtureId, { kind, count: ++goalsCelebrated.current, ...(who ? { who } : {}) }] as const),
-    );
-    if (Object.keys(called).length) {
-      setAlerts((current) => ({ ...current, ...called }));
-      setTimeout(() => setAlerts((current) => Object.fromEntries(Object.entries(current).filter(([fixtureId, alert]) => called[fixtureId] !== alert))), FLOOD_MS[resumeSpeed.current]);
-    }
-    const reason = pauseReason(live, minute);
-    if (reason === "halfTime" || reason === "coachMatch") pause();
-    setIncident(incidentOf(live, minute, hotSeat));
-    if (reason === "fullTime") void finish();
-  }, [minute]);
+  }
+
+  /**
+   * Stands the round still while VAR checks a human coach's match: the check, then its decision
+   * (`onDecided`), then play again (`onDone`; a check at the final whistle ends the round only then).
+   */
+  function holdForVar(held: Omit<VarHold, "phase">, onDecided: () => void, onDone: () => void) {
+    varTimers.current.forEach((timer) => clearTimeout(timer));
+    const pace = resumeSpeed.current;
+    const checking = VAR_CHECK_MS[pace] * Math.min(1.2, Math.max(0.6, held.check.seconds / AVERAGE_CHECK_SECONDS));
+    const decided = checking + VAR_DECIDED_MS[pace];
+    setVarHold({ ...held, phase: "checking" });
+    varTimers.current = [
+      window.setTimeout(() => {
+        setVarHold((current) => current && { ...current, phase: "decided" });
+        onDecided();
+      }, checking),
+      window.setTimeout(() => setVarHold((current) => current && { ...current, phase: "leaving" }), decided),
+      window.setTimeout(() => {
+        setVarHold(null);
+        onDone();
+      }, decided + VAR_PEEL_MS),
+    ];
+  }
 
   async function kickOff(sheet: Sheet) {
     if (!preMatch) return;
@@ -520,7 +578,7 @@ export function Round() {
 
   if (!round) return <p className="status live-missing">Abrindo a rodada…</p>;
 
-  const matches = roundAt(round, minute);
+  const matches = roundAt(round, minute, varHold?.phase === "checking" ? varHold.fixtureId : null);
   const mine = matches.find((m) => m.isCoach);
   const scores = new Map(matches.map((m) => [m.fixtureId, m.score]));
   const table = round.table && liveTable(round.table, scores);
@@ -587,6 +645,7 @@ export function Round() {
           minute={minute}
           speed={speed}
           golCount={golCount}
+          varHold={varHold}
           onSpeed={chooseSpeed}
           isOnlyMine={isOnlyMine}
           onOnlyMine={setOnlyMine}
@@ -737,6 +796,8 @@ function Digit({ value, className, flash, isSettled }: { value: number; classNam
 
 const EVENT_ICONS: Partial<Record<EventKind, string>> = {
   goal: "ph-fill ph-soccer-ball",
+  varCheck: "ph-fill ph-monitor-play",
+  wrongCall: "ph-bold ph-megaphone",
   penaltyMiss: "ph-bold ph-target",
   injury: "ph-fill ph-first-aid",
   substitution: "ph-bold ph-arrows-left-right",
@@ -763,6 +824,8 @@ type CoverProps = {
   minute: number;
   speed: Speed;
   golCount: number;
+  /** The VAR check the round stands still for, if any. */
+  varHold: VarHold | null;
   isOnlyMine: boolean;
   isFinished: boolean;
   shootoutWinner: string | null;
@@ -783,7 +846,7 @@ function clockNote(minute: number, speed: Speed, isFinished: boolean): string {
  * clubs' stickers, the clock and the controls. While the ball is in play the stickers give way to a slim
  * scoreboard above the board; a stop or a goal drops them back. In a hot-seat round every human coach gets a board.
  */
-function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msPerMinute, label, minute, speed, golCount, isOnlyMine, isFinished, shootoutWinner, table, onSpeed, onOnlyMine, children }: CoverProps) {
+function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msPerMinute, label, minute, speed, golCount, varHold, isOnlyMine, isFinished, shootoutWinner, table, onSpeed, onOnlyMine, children }: CoverProps) {
   // The cover builds itself only at kick-off, not when the coach comes back to a match under way.
   const [isKickOff] = useState(minute === 0);
   const isStopped = isFinished || minute >= FULL_TIME;
@@ -791,7 +854,9 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
   const home = round.clubs[match.homeId];
   const away = round.clubs[match.awayId];
   if (!home || !away) return null;
-  const scorers = scorersUntil(round, match.fixtureId, minute);
+  // The goal VAR is checking shows under the score once the decision is in.
+  const isChecking = varHold?.phase === "checking" && varHold.fixtureId === match.fixtureId;
+  const scorers = scorersUntil(round, match.fixtureId, isChecking ? minute - 1 : minute);
   const hasSeats = seats.length > 1;
   const [competition, roundName] = label.split(" · ");
   const side = (club: RoundClub, where: Side) => (
@@ -803,11 +868,20 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
     </div>
   );
   return (
-    <section className={`live-cover has-pitch${hasSeats ? " has-seats" : ""}${isKickOff ? " round-kickoff" : ""}`} aria-label="Seu jogo">
+    <section className={`live-cover has-pitch${hasSeats ? " has-seats" : ""}${isKickOff ? " round-kickoff" : ""}${varHold && varHold.phase !== "leaving" ? " is-var" : ""}`} aria-label="Seu jogo">
       {golCount > 0 && (
         <div key={golCount} className="gol-sweep" aria-hidden="true">
           GOL
         </div>
+      )}
+      {varHold && (
+        <VarSticker
+          key={`${varHold.fixtureId}-${varHold.check.minute}`}
+          check={varHold.check}
+          phase={varHold.phase}
+          name={round.names[varHold.check.playerId] ?? "Um jogador"}
+          club={round.clubs[varHold.check.clubId]?.shortName ?? ""}
+        />
       )}
       <div className="live-ttl" data-tauri-drag-region>
         <h1>
@@ -816,10 +890,10 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
           <span>{[roundName, formatBarDate(round.date)].filter(Boolean).join(" · ")}</span>
         </h1>
         <div className="live-tools">
-          {speed === 0 && !isFinished && minute < FULL_TIME && (
+          {(speed === 0 || varHold) && !isFinished && minute < FULL_TIME && (
             <span className="chip wait live-paused">
               <i className="ph-fill ph-pause" aria-hidden="true" />
-              Pausado
+              {varHold ? "Revisão do VAR" : "Pausado"}
             </span>
           )}
           <div className="live-clock">
@@ -827,7 +901,7 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
             <span className="live-track" aria-hidden="true">
               <i style={{ transform: `scaleX(${Math.min(minute, FULL_TIME) / FULL_TIME})` }} />
             </span>
-            <b aria-label="Minuto">{Math.min(minute, FULL_TIME)}'</b>
+            <b aria-label="Minuto">{varHold ? "VAR" : `${Math.min(minute, FULL_TIME)}'`}</b>
           </div>
           <div className="live-speed" role="group" aria-label="Velocidade">
             <button aria-label="Pausar" aria-pressed={speed === 0} disabled={isStopped} onClick={() => onSpeed(0)}>
@@ -853,6 +927,12 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
             <div className="live-stad">
               <b>{home.stadium}</b>
               {home.shortName} em casa
+              {(match.officials?.referee || match.officials?.hasVar) && (
+                <div className="live-ref">
+                  {match.officials.hasVar && <em>VAR</em>}
+                  {match.officials.referee && `Árbitro ${match.officials.referee}`}
+                </div>
+              )}
             </div>
             <div className={`live-mid${isLifted ? " is-lifted" : ""}${isGoalHeld ? " is-goal" : ""}`}>
               <div className="live-pitch">

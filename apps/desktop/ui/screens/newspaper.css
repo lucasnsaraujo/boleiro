@@ -152,6 +152,22 @@
   color: #1a1a17;
 }
 
+/* VAR's stories: the kicker in ink behind the review monitor, as the paper prints it (mock newspaper.html). */
+.paper-kick.var {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #1a1a17;
+}
+
+.paper-kick.var i {
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: #1a1a17;
+  color: var(--yellow);
+  font-size: 10px;
+}
+
 .paper-lead h2 {
   margin-top: 4px;
   font-stretch: 70%;

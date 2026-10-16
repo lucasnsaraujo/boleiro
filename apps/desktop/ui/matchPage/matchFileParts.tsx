@@ -8,6 +8,13 @@ import { Crest } from "../clubs/Crest.js";
 
 const THOUSANDS = new Intl.NumberFormat("pt-BR");
 
+/** "Árbitro Wilton Pereira Sampaio · VAR", or "Com VAR" when the data names no referee; null when it knows neither. */
+export function refereeLine(page: MatchPage): string | null {
+  const { referee, hasVar } = page.officials;
+  if (!referee) return hasVar ? "Com VAR" : null;
+  return `Árbitro ${referee}${hasVar ? " · VAR" : ""}`;
+}
+
 /** "Público 61.233 · Renda R$ 4,8 mi", for a match whose crowd is known. */
 export function venueLine(page: MatchPage): string[] {
   const { stadium, crowd, gate } = page.venue;
@@ -102,6 +109,8 @@ const EVENT_ICONS: Record<PageEvent["kind"], string> = {
   red: "",
   injury: "ph-fill ph-first-aid",
   substitution: "ph-bold ph-arrows-left-right",
+  varCheck: "ph-fill ph-monitor-play",
+  wrongCall: "ph-bold ph-megaphone",
 };
 
 export function EventMark({ event }: { event: PageEvent }) {

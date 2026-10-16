@@ -154,8 +154,8 @@ describe("event engine", () => {
       for (const text of texts) for (const [, slot] of text.matchAll(/\{(\w+)\}/g)) expect(slots, `${type.id}: {${slot}}`).toContain(slot);
       expect(type.texts.length, type.id).toBeGreaterThanOrEqual(2);
     }
-    expect(EVENT_BANK).toHaveLength(30);
-    expect(new Set(EVENT_BANK.map((type) => type.id)).size).toBe(30);
+    expect(EVENT_BANK).toHaveLength(31);
+    expect(new Set(EVENT_BANK.map((type) => type.id)).size).toBe(31);
     expect(new Set(EVENT_BANK.map((type) => type.area))).toEqual(new Set(["players", "squad", "board", "fans", "press"]));
 
     const named = runDays({ ...start, coachName: "Lucas Araujo" }, 365, EVENT_BANK);
