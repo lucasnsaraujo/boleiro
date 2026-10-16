@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate } from "react-router";
+import type { PendingEvent } from "@boleiro/engine/sim/events/eventMemory";
+import type { EventAnswered } from "@boleiro/engine/sim/events/runEvents";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import { formatBarDate, formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
@@ -14,6 +16,8 @@ import { clubFaceOf } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { clubMeters, jobSecurity, leagueAbroadName, leagueStanding, nextMatch, type NextMatch } from "../hub/hubSelectors.js";
 import { ConfidenceMeter } from "../finances/ConfidenceMeter.js";
+import { EventNote } from "../events/EventNote.js";
+import { EventPopUp } from "../events/EventPopUp.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import { SQUAD_KEYS, squadRows } from "../squad/squadRows.js";
 import { PlayerSticker } from "../squad/PlayerSticker.js";
@@ -22,7 +26,7 @@ import "./hub.css";
 
 const HUB_KEYS = [...SQUAD_KEYS, "boards", "coach", "mood", "finances"] as const;
 type HubState = Pick<GameState, (typeof HUB_KEYS)[number]>;
-type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null; seats: HotSeatView | null };
+type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null; seats: HotSeatView | null; event: PendingEvent | null };
 
 const TURNING_POINT_SCREENS: Record<TurningPoint["kind"], string> = { fired: "/sacked", seasonEnd: "/season-end" };
 const offersText = (count: number) => `${count} ${count === 1 ? "proposta" : "propostas"}`;
@@ -44,11 +48,15 @@ export function Hub() {
   const [missing, setMissing] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isPaperOpen, setPaperOpen] = useState(false);
+  /** The event the coach opened, and his answer once it went through. */
+  const [openEvent, setOpenEvent] = useState<PendingEvent | null>(null);
+  const [answered, setAnswered] = useState<EventAnswered | null>(null);
+  const [isAnswering, setAnswering] = useState(false);
 
   const load = useCallback(
     (isCurrent: () => boolean) =>
-      Promise.all([engine.read(HUB_KEYS), engine.inbox(), engine.turningPoint(), engine.hotSeat()]).then(
-        ([state, inbox, turningPoint, seats]) => isCurrent() && setLoaded({ state, inbox, turningPoint, seats }),
+      Promise.all([engine.read(HUB_KEYS), engine.inbox(), engine.turningPoint(), engine.hotSeat(), engine.pendingEvent()]).then(
+        ([state, inbox, turningPoint, seats, event]) => isCurrent() && setLoaded({ state, inbox, turningPoint, seats, event }),
         () => isCurrent() && setMissing(true),
       ),
     [engine],
@@ -75,7 +83,22 @@ export function Hub() {
   const passes = seats !== null && !seats.isLastTurn;
   const act = () => void round.play();
   const club = loaded?.state.coachClubId ? loaded.state.clubs[loaded.state.coachClubId] : undefined;
-  useCommands({ jogarRodada: loaded !== null && !round.isPlaying && act });
+  useCommands({ jogarRodada: loaded !== null && !round.isPlaying && openEvent === null && act });
+
+  async function answer(choice: number | null) {
+    setAnswering(true);
+    try {
+      setAnswered(await engine.apply({ type: "answerEvent", choice }));
+      await load(() => true);
+    } finally {
+      setAnswering(false);
+    }
+  }
+
+  function closeEvent() {
+    setOpenEvent(null);
+    setAnswered(null);
+  }
 
   if (missing || !open.current) {
     return (
@@ -167,7 +190,25 @@ export function Hub() {
         )}
         {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
 
-        {club && shown ? <PlayerSticker key={shown.id} state={state} row={shown} club={club} /> : <div className="slot hub-card-empty" />}
+        {club && loaded.event && selectedId === null ? (
+          <EventNote key={`${loaded.event.typeId}:${loaded.event.date}`} event={loaded.event} onOpen={() => loaded.event && setOpenEvent(loaded.event)} />
+        ) : club && shown ? (
+          <PlayerSticker key={shown.id} state={state} row={shown} club={club} />
+        ) : (
+          <div className="slot hub-card-empty" />
+        )}
+        {club && openEvent && (
+          <EventPopUp
+            event={openEvent}
+            club={club}
+            rival={openEvent.rivalId ? (state.clubs[openEvent.rivalId] ?? null) : null}
+            player={openEvent.playerId ? (state.players[openEvent.playerId] ?? null) : null}
+            isBusy={isAnswering}
+            answered={answered}
+            onAnswer={(choice) => void answer(choice)}
+            onClose={closeEvent}
+          />
+        )}
 
         <nav className="hub-dock" aria-label="Clube">
           {club ? (
@@ -248,6 +289,10 @@ function Paper({ news, onClose }: { news: InboxLine[]; onClose: () => void }) {
         <h2 id="hub-paper-title" ref={title} tabIndex={-1}>
           Jornal
         </h2>
+        <Link className="hub-paper-round" to="/newspaper">
+          <i className="ph-bold ph-newspaper" aria-hidden="true" />
+          Jornal da rodada
+        </Link>
         <button className="hub-paper-close" aria-label="Fechar o jornal" onClick={onClose}>
           <i className="ph-bold ph-x" aria-hidden="true" />
         </button>
