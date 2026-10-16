@@ -191,6 +191,22 @@
   animation: mf-rise 420ms var(--e-out) 320ms both;
 }
 
+.mf-ref {
+  margin-top: 2px;
+  animation-delay: 380ms;
+}
+
+/* A VAR check reads in ink; a wrong call that stood, in the red of a protest. */
+.mf-incidents small.var {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.mf-incidents small.wrong {
+  color: #d7322a;
+  font-weight: 800;
+}
+
 .mf-goals {
   list-style: none;
   display: flex;

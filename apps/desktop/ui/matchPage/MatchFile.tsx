@@ -7,7 +7,7 @@ import type { Side } from "@boleiro/game-client/round/liveRoundOf";
 import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
-import { ClubSticker, clubColours, EventMark, GoalNote, LiveChip, RollingDigit, StatBar, venueLine } from "./matchFileParts.js";
+import { ClubSticker, clubColours, EventMark, GoalNote, LiveChip, RollingDigit, refereeLine, StatBar, venueLine } from "./matchFileParts.js";
 import { MatchPitch } from "./MatchPitch.js";
 import { MatchSheet } from "./MatchSheet.js";
 import "./matchFile.css";
@@ -157,6 +157,7 @@ function MatchPanel({ page, view, isReturning, isLeaving, onFull, onClose, onSub
           <ClubSticker page={page} side="away" />
         </div>
         <p className="mf-venue">{venueLine(page).join(" · ")}</p>
+        {refereeLine(page) && <p className="mf-venue mf-ref">{refereeLine(page)}</p>}
         {goals.length > 0 && (
           <ol className="mf-goals" aria-label="Gols">
             {goals.map((g, index) => (
