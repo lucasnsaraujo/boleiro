@@ -54,7 +54,10 @@ describe("the match page of the round under way", () => {
         if (sub.type !== "substitution") continue;
         const side = sub.clubId === match.homeId ? onPitch.home : onPitch.away;
         const isOffLater = page.events.some(
-          (e) => (e.type === "substitution" && e.offId === sub.playerId) || ((e.type === "card" ? e.card === "red" : e.type === "injury") && e.playerId === sub.playerId),
+          (e) =>
+            (e.type === "substitution" && e.offId === sub.playerId) ||
+            (e.type === "card" && e.card === "red" && e.playerId === sub.playerId) ||
+            (e.type === "injury" && e.playerId === sub.playerId),
         );
         if (page.events.some((e) => e.type === "injury" && e.playerId === sub.offId)) hurtAndReplaced++;
         expect(side.includes(sub.playerId)).toBe(!isOffLater);
