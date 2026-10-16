@@ -124,4 +124,14 @@ describe("the next Club World Cup's field", () => {
     expect(clubIds.filter((id) => field?.countries[id] === "br").toSorted()).toEqual(["bahia-ba", "botafogo-rj", "flamengo-rj", "fluminense-rj"]);
     expect(Object.fromEntries(count(clubIds.map((id) => confederationOf(field?.countries[id] ?? ""))))).toEqual({ uefa: 12, conmebol: 6, concacaf: 5, afc: 4, caf: 4, ofc: 1 });
   });
+
+  it("gives FIFA's host place to an MLS club even when a Mexican club left out is stronger", () => {
+    const strongMexico = world.map((country) =>
+      country.structure.id === "mx" ? { ...country, levels: country.levels.map((level) => level.map((club) => ({ ...club, strengths: club.strengths.map((s) => s + 30) }))) } : country,
+    );
+    const mexicoFirst = loadNewGame(SEED, { coachClubId: null, world: strongMexico, guests });
+    const next = seasonEndField({ ...mexicoFirst, history: state.history, world: { ...mexicoFirst.world, ...filed("us", "tm-40058"), ...filed("mx", "tm-3631"), ...filed("sa", "tm-18544") } });
+    const northAmerica = (next?.clubWorldCup ?? []).filter((id) => confederationOf(next?.countries[id] ?? "") === "concacaf");
+    expect(Object.fromEntries(count(northAmerica.map((id) => next?.countries[id])))).toEqual({ us: 3, mx: 2 });
+  });
 });

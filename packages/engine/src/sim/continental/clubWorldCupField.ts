@@ -27,6 +27,8 @@ const CHAMPIONS_LEAGUE_BEFORE = ["tm-418", "tm-281", "tm-418", "tm-583", "tm-583
 // FIFA's window: the champions of the last four seasons qualify.
 const CHAMPION_SEASONS = 4;
 const COUNTRY_CAP = 2;
+// FIFA's place for the 2025 host, one of CONCACAF's five, which the game keeps for an MLS club.
+const HOST = { confederation: "concacaf", country: "us" } as const;
 
 /** A club's country, as the draws need it: Brazil's, a country's abroad or in the world, or a guest's. */
 function countryOf(state: Pick<GameState, "clubs" | "world" | "guests">, id: string): string | null {
@@ -46,14 +48,19 @@ function strengthOf(state: Pick<GameState, "clubs" | "players" | "world" | "gues
   return eleven(worldClub?.strengths ?? []);
 }
 
+/** The clubs by strength, strongest first. */
+function byStrength(state: Pick<GameState, "clubs" | "players" | "world" | "guests">, clubIds: readonly string[]): string[] {
+  const squads = new Map<string, number[]>();
+  for (const player of Object.values(state.players)) if (clubIds.includes(player.clubId)) squads.set(player.clubId, [...(squads.get(player.clubId) ?? []), player.strength]);
+  const strength = new Map(clubIds.map((id) => [id, strengthOf(state, id, squads)]));
+  return [...clubIds].sort((a, b) => (strength.get(b) ?? 0) - (strength.get(a) ?? 0) || a.localeCompare(b));
+}
+
 /** The field seeded by strength, strongest first; null unless every club of it is in the game. */
 function seededField(state: Pick<GameState, "clubs" | "players" | "world" | "guests">, clubIds: readonly string[]): ClubWorldCupField | null {
   const countries = Object.fromEntries(clubIds.map((id) => [id, countryOf(state, id)]));
   if (clubIds.some((id) => !countries[id])) return null;
-  const squads = new Map<string, number[]>();
-  for (const player of Object.values(state.players)) if (clubIds.includes(player.clubId)) squads.set(player.clubId, [...(squads.get(player.clubId) ?? []), player.strength]);
-  const strength = new Map(clubIds.map((id) => [id, strengthOf(state, id, squads)]));
-  const seeded = [...clubIds].sort((a, b) => (strength.get(b) ?? 0) - (strength.get(a) ?? 0) || a.localeCompare(b));
+  const seeded = byStrength(state, clubIds);
   return { clubIds: seeded, countries: Object.fromEntries(seeded.map((id) => [id, countries[id] ?? ""])) };
 }
 
@@ -100,7 +107,8 @@ function championsLeagueRanking(state: GameState): string[] {
  * first, whatever their country (the last four Libertadores and Champions League winners; as stand-ins
  * for the cups the game doesn't play, CONCACAF's from MLS's and Liga MX's champions and the AFC's
  * from Saudi Arabia's), then its ranking at no more than two clubs a country, then the clubs it sent
- * this season, past the cap when it would leave places empty. guess: the rankings are the season's
+ * this season; CONCACAF's last place, FIFA's host's, to the strongest MLS club of those left out; then
+ * the clubs it sent past the cap when it would leave places empty. guess: the rankings are the season's
  * Libertadores and the Champions League as it stands, the furthest first, for FIFA's four-year club
  * rankings; the other confederations keep their clubs. Null unless the season played a Club World Cup
  * to carry places from.
@@ -136,11 +144,12 @@ export function seasonEndClubWorldCupField(state: GameState): ClubWorldCupField 
   const rankings: Record<Confederation, string[]> = { uefa: championsLeagueRanking(state), conmebol: libertadoresRanking(state), concacaf: [], afc: [], caf: [], ofc: [] };
   const field = CONFEDERATIONS.flatMap((name) => {
     const places = CLUB_WORLD_CUP_PLACES[name];
+    const isHost = name === HOST.confederation;
     const picked: string[] = [];
     const perCountry = new Map<string, number>();
-    const take = (id: string, isChampion: boolean) => {
+    const take = (id: string, isChampion: boolean, upTo = isHost ? places - 1 : places) => {
       const country = countryOf(state, id);
-      if (picked.length >= places || picked.includes(id) || !country || confederation(id) !== name) return;
+      if (picked.length >= upTo || picked.includes(id) || !country || confederation(id) !== name) return;
       if (!isChampion && (perCountry.get(country) ?? 0) >= COUNTRY_CAP) return;
       picked.push(id);
       perCountry.set(country, (perCountry.get(country) ?? 0) + 1);
@@ -148,8 +157,12 @@ export function seasonEndClubWorldCupField(state: GameState): ClubWorldCupField 
     for (const id of champions[name]) if (id) take(id, true);
     for (const id of rankings[name]) take(id, false);
     for (const id of current.clubIds) take(id, false);
-    // As FIFA's host slot, places a country's cap left empty go to the clubs it sent this season.
-    for (const id of current.clubIds) take(id, true);
+    if (isHost) {
+      const [host] = byStrength(state, current.clubIds.filter((id) => !picked.includes(id) && countryOf(state, id) === HOST.country));
+      if (host) take(host, true, places);
+    }
+    // Places a country's cap left empty go to the clubs it sent this season.
+    for (const id of current.clubIds) take(id, true, places);
     return picked;
   });
   return seededField(state, field);
