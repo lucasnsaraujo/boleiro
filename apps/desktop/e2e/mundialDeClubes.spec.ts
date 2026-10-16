@@ -50,6 +50,10 @@ test("Flamengo, the 2026 Libertadores champion, finds the Mundial de Clubes on i
   await bar(page).getByRole("link", { name: "Tabelas" }).click();
   await page.getByRole("tab", { name: "Mundial de Clubes" }).click();
   await expect(ladder.getByLabel(/Flamengo/)).toHaveClass(/mine/);
+  // The note under the next tie carries no blank strip over its text.
+  const note = page.getByText(/^Empate vai direto para os/);
+  await expect(note).toBeVisible();
+  expect(await note.evaluate((el) => getComputedStyle(el, "::before").content)).toBe("none");
 
   await bar(page).getByRole("link", { name: "Times" }).click();
   const play = page.getByRole("button", { name: "Jogar rodada" });

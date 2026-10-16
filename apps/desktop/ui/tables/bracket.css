@@ -316,6 +316,11 @@
   width: 230px;
 }
 
+/* On the card's paper the album's tape strip reads as a blank box over the note. */
+.bk-next .note::before {
+  content: none;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .bk-tie,
   .bk-final {
