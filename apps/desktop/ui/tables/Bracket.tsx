@@ -57,7 +57,7 @@ function TieRows({ tie, clubs, coachClubId, crest }: { tie: TieView; clubs: Club
 
 const LEG_NAMES = ["Ida", "Volta"];
 
-/** Each leg on its own line: its score once played, else its day and ground. */
+/** Each leg on its own line, or the tie's one match: its score once played, else its day and ground. */
 function LegLines({ tie, clubs }: { tie: TieView; clubs: Clubs }) {
   return (
     <div className="bk-legs">
@@ -66,7 +66,7 @@ function LegLines({ tie, clubs }: { tie: TieView; clubs: Clubs }) {
         const played = leg.homeGoals !== null && leg.awayGoals !== null;
         return (
           <p key={leg.fixtureId}>
-            {LEG_NAMES[i] ?? `${i + 1}º jogo`}{" "}
+            {tie.legs.length === 1 ? "Jogo único" : (LEG_NAMES[i] ?? `${i + 1}º jogo`)}{" "}
             <b className={played ? undefined : "next"}>{played ? `${leg.homeGoals} × ${leg.awayGoals}` : formatBarDate(leg.date)}</b>
             {ground ? ` · ${ground}` : ""}
           </p>

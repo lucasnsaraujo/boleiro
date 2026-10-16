@@ -235,3 +235,16 @@ test("a played tie on the Libertadores bracket opens its last game's ficha", asy
   const panel = await screen.findByRole("dialog", { name: "Ficha do jogo" });
   expect(within(panel).getByLabelText(new RegExp(`^${home} \\d+ x \\d+ ${away}$`))).toBeTruthy();
 });
+
+test("a Club World Cup semi-final on the bracket is one match, not a first leg", async () => {
+  const given = await services("flamengo-rj");
+  const { date } = await given.engine.read(["date"]);
+  const days = Math.round((Date.parse("2026-07-10") - Date.parse(date)) / 86_400_000);
+  await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+  openTables(given);
+  await userEvent.click(await screen.findByRole("tab", { name: "Mundial de Clubes" }));
+  await userEvent.click(within(screen.getByRole("group", { name: "Fases" })).getByRole("button", { name: "Final" }));
+  const bracket = screen.getByRole("group", { name: "Mundial de Clubes, mata-mata" });
+  expect(within(bracket).getAllByText(/^Jogo único/)).toHaveLength(2);
+  expect(within(bracket).queryByText(/^Ida/)).toBeNull();
+});
