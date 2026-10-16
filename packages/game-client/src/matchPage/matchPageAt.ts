@@ -56,13 +56,18 @@ function pageEvent(event: PlayerEvent, homeId: string): PageEvent {
   }
 }
 
-/** Who is on the pitch for a side once `minute` has been played: the starters swapped by the substitutions, less anyone sent off or hurt. */
+/**
+ * Who is on the pitch for a side once `minute` has been played: the starters swapped by the
+ * substitutions, less anyone sent off or hurt with nobody on for him. A hurt man's substitute comes
+ * on at the same minute, listed after his injury.
+ */
 function onPitchOf(page: MatchPage, side: Side, events: readonly PageEvent[]): string[] {
+  const own = events.filter((e) => e.side === side);
+  const replaced = new Set(own.flatMap((e) => (e.kind === "substitution" && e.otherId ? [e.otherId] : [])));
   let players = page[side].starters.map((p) => p.id);
-  for (const e of events) {
-    if (e.side !== side) continue;
+  for (const e of own) {
     if (e.kind === "substitution") players = players.map((id) => (id === e.otherId ? e.playerId : id));
-    if (e.kind === "red" || e.kind === "injury") players = players.filter((id) => id !== e.playerId);
+    if (e.kind === "red" || (e.kind === "injury" && !replaced.has(e.playerId))) players = players.filter((id) => id !== e.playerId);
   }
   return players;
 }

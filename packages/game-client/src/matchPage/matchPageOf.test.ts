@@ -45,6 +45,25 @@ describe("the match page of the round under way", () => {
     }
   });
 
+  it("puts a substitute on the pitch in place of the man he replaced, a hurt one included", () => {
+    let hurtAndReplaced = 0;
+    for (const match of round.matches) {
+      const page = openPage(session, match.fixtureId);
+      const { onPitch } = matchPageAt(page, 90);
+      for (const sub of page.events) {
+        if (sub.type !== "substitution") continue;
+        const side = sub.clubId === match.homeId ? onPitch.home : onPitch.away;
+        const isOffLater = page.events.some(
+          (e) => (e.type === "substitution" && e.offId === sub.playerId) || ((e.type === "card" ? e.card === "red" : e.type === "injury") && e.playerId === sub.playerId),
+        );
+        if (page.events.some((e) => e.type === "injury" && e.playerId === sub.offId)) hurtAndReplaced++;
+        expect(side.includes(sub.playerId)).toBe(!isOffLater);
+        expect(side).not.toContain(sub.offId);
+      }
+    }
+    expect(hurtAndReplaced).toBeGreaterThan(0);
+  });
+
   it("follows the clock: the score counts the goals up to the minute shown, and the marks wait for the final whistle", () => {
     const page = openPage(session, otherFixtureId);
     const first = page.events.find((e) => e.type === "goal");
