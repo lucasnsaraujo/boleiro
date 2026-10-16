@@ -19,6 +19,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
+  vi.unstubAllGlobals();
   for (const close of closers.splice(0)) close();
 });
 
@@ -112,4 +113,20 @@ test("Ver ficha completa opens the full sheet on its summary, and its tabs switc
   expect(within(sheet).getByRole("img", { name: /^Escalações:/ })).toBeTruthy();
   await user().click(within(sheet).getByRole("tab", { name: "Confronto" }));
   expect(within(sheet).getByRole("region", { name: "Na tabela" })).toBeTruthy();
+});
+
+test("a match opened while the last one's panel is still leaving stays open", async () => {
+  // With motion on, a closing panel leaves over a few hundred milliseconds before it unmounts.
+  vi.stubGlobal("matchMedia", (query: string) => ({ matches: false, media: query, addEventListener: () => undefined, removeEventListener: () => undefined }));
+  const given = await kickOff();
+  const round = await given.engine.liveRound();
+  const [first, second] = round?.matches.filter((m) => isOnBoard(round, m) && m.fixtureId !== round.coach?.fixtureId) ?? [];
+  if (!round || !first || !second) return expect.fail("the round has two other matches");
+  const name = (clubId: string) => round.clubs[clubId]?.shortName ?? "";
+
+  await user().click(screen.getByRole("button", { name: `Ficha do jogo: ${name(first.homeId)} x ${name(first.awayId)}` }));
+  await user().click(within(await panel()).getByRole("button", { name: "Fechar a ficha" }));
+  await user().click(screen.getByRole("button", { name: `Ficha do jogo: ${name(second.homeId)} x ${name(second.awayId)}` }));
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  expect(within(await panel()).getByLabelText(`${name(second.homeId)} 0 x 0 ${name(second.awayId)}`)).toBeTruthy();
 });

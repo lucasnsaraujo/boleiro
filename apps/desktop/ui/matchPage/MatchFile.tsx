@@ -53,21 +53,30 @@ function useMatchPage(matchRef: string | null, version: unknown): MatchPage | nu
 export function MatchFile({ matchRef, minute = FULL_TIME, version, onSubstitute, onClose }: Props) {
   const page = useMatchPage(matchRef, version);
   const [isFull, setFull] = useState(false);
-  const [leaving, setLeaving] = useState<"panel" | "sheet" | null>(null);
+  // A leave belongs to the match it started on: another match opened meanwhile cancels it.
+  const [pendingLeave, setLeave] = useState<{ what: "panel" | "sheet"; matchRef: string | null } | null>(null);
+  const leaving = pendingLeave?.matchRef === matchRef ? pendingLeave.what : null;
   // Back from the sheet the panel is already in place: it fades in instead of sliding.
   const [isReturning, setReturning] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const shown = useRef(matchRef);
+  useEffect(() => {
+    shown.current = matchRef;
+  }, [matchRef]);
 
   const leave = useCallback(
     (what: "panel" | "sheet") => {
+      const from = shown.current;
       const done = () => {
-        setLeaving(null);
+        setLeave(null);
+        if (shown.current !== from) return;
         setFull(false);
         setReturning(what === "sheet");
         if (what === "panel") onClose();
       };
+      if (timer.current) clearTimeout(timer.current);
       if (prefersReducedMotion()) return done();
-      setLeaving(what);
+      setLeave({ what, matchRef: from });
       timer.current = setTimeout(done, LEAVE_MS);
     },
     [onClose],

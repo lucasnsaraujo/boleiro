@@ -658,7 +658,8 @@ export function Round() {
         />
       )}
 
-      <MatchFile matchRef={fileRef} minute={minute} version={round} onClose={() => setFileRef(null)} {...(fileCoach ? { onSubstitute: () => substituteFromFile(fileCoach.clubId) } : {})} />
+      {/* The coach's own windows take over from the ficha; it comes back as it was once they shut. */}
+      <MatchFile matchRef={incident || lineupSide ? null : fileRef} minute={minute} version={round} onClose={() => setFileRef(null)} {...(fileCoach ? { onSubstitute: () => substituteFromFile(fileCoach.clubId) } : {})} />
 
       {lineupSide && lineupLimits && (
         <LineupSheet
