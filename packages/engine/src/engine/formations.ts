@@ -209,8 +209,22 @@ function formationWorth(players: readonly Player[], formation: Formation): numbe
   }, 0);
 }
 
-/** The formation whose best eleven of these players is worth most; the earlier formation of FORMATION_NAMES on a tie. */
+// A club without a usual lineup (a continental guest from abroad) is fitted again at each of its matches.
+const fittings = new Map<string, Formation>();
+const FITTINGS_KEPT = 4096;
+
+/** The formation whose best eleven of these players is worth most; the earlier formation of FORMATION_NAMES on a tie. Remembered by the players' groups, positions and strengths. */
 export function fittingFormation(players: readonly Player[]): Formation {
+  const key = players.map((p) => `${p.group}/${p.positions?.join(",") ?? ""}/${p.strength}`).join(";");
+  const known = fittings.get(key);
+  if (known) return known;
+  const best = bestFormation(players);
+  if (fittings.size >= FITTINGS_KEPT) fittings.clear();
+  fittings.set(key, best);
+  return best;
+}
+
+function bestFormation(players: readonly Player[]): Formation {
   let best: Formation = "4-4-2";
   let bestWorth = -Infinity;
   for (const formation of FORMATION_NAMES) {
