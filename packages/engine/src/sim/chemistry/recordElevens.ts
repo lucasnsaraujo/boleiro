@@ -5,8 +5,10 @@ import { chemistryOf, SETTLED_LIMIT, type ClubChemistry } from "./chemistryOf.js
 
 const ELEVEN = 11;
 // guess: keeping this many starters from one match to the next leaves `settled` where it is; each
-// starter more or fewer moves it a point.
+// starter more raises it a point, each starter fewer lowers it two: changes unsettle faster than a
+// steady eleven settles.
 const NEUTRAL_KEPT = 8;
+const CHANGE_WEIGHT = 2;
 // guess: a match with at least this many of the last match's starters keeps a run of steady games going.
 const STEADY_KEPT = 9;
 
@@ -31,7 +33,8 @@ export function recordElevens(state: GameState, played: readonly Fixture[], shee
     const before = chemistry[clubId];
     const last = before?.eleven.length ? new Set(before.eleven) : usualStartersOf(state, clubId);
     const kept = last.size ? eleven.filter((id) => last.has(id)).length : NEUTRAL_KEPT;
-    const settled = Math.min(SETTLED_LIMIT, Math.max(-SETTLED_LIMIT, (before?.settled ?? 0) + kept - NEUTRAL_KEPT));
+    const step = kept >= NEUTRAL_KEPT ? kept - NEUTRAL_KEPT : CHANGE_WEIGHT * (kept - NEUTRAL_KEPT);
+    const settled = Math.min(SETTLED_LIMIT, Math.max(-SETTLED_LIMIT, (before?.settled ?? 0) + step));
     const was = chemistryOf(kickOff, clubId).value;
     const record: ClubChemistry = { eleven, settled, steadyGames: kept >= STEADY_KEPT ? (before?.steadyGames ?? 0) + 1 : 0, kept, was };
     // A named captain who left the club gives the armband back to the assistant's pick.

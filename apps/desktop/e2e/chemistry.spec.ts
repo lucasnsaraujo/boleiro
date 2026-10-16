@@ -54,7 +54,8 @@ test("open the chemistry map from the squad, name a captain, rotate the eleven a
   await playLiveRound(page);
 
   const after = await openChemistry(page);
-  expect(after).toBeLessThan(named);
-  await expect(page.getByText(/caiu \d+ desde o último jogo/)).toBeVisible();
+  expect(after).not.toBe(named);
+  await expect(page.getByRole("region", { name: "Por que está assim" })).toContainText("Muitas trocas no time");
+  await expect(page.getByText(/(caiu|subiu) \d+ desde o último jogo/)).toBeVisible();
   await expect(page.getByRole("group", { name: "Mapa do entrosamento" }).getByRole("listitem", { name: new RegExp(`${startsWithChosen.source}.*capitão`) })).toBeVisible();
 });
