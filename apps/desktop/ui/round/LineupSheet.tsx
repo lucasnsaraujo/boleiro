@@ -282,7 +282,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
 
   return createPortal(
     <div className="sheet-wrap">
-      <section className={isLive ? "lineup" : "lineup lineup-prematch"} role="dialog" aria-modal="true" aria-labelledby="lineup-title">
+      <section className={isLive ? "lineup" : "lineup lineup-prematch"} role="dialog" aria-modal="true" aria-labelledby="lineup-title" inert={isTacticsOpen}>
         <div className={drag ? "pitch dragging" : "pitch"} role="group" aria-label="Titulares">
           <i className="mark out" />
           <i className="mark half" />

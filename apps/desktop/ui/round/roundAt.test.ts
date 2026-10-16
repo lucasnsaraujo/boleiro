@@ -41,7 +41,7 @@ const round: LiveRound = {
   table: null,
   ratings: null,
   seenMinute: 0,
-  coach: { fixtureId: "ours", side: "away", starters: [], benchIds: [], squad: [], tactics: { formation: "4-4-2", posture: "balanced", penaltyTakerId: null }, lastChangeMinute: 0, incidentHandling: "askCoach", shootout: { kickers: [], isOverruled: false }, opponent: { name: "Rival", eleven: [], tactics: { formation: "4-4-2", posture: "balanced", penaltyTakerId: null } }, moment: { isHome: true, minute: 0, lead: 0 } },
+  coach: { fixtureId: "ours", side: "away", starters: [], benchIds: [], squad: [], tactics: { formation: "4-4-2", posture: "balanced", penaltyTakerId: null }, lastChangeMinute: 0, incidentHandling: "askCoach", shootout: { kickers: [], isOverruled: false }, opponent: { clubId: "rival", name: "Rival", starters: [], bench: [], formation: "4-4-2", rivalTactics: null, form: [] } },
 };
 
 test("at a minute each match shows the score so far, its red cards and its latest event, the coach's match first", () => {

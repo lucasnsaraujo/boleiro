@@ -3,6 +3,7 @@ import type { Formation } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { DEFAULT_TACTICS, type Tactics } from "@boleiro/engine/sim/coach/tactics";
 import type { BoardSide, MatchMoment } from "@boleiro/engine/sim/coach/tacticsBoard";
+import { waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
 import { openDisciplineDay, YELLOWS_PER_BAN } from "@boleiro/engine/sim/discipline/recordCards";
 import { yellowPhase } from "@boleiro/engine/sim/discipline/yellowPhase";
@@ -47,8 +48,26 @@ export type MatchDayPlan = {
   opponentFormation: Formation;
   /** The opponent's likely eleven and its coach's tactics, for the tactics board. */
   opponent: BoardSide;
+  /** The opponent's last five results in any competition, oldest first. */
+  opponentForm: MatchResult[];
   moment: MatchMoment;
 };
+
+export type MatchResult = "win" | "draw" | "loss";
+const FORM_LENGTH = 5;
+
+/** A club's last five results in any competition, oldest first. */
+export function recentResultsOf(fixtures: readonly Fixture[], clubId: string): MatchResult[] {
+  return fixtures
+    .filter((f) => f.result && (f.homeId === clubId || f.awayId === clubId))
+    .toSorted((a, b) => a.date.localeCompare(b.date))
+    .slice(-FORM_LENGTH)
+    .flatMap((f): MatchResult[] => {
+      if (!f.result) return [];
+      const [scored, conceded] = f.homeId === clubId ? [f.result.homeGoals, f.result.awayGoals] : [f.result.awayGoals, f.result.homeGoals];
+      return [scored > conceded ? "win" : scored === conceded ? "draw" : "loss"];
+    });
+}
 
 const GROUP_ORDER: Record<PositionGroup, number> = { GK: 0, DEF: 1, MID: 2, ATT: 3 };
 
@@ -133,7 +152,14 @@ export function matchDayPlan(state: GameState, formation?: Formation): MatchDayP
     ...(p.positions ? { positions: p.positions } : {}),
     strength: opponentStrength(p),
   }));
-  const opponent: BoardSide = { name: matchClubOf(state, opponentId)?.shortName ?? opponentId, eleven: opponentEleven, tactics: { ...DEFAULT_TACTICS, formation: opponentFormation } };
+  // A rival human coach plays his own tactics; his eleven stays the assistant's guess until his turn.
+  const rivalTactics = waitingCoachesOf(state).find((waiting) => waiting.clubId === opponentId)?.coach.tactics;
+  const opponent: BoardSide = {
+    name: matchClubOf(state, opponentId)?.shortName ?? opponentId,
+    eleven: opponentEleven,
+    tactics: rivalTactics ?? { ...DEFAULT_TACTICS, formation: opponentFormation },
+  };
   const moment: MatchMoment = { isHome: homeId === clubId, minute: 0, lead: 0 };
-  return { fixtureId: fixture.id, clubId, homeId, awayId, label, squad, lineup, tactics, opponentFormation, opponent, moment };
+  const opponentForm = recentResultsOf(state.fixtures, opponentId);
+  return { fixtureId: fixture.id, clubId, homeId, awayId, label, squad, lineup, tactics, opponentFormation, opponent, opponentForm, moment };
 }

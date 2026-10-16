@@ -4,7 +4,7 @@ import { createEngineSession } from "../engine/createEngineSession.js";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import { finishMatchDay } from "@boleiro/engine/sim/live/finishMatchDay";
 import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
-import { liveRoundOf, playerStatsOf, type LiveRound } from "./liveRoundOf.js";
+import { liveRoundOf, playerStatsOf, tacticsViewAt, type LiveRound } from "./liveRoundOf.js";
 import type { MatchDayPlan } from "./matchDayPlan.js";
 
 const CLUB = "flamengo-rj";
@@ -54,16 +54,31 @@ test("the plan before kick-off brings the opponent's likely eleven and its coach
   expect(plan.moment).toEqual({ isHome: plan.homeId === CLUB, minute: 0, lead: 0 });
 });
 
-test("the coach's side in the live round brings the opponent on the pitch and where the match stands", () => {
-  const coach = changed.coach;
+test("the tactics view of the coach's live match reads the opponent on the pitch and the score at any minute", () => {
+  const coach = kickOff.coach;
+  const match = kickOff.matches.find((m) => m.fixtureId === coach?.fixtureId);
+  if (!coach || !match) throw new Error("the coach has a match");
+  const opponentId = coach.side === "home" ? match.awayId : match.homeId;
+  const ownId = coach.side === "home" ? match.homeId : match.awayId;
+  const sub = match.events.find((e) => e.type === "substitution" && e.clubId === opponentId);
+  if (!sub || sub.type !== "substitution") return expect.fail("the opponent makes a substitution on this seed");
+  const ids = (minute: number) => tacticsViewAt(kickOff, coach, minute).opponent.eleven.map((p) => p.id);
+  expect(ids(sub.minute - 1)).toContain(sub.offId);
+  expect(ids(sub.minute)).toContain(sub.playerId);
+  expect(ids(sub.minute)).not.toContain(sub.offId);
+  const goalsBy = (clubId: string) => match.events.filter((e) => e.type === "goal" && e.minute <= 80 && e.clubId === clubId).length;
+  expect(tacticsViewAt(kickOff, coach, 80).moment).toEqual({ isHome: coach.side === "home", minute: 80, lead: goalsBy(ownId) - goalsBy(opponentId) });
+});
+
+test("an AI opponent losing late attacks in the tactics view, as it does in the match", () => {
+  const coach = kickOff.coach;
   if (!coach) throw new Error("the coach has a match");
-  expect(coach.opponent.eleven).toHaveLength(11);
-  expect(coach.opponent.eleven.map((p) => p.id)).not.toContain(coach.starters[0]);
-  const match = changed.matches.find((m) => m.fixtureId === coach.fixtureId);
-  const goalsBy = (clubId: string | undefined) => match?.events.filter((e) => e.type === "goal" && e.minute <= changed.seenMinute && e.clubId === clubId).length ?? 0;
-  const ownId = coach.side === "home" ? match?.homeId : match?.awayId;
-  const otherId = coach.side === "home" ? match?.awayId : match?.homeId;
-  expect(coach.moment).toEqual({ isHome: coach.side === "home", minute: changed.seenMinute, lead: goalsBy(ownId) - goalsBy(otherId) });
+  const late = { ...coach, opponent: { ...coach.opponent, rivalTactics: null } };
+  const losing = { ...kickOff, matches: kickOff.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [] } : m)) };
+  expect(tacticsViewAt(losing, late, 30).opponent.tactics.posture).toBe("balanced");
+  const ownGoal = { type: "goal" as const, minute: 10, clubId: coach.side === "home" ? losing.matches.find((m) => m.fixtureId === coach.fixtureId)?.homeId ?? "" : losing.matches.find((m) => m.fixtureId === coach.fixtureId)?.awayId ?? "", playerId: coach.starters[1] ?? "" };
+  const behind = { ...losing, matches: losing.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [ownGoal] } : m)) };
+  expect(tacticsViewAt(behind, late, 70).opponent.tactics.posture).toBe("attacking");
 });
 
 test("a substitute the coach brings on is rated after the change", () => {

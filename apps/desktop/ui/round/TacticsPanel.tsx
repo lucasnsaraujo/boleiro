@@ -4,6 +4,7 @@ import type { Lane } from "@boleiro/data/players";
 import type { Marking } from "@boleiro/engine/engine/match";
 import type { Tactics } from "@boleiro/engine/sim/coach/tactics";
 import { followAssistant, tacticsBoard, type BoardPlayer, type BoardSide, type Dial, type LaneView, type MatchMoment, type TacticsBoard } from "@boleiro/engine/sim/coach/tacticsBoard";
+import type { MatchResult } from "@boleiro/game-client/round/matchDayPlan";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { Crest } from "../clubs/Crest.js";
 import { MARKING_LABEL, MARKINGS, PLAY_LABEL, PLAYS, POSTURE_LABEL, POSTURES } from "./tacticsLabels.js";
@@ -11,8 +12,8 @@ import "./tacticsPanel.css";
 
 type ClubFace = Pick<Club, "id" | "shortName" | "colours">;
 
-/** What the tactics panel needs besides the coach's eleven and tactics: both clubs, the opponent's side and where the match stands. */
-export type TacticsContext = { club: ClubFace; opponentClub: ClubFace; opponent: BoardSide; moment: MatchMoment };
+/** What the tactics panel needs besides the coach's eleven and tactics: both clubs, the opponent's side and recent results, and where the match stands. */
+export type TacticsContext = { club: ClubFace; opponentClub: ClubFace; opponent: BoardSide; opponentForm: readonly MatchResult[]; moment: MatchMoment };
 
 type Props = {
   context: TacticsContext;
@@ -28,6 +29,8 @@ const LANE_PLACE: Record<Lane, string> = { left: "na esquerda", centre: "pelo ce
 // Marking as two three-step scales, as the approved mock shows it: tackles won and cards taken.
 const MARKING_STEP: Record<Marking, number> = { light: 1, heavy: 2, veryHeavy: 3 };
 const DIAL_COUNT = 4;
+const RESULT_LETTER: Record<MatchResult, string> = { win: "V", draw: "E", loss: "D" };
+const RESULT_NAME: Record<MatchResult, string> = { win: "vitória", draw: "empate", loss: "derrota" };
 
 const round = (value: number) => Math.round(value);
 const decimal = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -250,7 +253,7 @@ export function TacticsPanel({ context, eleven, tactics, isLive, onChange, onClo
   const wayEdge = way ? round(way.attack) - round(way.defense) : 0;
 
   return (
-    <section className="tac" role="dialog" aria-labelledby="tactics-title">
+    <section className="tac" role="dialog" aria-modal="true" aria-labelledby="tactics-title">
       <div className="page tac-dials">
         <header className="tac-hd">
           <h2 id="tactics-title" ref={title} tabIndex={-1}>
@@ -390,6 +393,18 @@ export function TacticsPanel({ context, eleven, tactics, isLive, onChange, onClo
             <dd>{POSTURE_LABEL[opponentTactics.posture]}</dd>
             <dt>Marcação</dt>
             <dd>{MARKING_LABEL[opponentTactics.marking ?? "heavy"]}</dd>
+            {context.opponentForm.length > 0 && (
+              <>
+                <dt>Últimos {context.opponentForm.length}</dt>
+                <dd className="fm" aria-label={context.opponentForm.map((r) => RESULT_NAME[r]).join(", ")}>
+                  {context.opponentForm.map((result, i) => (
+                    <i key={i} className={result} aria-hidden="true">
+                      {RESULT_LETTER[result]}
+                    </i>
+                  ))}
+                </dd>
+              </>
+            )}
           </dl>
         </div>
       </aside>

@@ -547,8 +547,10 @@
   height: 8px;
 }
 
+/* Club colours softened towards the card, so a pure red or yellow sits in the album's palette. */
 .tac-sec .sr .sb i {
   border-radius: 999px;
+  filter: saturate(0.78) brightness(0.96);
   transition: flex-grow 380ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -607,6 +609,38 @@
   text-align: right;
 }
 
+.tac-opp .fm {
+  display: flex;
+  justify-content: flex-end;
+  gap: 3px;
+}
+
+.tac-opp .fm i {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  font-style: normal;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 9.5px;
+  color: #fff;
+}
+
+.tac-opp .fm .win {
+  background: var(--green);
+}
+
+.tac-opp .fm .draw {
+  background: var(--line-2);
+  color: var(--ink);
+}
+
+.tac-opp .fm .loss {
+  background: var(--red);
+}
+
 @media (max-height: 760px) {
   .tac-dial {
     padding: 8px 0;
@@ -632,7 +666,10 @@
   }
 
   .tac-lane .duel,
-  .tac-sec .sr .sb i {
+  .tac-sec .sr .sb i,
+  .tac-seg button,
+  .tac-mk .scale i,
+  .tac-lane .arr {
     transition: none;
   }
 }

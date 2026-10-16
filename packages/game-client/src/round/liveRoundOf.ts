@@ -1,10 +1,11 @@
 import type { Club } from "@boleiro/data/clubs";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { aiPosture, DEFAULT_TACTICS, type Tactics } from "@boleiro/engine/sim/coach/tactics";
-import type { BoardSide, MatchMoment } from "@boleiro/engine/sim/coach/tacticsBoard";
+import type { Formation } from "@boleiro/engine/engine/formations";
+import type { BoardPlayer, BoardSide, MatchMoment } from "@boleiro/engine/sim/coach/tacticsBoard";
 import { humanClubIds, waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
-import type { Fixture, IsoDate } from "@boleiro/engine/sim/gameState";
+import type { Fixture, IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { onPitchAt } from "@boleiro/engine/sim/live/aiSubstitutions";
 import { incidentHandling, type IncidentHandling } from "@boleiro/engine/sim/live/incidentHandling";
 import type { CoachMatch, LiveDay } from "@boleiro/engine/sim/live/liveDay";
@@ -14,7 +15,7 @@ import type { MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import { clubMood } from "@boleiro/engine/sim/morale/clubMood";
 import { shootoutKickers } from "@boleiro/engine/sim/settleShootout";
 import { fixtureLabel } from "../format/competitionName.js";
-import { squadOf, type SquadPlayer } from "./matchDayPlan.js";
+import { recentResultsOf, squadOf, type MatchResult, type SquadPlayer } from "./matchDayPlan.js";
 
 export type Side = "home" | "away";
 export type RoundClub = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
@@ -42,10 +43,12 @@ export type CoachSide = {
   incidentHandling: IncidentHandling;
   /** Who would kick a shootout now, in order, and whether the squad overruled the coach's order to get it. */
   shootout: { kickers: string[]; isOverruled: boolean };
-  /** The opponent's eleven on the pitch now and its tactics, for the tactics board. */
-  opponent: BoardSide;
-  moment: MatchMoment;
+  /** Who the opponent may field, to read its side at any minute for the tactics board (tacticsViewAt). */
+  opponent: OpponentRoster;
 };
+
+/** The opponent of a coach's match: its starters and bench at today's strength, its formation, its coach's tactics when he is human, and its last five results before today. */
+export type OpponentRoster = { clubId: string; name: string; starters: BoardPlayer[]; bench: BoardPlayer[]; formation: Formation; rivalTactics: Tactics | null; form: MatchResult[] };
 
 /** A human coach's side of his match in a hot-seat game, with his club and his name. */
 export type HumanSide = CoachSide & { clubId: string; coachName: string };
@@ -102,25 +105,15 @@ function sideOf(live: LiveDay, open: CoachMatch, clubId: string, fixture: Fixtur
   const onPitch = onPitchAt(open.starters[side], bench, events, clubId, seenMinute + ONCE_PLAYED);
   const otherSide: Side = side === "home" ? "away" : "home";
   const opponentId = side === "home" ? fixture.awayId : fixture.homeId;
-  const goals = (id: string) => events.filter((e) => e.type === "goal" && e.minute <= seenMinute && e.clubId === id).length;
-  const lead = goals(clubId) - goals(opponentId);
-  const opponentBench = (isOwner ? open.opponentBench : open.bench) ?? [];
-  const opponentTactics = (isOwner ? open.rivalTactics : open.tactics) ?? {
-    ...DEFAULT_TACTICS,
-    formation: match?.formations[otherSide] ?? DEFAULT_TACTICS.formation,
-    posture: aiPosture(-lead, seenMinute),
-  };
-  const strengthOf = (p: { id: string; strength: number }) => open.strengths[p.id] ?? p.strength;
-  const opponent: BoardSide = {
+  const boardPlayer = (p: SimPlayer): BoardPlayer => ({ id: p.id, name: p.name, group: p.group, ...(p.positions ? { positions: p.positions } : {}), strength: open.strengths[p.id] ?? p.strength });
+  const opponent: OpponentRoster = {
+    clubId: opponentId,
     name: state.clubs[opponentId]?.shortName ?? guestClubOf(state, opponentId)?.name ?? opponentId,
-    eleven: onPitchAt(open.starters[otherSide], opponentBench, events, opponentId, seenMinute + ONCE_PLAYED).map((p) => ({
-      id: p.id,
-      name: p.name,
-      group: p.group,
-      ...(p.positions ? { positions: p.positions } : {}),
-      strength: strengthOf(p),
-    })),
-    tactics: opponentTactics,
+    starters: open.starters[otherSide].map(boardPlayer),
+    bench: ((isOwner ? open.opponentBench : open.bench) ?? []).map(boardPlayer),
+    formation: match?.formations[otherSide] ?? DEFAULT_TACTICS.formation,
+    rivalTactics: (isOwner ? open.rivalTactics : open.tactics) ?? null,
+    form: recentResultsOf(state.fixtures, opponentId),
   };
   const order = tactics.kickerOrder;
   const shootout = shootoutKickers({ clubId, onPitch, morale: clubMood(state, clubId).squad, ...(order ? { order } : {}) }, (p) => open.strengths[p.id] ?? p.strength);
@@ -135,8 +128,27 @@ function sideOf(live: LiveDay, open: CoachMatch, clubId: string, fixture: Fixtur
     incidentHandling: incidentHandling(state, clubId),
     shootout: { kickers: shootout.kickers.map((p) => p.id), isOverruled: shootout.isOverruled },
     opponent,
-    moment: { isHome: side === "home", minute: seenMinute, lead },
   };
+}
+
+/**
+ * A coach's live match as the tactics board reads it at `minute`: the opponent's eleven then, after
+ * its substitutions and less anyone sent off, its tactics (an AI coach's posture follows the score and
+ * the clock, as in the match), and the coach's lead.
+ */
+export function tacticsViewAt(round: Pick<LiveRound, "matches">, side: CoachSide, minute: number): { opponent: BoardSide; moment: MatchMoment } {
+  const { opponent } = side;
+  const events = (round.matches.find((m) => m.fixtureId === side.fixtureId)?.events ?? []).filter((e) => e.minute <= minute);
+  const byId = new Map([...opponent.starters, ...opponent.bench].map((p) => [p.id, p]));
+  let eleven = [...opponent.starters];
+  for (const event of events) {
+    if (event.type === "substitution" && event.clubId === opponent.clubId) eleven = eleven.map((p) => (p.id === event.offId ? (byId.get(event.playerId) ?? p) : p));
+    if (event.type === "card" && event.card !== "yellow" && event.clubId === opponent.clubId) eleven = eleven.filter((p) => p.id !== event.playerId);
+  }
+  const theirGoals = events.filter((e) => e.type === "goal" && e.clubId === opponent.clubId).length;
+  const lead = events.filter((e) => e.type === "goal").length - 2 * theirGoals;
+  const tactics = opponent.rivalTactics ?? { ...DEFAULT_TACTICS, formation: opponent.formation, posture: aiPosture(-lead, minute) };
+  return { opponent: { name: opponent.name, eleven, tactics }, moment: { isHome: side.side === "home", minute, lead } };
 }
 
 function coachSideOf(live: LiveDay, fixture: Fixture | undefined, seenMinute: number): CoachSide | null {
