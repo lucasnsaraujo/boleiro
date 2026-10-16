@@ -23,6 +23,9 @@ export const INTERCONTINENTAL_CUP_STAGES: { name: string; dates: IsoDate[] }[] =
 
 const STAGES = { playOff: 0, africanAsianPacificCup: 1, derbyOfTheAmericas: 2, challengerCup: 3, final: 4 } as const;
 
+/** The stage the season's Libertadores winner joins at. */
+export const DERBY_OF_THE_AMERICAS = STAGES.derbyOfTheAmericas;
+
 // The 2024 prize money in USD by final place (Sport, as Calcio e Finanza reported it on 19 Dec 2024):
 // 5 million for the champion, 4 for the runner-up, then 2.5, 2, 1.5 and 1 million for the losers of the
 // Challenger Cup, the Derby of the Americas, the African–Asian–Pacific Cup and its play-off.
