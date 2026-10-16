@@ -20,8 +20,9 @@ const EVENT_SALT = 0x5e17e5;
 // same day, which goes to the newspaper; a Série A club the AI runs gets one about once a month.
 const HUMAN_CHANCES = [0.1, 0.03] as const;
 const AI_CHANCES = [0.03] as const;
-// The mock's "Sem resposta até quarta" for an event on a Sunday: the coach has three days to answer.
-const ANSWER_DAYS = 3;
+// An event waits for the coach until his club's next match, which the days played on stop at; the
+// assistant answers it after that match. guess: off-season, with no match booked, it waits two weeks.
+const ANSWER_DAYS_WITHOUT_MATCH = 14;
 // guess: the newspaper's archive keeps about five months of stories.
 const NEWS_DAYS = 150;
 
@@ -131,6 +132,16 @@ function drawEvent(scene: EventScene, recall: Recall, bank: readonly EventType[]
   return open.at(-1) ?? null;
 }
 
+/** The day of the club's next match after `date`, if one is booked. */
+function nextMatchDay(state: GameState, clubId: string, date: IsoDate): IsoDate | null {
+  let next: IsoDate | null = null;
+  for (const fixture of state.fixtures) {
+    if (fixture.result || fixture.date <= date || (fixture.homeId !== clubId && fixture.awayId !== clubId)) continue;
+    if (!next || fixture.date < next) next = fixture.date;
+  }
+  return next;
+}
+
 /** The event drawn for a club happens: it waits for its human coach as a pop-up, or settles at once. */
 function happen(state: GameState, scene: EventScene, drawn: { type: EventType; cast: Cast }, asksCoach: boolean, random: () => number): Resolved {
   const { type, cast } = drawn;
@@ -156,7 +167,7 @@ function happen(state: GameState, scene: EventScene, drawn: { type: EventType; c
         effects: byCast(choice.effects, scene, cast),
       })),
       assistantChoice: type.assistantChoice ?? 0,
-      expiresOn: addDays(date, ANSWER_DAYS),
+      expiresOn: nextMatchDay(state, clubId, date) ?? addDays(date, ANSWER_DAYS_WITHOUT_MATCH),
     };
     if (asksCoach) return { state: withMemory(state, (memory) => ({ ...memory, pending: { ...memory.pending, [clubId]: pending } })), events: [happened] };
     const settled = settle(state, pending, pending.assistantChoice, type, date);

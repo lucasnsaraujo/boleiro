@@ -117,12 +117,17 @@ describe("event engine", () => {
     expect(settledByAssistant.length).toBeGreaterThan(0);
   });
 
-  it("has the assistant answer an event the coach lets lapse, three days on", () => {
+  it("has the assistant answer an event the coach lets lapse, at his club's next match", () => {
     const type = askingType("lapse", { cooldownDays: 400 });
     const ran = runDays(start, 120, [type]);
     const popped = ran.days.find(({ events }) => events.some((e) => e.type === "eventHappened" && e.clubId === CLUB && e.asksCoach));
     const answered = ran.days.find(({ events }) => events.some((e) => e.type === "eventAnswered" && e.clubId === CLUB && e.byAssistant));
-    expect(popped && answered && answered.date).toBe(popped && addDays(popped.date, 3));
+    const nextMatch = start.fixtures
+      .filter((f) => (f.homeId === CLUB || f.awayId === CLUB) && popped && f.date > popped.date)
+      .map((f) => f.date)
+      .sort()[0];
+    expect(nextMatch).toBeDefined();
+    expect(answered?.date).toBe(nextMatch);
     expect(eventsOf(ran.state, { typeId: "lapse", clubId: CLUB })[0]?.choice).toBe(0);
   });
 

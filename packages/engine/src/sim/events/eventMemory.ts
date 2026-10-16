@@ -31,7 +31,7 @@ export type PendingEvent = EventRecord & {
   choices: EventChoice[];
   /** The answer the assistant gives when the coach leaves it to him or lets it lapse. */
   assistantChoice: number;
-  /** The assistant answers on this day if the coach hasn't. */
+  /** The assistant answers at the end of this day, the club's next match day, if the coach hasn't. */
   expiresOn: IsoDate;
 };
 
