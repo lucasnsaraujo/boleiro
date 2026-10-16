@@ -437,8 +437,8 @@ test("leaving the incident window as it is changes nothing and plays on", async 
   expect(apply.mock.calls.some(([command]) => command.type === "changeLive")).toBe(false);
 });
 
-/** A session whose coach's match has `incident` at its minute and nothing else of the coach's side before it. */
-function withIncidentAt(minute: number, incident: (coach: NonNullable<CommandResults["startRound"]["coach"]>) => MatchEvent) {
+/** A session whose coach's match has `incident`, one event or several, at its minute and nothing else of the coach's side before it. */
+function withIncidentAt(minute: number, incident: (coach: NonNullable<CommandResults["startRound"]["coach"]>) => MatchEvent | readonly MatchEvent[]) {
   return (engine: EngineClient): EngineClient => {
     function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
     async function apply(command: GameCommand): Promise<unknown> {
@@ -448,14 +448,14 @@ function withIncidentAt(minute: number, incident: (coach: NonNullable<CommandRes
       const coach = round.coach;
       if (!coach) throw new Error("the coach has a match");
       const quiet = (e: MatchEvent) => e.minute > minute || !("clubId" in e);
-      return { ...round, matches: round.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [incident(coach), ...m.events.filter(quiet)] } : m)) };
+      return { ...round, matches: round.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [...[incident(coach)].flat(), ...m.events.filter(quiet)] } : m)) };
     }
     async function liveRound() {
       const round = await engine.liveRound();
       const coach = round?.coach;
       if (!round || !coach) return round;
       const quiet = (e: MatchEvent) => e.minute > minute || !("clubId" in e);
-      return { ...round, matches: round.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [incident(coach), ...m.events.filter(quiet)] } : m)) };
+      return { ...round, matches: round.matches.map((m) => (m.fixtureId === coach.fixtureId ? { ...m, events: [...[incident(coach)].flat(), ...m.events.filter(quiet)] } : m)) };
     }
     return { ...engine, apply, liveRound };
   };
@@ -465,6 +465,35 @@ const hurtForward = (minute: number) => (coach: NonNullable<CommandResults["star
   const forward = coach.squad.find((p) => coach.starters.includes(p.id) && p.group === "ATT");
   return { type: "injury", minute, clubId: "bahia-ba", playerId: forward?.id ?? "", days: 9 };
 };
+
+/** A red card for the coach's first defender that VAR gives at `minute`, the check coming before the card. */
+const sentOffByVar = (minute: number) => (coach: NonNullable<CommandResults["startRound"]["coach"]>): MatchEvent[] => {
+  const playerId = coach.squad.find((p) => coach.starters.includes(p.id) && p.group === "DEF")?.id ?? "";
+  return [
+    { type: "varCheck", minute, clubId: "bahia-ba", playerId, decision: "redCardGiven", seconds: 60 },
+    { type: "card", minute, clubId: "bahia-ba", playerId, card: "red" },
+  ];
+};
+
+test("a red card VAR gives the coach's side stops the round with the decision, so a speed picked during the check still leaves its window paused", async () => {
+  const MINUTE = 6;
+  const pauseButton = () => screen.getByRole("button", { name: "Pausar" });
+  await kickOff(await onMatchDay(withIncidentAt(MINUTE, sentOffByVar(MINUTE))));
+  for (let minute = 0; minute < MINUTE + 2; minute++) play(1);
+  await screen.findByText("VAR checando o lance");
+  expect(screen.getByLabelText("Minuto").textContent).toBe("VAR");
+  // The clock doesn't give the decision away while VAR checks.
+  expect(pauseButton()).toHaveProperty("ariaPressed", "false");
+
+  await user().click(screen.getByRole("button", { name: "2x" }));
+  const window = await screen.findByRole("dialog", { name: /^Expulso:/ }, { timeout: 5_000 });
+  expect(pauseButton()).toHaveProperty("ariaPressed", "true");
+
+  await user().click(within(window).getByRole("button", { name: "Deixar como está" }));
+  await waitFor(() => expect(screen.queryByText("VAR checando o lance")).toBeNull(), { timeout: 5_000 });
+  act(() => vi.advanceTimersByTime(2 * 330));
+  expect(shownMinute()).toBeGreaterThan(MINUTE);
+}, 30_000);
 
 test("an injury in first-half stoppage time opens the incident window at half-time", async () => {
   const given = await onMatchDay(withIncidentAt(HALF_TIME, hurtForward(HALF_TIME)));
