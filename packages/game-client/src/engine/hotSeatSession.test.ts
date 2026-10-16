@@ -239,3 +239,32 @@ test("a waiting coach substitutes live in his own match, and his change survives
   loaded.apply({ type: "finishRound" });
   expect(loaded.read(["history"]).history.players[ANA.clubId]?.[onId]?.apps).toBe(appsBefore + 1);
 });
+
+test("each hot-seat coach meets his own club's events on his turn and answers them himself", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: SEED, choices: twoCoaches });
+  const answeredBy = new Set<string>();
+  for (let step = 0; step < MAX_STEPS && answeredBy.size < 2; step++) {
+    const view = session.hotSeat();
+    const seated = seatedOf(view);
+    const pending = session.pendingEvent();
+    if (pending) {
+      expect(pending.clubId).toBe(seated.clubId);
+      const answered = session.apply({ type: "answerEvent", choice: pending.choices.length - 1 });
+      expect(answered).toMatchObject({ clubId: seated.clubId, byAssistant: false });
+      expect(session.pendingEvent()).toBeNull();
+      answeredBy.add(seated.name);
+    }
+    if (!view?.isLastTurn) session.apply({ type: "passTurn" });
+    else {
+      // Days played hand the seat back to the first coach; on the match day itself the last one kicks off.
+      const played = session.apply({ type: "playToMatchDay" });
+      if (played.stop === "matchDay" && played.daysPlayed === 0) {
+        session.apply({ type: "startRound" });
+        session.apply({ type: "finishRound" });
+      }
+    }
+    for (let point = session.turningPoint(); point; point = session.turningPoint()) session.apply({ type: "closeTurningPoint" });
+  }
+  expect([...answeredBy].sort()).toEqual([ANA.name, BRUNO.name]);
+}, 120_000);

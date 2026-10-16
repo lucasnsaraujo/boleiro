@@ -27,7 +27,7 @@ function roundTrip(state: GameState): GameState {
 function seasonRun(seasons: number): () => SeasonRun {
   let run: SeasonRun | undefined;
   beforeAll(() => {
-    run = runSeasons(1, seasons, roundTrip);
+    run = runSeasons(3, seasons, roundTrip);
   }, 60_000 * seasons);
   return () => {
     if (!run) throw new Error(`the ${seasons} seasons did not run`);
@@ -46,7 +46,7 @@ function expectSeasonsPlayed(run: SeasonRun, seasons: number) {
 // The checks below are the ten-season band checks of seasonRevenues, strengthBySeason and transferFlow,
 // run on the same seasons that went through a save and load. The short run skips the ones that need a
 // long run: the spread and Série D drift compare a settled season with the last, and the cash cap fails
-// after two seasons (a club relegated from Série A keeps its Série A cash, e.g. Mirassol 2027).
+// after two seasons (a club relegated from Série A keeps its Série A cash).
 describe("two seasons from the season runner", () => {
   const run = seasonRun(2);
 

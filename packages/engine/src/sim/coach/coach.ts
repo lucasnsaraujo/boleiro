@@ -1,4 +1,5 @@
 import type { IsoDate } from "../gameState.js";
+import type { EventArea } from "../events/eventMemory.js";
 import type { Tactics } from "./tactics.js";
 
 /** `salary` is monthly, in BRL; the contract runs to the end of `untilSeason`. */
@@ -16,6 +17,8 @@ export type Coach = {
   tactics: Tactics;
   /** The last day of the window the coach got for himself when he took a club outside the game's windows. */
   personalWindowUntil?: IsoDate;
+  /** The areas whose events the assistant answers for him at once; left out, every event asks the coach. */
+  assistantAreas?: EventArea[];
 };
 
 // guess: an unknown coach starts at the reputation of the smallest national clubs.

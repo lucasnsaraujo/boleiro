@@ -1,6 +1,8 @@
 import type { Formation } from "@boleiro/engine/engine/formations";
 import { advanceDay, type DayDecisions, type DayEvent, type DayResult, type WaitingDecisions } from "@boleiro/engine/sim/advanceDay";
 import { declineOffer } from "@boleiro/engine/sim/coach/declineOffer";
+import { pendingEventOf, type EventArea, type PendingEvent } from "@boleiro/engine/sim/events/eventMemory";
+import { answerEvent, type EventAnswered } from "@boleiro/engine/sim/events/runEvents";
 import { passTheSeat, swapSeat, waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import { applyLiveChange, type LiveChange } from "@boleiro/engine/sim/live/applyLiveChange";
@@ -28,6 +30,7 @@ import { isSigning, marketClockView, spendMarketTime, type MarketClock, type Mar
 import { matchPageOf, type MatchPage } from "../matchPage/matchPageOf.js";
 import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
 import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
+import { newspaperEditions, newspaperOf, type Edition, type EditionTitle } from "../newspaper/roundNewspaper.js";
 import { readStoredSave, splitGame, writeSessionSave, writeSessionShards, type SaveShards, type SeatParts, type SplitGame, type StoredSave } from "./sessionSave.js";
 
 export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode" | "stateChampionships" | "midSeasonWindow" | "hotSeat" | "marketClockSeconds" | "formats">;
@@ -87,6 +90,10 @@ type CommandFields = {
    * only when the player is not his. The clock runs only in a game with it and inside a window.
    */
   spendMarketTime: { seconds: number; playerId?: string };
+  /** The coach in the seat answers the event waiting for him with answer `choice`, or leaves it to his assistant with null. */
+  answerEvent: { choice: number | null };
+  /** From now on the assistant answers the events of `area` for the coach in the seat (`isHanded`), or stops doing it. */
+  handToAssistant: { area: EventArea; isHanded: boolean };
 };
 
 /** What a move on a kid of the academy answers: null when it went through, and the sale it made. */
@@ -127,6 +134,8 @@ export type CommandResults = {
   sellProspect: ProspectAnswer;
   passTurn: HotSeatView;
   spendMarketTime: MarketClockView | null;
+  answerEvent: EventAnswered;
+  handToAssistant: undefined;
 };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
@@ -539,6 +548,19 @@ export function createEngineSession(files: GameFiles) {
       if (!view) throw new Error("a hot-seat game lost its coaches");
       return view;
     },
+    answerEvent({ choice }) {
+      const before = betweenDays("an event can't be answered");
+      if (!before.coachClubId) throw new Error("a coach without a club has no events to answer");
+      const answered = answerEvent(before, before.coachClubId, choice);
+      state = answered.state;
+      addNews(inboxLines(before, answered.state, [answered.event]));
+      return answered.event;
+    },
+    handToAssistant({ area, isHanded }) {
+      const game = betweenDays("the assistant can't take an area");
+      const areas = (game.coach.assistantAreas ?? []).filter((own) => own !== area);
+      state = { ...game, coach: { ...game.coach, assistantAreas: isHanded ? [...areas, area] : areas } };
+    },
     spendMarketTime({ seconds, playerId }) {
       const game = current();
       const isOwnPlayer = playerId !== undefined && game.coachClubId !== null && game.players[playerId]?.clubId === game.coachClubId;
@@ -579,6 +601,19 @@ export function createEngineSession(files: GameFiles) {
     /** The hot-seat coaches in turn order and who sits now; null in a one-coach game. */
     hotSeat(): HotSeatView | null {
       return hotSeatView();
+    },
+    /** The event waiting for the seated coach's answer, if any. */
+    pendingEvent(): PendingEvent | null {
+      const game = current();
+      return pendingEventOf(game, game.coachClubId);
+    },
+    /** The round's newspaper of `date` as the seated coach reads it, the latest when left out; null before the first edition. */
+    newspaper(date?: IsoDate): Edition | null {
+      return newspaperOf(current(), date);
+    },
+    /** The newspaper's editions, newest first. */
+    newspaperEditions(): EditionTitle[] {
+      return newspaperEditions(current());
     },
     /** The seated coach's market clock for the window open today; null without the clock or a window. */
     marketClock(): MarketClockView | null {

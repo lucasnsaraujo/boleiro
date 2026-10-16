@@ -8,7 +8,7 @@ import { humanClubIds, isHumanClub, passTheSeat, waitingCoachesOf } from "./huma
 
 const FIRST = "flamengo-rj";
 const SECOND = "palmeiras-sp";
-const twoCoaches = loadNewGame(6, { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }] } });
+const twoCoaches = loadNewGame(7, { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }] } });
 
 function advanceUntil(state: GameState, isDone: (state: GameState) => boolean): GameState {
   let current = state;
@@ -28,7 +28,7 @@ function weakestEleven(state: GameState, clubId: string): string[] {
 
 describe("hot-seat coaches", () => {
   it("leaves a one-coach game without waiting coaches, and passing the seat changes nothing", () => {
-    const alone = loadNewGame(6, { coachClubId: FIRST });
+    const alone = loadNewGame(7, { coachClubId: FIRST });
     expect(alone.waitingCoaches).toBeUndefined();
     expect(passTheSeat(alone)).toBe(alone);
     expect(humanClubIds(alone)).toEqual([FIRST]);

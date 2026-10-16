@@ -4,6 +4,7 @@ import type { Fixture, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { clubMood, NEUTRAL_MOOD, type ClubMood } from "./clubMood.js";
+import { reactToDay } from "./reactToDay.js";
 import { rivalsOf } from "./rivalsOf.js";
 
 const start = loadNewGame(7, { coachClubId: null });
@@ -190,5 +191,17 @@ describe("mood in a save", () => {
   it("survives a save and load", () => {
     const angry = withMood(leagueDay, host, { fans: 12, squad: 30, supporters: "protest", closedDoorGames: 3 });
     expect(loadGame(saveGame(angry)).mood).toStrictEqual(angry.mood);
+  });
+});
+
+describe("a club the game keeps no books for", () => {
+  it("can't be fined, so its fans' disorder leaves the day running", () => {
+    const guest = "guest-club";
+    const fixture: Fixture = { id: "guest-game", competitionId: "libertadores", stage: 0, date: start.date, homeId: guest, awayId: host, result: { homeGoals: 0, awayGoals: 3 } };
+    const angry = withMood(start, guest, { fans: 0, supporters: "violence" });
+    expect(angry.finances[guest]).toBeUndefined();
+    const reacted = reactToDay(angry, [fixture], [], () => 0);
+    expect(reacted.events.some((event) => event.type === "fansViolence" && event.clubId === guest)).toBe(true);
+    expect(reacted.state.finances).toEqual(angry.finances);
   });
 });

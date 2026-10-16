@@ -13,8 +13,8 @@ import { createEngineSession, type CommandResults, type CommandType, type GameCo
 
 const CLUB = "flamengo-rj";
 const SEED = 7;
-// The season test needs a coach the board keeps all year; the board sacks him on seeds 1, 2, 7 and 8 of today's engine.
-const SEASON_SEED = 3;
+// The season test needs a coach the board keeps all year; the board sacks him on seeds 1, 2, 3, 7 and 8 of today's engine.
+const SEASON_SEED = 4;
 // Enough steps for a season of play-ons and match days; a stuck loop fails instead of hanging.
 const MAX_STEPS = 400;
 
@@ -287,11 +287,35 @@ function playHotSeatTurn() {
   return { recorded };
 }
 
+/** Plays on until an event asks the coach, answers it, hands one area to the assistant and plays on. */
+function playEvents() {
+  const recorded = recordedSession();
+  const { session, apply } = recorded;
+  // The board keeps the coach all year on the season's seed, so his club's events keep coming.
+  apply({ type: "newGame", seed: SEASON_SEED, choices: { coachClubId: CLUB } });
+  for (let step = 0; step < MAX_STEPS && !session.pendingEvent(); step++) {
+    if (apply({ type: "playToMatchDay" }).stop === "matchDay") {
+      apply({ type: "startRound" });
+      apply({ type: "finishRound" });
+    }
+  }
+  const pending = session.pendingEvent();
+  if (!pending) throw new Error("an event asks the coach within a season");
+  const before = session.read(["mood", "boards", "finances"]);
+  const answered = apply({ type: "answerEvent", choice: 0 });
+  const after = session.read(["mood", "boards", "finances"]);
+  const inbox = session.inbox();
+  apply({ type: "handToAssistant", area: "press", isHanded: true });
+  apply({ type: "playToMatchDay" });
+  return { recorded, pending, answered, before, after, inbox };
+}
+
 let season: Season;
 let career: ReturnType<typeof playCareerStart>;
 let marketWindow: ReturnType<typeof playMarketWindow>;
 let money: ReturnType<typeof playMoney>;
 let academy: ReturnType<typeof playAcademy>;
+let events: ReturnType<typeof playEvents>;
 
 beforeAll(() => {
   season = playSeason();
@@ -299,7 +323,26 @@ beforeAll(() => {
   marketWindow = playMarketWindow();
   money = playMoney();
   academy = playAcademy();
+  events = playEvents();
 }, 120_000);
+
+test("an event that asks the coach waits for his answer, the answer lands, and the log replays alike", () => {
+  const { pending, answered, before, after, recorded, inbox } = events;
+  expect(answered).toMatchObject({ type: "eventAnswered", clubId: CLUB, typeId: pending.typeId, choice: 0, byAssistant: false });
+  const effects = pending.choices[0]?.effects ?? {};
+  const mood = (state: typeof before) => state.mood[CLUB];
+  if (effects.morale) expect(mood(after)?.squad).not.toBe(mood(before)?.squad);
+  if (effects.fans) expect(mood(after)?.fans).not.toBe(mood(before)?.fans);
+  if (effects.money) expect(after.finances[CLUB]?.cash).toBe((before.finances[CLUB]?.cash ?? 0) + effects.money);
+  if (effects.board) expect(after.boards[CLUB]?.pressure).not.toBe(before.boards[CLUB]?.pressure);
+  if (effects.morale || effects.fans || effects.board || effects.money) expect(after).not.toEqual(before);
+  expect(recorded.session.pendingEvent()?.date ?? null).not.toBe(pending.date);
+  expect(recorded.session.read(["coach"]).coach.assistantAreas).toEqual(["press"]);
+  expect(inbox.some((line) => line.text === answered.headline)).toBe(true);
+  const twin = replay(recorded.applied);
+  expect(twin.results).toEqual(recorded.applied.map(({ result }) => result));
+  expect(sha256(twin.session.save())).toBe(sha256(recorded.session.save()));
+});
 
 test("a season played through commands alone ends, turns the year and crowns a champion", () => {
   const { session } = season.recorded;
@@ -409,7 +452,7 @@ test("the money commands survive JSON and replay alike from the same seed", () =
 });
 
 test("the season, career, market, money, academy and hot-seat logs between them send every kind of command", () => {
-  const logs = [season, career, marketWindow, money, academy, playHotSeatTurn()].flatMap(({ recorded }) => recorded.applied);
+  const logs = [season, career, marketWindow, money, academy, events, playHotSeatTurn()].flatMap(({ recorded }) => recorded.applied);
   const sent = new Set(logs.map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
@@ -437,6 +480,8 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     sellProspect: true,
     passTurn: true,
     spendMarketTime: true,
+    answerEvent: true,
+    handToAssistant: true,
   };
   expect([...sent].sort()).toEqual(Object.keys(every).sort());
 });

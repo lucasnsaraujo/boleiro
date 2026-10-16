@@ -105,7 +105,8 @@ export function reactToDay(
     const escalated = escalateSupporters(clubId, changed, lost.has(clubId), random, troubled.get(clubId) ?? null);
     mood[clubId] = escalated.mood;
     events.push(...escalated.events);
-    if (escalated.fine) next = bookMoney(next, clubId, { cost: "fines", amount: escalated.fine });
+    // A continental guest club is played result-only and keeps no books to fine.
+    if (escalated.fine && next.finances[clubId]) next = bookMoney(next, clubId, { cost: "fines", amount: escalated.fine });
   }
   return { state: { ...next, mood }, events };
 }
