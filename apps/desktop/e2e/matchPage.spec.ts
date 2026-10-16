@@ -27,6 +27,7 @@ async function toKickOff(page: Page) {
 
 test("a match on the live board opens in the panel, Ver ficha completa opens its tabs, and the round plays on to the end", async ({ page }) => {
   test.setTimeout(3 * 60_000);
+  await page.clock.install();
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Tite" });
   await toKickOff(page);
