@@ -93,7 +93,7 @@ export function payContinentalPrizes(state: GameState, played: readonly Fixture[
       if (!final) continue;
       pay(final.winnerId, competition.id, prizesOf(final.winnerId).champion);
       pay(final.loserId, competition.id, prizesOf(final.loserId)["runner-up"]);
-    } else {
+    } else if (prizesOf(fixture.homeId)[knockedOutIn(name)] !== undefined) {
       const tie = tieResults(stage, next.fixtures.filter((f) => f.competitionId === competition.id && f.stage === fixture.stage))[fixture.tie];
       if (tie) pay(tie.loserId, competition.id, prizesOf(tie.loserId)[knockedOutIn(name)]);
     }
