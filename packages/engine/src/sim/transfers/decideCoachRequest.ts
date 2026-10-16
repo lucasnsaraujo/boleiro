@@ -8,6 +8,7 @@ import type { CoachRequest } from "./coachRequest.js";
 import { isClubFull } from "./squadCap.js";
 import type { Counter } from "./transferMarket.js";
 import { contractEnd } from "./expireContracts.js";
+import { releaseClauseOf } from "./releaseClause.js";
 import { LENDER_WAGE_SHARE, LOAN_MAX_AGE, loanUntil } from "./loans.js";
 import { marketView, type MarketView } from "./marketView.js";
 import { movePlayer, type Transfer } from "./movePlayer.js";
@@ -115,6 +116,21 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
         return approve(signed, request, null, [{ type: "preContractSigned", playerId: player.id, fromClubId: player.clubId, toClubId: coachClubId }]);
       }
       return approve(state, request, { playerId: player.id, kind: free ? "freeAgent" : "transfer", toClubId: coachClubId, fee, contract });
+    }
+    case "payClause": {
+      if (own) return refuse(state, request, "alreadyAtClub");
+      if (!state.players[player.id]) return refuse(state, request, "notAvailable");
+      if (loan) return refuse(state, request, "onLoan");
+      if (state.market.preContracts[player.id]) return refuse(state, request, "preContractSigned");
+      if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
+      if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
+      // His club has no say: the clause is paid and only the board and the player decide.
+      const fee = releaseClauseOf(player);
+      const wage = request.wage !== undefined ? Math.max(1, Math.round(request.wage)) : wageDemand(player, squad);
+      const refused = boardRefusal(finance, bill, { upFront: fee + 3 * wage, wageChange: wage });
+      if (refused) return refuse(state, request, refused);
+      if (!isWilling(view, state, player, coachClubId, wage, random)) return refuse(state, request, "playerUnwilling");
+      return approve(state, request, { playerId: player.id, kind: "releaseClause", toClubId: coachClubId, fee, contract: { wage, until: contractEnd(year + 1, random) } });
     }
     case "sell": {
       if (!own || loan) return refuse(state, request, "notAtClub");

@@ -60,6 +60,14 @@ export function requestOptions(state: RequestState, playerId: string, years = DE
   return isLendable(state, player, lineupOf) ? [buy, { label: "Pedir empréstimo", request: { kind: "loanIn", playerId } }] : [buy];
 }
 
+/** The request to pay his release clause, for a player under contract at another club whom nobody else holds; null otherwise. */
+export function clauseRequest(state: RequestState, playerId: string): CoachRequest | null {
+  const player = state.players[playerId];
+  if (!state.coachClubId || !player || player.clubId === state.coachClubId) return null;
+  if (state.market.loans[playerId] || state.market.preContracts[playerId]) return null;
+  return { kind: "payClause", playerId };
+}
+
 /** Whether the board can only grant it inside a transfer window. Free agents, pre-contracts and renewals go any day. */
 export function needsWindow(state: Pick<GameState, "date" | "coachClubId" | "players" | "market">, request: CoachRequest): boolean {
   if (request.kind === "renew") return false;

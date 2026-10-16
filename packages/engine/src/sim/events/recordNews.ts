@@ -183,7 +183,7 @@ export function recordNews(state: GameState, date: IsoDate, events: readonly Day
       const isHumans = (event.toClubId !== null && humans.has(event.toClubId)) || (event.fromClubId !== null && humans.has(event.fromClubId));
       if (event.kind === "abroad" && (isHumans || (isMajor(event.fromClubId) && event.fee >= SALE_ABROAD_FEE))) {
         add("signing", [event.fromClubId ?? ""], event.fee / SALE_ABROAD_FEE, pick(SALES_ABROAD, `sale:${event.playerId}`, { ...names, fee: millions(event.fee) }));
-      } else if (["transfer", "fromAbroad", "freeAgent", "preContract", "loanBuy"].includes(event.kind) && event.toClubId && (isHumans || (isMajor(event.toClubId) && event.fee >= SIGNING_FEE))) {
+      } else if (["transfer", "releaseClause", "fromAbroad", "freeAgent", "preContract", "loanBuy"].includes(event.kind) && event.toClubId && (isHumans || (isMajor(event.toClubId) && event.fee >= SIGNING_FEE))) {
         add("signing", [event.toClubId, ...(event.fromClubId ? [event.fromClubId] : [])], isHumans ? 10 : event.fee / SIGNING_FEE, pick(SIGNINGS, `signing:${event.playerId}`, names));
       }
     }

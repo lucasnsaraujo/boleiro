@@ -31,5 +31,5 @@ export function spendMarketTime(clock: MarketClock | null, rules: CoachWindows, 
 
 /** Whether the request brings a player in, which a coach whose clock has run out can't start any more; selling and renewing can. */
 export function isSigning(request: CoachRequest): boolean {
-  return request.kind === "sign" || request.kind === "loanIn";
+  return request.kind === "sign" || request.kind === "payClause" || request.kind === "loanIn";
 }

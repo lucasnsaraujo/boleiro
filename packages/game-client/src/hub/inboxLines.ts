@@ -20,6 +20,7 @@ export type NewsState = Pick<GameState, "date" | "coachClubId" | "clubs" | "play
 
 const REQUEST_NOUNS: Record<CoachRequest["kind"], string> = {
   sign: "a contratação",
+  payClause: "o pagamento da multa rescisória",
   sell: "a venda",
   renew: "a renovação",
   loanIn: "o empréstimo",
@@ -204,6 +205,7 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         const to = toClubId ? clubName(toClubId) : "exterior";
         if (kind === "loan") return [`${name} emprestado (${to})`, "neutral"];
         if (kind === "loanReturn") return [`${name} volta para ${to}`, "neutral"];
+        if (kind === "releaseClause") return [`${name} sai: ${to} paga a multa rescisória, ${formatMoney(fee)}`, "bad"];
         if (fee === 0) return [`${name} sai sem custo (${to})`, "neutral"];
         return [`${name} vendido por ${formatMoney(fee)} (${to})`, "neutral"];
       }

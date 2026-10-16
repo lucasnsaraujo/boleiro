@@ -9,6 +9,7 @@ import { windowStatus } from "./marketSearch.js";
 /** The request as a noun, and whether pt-BR treats it as feminine. */
 const NOUNS: Record<CoachRequest["kind"], { noun: string; feminine: boolean }> = {
   sign: { noun: "Contratação", feminine: true },
+  payClause: { noun: "Multa rescisória", feminine: true },
   sell: { noun: "Venda", feminine: true },
   renew: { noun: "Renovação", feminine: true },
   loanIn: { noun: "Empréstimo", feminine: false },

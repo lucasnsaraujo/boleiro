@@ -169,6 +169,7 @@ describe("the squad", () => {
     expect(line({ ...move, kind: "loanReturn", fromClubId: "vitoria-ba", toClubId: "bahia-ba" })?.text).toBe(`${own.name} volta de empréstimo`);
     expect(line({ ...move, kind: "freeAgent", fromClubId: null, toClubId: "bahia-ba", fee: 0 })?.text).toBe(`${own.name} chega sem custo`);
     expect(line({ ...move, kind: "fromAbroad", fromClubId: null, toClubId: "bahia-ba" })?.text).toBe(`${own.name} chega do exterior por R$ 3 mi`);
+    expect(line({ ...move, kind: "releaseClause", fromClubId: "bahia-ba", toClubId: "vitoria-ba" })).toMatchObject({ text: `${own.name} sai: Vitória paga a multa rescisória, R$ 3 mi`, tone: "bad" });
     expect(lines({ ...move, kind: "transfer", fromClubId: "vitoria-ba", toClubId: "juazeirense-ba" })).toEqual([]);
   });
 
