@@ -19,8 +19,8 @@ function winnerOf(page: MatchPage, view: MatchView): Side | null {
   return page.penaltyWinnerId === page.home.club.id ? "home" : "away";
 }
 
-/** "no Maracanã", "na Arena da Baixada". */
-const atStadium = (stadium: string) => `${/^arena\b/i.test(stadium) ? "na" : "no"} ${stadium}`;
+/** "no Maracanã", "na Arena da Baixada", "na Neo Química Arena", "na Vila Belmiro". */
+const atStadium = (stadium: string) => `${/^(arena|vila)\b|\barena$/i.test(stadium) ? "na" : "no"} ${stadium}`;
 
 /** The goal after which the winner led for good: the one that won the match. */
 function winningGoal(view: MatchView, winner: Side): PageEvent | undefined {
@@ -46,7 +46,7 @@ export function headlineOf(page: MatchPage, view: MatchView): string {
   if (margin >= ROUT) return `${club(winner)} goleia ${club(other(winner))}${away}`;
   const decisive = winningGoal(view, winner);
   if (margin === 1 && decisive && decisive.goalKind !== "ownGoal") return `${name(decisive.playerId)} decide${DECIDES[decisive.goalKind ?? "openPlay"] ?? ""}`;
-  return `${club(winner)} vence ${club(other(winner))}${away}`;
+  return `${club(winner)} vence${margin > 1 ? " com folga" : ""}${away}`;
 }
 
 /** What each goal did to the score, as the report tells it. */

@@ -46,8 +46,7 @@
   align-items: center;
   gap: 10px;
   height: calc(52px + var(--mf-pad-top, 0px));
-  padding-top: var(--mf-pad-top, 0px);
-  padding: 0 14px 0 22px;
+  padding: var(--mf-pad-top, 0px) 14px 0 22px;
 }
 
 .mf-ph .lbl {
@@ -137,9 +136,12 @@
 
 .mf-club b {
   max-width: 100%;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  line-height: 1.15;
+  text-wrap: balance;
   font-stretch: var(--wide);
   font-weight: 900;
   font-size: 15px;
@@ -736,6 +738,12 @@
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
 }
 
+/* Before the final whistle one card holds the place of both sides' marks. */
+.mf-marks.waiting {
+  grid-column: span 2;
+  align-self: start;
+}
+
 .mf-panelbody.tab-confronto {
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   align-content: start;
@@ -828,11 +836,15 @@
   text-transform: uppercase;
 }
 
+/* A long club name breaks onto a second line rather than losing its end. */
 .mf-clip-score span {
   min-width: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.1;
+  text-wrap: balance;
 }
 
 .mf-clip-score span:last-child {
@@ -849,7 +861,7 @@
 
 .mf-clip dl {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(var(--facts, 3), 1fr);
   border-top: 1px solid rgba(27, 32, 24, 0.35);
   border-bottom: 1px solid rgba(27, 32, 24, 0.35);
 }
@@ -873,9 +885,11 @@
 }
 
 .mf-clip dd {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  line-height: 1.15;
   font-stretch: var(--wide);
   font-weight: 900;
   font-size: 13px;
@@ -931,7 +945,8 @@
   grid-template-columns: repeat(30, 1fr);
   gap: 3px;
   height: 104px;
-  margin: 12px 0 4px;
+  /* Room above and below the bars for the goal pins, clear of the title and the minutes. */
+  margin: 22px 0 22px;
 }
 
 .mf-wave::after {
@@ -982,7 +997,7 @@
 
 .mf-pin {
   position: absolute;
-  top: -8px;
+  top: -20px;
   z-index: 1;
   transform: translateX(-50%);
   padding: 1px 6px;
@@ -999,7 +1014,7 @@
 
 .mf-pin.away {
   top: auto;
-  bottom: -8px;
+  bottom: -20px;
 }
 
 .mf-axis {

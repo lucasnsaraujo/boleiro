@@ -130,3 +130,21 @@ test("a match opened while the last one's panel is still leaving stays open", as
   await new Promise((resolve) => setTimeout(resolve, 400));
   expect(within(await panel()).getByLabelText(`${name(second.homeId)} 0 x 0 ${name(second.awayId)}`)).toBeTruthy();
 });
+
+test("the full sheet's tabs step with the arrow keys, wrapping from the first to the last", async () => {
+  const given = await kickOff();
+  const round = await given.engine.liveRound();
+  const match = round?.matches.find((m) => isOnBoard(round, m) && m.fixtureId !== round.coach?.fixtureId);
+  if (!round || !match) return expect.fail("the round has another match");
+  const name = (clubId: string) => round.clubs[clubId]?.shortName ?? "";
+
+  await user().click(screen.getByRole("button", { name: `Ficha do jogo: ${name(match.homeId)} x ${name(match.awayId)}` }));
+  await user().click(within(await panel()).getByRole("button", { name: /Ver ficha completa/ }));
+  const sheet = await screen.findByRole("dialog", { name: "Ficha completa" });
+  within(sheet).getByRole("tab", { name: "Resumo" }).focus();
+  await user().keyboard("{ArrowRight}");
+  expect(within(sheet).getByRole("tab", { name: "Escalações" })).toHaveProperty("ariaSelected", "true");
+  expect(document.activeElement).toBe(within(sheet).getByRole("tab", { name: "Escalações" }));
+  await user().keyboard("{ArrowLeft}{ArrowLeft}");
+  expect(within(sheet).getByRole("tab", { name: "Confronto" })).toHaveProperty("ariaSelected", "true");
+});

@@ -91,7 +91,25 @@ export function MatchSheet({ page, view, isLeaving, onBack, onClose }: Props) {
         <div ref={tabs} className="mf-tabs" role="tablist" aria-label="Ficha do jogo" style={{ ["--ink-x" as string]: `${ink.x}px`, ["--ink-w" as string]: `${ink.width}px` }}>
           <i className="mf-tab-ink" aria-hidden="true" />
           {TABS.map((t) => (
-            <button key={t.id} role="tab" id={`mf-tab-${t.id}`} aria-selected={t.id === tab} aria-controls="mf-tabpanel" onClick={() => setTab(t.id)}>
+            <button
+              key={t.id}
+              role="tab"
+              id={`mf-tab-${t.id}`}
+              aria-selected={t.id === tab}
+              aria-controls="mf-tabpanel"
+              tabIndex={t.id === tab ? 0 : -1}
+              onClick={() => setTab(t.id)}
+              onKeyDown={(event) => {
+                const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+                if (!step) return;
+                // The round's boards step on the arrows too; a tab that took them leaves them alone.
+                event.preventDefault();
+                const next = TABS[(TABS.findIndex((other) => other.id === tab) + step + TABS.length) % TABS.length];
+                if (!next) return;
+                setTab(next.id);
+                document.getElementById(`mf-tab-${next.id}`)?.focus();
+              }}
+            >
               {t.label}
             </button>
           ))}
@@ -118,6 +136,13 @@ type TabProps = { page: MatchPage; view: MatchView };
 
 function Summary({ page, view }: TabProps) {
   const [lead, goals] = reportOf(page, view);
+  // Only what is known goes in the clipping: a league abroad has no stadium, crowd or gate on record.
+  const gate = venueLine(page).find((part) => part.startsWith("Renda"))?.replace("Renda ", "");
+  const facts = [
+    ["Estádio", page.venue.stadium],
+    ["Público", page.venue.crowd ? new Intl.NumberFormat("pt-BR").format(page.venue.crowd) : null],
+    ["Renda", gate],
+  ].filter((fact): fact is [string, string] => !!fact[1]);
   return (
     <>
       <article className="mf-clip" aria-label="Jornal da rodada">
@@ -134,20 +159,16 @@ function Summary({ page, view }: TabProps) {
           </b>
           <span>{page.away.club.shortName}</span>
         </div>
-        <dl>
-          <div>
-            <dt>Estádio</dt>
-            <dd>{page.venue.stadium ?? "—"}</dd>
-          </div>
-          <div>
-            <dt>Público</dt>
-            <dd>{page.venue.crowd ? new Intl.NumberFormat("pt-BR").format(page.venue.crowd) : "—"}</dd>
-          </div>
-          <div>
-            <dt>Renda</dt>
-            <dd>{venueLine(page).find((part) => part.startsWith("Renda"))?.replace("Renda ", "") ?? "—"}</dd>
-          </div>
-        </dl>
+        {facts.length > 0 && (
+          <dl style={{ ["--facts" as string]: facts.length }}>
+            {facts.map(([term, value]) => (
+              <div key={term}>
+                <dt>{term}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
         {goals && <p className={goals.length > LONG_COPY ? "mf-copy long" : "mf-copy"}>{goals}</p>}
       </article>
       <div className="mf-mid">
@@ -190,7 +211,7 @@ function Pressure({ page, view }: TabProps) {
           </span>
         ))}
         {goals.map((g, index) => (
-          <span key={index} className={`mf-pin ${g.side}`} style={{ left: `${(g.minute / 90) * 100}%` }}>
+          <span key={index} className={`mf-pin ${g.side}`} style={{ left: `clamp(14px, ${(g.minute / 90) * 100}%, calc(100% - 14px))` }}>
             {g.minute}'
           </span>
         ))}
@@ -332,13 +353,13 @@ function Numbers({ page, view }: TabProps) {
           <StatBar key={line.key} line={line} index={index} />
         ))}
       </section>
-      {(["home", "away"] as const).map((side) => (
-        <section key={side} className="mf-card mf-marks" aria-label={`Notas ${page[side].club.shortName}`}>
-          <h3>
-            <Crest club={page[side].club} size={20} />
-            Notas · {page[side].club.shortName}
-          </h3>
-          {view.ratings ? (
+      {view.ratings ? (
+        (["home", "away"] as const).map((side) => (
+          <section key={side} className="mf-card mf-marks" aria-label={`Notas ${page[side].club.shortName}`}>
+            <h3>
+              <Crest club={page[side].club} size={20} />
+              Notas · {page[side].club.shortName}
+            </h3>
             <ol>
               {marks(side).map(({ player, rating }, index) => (
                 <li key={player.id} style={{ ["--i" as string]: index }}>
@@ -354,11 +375,14 @@ function Numbers({ page, view }: TabProps) {
                 </li>
               ))}
             </ol>
-          ) : (
-            <p className="mf-none">As notas saem no apito final.</p>
-          )}
+          </section>
+        ))
+      ) : (
+        <section className="mf-card mf-marks waiting" aria-label="Notas">
+          <h3>Notas</h3>
+          <p className="mf-none">As notas dos dois times saem no apito final.</p>
         </section>
-      ))}
+      )}
     </>
   );
 }
