@@ -104,6 +104,10 @@ const CONTINENTAL_STAGE_NAMES: Record<string, string> = {
   "quarter-finals": "Quartas",
   "semi-finals": "Semifinal",
   final: "Final",
+  "play-off": "Play-off",
+  "african-asian-pacific-cup": "Copa África-Ásia-Pacífico",
+  "derby-of-the-americas": "Dérbi das Américas",
+  "challenger-cup": "Copa Challenger",
 };
 const LEAGUE_STAGE_NAMES: Record<string, readonly string[]> = {
   "serie-c": ["Primeira fase", "Quadrangular", "Final"],
@@ -440,3 +444,31 @@ export function knockoutBracket(competition: Competition, fixtures: readonly Fix
     return { stage: index, name: CONTINENTAL_STAGE_NAMES[stage.name] ?? stage.name, dates: competition.stageDates[index] ?? [], ties: Array.from({ length: places }, (_, tie) => drawn[tie] ?? null) };
   });
 }
+
+/** A place of the Intercontinental Cup's ladder before its tie is drawn: a club already in, the winner of an earlier round, or a cup's champion still to come. */
+export type LadderPlace = { clubId: string } | { from: number } | { title: "Libertadores" | "Champions League" };
+
+/** A round of the Intercontinental Cup's ladder: its one tie once drawn, else the places waiting for it. */
+export type LadderRound = { stage: number; name: string; dates: string[]; tie: TieView | null; places: [LadderPlace, LadderPlace] };
+
+/**
+ * The Intercontinental Cup's five rounds as one ladder: the play-off's winner goes on to the
+ * African–Asian–Pacific Cup, whose winner meets the Derby of the Americas' in the Challenger Cup, and
+ * its winner the Champions League's in the final. Empty for any other competition.
+ */
+export function intercontinentalLadder(competition: Competition, fixtures: readonly Fixture[]): LadderRound[] {
+  if (competition.kind !== "continental" || competition.cup !== "intercontinental-cup") return [];
+  const entrant = (stage: number, at = 0): LadderPlace => ({ clubId: competition.entries[stage]?.[at] ?? "" });
+  const places: [LadderPlace, LadderPlace][] = [
+    [entrant(0), entrant(0, 1)],
+    [entrant(1), { from: 0 }],
+    [{ title: "Libertadores" }, entrant(2)],
+    [{ from: 2 }, { from: 1 }],
+    [{ title: "Champions League" }, { from: 3 }],
+  ];
+  return places.map((pair, index) => {
+    const name = CUP_STAGES[competition.cup][index]?.name ?? "";
+    return { stage: index, name: CONTINENTAL_STAGE_NAMES[name] ?? name, dates: competition.stageDates[index] ?? [], tie: knockoutTies(competition, index, fixtures)[0] ?? null, places: pair };
+  });
+}
+

@@ -4,6 +4,7 @@ import { RAPIDO } from "@boleiro/engine/sim/formats";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
 import {
+  intercontinentalLadder,
   coachCompetitions,
   competitionStages,
   defaultStage,
@@ -293,7 +294,7 @@ describe("CONMEBOL's cups and South America's leagues", () => {
   const libertadores = flamengo.competitions["libertadores-2026"];
   if (libertadores?.kind !== "continental") throw new Error("no Libertadores");
 
-  test("the coach's club sees the cups it plays after Brazil's, the Libertadores, Sul-Americana and, in FIFA's 2029 edition year, Club World Cup tabs after the Copa do Brasil", () => {
+  test("the coach's club sees the cups it plays after Brazil's, the Libertadores, Sul-Americana, Mundial de Clubes and, in FIFA's 2029 edition year, Super Mundial tabs after the Copa do Brasil", () => {
     const edition = newGameFromFiles(7, { coachClubId: "flamengo-rj", season: 2029 }, bundledGameFiles);
     expect(coachCompetitions(edition).map((c) => c.id)).toEqual(["state-rj-2029", "serie-a-2029", "copa-do-brasil-2029", "libertadores-2029", "recopa-2029", "club-world-cup-2029"]);
     expect(tableTabs(edition).tabs.map((c) => c.id)).toEqual([
@@ -306,9 +307,32 @@ describe("CONMEBOL's cups and South America's leagues", () => {
       "sul-americana-2029",
       "recopa-2029",
       "club-world-cup-2029",
+      "intercontinental-cup-2029",
       "state-rj-2029",
     ]);
     expect(tableTabs({ ...flamengo, coachClubId: "bahia-ba" }).tabs.map((c) => c.id)).not.toContain("recopa-2026");
+  });
+
+  test("the Mundial de Clubes is a tab of every coach's, its ladder named round by round: the play-off drawn, the clubs and titles waiting for each later round", () => {
+    const mundial = flamengo.competitions["intercontinental-cup-2026"];
+    if (mundial?.kind !== "continental") throw new Error("no Mundial de Clubes");
+    expect(tableTabs({ ...flamengo, coachClubId: "bahia-ba" }).tabs.map((c) => c.id)).toContain(mundial.id);
+    const ladder = intercontinentalLadder(mundial, flamengo.fixtures);
+    expect(ladder.map((round) => [round.name, round.dates])).toEqual([
+      ["Play-off", ["2026-09-15"]],
+      ["Copa África-Ásia-Pacífico", ["2026-10-13"]],
+      ["Dérbi das Américas", ["2026-12-09"]],
+      ["Copa Challenger", ["2026-12-12"]],
+      ["Final", ["2026-12-16"]],
+    ]);
+    expect(ladder[0]?.tie?.clubIds).toEqual(mundial.entries[0]);
+    expect(ladder.map((round) => round.places)).toEqual([
+      [{ clubId: mundial.entries[0]?.[0] }, { clubId: mundial.entries[0]?.[1] }],
+      [{ clubId: mundial.entries[1]?.[0] }, { from: 0 }],
+      [{ title: "Libertadores" }, { clubId: mundial.entries[2]?.[0] }],
+      [{ from: 2 }, { from: 1 }],
+      [{ title: "Champions League" }, { from: 3 }],
+    ]);
   });
 
   test("the Libertadores names its stages the way Brazilian fans do", () => {
