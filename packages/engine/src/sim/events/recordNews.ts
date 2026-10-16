@@ -6,6 +6,7 @@ import { addDays } from "../dates.js";
 import type { Fixture, GameState, IsoDate } from "../gameState.js";
 import type { MatchSheets } from "../history/recordMatches.js";
 import { rivalsOf } from "../morale/rivalsOf.js";
+import type { VarDecision, WrongCallKind } from "../referees/refereeCalls.js";
 import { eventMemoryOf, type NewsItem, type NewsKind } from "./eventMemory.js";
 
 // The newspaper's stories draw their wording from a stream of their own per day and story.
@@ -20,7 +21,7 @@ const UPSET_PLACES = 10;
 const UPSET_FROM_GAMES = 5;
 const DIVISION_RANK = { A: 0, B: 1, C: 2, D: 3 } as const;
 // guess: the day's busiest beats print a few stories each; the rest is in the results.
-const PER_DAY: Record<Exclude<NewsKind, "event" | "match">, number> = { signing: 3, sacking: 3, upset: 2, rivalry: 2 };
+const PER_DAY: Record<Exclude<NewsKind, "event" | "match">, number> = { signing: 3, sacking: 3, upset: 2, rivalry: 2, var: 2, controversy: 3 };
 
 type Variant = (names: Record<string, string>) => { headline: string; body: string };
 
@@ -60,6 +61,32 @@ const DRAWS: readonly Variant[] = [
   (n) => ({ headline: `${n.home} e ${n.away} ficam no empate`, body: `${n.score}. ${n.goals}` }),
   (n) => ({ headline: `Empate entre ${n.home} e ${n.away}`, body: `${n.score}. ${n.goals}` }),
 ];
+
+// What VAR changed, of the player named (`player`, of `club`) at `minute` after a check of `review`.
+const VAR_STORIES: Record<Exclude<VarDecision, "goalStands">, Variant> = {
+  goalRuledOut: (n) => ({ headline: `VAR anula gol do ${n.club}`, body: `${n.player} marcou aos ${n.minute}', mas a revisão de ${n.review} pegou impedimento.${n.referee}` }),
+  goalAwarded: (n) => ({ headline: `VAR dá o gol de ${n.player}`, body: `O bandeira marcou impedimento aos ${n.minute}'; a revisão de ${n.review} validou o gol do ${n.club}.${n.referee}` }),
+  penaltyAwarded: (n) => ({ headline: `Pênalti pelo VAR para o ${n.club}`, body: `Revisão de ${n.review} aos ${n.minute}', e ${n.player} foi para a bola.${n.referee}` }),
+  penaltyCancelled: (n) => ({ headline: `VAR desmarca pênalti para o ${n.club}`, body: `O árbitro tinha dado pênalti em ${n.player} aos ${n.minute}'. A revisão levou ${n.review}.${n.referee}` }),
+  redCardGiven: (n) => ({ headline: `VAR expulsa ${n.player}`, body: `O árbitro foi ao monitor aos ${n.minute}' e trocou o amarelo pelo vermelho. O ${n.club} jogou com um a menos.${n.referee}` }),
+  redCardCancelled: (n) => ({ headline: `VAR devolve ${n.player} ao jogo`, body: `O vermelho aos ${n.minute}' caiu depois de ${n.review} de revisão. Alívio no ${n.club}.${n.referee}` }),
+};
+// A wrong call that stood, told as the side it cost (`against`) tells it.
+const WRONG_CALLS: Record<WrongCallKind, (n: Record<string, string>) => string> = {
+  goalShouldNotStand: (n) => `O gol de ${n.player} (${n.club}) aos ${n.minute}' saiu em impedimento e valeu.`,
+  goalWronglyRuledOut: (n) => `O gol de ${n.player} aos ${n.minute}' era legal e foi anulado.`,
+  penaltyWronglyGiven: (n) => `O pênalti para o ${n.club} aos ${n.minute}' não existiu.`,
+  penaltyNotGiven: (n) => `${n.player} foi derrubado na área aos ${n.minute}' e o árbitro mandou seguir.`,
+  redCardWronglyGiven: (n) => `A expulsão de ${n.player} aos ${n.minute}' foi exagerada.`,
+  redCardNotGiven: (n) => `${n.player} (${n.club}) merecia o vermelho aos ${n.minute}' e ficou em campo.`,
+};
+const CONTROVERSIES: readonly Variant[] = [
+  (n) => ({ headline: `${n.against} reclama de ${n.by}`, body: `${n.what} No vestiário, o ${n.against} saiu falando em erro grave.` }),
+  (n) => ({ headline: `Polêmica: ${n.against} prejudicado pela arbitragem`, body: `${n.what} ${n.blame}` }),
+];
+
+/** "1 min 40 s", "48 s". */
+const reviewLength = (seconds: number) => (seconds >= 60 ? `${Math.floor(seconds / 60)} min${seconds % 60 ? ` ${seconds % 60} s` : ""}` : `${seconds} s`);
 
 function scoreLine(state: GameState, fixture: Fixture): string {
   const name = (id: string) => state.clubs[id]?.shortName ?? id;
@@ -126,6 +153,27 @@ export function recordNews(state: GameState, date: IsoDate, events: readonly Day
         const places = above && below ? above.position - below.position : 0;
         if (places >= UPSET_PLACES && (below?.games ?? 0) >= UPSET_FROM_GAMES) add("upset", [winner, loser], places / 4, pick(UPSETS, `upset:${fixture.id}`, names));
       }
+    } else if (event.type === "refereeCall") {
+      const { call } = event;
+      const against = call.type === "wrongCall" ? call.againstId : call.clubId;
+      const isHumans = humans.has(call.clubId) || humans.has(against);
+      if (!isHumans && !isMajor(call.clubId) && !isMajor(against)) continue;
+      const names = {
+        player: state.players[call.playerId]?.name ?? "um jogador",
+        club: name(call.clubId),
+        against: name(against),
+        minute: String(call.minute),
+        by: event.referee ?? "a arbitragem",
+        referee: event.referee ? ` Árbitro: ${event.referee}.` : "",
+        blame: event.referee ? `O técnico do ${name(against)} culpou ${event.referee}.` : `O técnico do ${name(against)} culpou a arbitragem.`,
+      };
+      const key = `${event.fixtureId}:${call.minute}:${call.playerId}`;
+      if (call.type === "varCheck") {
+        if (call.decision === "goalStands") continue;
+        add("var", [call.clubId], isHumans ? 10 : 1, VAR_STORIES[call.decision]({ ...names, review: reviewLength(call.seconds) }));
+      } else {
+        add("controversy", [against, call.clubId], isHumans ? 10 : 1, pick(CONTROVERSIES, `referee:${key}`, { ...names, what: WRONG_CALLS[call.call](names) }));
+      }
     } else if (event.type === "coachFired") {
       if (!event.isYou && !(isMajor(event.clubId) || state.clubs[event.clubId]?.division === "B")) continue;
       const names = { club: name(event.clubId), position: String(event.position), target: String(event.targetPosition), coach: state.coachName || "o técnico" };
@@ -143,7 +191,7 @@ export function recordNews(state: GameState, date: IsoDate, events: readonly Day
   }
   if (!stories.length) return state;
   const kept: NewsItem[] = [];
-  for (const kind of ["match", "event", "signing", "sacking", "upset", "rivalry"] as const) {
+  for (const kind of ["match", "event", "signing", "sacking", "upset", "rivalry", "var", "controversy"] as const) {
     const own = stories.filter(({ story }) => story.kind === kind).sort((a, b) => b.rank - a.rank);
     const limit = kind === "match" || kind === "event" ? own.length : PER_DAY[kind];
     kept.push(...own.slice(0, limit).map(({ story }) => story));

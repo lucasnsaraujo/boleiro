@@ -1,3 +1,4 @@
+import { WRONG_CALL_WORDS } from "../format/refereeCallWords.js";
 import { guestClubOf } from "@boleiro/engine/sim/continental/guestClubs";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
@@ -116,6 +117,11 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         return isOurs(event.clubId) ? [`${playerName(event.playerId)} sobe da base`, "neutral"] : null;
       case "prospectReleased":
         return isOurs(event.clubId) ? [`${event.name} fez 21 anos e deixou a base, dispensado`, "neutral"] : null;
+      case "refereeCall": {
+        const { call, referee } = event;
+        if (call.type !== "wrongCall" || !isOurs(call.againstId)) return null;
+        return [`Polêmica com ${referee ?? "a arbitragem"}: ${WRONG_CALL_WORDS[call.call](playerName(call.playerId)).toLowerCase()}`, "bad"];
+      }
       case "squadToppedUp":
         return isOurs(event.clubId) ? [`Elenco completado com ${plural(event.playerIds.length, "garoto da base", "garotos da base")}`, "neutral"] : null;
       case "youthTrialsHeld":
