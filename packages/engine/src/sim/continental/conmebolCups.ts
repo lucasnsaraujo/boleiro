@@ -58,9 +58,9 @@ export function cupStageDates(cup: ContinentalCup, season: number, formats: Form
   return CUP_STAGES[cup].map((stage) => stageDatesIn(stage.name, stage.dates, formats).map((date) => inSeason(date, season)));
 }
 
-/** Every date of the season's CONMEBOL cups and Club World Cup. */
-export function conmebolDates(season: number, formats: Formats): IsoDate[] {
-  return CONTINENTAL_CUPS.flatMap((cup) => cupStageDates(cup, season, formats).flat());
+/** Every date of the season's CONMEBOL cups and, when `playsClubWorldCup`, the Club World Cup's. */
+export function conmebolDates(season: number, formats: Formats, playsClubWorldCup: boolean): IsoDate[] {
+  return CONTINENTAL_CUPS.filter((cup) => playsClubWorldCup || cup !== "club-world-cup").flatMap((cup) => cupStageDates(cup, season, formats).flat());
 }
 
 const FULL_GROUP_DAYS = 6;

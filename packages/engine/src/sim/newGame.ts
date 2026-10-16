@@ -182,7 +182,7 @@ export function newGame(
       return { id, clubId, name, group, strength, ...(roles?.length ? { positions: [...roles] } : {}), contractUntil, ...openingProfile(player, `${season}-01-01`, traitRandom.next) };
     });
   const squadPlayers = [...dataPlayers, ...academyTopUp(clubs, dataPlayers, `${season}-01-01`, randomStream(seed ^ ACADEMY_STREAM_SALT).next)];
-  const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION, stateChampionships, playsContinentalCups(countries), formats, gridRounds, fullTier.map((country) => country.structure));
+  const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION, stateChampionships, playsContinentalCups(countries), formats, gridRounds, fullTier.map((country) => country.structure), countries.length > 0 && guests !== undefined);
   const { economy, finances: boardFinances, wages } = openingFinances(clubsById, squadPlayers, competitions, fixtures, financeData, competitionMoney);
   const finances = (hotSeat?.otherCoaches ?? []).map((other) => other.clubId).reduce(withNewCoachRoom, withNewCoachRoom(boardFinances, coachClubId));
   const simPlayers = Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }]));

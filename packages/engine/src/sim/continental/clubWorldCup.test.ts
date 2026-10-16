@@ -8,6 +8,7 @@ import { loadGuests } from "../world/loadGuests.js";
 import { loadMarketLeagues } from "../world/loadMarketLeagues.js";
 import { loadSouthAmerica } from "../world/loadSouthAmerica.js";
 import { confederationOf } from "./clubWorldCup.js";
+import { cupStageDates } from "./conmebolCups.js";
 import { seasonEndField } from "./continentalField.js";
 import { payContinentalPrizes } from "./payContinentalPrizes.js";
 
@@ -90,6 +91,17 @@ describe("the Club World Cup of a game of the whole world", () => {
 
   it("is not played in a game without its guests, as in one saved before them", () => {
     expect(clubWorldCupOf(loadNewGame(SEED, { coachClubId: "flamengo-rj", world, season: EDITION }))).toBeUndefined();
+  });
+
+  it("keeps no league clear of its days in a year it isn't played, nor in a game without its guests", () => {
+    const leagueDaysNextToIt = (game: GameState) => {
+      const days = cupStageDates("club-world-cup", game.season, game.formats).flat();
+      const leagueDays = [...Object.values(game.competitions).flatMap((c) => (c.kind === "league" && c.division === "A" ? c.stageDates.flat() : [])), ...(game.calendar.leagueGrid ?? [])];
+      return leagueDays.filter((date) => days.some((day) => Math.abs(Date.parse(day) - Date.parse(date)) <= 86_400_000));
+    };
+    expect(leagueDaysNextToIt(loadNewGame(SEED, { coachClubId: "flamengo-rj", world, guests }))).not.toEqual([]);
+    expect(leagueDaysNextToIt(loadNewGame(SEED, { coachClubId: "flamengo-rj", world, guests, formats: RAPIDO }))).not.toEqual([]);
+    expect(leagueDaysNextToIt(loadNewGame(SEED, { coachClubId: "flamengo-rj", world, formats: RAPIDO, season: EDITION }))).not.toEqual([]);
   });
 
   it("pays a Brazilian club FIFA's South American participation on its first match and two million dollars a win", () => {

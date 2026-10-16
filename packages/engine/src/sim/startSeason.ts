@@ -8,6 +8,7 @@ import { copaDoBrasilGameScales, seasonCalendar } from "./seasonCalendar.js";
 import { shuffle } from "./shuffle.js";
 import { STATE_CHAMPIONSHIP } from "./stateChampionship.js";
 import { BRAZIL } from "./world/brazil.js";
+import { isClubWorldCupSeason } from "./continental/clubWorldCup.js";
 import { continentalDates } from "./continental/continentalDays.js";
 import type { CountryStructure } from "./world/world.js";
 import { gameScales, REALISTA, type Formats } from "./formats.js";
@@ -50,7 +51,8 @@ export type SeasonStart = { calendar: SeasonCalendar; competitions: Record<strin
 /**
  * Opens every competition of the season. `qualification` is what last season's estaduais and leagues decided;
  * without `playsStateChampionships` the estaduais are not played and their dates stay empty; with
- * `playsContinentalCups` Brazil's leagues keep clear of CONMEBOL's match days. On the unified calendar
+ * `playsContinentalCups` Brazil's leagues keep clear of CONMEBOL's match days, and of the Club World
+ * Cup's in a season that plays one when the game `hasClubWorldCupGuests`. On the unified calendar
  * the leagues' grid holds `gridRounds` match days, the most any league of the game's world plays.
  */
 export function startSeason(
@@ -63,6 +65,7 @@ export function startSeason(
   formats: Formats = REALISTA,
   gridRounds = 0,
   abroad: readonly CountryStructure[] = [],
+  hasClubWorldCupGuests = false,
 ): SeasonStart {
   const clubStates: Record<string, State> = Object.fromEntries(Object.values(clubs).flatMap((club) => (club.state ? [[club.id, club.state]] : [])));
   const levels = BRAZIL.levels.map((level) => {
@@ -73,7 +76,7 @@ export function startSeason(
   });
   const dateCounts = new Map(levels.map((level) => [level.division, level.stageCounts.reduce((sum, n) => sum + n, 0)]));
   const total = (division: Division) => dateCounts.get(division) ?? 0;
-  const continental = playsContinentalCups || formats.calendar === "unified" ? continentalDates(season, formats) : [];
+  const continental = playsContinentalCups || formats.calendar === "unified" ? continentalDates(season, formats, hasClubWorldCupGuests && isClubWorldCupSeason(season)) : [];
   const calendar = seasonCalendar(season, { A: total("A"), B: total("B"), C: total("C"), D: total("D") }, continental, formats, gridRounds);
   const competitions: Record<string, Competition> = {};
   const fixtures: Fixture[] = [];
