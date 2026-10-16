@@ -2,6 +2,7 @@ import { beforeAll, expect, test } from "vitest";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
 import { createEngineSession } from "../engine/createEngineSession.js";
 import type { GameState } from "@boleiro/engine/sim/gameState";
+import { finishMatchDay } from "@boleiro/engine/sim/live/finishMatchDay";
 import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
 import { liveRoundOf, playerStatsOf, type LiveRound } from "./liveRoundOf.js";
 
@@ -120,4 +121,16 @@ test("a competition the coach's club reached from another cup, outside its entry
   const dropped = { ...state, competitions: { ...state.competitions, [competition.id]: { ...competition, clubIds: competition.clubIds.filter((id) => id !== CLUB) } } };
   const round = liveRoundOf(startMatchDay(dropped, {}), 0);
   expect(round.competitions.find((c) => c.id === competition.id)?.hasHumanCoach).toBe(true);
+});
+
+test("a round saved before players had a form of the day still rates everyone and ends as it would have", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 4, choices: { coachClubId: CLUB } });
+  for (let step = 0; step < MAX_STEPS && session.apply({ type: "playToMatchDay" }).stop !== "matchDay"; step++);
+  const live = startMatchDay(session.read(KEYS), {});
+  const old = { ...live, matches: live.matches.map((match) => ({ ...match, play: undefined })) };
+  const round = liveRoundOf(old, 90);
+  expect(round.ratings?.home.length).toBeGreaterThanOrEqual(11);
+  expect(round.matches.every((m) => m.play === undefined)).toBe(true);
+  expect(finishMatchDay(old)).toEqual(finishMatchDay(live));
 });
