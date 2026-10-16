@@ -35,7 +35,7 @@ test("Flamengo, the 2026 Libertadores champion, finds the Mundial de Clubes on i
 
   await bar(page).getByRole("link", { name: "Tabelas" }).click();
   await page.getByRole("tab", { name: "Mundial de Clubes" }).click();
-  await expect(page.getByRole("img", { name: "Mundial de Clubes" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^Mundial de Clubes 2026/ }).locator("img")).toBeVisible();
   const ladder = page.getByRole("group", { name: "Mundial de Clubes, mata-mata" });
   await expect(ladder.getByText("Campeão da Libertadores")).toBeVisible();
   await expect(ladder.getByText("Campeão da Champions")).toBeVisible();

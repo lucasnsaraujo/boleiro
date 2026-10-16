@@ -248,7 +248,7 @@ test("a Super Mundial semi-final on the bracket is one match, not a first leg", 
   openTables(given);
   await userEvent.click(await screen.findByRole("tab", { name: "Super Mundial" }));
   await userEvent.click(within(screen.getByRole("group", { name: "Fases" })).getByRole("button", { name: "Final" }));
-  expect(screen.getByRole("img", { name: "Super Mundial" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: /^Super Mundial 2029/ }).querySelector("img")?.getAttribute("src")).toMatch(/club-world-cup/);
   const bracket = screen.getByRole("group", { name: "Super Mundial, mata-mata" });
   expect(within(bracket).getAllByText(/^Jogo único/)).toHaveLength(2);
   expect(within(bracket).queryByText(/^Ida/)).toBeNull();
@@ -257,7 +257,7 @@ test("a Super Mundial semi-final on the bracket is one match, not a first leg", 
 test("the Mundial de Clubes tab shows its logo and its ladder from the play-off, the Libertadores' and the Champions League's champions still to come", async () => {
   openTables(await services("flamengo-rj"));
   await userEvent.click(await screen.findByRole("tab", { name: "Mundial de Clubes" }));
-  expect(screen.getByRole("img", { name: "Mundial de Clubes" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: /^Mundial de Clubes 2026/ }).querySelector("img")?.getAttribute("src")).toMatch(/intercontinental-cup/);
   const ladder = screen.getByRole("group", { name: "Mundial de Clubes, mata-mata" });
   expect(within(ladder).getAllByText(/^(Play-off|Copa África-Ásia-Pacífico|Dérbi das Américas|Copa Challenger|Final)$/).map((caption) => caption.textContent)).toEqual([
     "Play-off",
@@ -277,4 +277,11 @@ test("the Mundial de Clubes ladder shows every round at once, with no round pick
   await userEvent.click(await screen.findByRole("tab", { name: "Mundial de Clubes" }));
   expect(screen.getByRole("group", { name: "Mundial de Clubes, mata-mata" })).toBeTruthy();
   expect(screen.queryByRole("group", { name: "Fases" })).toBeNull();
+});
+
+test("the Mundial de Clubes heading names it once, its logo beside the name", async () => {
+  openTables(await services("flamengo-rj"));
+  await userEvent.click(await screen.findByRole("tab", { name: "Mundial de Clubes" }));
+  const heading = screen.getByRole("heading", { name: /^Mundial de Clubes 2026/ });
+  expect(heading.querySelector("img")?.getAttribute("src")).toMatch(/intercontinental-cup/);
 });

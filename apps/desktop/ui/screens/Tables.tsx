@@ -275,7 +275,7 @@ function BracketTitle({ competition }: { competition: Competition }) {
   const name = competitionName(competition);
   return (
     <h2 className="bk-title">
-      {mark && <img className="bk-title-mark" src={mark} alt={name} width={28} height={28} />}
+      {mark && <img className="bk-title-mark" src={mark} alt="" width={28} height={28} />}
       {name} {competition.season}
       <span>mata-mata</span>
     </h2>
