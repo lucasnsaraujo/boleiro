@@ -1480,3 +1480,25 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* Reduced motion: nothing slides, pops, rolls or staggers in; the panel and the sheet just fade up at once. */
+@media (prefers-reduced-motion: reduce) {
+  .mf-panel,
+  .mf-sheet,
+  .mf * {
+    animation-name: mf-fade-in !important;
+    animation-duration: 160ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition: none !important;
+  }
+
+  .mf-pulse::after,
+  .mp-lines * {
+    animation: none !important;
+  }
+
+  .mp-lines * {
+    stroke-dashoffset: 0;
+  }
+}
