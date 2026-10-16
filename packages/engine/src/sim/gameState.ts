@@ -15,6 +15,7 @@ import type { EuropeanCups } from "./continental/uefaCups.js";
 import type { World } from "./world/world.js";
 import type { Formats } from "./formats.js";
 import type { Youth } from "./youth/academy.js";
+import type { EventMemory } from "./events/eventMemory.js";
 
 export type IsoDate = string;
 
@@ -249,4 +250,6 @@ export type GameState = {
   marketClockSeconds?: number;
   /** The calendar and formats chosen at new game; a game on Realista's, or saved before them, has none. */
   formats?: Formats;
+  /** What the event engine remembers: past events, answers waiting, the newspaper's stories; a save from before events has none. */
+  eventMemory?: EventMemory;
 };

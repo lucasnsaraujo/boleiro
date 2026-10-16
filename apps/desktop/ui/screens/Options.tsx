@@ -4,6 +4,7 @@ import credits from "../../../../assets/sounds/CREDITS.md?raw";
 import { useRunCommand } from "../app/AppCommands.js";
 import { platformOf } from "../app/platform.js";
 import { NAV } from "../app/screens.js";
+import { AssistantAreas } from "../events/AssistantAreas.js";
 import { ServicesContext } from "../app/ServicesContext.js";
 import { shortcutKeys, type CommandId } from "../app/shortcuts.js";
 import { GAME_SLOT_IDS, slotLabel } from "@boleiro/game-client/saves/slotMeta";
@@ -135,6 +136,8 @@ export function Options() {
             />
           </div>
         </section>
+
+        {opened && <AssistantAreas />}
 
         {opened && (
           <section className="options-group" aria-labelledby="options-saving-title">

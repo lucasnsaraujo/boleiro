@@ -7,6 +7,7 @@ import { History } from "../screens/History.js";
 import { Hub } from "../screens/Hub.js";
 import { Market } from "../screens/Market.js";
 import { NewGame } from "../screens/NewGame.js";
+import { Newspaper } from "../screens/Newspaper.js";
 import { Offers } from "../screens/Offers.js";
 import { Options } from "../screens/Options.js";
 import { Round } from "../screens/Round.js";
@@ -40,6 +41,7 @@ const ELEMENTS: Record<ScreenPath, ReactElement> = {
   "/options": <Options />,
   "/saves": <Saves />,
   "/turn": <Turn />,
+  "/newspaper": <Newspaper />,
 };
 
 export const routes: RouteObject[] = [

@@ -13,6 +13,8 @@ import { copyRecord } from "../copyRecord.js";
 import { addDays } from "../dates.js";
 import { countCards, type Booking } from "../discipline/drawCards.js";
 import { endSeason } from "../endSeason.js";
+import { recordNews } from "../events/recordNews.js";
+import { runEvents } from "../events/runEvents.js";
 import { closeMonth } from "../finances/closeMonth.js";
 import { payCopaPrizes } from "../finances/payCopaPrizes.js";
 import { payTitleBonuses } from "../finances/payTitleBonuses.js";
@@ -227,7 +229,9 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const filled = market.state.players !== next.players ? fillShortSquads(market.state) : { state: market.state, events: [] };
   events.push(...filled.events);
   const released = leftClubIds(state, filled.state).reduce(releaseTicketPrice, releaseTicketPrice(filled.state, state.coachClubId));
-  const recorded = recordDayEvents(released, events, state);
+  const happened = runEvents(recordNews(released, state.date, events, day.sheets), state.date, played);
+  events.push(...happened.events);
+  const recorded = recordDayEvents(happened.state, events, state);
   return state.waitingCoaches ? { state: recorded, events, waitingEvents } : { state: recorded, events };
 }
 

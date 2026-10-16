@@ -383,3 +383,22 @@ test("requests waiting on the desk are dropped when the coach changes club, so t
   await engine.apply({ type: "playToMatchDay" });
   expect((await engine.desk()).answers).toEqual([]);
 });
+
+test("the event waiting for the coach and the round's newspaper come across the worker", async () => {
+  const engine = startEngine();
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  let waiting = null;
+  for (let step = 0; step < 200 && !waiting; step++) {
+    const { stop, daysPlayed } = await engine.apply({ type: "playToMatchDay" });
+    if (stop === "matchDay" && daysPlayed === 0) {
+      await engine.apply({ type: "startRound" });
+      await engine.apply({ type: "finishRound" });
+    }
+    waiting = await engine.pendingEvent();
+  }
+  const { eventMemory } = await engine.read(["eventMemory"]);
+  expect(waiting?.clubId).toBe("bahia-ba");
+  expect(waiting).toEqual(eventMemory?.pending["bahia-ba"]);
+  expect((await engine.newspaper())?.lead?.headline).toEqual(expect.any(String));
+  expect((await engine.newspaperEditions()).length).toBeGreaterThan(0);
+}, 120_000);
