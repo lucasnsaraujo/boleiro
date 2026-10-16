@@ -291,7 +291,8 @@ function playHotSeatTurn() {
 function playEvents() {
   const recorded = recordedSession();
   const { session, apply } = recorded;
-  apply({ type: "newGame", seed: SEED, choices: { coachClubId: CLUB } });
+  // The board keeps the coach all year on the season's seed, so his club's events keep coming.
+  apply({ type: "newGame", seed: SEASON_SEED, choices: { coachClubId: CLUB } });
   for (let step = 0; step < MAX_STEPS && !session.pendingEvent(); step++) {
     if (apply({ type: "playToMatchDay" }).stop === "matchDay") {
       apply({ type: "startRound" });

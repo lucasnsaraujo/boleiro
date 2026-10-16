@@ -8,12 +8,14 @@ import { clubFaceOf } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import "./newspaper.css";
 
-const KEYS = ["date", "season", "clubs", "coachClubId", "fixtures"] as const;
+const KEYS = ["season", "clubs", "coachClubId"] as const;
 type PaperState = Pick<GameState, (typeof KEYS)[number]>;
 type Loaded = { state: PaperState; edition: Edition | null; editions: EditionTitle[] };
 
 // The archive column fits seven editions at 1280x800 (mock design/mocks/newspaper.html); older ones open on request.
 const ARCHIVE = 7;
+// The side column fits four stories under the masthead; the rest run in the lead's columns.
+const SIDE_STORIES = 4;
 const KICKER_CLASSES: Record<Story["kind"], string> = { match: "", event: "v", signing: "m", sacking: "d", upset: "z", rivalry: "q" };
 
 /** The round's newspaper: the edition of the coach's last match day, or of the day picked in the archive. */
@@ -83,14 +85,15 @@ export function Newspaper() {
 
 function Sheet({ state, edition, number }: { state: PaperState; edition: Edition; number: number }) {
   const club = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
-  const name = (id: string) => state.clubs[id]?.shortName ?? id;
-  const { lead, match } = edition;
+  const name = (id: string) => edition.names[id] ?? id;
+  const { lead, match, next, ownPlace } = edition;
   const home = match && clubFaceOf(state.clubs, match.homeId);
   const away = match && clubFaceOf(state.clubs, match.awayId);
-  const next = state.coachClubId ? state.fixtures.filter((f) => !f.result && f.date > edition.date && (f.homeId === state.coachClubId || f.awayId === state.coachClubId)).sort((a, b) => a.date.localeCompare(b.date))[0] : undefined;
-  const [deck, ...rest] = (lead?.body ?? "").split(/(?<=\.) (?=Gols:|Sem gols)/);
-  const ownStories = edition.side.filter((story) => story.kind === "event" && story.clubIds[0] === state.coachClubId);
-  const sideStories = edition.side.filter((story) => !ownStories.includes(story));
+  const goals = (lead?.body ?? "").match(/(Gols: .*|Sem gols\.)$/)?.[0] ?? "";
+  const deck = club && ownPlace ? `${club.shortName} chega a ${ownPlace.points} pontos e ${ownPlace.position === 1 ? "lidera" : `é o ${ownPlace.position}º`} ${edition.results.title ? `da ${edition.results.title}` : "na tabela"}.` : match ? goals : lead?.body;
+  const isOwn = (story: Story) => story.kind === "event" && story.clubIds[0] === state.coachClubId;
+  const sideStories = edition.side.filter((story) => !isOwn(story)).slice(0, SIDE_STORIES);
+  const ownStories = edition.side.filter((story) => !sideStories.includes(story));
   return (
     <article className="paper-sheet" aria-label={`Jornal do Boleiro, ${formatGameDate(edition.date)}`}>
       <span className="paper-tape l" aria-hidden="true" />
@@ -105,7 +108,7 @@ function Sheet({ state, edition, number }: { state: PaperState; edition: Edition
           <span>Jornal do</span>Boleiro
         </h1>
         <div className="r">
-          <b>{edition.round ? `Edição da ${edition.round}` : "Edição do dia"}</b>
+          <b>{edition.round.endsWith("rodada") ? `Edição da ${edition.round}` : "Edição do dia"}</b>
           <br />
           Temporada {state.season} · nº {number} · R$ 4,00
         </div>
@@ -123,12 +126,12 @@ function Sheet({ state, edition, number }: { state: PaperState; edition: Edition
           {lead && <span className="paper-kick">{lead.kicker}</span>}
           <h2>{lead?.headline}</h2>
           {deck && <p className="paper-deck">{deck}</p>}
-          {match?.result && home && away && (
+          {match?.result && (
             <>
-              <div className="paper-board" aria-label={`${home.shortName} ${match.result.homeGoals} a ${match.result.awayGoals} ${away.shortName}`}>
+              <div className="paper-board" aria-label={`${name(match.homeId)} ${match.result.homeGoals} a ${match.result.awayGoals} ${name(match.awayId)}`}>
                 <div className="t">
-                  <Crest club={home} size={30} />
-                  {home.shortName}
+                  {home && <Crest club={home} size={30} />}
+                  {name(match.homeId)}
                 </div>
                 <div className="s">
                   {match.result.homeGoals}
@@ -136,12 +139,12 @@ function Sheet({ state, edition, number }: { state: PaperState; edition: Edition
                   {match.result.awayGoals}
                 </div>
                 <div className="t a">
-                  {away.shortName}
-                  <Crest club={away} size={30} />
+                  {name(match.awayId)}
+                  {away && <Crest club={away} size={30} />}
                 </div>
               </div>
               <div className="paper-gls">
-                <div>{rest.join(" ")}</div>
+                <div>{ownPlace ? goals : ""}</div>
                 <div>{state.clubs[match.homeId]?.stadium}</div>
               </div>
             </>
@@ -150,7 +153,7 @@ function Sheet({ state, edition, number }: { state: PaperState; edition: Edition
             <div className="paper-cols">
               {ownStories.map((story) => (
                 <p key={`${story.date}${story.headline}`}>
-                  <b>{story.headline}.</b> {story.body}
+                  <b>{story.kicker === "Bastidores" ? "" : `${story.kicker}: `}{story.headline}.</b> {story.body}
                 </p>
               ))}
             </div>

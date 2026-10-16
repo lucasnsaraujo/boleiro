@@ -73,7 +73,7 @@ function settle(state: GameState, pending: PendingEvent, picked: number, type: E
   const news = type?.choices?.[picked]?.news;
   const headline = news ? fillSlots(news, slotsOf(state, clubId, cast)) : pending.headline;
   const record: EventRecord = { typeId: pending.typeId, date: pending.date, clubId, ...cast, choice: picked };
-  const story: NewsItem = { date, kind: "event", clubIds: [clubId, ...(cast.rivalId ? [cast.rivalId] : [])], headline, body: `${pending.body} Resposta: ${answer.label}` };
+  const story: NewsItem = { date, kind: "event", clubIds: [clubId, ...(cast.rivalId ? [cast.rivalId] : [])], headline, body: `${pending.body} Resposta: ${answer.label.replace(/[^.!?”]$/, "$&.")}` };
   const remembered = withMemory(state, (memory) => remember(memory, record, story));
   return { state: applyEffects(remembered, clubId, cast, answer.effects, date), headline };
 }

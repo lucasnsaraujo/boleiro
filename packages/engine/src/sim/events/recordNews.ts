@@ -1,6 +1,7 @@
 import { keyedStream } from "../../engine/random.js";
 import type { DayEvent } from "../advanceDay.js";
 import { humanClubIds } from "../coach/humanCoaches.js";
+import { guestClubOf } from "../continental/guestClubs.js";
 import { addDays } from "../dates.js";
 import type { Fixture, GameState, IsoDate } from "../gameState.js";
 import type { MatchSheets } from "../history/recordMatches.js";
@@ -85,7 +86,7 @@ function goalsLine(state: GameState, sheets: MatchSheets, fixture: Fixture): str
  */
 export function recordNews(state: GameState, date: IsoDate, events: readonly DayEvent[], sheets: MatchSheets): GameState {
   const humans = new Set(humanClubIds(state));
-  const name = (id: string | null) => (id && state.clubs[id]?.shortName) || "exterior";
+  const name = (id: string | null) => (id && (state.clubs[id]?.shortName ?? guestClubOf(state, id)?.name)) || "exterior";
   const isMajor = (id: string | null) => id !== null && (humans.has(id) || state.clubs[id]?.division === "A");
   const pick = (variants: readonly Variant[], key: string, names: Record<string, string>) => {
     const random = keyedStream(state.seed ^ NEWS_SALT, `${date}:${key}`);

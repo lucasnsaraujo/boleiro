@@ -1,9 +1,10 @@
+import { guestClubOf } from "@boleiro/engine/sim/continental/guestClubs";
 import { eventMemoryOf, type NewsItem, type NewsKind } from "@boleiro/engine/sim/events/eventMemory";
 import type { Fixture, GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import { standings } from "@boleiro/engine/sim/standings";
 import { competitionName, fixtureLabel } from "../format/competitionName.js";
 
-export type NewspaperState = Pick<GameState, "coachClubId" | "clubs" | "fixtures" | "competitions" | "eventMemory">;
+export type NewspaperState = Pick<GameState, "coachClubId" | "clubs" | "fixtures" | "competitions" | "eventMemory" | "world">;
 
 /** One story of an edition with the word over its headline ("Zebra", "Mercado"). */
 export type Story = NewsItem & { kicker: string };
@@ -21,14 +22,21 @@ export type Edition = {
   side: Story[];
   results: { title: string; lines: ResultLine[] };
   table: { clubId: string; points: number; goalDifference: number }[];
+  /** The coach's club in its league group after the day, when the match was a league's. */
+  ownPlace: { position: number; points: number } | null;
+  /** The coach's next match after the edition's day, if one is booked. */
+  next: Fixture | null;
+  /** The short name of every club the edition prints, continental guests included. */
+  names: Record<string, string>;
 };
 
 /** An edition in the archive list: its day, what it was about and its lead's headline. */
 export type EditionTitle = { date: IsoDate; label: string; headline: string };
 
 const KICKERS: Record<NewsKind, string> = { match: "", event: "Bastidores", signing: "Mercado", sacking: "Técnico", upset: "Zebra", rivalry: "Rivalidade" };
-// The paper's side column fits five stories at 1280x800 (mock design/mocks/newspaper.html).
-const SIDE_STORIES = 5;
+// The paper's side column fits five stories at 1280x800 (mock design/mocks/newspaper.html), and the lead's
+// columns a few more.
+const SIDE_STORIES = 8;
 // The results row holds the round's ten games of a 20-club league.
 const RESULTS = 10;
 // The coach's own news first, then the beats in the mock's order.
@@ -83,6 +91,11 @@ export function newspaperOf(state: NewspaperState, date?: IsoDate): Edition | nu
   const sameRound = match ? state.fixtures.filter((f) => f.competitionId === match.competitionId && f.date === day && f.result) : [];
   const lines = sameRound.flatMap((f) => (f.result ? [{ homeId: f.homeId, awayId: f.awayId, homeGoals: f.result.homeGoals, awayGoals: f.result.awayGoals }] : []));
   const ownFirst = [...lines].sort((a, b) => Number(b.homeId === state.coachClubId || b.awayId === state.coachClubId) - Number(a.homeId === state.coachClubId || a.awayId === state.coachClubId));
+  const table = match ? leagueTable(state, match) : [];
+  const ownIndex = table.findIndex((row) => row.clubId === state.coachClubId);
+  const own = table[ownIndex];
+  const next = state.fixtures.filter((f) => !f.result && f.date > day && (f.homeId === state.coachClubId || f.awayId === state.coachClubId)).sort((a, b) => a.date.localeCompare(b.date))[0] ?? null;
+  const shownIds = [...(match ? [match.homeId, match.awayId] : []), ...lines.flatMap((l) => [l.homeId, l.awayId]), ...table.slice(0, 4).map((row) => row.clubId), ...(next ? [next.homeId, next.awayId] : [])];
   return {
     date: day,
     round: match && competition ? (fixtureLabel(competition, match).split(" · ")[1] ?? competitionName(competition)) : "",
@@ -90,19 +103,20 @@ export function newspaperOf(state: NewspaperState, date?: IsoDate): Edition | nu
     match,
     side: side.map((item) => storyOf(state, item)),
     results: { title: competition ? competitionName(competition) : "", lines: ownFirst.slice(0, RESULTS) },
-    table: match ? tableTop(state, match) : [],
+    table: table.slice(0, 4),
+    ownPlace: own ? { position: ownIndex + 1, points: own.points } : null,
+    next,
+    names: Object.fromEntries(shownIds.map((id) => [id, state.clubs[id]?.shortName ?? guestClubOf(state, id)?.name ?? id])),
   };
 }
 
-/** The first four of the coach's league group after the edition's day, when the match was a league's. */
-function tableTop(state: NewspaperState, match: Fixture): Edition["table"] {
+/** The coach's league group after the edition's day, when the match was a league's. */
+function leagueTable(state: NewspaperState, match: Fixture): Edition["table"] {
   const competition = state.competitions[match.competitionId];
   const stage = competition?.stages[match.stage];
   if (competition?.kind !== "league" || stage?.kind !== "groups") return [];
   const group = stage.groups.find((clubs) => clubs.includes(match.homeId));
   if (!group) return [];
   const played = state.fixtures.filter((f) => f.competitionId === competition.id && f.stage === match.stage && f.result && f.date <= match.date);
-  return standings(group, played, competition.drawOrder)
-    .slice(0, 4)
-    .map((row) => ({ clubId: row.clubId, points: row.points, goalDifference: row.goalDifference }));
+  return standings(group, played, competition.drawOrder).map((row) => ({ clubId: row.clubId, points: row.points, goalDifference: row.goalDifference }));
 }
