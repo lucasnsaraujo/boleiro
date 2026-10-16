@@ -6,7 +6,7 @@ import { contractEnd } from "./expireContracts.js";
 import { marketView, type MarketView } from "./marketView.js";
 import { movePlayer } from "./movePlayer.js";
 import { isClubFull } from "./squadCap.js";
-import { REPLACEMENT_BAND, SQUAD_TARGET, squadNeeds } from "./squadNeeds.js";
+import { REPLACEMENT_BAND, SQUAD_TARGET } from "./squadNeeds.js";
 import type { PlayerMoved, PreContractSigned } from "./transferEvents.js";
 import { valuePlayer } from "./valuePlayer.js";
 import { wageDemandAt, wageRateOf, type WageRate } from "./wageDemand.js";
@@ -62,7 +62,7 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
   const squad = view.squad(buyerId);
   if (!finance || !club || squad.length < 11 || isClubFull(state, buyerId, squad.length)) return null;
   const buyerTier = view.tier(buyerId);
-  const needs = squadNeeds(squad, buyerTier);
+  const needs = view.needs(buyerId);
   if (!needs.weakest) return null;
   // A short squad replaces departures near its own level; a full one upgrades its weakest starter.
   const replacing = needs.short > 0;
@@ -157,7 +157,7 @@ export function tradeBetweenClubs(state: GameState, random: () => number): { sta
           view.record(deal.released, null);
         }
       }
-      if (squadNeeds(view.squad(buyerId), view.tier(buyerId)).short === 0) break;
+      if (view.needs(buyerId).short === 0) break;
     }
   }
   return { state: market.state, events };
