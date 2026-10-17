@@ -37,3 +37,29 @@ test("the coach sees his betting sponsor's odds before a match, takes the sponso
   await expect(deal.getByRole("img", { name: brand })).toBeVisible();
   await expect(deal).toContainText(yearly);
 });
+
+test("the sponsors screen fits the smallest window: the deal list keeps room for its rows and nothing spills out of its card", async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 680 });
+  await page.goto("/");
+  await startAtClub(page, { division: "Série A", search: "botafogo", club: "Botafogo", coach: "Rita" });
+  await page.getByRole("link", { name: "Patrocínio", exact: true }).click();
+  const deals = page.getByRole("list", { name: "Na camisa hoje" });
+  await expect(deals).toBeVisible();
+  const card = page.getByRole("region", { name: "Patrocínio", exact: true });
+  const spills = await card.evaluate((root) => {
+    const edge = root.getBoundingClientRect();
+    return [...root.querySelectorAll("*")]
+      .filter((el) => el.getBoundingClientRect().width > 0)
+      .filter((el) => el.getBoundingClientRect().right > edge.right + 0.5 || el.getBoundingClientRect().bottom > edge.bottom + 0.5)
+      .map((el) => `${el.className || el.tagName}`);
+  });
+  expect(spills).toEqual([]);
+  const listBox = await deals.boundingBox();
+  expect(listBox?.width ?? 0).toBeGreaterThanOrEqual(300);
+  for (const row of await deals.getByRole("listitem").all()) {
+    const clipped = await row.evaluate((el) => [...el.querySelectorAll("b, .v")].some((part) => part.scrollWidth > part.clientWidth + 1));
+    expect(clipped).toBe(false);
+  }
+  const side = page.getByRole("region", { name: /^Propostas/ });
+  expect(await side.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+});

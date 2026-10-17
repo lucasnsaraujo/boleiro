@@ -506,3 +506,52 @@
     animation: none;
   }
 }
+
+/* Under 1180 px (the window opens down to 1024) the offers column narrows and the shirt shrinks, so the
+   list of deals keeps room for its logo, place and value. */
+@media (max-width: 1180px) {
+  .sponsors {
+    grid-template-columns: minmax(0, 1fr) 330px;
+  }
+
+  .spo {
+    padding: 18px 18px 16px;
+  }
+
+  .spo-body {
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .spo-body .shirt {
+    zoom: 0.72;
+    transform: none;
+  }
+
+  .spo-row {
+    grid-template-columns: 96px minmax(0, 1fr) auto;
+  }
+
+  .spo-or {
+    grid-template-columns: 84px minmax(0, 1fr) auto;
+  }
+
+  /* The betting card's odds go under its lines, which then keep the card's width and a few lines' height. */
+  .spo-bet-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .spo-bet-odds {
+    align-self: flex-end;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 6px 6px 0 0;
+  }
+
+  .spo-bet-odds .cap {
+    order: -1;
+    margin-top: 0;
+  }
+}
