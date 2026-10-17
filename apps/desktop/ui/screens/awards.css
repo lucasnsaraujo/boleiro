@@ -1,0 +1,933 @@
+/* The season's prizes as an album spread (mock design/mocks/awards.html): the Bola de Ouro and the other
+   prizes on the left page, the Bola de Prata team on a faint pitch on the right; divider tabs above. */
+.awards {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px 14px;
+}
+
+.awards-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 18px;
+}
+
+/* Divider tabs: the open one is the page's own paper, the others sit behind it. */
+.awards-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.awards-tab {
+  position: relative;
+  height: 32px;
+  padding: 0 18px;
+  border-radius: 10px 10px 0 0;
+  background: var(--paper-2);
+  color: var(--mute);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  box-shadow: inset 0 -1px 0 var(--line);
+  transform: translateY(3px);
+  transition:
+    transform var(--t-base) var(--e-out),
+    color var(--t-fast) ease-out,
+    background-color var(--t-fast) ease-out;
+}
+
+.awards-tab:hover {
+  color: var(--ink);
+  transform: translateY(1px);
+}
+
+.awards-tab[aria-selected="true"] {
+  z-index: 2;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 -1px 0 var(--line), -1px 0 0 var(--line), 1px 0 0 var(--line);
+  transform: none;
+}
+
+.awards-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 6px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--yellow);
+}
+
+.awards-step {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 6px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.awards-step span {
+  min-width: 52px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.awards-step-btn {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ink-2);
+  transition: background-color var(--t-fast) ease-out;
+}
+
+.awards-step-btn:hover:not(:disabled) {
+  background: var(--paper-2);
+}
+
+.awards-step-btn:disabled {
+  color: var(--line-2);
+  cursor: default;
+}
+
+.awards-spread {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 548px minmax(0, 1fr);
+  border-radius: 8px;
+  box-shadow: var(--sh-page);
+}
+
+/* The two pages, each with the binding's shade on its inner edge. */
+.aw-page {
+  position: relative;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--card);
+}
+
+.aw-page.is-left {
+  border-radius: 8px 0 0 8px;
+  padding: 22px 26px 22px 28px;
+  background:
+    linear-gradient(270deg, rgba(20, 35, 26, 0.08), rgba(20, 35, 26, 0) 26px),
+    var(--card);
+}
+
+.aw-page.is-right {
+  border-radius: 0 8px 8px 0;
+  padding: 22px 28px 18px 30px;
+  background:
+    linear-gradient(90deg, rgba(20, 35, 26, 0.08), rgba(20, 35, 26, 0) 26px),
+    var(--card);
+}
+
+.aw-page.is-wide {
+  grid-column: 1 / -1;
+  border-radius: 8px;
+  padding: 22px 28px;
+  overflow: auto;
+}
+
+.aw-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.aw-head h2 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.aw-head > span {
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.aw-head:has(.aw-ball-title) {
+  align-items: center;
+}
+
+.aw-ball-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.aw-ball {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 17px;
+}
+
+.aw-ball.is-gold {
+  background: var(--yellow);
+  color: var(--on-yellow);
+  box-shadow: 0 2px 0 var(--yellow-d);
+}
+
+.aw-ball.is-silver {
+  background: #dcdce2;
+  color: #3c4a40;
+  box-shadow: 0 2px 0 #a9a9b3;
+}
+
+/* ---------- Stickers ---------- */
+.aw-stk {
+  --w: 114px;
+  --h: 66px;
+  --ini: 36px;
+  position: relative;
+  width: var(--w);
+  padding: 5px 5px 0;
+  border-radius: 10px;
+  background: #fff;
+  color: #14231a;
+  text-align: center;
+  box-shadow:
+    0 1px 0 rgba(20, 35, 26, 0.12),
+    0 0 0 1px rgba(20, 35, 26, 0.08),
+    0 8px 14px -8px rgba(20, 35, 26, 0.45);
+  animation: aw-stick var(--t-stamp) var(--e-slap) calc(var(--i, 0) * 45ms + 80ms) both;
+}
+
+@keyframes aw-stick {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) rotate(-5deg) scale(1.08);
+    box-shadow: 0 0 0 1px rgba(20, 35, 26, 0.08), 0 22px 26px -10px rgba(20, 35, 26, 0.35);
+  }
+}
+
+.aw-art {
+  position: relative;
+  height: var(--h);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--c);
+}
+
+.aw-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0 10px, rgba(255, 255, 255, 0) 10px 20px);
+}
+
+.aw-art b {
+  position: relative;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: var(--ini);
+  line-height: 1;
+  color: var(--ic);
+}
+
+.aw-art .crest {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+}
+
+.aw-art em {
+  position: absolute;
+  right: 6px;
+  top: 5px;
+  font-style: normal;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 9.5px;
+  color: var(--ic);
+  opacity: 0.85;
+}
+
+.aw-cap {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 0 6px;
+}
+
+.aw-name {
+  overflow: hidden;
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.aw-sub {
+  overflow: hidden;
+  font-size: 10.5px;
+  color: #5c584b;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* A winner's sticker is foil, ringed in yellow, with a light sweeping across it once it lands. It is
+   printed, so it stays light foil on the night-green paper too. */
+.aw-stk.is-win {
+  background: linear-gradient(135deg, #fff7d1 0%, #fffdf7 30%, #e2f3ea 55%, #fff4c2 80%, #fffdf7 100%);
+  box-shadow:
+    0 0 0 3px var(--yellow),
+    0 14px 22px -8px rgba(20, 35, 26, 0.45);
+}
+
+.aw-stk.is-win .aw-art::after {
+  content: "";
+  position: absolute;
+  inset: -20% -60%;
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0) 60%);
+  transform: translateX(-70%);
+  animation: aw-sheen 1100ms var(--e-in-out) calc(var(--i, 0) * 45ms + 620ms) both;
+}
+
+@keyframes aw-sheen {
+  to {
+    transform: translateX(70%);
+  }
+}
+
+.aw-stk.is-hero {
+  --w: 188px;
+  --h: 196px;
+  --ini: 108px;
+  transform: rotate(-2.5deg);
+  animation-name: aw-slap;
+  animation-duration: 640ms;
+}
+
+@keyframes aw-slap {
+  0% {
+    opacity: 0;
+    transform: translateY(-36px) rotate(-11deg) scale(1.18);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(-1.5deg) scale(0.97);
+  }
+  100% {
+    transform: rotate(-2.5deg);
+  }
+}
+
+.aw-stk.is-hero .aw-cap {
+  padding: 8px 0 10px;
+}
+
+.aw-stk.is-hero .aw-name {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 17px;
+}
+
+.aw-stk.is-hero .aw-sub {
+  font-size: 12px;
+}
+
+.aw-stk.is-hero .aw-art .crest {
+  left: 8px;
+  top: 8px;
+}
+
+.aw-stk.is-mini {
+  --w: 56px;
+  --h: 56px;
+  --ini: 26px;
+  padding-bottom: 5px;
+}
+
+/* ---------- Left page: the Bola de Ouro ---------- */
+.aw-gold {
+  display: grid;
+  grid-template-columns: 196px 1fr;
+  gap: 22px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.aw-gold .aw-stk {
+  margin-left: 4px;
+}
+
+.aw-award {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+.aw-gold-text {
+  animation: aw-rise var(--t-slow) var(--e-out) 260ms both;
+}
+
+@keyframes aw-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.aw-gold h3 {
+  margin-top: 10px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.aw-gold p {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.aw-nums {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: start;
+  gap: 0 18px;
+  margin-top: 14px;
+}
+
+.aw-nums div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.aw-nums dt {
+  font-size: 11px;
+  color: var(--mute);
+}
+
+.aw-nums dd {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1.05;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.aw-gold .aw-votes {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.aw-votes b {
+  color: var(--ink);
+}
+
+.aw-trio {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 2px dotted var(--line-2);
+  list-style: none;
+}
+
+.aw-trio-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.aw-trio-item:nth-child(1) .aw-stk {
+  transform: rotate(-2deg);
+}
+
+.aw-trio-item:nth-child(3) .aw-stk {
+  transform: rotate(2deg);
+}
+
+.aw-trio-item > div {
+  min-width: 0;
+}
+
+.aw-trio-item .lbl {
+  font-size: 10px;
+}
+
+.aw-trio-item b {
+  display: block;
+  overflow: hidden;
+  margin-top: 3px;
+  font-weight: 800;
+  font-size: 13.5px;
+  line-height: 1.15;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.aw-trio-item small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--mute);
+}
+
+.aw-mini-slot {
+  width: 56px;
+  height: 66px;
+  flex: none;
+}
+
+.aw-rec {
+  margin-top: 22px;
+}
+
+.aw-rec h4,
+.aw-lead h4 {
+  padding-bottom: 5px;
+  border-bottom: 2px solid var(--ink);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.aw-rr {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 32px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 12.5px;
+}
+
+.aw-rr dt {
+  color: var(--mute);
+}
+
+.aw-rr dd {
+  font-weight: 700;
+  text-align: right;
+}
+
+.aw-rr small {
+  margin-left: 6px;
+  font-weight: 500;
+  color: var(--mute);
+}
+
+/* The league's records as printed plates, the mark in display type. */
+.aw-plates {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.aw-plate {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  padding: 14px 18px 16px;
+  animation: aw-rise var(--t-slow) var(--e-out) calc(var(--n, 0) * 90ms) both;
+}
+
+.aw-plate:nth-child(1) {
+  transform: rotate(-0.6deg);
+}
+
+.aw-plate:nth-child(2) {
+  --n: 1;
+  transform: rotate(0.5deg);
+}
+
+.aw-plate:nth-child(3) {
+  --n: 2;
+  transform: rotate(-0.3deg);
+}
+
+.aw-plate dd {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.aw-plate-big {
+  min-width: 196px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.aw-plate-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.aw-plate-who > span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.aw-plate-who b {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.aw-plate-who small {
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.aw-acts {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.aw-none {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.aw-foot {
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.aw-empty {
+  flex: 1;
+  margin-top: 18px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.aw-empty i {
+  font-size: 34px;
+  color: var(--line-2);
+}
+
+/* ---------- Right page: the Bola de Prata team on a faint pitch ---------- */
+.aw-pitch {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-top: 12px;
+}
+
+.aw-lines {
+  position: absolute;
+  inset: 6px 10px 0;
+  border: 2px solid var(--rule);
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+}
+
+.aw-lines::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 220px;
+  height: 92px;
+  margin-left: -110px;
+  border: 2px solid var(--rule);
+  border-bottom: 0;
+}
+
+.aw-lines::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  width: 160px;
+  height: 80px;
+  margin-left: -80px;
+  border: 2px solid var(--rule);
+  border-top: 0;
+  border-radius: 0 0 80px 80px;
+}
+
+.aw-team {
+  position: relative;
+  height: 100%;
+  display: grid;
+  grid-template-rows: repeat(4, 1fr);
+  align-items: center;
+  padding: 6px 0 4px;
+  list-style: none;
+}
+
+.aw-row-list {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  list-style: none;
+}
+
+.aw-row:nth-child(-n + 2) .aw-row-list {
+  gap: 48px;
+}
+
+.aw-pick .aw-stk {
+  padding-bottom: 6px;
+}
+
+.aw-pos {
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  margin-left: -11px;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+/* The player's season average, pencilled on the corner of his sticker. */
+.aw-avg {
+  position: absolute;
+  right: -7px;
+  bottom: 14px;
+  padding: 1px 6px;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: var(--card);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  transform: rotate(4deg);
+}
+
+.aw-note {
+  position: absolute;
+  right: 34px;
+  bottom: 30px;
+  z-index: 2;
+  width: 190px;
+  transform: rotate(2deg);
+  animation: aw-rise var(--t-slow) var(--e-out) 900ms both;
+}
+
+/* ---------- Seasons ---------- */
+.aw-table {
+  width: 100%;
+  margin-top: 16px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.aw-table th,
+.aw-table td {
+  height: 46px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.aw-table thead th {
+  height: 30px;
+  border-bottom: 2px solid var(--ink);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.aw-table tbody th {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.aw-table tbody th .chip {
+  margin-left: 8px;
+  vertical-align: 2px;
+}
+
+.aw-table small {
+  display: block;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.aw-table td {
+  height: 70px;
+}
+
+.aw-cell,
+.aw-champion {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.aw-champion {
+  font-weight: 800;
+}
+
+.aw-cell .aw-stk.is-mini {
+  --w: 34px;
+  --h: 34px;
+  --ini: 16px;
+  padding: 3px;
+  border-radius: 7px;
+  animation: none;
+}
+
+.aw-cell .aw-stk.is-mini .aw-art {
+  border-radius: 5px;
+}
+
+.aw-cell .aw-stk.is-mini .crest {
+  display: none;
+}
+
+.aw-cell b {
+  font-weight: 800;
+}
+
+.aw-cell-none {
+  color: var(--mute);
+}
+
+.aw-table td:last-child {
+  text-align: right;
+}
+
+/* The season under way before its first round: an empty slot where its prizes will be stuck. */
+.aw-upcoming td {
+  height: 58px;
+}
+
+.aw-upcoming .slot {
+  display: flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 16px;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.aw-table tbody tr {
+  animation: aw-rise var(--t-base) var(--e-out) both;
+}
+
+/* ---------- Records ---------- */
+.aw-leaders {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 22px;
+}
+
+.aw-lead ol {
+  list-style: none;
+  counter-reset: lead;
+}
+
+.aw-lead li {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  height: 30px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 12.5px;
+  counter-increment: lead;
+}
+
+.aw-lead li::before {
+  content: counter(lead);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  color: var(--mute);
+}
+
+.aw-lead li span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.aw-lead li b {
+  font-variant-numeric: tabular-nums;
+}
+
+.aw-crest {
+  display: inline-flex;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .aw-stk.is-win .aw-name,
+[data-theme="dark"] .aw-stk.is-win .aw-sub {
+  color: #14231a;
+}
+
+[data-theme="dark"] .aw-lines,
+[data-theme="dark"] .aw-lines::before,
+[data-theme="dark"] .aw-lines::after {
+  border-color: var(--line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aw-stk,
+  .aw-stk.is-hero,
+  .aw-stk.is-win .aw-art::after,
+  .aw-gold-text,
+  .aw-note,
+  .aw-table tbody tr {
+    animation: none;
+  }
+}

@@ -13,8 +13,12 @@
   padding-bottom: 12px;
 }
 
-.history-head .btn-main {
+.history-head .history-awards {
   margin: 0 0 10px auto;
+}
+
+.history-head .btn-main {
+  margin: 0 0 10px;
 }
 
 .history-tabs {
