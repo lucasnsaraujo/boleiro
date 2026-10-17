@@ -74,6 +74,9 @@ describe("match injuries", () => {
   });
 });
 
+// The test plays the days up to the estaduais' first round, then tries that day on 20 streams.
+const PLAYS_THE_ESTADUAL_MS = 60_000;
+
 describe("an injury in a match", () => {
   it("stays on the player with what it was, and its news says so", () => {
     const firstLeagueDay = game.calendar.stateChampionshipDates[0] ?? date;
@@ -84,5 +87,5 @@ describe("an injury in a match", () => {
     if (!injured || event?.type !== "playerInjured") throw new Error("nobody got hurt in 20 days");
     expect(event.kind).toBeDefined();
     expect(injured.state.players[event.playerId]?.condition.injury).toBe(event.kind);
-  });
+  }, PLAYS_THE_ESTADUAL_MS);
 });
