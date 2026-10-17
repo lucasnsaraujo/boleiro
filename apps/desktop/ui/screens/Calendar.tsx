@@ -198,14 +198,12 @@ function MatchChip({ match, clubId, opponent, isToday, onOpen }: { match: PageMa
     <li className={result ? `agenda-match played ${result.outcome}` : "agenda-match"} style={{ gridRow: match.row, gridColumn: match.column }}>
       {result && <button type="button" className="agenda-open" aria-label={`Ficha do jogo contra ${opponent?.shortName ?? match.opponentId}`} onClick={() => onOpen(match.fixtureId)} />}
       <span className="sr-only">{isToday ? "Hoje" : formatRowDate(match.date)}, </span>
+      {clubId && <DerbyBadgeOf homeId={clubId} awayId={match.opponentId} />}
       <span className="agenda-match-crest" aria-hidden="true">
         {opponent && <Crest club={opponent} size={22} />}
       </span>
       <span className="agenda-match-text">
-        <b>
-          {opponent?.shortName ?? match.opponentId}
-          {clubId && <DerbyBadgeOf homeId={clubId} awayId={match.opponentId} />}
-        </b>
+        <b>{opponent?.shortName ?? match.opponentId}</b>
         <small>
           {score}
           {match.competition} · {side(match.isHome)}
