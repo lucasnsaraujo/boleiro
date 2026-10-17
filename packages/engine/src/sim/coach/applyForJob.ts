@@ -29,11 +29,6 @@ export function refusalOf(state: GameState, clubId: string, stature: number): Re
   return stature <= state.coach.reputation + APPLY_REACH ? null : "tooBig";
 }
 
-/** Whether a club with an open job would take the coach in the seat: his reputation reaches its stature and it holds nothing against him. */
-export function wouldHire(state: GameState, clubId: string, stature: number): boolean {
-  return refusalOf(state, clubId, stature) === null;
-}
-
 /** The coach in the seat applies for a club's open job; the club answers at once. */
 export function applyForJob(state: GameState, clubId: string): { state: GameState; answer: JobAnswer } {
   const isOpen = clubId in (state.coaches?.openJobs ?? {}) && clubId in state.boards && !isHumanClub(state, clubId);
