@@ -6,6 +6,8 @@ import { offerJobs } from "../coach/offerJobs.js";
 import type { CoachStint } from "../history/history.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { coachMarketOf, withCoachMarket } from "../transfers/coachMarket.js";
+import { coachMarketDay } from "../transfers/coachMarketDay.js";
 import type { CoachRequest } from "../transfers/coachRequest.js";
 
 let windowDay = loadNewGame(4, { coachClubId: "flamengo-rj" });
@@ -87,5 +89,20 @@ describe("the market between rivals", () => {
     expect(reasonOf(remembered, { kind: "sign", playerId: idol.id, fee: 1e9 })).toBe("idolRefusesRival");
     expect(reasonOf(remembered, { kind: "payClause", playerId: idol.id })).toBe("idolRefusesRival");
     expect(reasonOf(newcomer, { kind: "sign", playerId: idol.id, fee: 1e9 })).not.toBe("idolRefusesRival");
+  });
+
+  it("Fluminense bids nothing for a Flamengo idol the coach lists, but would for one who isn't", () => {
+    const coachAtFlamengo = rich(withSpell(windowDay, "flamengo-rj", "2025-12-01", null));
+    const idol = standout(coachAtFlamengo, "flamengo-rj");
+    const flamengo = coachAtFlamengo.finances["flamengo-rj"];
+    const fluminense = coachAtFlamengo.finances["fluminense-rj"];
+    if (!flamengo || !fluminense) throw new Error("no finances for Flamengo or Fluminense");
+    // Fluminense is the only other club with books, so it is the only buyer there could be.
+    const finances = { "flamengo-rj": flamengo, "fluminense-rj": { ...fluminense, transferBudget: 1e10, wageCap: 1e10 } };
+    const listed = withCoachMarket({ ...coachAtFlamengo, finances }, { ...coachMarketOf(coachAtFlamengo), listings: { [idol.id]: { mode: "cheap", price: 1 } } });
+    const bidsFor = (state: GameState) => coachMarketDay(state, () => 0).events.filter((e) => e.type === "bidReceived" && e.playerId === idol.id);
+    expect(bidsFor(listed)).toMatchObject([{ buyerId: "fluminense-rj" }]);
+    const history = { ...listed.history, players: { ...listed.history.players, "flamengo-rj": { [idol.id]: { name: idol.name, apps: 220, goals: 10 } } } };
+    expect(bidsFor({ ...listed, history })).toEqual([]);
   });
 });

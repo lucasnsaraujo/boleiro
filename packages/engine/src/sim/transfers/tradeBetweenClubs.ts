@@ -12,6 +12,7 @@ import { valuePlayer } from "./valuePlayer.js";
 import { wageDemandAt, wageRateOf, type WageRate } from "./wageDemand.js";
 import { willingToJoin } from "./willingToJoin.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
+import { idolRefusesMove } from "../rivalries/idols.js";
 
 // guess: a selling club asks a tenth over market value.
 export const ASKING_PREMIUM = 1.1;
@@ -98,6 +99,7 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
     if (replacing && RANK[sellerTier] > RANK[buyerTier]) continue;
     if (!preContract && view.squad(player.clubId).length <= MIN_SQUAD) continue;
     if (!preContract && RANK[sellerTier] >= RANK[buyerTier] && starters(player.clubId).has(player.id)) continue;
+    if (idolRefusesMove(state, player, buyerId)) continue;
     const fee = preContract ? 0 : Math.round(valuePlayer(player, sellerTier, state.date) * state.market.eurBrl * ASKING_PREMIUM);
     const wage = wageDemandAt(player, (rate ??= wageRateOf(squad)));
     let released: SimPlayer | null = null;
