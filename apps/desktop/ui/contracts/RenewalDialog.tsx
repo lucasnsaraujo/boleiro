@@ -244,7 +244,7 @@ export function RenewalDialog({ playerId, onClose: close, onChange }: Props) {
         </aside>
 
         <div className="ct-r">
-          <button className="ct-x" aria-label="Fechar" onClick={onClose} disabled={isBusy}>
+          <button className="ct-x" aria-label="Fechar a renovação" onClick={onClose} disabled={isBusy}>
             <i className="ph-bold ph-x" aria-hidden="true" />
           </button>
           <h2 id="ct-title" ref={title} tabIndex={-1}>
