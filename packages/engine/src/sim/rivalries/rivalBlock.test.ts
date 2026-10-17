@@ -86,6 +86,12 @@ describe("the market between rivals", () => {
     expect(reasonOf(stillAtFlamengo, { kind: "payClause", playerId: flu.id })).not.toBe("rivalWillNotSell");
   });
 
+  it("Fluminense has no say when Flamengo's long-serving coach signs a pre-contract with a player whose contract runs out", () => {
+    const flu = standout(stillAtFlamengo, "fluminense-rj");
+    const expiring = { ...stillAtFlamengo, players: { ...stillAtFlamengo.players, [flu.id]: { ...flu, contractUntil: "2026-05-31" } } };
+    expect(reasonOf(expiring, { kind: "sign", playerId: flu.id })).not.toBe("rivalWillNotSell");
+  });
+
   it("a Fluminense idol refuses to move to Flamengo, even with his release clause paid", () => {
     const newcomer = rich(withSpell(windowDay, "flamengo-rj", "2025-12-01", null));
     const idol = standout(newcomer, "fluminense-rj");

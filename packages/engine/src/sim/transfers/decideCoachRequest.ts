@@ -118,7 +118,8 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       // guess: every free agent counts, released or expired, whenever it happened. A pre-contract only takes effect when his contract ends.
       if (!free && !preContract && !isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       if (!free && !preContract && view.squad(player.clubId).length <= MIN_SQUAD) return refuse(state, request, "sellerWillNotSell");
-      if (!free && rivalBlockOf(state, player.clubId)) return refuse(state, request, "rivalWillNotSell");
+      // A pre-contract is the player's to sign, as a paid clause is: his club has no say.
+      if (!free && !preContract && rivalBlockOf(state, player.clubId)) return refuse(state, request, "rivalWillNotSell");
       if (!free && idolRefusesMove(state, player, coachClubId)) return refuse(state, request, "idolRefusesRival");
       let fee = 0;
       if (!free && !preContract) {
