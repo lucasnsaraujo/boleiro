@@ -1,3 +1,4 @@
+import { withCoachWorld } from "./coach/aiCoaches.js";
 import type { Club } from "@boleiro/data/clubs";
 import type { CompetitionMoney } from "@boleiro/data/competition-money";
 import type { ClubLineup } from "@boleiro/data/dataPack";
@@ -219,7 +220,7 @@ export function newGame(
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
   const withClock = marketClockSeconds === undefined ? game : { ...game, marketClockSeconds };
   const withAcademies = { ...withClock, youth: openAcademies(withClock) };
-  return withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat);
+  return withCoachWorld(withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat));
 }
 
 /** The game with its other human coaches waiting for their turns; a one-coach game stays as it is. */

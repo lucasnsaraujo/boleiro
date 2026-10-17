@@ -252,6 +252,11 @@ describe("the coach's career", () => {
     expect(line({ type: "contractEnded", clubId: "bahia-ba", season: 2026 })).toMatchObject({ text: "Fim do contrato com Bahia", tone: "bad" });
   });
 
+  test("a club he once coached naming its new coach is his news; any other club's is not", () => {
+    expect(line({ type: "coachAppointed", clubId: "bahia-ba", coachId: "c1", name: "Rogério Ceni" })).toMatchObject({ text: "Bahia anuncia Rogério Ceni como novo técnico", tone: "neutral" });
+    expect(lines({ type: "coachAppointed", clubId: "vitoria-ba", coachId: "c2", name: "Jair Ventura" })).toEqual([]);
+  });
+
   test("on the day he takes a new job, the new club's news is his too", () => {
     const hired = { ...game, coachClubId: "vitoria-ba" };
     expect(inboxLines(game, hired, [{ type: "fansProtest", clubId: "vitoria-ba", fans: 20, moraleLost: 5 }])).toHaveLength(1);

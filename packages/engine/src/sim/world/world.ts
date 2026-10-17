@@ -1,3 +1,4 @@
+import type { CountryCoaching } from "../coach/aiCoaches.js";
 import type { IsoDate, LeagueFormatId } from "../gameState.js";
 import type { CupFinal, LeaguePlace } from "./continentalPlaces.js";
 import type { ResultOnlyCup } from "./resultOnlyCup.js";
@@ -64,6 +65,8 @@ type CountrySeason = {
   continental: Record<string, string[]>;
   /** Its cup's final, when it plays one. */
   cup?: CupFinal;
+  /** The days its top league's last round and its cup's final were played; a season filed before they were kept has none. */
+  finals?: { league: IsoDate; cup?: IsoDate };
 };
 
 /** A result-only country in the game: its own random stream, so it plays and saves apart from the rest. */
@@ -78,6 +81,8 @@ export type Country = {
   rngState: number;
   /** True when a human coach took one of its clubs: its leagues play in the full tier, and only its cup here. */
   isFullTier?: true;
+  /** Its clubs' AI coaches, its pool and its ranking points; a save from before AI coaches gets them when it loads (withCoachWorld). */
+  coaching?: CountryCoaching;
 };
 
 /** The unified calendar's days a result-only country plays on: the leagues' grid, round k on its k-th day, and the cups' shared midweeks. */

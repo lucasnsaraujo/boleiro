@@ -3,6 +3,9 @@ import { randomStream } from "../../engine/random.js";
 import type { DayEvent, DayResult, WaitingDecisions } from "../advanceDay.js";
 import { isHumanClub, waitingCoachesOf, type WaitingCoach } from "../coach/humanCoaches.js";
 import { coachCareerDay } from "../coach/coachCareerDay.js";
+import { moveAiCoaches, moveWorldCoaches } from "../coach/moveAiCoaches.js";
+import { closeCoachSeason, retiredPlayers } from "../coach/closeCoachSeason.js";
+import { seasonRuns } from "../coach/rankingPoints.js";
 import { seasonEndField } from "../continental/continentalField.js";
 import { openContinentalCups } from "../continental/openContinentalCups.js";
 import { payContinentalPrizes } from "../continental/payContinentalPrizes.js";
@@ -220,36 +223,41 @@ export function finishMatchDay(live: LiveDay): DayResult {
   next = reacted.state;
   events.push(...reacted.events);
   const career = coachCareerDay(next, played, decisions.acceptOffer, random.next, (decisions.waiting ?? []).map((own) => own.acceptOffer));
-  next = career.state;
+  const moved = moveAiCoaches(career.state, state, career.vacancies, state.date);
+  next = moved.state;
   const waitingEvents: DayEvent[][] = career.waitingEvents;
   // Friendlies the coach booked for a club he no longer runs are called off with his move.
   if (state.coachClubId && next.coachClubId !== state.coachClubId) next = dropCoachFriendlies(next, state.coachClubId);
   const formerClubIds = leftClubIds(state, next);
   for (const clubId of formerClubIds) next = dropCoachFriendlies(next, clubId);
-  events.push(...career.events);
+  events.push(...career.events, ...moved.events);
   next = { ...next, rngState: random.state() };
   if (state.date === copinhaDate(state.season)) {
     const copinha = playCopinha(next);
     next = copinha.state;
     events.push(...copinha.events);
   }
-  if (state.world) next = { ...next, world: playWorldDay(state.world, state.date) };
+  if (state.world) next = { ...next, world: moveWorldCoaches(playWorldDay(state.world, state.date), state.date) };
   if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state)) };
   if (next.date.slice(0, 4) !== String(state.season)) {
     const continentalField = seasonEndField(next);
+    const runs = seasonRuns(next);
     const academies = turnOverAcademies(closeSeasonHistory(next));
     const developed = developPlayers(academies.state);
+    const retired = retiredPlayers(academies.state, developed.events);
     const ended = endSeason(developed.state);
     const marked = { ...ended.state, history: recordStrengths(ended.state) };
     const coachRandom = randomStream(marked.rngState);
-    const started = startCoachSeason(marked, Object.values(ended.outcomes), coachRandom.next);
+    const begun = startCoachSeason(marked, Object.values(ended.outcomes), coachRandom.next);
+    // The clubs that change coach before the season, and any whose human coach's contract ended, open their jobs on the coaches' own stream.
+    const started = { ...begun, state: moveAiCoaches(begun.state, marked, begun.vacancies, state.date).state };
     started.waitingEvents.forEach((own, index) => waitingEvents[index]?.push(...own));
     events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...academies.events, ...developed.events, ...started.events);
     // Bans still pending when a competition ends lapse with it.
     const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
     next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };
     if (next.world) next = { ...next, world: endWorldSeason(next.world, next.season, unifiedDatesOf(next.calendar)) };
-    next = openContinentalCups(next, continentalField);
+    next = closeCoachSeason(openContinentalCups(next, continentalField), state.season, runs, retired);
   }
   const market = runTransferDay(next, decisions.requests ?? [], (decisions.waiting ?? []).map((own) => own.requests ?? []));
   events.push(...market.events);

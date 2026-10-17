@@ -2,6 +2,9 @@ import type { Formation } from "@boleiro/engine/engine/formations";
 import { advanceDay, type DayDecisions, type DayEvent, type DayResult, type WaitingDecisions } from "@boleiro/engine/sim/advanceDay";
 import { withAssistantDuty, type AssistantDuty } from "@boleiro/engine/sim/coach/assistantDuties";
 import { declineOffer } from "@boleiro/engine/sim/coach/declineOffer";
+import { withCoachWorld } from "@boleiro/engine/sim/coach/aiCoaches";
+import { applyForJob, type JobAnswer } from "@boleiro/engine/sim/coach/applyForJob";
+import { resign } from "@boleiro/engine/sim/coach/resign";
 import { nameCaptain } from "@boleiro/engine/sim/chemistry/nameCaptain";
 import { pendingEventOf, type EventArea, type PendingEvent } from "@boleiro/engine/sim/events/eventMemory";
 import { answerEvent, type EventAnswered } from "@boleiro/engine/sim/events/runEvents";
@@ -32,6 +35,7 @@ import type { MarketFilters } from "../market/marketFilters.js";
 import { EMPTY_SCOUTING, forgetFilter, keepFilter, watch, type Scouting } from "../market/scouting.js";
 import { isSigning, marketClockView, spendMarketTime, type MarketClock, type MarketClockView } from "../market/marketClock.js";
 import { chemistryPage, type ChemistryPage } from "../chemistry/chemistryPage.js";
+import { coachesPage, coachProfile, type CoachesPage, type CoachProfile } from "../coaches/coachesPage.js";
 import { matchPageOf, type MatchPage } from "../matchPage/matchPageOf.js";
 import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
 import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
@@ -63,6 +67,10 @@ type CommandFields = {
   finishRound: Record<never, never>;
   closeTurningPoint: Record<never, never>;
   declineOffer: { clubId: string };
+  /** The coach in the seat walks out on his club. */
+  resign: Record<never, never>;
+  /** The coach in the seat applies for a club's open job; the club answers at once. */
+  applyForJob: { clubId: string };
   ask: { request: CoachRequest };
   withdraw: { playerId: string };
   /** Puts one of the coach's players up for sale or at auction, or takes him off the market with `way` null. */
@@ -135,6 +143,8 @@ export type CommandResults = {
   finishRound: AdvanceResult;
   closeTurningPoint: undefined;
   declineOffer: undefined;
+  resign: undefined;
+  applyForJob: JobAnswer;
   ask: BoardDesk;
   withdraw: BoardDesk;
   listPlayer: undefined;
@@ -374,10 +384,10 @@ export function createEngineSession(files: GameFiles) {
     newGame({ seed, choices }) {
       return begin(newGameFromFiles(seed, choices, files));
     },
-    /** A save from before positions gets them from the shipped pack (withPackPositions). */
+    /** A save from before positions gets them from the shipped pack (withPackPositions); one from before AI coaches gets them from its seed. */
     load({ save }) {
       const loaded = readStoredSave(save);
-      const game = withPackPositions(loaded.game, files);
+      const game = withCoachWorld(withPackPositions(loaded.game, files));
       const summary = begin(game);
       desk = loaded.desk;
       turningPoints = loaded.turningPoints;
@@ -509,6 +519,16 @@ export function createEngineSession(files: GameFiles) {
     declineOffer({ clubId }) {
       state = declineOffer(betweenDays("an offer can't be declined"), clubId);
     },
+    /** His requests were for the board he left, so they go with him. Refused during a round, like declining an offer. */
+    resign() {
+      state = resign(betweenDays("the coach can't resign"));
+      desk = { ...desk, pending: [] };
+    },
+    applyForJob({ clubId }) {
+      const applied = applyForJob(betweenDays("a job can't be applied for"), clubId);
+      state = applied.state;
+      return applied.answer;
+    },
     /** Puts a request on the board's desk; it reaches the board on the next day played that it is due. */
     ask({ request }) {
       current();
@@ -634,6 +654,14 @@ export function createEngineSession(files: GameFiles) {
     /** The lineup sheet before kick-off on the coach's match day; with a formation, the assistant's eleven in it. */
     matchDayPlan(formation?: Formation): MatchDayPlan {
       return matchDayPlan(current(), formation);
+    },
+    /** The coaches screen: the rankings as of `season` (the latest when left out), the job centre and the seated coach's own profile. */
+    coaches(season?: number): CoachesPage {
+      return coachesPage(current(), season);
+    },
+    /** A coach's page by his ranking key, or by a club's id for its AI coach; null when nobody has it. */
+    coachProfile(key: string): CoachProfile | null {
+      return coachProfile(current(), key);
     },
     /** The chemistry screen of the seated coach's club; null without a club. */
     chemistry(): ChemistryPage | null {
