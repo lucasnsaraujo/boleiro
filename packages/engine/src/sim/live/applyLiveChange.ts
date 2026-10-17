@@ -11,10 +11,12 @@ import { engineTeam } from "../players/matchSetup.js";
 import { matchOfficials } from "../referees/matchOfficials.js";
 import { withRefereeCalls } from "../referees/refereeCalls.js";
 import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
-import { aiSubstitutions, MAX_SUBSTITUTION_WINDOWS, MAX_SUBSTITUTIONS, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
+import { tieBreakOf } from "../tieBreaks.js";
+import { aiSubstitutions, EXTRA_TIME_SUBSTITUTIONS, EXTRA_TIME_WINDOWS, isFreeWindow, MAX_SUBSTITUTION_WINDOWS, MAX_SUBSTITUTIONS, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
 import { describeGoals, drawPenaltyMisses, type GoalEvent, type GoalSide } from "./goalDetails.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
-import { drawMinute, FULL_TIME, HALF_TIME, goalMinuteWeights, inMatchOrder, sentOffMinute, type MatchEvent } from "./matchTimeline.js";
+import { drawMinute, EXTRA_TIME_END, FULL_TIME, goalMinuteWeights, inMatchOrder, isWhistle, matchEndOf, sentOffMinute, whistlesTo, type MatchEvent } from "./matchTimeline.js";
+import { playExtraTime } from "./playExtraTime.js";
 
 export type Substitution = { offId: string; onId: string };
 
@@ -44,7 +46,7 @@ function onPitch(coachMatch: CoachMatch, events: readonly MatchEvent[], side: Si
   return players;
 }
 
-/** Throws unless every substitution follows Law 3 and the bench at this minute. */
+/** Throws unless every substitution follows Law 3 (its extra substitution and opportunity once extra time comes) and the bench at this minute. */
 function checkSubstitutions(
   coachMatch: CoachMatch,
   kept: readonly MatchEvent[],
@@ -55,11 +57,14 @@ function checkSubstitutions(
   subs: readonly Substitution[],
 ): void {
   if (!subs.length) return;
+  const isExtraTime = minute >= FULL_TIME;
+  const most = MAX_SUBSTITUTIONS + (isExtraTime ? EXTRA_TIME_SUBSTITUTIONS : 0);
+  const mostWindows = MAX_SUBSTITUTION_WINDOWS + (isExtraTime ? EXTRA_TIME_WINDOWS : 0);
   const made = kept.filter((e) => e.type === "substitution" && e.clubId === clubId);
-  if (made.length + subs.length > MAX_SUBSTITUTIONS) throw new Error(`a side makes at most ${MAX_SUBSTITUTIONS} substitutions`);
-  const windows = new Set(made.filter((e) => e.minute !== HALF_TIME).map((e) => e.minute));
-  if (minute !== HALF_TIME && !windows.has(minute) && windows.size >= MAX_SUBSTITUTION_WINDOWS) {
-    throw new Error(`a side has at most ${MAX_SUBSTITUTION_WINDOWS} substitution windows, plus half-time`);
+  if (made.length + subs.length > most) throw new Error(`a side makes at most ${most} substitutions`);
+  const windows = new Set(made.filter((e) => !isFreeWindow(e.minute)).map((e) => e.minute));
+  if (!isFreeWindow(minute) && !windows.has(minute) && windows.size >= mostWindows) {
+    throw new Error(`a side has at most ${mostWindows} substitution windows, plus the breaks`);
   }
   const played = new Set([...coachMatch.starters.home, ...coachMatch.starters.away].map((p) => p.id));
   for (const e of made) if (e.type === "substitution") played.add(e.playerId);
@@ -188,19 +193,62 @@ function shootoutAfter(live: LiveDay, coachMatch: CoachMatch, match: LiveMatch, 
   if (!fixture) return [];
   const goals = (clubId: string) => events.filter((e) => e.type === "goal" && e.clubId === clubId).length;
   const result = { homeGoals: goals(match.homeId), awayGoals: goals(match.awayId) };
-  if (!isShootoutDue(live.state, { ...fixture, result })) return [];
+  const competition = live.state.competitions[fixture.competitionId];
+  if (!isShootoutDue(live.state, { ...fixture, result }) || (competition && tieBreakOf(competition, fixture.stage) === "betterSeed")) return [];
+  const end = matchEndOf(events);
   const strength = (p: SimPlayer) => coachMatch.strengths[p.id] ?? p.strength;
   const side = (s: Side) => {
     const clubId = s === "home" ? match.homeId : match.awayId;
     const order = s === coachSide ? coachMatch.tactics.kickerOrder : coachMatch.rivalTactics?.kickerOrder;
     return {
       clubId,
-      onPitch: onPitchAt(coachMatch.starters[s], benchOf(coachMatch, s, coachSide), events, clubId, FULL_TIME + 1),
+      onPitch: onPitchAt(coachMatch.starters[s], benchOf(coachMatch, s, coachSide), events, clubId, end + 1),
       morale: clubMood(live.state, clubId).squad,
       ...(order ? { order } : {}),
     };
   };
-  return settleShootout({ ...fixture, result }, shootoutSeed(random), side("home"), side("away"), strength).events;
+  return settleShootout({ ...fixture, result }, shootoutSeed(random), side("home"), side("away"), strength, end === EXTRA_TIME_END ? EXTRA_TIME_END : FULL_TIME).events;
+}
+
+/**
+ * Extra time of the coach's match after `from`, drawn on the match's stream, when it is under way
+ * already (`from` 90 or later) or the tie is level after the ninety minutes and its competition plays
+ * it; null when the match ends at ninety minutes. Each side's goals follow the engine's expected goals
+ * for the elevens and tactics on the pitch, an AI side at the posture aiPosture gives it then.
+ */
+function extraTimeAfter(live: LiveDay, coachMatch: CoachMatch, match: LiveMatch, events: readonly MatchEvent[], coachSide: Side, from: number, random: () => number): MatchEvent[] | null {
+  const fixture = live.state.fixtures.find((f) => f.id === match.fixtureId);
+  const competition = fixture && live.state.competitions[fixture.competitionId];
+  if (!fixture || !competition) return null;
+  const goals = (clubId: string) => events.filter((e) => e.type === "goal" && e.clubId === clubId).length;
+  if (from < FULL_TIME) {
+    const result = { homeGoals: goals(match.homeId), awayGoals: goals(match.awayId) };
+    if (!isShootoutDue(live.state, { ...fixture, result }) || tieBreakOf(competition, fixture.stage) !== "extraTime") return null;
+  }
+  const start = Math.max(from, FULL_TIME);
+  const clubIds = { home: match.homeId, away: match.awayId };
+  const aiSide: Side = coachSide === "home" ? "away" : "home";
+  const strength = (p: SimPlayer) => coachMatch.strengths[p.id] ?? p.strength;
+  const humanTactics = (side: Side) => (side === coachSide ? coachMatch.tactics : coachMatch.rivalTactics);
+  const lead = goals(clubIds[aiSide]) - goals(clubIds[coachSide]);
+  const team = (side: Side): Team =>
+    engineTeam(clubIds[side], onPitch(coachMatch, events, side, clubIds[side]), strength, humanTactics(side) ?? { ...DEFAULT_TACTICS, formation: match.formations[side], posture: aiPosture(lead, start + 1) });
+  const markingOf = (side: Side) => humanTactics(side)?.marking;
+  const benches = { home: benchOf(coachMatch, "home", coachSide), away: benchOf(coachMatch, "away", coachSide) };
+  const extraTime = {
+    clubIds,
+    starters: coachMatch.starters,
+    benches,
+    aiSides: { home: coachSide !== "home" && !coachMatch.rivalTactics, away: coachSide !== "away" && !coachMatch.rivalTactics },
+    penaltyTakers: { home: humanTactics("home")?.penaltyTakerId ?? null, away: humanTactics("away")?.penaltyTakerId ?? null },
+    strength,
+    tiredness: (p: SimPlayer) => tirednessOn(p, coachMatch.context.date),
+    teams: { home: team("home"), away: team("away") },
+    params: coachMatch.params,
+    cardRates: markedCardRates(coachMatch.cardRates, { home: markingOf("home"), away: markingOf("away") }),
+    context: coachMatch.context,
+  };
+  return playExtraTime(extraTime, events, random, start);
 }
 
 /** What the referee's calls of the coach's match need: its officials, and who is on the pitch for each side at each minute. */
@@ -230,11 +278,12 @@ function openMatchOf(live: LiveDay, clubId: string): CoachMatch | undefined {
 export function applyLiveChange(live: LiveDay, minute: number, change: LiveChange, clubId: string | null = live.state.coachClubId): LiveDay {
   const coachMatch = clubId === null ? undefined : openMatchOf(live, clubId);
   if (!coachMatch || !clubId) throw new Error("the coach has no match today");
-  if (!Number.isInteger(minute) || minute < coachMatch.lastChangeMinute || minute >= FULL_TIME) {
-    throw new Error(`a change must come between minute ${coachMatch.lastChangeMinute} and ${FULL_TIME - 1}`);
-  }
   const match = live.matches.find((m) => m.fixtureId === coachMatch.fixtureId);
   if (!match) throw new Error(`coach's match ${coachMatch.fixtureId} has no timeline`);
+  const end = matchEndOf(match.events);
+  if (!Number.isInteger(minute) || minute < coachMatch.lastChangeMinute || minute >= end) {
+    throw new Error(`a change must come between minute ${coachMatch.lastChangeMinute} and ${end - 1}`);
+  }
   const ownerId = coachMatch.clubId ?? live.state.coachClubId;
   const ownerSide: Side = match.homeId === ownerId ? "home" : "away";
   const changingSide: Side = match.homeId === clubId ? "home" : "away";
@@ -242,7 +291,7 @@ export function applyLiveChange(live: LiveDay, minute: number, change: LiveChang
   const before = isRival ? coachMatch.rivalTactics : coachMatch.tactics;
   if (!before) throw new Error(`${clubId} has no coach in match ${coachMatch.fixtureId}`);
   // The referee's calls are told again over the whole new timeline; they never shape what is drawn.
-  const isReplayed = (e: MatchEvent) => e.type !== "halfTime" && e.type !== "fullTime" && e.type !== "shootoutKick" && e.type !== "orderOverruled" && e.type !== "varCheck" && e.type !== "wrongCall";
+  const isReplayed = (e: MatchEvent) => !isWhistle(e) && e.type !== "shootoutKick" && e.type !== "orderOverruled" && e.type !== "varCheck" && e.type !== "wrongCall";
   const kept = match.events.filter((e) => e.minute <= minute && isReplayed(e));
   const subs = change.substitutions ?? [];
   const bench = benchOf(coachMatch, changingSide, ownerSide);
@@ -259,10 +308,11 @@ export function applyLiveChange(live: LiveDay, minute: number, change: LiveChang
   const random = randomStream(coachMatch.rngState);
   const next: CoachMatch = isRival ? { ...coachMatch, rivalTactics: tactics, lastChangeMinute: minute, isChanged: true } : { ...coachMatch, tactics, lastChangeMinute: minute, isChanged: true };
   const sofar = [...kept, ...substitutions];
-  const after = redraw(next, match, sofar, ownerSide, minute, random.next);
-  const played = [...sofar, ...after];
-  const shootout = shootoutAfter(live, next, match, played, ownerSide, random.next);
-  const timeline = inMatchOrder([...played, { type: "halfTime", minute: HALF_TIME }, { type: "fullTime", minute: FULL_TIME }, ...shootout]);
+  const ninety = [...sofar, ...(minute < FULL_TIME ? redraw(next, match, sofar, ownerSide, minute, random.next) : [])];
+  const extraTime = extraTimeAfter(live, next, match, ninety, ownerSide, minute, random.next);
+  const played = [...ninety, ...(extraTime ?? [])];
+  const shootout = shootoutAfter(live, next, match, [...played, ...whistlesTo(extraTime ? EXTRA_TIME_END : FULL_TIME)], ownerSide, random.next);
+  const timeline = inMatchOrder([...played, ...whistlesTo(extraTime ? EXTRA_TIME_END : FULL_TIME), ...shootout]);
   const events = withRefereeCalls(timeline, refereeOf(live, next, match, timeline, ownerSide));
   const formations = { ...match.formations, [changingSide]: tactics.formation };
   const redrawn: CoachMatch = { ...next, rngState: random.state() };

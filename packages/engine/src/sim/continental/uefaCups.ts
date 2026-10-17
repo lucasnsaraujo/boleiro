@@ -5,7 +5,7 @@ import { inSeason } from "../seasonCalendar.js";
 import { shuffle } from "../shuffle.js";
 import { standings } from "../standings.js";
 import { EUROPE } from "../world/europe.js";
-import { scoreDraw } from "../world/resultOnlyLeague.js";
+import { scoreDraw, settleLevelTie } from "../world/resultOnlyLeague.js";
 import { UEFA_CUPS, type UefaCup } from "../world/uefaPlaces.js";
 import type { World, WorldClub } from "../world/world.js";
 import { unifiedUefaCalendar, type UefaCalendar } from "./continentalDays.js";
@@ -19,7 +19,9 @@ export type KnockoutRoundName = (typeof KNOCKOUT_ROUNDS)[number];
 /**
  * A knockout round as drawn: each tie's clubs, the better-placed one first, who hosts the second
  * leg (or the single match, when `dates` holds one). `results` holds each tie's legs in order, two characters a leg (goals from "0", home side
- * first), then its winner's side, "0" first club or "1" second; "-" for what is not played yet.
+ * first, extra time's in the last leg), then its winner's side, "0" first club or "1" second ("2" or "3" when won in extra time, "4" or
+ * "5" on penalties after it); "-" for what is not played yet. A tie level on aggregate went to penalties, after extra time unless
+ * a save from before the game played it says "0" or "1".
  */
 export type KnockoutRound = { name: KnockoutRoundName; dates: IsoDate[]; ties: [string, string][]; results: string };
 
@@ -56,6 +58,8 @@ const UNIFIED_ROLLOVER = "01-01";
 const MATCHDAY_SIZE = LEAGUE_PHASE_CLUBS / 2;
 const UNPLAYED = "-";
 const ZERO_GOALS = "0".charCodeAt(0);
+const WON_IN_EXTRA_TIME = 2;
+const WON_ON_PENALTIES_AFTER_EXTRA_TIME = 4;
 
 // The 2026/27 calendars (Wikipedia, "2026–27 UEFA Champions League" and "... Europa League", read
 // 2026-10-15), one day per matchday and leg where UEFA spreads one over two or three. guess: the
@@ -149,8 +153,8 @@ export function leaguePhaseTable(cup: LeaguePhaseCup): string[] {
 
 export type TieLeg = { date: IsoDate; homeId: string; awayId: string; result: MatchResult | null };
 
-/** A knockout tie's legs, the second hosted by its first club, and its winner once decided. */
-export function knockoutTie(round: KnockoutRound, index: number): { clubIds: [string, string]; legs: TieLeg[]; winnerId: string | null; onPenalties: boolean } {
+/** A knockout tie's legs, the second hosted by its first club, and its winner once decided, after extra time or on penalties. */
+export function knockoutTie(round: KnockoutRound, index: number): { clubIds: [string, string]; legs: TieLeg[]; winnerId: string | null; onPenalties: boolean; isAfterExtraTime?: true } {
   const clubIds = round.ties[index] ?? ["", ""];
   const length = tieLength(round);
   const code = round.results.slice(index * length, (index + 1) * length);
@@ -160,10 +164,12 @@ export function knockoutTie(round: KnockoutRound, index: number): { clubIds: [st
     const isPlayed = code[2 * leg] !== UNPLAYED;
     return { date, homeId, awayId, result: isPlayed ? { homeGoals: goalsAt(code, 2 * leg), awayGoals: goalsAt(code, 2 * leg + 1) } : null };
   });
-  const decider = code[length - 1];
-  const winnerId = decider === "0" ? clubIds[0] : decider === "1" ? clubIds[1] : null;
+  const decider = code[length - 1] ?? UNPLAYED;
+  const side = Number(decider);
+  const winnerId = decider === UNPLAYED ? null : (clubIds[side % 2] ?? null);
   const [first, second] = aggregateOf(clubIds, legs);
-  return { clubIds, legs, winnerId, onPenalties: winnerId !== null && first === second };
+  const onPenalties = winnerId !== null && first === second;
+  return { clubIds, legs, winnerId, onPenalties, ...(side >= WON_IN_EXTRA_TIME ? { isAfterExtraTime: true as const } : {}) };
 }
 
 /** Each club's goals over the tie's legs played so far, in the order of `clubIds`. */
@@ -230,15 +236,24 @@ function playRoundDay(round: KnockoutRound, date: IsoDate, clubOf: ClubOf, rando
     let code = round.results.slice(index * length, (index + 1) * length);
     const today = tie.legs[leg];
     if (today && !today.result) {
-      const { homeGoals, awayGoals } = scoreDraw(clubOf(today.homeId), clubOf(today.awayId), random);
-      code = code.slice(0, 2 * leg) + score(homeGoals, awayGoals) + code.slice(2 * leg + 2);
+      let { homeGoals, awayGoals } = scoreDraw(clubOf(today.homeId), clubOf(today.awayId), random);
       if (leg === tie.legs.length - 1) {
-        const legs = tie.legs.map((l, i) => (i === leg ? { ...l, result: { homeGoals, awayGoals } } : l));
-        const [first, second] = aggregateOf(tie.clubIds, legs);
-        // guess: a level tie goes straight to penalties, an even draw; extra time is not played.
-        const isSecondThrough = second > first || (second === first && random() < 0.5);
-        code = code.slice(0, length - 1) + (isSecondThrough ? "1" : "0");
+        const aggregate = (result: MatchResult) => aggregateOf(tie.clubIds, tie.legs.map((l, i) => (i === leg ? { ...l, result } : l)));
+        const [first, second] = aggregate({ homeGoals, awayGoals });
+        let side = second > first ? 1 : 0;
+        // UEFA plays extra time when a tie is level after the last leg, then penalties (UEFA, away goals rule
+        // abolished in 2021, https://insideworldfootball.com/?p=127856); the one-match final too.
+        if (first === second) {
+          const { extraTime, isAwayShootoutWinner } = settleLevelTie(clubOf(today.homeId), clubOf(today.awayId), true, random);
+          homeGoals += extraTime?.homeGoals ?? 0;
+          awayGoals += extraTime?.awayGoals ?? 0;
+          const [afterFirst, afterSecond] = aggregate({ homeGoals, awayGoals });
+          const isHostFirst = today.homeId === tie.clubIds[0];
+          side = afterFirst === afterSecond ? WON_ON_PENALTIES_AFTER_EXTRA_TIME + Number(isAwayShootoutWinner === isHostFirst) : WON_IN_EXTRA_TIME + Number(afterSecond > afterFirst);
+        }
+        code = code.slice(0, length - 1) + String(side);
       }
+      code = code.slice(0, 2 * leg) + score(homeGoals, awayGoals) + code.slice(2 * leg + 2);
     }
     results += code;
   });

@@ -90,7 +90,10 @@ const CONTROVERSIES: readonly Variant[] = [
 function scoreLine(state: GameState, fixture: Fixture): string {
   const name = (id: string) => state.clubs[id]?.shortName ?? id;
   const result = fixture.result;
-  return result ? `${name(fixture.homeId)} ${result.homeGoals} × ${result.awayGoals} ${name(fixture.awayId)}` : "";
+  if (!result) return "";
+  const extraTime = result.isAfterExtraTime ? " (prorr.)" : "";
+  const shootout = result.penaltyWinnerId ? `, ${name(result.penaltyWinnerId)} nos pênaltis` : "";
+  return `${name(fixture.homeId)} ${result.homeGoals} × ${result.awayGoals} ${name(fixture.awayId)}${extraTime}${shootout}`;
 }
 
 /** Who scored, by side: "Gols: Pedro (2), Arrascaeta; Luciano Juba." */

@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { inMatchOrder } from "@boleiro/engine/sim/live/matchTimeline";
 import type { LiveRound } from "@boleiro/game-client/round/liveRoundOf";
-import { calloutsBetween, goalsBetween, highlightsBetween, pauseReason, roundAt, scorersUntil, varCheckAt } from "./roundAt.js";
+import { calloutsBetween, goalsBetween, highlightsBetween, pauseReason, roundAt, roundEndOf, scorersUntil, varCheckAt } from "./roundAt.js";
 
 const colours = { primary: "#000000", secondary: "#ffffff" };
 const club = (id: string, shortName: string) => ({ id, shortName, colours, stadium: `Estádio do ${shortName}` });
@@ -71,6 +71,39 @@ test("the round stops by itself at half-time, at the final whistle, and when the
   expect(pauseReason(round, 45)).toBe("halfTime");
   expect(pauseReason(round, 50)).toBe("coachMatch");
   expect(pauseReason(round, 90)).toBe("fullTime");
+});
+
+const extraTime: LiveRound = {
+  ...round,
+  matches: [
+    ...round.matches.slice(0, 1),
+    {
+      fixtureId: "ours",
+      competitionId: "a",
+      homeId: "vit",
+      awayId: "bahia",
+      events: inMatchOrder([
+        { type: "halfTime", minute: 45 },
+        { type: "fullTime", minute: 90 },
+        { type: "goal", minute: 97, clubId: "bahia", playerId: "b9" },
+        { type: "card", minute: 110, clubId: "bahia", playerId: "b2", card: "red" },
+        { type: "extraHalfTime", minute: 105 },
+        { type: "extraTimeEnd", minute: 120 },
+      ]),
+    },
+  ],
+};
+
+test("a round with a match in extra time runs to 120 and stops in its breaks at 90 and 105, never for its goals", () => {
+  expect(roundEndOf(round)).toBe(90);
+  expect(roundEndOf(extraTime)).toBe(120);
+  expect(pauseReason(extraTime, 90)).toBe("extraTimeBreak");
+  expect(pauseReason(extraTime, 97)).toBeNull();
+  expect(pauseReason(extraTime, 105)).toBe("extraTimeBreak");
+  expect(pauseReason(extraTime, 110)).toBe("coachMatch");
+  expect(pauseReason(extraTime, 120)).toBe("fullTime");
+  const [ours] = roundAt(extraTime, 100);
+  expect(ours).toMatchObject({ score: { home: 0, away: 1 }, last: { minute: 97, text: "Gol de Everaldo" } });
 });
 
 test("a match's scorers up to a minute come in order, named, with their side", () => {

@@ -2,7 +2,7 @@ import type { PositionGroup } from "../../engine/match.js";
 import type { SimPlayer } from "../gameState.js";
 import { whoPlayed } from "./aiSubstitutions.js";
 import { playerStatsAt, type MatchPlay, type PlayerStats } from "./matchPlay.js";
-import { FULL_TIME, type MatchEvent } from "./matchTimeline.js";
+import { matchEndOf, type MatchEvent } from "./matchTimeline.js";
 
 /** A side as rated after the match: who started and who could come on. */
 export type RatedSide = { clubId: string; starters: readonly SimPlayer[]; bench: readonly SimPlayer[] };
@@ -52,12 +52,13 @@ const SCORES: Record<PositionGroup, { mean: number; sd: number }> = {
 const LOWEST = 3;
 const HIGHEST = 10;
 
-function scoreOf(s: PlayerStats, margin: number, isCleanSheet: boolean): number {
+/** A player's score; the result counts by the share of the match (`end` minutes long) he played. */
+function scoreOf(s: PlayerStats, margin: number, isCleanSheet: boolean, end: number): number {
   // Missed penalties cost their own price, so they leave the taker's other shots.
   const missed = s.shots - s.shotsOnTarget - (s.penaltiesMissed - s.penaltiesKeptOut);
   const saved = s.shotsOnTarget - s.goals - s.penaltiesKeptOut;
   return (
-    (RESULT * margin * s.minutes) / FULL_TIME +
+    (RESULT * margin * s.minutes) / end +
     GOAL * (s.goals - s.penaltyGoals) +
     PENALTY_GOAL * s.penaltyGoals +
     ASSIST * s.assists +
@@ -94,7 +95,8 @@ function timelineOnly(sides: { home: RatedSide; away: RatedSide }): MatchPlay {
  * and how his side did, on the spread of FotMob's Série A ratings for his position.
  */
 export function matchRatings(sides: { home: RatedSide; away: RatedSide }, events: readonly MatchEvent[], play: MatchPlay = timelineOnly(sides)): { home: PlayerRating[]; away: PlayerRating[] } {
-  const stats = playerStatsAt(play, events, FULL_TIME);
+  const end = matchEndOf(events);
+  const stats = playerStatsAt(play, events, end);
   const goalsOf = (clubId: string) => events.filter((e) => e.type === "goal" && e.clubId === clubId).length;
   const rate = (own: RatedSide, other: RatedSide): PlayerRating[] => {
     const { players } = whoPlayed(own.starters, own.bench, events, own.clubId);
@@ -102,7 +104,7 @@ export function matchRatings(sides: { home: RatedSide; away: RatedSide }, events
     const isCleanSheet = goalsOf(other.clubId) === 0;
     return players.map((player) => {
       const s = stats[player.id];
-      const score = s ? scoreOf({ ...s, group: player.group }, margin, isCleanSheet) : 0;
+      const score = s ? scoreOf({ ...s, group: player.group }, margin, isCleanSheet, end) : 0;
       const fotmob = FOTMOB[player.group];
       const scores = SCORES[player.group];
       const rating = fotmob.mean + (fotmob.sd * (score - scores.mean)) / scores.sd;

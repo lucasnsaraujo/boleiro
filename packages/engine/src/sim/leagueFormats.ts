@@ -249,8 +249,8 @@ const mls: LeagueFormat = {
 // Liga MX 2026: 18 clubs play two tournaments a year, the Clausura from January and the Apertura from
 // July, each a single round robin and a liguilla of two-leg ties to its own champion; relegation is
 // suspended (Liga MX, https://ligamx.net/cancha/reglamento). The game plays the liguilla of the top eight
-// (1st against 8th, reseeded semi-finals), without the play-in for 7th to 10th; ties level on aggregate
-// go to penalties, where the real liguilla sends the better seed through. It files the Apertura's
+// (1st against 8th, reseeded semi-finals), without the play-in for 7th to 10th; a quarter- or
+// semi-final level on aggregate sends the better seed through, a final goes to extra time (tieBreaks.ts). It files the Apertura's
 // champion as the season's. With the league met once, each liguilla tie is one match.
 const LIGA_MX_TOURNAMENT = 4;
 

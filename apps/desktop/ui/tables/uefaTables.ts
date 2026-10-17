@@ -24,7 +24,7 @@ export function uefaLeaguePhase(cup: LeaguePhaseCup): { groups: GroupTable[]; zo
 
 function tieViews(cup: LeaguePhaseCup, round: KnockoutRound): TieView[] {
   return round.ties.map((_, index) => {
-    const { clubIds, legs, winnerId, onPenalties } = knockoutTie(round, index);
+    const { clubIds, legs, winnerId, onPenalties, isAfterExtraTime } = knockoutTie(round, index);
     const isStarted = legs.some((leg) => leg.result);
     return {
       clubIds,
@@ -40,6 +40,7 @@ function tieViews(cup: LeaguePhaseCup, round: KnockoutRound): TieView[] {
       aggregate: isStarted ? aggregateOf(clubIds, legs) : null,
       winnerId,
       onPenalties,
+      isAfterExtraTime: isAfterExtraTime === true,
       isPlayoff: false,
     };
   });

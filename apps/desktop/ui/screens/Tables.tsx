@@ -39,6 +39,7 @@ import {
   type TieView,
   type ZoneKey,
 } from "../tables/competitionTables.js";
+import { tieBreakOf } from "@boleiro/engine/sim/tieBreaks";
 import "./tables.css";
 
 const copaFinalists = (competitions: readonly Competition[], fixtures: GameState["fixtures"]) => {
@@ -303,6 +304,7 @@ function nextTieOf(competition: Competition, fixtures: readonly Fixture[], stage
     ground: neutralGround(competition, next),
     firstLeg,
     isTwoLegged: legs.length > 1,
+    tieBreak: tieBreakOf(competition, next.stage),
   };
 }
 
@@ -728,6 +730,7 @@ function TieList({ name, ties, clubs, coachClubId, onOpenMatch }: { name: string
               <span className="tie-legs">
                 {tie.isPlayoff && "Repescagem · "}
                 {legLine(tie)}
+                {tie.isAfterExtraTime && " · prorr."}
                 {tie.onPenalties && " · pên."}
               </span>
             </li>

@@ -82,7 +82,8 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         const shootout = result.penaltyWinnerId ? `, ${clubName(result.penaltyWinnerId)} nos pênaltis` : "";
         const tone: InboxTone = result.penaltyWinnerId ? (isOurs(result.penaltyWinnerId) ? "good" : "bad") : ours > 0 ? "good" : ours < 0 ? "bad" : "neutral";
         const played = competition(competitionId);
-        const score = `${clubName(homeId)} ${result.homeGoals} x ${result.awayGoals} ${clubName(awayId)}${shootout}`;
+        const extraTime = result.isAfterExtraTime ? " (prorr.)" : "";
+        const score = `${clubName(homeId)} ${result.homeGoals} x ${result.awayGoals} ${clubName(awayId)}${extraTime}${shootout}`;
         return [played ? `${competitionName(played)}: ${score}` : score, tone];
       }
       case "seasonEnded": {

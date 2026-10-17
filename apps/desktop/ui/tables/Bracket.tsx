@@ -99,10 +99,12 @@ function TieCard({ tie, feeders, clubs, coachClubId, isSemi, style, onOpenMatch 
     );
   }
   const shootoutWinner = tie.onPenalties && tie.winnerId ? nameOf(clubs, tie.winnerId) : null;
+  const extraTimeWinner = !tie.onPenalties && tie.isAfterExtraTime && tie.winnerId ? nameOf(clubs, tie.winnerId) : null;
   return (
     <div className={className} style={style} aria-label={`${nameOf(clubs, tie.clubIds[0])} x ${nameOf(clubs, tie.clubIds[1])}`}>
       <TieOpener tie={tie} clubs={clubs} onOpenMatch={onOpenMatch} />
       {shootoutWinner && <span className="bk-pens">{shootoutWinner} nos pênaltis</span>}
+      {extraTimeWinner && <span className="bk-pens">{extraTimeWinner} na prorrogação</span>}
       <TieRows tie={tie} clubs={clubs} coachClubId={coachClubId} crest={isSemi ? 20 : 18} />
       {isSemi && <LegLines tie={tie} clubs={clubs} />}
     </div>

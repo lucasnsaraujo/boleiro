@@ -6,8 +6,16 @@ import type { MatchEvent } from "./matchTimeline.js";
 // opportunities during the match; substitutions at half-time do not use one.
 export const MAX_SUBSTITUTIONS = 5;
 export const MAX_SUBSTITUTION_WINDOWS = 3;
+// Law 3.1 again: a sixth substitute and a fourth opportunity in extra time; substitutions in the break
+// before it and at its half-time do not use one.
+export const EXTRA_TIME_SUBSTITUTIONS = 1;
+export const EXTRA_TIME_WINDOWS = 1;
 const HALF_TIME = 45;
 const FULL_TIME = 90;
+const EXTRA_HALF_TIME = 105;
+
+/** Whether a substitution at `minute` is made in a break and so uses none of a side's opportunities. */
+export const isFreeWindow = (minute: number): boolean => minute === HALF_TIME || minute === FULL_TIME || minute === EXTRA_HALF_TIME;
 
 // guess: an AI club names its twelve best fit players outside the eleven as substitutes.
 const BENCH_SIZE = 12;
@@ -77,7 +85,7 @@ function lastInvolvements(events: readonly MatchEvent[]): Map<string, number> {
   const last = new Map<string, number>();
   const involve = (playerId: string, minute: number) => last.set(playerId, Math.max(minute, last.get(playerId) ?? 0));
   for (const e of events) {
-    if (e.type === "halfTime" || e.type === "fullTime" || e.type === "shootoutKick" || e.type === "orderOverruled") continue;
+    if (!("playerId" in e) || e.type === "shootoutKick") continue;
     involve(e.playerId, e.minute);
     if (e.type === "goal" && e.assistId) involve(e.assistId, e.minute);
     if (e.type === "penaltyMiss") involve(e.keeperId, e.minute);
@@ -175,11 +183,20 @@ export function aiSubstitutions(side: AiSide, events: readonly MatchEvent[], fro
   return subs;
 }
 
-/** Everyone who took part for a side and the minutes of those who did not play the whole match. */
-export function whoPlayed(starters: readonly SimPlayer[], bench: readonly SimPlayer[], events: readonly MatchEvent[], clubId: string): { players: SimPlayer[]; minutes: Map<string, number> } {
+/**
+ * Everyone who took part for a side and the minutes of those who did not play the whole match; after
+ * extra time (`end` 120), everyone's minutes.
+ */
+export function whoPlayed(
+  starters: readonly SimPlayer[],
+  bench: readonly SimPlayer[],
+  events: readonly MatchEvent[],
+  clubId: string,
+  end: number = FULL_TIME,
+): { players: SimPlayer[]; minutes: Map<string, number> } {
   const byId = new Map(bench.map((p) => [p.id, p]));
   const players = [...starters];
-  const minutes = new Map<string, number>();
+  const minutes = new Map<string, number>(end > FULL_TIME ? starters.map((p) => [p.id, end]) : []);
   const cameOn = new Map<string, number>();
   for (const event of events) {
     if (event.type !== "substitution" || event.clubId !== clubId) continue;
@@ -188,7 +205,7 @@ export function whoPlayed(starters: readonly SimPlayer[], bench: readonly SimPla
     players.push(on);
     minutes.set(event.offId, event.minute - (cameOn.get(event.offId) ?? 0));
     cameOn.set(on.id, event.minute);
-    minutes.set(on.id, FULL_TIME - event.minute);
+    minutes.set(on.id, end - event.minute);
   }
   return { players, minutes };
 }
