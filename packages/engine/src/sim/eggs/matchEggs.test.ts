@@ -240,6 +240,12 @@ test("a final won in extra time has no stoppage-time title goal", () => {
   expect(sidesOf("final-stoppage-winner", { score: [2, 1], isFinal: true, isAfterExtraTime: true, events: extra })).toEqual([]);
 });
 
+test("a shootout won after a leg lost or drawn is no win in the match for the eggs that need one", () => {
+  expect(sidesOf("stoppage-comeback", { score: [0, 1], penaltyWinnerId: HOME, events: [goal(AWAY, "a", 30)] })).toEqual([]);
+  expect(sidesOf("aflitos", { score: [0, 1], penaltyWinnerId: HOME, events: [red(HOME, "h1"), red(HOME, "h2", 60), goal(AWAY, "a", 80)] })).toEqual([]);
+  expect(sidesOf("comeback-three", { score: [3, 3], penaltyWinnerId: HOME, events: [...goals(AWAY, 3, 5), ...goals(HOME, 3, 50)] })).toEqual([]);
+});
+
 test("one player hitting the woodwork three times", () => {
   const posts = [{ clubId: AWAY, playerId: "a9" }, { clubId: AWAY, playerId: "a9" }, { clubId: AWAY, playerId: "a9" }];
   expect(sidesOf("woodwork-hat-trick", { score: [1, 1], woodwork: posts })).toEqual([AWAY]);

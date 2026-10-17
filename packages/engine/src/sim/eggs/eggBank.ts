@@ -14,10 +14,10 @@ function scoreFor(tale: MatchTale, clubId: string): [number, number] {
   return clubId === tale.fixture.homeId ? [homeGoals, awayGoals] : [awayGoals, homeGoals];
 }
 
-/** Whether the side won, in the ninety (or a hundred and twenty) minutes or on penalties. */
+/** Whether the side won the match in the ninety (or a hundred and twenty) minutes; a shootout after it decides a tie, not the match. */
 function hasWon(tale: MatchTale, clubId: string): boolean {
   const [own, other] = scoreFor(tale, clubId);
-  return own > other || tale.fixture.result.penaltyWinnerId === clubId;
+  return own > other;
 }
 
 const goalsIn = (tale: MatchTale): Goal[] => tale.events.filter((e): e is Goal => e.type === "goal");
