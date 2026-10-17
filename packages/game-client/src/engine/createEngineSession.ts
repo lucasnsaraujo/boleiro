@@ -27,6 +27,7 @@ import { repayBankLoan, takeBankLoan, type BankLoanAnswer } from "@boleiro/engin
 import { bookFriendly, type FriendlyAnswer } from "@boleiro/engine/sim/friendlies/friendlies";
 import { requestStadiumWorks, type WorksAnswer } from "@boleiro/engine/sim/stadium/stadiumWorks";
 import { promoteProspect, releaseProspect, sellProspect, type ProspectRefusal, type ProspectSold } from "@boleiro/engine/sim/youth/moveProspect";
+import { seedGameSponsors, signSponsorOffer } from "@boleiro/engine/sim/sponsors/sponsorDeals";
 import { eventsOfWaitingCoach, hotSeatViewOf, isHumanMatchDay, type HotSeatView } from "../hub/hotSeat.js";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { isCoachMatchDay, playToMatchDay, stopReason, type StopReason } from "../hub/playToMatchDay.js";
@@ -42,6 +43,7 @@ import { matchPageOf, type MatchPage } from "../matchPage/matchPageOf.js";
 import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
 import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
 import { newspaperEditions, newspaperOf, type Edition, type EditionTitle } from "../newspaper/roundNewspaper.js";
+import { betStickerOf, sponsorsPageOf, type BetSticker, type SponsorsPage } from "../sponsors/sponsorsPage.js";
 import { readStoredSave, splitGame, writeSessionSave, writeSessionShards, type SaveShards, type SeatParts, type SplitGame, type StoredSave } from "./sessionSave.js";
 
 /** What a new game is started with; the app's new-game screen leaves `season` out, for the first season. */
@@ -120,6 +122,10 @@ type CommandFields = {
   saveFilter: { name: string; filters: MarketFilters };
   /** The coach in the seat forgets the market search saved under `name`. */
   deleteFilter: { name: string };
+  /** The coach in the seat signs one of his club's sponsor offers; the brand goes on the kit today. */
+  signSponsor: { offerId: string };
+  /** The coach in the seat picks his club's sponsors himself (`isPicking`), or leaves them to the board again. */
+  pickSponsors: { isPicking: boolean };
   /** The coach in the seat retires one of his players now. */
   retirePlayer: { playerId: string };
   /** The coach in the seat asks one of his players who announced his last season to play one more year. */
@@ -173,6 +179,8 @@ export type CommandResults = {
   watchPlayer: Scouting;
   saveFilter: Scouting;
   deleteFilter: Scouting;
+  signSponsor: SponsorsPage | null;
+  pickSponsors: undefined;
   retirePlayer: undefined;
   persuadeToStay: PlayerPersuaded;
 };
@@ -396,10 +404,11 @@ export function createEngineSession(files: GameFiles) {
     newGame({ seed, choices }) {
       return begin(newGameFromFiles(seed, choices, files));
     },
-    /** A save from before positions gets them from the shipped pack (withPackPositions); one from before AI coaches gets them from its seed. */
+    /** A save from before positions gets them from the shipped pack (withPackPositions), one from before AI coaches gets them from its seed, and one from before sponsors its clubs' kit deals. */
     load({ save }) {
       const loaded = readStoredSave(save);
-      const game = withCoachWorld(withPackPositions(loaded.game, files));
+      const positioned = withCoachWorld(withPackPositions(loaded.game, files));
+      const game = positioned.sponsors || !files.sponsors ? positioned : seedGameSponsors(positioned, files.sponsors);
       const summary = begin(game);
       desk = loaded.desk;
       turningPoints = loaded.turningPoints;
@@ -649,6 +658,22 @@ export function createEngineSession(files: GameFiles) {
       scouting = forgetFilter(scouting, name);
       return scouting;
     },
+    signSponsor({ offerId }) {
+      const game = betweenDays("a sponsor can't be signed");
+      if (!game.coachClubId) throw new Error("a coach without a club signs no sponsor");
+      if (game.coach.picksSponsors !== true) throw new Error("the board negotiates the sponsors; take them from it first");
+      const offer = game.sponsors?.[game.coachClubId]?.offers.find((o) => o.id === offerId);
+      state = signSponsorOffer(game, game.coachClubId, offerId);
+      if (offer) addNews(inboxLines(game, state, [{ type: "sponsorSigned", clubId: game.coachClubId, slot: offer.slot, brandName: offer.brandName, yearly: offer.yearly, years: offer.years, byBoard: false }]));
+      return sponsorsPageOf(state);
+    },
+    pickSponsors({ isPicking }) {
+      const game = betweenDays("the sponsors can't change hands");
+      const coach = { ...game.coach };
+      if (isPicking) coach.picksSponsors = true;
+      else delete coach.picksSponsors;
+      state = { ...game, coach };
+    },
     retirePlayer({ playerId }) {
       const before = betweenDays("a player can't be retired");
       const retired = retirePlayer(before, playerId);
@@ -736,6 +761,14 @@ export function createEngineSession(files: GameFiles) {
     /** The watch list and saved market searches of the coach in the seat. */
     scouting(): Scouting {
       return scouting;
+    },
+    /** The sponsors screen of the seated coach's club; null without a club. */
+    sponsors(): SponsorsPage | null {
+      return sponsorsPageOf(current());
+    },
+    /** The odds the betting sponsor on the seated coach's kit posts for his next match; null without one. */
+    betSticker(): BetSticker | null {
+      return betStickerOf(current());
     },
     /** The seated coach's market clock for the window open today; null without the clock or a window. */
     marketClock(): MarketClockView | null {

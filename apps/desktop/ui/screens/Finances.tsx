@@ -5,6 +5,7 @@ import type { CostLine, GameState, RevenueLine } from "@boleiro/engine/sim/gameS
 import { formatDayMonth, monthName } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import type { BoardDesk } from "@boleiro/game-client/market/boardDesk";
+import type { SponsorsPage } from "@boleiro/game-client/sponsors/sponsorsPage";
 import { useServices } from "../app/ServicesContext.js";
 import { BankLoanCard } from "../finances/BankLoanCard.js";
 import { ConfidenceMeter } from "../finances/ConfidenceMeter.js";
@@ -13,6 +14,7 @@ import { FriendliesCard } from "../finances/FriendliesCard.js";
 import { useCountUp } from "../finances/useCountUp.js";
 import { clubMeters } from "../hub/hubSelectors.js";
 import { BoardRequests } from "../market/BoardRequests.js";
+import { BrandLogo } from "../sponsors/BrandLogo.js";
 import "./finances.css";
 
 const FINANCE_KEYS = [
@@ -63,6 +65,7 @@ export function Finances() {
   const { engine } = useServices();
   const [state, setState] = useState<FinanceState | null>(null);
   const [desk, setDesk] = useState<BoardDesk | null>(null);
+  const [sponsors, setSponsors] = useState<SponsorsPage | null>(null);
   const [failed, setFailed] = useState(false);
   const [period, setPeriod] = useState<Period | null>(null);
   const [isBusy, setBusy] = useState(false);
@@ -72,11 +75,12 @@ export function Finances() {
 
   useEffect(() => {
     let current = true;
-    Promise.all([engine.read(FINANCE_KEYS), engine.desk()]).then(
-      ([read, onDesk]) => {
+    Promise.all([engine.read(FINANCE_KEYS), engine.desk(), engine.sponsors()]).then(
+      ([read, onDesk, onKit]) => {
         if (!current) return;
         setState(read);
         setDesk(onDesk);
+        setSponsors(onKit);
       },
       () => current && setFailed(true),
     );
@@ -188,6 +192,7 @@ export function Finances() {
               Ir ao mercado
             </Link>
           </div>
+          {sponsors && <SponsorsCard page={sponsors} />}
           <section className="fin-desk" aria-labelledby="desk-title">
             <h2 id="desk-title" className="lbl">
               Pedidos à diretoria
@@ -221,6 +226,42 @@ export function Finances() {
         </section>
       </aside>
     </div>
+  );
+}
+
+// The footer lists the kit's biggest deals by logo; the rest are counted.
+const SPONSOR_CHIPS = 4;
+
+/** The kit's deals on the finances screen: each brand's logo and yearly value, the biggest first, and their total. */
+function SponsorsCard({ page }: { page: SponsorsPage }) {
+  const deals = page.contracts.toSorted((a, b) => b.yearly - a.yearly);
+  const rest = deals.slice(SPONSOR_CHIPS);
+  return (
+    <section className="fin-spon" aria-labelledby="fin-spon-title">
+      <h2 id="fin-spon-title" className="lbl">
+        <Link to="/sponsors">Patrocínio</Link>
+      </h2>
+      <b>
+        {formatMoney(page.total)}
+        <small> por ano na camisa</small>
+      </b>
+      <ul aria-label="Na camisa">
+        {deals.slice(0, SPONSOR_CHIPS).map((deal) => (
+          <li key={`${deal.slot}:${deal.brandId}`} aria-label={`${deal.brandName}: ${formatMoney(deal.yearly)} por ano`}>
+            <span className="fin-spon-mk">
+              <BrandLogo brandId={deal.brandId} name={deal.brandName} height={13} maxWidth={56} />
+            </span>
+            <span>{formatMoney(deal.yearly)}</span>
+          </li>
+        ))}
+        {rest.length > 0 && (
+          <li className="fin-spon-rest" aria-label={`Mais ${rest.length}: ${formatMoney(rest.reduce((sum, d) => sum + d.yearly, 0))} por ano`}>
+            <span className="fin-spon-mk">+{rest.length}</span>
+            <span>{formatMoney(rest.reduce((sum, d) => sum + d.yearly, 0))}</span>
+          </li>
+        )}
+      </ul>
+    </section>
   );
 }
 

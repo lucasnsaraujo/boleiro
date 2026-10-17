@@ -8,7 +8,7 @@ import { openDisciplineDay } from "../discipline/recordCards.js";
 import { refuseSuspended } from "../discipline/suspendedPlayers.js";
 import { matchOfficials, refereedCardRates } from "../referees/matchOfficials.js";
 import { withRefereeCalls } from "../referees/refereeCalls.js";
-import type { Fixture, GameState, SimPlayer } from "../gameState.js";
+import type { Competition, Fixture, GameState, SimPlayer } from "../gameState.js";
 import type { MatchSheets } from "../history/recordMatches.js";
 import { clubMood } from "../morale/clubMood.js";
 import { withoutCrowd } from "../morale/withoutCrowd.js";
@@ -45,7 +45,7 @@ const TIMELINE_STREAM_SALT = 0x71e11e;
 const COACH_MATCH_STREAM_SALT = 0xc0ac5;
 
 /** Club squads, the game's shared ones (squadsOfGame). A continental cup's guest from abroad brings its own. */
-function squadsOf(state: GameState): (clubId: string) => readonly SimPlayer[] {
+export function squadsOf(state: GameState): (clubId: string) => readonly SimPlayer[] {
   return (clubId) => {
     const squads = squadsOfGame(state);
     const guest = squads.has(clubId) ? null : guestClubOf(state, clubId);
@@ -66,7 +66,7 @@ function coachLineupOf(state: GameState, decisions: DayDecisions): SimPlayer[] |
 }
 
 /** Each waiting hot-seat coach's plan for his club's match, by club: the eleven he picked on his turn and his tactics. */
-function waitingPlansOf(state: GameState, decisions: DayDecisions): Record<string, CoachPlan> {
+export function waitingPlansOf(state: GameState, decisions: DayDecisions): Record<string, CoachPlan> {
   const plans: Record<string, CoachPlan> = {};
   waitingCoachesOf(state).forEach((waiting, index) => {
     if (!waiting.clubId) return;
@@ -74,6 +74,30 @@ function waitingPlansOf(state: GameState, decisions: DayDecisions): Record<strin
     plans[waiting.clubId] = { lineup: coachLineupOf({ ...state, coachClubId: waiting.clubId }, own), tactics: own.tactics ?? waiting.coach.tactics };
   });
   return plans;
+}
+
+/**
+ * A fixture's two sides as the match engine lines them up on its day, and the engine's parameters for it:
+ * without the players `suspended` from it, with each human coach's plan and each player's form of the day.
+ */
+export function fixtureSides(
+  state: GameState,
+  fixture: Fixture,
+  competition: Competition,
+  squad: (clubId: string) => readonly SimPlayer[],
+  plans: { coach: CoachPlan; waiting: Readonly<Record<string, CoachPlan>>; suspended: ReadonlySet<string> },
+) {
+  const available = (clubId: string) => squad(clubId).filter((p) => !plans.suspended.has(p.id));
+  const forms = new Map<string, number>();
+  const formOf = (p: SimPlayer) => {
+    let form = forms.get(p.id);
+    if (form === undefined) forms.set(p.id, (form = formOfTheDay(state.seed, fixture.id, p.id, { morale: clubMood(state, p.clubId).squad, fatigue: fatigueOn(p, state.date) })));
+    return form;
+  };
+  const formStrengthOf = (p: SimPlayer) => formStrength(formOf(p));
+  const setup = matchSetup(state, fixture, available, plans.coach, plans.waiting, formStrengthOf);
+  const params = withoutCrowd(paramsForCompetition(competition, fixture.stage), clubMood(state, fixture.homeId));
+  return { available, formOf, formStrengthOf, setup, params };
 }
 
 /** A redraw stream for a waiting coach's match, apart from the seated coach's and from every other match's. */
@@ -108,20 +132,11 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const coachClubId = [fixture.homeId, fixture.awayId].find((id) => id === state.coachClubId);
     if (coachClubId) refuseSuspended(coach.lineup ?? [], suspended);
     for (const clubId of [fixture.homeId, fixture.awayId]) refuseSuspended(waiting[clubId]?.lineup ?? [], suspended);
-    const available = (clubId: string) => squad(clubId).filter((p) => !suspended.has(p.id));
-    const forms = new Map<string, number>();
-    const formOf = (p: SimPlayer) => {
-      let form = forms.get(p.id);
-      if (form === undefined) forms.set(p.id, (form = formOfTheDay(state.seed, fixture.id, p.id, { morale: clubMood(state, p.clubId).squad, fatigue: fatigueOn(p, state.date) })));
-      return form;
-    };
-    const formStrengthOf = (p: SimPlayer) => formStrength(formOf(p));
-    const setup = matchSetup(state, fixture, available, coach, waiting, formStrengthOf);
+    const { available, formOf, formStrengthOf, setup, params } = fixtureSides(state, fixture, competition, squad, { coach, waiting, suspended });
     const officials = matchOfficials(state.seed, competition, fixture);
     const cardRates = refereedCardRates(CARD_RATES[cardCompetitionOf(competition)], officials);
     const markingOf = (clubId: string) => planOf(clubId)?.tactics.marking;
     const bookings = drawCards(setup.homeLineup, setup.awayLineup, markedCardRates(cardRates, { home: markingOf(fixture.homeId), away: markingOf(fixture.awayId) }), random.next);
-    const params = withoutCrowd(paramsForCompetition(competition, fixture.stage), clubMood(state, fixture.homeId));
     const goals = simulateMatch(setup.home, setup.away, random.next, params, sendOffMinutes(bookings, fixture.homeId));
     const afterNinety = { ...goals, cards: countCards(bookings, fixture.homeId) };
     // A tie level after ninety minutes always takes its shootout's draw, so the day's stream runs the same whatever settles it.

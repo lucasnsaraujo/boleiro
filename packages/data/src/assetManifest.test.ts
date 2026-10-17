@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { imageFileOf, parseAssetManifest, type ClubImages } from "./assetManifest.js";
+import { imageFileOf, logoFileOf, parseAssetManifest, type ClubImages } from "./assetManifest.js";
 import { loadCrests } from "./crests.js";
 import { loadPack } from "./dataPack.js";
 
@@ -15,6 +15,30 @@ const MANIFEST = JSON.stringify({
     "scoreboard_crest/def": { kind: "scoreboard_crest", width: 500, height: 500, boxes: [64, 128, 256], formats: ["webp", "avif"] },
   },
   clubs: { "bahia-ba": { crest: "crest/abc", scoreboardCrest: "scoreboard_crest/def" }, "jacuipense-ba": { crest: "crest/abc" } },
+});
+
+describe("logoFileOf", () => {
+  const logos = JSON.stringify({
+    format: 1,
+    images: { "logo/abc": { kind: "logo", width: 512, height: 120, boxes: [128, 256], formats: ["webp"] } },
+    clubs: {},
+    brands: { betano: { logo: "logo/abc" } },
+  });
+
+  it("picks a brand's logo in the smallest box that fills its width", () => {
+    const manifest = parseAssetManifest(logos);
+    expect(logoFileOf(manifest, "betano", 100, "webp")).toBe("logo/abc-128.webp");
+    expect(logoFileOf(manifest, "betano", 200, "webp")).toBe("logo/abc-256.webp");
+    expect(logoFileOf(manifest, "nike", 100, "webp")).toBeNull();
+  });
+
+  it("rejects a brand whose logo the manifest doesn't list", () => {
+    expect(() => parseAssetManifest(logos.replace('"logo": "logo/abc"', '"logo": "logo/zzz"').replace('{"logo":"logo/abc"}', '{"logo":"logo/zzz"}'))).toThrow(/brands.betano.logo/);
+  });
+
+  it("reads a manifest without brands as one with none", () => {
+    expect(parseAssetManifest(MANIFEST).brands).toEqual({});
+  });
 });
 
 describe("imageFileOf", () => {

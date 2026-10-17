@@ -3,7 +3,9 @@
 The pack is one gzipped JSON document with a column per field (`clubs.name[i]` is club i's name),
 read by packages/data/src/dataPack.ts. Each player's `positions` are his roles, Transfermarkt's main
 one first, then the others FotMob lists; `lineups` holds each club's last real eleven. `packVersion` is a hash of the content, so a career saved
-with one pack never silently loads another.
+with one pack never silently loads another. The sponsors go in a pack of their own, sponsors.pack.json.gz
+(packages/data/src/sponsors.ts): the brands and the kit deals, so a new sponsors table leaves Brazil's
+pack, and the version every Brazil save keeps, as they are.
 
 Usage: python pipeline/build_pack.py pipeline/boleiro.db packages/data/pack [snapshot id]
 """
@@ -20,6 +22,7 @@ from positions import roles_of
 
 PACK_FORMAT = 1
 PACK_FILE = "brazil.pack.json.gz"
+SPONSORS_PACK_FILE = "sponsors.pack.json.gz"
 CLUB_SOURCE_FIELDS = ("names", "state", "division", "stadium", "pitch", "colours", "fanbase")
 FINANCE_FIELDS = {
     "season": "season", "revenueTotal": "revenue_total", "broadcasting": "broadcasting", "matchday": "matchday",
@@ -105,10 +108,32 @@ def build(db: sqlite3.Connection, snapshot: int) -> dict[str, object]:
     }
 
 
-def pack_json(content: dict[str, object]) -> str:
+def build_sponsors(db: sqlite3.Connection, snapshot: int) -> dict[str, object]:
+    brands = db.execute("SELECT * FROM brands WHERE snapshot_id = ? ORDER BY seq", (snapshot,)).fetchall()
+    brand_index = {brand["id"]: i for i, brand in enumerate(brands)}
+    deals = db.execute("SELECT * FROM sponsor_deals WHERE snapshot_id = ? ORDER BY seq", (snapshot,)).fetchall()
+    return {
+        "brands": {
+            **columns(brands, {"id": "id", "name": "name", "sector": "sector", "size": "size"}),
+            "isPool": [bool(brand["is_pool"]) for brand in brands],
+        },
+        "deals": {
+            **columns(deals, {"club": "club_id", "slot": "slot", "rank": "rank"}),
+            "brand": [brand_index[deal["brand_id"]] for deal in deals],
+            **columns(deals, {"yearly": "yearly_value", "untilSeason": "until_season", "valueSource": "value_source", "source": "source"}),
+        },
+    }
+
+
+def pack_json(content: dict[str, object], prefix: str = "br") -> str:
     body = json.dumps(content, ensure_ascii=False, separators=(",", ":"))
-    version = "br-" + hashlib.sha256(body.encode()).hexdigest()[:12]
+    version = f"{prefix}-" + hashlib.sha256(body.encode()).hexdigest()[:12]
     return json.dumps({"format": PACK_FORMAT, "packVersion": version, **content}, ensure_ascii=False, separators=(",", ":"))
+
+
+def write_pack(text: str, out: Path) -> None:
+    out.write_bytes(gzip.compress(text.encode(), compresslevel=9, mtime=0))
+    print(f"{out}: {len(text)} bytes of JSON, {out.stat().st_size} gzipped")
 
 
 def main() -> None:
@@ -117,10 +142,11 @@ def main() -> None:
         db.row_factory = sqlite3.Row
         snapshot = int(sys.argv[3]) if len(sys.argv) > 3 else latest_snapshot(db)
         text = pack_json(build(db, snapshot))
+        sponsors = pack_json(build_sponsors(db, snapshot), "sp")
     out_dir.mkdir(parents=True, exist_ok=True)
-    out = out_dir / PACK_FILE
-    out.write_bytes(gzip.compress(text.encode(), compresslevel=9, mtime=0))
-    print(f"snapshot {snapshot} -> {out}: {len(text)} bytes of JSON, {out.stat().st_size} gzipped")
+    print(f"snapshot {snapshot}")
+    write_pack(text, out_dir / PACK_FILE)
+    write_pack(sponsors, out_dir / SPONSORS_PACK_FILE)
 
 
 if __name__ == "__main__":

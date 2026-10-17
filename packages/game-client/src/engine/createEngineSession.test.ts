@@ -13,6 +13,8 @@ import { bundledGameFiles } from "./bundledGameFiles.js";
 import { createEngineSession, type CommandResults, type CommandType, type GameCommand } from "./createEngineSession.js";
 
 const CLUB = "flamengo-rj";
+// Botafogo's 2026 kit, before the betting ban, had nothing on its front, back or shorts (Wikipedia, data/sponsors.csv).
+const SPONSORS_CLUB = "botafogo-rj";
 const SEED = 7;
 // The season test needs a coach the board keeps all year, and the events test an event that asks him within it: seed 8 gives both on today's engine.
 const SEASON_SEED = 8;
@@ -363,6 +365,22 @@ function playCaptain() {
   return { recorded, before, kid, named, plan, save: session.save() };
 }
 
+/** At a club with empty places on its kit: the coach takes the sponsors from the board, signs the best offer and saves. */
+function playSponsors() {
+  const recorded = recordedSession();
+  const { session, apply } = recorded;
+  apply({ type: "newGame", seed: SEED, choices: { coachClubId: SPONSORS_CLUB } });
+  const before = session.sponsors();
+  apply({ type: "pickSponsors", isPicking: true });
+  const picking = session.sponsors();
+  const offer = before?.offers.toSorted((a, b) => b.yearly - a.yearly)[0];
+  if (!before || !offer) throw new Error("a club with empty places on its kit starts with offers");
+  const signed = apply({ type: "signSponsor", offerId: offer.id });
+  const finances = session.read(["finances"]).finances;
+  apply({ type: "pickSponsors", isPicking: false });
+  return { recorded, before, picking, offer, signed, finances, inbox: session.inbox(), save: session.save() };
+}
+
 /** Retires one of the coach's players and asks a veteran who announced his last season to stay. */
 function playPlayerLife() {
   const recorded = recordedSession();
@@ -387,6 +405,7 @@ let events: ReturnType<typeof playEvents>;
 let captain: ReturnType<typeof playCaptain>;
 let coachMoves: ReturnType<typeof playCoachMoves>;
 let scouting: ReturnType<typeof playScouting>;
+let sponsors: ReturnType<typeof playSponsors>;
 
 beforeAll(() => {
   season = playSeason();
@@ -398,7 +417,39 @@ beforeAll(() => {
   captain = playCaptain();
   coachMoves = playCoachMoves();
   scouting = playScouting();
+  sponsors = playSponsors();
 }, 120_000);
+
+test("the coach signs a sponsor offer: the brand goes on his kit, the club's yearly sponsorship grows by what it pays over its place and a save keeps it", () => {
+  const { before, picking, offer, signed, finances, inbox, save } = sponsors;
+  expect(before.isBoardNegotiating).toBe(true);
+  expect(picking?.isBoardNegotiating).toBe(false);
+  expect(signed?.contracts).toContainEqual(expect.objectContaining({ slot: offer.slot, brandId: offer.brandId, yearly: offer.yearly, basis: "game" }));
+  expect(signed?.offers.filter((o) => o.slot === offer.slot)).toEqual([]);
+  expect(finances[SPONSORS_CLUB]?.sponsorship).toBe(before.sponsorship + offer.yearly - offer.placeValue);
+  expect(inbox.at(-1)?.text).toContain(offer.brandName);
+  const reloaded = createEngineSession(bundledGameFiles);
+  reloaded.apply({ type: "load", save });
+  expect(reloaded.sponsors()?.contracts).toEqual(signed?.contracts);
+  expect(reloaded.sponsors()?.isBoardNegotiating).toBe(true);
+});
+
+test("the coach can't sign a sponsor while the board negotiates them", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: SEED, choices: { coachClubId: SPONSORS_CLUB } });
+  const offer = session.sponsors()?.offers[0];
+  if (!offer) throw new Error("a club with empty places on its kit starts with offers");
+  expect(() => session.apply({ type: "signSponsor", offerId: offer.id })).toThrow(/board negotiates/);
+  expect(session.sponsors()?.offers).toContainEqual(offer);
+});
+
+test("the sponsor commands survive JSON and replay alike from the same seed", () => {
+  const { session, applied } = sponsors.recorded;
+  for (const { command } of applied) expect(JSON.parse(JSON.stringify(command))).toStrictEqual(command);
+  const twin = replay(applied);
+  expect(twin.results).toEqual(applied.map(({ result }) => result));
+  expect(sha256(twin.session.save())).toBe(sha256(session.save()));
+});
 
 test("a coach who resigns is out of work with his old club's job open, and the club won't take him back", () => {
   const { recorded, answer, page } = coachMoves;
@@ -413,6 +464,21 @@ test("the coach-move commands survive JSON and replay alike from the same seed",
   const twin = replay(applied);
   expect(twin.results).toEqual(applied.map(({ result }) => result));
   expect(sha256(twin.session.save())).toBe(sha256(session.save()));
+});
+
+test("a save from before sponsors loads with every club's kit deals seeded from the data, the same on every load", () => {
+  const saved = JSON.parse(captain.save);
+  delete saved.game.sponsors;
+  delete saved.game.sponsorPool;
+  const save = JSON.stringify(saved);
+  const first = createEngineSession(bundledGameFiles);
+  first.apply({ type: "load", save });
+  const second = createEngineSession(bundledGameFiles);
+  second.apply({ type: "load", save });
+  const page = first.sponsors();
+  expect(page?.contracts.some((c) => c.slot === "master")).toBe(true);
+  expect(second.sponsors()).toEqual(page);
+  expect(Object.keys(first.read(["sponsors"]).sponsors ?? {}).length).toBe(Object.keys(first.read(["finances"]).finances).length);
 });
 
 test("the coach names a captain: the chemistry screen and the lineup sheet show him, a save keeps him, and the meter pays for his lack of standing", () => {
@@ -593,7 +659,7 @@ test("the money commands survive JSON and replay alike from the same seed", () =
 });
 
 test("the season, career, market, money, academy and hot-seat logs between them send every kind of command", () => {
-  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, scouting, playHotSeatTurn(), playPlayerLife()].flatMap(({ recorded }) => recorded.applied);
+  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, scouting, sponsors, playHotSeatTurn(), playPlayerLife()].flatMap(({ recorded }) => recorded.applied);
   const sent = new Set(logs.map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
@@ -630,6 +696,8 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     watchPlayer: true,
     saveFilter: true,
     deleteFilter: true,
+    signSponsor: true,
+    pickSponsors: true,
     retirePlayer: true,
     persuadeToStay: true,
   };
