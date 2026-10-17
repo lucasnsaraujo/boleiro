@@ -56,6 +56,8 @@ const isShootout = (e: MatchEvent) => e.type === "shootoutKick" || e.type === "o
 const untilFullTime = (events: readonly MatchEvent[]) => events.slice(0, events.findIndex((e) => e.type === "fullTime") + 1);
 
 const extraTimeDay = asKnockoutDay(matchDay, true);
+// Enough saves' seeds for a straight red card in extra time to turn up.
+const SEEDS = 40;
 const penaltiesDay = asKnockoutDay(matchDay, false);
 const withExtraTime = startMatchDay(extraTimeDay, {});
 const straightToPenalties = startMatchDay(penaltiesDay, {});
@@ -96,6 +98,17 @@ describe("extra time", () => {
       expect(untilFullTime(match.events)).toEqual(untilFullTime(other.events.filter((e) => !isShootout(e))));
       if (!isLevelAt(match, FULL_TIME)) expect(match.events).toEqual(other.events);
     });
+  });
+
+  it("leaves the day's stream as it was when a straight red card in extra time adds to a ban", () => {
+    let straightReds = 0;
+    for (let seed = 0; seed < SEEDS; seed++) {
+      const salted = (state: GameState) => ({ ...state, seed });
+      const extra = startMatchDay(salted(extraTimeDay), {});
+      straightReds += extra.matches.flatMap((m) => m.events).filter((e) => e.type === "card" && e.card === "red" && e.minute > FULL_TIME).length;
+      expect(extra.rest.rngState).toBe(startMatchDay(salted(penaltiesDay), {}).rest.rngState);
+    }
+    expect(straightReds).toBeGreaterThan(0);
   });
 
   it("counts extra time's minutes in what the players did and in their season's minutes", () => {

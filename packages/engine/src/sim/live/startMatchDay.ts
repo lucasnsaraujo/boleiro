@@ -31,6 +31,13 @@ import { detailStream, EXTRA_TIME_END, FULL_TIME, inMatchOrder, kickOffTimeline,
 import { bookingsOf, extraTimeStream, playExtraTime, withExtraTime } from "./playExtraTime.js";
 
 const LINEUP_SIZE = 11;
+const EXTRA_TIME_CARDS_SALT = 0xca7d;
+
+/** A stream that hands out `count` draws of `first`, then draws of `then`. */
+function firstDrawsFrom(first: () => number, count: number, then: () => number): () => number {
+  let left = count;
+  return () => (left-- > 0 ? first() : then());
+}
 // Goal minutes and redraws of the coach's match draw from streams of their own, so the day's
 // results stay as the main stream has always drawn them.
 const TIMELINE_STREAM_SALT = 0x71e11e;
@@ -172,7 +179,9 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     };
     const timeline = tieBreak === "extraTime" ? withExtraTime(ninety, playExtraTime(extraTimeMatch, ninety.events, extraTimeStream(state.seed, fixture.id)), extraTimeMatch) : ninety;
     const isExtraTime = timeline !== ninety;
-    const allBookings = isExtraTime ? bookingsOf(timeline.events) : bookings;
+    const allBookings = isExtraTime ? [...bookings, ...bookingsOf(timeline.events.filter((e) => e.minute > FULL_TIME))] : bookings;
+    // A straight red's ban length is drawn as its card is recorded: the ninety minutes' from the day's stream, extra time's from one of its own.
+    const cardRandom = isExtraTime ? firstDrawsFrom(random.next, bookings.filter((b) => b.card === "red").length, extraTimeStream(state.seed ^ EXTRA_TIME_CARDS_SALT, fixture.id)) : random.next;
     const injuries = isExtraTime ? new Map([...ninetyInjuries, ...timeline.events.flatMap((e) => (e.type === "injury" && e.minute > FULL_TIME ? [[e.playerId, e.days] as const] : []))]) : ninetyInjuries;
     const goalsOf = (clubId: string) => timeline.events.filter((e) => e.type === "goal" && e.clubId === clubId).length;
     const score = isExtraTime ? { homeGoals: goalsOf(homeId), awayGoals: goalsOf(awayId), isAfterExtraTime: true as const, cards: countCards(allBookings, homeId) } : afterNinety;
@@ -213,7 +222,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
         state,
         competition,
         { played, context: setup.context, awayTravelKm: setup.awayTravelKm, lineups, minutes: timeline.minutes, bookings: allBookings, injuries, scorers: timeline.scorers },
-        random.next,
+        cardRandom,
       );
       const coachLineup = ownerId === homeId ? setup.homeLineup : setup.awayLineup;
       const opponentId = ownerId === homeId ? awayId : homeId;
@@ -251,7 +260,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const load = recordMatchLoad({ ...setup, homeLineup: lineups.home, awayLineup: lineups.away, result: score }, injuries, timeline.minutes);
     playedToday.push(...load.players);
     events.push(...load.events);
-    events.push(...cards.record(competition, played, allBookings, (id) => state.players[id]?.clubId, random.next));
+    events.push(...cards.record(competition, played, allBookings, (id) => state.players[id]?.clubId, cardRandom));
     sheets[played.id] = { ...lineups, scorers: timeline.scorers };
     return played;
   };
