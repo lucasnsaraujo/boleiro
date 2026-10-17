@@ -122,7 +122,7 @@ function CompetitionTables({ competition, page }: { competition: NationalCompeti
             </thead>
             <tbody>
               {group.rows.map((row, i) => (
-                <tr key={row.teamId} className={row.teamId === page.team.id ? "own" : undefined}>
+                <tr key={row.teamId} className={[row.teamId === page.team.id ? "own" : "", row.isThrough ? "through" : ""].filter(Boolean).join(" ") || undefined}>
                   <th scope="row" className="nt-tn">
                     <span className="nt-pos">{i + 1}</span>
                     {(() => {

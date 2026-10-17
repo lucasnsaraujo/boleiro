@@ -44,6 +44,7 @@ describe("the national-team screen", () => {
     const page = nationalTeamPage(start);
     const worldCup = page?.competitions.find((c) => c.id === "world-cup-2026");
     expect(worldCup?.groups[0]?.rows.map((r) => r.teamId)).toEqual(expect.arrayContaining(["brazil", "morocco"]));
+    expect(worldCup?.groups.flatMap((g) => g.rows).filter((r) => r.isThrough)).toHaveLength(32);
     expect(nationalTeamPage(start, "argentina")?.team.name).toBe("Argentina");
   });
 

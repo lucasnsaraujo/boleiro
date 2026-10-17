@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { randomStream } from "../../engine/random.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { fifaWindowsOf } from "./fifaCalendar.js";
-import { competitionsOf, COPA_AMERICA_2028_HOST, WORLD_CUP_2030_SIZE, type DrawSource } from "./nationalCompetitions.js";
+import { competitionsOf, COPA_AMERICA_2028_HOST, throughNow, WORLD_CUP_2030_SIZE, type DrawSource } from "./nationalCompetitions.js";
 
 const game = loadNewGame(2, { coachClubId: null, nationalFootball: loadNationalFootball() });
 const teams = game.nations?.teams ?? {};
@@ -56,5 +56,21 @@ describe("the national competitions of the 2030 cycle", () => {
   it("open a Nations League League A every even year after 2026", () => {
     expect(competitionsOf(2028, source, random()).competitions.some((c) => c.id === "nations-league-2028")).toBe(true);
     expect(competitionsOf(2027, source, random()).competitions.some((c) => c.kind === "nations-league")).toBe(false);
+  });
+});
+
+describe("who a competition sends through as its tables stand", () => {
+  it("takes CONMEBOL's six World Cup places from the qualifiers: its three 2030 hosts, in already, and the best three others", () => {
+    const opened = competitionsOf(2027, source, random());
+    const qualifiers = opened.competitions.find((c) => c.id === "qualifiers-conmebol-2030");
+    const through = qualifiers ? throughNow(qualifiers, { ...source, matches: opened.matches }) : new Set<string>();
+    expect(through.size).toBe(6);
+    for (const host of ["argentina", "uruguay", "paraguay"]) expect(through.has(host)).toBe(true);
+  });
+
+  it("takes a 48-team World Cup's top two of each group and its eight best thirds", () => {
+    const worldCup = game.nations?.competitions["world-cup-2026"];
+    const through = worldCup && game.nations ? throughNow(worldCup, game.nations) : new Set<string>();
+    expect(through.size).toBe(32);
   });
 });

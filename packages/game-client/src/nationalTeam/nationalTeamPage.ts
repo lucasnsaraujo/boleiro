@@ -5,7 +5,7 @@ import { CALL_UP_PLACES, nationalsByTeam, OUTSIDER_MARK, pickCallUp, roleOf } fr
 import { fifaWindowsOf, type FifaWindow } from "@boleiro/engine/sim/nations/fifaCalendar";
 import { daysBetween } from "@boleiro/engine/sim/dates";
 import { TOURNAMENT_CAMP_DAYS } from "@boleiro/engine/sim/nations/nationsDay";
-import { CONFEDERATIONS_WITH_QUALIFIERS, groupTable } from "@boleiro/engine/sim/nations/nationalCompetitions";
+import { CONFEDERATIONS_WITH_QUALIFIERS, groupTable, throughNow } from "@boleiro/engine/sim/nations/nationalCompetitions";
 import type { NationalCompetition, NationalMatch, Nations } from "@boleiro/engine/sim/nations/nations";
 import { poolOf } from "@boleiro/engine/sim/nations/nationalJobs";
 import { nationalTeamName } from "../format/nationalTeamName.js";
@@ -28,7 +28,8 @@ export type NationalFixtureRow = {
   result: { home: number; away: number; penaltyWinnerId?: string; isAfterExtraTime?: true } | null;
 };
 
-export type NationalTableRow = { teamId: string; name: string; code: string; played: number; won: number; drawn: number; lost: number; goalsFor: number; goalsAgainst: number; points: number };
+/** A table's row; `isThrough` when the team would go on as the tables stand. */
+export type NationalTableRow = { teamId: string; name: string; code: string; played: number; won: number; drawn: number; lost: number; goalsFor: number; goalsAgainst: number; points: number; isThrough: boolean };
 
 /** A competition the team plays: its groups (its own first) and its knockout rounds so far. */
 export type NationalCompetitionView = { id: string; name: string; kind: NationalCompetition["kind"]; groups: { name: string; rows: NationalTableRow[] }[]; knockout: { round: string; matches: NationalFixtureRow[] }[]; winnerId: string | null };
@@ -87,10 +88,10 @@ function windowAround(date: IsoDate): FifaWindow | null {
   return [...fifaWindowsOf(season), ...fifaWindowsOf(season + 1)].find((w) => w.until >= date) ?? null;
 }
 
-function tableRows(nations: Nations, ids: readonly string[], matches: readonly NationalMatch[]): NationalTableRow[] {
+function tableRows(nations: Nations, ids: readonly string[], matches: readonly NationalMatch[], through: ReadonlySet<string>): NationalTableRow[] {
   const order = groupTable(ids, matches, (id) => nations.teams[id]?.points ?? 0);
   return order.map((teamId) => {
-    const row: NationalTableRow = { teamId, name: teamName(nations, teamId), code: nations.teams[teamId]?.code ?? "", played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0 };
+    const row: NationalTableRow = { teamId, name: teamName(nations, teamId), code: nations.teams[teamId]?.code ?? "", played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0, isThrough: through.has(teamId) };
     for (const m of matches) {
       if (!m.result || m.round !== "group" || (m.homeId !== teamId && m.awayId !== teamId)) continue;
       const [own, other] = m.homeId === teamId ? [m.result.home, m.result.away] : [m.result.away, m.result.home];
@@ -108,9 +109,10 @@ function tableRows(nations: Nations, ids: readonly string[], matches: readonly N
 
 function competitionView(nations: Nations, competition: NationalCompetition, teamId: string): NationalCompetitionView {
   const own = nations.matches.filter((m) => m.competitionId === competition.id);
+  const through = throughNow(competition, nations);
   const groups = Object.entries(competition.groups)
     .sort(([, a], [, b]) => Number(b.includes(teamId)) - Number(a.includes(teamId)))
-    .map(([name, ids]) => ({ name, rows: tableRows(nations, ids, own) }));
+    .map(([name, ids]) => ({ name, rows: tableRows(nations, ids, own, through) }));
   const knockout = ROUND_ORDER.flatMap((round) => {
     const matches = own.filter((m) => m.round === round).map((m) => fixtureRow(nations, m));
     return matches.length ? [{ round, matches }] : [];

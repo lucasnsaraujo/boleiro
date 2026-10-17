@@ -9,7 +9,7 @@ import { nationalSide, splitRefs } from "./callUps.js";
 import { callUpRefsOf, nationalJobsAfter, withLiveOffer, type NationalJobEvent } from "./nationalJobs.js";
 import { fifaWindowsOf, type FifaWindow } from "./fifaCalendar.js";
 import { matchImportance, rankingPointsAfter } from "./fifaRanking.js";
-import { competitionsOf, groupTable } from "./nationalCompetitions.js";
+import { competitionsOf, groupQualifiers, groupTable } from "./nationalCompetitions.js";
 import type { CallUp, KnockoutRound, NationalCompetition, NationalMatch, NationalResult, Nations } from "./nations.js";
 
 export type CalledUp = { type: "calledUp"; playerId: string; clubId: string; teamId: string; until: IsoDate };
@@ -95,29 +95,6 @@ export function firstRoundPairs(seeds: readonly string[], groupOf: (id: string) 
     [pair[1], swap[1]] = [swap[1], pair[1]];
   });
   return pairs;
-}
-
-/** The teams through a competition's groups in seeding order: each place's teams best first, then the best of the next place. */
-function groupQualifiers(competition: NationalCompetition, matches: readonly NationalMatch[], points: (id: string) => number): string[] {
-  const own = matches.filter((m) => m.competitionId === competition.id && m.round === "group");
-  const stats = new Map<string, { pts: number; gd: number; gf: number }>();
-  for (const m of own) {
-    if (!m.result) continue;
-    for (const [id, f, a] of [[m.homeId, m.result.home, m.result.away], [m.awayId, m.result.away, m.result.home]] as const) {
-      const row = stats.get(id) ?? { pts: 0, gd: 0, gf: 0 };
-      stats.set(id, { pts: row.pts + (f > a ? 3 : f === a ? 1 : 0), gd: row.gd + f - a, gf: row.gf + f });
-    }
-  }
-  const row = (id: string) => stats.get(id) ?? { pts: 0, gd: 0, gf: 0 };
-  const best = (a: string, b: string) => row(b).pts - row(a).pts || row(b).gd - row(a).gd || row(b).gf - row(a).gf || points(b) - points(a);
-  const tables = Object.values(competition.groups).map((ids) => groupTable(ids, own, points));
-  const through: string[] = [];
-  for (let place = 0; place < competition.places; place++) through.push(...tables.flatMap((table) => table.slice(place, place + 1)).sort(best));
-  if (competition.bestOf) {
-    const { position, count } = competition.bestOf;
-    through.push(...tables.flatMap((table) => table.slice(position - 1, position)).sort(best).slice(0, count));
-  }
-  return through;
 }
 
 /**

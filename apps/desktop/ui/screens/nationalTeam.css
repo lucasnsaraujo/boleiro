@@ -515,7 +515,7 @@
   font-size: 11px;
 }
 
-.nt-table tbody tr:nth-child(-n + 2) .nt-pos {
+.nt-table tr.through .nt-pos {
   color: var(--green);
 }
 

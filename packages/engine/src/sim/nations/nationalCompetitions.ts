@@ -148,13 +148,20 @@ function tournamentOf(
   return { competitions: [competition], matches: groupMatches(base.id, groups, 1, groupDays, true) };
 }
 
+const worldCupSizeOf = (season: number): 48 | 64 => (season === 2030 ? WORLD_CUP_2030_SIZE : 48);
+
+/** A World Cup's hosts: 2030's six, a later one's the best-ranked team of the confederation whose turn it is. */
+function worldCupHostsOf(season: number, source: DrawSource): string[] {
+  return season === 2030 ? WORLD_CUP_2030_HOSTS : [confederationTeams(source, HOST_TURNS[((season - 2034) / 4) % HOST_TURNS.length] ?? "UEFA")[0] ?? ""];
+}
+
 /** A World Cup after 2026's, its days 2026's moved to its own start; its field the hosts, the qualifiers' and the best-ranked of the rest. */
 function worldCupOfSeason(season: number, source: DrawSource, random: () => number): Opened {
   const span = worldCupOf(season);
   if (!span) return { competitions: [], matches: [] };
   const id = `world-cup-${season}`;
-  const size = season === 2030 ? WORLD_CUP_2030_SIZE : 48;
-  const hosts = season === 2030 ? WORLD_CUP_2030_HOSTS : [confederationTeams(source, HOST_TURNS[((season - 2034) / 4) % HOST_TURNS.length] ?? "UEFA")[0] ?? ""];
+  const size = worldCupSizeOf(season);
+  const hosts = worldCupHostsOf(season, source);
   const field = worldCupField(season, size, hosts, source);
   const groups = drawGroups(field, 4, source, random, hosts.slice(0, 1));
   const shift = daysBetween("2026-06-11", span.from);
@@ -194,6 +201,44 @@ function worldCupField(season: number, size: number, hosts: readonly string[], s
   }
   for (const id of Object.keys(source.teams).sort(byPoints(source.teams))) if (field.size < size) field.add(id);
   return [...field].slice(0, size);
+}
+
+/** The teams through a competition's groups in seeding order: each place's teams best first, then the best of the next place. */
+export function groupQualifiers(competition: NationalCompetition, matches: readonly NationalMatch[], points: (id: string) => number): string[] {
+  const own = matches.filter((m) => m.competitionId === competition.id && m.round === "group");
+  const stats = new Map<string, { pts: number; gd: number; gf: number }>();
+  for (const m of own) {
+    if (!m.result) continue;
+    for (const [id, f, a] of [[m.homeId, m.result.home, m.result.away], [m.awayId, m.result.away, m.result.home]] as const) {
+      const row = stats.get(id) ?? { pts: 0, gd: 0, gf: 0 };
+      stats.set(id, { pts: row.pts + (f > a ? 3 : f === a ? 1 : 0), gd: row.gd + f - a, gf: row.gf + f });
+    }
+  }
+  const row = (id: string) => stats.get(id) ?? { pts: 0, gd: 0, gf: 0 };
+  const best = (a: string, b: string) => row(b).pts - row(a).pts || row(b).gd - row(a).gd || row(b).gf - row(a).gf || points(b) - points(a);
+  const tables = Object.values(competition.groups).map((ids) => groupTable(ids, own, points));
+  const through: string[] = [];
+  for (let place = 0; place < competition.places; place++) through.push(...tables.flatMap((table) => table.slice(place, place + 1)).sort(best));
+  if (competition.bestOf) {
+    const { position, count } = competition.bestOf;
+    through.push(...tables.flatMap((table) => table.slice(position - 1, position)).sort(best).slice(0, count));
+  }
+  return through;
+}
+
+/**
+ * The teams a competition sends on as its tables stand: a World Cup qualifier's hosts, in already, and the best
+ * of the rest to its confederation's share of the cup, or a tournament's or Nations League's group places.
+ */
+export function throughNow(competition: NationalCompetition, source: DrawSource): Set<string> {
+  const points = (id: string) => source.teams[id]?.points ?? 0;
+  const { confederation } = competition;
+  if (competition.kind !== "qualifiers" || !confederation) return new Set(groupQualifiers(competition, source.matches, points));
+  // A qualifier's id ends in its World Cup's year (competitionsOf).
+  const season = Number(competition.id.slice(competition.id.lastIndexOf("-") + 1));
+  const hosts = worldCupHostsOf(season, source).filter((id) => source.teams[id]?.confederation === confederation);
+  const places = Math.round((WORLD_CUP_PLACES[confederation] * worldCupSizeOf(season)) / 48) - hosts.length;
+  return new Set([...hosts, ...qualifiedFrom(competition, source.matches, Math.max(0, places), new Set(hosts), points)]);
 }
 
 /** A table's order: points, goal difference, goals for, then FIFA points. */
