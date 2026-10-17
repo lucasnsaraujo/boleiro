@@ -240,7 +240,9 @@ export function finishMatchDay(live: LiveDay): DayResult {
     const ended = endSeason(developed.state);
     const marked = { ...ended.state, history: recordStrengths(ended.state) };
     const coachRandom = randomStream(marked.rngState);
-    const started = startCoachSeason(marked, Object.values(ended.outcomes), coachRandom.next);
+    const begun = startCoachSeason(marked, Object.values(ended.outcomes), coachRandom.next);
+    // The clubs that change coach before the season, and any whose human coach's contract ended, open their jobs on the coaches' own stream.
+    const started = { ...begun, state: moveAiCoaches(begun.state, marked, begun.vacancies, state.date).state };
     started.waitingEvents.forEach((own, index) => waitingEvents[index]?.push(...own));
     events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...academies.events, ...developed.events, ...started.events);
     // Bans still pending when a competition ends lapse with it.

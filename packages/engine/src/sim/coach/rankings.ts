@@ -59,7 +59,7 @@ export function worldRanking(state: Pick<GameState, "coaches" | "world" | "clubs
   return sorted(total);
 }
 
-/** Every coach, AI and human, ranked by his clubs' world points for the share of each season he ran them, over the five seasons to `season`. */
+/** Every coach, AI and human, who ran a club in the five seasons to `season`, ranked by his clubs' world points for the share of each season he ran them. */
 export function coachRanking(state: Pick<GameState, "coaches" | "world" | "clubs" | "guests" | "players">, season?: number): Ranked {
   const asOf = asOfSeason(state, season);
   const factors = countryFactors(state);
@@ -70,7 +70,7 @@ export function coachRanking(state: Pick<GameState, "coaches" | "world" | "clubs
       if (!weight) continue;
       for (const [key, credits] of Object.entries(filed.credits)) {
         const points = credits.reduce((sum, [clubId, share]) => sum + share * seasonPointsOf(filed, clubId, factors.get(countryOf(clubId)) ?? 0), 0);
-        if (points > 0) total.set(key, (total.get(key) ?? 0) + weight * points);
+        total.set(key, (total.get(key) ?? 0) + weight * points);
       }
     }
   }

@@ -74,11 +74,13 @@ export function nationalPoints(history: GameState["history"], season: number, cu
 }
 
 /**
- * guess, after UEFA's and IFFHS's club rankings: a continental cup counts like a league title of a top
- * country, scaled by the cup's standing; the champion gets all of it, then the runner-up 60%, the
- * semi-finalists 40%, quarter-finalists 25%, the round of 16 15% and the earlier rounds 8%. Continental
- * points count whole, with no country's weight.
+ * guess, after UEFA's and IFFHS's club rankings, kept to what every country's filed seasons hold: a
+ * top league's first ten places score the CBF's way from 800, a second level's champion 400, a national
+ * cup's finalists 600 and 480, all weighed by the country when ranked; a continental cup's winner scores
+ * whole: the Club World Cup 1500, the Libertadores and the Champions League 1000, the Sul-Americana and
+ * the Europa League 500, the Intercontinental 700, the Recopa and the UEFA Super Cup 300.
  */
+const TOP_PLACES = 10;
 const CONTINENTAL_POINTS: Record<string, number> = {
   "club-world-cup": 1500,
   "intercontinental-cup": 700,
@@ -86,10 +88,7 @@ const CONTINENTAL_POINTS: Record<string, number> = {
   "sul-americana": 500,
   recopa: 300,
 };
-const CONTINENTAL_SHARES = [0.6, 0.4, 0.25, 0.15, 0.08] as const;
-// guess: UEFA's winners count like CONMEBOL's.
 const UEFA_POINTS = { championsLeague: 1000, europaLeague: 500, superCup: 300 } as const;
-// guess: a national cup abroad counts like the Copa do Brasil, its champion 600, the runner-up 480.
 const CUP_FINAL_POINTS = { champion: 600, runnerUp: 480 } as const;
 
 /** A season's points of one part of the game: domestic ones, weighed by each club's country when ranked, and continental ones, counted whole. */
@@ -105,36 +104,45 @@ function uefaPoints(winners: readonly UefaWinner[], isOurs: (clubId: string) => 
   }
 }
 
-/** The full tier's clubs' points for the season: Brazil's national ones, the leagues abroad it plays, its continental cups and UEFA's new winners among its clubs. */
-export function fullTierPoints(national: Readonly<Points>, runs: SeasonRuns, uefaWinners: readonly UefaWinner[], isOurs: (clubId: string) => boolean): ClubSeasonPoints {
-  const domestic: Points = { ...national };
+/** A top league's first places from its final order, top first. */
+function topPlaces(order: readonly string[], add: (clubId: string, value: number) => void): void {
+  order.slice(0, TOP_PLACES).forEach((clubId, index) => add(clubId, DIVISION_POINTS.A * placeShare(index + 1)));
+}
+
+/** The full tier's clubs' points for the season: Série A and the leagues abroad it plays, Série B's champion, the Copa do Brasil's final, its continental winners and UEFA's new winners among its clubs. */
+export function fullTierPoints(history: GameState["history"], season: number, runs: SeasonRuns, uefaWinners: readonly UefaWinner[], isOurs: (clubId: string) => boolean): ClubSeasonPoints {
+  const domestic: Points = {};
   const continental: Points = {};
   const addDomestic = adder(domestic);
   const addContinental = adder(continental);
-  for (const { level, order } of runs.leaguesAbroad) order.forEach((clubId, index) => addDomestic(clubId, (level === 0 ? DIVISION_POINTS.A : DIVISION_POINTS.B) * placeShare(index + 1)));
-  for (const [key, run] of Object.entries(runs.cups)) {
-    const base = CONTINENTAL_POINTS[key];
-    if (!base) continue;
-    for (const [clubId, fromFinal] of Object.entries(run.fromFinal)) {
-      addContinental(clubId, base * (run.championId === clubId ? 1 : (CONTINENTAL_SHARES[Math.min(fromFinal, CONTINENTAL_SHARES.length - 1)] ?? 0)));
-    }
+  const filed = history.seasons.find((record) => record.season === season);
+  topPlaces(filed?.tables.A ?? [], addDomestic);
+  addDomestic(filed?.tables.B[0] ?? "", DIVISION_POINTS.B);
+  for (const { level, order } of runs.leaguesAbroad) {
+    if (level === 0) topPlaces(order, addDomestic);
+    else if (level === 1) addDomestic(order[0] ?? "", DIVISION_POINTS.B);
   }
+  const copa = runs.cups["copa-do-brasil"];
+  if (copa?.championId) {
+    addDomestic(copa.championId, CUP_FINAL_POINTS.champion);
+    for (const [clubId, fromFinal] of Object.entries(copa.fromFinal)) if (fromFinal === 0 && clubId !== copa.championId) addDomestic(clubId, CUP_FINAL_POINTS.runnerUp);
+  }
+  for (const [key, run] of Object.entries(runs.cups)) if (run.championId) addContinental(run.championId, CONTINENTAL_POINTS[key] ?? 0);
   uefaPoints(uefaWinners, isOurs, addContinental);
   return { domestic, continental };
 }
 
 /**
  * A result-only country's clubs' points from its seasons filed since the rankings last read it: its
- * champion and the clubs placed for the continent, in order, as the top of its table; its second level's
- * champion; its cup final; and UEFA's new winners among its clubs.
+ * champion and the clubs placed for the continent, in order, as the top of its table (a filed season
+ * keeps no more of it); its second level's champion; its cup final; and UEFA's new winners among its clubs.
  */
 export function countryPoints(country: Country, fromRecord: number, uefaWinners: readonly UefaWinner[]): ClubSeasonPoints {
   const domestic: Points = {};
   const continental: Points = {};
   const add = adder(domestic);
   for (const record of country.seasons.slice(fromRecord)) {
-    const placed = [...new Set([record.champions[0] ?? "", ...Object.values(record.continental).flat()])].filter(Boolean);
-    placed.forEach((clubId, index) => add(clubId, DIVISION_POINTS.A * placeShare(index + 1)));
+    topPlaces([...new Set([record.champions[0] ?? "", ...Object.values(record.continental).flat()])].filter(Boolean), add);
     if (record.champions[1]) add(record.champions[1], DIVISION_POINTS.B);
     if (record.cup) {
       add(record.cup.championId, CUP_FINAL_POINTS.champion);
