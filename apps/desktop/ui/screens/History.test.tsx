@@ -84,3 +84,52 @@ test("the Raridades tab hides until the career finds an egg, then counts it out 
   expect(within(panel).getAllByRole("listitem")).toHaveLength(total);
   expect(within(panel).getAllByLabelText(/^Figurinha R\d\d, ainda escondida$/)).toHaveLength(total - 1);
 });
+
+/** Plays every day up to `date` with no decisions. */
+async function playUntil(given: Services, date: string) {
+  const { date: today } = await given.engine.read(["date"]);
+  const days = Math.round((Date.parse(date) - Date.parse(today)) / 86_400_000);
+  await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+}
+
+test("the album turns to last season's page of stickers, foil among them, and its title's page opens the final's ficha", async () => {
+  // Palmeiras keeps its coach through a season that wins it the Paulista and the league.
+  const given = await services("palmeiras-sp", 9);
+  await playUntil(given, "2027-01-02");
+  const album = await given.engine.album();
+  const title = album.titles.find((t) => t.decider?.kind === "final");
+  const decider = title?.decider;
+  if (!title || !decider) return expect.fail("the coach won a final in 2026");
+  const { clubs } = await given.engine.read(["clubs"]);
+  openHistory(given);
+
+  const years = await screen.findByRole("navigation", { name: "Temporadas" });
+  await userEvent.click(within(years).getByRole("button", { name: /^2026/ }));
+  const stickers = await screen.findByRole("list", { name: "Figurinhas de 2026" });
+  expect(within(stickers).getAllByRole("link", { name: /, brilhante: / }).length).toBeGreaterThan(0);
+  expect(within(stickers).getAllByRole("link", { name: /\d+ jogos? e \d+ gols?$/ }).length).toBeGreaterThan(10);
+
+  await userEvent.click(screen.getByRole("button", { name: new RegExp(`^${title.name} 2026, final: .*abrir a página do título$`) }));
+  const page = await screen.findByRole("dialog", { name: title.name });
+  const nameOf = (id: string) => clubs[id]?.shortName ?? id;
+  const score = `${nameOf(decider.homeId)} ${decider.homeGoals} x ${decider.awayGoals} ${nameOf(decider.awayId)}`;
+  expect(within(page).getByLabelText(score)).toBeTruthy();
+  expect(within(page).getAllByRole("listitem").length).toBeGreaterThanOrEqual(decider.goals.length);
+  await userEvent.click(within(page).getByRole("button", { name: "Ver ficha da final" }));
+  const ficha = await screen.findByRole("dialog", { name: "Ficha do jogo" });
+  expect(within(ficha).getByText("Encerrado")).toBeTruthy();
+  expect(within(ficha).getByLabelText(score)).toBeTruthy();
+});
+
+test("each hot-seat coach opens his own album", async () => {
+  const { engine, close } = inMemoryEngine();
+  closers.push(close);
+  await engine.apply({ type: "newGame", seed: 3, choices: { coachClubId: "bahia-ba", hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "vitoria-ba" }] } } });
+  openHistory({ engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Ana" } } });
+  const seats = await screen.findByRole("group", { name: "Álbum de" });
+  expect(screen.getByRole("heading", { name: "Bahia" })).toBeTruthy();
+  await userEvent.click(within(seats).getByRole("button", { name: "Bruno" }));
+  expect(await screen.findByRole("heading", { name: "Vitória" })).toBeTruthy();
+  expect(within(seats).getByRole("button", { name: "Bruno", pressed: true })).toBeTruthy();
+  expect(screen.queryByRole("tab", { name: "Carreira" })).toBeNull();
+});
