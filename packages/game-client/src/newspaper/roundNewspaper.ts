@@ -44,13 +44,14 @@ const KICKERS: Record<NewsKind, string> = {
   controversy: "Arbitragem",
   award: "Prêmios",
   record: "Recorde",
+  egg: "Almanaque",
 };
 // The paper's side column fits five stories at 1280x800 (mock design/mocks/newspaper.html), and the lead's
 // columns a few more.
 const SIDE_STORIES = 8;
 // The results row holds the round's ten games of a 20-club league.
 const RESULTS = 10;
-// The coach's own news first, then the beats in the mock's order.
+// The almanac's rare finds first, then the coach's own news, then the beats in the mock's order.
 const SIDE_ORDER: readonly NewsKind[] = ["award", "record", "upset", "controversy", "var", "sacking", "signing", "rivalry", "event"];
 
 const isAbout = (item: NewsItem, clubId: string | null) => clubId !== null && item.clubIds.includes(clubId);
@@ -96,7 +97,7 @@ export function newspaperOf(state: NewspaperState, date?: IsoDate): Edition | nu
   const match = coachMatchOn(state, day);
   const leadItem = window.find((item) => item.kind === "match" && item.date === day && isAbout(item, state.coachClubId)) ?? window.findLast((item) => item.kind !== "match") ?? null;
   const rest = window.filter((item) => item !== leadItem && !(item.kind === "match" && !isAbout(item, state.coachClubId)));
-  const rank = (item: NewsItem) => (isAbout(item, state.coachClubId) && item.kind !== "match" ? -1 : SIDE_ORDER.indexOf(item.kind));
+  const rank = (item: NewsItem) => (item.kind === "egg" ? -2 : isAbout(item, state.coachClubId) && item.kind !== "match" ? -1 : SIDE_ORDER.indexOf(item.kind));
   const side = [...rest].sort((a, b) => rank(a) - rank(b) || b.date.localeCompare(a.date)).slice(0, SIDE_STORIES);
   const competition = match ? state.competitions[match.competitionId] : undefined;
   const sameRound = match ? state.fixtures.filter((f) => f.competitionId === match.competitionId && f.date === day && f.result) : [];

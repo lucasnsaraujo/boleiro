@@ -32,6 +32,7 @@ const page = (isLive: boolean): MatchPage => ({
   officials: { referee: null, hasVar: false },
   meetings: [],
   curiosities: [],
+  eggs: [],
 });
 
 describe("the match page of a match that went to extra time", () => {

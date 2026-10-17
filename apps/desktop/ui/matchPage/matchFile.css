@@ -1568,3 +1568,13 @@
     stroke-dashoffset: 0;
   }
 }
+
+/* An egg taped in the panel drops in after the curiosity; in the ficha it leads the notes. */
+.mf-egg-fact {
+  transform: rotate(0.5deg);
+  animation: mf-drop 640ms var(--e-slap) 900ms both;
+}
+
+.mf-note.mf-egg {
+  flex-direction: row;
+}

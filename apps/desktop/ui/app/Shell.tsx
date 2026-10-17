@@ -20,6 +20,9 @@ import { NAV, navIndexOf, showsBar, type NavId } from "./screens.js";
 import { useServices } from "./ServicesContext.js";
 import { commandForKey, MATCH_COMMAND_IDS, type CommandId } from "./shortcuts.js";
 import { useAskBeforeDiscarding } from "./useAskBeforeDiscarding.js";
+import { useWin98Round } from "../eggs/useWin98Round.js";
+import { Win98TaskBar, Win98TitleBar } from "../eggs/Win98Chrome.js";
+import { EggReveal, useFoundStickers } from "../eggs/EggReveal.js";
 import { isTyping } from "./useTypedWord.js";
 import "./shell.css";
 
@@ -155,6 +158,11 @@ export function Shell() {
     return () => clearTimeout(timer);
   }, [toast]);
   const say = (text: string, isError = false) => setToast({ id: Date.now(), text, isError });
+  // Inside a game, the live round and the turning points included; the start menu's brasfoot is the tribute's.
+  const isInGame = game.current !== null && pathname !== "/" && pathname !== "/new-game";
+  const [eggsFound, setEggsFound] = useState(0);
+  const win98 = useWin98Round({ isInGame, date: clock?.date ?? null, onFound: () => setEggsFound((count) => count + 1) });
+  const found = useFoundStickers(isInGame, clock?.date ?? null, eggsFound);
 
   async function save() {
     const opened = game.current;
@@ -226,6 +234,7 @@ export function Shell() {
   return (
     <GameClockContext value={{ refresh }}>
       <div className="app" data-chrome={chrome} data-mica={isMicaOn || undefined}>
+        {win98.isShown && <Win98TitleBar title={`Boleiro 98 · ${clock?.clubName ?? "Sem clube"} ${clock?.season ?? ""}`} date={clock?.date ?? null} onLeave={win98.leave} />}
         {hasBar && (
           <nav className="bar" aria-label="Telas" data-tauri-drag-region>
             {NAV.map((item, index) => (
@@ -269,8 +278,10 @@ export function Shell() {
           <div className="drag-edge" data-tauri-drag-region />
           <Outlet />
         </main>
+        {win98.isShown && <Win98TaskBar task={`Boleiro 98 · ${clock?.clubName ?? "Sem clube"}`} date={clock?.date ?? null} onLeave={win98.leave} />}
         {chrome === "windows" && <CaptionButtons />}
         {question}
+        {found.shown && pathname === "/hub" && <EggReveal key={found.shown.eggId} sticker={found.shown} onDone={found.dismiss} />}
         {toast && (
           <p key={toast.id} className={toast.isError ? "toast stk error" : "toast stk"} role="status">
             <i className={toast.isError ? "ph-bold ph-warning" : "ph-bold ph-floppy-disk"} aria-hidden="true" />

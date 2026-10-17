@@ -8,10 +8,13 @@ export function isTyping(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.isContentEditable || target.matches(TEXT_FIELDS));
 }
 
+// A word's first letter alone could be anything the coach meant; from its second on, he is typing the word.
+const SURE_LETTERS = 2;
 
 /**
  * Runs `onTyped` when the coach types `word` on the screen, letter by letter, outside any text field
- * and without modifiers. Case and pauses don't matter; a wrong letter starts the word over.
+ * and without modifiers. Case and pauses don't matter; a wrong letter starts the word over. Once the
+ * coach is surely typing the word, its letters are kept from the game's shortcuts (the live table's T).
  */
 export function useTypedWord(word: string, onTyped: () => void): void {
   const latest = useRef(onTyped);
@@ -23,12 +26,17 @@ export function useTypedWord(word: string, onTyped: () => void): void {
     let typed = "";
     const onKey = (event: KeyboardEvent) => {
       if (event.key.length !== 1 || event.metaKey || event.ctrlKey || event.altKey || isTyping(event.target)) return;
-      typed = (typed + event.key.toLowerCase()).slice(-wanted.length);
+      const keys = typed + event.key.toLowerCase();
+      let length = Math.min(keys.length, wanted.length);
+      while (length > 0 && !keys.endsWith(wanted.slice(0, length))) length--;
+      typed = wanted.slice(0, length);
+      if (length >= SURE_LETTERS) event.preventDefault();
       if (typed !== wanted) return;
       typed = "";
       latest.current();
     };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    // Heard while the key goes down to the page, before the shell's shortcuts hear it on its way back up.
+    document.addEventListener("keydown", onKey, { capture: true });
+    return () => document.removeEventListener("keydown", onKey, { capture: true });
   }, [word]);
 }

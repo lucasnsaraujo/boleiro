@@ -1,0 +1,92 @@
+.egg-album-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4);
+  margin-bottom: var(--s-4);
+}
+
+/* The count: the found number large, "3 de 48" beside it, set like the history's title counts. */
+.egg-album-count {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+}
+
+.egg-album-count b {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 34px;
+  line-height: 1;
+  color: var(--green);
+}
+
+.egg-album-count span {
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.egg-album-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 132px);
+  grid-auto-rows: 182px;
+  gap: 18px 16px;
+  justify-content: start;
+  padding-bottom: var(--s-5);
+}
+
+.egg-album-grid > li.wide {
+  grid-column: span 2;
+}
+
+.egg-album-stuck {
+  position: relative;
+  transform: rotate(calc((var(--i) * 37 % 5 - 2) * 0.6deg));
+}
+
+.egg-album-times {
+  position: absolute;
+  right: -7px;
+  bottom: 44px;
+  min-width: 26px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: var(--card);
+  font-weight: 800;
+  font-size: 11px;
+  box-shadow: var(--sh-sticker);
+}
+
+.egg-album-slot {
+  width: 132px;
+  height: 172px;
+  display: grid;
+  place-items: center;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: var(--mute);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .egg-album-stuck {
+    animation: egg-album-stick 420ms calc(var(--i) * 12ms) var(--e-slap) both;
+  }
+}
+
+@keyframes egg-album-stick {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) rotate(-6deg) scale(1.06);
+  }
+}

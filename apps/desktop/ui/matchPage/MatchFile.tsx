@@ -1,3 +1,4 @@
+import { EggNoteCard } from "../eggs/EggNoteCard.js";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { EXTRA_TIME_END } from "@boleiro/engine/sim/live/matchTimeline";
@@ -133,6 +134,7 @@ function MatchPanel({ page, view, isReturning, isLeaving, onFull, onClose, onSub
   const sendOffs = view.events.filter((e) => e.kind === "red" || e.kind === "injury");
   const stats = PANEL_STATS.flatMap((key) => view.stats.find((s) => s.key === key) ?? []);
   const [curiosity] = page.curiosities;
+  const [egg] = page.eggs;
   const title = useDialogFocus<HTMLSpanElement>(true);
   return (
     <aside className={`mf-panel${isReturning ? " entry-return" : ""}${isLeaving ? " leaving" : ""}`} role="dialog" aria-label="Ficha do jogo" style={clubColours(page)}>
@@ -218,6 +220,7 @@ function MatchPanel({ page, view, isReturning, isLeaving, onFull, onClose, onSub
             </span>
           </p>
         )}
+        {egg && <EggNoteCard note={egg} className="mf-egg-fact" />}
       </div>
       <footer className="mf-actions">
         {onSubstitute && (

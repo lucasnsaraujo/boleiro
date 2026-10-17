@@ -62,6 +62,8 @@ export type NewGameOptions = {
   midSeasonWindow?: boolean;
   /** A hot-seat game: the first coach's name, and the other human coaches in turn order, each at a club of his own. */
   hotSeat?: { coachName: string; otherCoaches: readonly { name: string; clubId: string }[] };
+  /** The coach's name in a one-coach game, kept only for the easter eggs; a hot-seat game names its coaches in `hotSeat`. */
+  coachName?: string;
   /** Each coach's market time per transfer window, in seconds; left out, the market has no clock. */
   marketClockSeconds?: number;
   /** The calendar and formats (Rápido, Realista or a custom mix); left out, Realista's. */
@@ -156,7 +158,7 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, guests, stateChampionships = true, midSeasonWindow = true, hotSeat, marketClockSeconds, formats = REALISTA, sponsors }: NewGameOptions,
+  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, guests, stateChampionships = true, midSeasonWindow = true, hotSeat, coachName, marketClockSeconds, formats = REALISTA, sponsors }: NewGameOptions,
 ): GameState {
   const countries = (world ?? []).map(({ structure, levels }) => ({ structure: inFormats(structure, formats), levels }));
   const fullTier = countriesOfHumans(countries, [coachClubId, ...(hotSeat?.otherCoaches ?? []).map((other) => other.clubId)], formats);
@@ -225,7 +227,8 @@ export function newGame(
   const withClock = marketClockSeconds === undefined ? game : { ...game, marketClockSeconds };
   const withAcademies = { ...withClock, youth: openAcademies(withClock) };
   const started = withCoachWorld(withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat));
-  return sponsors ? seedGameSponsors(started, sponsors) : started;
+  const named = coachName && !hotSeat ? { ...started, eggs: { log: [], coachName } } : started;
+  return sponsors ? seedGameSponsors(named, sponsors) : named;
 }
 
 /** The game with its other human coaches waiting for their turns; a one-coach game stays as it is. */
