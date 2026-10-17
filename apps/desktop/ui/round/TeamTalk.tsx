@@ -1,5 +1,6 @@
 import { TALK_TONES, type TalkEffect, type TalkMoment, type TalkTone } from "@boleiro/engine/sim/live/teamTalk";
 import "./teamTalk.css";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 const TONES: Record<TalkTone, { name: string; icon: string }> = {
   calm: { name: "Calma", icon: "hourglass-medium" },
@@ -39,6 +40,8 @@ const signed = (value: number) => (value > 0 ? `+${value}` : value < 0 ? `−${M
 type HalfTimeProps = {
   /** The coach's club, and the match's two sides as the board shows them with the score at the break. */
   club: string;
+  /** The coach's club's id, for the article its name takes ("vestiário da Chapecoense"). */
+  clubId?: string;
   home: string;
   away: string;
   /** The coach's name above the card in a hot-seat round, where each human coach talks to his own side. */
@@ -55,8 +58,8 @@ type HalfTimeProps = {
  * The dressing room at half-time: four tones to talk to the side in, the assistant's pick marked, one click
  * each; never in the way, since the round goes on without a talk. Once given, how the group took it.
  */
-export function HalfTimeTalk({ club, home, away, coachName, score, moment, suggested, given, isBusy, onTalk }: HalfTimeProps) {
-  const label = `Intervalo: vestiário do ${club}`;
+export function HalfTimeTalk({ club, clubId, home, away, coachName, score, moment, suggested, given, isBusy, onTalk }: HalfTimeProps) {
+  const label = `Intervalo: vestiário ${withArticle(club, clubArticle(clubId ?? ""), "de")}`;
   if (given) {
     const tone = TONES[given.tone];
     return (

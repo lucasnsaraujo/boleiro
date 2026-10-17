@@ -16,6 +16,7 @@ import { usePlayRound } from "../hub/usePlayRound.js";
 import { useFlip } from "../motion/useFlip.js";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import "./coaches.css";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 const KEYS = ["date", "season", "coachClubId", "clubs", "coach"] as const;
 type CoachesState = Pick<GameState, (typeof KEYS)[number]>;
@@ -515,7 +516,7 @@ function JobCentre({
                     <>
                       <span className={job.wouldHire ? "coaches-verdict is-yes" : "coaches-verdict"}>
                         {job.wouldHire ? "aceitaria você" : job.refusal === "rivalIdol" ? "porta fechada" : "fora do alcance"}
-                        {job.refusal && <small id={`coaches-why-${job.clubId}`}>{jobRefusalText(job.refusal, state.clubs[job.idolOf ?? ""]?.shortName ?? "rival")}</small>}
+                        {job.refusal && <small id={`coaches-why-${job.clubId}`}>{jobRefusalText(job.refusal, job.idolOf ? withArticle(state.clubs[job.idolOf]?.shortName ?? job.idolOf, clubArticle(job.idolOf), "de") : "de rival")}</small>}
                       </span>
                       <button
                         className="btn sm go"
@@ -648,7 +649,7 @@ function ProfileCard({
             return (
               <span key={clubId} className="coaches-idol-chip">
                 {idolClub && <Crest club={idolClub} size={16} />}
-                Ídolo do {idolClub?.shortName ?? clubId}
+                Ídolo {withArticle(idolClub?.shortName ?? clubId, clubArticle(clubId), "de")}
               </span>
             );
           })}

@@ -1,5 +1,6 @@
 import type { Stance, TalkMood } from "@boleiro/engine/sim/transfers/contractTerms";
 import { formatContractLength } from "@boleiro/game-client/format/formatContractLength";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 /** How each stance reads on its length's card. */
 export const STANCE_LABELS: Record<Stance, string> = { wants: "Prefere", agrees: "Topa", hard: "Difícil", refuses: "Recusa" };
@@ -22,7 +23,7 @@ export function lengthsText(months: readonly number[]): string {
 }
 
 function moodText(mood: TalkMood, clubName: (clubId: string) => string): string | null {
-  const offer = mood.offerFrom && (mood.offerFrom === "abroad" ? "tem proposta da Europa na mesa" : `tem proposta do ${clubName(mood.offerFrom)} na mesa`);
+  const offer = mood.offerFrom && (mood.offerFrom === "abroad" ? "tem proposta da Europa na mesa" : `tem proposta ${withArticle(clubName(mood.offerFrom), clubArticle(mood.offerFrom), "de")} na mesa`);
   const parts = [mood.hasAskedToLeave ? "pediu para sair há pouco" : null, offer, mood.morale < SOUR_MORALE ? "sente o elenco pra baixo" : null].filter((part): part is string => !!part);
   if (!parts.length) return null;
   const sentence = parts.length === 1 ? (parts[0] ?? "") : `${parts.slice(0, -1).join(", ")} e ${parts.at(-1)}`;

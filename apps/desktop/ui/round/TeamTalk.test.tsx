@@ -19,6 +19,14 @@ test("at half-time the coach picks one of four tones, the assistant's marked, in
   expect(onTalk).toHaveBeenLastCalledWith("demand");
 });
 
+test("the dressing room is the club's, with the club's own article: vestiário da Chapecoense", () => {
+  render(<HalfTimeTalk club="Chapecoense" clubId="chapecoense-sc" home="Chapecoense" away="Avaí" score="0 × 0" moment={trailing} suggested="demand" given={null} isBusy={false} onTalk={vi.fn()} />);
+  expect(screen.getByRole("region", { name: "Intervalo: vestiário da Chapecoense" })).toBeTruthy();
+  cleanup();
+  render(<HalfTimeTalk club="Flamengo" clubId="flamengo-rj" home="Vasco" away="Flamengo" score="1 × 0" moment={trailing} suggested="demand" given={null} isBusy={false} onTalk={vi.fn()} />);
+  expect(screen.getByRole("region", { name: "Intervalo: vestiário do Flamengo" })).toBeTruthy();
+});
+
 test("once the talk is given the card tells how the dressing room took it", () => {
   render(<HalfTimeTalk club="Flamengo" home="Vasco" away="Flamengo" score="1 × 0" moment={trailing} suggested="demand" given={{ tone: "praise", form: -0.08, morale: 0 }} isBusy={false} onTalk={vi.fn()} />);
   const status = screen.getByRole("status");

@@ -771,6 +771,7 @@ export function Round() {
         <HalfTimeTalk
           key={talker.clubId}
           club={round.clubs[talker.clubId]?.shortName ?? ""}
+          clubId={talker.clubId}
           home={round.clubs[talkMatch.homeId]?.shortName ?? ""}
           away={round.clubs[talkMatch.awayId]?.shortName ?? ""}
           score={`${talkMatch.score.home} × ${talkMatch.score.away}`}

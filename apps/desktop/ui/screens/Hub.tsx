@@ -324,7 +324,7 @@ export function Hub() {
           {!club ? (
             <p className="hub-squad-none">Sem clube, sem elenco.</p>
           ) : squadTab === "squad" ? (
-            <SquadTable rows={rows} clubName={club.shortName} selectedId={shownId} onSelect={setSelectedId} />
+            <SquadTable rows={rows} clubName={club.shortName} clubId={club.id} selectedId={shownId} onSelect={setSelectedId} />
           ) : (
             <ContractsEnding rows={ending} clubs={state.clubs} isAssistantOn={doesAssistantHandle(state.coach, "contracts")} onDesk={onDesk} onRenew={setRenewingId} />
           )}

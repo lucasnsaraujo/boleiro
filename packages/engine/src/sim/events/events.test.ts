@@ -205,6 +205,22 @@ describe("event engine", () => {
     expect(isDerbyFor(start, won("vitoria-ba"), "bahia-ba")).toBe(true);
   });
 
+  it("writes a feminine club, rival or arena with the feminine article: da Chapecoense, na Arena Condá, contra a Ponte Preta", () => {
+    const text = { headline: "Presidente do {club} cobra o elenco no {stadium}", body: "O {club} encara o {rival}. A torcida do {club} lota o {stadium}." };
+    const storyAt = (clubId: string) => {
+      const state = loadNewGame(5, { coachClubId: clubId });
+      const bank = [newsType("cobranca", { texts: [text, text, text], cast: () => ({ rivalId: "ponte-preta-sp" }) })];
+      const ran = runDays(state, 60, bank).state;
+      return eventMemoryOf(ran).news.find((item) => item.clubIds[0] === clubId);
+    };
+    const chape = storyAt("chapecoense-sc");
+    expect(chape?.headline).toBe("Presidente da Chapecoense cobra o elenco na Arena Condá");
+    expect(chape?.body).toBe("A Chapecoense encara a Ponte Preta. A torcida da Chapecoense lota a Arena Condá.");
+    const flamengo = storyAt(CLUB);
+    expect(flamengo?.headline).toBe(`Presidente do Flamengo cobra o elenco no ${start.clubs[CLUB]?.stadium}`);
+    expect(flamengo?.body).toBe(`O Flamengo encara a Ponte Preta. A torcida do Flamengo lota o ${start.clubs[CLUB]?.stadium}.`);
+  });
+
   it("offers a press conference whose answers move morale, board, fans and rivalry", () => {
     const press = EVENT_BANK.filter((type) => type.look === "press");
     expect(press.length).toBeGreaterThan(0);
@@ -219,6 +235,24 @@ describe("event engine", () => {
 });
 
 describe("the round's newspaper", () => {
+  it("prints a feminine club's stories with the feminine article: the Chapecoense sacks its coach and loses to the Flamengo", () => {
+    const CHAPE = "chapecoense-sc";
+    const lost: Fixture = { id: "f-chape", competitionId: "x", stage: 0, date: start.date, homeId: CLUB, awayId: CHAPE, result: { homeGoals: 2, awayGoals: 0 } };
+    const papered = recordNews(
+      start,
+      start.date,
+      [
+        { type: "matchPlayed", fixture: lost },
+        { type: "coachFired", clubId: CHAPE, date: start.date, isYou: false, position: 18, targetPosition: 6 },
+      ],
+      {},
+    );
+    const texts = eventMemoryOf(papered).news.flatMap((item) => [item.headline, item.body]);
+    expect(texts.join(" ")).toContain("Chapecoense");
+    for (const text of texts) expect(text).not.toMatch(/(^|\s)(o|do|no|ao|pelo|O|Do|No|Ao|Pelo) Chapecoense/);
+    expect(texts.some((text) => /(^|\s)(a|da|na|à|pela|A|Da|Na) Chapecoense/.test(text))).toBe(true);
+  });
+
   it("prints the coach's match, a sacking, a signing and an upset from the day's events", () => {
     const players = Object.values(start.players);
     const signing = players.find((p) => p.clubId === AI_CLUB);

@@ -10,6 +10,7 @@ import { AwardSticker } from "../awards/AwardSticker.js";
 import { Crest } from "../clubs/Crest.js";
 import { clubById } from "../clubs/clubCatalog.js";
 import "./awards.css";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 const KEYS = ["season", "coachClubId", "clubs"] as const;
 type AwardsState = Pick<GameState, (typeof KEYS)[number]>;
@@ -234,7 +235,7 @@ function SeasonPages({ shown, book, clubOf, coachClubId, onRecords, onSeasons }:
             />
             {book.club && (
               <RecordRow
-                term={`Invencibilidade do ${clubOf(book.club.clubId)?.shortName ?? ""}`}
+                term={`Invencibilidade ${withArticle(clubOf(book.club.clubId)?.shortName ?? "", clubArticle(book.club.clubId), "de")}`}
                 value={book.club.records.longestUnbeaten ? `${book.club.records.longestUnbeaten.games} jogos` : null}
                 detail={book.club.records.longestUnbeaten ? `${formatDayMonth(book.club.records.longestUnbeaten.from)} – ${formatDayMonth(book.club.records.longestUnbeaten.until)}` : ""}
               />
@@ -264,7 +265,7 @@ function SeasonPages({ shown, book, clubOf, coachClubId, onRecords, onSeasons }:
         </header>
         {coachClub && team.length > 0 && (
           <p className="note aw-note">
-            <b>{ours === 0 ? `Nenhum do ${coachClub.shortName}` : `${ours} do ${coachClub.shortName}`}</b> na seleção.
+            <b>{`${ours === 0 ? "Nenhum" : ours} ${withArticle(coachClub.shortName, clubArticle(coachClub.id), "de")}`}</b> na seleção.
             {gold && team.some((p) => p.playerId === gold.playerId) ? ` ${gold.name} leva também a Bola de Ouro.` : ""}
           </p>
         )}
