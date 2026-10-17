@@ -156,14 +156,17 @@ export function nationalTeamPage(state: GameState, teamId?: string): NationalTea
   const rows = ranked.map((row, i): RankingRowView => ({ rank: i + 1, ...row, points: Math.round(row.points) }));
   const rank = rows.find((row) => row.teamId === id)?.rank ?? rows.length;
 
-  const window = windowAround(state.date);
+  // The team's call-up under way sets the days (a tournament's, up to its exit); else the window under way or the next.
+  const running = nations.callUps[id];
+  const isAway = running !== undefined && running.from <= state.date && state.date <= running.until;
+  const window = isAway ? { from: running.from, until: running.until } : windowAround(state.date);
   // A tournament starting within a few weeks of the window keeps the call-up together until it ends (nationsDay).
   const tournament = Object.values(nations.competitions).find((c) => {
-    if ((c.kind !== "world-cup" && c.kind !== "continental-cup") || c.winnerId || !window || !Object.values(c.groups).some((ids) => ids.includes(id))) return false;
+    if ((c.kind !== "world-cup" && c.kind !== "continental-cup") || !window || !Object.values(c.groups).some((ids) => ids.includes(id))) return false;
     const first = nations.matches.filter((m) => m.competitionId === c.id).map((m) => m.date).sort()[0];
     return first !== undefined && first >= window.from && daysBetween(window.until, first) <= TOURNAMENT_CAMP_DAYS;
   });
-  const until = tournament && window && tournament.until > window.until && (nations.callUps[id]?.until ?? tournament.until) > window.until ? tournament.until : (window?.until ?? state.date);
+  const until = isAway ? running.until : tournament && window && tournament.until > window.until ? tournament.until : (window?.until ?? state.date);
   const fixtures = window
     ? nations.matches.filter((m) => (m.homeId === id || m.awayId === id) && m.date >= window.from && m.date <= until).sort((a, b) => a.date.localeCompare(b.date)).map((m) => fixtureRow(nations, m))
     : [];

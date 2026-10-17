@@ -11,6 +11,8 @@ const start = gameOf();
 const days = (from: string, to: string) => Array.from({ length: Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000) }, () => ({}));
 session.apply({ type: "advance", days: days("2026-01-01", "2026-03-24") });
 const inWindow = gameOf();
+session.apply({ type: "advance", days: days("2026-03-24", "2026-06-20") });
+const atWorldCup = gameOf();
 
 describe("the national-team screen", () => {
   test("opens on Brazil, sixth in the FIFA ranking of 7 October 2026, with the next window ahead", () => {
@@ -49,5 +51,13 @@ describe("the national-team screen", () => {
     expect(nationalTeamPage(start, "japan")?.team).toMatchObject({ confederation: "AFC", qualifiesByRanking: true });
     expect(nationalTeamPage(start)?.team).toMatchObject({ confederation: "CONMEBOL", qualifiesByRanking: false });
     expect(nationalTeamPage(start, "germany")?.team.qualifiesByRanking).toBe(false);
+  });
+
+  test("during the World Cup shows the tournament under way, its matches and the squad at it", () => {
+    const page = nationalTeamPage(atWorldCup);
+    expect(page?.window).toMatchObject({ from: "2026-06-01", tournament: "Copa do Mundo 2026" });
+    expect(page?.fixtures.some((f) => f.competition === "Copa do Mundo 2026")).toBe(true);
+    expect(page?.callUp.isProvisional).toBe(false);
+    expect(page?.callUp.count).toBeGreaterThan(20);
   });
 });
