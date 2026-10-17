@@ -4,7 +4,7 @@ import { addDays } from "../dates.js";
 import type { SimPlayer } from "../gameState.js";
 import { advanceDay } from "../advanceDay.js";
 import { loadNewGame } from "../loadNewGame.js";
-import { drawInjury, injurySeverity, MATCH_HOURS, MATCH_INJURIES_PER_HOUR, matchInjuryChance, type Injury, type InjurySeverity } from "./matchInjuryChance.js";
+import { drawInjury, injurySeverity, MATCH_HOURS, MATCH_INJURIES_PER_HOUR, matchInjuryChance, SEASON_RISK_MEAN, type Injury, type InjurySeverity } from "./matchInjuryChance.js";
 
 const game = loadNewGame(3, { coachClubId: null });
 const date = game.date;
@@ -26,9 +26,9 @@ describe("match injuries", () => {
     expect(matchInjuryChance(aged(34), natural)).toBeGreaterThan(matchInjuryChance(aged(22), natural) * 1.2);
   });
 
-  it("keep the squads' average risk at the UEFA study's rate", () => {
+  it("keep the squads' average risk at the UEFA study's rate, less what older starters and recurrences add over a season", () => {
     const mean = players.reduce((sum, p) => sum + matchInjuryChance(p, natural), 0) / players.length;
-    const study = 1 - Math.exp(-MATCH_INJURIES_PER_HOUR * MATCH_HOURS);
+    const study = 1 - Math.exp(-MATCH_INJURIES_PER_HOUR * MATCH_HOURS / SEASON_RISK_MEAN);
     expect(mean / study).toBeGreaterThan(0.99);
     expect(mean / study).toBeLessThan(1.01);
   });
@@ -58,9 +58,11 @@ describe("match injuries", () => {
     const back = addDays(date, -20);
     const returned: SimPlayer = { ...aged(26), condition: { ...somebody.condition, injuredUntil: back, injury: "ligament" } };
     const hazard = (player: SimPlayer) => -Math.log(1 - matchInjuryChance(player, natural));
-    expect(hazard(returned)).toBeCloseTo(hazard(aged(26)) * 2, 6);
-    const again = draws(returned, 5_000);
-    expect(again.every((i) => i.kind === "ligament" && i.isRecurrence)).toBe(true);
+    expect(hazard(returned)).toBeCloseTo(hazard(aged(26)) * 1.75, 6);
+    const inWindow = draws(returned, 20_000);
+    const again = inWindow.filter((i) => i.isRecurrence);
+    expect(again.length / inWindow.length).toBeCloseTo(0.75 / 1.75, 1);
+    expect(again.every((i) => i.kind === "ligament")).toBe(true);
     const first = draws(aged(26), 20_000).filter((i) => i.kind === "ligament");
     expect(meanDays(again)).toBeGreaterThan(meanDays(first) * 1.2);
 

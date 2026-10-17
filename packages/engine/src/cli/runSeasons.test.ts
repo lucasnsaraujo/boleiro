@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { advanceDay } from "../sim/advanceDay.js";
 import type { GameState } from "../sim/gameState.js";
+import { MATCH_INJURIES_PER_HOUR } from "../sim/players/matchInjuryChance.js";
 import { loadGame, saveGame } from "../sim/saveGame.js";
 import { realismReport } from "./realismReport.js";
 import { expectMedianRevenueNearTypical, expectNoCashHoarding, expectRevenueInDivisionBand } from "./revenueBandChecks.js";
@@ -38,6 +39,21 @@ function seasonRun(seasons: number): () => SeasonRun {
 const clubSeasonsOf = (run: SeasonRun) => run.seasons.flatMap((s) => s.stats.clubSeasons);
 const flowsOf = (run: SeasonRun) => run.seasons.map((s) => s.stats.flow);
 
+/**
+ * Match injuries per starter hour stay at the UEFA injury study's 27.5 per 1000 h (Ekstrand, Hägglund &
+ * Waldén 2011), which already counts re-injuries, plus up to 15% for fatigue, artificial pitches and
+ * injury-prone players; re-injuries are 12% of all injuries in that study and 10% in the UEFA Elite Club
+ * Injury Study's 18 seasons (Ekstrand et al. 2021).
+ */
+function expectInjuriesAtStudyRate(run: SeasonRun) {
+  for (const { injuries } of run.seasons.map((s) => s.stats)) {
+    expect(injuries.injuries / injuries.starterHours).toBeGreaterThan(MATCH_INJURIES_PER_HOUR);
+    expect(injuries.injuries / injuries.starterHours).toBeLessThan(MATCH_INJURIES_PER_HOUR * 1.15);
+    expect(injuries.recurrences / injuries.injuries).toBeGreaterThan(0.07);
+    expect(injuries.recurrences / injuries.injuries).toBeLessThan(0.15);
+  }
+}
+
 function expectSeasonsPlayed(run: SeasonRun, seasons: number) {
   expect(run.seasons.map((s) => s.summary.season)).toEqual(Array.from({ length: seasons }, (_, i) => 2026 + i));
   expect(run.final.season).toBe(2026 + seasons);
@@ -69,6 +85,10 @@ describe("two seasons from the season runner", () => {
     expectTalentToEurope(flowsOf(run()));
     expectForeignersMostlyInSerieA(flowsOf(run()));
     expectDomesticMoves(flowsOf(run()));
+  });
+
+  it("injures players at the UEFA study's rate, re-injuries included, season after season", () => {
+    expectInjuriesAtStudyRate(run());
   });
 
   it("prints the tables, winners, movements, transfers and money of a season", () => {

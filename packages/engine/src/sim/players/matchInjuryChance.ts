@@ -31,10 +31,17 @@ const AGE_RISK_MEAN = 1.0135;
 const MEDIAN_AGE = 26;
 // Within two months of returning a player is in his "early recurrence" window (Fuller et al. 2006,
 // consensus on injury definitions, BJSM 40(3):193–201). A previous injury multiplies the next season's
-// risk by 2.7 (Hägglund, Waldén & Ekstrand 2006). guess: twice the risk in the window, and the injury
-// that comes is the same one again.
+// risk by 2.7 (Hägglund, Waldén & Ekstrand 2006). guess: 1.75 times the risk in the window, the extra
+// share of the injuries there being the same one coming back. About 18% of starts fall in a window in
+// seeded runs, so re-injuries are 0.18 × 0.75 / 1.135 = 12% of all injuries, the UEFA injury study's share.
 const RECURRENCE_DAYS = 60;
-const RECURRENCE_RISK = 2;
+const RECURRENCE_RISK = 1.75;
+const RECURRENCE_STARTS = 0.18;
+// The study's 27.5 per 1000 h is the average over the season's starts and already counts re-injuries,
+// so the risk is divided by what recurrence windows and starters' ages (older than their squads: 1.034
+// times the squads' age risk in seeded runs) add on average. runSeasons.test.ts holds a season to the rate.
+const STARTER_AGE_RISK = 1.034;
+export const SEASON_RISK_MEAN = STARTER_AGE_RISK * (1 + (RECURRENCE_RISK - 1) * RECURRENCE_STARTS);
 
 export type InjuryKind = "muscle" | "ligament" | "knock";
 /** An injury drawn for a match: what it is, the days out, and whether it is the last one coming back. */
@@ -55,7 +62,7 @@ export function matchInjuryChance(player: SimPlayer, context: MatchContext): num
   const tired = 1 + (FATIGUE_RISK_PER_MATCH * fatigueOn(player, context.date)) / 100;
   const age = AGE_RISK_PER_YEAR ** (player.age - MEDIAN_AGE) / AGE_RISK_MEAN;
   const recurrence = isRecurrenceWindow(player, context.date) ? RECURRENCE_RISK : 1;
-  return 1 - Math.exp(-MATCH_INJURIES_PER_HOUR * MATCH_HOURS * prone * pitch * tired * age * recurrence);
+  return 1 - Math.exp((-MATCH_INJURIES_PER_HOUR * MATCH_HOURS * prone * pitch * tired * age * recurrence) / SEASON_RISK_MEAN);
 }
 
 // Match injuries in the UEFA Elite Club Injury Study, 2000/01–2018/19 (Ekstrand et al. 2021, BJSM
@@ -83,10 +90,13 @@ function logNormalDays(median: number, sigma: number, random: () => number): num
   return Math.min(LONGEST_LAYOFF, Math.max(1, Math.round(median * Math.exp(sigma * z))));
 }
 
-/** What an injury picked up on `date` is and how long it keeps the player out: his last one again inside its recurrence window. */
+/**
+ * What an injury picked up on `date` is and how long it keeps the player out. Inside the recurrence
+ * window the share of injuries the window adds is his last one coming back.
+ */
 export function drawInjury(player: SimPlayer, date: IsoDate, random: () => number): Injury {
   const last = player.condition.injury;
-  const isRecurrence = last !== undefined && isRecurrenceWindow(player, date);
+  const isRecurrence = last !== undefined && isRecurrenceWindow(player, date) && random() < 1 - 1 / RECURRENCE_RISK;
   let roll = random();
   const type = (isRecurrence && KINDS.find((k) => k.kind === last)) || (KINDS.find((k) => (roll -= k.share) < 0) ?? KINDS.at(-1));
   if (!type) throw new Error("no injury kinds");
