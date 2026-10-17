@@ -1,0 +1,917 @@
+/* Técnicos: the rankings and the job centre on a paper page, the picked coach's sticker beside it. */
+.coaches {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 14px;
+  padding: 18px 14px 14px;
+}
+
+.coaches-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Head: title, the ranking's season and the offers on the table */
+.coaches-head {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  padding: 0 2px 12px;
+}
+
+.coaches-title {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.coaches-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.coaches-season {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: var(--card);
+  box-shadow: var(--sh-sticker);
+}
+
+.coaches-season-step {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--ink-2);
+  transition: background-color var(--t-fast) var(--e-out), color var(--t-fast) var(--e-out);
+}
+
+.coaches-season-step:hover:not(:disabled) {
+  background: var(--paper-2);
+  color: var(--ink);
+}
+
+.coaches-season-step:disabled {
+  color: var(--line-2);
+}
+
+.coaches-season-now {
+  min-width: 52px;
+  text-align: center;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.coaches-offers {
+  text-decoration: none;
+}
+
+.coaches-season + .coaches-offers {
+  margin-left: 0;
+}
+
+.coaches-head > .coaches-offers:nth-child(2) {
+  margin-left: auto;
+}
+
+.coaches-n {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  background: var(--red);
+  color: var(--on-red);
+  font-stretch: var(--semi);
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+/* Paper tabs over the page */
+.coaches-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.coaches-tab {
+  height: 34px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 8px 8px 0 0;
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--ink-2);
+  transition: background-color var(--t-fast) var(--e-out), color var(--t-fast) var(--e-out);
+}
+
+.coaches-tab:hover {
+  color: var(--ink);
+}
+
+.coaches-tab[aria-selected="true"] {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 -1px 0 var(--line), 1px 0 0 var(--line), -1px 0 0 var(--line);
+}
+
+.coaches-board {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border-top-left-radius: 0;
+}
+
+/* Ranking tables */
+.coaches-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--card);
+}
+
+.coaches-table th:first-child,
+.coaches-table td:first-child {
+  padding-left: 16px;
+}
+
+.coaches-table td {
+  height: 38px;
+}
+
+.coaches-pos {
+  width: 52px;
+  text-align: left;
+  font-stretch: var(--semi);
+  font-weight: 900;
+}
+
+td.coaches-pos {
+  font-size: 13px;
+}
+
+.coaches-table tbody tr:nth-child(-n + 3) td.coaches-pos {
+  color: var(--later);
+}
+
+.coaches-points {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 13.5px;
+}
+
+.coaches-row td {
+  transition: background-color var(--t-fast) var(--e-out);
+}
+
+.coaches-row:hover td {
+  background: color-mix(in srgb, var(--yellow-l) 45%, transparent);
+}
+
+.coaches-row.is-you td {
+  background: var(--green-l);
+}
+
+.coaches-row.is-you td:first-child {
+  box-shadow: inset 4px 0 0 var(--green);
+}
+
+.coaches-row.sel td {
+  background: var(--yellow-l);
+}
+
+.coaches-row.sel td:first-child {
+  box-shadow: inset 4px 0 0 var(--yellow);
+}
+
+.coaches-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.coaches-who:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.coaches-you {
+  height: 18px;
+  padding: 0 7px;
+  font-size: 9.5px;
+}
+
+.coaches-club {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-stretch: 100%;
+}
+
+.coaches-club.is-none {
+  color: var(--mute);
+  font-style: italic;
+}
+
+/* A coach's initials on a disc in his club's colours: the album's avatar */
+.coaches-av {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--card);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(20, 35, 26, 0.18), 0 2px 4px -1px rgba(20, 35, 26, 0.35);
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+}
+
+.coaches-av.is-big {
+  width: 68px;
+  height: 68px;
+  border-width: 4px;
+  font-size: 24px;
+  box-shadow: 0 0 0 1px rgba(20, 35, 26, 0.18), 0 6px 12px -4px rgba(20, 35, 26, 0.45);
+}
+
+.coaches-move {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 11.5px;
+}
+
+.coaches-move.is-up {
+  color: var(--green);
+}
+
+.coaches-move.is-down {
+  color: var(--red);
+}
+
+.coaches-move.is-same {
+  color: var(--mute);
+}
+
+.coaches-move.is-new {
+  padding: 1px 6px;
+  border-radius: var(--r-pill);
+  background: var(--yellow-l);
+  color: var(--later);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.coaches-foot {
+  padding: 12px 16px 16px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--mute);
+  border-top: 1px solid var(--rule);
+}
+
+/* Before the first ranking: the empty sticker slot */
+.coaches-empty {
+  height: 100%;
+  min-height: 320px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 40px;
+  text-align: center;
+}
+
+.coaches-empty-slot {
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  transform: rotate(-6deg);
+  color: var(--line-2);
+  font-size: 40px;
+}
+
+.coaches-empty-title {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.coaches-empty-text {
+  max-width: 420px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--mute);
+}
+
+/* Job centre */
+.coaches-jobs-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: var(--card);
+  border-bottom: 2px solid var(--ink);
+}
+
+.coaches-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.coaches-rep {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.coaches-rep b {
+  margin-left: 4px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.coaches-free {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 16px 10px;
+  font-size: 13px;
+}
+
+.coaches-free .btn {
+  margin-left: auto;
+}
+
+.coaches-jobs-none {
+  padding: 28px 16px;
+  color: var(--mute);
+}
+
+.coaches-job-list {
+  list-style: none;
+}
+
+.coaches-job {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1.3fr) minmax(0, 1fr) 132px minmax(210px, auto);
+  align-items: center;
+  column-gap: 14px;
+  min-height: 62px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--rule);
+  transition: background-color var(--t-fast) var(--e-out);
+}
+
+.coaches-job:hover {
+  background: color-mix(in srgb, var(--yellow-l) 40%, transparent);
+}
+
+.coaches-job .crest {
+  justify-self: center;
+}
+
+.coaches-job-club {
+  display: grid;
+  min-width: 0;
+}
+
+.coaches-job-club b {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 14.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coaches-job-club small,
+.coaches-job-state small,
+.coaches-job-size small {
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.coaches-job-state {
+  display: grid;
+  justify-items: start;
+  gap: 3px;
+}
+
+.coaches-job-size {
+  display: grid;
+  gap: 4px;
+}
+
+.coaches-job-act {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.coaches-verdict {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--mute);
+  white-space: nowrap;
+}
+
+.coaches-verdict.is-yes {
+  color: var(--green);
+}
+
+.coaches-job.is-shaky .crest {
+  filter: saturate(0.6);
+}
+
+/* The club's yes, stamped on the row */
+.coaches-stamp {
+  display: inline-block;
+  padding: 5px 10px 4px;
+  border: 2px solid var(--green);
+  border-radius: var(--r-s);
+  color: var(--green);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transform: rotate(-3deg);
+}
+
+.coaches-stamp:hover {
+  background: var(--green-l);
+}
+
+.coaches-stamp.is-stamped {
+  animation: coaches-stamp-in var(--t-stamp) var(--e-slap) both;
+}
+
+/* The picked coach's sticker */
+.coaches-profile {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden auto;
+  animation: coaches-profile-in 520ms var(--e-out) both;
+}
+
+.coaches-profile-top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 16px 16px;
+  background: var(--foil);
+  border-bottom: 1px solid var(--line);
+  border-radius: var(--r-m) var(--r-m) 0 0;
+}
+
+.coaches-profile-face {
+  position: relative;
+  animation: coaches-pop 560ms var(--e-slap) 90ms both;
+}
+
+.coaches-profile-crest {
+  position: absolute;
+  right: -10px;
+  bottom: -6px;
+}
+
+.coaches-profile-who h2 {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 19px;
+  line-height: 1.1;
+}
+
+.coaches-profile-who p {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.coaches-profile-who .coaches-profile-club {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.coaches-rank {
+  display: grid;
+  justify-items: end;
+}
+
+.coaches-rank-n {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 40px;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  color: var(--green);
+  animation: coaches-stamp-in var(--t-stamp) var(--e-slap) 220ms both;
+}
+
+.coaches-rank small {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mute);
+}
+
+.coaches-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.coaches-facts div {
+  display: grid;
+  gap: 4px;
+  padding: 10px 16px;
+  background: var(--card);
+}
+
+.coaches-facts dt {
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.coaches-facts dd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coaches-facts dd .meter {
+  flex: 1;
+}
+
+.coaches-facts dd b {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.coaches-former {
+  margin: 18px 16px 4px;
+}
+
+.coaches-titles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 14px 16px 0;
+}
+
+.coaches-title-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  background: var(--yellow-l);
+  font-weight: 800;
+  font-size: 11.5px;
+  animation: coaches-pop 480ms var(--e-slap) 280ms both;
+}
+
+.coaches-title-chip i {
+  color: var(--yellow-d);
+}
+
+.coaches-title-chip small {
+  font-weight: 600;
+  color: var(--mute);
+}
+
+.coaches-career {
+  padding: 16px 16px 8px;
+}
+
+.coaches-career-none {
+  padding-top: 8px;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.coaches-timeline {
+  position: relative;
+  list-style: none;
+  margin-top: 10px;
+}
+
+/* The career's thread, drawn down through the clubs */
+.coaches-timeline::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--line-2);
+  transform-origin: top;
+  animation: coaches-thread 700ms var(--e-out) 160ms both;
+}
+
+.coaches-stint {
+  position: relative;
+  display: grid;
+  grid-template-columns: 12px 20px minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 9px;
+  row-gap: 1px;
+  padding: 7px 0;
+  animation: coaches-stint-in 420ms var(--e-out) calc(220ms + var(--i, 0) * 50ms) both;
+}
+
+.coaches-stint-dot {
+  grid-row: 1 / span 2;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: inset 0 0 0 2px var(--line-2);
+}
+
+.coaches-stint.is-now .coaches-stint-dot {
+  background: var(--green);
+  box-shadow: 0 0 0 3px var(--green-l);
+}
+
+.coaches-stint .crest {
+  grid-row: 1 / span 2;
+}
+
+.coaches-stint-club {
+  font-weight: 800;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coaches-stint-when {
+  grid-column: 3;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.coaches-exit {
+  grid-column: 4;
+  grid-row: 1 / span 2;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.coaches-exit.is-now {
+  background: var(--green);
+  color: var(--on-green);
+}
+
+.coaches-exit.is-fired {
+  background: var(--red-l);
+  color: var(--red);
+}
+
+.coaches-exit.is-resigned {
+  background: var(--yellow-l);
+  color: var(--later);
+}
+
+.coaches-profile-acts {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding: 12px 16px 14px;
+  border-top: 1px solid var(--rule);
+}
+
+/* Resigning: the letter on the board's desk */
+.coaches-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  background: var(--veil);
+  animation: coaches-fade var(--t-base) var(--e-out) both;
+}
+
+.coaches-resign {
+  position: relative;
+  width: min(480px, calc(100% - 80px));
+  padding: 28px 30px 22px;
+  border-radius: var(--r-m);
+  box-shadow: var(--sh-pop);
+  animation: coaches-resign-in var(--t-slow) var(--e-out) both;
+}
+
+.coaches-resign-letter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.coaches-resign-letter i {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--red);
+  color: var(--on-red);
+  font-size: 21px;
+  transform: rotate(-8deg);
+  animation: coaches-letter 900ms var(--e-slap) 180ms both;
+}
+
+.coaches-resign h2 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 23px;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+
+.coaches-resign h2:focus {
+  outline: none;
+}
+
+.coaches-resign-list {
+  margin-top: 12px;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.coaches-resign-list b {
+  color: var(--ink);
+}
+
+.coaches-resign-acts {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.coaches-resign-acts .btn.flat {
+  margin-left: auto;
+}
+
+/* Rows come in one after another when a tab or season opens */
+.coaches-row,
+.coaches-job {
+  animation: coaches-row-in 380ms var(--e-out) calc(var(--i, 0) * 18ms) both;
+}
+
+@keyframes coaches-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes coaches-profile-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) rotate(-1.4deg) scale(0.985);
+  }
+  60% {
+    transform: translateY(-2px) rotate(0.3deg);
+  }
+}
+
+@keyframes coaches-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.55) rotate(-14deg);
+  }
+}
+
+@keyframes coaches-stamp-in {
+  from {
+    opacity: 0;
+    transform: scale(1.7) rotate(-12deg);
+  }
+}
+
+@keyframes coaches-thread {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes coaches-stint-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+@keyframes coaches-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes coaches-resign-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+}
+
+@keyframes coaches-letter {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px) rotate(-30deg) scale(0.6);
+  }
+  55% {
+    transform: translateY(2px) rotate(6deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(-8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coaches-profile,
+  .coaches-resign,
+  .coaches-row,
+  .coaches-job {
+    animation-name: coaches-fade;
+  }
+
+  .coaches-profile-face,
+  .coaches-rank-n,
+  .coaches-title-chip,
+  .coaches-stint,
+  .coaches-stamp.is-stamped,
+  .coaches-resign-letter i,
+  .coaches-timeline::before {
+    animation: none;
+  }
+}
