@@ -8,6 +8,8 @@ import { applyForJob, type JobAnswer } from "@boleiro/engine/sim/coach/applyForJ
 import { resign } from "@boleiro/engine/sim/coach/resign";
 import { nameCaptain } from "@boleiro/engine/sim/chemistry/nameCaptain";
 import { pendingEventOf, type EventArea, type PendingEvent } from "@boleiro/engine/sim/events/eventMemory";
+import type { EggFound } from "@boleiro/engine/sim/eggs/eggBook";
+import { findCoachEgg } from "@boleiro/engine/sim/eggs/findEggs";
 import { answerEvent, type EventAnswered } from "@boleiro/engine/sim/events/runEvents";
 import { passTheSeat, swapSeat, waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
@@ -43,6 +45,7 @@ import { assistantPage, type AssistantPage } from "../assistant/assistantPage.js
 import { awardsBook, type AwardsBook } from "../awards/awardsBook.js";
 import { chemistryPage, type ChemistryPage } from "../chemistry/chemistryPage.js";
 import { coachesPage, coachProfile, type CoachesPage, type CoachProfile } from "../coaches/coachesPage.js";
+import { eggAlbumOf, type EggAlbum } from "../eggs/eggAlbum.js";
 import { matchPageOf, type MatchPage } from "../matchPage/matchPageOf.js";
 import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
 import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
@@ -52,7 +55,7 @@ import { nationalTeamPage, type NationalTeamPage } from "../nationalTeam/nationa
 import { readStoredSave, splitGame, writeSessionSave, writeSessionShards, type SaveShards, type SeatParts, type SplitGame, type StoredSave } from "./sessionSave.js";
 
 /** What a new game is started with; the app's new-game screen leaves `season` out, for the first season. */
-export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode" | "stateChampionships" | "midSeasonWindow" | "hotSeat" | "marketClockSeconds" | "formats" | "season">;
+export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode" | "stateChampionships" | "midSeasonWindow" | "hotSeat" | "coachName" | "marketClockSeconds" | "formats" | "season">;
 export type GameSummary = Pick<GameState, "date" | "season" | "coachClubId">;
 export type AdvanceResult = { date: IsoDate; events: DayEvent[] };
 export type PlayResult = { date: IsoDate; stop: StopReason; daysPlayed: number };
@@ -145,6 +148,8 @@ type CommandFields = {
   declineNationalJob: Record<never, never>;
   /** The coach of a national team calls up these players (refs of his pool) for its next window. */
   setCallUp: { refs: readonly string[] };
+  /** The coach in the seat found an easter egg on the screen (a word typed). */
+  findEgg: { eggId: string };
 };
 
 /** What a move on a kid of the academy answers: null when it went through, and the sale it made. */
@@ -203,6 +208,7 @@ export type CommandResults = {
   acceptNationalJob: undefined;
   declineNationalJob: undefined;
   setCallUp: undefined;
+  findEgg: EggFound | null;
 };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
@@ -648,6 +654,14 @@ export function createEngineSession(files: GameFiles) {
       if (!view) throw new Error("a hot-seat game lost its coaches");
       return view;
     },
+    findEgg({ eggId }) {
+      const before = current();
+      const found = findCoachEgg(before, eggId);
+      if (!found.event) return null;
+      state = found.state;
+      addNews(inboxLines(before, found.state, [found.event]));
+      return found.event;
+    },
     answerEvent({ choice }) {
       const before = betweenDays("an event can't be answered");
       if (!before.coachClubId) throw new Error("a coach without a club has no events to answer");
@@ -797,6 +811,10 @@ export function createEngineSession(files: GameFiles) {
     pendingEvent(): PendingEvent | null {
       const game = current();
       return pendingEventOf(game, game.coachClubId);
+    },
+    /** The easter eggs the career found, out of every egg in the game. */
+    eggAlbum(): EggAlbum {
+      return eggAlbumOf(current());
     },
     /** The round's newspaper of `date` as the seated coach reads it, the latest when left out; null before the first edition. */
     newspaper(date?: IsoDate): Edition | null {

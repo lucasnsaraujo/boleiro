@@ -1,0 +1,92 @@
+/* The almanac's note: the egg's mini sticker stuck on a corner of a foil-edged card. */
+.egg-note {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px 12px 12px;
+  border-radius: var(--r-m);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 12.5px;
+  line-height: 1.45;
+  box-shadow:
+    inset 0 0 0 1.5px transparent,
+    var(--sh-sticker);
+  isolation: isolate;
+}
+
+/* A thin foil edge, the way the album marks its special stickers. */
+.egg-note::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(120deg, #f0c43c, #fff3c4 30%, #9fe0c4 55%, #e9b726 80%, #fff1b0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.egg-note-text {
+  display: grid;
+  gap: 3px;
+}
+
+.egg-note-text .lbl {
+  color: var(--later);
+}
+
+.egg-note-stk {
+  flex: none;
+  width: 44px;
+  padding: 3px;
+  border-radius: 7px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgba(20, 35, 26, 0.12),
+    0 4px 8px -4px rgba(20, 35, 26, 0.45);
+  transform: rotate(-6deg) translateY(-2px);
+}
+
+.egg-note-face {
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  color: #f2ead9;
+  background: var(--green);
+}
+
+.egg-note-stk.veryRare .egg-note-face {
+  background: linear-gradient(160deg, #2a56c8, #1b3f9e 55%, #12307e);
+}
+
+.egg-note-stk.legendary .egg-note-face {
+  color: #3b2a00;
+  background: linear-gradient(135deg, #fff1b0 0%, #f0c43c 30%, #ffe68a 50%, #d9a514 75%, #fff3c4 100%);
+}
+
+.egg-note-face .egg-art {
+  width: 32px;
+  height: 32px;
+  stroke-width: 3;
+  filter: none;
+}
+
+.egg-note-face .egg-art-score {
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+[data-skin="win98"] .egg-note::before {
+  display: none;
+}
+
+[data-skin="win98"] .egg-note-stk,
+[data-skin="win98"] .egg-note-face {
+  border-radius: 0;
+}

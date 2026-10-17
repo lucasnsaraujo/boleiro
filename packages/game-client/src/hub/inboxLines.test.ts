@@ -440,3 +440,12 @@ describe("national-team jobs", () => {
     expect(line({ type: "nationalCoachFired", teamId: "portugal" })).toMatchObject({ text: "Você não é mais o técnico de Portugal", tone: "bad" });
   });
 });
+
+describe("easter eggs", () => {
+  const found = (clubId: string): DayEvent => ({ type: "eggFound", eggId: "sobrenatural", clubId, title: "Sobrenatural de Almeida", look: "sticker", headline: "Sobrenatural de Almeida baixou no jogo do Bahia", body: "corpo" });
+
+  test("an egg the coach's club found is a good line marked as a rarity; another club's is not news", () => {
+    expect(line(found("bahia-ba"))).toEqual({ date: game.date, text: "Raridade: Sobrenatural de Almeida baixou no jogo do Bahia", tone: "good" });
+    expect(lines(found("vitoria-ba"))).toEqual([]);
+  });
+});

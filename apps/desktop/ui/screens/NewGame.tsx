@@ -182,7 +182,7 @@ export function NewGame() {
           stateChampionships: playsEstaduais,
           ...(hasMidSeasonWindow ? {} : { midSeasonWindow: false }),
           formats,
-          ...(hotSeat ? { hotSeat } : {}),
+          ...(hotSeat ? { hotSeat } : { coachName: name }),
           ...(clockMinutes === null ? {} : { marketClockSeconds: clockMinutes * 60 }),
         },
       });

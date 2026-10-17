@@ -67,3 +67,20 @@ test("a record win of this season opens its match's ficha", async () => {
   expect(within(panel).getByText("Encerrado")).toBeTruthy();
   expect(within(panel).getByLabelText(score)).toBeTruthy();
 });
+
+test("the Raridades tab hides until the career finds an egg, then counts it out of every egg and keeps the rest as empty slots", async () => {
+  const given = await services("bahia-ba");
+  openHistory(given);
+  await screen.findByRole("tab", { name: "Clube", selected: true });
+  expect(screen.queryByRole("tab", { name: "Raridades" })).toBeNull();
+  cleanup();
+
+  await given.engine.apply({ type: "findEgg", eggId: "windows-98" });
+  const { total } = await given.engine.eggAlbum();
+  openHistory(given, "/history?aba=raridades");
+  const panel = await screen.findByRole("tabpanel", { name: "Raridades" });
+  expect(within(panel).getByLabelText(`1 de ${total}`)).toBeTruthy();
+  expect(within(panel).getByRole("figure", { name: /Rodada de 1998, rara$/ })).toBeTruthy();
+  expect(within(panel).getAllByRole("listitem")).toHaveLength(total);
+  expect(within(panel).getAllByLabelText(/^Figurinha R\d\d, ainda escondida$/)).toHaveLength(total - 1);
+});
