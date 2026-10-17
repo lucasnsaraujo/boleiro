@@ -10,6 +10,7 @@ import { runTransferDay } from "../transfers/runTransferDay.js";
 import type { Bid } from "../transfers/transferMarket.js";
 import { assistantPromotions } from "../youth/assistantPromotions.js";
 import { ASSISTANT_DUTIES, doesAssistantHandle, withAssistantDuty, type AssistantDuty } from "./assistantDuties.js";
+import { swapSeat } from "./humanCoaches.js";
 
 const COACH = "flamengo-rj";
 const start = loadNewGame(5, { coachClubId: COACH });
@@ -108,6 +109,15 @@ describe("the selling duty", () => {
     const day = runTransferDay(withDuty(nameCaptain(offered(start), COACH, surplus.id), "selling", true), []);
     expect(day.state.players[surplus.id]?.clubId).toBe(COACH);
     expect(coachMarketOf(day.state).bids[surplus.id]).toBeDefined();
+  });
+
+  it("switched on for a waiting hot-seat coach, sells for him as for the coach in the seat", () => {
+    const twoCoaches = loadNewGame(5, { coachClubId: COACH, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "santos-sp" }] } });
+    const anaWaits = swapSeat(withDuty(offered(twoCoaches), "selling", true), 0);
+    const day = runTransferDay(anaWaits, []);
+    expect(day.state.players[surplus.id]?.clubId).toBe("palmeiras-sp");
+    expect(day.events).toContainEqual(expect.objectContaining({ type: "playerMoved", playerId: surplus.id, fee: 1_200_000, byAssistant: true }));
+    expect(day.state.waitingCoaches?.[0]?.market?.bids[star.id]).toBeDefined();
   });
 
   it("switched off, leaves every offer to the coach", () => {
