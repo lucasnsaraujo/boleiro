@@ -43,6 +43,7 @@ import { assistantPage, type AssistantPage } from "../assistant/assistantPage.js
 import { awardsBook, type AwardsBook } from "../awards/awardsBook.js";
 import { chemistryPage, type ChemistryPage } from "../chemistry/chemistryPage.js";
 import { coachesPage, coachProfile, type CoachesPage, type CoachProfile } from "../coaches/coachesPage.js";
+import { albumOf, type Album } from "../album/albumOf.js";
 import { eggAlbumOf, type EggAlbum } from "../eggs/eggAlbum.js";
 import { matchPageOf, type MatchPage } from "../matchPage/matchPageOf.js";
 import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
@@ -787,6 +788,10 @@ export function createEngineSession(files: GameFiles) {
     /** The easter eggs the career found, out of every egg in the game. */
     eggAlbum(): EggAlbum {
       return eggAlbumOf(current());
+    },
+    /** The album of a human coach: `seat` 0 is the one in the seat, then the waiting ones in turn order. */
+    album(seat?: number): Album {
+      return albumOf(current(), seat);
     },
     /** The round's newspaper of `date` as the seated coach reads it, the latest when left out; null before the first edition. */
     newspaper(date?: IsoDate): Edition | null {

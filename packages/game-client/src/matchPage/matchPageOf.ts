@@ -1,4 +1,5 @@
 import type { Role } from "@boleiro/data/players";
+import type { KeptMatch } from "@boleiro/engine/sim/album/album";
 import type { Formation } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
@@ -16,7 +17,8 @@ import { pairKeyOf, rivalryMemoryOf } from "@boleiro/engine/sim/rivalries/rivalr
 import { rivalryOf, type Rivalry } from "@boleiro/engine/sim/rivalries/rivalryOf";
 import { standings } from "@boleiro/engine/sim/standings";
 import { leagueMatches } from "@boleiro/engine/sim/world/resultOnlyLeague";
-import { competitionName, fixtureLabel } from "../format/competitionName.js";
+import { competitionKey } from "@boleiro/engine/sim/history/history";
+import { competitionKeyName, competitionName, fixtureLabel } from "../format/competitionName.js";
 import type { RoundClub } from "../round/liveRoundOf.js";
 import { officialsOf, type Officials } from "../round/officialsOf.js";
 import { curiositiesOf } from "./curiositiesOf.js";
@@ -199,14 +201,69 @@ function storyFromDay(day: LiveDay, fixtureId: string): Story | null {
   };
 }
 
+/** A final or a league-winning match a human coach's album kept whole after its season's fixtures went. */
+function keptMatchOf(state: GameState, ref: string): KeptMatch | undefined {
+  const records = [state.history.coach, ...(state.waitingCoaches ?? []).map((waiting) => waiting.record)];
+  return records.flatMap((record) => record.keptMatches ?? []).find((match) => match.fixture.id === ref);
+}
+
+/** The page of a kept match, as it was played: its line-ups, timeline and marks, with nothing told again. */
+function keptPage(state: GameState, kept: KeptMatch): MatchPage {
+  const { fixture } = kept;
+  const players = new Map(kept.players.map(([id, name, group, strength, clubId]) => [id, { player: { id, name, group, strength }, clubId }]));
+  const starters = new Set(kept.starters);
+  const side = (clubId: string, where: "home" | "away"): PageSide => {
+    const own = [...players.values()].filter((p) => p.clubId === clubId);
+    return {
+      club: clubOf(state, clubId),
+      formation: kept.formations[where],
+      starters: kept.starters.flatMap((id) => {
+        const starter = players.get(id);
+        return starter?.clubId === clubId ? [starter.player] : [];
+      }),
+      bench: own.filter((p) => !starters.has(p.player.id)).map((p) => p.player),
+      place: null,
+    };
+  };
+  const name = competitionKeyName(competitionKey(fixture.competitionId));
+  const stage = kept.kind === "final" ? (kept.firstLeg ? "final, jogo de volta" : "final") : "o jogo do título";
+  return {
+    ref: fixture.id,
+    isLive: false,
+    isRetold: false,
+    label: `${name} · ${stage}`,
+    competition: name,
+    date: fixture.date,
+    home: side(fixture.homeId, "home"),
+    away: side(fixture.awayId, "away"),
+    penaltyWinnerId: fixture.result.penaltyWinnerId ?? null,
+    isAfterExtraTime: fixture.result.isAfterExtraTime ?? hasExtraTimeIn(kept.events),
+    events: kept.events,
+    play: null,
+    ratings: kept.ratings,
+    names: Object.fromEntries(kept.players.map(([id, playerName]) => [id, playerName])),
+    venue: { stadium: kept.stadium, crowd: kept.crowd, gate: null },
+    officials: { referee: kept.referee, hasVar: kept.events.some((e) => e.type === "varCheck") },
+    meetings: [],
+    curiosities: [],
+    eggs: matchEggNotes(state, state.history, fixture, null),
+    derby: rivalryOf(fixture.homeId, fixture.awayId),
+    coachDuel: null,
+  };
+}
+
 /**
  * The page of a match: of the live day `live` when it plays it (`isUnderWay` while its round runs),
- * else of a played match told again from its fixture's seed; null for a match not played yet.
+ * else of a played match told again from its fixture's seed, or as an album kept it once its season's
+ * fixtures went; null for a match not played yet.
  */
 export function matchPageOf(state: GameState, ref: string, live: { day: LiveDay; isUnderWay: boolean } | null): MatchPage | null {
   const real = live ? storyFromDay(live.day, ref) : null;
   const located = locate(state, ref);
-  if (!located) return null;
+  if (!located) {
+    const kept = keptMatchOf(state, ref);
+    return kept ? keptPage(state, kept) : null;
+  }
   const { fixture } = located;
   const { result } = fixture;
   // A real timeline is read against the game as it kicked off: its history and gate are the ones before the match.

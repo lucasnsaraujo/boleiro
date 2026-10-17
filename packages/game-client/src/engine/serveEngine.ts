@@ -41,6 +41,8 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.pendingEvent();
     case "eggAlbum":
       return session.eggAlbum();
+    case "album":
+      return session.album(...request.args);
     case "newspaper":
       return session.newspaper(...request.args);
     case "newspaperEditions":
