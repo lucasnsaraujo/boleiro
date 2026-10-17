@@ -13,6 +13,10 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.chemistry();
     case "assistant":
       return session.assistant();
+    case "sponsors":
+      return session.sponsors();
+    case "betSticker":
+      return session.betSticker();
     case "awards":
       return session.awards();
     case "coaches":

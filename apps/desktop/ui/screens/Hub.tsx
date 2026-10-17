@@ -7,6 +7,7 @@ import { formatBarDate, formatDayMonth } from "@boleiro/game-client/format/forma
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import type { HotSeatView } from "@boleiro/game-client/hub/hotSeat";
 import type { InboxLine } from "@boleiro/game-client/hub/inboxLines";
+import type { BetSticker } from "@boleiro/game-client/sponsors/sponsorsPage";
 import type { TurningPoint } from "@boleiro/game-client/hub/turningPoints";
 import type { BoardDesk } from "@boleiro/game-client/market/boardDesk";
 import { contractsEnding } from "@boleiro/game-client/market/contracts";
@@ -27,11 +28,13 @@ import { ContractsEnding } from "../contracts/ContractsEnding.js";
 import { RenewalDialog } from "../contracts/RenewalDialog.js";
 import { PlayerSticker } from "../squad/PlayerSticker.js";
 import { SquadTable } from "../squad/SquadTable.js";
+import { BrandLogo } from "../sponsors/BrandLogo.js";
+import { OddsSticker } from "../sponsors/OddsSticker.js";
 import "./hub.css";
 
 const HUB_KEYS = [...SQUAD_KEYS, "boards", "coach", "mood", "finances", "eventMemory", "hasMidSeasonWindow"] as const;
 type HubState = Pick<GameState, (typeof HUB_KEYS)[number]>;
-type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null; seats: HotSeatView | null; event: PendingEvent | null; desk: BoardDesk };
+type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null; seats: HotSeatView | null; event: PendingEvent | null; desk: BoardDesk; bet: BetSticker | null };
 type SquadTab = "squad" | "contracts";
 
 const TURNING_POINT_SCREENS: Record<TurningPoint["kind"], string> = { fired: "/sacked", seasonEnd: "/season-end" };
@@ -39,9 +42,6 @@ const offersText = (count: number) => `${count} ${count === 1 ? "proposta" : "pr
 
 // The newspaper stays short: the newest lines only, everything else is on the other screens.
 const INBOX_LINES = 7;
-
-/** The features of the dock that have no screen yet, greyed out until their slices land. */
-const LATER = [{ label: "Patrocínio", icon: "handshake", title: "Patrocínios" }] as const;
 
 export function Hub() {
   const { engine, game: open } = useServices();
@@ -63,8 +63,8 @@ export function Hub() {
 
   const load = useCallback(
     (isCurrent: () => boolean) =>
-      Promise.all([engine.read(HUB_KEYS), engine.inbox(), engine.turningPoint(), engine.hotSeat(), engine.pendingEvent(), engine.desk()]).then(
-        ([state, inbox, turningPoint, seats, event, desk]) => isCurrent() && setLoaded({ state, inbox, turningPoint, seats, event, desk }),
+      Promise.all([engine.read(HUB_KEYS), engine.inbox(), engine.turningPoint(), engine.hotSeat(), engine.pendingEvent(), engine.desk(), engine.betSticker()]).then(
+        ([state, inbox, turningPoint, seats, event, desk, bet]) => isCurrent() && setLoaded({ state, inbox, turningPoint, seats, event, desk, bet }),
         () => isCurrent() && setMissing(true),
       ),
     [engine],
@@ -177,6 +177,11 @@ export function Hub() {
               {offersText(offers)}
             </Link>
           )}
+          {club && loaded.bet && offers === 0 && (
+            <Link className="hub-spon" to="/sponsors" title={`Patrocínio: ${loaded.bet.brandName}`} aria-label={`Patrocínio: ${loaded.bet.brandName}`}>
+              <BrandLogo brandId={loaded.bet.brandId} name={loaded.bet.brandName} height={11} maxWidth={64} />
+            </Link>
+          )}
         </section>
 
         {club && (
@@ -194,7 +199,7 @@ export function Hub() {
           </section>
         )}
 
-        {club && (next ? <NextMatchSticker next={next} state={state} /> : <p className="stk hub-next hub-next-none">Nenhum jogo marcado.</p>)}
+        {club && (next ? <NextMatchSticker next={next} state={state} bet={loaded.bet} /> : <p className="stk hub-next hub-next-none">Nenhum jogo marcado.</p>)}
 
         {!club && offers > 0 ? (
           <div className="hub-actions">
@@ -251,12 +256,17 @@ export function Hub() {
               Finanças
             </span>
           )}
-          {LATER.map(({ label, icon, title }) => (
-            <span key={label} className="hub-dock-item off" aria-disabled="true" title={`${title} · em breve`}>
-              <i className={`ph-bold ph-${icon}`} aria-hidden="true" />
-              {label}
+          {club ? (
+            <Link to="/sponsors" className="hub-dock-item" title="Patrocínios">
+              <i className="ph-bold ph-handshake" aria-hidden="true" />
+              Patrocínio
+            </Link>
+          ) : (
+            <span className="hub-dock-item off" aria-disabled="true" title="Sem clube, sem patrocínio">
+              <i className="ph-bold ph-handshake" aria-hidden="true" />
+              Patrocínio
             </span>
-          ))}
+          )}
           <Link to="/assistant" className="hub-dock-item" title="Auxiliar técnico">
             <i className="ph-bold ph-user-switch" aria-hidden="true" />
             Auxiliar
@@ -316,7 +326,7 @@ export function Hub() {
   );
 }
 
-function NextMatchSticker({ next, state }: { next: NextMatch; state: HubState }) {
+function NextMatchSticker({ next, state, bet }: { next: NextMatch; state: HubState; bet: BetSticker | null }) {
   const opponent = clubFaceOf(state.clubs, next.opponentId);
   if (!opponent) return null;
   return (
@@ -332,6 +342,7 @@ function NextMatchSticker({ next, state }: { next: NextMatch; state: HubState })
           <p className="hub-next-what">{next.label}</p>
         </div>
       </div>
+      {bet?.fixtureId === next.fixture.id && <OddsSticker match={bet} brand={{ id: bet.brandId, name: bet.brandName }} className="hub-odds" />}
     </section>
   );
 }

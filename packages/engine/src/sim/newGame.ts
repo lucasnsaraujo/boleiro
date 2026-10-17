@@ -31,6 +31,8 @@ import { SOUTH_AMERICA } from "./world/southAmerica.js";
 import type { Guests } from "./world/guests.js";
 import type { CountryStructure, UnifiedDates, World, WorldClub } from "./world/world.js";
 import { openAcademies } from "./youth/academy.js";
+import { seedGameSponsors } from "./sponsors/sponsorDeals.js";
+import type { SponsorFiles } from "./sponsors/sponsors.js";
 
 /** A result-only country to start: its structure and its clubs level by level, top first. */
 export type CountryStart = { structure: CountryStructure; levels: readonly (readonly WorldClub[])[] };
@@ -64,6 +66,8 @@ export type NewGameOptions = {
   marketClockSeconds?: number;
   /** The calendar and formats (Rápido, Realista or a custom mix); left out, Realista's. */
   formats?: Formats;
+  /** The kit deals and the brands of the offer pool (the sponsors pack); left out, the clubs have no sponsors on their kits. */
+  sponsors?: SponsorFiles;
 };
 
 /** The most human coaches one game takes, all on one computer (SPEC §14). */
@@ -152,7 +156,7 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, guests, stateChampionships = true, midSeasonWindow = true, hotSeat, marketClockSeconds, formats = REALISTA }: NewGameOptions,
+  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, guests, stateChampionships = true, midSeasonWindow = true, hotSeat, marketClockSeconds, formats = REALISTA, sponsors }: NewGameOptions,
 ): GameState {
   const countries = (world ?? []).map(({ structure, levels }) => ({ structure: inFormats(structure, formats), levels }));
   const fullTier = countriesOfHumans(countries, [coachClubId, ...(hotSeat?.otherCoaches ?? []).map((other) => other.clubId)], formats);
@@ -220,7 +224,8 @@ export function newGame(
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
   const withClock = marketClockSeconds === undefined ? game : { ...game, marketClockSeconds };
   const withAcademies = { ...withClock, youth: openAcademies(withClock) };
-  return withCoachWorld(withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat));
+  const started = withCoachWorld(withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat));
+  return sponsors ? seedGameSponsors(started, sponsors) : started;
 }
 
 /** The game with its other human coaches waiting for their turns; a one-coach game stays as it is. */

@@ -1,0 +1,139 @@
+/* The club's shirt on the sponsors screen (sponsors.html): drawn in the club's colours, sponsors printed in the
+   kit's ink. A print presses on with a spring and the one it replaces lifts off and fades. */
+.shirt {
+  position: relative;
+  width: 330px;
+  height: 360px;
+  margin: 0;
+  flex: none;
+}
+
+.shirt svg {
+  position: absolute;
+  inset: 0;
+  filter: drop-shadow(0 14px 16px rgba(20, 35, 26, 0.28));
+}
+
+[data-theme="dark"] .shirt svg {
+  filter: drop-shadow(0 16px 20px rgba(0, 0, 0, 0.6));
+}
+
+.shirt-crest {
+  position: absolute;
+  left: 104px;
+  top: 80px;
+}
+
+.shirt-print {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.shirt-print.sleeves {
+  transform: rotate(-28deg);
+}
+
+.shirt-print .ink {
+  display: block;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  filter: drop-shadow(0 0.5px 0.5px rgba(0, 0, 0, 0.25));
+}
+
+/* A logo that is an opaque tile goes on as a sewn patch: a white cloth label with a stitched edge. */
+.shirt-print .patch {
+  display: grid;
+  place-items: center;
+  padding: 3px 5px;
+  border-radius: 4px;
+  background: #fff;
+  outline: 1px dashed rgba(20, 35, 26, 0.25);
+  outline-offset: -3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.shirt-print .patch img {
+  display: block;
+  border-radius: 2px;
+}
+
+.shirt-print .ink-name {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.shirt-print.on > * {
+  animation: shirt-press var(--press-ms) var(--press-ease) both;
+}
+
+.shirt-print.off > * {
+  animation: shirt-peel calc(var(--press-ms) * 0.7) cubic-bezier(0.55, 0, 0.75, 0.2) forwards;
+}
+
+@keyframes shirt-press {
+  from {
+    transform: translateY(-10px) scale(1.28) rotate(-5deg);
+    opacity: 0;
+    filter: blur(2px);
+  }
+  35% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes shirt-peel {
+  to {
+    transform: translate(10px, -16px) rotate(9deg) scale(0.86);
+    opacity: 0;
+  }
+}
+
+/* The place an offer would take: a dashed outline that breathes until the coach decides. */
+.shirt-target {
+  position: absolute;
+  border-radius: 8px;
+  outline: 2px dashed var(--yellow);
+  outline-offset: 5px;
+  animation: shirt-target 1.6s ease-in-out infinite;
+}
+
+.shirt-target.sleeves {
+  transform: rotate(-28deg);
+}
+
+@keyframes shirt-target {
+  50% {
+    outline-offset: 9px;
+    outline-color: color-mix(in srgb, var(--yellow) 45%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shirt-print.on > *,
+  .shirt-print.off > *,
+  .shirt-target {
+    animation: none;
+  }
+
+  .shirt-print.off {
+    display: none;
+  }
+}

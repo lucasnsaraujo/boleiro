@@ -13,3 +13,4 @@ apps/desktop/src-tauri/gen/
 pipeline/boleiro.db*
 __pycache__/
 data/fotmob_cache
+data/sponsors_cache

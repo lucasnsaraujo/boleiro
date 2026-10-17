@@ -16,6 +16,7 @@ import { Offers } from "../screens/Offers.js";
 import { Options } from "../screens/Options.js";
 import { Round } from "../screens/Round.js";
 import { Sacked } from "../screens/Sacked.js";
+import { Sponsors } from "../screens/Sponsors.js";
 import { Stadium } from "../screens/Stadium.js";
 import { Saves } from "../screens/Saves.js";
 import { SeasonEnd } from "../screens/SeasonEnd.js";
@@ -48,6 +49,7 @@ const ELEMENTS: Record<ScreenPath, ReactElement> = {
   "/turn": <Turn />,
   "/newspaper": <Newspaper />,
   "/chemistry": <Chemistry />,
+  "/sponsors": <Sponsors />,
   "/awards": <Awards />,
   "/assistant": <Assistant />,
 };
