@@ -1,3 +1,4 @@
+import { assistantTalk, kickOffMoment, type TalkMoment, type TalkTone } from "@boleiro/engine/sim/live/teamTalk";
 import type { Role } from "@boleiro/data/players";
 import type { Formation } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
@@ -56,6 +57,8 @@ export type MatchDayPlan = {
   moment: MatchMoment;
   /** The club's chemistry meter, its captain and the assistant's pick for the armband. */
   chemistry: { value: number; captainId: string | null; suggestedCaptainId: string | null };
+  /** Where the club stands for a talk before kick-off, and the tone the assistant would take. */
+  talk: { moment: TalkMoment; suggested: TalkTone };
 };
 
 export type MatchResult = "win" | "draw" | "loss";
@@ -175,5 +178,7 @@ export function matchDayPlan(state: GameState, formation?: Formation): MatchDayP
   const opponentForm = recentResultsOf(state.fixtures, opponentId);
   const own = chemistryOf(state, clubId);
   const chemistry = { value: own.value, captainId: own.captain?.playerId ?? null, suggestedCaptainId: own.candidates[0]?.playerId ?? null };
-  return { fixtureId: fixture.id, clubId, homeId, awayId, label, squad, lineup, tactics, opponentFormation, opponent, opponentForm, moment, chemistry };
+  const talkMoment = kickOffMoment(state, fixture, clubId);
+  const talk = { moment: talkMoment, suggested: assistantTalk(talkMoment) };
+  return { fixtureId: fixture.id, clubId, homeId, awayId, label, squad, lineup, tactics, opponentFormation, opponent, opponentForm, moment, chemistry, talk };
 }

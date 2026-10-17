@@ -51,10 +51,10 @@ export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode" |
 export type GameSummary = Pick<GameState, "date" | "season" | "coachClubId">;
 export type AdvanceResult = { date: IsoDate; events: DayEvent[] };
 export type PlayResult = { date: IsoDate; stop: StopReason; daysPlayed: number };
-/** The coach's eleven and tactics for kick-off; left out, the assistant's pick and his last tactics. */
-export type KickOff = Pick<DayDecisions, "lineup" | "tactics">;
-/** What a hot-seat coach leaves for the day when he passes his turn: his eleven and tactics, or the job offer he takes. */
-export type TurnChoice = Pick<DayDecisions, "lineup" | "tactics" | "acceptOffer">;
+/** The coach's eleven, tactics and talk for kick-off; left out, the assistant's pick, his last tactics and no talk. */
+export type KickOff = Pick<DayDecisions, "lineup" | "tactics" | "talk">;
+/** What a hot-seat coach leaves for the day when he passes his turn: his eleven, tactics and talk, or the job offer he takes. */
+export type TurnChoice = Pick<DayDecisions, "lineup" | "tactics" | "talk" | "acceptOffer">;
 
 /** What each command carries besides its `type`. */
 type CommandFields = {
@@ -490,9 +490,9 @@ export function createEngineSession(files: GameFiles) {
      * Kicks off the coach's match day. Every match is drawn now; the screen plays the timelines back.
      * The coach's requests that are due go with the day and reach the board after the final whistle.
      */
-    startRound({ lineup, tactics }) {
+    startRound({ lineup, tactics, talk }) {
       refuseBeforeLastTurn("the round can't start");
-      const kickOff: DayDecisions = { lineup, tactics };
+      const kickOff: DayDecisions = { lineup, tactics, ...(talk ? { talk } : {}) };
       const { due } = dueRequests(current(), desk.pending);
       const decisions = due.length ? { ...kickOff, requests: due } : kickOff;
       lastRound = null;
@@ -614,11 +614,11 @@ export function createEngineSession(files: GameFiles) {
       state = sold;
       return answer;
     },
-    passTurn({ lineup, tactics, acceptOffer }) {
+    passTurn({ lineup, tactics, talk, acceptOffer }) {
       betweenDays("the turn can't pass");
       if (!waiting.length) throw new Error("a one-coach game has no turns to pass");
       if (seated === waiting.length) throw new Error("the last coach of the turn plays the day instead");
-      passed[seated] = { lineup, tactics, acceptOffer };
+      passed[seated] = { lineup, tactics, acceptOffer, ...(talk ? { talk } : {}) };
       rotateSeat();
       const view = hotSeatView();
       if (!view) throw new Error("a hot-seat game lost its coaches");

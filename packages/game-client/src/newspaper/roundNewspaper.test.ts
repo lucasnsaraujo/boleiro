@@ -57,3 +57,23 @@ test("a game without news has no paper yet", () => {
   expect(newspaperOf({ ...game, eventMemory: undefined })).toBeNull();
   expect(eventMemoryOf({ eventMemory: undefined }).news).toEqual([]);
 });
+
+test("files the events of the round under their own sections, and a story from an old save under Bastidores", () => {
+  const story = (headline: string, topic?: "health" | "sponsors" | "rivals" | "staff") => ({ date: "2026-02-01", kind: "event" as const, clubIds: [CLUB], headline, body: "", ...(topic ? { topic } : {}) });
+  const news = [
+    story("Dengue tira o meia", "health"),
+    story("Patrocinador quer o elenco", "sponsors"),
+    story("Corneta do rival", "rivals"),
+    story("Roupeiro se aposenta", "staff"),
+    story("Atraso no treino"),
+  ];
+  const edition = newspaperOf({ ...game, coachClubId: null, eventMemory: { log: [], pending: {}, news, rivalry: {} } });
+  const kickers = Object.fromEntries([edition?.lead, ...(edition?.side ?? [])].map((item) => [item?.headline, item?.kicker]));
+  expect(kickers).toEqual({
+    "Dengue tira o meia": "Departamento médico",
+    "Patrocinador quer o elenco": "Patrocínio",
+    "Corneta do rival": "Rivalidade",
+    "Roupeiro se aposenta": "Comissão técnica",
+    "Atraso no treino": "Bastidores",
+  });
+});
