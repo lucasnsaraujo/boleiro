@@ -7,10 +7,15 @@ each pair of them. Clubs are matched by their Wikipedia article: Wikidata gives 
 of each Transfermarkt club id (property P7223) the packs carry, and the lists' links are followed
 through redirects to the same titles (the API's links of each page, redirects resolved).
 
+A line's name for the derby is kept when it is one: a local name ("Clássico da Rivalidade"), not an English
+one ("London derby"), a city heading ("Córdoba") or table markup; the game calls the rest "Clássico". In
+Brazil's list a link to a namesake club of another state stands for the club of the state section it sits in.
+
 Intensity 1-5: the pairs in HAND_RATED keep the rating written there; the others are ranked by
-Wikipedia attention over the last 60 days (Wikimedia pageviews, through the Action API): the derby article's
-views when the line links one, else the smaller club's article views times the median ratio of
-derby to club views among the pairs that have both. The rank sets the intensity (INTENSITY_SHARES).
+Wikipedia attention over the last 60 days (Wikimedia pageviews, through the Action API) among all the derbies
+of their country: the derby article's views when the line links one that is that derby alone (not a list or
+a city's derbies), else the smaller club's article views times the median ratio of derby to club views
+among the pairs that have both. The rank sets the intensity (INTENSITY_SHARES).
 
 Writes data/derbies.csv (one row per pair, with the list page it came from) and the engine's table,
 packages/data/src/derbies.ts, generated from it. Answers are cached in data/wiki_cache
@@ -55,8 +60,9 @@ LISTS = (
 # Days of pageviews the Action API keeps (PageViewInfo's longest window), read through it 50 articles a
 # request: the REST pageviews API answers a generic User-Agent once every ~17 seconds (HTTP 429).
 VIEWS_DAYS = 60
-# Share of the unrated pairs at intensity 1, 2, 3 and 4, from the least watched up (guess: most
-# derbies on the lists are local matches between small clubs; a tenth draws national attention).
+# Share of a country's derbies at intensity 1, 2, 3 and 4, from the least watched up (guess: most
+# derbies on the lists are local matches between small clubs; a tenth draws national attention). The
+# hand-rated derbies are ranked with the others, so the unrated ones fall in below the country's biggest.
 INTENSITY_SHARES = (0.35, 0.35, 0.2, 0.1)
 MAX_CLUBS_IN_A_LINE = 4
 # guess: clubs of two countries meet only in a continental cup now and then, so their rivalry stays small.
@@ -65,17 +71,18 @@ INTERNATIONAL_MAX = 2
 RETRIES = 6
 
 # The biggest derbies of the game's world, rated by hand: 5 for the matches that stop a country
-# (and that the world watches), 4 for a big city's or state's main derby. Each cites the Wikipedia
-# article that describes it, or the list that has it when it has none; keys are the game's club ids,
-# display names in Portuguese.
+# (and that the world watches), 4 for a big city's or state's main derby, 3 for a smaller state's
+# main derby or a big city's next one. Each cites the Wikipedia article that describes it, or the list
+# that has it when it has none; keys are the game's club ids, display names in Portuguese (empty to
+# keep the list's own name).
 HAND_RATED: dict[tuple[str, str], tuple[int, str, str]] = {
     ('flamengo-rj', 'fluminense-rj'): (5, 'Fla-Flu', 'Fla–Flu'),
     ('gremio-rs', 'internacional-rs'): (5, 'Gre-Nal', 'Grenal'),
-    ('corinthians-sp', 'palmeiras-sp'): (5, 'Derby Paulista', 'Derby Paulista'),
+    ('corinthians-sp', 'palmeiras-sp'): (5, 'Dérbi Paulista', 'Derby Paulista'),
     ('atletico-mg-mg', 'cruzeiro-mg'): (5, 'Clássico Mineiro', 'Clássico Mineiro'),
     ('bahia-ba', 'vitoria-ba'): (5, 'Ba-Vi', 'List of Brazilian football derbies'),
     ('flamengo-rj', 'vasco-rj'): (5, 'Clássico dos Milhões', 'Clássico dos Milhões'),
-    ('corinthians-sp', 'sao-paulo-sp'): (4, 'Majestoso', 'Majestoso'),
+    ('corinthians-sp', 'sao-paulo-sp'): (4, 'Majestoso', 'Clássico Majestoso'),
     ('palmeiras-sp', 'sao-paulo-sp'): (4, 'Choque-Rei', 'Choque-Rei'),
     ('corinthians-sp', 'santos-sp'): (4, 'Clássico Alvinegro', 'Clássico Alvinegro'),
     ('santos-sp', 'sao-paulo-sp'): (3, 'San–São', 'San–São'),
@@ -83,16 +90,22 @@ HAND_RATED: dict[tuple[str, str], tuple[int, str, str]] = {
     ('athletico-pr-pr', 'coritiba-pr'): (4, 'Athletiba', 'Athletiba'),
     ('ceara-ce', 'fortaleza-ce'): (4, 'Clássico-Rei', 'List of Brazilian football derbies'),
     ('nautico-pe', 'sport-pe'): (4, 'Clássico dos Clássicos', 'Clássico dos Clássicos'),
-    ('santa-cruz-pe', 'sport-pe'): (4, 'List of Brazilian football derbies', 'List of Brazilian football derbies'),
+    ('santa-cruz-pe', 'sport-pe'): (4, 'Clássico das Multidões', 'List of Brazilian football derbies'),
     ('paysandu-pa', 'remo-pa'): (4, 'Re-Pa', 'Re-Pa'),
     ('botafogo-rj', 'fluminense-rj'): (3, 'Clássico Vovô', 'Clássico Vovô'),
-    ('fluminense-rj', 'vasco-rj'): (4, 'List of Brazilian football derbies', 'List of Brazilian football derbies'),
-    ('botafogo-rj', 'flamengo-rj'): (4, 'List of Brazilian football derbies', 'List of Brazilian football derbies'),
-    ('botafogo-rj', 'vasco-rj'): (3, 'List of Brazilian football derbies', 'List of Brazilian football derbies'),
-    ('guarani-sp', 'ponte-preta-sp'): (4, 'List of Brazilian football derbies', 'List of Brazilian football derbies'),
-    ('crb-al', 'csa-al'): (3, 'Clássico das Multidões alagoano', 'List of Brazilian football derbies'),
-    ('avai-sc', 'figueirense-sc'): (3, 'Clássico da Capital', 'List of Brazilian football derbies'),
-    ('goias-go', 'vila-nova-go'): (3, 'Clássico Goiano', 'List of Brazilian football derbies'),
+    ('fluminense-rj', 'vasco-rj'): (4, 'Clássico dos Gigantes', 'List of Brazilian football derbies'),
+    ('botafogo-rj', 'flamengo-rj'): (4, 'Clássico da Rivalidade', 'List of Brazilian football derbies'),
+    ('botafogo-rj', 'vasco-rj'): (3, 'Clássico Alvinegro', 'List of Brazilian football derbies'),
+    ('guarani-sp', 'ponte-preta-sp'): (4, 'Dérbi Campineiro', 'Derby Campineiro'),
+    ('crb-al', 'csa-al'): (3, 'Clássico das Multidões', 'List of Brazilian football derbies'),
+    ('avai-sc', 'figueirense-sc'): (3, 'Clássico da Ilha', 'List of Brazilian football derbies'),
+    ('goias-go', 'vila-nova-go'): (3, '', 'List of Brazilian football derbies'),
+    ('nautico-pe', 'santa-cruz-pe'): (3, 'Clássico das Emoções', 'Clássico das Emoções'),
+    ('caxias-rs', 'juventude-rs'): (3, 'Ca-Ju', 'List of Brazilian football derbies'),
+    ('abc-rn', 'america-rn-rn'): (3, '', 'List of Brazilian football derbies'),
+    ('moto-ma', 'sampaio-correa-ma'): (3, 'Superclássico Maranhense', 'List of Brazilian football derbies'),
+    ('campinense-pb', 'treze-pb'): (3, 'Clássico dos Maiorais', 'List of Brazilian football derbies'),
+    ('atletico-go-go', 'goias-go'): (3, '', 'List of Brazilian football derbies'),
     ('tm-189', 'tm-209'): (5, 'Superclássico', 'Superclásico'),
     ('tm-1234', 'tm-1444'): (4, 'Clássico de Avellaneda', 'Avellaneda derby'),
     ('tm-1286', 'tm-1418'): (4, 'Clássico Rosarino', 'Rosario derby'),
@@ -112,6 +125,9 @@ HAND_RATED: dict[tuple[str, str], tuple[int, str, str]] = {
     ('tm-281', 'tm-985'): (4, 'Dérbi de Manchester', 'Manchester derby'),
     ('tm-29', 'tm-31'): (4, 'Dérbi de Merseyside', 'Merseyside derby'),
     ('tm-11', 'tm-148'): (4, 'Dérbi do Norte de Londres', 'North London derby'),
+    ('tm-11', 'tm-985'): (4, 'Arsenal × Manchester United', 'Arsenal F.C.–Manchester United F.C. rivalry'),
+    ('tm-11', 'tm-631'): (3, 'Arsenal × Chelsea', 'Arsenal F.C.–Chelsea F.C. rivalry'),
+    ('tm-148', 'tm-631'): (3, 'Chelsea × Tottenham', 'Chelsea F.C.–Tottenham Hotspur F.C. rivalry'),
     ('tm-289', 'tm-762'): (4, 'Dérbi Tyne-Wear', 'Tyne–Wear derby'),
     ('tm-124', 'tm-371'): (5, 'Old Firm', 'Old Firm'),
     ('tm-43', 'tm-903'): (3, 'Dérbi de Edimburgo', 'Edinburgh derby'),
@@ -129,9 +145,10 @@ HAND_RATED: dict[tuple[str, str], tuple[int, str, str]] = {
     ('tm-16', 'tm-33'): (4, 'Revierderby', 'Revierderby'),
     ('tm-41', 'tm-86'): (3, 'Nordderby', 'Nordderby'),
     ('tm-244', 'tm-583'): (4, 'Le Classique', 'Le Classique'),
-    ('tm-1041', 'tm-618'): (3, 'Olympique Lyonnais–AS Saint-Étienne rivalry', 'Olympique Lyonnais–AS Saint-Étienne rivalry'),
+    ('tm-1041', 'tm-618'): (3, 'Derby du Rhône', 'Olympique Lyonnais–AS Saint-Étienne rivalry'),
     ('tm-294', 'tm-720'): (4, 'O Clássico', 'O Clássico'),
     ('tm-294', 'tm-336'): (4, 'Dérbi de Lisboa', 'Derby de Lisboa'),
+    ('tm-336', 'tm-720'): (4, 'Clássico Porto × Sporting', 'FC Porto–Sporting CP rivalry'),
     ('tm-234', 'tm-610'): (4, 'De Klassieker', 'De Klassieker'),
     ('tm-141', 'tm-36'): (5, 'Dérbi Intercontinental', 'The Intercontinental Derby (football)'),
     ('tm-114', 'tm-141'): (4, 'Galatasaray × Beşiktaş', 'Beşiktaş–Galatasaray rivalry'),
@@ -156,8 +173,13 @@ TEMPLATE = re.compile(r"\{\{[^{}]*\}\}")
 MAIN = re.compile(r"\{\{\s*main(?: article)?\s*\|([^}]*)\}\}", re.I)
 # Where a line's derby clause ends and its prose begins: a verb or the end of a sentence outside a link.
 PROSE = re.compile(r"\s(?:was|is|are|were|has|have|had|who|which|since|until|after|when|while)\s|(?<!vs)(?<!\sv)[.;](?:\s|$)")
-# A list's name for a derby in English ("Black Country derby") is left out: the game shows "Clássico".
-ENGLISH_NAME = re.compile(r"\b(?:derby|derbies|rivalry|rivalries)\b", re.I)
+# A list's name for a derby in English ("Black Country derby", "The Topper", "Derby of Via Emilia") is left out: the game shows
+# "Clássico". A local name may open with the word ("Derby della Madonnina", "Derby do Cerrado").
+ENGLISH_NAME = re.compile(r"\b(?:derbies|rivalry|rivalries)\b|\S[\s-]derby\b|^(?:the|derby\s+of)\s", re.I)
+# Table markup, a pair of places ("Godoy Cruz/San Juan") or a link left open is no derby's name.
+NOT_A_NAME = re.compile(r"\[\[|\]\]|[|=/]")
+# An article about several derbies (a city's or a country's) says nothing about one of them.
+LIST_ARTICLE = re.compile(r"\b(?:derbies|rivalries)\b|^(?:List of|Football rivalries)", re.I)
 # Words in a derby article's title; a heading link without them is a city or a region, not the derby.
 DERBY_WORDS = ("derby", "derbi", "dérbi", "rivalr", "clásico", "clássico", "classico", "classique", "klassiker", "superclás", "old firm", "–", "-")
 
@@ -171,30 +193,57 @@ def plain(text: str) -> str:
     return re.sub(r"'{2,}", "", text).strip(" *#:;|-")
 
 
-def derbies_in_line(line: str, clubs: dict[str, str], resolve: Callable[[str], str]) -> list[Derby]:
-    """The derbies a list line names: each pair of the two to four clubs it links, its name and article."""
+def is_name(text: str) -> bool:
+    return bool(text) and not NOT_A_NAME.search(text) and not ENGLISH_NAME.search(text) and not is_list(text)
+
+
+def name_and_article(head: str, clubs: dict[str, str], resolve: Callable[[str], str]) -> tuple[str, str]:
+    """
+    A line head's name for its derby and the derby's own article: of its "or" alternatives ("[[Natal]] derby
+    or ''Clássico-Rei''"), translations in brackets dropped, the first that is a name and the first that is
+    a link to one derby's article. An alternative that links a place alone is a city heading, neither.
+    """
+    name, article = "", ""
+    for alternative in re.split(r"\s+or\s+", re.sub(r"\s*\([^()]*\)", "", head)):
+        alternative = alternative.strip(" '*#")
+        whole = LINK.fullmatch(alternative)
+        title = resolve(whole.group(1).strip()) if whole else ""
+        if whole and (title in clubs or not any(w in title.lower() for w in DERBY_WORDS)):
+            continue
+        if title and not article and not LIST_ARTICLE.search(title):
+            article = title
+        text = re.sub(r"\s+vs?\.?\s+", " × ", plain(alternative))
+        if not name and is_name(text):
+            name = text
+    return name[:60], article
+
+
+def derbies_in_line(line: str, clubs: dict[str, str], resolve: Callable[[str], str], club_of_link: Callable[[str, str], str] | None = None) -> list[Derby]:
+    """
+    The derbies a list line names: each pair of the two to four clubs it links, its name and article.
+    `club_of_link` (a link's resolved title and label) picks the club a link stands for, when not `clubs`.
+    """
     text = REF.sub("", line)
     while TEMPLATE.search(text):
         text = TEMPLATE.sub("", text)
-    head, has_colon, _ = text.partition(":")
-    name = plain(head) if has_colon and not ENGLISH_NAME.search(plain(head)) else ""
+    # A colon inside a link ("[[:pl:Derby Łodzi|Łódź Derby]]") is not the head's.
     masked = LINK.sub(lambda m: "x" * len(m.group(0)), text)
+    has_colon = ":" in masked
+    head = text[: masked.index(":")] if has_colon else text
+    name, article = name_and_article(head, clubs, resolve) if has_colon else ("", "")
     prose = PROSE.search(masked, len(head) + 1 if has_colon else 0)
     if prose:
         text = text[: prose.start()]
     found: list[str] = []
-    article = ""
     for match in LINK.finditer(text):
         title = resolve(match.group(1).strip())
-        club = clubs.get(title, "")
+        club = club_of_link(title, match.group(2) or match.group(1)) if club_of_link else clubs.get(title, "")
         if club and club not in found:
             found.append(club)
-        elif not club and not article and has_colon and plain(head) == plain(match.group(0)) and match.start() < len(head) and any(w in title.lower() for w in DERBY_WORDS):
-            article = title
     if not 2 <= len(found) <= MAX_CLUBS_IN_A_LINE:
         return []
     ordered = sorted(found)
-    return [Derby(clubs=(a, b), name=name[:60], article=article) for i, a in enumerate(ordered) for b in ordered[i + 1:]]
+    return [Derby(clubs=(a, b), name=name, article=article) for i, a in enumerate(ordered) for b in ordered[i + 1:]]
 
 
 BRAZIL_LIST = "List of Brazilian football derbies"
@@ -213,46 +262,90 @@ def folded(text: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", text.lower()) if unicodedata.category(c) != "Mn").strip()
 
 
-def brazilian_club_titles(wikitext: str, clubs: list[dict[str, str]], resolve: Callable[[str], str]) -> dict[str, str]:
-    """
-    The game's Brazilian clubs Wikidata leaves unmatched, found in Brazil's derby list: a link whose label
-    is a club's short name (without its "-PB" state mark) in the state section it sits under.
-    """
+def clubs_by_state_name(clubs: list[dict[str, str]]) -> dict[tuple[str, str], str]:
+    """Each Brazilian club by its state and its folded short name, without its "-PB" state mark."""
     by_state: dict[tuple[str, str], str] = {}
     for club in clubs:
         state = club["state"]
-        name = folded(re.sub(rf"-{state}$", "", club["short_name"]))
-        by_state.setdefault((state, name), club["id"])
-    found: dict[str, str] = {}
+        by_state.setdefault((state, folded(re.sub(rf"-{state}$", "", club["short_name"]))), club["id"])
+    return by_state
+
+
+def state_lines(wikitext: str) -> list[tuple[str, str]]:
+    """Brazil's list bullets, each with the state of the section it sits under ("" outside one)."""
+    lines: list[tuple[str, str]] = []
     state = ""
     for line in wikitext.splitlines():
         heading = HEADING.match(line)
         if heading:
             state = STATE_CODES.get(folded(re.sub(r"\s*\(.*\)", "", plain(heading.group(1)))), "")
-            continue
-        if not state or not line.startswith("*"):
-            continue
-        for match in LINK.finditer(REF.sub("", line)):
+        elif line.startswith(("*", "#")):
+            lines.append((state, line))
+    return lines
+
+
+def brazilian_club_titles(wikitext: str, clubs: list[dict[str, str]], resolve: Callable[[str], str]) -> dict[str, str]:
+    """
+    The game's Brazilian clubs Wikidata leaves unmatched, found in Brazil's derby list: a link after a line's
+    head (the head names the city) whose label is a club's short name in the state section it sits under.
+    """
+    by_state = clubs_by_state_name(clubs)
+    found: dict[str, str] = {}
+    for state, line in state_lines(wikitext):
+        text = REF.sub("", line)
+        head, has_colon, _ = text.partition(":")
+        for match in LINK.finditer(text, len(head) if has_colon else 0):
             club = by_state.get((state, folded(match.group(2) or match.group(1))))
             if club:
                 found.setdefault(resolve(match.group(1).strip()), club)
     return found
 
 
+def brazilian_derbies(wikitext: str, clubs: dict[str, str], brazil: list[dict[str, str]], resolve: Callable[[str], str]) -> list[Derby]:
+    """
+    The derbies of Brazil's list. The list links some clubs to a namesake's article from another state (Santarém's
+    São Raimundo to Manaus's): in a state's section, a link to another state's club stands for the section's own
+    club of that short name when it has one.
+    """
+    by_state = clubs_by_state_name(brazil)
+    state_of = {club["id"]: club["state"] for club in brazil}
+    derbies: list[Derby] = []
+    for state, line in state_lines(wikitext):
+        def club_of_link(title: str, label: str) -> str:
+            club = clubs.get(title, "")
+            if state and club in state_of and state_of[club] != state:
+                return by_state.get((state, folded(label)), club)
+            return club
+        derbies += derbies_in_line(line, clubs, resolve, club_of_link)
+    return derbies
+
+
 def intensities_by_views(views: dict[tuple[str, str], float], countries: dict[str, str] | None = None) -> dict[tuple[str, str], int]:
     """
-    Intensity 1-4 for each pair by its rank in attention, INTENSITY_SHARES of the pairs at each level;
-    a pair from two countries (given `countries`) no higher than INTERNATIONAL_MAX.
+    Intensity 1-4 for each pair by its rank in attention among its country's pairs (given `countries`; the
+    pairs of two countries apart, no higher than INTERNATIONAL_MAX), INTENSITY_SHARES of them at each level.
     """
-    ranked = sorted(views, key=lambda pair: (views[pair], pair))
+    def country_of(pair: tuple[str, str]) -> str:
+        if countries is None:
+            return ""
+        return countries.get(pair[0], "") if countries.get(pair[0]) == countries.get(pair[1]) else "international"
     bounds = [sum(INTENSITY_SHARES[: level + 1]) for level in range(len(INTENSITY_SHARES))]
     scale = {}
-    for rank, pair in enumerate(ranked):
-        share = (rank + 1) / len(ranked)
-        level = next(level + 1 for level, bound in enumerate(bounds) if share <= bound + 1e-9)
-        is_international = countries is not None and countries.get(pair[0]) != countries.get(pair[1])
-        scale[pair] = min(level, INTERNATIONAL_MAX) if is_international else level
+    for country in sorted({country_of(pair) for pair in views}):
+        ranked = sorted((pair for pair in views if country_of(pair) == country), key=lambda pair: (views[pair], pair))
+        for rank, pair in enumerate(ranked):
+            share = (rank + 1) / len(ranked)
+            level = next(level + 1 for level, bound in enumerate(bounds) if share <= bound + 1e-9)
+            scale[pair] = min(level, INTERNATIONAL_MAX) if country == "international" else level
     return scale
+
+
+def attention_articles(articles: dict[tuple[str, str], str]) -> dict[tuple[str, str], str]:
+    """The pairs whose article is about their derby alone: not a list, and no other pair's article too."""
+    counts: dict[str, int] = {}
+    for article in articles.values():
+        counts[article] = counts.get(article, 0) + 1
+    return {pair: article for pair, article in articles.items() if article and counts[article] == 1 and not LIST_ARTICLE.search(article)}
 
 
 class Wiki:
@@ -450,23 +543,24 @@ def main() -> None:
     # Wikidata may still name a club by a title that now redirects to its article.
     club_of_title = {**{resolve(title): club for title, club in club_of_title.items()}, **club_of_title}
     with BRAZIL_CLUBS.open(encoding="utf-8") as rows:
-        unmatched = [row for row in csv.DictReader(rows) if row["id"] not in set(club_of_title.values())]
-    by_name = brazilian_club_titles(pages.get(BRAZIL_LIST, ""), unmatched, resolve)
+        brazil = list(csv.DictReader(rows))
+    matched = set(club_of_title.values())
+    by_name = brazilian_club_titles(pages.get(BRAZIL_LIST, ""), [row for row in brazil if row["id"] not in matched], resolve)
     club_of_title = {**by_name, **club_of_title}
     print(f"{len(by_name)} more Brazilian clubs matched by name in their state's derbies")
 
     found: dict[tuple[str, str], tuple[Derby, str]] = {}
     for page, text in pages.items():
-        for line in lines_of(text):
-            for derby in derbies_in_line(line, club_of_title, resolve):
-                if derby.clubs not in found or (derby.article and not found[derby.clubs][0].article):
-                    found[derby.clubs] = (derby, page_url(page))
+        lines = brazilian_derbies(text, club_of_title, brazil, resolve) if page == BRAZIL_LIST else [d for line in lines_of(text) for d in derbies_in_line(line, club_of_title, resolve)]
+        for derby in lines:
+            if derby.clubs not in found or (derby.article and not found[derby.clubs][0].article):
+                found[derby.clubs] = (derby, page_url(page))
     # A hand-rated derby is watched through the article its rating cites, and comes from that page when no list has it;
     # a rating that cites a list (the derby has no article of its own) is watched through its clubs.
     for pair, (_, name, cited) in HAND_RATED.items():
         article = "" if is_list(cited) else cited
         source = found[pair][1] if pair in found else page_url(cited)
-        found[pair] = (Derby(clubs=pair, name=name, article=article), source)
+        found[pair] = (Derby(clubs=pair, name=name or (found[pair][0].name if pair in found else ""), article=article), source)
     print(f"{len(found)} derbies")
 
     title_of_club = {club: title for title, club in club_of_title.items()}
@@ -474,19 +568,20 @@ def main() -> None:
     articles = sorted({derby.article for derby, _ in found.values() if derby.article})
     views = wiki.views(sorted({title_of_club[c] for c in clubs_in_derbies} | set(articles)))
     club_views = {club: views.get(title_of_club[club], 0) if club in title_of_club else 0 for club in sorted({c for pair in found for c in pair})}
-    article_views = {pair: views.get(derby.article, 0) for pair, (derby, _) in sorted(found.items()) if derby.article}
+    own_articles = attention_articles({pair: derby.article for pair, (derby, _) in found.items()})
+    article_views = {pair: views.get(article, 0) for pair, article in sorted(own_articles.items())}
     ratios = sorted(article_views[pair] / min(club_views[c] for c in pair) for pair in article_views if min(club_views[c] for c in pair) > 0)
     ratio = ratios[len(ratios) // 2] if ratios else 0.05
     print(f"derby article / smaller club views, median of {len(ratios)}: {ratio:.3f}")
     attention = {pair: article_views.get(pair) or ratio * min(club_views[c] for c in pair) for pair in found}
-    by_views = intensities_by_views({pair: views for pair, views in attention.items() if pair not in HAND_RATED}, countries_of_clubs())
+    by_views = intensities_by_views(attention, countries_of_clubs())
 
     rows = []
     for pair in sorted(found):
         derby, source = found[pair]
         rated = HAND_RATED.get(pair)
         rows.append({
-            "club_a": pair[0], "club_b": pair[1], "name": rated[1] if rated else derby.name,
+            "club_a": pair[0], "club_b": pair[1], "name": derby.name,
             "intensity": str(rated[0] if rated else by_views[pair]), "basis": "hand" if rated else "pageviews",
             "views": str(round(attention[pair])), "article": derby.article, "source": source, "seen_on": seen_on,
         })

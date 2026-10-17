@@ -1,548 +1,552 @@
 club_a,club_b,name,intensity,basis,views,article,source,seen_on
-abc-rn,america-rn-rn,,1,pageviews,75,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-amazonas-am,manaus-am,,1,pageviews,35,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-america-mg-mg,atletico-mg-mg,,1,pageviews,224,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-america-mg-mg,cruzeiro-mg,Coelho vs. Raposa (Rabbit vs. Fox),1,pageviews,224,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-america-rj-rj,vasco-rj,,1,pageviews,112,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-anapolina-go,anapolis-go,,1,pageviews,17,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-aracaju-se,confianca-se,,1,pageviews,78,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+abc-rn,america-rn-rn,Clássico-Rei,3,hand,67,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+amazonas-am,manaus-am,,2,pageviews,31,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+america-mg-mg,atletico-mg-mg,Clássico das Multidões,3,pageviews,194,América–Atlético Mineiro rivalry,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+america-mg-mg,cruzeiro-mg,Coelho × Raposa,3,pageviews,201,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+america-rj-rj,vasco-rj,Clássico da Paz,2,pageviews,100,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+anapolina-go,anapolis-go,,1,pageviews,15,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 athletico-pr-pr,coritiba-pr,Athletiba,4,hand,365,Athletiba,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-atletico-go-go,goias-go,,1,pageviews,132,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-atletico-go-go,vila-nova-go,,1,pageviews,132,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+atletico-go-go,goias-go,,3,hand,118,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+atletico-go-go,vila-nova-go,,2,pageviews,118,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 atletico-mg-mg,cruzeiro-mg,Clássico Mineiro,5,hand,1058,Clássico Mineiro,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-atletico-rio-negro-am,nacional-am,Rio–Nal,1,pageviews,20,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-atletico-rio-negro-am,sao-raimundo-am,,1,pageviews,13,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-atletico-roraima-rr,bare-rr,Bareima,1,pageviews,7,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-avai-sc,criciuma-sc,,1,pageviews,171,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-avai-sc,figueirense-sc,Clássico da Capital,3,hand,173,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-avai-sc,joinville-sc,,1,pageviews,65,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-bahia-ba,galicia-ba,,1,pageviews,16,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-bahia-ba,vitoria-ba,Ba-Vi,5,hand,460,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-botafogo-pb-pb,campinense-pb,,1,pageviews,27,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-botafogo-pb-pb,treze-pb,,1,pageviews,29,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-botafogo-rj,flamengo-rj,List of Brazilian football derbies,4,hand,965,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+atletico-rio-negro-am,nacional-am,Rio–Nal,1,pageviews,18,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+atletico-rio-negro-am,sao-raimundo-am,Clássico da Luta,1,pageviews,12,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+atletico-roraima-rr,bare-rr,Bareima,1,pageviews,6,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+avai-sc,criciuma-sc,,2,pageviews,153,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+avai-sc,figueirense-sc,Clássico da Ilha,3,hand,155,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+avai-sc,joinville-sc,,2,pageviews,58,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+bahia-ba,galicia-ba,Clássico das Cores,1,pageviews,14,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+bahia-ba,vitoria-ba,Ba-Vi,5,hand,412,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+botafogo-pb-pb,campinense-pb,,1,pageviews,24,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+botafogo-pb-pb,treze-pb,,2,pageviews,26,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+botafogo-rj,flamengo-rj,Clássico da Rivalidade,4,hand,865,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 botafogo-rj,fluminense-rj,Clássico Vovô,3,hand,429,Clássico Vovô,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-botafogo-rj,vasco-rj,List of Brazilian football derbies,3,hand,965,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-brasilia-df,gama-df,,1,pageviews,52,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-brasiliense-df,gama-df,,1,pageviews,39,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-campinense-pb,treze-pb,,1,pageviews,27,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-cascavel-pr,foz-do-iguacu-pr,,1,pageviews,9,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-caxias-rs,juventude-rs,,1,pageviews,55,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-ceara-ce,ferroviario-ce,,1,pageviews,38,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-ceara-ce,fortaleza-ce,Clássico-Rei,4,hand,190,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-corinthians-sp,palmeiras-sp,Derby Paulista,5,hand,1268,Derby Paulista,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+botafogo-rj,vasco-rj,Clássico Alvinegro,3,hand,865,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+brasilia-df,gama-df,Clássico Candango,2,pageviews,46,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+brasiliense-df,gama-df,Clássico Verde e Amarelo,2,pageviews,35,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+campinense-pb,treze-pb,Clássico dos Maiorais,3,hand,24,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+cascavel-pr,foz-do-iguacu-pr,Clássico do Oeste Paranaense,1,pageviews,8,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+caxias-rs,juventude-rs,Ca-Ju,3,hand,49,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+ceara-ce,ferroviario-ce,Clássico da Paz,2,pageviews,34,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+ceara-ce,fortaleza-ce,Clássico-Rei,4,hand,170,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+corinthians-sp,palmeiras-sp,Dérbi Paulista,5,hand,1268,Derby Paulista,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 corinthians-sp,santos-sp,Clássico Alvinegro,4,hand,637,Clássico Alvinegro,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-corinthians-sp,sao-paulo-sp,Majestoso,4,hand,11,Majestoso,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-crb-al,csa-al,Clássico das Multidões alagoano,3,hand,100,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-criciuma-sc,figueirense-sc,,1,pageviews,171,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-criciuma-sc,joinville-sc,,1,pageviews,65,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-ferroviaria-es,rio-branco-es,Dérbi Capixaba,1,pageviews,12,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-ferroviaria-es,vitoria-es,,1,pageviews,12,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-ferroviario-ce,fortaleza-ce,,1,pageviews,38,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-figueirense-sc,joinville-sc,,1,pageviews,65,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+corinthians-sp,sao-paulo-sp,Majestoso,4,hand,743,Clássico Majestoso,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+crb-al,csa-al,Clássico das Multidões,3,hand,90,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+criciuma-sc,figueirense-sc,,2,pageviews,153,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+criciuma-sc,joinville-sc,,2,pageviews,58,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+ferroviaria-es,rio-branco-es,Dérbi Capixaba,1,pageviews,11,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+ferroviaria-es,vitoria-es,,1,pageviews,11,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+ferroviario-ce,fortaleza-ce,Clássico das Cores,2,pageviews,34,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+figueirense-sc,joinville-sc,,2,pageviews,58,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 flamengo-rj,fluminense-rj,Fla-Flu,5,hand,2608,Fla–Flu,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 flamengo-rj,vasco-rj,Clássico dos Milhões,5,hand,1159,Clássico dos Milhões,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-fluminense-rj,vasco-rj,List of Brazilian football derbies,4,hand,1648,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-goias-go,vila-nova-go,Clássico Goiano,3,hand,150,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+fluminense-rj,vasco-rj,Clássico dos Gigantes,4,hand,1478,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+goias-go,vila-nova-go,Derby do Cerrado,3,hand,134,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 gremio-rs,internacional-rs,Gre-Nal,5,hand,2468,Grenal,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-guarani-sp,ponte-preta-sp,List of Brazilian football derbies,4,hand,155,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-independencia-ac,rio-branco-ac,,1,pageviews,17,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-ji-parana-ro,uniao-cacoalense-ro,,1,pageviews,3,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-londrina-pr,operario-pr-pr,,1,pageviews,119,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-maranhao-ma,moto-ma,Maremoto,1,pageviews,23,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-maranhao-ma,sampaio-correa-ma,Samará,1,pageviews,28,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-mixto-mt,operario-varzea-grandense-mt,,1,pageviews,15,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-moto-ma,sampaio-correa-ma,,1,pageviews,23,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-nacional-am,sao-raimundo-am,,1,pageviews,13,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-nautico-pe,santa-cruz-pe,,1,pageviews,186,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+guarani-sp,ponte-preta-sp,Dérbi Campineiro,4,hand,120,Derby Campineiro,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+independencia-ac,rio-branco-ac,Clássico Vovô,1,pageviews,15,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+ji-parana-ro,uniao-cacoalense-ro,Clássico da Vizinhança,1,pageviews,3,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+londrina-pr,operario-pr-pr,Clássico do Interior,2,pageviews,106,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+maranhao-ma,moto-ma,Maremoto,1,pageviews,20,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+maranhao-ma,sampaio-correa-ma,Samará,1,pageviews,25,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+mixto-mt,operario-varzea-grandense-mt,Clássico dos Milhões,1,pageviews,13,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+moto-ma,sampaio-correa-ma,Superclássico Maranhense,3,hand,20,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+nacional-am,sao-raimundo-am,São–Nal,1,pageviews,12,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+nautico-pe,santa-cruz-pe,Clássico das Emoções,3,hand,81,Clássico das Emoções,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 nautico-pe,sport-pe,Clássico dos Clássicos,4,hand,245,Clássico dos Clássicos,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-palmas-to,tocantinopolis-to,,1,pageviews,11,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+palmas-to,tocantinopolis-to,,1,pageviews,10,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 palmeiras-sp,santos-sp,Clássico da Saudade,3,hand,754,Clássico da Saudade,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 palmeiras-sp,sao-paulo-sp,Choque-Rei,4,hand,821,Choque-Rei,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 paysandu-pa,remo-pa,Re-Pa,4,hand,283,Re-Pa,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-paysandu-pa,tuna-luso-brasileira-pa,,1,pageviews,29,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+paysandu-pa,tuna-luso-brasileira-pa,,1,pageviews,26,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 porto-vitoria-es,sd-serra-es,,1,pageviews,4,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-remo-pa,tuna-luso-brasileira-pa,,1,pageviews,29,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-rio-branco-es,vitoria-es,Vi–Rio,1,pageviews,31,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+remo-pa,tuna-luso-brasileira-pa,,1,pageviews,26,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+rio-branco-es,vitoria-es,Vi–Rio,2,pageviews,28,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 s-e-r-sao-jose-ap,ypiranga-ap,,1,pageviews,3,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-santa-cruz-pe,sport-pe,List of Brazilian football derbies,4,hand,199,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+santa-cruz-pe,sport-pe,Clássico das Multidões,4,hand,178,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
 santos-sp,sao-paulo-sp,San–São,3,hand,561,San–São,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-sao-francisco-pa,sao-raimundo-am,,1,pageviews,5,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
-tm-10004,tm-1154,,2,pageviews,765,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-10004,tm-583,,4,pageviews,4320,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+sao-francisco-pa,sao-raimundo-pa,,1,pageviews,4,,https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies,2026-10-17
+tm-10004,tm-1154,,2,pageviews,686,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-10004,tm-583,,4,pageviews,3873,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
 tm-10093,tm-8172,Clássico Paisa,3,hand,614,El Clásico Paisa,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-1010,tm-1039,,3,pageviews,2693,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1010,tm-1148,,3,pageviews,2693,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1010,tm-873,,3,pageviews,2693,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1017,tm-119,,3,pageviews,969,Tel Aviv derby,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
-tm-1017,tm-3793,,2,pageviews,495,Beitar Jerusalem F.C.–Hapoel Tel Aviv F.C. rivalry,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
-tm-1017,tm-9095,,3,pageviews,969,Tel Aviv derby,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
-tm-1020,tm-180,,4,pageviews,6840,South Coast derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-10217,tm-3837,,1,pageviews,152,Østfold derbies,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1025,tm-130,,3,pageviews,1675,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-1025,tm-1385,,2,pageviews,301,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-1025,tm-1429,,1,pageviews,86,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-1025,tm-430,,3,pageviews,1675,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-1028,tm-358,,4,pageviews,3673,South London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1010,tm-1039,,1,pageviews,2414,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1010,tm-1148,,1,pageviews,2414,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1010,tm-873,,1,pageviews,2414,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1017,tm-119,,4,pageviews,566,Tel Aviv derby,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
+tm-1017,tm-3793,,3,pageviews,495,Beitar Jerusalem F.C.–Hapoel Tel Aviv F.C. rivalry,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
+tm-1017,tm-9095,,1,pageviews,100,Tel Aviv derby,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
+tm-1020,tm-180,,3,pageviews,6840,South Coast derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-10217,tm-3837,,2,pageviews,233,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1025,tm-130,,3,pageviews,1501,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-1025,tm-1385,,1,pageviews,270,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-1025,tm-1429,,1,pageviews,77,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-1025,tm-430,Derby dell'Appennino,2,pageviews,544,Derby dell'Appennino,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-1028,tm-358,,2,pageviews,3317,South London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
 tm-1028,tm-379,,4,pageviews,67266,Millwall F.C.–West Ham United F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1028,tm-399,,3,pageviews,1411,Leeds United F.C.–Millwall F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1028,tm-631,,4,pageviews,10396,London derbies,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1028,tm-873,,4,pageviews,3673,South London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1029,tm-4557,,1,pageviews,153,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-10301,tm-53453,,2,pageviews,378,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1028,tm-399,,1,pageviews,1411,Leeds United F.C.–Millwall F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1028,tm-631,,2,pageviews,4017,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1028,tm-873,,2,pageviews,4017,South London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1029,tm-4557,,2,pageviews,137,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
+tm-10301,tm-53453,,2,pageviews,339,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-1037,tm-2433,Superclássico chileno,4,hand,422,Chilean Superclásico,https://en.wikipedia.org/wiki/Chilean_Supercl%C3%A1sico,2026-10-17
 tm-1038,tm-252,Derby della Lanterna,3,hand,1886,Derby della Lanterna,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-1039,tm-1148,,4,pageviews,8123,West London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1039,tm-631,,4,pageviews,8123,West London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1039,tm-931,,4,pageviews,8123,West London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-10403,tm-1829,Córdoba,1,pageviews,74,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-1041,tm-244,,4,pageviews,3949,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-1041,tm-618,Olympique Lyonnais–AS Saint-Étienne rivalry,3,hand,1194,Olympique Lyonnais–AS Saint-Étienne rivalry,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-1047,tm-2919,,3,pageviews,1411,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-10484,tm-6646,,2,pageviews,575,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
-tm-1049,tm-1050,,4,pageviews,3638,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-1049,tm-1531,,3,pageviews,2202,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-1049,tm-3368,,3,pageviews,2171,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-105,tm-24,,2,pageviews,408,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
-tm-1050,tm-1531,,3,pageviews,2202,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-10511,tm-12574,Godoy Cruz/San Juan,1,pageviews,58,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
+tm-1039,tm-1148,,2,pageviews,3610,West London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1039,tm-631,,2,pageviews,3610,West London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1039,tm-931,,2,pageviews,3610,West London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-10403,tm-1829,,2,pageviews,67,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
+tm-1041,tm-244,,3,pageviews,3540,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-1041,tm-618,Derby du Rhône,3,hand,1194,Olympique Lyonnais–AS Saint-Étienne rivalry,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-1047,tm-2919,,2,pageviews,1265,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-10484,tm-6646,,2,pageviews,516,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
+tm-1049,tm-1050,,3,pageviews,3262,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-1049,tm-1531,,2,pageviews,1974,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-1049,tm-3368,,1,pageviews,1946,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-105,tm-24,,1,pageviews,366,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
+tm-1050,tm-1531,,2,pageviews,1974,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-10511,tm-12574,,1,pageviews,52,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
 tm-10586,tm-429,,1,pageviews,194,Limassol derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1061,tm-218,,3,pageviews,1162,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-1061,tm-51828,,3,pageviews,1842,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-10625,tm-8031,,2,pageviews,583,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1064,tm-119,,2,pageviews,666,,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
+tm-1061,tm-218,California Clásico,3,pageviews,1194,California Clásico,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-1061,tm-51828,,4,pageviews,1651,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-10625,tm-8031,,4,pageviews,522,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1064,tm-119,,4,pageviews,597,,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
 tm-1064,tm-810,,2,pageviews,357,Haifa derby,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
-tm-10690,tm-660,,2,pageviews,262,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1070,tm-7097,Santa Fe,1,pageviews,180,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-1075,tm-2420,,2,pageviews,768,Derby do Minho,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1080,tm-1164,,2,pageviews,300,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-1080,tm-1420,,2,pageviews,300,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-1082,tm-826,,3,pageviews,1004,Derby du Nord,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-1084,tm-16795,,2,pageviews,671,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-1084,tm-3302,,3,pageviews,1083,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-1090,tm-1434,,2,pageviews,892,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1090,tm-610,,3,pageviews,2941,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1090,tm-724,,2,pageviews,361,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-10690,tm-660,,3,pageviews,235,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1070,tm-7097,,2,pageviews,161,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
+tm-1075,tm-2420,Derby do Minho,2,pageviews,768,Derby do Minho,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1080,tm-1164,Derby du Maine,1,pageviews,269,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-1080,tm-1420,Derby de l'Anjou,1,pageviews,269,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-1082,tm-826,Derby du Nord,2,pageviews,1004,Derby du Nord,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-1084,tm-16795,,1,pageviews,601,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-1084,tm-3302,,1,pageviews,971,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-1090,tm-1434,,3,pageviews,800,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1090,tm-610,,4,pageviews,2637,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1090,tm-724,,2,pageviews,323,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
 tm-1091,tm-265,,2,pageviews,798,Panathinaikos–PAOK rivalry,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
-tm-1091,tm-47,,2,pageviews,802,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
-tm-1091,tm-605,,3,pageviews,1489,Derby of Thessaloniki,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
-tm-1091,tm-683,,3,pageviews,999,Olympiacos–PAOK rivalry,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
-tm-1095,tm-1421,,2,pageviews,865,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-1095,tm-290,,3,pageviews,1221,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-1091,tm-47,,2,pageviews,719,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
+tm-1091,tm-605,,4,pageviews,1489,Derby of Thessaloniki,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
+tm-1091,tm-683,,2,pageviews,999,Olympiacos–PAOK rivalry,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
+tm-1095,tm-1421,,2,pageviews,775,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-1095,tm-290,Derby de la N77,2,pageviews,1095,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
 tm-11,tm-148,Dérbi do Norte de Londres,4,hand,12355,North London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-11,tm-281,,4,pageviews,9126,Arsenal F.C.–Manchester City F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1100,tm-195,The Classic,2,pageviews,789,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1100,tm-239,,2,pageviews,789,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1100,tm-76,,2,pageviews,486,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-11,tm-281,,3,pageviews,9126,Arsenal F.C.–Manchester City F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-11,tm-631,Arsenal × Chelsea,3,hand,27994,Arsenal F.C.–Chelsea F.C. rivalry,https://en.wikipedia.org/wiki/Arsenal_F.C.%E2%80%93Chelsea_F.C._rivalry,2026-10-17
+tm-11,tm-985,Arsenal × Manchester United,4,hand,10467,Arsenal F.C.–Manchester United F.C. rivalry,https://en.wikipedia.org/wiki/Arsenal_F.C.%E2%80%93Manchester_United_F.C._rivalry,2026-10-17
+tm-1100,tm-195,,4,pageviews,708,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1100,tm-239,,4,pageviews,708,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1100,tm-76,,2,pageviews,436,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-1106,tm-288,Clássico Platense,3,hand,367,La Plata derby,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-1108,tm-1533,,2,pageviews,583,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-11107,tm-6055,,1,pageviews,144,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-11107,tm-84,,1,pageviews,144,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1114,tm-18487,,3,pageviews,1047,Saudi Derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Asia_and_Oceania,2026-10-17
+tm-1108,tm-1533,,1,pageviews,523,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-11107,tm-6055,,2,pageviews,129,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-11107,tm-84,,2,pageviews,129,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1114,tm-18487,,2,pageviews,1047,Saudi Derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Asia_and_Oceania,2026-10-17
 tm-1114,tm-18544,,2,pageviews,958,Riyadh derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Asia_and_Oceania,2026-10-17
-tm-1114,tm-8023,Saudi El Clasico,3,pageviews,2338,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Asia_and_Oceania,2026-10-17
+tm-1114,tm-8023,,3,pageviews,2096,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Asia_and_Oceania,2026-10-17
 tm-11141,tm-4078,Canadian Classique,3,pageviews,1329,Canadian Classique,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-11141,tm-813,Trillium Cup,3,pageviews,1052,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-11194,tm-419,,2,pageviews,288,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1123,tm-677,,3,pageviews,2640,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-11255,tm-521,,1,pageviews,5,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-11282,tm-589,,2,pageviews,526,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
-tm-1132,tm-164,,4,pageviews,5018,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1132,tm-466,,3,pageviews,2925,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-11141,tm-813,,2,pageviews,943,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-11194,tm-419,,2,pageviews,258,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1123,tm-677,,2,pageviews,2977,East Anglian derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-11255,tm-521,,1,pageviews,4,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-11282,tm-589,,2,pageviews,472,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
+tm-1132,tm-164,,1,pageviews,2620,East Lancashire derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1132,tm-466,,1,pageviews,2622,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
 tm-114,tm-141,Galatasaray × Beşiktaş,4,hand,2128,Beşiktaş–Galatasaray rivalry,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
-tm-114,tm-1467,,2,pageviews,725,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
-tm-114,tm-20,,2,pageviews,915,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
+tm-114,tm-1467,,2,pageviews,650,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
+tm-114,tm-20,,2,pageviews,820,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
 tm-114,tm-36,Beşiktaş × Fenerbahçe,4,hand,49,Beşiktaş–Fenerbahçe rivalry,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
-tm-114,tm-449,,4,pageviews,3683,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
-tm-1148,tm-399,,4,pageviews,7135,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1148,tm-631,,4,pageviews,8123,West London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1148,tm-931,,4,pageviews,8123,West London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1154,tm-583,,2,pageviews,765,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-1159,tm-347,,1,pageviews,189,Derby Lorrain,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-11831,tm-928,Vicente López/Victoria,1,pageviews,214,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-1184,tm-475,,2,pageviews,833,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
-tm-11855,tm-629,Clásico más añejo,1,pageviews,104,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-119,tm-9095,,3,pageviews,969,Tel Aviv derby,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
-tm-1191,tm-1270,,2,pageviews,612,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-114,tm-449,,3,pageviews,3302,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
+tm-1148,tm-399,,2,pageviews,6397,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1148,tm-631,,2,pageviews,6397,West London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1148,tm-931,,2,pageviews,6332,West London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1154,tm-583,,2,pageviews,686,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-1159,tm-347,Derby Lorrain,1,pageviews,189,Derby Lorrain,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-11831,tm-928,,2,pageviews,192,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
+tm-1184,tm-475,,2,pageviews,747,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
+tm-11855,tm-629,Clásico más añejo,2,pageviews,93,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-119,tm-9095,,1,pageviews,100,Tel Aviv derby,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
+tm-1191,tm-1270,,1,pageviews,549,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
 tm-11912,tm-53453,,1,pageviews,160,Ararat derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1192,tm-2553,,2,pageviews,439,Ayrshire derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1192,tm-2553,,1,pageviews,439,Ayrshire derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
 tm-12,tm-398,Derby della Capitale,4,hand,5098,Derby della Capitale,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-12,tm-430,,4,pageviews,3851,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-12,tm-506,,4,pageviews,6652,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-12,tm-6195,,4,pageviews,5476,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-12,tm-430,,3,pageviews,3452,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-12,tm-506,,4,pageviews,5964,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-12,tm-6195,Derby del Sole,2,pageviews,1169,Derby del Sole,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
 tm-1214,tm-629,Superclássico paraguaio,4,hand,428,Paraguayan football derby,https://en.wikipedia.org/wiki/Paraguayan_football_derby,2026-10-17
-tm-12179,tm-14687,Mendoza,1,pageviews,131,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-122,tm-170,„Das Traditionsduell“,3,pageviews,1084,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1228,tm-404,,1,pageviews,212,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-12179,tm-14687,,2,pageviews,117,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
+tm-122,tm-170,„Das Traditionsduell“,3,pageviews,972,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1228,tm-404,,1,pageviews,190,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
 tm-1234,tm-1444,Clássico de Avellaneda,4,hand,1511,Avellaneda derby,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-1237,tm-873,,4,pageviews,5412,Brighton & Hove Albion F.C.–Crystal Palace F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-124,tm-2760,,2,pageviews,647,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1237,tm-873,,2,pageviews,5412,Brighton & Hove Albion F.C.–Crystal Palace F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-124,tm-2760,,1,pageviews,580,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
 tm-124,tm-3031,,2,pageviews,733,Original Glasgow derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
 tm-124,tm-370,,3,pageviews,1580,Aberdeen F.C.–Rangers F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
 tm-124,tm-371,Old Firm,5,hand,36373,Old Firm,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1244,tm-3709,,3,pageviews,1368,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-12458,tm-12672,Isidro Casanova/Morón,1,pageviews,55,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-1247,tm-4284,,2,pageviews,875,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-1247,tm-6643,Rocky Mountain Cup,2,pageviews,827,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-12567,tm-1531,,3,pageviews,2202,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-126,tm-141,,2,pageviews,484,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
-tm-126,tm-449,,2,pageviews,484,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
-tm-1268,tm-1455,,2,pageviews,258,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1268,tm-234,,2,pageviews,656,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1268,tm-610,Hofstad vs. Hoofdstad,2,pageviews,656,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1269,tm-1304,,2,pageviews,380,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1244,tm-3709,,1,pageviews,1226,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-12458,tm-12672,,1,pageviews,49,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
+tm-1247,tm-4284,,1,pageviews,784,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-1247,tm-6643,,1,pageviews,742,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-12567,tm-1531,,2,pageviews,1974,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-126,tm-141,,1,pageviews,434,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
+tm-126,tm-449,,1,pageviews,434,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
+tm-1268,tm-1455,,1,pageviews,232,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1268,tm-234,,3,pageviews,589,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1268,tm-610,Hofstad × Hoofdstad,3,pageviews,589,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1269,tm-1304,,2,pageviews,341,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
 tm-1269,tm-1435,IJsselderby,1,pageviews,216,IJsselderby,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1269,tm-317,,2,pageviews,486,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1269,tm-317,,2,pageviews,436,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
 tm-1270,tm-2795,,2,pageviews,646,Fife derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1283,tm-202,,1,pageviews,217,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1283,tm-202,,1,pageviews,194,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
 tm-1286,tm-1418,Clássico Rosarino,4,hand,933,Rosario derby,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-1293,tm-501,,2,pageviews,690,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-13,tm-368,,3,pageviews,3365,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-1293,tm-501,,3,pageviews,619,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-13,tm-368,,2,pageviews,3017,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
 tm-13,tm-418,Dérbi de Madri,4,hand,12661,Madrid derby,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-13,tm-621,,4,pageviews,3994,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-130,tm-1385,,2,pageviews,301,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-130,tm-1429,,1,pageviews,86,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-1301,tm-982,,2,pageviews,338,Derby da Madeira,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1304,tm-1435,,2,pageviews,380,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-13,tm-621,,3,pageviews,3581,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-130,tm-1385,,1,pageviews,270,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-130,tm-1429,,1,pageviews,77,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-1301,tm-982,Derby da Madeira,2,pageviews,338,Derby da Madeira,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1304,tm-1435,,2,pageviews,341,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
 tm-1304,tm-317,,1,pageviews,161,Twentse derby,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-131,tm-27,,2,pageviews,8898,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-131,tm-27,,2,pageviews,7978,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-131,tm-418,El Clásico,5,hand,65397,El Clásico,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-131,tm-5,,2,pageviews,9240,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-131,tm-5,,2,pageviews,8284,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-131,tm-714,Dérbi de Barcelona,3,hand,2806,Derbi Barceloní,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-132,tm-403,,2,pageviews,627,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1322,tm-697,,2,pageviews,323,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-13297,tm-14555,Clásico de Los Andes,1,pageviews,34,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-13297,tm-531,Clasico Moderno,1,pageviews,84,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-133,tm-306,,2,pageviews,452,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-13339,tm-19634,Munro/Los Polvorines,1,pageviews,34,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-13353,tm-49283,Clásico Fronterizo,2,pageviews,449,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-13726,tm-377,,1,pageviews,145,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-13726,tm-479,,1,pageviews,44,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1385,tm-1429,,1,pageviews,86,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-1385,tm-6574,,2,pageviews,301,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-1390,tm-458,,3,pageviews,1541,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-14,tm-170,,3,pageviews,1077,Vienna derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1402,tm-2784,,1,pageviews,222,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1402,tm-829,,1,pageviews,222,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-132,tm-403,,2,pageviews,562,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1322,tm-697,,3,pageviews,290,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-13297,tm-14555,Clásico de Los Andes,1,pageviews,30,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-13297,tm-531,Clasico Moderno,4,pageviews,75,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-133,tm-306,,2,pageviews,406,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-13339,tm-19634,,1,pageviews,30,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
+tm-13353,tm-49283,Clásico Fronterizo,1,pageviews,403,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-13726,tm-377,,2,pageviews,130,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-13726,tm-479,,1,pageviews,40,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1385,tm-1429,,1,pageviews,77,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-1385,tm-6574,,1,pageviews,270,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-1390,tm-458,Derby delle Isole,1,pageviews,208,Derby delle Isole,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-14,tm-170,,4,pageviews,1077,Vienna derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1402,tm-2784,,2,pageviews,199,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1402,tm-829,,2,pageviews,199,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-141,tm-36,Dérbi Intercontinental,5,hand,5898,The Intercontinental Derby (football),https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
-tm-141,tm-399,,2,pageviews,5537,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-141,tm-449,,4,pageviews,5537,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
-tm-1420,tm-995,,2,pageviews,732,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-1426,tm-192,,2,pageviews,269,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1426,tm-384,,2,pageviews,336,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1426,tm-385,,2,pageviews,440,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1429,tm-6574,,1,pageviews,86,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-1434,tm-610,,2,pageviews,892,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1434,tm-723,,2,pageviews,392,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1434,tm-724,,2,pageviews,361,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1435,tm-317,,2,pageviews,773,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1435,tm-642,,2,pageviews,243,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-144,tm-327,,1,pageviews,126,Osijek–Rijeka derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-141,tm-399,,2,pageviews,4964,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-141,tm-449,,3,pageviews,4964,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
+tm-1420,tm-995,Derby de l'ouest,2,pageviews,656,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-1426,tm-192,,1,pageviews,241,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1426,tm-384,Derby tussen Noord- en Zuid-Limburg,2,pageviews,301,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1426,tm-385,Derby tussen Noord- en Zuid-Limburg,2,pageviews,394,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1429,tm-6574,Derby Cesena–Sassuolo,1,pageviews,77,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-1434,tm-610,,4,pageviews,800,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1434,tm-723,,2,pageviews,352,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1434,tm-724,,2,pageviews,323,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1435,tm-317,,3,pageviews,693,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1435,tm-642,,1,pageviews,218,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-144,tm-327,,2,pageviews,126,Osijek–Rijeka derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-144,tm-419,,2,pageviews,250,Dinamo–Rijeka derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-144,tm-447,,2,pageviews,656,Adriatic derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-144,tm-447,,3,pageviews,656,Adriatic derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-144,tm-9554,,1,pageviews,71,Rijeka city derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-144,tm-999,,1,pageviews,201,Istra 1961–Rijeka rivalry,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1443,tm-7918,,2,pageviews,246,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1455,tm-234,Rijnmondderby,2,pageviews,258,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1455,tm-468,Rijnmondderby,2,pageviews,258,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-1455,tm-798,Rijnmondderby,2,pageviews,258,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-14554,tm-31284,San Miguel de Tucumán/Santiago del Estero,1,pageviews,127,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-14555,tm-22918,Clásico añejo del fútbol venezolano,1,pageviews,34,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-14596,tm-17194,Clásico oriental,1,pageviews,48,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-148,tm-379,,3,pageviews,1805,Tottenham Hotspur F.C.–West Ham United F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1496,tm-1897,,1,pageviews,152,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-15,tm-18,,3,pageviews,2381,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
-tm-15,tm-3,,3,pageviews,1579,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
+tm-144,tm-999,Derby della Učka,3,pageviews,322,Rijeka-Pula Derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1443,tm-7918,,2,pageviews,220,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1455,tm-234,Rijnmondderby,1,pageviews,232,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1455,tm-468,Rijnmondderby,1,pageviews,232,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-1455,tm-798,Rijnmondderby,1,pageviews,232,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-14554,tm-31284,,2,pageviews,114,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
+tm-14555,tm-22918,Clásico añejo del fútbol venezolano,2,pageviews,30,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-14596,tm-17194,Clásico oriental,3,pageviews,43,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-148,tm-379,,1,pageviews,1805,Tottenham Hotspur F.C.–West Ham United F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-148,tm-631,Chelsea × Tottenham,3,hand,7630,Chelsea F.C.–Tottenham Hotspur F.C. rivalry,https://en.wikipedia.org/wiki/Chelsea_F.C.%E2%80%93Tottenham_Hotspur_F.C._rivalry,2026-10-17
+tm-1496,tm-1897,,2,pageviews,136,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-15,tm-18,,3,pageviews,2135,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
+tm-15,tm-3,,2,pageviews,1415,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
 tm-150,tm-368,Dérbi de Sevilha,4,hand,3365,Seville derby,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-1519,tm-2578,,2,pageviews,759,Tayside derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1519,tm-370,New Firm,3,pageviews,1234,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-1519,tm-511,,4,pageviews,3624,Dundee derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-152,tm-449,,2,pageviews,652,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
-tm-156,tm-208,,3,pageviews,2008,Eternal derby of Bulgarian football,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-156,tm-2259,,1,pageviews,223,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-156,tm-2531,,2,pageviews,313,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-156,tm-31614,,2,pageviews,959,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-156,tm-675,,2,pageviews,371,Oldest capital derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-156,tm-730,,1,pageviews,11,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-157,tm-2282,The Battle of Flanders,3,pageviews,1175,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
+tm-1519,tm-2578,,2,pageviews,722,Tayside derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1519,tm-370,,3,pageviews,1106,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-1519,tm-511,,3,pageviews,3624,Dundee derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-152,tm-449,,2,pageviews,585,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
+tm-156,tm-208,,4,pageviews,2008,Eternal derby of Bulgarian football,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-156,tm-2259,,2,pageviews,200,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-156,tm-2531,,2,pageviews,281,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-156,tm-31614,,3,pageviews,860,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-156,tm-675,,3,pageviews,371,Oldest capital derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-156,tm-730,,1,pageviews,10,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-157,tm-2282,,3,pageviews,1053,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
 tm-16,tm-27,Der Klassiker,4,hand,7830,Der Klassiker,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
 tm-16,tm-33,Revierderby,4,hand,3574,Revierderby,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
-tm-16,tm-418,,2,pageviews,7102,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-16,tm-80,rowspan=2|Borussia Dortmund |Schalke 04 |Revierderby |Games ,2,pageviews,584,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
-tm-162,tm-417,,2,pageviews,492,Derby de la Côte d'Azur,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-164,tm-466,,3,pageviews,2925,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-168,tm-759,[[,1,pageviews,197,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-168,tm-8377,,1,pageviews,45,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-168,tm-8936,,1,pageviews,96,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-169,tm-265,,2,pageviews,383,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
-tm-169,tm-3060,,2,pageviews,383,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
-tm-169,tm-3062,,1,pageviews,213,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
-tm-172,tm-3057,The Choc Wallon,2,pageviews,242,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
-tm-172,tm-3901,,2,pageviews,242,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
-tm-17427,tm-23170,Clásico del barrio Trinidad,1,pageviews,41,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-17584,tm-9855,Clásico Universitario,1,pageviews,52,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-17647,tm-353,Romeriksderbyet,1,pageviews,49,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-1775,tm-2063,San Lorenzo × Huracán,3,hand,327,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-18,tm-3,,3,pageviews,1579,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
-tm-180,tm-989,,4,pageviews,4037,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-16,tm-418,,2,pageviews,6367,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-16,tm-80,,1,pageviews,523,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
+tm-162,tm-417,Derby de la Côte d'Azur,1,pageviews,492,Derby de la Côte d'Azur,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-164,tm-466,,1,pageviews,2622,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-168,tm-759,,2,pageviews,176,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-168,tm-8377,,1,pageviews,41,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-168,tm-8936,,1,pageviews,86,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-169,tm-265,,1,pageviews,343,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
+tm-169,tm-3060,,1,pageviews,343,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
+tm-169,tm-3062,,1,pageviews,191,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
+tm-172,tm-3057,,1,pageviews,217,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
+tm-172,tm-3901,,2,pageviews,217,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
+tm-17427,tm-23170,Clásico del barrio Trinidad,1,pageviews,37,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-17584,tm-9855,Clásico Universitario,1,pageviews,46,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-17647,tm-353,Romeriksderbyet,1,pageviews,44,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-1775,tm-2063,San Lorenzo × Huracán,3,hand,293,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
+tm-18,tm-3,,3,pageviews,1415,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
+tm-180,tm-989,,2,pageviews,3619,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
 tm-184,tm-6593,Clássico peruano,4,hand,767,Peruvian Clásico,https://en.wikipedia.org/wiki/Peruvian_Cl%C3%A1sico,2026-10-17
-tm-18487,tm-8023,,2,pageviews,722,Jeddah Derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Asia_and_Oceania,2026-10-17
-tm-18544,tm-8023,Al-Ittihad—Al-Nassr Clasico,3,pageviews,2338,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Asia_and_Oceania,2026-10-17
+tm-18487,tm-8023,,1,pageviews,722,Jeddah Derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Asia_and_Oceania,2026-10-17
+tm-18544,tm-8023,Al-Ittihad—Al-Nassr Clasico,4,pageviews,2096,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Asia_and_Oceania,2026-10-17
 tm-189,tm-209,Superclássico,5,hand,7356,Superclásico,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
 tm-18945,tm-3899,,1,pageviews,145,Famagusta derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-19124,tm-7656,Clásico Metropolitano,1,pageviews,64,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-192,tm-384,,2,pageviews,269,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-192,tm-385,,2,pageviews,269,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-19124,tm-7656,Clásico Metropolitano,2,pageviews,57,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-192,tm-384,,1,pageviews,241,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-192,tm-385,Derby tussen Noord- en Zuid-Limburg,1,pageviews,241,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
 tm-195,tm-687,,2,pageviews,341,Molde FK–Rosenborg BK rivalry,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-197,tm-377,,2,pageviews,309,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-197,tm-540,,2,pageviews,1247,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-197,tm-377,,3,pageviews,277,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-197,tm-540,,1,pageviews,1118,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-197,tm-62,Dérbi de Praga,4,hand,1495,Prague derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-19780,tm-4362,,1,pageviews,55,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-202,tm-306,,2,pageviews,296,Derby of the North,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-20758,tm-7087,,1,pageviews,61,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-208,tm-2259,,1,pageviews,223,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-208,tm-2531,,2,pageviews,313,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-208,tm-31614,,3,pageviews,959,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-208,tm-675,,1,pageviews,213,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-208,tm-730,,1,pageviews,11,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-20857,tm-7532,,1,pageviews,44,,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
-tm-21101,tm-687,,1,pageviews,147,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-2157,tm-413,,1,pageviews,163,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-218,tm-9636,Heritage Cup,3,pageviews,1162,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-22,tm-703,,3,pageviews,2367,Derby County F.C.–Nottingham Forest F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-2239,tm-2581,,2,pageviews,319,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-2259,tm-2531,,2,pageviews,373,Plovdiv derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-19780,tm-4362,,1,pageviews,50,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-202,tm-306,Derby van het Noorden,2,pageviews,296,Derby of the North,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-20758,tm-7087,,1,pageviews,55,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-208,tm-2259,,2,pageviews,200,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-208,tm-2531,,3,pageviews,281,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-208,tm-31614,,4,pageviews,860,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-208,tm-675,,2,pageviews,191,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-208,tm-730,,1,pageviews,10,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-20857,tm-7532,,1,pageviews,39,,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
+tm-21101,tm-687,,1,pageviews,132,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-2157,tm-413,,2,pageviews,146,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-218,tm-9636,,3,pageviews,1042,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-22,tm-703,,1,pageviews,2367,Derby County F.C.–Nottingham Forest F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-2239,tm-2581,,1,pageviews,286,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-2259,tm-2531,,3,pageviews,373,Plovdiv derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-2259,tm-730,,1,pageviews,112,Railroaders derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-22610,tm-6055,,1,pageviews,35,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-22610,tm-6055,,2,pageviews,32,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-2282,tm-520,,2,pageviews,736,Bruges derby,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
-tm-2282,tm-58,The Topper,3,pageviews,1731,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
-tm-2288,tm-603,,3,pageviews,2052,South Wales derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-23,tm-42,,2,pageviews,428,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
-tm-2311,tm-5225,,1,pageviews,192,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-2311,tm-5544,,1,pageviews,143,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-2311,tm-5545,,1,pageviews,96,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-23171,tm-966,Clásico de la Villa Imperial,1,pageviews,47,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-2331,tm-5587,,2,pageviews,370,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-2331,tm-6195,,2,pageviews,381,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-234,tm-383,,3,pageviews,3588,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-234,tm-468,,2,pageviews,562,Rotterdam derby,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-2282,tm-58,,4,pageviews,1551,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
+tm-2288,tm-603,,1,pageviews,2052,South Wales derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-23,tm-42,,1,pageviews,383,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
+tm-2311,tm-5225,,2,pageviews,172,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-2311,tm-5544,,2,pageviews,128,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-2311,tm-5545,,1,pageviews,86,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-23171,tm-966,Clásico de la Villa Imperial,1,pageviews,42,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-2331,tm-5587,,1,pageviews,332,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-2331,tm-6195,,2,pageviews,341,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-234,tm-383,,4,pageviews,3216,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-234,tm-468,,3,pageviews,609,Rotterdam derby,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
 tm-234,tm-610,De Klassieker,4,hand,2503,De Klassieker,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-234,tm-798,,2,pageviews,562,Rotterdam derby,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-2350,tm-2352,,2,pageviews,302,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-2350,tm-9961,Clásico añejo,2,pageviews,308,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-2352,tm-8172,,2,pageviews,302,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-2352,tm-9961,Clásico Vallecaucano,2,pageviews,288,Clásico Vallecaucano,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-238,tm-7146,[[,1,pageviews,104,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-2381,tm-3205,,2,pageviews,305,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
-tm-239,tm-2761,,1,pageviews,183,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-234,tm-798,,3,pageviews,675,Rotterdam derby,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-2350,tm-2352,,1,pageviews,271,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-2350,tm-9961,Clásico añejo,2,pageviews,276,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-2352,tm-8172,,2,pageviews,271,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-2352,tm-9961,Clásico Vallecaucano,3,pageviews,288,Clásico Vallecaucano,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-238,tm-7146,,2,pageviews,93,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-2381,tm-3205,,1,pageviews,273,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
+tm-239,tm-2761,,1,pageviews,164,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-2407,tm-7055,Clássico Regio,3,hand,1626,Clásico Regiomontano,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-24078,tm-26462,,1,pageviews,41,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-2417,tm-3938,Córdoba,2,pageviews,393,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-2425,tm-3345,,2,pageviews,243,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-244,tm-417,,3,pageviews,1405,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-24078,tm-26462,,1,pageviews,36,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-2417,tm-3938,,3,pageviews,353,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
+tm-2425,tm-3345,Derby do Mar,1,pageviews,218,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-244,tm-417,,3,pageviews,1260,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
 tm-244,tm-583,Le Classique,4,hand,7250,Le Classique,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-244,tm-618,,3,pageviews,1526,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-2440,tm-25467,Shertz–Gemmel Cup/Colonial Cup,3,pageviews,1114,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-2440,tm-623,Atlantic Cup,3,pageviews,1114,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-2440,tm-626,Revolution–United,3,pageviews,1114,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-2448,tm-2497,,2,pageviews,660,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-2451,tm-370,,2,pageviews,377,North derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-252,tm-416,,3,pageviews,1612,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-2531,tm-6764,,1,pageviews,161,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-255,tm-2745,[[,1,pageviews,180,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-256,tm-88,[[,1,pageviews,180,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-2578,tm-511,,2,pageviews,759,Tayside derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-2581,tm-276,,2,pageviews,319,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-26069,tm-7732,,2,pageviews,904,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Asia_and_Oceania,2026-10-17
-tm-262,tm-3785,,1,pageviews,144,,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
-tm-2639,tm-2990,,1,pageviews,241,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-265,tm-605,,3,pageviews,1120,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
+tm-244,tm-618,,3,pageviews,1368,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-2440,tm-25467,,2,pageviews,999,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-2440,tm-623,,2,pageviews,999,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-2440,tm-626,Revolution–United,2,pageviews,999,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-2448,tm-2497,,1,pageviews,592,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-2451,tm-370,,1,pageviews,377,North derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-252,tm-416,,2,pageviews,1445,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-2531,tm-6764,,2,pageviews,144,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-255,tm-2745,,2,pageviews,161,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-256,tm-88,,2,pageviews,161,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-2578,tm-511,,2,pageviews,722,Tayside derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-2581,tm-276,Derby Mincio,1,pageviews,286,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-26069,tm-7732,,1,pageviews,811,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Asia_and_Oceania,2026-10-17
+tm-262,tm-3785,,2,pageviews,129,,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
+tm-2639,tm-2990,Derby do Centro,1,pageviews,216,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-265,tm-605,,3,pageviews,1004,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
 tm-265,tm-683,Dérbi dos eternos inimigos,5,hand,4090,Derby of the Eternal Enemies,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
-tm-2655,tm-276,,2,pageviews,284,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-266,tm-413,,2,pageviews,387,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-2662,tm-503,,1,pageviews,120,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-26985,tm-4772,,1,pageviews,211,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-27,tm-4,,3,pageviews,1090,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
-tm-27,tm-86,,3,pageviews,1703,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
-tm-27,tm-985,,2,pageviews,8898,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-2715,tm-3057,,1,pageviews,58,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
-tm-2727,tm-354,,2,pageviews,329,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
-tm-2729,tm-2734,Clásico del Sur,1,pageviews,114,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-2729,tm-28999,Clásico Cuzqueño,1,pageviews,107,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-2729,tm-76945,Clásico Cuzqueño,1,pageviews,73,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-2760,tm-3031,,2,pageviews,647,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-2760,tm-371,,2,pageviews,647,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-2784,tm-3899,,2,pageviews,422,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-2784,tm-829,,2,pageviews,463,Nicosia derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-279,tm-540,,2,pageviews,2551,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-279,tm-634,Örökrangadó,2,pageviews,354,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-279,tm-708,A Derbi,2,pageviews,820,Ferencvárosi TC–Újpest FC rivalry,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-279,tm-709,,1,pageviews,7,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-279,tm-84,,2,pageviews,372,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-281,tm-31,,4,pageviews,10079,Liverpool F.C.–Manchester City F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-281,tm-418,,2,pageviews,19424,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-281,tm-631,,4,pageviews,24409,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-2655,tm-276,,1,pageviews,255,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-266,tm-413,,2,pageviews,347,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-2662,tm-503,,1,pageviews,107,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-26985,tm-4772,,2,pageviews,189,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-27,tm-4,,2,pageviews,977,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
+tm-27,tm-86,,3,pageviews,1527,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
+tm-27,tm-985,,2,pageviews,7978,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-2715,tm-3057,,1,pageviews,52,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
+tm-2727,tm-354,,2,pageviews,295,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
+tm-2729,tm-2734,Clásico del Sur,3,pageviews,102,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-2729,tm-28999,Clásico Cuzqueño,2,pageviews,96,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-2729,tm-76945,Clásico Cuzqueño,1,pageviews,66,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-2760,tm-3031,,2,pageviews,580,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-2760,tm-371,,2,pageviews,580,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-2784,tm-3899,,3,pageviews,378,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-2784,tm-829,,4,pageviews,463,Nicosia derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-279,tm-540,,1,pageviews,2287,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-279,tm-634,,3,pageviews,318,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-279,tm-708,A Derbi,4,pageviews,820,Ferencvárosi TC–Újpest FC rivalry,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-279,tm-709,,1,pageviews,6,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-279,tm-84,,3,pageviews,334,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-281,tm-31,,3,pageviews,10079,Liverpool F.C.–Manchester City F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-281,tm-418,,2,pageviews,17414,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-281,tm-631,,4,pageviews,21883,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
 tm-281,tm-985,Dérbi de Manchester,4,hand,44800,Manchester derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-289,tm-641,,3,pageviews,1022,Tees–Wear derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-289,tm-641,,1,pageviews,1022,Tees–Wear derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
 tm-289,tm-762,Dérbi Tyne-Wear,4,hand,11945,Tyne–Wear derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-28999,tm-76945,Clásico Cuzqueño,1,pageviews,73,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-28999,tm-76945,Clásico Cuzqueño,2,pageviews,66,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
 tm-29,tm-31,Dérbi de Merseyside,4,hand,12019,Merseyside derby,https://en.wikipedia.org/wiki/Merseyside_derby,2026-10-17
-tm-290,tm-2969,,2,pageviews,294,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-290,tm-2969,Derby de Bourgogne,1,pageviews,263,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
 tm-294,tm-336,Dérbi de Lisboa,4,hand,3223,Derby de Lisboa,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-294,tm-720,O Clássico,4,hand,5033,O Clássico,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-2976,tm-5223,,1,pageviews,206,,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
-tm-2976,tm-6105,,1,pageviews,134,,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
-tm-30038,tm-31284,Santiago del Estero,1,pageviews,36,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-3026,tm-465,,2,pageviews,489,Renfrewshire derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-3031,tm-371,,3,pageviews,1101,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-3057,tm-3159,,1,pageviews,235,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
-tm-3057,tm-58,The 'Classico',2,pageviews,897,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
+tm-2976,tm-5223,,2,pageviews,184,,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
+tm-2976,tm-6105,,1,pageviews,120,,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
+tm-30038,tm-31284,,1,pageviews,32,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
+tm-3026,tm-465,,1,pageviews,489,Renfrewshire derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-3031,tm-371,,3,pageviews,987,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-3057,tm-3159,,1,pageviews,211,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
+tm-3057,tm-58,,3,pageviews,804,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
 tm-31,tm-985,Clássico do Noroeste,5,hand,20697,Liverpool F.C.–Manchester United F.C. rivalry,https://en.wikipedia.org/wiki/Liverpool_F.C.%E2%80%93Manchester_United_F.C._rivalry,2026-10-17
-tm-314,tm-327,,1,pageviews,106,Slavonian derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-314,tm-456,,1,pageviews,106,Slavonian derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-31614,tm-967,,1,pageviews,164,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-318,tm-6456,,1,pageviews,220,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-318,tm-7976,,1,pageviews,81,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-324,tm-4000,,2,pageviews,426,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-327,tm-456,,1,pageviews,106,Slavonian derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-33,tm-80,rowspan=2|Borussia Dortmund |Schalke 04 |Revierderby |Games ,2,pageviews,584,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
-tm-337,tm-399,,3,pageviews,3022,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-337,tm-405,,4,pageviews,4638,Second City derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-337,tm-543,,3,pageviews,3022,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-337,tm-984,,3,pageviews,3022,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-338,tm-39097,,1,pageviews,83,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-314,tm-327,,1,pageviews,70,Slavonian derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-314,tm-456,,1,pageviews,70,Slavonian derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-31614,tm-967,,2,pageviews,147,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-318,tm-428,,3,pageviews,197,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-318,tm-6456,,3,pageviews,197,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-318,tm-7976,,1,pageviews,73,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-324,tm-4000,,4,pageviews,382,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-327,tm-456,,2,pageviews,120,Slavonian derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-33,tm-80,,1,pageviews,523,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
+tm-336,tm-720,Clássico Porto × Sporting,4,hand,2461,FC Porto–Sporting CP rivalry,https://en.wikipedia.org/wiki/FC_Porto%E2%80%93Sporting_CP_rivalry,2026-10-17
+tm-337,tm-399,,1,pageviews,2709,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-337,tm-405,,2,pageviews,4638,Second City derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-337,tm-543,,1,pageviews,2709,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-337,tm-984,,2,pageviews,2709,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-338,tm-39097,,2,pageviews,74,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-338,tm-660,Clássico ucraniano,4,hand,678,Klasychne derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-338,tm-86209,,1,pageviews,80,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-347,tm-667,,2,pageviews,710,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-35,tm-41,,3,pageviews,1223,Hamburg derby,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
-tm-3508,tm-601,,1,pageviews,232,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
+tm-338,tm-86209,,1,pageviews,72,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-347,tm-667,Derby de l'Est,1,pageviews,637,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-35,tm-41,,2,pageviews,1223,Hamburg derby,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
+tm-3508,tm-601,,1,pageviews,208,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
 tm-3523,tm-4561,Clássico del Astillero,4,hand,663,Clásico del Astillero,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-353,tm-76,,2,pageviews,511,Lillestrøm SK–Vålerenga Fotball rivalry,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-3551,tm-541,Vorarlberg Derbys,1,pageviews,161,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-358,tm-873,,4,pageviews,3673,South London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-36,tm-449,,4,pageviews,6975,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
-tm-3631,tm-3711,Clásico Joven,3,pageviews,1860,Clásico Joven,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-3631,tm-6711,Clássico Nacional,4,hand,1633,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-353,tm-76,,3,pageviews,511,Lillestrøm SK–Vålerenga Fotball rivalry,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-3551,tm-541,Vorarlberg Derbys,1,pageviews,144,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-358,tm-873,,2,pageviews,3317,South London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-36,tm-449,,4,pageviews,6253,,https://en.wikipedia.org/wiki/Football_rivalries_in_Turkey,2026-10-17
+tm-3631,tm-3711,Clásico Joven,4,pageviews,1860,Clásico Joven,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-3631,tm-6711,Clássico Nacional,4,hand,1464,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
 tm-3631,tm-7633,Clássico Capitalino,3,hand,734,Clásico Capitalino,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-365,tm-540,,2,pageviews,386,Traditional derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-368,tm-759,,2,pageviews,373,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-371,tm-41,,2,pageviews,2412,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-3711,tm-4035,Clásico Hidalguense,2,pageviews,695,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-3711,tm-7633,,3,pageviews,1123,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-377,tm-479,,1,pageviews,44,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-379,tm-631,,4,pageviews,10396,London derbies,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-3793,tm-43119,,2,pageviews,369,Jerusalem derby,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
-tm-3793,tm-4769,,2,pageviews,253,,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
-tm-383,tm-3892,,2,pageviews,298,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-383,tm-610,De Topper,3,pageviews,2176,AFC Ajax–PSV Eindhoven rivalry,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-384,tm-385,,2,pageviews,336,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-3892,tm-500,,1,pageviews,117,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-39097,tm-86209,,1,pageviews,80,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-3948,tm-58,,3,pageviews,1731,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
-tm-398,tm-430,,4,pageviews,3727,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-399,tm-603,,3,pageviews,2289,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-399,tm-631,,4,pageviews,6819,Chelsea F.C.–Leeds United F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-399,tm-985,,4,pageviews,6821,Leeds United F.C.–Manchester United F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-4000,tm-6107,,1,pageviews,173,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-40058,tm-623,,3,pageviews,2632,Hudson River Derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-40188,tm-4961,Clásico de la 57,2,pageviews,413,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-4035,tm-4941,,2,pageviews,695,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-405,tm-543,,4,pageviews,4934,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-405,tm-984,,3,pageviews,1256,Aston Villa F.C.–West Bromwich Albion F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-405,tm-990,,4,pageviews,9377,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-4059,tm-790,,1,pageviews,131,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-4059,tm-9233,,1,pageviews,67,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-4078,tm-626,,3,pageviews,1300,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-4097,tm-6195,,2,pageviews,468,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-365,tm-540,,4,pageviews,386,Traditional derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-368,tm-759,,1,pageviews,334,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-371,tm-41,,1,pageviews,2162,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-3711,tm-4035,Clásico Hidalguense,1,pageviews,623,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-3711,tm-7633,,2,pageviews,1007,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-377,tm-479,,1,pageviews,40,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-379,tm-631,,3,pageviews,7587,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-3793,tm-43119,,3,pageviews,369,Jerusalem derby,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
+tm-3793,tm-4769,,2,pageviews,227,,https://en.wikipedia.org/wiki/Football_derbies_in_Israel,2026-10-17
+tm-383,tm-3892,,2,pageviews,267,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-383,tm-610,De Topper,4,pageviews,2176,AFC Ajax–PSV Eindhoven rivalry,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-384,tm-385,Derby van het Zuiden,2,pageviews,301,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-3892,tm-500,,1,pageviews,105,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-39097,tm-86209,,2,pageviews,72,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-3948,tm-58,,4,pageviews,1551,,https://en.wikipedia.org/wiki/Football_rivalries_in_Belgium,2026-10-17
+tm-398,tm-430,,3,pageviews,3342,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-399,tm-603,,1,pageviews,2052,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-399,tm-631,,2,pageviews,6819,Chelsea F.C.–Leeds United F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-399,tm-985,,2,pageviews,6821,Leeds United F.C.–Manchester United F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-4000,tm-6107,,2,pageviews,155,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-40058,tm-623,,4,pageviews,2632,Hudson River Derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-40188,tm-4961,Clásico de la 57,1,pageviews,370,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-4035,tm-4941,,2,pageviews,623,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-405,tm-543,,2,pageviews,4424,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-405,tm-984,,1,pageviews,1256,Aston Villa F.C.–West Bromwich Albion F.C. rivalry,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-405,tm-990,,3,pageviews,8407,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-4059,tm-790,,2,pageviews,118,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-4059,tm-9233,,1,pageviews,60,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-4078,tm-626,,3,pageviews,1166,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-4097,tm-6195,,2,pageviews,419,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
 tm-41,tm-86,Nordderby,3,hand,1030,Nordderby,https://en.wikipedia.org/wiki/Nordderby,2026-10-17
 tm-416,tm-506,Derby della Mole,3,hand,2794,Derby della Mole,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-4172,tm-430,,2,pageviews,578,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-4172,tm-749,,2,pageviews,490,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-418,tm-506,,2,pageviews,9598,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-4172,tm-430,,2,pageviews,518,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-4172,tm-749,,2,pageviews,440,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-418,tm-506,,2,pageviews,8605,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-419,tm-447,Dérbi eterno croata,4,hand,2428,Eternal derby (Croatia),https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-422,tm-5689,,2,pageviews,514,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-428,tm-6112,,1,pageviews,210,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-428,tm-6456,,1,pageviews,234,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-4284,tm-813,,2,pageviews,875,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-4284,tm-82686,,2,pageviews,875,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-4291,tm-6321,Cascadia Cup,2,pageviews,896,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-4291,tm-9636,Cascadia Cup,2,pageviews,896,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-4294,tm-7378,,2,pageviews,589,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-422,tm-5689,,4,pageviews,461,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-428,tm-6112,,2,pageviews,189,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-428,tm-6456,,3,pageviews,209,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-4284,tm-813,,1,pageviews,784,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-4284,tm-82686,,1,pageviews,784,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-4291,tm-6321,,1,pageviews,803,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-4291,tm-9636,,1,pageviews,803,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-4294,tm-7378,Derby do Algarve,2,pageviews,528,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
 tm-43,tm-903,Dérbi de Edimburgo,3,hand,7348,Edinburgh derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-430,tm-506,,3,pageviews,1173,ACF Fiorentina–Juventus FC rivalry,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-430,tm-749,,2,pageviews,490,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-432,tm-8816,Brimstone Cup,2,pageviews,786,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-44,tm-89,,3,pageviews,1316,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
-tm-4529,tm-540,,2,pageviews,273,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-4531,tm-51316,,1,pageviews,81,Eastern Slovak derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-45604,tm-51663,,3,pageviews,1087,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-430,tm-506,,2,pageviews,1173,ACF Fiorentina–Juventus FC rivalry,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-430,tm-749,Derby Arno,2,pageviews,440,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-432,tm-8816,,1,pageviews,705,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-44,tm-89,,2,pageviews,1180,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
+tm-4529,tm-540,,3,pageviews,245,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-4531,tm-51316,,2,pageviews,81,Eastern Slovak derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-45604,tm-51663,,2,pageviews,975,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
 tm-45604,tm-69261,,2,pageviews,939,Inter Miami CF–Orlando City SC rivalry,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-458,tm-6195,,3,pageviews,1541,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-458,tm-6195,Derby delle Due Sicilie,2,pageviews,409,Derby delle Due Sicilie,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
 tm-46,tm-5,Derby della Madonnina,5,hand,14078,Derby della Madonnina,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
 tm-46,tm-506,Derby d'Italia,4,hand,3954,Derby d'Italia,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-46,tm-800,,3,pageviews,3055,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-4603,tm-5572,,1,pageviews,173,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
-tm-467,tm-499,,2,pageviews,681,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-467,tm-642,,2,pageviews,243,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-468,tm-798,,2,pageviews,562,Rotterdam derby,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-47,tm-605,,2,pageviews,802,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
-tm-472,tm-648,,2,pageviews,778,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-4772,tm-790,,1,pageviews,200,Eternal derby (Slovenia),https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-48,tm-79,,2,pageviews,556,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
-tm-499,tm-642,,2,pageviews,243,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-46,tm-800,,3,pageviews,2739,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-4603,tm-5572,,1,pageviews,155,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
+tm-467,tm-499,,3,pageviews,610,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-467,tm-642,,1,pageviews,218,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-468,tm-798,,3,pageviews,609,Rotterdam derby,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-47,tm-605,,2,pageviews,719,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
+tm-472,tm-648,,1,pageviews,698,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-4772,tm-790,,4,pageviews,604,Eternal derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-48,tm-79,,1,pageviews,499,,https://en.wikipedia.org/wiki/German_football_rivalries,2026-10-17
+tm-499,tm-642,,1,pageviews,218,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
 tm-5,tm-506,,4,pageviews,5148,Juventus FC–AC Milan rivalry,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-5,tm-800,,3,pageviews,3055,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-506,tm-6195,,3,pageviews,1363,Juventus FC–SSC Napoli rivalry,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-506,tm-985,,2,pageviews,9598,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-512,tm-543,,3,pageviews,2910,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-512,tm-984,,3,pageviews,2910,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-51663,tm-63966,,3,pageviews,1087,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-51663,tm-78435,,3,pageviews,1057,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-51772,tm-813,,2,pageviews,750,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-5208,tm-830,Banfield/Lomas de Zamora,1,pageviews,47,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
-tm-5225,tm-5544,,1,pageviews,143,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-5225,tm-5545,,1,pageviews,96,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-53453,tm-60368,,2,pageviews,342,Ararat-Armenia – Noah rivalry,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-543,tm-984,,4,pageviews,10361,Black Country derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-5544,tm-5545,,1,pageviews,96,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-5570,tm-6878,Clásico Paceño,1,pageviews,227,Clásico Paceño,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-5587,tm-6195,,2,pageviews,370,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
-tm-56089,tm-9168,,2,pageviews,641,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-5619,tm-687,,2,pageviews,263,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-5699,tm-759,,1,pageviews,95,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
-tm-603,tm-698,,3,pageviews,1132,Severnside derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-605,tm-683,,3,pageviews,1120,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
-tm-6058,tm-9241,,1,pageviews,97,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-610,tm-724,,2,pageviews,361,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-618,tm-995,,2,pageviews,847,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-62,tm-715,,2,pageviews,393,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-62,tm-941,,2,pageviews,784,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-621,tm-630,,3,pageviews,3367,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-5,tm-800,,3,pageviews,2739,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-506,tm-6195,,2,pageviews,1363,Juventus FC–SSC Napoli rivalry,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-506,tm-985,,2,pageviews,8605,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-512,tm-543,,1,pageviews,2609,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-512,tm-984,,1,pageviews,2609,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-51663,tm-63966,,2,pageviews,975,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-51663,tm-78435,,2,pageviews,947,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-51772,tm-813,,4,pageviews,1927,Hell Is Real derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-5208,tm-830,,1,pageviews,42,,https://en.wikipedia.org/wiki/Football_rivalries_in_Argentina,2026-10-17
+tm-5225,tm-5544,,2,pageviews,128,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-5225,tm-5545,,1,pageviews,86,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-53453,tm-60368,,4,pageviews,342,Ararat-Armenia – Noah rivalry,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-543,tm-984,,3,pageviews,10361,Black Country derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-5544,tm-5545,,1,pageviews,86,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-5570,tm-6878,Clásico Paceño,4,pageviews,227,Clásico Paceño,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-5587,tm-6195,Derby del Golfo,2,pageviews,332,,https://en.wikipedia.org/wiki/Football_derbies_in_Italy,2026-10-17
+tm-56089,tm-9168,,1,pageviews,575,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-5619,tm-687,,2,pageviews,235,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-5699,tm-759,,1,pageviews,85,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-603,tm-698,,1,pageviews,1132,Severnside derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-605,tm-683,,3,pageviews,1004,,https://en.wikipedia.org/wiki/Football_derbies_in_Greece,2026-10-17
+tm-6058,tm-9241,,2,pageviews,87,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-610,tm-724,,2,pageviews,323,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-618,tm-995,,2,pageviews,759,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-62,tm-715,,3,pageviews,352,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-62,tm-941,,4,pageviews,703,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-621,tm-630,,3,pageviews,3018,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
 tm-621,tm-681,Dérbi basco,3,hand,2965,Basque derby,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-623,tm-626,,3,pageviews,1300,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-629,tm-9875,,2,pageviews,255,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-631,tm-873,,4,pageviews,10396,London derbies,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-631,tm-931,,4,pageviews,8123,West London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
-tm-6321,tm-9636,Cascadia Cup,3,pageviews,1214,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-6362,tm-9855,Superclásico de Quito,1,pageviews,142,Superclásico de Quito,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-6377,tm-814,,1,pageviews,137,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-63966,tm-78435,,3,pageviews,1057,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-641,tm-762,,3,pageviews,1211,Tyne–Tees derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-623,tm-626,,3,pageviews,1166,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-629,tm-9875,,3,pageviews,228,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-631,tm-873,,3,pageviews,7877,,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-631,tm-931,,2,pageviews,6332,West London derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
+tm-6321,tm-9636,,3,pageviews,1088,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-6362,tm-9855,Superclásico de Quito,2,pageviews,142,Superclásico de Quito,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-6377,tm-814,,2,pageviews,123,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-63966,tm-78435,,2,pageviews,947,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-641,tm-762,,1,pageviews,1211,Tyne–Tees derby,https://en.wikipedia.org/wiki/List_of_association_football_rivalries_in_the_United_Kingdom,2026-10-17
 tm-6711,tm-8590,Clássico Tapatío,3,hand,1328,Clásico Tapatío,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-675,tm-730,,1,pageviews,180,Little capital derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-6984,tm-9811,Clásico Cafetero,1,pageviews,110,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-6985,tm-8056,Clásico Cruceño,1,pageviews,190,Clásico Cruceño,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-7042,tm-9202,,2,pageviews,296,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
-tm-7055,tm-7633,Clásico Universitario,3,pageviews,1123,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-708,tm-709,,1,pageviews,7,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-708,tm-84,,2,pageviews,372,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-709,tm-84,,1,pageviews,7,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-7090,tm-8031,,1,pageviews,132,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-7090,tm-9526,,1,pageviews,132,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-710,tm-790,,2,pageviews,518,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
-tm-723,tm-724,Markermeerderby,2,pageviews,361,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
-tm-8377,tm-8936,,1,pageviews,45,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
+tm-675,tm-730,,2,pageviews,180,Little capital derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-6984,tm-9811,Clásico Cafetero,1,pageviews,99,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-6985,tm-8056,Clásico Cruceño,2,pageviews,190,Clásico Cruceño,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-7042,tm-9202,Derby de la Côte d'Opale,1,pageviews,266,,https://en.wikipedia.org/wiki/Football_rivalries_in_France,2026-10-17
+tm-7055,tm-7633,Clásico Universitario,2,pageviews,1007,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-708,tm-709,,1,pageviews,6,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-708,tm-84,,4,pageviews,334,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-709,tm-84,,1,pageviews,6,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-7090,tm-8031,,1,pageviews,119,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-7090,tm-9526,,2,pageviews,119,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-710,tm-790,,3,pageviews,464,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-723,tm-724,Markermeerderby,2,pageviews,323,,https://en.wikipedia.org/wiki/Football_derbies_in_the_Netherlands,2026-10-17
+tm-8377,tm-8936,,1,pageviews,41,,https://en.wikipedia.org/wiki/List_of_derbies_in_Poland,2026-10-17
 tm-861,tm-866,Clásico uruguaio,5,hand,946,Uruguayan Clásico,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-8816,tm-9168,,2,pageviews,810,Texas Derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
-tm-897,tm-940,,3,pageviews,2532,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
-tm-9599,tm-967,,1,pageviews,123,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17
+tm-8816,tm-9168,,1,pageviews,810,Texas Derby,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas,2026-10-17
+tm-897,tm-940,,2,pageviews,2270,,https://en.wikipedia.org/wiki/Spanish_football_rivalries,2026-10-17
+tm-9599,tm-967,,1,pageviews,110,,https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe,2026-10-17

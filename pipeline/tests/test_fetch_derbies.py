@@ -24,6 +24,10 @@ class DerbyLinesTest(unittest.TestCase):
         line = "* Rivalry of the Andes derby: [[Atlético Nacional]] vs. [[Millonarios F.C.|Millonarios]]"
         self.assertEqual(fetch_derbies.derbies_in_line(line, CLUBS, resolve)[0].name, "")
 
+    def test_keeps_a_local_name_that_opens_with_derby(self) -> None:
+        line = "* ''Derby do Cerrado'' ([[Cerrado]] Derby): [[Atlético Nacional]] vs. [[Millonarios F.C.|Millonarios]]"
+        self.assertEqual(fetch_derbies.derbies_in_line(line, CLUBS, resolve)[0].name, "Derby do Cerrado")
+
     def test_keeps_the_derby_article_the_line_links_to(self) -> None:
         line = "* [[Atlético Nacional–Millonarios F.C. rivalry|Rivalry amongst Atlético Nacional and Millonarios]]"
         self.assertEqual(fetch_derbies.derbies_in_line(line, CLUBS | {"Atlético Nacional–Millonarios F.C. rivalry": ""}, resolve), [])
@@ -37,6 +41,38 @@ class DerbyLinesTest(unittest.TestCase):
 
     def test_takes_a_city_heading_for_no_derby_article(self) -> None:
         line = "* [[Medellín]]: [[Atlético Nacional]] vs. [[Millonarios F.C.|Millonarios]]"
+        self.assertEqual(fetch_derbies.derbies_in_line(line, CLUBS, resolve)[0].article, "")
+
+    def test_takes_a_city_heading_for_no_derby_name(self) -> None:
+        line = "*[[Córdoba, Argentina|Córdoba]]: [[Atlético Nacional]] vs. [[Millonarios F.C.|Millonarios]] (''Cordoban derby'')"
+        self.assertEqual(fetch_derbies.derbies_in_line(line, CLUBS, resolve)[0].name, "")
+
+    def test_keeps_a_portuguese_name_without_its_english_translation(self) -> None:
+        line = "* ''Clássico da Rivalidade'' (The Rivalry Derby): [[Esporte Clube Bahia|Bahia]] vs. [[Esporte Clube Vitória|Vitória]]"
+        self.assertEqual(fetch_derbies.derbies_in_line(line, CLUBS, resolve)[0].name, "Clássico da Rivalidade")
+
+    def test_takes_the_local_name_of_a_city_derby_that_has_one(self) -> None:
+        line = "* [[Natal, Rio Grande do Norte|Natal]] derby or ''Clássico-Rei'' (The Derby-King): [[Esporte Clube Bahia|Bahia]] vs. [[Esporte Clube Vitória|Vitória]]"
+        self.assertEqual(fetch_derbies.derbies_in_line(line, CLUBS, resolve)[0].name, "Clássico-Rei")
+        line = "* [[Caxias do Sul]] derby or Ca–Ju: [[Esporte Clube Bahia|Bahia]] vs. [[Esporte Clube Vitória|Vitória]]"
+        self.assertEqual(fetch_derbies.derbies_in_line(line, CLUBS, resolve)[0].name, "Ca–Ju")
+
+    def test_leaves_out_table_markup_place_pairs_and_english_titles_as_names(self) -> None:
+        for head in ("rowspan=2|Bahia |Vitória |Ba-Vi |Games ", "[[Godoy Cruz, Mendoza|Godoy Cruz]]/[[San Juan, Argentina|San Juan]]",
+                     "The Topper", "Derby of Via Emilia", "Tel Aviv mini-derby", "List of Brazilian football derbies"):
+            line = f"* {head}: [[Esporte Clube Bahia|Bahia]] vs. [[Esporte Clube Vitória|Vitória]]"
+            self.assertEqual([d.name for d in fetch_derbies.derbies_in_line(line, CLUBS, resolve)], [""], head)
+
+    def test_reads_no_head_out_of_a_link_to_another_wikipedia(self) -> None:
+        line = "* [[:pl:Derby Bahii|Bahia Derby]] (''Ba–Vi''): [[Esporte Clube Bahia|Bahia]] vs. [[Esporte Clube Vitória|Vitória]]"
+        self.assertEqual([d.name for d in fetch_derbies.derbies_in_line(line, CLUBS, resolve)], [""])
+
+    def test_names_no_hand_rated_derby_after_a_list_or_in_english(self) -> None:
+        for pair, (_, name, _) in fetch_derbies.HAND_RATED.items():
+            self.assertTrue(not name or fetch_derbies.is_name(name), pair)
+
+    def test_leaves_a_list_of_derbies_out_as_the_derby_article(self) -> None:
+        line = "* [[London derbies|London derby]]: [[Atlético Nacional]] vs. [[Millonarios F.C.|Millonarios]]"
         self.assertEqual(fetch_derbies.derbies_in_line(line, CLUBS, resolve)[0].article, "")
 
     def test_pairs_every_club_of_a_three_way_derby(self) -> None:
@@ -67,6 +103,29 @@ class BrazilianClubsTest(unittest.TestCase):
             "Santa Cruz Futebol Clube": "santa-cruz-pe", "Botafogo Futebol Clube (PB)": "botafogo-pb", "Treze Futebol Clube": "treze-pb",
         })
 
+    def test_takes_a_city_heading_for_no_club_of_that_name(self) -> None:
+        wikitext = "==[[Sergipe]]==\n*[[Aracaju]] derby: [[Associação Desportiva Confiança|Confiança]] vs. [[Club Sportivo Sergipe|Sergipe]]"
+        clubs = [{"id": "aracaju-se", "short_name": "Aracaju", "state": "SE"}, {"id": "confianca-se", "short_name": "Confiança", "state": "SE"}]
+        self.assertEqual(fetch_derbies.brazilian_club_titles(wikitext, clubs, resolve), {"Associação Desportiva Confiança": "confianca-se"})
+
+
+class BrazilianLinesTest(unittest.TestCase):
+    STATES = {"sao-raimundo-am": "AM", "sao-raimundo-pa": "PA", "sao-francisco-pa": "PA", "nacional-am": "AM"}
+    SHORT_NAMES = {"sao-raimundo-am": "São Raimundo", "sao-raimundo-pa": "São Raimundo", "sao-francisco-pa": "São Francisco", "nacional-am": "Nacional"}
+
+    def derbies(self, wikitext: str) -> list[tuple[str, str]]:
+        clubs = {"São Raimundo Esporte Clube (AM)": "sao-raimundo-am", "São Francisco Futebol Clube (PA)": "sao-francisco-pa", "Nacional Futebol Clube": "nacional-am"}
+        brazil = [{"id": club, "short_name": self.SHORT_NAMES[club], "state": state} for club, state in self.STATES.items()]
+        return [d.clubs for d in fetch_derbies.brazilian_derbies(wikitext, clubs, brazil, resolve)]
+
+    def test_takes_a_link_to_a_namesake_from_another_state_for_the_club_of_the_section(self) -> None:
+        wikitext = "==[[Pará]]==\n* [[Santarém, Pará|Santarém]] derby: [[São Francisco Futebol Clube (PA)|São Francisco]] vs. [[São Raimundo Esporte Clube (AM)|São Raimundo]]"
+        self.assertEqual(self.derbies(wikitext), [("sao-francisco-pa", "sao-raimundo-pa")])
+
+    def test_keeps_the_linked_club_in_its_own_state_section(self) -> None:
+        wikitext = "==[[Amazonas (Brazilian state)|Amazonas]]==\n* São–Nal: [[Nacional Futebol Clube|Nacional]] vs. [[São Raimundo Esporte Clube (AM)|São Raimundo]]"
+        self.assertEqual(self.derbies(wikitext), [("nacional-am", "sao-raimundo-am")])
+
 
 class IntensityTest(unittest.TestCase):
     def test_ranks_the_unrated_pairs_by_pageviews_into_one_to_four(self) -> None:
@@ -82,6 +141,19 @@ class IntensityTest(unittest.TestCase):
         countries = {"a": "es", **{f"b{i}": "es" for i in range(19)}, "b19": "it"}
         self.assertEqual(fetch_derbies.intensities_by_views(views, countries)[("a", "b19")], 2)
         self.assertEqual(fetch_derbies.intensities_by_views(views, countries)[("a", "b18")], 4)
+
+    def test_ranks_each_country_on_its_own(self) -> None:
+        views = {("a", f"b{i}"): (i + 1) * 100 for i in range(20)} | {("c", f"d{i}"): (i + 1) * 10_000 for i in range(20)}
+        countries = {"a": "br", **{f"b{i}": "br" for i in range(20)}, "c": "en", **{f"d{i}": "en" for i in range(20)}}
+        scale = fetch_derbies.intensities_by_views(views, countries)
+        self.assertEqual((scale[("a", "b19")], scale[("a", "b0")]), (4, 1))
+        self.assertEqual((scale[("c", "d19")], scale[("c", "d0")]), (4, 1))
+
+
+class AttentionTest(unittest.TestCase):
+    def test_counts_an_article_for_a_pair_only_when_it_is_that_derby_alone(self) -> None:
+        derbies = {("a", "b"): "A–B rivalry", ("c", "d"): "West London derby", ("c", "e"): "West London derby", ("d", "e"): "West London derby"}
+        self.assertEqual(fetch_derbies.attention_articles(derbies), {("a", "b"): "A–B rivalry"})
 
 
 if __name__ == "__main__":
