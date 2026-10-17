@@ -3,8 +3,9 @@ import type { Fixture, GameState, LeagueCompetition } from "../gameState.js";
 import { LEAGUE_FORMATS } from "../leagueFormats.js";
 import { standings } from "../standings.js";
 import { championOf } from "./championOf.js";
-import { competitionKey, type History, type PlayerAtClub, type SeasonRecord, type TopScorer } from "./history.js";
+import { competitionKey, type History, type PlayerAtClub, type SeasonRecord } from "./history.js";
 import { seasonAwards } from "./seasonAwards.js";
+import { topScorerOf } from "./topScorerOf.js";
 
 // guess: a player who left a club after fewer games than this is not worth remembering there; it keeps
 // the per-club tallies from growing with every loanee and youth player who passed through.
@@ -23,20 +24,6 @@ function finalOrder(competition: LeagueCompetition, fixtures: readonly Fixture[]
   return [...overall].sort(
     (a, b) => Number(b === championId) - Number(a === championId) || (reached.get(b) ?? 0) - (reached.get(a) ?? 0) || overall.indexOf(a) - overall.indexOf(b),
   );
-}
-
-function topScorerOf(goals: Record<string, number>, state: GameState): TopScorer | null {
-  const [best] = Object.entries(goals).sort(([a, x], [b, y]) => y - x || a.localeCompare(b));
-  if (!best) return null;
-  const [playerId, count] = best;
-  const player = state.players[playerId];
-  const known = Object.entries(state.history.players).find(([, players]) => playerId in players);
-  return {
-    playerId,
-    name: player?.name ?? known?.[1][playerId]?.name ?? playerId,
-    clubId: player?.clubId ?? known?.[0] ?? "",
-    goals: count,
-  };
 }
 
 function forgetPassersBy(state: GameState): History["players"] {

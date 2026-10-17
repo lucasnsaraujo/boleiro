@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { Club } from "@boleiro/data/clubs";
 import type { Role } from "@boleiro/data/players";
 import type { GameState } from "@boleiro/engine/sim/gameState";
-import type { AwardedPlayer, BallonDorVote, SeasonAwards } from "@boleiro/engine/sim/history/history";
+import type { AwardedPlayer, BallonDorVote, SeasonAwards, TopScorer } from "@boleiro/engine/sim/history/history";
 import type { AwardsBook } from "@boleiro/game-client/awards/awardsBook";
 import { formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import { useServices } from "../app/ServicesContext.js";
@@ -308,7 +308,7 @@ function winText(win: { homeId: string; awayId: string; homeGoals: number; awayG
   return `${clubOf(win.homeId)?.shortName ?? win.homeId} ${win.homeGoals} × ${win.awayGoals} ${clubOf(win.awayId)?.shortName ?? win.awayId}`;
 }
 
-function TrioItem({ label, player, clubOf, detail, order }: { label: string; player: AwardedPlayer | null; clubOf: ClubLookup; detail: (p: AwardedPlayer) => string; order: number }) {
+function TrioItem<P extends TopScorer>({ label, player, clubOf, detail, order }: { label: string; player: P | null; clubOf: ClubLookup; detail: (p: P) => string; order: number }) {
   return (
     <li className="aw-trio-item" aria-label={player ? `${label}: ${player.name}` : `${label}: ninguém ainda`}>
       {player ? <AwardSticker name={player.name} club={clubOf(player.clubId)} isWinner size="mini" order={order} /> : <span className="aw-mini-slot slot" aria-hidden="true" />}

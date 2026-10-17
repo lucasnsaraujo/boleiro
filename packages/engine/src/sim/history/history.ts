@@ -65,14 +65,15 @@ export type BallonDorVote = { playerId: string; name: string; clubId: string; cl
 /**
  * The season's awards: the Brasileirão's Bola de Ouro (with the next two), its Bola de Prata team (the
  * season's team, goalkeeper first and attack last), top scorer and best young player, and the world's
- * Ballon d'Or top three. Each is null, or empty, when nobody played enough to win it.
+ * Ballon d'Or top three. Each is null, or empty, when nobody played enough to win it. The top scorer
+ * stays named after he leaves the game, as the history's top scorers do.
  */
 export type SeasonAwards = {
   competition: CompetitionKey;
   bolaDeOuro: AwardedPlayer | null;
   runnersUp: AwardedPlayer[];
   bolaDePrata: AwardedPlayer[];
-  topScorer: AwardedPlayer | null;
+  topScorer: TopScorer | null;
   bestYoung: AwardedPlayer | null;
   ballonDor: BallonDorVote[];
 };

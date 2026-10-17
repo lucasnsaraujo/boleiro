@@ -85,6 +85,22 @@ describe("the Brasileirão's awards", () => {
     expect(awarded.bestYoung).toMatchObject({ playerId: kid.id, goals: 4, assists: 4, average: 8.8 });
   });
 
+  it("name a top scorer who has left the game since, as the club's history knows him", () => {
+    const [scorer] = players;
+    if (!scorer) throw new Error("no players");
+    const stayed = Object.fromEntries(Object.entries(start.players).filter(([id]) => id !== scorer.id));
+    const club = { [scorer.id]: { name: scorer.name, apps: 30, goals: 23 } };
+    const state = withSeason(marks, { [scorer.id]: 23 }, { players: stayed });
+    const awarded = seasonAwards({ ...state, history: { ...state.history, players: { [scorer.clubId]: club } } }, {});
+    expect(awarded.topScorer).toEqual({ playerId: scorer.id, name: scorer.name, clubId: scorer.clubId, goals: 23 });
+  });
+
+  it("name the top scorer of a season saved before it kept ratings", () => {
+    const [scorer] = players;
+    if (!scorer) throw new Error("no players");
+    expect(seasonAwards(withSeason({}, { [scorer.id]: 9 }), {}).topScorer).toMatchObject({ playerId: scorer.id, name: scorer.name, goals: 9 });
+  });
+
   it("are empty in a season nobody played enough", () => {
     const awarded = seasonAwards(withSeason({}), {});
     expect(awarded).toMatchObject({ bolaDeOuro: null, runnersUp: [], bolaDePrata: [], topScorer: null, bestYoung: null });

@@ -163,7 +163,7 @@ describe("the squad", () => {
         bolaDeOuro: { ...ours, role: "atacante" },
         runnersUp: [],
         bolaDePrata: [{ ...ours, role: "atacante" }, { ...theirs, role: "goleiro" }],
-        topScorer: { ...ours, role: "atacante" },
+        topScorer: { playerId: own.id, name: "Gilberto", clubId: "bahia-ba", goals: 21 },
         bestYoung: { ...ours, role: "atacante" },
         ballonDor: [{ playerId: own.id, name: "Gilberto", clubId: "bahia-ba", clubName: "Bahia", score: 90, titles: [], apps: 30, goals: 21, average: 7.4 }],
       },

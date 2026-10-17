@@ -2,6 +2,7 @@ import { GROUP_OF_ROLE, type PositionGroup, type Role } from "@boleiro/data/play
 import type { GameState, SimPlayer } from "../gameState.js";
 import { latestChampionsLeagueWinner } from "../continental/uefaCups.js";
 import { typicalRating } from "../live/matchRatings.js";
+import { topScorerOf } from "./topScorerOf.js";
 import { competitionKey, type AwardedPlayer, type BallonDorVote, type CompetitionKey, type SeasonAwards, type SeasonMark } from "./history.js";
 
 // The Bola de Prata (Placar 1970–2015, ESPN since 2016) averages the 0–10 marks each player gets per
@@ -183,15 +184,13 @@ export function seasonAwards(state: AwardsState, champions: Readonly<Record<Comp
     .filter((p): p is AwardedPlayer => p !== null)
     .sort(byAverage);
   const [first = null, ...rest] = eligible;
-  // As the history's top scorers: most goals, then the player id.
-  const [scorerId, scorerGoals = 0] = Object.entries(goals).sort(([a, x], [b, y]) => y - x || a.localeCompare(b))[0] ?? [];
-  const topScorer = scorerId && scorerGoals > 0 ? awarded(scorerId, tally[scorerId] ?? [0, 0, 0]) ?? null : null;
+  const scorer = topScorerOf(goals, state);
   return {
     competition: key,
     bolaDeOuro: first,
     runnersUp: rest.slice(0, 2),
     bolaDePrata: silverTeam(eligible),
-    topScorer,
+    topScorer: scorer && scorer.goals > 0 ? scorer : null,
     bestYoung: eligible.find((p) => p.age <= YOUNG_AGE) ?? null,
     ballonDor: ballonDor(state, champions),
   };
