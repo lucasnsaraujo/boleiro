@@ -18,9 +18,9 @@ export type TieBreak = "extraTime" | "penalties" | "betterSeed";
 //   guess: the Sul-Americana's one-match first stage goes straight to penalties, as every other round before the final.
 // - Recopa: extra time when level on aggregate (Wikipedia, "2026 Recopa Sudamericana", Format:
 //   https://en.wikipedia.org/wiki/2026_Recopa_Sudamericana).
-// - Copa do Brasil 2026: penalties without extra time in phases 1 to 4 and in the two-legged ties (O Imparcial,
-//   https://oimparcial.com.br/noticias/2026/01/cbf-divulga-datas-e-formato-da-copa-do-brasil-2026/). guess:
-//   extra time in the first one-match final, which no source read settles; CONMEBOL's and FIFA's one-match finals play it.
+// - Copa do Brasil 2026: no extra time in any phase; phases 1 to 4 and the one-match final go straight to penalties,
+//   the two-legged ties to penalties after goal difference (CBF, Regulamento Específico da Copa do Brasil 2026,
+//   art. 22, https://stcbfsiteprdimgbrs.blob.core.windows.net/img-site/cdn/REC_Copa_do_Brasil_2026_66989a5426.pdf).
 // - State championships: guess, penalties, as the Paulista's 2026 knockout rounds (Wikipedia, "2026 Campeonato
 //   Paulista", https://en.wikipedia.org/wiki/2026_Campeonato_Paulista); the game's estaduais share one format.
 // - MLS: straight to penalties in the best-of-three round one (the game's first play-off round), extra time
@@ -29,7 +29,6 @@ export type TieBreak = "extraTime" | "penalties" | "betterSeed";
 //   final plays extra time and penalties (Fox Sports México, https://www.foxsports.com.mx/2023/12/02/que-pasa-si-hay-empate-en-la-liguilla-de-la-liga-mx/).
 // - Série C and D: guess, penalties, as Brazil's other two-legged ties.
 // A round the game's formats play as one match where the real one has two legs follows the competition's final.
-const COPA_DO_BRASIL = { lastStraightToPenalties: 3, final: 8, legs: [1, 1, 1, 1, 2, 2, 2, 2, 1] } as const;
 const MLS_FIRST_ROUND = 1;
 const LIGA_MX_FINALS = new Set([3, 7]);
 
@@ -45,7 +44,7 @@ export function tieBreakOf(competition: Competition, stage: number): TieBreak {
       return isFinal || isMadeOneMatch(competition, stage, CUP_STAGES[cup][stage]?.dates.length) ? "extraTime" : "penalties";
     }
     case "cup":
-      return stage === COPA_DO_BRASIL.final || (stage > COPA_DO_BRASIL.lastStraightToPenalties && isMadeOneMatch(competition, stage, COPA_DO_BRASIL.legs[stage])) ? "extraTime" : "penalties";
+      return "penalties";
     case "league":
       if (competition.format === "mls") return stage > MLS_FIRST_ROUND ? "extraTime" : "penalties";
       if (competition.format === "liga-mx") return LIGA_MX_FINALS.has(stage) ? "extraTime" : "betterSeed";

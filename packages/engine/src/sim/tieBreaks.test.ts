@@ -41,13 +41,12 @@ describe("a level tie's tie-break, as each real competition settles it", () => {
     expect(tieBreakOf(libertadores, 4)).toBe("extraTime");
     expect(tieBreakOf(libertadores, 5)).toBe("penalties");
     expect(tieBreakOf(continental("sul-americana", cupStageDates("sul-americana", 2026, RAPIDO)), 0)).toBe("penalties");
-    expect(tieBreakOf(copaDoBrasil([1, 1, 1, 1, 1, 1, 2, 2, 1]), 5)).toBe("extraTime");
   });
 
-  it("sends the Copa do Brasil's ties to penalties and plays extra time in its one-match final", () => {
+  it("sends every Copa do Brasil tie, its one-match final included, straight to penalties", () => {
     const cup = copaDoBrasil();
-    expect([0, 1, 2, 3, 4, 5, 6, 7].map((stage) => tieBreakOf(cup, stage))).toEqual(Array(8).fill("penalties"));
-    expect(tieBreakOf(cup, 8)).toBe("extraTime");
+    expect([0, 1, 2, 3, 4, 5, 6, 7, 8].map((stage) => tieBreakOf(cup, stage))).toEqual(Array(9).fill("penalties"));
+    expect(tieBreakOf(copaDoBrasil([1, 1, 1, 1, 1, 1, 2, 2, 1]), 5)).toBe("penalties");
   });
 
   it("sends a state championship's ties to penalties", () => {
@@ -68,12 +67,12 @@ describe("a level tie's tie-break, as each real competition settles it", () => {
   });
 
   it("plays extra time only in a tie's last leg", () => {
-    const final = copaDoBrasil();
-    expect(hasExtraTime(final, 8, 0)).toBe(true);
+    const final = continental("libertadores");
+    expect(hasExtraTime(final, 7, 0)).toBe(true);
     const recopa = continental("recopa");
     expect(hasExtraTime(recopa, 0, 0)).toBe(false);
     expect(hasExtraTime(recopa, 0, 1)).toBe(true);
-    expect(hasExtraTime(copaDoBrasil(), 7, 1)).toBe(false);
+    expect(hasExtraTime(continental("libertadores"), 6, 1)).toBe(false);
   });
 });
 
