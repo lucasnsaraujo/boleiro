@@ -1,7 +1,7 @@
 import { useState, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import type { Club } from "@boleiro/data/clubs";
-import type { Effects, EventArea, PendingEvent } from "@boleiro/engine/sim/events/eventMemory";
+import type { Effects, EventArea, EventTopic, PendingEvent } from "@boleiro/engine/sim/events/eventMemory";
 import type { EventAnswered } from "@boleiro/engine/sim/events/runEvents";
 import type { IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { formatBarDate, formatMonthYear } from "@boleiro/game-client/format/formatGameDate";
@@ -12,6 +12,15 @@ import { effectCells, expiryText, reporterOn, type EffectCell } from "./eventVie
 import "./eventPopUp.css";
 
 const AREA_ICONS: Record<EventArea, string> = { players: "chat-circle-text", squad: "users-three", board: "briefcase", fans: "megaphone", press: "microphone" };
+const TOPIC_ICONS: Record<EventTopic, string> = {
+  ...AREA_ICONS,
+  staff: "clipboard-text",
+  rivals: "sword",
+  sponsors: "handshake",
+  life: "heart",
+  discipline: "warning-octagon",
+  health: "first-aid-kit",
+};
 
 type Props = {
   event: PendingEvent;
@@ -26,17 +35,26 @@ type Props = {
   /** The coach's answer once it went through; the window then shows what it did. */
   answered: EventAnswered | null;
   onAnswer: (choice: number | null) => void;
+  /** A press conference's next question, once an answer with more to come went through. */
+  onNext: () => void;
   onClose: () => void;
 };
 
 /**
  * The event that waits for the coach, stuck over the hub: who it is about, what they said, and the
- * answers with what each moves. A press conference gets the sponsor wall and the reporter's question.
+ * answers with what each moves. A press conference gets the sponsor wall and the reporters' questions,
+ * one at a time.
  */
-export function EventPopUp({ event, club, rival, player, today, standing, isBusy, hasFailed, answered, onAnswer, onClose }: Props) {
+export function EventPopUp({ event, club, rival, player, today, standing, isBusy, hasFailed, answered, onAnswer, onNext, onClose }: Props) {
   const title = useDialogFocus<HTMLHeadingElement>(true, { isModal: true });
-  const [chosen, setChosen] = useState<number | null>(null);
   const isPress = event.look === "press";
+  // The question on screen: a press conference's first one not answered yet.
+  const step = event.answers?.length ?? 0;
+  const total = event.questions?.length ?? 1;
+  const [pick, setPick] = useState<{ step: number; choice: number } | null>(null);
+  const chosen = pick?.step === step ? pick.choice : null;
+  const setChosen = (choice: number) => setPick({ step, choice });
+  const isNextAsked = answered !== null && answered.questionsLeft > 0;
 
   function onKeyDown(key: KeyboardEvent) {
     // A focused button answers Enter with its own click.
@@ -48,7 +66,7 @@ export function EventPopUp({ event, club, rival, player, today, standing, isBusy
   }
 
   const choices = (
-    <div className={isPress ? "ev-answers press" : "ev-answers"} role="radiogroup" aria-label="Respostas">
+    <div key={step} className={isPress ? "ev-answers press" : "ev-answers"} role="radiogroup" aria-label="Respostas">
       <div className="ev-fx-head" aria-hidden="true">
         {effectCells({}, isPress).map((cell) => (
           <span key={cell.key} className="lbl">
@@ -82,7 +100,21 @@ export function EventPopUp({ event, club, rival, player, today, standing, isBusy
     </div>
   );
 
-  const foot = answered ? (
+  const foot = isNextAsked ? (
+    <div className="ev-foot ev-done" role="status">
+      <p>
+        <i className="ph-bold ph-check-circle" aria-hidden="true" />
+        {answered.headline ? <b>{answered.headline}</b> : "Resposta dada."} {answered.questionsLeft === 1 ? "Falta uma pergunta." : `Faltam ${answered.questionsLeft} perguntas.`}
+      </p>
+      <button className="btn flat" onClick={onClose}>
+        Fechar
+      </button>
+      <button className="btn go" onClick={onNext} autoFocus>
+        <i className="ph-bold ph-arrow-right" aria-hidden="true" />
+        Próxima pergunta
+      </button>
+    </div>
+  ) : answered ? (
     <div className="ev-foot ev-done" role="status">
       <p>
         <i className="ph-bold ph-check-circle" aria-hidden="true" />
@@ -140,19 +172,31 @@ export function EventPopUp({ event, club, rival, player, today, standing, isBusy
             {event.setting}
           </div>
           {close}
-          <div className="ev-question">
+          <div className="ev-question" key={step}>
             <div className="ev-reporter">
               <span className="av" aria-hidden="true">
-                {reporterOn(event.date).charAt(0)}
+                {reporterOn(event.date, step).charAt(0)}
               </span>
-              <b>{reporterOn(event.date)}</b>
+              <b>{reporterOn(event.date, step)}</b>
               <small>Jornal do Boleiro</small>
             </div>
             <div className="ev-bubble">
               <h2 id="event-title" ref={title} tabIndex={-1}>
                 {event.body}
               </h2>
-              <small>{standing ?? event.headline}</small>
+              <small>
+                {total > 1 && (
+                  <span className="ev-count">
+                    <span className="ev-pips" aria-hidden="true">
+                      {Array.from({ length: total }, (_, index) => (
+                        <i key={index} className={index < step ? "done" : index === step ? "now" : undefined} />
+                      ))}
+                    </span>
+                    Pergunta <b>{step + 1} de {total}</b> ·{" "}
+                  </span>
+                )}
+                {standing ?? event.headline}
+              </small>
             </div>
           </div>
           {choices}
@@ -164,7 +208,7 @@ export function EventPopUp({ event, club, rival, player, today, standing, isBusy
             {player ? <PlayerStamp player={player} club={club} /> : <ClubStamp club={club} />}
             <div>
               <div className="ev-kind">
-                <i className={`ph-bold ph-${AREA_ICONS[event.area]}`} aria-hidden="true" />
+                <i className={`ph-bold ph-${event.topic ? TOPIC_ICONS[event.topic] : AREA_ICONS[event.area]}`} aria-hidden="true" />
                 {event.setting ? `${event.setting} · ` : ""}
                 {formatBarDate(event.date)}
                 {close}

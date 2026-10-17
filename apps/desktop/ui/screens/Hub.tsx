@@ -124,6 +124,14 @@ export function Hub() {
     setAnswered(null);
   }
 
+  /** A press conference's next question, in the same window. */
+  async function nextQuestion() {
+    const next = await engine.pendingEvent().catch(() => null);
+    setAnswered(null);
+    if (next) openEventPopUp(next);
+    else closeEvent();
+  }
+
   if (missing || !open.current) {
     return (
       <div className="hub-missing">
@@ -243,6 +251,7 @@ export function Hub() {
             hasFailed={hasAnswerFailed}
             answered={answered}
             onAnswer={(choice) => void answer(choice)}
+            onNext={() => void nextQuestion()}
             onClose={closeEvent}
           />
         )}

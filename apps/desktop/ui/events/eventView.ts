@@ -45,8 +45,8 @@ export function expiryText(event: Pick<PendingEvent, "expiresOn">, today: IsoDat
 // Generated reporters of the game's own paper; invented names, as SPEC §14 asks of generated people.
 const REPORTERS = ["Renata Moura", "Caio Bastos", "Lívia Prado", "Otávio Reis", "Júlia Tavares"] as const;
 
-/** The reporter who asks at the press conference of `date`, the same one for the same day. */
-export function reporterOn(date: IsoDate): string {
+/** The reporter who asks question `question` (the first, left out) at the press conference of `date`, the same one for the same day. */
+export function reporterOn(date: IsoDate, question = 0): string {
   const day = Number(date.slice(8, 10)) + Number(date.slice(5, 7));
-  return REPORTERS[day % REPORTERS.length] ?? REPORTERS[0];
+  return REPORTERS[(day + question) % REPORTERS.length] ?? REPORTERS[0];
 }

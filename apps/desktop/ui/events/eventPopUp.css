@@ -579,13 +579,88 @@
   color: var(--mute);
 }
 
+/* A press conference's questions come one at a time: each new reporter's sticker slaps on, the bubble
+   follows, the answers deal in behind it; the pips under the question count them off. */
+.ev-question .av {
+  animation: ev-reporter var(--t-stamp) var(--e-slap) 60ms both;
+}
+
+@keyframes ev-reporter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) rotate(-14deg) scale(0.7);
+  }
+}
+
+.ev-answers.press .ev-choice {
+  animation: ev-answer-in var(--t-slow) var(--e-out) backwards;
+  animation-delay: 240ms;
+}
+
+.ev-answers.press .ev-choice:nth-of-type(2) {
+  animation-delay: 300ms;
+}
+
+.ev-answers.press .ev-choice:nth-of-type(3) {
+  animation-delay: 360ms;
+}
+
+@keyframes ev-answer-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.ev-count {
+  white-space: nowrap;
+}
+
+.ev-count b {
+  color: var(--ink-2);
+}
+
+.ev-pips {
+  display: inline-flex;
+  gap: 4px;
+  margin-right: 8px;
+  vertical-align: 1px;
+}
+
+.ev-pips i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+}
+
+.ev-pips i.done {
+  background: var(--green);
+  box-shadow: none;
+}
+
+.ev-pips i.now {
+  background: var(--ink);
+  box-shadow: none;
+  animation: ev-pip var(--t-stamp) var(--e-slap) 200ms both;
+}
+
+@keyframes ev-pip {
+  from {
+    transform: scale(0.2);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ev-veil,
   .ev-pop,
   .ev-stamp,
   .ev-bubble,
   .ev-done p,
-  .ev-choice.on .ev-fx span {
+  .ev-choice.on .ev-fx span,
+  .ev-question .av,
+  .ev-answers.press .ev-choice,
+  .ev-pips i.now {
     animation: none;
   }
 }
