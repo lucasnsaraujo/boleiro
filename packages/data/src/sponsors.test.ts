@@ -63,6 +63,14 @@ describe("the sponsors pack", () => {
     }
   });
 
+  it("records where each logo came from and its licence, a favicon's as unknown, the mark a trademark", () => {
+    const withLogo = csv("brands.csv").filter((brand) => brand.logo_path);
+    for (const brand of withLogo) expect(brand.logo_source, brand.id).toMatch(/^https:\/\//);
+    const favicons = withLogo.filter((brand) => brand.logo_kind === "favicon");
+    expect(favicons.length).toBeGreaterThan(0);
+    for (const brand of favicons) expect(brand.logo_licence, brand.id).toBe("unknown licence; trademark; via Google favicon service");
+  });
+
   it("rejects a deal whose brand is not in the pack", () => {
     const pack = JSON.parse(built);
     pack.deals.brand[0] = pack.brands.id.length;

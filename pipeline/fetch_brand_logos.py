@@ -43,6 +43,8 @@ OVERRIDES = ROOT / "data" / "brand-logos.csv"
 LOGOS = Path("assets") / "logos"
 LOGO_WIDTH = 512
 FAVICON = "https://www.google.com/s2/favicons?domain={}&sz=128"
+# A site's icon comes with no licence: it is the brand's trademark, used as the crests are.
+FAVICON_LICENCE = "unknown licence; trademark; via Google favicon service"
 # A favicon smaller than this is Google's stand-in globe or too blurry to show.
 MIN_FAVICON_PX = 48
 # Commons rations SVG renders; a logo refused is left for the next run instead of waited on.
@@ -260,7 +262,7 @@ def main() -> None:
         elif website:
             favicon = FAVICON.format(domain_of(website))
             if ((ROOT / path).exists() and kept.get(brand["id"]) in {favicon, None}) or save_png(download(favicon) or b"", ROOT / path, MIN_FAVICON_PX):
-                kind, source, licence = "favicon", favicon, "favicon"
+                kind, source, licence = "favicon", favicon, FAVICON_LICENCE
         shape = logo_shape(ROOT / path) if kind else ""
         sector = brand["sector"] or ("betting" if BETTING.search(brand["name"]) else "")
         rows.append({
