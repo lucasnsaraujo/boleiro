@@ -123,6 +123,12 @@ export function undo(sheet: Sheet): Sheet {
   return last ? { ...last, picked: null, history: sheet.history.slice(0, -1) } : sheet;
 }
 
+const OUT_REASONS: Record<NonNullable<SquadPlayer["status"]>, string> = {
+  injured: "está machucado",
+  suspended: "está suspenso",
+  facesOwner: "não pode enfrentar o clube dono do passe",
+};
+
 /** What stops this eleven from kicking off, in the coach's words, or null when it can. */
 export function lineupProblem(lineup: readonly string[], squad: readonly SquadPlayer[]): string | null {
   const players = squad.filter((p) => lineup.includes(p.id));
@@ -131,7 +137,7 @@ export function lineupProblem(lineup: readonly string[], squad: readonly SquadPl
   if (keepers === 0) return "Escale um goleiro.";
   if (keepers > 1) return "Só um goleiro pode começar.";
   const out = players.find((p) => p.status !== null);
-  if (out) return `${out.name} está ${out.status === "injured" ? "machucado" : "suspenso"}.`;
+  if (out?.status) return `${out.name} ${OUT_REASONS[out.status]}.`;
   return null;
 }
 

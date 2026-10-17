@@ -25,6 +25,7 @@ const COUNTED: Partial<Record<MoveKind, keyof Omit<MoveCounts, "season">>> = {
   abroad: "toEurope",
   fromAbroad: "fromAbroad",
   transfer: "domestic",
+  releaseClause: "domestic",
   freeAgent: "freeAgents",
   preContract: "preContracts",
   loan: "loans",

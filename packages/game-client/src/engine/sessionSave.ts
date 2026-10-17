@@ -6,18 +6,19 @@ import type { InboxLine } from "../hub/inboxLines.js";
 import type { TurningPoint } from "../hub/turningPoints.js";
 import { EMPTY_DESK, type BoardDesk } from "../market/boardDesk.js";
 import type { MarketClock } from "../market/marketClock.js";
+import { readScouting, type Scouting } from "../market/scouting.js";
 
 /** A match day under way and the furthest minute the screen has shown of it. */
 export type LiveRoundSave = { day: LiveDay; seenMinute: number };
-/** A waiting hot-seat coach's part of the session: his inbox, his board's desk, his turning points and his market clock. */
-export type SeatParts = { news: InboxLine[]; desk: BoardDesk; turningPoints: TurningPoint[]; clock: MarketClock | null };
+/** A waiting hot-seat coach's part of the session: his inbox, his board's desk, his turning points, his market clock and his scouting, if any. */
+export type SeatParts = { news: InboxLine[]; desk: BoardDesk; turningPoints: TurningPoint[]; clock: MarketClock | null; scouting?: Scouting };
 /** A hot-seat game's turn: the waiting coaches' parts in waiting order, the seated coach's place in turn order, and what those who passed left for the day. */
 export type SeatsSave = { waiting: SeatParts[]; seated: number; passed: Pick<LiveDay["decisions"], "lineup" | "tactics" | "acceptOffer">[] };
 /**
  * What a save holds: the sim's game, plus the session's own state the sim does not keep. A one-coach game has
- * no `seats`, and one without the market clock (or before it) no `clock`.
+ * no `seats`, one without the market clock (or before it) no `clock`, and one whose seated coach never scouted no `scouting`.
  */
-export type SessionSave = { game: GameState; desk: BoardDesk; turningPoints: TurningPoint[]; live: LiveRoundSave | null; clock?: MarketClock; seats?: SeatsSave };
+export type SessionSave = { game: GameState; desk: BoardDesk; turningPoints: TurningPoint[]; live: LiveRoundSave | null; clock?: MarketClock; seats?: SeatsSave; scouting?: Scouting };
 
 /** A save split into parts written apart, by name: the game's shards and the session's own state. */
 export type SaveShards = Readonly<Record<string, string>>;
@@ -52,7 +53,9 @@ function isClock(value: unknown): value is MarketClock {
 
 function isSeats(value: unknown): value is SeatsSave {
   if (!isRecord(value) || typeof value.seated !== "number" || !Array.isArray(value.passed) || !Array.isArray(value.waiting)) return false;
-  return value.waiting.every((parts) => isRecord(parts) && isDesk(parts.desk) && isTurningPoints(parts.turningPoints) && (parts.clock === null || isClock(parts.clock)));
+  return value.waiting.every(
+    (parts) => isRecord(parts) && isDesk(parts.desk) && isTurningPoints(parts.turningPoints) && (parts.clock === null || isClock(parts.clock)) && (parts.scouting === undefined || readScouting(parts.scouting) !== null),
+  );
 }
 
 function isSavedLive(value: unknown): value is SavedLive {
@@ -76,9 +79,19 @@ function savedLiveOf(live: LiveRoundSave | null): SavedLive | null {
   );
 }
 
-/** The clock and the seats, each only when the session has it. */
-function seatParts({ clock, seats }: Pick<SessionSave, "clock" | "seats">) {
-  return { ...(clock ? { clock } : {}), ...(seats ? { seats } : {}) };
+/** The clock, the seats and the scouting, each only when the session has it. */
+function seatParts({ clock, seats, scouting }: Pick<SessionSave, "clock" | "seats" | "scouting">) {
+  return { ...(clock ? { clock } : {}), ...(seats ? { seats } : {}), ...(scouting ? { scouting } : {}) };
+}
+
+/** The waiting coaches' parts with each one's scouting read as a save holds it: filters saved before a market criterion get it off. */
+function withSeatScouting(seats: SeatsSave): SeatsSave {
+  const waiting = seats.waiting.map((parts) => {
+    if (parts.scouting === undefined) return parts;
+    const scouting = readScouting(parts.scouting);
+    return scouting ? { ...parts, scouting } : parts;
+  });
+  return { ...seats, waiting };
 }
 
 export function writeSessionSave({ game, desk, turningPoints, live, ...rest }: SessionSave): string {
@@ -109,13 +122,16 @@ export function writeSessionShards(split: SplitGame, { desk, turningPoints, live
 
 /** A save from before hot-seat games has no seats and loads as a one-coach game; one from before the market clock has no clock. */
 function withSessionParts(parts: Record<string, unknown>, game: GameState): SessionSave {
-  const { desk, turningPoints, live = null, clock, seats } = parts;
+  const { desk, turningPoints, live = null, clock, seats, scouting: savedScouting } = parts;
   if (!isDesk(desk)) throw new Error("not a Boleiro save: its board desk is malformed");
   if (!isTurningPoints(turningPoints)) throw new Error("not a Boleiro save: its turning points are malformed");
   if (live !== null && !isSavedLive(live)) throw new Error("not a Boleiro save: its live round is malformed");
   if (clock !== undefined && !isClock(clock)) throw new Error("not a Boleiro save: its market clock is malformed");
   if (seats !== undefined && (!isSeats(seats) || seats.waiting.length !== (game.waitingCoaches?.length ?? 0))) throw new Error("not a Boleiro save: its coaches' turns are malformed");
-  return { game, desk, turningPoints, live: live && { day: { ...live.day, state: game }, seenMinute: live.seenMinute }, ...seatParts({ clock, seats }) };
+  const scouting = savedScouting === undefined ? undefined : readScouting(savedScouting);
+  if (scouting === null) throw new Error("not a Boleiro save: its watch list or saved filters are malformed");
+  const turns = seats && withSeatScouting(seats);
+  return { game, desk, turningPoints, live: live && { day: { ...live.day, state: game }, seenMinute: live.seenMinute }, ...seatParts({ clock, seats: turns, scouting }) };
 }
 
 /**

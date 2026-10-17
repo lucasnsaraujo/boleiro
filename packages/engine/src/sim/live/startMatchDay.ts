@@ -21,6 +21,7 @@ import { squadsOfGame } from "../players/squadsByClub.js";
 import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
 import { aiBench, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
 import { waitingCoachesOf } from "../coach/humanCoaches.js";
+import { withLoaneesFacingOwner } from "../transfers/loans.js";
 import { coachOutcome } from "./coachOutcome.js";
 import { formOfTheDay, formStrength } from "./formOfTheDay.js";
 import { incidentHandling } from "./incidentHandling.js";
@@ -94,7 +95,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
   const playFixture = (fixture: Fixture): Fixture => {
     const competition = state.competitions[fixture.competitionId];
     if (!competition) throw new Error(`fixture ${fixture.id} has no competition ${fixture.competitionId}`);
-    const suspended = cards.suspended(fixture.competitionId);
+    const suspended = withLoaneesFacingOwner(cards.suspended(fixture.competitionId), state, fixture);
     const coachClubId = [fixture.homeId, fixture.awayId].find((id) => id === state.coachClubId);
     if (coachClubId) refuseSuspended(coach.lineup ?? [], suspended);
     for (const clubId of [fixture.homeId, fixture.awayId]) refuseSuspended(waiting[clubId]?.lineup ?? [], suspended);

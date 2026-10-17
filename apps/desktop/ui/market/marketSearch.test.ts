@@ -2,7 +2,9 @@ import { describe, expect, test } from "vitest";
 import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
-import { marketClubs, marketLeagues, marketNationalities, NO_FILTERS, searchMarket, strengthBounds, windowStatus, type MarketFilters } from "./marketSearch.js";
+import { releaseClauseOf } from "@boleiro/engine/sim/transfers/releaseClause";
+import { NO_FILTERS, type MarketFilters } from "@boleiro/game-client/market/marketFilters";
+import { marketClubs, marketLeagues, marketNationalities, searchMarket, strengthBounds, windowStatus } from "./marketSearch.js";
 
 const COACH = "sport-pe";
 const game = newGameFromFiles(5, { coachClubId: COACH }, bundledGameFiles);
@@ -16,6 +18,33 @@ function anyPlayerOf(clubId: string): SimPlayer {
 }
 
 describe("searching the market", () => {
+  test("a player under contract shows his release clause; a free agent and a loanee have none to pay", () => {
+    const signed = anyPlayerOf("palmeiras-sp");
+    const free = { ...anyPlayerOf("vitoria-ba"), id: "free-1" };
+    const lent = anyPlayerOf("bahia-ba");
+    const loans = { [lent.id]: { fromClubId: "palmeiras-sp", until: "2026-06-30", lenderWageShare: 0.5, buyOption: null } };
+    const rows = search({}, { ...game, market: { ...game.market, freeAgents: { [free.id]: free }, loans } });
+    expect(rows.find((r) => r.id === signed.id)?.clause).toBe(releaseClauseOf(signed, "A", game.market.eurBrl));
+    expect(rows.find((r) => r.id === free.id)?.clause).toBeNull();
+    expect(rows.find((r) => r.id === lent.id)?.clause).toBeNull();
+  });
+
+  test("only watched players, when the coach asks, each row saying whether he watches it", () => {
+    const watched = anyPlayerOf("palmeiras-sp");
+    const rows = searchMarket(game, { ...NO_FILTERS, isWatchedOnly: true }, ALL, new Set([watched.id])).rows;
+    expect(rows.map((r) => r.id)).toEqual([watched.id]);
+    expect(rows[0]?.isWatched).toBe(true);
+    expect(search({}).every((r) => !r.isWatched)).toBe(true);
+  });
+
+  test("the players the coach lent out, by their own status", () => {
+    const lent = { ...anyPlayerOf(COACH), clubId: "vitoria-ba" };
+    const loans = { [lent.id]: { fromClubId: COACH, until: "2026-06-30", lenderWageShare: 0.5, buyOption: null } };
+    const state = { ...game, players: { ...game.players, [lent.id]: lent }, market: { ...game.market, loans } };
+    const rows = search({ status: "lentOut" }, state);
+    expect(rows.map((r) => [r.id, r.status])).toEqual([[lent.id, "lentOut"]]);
+  });
+
   test("lists other clubs' players, strongest first, never the coach's own", () => {
     const rows = search({});
     expect(rows.some((r) => game.players[r.id]?.clubId === COACH)).toBe(false);

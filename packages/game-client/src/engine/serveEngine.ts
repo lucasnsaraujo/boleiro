@@ -23,6 +23,8 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.hotSeat();
     case "marketClock":
       return session.marketClock();
+    case "scouting":
+      return session.scouting();
     case "pendingEvent":
       return session.pendingEvent();
     case "newspaper":

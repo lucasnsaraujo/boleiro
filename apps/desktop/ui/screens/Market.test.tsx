@@ -28,11 +28,23 @@ async function fillSquadTo(engine: EngineClient, size: number): Promise<void> {
   await engine.apply({ type: "load", save: JSON.stringify(save) });
 }
 
-async function openMarket(coachClubId = "sport-pe", squadSize?: number): Promise<Services> {
+type SavedFinances = { game: { coachClubId: string; finances: Record<string, { transferBudget: number }> } };
+
+/** Sets the coach's transfer budget, through a save loaded back. */
+async function setTransferBudget(engine: EngineClient, transferBudget: number): Promise<void> {
+  const save: SavedFinances = JSON.parse(await engine.save());
+  const finance = save.game.finances[save.game.coachClubId];
+  if (!finance) throw new Error("the coach's club has no finances");
+  finance.transferBudget = transferBudget;
+  await engine.apply({ type: "load", save: JSON.stringify(save) });
+}
+
+async function openMarket(coachClubId = "sport-pe", squadSize?: number, transferBudget?: number): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
   await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId } });
   if (squadSize !== undefined) await fillSquadTo(engine, squadSize);
+  if (transferBudget !== undefined) await setTransferBudget(engine, transferBudget);
   const services: Services = { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
   const router = createMemoryRouter([{ path: "/market", element: <Market /> }], { initialEntries: ["/market"] });
   render(
@@ -114,4 +126,46 @@ test("the Propostas tab shows the offers for the coach's own players and his pla
   await userEvent.click(await screen.findByRole("tab", { name: "Propostas" }));
   expect(await screen.findByRole("heading", { name: "Nenhuma proposta na mesa" })).toBeTruthy();
   expect(screen.getByRole("heading", { name: "À venda" })).toBeTruthy();
+});
+
+test("paying a player's release clause puts that request on the board's desk", async () => {
+  const { engine } = await openMarket("flamengo-rj");
+  const name = await pickPricedPlayer();
+  const chosen = screen.getByRole("region", { name });
+  const pay = within(chosen).getByRole("button", { name: /^Pagar a multa: R\$/ });
+  await userEvent.click(pay);
+  expect(within(screen.getByRole("list", { name: "Pedidos à diretoria" })).getByText(`Multa rescisória de ${name}`)).toBeTruthy();
+  expect((await engine.desk()).pending).toMatchObject([{ kind: "payClause" }]);
+});
+
+test("a release clause over the transfer budget can't be paid, and the screen says why", async () => {
+  await openMarket("sport-pe", undefined, 0);
+  const name = await pickPricedPlayer();
+  const chosen = screen.getByRole("region", { name });
+  expect(within(chosen).getByRole("button", { name: /^Pagar a multa: R\$/ })).toHaveProperty("disabled", true);
+  expect(within(chosen).getByText(/^A multa não cabe na verba/)).toBeTruthy();
+});
+
+test("a starred player is on the watch list, and the watched-only switch lists just him", async () => {
+  const { engine } = await openMarket();
+  const name = await pickPricedPlayer();
+  await userEvent.click(within(screen.getByRole("region", { name })).getByRole("button", { name: "Observar" }));
+  expect(await within(screen.getByRole("region", { name })).findByRole("button", { name: "Observando" })).toBeTruthy();
+  expect((await engine.scouting()).watchList).toHaveLength(1);
+  await userEvent.click(screen.getByRole("switch", { name: "Só observados" }));
+  const rows = within(screen.getByRole("table", { name: "Jogadores" })).getAllByRole("row").slice(1);
+  expect(rows.map((row) => within(row).getAllByRole("button")[0]?.textContent)).toEqual([name]);
+});
+
+test("a search saved under a name comes back from the saved searches", async () => {
+  const { engine } = await openMarket();
+  await screen.findByRole("table", { name: "Jogadores" });
+  await pickOption(screen.getByRole("combobox", { name: "Posição" }), "Goleiro");
+  await userEvent.click(screen.getByRole("button", { name: "Salvar busca" }));
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome da busca" }), "Goleiros{Enter}");
+  expect((await engine.scouting()).savedFilters).toMatchObject([{ name: "Goleiros", filters: { group: "GK" } }]);
+  await pickOption(screen.getByRole("combobox", { name: "Posição" }), "Todas");
+  await pickOption(await screen.findByRole("combobox", { name: "Buscas salvas" }), "Goleiros");
+  const positions = within(screen.getByRole("table", { name: "Jogadores" })).getAllByRole("cell", { name: /^(GOL|DEF|MEI|ATA)$/ }).map((cell) => cell.textContent);
+  expect(new Set(positions)).toEqual(new Set(["GOL"]));
 });

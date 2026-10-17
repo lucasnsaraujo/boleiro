@@ -2,11 +2,13 @@ import { WRONG_CALL_WORDS } from "../format/refereeCallWords.js";
 import { guestClubOf } from "@boleiro/engine/sim/continental/guestClubs";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
+import { squadsOfGame } from "@boleiro/engine/sim/players/squadsByClub";
 import { SQUAD_CAP } from "@boleiro/engine/sim/transfers/squadCap";
+import { isInPreContractWindow } from "@boleiro/engine/sim/transfers/tradeBetweenClubs";
 import { copinhaRun } from "@boleiro/engine/sim/youth/copinha";
 import type { AdvanceResult } from "../engine/createEngineSession.js";
 import { competitionName } from "../format/competitionName.js";
-import { monthName } from "../format/formatGameDate.js";
+import { formatDayMonth, monthName } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
 import { boardGoal } from "../screens/clubChoices.js";
 import { copinhaRoundName } from "../format/copinhaRoundName.js";
@@ -20,10 +22,12 @@ export type NewsState = Pick<GameState, "date" | "coachClubId" | "clubs" | "play
 
 const REQUEST_NOUNS: Record<CoachRequest["kind"], string> = {
   sign: "a contratação",
+  payClause: "o pagamento da multa rescisória",
   sell: "a venda",
   renew: "a renovação",
   loanIn: "o empréstimo",
   loanOut: "o empréstimo",
+  recall: "a volta antecipada",
 };
 
 const REFUSALS: Record<string, string> = {
@@ -37,6 +41,9 @@ const REFUSALS: Record<string, string> = {
   lenderNotBigger: "o clube dele não é maior que o nosso",
   lenderNeedsHim: "o clube dele não libera",
   tooOld: "velho demais para empréstimo",
+  loanLimit: "a FIFA limita a seis os empréstimos internacionais de cada clube",
+  nationalLoanLimit: "a CBF limita a 16 os empréstimos nacionais de cada clube",
+  loanPairLimit: "o regulamento limita a três os empréstimos entre os mesmos clubes",
   preContractSigned: "ele já assinou pré-contrato",
   alreadyAtClub: "ele já joga aqui",
   onLoan: "ele está emprestado",
@@ -204,6 +211,7 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         const to = toClubId ? clubName(toClubId) : "exterior";
         if (kind === "loan") return [`${name} emprestado (${to})`, "neutral"];
         if (kind === "loanReturn") return [`${name} volta para ${to}`, "neutral"];
+        if (kind === "releaseClause") return [`${name} sai: ${to} paga a multa rescisória, ${formatMoney(fee)}`, "bad"];
         if (fee === 0) return [`${name} sai sem custo (${to})`, "neutral"];
         return [`${name} vendido por ${formatMoney(fee)} (${to})`, "neutral"];
       }
@@ -239,8 +247,21 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
     }
   }
 
-  return events.flatMap((event) => {
+  const lines = events.flatMap((event) => {
     const found = lineOf(event);
     return found ? [{ date: before.date, text: found[0], tone: found[1] }] : [];
   });
+  return [...lines, ...preContractWarnings(before, after)];
+}
+
+/** The coach's players who entered the last six months of their contract that day, when any club may sign them to a pre-contract. */
+function preContractWarnings(before: NewsState, after: NewsState): InboxLine[] {
+  if (!after.coachClubId || after.coachClubId !== before.coachClubId || after.date === before.date) return [];
+  return (squadsOfGame(after).get(after.coachClubId) ?? [])
+    .filter((p) => !after.market.preContracts[p.id] && !after.market.loans[p.id] && isInPreContractWindow(p, after.date) && !isInPreContractWindow(p, before.date))
+    .map((p) => ({
+      date: before.date,
+      text: `${p.name} entra nos últimos seis meses de contrato (até ${formatDayMonth(p.contractUntil)}): outros clubes já podem assinar pré-contrato com ele`,
+      tone: "bad",
+    }));
 }

@@ -46,6 +46,7 @@ export function requestOptions(state: RequestState, playerId: string, years = DE
   const player = state.players[playerId];
   if (!player) return [];
   const loan = market.loans[playerId];
+  if (loan?.fromClubId === coachClubId) return [{ label: "Chamar de volta", request: { kind: "recall", playerId } }];
   // A loanee here can only be bought, through his purchase clause.
   if (loan) return player.clubId === coachClubId && loan.buyOption !== null ? [{ label: "Comprar", request: { kind: "sign", playerId } }] : [];
   if (player.clubId === coachClubId) {
@@ -58,6 +59,14 @@ export function requestOptions(state: RequestState, playerId: string, years = DE
   if (isInPreContractWindow(player, state.date)) return [{ label: "Pré-contrato", request: { kind: "sign", playerId } }];
   const buy: RequestOption = { label: "Comprar", request: { kind: "sign", playerId } };
   return isLendable(state, player, lineupOf) ? [buy, { label: "Pedir empréstimo", request: { kind: "loanIn", playerId } }] : [buy];
+}
+
+/** The request to pay his release clause, for a player under contract at another club whom nobody else holds; null otherwise. */
+export function clauseRequest(state: RequestState, playerId: string): CoachRequest | null {
+  const player = state.players[playerId];
+  if (!state.coachClubId || !player || player.clubId === state.coachClubId) return null;
+  if (state.market.loans[playerId] || state.market.preContracts[playerId]) return null;
+  return { kind: "payClause", playerId };
 }
 
 /** Whether the board can only grant it inside a transfer window. Free agents, pre-contracts and renewals go any day. */
