@@ -5,7 +5,7 @@ import type { GameState } from "../gameState.js";
 import { startMatchDay } from "../live/startMatchDay.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { isInjured } from "../players/isInjured.js";
-import { CALL_UP_PLACES, CALL_UP_SIZE, OUTSIDER_MARK, nationalSide } from "./callUps.js";
+import { CALL_UP_PLACES, CALL_UP_SIZE, nationalSide, nationalsByTeam } from "./callUps.js";
 import { firstRoundPairs, onDutyOn } from "./nationsDay.js";
 
 const football = loadNationalFootball();
@@ -140,11 +140,13 @@ describe("national football over 2026", () => {
     expect(afterWorldCup.nations?.titles.map((t) => t.competitionId)).toContain("world-cup-2026");
   });
 
-  it("names a pool player the game keeps no squad place for by his row among the team's outsiders", () => {
-    expect(OUTSIDER_MARK).toBe("~");
+  it("keeps a team's pool players abroad apart from the game's own players of that team", () => {
     const brazil = start.nations?.outsiders.brazil;
-    expect(brazil?.names.length).toBe(brazil?.strengths.length);
-    expect(brazil?.roles.length).toBe(brazil?.names.length);
+    const own = new Set((nationalsByTeam(start.players, start.nations?.teams ?? {}).get("brazil") ?? []).map((p) => p.name));
+    expect(brazil?.names.length).toBeGreaterThan(0);
+    expect(brazil?.names.filter((name) => own.has(name))).toEqual([]);
+    const called = march.nations?.callUps.brazil?.outsiders ?? [];
+    expect(called.every((row) => brazil?.names[row] !== undefined)).toBe(true);
   });
 });
 

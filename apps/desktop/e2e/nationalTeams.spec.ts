@@ -45,7 +45,7 @@ test("the March FIFA window takes a called-up player from the coach's club and g
   await expect(page.getByRole("region", { name: "Data Fifa" })).toContainText("23 a 31 mar");
 
   // Brazil's call-up has its places by position, Flamengo's men marked as the coach's.
-  await expect(page.getByRole("group", { name: "Goleiros" }).getByRole("listitem")).toHaveCount(3);
+  await expect(page.getByRole("group", { name: "Goleiros" }).getByRole("listitem", { name: /força/ })).toHaveCount(3);
   await expect(page.getByRole("tabpanel", { name: "Convocação" }).getByRole("listitem", { name: /, seu clube$/ }).first()).toBeVisible();
 
   await page.getByRole("tab", { name: "Jogos e tabelas" }).click();
@@ -55,12 +55,12 @@ test("the March FIFA window takes a called-up player from the coach's club and g
   await page.getByRole("tab", { name: "Ranking Fifa" }).click();
   await expect(page.getByRole("tabpanel", { name: "Ranking Fifa" })).toContainText("Espanha");
 
-  // The day after the window he is back at the club.
+  // The day after the window he is back at the club; the box turns to a preview of the next window.
   await fastForward(page, "2026-04-01");
   await bar(page).getByRole("link", { name: "Times" }).click();
   await expect(await news(page)).toContainText("volta da seleção");
   await openNationalTeam(page);
-  await expect(page.getByRole("region", { name: "Saem do Flamengo" })).toContainText("Ninguém do Flamengo está com uma seleção agora.");
+  await expect(page.getByRole("region", { name: "Saem do Flamengo" })).toContainText("Prévia pelas listas prováveis.");
 });
 
 test("Brazil's screen shows the South American qualifiers' table with the two matches the September 2027 window has played", async ({ page }) => {
