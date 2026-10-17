@@ -45,15 +45,23 @@ export function TitlePage({ title, clubs, onClose, onOpenMatch }: Props) {
   const club = clubs[title.clubId];
   const colours = club ? plateColours(club.colours) : { background: "#0B7A3B", text: "#FFFFFF" };
   const { decider } = title;
-  const nameOf = (id: string) => clubs[id]?.shortName ?? id;
+  const nameOf = (id: string) => clubs[id]?.shortName ?? decider?.clubs[id]?.name ?? id;
+  // A club from abroad may be gone from the game since: its crest comes from the name and colours kept with the match.
+  const crestOf = (id: string): Pick<Club, "id" | "shortName" | "colours"> | null => {
+    const then = decider?.clubs[id];
+    return clubs[id] ?? (then ? { id, shortName: then.name, colours: then.colours ?? { primary: "#3C4A40", secondary: "#FFFFFF" } } : null);
+  };
   const style = { "--c": colours.background, "--ic": colours.text } as CSSProperties;
   const lines = storyLines(title);
-  const side = (id: string) => (
-    <span className="ab-tp-side">
-      {clubs[id] && <Crest club={clubs[id]} size={44} />}
-      <span>{nameOf(id)}</span>
-    </span>
-  );
+  const side = (id: string) => {
+    const crest = crestOf(id);
+    return (
+      <span className="ab-tp-side">
+        {crest && <Crest club={crest} size={44} />}
+        <span>{nameOf(id)}</span>
+      </span>
+    );
+  };
   return createPortal(
     <div
       className="ab-veil"
@@ -80,7 +88,7 @@ export function TitlePage({ title, clubs, onClose, onOpenMatch }: Props) {
           </span>
           <div className="ab-tp-head">
             <p className="ab-tp-kicker">
-              Campeão · {title.season}
+              {title.season}
               {club && ` · ${club.shortName}`}
             </p>
             <h2 id="ab-tp-title" ref={heading} tabIndex={-1}>

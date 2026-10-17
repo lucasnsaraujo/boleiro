@@ -23,6 +23,9 @@ export type KeptPlayer = [id: string, name: string, group: PositionGroup, streng
 
 export type PlayedFixture = Fixture & { result: MatchResult };
 
+/** A club of a kept match as it was then: a club from abroad may be gone from the game by the next season. */
+export type KeptClub = { name: string; colours?: { primary: string; secondary: string } };
+
 /**
  * A match a human coach's album keeps whole after its season's fixtures go: a final his club played
  * (`isWon` when it took the cup) or the match that won it a league. A two-legged final keeps its
@@ -35,6 +38,7 @@ export type KeptMatch = {
   isWon: boolean;
   fixture: PlayedFixture;
   firstLeg: PlayedFixture | null;
+  sides: { home: KeptClub; away: KeptClub };
   formations: { home: Formation; away: Formation };
   /** Everyone who played: the starters first, as they lined up, then the substitutes. */
   players: KeptPlayer[];

@@ -214,8 +214,10 @@ function keptPage(state: GameState, kept: KeptMatch): MatchPage {
   const starters = new Set(kept.starters);
   const side = (clubId: string, where: "home" | "away"): PageSide => {
     const own = [...players.values()].filter((p) => p.clubId === clubId);
+    const then = kept.sides[where];
+    const now = clubOf(state, clubId);
     return {
-      club: clubOf(state, clubId),
+      club: state.clubs[clubId] ? now : { ...now, shortName: then.name, colours: then.colours ?? now.colours },
       formation: kept.formations[where],
       starters: kept.starters.flatMap((id) => {
         const starter = players.get(id);

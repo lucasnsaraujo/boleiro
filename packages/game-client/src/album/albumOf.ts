@@ -1,5 +1,5 @@
 import type { Role } from "@boleiro/data/players";
-import { SHINE, type AlbumPage, type KeptMatch } from "@boleiro/engine/sim/album/album";
+import { SHINE, type AlbumPage, type KeptClub, type KeptMatch } from "@boleiro/engine/sim/album/album";
 import { fileAlbumPages } from "@boleiro/engine/sim/album/fileAlbumPages";
 import type { WaitingCoach } from "@boleiro/engine/sim/coach/humanCoaches";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
@@ -59,6 +59,8 @@ export type TitleDecider = {
   penaltyWinnerId: string | null;
   isAfterExtraTime: boolean;
   firstLeg: { homeId: string; awayId: string; homeGoals: number; awayGoals: number } | null;
+  /** Both clubs as they were, by id: one from abroad may be gone from the game since. */
+  clubs: Record<string, KeptClub>;
   goals: Goal[];
   stadium: string | null;
   crowd: number | null;
@@ -199,6 +201,7 @@ function deciderOf(match: KeptMatch): TitleDecider {
     penaltyWinnerId: fixture.result.penaltyWinnerId ?? null,
     isAfterExtraTime: fixture.result.isAfterExtraTime === true,
     firstLeg: match.firstLeg ? { homeId: match.firstLeg.homeId, awayId: match.firstLeg.awayId, homeGoals: match.firstLeg.result.homeGoals, awayGoals: match.firstLeg.result.awayGoals } : null,
+    clubs: { [fixture.homeId]: match.sides.home, [fixture.awayId]: match.sides.away },
     goals: match.events.flatMap((e): Goal[] => (e.type === "goal" ? [{ name: names.get(e.playerId) ?? e.playerId, clubId: e.clubId, minute: e.minute, kind: e.kind ?? null }] : [])),
     stadium: match.stadium,
     crowd: match.crowd,

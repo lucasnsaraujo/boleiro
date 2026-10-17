@@ -72,6 +72,7 @@ describe("a season's album, played", () => {
         const goals = final.events.filter((e) => e.type === "goal");
         expect(goals.length).toBe((fixture?.result?.homeGoals ?? 0) + (fixture?.result?.awayGoals ?? 0));
         expect(final.starters).toHaveLength(22);
+        expect([final.sides.home.name, final.sides.away.name]).toEqual([last.clubs[final.fixture.homeId]?.shortName, last.clubs[final.fixture.awayId]?.shortName]);
       }
       finals += keptFinals.length;
     }

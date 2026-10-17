@@ -1334,3 +1334,8 @@ li:nth-child(3n + 2) > .ab-plate {
   flex-wrap: wrap;
   gap: 12px;
 }
+
+/* A season's rarities sit small on its page; the Raridades tab prints them full size. */
+.ab-eggs li {
+  zoom: 0.6;
+}

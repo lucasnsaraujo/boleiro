@@ -120,9 +120,9 @@ export function History() {
             ))}
           </div>
         )}
-        <Link className="btn-quiet history-awards" to="/awards">
+        <Link className="btn-quiet history-awards" to="/awards" aria-label="Prêmios e recordes">
           <i className="ph-bold ph-trophy" aria-hidden="true" />
-          Prêmios e recordes
+          Prêmios
         </Link>
         <button className="btn-main" onClick={() => void round.play()} disabled={round.isPlaying}>
           {playRoundLabel(round.isPlaying, state.coachClubId !== null)}

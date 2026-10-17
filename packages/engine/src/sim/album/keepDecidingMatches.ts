@@ -1,4 +1,5 @@
 import { humanClubIds } from "../coach/humanCoaches.js";
+import { guestClubOf } from "../continental/guestClubs.js";
 import { neutralGround } from "../continental/neutralGrounds.js";
 import { attendance } from "../finances/recordMatchFinances.js";
 import type { Competition, Fixture, GameState, SimPlayer } from "../gameState.js";
@@ -8,7 +9,7 @@ import type { LiveMatch } from "../live/liveDay.js";
 import { matchRatings } from "../live/matchRatings.js";
 import { matchOfficials } from "../referees/matchOfficials.js";
 import { standings } from "../standings.js";
-import type { KeptMatch, KeptPlayer, PlayedFixture } from "./album.js";
+import type { KeptClub, KeptMatch, KeptPlayer, PlayedFixture } from "./album.js";
 
 const isPlayed = (fixture: Fixture): fixture is PlayedFixture => fixture.result !== null;
 
@@ -55,6 +56,7 @@ function kept(state: GameState, competition: Competition, fixture: PlayedFixture
     season: competition.season,
     clubId,
     fixture,
+    sides: { home: keptClub(state, fixture.homeId), away: keptClub(state, fixture.awayId) },
     formations: match.formations,
     players: everyone.map((p): KeptPlayer => [p.id, p.name, p.group, Math.round(p.strength), p.clubId]),
     starters: [...home.starters, ...away.starters].map((p) => p.id),
@@ -64,6 +66,13 @@ function kept(state: GameState, competition: Competition, fixture: PlayedFixture
     crowd: ground || !finance ? null : attendance(state, finance, fixture.homeId, fixture.awayId, fixture),
     referee: matchOfficials(state.seed, competition, fixture).referee?.name ?? null,
   };
+}
+
+function keptClub(state: GameState, clubId: string): KeptClub {
+  const club = state.clubs[clubId];
+  if (club) return { name: club.shortName, colours: club.colours };
+  const guest = guestClubOf(state, clubId);
+  return { name: guest?.name ?? clubId, ...(guest?.colours ? { colours: guest.colours } : {}) };
 }
 
 const keptBy = (record: CoachRecord, match: KeptMatch): CoachRecord => ({ ...record, keptMatches: [...(record.keptMatches ?? []), match] });

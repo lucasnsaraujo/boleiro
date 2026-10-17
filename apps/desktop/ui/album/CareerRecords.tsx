@@ -23,7 +23,7 @@ export function CareerRecords({ records, clubs, coachName }: { records: AlbumRec
         <header className="ab-ph">
           <div className="ab-ph-text">
             <h2 id="ab-career-title">Recordes de {coachName || "sua carreira"}</h2>
-            <p>Do álbum: os jogos e gols de cada temporada que ele imprimiu</p>
+            <p>Contados nas páginas do álbum, temporada a temporada</p>
           </div>
         </header>
         <ul className="ab-counters">

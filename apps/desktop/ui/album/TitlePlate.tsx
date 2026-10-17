@@ -11,7 +11,7 @@ function plateDetail(title: TitlePage, clubs: Clubs): string {
   if (!decider) return "final não guardada";
   const opponentId = decider.homeId === title.clubId ? decider.awayId : decider.homeId;
   const [own, other] = decider.homeId === title.clubId ? [decider.homeGoals, decider.awayGoals] : [decider.awayGoals, decider.homeGoals];
-  const opponent = clubs[opponentId]?.shortName ?? opponentId;
+  const opponent = clubs[opponentId]?.shortName ?? decider.clubs[opponentId]?.name ?? opponentId;
   const shootout = decider.penaltyWinnerId ? " (pên.)" : "";
   return decider.kind === "league" ? `título decidido: ${own} × ${other} ${opponent}` : `final: ${own} × ${other} ${opponent}${shootout}`;
 }
