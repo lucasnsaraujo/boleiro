@@ -120,6 +120,12 @@ describe("retiring a player by hand", () => {
     expect([retired?.listings[player.id], retired?.auctions[player.id], retired?.bids[player.id]]).toEqual([undefined, undefined, undefined]);
   });
 
+  it("refuses a player on loan to the coach, who belongs to another club", () => {
+    const loan = { fromClubId: "palmeiras-sp", until: "2026-12-31", lenderWageShare: 0.5, buyOption: null };
+    const lent = { ...start, market: { ...start.market, loans: { [player.id]: loan } } };
+    expect(() => retirePlayer(lent, player.id)).toThrow(/on loan/);
+  });
+
   it("refuses a player of another club", () => {
     const other = Object.values(start.players).find((p) => p.clubId !== COACH_CLUB);
     if (!other) throw new Error("no other player");

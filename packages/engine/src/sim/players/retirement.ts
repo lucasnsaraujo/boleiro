@@ -77,9 +77,10 @@ function withoutPlayer(state: GameState, playerId: string): GameState {
   return { ...state, players, market: marketOf(state.market, (id) => id !== playerId) };
 }
 
-/** The coach retires one of his players now, whatever his age. */
+/** The coach retires one of his players now, whatever his age; a loanee belongs to his own club, which decides. */
 export function retirePlayer(state: GameState, playerId: string): { state: GameState; event: PlayerRetired } {
   const player = coachsPlayer(state, playerId);
+  if (state.market.loans[playerId]) throw new Error(`${player.name} is on loan from another club`);
   return { state: withoutPlayer(state, playerId), event: { type: "playerRetired", playerId, clubId: player.clubId, name: player.name, age: player.age } };
 }
 

@@ -236,7 +236,7 @@ export function Player() {
           onWithdraw={() => void engine.apply({ type: "withdraw", playerId: card.id }).then(setDesk)}
         />
       )}
-      {card.isCoachsPlayer && (
+      {card.isCoachsPlayer && !card.contract.loan && (
         <RetirementActions
           name={card.name}
           retiring={state.players[card.id]?.retiring ?? null}
