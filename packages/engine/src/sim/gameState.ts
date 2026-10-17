@@ -18,6 +18,7 @@ import type { Guests } from "./world/guests.js";
 import type { World } from "./world/world.js";
 import type { Formats } from "./formats.js";
 import type { Youth } from "./youth/academy.js";
+import type { EggBook } from "./eggs/eggBook.js";
 import type { EventMemory } from "./events/eventMemory.js";
 import type { ClubChemistry } from "./chemistry/chemistryOf.js";
 import type { ClubSponsors, PoolBrand } from "./sponsors/sponsors.js";
@@ -270,4 +271,6 @@ export type GameState = {
   sponsors?: Record<string, ClubSponsors>;
   /** The brands that can bid for a place on a kit, kept from the pack the career started with. */
   sponsorPool?: PoolBrand[];
+  /** The easter eggs the human coaches found; a save from before eggs, or a game where none was found, has none. */
+  eggs?: EggBook;
 };

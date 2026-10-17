@@ -23,7 +23,7 @@ const UPSET_PLACES = 10;
 const UPSET_FROM_GAMES = 5;
 const DIVISION_RANK = { A: 0, B: 1, C: 2, D: 3 } as const;
 // guess: the day's busiest beats print a few stories each; the rest is in the results.
-const PER_DAY: Record<Exclude<NewsKind, "event" | "match">, number> = { signing: 3, sacking: 3, upset: 2, rivalry: 2, var: 2, controversy: 3, award: 2, record: 3 };
+const PER_DAY: Record<Exclude<NewsKind, "event" | "match" | "egg">, number> = { signing: 3, sacking: 3, upset: 2, rivalry: 2, var: 2, controversy: 3, award: 2, record: 3 };
 
 type Variant = (names: Record<string, string>) => { headline: string; body: string };
 
