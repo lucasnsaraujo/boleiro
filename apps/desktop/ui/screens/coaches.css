@@ -135,6 +135,7 @@
   min-height: 0;
   overflow: auto;
   border-top-left-radius: 0;
+  container-type: inline-size;
 }
 
 /* Ranking tables */
@@ -463,6 +464,18 @@ td.coaches-pos {
 
 .coaches-job.is-shaky .crest {
   filter: saturate(0.6);
+}
+
+/* A narrow page (the window at its 1024 px minimum) drops the size meter so the rest keeps its room. */
+@container (max-width: 760px) {
+  .coaches-job {
+    grid-template-columns: 34px minmax(0, 1fr) auto auto;
+    column-gap: 12px;
+  }
+
+  .coaches-job-size {
+    display: none;
+  }
 }
 
 /* The club's yes, stamped on the row */
