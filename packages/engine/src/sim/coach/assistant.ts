@@ -10,7 +10,7 @@ import { coachSalary } from "./coachSalary.js";
 import { asWaitingCoach, waitingCoachesOf } from "./humanCoaches.js";
 import { inventCoachName } from "./inventCoachName.js";
 
-export const ASSISTANT_LEVELS = [1, 2, 3, 4, 5] as const;
+const ASSISTANT_LEVELS = [1, 2, 3, 4, 5] as const;
 export type AssistantLevel = (typeof ASSISTANT_LEVELS)[number];
 
 /**
@@ -78,7 +78,7 @@ function invented(state: Pick<GameState, "seed">, key: string): { name: string; 
 }
 
 /** The assistant every club has on its staff, level 1, the coach's until he hires another. */
-export function clubAssistant(state: Pick<GameState, "seed">, clubId: string | null): Assistant {
+function clubAssistant(state: Pick<GameState, "seed">, clubId: string | null): Assistant {
   const key = `club:${clubId ?? ""}`;
   return { id: key, ...invented(state, key), level: 1, wage: 0 };
 }

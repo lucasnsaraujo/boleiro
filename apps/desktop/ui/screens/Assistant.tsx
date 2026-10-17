@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Link } from "react-router";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import type { AssistantCandidate, AssistantRefusal } from "@boleiro/engine/sim/coach/assistant";
@@ -99,6 +99,11 @@ export function Assistant() {
     };
   }, [load]);
 
+  // Searching the market for his suggestions is the screen's heaviest work: once per read of the game.
+  const suggestions = useMemo(
+    () => (loaded?.page.tip && loaded.state.coachClubId ? signingSuggestions(loaded.state, loaded.page.assistant, loaded.page.tip, loaded.watched) : null),
+    [loaded],
+  );
   const tipKey = loaded?.page.tip ? `assistant:${loaded.page.assistant.id}:${loaded.page.tip.playerId}:${loaded.state.date}` : null;
   const weakShown = useCountUp(Math.round(loaded?.page.tip?.read ?? 0), tipKey);
 
@@ -134,11 +139,10 @@ export function Assistant() {
   if (hasFailed) return <p className="status error">O auxiliar não abriu. Volte ao clube e tente de novo.</p>;
   if (!loaded) return <p className="status">Chamando o auxiliar…</p>;
 
-  const { page, state, watched } = loaded;
+  const { page, state } = loaded;
   const { assistant, tip } = page;
   const club = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
   const isOwn = !assistant.since;
-  const suggestions = tip && club ? signingSuggestions(state, assistant, tip, watched) : null;
   const captain = page.captainName ? `, ${page.captainName} de capitão` : "";
 
   return (
