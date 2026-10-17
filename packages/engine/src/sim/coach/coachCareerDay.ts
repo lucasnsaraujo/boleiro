@@ -12,7 +12,7 @@ export const FIRING_REPUTATION_COST = 5;
 
 type CareerEvent = CoachHired | CoachFired | JobOffered;
 
-/** The coach in the seat after the day's offer he accepted and his salary on the first of the month. */
+/** The coach in the seat after the day's offer he accepted, and his and his hired assistant's salaries on the first of the month. */
 function hireAndPay(state: GameState, accepted: string | undefined, events: CareerEvent[]): GameState {
   let next = state;
   // Another hot-seat coach may have taken the club since it made the offer.
@@ -21,9 +21,12 @@ function hireAndPay(state: GameState, accepted: string | undefined, events: Care
     next = hired.state;
     events.push(hired.event);
   }
-  const { contract } = next.coach;
+  const { contract, assistant } = next.coach;
   if (next.date.endsWith("-01") && next.coachClubId && contract) {
     next = bookMoney(next, next.coachClubId, { cost: "wages", amount: contract.salary });
+  }
+  if (next.date.endsWith("-01") && next.coachClubId && assistant?.wage) {
+    next = bookMoney(next, next.coachClubId, { cost: "wages", amount: assistant.wage });
   }
   return next;
 }

@@ -1,5 +1,6 @@
 import type { IsoDate } from "../gameState.js";
 import type { EventArea } from "../events/eventMemory.js";
+import type { Assistant, FormerPlayer } from "./assistant.js";
 import type { AssistantDuty } from "./assistantDuties.js";
 import type { Tactics } from "./tactics.js";
 
@@ -24,6 +25,10 @@ export type Coach = {
   cooldowns?: { clubId: string; untilSeason: number }[];
   /** The duties he set apart from their defaults (assistantDuties.ts); left out, the assistant runs the defaults. */
   assistantDuties?: Partial<Record<AssistantDuty, boolean>>;
+  /** The assistant he hired; left out, his club's own level-1 assistant (assistant.ts). */
+  assistant?: Assistant;
+  /** The last players who retired at his club, who may come back as his assistant. */
+  formerPlayers?: FormerPlayer[];
 };
 
 /** Whether the club still holds the coach's resignation against him. */
