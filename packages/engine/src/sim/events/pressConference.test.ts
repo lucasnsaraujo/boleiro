@@ -3,6 +3,7 @@ import { coachesByClub } from "../coach/aiCoaches.js";
 import { addDays } from "../dates.js";
 import type { GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { loadGame, saveGame } from "../saveGame.js";
 import { clubMood } from "../morale/clubMood.js";
 import { eventMemoryOf, eventsOf, pendingEventOf } from "./eventMemory.js";
 import type { EventType, PressQuestionType } from "./eventType.js";
@@ -105,6 +106,39 @@ describe("a press conference", () => {
     const bank = [conference({ followUps: [question("never", 9, false)] })];
     const pending = pendingEventOf(untilPending(start, bank), CLUB);
     expect(pending?.questions).toHaveLength(1);
+  });
+});
+
+describe("saves", () => {
+  it("keeps a press conference half answered across a save and goes on from the question it stopped at", () => {
+    const bank = [conference()];
+    const first = answerEvent(untilPending(start, bank), CLUB, 0, bank).state;
+    const loaded = loadGame(saveGame(first));
+    expect(pendingEventOf(loaded, CLUB)).toEqual(pendingEventOf(first, CLUB));
+    const done = answerEvent(answerEvent(loaded, CLUB, 2, bank).state, CLUB, 2, bank).state;
+    expect(eventsOf(done, { typeId: "conference", clubId: CLUB }).at(-1)?.answers).toEqual([0, 2, 2]);
+  });
+
+  it("answers a press event saved before conferences as its one question, under its topic", () => {
+    const pending = {
+      typeId: "press-rival",
+      date: start.date,
+      clubId: CLUB,
+      area: "press" as const,
+      look: "press" as const,
+      headline: "Coletiva: o rival na pauta",
+      body: "“O rival provoca. Responde?”",
+      setting: "Coletiva no CT",
+      choices: [{ label: "“Sim.”", effects: { morale: 1 } }, { label: "“Não.”", effects: {} }],
+      assistantChoice: 1,
+      expiresOn: start.date,
+    };
+    const old: GameState = { ...start, eventMemory: { log: [], pending: { [CLUB]: pending }, news: [], rivalry: {} } };
+    const answered = answerEvent(loadGame(saveGame(old)), CLUB, 0);
+    expect(answered.event.questionsLeft).toBe(0);
+    expect(pendingEventOf(answered.state, CLUB)).toBeNull();
+    expect(eventsOf(answered.state, { typeId: "press-rival" }).at(-1)).toEqual({ typeId: "press-rival", date: start.date, clubId: CLUB, choice: 0 });
+    expect(eventMemoryOf(answered.state).news.at(-1)?.topic).toBe("press");
   });
 });
 
