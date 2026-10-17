@@ -10,16 +10,19 @@ export type Slots = Record<SlotName, string> & { articles?: Partial<Record<"club
 // A club without a named coach is "o técnico", which a preposition before it takes in: "do técnico".
 const JOINED = { de: "do", em: "no", a: "ao", por: "pelo" } as const;
 
+// A slot right after these opens a sentence: the text's start, a full stop or a quote that opens one.
+const SENTENCE_START = /(^|[.!?…]\s+)“?$/;
+const capitalised = (name: string) => name.charAt(0).toUpperCase() + name.slice(1);
+
 /**
- * The text with each `{slot}` replaced by its name, starting with a capital ("o técnico" opens a
- * headline as "O técnico"); a slot the text doesn't know stays as it is. Texts write a club or a
- * stadium after the masculine article ("do {club}"); a feminine one takes the feminine ("da Chapecoense").
+ * The text with each `{slot}` replaced by its name, a name that opens a sentence with a capital
+ * ("o técnico" opens one as "O técnico"); a slot the text doesn't know stays as it is. Texts write a
+ * club or a stadium after the masculine article ("do {club}"); a feminine one takes the feminine ("da Chapecoense").
  */
 export function fillSlots(text: string, slots: Slots): string {
   const filled = text
-    .replace(/\{(\w+)\}/g, (whole, slot: string) => (isSlotName(slot) ? slots[slot] : whole))
+    .replace(/\{(\w+)\}/g, (whole, slot: string, at: number) => (isSlotName(slot) ? (SENTENCE_START.test(text.slice(0, at)) ? capitalised(slots[slot]) : slots[slot]) : whole))
     .replace(/\b(de|em|a|por) o técnico/g, (_whole, word: keyof typeof JOINED) => `${JOINED[word]} técnico`);
   const named = (["club", "rival", "stadium"] as const).map((slot) => ({ name: slots[slot], article: slots.articles?.[slot] ?? "o" }));
-  const agreed = agreeArticles(filled, named);
-  return agreed.charAt(0).toUpperCase() + agreed.slice(1);
+  return capitalised(agreeArticles(filled, named));
 }

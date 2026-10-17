@@ -166,4 +166,11 @@ describe("event texts", () => {
     expect(fillSlots("Confiança em {coach}", slots)).toBe("Confiança no técnico");
     expect(fillSlots("{coach} rebate", slots)).toBe("O técnico rebate");
   });
+
+  it("opens a sentence with a capital when a slot starts it after a full stop", () => {
+    const slots = { player: "", teammate: "", club: "Flamengo", rival: "", age: "", position: "", stadium: "Maracanã", coach: "o técnico" };
+    expect(fillSlots("O {stadium} lembrou de quem está no banco. {coach} acenou meio sem jeito.", slots)).toBe("O Maracanã lembrou de quem está no banco. O técnico acenou meio sem jeito.");
+    expect(fillSlots("Vaias no fim! “{coach} fora!”, gritou a torcida.", slots)).toBe("Vaias no fim! “O técnico fora!”, gritou a torcida.");
+    expect(fillSlots("Elogios a {coach} e ao time.", slots)).toBe("Elogios ao técnico e ao time.");
+  });
 });
