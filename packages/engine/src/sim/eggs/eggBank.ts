@@ -146,6 +146,7 @@ export const EGG_BANK: readonly EggType[] = [
     title: "Gol olímpico",
     rarity: "rare",
     look: "sticker",
+    once: "player",
     find: (tale) =>
       goalsIn(tale)
         .filter((g) => g.kind === "olympic")
@@ -569,6 +570,7 @@ export const EGG_BANK: readonly EggType[] = [
     title: "Garçom",
     rarity: "veryRare",
     look: "sticker",
+    once: "player",
     find: (tale) => {
       const tally = new Map<string, Goal[]>();
       for (const g of goalsIn(tale)) if (g.assistId) tally.set(g.assistId, [...(tally.get(g.assistId) ?? []), g]);
@@ -652,6 +654,7 @@ export const EGG_BANK: readonly EggType[] = [
     title: "Dia do Futebol",
     rarity: "veryRare",
     look: "clipping",
+    once: "club",
     find: (scene) => (scene.date.endsWith("-07-19") && playsToday(scene) ? { clubId: scene.clubId } : null),
     texts: [{ headline: "{club} joga no Dia Nacional do Futebol", body: "19 de julho: em 1900 nascia o Sport Club Rio Grande, o clube mais antigo do Brasil ainda em atividade. A data virou o dia do futebol em 1976." }],
   },

@@ -74,6 +74,15 @@ describe("finding eggs", () => {
     expect(findEggs(first.state, first.state, `2027-${day}`, [], [], [always]).events).toEqual([]);
   });
 
+  it("tells the club it plays on the Dia Nacional do Futebol once in its career", () => {
+    const day = EGG_BANK.find((type) => type.id === "football-day");
+    if (day?.on !== "day") throw new Error("no football day");
+    const playing = (date: string): DayEvent[] => [{ type: "matchPlayed", fixture: { ...ours, id: `ours-${date}`, date } }];
+    const first = findEggs(start, start, "2026-07-19", playing("2026-07-19"), [], [day]);
+    expect(first.events.map((e) => e.eggId)).toEqual(["football-day"]);
+    expect(findEggs(first.state, first.state, "2027-07-19", playing("2027-07-19"), [], [day]).events).toEqual([]);
+  });
+
   it("names a kid of the academy after the coach the game knows by name", () => {
     const kid = Object.values(start.youth?.prospects ?? {}).find((p) => p.clubId === CLUB);
     if (!kid) throw new Error("no academy");

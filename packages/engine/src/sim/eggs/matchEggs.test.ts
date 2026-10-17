@@ -101,7 +101,8 @@ test("a goalkeeper's goal is a rare sticker; his own goal is not", () => {
   expect(sidesOf("keeper-goal", { score: [1, 0], events: [goal(HOME, "gk", 88, "ownGoal")], groups })).toEqual([]);
 });
 
-test("a goal straight from a corner is an olympic goal", () => {
+test("a goal straight from a corner is an olympic goal, found once per player", () => {
+  expect(egg("olympic-goal").once).toBe("player");
   expect(sidesOf("olympic-goal", { score: [0, 1], events: [goal(AWAY, "a", 20, "olympic")] })).toEqual([AWAY]);
   expect(sidesOf("olympic-goal", { score: [0, 1], events: [goal(AWAY, "a", 20, "freeKick")] })).toEqual([]);
 });
@@ -309,7 +310,8 @@ test("a goalkeeper sent off and his side still not beaten", () => {
   expect(sidesOf("keeper-sent-off", { score: [0, 0], events: [red(HOME, "zag", 50)], groups: { zag: "DEF" } })).toEqual([]);
 });
 
-test("three assists by one player", () => {
+test("three assists by one player, found once per player", () => {
+  expect(egg("assist-hat-trick").once).toBe("player");
   const assisted = [10, 20, 30].map((minute, i): MatchEvent => ({ type: "goal", minute, clubId: AWAY, playerId: `a${i}`, assistId: "a10" }));
   expect(sidesOf("assist-hat-trick", { score: [0, 3], events: assisted })).toEqual([AWAY]);
   expect(sidesOf("assist-hat-trick", { score: [0, 3], events: [...assisted.slice(0, 2), goal(AWAY, "a2", 30)] })).toEqual([]);
