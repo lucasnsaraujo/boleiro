@@ -253,6 +253,13 @@ export function NationalTeam() {
   const shown = draft ?? callUp.groups.flatMap((g) => g.players.map((p) => p.ref));
   const groups = callUp.groups.map((group) => ({ ...group, players: shown.flatMap((ref) => cards.get(ref) ?? []).filter((p) => p.role === group.role).sort((a, b) => b.strength - a.strength) }));
   const count = groups.reduce((sum, g) => sum + g.players.length, 0);
+  // Open places by position, never more in all than the list has left: a position past its places takes from the others.
+  let left = Math.max(0, callUp.size - count);
+  const openPlaces = groups.map((g) => {
+    const open = Math.min(left, Math.max(0, g.places - g.players.length));
+    left -= open;
+    return open;
+  });
   const edit = (next: string[]) => {
     setDraft(next);
     setOpenSlot(null);
@@ -350,9 +357,11 @@ export function NationalTeam() {
               </ul>
             ) : null}
             <p className="nt-nb">
-              {leaving.isProvisional ? "Prévia pelas listas prováveis. " : ""}
+              {leaving.isProvisional && leaving.players.length > 0 ? "Prévia pelas listas prováveis. " : ""}
               {leaving.players.length === 0
-                ? `Ninguém ${theClub("de")} está com uma seleção agora.`
+                ? leaving.isProvisional
+                  ? `Ninguém ${theClub("de")} deve ser convocado na próxima data Fifa.`
+                  : `Ninguém ${theClub("de")} está com uma seleção agora.`
                 : leaving.clubMatches === 0
                   ? `${capitalized(theClub())} não joga enquanto eles estão fora.`
                   : `${capitalized(theClub())} joga ${leaving.clubMatches === 1 ? "1 vez" : `${leaving.clubMatches} vezes`} sem eles, até ${formatDayMonth(leaving.players.reduce((last, p) => (p.until > last ? p.until : last), ""))}.`}
@@ -382,7 +391,7 @@ export function NationalTeam() {
               </button>
             ))}
           </div>
-          <span className="nt-note">{tab === "callUp" ? callUpNote : tab === "ranking" ? `Parte do ranking da Fifa de ${formatDayMonth(page.ranking.date)} ${page.ranking.date.slice(0, 4)} e muda jogo a jogo` : page.competitions.length === 1 ? "1 competição" : `${page.competitions.length} competições`}</span>
+          <span className="nt-note">{tab === "callUp" ? callUpNote : tab === "ranking" ? `Começa no ranking da Fifa de ${formatDayMonth(page.ranking.date)} ${page.ranking.date.slice(0, 4)} e muda jogo a jogo` : page.competitions.length === 1 ? "1 competição" : `${page.competitions.length} competições`}</span>
           {tab === "callUp" && (
             <span className="nt-cnt">
               {count} <em>de {callUp.size}</em>
@@ -393,17 +402,17 @@ export function NationalTeam() {
 
         {tab === "callUp" && (
           <div className="nt-callup" role="tabpanel" aria-label="Convocação" key={`${team.id}-${callUp.isProvisional}`}>
-            {groups.map((group) => (
+            {groups.map((group, groupIndex) => (
               <div className="nt-grp" key={group.role} role="group" aria-label={ROLE_GROUPS[group.role]}>
                 <div className="nt-gl">
-                  {ROLE_GROUPS[group.role]} <small>{Math.min(group.players.length, group.places)} de {group.places}</small>
+                  {ROLE_GROUPS[group.role]} <small>{group.players.length} de {group.places}</small>
                 </div>
                 <ul className="nt-row">
                   {group.players.map((player) => {
                     number++;
                     return <Sticker key={player.ref} player={player} number={number} colours={team.colours} index={number} {...(isEditing ? { onDrop: () => edit(shown.filter((ref) => ref !== player.ref)) } : {})} />;
                   })}
-                  {Array.from({ length: Math.max(0, group.places - group.players.length) }, (_, i) => {
+                  {Array.from({ length: openPlaces[groupIndex] ?? 0 }, (_, i) => {
                     number++;
                     const vacancy = `Vaga ${String(number).padStart(2, "0")}`;
                     return isEditing && count < callUp.size ? (
@@ -413,7 +422,7 @@ export function NationalTeam() {
                           {vacancy}
                         </button>
                         {openSlot === group.role && i === 0 && (
-                          <ul className="stk nt-pool" aria-label={`Chamar para ${ROLE_GROUPS[group.role].toLowerCase()}`}>
+                          <ul className={groupIndex >= groups.length - 2 ? "stk nt-pool up" : "stk nt-pool"} aria-label={`Chamar para ${ROLE_GROUPS[group.role].toLowerCase()}`}>
                             {(coaching?.pool ?? []).filter((p) => p.role === group.role && !shown.includes(p.ref)).slice(0, 8).map((p) => (
                               <li key={p.ref}>
                                 <button type="button" onClick={() => edit([...shown, p.ref])}>

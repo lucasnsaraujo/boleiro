@@ -788,6 +788,12 @@ button.nt-sl[aria-expanded="true"] {
   animation: nt-pop var(--t-base) var(--e-out) both;
 }
 
+/* In the last rows the list opens upward, inside the album's scroll. */
+.nt-pool.up {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
 .nt-pool button {
   width: 100%;
   display: grid;
