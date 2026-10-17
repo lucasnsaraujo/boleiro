@@ -3,7 +3,7 @@ import { bar, playLiveRound, startAtClub } from "./flows.js";
 
 const MAX_PRESSES = 12;
 // A game seed whose 2026 Libertadores Flamengo wins with no decisions taken, keeping its coach.
-const LIBERTADORES_WON = 5;
+const LIBERTADORES_WON = 26;
 
 /** Plays every day before `date` in the worker with no decisions, through the e2e build's engine hook. */
 async function playDaysBefore(page: Page, date: string) {
