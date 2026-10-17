@@ -26,6 +26,8 @@ const ROUND_NAMES: Record<string, string> = {
   "third-place": "3º lugar",
   final: "Final",
 };
+// A row holds eight stickers; a pick list opened from its right half opens leftward.
+const ROW_HALF = 4;
 type Tab = "callUp" | "tables" | "ranking";
 const TABS: { id: Tab; label: string }[] = [
   { id: "callUp", label: "Convocação" },
@@ -422,7 +424,7 @@ export function NationalTeam() {
                           {vacancy}
                         </button>
                         {openSlot === group.role && i === 0 && (
-                          <ul className={groupIndex >= groups.length - 2 ? "stk nt-pool up" : "stk nt-pool"} aria-label={`Chamar para ${ROLE_GROUPS[group.role].toLowerCase()}`}>
+                          <ul className={["stk nt-pool", groupIndex >= groups.length - 2 ? "up" : "", group.players.length + i >= ROW_HALF ? "end" : ""].filter(Boolean).join(" ")} aria-label={`Chamar para ${ROLE_GROUPS[group.role].toLowerCase()}`}>
                             {(coaching?.pool ?? []).filter((p) => p.role === group.role && !shown.includes(p.ref)).slice(0, 8).map((p) => (
                               <li key={p.ref}>
                                 <button type="button" onClick={() => edit([...shown, p.ref])}>
