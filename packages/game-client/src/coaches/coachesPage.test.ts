@@ -4,7 +4,7 @@ import { createEngineSession } from "../engine/createEngineSession.js";
 
 function session() {
   const opened = createEngineSession(bundledGameFiles);
-  opened.apply({ type: "newGame", seed: 3, choices: { coachClubId: "bahia-ba" } });
+  opened.apply({ type: "newGame", seed: 4, choices: { coachClubId: "bahia-ba" } });
   return opened;
 }
 
