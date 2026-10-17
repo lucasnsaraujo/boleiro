@@ -80,6 +80,7 @@ test("a club game starts at the chosen club and saves under the coach's name", a
   expect(await engine.read(["coachClubId"])).toEqual({ coachClubId: "bahia-ba" });
   expect(await slots.list()).toMatchObject([{ id: "slot-1", coachName: "Rogério", coachClubId: "bahia-ba", division: "A" }]);
   expect(game.current).toEqual({ slotId: "slot-1", coachName: "Rogério" });
+  expect((await engine.read(["eggs"])).eggs?.coachName).toBe("Rogério");
 });
 
 test("the estaduais are on by default and switched off start a season without them", async () => {
