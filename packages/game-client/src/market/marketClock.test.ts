@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { marketClockView, spendMarketTime } from "./marketClock.js";
+import { isSigning, marketClockView, spendMarketTime } from "./marketClock.js";
 
 const BUDGET = 300;
 const noWindowOfHisOwn = { coach: {} };
@@ -16,4 +16,10 @@ test("the clock runs inside a coach's own window and stops with it", () => {
 test("the clock has no mid-season window to run in a game without it", () => {
   expect(marketClockView(null, noWindowOfHisOwn, "2026-08-10", BUDGET)).toEqual({ budgetSeconds: BUDGET, leftSeconds: BUDGET });
   expect(marketClockView(null, withoutMidSeasonWindow, "2026-08-10", BUDGET)).toBeNull();
+});
+
+test("paying a release clause brings a player in, so a coach out of time can't; recalling a lent player or selling can", () => {
+  expect(isSigning({ kind: "payClause", playerId: "p" })).toBe(true);
+  expect(isSigning({ kind: "recall", playerId: "p" })).toBe(false);
+  expect(isSigning({ kind: "sell", playerId: "p" })).toBe(false);
 });
