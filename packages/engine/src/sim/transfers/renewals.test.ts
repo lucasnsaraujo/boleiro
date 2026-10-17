@@ -154,6 +154,15 @@ describe("a player's renewal counter on the market's day", () => {
   });
 });
 
+describe("renewalTermsOf", () => {
+  it("never asks less than he earns, however happy the squad", () => {
+    const happy: GameState = { ...withPlayer(start, { wage: 50_000_000 }), mood: { ...start.mood, [COACH]: { squad: 100, fans: 50, supporters: "calm", closedDoorGames: 0 } } };
+    const player = happy.players[ours.id];
+    if (!player) throw new Error("he left");
+    expect(Math.min(...renewalTermsOf(happy, player).terms.map((t) => t.wage))).toBe(50_000_000);
+  });
+});
+
 describe("talkMoodOf", () => {
   it("remembers a request to leave for a year, and sees a club's offer waiting", () => {
     const asked: GameState = { ...start, eventMemory: { ...EMPTY_MEMORY, log: [{ typeId: "player-wants-out", date: "2025-11-01", clubId: COACH, playerId: ours.id }] } };

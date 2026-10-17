@@ -41,10 +41,12 @@ export function talkMoodOf(state: TalkState, player: Pick<SimPlayer, "id" | "clu
   };
 }
 
-/** His terms to renew with his club: around the club's going rate for his strength, never below what he earns. */
+/** His terms to renew with his club: around the club's going rate for his strength, never asking below what he earns. */
 export function renewalTermsOf(state: TalkState, player: SimPlayer, squad: readonly SimPlayer[] = squadsOfGame(state).get(player.clubId) ?? []): RenewalTerms {
   const preferred = preferredMonths(player, squad);
   const mood = talkMoodOf(state, player);
   const anchor = Math.max(player.wage, goingRate(player.strength, squad));
-  return { preferred, mood, terms: contractTerms(anchor, preferred, mood) };
+  // A happy squad lowers every ask, but nobody signs on for less than he has.
+  const terms = contractTerms(anchor, preferred, mood).map((term) => (term.wage < player.wage ? { ...term, wage: player.wage } : term));
+  return { preferred, mood, terms };
 }
