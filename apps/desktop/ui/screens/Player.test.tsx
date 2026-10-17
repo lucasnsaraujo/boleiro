@@ -17,10 +17,11 @@ afterEach(() => {
   for (const close of closers.splice(0)) close();
 });
 
-async function openPlayerOf(clubId: string, from: string[] = []): Promise<{ engine: EngineClient; playerId: string }> {
+async function openPlayerOf(clubId: string, from: string[] = [], prepare: (engine: EngineClient) => Promise<unknown> = async () => undefined): Promise<{ engine: EngineClient; playerId: string }> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
   await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "sport-pe" } });
+  await prepare(engine);
   const { players } = await engine.read(["players"]);
   const player = Object.values(players).find((p) => p.clubId === clubId && p.age > 21);
   if (!player) throw new Error(`no player at ${clubId}`);
@@ -114,6 +115,28 @@ test("the coach retires one of his players after a confirm, and he leaves the sq
   await userEvent.click(within(confirm).getByRole("button", { name: "Aposentar" }));
   expect(await screen.findByText("Clube aberto")).toBeTruthy();
   expect((await engine.read(["players"])).players[playerId]).toBeUndefined();
+});
+
+test("the confirm to retire a player takes the focus, and Escape puts it away", async () => {
+  const { engine, playerId } = await openPlayerOf("sport-pe");
+  const name = (await engine.read(["players"])).players[playerId]?.name ?? "";
+  const retire = await screen.findByRole("button", { name: `Aposentar ${name}` });
+  await userEvent.click(retire);
+  const confirm = screen.getByRole("alertdialog", { name: `Aposentar ${name} agora? Ele deixa o elenco e não volta.` });
+  expect(confirm.contains(document.activeElement)).toBe(true);
+  await userEvent.keyboard("{Escape}");
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(document.activeElement).toBe(retire);
+});
+
+test("during a live round a player can't be retired, and the page says why", async () => {
+  const { engine, playerId } = await openPlayerOf("sport-pe", [], async (engine) => {
+    await engine.apply({ type: "playToMatchDay" });
+    await engine.apply({ type: "startRound" });
+  });
+  const name = (await engine.read(["players"])).players[playerId]?.name ?? "";
+  expect(await screen.findByText("Com a rodada em andamento, isso fica para depois do apito final.")).toBeTruthy();
+  expect(screen.getByRole("button", { name: `Aposentar ${name}` })).toHaveProperty("disabled", true);
 });
 
 test("a veteran who announced his last season can be asked once to play one more year", async () => {

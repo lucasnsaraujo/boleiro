@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import type { Retiring } from "@boleiro/engine/sim/players/retirement";
@@ -81,15 +81,17 @@ export function Player() {
   const [watchList, setWatchList] = useState<readonly string[]>([]);
   const [failed, setFailed] = useState(false);
   const [reads, setReads] = useState(0);
+  const [isRoundUnderWay, setRoundUnderWay] = useState(false);
 
   useEffect(() => {
     let current = true;
-    Promise.all([engine.read(PLAYER_KEYS), engine.desk(), engine.scouting()]).then(
-      ([read, onDesk, scouting]) => {
+    Promise.all([engine.read(PLAYER_KEYS), engine.desk(), engine.scouting(), engine.liveRound()]).then(
+      ([read, onDesk, scouting, live]) => {
         if (!current) return;
         setState(read);
         setDesk(onDesk);
         setWatchList(scouting.watchList);
+        setRoundUnderWay(live !== null);
       },
       () => current && setFailed(true),
     );
@@ -240,7 +242,8 @@ export function Player() {
         <RetirementActions
           name={card.name}
           retiring={state.players[card.id]?.retiring ?? null}
-          onRetire={() => void engine.apply({ type: "retirePlayer", playerId: card.id }).then(() => navigate("/hub"))}
+          isRoundUnderWay={isRoundUnderWay}
+          onRetire={() => engine.apply({ type: "retirePlayer", playerId: card.id }).then(() => navigate("/hub"))}
           onPersuade={() => engine.apply({ type: "persuadeToStay", playerId: card.id }).then((answer) => {
             setReads((n) => n + 1);
             return answer.stays;
@@ -251,15 +254,29 @@ export function Player() {
   );
 }
 
-type RetirementProps = { name: string; retiring: Retiring | null; onRetire: () => void; onPersuade: () => Promise<boolean> };
+type RetirementProps = { name: string; retiring: Retiring | null; isRoundUnderWay: boolean; onRetire: () => Promise<unknown>; onPersuade: () => Promise<boolean> };
 
 /**
  * A player who announced his last season can be asked once to play one more year; any of the coach's
- * players can be retired now, after a confirm, since it can't be undone.
+ * players can be retired now, after a confirm, since it can't be undone. Both wait out a live round.
  */
-function RetirementActions({ name, retiring, onRetire, onPersuade }: RetirementProps) {
+function RetirementActions({ name, retiring, isRoundUnderWay, onRetire, onPersuade }: RetirementProps) {
   const [isConfirming, setConfirming] = useState(false);
   const [stays, setStays] = useState<boolean | null>(null);
+  const [hasFailed, setFailed] = useState(false);
+  const opener = useRef<HTMLButtonElement>(null);
+  const cancel = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (isConfirming) cancel.current?.focus();
+  }, [isConfirming]);
+  const close = () => {
+    setConfirming(false);
+    opener.current?.focus();
+  };
+  const run = (act: () => Promise<unknown>) => {
+    setFailed(false);
+    act().catch(() => setFailed(true));
+  };
   return (
     <section className="player-retire" aria-labelledby="retire-title">
       <h2 id="retire-title" className="player-facts-title">
@@ -272,13 +289,14 @@ function RetirementActions({ name, retiring, onRetire, onPersuade }: RetirementP
           {retiring.hasBeenAsked && " Você pediu mais um ano e ele não mudou de ideia."}
         </p>
       )}
+      {isRoundUnderWay && <p className="player-retire-line">Com a rodada em andamento, isso fica para depois do apito final.</p>}
       <div className="player-retire-acts">
         {retiring && !retiring.hasBeenAsked && stays === null && (
-          <button className="btn-main" onClick={() => void onPersuade().then(setStays)}>
+          <button className="btn-main" disabled={isRoundUnderWay} onClick={() => run(() => onPersuade().then(setStays))}>
             Pedir mais um ano
           </button>
         )}
-        <button className="btn-quiet" onClick={() => setConfirming(true)} aria-expanded={isConfirming}>
+        <button ref={opener} className="btn-quiet" disabled={isRoundUnderWay} onClick={() => setConfirming(true)} aria-expanded={isConfirming}>
           Aposentar {name}
         </button>
         {isConfirming && (
@@ -287,19 +305,24 @@ function RetirementActions({ name, retiring, onRetire, onPersuade }: RetirementP
             role="alertdialog"
             aria-labelledby="retire-confirm-title"
             onKeyDown={(event) => {
-              if (event.key === "Escape") setConfirming(false);
+              if (event.key === "Escape") close();
             }}
           >
             <p id="retire-confirm-title">Aposentar {name} agora? Ele deixa o elenco e não volta.</p>
-            <button className="btn sm no" onClick={onRetire}>
+            <button className="btn sm no" onClick={() => run(onRetire)}>
               Aposentar
             </button>
-            <button className="btn sm" onClick={() => setConfirming(false)}>
+            <button ref={cancel} className="btn sm" onClick={close}>
               Cancelar
             </button>
           </div>
         )}
       </div>
+      {hasFailed && (
+        <p className="status error" role="alert">
+          O pedido não chegou ao clube. Tente de novo.
+        </p>
+      )}
     </section>
   );
 }
