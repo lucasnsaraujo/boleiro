@@ -103,6 +103,13 @@ export function seasonMoves(structure: CountryStructure, tables: readonly (reado
   return { exits, moves: pyramidMoves(structure.levels.map((_, i) => i), exits) };
 }
 
+/** The days the season's top league and cup were decided, from its last dates. */
+function finalsOf({ leagues, cup }: Pick<Country, "leagues" | "cup">): Pick<Country["seasons"][number], "finals"> {
+  const league = leagues[0]?.dates.at(-1);
+  const cupFinal = cup?.dates.at(-1);
+  return league ? { finals: { league, ...(cupFinal ? { cup: cupFinal } : {}) } } : {};
+}
+
 /** Files the season `filed` from its final tables, moves clubs through the pyramid and opens `season`. */
 function fileSeason(country: Country, tables: readonly (readonly string[])[], filed: number, season: number, unified?: UnifiedDates): Country {
   const { structure } = country;
@@ -121,6 +128,7 @@ function fileSeason(country: Country, tables: readonly (readonly string[])[], fi
       ...(structure.uefa ? uefaPlaces(structure.uefa, tables[0] ?? [], cup) : {}),
     },
     ...(cup ? { cup } : {}),
+    ...finalsOf(country),
   };
   return { ...country, ...opened, seasons: [...country.seasons, record], rngState: random.state() };
 }

@@ -21,6 +21,11 @@ export function withRequest(pending: readonly CoachRequest[], request: CoachRequ
   return [...pending.filter((r) => r.playerId !== request.playerId), request];
 }
 
+/** The pending requests whose player is still in the game; one who retired or went abroad has nothing left for the board to decide. */
+export function withoutLeavers(pending: readonly CoachRequest[], state: Pick<GameState, "players" | "market">): CoachRequest[] {
+  return pending.filter((request) => request.playerId in state.players || request.playerId in state.market.freeAgents);
+}
+
 /**
  * The requests to hand the board today, and those that wait. The board decides the morning after,
  * so a request that needs the window waits until that morning falls inside it.

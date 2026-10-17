@@ -205,3 +205,53 @@
   font: 500 15px var(--cond);
   color: var(--chalk-2);
 }
+
+/* The end of a career: a veteran's announcement, the ask for one more year, and retiring him now. */
+.player-retire {
+  margin-top: 22px;
+}
+
+.player-retire-line {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.player-retire-line.is-good {
+  color: var(--green);
+  font-weight: 700;
+}
+
+.player-retire-acts {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.player-retire-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  animation: player-retire-pin var(--t-stamp) var(--e-slap) both;
+}
+
+.player-retire-confirm p {
+  flex-basis: 100%;
+  font-weight: 700;
+}
+
+@keyframes player-retire-pin {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) rotate(-2deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-retire-confirm {
+    animation: none;
+  }
+}

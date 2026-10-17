@@ -79,6 +79,10 @@ export function History() {
             </button>
           ))}
         </div>
+        <Link className="btn-quiet history-awards" to="/awards">
+          <i className="ph-bold ph-trophy" aria-hidden="true" />
+          Prêmios e recordes
+        </Link>
         <button className="btn-main" onClick={() => void round.play()} disabled={round.isPlaying}>
           {playRoundLabel(round.isPlaying, state.coachClubId !== null)}
         </button>
@@ -330,6 +334,8 @@ function exitText(stint: CareerStint): string {
       return "fim de contrato";
     case "moved":
       return "trocou de clube";
+    case "resigned":
+      return "pediu demissão";
   }
 }
 

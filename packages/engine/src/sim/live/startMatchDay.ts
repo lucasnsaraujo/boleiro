@@ -16,7 +16,7 @@ import { paramsForCompetition } from "../paramsForCompetition.js";
 import { isInjured } from "../players/isInjured.js";
 import { matchSetup, playingStrength, type CoachPlan } from "../players/matchSetup.js";
 import { fatigueOn } from "../players/fatigueOn.js";
-import { drawMatchInjuries, recordMatchLoad } from "../players/recordMatchLoad.js";
+import { drawMatchInjuries, injuryStreamOf, recordMatchLoad } from "../players/recordMatchLoad.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
 import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
 import { hasExtraTime, tieBreakOf } from "../tieBreaks.js";
@@ -127,7 +127,8 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     // A tie level after ninety minutes always takes its shootout's draw, so the day's stream runs the same whatever settles it.
     const shootout = isShootoutDue(state, { ...fixture, result: afterNinety }) ? shootoutSeed(random.next) : null;
     const tieBreak = shootout === null ? null : tieBreakOf(competition, fixture.stage);
-    const ninetyInjuries = drawMatchInjuries([...setup.homeLineup, ...setup.awayLineup], setup.context, random.next);
+    const injuryStream = injuryStreamOf(state.seed, fixture.id);
+    const ninetyInjuries = drawMatchInjuries([...setup.homeLineup, ...setup.awayLineup], setup.context, random.next, injuryStream);
     const { homeId, awayId } = fixture;
     // Each player's strength today, worked out once: goal kinds, penalties and substitutions ask for it again and again.
     const strengths = new Map<string, (p: SimPlayer) => number>();
@@ -178,13 +179,15 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
       params,
       cardRates: markedCardRates(cardRates, { home: markingOf(homeId), away: markingOf(awayId) }),
       context: setup.context,
+      injuryStream,
     };
     const timeline = tieBreak === "extraTime" ? withExtraTime(ninety, playExtraTime(extraTimeMatch, ninety.events, extraTimeStream(state.seed, fixture.id)), extraTimeMatch) : ninety;
     const isExtraTime = timeline !== ninety;
     const allBookings = isExtraTime ? [...bookings, ...bookingsOf(timeline.events.filter((e) => e.minute > FULL_TIME))] : bookings;
     // A straight red's ban length is drawn as its card is recorded: the ninety minutes' from the day's stream, extra time's from one of its own.
     const cardRandom = isExtraTime ? firstDrawsFrom(random.next, bookings.filter((b) => b.card === "red").length, extraTimeStream(state.seed ^ EXTRA_TIME_CARDS_SALT, fixture.id)) : random.next;
-    const injuries = isExtraTime ? new Map([...ninetyInjuries, ...timeline.events.flatMap((e) => (e.type === "injury" && e.minute > FULL_TIME ? [[e.playerId, e.days] as const] : []))]) : ninetyInjuries;
+    const extraTimeInjuries = timeline.events.flatMap((e) => (e.type === "injury" && e.minute > FULL_TIME ? [[e.playerId, { days: e.days, kind: e.kind ?? "knock", isRecurrence: e.isRecurrence === true }] as const] : []));
+    const injuries = isExtraTime ? new Map([...ninetyInjuries, ...extraTimeInjuries]) : ninetyInjuries;
     const goalsOf = (clubId: string) => timeline.events.filter((e) => e.type === "goal" && e.clubId === clubId).length;
     const score = isExtraTime ? { homeGoals: goalsOf(homeId), awayGoals: goalsOf(awayId), isAfterExtraTime: true as const, cards: countCards(allBookings, homeId) } : afterNinety;
     const end = isExtraTime ? EXTRA_TIME_END : FULL_TIME;

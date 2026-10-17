@@ -9,6 +9,10 @@ import { formatDayMonth, formatMonthYear } from "@boleiro/game-client/format/for
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import type { BoardDesk } from "@boleiro/game-client/market/boardDesk";
 import { clauseRequest, requestOptions } from "@boleiro/game-client/market/coachRequests";
+import { signingTerms } from "@boleiro/game-client/market/contracts";
+import { formatContractLength } from "@boleiro/game-client/format/formatContractLength";
+import { assistantPick, contractEndOn, type ContractTerm } from "@boleiro/engine/sim/transfers/contractTerms";
+import { STANCE_LABELS } from "../contracts/renewalText.js";
 import type { Scouting } from "@boleiro/game-client/market/scouting";
 import { RangeSlider } from "../controls/RangeSlider.js";
 import { Select } from "../controls/Select.js";
@@ -26,6 +30,8 @@ import { pendingText, requestTitle } from "./requestText.js";
 export const MARKET_KEYS = ["date", "coachClubId", "clubs", "players", "market", "finances", "boards", "history", "hasMidSeasonWindow", "coach"] as const;
 export type MarketState = Pick<GameState, (typeof MARKET_KEYS)[number]>;
 
+// guess: with no length he takes, a signing offers the club's usual two years.
+const DEFAULT_SIGNING_MONTHS = 24;
 // The list stays short; "Ver mais" adds another page.
 const PAGE = 40;
 const DESK_ANSWERS = 3;
@@ -343,13 +349,20 @@ type ChosenProps = {
   onWatch: (playerId: string, isWatched: boolean) => void;
 };
 
+/** The length a signing offers first: the one nearest two years he takes, as the assistant would. */
+const firstTerm = (terms: readonly ContractTerm[]): ContractTerm | undefined => assistantPick(terms) ?? terms.find((term) => term.stance !== "refuses");
+
 function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCounter, onWatch }: ChosenProps) {
+  const terms = useMemo(() => signingTerms(state, row.id, row.wage), [state, row.id, row.wage]);
   const [fee, setFee] = useState(row.price ?? 0);
-  const [wage, setWage] = useState(row.wage);
+  const [months, setMonths] = useState(() => firstTerm(terms)?.months ?? DEFAULT_SIGNING_MONTHS);
+  const [wage, setWage] = useState(() => firstTerm(terms)?.wage ?? row.wage);
   useEffect(() => {
+    const first = firstTerm(terms);
     setFee(row.price ?? 0);
-    setWage(row.wage);
-  }, [row.price, row.wage]);
+    setMonths(first?.months ?? DEFAULT_SIGNING_MONTHS);
+    setWage(first?.wage ?? row.wage);
+  }, [row.price, row.wage, terms]);
 
   const owner = row.clubId ? state.clubs[row.clubId] : undefined;
   const options = requestOptions(state, row.id);
@@ -367,9 +380,15 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
   const best = advice.atPosition[0]?.strength ?? row.strength;
   const scale = (strength: number) => `${Math.max(8, Math.min(100, strength))}%`;
 
+  // A loanee's purchase keeps his contract, and a pre-contract takes the club's usual deal when it starts
+  // (the market keeps only the club he joins); every other signing offers a length.
+  const hasLength = row.clubId !== state.coachClubId && row.status !== "contractEnding";
+  const length = hasLength ? { years: months / 12 } : {};
+  const term = terms.find((t) => t.months === months);
+
   function sign() {
     if (!buy || buy.request.kind !== "sign") return;
-    onAsk(hasFee ? { ...buy.request, fee, wage } : { ...buy.request, wage });
+    onAsk(hasFee ? { ...buy.request, fee, wage, ...length } : { ...buy.request, wage, ...length });
   }
 
   return (
@@ -427,6 +446,37 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
               <span className="lbl">Salário</span>
               <MoneyStepper label="Salário" value={wage} step={roundStep(row.wage)} hint="por mês" onChange={setWage} />
             </div>
+            {hasLength && (
+              <div className="market-offer-row">
+                <span className="lbl">Prazo</span>
+                <div className="market-lengths" role="radiogroup" aria-label="Tempo de contrato">
+                  {terms.map((t) => (
+                    <button
+                      key={t.months}
+                      type="button"
+                      role="radio"
+                      aria-checked={t.months === months}
+                      aria-label={`${formatContractLength(t.months)}: ${formatMoney(t.wage)} por mês, ${STANCE_LABELS[t.stance]}`}
+                      title={`${formatMoney(t.wage)} por mês · ${STANCE_LABELS[t.stance]}`}
+                      className={`market-len ${t.stance}${t.months === months ? " on" : ""}`}
+                      disabled={t.stance === "refuses"}
+                      onClick={() => {
+                        setMonths(t.months);
+                        setWage(t.wage);
+                      }}
+                    >
+                      <b>{t.months < 12 ? t.months : t.months / 12}</b>
+                      <small>{t.months < 12 ? "meses" : t.months === 12 ? "ano" : "anos"}</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {hasLength && term && (
+              <p className={`market-len-note ${term.stance}`}>
+                {STANCE_LABELS[term.stance]} · pede {formatMoney(term.wage)} · até {formatMonthYear(contractEndOn(state.date, months))}
+              </p>
+            )}
           </div>
         )}
 
@@ -533,7 +583,7 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
           )}
           {!pending && !counter && clause && row.clause !== null && (
             <>
-              <button className="btn flat market-clause" disabled={clauseShortBy > 0} onClick={() => onAsk({ kind: "payClause", playerId: row.id, wage })}>
+              <button className="btn flat market-clause" disabled={clauseShortBy > 0} onClick={() => onAsk({ kind: "payClause", playerId: row.id, wage, ...length })}>
                 Pagar a multa: {formatMoney(row.clause)}
               </button>
               {clauseShortBy > 0 && <p className="market-note">A multa não cabe na verba: faltam {formatMoney(clauseShortBy)}.</p>}

@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { Fixture, MatchResult } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
-import { inboxLines, type DayEvent } from "./inboxLines.js";
+import { inboxLines, type DayEvent, type InboxLine } from "./inboxLines.js";
 
 const game = newGameFromFiles(3, { coachClubId: "bahia-ba" }, bundledGameFiles);
 const own = Object.values(game.players).find((p) => p.clubId === "bahia-ba");
@@ -130,6 +130,59 @@ describe("the squad", () => {
     expect(line({ type: "playerSuspended", playerId: own.id, clubId: "bahia-ba", ...card, matches: 2 })?.text).toBe(`${own.name} suspenso: 2 jogos`);
   });
 
+  test("an injury says what it is, and one coming back says he got hurt again", () => {
+    const injury: DayEvent = { type: "playerInjured", playerId: own.id, clubId: "bahia-ba", days: 30, fitOn: "2026-03-01", kind: "ligament" };
+    expect(line(injury)).toMatchObject({ text: `${own.name} lesionado: lesão ligamentar, 30 dias fora`, tone: "bad" });
+    expect(line({ ...injury, kind: "muscle", days: 9, isRecurrence: true })?.text).toBe(`${own.name} volta a se lesionar: lesão muscular, 9 dias fora`);
+    expect(line({ ...injury, kind: "knock", days: 2 })?.text).toBe(`${own.name} sente uma pancada: 2 dias fora`);
+    expect(line({ ...injury, kind: "knock", days: 40 })?.text).toBe(`${own.name} lesionado: 40 dias fora`);
+  });
+
+  test("a veteran announcing his last season asks the coach to talk him round, and his answer is news", () => {
+    expect(line({ type: "playerWantsToRetire", playerId: own.id, clubId: "bahia-ba", name: "Gilberto", age: 38, afterSeason: 2027 })).toMatchObject({
+      text: "Gilberto anuncia que 2027 será sua última temporada. Converse com ele na página do jogador",
+      tone: "neutral",
+    });
+    const asked: DayEvent = { type: "playerPersuaded", playerId: own.id, clubId: "bahia-ba", name: "Gilberto", stays: true };
+    expect(line(asked)).toMatchObject({ text: "Gilberto aceita jogar mais um ano", tone: "good" });
+    expect(line({ ...asked, stays: false })).toMatchObject({ text: "Gilberto não muda de ideia e para no fim da temporada", tone: "bad" });
+  });
+
+  test("a record one of the coach's players or his club breaks is news, and other clubs' records are not", () => {
+    const record: DayEvent = { type: "recordBroken", scope: "league", competition: "serie-a", kind: "mostSeasonGoals", clubId: "bahia-ba", playerId: own.id, name: "Gilberto", value: 19, previous: 18 };
+    expect(line(record)).toMatchObject({ text: "Recorde: Gilberto chega a 19 gols e passa o recorde da Série A numa temporada (18)", tone: "good" });
+    expect(line({ ...record, scope: "club", competition: null, kind: "youngestScorer", value: 16, previous: 17 })?.text).toBe("Recorde: Gilberto, 16 anos, é o goleador mais jovem da história do clube");
+    expect(line({ ...record, scope: "club", competition: null, kind: "longestUnbeaten", playerId: null, name: null, value: 14, previous: 13 })?.text).toBe("Recorde: 14 jogos sem perder, a maior invencibilidade do clube");
+    expect(line({ ...record, kind: "biggestWin", playerId: null, name: null, value: 6, previous: 5 })?.text).toBe("Recorde: a maior goleada da história da Série A, por 6 gols de diferença");
+    expect(lines({ ...record, clubId: "palmeiras-sp" })).toEqual([]);
+  });
+
+  test("the season's awards tell the coach every prize his players won", () => {
+    const ours = { playerId: own.id, name: "Gilberto", clubId: "bahia-ba", age: 20, apps: 30, goals: 21, assists: 2, average: 7.4 };
+    const theirs = { ...ours, playerId: "x", name: "Outro", clubId: "palmeiras-sp" };
+    const awards: DayEvent = {
+      type: "seasonAwarded",
+      season: 2026,
+      awards: {
+        competition: "serie-a",
+        bolaDeOuro: { ...ours, role: "atacante" },
+        runnersUp: [],
+        bolaDePrata: [{ ...ours, role: "atacante" }, { ...theirs, role: "goleiro" }],
+        topScorer: { playerId: own.id, name: "Gilberto", clubId: "bahia-ba", goals: 21 },
+        bestYoung: { ...ours, role: "atacante" },
+        ballonDor: [{ playerId: own.id, name: "Gilberto", clubId: "bahia-ba", clubName: "Bahia", score: 90, titles: [], apps: 30, goals: 21, average: 7.4 }],
+      },
+    };
+    expect(lines(awards).map((l) => [l.text, l.tone])).toEqual([
+      ["Gilberto ganha a Bola de Ouro de 2026: o melhor do Brasileirão", "good"],
+      ["Gilberto ganha a Bola de Prata de atacante", "good"],
+      ["Gilberto é o artilheiro do Brasileirão, com 21 gols", "good"],
+      ["Gilberto é a revelação do Brasileirão", "good"],
+      ["Gilberto ganha a Bola de Ouro da France Football: o melhor do mundo", "good"],
+    ]);
+    expect(lines({ ...awards, awards: { ...awards.awards, bolaDeOuro: null, bolaDePrata: [], topScorer: null, bestYoung: null, ballonDor: [] } })).toEqual([]);
+  });
+
   test("bookings and sending-offs stay out; the suspension is the news", () => {
     expect(lines({ type: "playerBooked", playerId: own.id, clubId: "bahia-ba", ...card, minute: 10 })).toEqual([]);
     expect(lines({ type: "playerSentOff", playerId: own.id, clubId: "bahia-ba", ...card, minute: 10, secondYellow: false })).toEqual([]);
@@ -252,6 +305,11 @@ describe("the coach's career", () => {
     expect(line({ type: "contractEnded", clubId: "bahia-ba", season: 2026 })).toMatchObject({ text: "Fim do contrato com Bahia", tone: "bad" });
   });
 
+  test("a club he once coached naming its new coach is his news; any other club's is not", () => {
+    expect(line({ type: "coachAppointed", clubId: "bahia-ba", coachId: "c1", name: "Rogério Ceni" })).toMatchObject({ text: "Bahia anuncia Rogério Ceni como novo técnico", tone: "neutral" });
+    expect(lines({ type: "coachAppointed", clubId: "vitoria-ba", coachId: "c2", name: "Jair Ventura" })).toEqual([]);
+  });
+
   test("on the day he takes a new job, the new club's news is his too", () => {
     const hired = { ...game, coachClubId: "vitoria-ba" };
     expect(inboxLines(game, hired, [{ type: "fansProtest", clubId: "vitoria-ba", fans: 20, moraleLost: 5 }])).toHaveLength(1);
@@ -284,4 +342,63 @@ describe("the season", () => {
 test("every line is dated the day it happened", () => {
   const before = { ...game, date: "2026-01-11" };
   expect(inboxLines(before, game, [{ type: "fansPressure", clubId: "bahia-ba", fans: 30 }])[0]?.date).toBe("2026-01-11");
+});
+
+describe("contracts", () => {
+  const ending = (until: string, players = [own]) => ({ ...game, players: { ...game.players, ...Object.fromEntries(players.map((p) => [p.id, { ...p, contractUntil: until }])) } });
+
+  test("players entering their contract's last year are one warning, before other clubs may sign them", () => {
+    const lastYear = (lines: readonly InboxLine[]) => lines.filter((l) => l.text.includes("último ano de contrato"));
+    const today = { ...ending("2027-06-30"), date: "2026-06-30" };
+    const tomorrow = { ...today, date: "2026-07-01" };
+    expect(lastYear(inboxLines(today, tomorrow, []))).toEqual([
+      { date: "2026-06-30", text: `${own.name} entra no último ano de contrato (até jun 2027): renove antes que outros clubes possam assinar pré-contrato com ele`, tone: "neutral" },
+    ]);
+    expect(lastYear(inboxLines(tomorrow, { ...tomorrow, date: "2026-07-02" }, []))).toEqual([]);
+    const second = Object.values(game.players).find((p) => p.clubId === "bahia-ba" && p.id !== own.id);
+    if (!second) throw new Error("Bahia has one player");
+    const both = { ...ending("2027-06-30", [own, second]), date: "2026-06-30" };
+    expect(lastYear(inboxLines(both, { ...both, date: "2026-07-01" }, [])).map((l) => l.text)).toEqual([
+      `2 jogadores entram no último ano de contrato: ${[own.name, second.name].sort((a, b) => a.localeCompare(b, "pt-BR")).join(" e ")}`,
+    ]);
+  });
+
+  test("a player's counter to a renewal says what he asks and for how long", () => {
+    expect(line({ type: "renewalCountered", playerId: own.id, months: 24, wage: 450_000 })).toMatchObject({
+      text: `${own.name} pede R$ 450 mil por mês para renovar por 2 anos. Responda na renovação`,
+      tone: "neutral",
+    });
+    expect(line({ type: "renewalCountered", playerId: own.id, months: 6, wage: 450_000 })?.text).toContain("por 6 meses");
+    expect(lines({ type: "requestDecided", request: { kind: "renew", playerId: own.id, years: 2, wage: 1 }, approved: false, reason: "playerCounter" })).toEqual([]);
+  });
+
+  test("a renewal turned down by the player says why", () => {
+    const refused = (reason: string) => line({ type: "requestDecided", request: { kind: "renew", playerId: own.id, years: 0.5 }, approved: false, reason })?.text;
+    expect(refused("lengthRefused")).toBe(`Diretoria recusa a renovação de ${own.name}: ele não aceita esse tempo de contrato`);
+    expect(refused("wageTooLow")).toBe(`Diretoria recusa a renovação de ${own.name}: ele quer bem mais do que o oferecido`);
+  });
+
+  test("what the assistant did with the contracts is his own news", () => {
+    expect(line({ type: "playerContractRenewed", playerId: own.id, clubId: "bahia-ba", until: "2029-12-31", wage: 320_000, byAssistant: true })).toMatchObject({
+      text: `O auxiliar renovou com ${own.name} até dez 2029, por R$ 320 mil por mês`,
+      tone: "good",
+    });
+    const skipped = (reason: "notInPlans" | "playerUnwilling" | "wageCap") => line({ type: "renewalSkipped", playerId: own.id, clubId: "bahia-ba", until: "2026-12-31", reason })?.text;
+    expect(skipped("notInPlans")).toBe(`O auxiliar deixa acabar o contrato de ${own.name} (dez 2026): está fora dos planos`);
+    expect(skipped("playerUnwilling")).toBe(`O auxiliar não renovou com ${own.name} (contrato até dez 2026): ele não aceita nenhum tempo de contrato`);
+    expect(skipped("wageCap")).toBe(`O auxiliar não renovou com ${own.name} (contrato até dez 2026): o salário passa do teto da folha`);
+    expect(lines({ type: "renewalSkipped", playerId: other.id, clubId: "vitoria-ba", until: "2026-12-31", reason: "notInPlans" })).toEqual([]);
+  });
+
+  test("a look at many contracts is one line per outcome, so it doesn't flood the inbox", () => {
+    const squad = Object.values(game.players).filter((p) => p.clubId === "bahia-ba").slice(0, 4);
+    const [a, b, c, d] = squad;
+    if (!a || !b || !c || !d) throw new Error("Bahia has four players");
+    const renewed = (p: typeof a): DayEvent => ({ type: "playerContractRenewed", playerId: p.id, clubId: "bahia-ba", until: "2028-12-31", wage: 1, byAssistant: true });
+    const skipped = (p: typeof a): DayEvent => ({ type: "renewalSkipped", playerId: p.id, clubId: "bahia-ba", until: "2026-12-31", reason: "notInPlans" });
+    expect(lines(renewed(a), renewed(b), skipped(c), skipped(d)).map((l) => l.text)).toEqual([
+      `O auxiliar renovou 2 contratos: ${a.name} e ${b.name}`,
+      `O auxiliar deixa acabar 2 contratos: ${c.name} e ${d.name} (fora dos planos)`,
+    ]);
+  });
 });

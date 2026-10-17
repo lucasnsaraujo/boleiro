@@ -4,12 +4,14 @@ import type { Formation } from "../engine/formations.js";
 import type { Player } from "../engine/match.js";
 import type { Board } from "./coach/boardExpectations.js";
 import type { Coach } from "./coach/coach.js";
+import type { CoachWorld } from "./coach/aiCoaches.js";
 import type { WaitingCoach } from "./coach/humanCoaches.js";
 import type { Discipline, MatchCards } from "./discipline/discipline.js";
 import type { Friendly } from "./friendlies/friendlies.js";
 import type { History } from "./history/history.js";
 import type { ClubMood } from "./morale/clubMood.js";
 import type { PlayerProfile } from "./players/playerProfile.js";
+import type { Retiring } from "./players/retirement.js";
 import type { TransferMarket } from "./transfers/transferMarket.js";
 import type { EuropeanCups } from "./continental/uefaCups.js";
 import type { Guests } from "./world/guests.js";
@@ -28,8 +30,9 @@ export type UsualLineup = { formation: Formation; starters: string[] };
 /**
  * `wage` is the monthly wage in BRL; the contract runs to the end of `contractUntil`. A player who came
  * up through an academy keeps his hidden `potential`, the strength he grows toward by his late twenties.
+ * A human coach's veteran who announced his last season is `retiring`.
  */
-export type SimPlayer = Player & { id: string; clubId: string; wage: number; contractUntil: IsoDate; potential?: number } & PlayerProfile;
+export type SimPlayer = Player & { id: string; clubId: string; wage: number; contractUntil: IsoDate; potential?: number; retiring?: Retiring } & PlayerProfile;
 
 export type MatchResult = {
   homeGoals: number;
@@ -259,6 +262,8 @@ export type GameState = {
   formats?: Formats;
   /** What the event engine remembers: past events, answers waiting, the newspaper's stories; a save from before events has none. */
   eventMemory?: EventMemory;
+  /** Every club's AI coach, the free pool and the rankings; a save from before AI coaches gets them from its seed when it loads (withCoachWorld). */
+  coaches?: CoachWorld;
   /** Each club's chemistry between matches, from its first match in the game; a save from before chemistry has none. */
   chemistry?: Record<string, ClubChemistry>;
   /** Each club's kit deals, a breakdown of its `sponsorship`; a save from before sponsors gets them seeded from the data when loaded. */

@@ -50,8 +50,8 @@ export function requestOptions(state: RequestState, playerId: string, years = DE
   // A loanee here can only be bought, through his purchase clause.
   if (loan) return player.clubId === coachClubId && loan.buyOption !== null ? [{ label: "Comprar", request: { kind: "sign", playerId } }] : [];
   if (player.clubId === coachClubId) {
-    // The board refuses to renew a player who already signed a pre-contract elsewhere.
-    const renew: RequestOption[] = market.preContracts[playerId] ? [] : [{ label: "Renovar", request: { kind: "renew", playerId, years } }];
+    // The board refuses to renew a player who already signed a pre-contract elsewhere or announced his last season.
+    const renew: RequestOption[] = market.preContracts[playerId] || player.retiring ? [] : [{ label: "Renovar", request: { kind: "renew", playerId, years } }];
     const own: RequestOption[] = [...renew, { label: "Vender", request: { kind: "sell", playerId } }];
     return player.age <= LOAN_MAX_AGE ? [...own, { label: "Emprestar", request: { kind: "loanOut", playerId } }] : own;
   }

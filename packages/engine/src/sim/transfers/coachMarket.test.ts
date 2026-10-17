@@ -249,6 +249,14 @@ describe("the coach's offer for another club's player", () => {
     expect(decision?.type === "requestDecided" && decision.reason).not.toBe("offerTooLow");
   });
 
+  it("can take up the club's counter on the last day it stands", () => {
+    const coach = coachMarketOf(windowOpen);
+    const fee = Math.round(price * 0.9);
+    const lastDay = withCoachMarket(rich(windowOpen), { ...coach, counters: { [target.id]: { clubId: "vitoria-ba", fee, until: windowOpen.date } } });
+    const decision = decisionOf(play(lastDay, 1, [{ kind: "sign", playerId: target.id, fee }]).events);
+    expect(decision?.type === "requestDecided" && decision.reason).not.toBe("counterOffer");
+  });
+
   it("is refused outright when it is far below the club's price", () => {
     const { state, events } = play(rich(windowOpen), 1, [{ kind: "sign", playerId: target.id, fee: Math.round(price * 0.3) }]);
     expect(decisionOf(events)).toMatchObject({ approved: false, reason: "offerTooLow" });

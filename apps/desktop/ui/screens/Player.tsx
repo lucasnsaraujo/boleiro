@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import type { GameState } from "@boleiro/engine/sim/gameState";
+import type { Retiring } from "@boleiro/engine/sim/players/retirement";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { Select } from "../controls/Select.js";
 import { useServices } from "../app/ServicesContext.js";
@@ -15,6 +16,7 @@ import { pendingText, requestTitle } from "../market/requestText.js";
 import { playerCard, type PlayerCard } from "../squad/playerCard.js";
 import { statusText } from "../squad/squadRows.js";
 import { WatchToggle } from "../controls/WatchToggle.js";
+import { RenewalDialog } from "../contracts/RenewalDialog.js";
 import "./player.css";
 
 const PLAYER_KEYS = ["date", "season", "coachClubId", "clubs", "players", "discipline", "competitions", "fixtures", "history", "market", "hasMidSeasonWindow", "coach"] as const;
@@ -79,22 +81,26 @@ export function Player() {
   const [desk, setDesk] = useState<BoardDesk | null>(null);
   const [watchList, setWatchList] = useState<readonly string[]>([]);
   const [failed, setFailed] = useState(false);
+  const [reads, setReads] = useState(0);
+  const [isRoundUnderWay, setRoundUnderWay] = useState(false);
+  const [isNegotiating, setNegotiating] = useState(false);
 
   useEffect(() => {
     let current = true;
-    Promise.all([engine.read(PLAYER_KEYS), engine.desk(), engine.scouting()]).then(
-      ([read, onDesk, scouting]) => {
+    Promise.all([engine.read(PLAYER_KEYS), engine.desk(), engine.scouting(), engine.liveRound()]).then(
+      ([read, onDesk, scouting, live]) => {
         if (!current) return;
         setState(read);
         setDesk(onDesk);
         setWatchList(scouting.watchList);
+        setRoundUnderWay(live !== null);
       },
       () => current && setFailed(true),
     );
     return () => {
       current = false;
     };
-  }, [engine]);
+  }, [engine, reads]);
 
   // The squad, the market and the tables all open players; a player opened straight from a link has no screen behind him.
   const hasScreenBehind = location.key !== "default";
@@ -232,9 +238,96 @@ export function Player() {
           desk={desk}
           onAsk={(request) => void engine.apply({ type: "ask", request }).then(setDesk)}
           onWithdraw={() => void engine.apply({ type: "withdraw", playerId: card.id }).then(setDesk)}
+          onNegotiate={() => setNegotiating(true)}
         />
       )}
+      {card.isCoachsPlayer && !card.contract.loan && (
+        <RetirementActions
+          name={card.name}
+          retiring={state.players[card.id]?.retiring ?? null}
+          isRoundUnderWay={isRoundUnderWay}
+          onRetire={() => engine.apply({ type: "retirePlayer", playerId: card.id }).then(() => navigate("/hub"))}
+          onPersuade={() => engine.apply({ type: "persuadeToStay", playerId: card.id }).then((answer) => {
+            setReads((n) => n + 1);
+            return answer.stays;
+          })}
+        />
+      )}
+      {isNegotiating && <RenewalDialog playerId={card.id} onClose={() => setNegotiating(false)} onChange={() => void engine.desk().then(setDesk)} />}
     </div>
+  );
+}
+
+type RetirementProps = { name: string; retiring: Retiring | null; isRoundUnderWay: boolean; onRetire: () => Promise<unknown>; onPersuade: () => Promise<boolean> };
+
+/**
+ * A player who announced his last season can be asked once to play one more year; any of the coach's
+ * players can be retired now, after a confirm, since it can't be undone. Both wait out a live round.
+ */
+function RetirementActions({ name, retiring, isRoundUnderWay, onRetire, onPersuade }: RetirementProps) {
+  const [isConfirming, setConfirming] = useState(false);
+  const [stays, setStays] = useState<boolean | null>(null);
+  const [hasFailed, setFailed] = useState(false);
+  const opener = useRef<HTMLButtonElement>(null);
+  const cancel = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (isConfirming) cancel.current?.focus();
+  }, [isConfirming]);
+  const close = () => {
+    setConfirming(false);
+    opener.current?.focus();
+  };
+  const run = (act: () => Promise<unknown>) => {
+    setFailed(false);
+    act().catch(() => setFailed(true));
+  };
+  return (
+    <section className="player-retire" aria-labelledby="retire-title">
+      <h2 id="retire-title" className="player-facts-title">
+        Fim de carreira
+      </h2>
+      {stays === true && <p className="player-retire-line is-good">{name} aceitou jogar mais um ano.</p>}
+      {retiring && stays !== true && (
+        <p className="player-retire-line">
+          {name} anunciou que {retiring.afterSeason} será sua última temporada.
+          {retiring.hasBeenAsked && " Você pediu mais um ano e ele não mudou de ideia."}
+        </p>
+      )}
+      {isRoundUnderWay && <p className="player-retire-line">Com a rodada em andamento, isso fica para depois do apito final.</p>}
+      <div className="player-retire-acts">
+        {retiring && !retiring.hasBeenAsked && stays === null && (
+          <button className="btn-main" disabled={isRoundUnderWay} onClick={() => run(() => onPersuade().then(setStays))}>
+            Pedir mais um ano
+          </button>
+        )}
+        <button ref={opener} className="btn-quiet" disabled={isRoundUnderWay} onClick={() => setConfirming(true)} aria-expanded={isConfirming}>
+          Aposentar {name}
+        </button>
+        {isConfirming && (
+          <div
+            className="note player-retire-confirm"
+            role="alertdialog"
+            aria-labelledby="retire-confirm-title"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") close();
+            }}
+          >
+            <p id="retire-confirm-title">Aposentar {name} agora? Ele deixa o elenco e não volta.</p>
+            <button className="btn sm no" onClick={() => run(onRetire)}>
+              Aposentar
+            </button>
+            <button ref={cancel} className="btn sm" onClick={close}>
+              Cancelar
+            </button>
+          </div>
+        )}
+      </div>
+      {hasFailed && (
+        <p className="status error" role="alert">
+          O pedido não chegou ao clube. Tente de novo.
+        </p>
+      )}
+    </section>
   );
 }
 
@@ -245,10 +338,15 @@ type ActionsProps = {
   desk: BoardDesk;
   onAsk: (request: CoachRequest) => void;
   onWithdraw: () => void;
+  /** Opens the renewal screen, where each length has its own wage. */
+  onNegotiate: () => void;
 };
 
-/** Renovar, Vender and Emprestar, or Chamar de volta for a player lent out, go to the board's desk; a request already there can be withdrawn. */
-function ContractActions({ state, playerId, name, desk, onAsk, onWithdraw }: ActionsProps) {
+/**
+ * Renovar (at his ask, for the years chosen), Vender and Emprestar, or Chamar de volta for a player lent out,
+ * go to the board's desk; Negociar opens the renewal screen; a request already there can be withdrawn.
+ */
+function ContractActions({ state, playerId, name, desk, onAsk, onWithdraw, onNegotiate }: ActionsProps) {
   const [years, setYears] = useState<number>(DEFAULT_RENEWAL_YEARS);
   const pending = desk.pending.find((request) => request.playerId === playerId);
   if (pending) {
@@ -276,6 +374,9 @@ function ContractActions({ state, playerId, name, desk, onAsk, onWithdraw }: Act
               <Select label="Anos" caption={null} value={String(years)} options={RENEWAL_YEARS.map((n) => ({ value: String(n), label: String(n) }))} onChange={(value) => setYears(Number(value))} />
               {years === 1 ? "ano" : "anos"}
             </label>
+            <button className="btn-quiet" onClick={onNegotiate}>
+              Negociar
+            </button>
           </span>
         ) : (
           <button key={option.label} className="btn-quiet" onClick={() => onAsk(option.request)}>

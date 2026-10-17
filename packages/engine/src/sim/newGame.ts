@@ -1,3 +1,4 @@
+import { withCoachWorld } from "./coach/aiCoaches.js";
 import type { Club } from "@boleiro/data/clubs";
 import type { CompetitionMoney } from "@boleiro/data/competition-money";
 import type { ClubLineup } from "@boleiro/data/dataPack";
@@ -223,7 +224,7 @@ export function newGame(
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
   const withClock = marketClockSeconds === undefined ? game : { ...game, marketClockSeconds };
   const withAcademies = { ...withClock, youth: openAcademies(withClock) };
-  const started = withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat);
+  const started = withCoachWorld(withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat));
   return sponsors ? seedGameSponsors(started, sponsors) : started;
 }
 

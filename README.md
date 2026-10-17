@@ -24,6 +24,8 @@ Sponsors: `data/sponsors.csv` holds every brand on each club's 2026 kit as Wikip
 
 Positions and last elevens come from FotMob: `.venv/bin/python pipeline/scrape_fotmob.py data` (cached in `data/fotmob_cache`, the same polite fetcher as the Transfermarkt scraper) writes `data/fotmob-players.csv` (each player's FotMob positions, matched to his Transfermarkt id by name within the club) and `data/fotmob-lineups.csv` (each club's last starting eleven, with its formation where FotMob gives one; Séries C and D matches list the starters only). A player's main position stays Transfermarkt's; FotMob adds his others. In the game a player keeps his whole strength in his main position, 97% in another of his and 85% anywhere else (50% for a keeper outfield or an outfielder in goal); each club plays its last real formation, or the one its real eleven, or else its squad, fits best.
 
+Every club's head coach comes from Transfermarkt's league manager lists: `python3 pipeline/fetch_coaches.py` (cached in `data/tm_cache`, `--offline` to rebuild from it) writes `data/coaches.csv` and the engine's roster `packages/data/src/coachRoster.ts`; clubs it doesn't cover get invented local coaches.
+
 `data/club-facts.csv` holds hand-checked values (artificial pitches, fanbase survey shares, short names) that override or fill the scraped ones.
 
 Strength starts from a division baseline and moves with each player's own evidence: market value, share of minutes, Sofascore rating and, for forwards, goals and assists per 90. Players with little data stay near the baseline.

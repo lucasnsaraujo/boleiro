@@ -23,7 +23,8 @@ export type SeasonStats = {
   clubSeasons: ClubSeason[];
   /** Moves by kind, and the share of non-Brazilian players per tier on the season's last day. */
   flow: SeasonFlow;
-  injuries: { injuries: number; clubs: number; starterHours: number };
+  /** `recurrences` counts the injuries that were a player's last one coming back. */
+  injuries: { injuries: number; recurrences: number; clubs: number; starterHours: number };
 };
 
 const CARD_COMPETITIONS: readonly CardCompetition[] = ["A", "B", "C", "D", "cup", "state"];
@@ -76,6 +77,6 @@ export function seasonStats({ before, after, fixtures, injuries, moves }: Season
     cards,
     clubSeasons: clubSeasonsOf(before, after),
     flow: { ...moves.reduce(tallyMove, emptyFlow(before.season)), foreignShare: foreignShare(before) },
-    injuries: { injuries: injuries.length, clubs: clubs.size, starterHours: fixtures.length * 2 * STARTERS * MATCH_HOURS },
+    injuries: { injuries: injuries.length, recurrences: injuries.filter((i) => i.isRecurrence).length, clubs: clubs.size, starterHours: fixtures.length * 2 * STARTERS * MATCH_HOURS },
   };
 }

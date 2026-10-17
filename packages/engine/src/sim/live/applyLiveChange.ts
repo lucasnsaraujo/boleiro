@@ -6,7 +6,8 @@ import { drawCardsAfter, markedCardRates } from "../discipline/drawCards.js";
 import type { SimPlayer } from "../gameState.js";
 import { scorersOf } from "../history/scorersOf.js";
 import { clubMood } from "../morale/clubMood.js";
-import { injuryLayoffDays, matchInjuryChance } from "../players/matchInjuryChance.js";
+import { drawInjury, matchInjuryChance } from "../players/matchInjuryChance.js";
+import { injuryStreamOf } from "../players/recordMatchLoad.js";
 import { engineTeam } from "../players/matchSetup.js";
 import { matchOfficials } from "../referees/matchOfficials.js";
 import { withRefereeCalls } from "../referees/refereeCalls.js";
@@ -98,7 +99,7 @@ function poissonCount(mean: number, random: () => number): number {
  * whole match, spread by Série A's goal minutes and the ten-men effect; an AI side takes the
  * posture aiPosture gives it for the score at each minute, a rival human coach's side his tactics.
  */
-function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEvent[], coachSide: Side, minute: number, random: () => number): MatchEvent[] {
+function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEvent[], coachSide: Side, minute: number, random: () => number, seed: number): MatchEvent[] {
   const clubIds = { home: match.homeId, away: match.awayId };
   const elevens = { home: onPitch(coachMatch, kept, "home", clubIds.home), away: onPitch(coachMatch, kept, "away", clubIds.away) };
   const strength = (p: SimPlayer) => coachMatch.strengths[p.id] ?? p.strength;
@@ -121,11 +122,11 @@ function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEv
   const share = (FULL_TIME - minute) / FULL_TIME;
   const injuries: MatchEvent[] = [...playing("home"), ...playing("away")].flatMap((player): MatchEvent[] => {
     if (random() >= 1 - (1 - matchInjuryChance(player, coachMatch.context)) ** share) return [];
-    const days = injuryLayoffDays(random);
+    const { days, kind, isRecurrence } = drawInjury(player, coachMatch.context.date, injuryStreamOf(seed, match.fixtureId)(player.id));
     const earliest = Math.max(minute + 1, ...cards.flatMap((e) => (e.type === "card" && e.playerId === player.id ? [e.minute] : [])));
     const latest = sentOffMinute(sofar, player.id) ?? FULL_TIME;
     const at = earliest + Math.floor(random() * (latest - earliest + 1));
-    return [{ type: "injury", minute: at, clubId: player.clubId, playerId: player.id, days }];
+    return [{ type: "injury", minute: at, clubId: player.clubId, playerId: player.id, days, kind, ...(isRecurrence ? { isRecurrence } : {}) }];
   });
   const injuredMinute = new Map([...kept, ...injuries].flatMap((e) => (e.type === "injury" ? [[e.playerId, e.minute] as const] : [])));
 
@@ -247,6 +248,7 @@ function extraTimeAfter(live: LiveDay, coachMatch: CoachMatch, match: LiveMatch,
     params: coachMatch.params,
     cardRates: markedCardRates(coachMatch.cardRates, { home: markingOf("home"), away: markingOf("away") }),
     context: coachMatch.context,
+    injuryStream: injuryStreamOf(live.state.seed, match.fixtureId),
   };
   return playExtraTime(extraTime, events, random, start);
 }
@@ -308,7 +310,7 @@ export function applyLiveChange(live: LiveDay, minute: number, change: LiveChang
   const random = randomStream(coachMatch.rngState);
   const next: CoachMatch = isRival ? { ...coachMatch, rivalTactics: tactics, lastChangeMinute: minute, isChanged: true } : { ...coachMatch, tactics, lastChangeMinute: minute, isChanged: true };
   const sofar = [...kept, ...substitutions];
-  const ninety = [...sofar, ...(minute < FULL_TIME ? redraw(next, match, sofar, ownerSide, minute, random.next) : [])];
+  const ninety = [...sofar, ...(minute < FULL_TIME ? redraw(next, match, sofar, ownerSide, minute, random.next, live.state.seed) : [])];
   const extraTime = extraTimeAfter(live, next, match, ninety, ownerSide, minute, random.next);
   const played = [...ninety, ...(extraTime ?? [])];
   const shootout = shootoutAfter(live, next, match, [...played, ...whistlesTo(extraTime ? EXTRA_TIME_END : FULL_TIME)], ownerSide, random.next);

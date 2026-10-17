@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
-import { boardNotes, dueRequests, withRequest } from "./boardDesk.js";
+import { boardNotes, dueRequests, withoutLeavers, withRequest } from "./boardDesk.js";
 
 const COACH = "sport-pe";
 const game = newGameFromFiles(5, { coachClubId: COACH }, bundledGameFiles);
@@ -26,6 +26,12 @@ describe("the coach's pending requests", () => {
     expect(dueRequests(on("2026-01-03"), [sell, renew])).toEqual({ due: [renew], waiting: [sell] });
     expect(dueRequests(on("2026-01-04"), [sell])).toEqual({ due: [sell], waiting: [] });
     expect(dueRequests(on("2026-03-03"), [sell])).toEqual({ due: [], waiting: [sell] });
+  });
+
+  test("a request for a player who left the game, retired or gone abroad, leaves the desk", () => {
+    const players = Object.fromEntries(Object.entries(game.players).filter(([id]) => id !== own.id));
+    const pending = [{ kind: "sell", playerId: own.id }, { kind: "sign", playerId: other.id }] as const;
+    expect(withoutLeavers(pending, { ...game, players })).toEqual([{ kind: "sign", playerId: other.id }]);
   });
 });
 

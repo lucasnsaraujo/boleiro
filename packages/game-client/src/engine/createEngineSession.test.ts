@@ -16,8 +16,8 @@ const CLUB = "flamengo-rj";
 // Botafogo's 2026 kit, before the betting ban, had nothing on its front, back or shorts (Wikipedia, data/sponsors.csv).
 const SPONSORS_CLUB = "botafogo-rj";
 const SEED = 7;
-// The season test needs a coach the board keeps all year; the board sacks him on seeds 1, 2, 3, 7 and 8 of today's engine.
-const SEASON_SEED = 4;
+// The season test needs a coach the board keeps all year, and the events test an event that asks him within it: seed 8 gives both on today's engine.
+const SEASON_SEED = 8;
 // Enough steps for a season of play-ons and match days; a stuck loop fails instead of hanging.
 const MAX_STEPS = 400;
 
@@ -194,6 +194,17 @@ function playCareerStart() {
   return { recorded, declined: declined.clubId, signed: signed.clubId };
 }
 
+/** A coach who walks out of his club, applies for a job (his old club's, which won't have him back) and plays on unemployed. */
+function playCoachMoves() {
+  const recorded = recordedSession();
+  recorded.apply({ type: "newGame", seed: SEED, choices: { coachClubId: "bahia-ba" } });
+  recorded.apply({ type: "advance", days: [{}, {}] });
+  recorded.apply({ type: "resign" });
+  const answer = recorded.apply({ type: "applyForJob", clubId: "bahia-ba" });
+  recorded.apply({ type: "advance", days: [{}, {}, {}] });
+  return { recorded, answer, page: recorded.session.coaches() };
+}
+
 /**
  * The coach's own market in the January window: weak players listed cheap, one put at auction and
  * taken off, an offer under a club's price that draws its counter, which he turns down, and the first
@@ -334,6 +345,7 @@ function playEvents() {
   const after = session.read(["mood", "boards", "finances"]);
   const inbox = session.inbox();
   apply({ type: "handToAssistant", area: "press", isHanded: true });
+  apply({ type: "setAssistantDuty", duty: "contracts", isOn: false });
   apply({ type: "playToMatchDay" });
   return { recorded, pending, answered, before, after, inbox };
 }
@@ -369,6 +381,21 @@ function playSponsors() {
   return { recorded, before, picking, offer, signed, finances, inbox: session.inbox(), save: session.save() };
 }
 
+/** Retires one of the coach's players and asks a veteran who announced his last season to stay. */
+function playPlayerLife() {
+  const recorded = recordedSession();
+  const { session, apply } = recorded;
+  apply({ type: "newGame", seed: SEED, choices: { coachClubId: CLUB } });
+  const [retiring, veteran] = Object.values(session.read(["players"]).players).filter((p) => p.clubId === CLUB);
+  if (!retiring || !veteran) throw new Error("the coach's club has players");
+  apply({ type: "retirePlayer", playerId: retiring.id });
+  const saved = JSON.parse(session.save()) as { game: { players: Record<string, SimPlayer> } };
+  saved.game.players[veteran.id] = { ...veteran, retiring: { afterSeason: 2026, hasBeenAsked: false } };
+  apply({ type: "load", save: JSON.stringify(saved) });
+  apply({ type: "persuadeToStay", playerId: veteran.id });
+  return { recorded };
+}
+
 let season: Season;
 let career: ReturnType<typeof playCareerStart>;
 let marketWindow: ReturnType<typeof playMarketWindow>;
@@ -376,6 +403,7 @@ let money: ReturnType<typeof playMoney>;
 let academy: ReturnType<typeof playAcademy>;
 let events: ReturnType<typeof playEvents>;
 let captain: ReturnType<typeof playCaptain>;
+let coachMoves: ReturnType<typeof playCoachMoves>;
 let scouting: ReturnType<typeof playScouting>;
 let sponsors: ReturnType<typeof playSponsors>;
 
@@ -387,6 +415,7 @@ beforeAll(() => {
   academy = playAcademy();
   events = playEvents();
   captain = playCaptain();
+  coachMoves = playCoachMoves();
   scouting = playScouting();
   sponsors = playSponsors();
 }, 120_000);
@@ -417,6 +446,21 @@ test("the coach can't sign a sponsor while the board negotiates them", () => {
 test("the sponsor commands survive JSON and replay alike from the same seed", () => {
   const { session, applied } = sponsors.recorded;
   for (const { command } of applied) expect(JSON.parse(JSON.stringify(command))).toStrictEqual(command);
+  const twin = replay(applied);
+  expect(twin.results).toEqual(applied.map(({ result }) => result));
+  expect(sha256(twin.session.save())).toBe(sha256(session.save()));
+});
+
+test("a coach who resigns is out of work with his old club's job open, and the club won't take him back", () => {
+  const { recorded, answer, page } = coachMoves;
+  expect(recorded.session.read(["coachClubId"]).coachClubId).toBeNull();
+  expect(answer).toBe("notWelcome");
+  expect(page.jobs.find((job) => job.clubId === "bahia-ba")).toMatchObject({ wouldHire: false });
+  expect(page.you.stints.at(-1)).toMatchObject({ clubId: "bahia-ba", left: "resigned" });
+});
+
+test("the coach-move commands survive JSON and replay alike from the same seed", () => {
+  const { session, applied } = coachMoves.recorded;
   const twin = replay(applied);
   expect(twin.results).toEqual(applied.map(({ result }) => result));
   expect(sha256(twin.session.save())).toBe(sha256(session.save()));
@@ -615,7 +659,7 @@ test("the money commands survive JSON and replay alike from the same seed", () =
 });
 
 test("the season, career, market, money, academy and hot-seat logs between them send every kind of command", () => {
-  const logs = [season, career, marketWindow, money, academy, events, captain, scouting, sponsors, playHotSeatTurn()].flatMap(({ recorded }) => recorded.applied);
+  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, scouting, sponsors, playHotSeatTurn(), playPlayerLife()].flatMap(({ recorded }) => recorded.applied);
   const sent = new Set(logs.map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
@@ -628,6 +672,8 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     finishRound: true,
     closeTurningPoint: true,
     declineOffer: true,
+    resign: true,
+    applyForJob: true,
     ask: true,
     withdraw: true,
     listPlayer: true,
@@ -645,12 +691,15 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     spendMarketTime: true,
     answerEvent: true,
     handToAssistant: true,
+    setAssistantDuty: true,
     nameCaptain: true,
     watchPlayer: true,
     saveFilter: true,
     deleteFilter: true,
     signSponsor: true,
     pickSponsors: true,
+    retirePlayer: true,
+    persuadeToStay: true,
   };
   expect([...sent].sort()).toEqual(Object.keys(every).sort());
 });

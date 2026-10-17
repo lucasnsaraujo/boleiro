@@ -5,7 +5,7 @@ import { createEngineSession } from "./createEngineSession.js";
 
 const ARSENAL = "tm-11";
 // The season needs the board to keep its coach all year.
-const SEED = 4;
+const SEED = 1;
 const MAX_STEPS = 800;
 
 let session: ReturnType<typeof createEngineSession>;

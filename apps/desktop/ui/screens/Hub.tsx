@@ -9,6 +9,9 @@ import type { HotSeatView } from "@boleiro/game-client/hub/hotSeat";
 import type { InboxLine } from "@boleiro/game-client/hub/inboxLines";
 import type { BetSticker } from "@boleiro/game-client/sponsors/sponsorsPage";
 import type { TurningPoint } from "@boleiro/game-client/hub/turningPoints";
+import type { BoardDesk } from "@boleiro/game-client/market/boardDesk";
+import { contractsEnding } from "@boleiro/game-client/market/contracts";
+import { doesAssistantHandle } from "@boleiro/engine/sim/coach/assistantDuties";
 import { useCommands } from "../app/AppCommands.js";
 import { useGameClock } from "../app/gameClock.js";
 import { useServices } from "../app/ServicesContext.js";
@@ -21,15 +24,18 @@ import { EventNote } from "../events/EventNote.js";
 import { EventPopUp } from "../events/EventPopUp.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import { SQUAD_KEYS, squadRows } from "../squad/squadRows.js";
+import { ContractsEnding } from "../contracts/ContractsEnding.js";
+import { RenewalDialog } from "../contracts/RenewalDialog.js";
 import { PlayerSticker } from "../squad/PlayerSticker.js";
 import { SquadTable } from "../squad/SquadTable.js";
 import { BrandLogo } from "../sponsors/BrandLogo.js";
 import { OddsSticker } from "../sponsors/OddsSticker.js";
 import "./hub.css";
 
-const HUB_KEYS = [...SQUAD_KEYS, "boards", "coach", "mood", "finances"] as const;
+const HUB_KEYS = [...SQUAD_KEYS, "boards", "coach", "mood", "finances", "eventMemory", "hasMidSeasonWindow"] as const;
 type HubState = Pick<GameState, (typeof HUB_KEYS)[number]>;
-type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null; seats: HotSeatView | null; event: PendingEvent | null; bet: BetSticker | null };
+type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null; seats: HotSeatView | null; event: PendingEvent | null; desk: BoardDesk; bet: BetSticker | null };
+type SquadTab = "squad" | "contracts";
 
 const TURNING_POINT_SCREENS: Record<TurningPoint["kind"], string> = { fired: "/sacked", seasonEnd: "/season-end" };
 const offersText = (count: number) => `${count} ${count === 1 ? "proposta" : "propostas"}`;
@@ -52,13 +58,16 @@ export function Hub() {
   const [answered, setAnswered] = useState<EventAnswered | null>(null);
   const [isAnswering, setAnswering] = useState(false);
   const [hasAnswerFailed, setAnswerFailed] = useState(false);
+  const [squadTab, setSquadTab] = useState<SquadTab>("squad");
+  /** The player whose renewal screen is open. */
+  const [renewingId, setRenewingId] = useState<string | null>(null);
   /** The event the pop-up shows; an answer that lands after it closed is dropped. */
   const shownEvent = useRef<PendingEvent | null>(null);
 
   const load = useCallback(
     (isCurrent: () => boolean) =>
-      Promise.all([engine.read(HUB_KEYS), engine.inbox(), engine.turningPoint(), engine.hotSeat(), engine.pendingEvent(), engine.betSticker()]).then(
-        ([state, inbox, turningPoint, seats, event, bet]) => isCurrent() && setLoaded({ state, inbox, turningPoint, seats, event, bet }),
+      Promise.all([engine.read(HUB_KEYS), engine.inbox(), engine.turningPoint(), engine.hotSeat(), engine.pendingEvent(), engine.desk(), engine.betSticker()]).then(
+        ([state, inbox, turningPoint, seats, event, desk, bet]) => isCurrent() && setLoaded({ state, inbox, turningPoint, seats, event, desk, bet }),
         () => isCurrent() && setMissing(true),
       ),
     [engine],
@@ -85,7 +94,7 @@ export function Hub() {
   const passes = seats !== null && !seats.isLastTurn;
   const act = () => void round.play();
   const club = loaded?.state.coachClubId ? loaded.state.clubs[loaded.state.coachClubId] : undefined;
-  useCommands({ jogarRodada: loaded !== null && !round.isPlaying && openEvent === null && act });
+  useCommands({ jogarRodada: loaded !== null && !round.isPlaying && openEvent === null && renewingId === null && act });
 
   async function answer(choice: number | null) {
     if (isAnswering) return;
@@ -143,6 +152,8 @@ export function Hub() {
   const strongest = rows.reduce<(typeof rows)[number] | null>((best, row) => (!best || row.strength > best.strength ? row : best), null);
   const shown = rows.find((row) => row.id === selectedId) ?? strongest;
   const shownId = shown?.id ?? null;
+  const ending = club ? contractsEnding(state) : [];
+  const onDesk = new Set(loaded.desk.pending.map((request) => request.playerId));
 
   return (
     <div className="hub fills-screen">
@@ -210,8 +221,7 @@ export function Hub() {
         )}
         {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
 
-        {/* The paper pins over the card, never over the play button above it. */}
-        <div className="hub-desk">
+        <div className="hub-slot">
           {club && loaded.event && selectedId === null ? (
             <EventNote key={`${loaded.event.typeId}:${loaded.event.date}`} event={loaded.event} today={state.date} onOpen={() => loaded.event && openEventPopUp(loaded.event)} />
           ) : club && shown ? (
@@ -219,24 +229,23 @@ export function Hub() {
           ) : (
             <div className="slot hub-card-empty" />
           )}
-          {club && openEvent && (
-            <EventPopUp
-              event={openEvent}
-              club={club}
-              rival={openEvent.rivalId ? (state.clubs[openEvent.rivalId] ?? null) : null}
-              player={openEvent.playerId ? (state.players[openEvent.playerId] ?? null) : null}
-              today={state.date}
-              standing={standing ? `${club.shortName} · ${standing.position}º lugar · ${standing.points} pts` : null}
-              isBusy={isAnswering}
-              hasFailed={hasAnswerFailed}
-              answered={answered}
-              onAnswer={(choice) => void answer(choice)}
-              onClose={closeEvent}
-            />
-          )}
-
           {isPaperOpen && <Paper news={news} onClose={() => setPaperOpen(false)} />}
         </div>
+        {club && openEvent && (
+          <EventPopUp
+            event={openEvent}
+            club={club}
+            rival={openEvent.rivalId ? (state.clubs[openEvent.rivalId] ?? null) : null}
+            player={openEvent.playerId ? (state.players[openEvent.playerId] ?? null) : null}
+            today={state.date}
+            standing={standing ? `${club.shortName} · ${standing.position}º lugar · ${standing.points} pts` : null}
+            isBusy={isAnswering}
+            hasFailed={hasAnswerFailed}
+            answered={answered}
+            onAnswer={(choice) => void answer(choice)}
+            onClose={closeEvent}
+          />
+        )}
 
         <nav className="hub-dock" aria-label="Clube">
           {club ? (
@@ -295,8 +304,29 @@ export function Hub() {
       </div>
 
       <section className="page hub-squad" aria-label="Elenco">
-        {club ? <SquadTable rows={rows} clubName={club.shortName} selectedId={shownId} onSelect={setSelectedId} /> : <p className="hub-squad-none">Sem clube, sem elenco.</p>}
+        {club && (
+          <div className="hub-squad-tabs" role="tablist" aria-label="Elenco e contratos">
+            <button role="tab" id="hub-tab-squad" aria-selected={squadTab === "squad"} aria-controls="hub-squad-panel" className="hub-squad-tab" onClick={() => setSquadTab("squad")}>
+              Elenco
+              <span className="hub-squad-n">{rows.length}</span>
+            </button>
+            <button role="tab" id="hub-tab-contracts" aria-selected={squadTab === "contracts"} aria-controls="hub-squad-panel" className="hub-squad-tab" onClick={() => setSquadTab("contracts")}>
+              Contratos
+              <span className={ending.some((row) => row.isPreContractOpen && !row.leavesForId) ? "hub-squad-n urgent" : "hub-squad-n"}>{ending.length}</span>
+            </button>
+          </div>
+        )}
+        <div className="hub-squad-scroll" id="hub-squad-panel" role={club ? "tabpanel" : undefined} aria-labelledby={club ? (squadTab === "squad" ? "hub-tab-squad" : "hub-tab-contracts") : undefined}>
+          {!club ? (
+            <p className="hub-squad-none">Sem clube, sem elenco.</p>
+          ) : squadTab === "squad" ? (
+            <SquadTable rows={rows} clubName={club.shortName} selectedId={shownId} onSelect={setSelectedId} />
+          ) : (
+            <ContractsEnding rows={ending} clubs={state.clubs} isAssistantOn={doesAssistantHandle(state.coach, "contracts")} onDesk={onDesk} onRenew={setRenewingId} />
+          )}
+        </div>
       </section>
+      {renewingId && <RenewalDialog playerId={renewingId} onClose={() => setRenewingId(null)} onChange={() => void load(() => true)} />}
     </div>
   );
 }

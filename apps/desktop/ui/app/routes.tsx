@@ -1,8 +1,10 @@
 import type { ReactElement } from "react";
 import { Navigate, type RouteObject } from "react-router";
+import { Awards } from "../screens/Awards.js";
 import { Calendar } from "../screens/Calendar.js";
 import { Chemistry } from "../screens/Chemistry.js";
 import { Club } from "../screens/Club.js";
+import { Coaches } from "../screens/Coaches.js";
 import { Finances } from "../screens/Finances.js";
 import { History } from "../screens/History.js";
 import { Hub } from "../screens/Hub.js";
@@ -39,6 +41,7 @@ const ELEMENTS: Record<ScreenPath, ReactElement> = {
   "/history": <History />,
   "/season-end": <SeasonEnd />,
   "/offers": <Offers />,
+  "/coaches": <Coaches />,
   "/sacked": <Sacked />,
   "/options": <Options />,
   "/saves": <Saves />,
@@ -46,6 +49,7 @@ const ELEMENTS: Record<ScreenPath, ReactElement> = {
   "/newspaper": <Newspaper />,
   "/chemistry": <Chemistry />,
   "/sponsors": <Sponsors />,
+  "/awards": <Awards />,
 };
 
 export const routes: RouteObject[] = [
