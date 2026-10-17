@@ -118,6 +118,41 @@ const coachMatchOf = (live: typeof levelDay) => {
 };
 const isReplayed = (e: MatchEvent) => e.type === "goal" || e.type === "card" || e.type === "injury" || e.type === "substitution" || e.type === "penaltyMiss";
 
+/** Today's matches made second legs of Recopa ties whose first legs the visitors won 1–0 at home. */
+function asSecondLegDay(state: GameState): GameState {
+  const today = state.fixtures.filter((f) => f.date === state.date);
+  const ties = today.map((f): [string, string] => [f.homeId, f.awayId]);
+  const firstLeg = "2026-01-02";
+  const competition: Competition = {
+    id: "recopa-ko",
+    kind: "continental",
+    cup: "recopa",
+    season: state.season,
+    clubIds: ties.flat(),
+    entries: [],
+    countries: {},
+    drawOrder: ties.flat(),
+    stages: [{ kind: "knockout", ties, dates: [firstLeg, state.date] }],
+    stageDates: [[firstLeg, state.date]],
+  };
+  const firstLegs = today.map((f, tie): Fixture => ({ id: `${f.id}-ida`, competitionId: "recopa-ko", stage: 0, date: firstLeg, homeId: f.awayId, awayId: f.homeId, tie, result: { homeGoals: 1, awayGoals: 0 } }));
+  const asTie = new Map(today.map((f, tie): [string, Fixture] => [f.id, { ...f, competitionId: "recopa-ko", stage: 0, tie }]));
+  return { ...state, competitions: { ...state.competitions, "recopa-ko": competition }, fixtures: [...firstLegs, ...state.fixtures.map((f) => asTie.get(f.id) ?? f)] };
+}
+
+describe("extra time in a two-legged tie", () => {
+  it("is played when the aggregate is level after the second leg's ninety minutes, whatever that leg's own score", () => {
+    const live = startMatchDay(asSecondLegDay(matchDay), {});
+    for (const match of live.matches) {
+      const { home, away } = goalsBy(match, FULL_TIME);
+      expect(match.events.some((e) => e.type === "extraTimeEnd")).toBe(home - away === 1);
+      const after = goalsBy(match, EXTRA_TIME_END);
+      expect(match.events.some((e) => e.type === "shootoutKick")).toBe(after.home - after.away === 1);
+    }
+    expect(live.matches.some((m) => goalsBy(m, FULL_TIME).home - goalsBy(m, FULL_TIME).away === 1)).toBe(true);
+  });
+});
+
 describe("the coach's match in extra time", () => {
   it("goes to extra time after ninety level minutes, and the coach can change his side during it, keeping everything before", () => {
     const match = coachMatchOf(levelDay);
