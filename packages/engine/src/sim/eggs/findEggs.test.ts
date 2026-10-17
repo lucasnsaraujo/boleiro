@@ -54,6 +54,13 @@ describe("finding eggs", () => {
     expect(eggBookOf(again.state).log).toHaveLength(1);
   });
 
+  it("finds an egg only for the human coach's club it is about, not for the opponent it happened against", () => {
+    const aboutTheOpponent: MatchEgg = { ...everyMatch, id: "about-the-opponent", find: (tale) => [{ clubId: tale.fixture.awayId }] };
+    const found = run([aboutTheOpponent]);
+    expect(found.events).toEqual([]);
+    expect(eggBookOf(found.state).log).toEqual([]);
+  });
+
   it("names a kid of the academy after the coach the game knows by name", () => {
     const kid = Object.values(start.youth?.prospects ?? {}).find((p) => p.clubId === CLUB);
     if (!kid) throw new Error("no academy");
@@ -110,6 +117,12 @@ describe("finding eggs", () => {
     expect(matchEggNotes(start, start.history, { ...ours, result: { homeGoals: 1, awayGoals: 0 } }, story)).toEqual([]);
     expect(matchEggNotes(start, start.history, { ...ours, result: { homeGoals: 7, awayGoals: 1 } }, null)).toEqual([]);
     expect(matchEggNotes(booked, start.history, { ...ours, result: { homeGoals: 7, awayGoals: 1 } }, null).map((note) => note.eggId)).toEqual(["olympic-goal"]);
+  });
+
+  it("tapes no egg on the page of a match between two clubs no human coaches, nor one about the human club's opponent", () => {
+    const story = { events: [], play: null };
+    expect(matchEggNotes(start, start.history, { ...theirs, result: { homeGoals: 7, awayGoals: 1 } }, story)).toEqual([]);
+    expect(matchEggNotes(start, start.history, { ...ours, result: { homeGoals: 1, awayGoals: 7 } }, story)).toEqual([]);
   });
 
   it("looks for eggs as a day is played", () => {
