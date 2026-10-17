@@ -1,14 +1,11 @@
 import type { Tactics } from "@boleiro/engine/sim/coach/tactics";
 import type { LiveChange, Substitution } from "@boleiro/engine/sim/live/applyLiveChange";
-import { FULL_TIME, HALF_TIME, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
+import { EXTRA_TIME_SUBSTITUTIONS, EXTRA_TIME_WINDOWS, isFreeWindow, MAX_SUBSTITUTION_WINDOWS, MAX_SUBSTITUTIONS } from "@boleiro/engine/sim/live/aiSubstitutions";
+import { FULL_TIME, matchEndOf, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import type { KickOff } from "@boleiro/game-client/engine/createEngineSession";
 import type { CoachSide } from "@boleiro/game-client/round/liveRoundOf";
 import type { SquadPlayer } from "@boleiro/game-client/round/matchDayPlan";
 
-// IFAB Laws of the Game 2025/26, Law 3.1, as applyLiveChange enforces them: five substitutes in at
-// most three windows, half-time not counting as one.
-const MAX_SUBSTITUTIONS = 5;
-const MAX_WINDOWS = 3;
 const LINEUP_SIZE = 11;
 
 /** What the coach's match allows at the minute the sheet opens. */
@@ -16,7 +13,7 @@ export type LiveLimits = {
   minute: number;
   onPitch: string[];
   subsLeft: number;
-  /** Stoppages the coach may still make substitutions in; half-time does not use one. */
+  /** Stoppages the coach may still make substitutions in; half-time and extra time's breaks use none. */
   stopsLeft: number;
   sentOff: ReadonlySet<string>;
   hurt: ReadonlySet<string>;
@@ -33,11 +30,15 @@ type Choice = { lineup: string[]; tactics: Tactics; subs: Substitution[] };
 /** The lineup sheet being edited: the eleven, tactics and substitutions so far, the starter picked to go off, and what to undo. */
 export type Sheet = Choice & { picked: string | null; history: Choice[] };
 
+/** What the coach may still do at `minute`, by Law 3 as applyLiveChange enforces it: a sixth substitute and a fourth stoppage once extra time comes. */
 export function liveLimits(coach: CoachSide, events: readonly MatchEvent[], clubId: string, minute: number): LiveLimits {
+  const isExtraTime = minute >= FULL_TIME;
+  const most = MAX_SUBSTITUTIONS + (isExtraTime ? EXTRA_TIME_SUBSTITUTIONS : 0);
+  const mostWindows = MAX_SUBSTITUTION_WINDOWS + (isExtraTime ? EXTRA_TIME_WINDOWS : 0);
   const sofar = events.filter((e) => e.minute <= minute);
   const made = sofar.flatMap((e) => (e.type === "substitution" && e.clubId === clubId ? [e] : []));
-  const windows = new Set(made.filter((e) => e.minute !== HALF_TIME).map((e) => e.minute));
-  const hasWindow = minute === HALF_TIME || windows.has(minute) || windows.size < MAX_WINDOWS;
+  const windows = new Set(made.filter((e) => !isFreeWindow(e.minute)).map((e) => e.minute));
+  const hasWindow = isFreeWindow(minute) || windows.has(minute) || windows.size < mostWindows;
   const onPitch = made.reduce((eleven, sub) => eleven.map((id) => (id === sub.offId ? sub.playerId : id)), coach.starters);
   const cameOn = new Set(made.map((e) => e.playerId));
   const ofCoach = (type: "injury" | "card") =>
@@ -45,8 +46,8 @@ export function liveLimits(coach: CoachSide, events: readonly MatchEvent[], club
   return {
     minute,
     onPitch,
-    subsLeft: minute >= FULL_TIME || !hasWindow ? 0 : MAX_SUBSTITUTIONS - made.length,
-    stopsLeft: MAX_WINDOWS - windows.size,
+    subsLeft: minute >= matchEndOf(events) || !hasWindow ? 0 : most - made.length,
+    stopsLeft: mostWindows - windows.size,
     sentOff: ofCoach("card"),
     hurt: ofCoach("injury"),
     benchIds: new Set(coach.benchIds.filter((id) => !cameOn.has(id))),

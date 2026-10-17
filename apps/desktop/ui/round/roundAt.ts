@@ -2,7 +2,7 @@ import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
 import type { VarCheck } from "@boleiro/engine/sim/referees/refereeCalls";
 import { VAR_WORDS, WRONG_CALL_WORDS } from "@boleiro/game-client/format/refereeCallWords";
 import { badDaysOf } from "@boleiro/engine/sim/live/matchPlay";
-import { FULL_TIME, HALF_TIME, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
+import { EXTRA_HALF_TIME, FULL_TIME, HALF_TIME, isWhistle, matchEndOf, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import type { LiveRound, RoundMatch, Side } from "@boleiro/game-client/round/liveRoundOf";
 
 export type EventKind = "goal" | "penaltyMiss" | "yellow" | "red" | "injury" | "substitution" | "varCheck" | "wrongCall";
@@ -10,11 +10,11 @@ export type EventKind = "goal" | "penaltyMiss" | "yellow" | "red" | "injury" | "
 export type ShownEvent = { kind: EventKind; minute: number; side: Side; text: string };
 export type Score = { home: number; away: number };
 /** One match at a minute of the round: the score so far, red cards and its latest event. */
-/** A match at a minute; `isHuman` when the coach's or a hot-seat coach's club plays it. */
-export type MatchAt = RoundMatch & { score: Score; reds: Score; last: ShownEvent | null; isCoach: boolean; isHuman: boolean };
+/** A match at a minute; `isHuman` when the coach's or a hot-seat coach's club plays it, `isInExtraTime` from its ninety minutes' end on. */
+export type MatchAt = RoundMatch & { score: Score; reds: Score; last: ShownEvent | null; isCoach: boolean; isHuman: boolean; isInExtraTime: boolean };
 
-/** What happened during the ninety minutes to a player; the whistles and the shootout after full time are not. */
-type PlayerEvent = Exclude<MatchEvent, { type: "halfTime" | "fullTime" | "shootoutKick" | "orderOverruled" }>;
+/** What happened during the match to a player; the whistles and the shootout after the last one are not. */
+type PlayerEvent = Exclude<MatchEvent, { type: "halfTime" | "fullTime" | "extraHalfTime" | "extraTimeEnd" | "shootoutKick" | "orderOverruled" }>;
 
 function kindOf(event: PlayerEvent): EventKind {
   if (event.type === "card") return event.card === "yellow" ? "yellow" : "red";
@@ -52,8 +52,7 @@ function eventText(event: PlayerEvent, names: Readonly<Record<string, string>>):
   }
 }
 
-const isPlayerEvent = (event: MatchEvent): event is PlayerEvent =>
-  event.type !== "halfTime" && event.type !== "fullTime" && event.type !== "shootoutKick" && event.type !== "orderOverruled";
+const isPlayerEvent = (event: MatchEvent): event is PlayerEvent => !isWhistle(event) && event.type !== "shootoutKick" && event.type !== "orderOverruled";
 
 function matchAt(round: LiveRound, match: RoundMatch, minute: number, underReview: string | null): MatchAt {
   const score = { home: 0, away: 0 };
@@ -75,7 +74,8 @@ function matchAt(round: LiveRound, match: RoundMatch, minute: number, underRevie
   }
   const isCoach = match.fixtureId === round.coach?.fixtureId;
   const isOtherHuman = round.otherHumanClubIds?.some((id) => id === match.homeId || id === match.awayId) ?? false;
-  return { ...match, score, reds, last, isCoach, isHuman: isCoach || isOtherHuman };
+  const isInExtraTime = minute >= FULL_TIME && matchEndOf(match.events) > FULL_TIME;
+  return { ...match, score, reds, last, isCoach, isHuman: isCoach || isOtherHuman, isInExtraTime };
 }
 
 /**
@@ -163,13 +163,21 @@ export function varCheckAt(round: LiveRound, minute: number): { fixtureId: strin
   return null;
 }
 
+/** The minute the round ends: 120 when one of its matches goes to extra time, else 90. */
+export function roundEndOf(round: LiveRound): number {
+  return Math.max(FULL_TIME, ...round.matches.map((match) => matchEndOf(match.events)));
+}
+
 /**
- * Why the round stops by itself at `minute`: half-time, the final whistle, or something that needs
- * a coach in his match: a red card or an injury to any human coach's side. A goal never stops it.
+ * Why the round stops by itself at `minute`: half-time, extra time's breaks (before it and at its
+ * half-time), the final whistle, or something that needs a coach in his match: a red card or an
+ * injury to any human coach's side. A goal never stops it.
  */
-export function pauseReason(round: LiveRound, minute: number): "halfTime" | "fullTime" | "coachMatch" | null {
-  if (minute >= FULL_TIME) return "fullTime";
+export function pauseReason(round: LiveRound, minute: number): "halfTime" | "extraTimeBreak" | "fullTime" | "coachMatch" | null {
+  const end = roundEndOf(round);
+  if (minute >= end) return "fullTime";
   if (minute === HALF_TIME) return "halfTime";
+  if (minute === FULL_TIME || minute === EXTRA_HALF_TIME) return "extraTimeBreak";
   const coachClubId = round.coachClubId;
   const match = round.matches.find((m) => m.fixtureId === round.coach?.fixtureId);
   const needsCoach =

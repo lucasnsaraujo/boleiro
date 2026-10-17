@@ -2,7 +2,7 @@ import { memo, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router";
 import type { Club } from "@boleiro/data/clubs";
-import { FULL_TIME, HALF_TIME } from "@boleiro/engine/sim/live/matchTimeline";
+import { EXTRA_HALF_TIME, FULL_TIME, HALF_TIME, matchEndOf } from "@boleiro/engine/sim/live/matchTimeline";
 import { useCommands } from "../app/AppCommands.js";
 import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
@@ -30,7 +30,7 @@ import type { VarCheck } from "@boleiro/engine/sim/referees/refereeCalls";
 import { tacticsViewAt, type CoachSide, type HumanSide, type LiveRound, type RoundClub, type Side } from "@boleiro/game-client/round/liveRoundOf";
 import { liveTable, shortTable, type LiveTableRow } from "../round/liveTable.js";
 import type { MatchDayPlan } from "@boleiro/game-client/round/matchDayPlan";
-import { calloutsBetween, goalsBetween, pauseReason, roundAt, scorersUntil, varCheckAt, type Callout, type EventKind, type MatchAt } from "../round/roundAt.js";
+import { calloutsBetween, goalsBetween, pauseReason, roundAt, roundEndOf, scorersUntil, varCheckAt, type Callout, type EventKind, type MatchAt } from "../round/roundAt.js";
 import { VarSticker, type VarPhase } from "../round/VarSticker.js";
 import { useStickerLift } from "../round/useStickerLift.js";
 import type { Substitution } from "@boleiro/engine/sim/live/applyLiveChange";
@@ -95,7 +95,7 @@ type OpenIncident = Coached & { incident: Incident };
  */
 function incidentOf(round: LiveRound, minute: number, hotSeat: HotSeatView | null, answered: ReadonlySet<string> = new Set()): OpenIncident | null {
   const reason = pauseReason(round, minute);
-  if (reason !== "coachMatch" && reason !== "halfTime") return null;
+  if (reason !== "coachMatch" && reason !== "halfTime" && reason !== "extraTimeBreak") return null;
   const sides = coachedSides(round, hotSeat);
   for (const coached of sides) {
     const { side, clubId } = coached;
@@ -196,7 +196,7 @@ export function Round() {
         setMinute(at);
         setIncident(incidentOf(live, at, seats));
         // Back after a final whistle that didn't go through: no new minute will call it again.
-        if (at >= FULL_TIME) void finish();
+        if (at >= roundEndOf(live)) void finish();
         return;
       }
       // In a hot-seat game the last coach may have no match today while the others do: their round starts at once.
@@ -220,13 +220,15 @@ export function Round() {
     };
   }, [engine]);
 
-  const isRunning = round !== null && speed > 0 && !isLineupOpen && !isTableOpen && incident === null && varHold === null && minute < FULL_TIME;
+  // The round runs to 120 when one of its matches goes to extra time.
+  const end = round ? roundEndOf(round) : FULL_TIME;
+  const isRunning = round !== null && speed > 0 && !isLineupOpen && !isTableOpen && incident === null && varHold === null && minute < end;
   useEffect(() => () => varTimers.current.forEach((timer) => clearTimeout(timer)), []);
   useEffect(() => {
     if (!isRunning || speed === 0) return;
-    const tick = setInterval(() => setMinute((m) => Math.min(FULL_TIME, m + 1)), MS_PER_MINUTE[speed]);
+    const tick = setInterval(() => setMinute((m) => Math.min(end, m + 1)), MS_PER_MINUTE[speed]);
     return () => clearInterval(tick);
-  }, [isRunning, speed]);
+  }, [isRunning, speed, end]);
 
   function pause() {
     setSpeed((current) => {
@@ -272,7 +274,7 @@ export function Round() {
     const incidentNow = incidentOf(live, minute, hotSeat);
     // The round stops with the window it stops for, after a VAR check's decision: a speed picked in between would leave the window over a clock that looks running.
     const stopNow = () => {
-      if (reason === "halfTime" || reason === "coachMatch") pause();
+      if (reason === "halfTime" || reason === "extraTimeBreak" || reason === "coachMatch") pause();
       setIncident(incidentNow);
     };
     const finishNow = () => {
@@ -488,7 +490,7 @@ export function Round() {
   }
 
   // The match keys work only while the match can still be driven: kicked off, before the final whistle, no sheet open.
-  const isDrivable = round !== null && result === null && minute < FULL_TIME && !isLineupOpen && !isTableOpen && incident === null;
+  const isDrivable = round !== null && result === null && minute < end && !isLineupOpen && !isTableOpen && incident === null;
   // In a hot-seat round every human coach has a board, in turn order; the arrows move the focus through them.
   const boardCoaches = round?.humanSides ? coachedSides(round, hotSeat) : [];
   const focus = Math.max(0, boardCoaches.findIndex((coached) => coached.clubId === focusClubId));
@@ -508,7 +510,7 @@ export function Round() {
     tabelaAoVivo: isDrivable && round.table !== null && (() => openSheet(setTableOpen)),
   });
 
-  const crowd = round && result === null && minute < FULL_TIME ? crowdLevel(round, minute) * (isRunning ? 1 : PAUSED_CROWD) : null;
+  const crowd = round && result === null && minute < end ? crowdLevel(round, minute) * (isRunning ? 1 : PAUSED_CROWD) : null;
   useEffect(() => sound.setCrowd(crowd), [sound, crowd]);
   useEffect(() => () => sound.setCrowd(null), [sound]);
 
@@ -647,6 +649,7 @@ export function Round() {
           msPerMinute={MS_PER_MINUTE[resumeSpeed.current]}
           label={round.competitions.find((c) => c.id === mine.competitionId)?.label ?? ""}
           minute={minute}
+          end={end}
           speed={speed}
           golCount={golCount}
           varHold={varHold}
@@ -662,7 +665,7 @@ export function Round() {
               <i className="ph-bold ph-arrow-left" aria-hidden="true" />
               {hotSeat ? "Próxima vez" : "Voltar ao clube"}
             </button>
-          ) : minute >= FULL_TIME ? (
+          ) : minute >= end ? (
             error ? (
               <button className="btn y live-act" onClick={() => void finish()}>
                 Tentar de novo
@@ -694,7 +697,7 @@ export function Round() {
       {error && !isLineupOpen && !incident && <p className="status error live-error">{error}</p>}
 
       <div className="live-list">
-        {minute >= FULL_TIME && <MatchReport round={round} />}
+        {minute >= end && <MatchReport round={round} />}
         {openGroups.map((group) => groupSection(group, isOnlyMine && !group.rows.some((m) => m.isHuman)))}
         {otherGroups.length > 0 && (
           <div className="live-others" hidden={isOnlyMine}>
@@ -826,6 +829,8 @@ type CoverProps = {
   msPerMinute: number;
   label: string;
   minute: number;
+  /** The minute the round ends: 90, or 120 when a match goes to extra time. */
+  end: number;
   speed: Speed;
   golCount: number;
   /** The VAR check the round stands still for, if any. */
@@ -839,9 +844,14 @@ type CoverProps = {
   children: ReactNode;
 };
 
-function clockNote(minute: number, speed: Speed, isFinished: boolean): string {
-  if (isFinished || minute >= FULL_TIME) return "Fim de jogo";
+/** Where the coach's match stands at `minute`, which ends at `end`: 90, or 120 after extra time. */
+function clockNote(minute: number, speed: Speed, isFinished: boolean, end: number): string {
+  if (isFinished || minute >= end) return "Fim de jogo";
   if (minute === HALF_TIME && speed === 0) return "Intervalo";
+  if (minute === FULL_TIME && speed === 0) return "Fim do tempo normal";
+  if (minute === EXTRA_HALF_TIME && speed === 0) return "Intervalo da prorrogação";
+  if (minute > EXTRA_HALF_TIME) return "Prorrogação · 2º tempo";
+  if (minute >= FULL_TIME) return "Prorrogação · 1º tempo";
   return minute > HALF_TIME ? "2º tempo" : "1º tempo";
 }
 
@@ -850,10 +860,10 @@ function clockNote(minute: number, speed: Speed, isFinished: boolean): string {
  * clubs' stickers, the clock and the controls. While the ball is in play the stickers give way to a slim
  * scoreboard above the board; a stop or a goal drops them back. In a hot-seat round every human coach gets a board.
  */
-function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msPerMinute, label, minute, speed, golCount, varHold, isOnlyMine, isFinished, shootoutWinner, table, onSpeed, onOnlyMine, children }: CoverProps) {
+function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msPerMinute, label, minute, end, speed, golCount, varHold, isOnlyMine, isFinished, shootoutWinner, table, onSpeed, onOnlyMine, children }: CoverProps) {
   // The cover builds itself only at kick-off, not when the coach comes back to a match under way.
   const [isKickOff] = useState(minute === 0);
-  const isStopped = isFinished || minute >= FULL_TIME;
+  const isStopped = isFinished || minute >= end;
   const { isLifted, isGoalHeld } = useStickerLift(match.score.home + match.score.away, isRunning && minute >= 1 && !isStopped);
   const home = round.clubs[match.homeId];
   const away = round.clubs[match.awayId];
@@ -894,18 +904,18 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
           <span>{[roundName, formatBarDate(round.date)].filter(Boolean).join(" · ")}</span>
         </h1>
         <div className="live-tools">
-          {(speed === 0 || varHold) && !isFinished && minute < FULL_TIME && (
+          {(speed === 0 || varHold) && !isFinished && minute < end && (
             <span className="chip wait live-paused">
               <i className="ph-fill ph-pause" aria-hidden="true" />
               {varHold ? "Revisão do VAR" : "Pausado"}
             </span>
           )}
           <div className="live-clock">
-            <span>{clockNote(minute, speed, isFinished)}</span>
+            <span>{clockNote(minute, speed, isFinished, Math.min(end, matchEndOf(match.events)))}</span>
             <span className="live-track" aria-hidden="true">
-              <i style={{ transform: `scaleX(${Math.min(minute, FULL_TIME) / FULL_TIME})` }} />
+              <i style={{ transform: `scaleX(${Math.min(minute, end) / end})` }} />
             </span>
-            <b aria-label="Minuto">{varHold ? "VAR" : `${Math.min(minute, FULL_TIME)}'`}</b>
+            <b aria-label="Minuto">{varHold ? "VAR" : `${Math.min(minute, end)}'`}</b>
           </div>
           <div className="live-speed" role="group" aria-label="Velocidade">
             <button aria-label="Pausar" aria-pressed={speed === 0} disabled={isStopped} onClick={() => onSpeed(0)}>
@@ -992,6 +1002,7 @@ const isSameRow = (before: MatchRowProps, after: MatchRowProps) =>
   before.match.score.away === after.match.score.away &&
   before.match.reds.home === after.match.reds.home &&
   before.match.reds.away === after.match.reds.away &&
+  before.match.isInExtraTime === after.match.isInExtraTime &&
   before.match.last?.minute === after.match.last?.minute &&
   before.match.last?.text === after.match.last?.text;
 
@@ -1021,6 +1032,7 @@ const MatchRow = memo(function MatchRow({ match, clubs, flash, alert, isHidden, 
             {alert.who && ` · ${alert.who}`}
           </span>
         )}
+        {match.isInExtraTime && <span className="prorr">Prorr.</span>}
         {match.last && (
           <>
             <EventMark kind={match.last.kind} />
