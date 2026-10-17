@@ -185,8 +185,7 @@ describe("crowd trouble the STJD punishes", () => {
     expect(rivalryOf("tm-124", "tm-371")?.intensity).toBe(5);
     const like = leagueDay.clubs["flamengo-rj"];
     if (!like) throw new Error("no Flamengo");
-    const { state: _brazil, ...abroadClub } = like;
-    const clubs = { ...leagueDay.clubs, ...Object.fromEntries(["tm-124", "tm-371"].map((id) => [id, { ...abroadClub, id, abroad: { country: "gb-sct", level: 0 } }])) };
+    const clubs = { ...leagueDay.clubs, ...Object.fromEntries(["tm-124", "tm-371"].map((id) => [id, { ...like, id, state: undefined, abroad: { country: "gb-sct", level: 0 } }])) };
     expect(troubleAfterLosing({ ...leagueDay, clubs }, "tm-124", "tm-371")).toBe(0);
   });
 });
