@@ -103,3 +103,10 @@ test("a player the coach lent out can be called back from his page", async () =>
   await userEvent.click(await screen.findByRole("button", { name: "Chamar de volta" }));
   expect((await engine.desk()).pending).toEqual([{ kind: "recall", playerId }]);
 });
+
+test("Negociar opens the renewal screen of the coach's player", async () => {
+  const { engine, playerId } = await openPlayerOf("sport-pe");
+  const { players } = await engine.read(["players"]);
+  await userEvent.click(await screen.findByRole("button", { name: "Negociar" }));
+  expect(await screen.findByRole("heading", { name: `Renovar com ${players[playerId]?.name}` })).toBeTruthy();
+});

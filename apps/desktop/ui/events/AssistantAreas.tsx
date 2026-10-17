@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { doesAssistantHandle, type AssistantDuty } from "@boleiro/engine/sim/coach/assistantDuties";
 import type { EventArea } from "@boleiro/engine/sim/events/eventMemory";
 import { useServices } from "../app/ServicesContext.js";
 
@@ -10,16 +11,25 @@ const AREAS: readonly { area: EventArea; label: string; note: string }[] = [
   { area: "press", label: "Imprensa", note: "Coletivas e convites de TV" },
 ];
 
-/** The areas whose events the assistant answers for the coach in the seat, each one a switch. */
+const DUTIES: readonly { duty: AssistantDuty; label: string; note: string }[] = [
+  { duty: "contracts", label: "Contratos", note: "Renova quem vale a pena manter no fim de cada janela e da temporada, dentro do teto da folha" },
+];
+
+/** The duties the assistant runs and the areas whose events he answers for the coach in the seat, each one a switch. */
 export function AssistantAreas() {
   const { engine } = useServices();
   const [handed, setHanded] = useState<ReadonlySet<EventArea> | null>(null);
+  const [duties, setDuties] = useState<ReadonlySet<AssistantDuty>>(new Set());
   const [hasFailed, setFailed] = useState(false);
 
   useEffect(() => {
     let current = true;
     engine.read(["coach"]).then(
-      ({ coach }) => current && setHanded(new Set(coach.assistantAreas ?? [])),
+      ({ coach }) => {
+        if (!current) return;
+        setHanded(new Set(coach.assistantAreas ?? []));
+        setDuties(new Set(DUTIES.filter(({ duty }) => doesAssistantHandle(coach, duty)).map(({ duty }) => duty)));
+      },
       () => current && setFailed(true),
     );
     return () => {
@@ -42,13 +52,39 @@ export function AssistantAreas() {
     }
   }
 
+  async function runDuty(duty: AssistantDuty, isOn: boolean) {
+    setFailed(false);
+    try {
+      await engine.apply({ type: "setAssistantDuty", duty, isOn });
+      setDuties((current) => {
+        const next = new Set(current);
+        if (isOn) next.add(duty);
+        else next.delete(duty);
+        return next;
+      });
+    } catch {
+      setFailed(true);
+    }
+  }
+
   if (!handed) return null;
   return (
     <section className="options-group" aria-labelledby="options-assistant-title">
       <h2 id="options-assistant-title" className="options-heading">
         Auxiliar
       </h2>
-      <p className="options-row-note">Ligado, o auxiliar responde sozinho os assuntos da área e você lê no jornal.</p>
+      {DUTIES.map(({ duty, label, note }) => (
+        <div key={duty} className="options-row">
+          <div className="options-row-text">
+            <label className="options-row-label" htmlFor={`assistant-duty-${duty}`}>
+              {label}
+            </label>
+            <p className="options-row-note">{note}</p>
+          </div>
+          <input id={`assistant-duty-${duty}`} type="checkbox" className="options-sw" checked={duties.has(duty)} onChange={(event) => void runDuty(duty, event.target.checked)} />
+        </div>
+      ))}
+      <p className="options-row-note">Nos assuntos abaixo, ligado, o auxiliar responde sozinho e você lê no jornal.</p>
       {AREAS.map(({ area, label, note }) => (
         <div key={area} className="options-row">
           <div className="options-row-text">
