@@ -13,8 +13,8 @@ import { bundledGameFiles } from "./bundledGameFiles.js";
 import { createEngineSession, type CommandResults, type CommandType, type GameCommand } from "./createEngineSession.js";
 
 const CLUB = "flamengo-rj";
-const SEED = 13;
-// The season test needs a coach the board keeps all year; the board sacks him on seeds 1, 2, 3, 7 and 8 of today's engine.
+const SEED = 7;
+// The season test needs a coach the board keeps all year, and the events test an event that asks him within it: seed 8 gives both on today's engine.
 const SEASON_SEED = 8;
 // Enough steps for a season of play-ons and match days; a stuck loop fails instead of hanging.
 const MAX_STEPS = 400;

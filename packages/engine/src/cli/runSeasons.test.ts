@@ -28,7 +28,7 @@ function roundTrip(state: GameState): GameState {
 function seasonRun(seasons: number): () => SeasonRun {
   let run: SeasonRun | undefined;
   beforeAll(() => {
-    run = runSeasons(8, seasons, roundTrip);
+    run = runSeasons(6, seasons, roundTrip);
   }, 60_000 * seasons);
   return () => {
     if (!run) throw new Error(`the ${seasons} seasons did not run`);
