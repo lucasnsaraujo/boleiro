@@ -60,6 +60,12 @@ From FotMob's public JSON (`/api/data/leagues`, `/api/data/teams`, `/api/data/ma
 - `fotmob-lineups.csv`: each club's eleven in its last match. Séries A and B team pages give the formation and each starter's slot; for Séries C and D the last match's details list the starters only, so `formation` is empty and the game picks the formation those starters fit best. A club missing here plays the formation its squad fits best (`guess`).
 - Costs of playing out of position (`packages/engine/src/engine/formations.ts`, `match.ts`): 97% of a player's strength in one of his other positions (`guess`, the approved lineup mock's −3%), 85% anywhere else and 50% for a keeper outfield or an outfielder in goal (`guess`, the values the engine already used). Checked with `pnpm calibrate` on the elevens the game fields.
 
+## coaches.csv and packages/data/src/coachRoster.ts
+
+Each club's head coach from Transfermarkt's league manager lists (`https://www.transfermarkt.com/x/trainer/pokalwettbewerb/<league code>`, e.g. [Série A](https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1)) on 2026-10-17, by `pipeline/fetch_coaches.py`: one page per league of the world packs, Séries A–D included, 66 pages, 1,163 clubs. Each row keeps the coach's Transfermarkt id, name, nationality (his first flag), age, the day he took over (dated back from the page's time in charge), contract end and whether Transfermarkt has a playing career for him. A page that lists a club twice (the coach on his way out and the one just installed) keeps the latest appointment. Venezuela's page matched none of the pack's clubs.
+
+Clubs without a row (Venezuela's, state-only clubs, the Club World Cup's guests) get invented coaches with local names (`packages/engine/src/sim/coach/inventCoachName.ts`); no real person is meant.
+
 ## Historical results
 
 | File | Source | Rebuilt by |
