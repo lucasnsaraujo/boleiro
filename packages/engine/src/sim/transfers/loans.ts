@@ -17,16 +17,33 @@ export const LENDER_WAGE_SHARE = 0.5;
 const LENDS_CHANCE = 0.25;
 const RANK = { A: 4, B: 3, C: 2, D: 1, state: 0 } as const;
 
-// FIFA RSTP art. 10 (in force since July 2022, six from 2024/25): a club holds at most six professionals
-// over 21 loaned out and six loaned in at a time, and at most three loaned between the same two clubs,
-// any age. https://digitalhub.fifa.com/m/785652de48694c8c/original/Explanatory-Notes-on-the-New-Loan-Provisions-in-the-Regulations-on-the-Status-and-Transfer-of-Players.pdf
-// guess: FIFA left domestic loans to each association; the game applies the same limits at home, and
-// has no club-trained exemption.
-const LOANS_OVER_AGE = 6;
+// FIFA RSTP art. 10, for international loans only: since 2024/25 a club holds at most six players loaned
+// out and six loaned in at a time, leaving out one lent before the season he turns 21 who is club-trained
+// with the lender (both conditions); and at most three loaned from one club to another, whatever the age.
+// https://digitalhub.fifa.com/m/785652de48694c8c/original/Explanatory-Notes-on-the-New-Loan-Provisions-in-the-Regulations-on-the-Status-and-Transfer-of-Players.pdf (questions 2A, J, L)
+// guess: the game doesn't record where a player trained; one who came up through an academy (he has a
+// hidden potential) counts as trained by the club lending him.
+const INTERNATIONAL_LOANS = 6;
+// CBF's Regulamento Geral de Registros, in force since 1 March 2026, as Chambers summarises it: 16 active
+// national loans, and at most three lent and three received between the same two clubs, no age exemption.
+// https://chambers.com/articles/o-novo-regulamento-geral-de-registros-da-cbf
+// guess: the summary doesn't say how the 16 count; the game holds a club to 16 out and 16 in.
+const NATIONAL_LOANS = 16;
 const LOANS_BETWEEN_CLUBS = 3;
 
-/** Which of FIFA's loan limits lending `player` from `lenderId` to `borrowerId` would break, if any. */
-export function loanLimitOf(state: Pick<GameState, "players" | "market">, lenderId: string, borrowerId: string, player: Pick<SimPlayer, "age">): "loanLimit" | "loanPairLimit" | null {
+const countryOf = (state: Pick<GameState, "clubs">, clubId: string): string => state.clubs[clubId]?.abroad?.country ?? "br";
+const isExemptFromFifaCap = (player: Pick<SimPlayer, "age" | "potential">): boolean => player.age <= LOAN_MAX_AGE && player.potential !== undefined;
+
+/** Which loan limit lending `player` from `lenderId` to `borrowerId` would break: FIFA's abroad, CBF's at home; null for none. */
+export function loanLimitOf(
+  state: Pick<GameState, "players" | "market" | "clubs">,
+  lenderId: string,
+  borrowerId: string,
+  player: Pick<SimPlayer, "age" | "potential">,
+): "loanLimit" | "nationalLoanLimit" | "loanPairLimit" | null {
+  const isInternational = (fromId: string, toId: string) => countryOf(state, fromId) !== countryOf(state, toId);
+  const international = isInternational(lenderId, borrowerId);
+  const counts = (loanee: Pick<SimPlayer, "age" | "potential">) => !international || !isExemptFromFifaCap(loanee);
   let between = 0;
   let lenderOut = 0;
   let borrowerIn = 0;
@@ -35,12 +52,14 @@ export function loanLimitOf(state: Pick<GameState, "players" | "market">, lender
     const loanee = state.players[playerId];
     if (!loan || !loanee) continue;
     if (loan.fromClubId === lenderId && loanee.clubId === borrowerId) between++;
-    if (loanee.age <= LOAN_MAX_AGE) continue;
+    if (isInternational(loan.fromClubId, loanee.clubId) !== international || !counts(loanee)) continue;
     if (loan.fromClubId === lenderId) lenderOut++;
     if (loanee.clubId === borrowerId) borrowerIn++;
   }
   if (between >= LOANS_BETWEEN_CLUBS) return "loanPairLimit";
-  return player.age > LOAN_MAX_AGE && (lenderOut >= LOANS_OVER_AGE || borrowerIn >= LOANS_OVER_AGE) ? "loanLimit" : null;
+  const cap = international ? INTERNATIONAL_LOANS : NATIONAL_LOANS;
+  if (!counts(player) || (lenderOut < cap && borrowerIn < cap)) return null;
+  return international ? "loanLimit" : "nationalLoanLimit";
 }
 
 /**
