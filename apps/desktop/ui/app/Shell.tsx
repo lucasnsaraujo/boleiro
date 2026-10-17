@@ -281,7 +281,7 @@ export function Shell() {
         {win98.isShown && <Win98TaskBar task={`Boleiro 98 · ${clock?.clubName ?? "Sem clube"}`} date={clock?.date ?? null} onLeave={win98.leave} />}
         {chrome === "windows" && <CaptionButtons />}
         {question}
-        {found.shown && <EggReveal key={found.shown.eggId} sticker={found.shown} onDone={found.dismiss} />}
+        {found.shown && pathname === "/hub" && <EggReveal key={found.shown.eggId} sticker={found.shown} onDone={found.dismiss} />}
         {toast && (
           <p key={toast.id} className={toast.isError ? "toast stk error" : "toast stk"} role="status">
             <i className={toast.isError ? "ph-bold ph-warning" : "ph-bold ph-floppy-disk"} aria-hidden="true" />

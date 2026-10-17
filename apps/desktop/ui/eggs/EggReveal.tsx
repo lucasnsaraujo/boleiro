@@ -46,7 +46,7 @@ export function useFoundStickers(isInGame: boolean, date: IsoDate | null, bump: 
 }
 
 /**
- * A rare sticker turning up, in the corner and out of the way: a foil packet slides in and tears
+ * A rare sticker turning up on the club screen, in the corner and out of the way: a foil packet slides in and tears
  * open, the sticker rises out of it and lands, and its note unrolls beside it. It never blocks play;
  * it peels away by itself after a while, or when closed.
  */
@@ -71,7 +71,7 @@ export function EggReveal({ sticker, onDone }: { sticker: EggSticker; onDone: ()
 
   const kind = sticker.look === "page" ? "Página especial" : "Figurinha rara";
   return (
-    <aside className={isLeaving ? "egg-reveal leaving" : "egg-reveal"} role="status" aria-label={kind}>
+    <aside className={isLeaving ? "egg-reveal leaving" : "egg-reveal"} aria-label={kind} aria-live="polite">
       <div className="egg-reveal-stage" aria-hidden="true">
         <span className="egg-packet">
           <span className="egg-packet-top" />

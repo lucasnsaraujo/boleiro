@@ -77,19 +77,30 @@ test("Iniciar takes the game back to 2026, and the start menu's brasfoot belongs
   expect(skin()).toBeUndefined();
 });
 
-test("a rare sticker found in play is revealed as a status the coach can close or follow to the album, once", async () => {
+test("a rare sticker found in play is revealed on the club screen, out of the way, once; the coach can close it or follow it to the album", async () => {
   const given = await services();
   const router = open(given, "/hub");
   await screen.findByRole("navigation", { name: "Telas" });
   await userEvent.keyboard("brasfoot");
-  const reveal = await screen.findByRole("status", { name: "Figurinha rara" });
+  const reveal = await screen.findByRole("complementary", { name: "Figurinha rara" });
   expect(within(reveal).getByText("Rodada de 1998")).toBeTruthy();
   await userEvent.click(within(reveal).getByRole("button", { name: "Fechar" }));
-  await waitFor(() => expect(screen.queryByRole("status", { name: "Figurinha rara" })).toBeNull());
+  await waitFor(() => expect(screen.queryByRole("complementary", { name: "Figurinha rara" })).toBeNull());
 
   await act(() => router.navigate("/tables"));
   await act(() => router.navigate("/hub"));
-  expect(screen.queryByRole("status", { name: "Figurinha rara" })).toBeNull();
+  expect(screen.queryByRole("complementary", { name: "Figurinha rara" })).toBeNull();
+});
+
+test("a sticker found away from the club screen waits there for the coach", async () => {
+  const given = await services();
+  const router = open(given, "/tables");
+  await screen.findByRole("navigation", { name: "Telas" });
+  await userEvent.keyboard("brasfoot");
+  await waitFor(() => expect(skin()).toBe("win98"));
+  expect(screen.queryByRole("complementary", { name: "Figurinha rara" })).toBeNull();
+  await act(() => router.navigate("/hub"));
+  expect(await screen.findByRole("complementary", { name: "Figurinha rara" })).toBeTruthy();
 });
 
 test("Ver no álbum opens the history's rarities", async () => {
@@ -97,7 +108,7 @@ test("Ver no álbum opens the history's rarities", async () => {
   const router = open(given, "/hub");
   await screen.findByRole("navigation", { name: "Telas" });
   await userEvent.keyboard("brasfoot");
-  const reveal = await screen.findByRole("status", { name: "Figurinha rara" });
+  const reveal = await screen.findByRole("complementary", { name: "Figurinha rara" });
   await userEvent.click(within(reveal).getByRole("link", { name: "Ver no álbum" }));
   expect(router.state.location.pathname).toBe("/history");
   expect(router.state.location.search).toBe("?aba=raridades");
