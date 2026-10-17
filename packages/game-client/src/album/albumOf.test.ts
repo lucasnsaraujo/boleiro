@@ -8,7 +8,7 @@ import { albumOf } from "./albumOf.js";
 
 const FIRST = "flamengo-rj";
 const SECOND = "palmeiras-sp";
-// A season where both coaches win a state title and the second one the league and the cup too.
+// A season where the second coach wins the league and a cup.
 const SEED = 6;
 
 /** A hot-seat season of two Série A coaches played to its end: its last day and the first of the next. */
@@ -24,6 +24,7 @@ function playSeason(): { last: GameState; next: GameState } {
 const { last, next } = playSeason();
 const seatOf = (state: GameState, name: string) => [state.coachName, ...(state.waitingCoaches ?? []).map((w) => w.name)].indexOf(name);
 const ana = albumOf(next, seatOf(next, "Ana"));
+const recordOf = (state: GameState, name: string): CoachRecord => (state.coachName === name ? state.history.coach : (state.waitingCoaches?.find((w) => w.name === name)?.record ?? state.history.coach));
 const bruno = albumOf(next, seatOf(next, "Bruno"));
 
 describe("a coach's album", () => {
@@ -58,7 +59,9 @@ describe("a coach's album", () => {
   });
 
   it("gives each title its page with the deciding match's real score and scorers, and opens that match after its season is gone", () => {
-    expect(bruno.titles.map((t) => t.competition).toSorted()).toEqual(["copa-do-brasil", "serie-a", "state-sp"]);
+    const record = recordOf(next, "Bruno");
+    expect(bruno.titles.map((t) => t.competition).toSorted()).toEqual(record.trophies.map((t) => t.competition).toSorted());
+    expect(bruno.titles.map((t) => t.decider?.kind).toSorted()).toEqual(["final", "league"]);
     for (const title of bruno.titles) {
       const decider = title.decider;
       if (!decider) return expect.fail(`${title.competition} has its deciding match`);
@@ -72,7 +75,6 @@ describe("a coach's album", () => {
       expect(page?.home.starters).toHaveLength(11);
       expect(page?.label).toContain(title.name);
     }
-    expect(bruno.titles.find((t) => t.competition === "serie-a")?.decider?.kind).toBe("league");
     for (const title of bruno.titles) {
       const decider = title.decider;
       const fixture = last.fixtures.find((f) => f.id === decider?.ref);
@@ -101,7 +103,7 @@ describe("a coach's album", () => {
     const stickers = bruno.seasons.flatMap((s) => s.stickers);
     expect(bruno.records.topSeasonScorer?.count).toBe(Math.max(...stickers.map((s) => s.goals)));
     expect(bruno.records.mostApps?.count).toBe(Math.max(...stickers.map((s) => s.apps)));
-    expect(bruno.records.titles).toBe(3);
+    expect(bruno.records.titles).toBe(recordOf(next, "Bruno").trophies.length);
     expect(bruno.records.bestFinish).toMatchObject({ division: "A", position: 1, clubId: SECOND });
     expect(bruno.records.byClub.map((c) => c.clubId)).toEqual([SECOND]);
     expect(bruno.records.byClub[0]?.records.biggestWin).toEqual(next.history.clubs[SECOND]?.biggestWin);

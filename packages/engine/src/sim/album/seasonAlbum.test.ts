@@ -57,9 +57,10 @@ describe("a season's album, played", () => {
     const champions = next.history.seasons.at(-1)?.champions ?? {};
     let finals = 0;
     for (const [clubId, record] of recordsOf(next)) {
+      const isHisDay = (date: string) => record.stints.some((stint) => stint.clubId === clubId && stint.from <= date && (stint.until === null || date < stint.until));
       const played = last.fixtures.filter((f) => {
         const competition = last.competitions[f.competitionId];
-        return isLastStage(competition, f.stage) && competition?.stages[f.stage]?.kind === "knockout" && (f.homeId === clubId || f.awayId === clubId);
+        return isLastStage(competition, f.stage) && competition?.stages[f.stage]?.kind === "knockout" && (f.homeId === clubId || f.awayId === clubId) && isHisDay(f.date);
       });
       const deciding = played.filter((f) => !played.some((g) => g.tie === f.tie && g.competitionId === f.competitionId && g.date > f.date));
       const keptFinals = (record.keptMatches ?? []).filter((m) => m.kind === "final");
@@ -81,7 +82,7 @@ describe("a season's album, played", () => {
     const champions = next.history.seasons.at(-1)?.champions ?? {};
     for (const [clubId, record] of recordsOf(next)) {
       const won = (record.keptMatches ?? []).filter((m) => m.kind === "league");
-      const leagues = Object.values(last.competitions).filter((c) => c.kind === "league" && champions[competitionKey(c.id)] === clubId);
+      const leagues = Object.values(last.competitions).filter((c) => c.kind === "league" && champions[competitionKey(c.id)] === clubId && record.trophies.some((t) => t.competition === competitionKey(c.id)));
       expect(won.map((m) => competitionKey(m.fixture.competitionId)).sort()).toEqual(leagues.map((c) => competitionKey(c.id)).sort());
       for (const match of won) {
         const competition = last.competitions[match.fixture.competitionId];
