@@ -12,7 +12,9 @@ const CLOSE_MS = 280;
  * opens on a click, or when the coach types "brasfoot". The card unpeels from the sticker, its old
  * monitor switches on and a pixel ball rolls into the net. Everything on it is drawn here; nothing is
  * Brasfoot's own. Facts: Brasfoot 2003 (pt.wikipedia.org/wiki/Brasfoot), inspired by Elifoot, written
- * by the Portuguese André Elias in 1987 (pt.wikipedia.org/wiki/Elifoot).
+ * by the Portuguese André Elias in 1987 (pt.wikipedia.org/wiki/Elifoot). The card thanks Brasfoot's
+ * creator without a name: Wikipedia and brasfoot.com name nobody, and the one source found that does
+ * (Máquina do Esporte, 1 September 2026) is too thin to print a person's name on.
  */
 export function BrasfootTribute() {
   const [isOpen, setOpen] = useState(false);
