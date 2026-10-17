@@ -2,7 +2,7 @@ import type { Formation } from "@boleiro/engine/engine/formations";
 import { chemistryOf } from "@boleiro/engine/sim/chemistry/chemistryOf";
 import { assistantCandidates, assistantOf, assistantReadOf, readErrorAt, scoutSharpeningAt, type Assistant, type AssistantCandidate } from "@boleiro/engine/sim/coach/assistant";
 import { doesAssistantHandle, type AssistantDuty } from "@boleiro/engine/sim/coach/assistantDuties";
-import { weakestSpot, type WeakSpot } from "@boleiro/engine/sim/coach/assistantTips";
+import { assistantEleven, weakestSpot, type ReadStarter, type WeakSpot } from "@boleiro/engine/sim/coach/assistantTips";
 import { doesAssistantPriceTickets } from "@boleiro/engine/sim/finances/setTicketPrice";
 import { tierOf } from "@boleiro/engine/sim/finances/tierOf";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
@@ -26,6 +26,8 @@ export type AssistantPage = {
   duties: Record<AssistantDuty, boolean>;
   candidates: AssistantCandidate[];
   tip: WeakSpot | null;
+  /** The eleven he would field today, as he reads them. */
+  eleven: ReadStarter[];
   formation: Formation;
   captainName: string | null;
   renewals: PlannedRenewal[];
@@ -53,8 +55,9 @@ export function assistantPage(state: GameState): AssistantPage {
     formation,
     nextReview: nextAssistantReview(state, state.date),
   };
-  if (!clubId) return { ...base, tip: null, captainName: null, renewals: [] };
-  const tip = weakestSpot(state, clubId, formation, assistantReadOf(state, assistant));
+  if (!clubId) return { ...base, tip: null, eleven: [], captainName: null, renewals: [] };
+  const read = assistantReadOf(state, assistant);
+  const tip = weakestSpot(state, clubId, formation, read);
   const captain = chemistryOf(state, clubId).captain;
   const squad = squadsOfGame(state).get(clubId) ?? [];
   const finance = state.finances[clubId];
@@ -66,5 +69,5 @@ export function assistantPage(state: GameState): AssistantPage {
         return verdict.kind === "renew" ? [{ playerId: player.id, name: player.name, contractUntil: player.contractUntil, months: verdict.term.months }] : [];
       })
     : [];
-  return { ...base, tip, captainName: captain ? (state.players[captain.playerId]?.name ?? null) : null, renewals };
+  return { ...base, tip, eleven: assistantEleven(state, clubId, formation, read), captainName: captain ? (state.players[captain.playerId]?.name ?? null) : null, renewals };
 }
