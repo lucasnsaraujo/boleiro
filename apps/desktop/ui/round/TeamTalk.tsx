@@ -2,10 +2,10 @@ import { TALK_TONES, type TalkEffect, type TalkMoment, type TalkTone } from "@bo
 import "./teamTalk.css";
 
 const TONES: Record<TalkTone, { name: string; icon: string }> = {
-  calm: { name: "Calma", icon: "hand-palm" },
+  calm: { name: "Calma", icon: "hourglass-medium" },
   faith: { name: "Confiança", icon: "handshake" },
-  demand: { name: "Cobrança", icon: "megaphone-simple" },
-  praise: { name: "Elogio", icon: "hands-clapping" },
+  demand: { name: "Cobrança", icon: "megaphone" },
+  praise: { name: "Elogio", icon: "star" },
 };
 
 /** What the coach says in each tone, for where his side stands: behind, level or ahead; before kick-off it is level. */

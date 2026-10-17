@@ -19,7 +19,7 @@ export function EventNote({ event, today, onOpen }: { event: PendingEvent; today
   return (
     <section className="note hub-event" aria-label="Assunto esperando resposta">
       <span className="lbl">
-        <i className={isPress ? "ph-bold ph-microphone" : "ph-bold ph-push-pin"} aria-hidden="true" />
+        <i className={isPress ? "ph-bold ph-microphone" : "ph-bold ph-bookmark-simple"} aria-hidden="true" />
         {isPress ? "Coletiva" : event.topic ? TOPIC_WORDS[event.topic] : AREA_WORDS[event.area]} · esperando você
       </span>
       <h2>{event.headline}</h2>

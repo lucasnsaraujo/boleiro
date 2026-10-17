@@ -25,12 +25,12 @@ const SECTION_MARKS: Record<EventTopic, { icon: string; className: string }> = {
   board: { icon: "briefcase", className: "d" },
   fans: { icon: "megaphone", className: "" },
   press: { icon: "microphone", className: "v" },
-  staff: { icon: "clipboard-text", className: "v" },
-  rivals: { icon: "sword", className: "" },
+  staff: { icon: "users-four", className: "v" },
+  rivals: { icon: "flag-banner", className: "" },
   sponsors: { icon: "handshake", className: "m" },
-  life: { icon: "heart", className: "z" },
-  discipline: { icon: "warning-octagon", className: "d" },
-  health: { icon: "first-aid-kit", className: "" },
+  life: { icon: "smiley", className: "z" },
+  discipline: { icon: "gavel", className: "d" },
+  health: { icon: "first-aid", className: "" },
 };
 // The dateline under the masthead names the edition's first sections.
 const DATELINE_SECTIONS = 3;

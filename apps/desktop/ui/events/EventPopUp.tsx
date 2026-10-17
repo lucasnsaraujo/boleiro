@@ -14,12 +14,12 @@ import "./eventPopUp.css";
 const AREA_ICONS: Record<EventArea, string> = { players: "chat-circle-text", squad: "users-three", board: "briefcase", fans: "megaphone", press: "microphone" };
 const TOPIC_ICONS: Record<EventTopic, string> = {
   ...AREA_ICONS,
-  staff: "clipboard-text",
-  rivals: "sword",
+  staff: "users-four",
+  rivals: "flag-banner",
   sponsors: "handshake",
-  life: "heart",
-  discipline: "warning-octagon",
-  health: "first-aid-kit",
+  life: "smiley",
+  discipline: "gavel",
+  health: "first-aid",
 };
 
 type Props = {
@@ -66,7 +66,7 @@ export function EventPopUp({ event, club, rival, player, today, standing, isBusy
   }
 
   const choices = (
-    <div key={step} className={isPress ? "ev-answers press" : "ev-answers"} role="radiogroup" aria-label="Respostas">
+    <div key={`answers-${step}`} className={isPress ? "ev-answers press" : "ev-answers"} role="radiogroup" aria-label="Respostas">
       <div className="ev-fx-head" aria-hidden="true">
         {effectCells({}, isPress).map((cell) => (
           <span key={cell.key} className="lbl">
@@ -172,7 +172,7 @@ export function EventPopUp({ event, club, rival, player, today, standing, isBusy
             {event.setting}
           </div>
           {close}
-          <div className="ev-question" key={step}>
+          <div className="ev-question" key={`question-${step}`}>
             <div className="ev-reporter">
               <span className="av" aria-hidden="true">
                 {reporterOn(event.date, step).charAt(0)}
