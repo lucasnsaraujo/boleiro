@@ -12,14 +12,13 @@ async function fastForward(page: Page, date: string) {
   }, date);
 }
 
-/** Starts the coach's game over in `season` from world `seed`, through the e2e build's engine hook. */
-async function startOverIn(page: Page, season: number, seed: number) {
-  await page.evaluate(async ([first, world]) => {
+/** Starts a new game in `season` from world `seed` with the coach at `clubId`, through the e2e build's engine hook. */
+async function startOverIn(page: Page, season: number, seed: number, clubId: string) {
+  await page.evaluate(async ([first, world, coachClubId]) => {
     const engine = window.boleiroEngine;
     if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
-    const { coachClubId } = await engine.read(["coachClubId"]);
     await engine.apply({ type: "newGame", seed: world, choices: { coachClubId, season: first } });
-  }, [season, seed] as const);
+  }, [season, seed, clubId] as const);
 }
 
 async function openNationalTeam(page: Page) {
@@ -68,8 +67,8 @@ test("Brazil's screen shows the South American qualifiers' table with the two ma
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Filipe" });
   // The app starts every game in 2026; CONMEBOL's 2030 qualifiers open in 2027 and start in its September window.
-  // World 2 keeps Flamengo's coach in the job until then (the e2e world sacks him in April).
-  await startOverIn(page, 2027, 2);
+  // World 1 keeps Bahia's coach in the job until then (the e2e world's 2027 sacks him in June).
+  await startOverIn(page, 2027, 1, "bahia-ba");
   await fastForward(page, "2027-09-28");
   await openNationalTeam(page);
   await page.getByRole("tab", { name: "Jogos e tabelas" }).click();
