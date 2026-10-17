@@ -1,4 +1,5 @@
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
+import "./moneyStepper.css";
 
 type Props = {
   /** What the amount is, as a screen reader names the group: "Oferta", "Salário", "Contraproposta". */

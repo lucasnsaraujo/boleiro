@@ -56,6 +56,7 @@ const REFUSALS: Record<string, string> = {
   offerTooLow: "o clube dele nem quis conversar com essa oferta",
   lengthRefused: "ele não aceita esse tempo de contrato",
   wageTooLow: "ele quer bem mais do que o oferecido",
+  playerCounter: "ele fez uma contraproposta",
   counterOffer: "o clube dele fez uma contraproposta",
 };
 

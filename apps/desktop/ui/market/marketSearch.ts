@@ -100,7 +100,8 @@ const TRANSFERMARKT_NAMES: Record<string, string> = {
 const REGION_CODES = Array.from({ length: 26 * 26 }, (_, i) => String.fromCharCode(65 + Math.floor(i / 26), 65 + (i % 26)));
 let portugueseNames: Map<string, string> | null = null;
 
-function inPortuguese(country: string): string {
+/** A country as Transfermarkt names it, in Portuguese. */
+export function inPortuguese(country: string): string {
   if (!portugueseNames) {
     const english = new Intl.DisplayNames(["en"], { type: "region", fallback: "none" });
     const portuguese = new Intl.DisplayNames(["pt-BR"], { type: "region", fallback: "none" });
