@@ -3,6 +3,7 @@ import { GROUP_OF_ROLE, type Role } from "@boleiro/data/players";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { typicalRating } from "../live/matchRatings.js";
+import type { World } from "../world/world.js";
 import type { SeasonMark } from "./history.js";
 import { roleOf, seasonAwards } from "./seasonAwards.js";
 
@@ -102,6 +103,15 @@ describe("the Ballon d'Or", () => {
     if (place(twin.id) >= 0) expect(place(star.id)).toBeLessThan(place(twin.id));
     expect(votes.find((v) => v.playerId === star.id)?.titles).toEqual(["serie-a", "libertadores"]);
     expect(votes.map((v) => v.score)).toEqual([...votes.map((v) => v.score)].sort((x, y) => y - x));
+  });
+
+  it("gives a result-only club's star the season the full tier's best players usually have", () => {
+    const strongest = Math.max(...players.map((p) => p.strength));
+    const flat: Record<string, SeasonMark> = Object.fromEntries(players.map((p) => [p.id, [30, 30 * 75, 3]]));
+    const club = { id: "tm-star", name: "Estrela FC", positions: "A", strengths: [strongest + 2], names: ["Estrela"] };
+    const world: World = { xx: { structure: { id: "xx", levels: [], window: ["08-01", "05-31"], continental: [] }, clubs: { [club.id]: club }, leagues: [], seasons: [], rngState: 1 } };
+    const votes = seasonAwards(withSeason(flat, {}, { world }), {}).ballonDor;
+    expect(votes[0]?.playerId).toBe("tm-star:0");
   });
 
   it("goes to the better season when two players are as strong and won nothing", () => {

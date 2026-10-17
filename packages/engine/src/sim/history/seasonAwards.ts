@@ -1,5 +1,6 @@
 import { GROUP_OF_ROLE, type PositionGroup, type Role } from "@boleiro/data/players";
 import type { GameState, SimPlayer } from "../gameState.js";
+import { latestChampionsLeagueWinner } from "../continental/uefaCups.js";
 import { typicalRating } from "../live/matchRatings.js";
 import { competitionKey, type AwardedPlayer, type BallonDorVote, type CompetitionKey, type SeasonAwards, type SeasonMark } from "./history.js";
 
@@ -27,12 +28,14 @@ const YOUNG_AGE = 21;
 // and class (Wikipedia, "Ballon d'Or", 2022 rules). guess, the whole model: a player's strength (one
 // worldwide scale, from EA FC's ratings), plus for full-tier players four points per rating point above
 // his position's typical rating over at least 20 games, 0.15 a goal and 0.1 an assist, plus each title his club won this season.
-// Result-only clubs have no ratings, so their players count strength and titles only.
+// Result-only clubs have no ratings, so their players get the season the full tier's 20 strongest
+// candidates had on average, on top of their strength and titles.
 const BALLON_MIN_APPS = 20;
 const PER_RATING_POINT = 4;
 const PER_GOAL = 0.15;
 const PER_ASSIST = 0.1;
 const BALLON_PLACES = 3;
+const USUAL_SEASON_OF = 20;
 // guess: the strongest three of each result-only club are its candidates.
 const WORLD_CANDIDATES_PER_CLUB = 3;
 const ROLE_OF_GROUP: Record<PositionGroup, Role> = { GK: "goleiro", DEF: "zagueiro", MID: "meia", ATT: "atacante" };
@@ -100,10 +103,13 @@ function titlesByClub(state: AwardsState, champions: Readonly<Record<Competition
     add(last.champions[0], `league-${countryId}`, TOP_LEAGUE_TITLE);
     add(last.cup?.championId, `cup-${countryId}`, TITLE_POINTS["copa-do-brasil"] ?? 1);
   }
+  // UEFA's season ends mid-year: the one filed last, or before the game played one, the last real champion.
   const uefa = state.europe?.winners.at(-1);
   if (uefa && uefa.season >= state.season - 1) {
     add(uefa.championsLeague, "champions-league", TITLE_POINTS["champions-league"] ?? 0);
     add(uefa.europaLeague, "europa-league", TITLE_POINTS["europa-league"] ?? 0);
+  } else if (state.europe) {
+    add(latestChampionsLeagueWinner(state.europe) ?? undefined, "champions-league", TITLE_POINTS["champions-league"] ?? 0);
   }
   return titles;
 }
@@ -121,16 +127,21 @@ function ballonDor(state: AwardsState, champions: Readonly<Record<CompetitionKey
   const goalsOf = (id: string) => Object.values(goals).reduce((sum, own) => sum + (own[id] ?? 0), 0);
   const titles = titlesByClub(state, champions);
   const votes: BallonDorVote[] = [];
+  const seasons: { strength: number; season: number }[] = [];
   for (const [playerId, [apps, tenths, assists]] of totals) {
     const player = state.players[playerId];
     if (!player || apps < BALLON_MIN_APPS) continue;
     const average = tenths / apps / 10;
     const scored = goalsOf(playerId);
     const won = titles.get(player.clubId);
-    const score = player.strength + PER_RATING_POINT * (average - typicalRating(player.group)) + PER_GOAL * scored + PER_ASSIST * assists + (won?.points ?? 0);
+    const season = PER_RATING_POINT * (average - typicalRating(player.group)) + PER_GOAL * scored + PER_ASSIST * assists;
+    seasons.push({ strength: player.strength, season });
+    const score = player.strength + season + (won?.points ?? 0);
     const clubName = state.clubs[player.clubId]?.shortName ?? player.clubId;
     votes.push({ playerId, name: player.name, clubId: player.clubId, clubName, score, titles: won?.keys ?? [], apps, goals: scored, average: Math.round(average * 100) / 100 });
   }
+  const strongest = seasons.sort((a, b) => b.strength - a.strength).slice(0, USUAL_SEASON_OF);
+  const usualSeason = strongest.length ? strongest.reduce((sum, s) => sum + s.season, 0) / strongest.length : 0;
   for (const country of Object.values(state.world ?? {})) {
     if (country.isFullTier) continue;
     for (const club of Object.values(country.clubs)) {
@@ -140,7 +151,7 @@ function ballonDor(state: AwardsState, champions: Readonly<Record<CompetitionKey
       for (const { strength, index } of strongest) {
         const name = club.names[index];
         if (!name) continue;
-        votes.push({ playerId: `${club.id}:${index}`, name, clubId: club.id, clubName: club.name, score: strength + (won?.points ?? 0), titles: won?.keys ?? [], apps: null, goals: null, average: null });
+        votes.push({ playerId: `${club.id}:${index}`, name, clubId: club.id, clubName: club.name, score: strength + usualSeason + (won?.points ?? 0), titles: won?.keys ?? [], apps: null, goals: null, average: null });
       }
     }
   }
