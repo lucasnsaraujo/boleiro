@@ -10,9 +10,11 @@ const side = (name: string, strength: number): Team => ({
   ],
 });
 const MATCHES = 20000;
+// Extra time's thirty minutes at 0.93 of normal time's rate a minute.
+const EXTRA_TIME_SHARE = (30 / 90) * (0.0252 / 0.027);
 
 describe("extra time", () => {
-  it("scores about a third of a match's goals, each side by its strength", () => {
+  it("scores a little under a third of a match's goals, each side by its strength", () => {
     const home = side("home", 72);
     const away = side("away", 66);
     const random = randomStream(11).next;
@@ -23,8 +25,8 @@ describe("extra time", () => {
       totals.away += goals.awayGoals;
     }
     const odds = matchOdds(home, away);
-    expect(totals.home / MATCHES).toBeCloseTo(odds.expectedHomeGoals / 3, 1);
-    expect(totals.away / MATCHES).toBeCloseTo(odds.expectedAwayGoals / 3, 1);
+    expect(totals.home / MATCHES).toBeCloseTo(odds.expectedHomeGoals * EXTRA_TIME_SHARE, 1);
+    expect(totals.away / MATCHES).toBeCloseTo(odds.expectedAwayGoals * EXTRA_TIME_SHARE, 1);
     expect(totals.home).toBeGreaterThan(totals.away);
   });
 

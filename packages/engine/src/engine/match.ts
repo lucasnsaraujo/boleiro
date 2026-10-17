@@ -319,11 +319,12 @@ export function simulateMatch(
   return { homeGoals: MAX_GOALS, awayGoals: MAX_GOALS };
 }
 
-// Extra time scores at normal time's rate: Euro 2020's eight knockout matches level after ninety
-// minutes had 7 goals in extra time, 0.0292 a minute, against 0.0294 in normal time ("UEFA EURO 2020:
-// a 'pure game of chance'?", https://arxiv.org/pdf/2203.07531). A small sample; no larger study was found.
-export const EXTRA_TIME_RATE = 0.0292 / 0.0294;
-export const EXTRA_TIME_MINUTES = 30;
+// Extra time scores a little below normal time's rate: the men's World Cups of 1986 to 2022, leaving out
+// 1998's and 2002's golden goal, had 34 goals in 45 extra times, 0.0252 a minute, against 0.0270 a minute
+// in their 476 matches' ninety minutes (Joshua C. Fjelstul, The Fjelstul World Cup Database, matches.csv
+// and goals.csv, https://github.com/jfjelstul/worldcup).
+const EXTRA_TIME_RATE = 0.0252 / 0.027;
+const EXTRA_TIME_MINUTES = 30;
 const MATCH_MINUTES = 90;
 
 /** Each side's expected goals over the thirty minutes of extra time; players sent off in the ninety minutes are missing from its start. */
