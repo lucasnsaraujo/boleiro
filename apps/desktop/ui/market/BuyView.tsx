@@ -447,7 +447,7 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
             </div>
             {!isLoanBuy && (
               <div className="market-offer-row">
-                <span className="lbl">Contrato</span>
+                <span className="lbl">Prazo</span>
                 <div className="market-lengths" role="radiogroup" aria-label="Tempo de contrato">
                   {terms.map((t) => (
                     <button

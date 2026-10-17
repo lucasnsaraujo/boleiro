@@ -471,7 +471,7 @@
 }
 
 .ct-offer .lbl {
-  width: 88px;
+  white-space: nowrap;
 }
 
 .ct-offer .money {
