@@ -2,18 +2,18 @@
 export type Article = "o" | "a";
 
 // The clubs the Brazilian press calls in the feminine ("a Chapecoense", "a Ponte Preta", "a Juventus"),
-// by id; every other club is "o". Brazil's: the usage in each club's pt.wikipedia article, the
-// "da/na/a X" against the "do/no/o X" before its short name. Abroad: the Italian clubs whose name is
-// feminine (la Juve, la Roma) and the clubs named after a university or a league, as Brazil's papers
-// write them ("a LDU", "a Universidad de Chile").
+// by id; every other club is "o". Brazil's: the usage in the club's pt.wikipedia article, "da/na/a X"
+// against "do/no/o X" before its short name, read on 2026-10-17 (Ferroviária 149 to 0, Chapecoense 130
+// to 0, Portuguesa 118 to 0, Anapolina 55 to 0, Inter de Limeira 15 to 0), and the clubs named for a
+// feminine noun whose article the search missed (a Ponte Preta, a Tuna, a Desportiva Ferroviária). Abroad: the
+// Italian clubs whose name is feminine (la Juve, la Roma) and the clubs named for a university or a
+// league, as Brazil's papers write them ("a LDU", "a Universidad de Chile").
 export const FEMININE_CLUB_IDS: readonly string[] = [
   "anapolina-go",
-  "aparecidense-go",
   "chapecoense-sc",
   "ferroviaria-es",
   "ferroviaria-sp",
   "inter-de-limeira-sp",
-  "jataiense-go",
   "ponte-preta-sp",
   "portuguesa-rj",
   "portuguesa-sp",
