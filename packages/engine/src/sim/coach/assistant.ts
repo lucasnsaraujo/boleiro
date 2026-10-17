@@ -3,7 +3,6 @@ import { keyedStream } from "../../engine/random.js";
 import type { DayEvent } from "../advanceDay.js";
 import type { GameState, IsoDate } from "../gameState.js";
 import { boardRefusal } from "../transfers/boardRefusal.js";
-import { unitHash } from "../transfers/coachMarket.js";
 import { wageBillsOf } from "../transfers/wageBillsOf.js";
 import type { Coach } from "./coach.js";
 import { coachSalary } from "./coachSalary.js";
@@ -104,7 +103,8 @@ export function assistantOfClub(state: Pick<GameState, "seed" | "coach" | "coach
  */
 export function assistantReadOf(state: Pick<GameState, "seed" | "season">, assistant: Pick<Assistant, "id" | "level">): (playerId: string, strength: number) => number {
   const error = READ_ERROR[assistant.level];
-  return (playerId, strength) => strength + error * (2 * unitHash(`${state.seed}:${assistant.id}:${state.season}:${playerId}`) - 1);
+  // A keyed stream's first draw, not a bare hash: FNV-1a alone left one assistant reading every player a third of a point low.
+  return (playerId, strength) => strength + error * (2 * keyedStream(state.seed, `read:${assistant.id}:${state.season}:${playerId}`)() - 1);
 }
 
 const strangerWage = (state: Pick<GameState, "players">, clubId: string, level: AssistantLevel) => Math.round(WAGE_SHARE[level] * coachSalary(state, clubId));

@@ -94,6 +94,13 @@ describe("the coach's assistant", () => {
     expect(assistantOf(fireAssistant(hired)).level).toBe(1);
     expect(fireAssistant(hired).coach).toEqual(start.coach);
   });
+
+  it("reads players off evenly, as often too high as too low", () => {
+    const read = assistantReadOf(start, { id: "same-man", level: 1 });
+    const players = Object.values(start.players);
+    const bias = players.reduce((sum, p) => sum + read(p.id, p.strength) - p.strength, 0) / players.length;
+    expect(Math.abs(bias)).toBeLessThan(0.25);
+  });
 });
 
 describe("a former player of the coach as his assistant", () => {
