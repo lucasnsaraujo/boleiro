@@ -68,4 +68,27 @@ describe("national-team jobs", () => {
     expect(after?.state.nations?.job).toBeUndefined();
     expect(after?.events).toContainEqual({ type: "nationalCoachFired", teamId: groupOut });
   });
+
+  it("are neither lost nor offered when a Nations League ends, whatever the coach's team's group place", () => {
+    const league = afterWorldCup.nations?.competitions["nations-league-2026"];
+    const teamId = Object.values(league?.groups ?? {}).flat()[1] ?? "";
+    const nations = afterWorldCup.nations && { ...afterWorldCup.nations, job: { teamId, since: "2026-01-01" } };
+    if (nations) delete nations.offer;
+    const coaching = { ...afterWorldCup, ...(nations ? { nations } : {}) };
+    const after = league ? nationalJobsAfter(coaching, league, "2027-06-13") : null;
+    expect(after?.state.nations?.job?.teamId).toBe(teamId);
+    expect(after?.events).toEqual([]);
+  });
+
+  it("are not offered in a hot-seat game, whose coaches would share one national job", () => {
+    const twoCoaches = loadNewGame(5, { coachClubId: "flamengo-rj", hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "santos-sp" }] } });
+    const worldCup = afterWorldCup.nations?.competitions["world-cup-2026"];
+    const nations = afterWorldCup.nations && { ...afterWorldCup.nations };
+    if (nations) delete nations.offer;
+    const hotSeat = { ...afterWorldCup, ...(nations ? { nations } : {}), ...(twoCoaches.waitingCoaches ? { waitingCoaches: twoCoaches.waitingCoaches } : {}) };
+    const after = worldCup ? nationalJobsAfter(hotSeat, worldCup, "2026-07-19") : null;
+    expect(hotSeat.waitingCoaches).toHaveLength(1);
+    expect(after?.events.filter((e) => e.type === "nationalJobOffered")).toEqual([]);
+    expect(after?.state.nations?.offer).toBeUndefined();
+  });
 });

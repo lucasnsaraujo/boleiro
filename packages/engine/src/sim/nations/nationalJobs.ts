@@ -16,6 +16,8 @@ const REPUTATION_BY_RANK: [number, number][] = [[10, 80], [30, 65], [60, 50], [I
 // guess: a federation changes coach when its team goes out of a final tournament before the quarter-finals (as
 // Brazil did after its 2022 quarter-final; here a round earlier), and fires the game's coach for the same.
 const EARLY_EXIT_ROUNDS = new Set(["group", "round-of-32", "round-of-16"]);
+// Federations judge their coaches on the final tournaments, not on a Nations League.
+const JOB_DECIDING_KINDS = new Set<NationalCompetition["kind"]>(["world-cup", "continental-cup"]);
 // guess: reputation a title is worth to the coach who won it.
 const TITLE_REPUTATION: Record<NationalCompetition["kind"], number> = { "world-cup": 15, "continental-cup": 10, "nations-league": 5, qualifiers: 0, friendlies: 0 };
 
@@ -37,13 +39,15 @@ function lastRoundOf(matches: readonly NationalMatch[], competitionId: string, t
 }
 
 /**
- * National jobs after a final tournament ends today: the game's coach fired when his team went out early, his
- * reputation up for a title, and the federations whose teams went out early offering him their job when his
- * reputation reaches it (the best-ranked of them; one offer at a time).
+ * National jobs after a competition ends today: the game's coach's reputation up for a title; and after a final
+ * tournament (a World Cup or a continental cup) the coach fired when his team went out early, and the
+ * federations whose teams went out early offering him their job when his reputation reaches it (the best-ranked
+ * of them; one offer at a time; none in a hot-seat game).
  */
 export function nationalJobsAfter(state: GameState, competition: NationalCompetition, today: IsoDate): { state: GameState; events: NationalJobEvent[] } {
   const nations = state.nations;
   if (!nations) return { state, events: [] };
+  const decidesJobs = JOB_DECIDING_KINDS.has(competition.kind);
   const events: NationalJobEvent[] = [];
   let next = nations;
   let coach = state.coach;
@@ -52,14 +56,15 @@ export function nationalJobsAfter(state: GameState, competition: NationalCompeti
   const job = nations.job;
   if (job && teams.includes(job.teamId)) {
     if (competition.winnerId === job.teamId) coach = { ...coach, reputation: Math.min(100, coach.reputation + TITLE_REPUTATION[competition.kind]) };
-    else if (isEarlyOut(job.teamId)) {
+    else if (decidesJobs && isEarlyOut(job.teamId)) {
       next = { ...next };
       delete next.job;
       delete next.picks;
       events.push({ type: "nationalCoachFired", teamId: job.teamId });
     }
   }
-  if (!next.offer) {
+  // A hot-seat game's coaches would share one national job: the federations leave them to their clubs.
+  if (decidesJobs && !next.offer && !state.waitingCoaches?.length) {
     const open = teams.filter((id) => isEarlyOut(id) && id !== next.job?.teamId && reputationFor(nations, id) <= coach.reputation).sort((a, b) => rankOf(nations, a) - rankOf(nations, b));
     const best = open[0];
     if (best) {
