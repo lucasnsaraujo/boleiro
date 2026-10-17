@@ -175,9 +175,8 @@ export function drawMatchPlay(
   return { starters: starters.map((p) => p.id), players };
 }
 
-/** When each player of the match was on the pitch: after `from`, up to and including `to`. */
-function spellsOf(play: MatchPlay, events: readonly MatchEvent[]): Map<string, { from: number; to: number }> {
-  const last = matchEndOf(events);
+/** When each player of a match ending at `last` was on the pitch: after `from`, up to and including `to`. */
+function spellsOf(play: MatchPlay, events: readonly MatchEvent[], last: number = matchEndOf(events)): Map<string, { from: number; to: number }> {
   const spells = new Map(play.starters.map((id) => [id, { from: 0, to: last }]));
   const end = (playerId: string, minute: number) => {
     const spell = spells.get(playerId);
@@ -239,7 +238,7 @@ const emptyStats = (own: PlayerPlay): PlayerStats => ({
  */
 export function playerStatsAt(play: MatchPlay, events: readonly MatchEvent[], minute: number): Record<string, PlayerStats> {
   const happened = events.filter((e) => e.minute <= minute);
-  const spells = spellsOf(play, happened);
+  const spells = spellsOf(play, happened, matchEndOf(events));
   const stats: Record<string, PlayerStats> = {};
   const isOn = (playerId: string, at: number) => {
     const spell = spells.get(playerId);
