@@ -4,7 +4,9 @@ import type { GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { clubMood, type ClubMood } from "./clubMood.js";
 import { moraleStrength } from "./moraleStrength.js";
+import { reactToDay } from "./reactToDay.js";
 import { reactToIdolSale } from "./reactToIdolSale.js";
+import { rivalryOf } from "../rivalries/rivalryOf.js";
 import { rivalsOf } from "./rivalsOf.js";
 
 const start = loadNewGame(9, { coachClubId: null });
@@ -91,15 +93,56 @@ describe("fan mood", () => {
   it("drops further after losing a derby than after losing to anyone else", () => {
     const rivals = rivalsOf(leagueDay.clubs);
     expect([...(rivals.get("flamengo-rj") ?? [])]).toContain("vasco-rj");
-    const asDerby = (rival: boolean) => {
-      const clubs = { ...leagueDay.clubs };
-      const away = clubs[visitor];
-      const home = clubs[host];
-      if (!away || !home) throw new Error("missing club");
-      clubs[visitor] = rival ? { ...away, state: home.state, fanbase: home.fanbase } : { ...away, state: home.state === "AC" ? "AP" : "AC", fanbase: 0 };
-      return clubMood(advanceDay(withStrength({ ...leagueDay, clubs }, host, 1), {}).state, host).fans;
+    // Derbies are real pairs now, so the visitor is swapped for a real rival of a host, or for a club the
+    // host has no derby with and the same fanbase; neither plays elsewhere that day.
+    const today = leagueDay.fixtures.filter((f) => f.date === leagueDay.date);
+    const busy = new Set(today.flatMap((f) => [f.homeId, f.awayId]));
+    const derby = today
+      .map((fixture) => ({ fixture, rival: [...(rivals.get(fixture.homeId) ?? [])].find((id) => !busy.has(id)) }))
+      .find(({ fixture, rival }) => rival && leagueDay.clubs[fixture.homeId]?.division === "A");
+    const rival = derby?.rival && leagueDay.clubs[derby.rival];
+    if (!derby || !rival) throw new Error("no Série A host with a rival free that day");
+    const home = derby.fixture.homeId;
+    const stranger = Object.values(leagueDay.clubs).find((club) => !busy.has(club.id) && club.id !== home && !rivals.get(home)?.has(club.id));
+    if (!stranger) throw new Error("no club free that day without a derby with the host");
+    const asDerby = (isRival: boolean) => {
+      const clubs = { ...leagueDay.clubs, [stranger.id]: { ...stranger, fanbase: rival.fanbase } };
+      const fixtures = leagueDay.fixtures.map((f) => (f.id === derby.fixture.id ? { ...f, awayId: isRival ? rival.id : stranger.id } : f));
+      return clubMood(advanceDay(withStrength({ ...leagueDay, clubs, fixtures }, home, 1), {}).state, home).fans;
     };
     expect(asDerby(true)).toBeLessThan(asDerby(false));
+  });
+
+  it("drops further after losing a bigger derby: Palmeiras' fans take the Derby Paulista harder than the Clássico da Saudade", () => {
+    const lostAtHomeTo = (rival: string) => {
+      const fixture = { id: "derby", competitionId: "x", stage: 0, date: leagueDay.date, homeId: "palmeiras-sp", awayId: rival, result: { homeGoals: 0, awayGoals: 1 } };
+      return clubMood(reactToDay(leagueDay, [fixture], [], () => 0.99).state, "palmeiras-sp").fans;
+    };
+    expect(lostAtHomeTo("corinthians-sp")).toBeLessThan(lostAtHomeTo("santos-sp"));
+  });
+
+  describe("a rival's result elsewhere", () => {
+    const stranger = Object.keys(leagueDay.clubs).find((id) => !rivalsOf(leagueDay.clubs).has(id));
+    if (!stranger) throw new Error("no club without a derby");
+    const lostElsewhere = (clubId: string) => ({ id: `${clubId}-elsewhere`, competitionId: "x", stage: 0, date: leagueDay.date, homeId: clubId, awayId: stranger, result: { homeGoals: 0, awayGoals: 1 } });
+    const fansAfter = (clubId: string, losers: readonly string[]) => clubMood(reactToDay(withMood(leagueDay, clubId, { fans: 50 }), losers.map(lostElsewhere), [], () => 0.99).state, clubId).fans;
+
+    it("lifts Flamengo's fans when Fluminense, Vasco and Botafogo all lose no more than Fluminense losing alone", () => {
+      const alone = fansAfter("flamengo-rj", ["fluminense-rj"]);
+      expect(alone).toBeGreaterThan(50);
+      expect(fansAfter("flamengo-rj", ["fluminense-rj", "vasco-rj", "botafogo-rj"])).toBeCloseTo(alone, 6);
+    });
+
+    it("moves the fans less than their own team's win would", () => {
+      const own = { id: "own", competitionId: "x", stage: 0, date: leagueDay.date, homeId: "flamengo-rj", awayId: stranger, result: { homeGoals: 1, awayGoals: 0 } };
+      const won = clubMood(reactToDay(withMood(leagueDay, "flamengo-rj", { fans: 50 }), [own], [], () => 0.99).state, "flamengo-rj").fans;
+      expect(fansAfter("flamengo-rj", ["fluminense-rj", "vasco-rj", "botafogo-rj"]) - 50).toBeLessThan((won - 50) / 4);
+    });
+
+    it("leaves the fans as they were when it is a small local derby's rival (intensity 1)", () => {
+      expect(rivalryOf("bahia-ba", "galicia-ba")?.intensity).toBe(1);
+      expect(fansAfter("bahia-ba", ["galicia-ba"])).toBe(50);
+    });
   });
 
   it("sours at the monthly closing when tickets cost far more than the division's average", () => {

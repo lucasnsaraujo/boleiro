@@ -5,6 +5,7 @@ import { tierOf } from "../finances/tierOf.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { clubMood, type ClubMood } from "./clubMood.js";
 import { DERBY_TROUBLE_CHANCE, escalateSupporters, type SupporterEvent } from "./escalateSupporters.js";
+import { rivalryOf, TOP_INTENSITY } from "../rivalries/rivalryOf.js";
 import { rivalsOf } from "./rivalsOf.js";
 
 // guess: the league average points per game when a quarter of games are drawn, as in developPlayers.
@@ -15,12 +16,22 @@ export const MOOD_MEMORY = 0.9;
 // guess: mood points per league point above the average, for fans and for the squad.
 const FAN_SWING = 4;
 const SQUAD_SWING = 3;
-// guess: a derby counts double for the fans.
-const DERBY_WEIGHT = 2;
+// guess: a derby weighs a quarter more for the fans per level of intensity: double for a state's main
+// derby (level 4), two and a quarter times for one that stops the country.
+const DERBY_WEIGHT_PER_LEVEL = 0.25;
 // Derby trouble draws from a stream of its own per fixture and loser, so the day's other draws stay as they were.
 const DERBY_TROUBLE_SALT = 0xd3e2b7;
-// guess: fan mood points when a rival wins (lost) or loses (gained) a game against someone else.
+// guess: fan mood points when a state's main rival (intensity 4) wins (lost) or loses (gained) a game
+// against someone else, in proportion for bigger and smaller derbies. Fans follow rivals from a derby
+// above a local one (intensity 2), and all of a day's rival results move them no more than one rival that
+// stops the country would, well below their own side's result.
 const RIVAL_RESULT = 1;
+const RIVAL_RESULT_INTENSITY = 4;
+const RIVAL_FOLLOWED_FROM = 2;
+const RIVAL_DAY_CAP = (RIVAL_RESULT * TOP_INTENSITY) / RIVAL_RESULT_INTENSITY;
+// guess: derby trouble the STJD punishes follows a city's second derby up (intensity 3), and only
+// between two Brazilian clubs: the Brazilian court judges no game abroad.
+const TROUBLE_FROM_INTENSITY = 3;
 // guess: monthly fan mood points per 100% the ticket price sits above the division's average,
 // capped either way.
 const PRICE_SWING = 3;
@@ -59,16 +70,21 @@ export function reactToDay(
   const lost = new Set<string>();
   /** Clubs whose fans made trouble after losing a derby, with the stream the court's verdict draws from. */
   const troubled = new Map<string, () => number>();
+  /** Each club's fan mood points from its rivals' results elsewhere today. */
+  const rivalSwings = new Map<string, number>();
   const rivals = played.length ? rivalsOf(state.clubs) : new Map<string, ReadonlySet<string>>();
+  const isBrazilian = (clubId: string) => state.clubs[clubId]?.state !== undefined;
 
   for (const fixture of played) {
     change(fixture.homeId, (mood) => ({ closedDoorGames: Math.max(0, mood.closedDoorGames - 1) }));
     for (const [id, opponent] of [[fixture.homeId, fixture.awayId], [fixture.awayId, fixture.homeId]] as const) {
       const above = pointsOf(fixture, id) - AVERAGE_POINTS;
-      const derby = rivals.get(id)?.has(opponent) ? DERBY_WEIGHT : 1;
+      const intensity = rivals.get(id)?.has(opponent) ? (rivalryOf(id, opponent)?.intensity ?? 0) : 0;
+      const derby = 1 + DERBY_WEIGHT_PER_LEVEL * intensity;
       if (pointsOf(fixture, id) === 0) {
         lost.add(id);
-        const trouble = derby > 1 ? keyedStream(state.seed ^ DERBY_TROUBLE_SALT, `${fixture.id}:${id}`) : null;
+        const isJudged = intensity >= TROUBLE_FROM_INTENSITY && isBrazilian(id) && isBrazilian(opponent);
+        const trouble = isJudged ? keyedStream(state.seed ^ DERBY_TROUBLE_SALT, `${fixture.id}:${id}`) : null;
         if (trouble && trouble() < DERBY_TROUBLE_CHANCE) troubled.set(id, trouble);
       }
       change(id, (mood) => ({
@@ -77,9 +93,15 @@ export function reactToDay(
       }));
       const swing = Math.sign(above) * (pointsOf(fixture, id) === 1 ? 0 : RIVAL_RESULT);
       for (const rival of rivals.get(id) ?? []) {
-        if (rival !== opponent && swing) change(rival, (mood) => ({ fans: clamp(mood.fans - swing) }));
+        const rivalry = rivalryOf(id, rival)?.intensity ?? 0;
+        if (rival !== opponent && swing && rivalry >= RIVAL_FOLLOWED_FROM) {
+          rivalSwings.set(rival, (rivalSwings.get(rival) ?? 0) - (swing * rivalry) / RIVAL_RESULT_INTENSITY);
+        }
       }
     }
+  }
+  for (const [id, swing] of rivalSwings) {
+    change(id, (mood) => ({ fans: clamp(mood.fans + Math.min(RIVAL_DAY_CAP, Math.max(-RIVAL_DAY_CAP, swing))) }));
   }
 
   for (const event of financeEvents) {

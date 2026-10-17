@@ -56,6 +56,7 @@ import type { CoachMatch, DayInProgress, LiveDay, MatchOutcome } from "./liveDay
 import { onPitchAt, whoPlayed } from "./aiSubstitutions.js";
 import { tieBreakOf } from "../tieBreaks.js";
 import { FULL_TIME, hasExtraTimeIn, matchEndOf, scorersFor, type MatchEvent } from "./matchTimeline.js";
+import { recordCoachMeetings } from "../rivalries/coachRivalries.js";
 
 function fixturesByCompetition(fixtures: readonly Fixture[]): Map<string, Fixture[]> {
   const byCompetition = new Map<string, Fixture[]>();
@@ -287,7 +288,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const filled = promoted.state.players !== next.players ? fillShortSquads(promoted.state) : { state: promoted.state, events: [] };
   events.push(...filled.events);
   const released = leftClubIds(state, filled.state).reduce(releaseTicketPrice, releaseTicketPrice(filled.state, state.coachClubId));
-  const happened = runEvents(recordNews(released, state.date, events, day.sheets), state.date, played);
+  const happened = runEvents(recordNews(recordCoachMeetings(released, played, state), state.date, events, day.sheets), state.date, played);
   events.push(...happened.events);
   const recorded = recordDayEvents(happened.state, events, state);
   return state.waitingCoaches ? { state: recorded, events, waitingEvents } : { state: recorded, events };

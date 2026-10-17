@@ -18,6 +18,7 @@ import {
 } from "../calendar/calendarMonths.js";
 import { clubFaceOf, type ClubFace } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
+import { DerbyBadgeOf } from "../rivalries/DerbyBadge.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import { useMatchFile } from "../matchPage/MatchFile.js";
 import "./calendar.css";
@@ -128,7 +129,7 @@ export function Calendar() {
             matches.length + windows.length === 0 ? null : (
               <ul key={month} className="agenda-entries" aria-label={capitalized(monthName(month))}>
                 {matches.map((match) => (
-                  <MatchChip key={match.fixtureId} match={match} opponent={clubFaceOf(state.clubs, match.opponentId) ?? undefined} isToday={match.date === state.date} onOpen={matchFile.open} />
+                  <MatchChip key={match.fixtureId} match={match} clubId={state.coachClubId} opponent={clubFaceOf(state.clubs, match.opponentId) ?? undefined} isToday={match.date === state.date} onOpen={matchFile.open} />
                 ))}
                 {windows.map((ribbon) => (
                   <WindowMark key={ribbon.opensOn} ribbon={ribbon} />
@@ -187,7 +188,7 @@ export function Calendar() {
   );
 }
 
-function MatchChip({ match, opponent, isToday, onOpen }: { match: PageMatch; opponent: ClubFace | undefined; isToday: boolean; onOpen: (fixtureId: string) => void }) {
+function MatchChip({ match, clubId, opponent, isToday, onOpen }: { match: PageMatch; clubId: string | null; opponent: ClubFace | undefined; isToday: boolean; onOpen: (fixtureId: string) => void }) {
   const { result } = match;
   // The coach's goals first, as the outcome letter reads.
   const score = result
@@ -197,6 +198,7 @@ function MatchChip({ match, opponent, isToday, onOpen }: { match: PageMatch; opp
     <li className={result ? `agenda-match played ${result.outcome}` : "agenda-match"} style={{ gridRow: match.row, gridColumn: match.column }}>
       {result && <button type="button" className="agenda-open" aria-label={`Ficha do jogo contra ${opponent?.shortName ?? match.opponentId}`} onClick={() => onOpen(match.fixtureId)} />}
       <span className="sr-only">{isToday ? "Hoje" : formatRowDate(match.date)}, </span>
+      {clubId && <DerbyBadgeOf homeId={clubId} awayId={match.opponentId} />}
       <span className="agenda-match-crest" aria-hidden="true">
         {opponent && <Crest club={opponent} size={22} />}
       </span>
@@ -255,6 +257,11 @@ function NextMatch({ match, state }: { match: UpcomingMatch; state: CalendarStat
   return (
     <>
       <h3 id="agenda-next-title">{match.label}</h3>
+      {state.coachClubId && (
+        <div className="agenda-derby">
+          <DerbyBadgeOf homeId={state.coachClubId} awayId={match.opponentId} isNamed />
+        </div>
+      )}
       <div className="agenda-vs">
         {home && <Crest club={home} size={56} />}
         <span className="agenda-x" aria-hidden="true">

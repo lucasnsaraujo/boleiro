@@ -287,7 +287,7 @@ test("the Mundial de Clubes heading names it once, its logo beside the name", as
 });
 
 test("a Super Mundial semi-final on the bracket is played at MetLife, not at the first club's ground", async () => {
-  const given = await services("flamengo-rj", CLUB_WORLD_CUP_SEASON);
+  const given = await services("flamengo-rj", CLUB_WORLD_CUP_SEASON, 8);
   const { date } = await given.engine.read(["date"]);
   const days = Math.round((Date.parse("2029-07-06") - Date.parse(date)) / 86_400_000);
   await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });

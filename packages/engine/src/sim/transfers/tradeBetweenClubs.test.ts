@@ -33,4 +33,19 @@ describe("AI clubs trading", () => {
     expect(events.filter((e) => e.type === "playerMoved" && e.kind === "released").length).toBeGreaterThan(0);
     for (const [playerId, clubId] of agreed) expect(state.market.preContracts[playerId], playerId).toBe(clubId);
   });
+
+  it("sign none of Flamengo's idols for Fluminense, Vasco or Botafogo, who otherwise take some of its expiring players", () => {
+    const rivals = ["fluminense-rj", "vasco-rj", "botafogo-rj"];
+    const flamengo = squads.get("flamengo-rj") ?? [];
+    const expiring: GameState = { ...rich, market: { ...rich.market, preContracts: {} }, players: { ...rich.players, ...Object.fromEntries(flamengo.map((p) => [p.id, { ...p, contractUntil: "2026-02-28" }])) } };
+    const idols = Object.fromEntries(flamengo.map((p) => [p.id, { name: p.name, apps: 220, goals: 10 }]));
+    const idolised: GameState = { ...expiring, history: { ...expiring.history, players: { ...expiring.history.players, "flamengo-rj": idols } } };
+    const signedByRivals = (state: GameState) =>
+      Array.from({ length: 6 }, (_, seed) => tradeBetweenClubs(openDraft(state), seededRandom(seed)).events)
+        .flat()
+        .filter((e) => e.type === "preContractSigned" || e.type === "playerMoved")
+        .filter((e) => e.fromClubId === "flamengo-rj" && rivals.includes(e.toClubId ?? "")).length;
+    expect(signedByRivals(expiring)).toBeGreaterThan(0);
+    expect(signedByRivals(idolised)).toBe(0);
+  });
 });

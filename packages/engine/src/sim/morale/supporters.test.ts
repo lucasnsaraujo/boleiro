@@ -5,6 +5,7 @@ import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { clubMood, NEUTRAL_MOOD, type ClubMood } from "./clubMood.js";
 import { reactToDay } from "./reactToDay.js";
+import { rivalryOf } from "../rivalries/rivalryOf.js";
 import { rivalsOf } from "./rivalsOf.js";
 
 const start = loadNewGame(7, { coachClubId: null });
@@ -163,6 +164,29 @@ describe("crowd trouble after a derby defeat", () => {
   it("never follows a derby the club didn't lose", () => {
     const spared = days.filter((d) => !d.lost && ofType(d.events, "fansViolence").some((e) => e.clubId === host));
     expect(spared).toEqual([]);
+  });
+});
+
+describe("crowd trouble the STJD punishes", () => {
+  const calm = (state: GameState, clubIds: readonly string[]) => clubIds.reduce((s, id) => withMood(s, id, { ...NEUTRAL_MOOD, fans: 70 }), state);
+  const troubleAfterLosing = (state: GameState, home: string, away: string) =>
+    Array.from({ length: 400 }, (_, seed) => {
+      const fixture: Fixture = { id: `${home}-${away}`, competitionId: "x", stage: 0, date: state.date, homeId: home, awayId: away, result: { homeGoals: 0, awayGoals: 1 } };
+      return reactToDay(calm({ ...state, seed }, [home, away]), [fixture], [], () => 0.99).events;
+    }).filter((events) => ofType(events, "fansViolence").some((e) => e.clubId === home)).length;
+
+  it("never follows a lost Brazilian derby below a city's second one (intensity 2)", () => {
+    expect(rivalryOf("america-rj-rj", "vasco-rj")?.intensity).toBe(2);
+    expect(troubleAfterLosing(leagueDay, "america-rj-rj", "vasco-rj")).toBe(0);
+    expect(troubleAfterLosing(leagueDay, "fluminense-rj", "vasco-rj")).toBeGreaterThan(0);
+  });
+
+  it("never follows a derby abroad, which the Brazilian court doesn't judge", () => {
+    expect(rivalryOf("tm-124", "tm-371")?.intensity).toBe(5);
+    const like = leagueDay.clubs["flamengo-rj"];
+    if (!like) throw new Error("no Flamengo");
+    const clubs = { ...leagueDay.clubs, ...Object.fromEntries(["tm-124", "tm-371"].map((id) => [id, { ...like, id, state: undefined, abroad: { country: "gb-sct", level: 0 } }])) };
+    expect(troubleAfterLosing({ ...leagueDay, clubs }, "tm-124", "tm-371")).toBe(0);
   });
 });
 

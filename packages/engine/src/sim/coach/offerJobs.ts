@@ -4,6 +4,7 @@ import { clubStatures } from "./clubStatures.js";
 import { isCoolingDown, OFFER_REACH, type JobOffer } from "./coach.js";
 import { coachSalary } from "./coachSalary.js";
 import { isHumanClub } from "./humanCoaches.js";
+import { rivalBlockOf } from "../rivalries/idols.js";
 
 export type JobOffered = { type: "jobOffered"; offer: JobOffer };
 
@@ -29,7 +30,7 @@ export function jobOffer(state: GameState, clubId: string): JobOffer {
 
 /**
  * Drops expired offers, then offers the player's coach the clubs' open jobs that his reputation
- * reaches. Clubs with an open job go to `vacancies`; an unemployed coach also hears from a club now and then.
+ * reaches, but for the big derby rivals of a club he is an idol of. Clubs with an open job go to `vacancies`; an unemployed coach also hears from a club now and then.
  */
 export function offerJobs(state: GameState, vacancies: readonly string[], random: () => number): { state: GameState; events: JobOffered[] } {
   const { coach, coachClubId } = state;
@@ -48,7 +49,8 @@ export function offerJobs(state: GameState, vacancies: readonly string[], random
     const stature = statures.get(clubId);
     return stature !== undefined && clubId in state.boards && stature <= coach.reputation + OFFER_REACH && stature >= floor;
   };
-  const isNew = (clubId: string) => !isHumanClub(state, clubId) && !offers.some((offer) => offer.clubId === clubId) && !isCoolingDown(coach, clubId, state.season);
+  const isNew = (clubId: string) =>
+    !isHumanClub(state, clubId) && !offers.some((offer) => offer.clubId === clubId) && !isCoolingDown(coach, clubId, state.season) && rivalBlockOf(state, clubId) === null;
   const offering = vacancies.filter((id) => isWithinReach(id) && isNew(id));
   if (!coachClubId && !offers.length && !offering.length && random() < IDLE_OFFER_CHANCE_PER_DAY) {
     const reachable = [...rank().statures.keys()].filter((id) => isWithinReach(id) && isNew(id)).sort();
