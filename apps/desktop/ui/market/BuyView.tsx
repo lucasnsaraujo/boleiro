@@ -380,9 +380,10 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
   const best = advice.atPosition[0]?.strength ?? row.strength;
   const scale = (strength: number) => `${Math.max(8, Math.min(100, strength))}%`;
 
-  // A loanee's purchase keeps his contract; every other signing offers a length.
-  const isLoanBuy = row.clubId === state.coachClubId;
-  const length = isLoanBuy ? {} : { years: months / 12 };
+  // A loanee's purchase keeps his contract, and a pre-contract takes the club's usual deal when it starts
+  // (the market keeps only the club he joins); every other signing offers a length.
+  const hasLength = row.clubId !== state.coachClubId && row.status !== "contractEnding";
+  const length = hasLength ? { years: months / 12 } : {};
   const term = terms.find((t) => t.months === months);
 
   function sign() {
@@ -445,7 +446,7 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
               <span className="lbl">Salário</span>
               <MoneyStepper label="Salário" value={wage} step={roundStep(row.wage)} hint="por mês" onChange={setWage} />
             </div>
-            {!isLoanBuy && (
+            {hasLength && (
               <div className="market-offer-row">
                 <span className="lbl">Prazo</span>
                 <div className="market-lengths" role="radiogroup" aria-label="Tempo de contrato">
@@ -471,7 +472,7 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
                 </div>
               </div>
             )}
-            {!isLoanBuy && term && (
+            {hasLength && term && (
               <p className={`market-len-note ${term.stance}`}>
                 {STANCE_LABELS[term.stance]} · pede {formatMoney(term.wage)} · até {formatMonthYear(contractEndAfter(state.date, months))}
               </p>
@@ -582,7 +583,7 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
           )}
           {!pending && !counter && clause && row.clause !== null && (
             <>
-              <button className="btn flat market-clause" disabled={clauseShortBy > 0} onClick={() => onAsk({ kind: "payClause", playerId: row.id, wage, years: months / 12 })}>
+              <button className="btn flat market-clause" disabled={clauseShortBy > 0} onClick={() => onAsk({ kind: "payClause", playerId: row.id, wage, ...length })}>
                 Pagar a multa: {formatMoney(row.clause)}
               </button>
               {clauseShortBy > 0 && <p className="market-note">A multa não cabe na verba: faltam {formatMoney(clauseShortBy)}.</p>}

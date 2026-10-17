@@ -109,7 +109,8 @@ export function RenewalDialog({ playerId, onClose: close, onChange }: Props) {
 
   const sheet = state ? renewalSheet(state, playerId) : null;
   const card = state ? playerCard(state, playerId) : null;
-  const chosen = sheet && (sheet.options.find((o) => o.months === months) ?? sheet.options.find((o) => o.isAssistantPick) ?? sheet.options.find((o) => o.stance !== "refuses"));
+  // He may refuse every length (asked to leave, an offer waiting, a sour squad): the cards still show why.
+  const chosen = sheet && (sheet.options.find((o) => o.months === months) ?? sheet.options.find((o) => o.isAssistantPick) ?? sheet.options.find((o) => o.stance !== "refuses") ?? sheet.options[0]);
 
   async function act(change: () => Promise<unknown>) {
     setBusy(true);
@@ -143,10 +144,16 @@ export function RenewalDialog({ playerId, onClose: close, onChange }: Props) {
   }
 
   if (!state || !desk || !sheet || !card || !chosen) {
+    const isGone = state !== null && desk !== null;
     return createPortal(
-      <div className="ct-veil">
-        <p className="status" role="status">
-          {hasFailed ? "Não deu para abrir o contrato." : "Abrindo o contrato…"}
+      <div className="ct-veil" onKeyDown={(event) => event.key === "Escape" && close()}>
+        <p className="stk ct-status" role="status">
+          {hasFailed ? "Não deu para abrir o contrato." : isGone ? "Não dá para renovar com ele agora." : "Abrindo o contrato…"}
+          {(hasFailed || isGone) && (
+            <button className="btn sm" onClick={close} autoFocus>
+              Fechar
+            </button>
+          )}
         </p>
       </div>,
       document.body,
@@ -162,6 +169,7 @@ export function RenewalDialog({ playerId, onClose: close, onChange }: Props) {
   const wage = offer ?? (counter && counter.months === chosen.months ? counter.wage : chosen.wage);
   const billAfter = sheet.bill - sheet.wage + wage;
   const isOverCap = wage > sheet.wage && billAfter > sheet.wageCap;
+  const isRefused = chosen.stance === "refuses";
   const pending = desk.pending.find((request) => request.playerId === playerId);
   const lastAnswer = desk.answers.filter((answer) => answer.request.playerId === playerId && answer.request.kind === "renew").at(-1);
   const leavesFor = card.contract.leavesForId ? state.clubs[card.contract.leavesForId] : undefined;
@@ -202,9 +210,9 @@ export function RenewalDialog({ playerId, onClose: close, onChange }: Props) {
         <i className="ph-bold ph-chats-circle" aria-hidden="true" />
         Negociar salário
       </button>
-      <button className="btn go ct-go" onClick={() => ask(chosen, wage)} disabled={isBusy || isOverCap}>
+      <button className="btn go ct-go" onClick={() => ask(chosen, wage)} disabled={isBusy || isOverCap || isRefused}>
         <i className="ph-bold ph-signature" aria-hidden="true" />
-        Renovar por {lengthWords}
+        {isRefused ? "Ele não aceita renovar" : `Renovar por ${lengthWords}`}
       </button>
     </div>
   );

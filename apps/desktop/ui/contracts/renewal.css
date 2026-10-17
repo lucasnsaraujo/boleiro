@@ -63,6 +63,14 @@
   }
 }
 
+.ct-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px 14px 20px;
+  font-size: 13px;
+}
+
 /* ---------- Left: the player's sticker and his contract ---------- */
 .ct-l {
   display: flex;

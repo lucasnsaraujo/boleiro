@@ -13,6 +13,7 @@ import { Shell } from "../app/Shell.js";
 import { unlockedFakeSound } from "../sound/fakeAudioContext.js";
 import { SoundProvider } from "../sound/SoundProvider.js";
 import { Hub } from "../screens/Hub.js";
+import { RenewalDialog } from "./RenewalDialog.js";
 
 const COACH = "bahia-ba";
 const closers: (() => void)[] = [];
@@ -93,4 +94,21 @@ test("Escape closes the renewal screen", async () => {
   await userEvent.keyboard("{Escape}");
   // The sheet peels off before it goes.
   await waitFor(() => expect(screen.queryByRole("heading", { name: `Renovar com ${name}` })).toBeNull());
+});
+
+test("a player the coach can't renew gets a note to close instead of a sheet", async () => {
+  const { engine, close } = inMemoryEngine();
+  closers.push(close);
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: COACH } });
+  const { players } = await engine.read(["players"]);
+  const other = Object.values(players).find((p) => p.clubId !== COACH);
+  let isClosed = false;
+  render(
+    <ServicesContext value={{ engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } }}>
+      <RenewalDialog playerId={other?.id ?? ""} onClose={() => (isClosed = true)} />
+    </ServicesContext>,
+  );
+  expect(await screen.findByText("Não dá para renovar com ele agora.")).toBeTruthy();
+  await userEvent.click(screen.getByRole("button", { name: "Fechar" }));
+  expect(isClosed).toBe(true);
 });

@@ -192,3 +192,28 @@ test("a contract length he won't talk about can't be offered", async () => {
     if (option.getAttribute("aria-label")?.endsWith("Recusa")) expect(option).toHaveProperty("disabled", true);
   }
 });
+
+type SavedContracts = { game: { players: Record<string, { name: string; clubId: string; contractUntil: string }> } };
+
+test("a pre-contract offers no length: it starts on the club's usual deal", async () => {
+  const { engine, close } = inMemoryEngine();
+  closers.push(close);
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "sport-pe" } });
+  // One Palmeiras player's contract now ends in June: other clubs may sign him to a pre-contract.
+  const save: SavedContracts = JSON.parse(await engine.save());
+  const ending = Object.values(save.game.players).find((p) => p.clubId === "palmeiras-sp");
+  if (!ending) throw new Error("no Palmeiras player");
+  ending.contractUntil = "2026-06-30";
+  await engine.apply({ type: "load", save: JSON.stringify(save) });
+  render(
+    <ServicesContext value={{ engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } }}>
+      <RouterProvider router={createMemoryRouter([{ path: "/market", element: <Market /> }], { initialEntries: ["/market"] })} />
+    </ServicesContext>,
+  );
+  const results = await screen.findByRole("table", { name: "Jogadores" });
+  await pickOption(screen.getByRole("combobox", { name: "Situação" }), "Fim de contrato");
+  await userEvent.click(within(results).getByRole("button", { name: ending.name }));
+  const chosen = screen.getByRole("region", { name: ending.name });
+  expect(within(chosen).getByRole("button", { name: "Pré-contrato" })).toBeTruthy();
+  expect(within(chosen).queryByRole("radiogroup", { name: "Tempo de contrato" })).toBeNull();
+});
