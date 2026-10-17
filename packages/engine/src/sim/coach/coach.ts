@@ -19,7 +19,14 @@ export type Coach = {
   personalWindowUntil?: IsoDate;
   /** The areas whose events the assistant answers for him at once; left out, every event asks the coach. */
   assistantAreas?: EventArea[];
+  /** Clubs he walked out on, which won't hire him again before the end of `untilSeason`; a coach who never resigned has none. */
+  cooldowns?: { clubId: string; untilSeason: number }[];
 };
+
+/** Whether the club still holds the coach's resignation against him. */
+export function isCoolingDown(coach: Pick<Coach, "cooldowns">, clubId: string, season: number): boolean {
+  return coach.cooldowns?.some((cooldown) => cooldown.clubId === clubId && cooldown.untilSeason >= season) ?? false;
+}
 
 // guess: an unknown coach starts at the reputation of the smallest national clubs.
 export const CAREER_START_REPUTATION = 5;

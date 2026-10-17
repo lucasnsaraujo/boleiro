@@ -16,7 +16,7 @@ export type InboxTone = "good" | "bad" | "neutral";
 /** One line of the hub's inbox, as a newspaper would print it. */
 export type InboxLine = { date: IsoDate; text: string; tone: InboxTone };
 
-export type NewsState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "competitions" | "market" | "world" | "youth">;
+export type NewsState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "competitions" | "market" | "world" | "youth"> & Partial<Pick<GameState, "history">>;
 
 const REQUEST_NOUNS: Record<CoachRequest["kind"], string> = {
   sign: "a contratação",
@@ -173,6 +173,10 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
       case "coachFired":
         if (!event.isYou) return null;
         return [`${clubName(event.clubId)} demite você: ${event.position}º lugar, a meta era ${event.targetPosition}º`, "bad"];
+      case "coachAppointed":
+        // Only a club he once coached: his successor there is his news.
+        if (!before.history?.coach.stints.some((stint) => stint.clubId === event.clubId)) return null;
+        return [`${clubName(event.clubId)} anuncia ${event.name} como novo técnico`, "neutral"];
       case "jobOffered": {
         const { clubId, salary, untilSeason } = event.offer;
         return [`${clubName(clubId)} faz proposta: ${formatMoney(salary)} por mês até ${untilSeason}`, "good"];

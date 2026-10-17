@@ -60,7 +60,8 @@ function waitingCareerDay(
  * The coach career's part of a day, after the matches and the monthly closing: an offer the player
  * accepted, the coach's salary on the first of the month, the boards' verdicts and new job offers. In a
  * hot-seat game each waiting coach then gets his own part, with the offer he accepted on his turn
- * (`waitingAccepted`, in waiting order); his events come back apart, in `waitingEvents`.
+ * (`waitingAccepted`, in waiting order); his events come back apart, in `waitingEvents`. `vacancies` are
+ * the clubs whose boards fired their coach today.
  */
 export function coachCareerDay(
   state: GameState,
@@ -68,7 +69,7 @@ export function coachCareerDay(
   accepted: string | undefined,
   random: () => number,
   waitingAccepted: readonly (string | undefined)[] = [],
-): { state: GameState; events: CareerEvent[]; waitingEvents: CareerEvent[][] } {
+): { state: GameState; events: CareerEvent[]; waitingEvents: CareerEvent[][]; vacancies: string[] } {
   const events: CareerEvent[] = [];
   let next = hireAndPay(state, accepted, events);
   const judged = judgeCoaches(next, played, random);
@@ -84,5 +85,5 @@ export function coachCareerDay(
     next = own.state;
     waitingEvents.push(own.events);
   }
-  return { state: next, events, waitingEvents };
+  return { state: next, events, waitingEvents, vacancies: judged.vacancies };
 }

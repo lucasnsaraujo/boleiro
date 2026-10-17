@@ -3,6 +3,7 @@ import { randomStream } from "../../engine/random.js";
 import type { DayEvent, DayResult, WaitingDecisions } from "../advanceDay.js";
 import { isHumanClub, waitingCoachesOf, type WaitingCoach } from "../coach/humanCoaches.js";
 import { coachCareerDay } from "../coach/coachCareerDay.js";
+import { moveAiCoaches } from "../coach/moveAiCoaches.js";
 import { seasonEndField } from "../continental/continentalField.js";
 import { openContinentalCups } from "../continental/openContinentalCups.js";
 import { payContinentalPrizes } from "../continental/payContinentalPrizes.js";
@@ -212,13 +213,14 @@ export function finishMatchDay(live: LiveDay): DayResult {
   next = reacted.state;
   events.push(...reacted.events);
   const career = coachCareerDay(next, played, decisions.acceptOffer, random.next, (decisions.waiting ?? []).map((own) => own.acceptOffer));
-  next = career.state;
+  const moved = moveAiCoaches(career.state, state, career.vacancies, state.date);
+  next = moved.state;
   const waitingEvents: DayEvent[][] = career.waitingEvents;
   // Friendlies the coach booked for a club he no longer runs are called off with his move.
   if (state.coachClubId && next.coachClubId !== state.coachClubId) next = dropCoachFriendlies(next, state.coachClubId);
   const formerClubIds = leftClubIds(state, next);
   for (const clubId of formerClubIds) next = dropCoachFriendlies(next, clubId);
-  events.push(...career.events);
+  events.push(...career.events, ...moved.events);
   next = { ...next, rngState: random.state() };
   if (state.date === copinhaDate(state.season)) {
     const copinha = playCopinha(next);
