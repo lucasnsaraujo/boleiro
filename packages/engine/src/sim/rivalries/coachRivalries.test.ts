@@ -72,6 +72,13 @@ describe("coach rivalries in the newspaper", () => {
     expect(newsOf(after).some((n) => n.kind === "rivalry" && n.headline.includes("Reencontro") && n.body.includes(aiCoach.name))).toBe(true);
   });
 
+  it("call no first meeting a reencontro, nor the fifth", () => {
+    const reunion = (state: GameState) => newsOf(advanceDay(state, {}).state).some((n) => n.headline.includes("Reencontro"));
+    expect(reunion(eve)).toBe(false);
+    expect(reunion(withRecord(eve, { meetings: 4, anaWins: 2, aiWins: 2 }))).toBe(false);
+    expect(reunion(withRecord(eve, { meetings: 5, anaWins: 2, aiWins: 2 }))).toBe(true);
+  });
+
   it("call a coach who keeps losing to the same man a freguesia", () => {
     const record = withRecord(eve, { meetings: 3, anaWins: 3, aiWins: 0 });
     const won = Array.from({ length: 40 }, (_, seed) => advanceDay({ ...record, seed, rngState: seed }, {}).state).find((after) => {

@@ -81,6 +81,11 @@ describe("the market between rivals", () => {
     expect(reasonOf(stillAtFlamengo, { kind: "sign", playerId: bahia.id, fee: 1e9 })).not.toBe("rivalWillNotSell");
   });
 
+  it("Fluminense has no say when Flamengo's long-serving coach pays a release clause", () => {
+    const flu = standout(stillAtFlamengo, "fluminense-rj");
+    expect(reasonOf(stillAtFlamengo, { kind: "payClause", playerId: flu.id })).not.toBe("rivalWillNotSell");
+  });
+
   it("a Fluminense idol refuses to move to Flamengo, even with his release clause paid", () => {
     const newcomer = rich(withSpell(windowDay, "flamengo-rj", "2025-12-01", null));
     const idol = standout(newcomer, "fluminense-rj");
