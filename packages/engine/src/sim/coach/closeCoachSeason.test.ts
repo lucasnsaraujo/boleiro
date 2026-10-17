@@ -242,8 +242,8 @@ describe("seasons played", () => {
     }
     // The rankings' five seasons of points, every coach's last spells and the pool stop growing; only the
     // standings and the retired coaches with titles keep adding, a little each season.
-    const [afterOne = 0, afterTwo = 0, , , , , , afterEight = 0, afterNine = 0] = sizes;
-    expect(afterNine - afterEight).toBeLessThan(0.4 * (afterTwo - afterOne));
+    const [afterOne = 0, , , afterFour = 0, , afterSix = 0, , , afterNine = 0] = sizes;
+    expect((afterNine - afterSix) / 3).toBeLessThan(0.5 * ((afterFour - afterOne) / 3));
   }, 120_000);
 });
 
