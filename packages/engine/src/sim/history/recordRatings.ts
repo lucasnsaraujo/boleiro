@@ -1,5 +1,6 @@
 import { copyRecord } from "../copyRecord.js";
 import type { Fixture, GameState, SimPlayer } from "../gameState.js";
+import { divisionOf } from "../finances/tierOf.js";
 import { formOfTheDay } from "../live/formOfTheDay.js";
 import { drawMatchPlay } from "../live/matchPlay.js";
 import { clubMood } from "../morale/clubMood.js";
@@ -10,8 +11,10 @@ import { competitionKey, type CompetitionKey, type SeasonMark } from "./history.
 import type { MatchSheets } from "./recordMatches.js";
 
 /**
- * Adds today's full-tier matches to the season's tallies: one rated game per player who took part,
- * his match rating (matchRatings) in tenths, and his assists, per competition. The awards read them.
+ * Adds today's matches with a top-flight side (Série A or a full-tier league's top level) to the
+ * season's tallies: one rated game per player who took part, his match rating (matchRatings) in tenths,
+ * and his assists, per competition. The awards read Série A's tallies and the Ballon d'Or a top-flight
+ * player's whole season, so the lower divisions' matches go unrated.
  * `kickOff` is the game the day kicked off from: a match saved before players had a play gets it
  * drawn again from there, as kick-off drew it, so it rates as it would have.
  */
@@ -25,7 +28,12 @@ export function recordRatings(state: GameState, kickOff: GameState, played: read
     if (!tally) own.set(key, (tally = ratings[key] = copyRecord(ratings[key] ?? {})));
     return tally;
   };
+  const isTopFlight = (clubId: string) => {
+    const club = state.clubs[clubId];
+    return club !== undefined && divisionOf(club) === "A";
+  };
   for (const fixture of played) {
+    if (!isTopFlight(fixture.homeId) && !isTopFlight(fixture.awayId)) continue;
     const sheet = sheets[fixture.id];
     const match = timelines.get(fixture.id);
     if (!sheet || !match) continue;

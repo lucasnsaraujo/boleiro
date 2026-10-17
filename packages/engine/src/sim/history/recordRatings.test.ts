@@ -41,4 +41,13 @@ describe("the season's ratings", () => {
     for (const id of new Set(assists)) expect(tally[id]?.[2]).toBe(assists.filter((a) => a === id).length);
   });
 
+  // The awards read Série A's tallies and the Ballon d'Or a top-flight player's whole season.
+  it("rate only matches with a top-flight side", () => {
+    const lowerDay = start.calendar.leagueDates.B.find((date) => date > leagueDay) ?? "";
+    let state = after;
+    while (state.date < lowerDay) state = advanceDay(state, {}).state;
+    const next = advanceDay(state, {}).state;
+    expect(next.fixtures.some((f) => f.date === lowerDay && f.competitionId.startsWith("serie-b") && f.result)).toBe(true);
+    expect(Object.keys(next.history.current.ratings?.["serie-b"] ?? {})).toEqual([]);
+  });
 });
