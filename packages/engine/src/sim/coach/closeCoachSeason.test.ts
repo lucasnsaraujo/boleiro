@@ -4,7 +4,7 @@ import type { GameState } from "../gameState.js";
 import type { SeasonRecord } from "../history/history.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { coachesByClub, type CoachWorld } from "./aiCoaches.js";
-import { closeCoachSeason, humanKey } from "./closeCoachSeason.js";
+import { closeCoachSeason, humanKey, retiredPlayers } from "./closeCoachSeason.js";
 import { fullTierPoints, nationalPoints, type CupRun, type SeasonRuns } from "./rankingPoints.js";
 import { coachRanking, nationalRanking, worldRanking } from "./rankings.js";
 
@@ -87,8 +87,8 @@ describe("the coaches' turn of the season", () => {
   const game = loadNewGame(3, { coachClubId: "bahia-ba" });
 
   it("queues a retired star to start coaching two to four seasons on, and leaves the others retired", () => {
-    const star = { name: "Craque Antigo", clubId: "palmeiras-sp", peak: 82, age: 37 };
-    const regular = { name: "Zagueiro Comum", clubId: "palmeiras-sp", peak: 70, age: 36 };
+    const star = { name: "Craque Antigo", nationality: "Uruguay", clubId: "palmeiras-sp", peak: 82, age: 37 };
+    const regular = { name: "Zagueiro Comum", nationality: "Brazil", clubId: "palmeiras-sp", peak: 70, age: 36 };
     const closed = closeCoachSeason(game, 2026, NO_RUNS, [star, regular]);
     const [queued, ...others] = coachesOf(closed).rookies;
     expect(others).toEqual([]);
@@ -97,9 +97,16 @@ describe("the coaches' turn of the season", () => {
     expect(queued?.season).toBeLessThanOrEqual(2030);
     const due = closeCoachSeason({ ...closed, season: queued?.season ?? 0 }, (queued?.season ?? 0) - 1, NO_RUNS, []);
     const coach = Object.values(coachesOf(due).coaches).find((c) => c.name === "Craque Antigo");
-    expect(coach).toMatchObject({ clubId: null, born: 1989, formerPlayer: { clubId: "palmeiras-sp", strength: 82 } });
+    expect(coach).toMatchObject({ clubId: null, born: 1989, nationality: "Uruguay", formerPlayer: { clubId: "palmeiras-sp", strength: 82 } });
     expect(coach?.reputation).toBeGreaterThan(Object.values(coachesOf(game).coaches).filter((c) => c.clubId === null).reduce((low, c) => Math.min(low, c.reputation), 100));
     expect(coachesOf(due).rookies).toEqual([]);
+  });
+
+  it("reads a retired player's first nationality", () => {
+    const player = Object.values(game.players).find((p) => p.nationalities[0] && p.nationalities[0] !== "Brazil");
+    if (!player) throw new Error("the game has no foreign player");
+    const [retired] = retiredPlayers(game, [{ type: "playerRetired", playerId: player.id, clubId: player.clubId, name: player.name, age: 37 }]);
+    expect(retired?.nationality).toBe(player.nationalities[0]);
   });
 
   it("retires a coach of 72 and opens his club's job", () => {

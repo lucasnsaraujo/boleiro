@@ -6,16 +6,17 @@ import type { Country } from "../world/world.js";
 import { fullTierClubs, fullTierStatures, inventCoach, type AiCoach, type AiCoachStint, type Coaching, type CoachWorld, type Rookie, type SeasonPoints } from "./aiCoaches.js";
 import { countryPoints, fullTierPoints, nationalPoints, type ClubSeasonPoints, type SeasonRuns, type UefaWinner } from "./rankingPoints.js";
 
-/** A retired player of the full tier: his name, the club he retired at, his best strength and his age. */
-export type RetiredPlayer = { name: string; clubId: string; peak: number; age: number };
+/** A retired player of the full tier: his name, his first nationality, the club he retired at, his best strength and his age. */
+export type RetiredPlayer = { name: string; nationality: string; clubId: string; peak: number; age: number };
 
 /** The players who retired at this season's turn (`events`), with their best strength from `before`, the game as they last played. */
 export function retiredPlayers(before: Pick<GameState, "players" | "history">, events: readonly DayEvent[]): RetiredPlayer[] {
   return events.flatMap((event) => {
     if (event.type !== "playerRetired") return [];
     const marks = before.history.strength[event.playerId] ?? [];
-    const peak = Math.max(before.players[event.playerId]?.strength ?? 0, ...marks.map((mark) => mark.strength));
-    return [{ name: event.name, clubId: event.clubId, peak, age: event.age }];
+    const player = before.players[event.playerId];
+    const peak = Math.max(player?.strength ?? 0, ...marks.map((mark) => mark.strength));
+    return [{ name: event.name, nationality: player?.nationalities[0] ?? "Brazil", clubId: event.clubId, peak, age: event.age }];
   });
 }
 
@@ -125,7 +126,7 @@ export function closeCoachSeason(state: GameState, season: number, runs: SeasonR
     .map((player) => ({
       name: player.name,
       born: season - player.age,
-      nationality: "Brazil",
+      nationality: player.nationality,
       clubId: player.clubId,
       strength: player.peak,
       reputation: Math.min(100, ROOKIE_REPUTATION + ROOKIE_REPUTATION_PER_PEAK_POINT * (player.peak - STAR_PEAK) + ROOKIE_REPUTATION_PER_STATURE * (statures.get(player.clubId) ?? 0)),
