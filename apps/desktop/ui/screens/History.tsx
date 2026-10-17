@@ -19,6 +19,7 @@ import { championRoll, clubPast, coachCareer, rollKeys, scorerRoll, type CareerS
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import { useMatchFile } from "../matchPage/MatchFile.js";
 import { EggAlbumPanel } from "../eggs/EggAlbumPanel.js";
+import { EggStickerCard } from "../eggs/EggStickerCard.js";
 import "../album/album.css";
 import "./history.css";
 
@@ -129,7 +130,7 @@ export function History() {
       </header>
       {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
       <div className="history-body" role="tabpanel" aria-label={shown?.title}>
-        {shown?.id === "clube" && clubId && <ClubAlbum state={state} album={album} clubId={clubId} coachName={coachName} onOpenTitle={setOpenTitle} onOpenMatch={matchFile.open} />}
+        {shown?.id === "clube" && clubId && <ClubAlbum state={state} album={album} clubId={clubId} coachName={coachName} onPickClub={openClub} onOpenTitle={setOpenTitle} onOpenMatch={matchFile.open} />}
         {shown?.id === "titulos" && <TrophyRoom titles={album.titles} clubs={state.clubs} onOpen={setOpenTitle} />}
         {shown?.id === "recordes" && <CareerRecords records={album.records} clubs={state.clubs} coachName={coachName} />}
         {shown?.id === "campeoes" && <ChampionsPanel state={state} keys={keys} onOpenClub={openClub} />}
@@ -160,22 +161,58 @@ function recordFixtureId(state: HistoryState, clubId: string, mark: MatchMark | 
   return state.fixtures.find((f) => f.result && f.date === mark.date && f.homeId === homeId && f.awayId === awayId)?.id ?? null;
 }
 
-type ClubAlbumProps = { state: HistoryState; album: Album; clubId: string; coachName: string; onOpenTitle: (title: Title) => void; onOpenMatch: (ref: string) => void };
+type ClubAlbumProps = {
+  state: HistoryState;
+  album: Album;
+  clubId: string;
+  coachName: string;
+  onPickClub: (clubId: string) => void;
+  onOpenTitle: (title: Title) => void;
+  onOpenMatch: (ref: string) => void;
+};
 
 /** The club in the album: the coach's seasons there, one spread each, or for a club he never ran its titles, campaigns, idols and records. */
-function ClubAlbum({ state, album, clubId, coachName, onOpenTitle, onOpenMatch }: ClubAlbumProps) {
+function ClubAlbum({ state, album, clubId, coachName, onPickClub, onOpenTitle, onOpenMatch }: ClubAlbumProps) {
   const club = state.clubs[clubId];
   const past = clubPast(state, clubId);
   const seasons = album.seasons.filter((season) => season.clubId === clubId);
+  const ranClubs = [...new Set(album.seasons.map((season) => season.clubId))];
   if (!club) return null;
   const right = (season: AlbumSeason | null) => (
-    <ClubPage state={state} clubId={clubId} past={past} titles={album.titles.filter((t) => season?.titleIds.includes(t.id))} season={season?.season ?? null} onOpenTitle={onOpenTitle} onOpenMatch={onOpenMatch} />
+    <ClubPage
+      state={state}
+      clubId={clubId}
+      past={past}
+      titles={album.titles.filter((t) => season?.titleIds.includes(t.id))}
+      eggs={season ? album.eggs.found.filter((egg) => egg.date.startsWith(String(season.season))) : []}
+      season={season?.season ?? null}
+      onOpenTitle={onOpenTitle}
+      onOpenMatch={onOpenMatch}
+    />
+  );
+  const switcher = ranClubs.length > 1 && (
+    <nav className="ab-clubs" aria-label="Seus clubes">
+      {ranClubs.map((id) => {
+        const ran = state.clubs[id];
+        return (
+          ran && (
+            <button key={id} aria-current={id === clubId ? "page" : undefined} onClick={() => onPickClub(id)}>
+              <Crest club={ran} size={22} />
+              {ran.shortName}
+            </button>
+          )
+        );
+      })}
+    </nav>
   );
   if (seasons.length) {
     return (
-      <SeasonBook key={`${album.shown}-${clubId}`} clubId={clubId} seasons={seasons} clubs={state.clubs} coachName={coachName}>
-        {right}
-      </SeasonBook>
+      <>
+        {switcher}
+        <SeasonBook key={`${album.shown}-${clubId}`} clubId={clubId} seasons={seasons} clubs={state.clubs} coachName={coachName}>
+          {right}
+        </SeasonBook>
+      </>
     );
   }
   const titleCount = past.titles.reduce((sum, t) => sum + t.seasons.length, 0);
@@ -244,10 +281,19 @@ function ClubTitles({ state, past }: { state: HistoryState; past: ClubPast }) {
   );
 }
 
-type ClubPageProps = { state: HistoryState; clubId: string; past: ClubPast; titles: readonly Title[]; season: number | null; onOpenTitle: (title: Title) => void; onOpenMatch: (ref: string) => void };
+type ClubPageProps = {
+  state: HistoryState;
+  clubId: string;
+  past: ClubPast;
+  titles: readonly Title[];
+  eggs: Album["eggs"]["found"];
+  season: number | null;
+  onOpenTitle: (title: Title) => void;
+  onOpenMatch: (ref: string) => void;
+};
 
-/** The right page: the season's titles, then the club's idols, records and titles. */
-function ClubPage({ state, clubId, past, titles, season, onOpenTitle, onOpenMatch }: ClubPageProps) {
+/** The right page: the season's titles and rare stickers, then the club's idols, records and titles. */
+function ClubPage({ state, clubId, past, titles, eggs, season, onOpenTitle, onOpenMatch }: ClubPageProps) {
   const club = state.clubs[clubId];
   const records = past.records;
   return (
@@ -261,6 +307,20 @@ function ClubPage({ state, clubId, past, titles, season, onOpenTitle, onOpenMatc
             {titles.map((title, i) => (
               <li key={title.id}>
                 <TitlePlate title={title} clubs={state.clubs} order={i} onOpen={onOpenTitle} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {season !== null && eggs.length > 0 && (
+        <section aria-labelledby="ab-season-eggs">
+          <h3 id="ab-season-eggs" className="ab-sec">
+            Raras de {season} <span>achadas nesta temporada</span>
+          </h3>
+          <ul className="ab-eggs">
+            {eggs.map((egg) => (
+              <li key={egg.eggId} title={egg.headline}>
+                <EggStickerCard sticker={egg} />
               </li>
             ))}
           </ul>

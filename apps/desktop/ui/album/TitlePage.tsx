@@ -15,10 +15,10 @@ const GOAL_KINDS: Partial<Record<NonNullable<Goal["kind"]>, string>> = { penalty
 
 /** The lines of a title's story, from what the career had recorded when he won it. */
 export function storyLines(title: Title): string[] {
-  const { story, season, name } = title;
+  const { story, season } = title;
   const lines = [story.careerTitle === 1 ? "Seu primeiro título na carreira." : `Seu ${ordinal(story.careerTitle)} título na carreira.`];
   lines.push(story.seasonAtClub === 1 ? "Na sua primeira temporada no clube." : `Na sua ${story.seasonAtClub}ª temporada no clube.`);
-  if (story.clubLastWon !== null) lines.push(season - story.clubLastWon === 1 ? `Bicampeão: o clube também ganhou em ${story.clubLastWon}.` : `O clube não ganhava ${name === "Copa do Brasil" ? "a" : "o"} ${name} desde ${story.clubLastWon}.`);
+  if (story.clubLastWon !== null) lines.push(season - story.clubLastWon === 1 ? `Bicampeão: o clube também ganhou em ${story.clubLastWon}.` : `O último título do clube nesta competição tinha sido em ${story.clubLastWon}.`);
   else if (season > story.historyFrom) lines.push(`Primeira vez do clube desde ${story.historyFrom}, quando o jogo começou.`);
   if (story.lostFinals.length) lines.push(`Depois de perder a final de ${story.lostFinals.join(" e de ")}.`);
   if (story.derby) lines.push(`Decidido no clássico: ${story.derby}.`);
