@@ -234,7 +234,7 @@ export function Shell() {
   return (
     <GameClockContext value={{ refresh }}>
       <div className="app" data-chrome={chrome} data-mica={isMicaOn || undefined}>
-        {win98.isShown && <Win98TitleBar title={`Boleiro 98 · ${clock?.clubName ?? "Sem clube"} ${clock?.season ?? ""}`} onLeave={win98.leave} />}
+        {win98.isShown && <Win98TitleBar title={`Boleiro 98 · ${clock?.clubName ?? "Sem clube"} ${clock?.season ?? ""}`} date={clock?.date ?? null} onLeave={win98.leave} />}
         {hasBar && (
           <nav className="bar" aria-label="Telas" data-tauri-drag-region>
             {NAV.map((item, index) => (

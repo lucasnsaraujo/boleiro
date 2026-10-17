@@ -15,8 +15,11 @@ function BallIcon() {
 /** "14/01/2026", as the tray clock of the time showed a date. */
 const trayDate = (date: IsoDate) => `${date.slice(8, 10)}/${date.slice(5, 7)}/${date.slice(0, 4)}`;
 
-/** The window's title bar while the game plays as a 1998 program; its × goes back to 2026. */
-export function Win98TitleBar({ title, onLeave }: { title: string; onLeave: () => void }) {
+/** The way out of 1998: back to the game's own year, or back to normal when there is no game day. */
+const backLabel = (date: IsoDate | null) => (date ? `Voltar para ${date.slice(0, 4)}` : "Voltar ao normal");
+
+/** The window's title bar while the game plays as a 1998 program; its × goes back to the game's year. */
+export function Win98TitleBar({ title, date, onLeave }: { title: string; date: IsoDate | null; onLeave: () => void }) {
   return (
     <div className="w98-title" data-tauri-drag-region>
       <BallIcon />
@@ -32,7 +35,7 @@ export function Win98TitleBar({ title, onLeave }: { title: string; onLeave: () =
             <path d="M0 0h9v8H0zM1 2v5h7V2z" fill="currentColor" fillRule="evenodd" />
           </svg>
         </span>
-        <button className="w98-cap close" aria-label="Voltar para 2026" onClick={onLeave}>
+        <button className="w98-cap close" aria-label={backLabel(date)} onClick={onLeave}>
           <svg width="8" height="7" viewBox="0 0 8 7" aria-hidden="true">
             <path d="M0 0h2l2 2 2-2h2L5 3.5 8 7H6L4 5 2 7H0l3-3.5z" fill="currentColor" />
           </svg>
@@ -44,7 +47,7 @@ export function Win98TitleBar({ title, onLeave }: { title: string; onLeave: () =
 
 /**
  * The taskbar along the bottom while the game plays as a 1998 program: Iniciar opens a menu that goes
- * back to 2026, the game's own task sits pressed beside it, and the tray clock shows the game's day.
+ * back to the game's year, the game's own task sits pressed beside it, and the tray clock shows the game's day.
  */
 export function Win98TaskBar({ task, date, onLeave }: { task: string; date: IsoDate | null; onLeave: () => void }) {
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -92,7 +95,7 @@ export function Win98TaskBar({ task, date, onLeave }: { task: string; date: IsoD
               }}
             >
               <BallIcon />
-              Voltar para 2026
+              {backLabel(date)}
             </button>
           </div>
         )}
