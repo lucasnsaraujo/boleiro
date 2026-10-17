@@ -4,8 +4,8 @@ import type { GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { playWorldDay } from "../world/resultOnlyWorld.js";
 import { loadSouthAmerica } from "../world/loadSouthAmerica.js";
-import { coachesByClub, type CoachWorld } from "./aiCoaches.js";
-import { moveAiCoaches } from "./moveAiCoaches.js";
+import { coachesByClub, countriesCoaching, type CoachWorld } from "./aiCoaches.js";
+import { moveAiCoaches, moveWorldCoaches } from "./moveAiCoaches.js";
 
 const coachesOf = (state: GameState): CoachWorld => {
   if (!state.coaches) throw new Error("the game has no AI coaches");
@@ -68,15 +68,14 @@ describe("the AI coaches' moves", () => {
   });
 
   it("changes the coach of about 57% of the result-only world's clubs in a season, as CIES counted", () => {
-    let state = loadNewGame(5, { coachClubId: "flamengo-rj", world: loadSouthAmerica(2026) });
-    const world = state.world ?? {};
+    let world = loadNewGame(5, { coachClubId: "flamengo-rj", world: loadSouthAmerica(2026) }).world ?? {};
+    const worldCoachAt = (clubId: string) => countriesCoaching({ world }).flatMap(([, country]) => [...coachesByClub(country.coaching)]).find(([id]) => id === clubId)?.[1];
     const clubs = Object.values(world).flatMap((country) => Object.keys(country.clubs));
-    const first = new Map(clubs.map((id) => [id, coachAt(state, id)?.id]));
+    const first = new Map(clubs.map((id) => [id, worldCoachAt(id)?.id]));
     const changed = new Set<string>();
-    while (state.date < "2026-12-31") {
-      const played = { ...state, world: playWorldDay(state.world ?? {}, state.date) };
-      state = moveAiCoaches({ ...played, date: addDays(state.date, 1) }, played, [], state.date).state;
-      for (const id of clubs) if (coachAt(state, id)?.id !== first.get(id)) changed.add(id);
+    for (let date = "2026-01-01"; date < "2026-12-31"; date = addDays(date, 1)) {
+      world = moveWorldCoaches(playWorldDay(world, date), date);
+      for (const id of clubs) if (worldCoachAt(id)?.id !== first.get(id)) changed.add(id);
     }
     // CIES: 484 of 850 teams changed coach during 2022/23, 56.9%.
     expect(changed.size / clubs.length).toBeGreaterThan(0.45);

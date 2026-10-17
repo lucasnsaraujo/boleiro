@@ -1,3 +1,4 @@
+import type { CountryCoaching } from "../coach/aiCoaches.js";
 import type { IsoDate, LeagueFormatId } from "../gameState.js";
 import type { CupFinal, LeaguePlace } from "./continentalPlaces.js";
 import type { ResultOnlyCup } from "./resultOnlyCup.js";
@@ -78,6 +79,8 @@ export type Country = {
   rngState: number;
   /** True when a human coach took one of its clubs: its leagues play in the full tier, and only its cup here. */
   isFullTier?: true;
+  /** Its clubs' AI coaches, its pool and its ranking points; a save from before AI coaches gets them when it loads (withCoachWorld). */
+  coaching?: CountryCoaching;
 };
 
 /** The unified calendar's days a result-only country plays on: the leagues' grid, round k on its k-th day, and the cups' shared midweeks. */

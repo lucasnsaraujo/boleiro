@@ -4,21 +4,34 @@ import type { GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { loadSouthAmerica } from "../world/loadSouthAmerica.js";
-import { clubsOfWorld, coachesByClub, withCoachWorld, type CoachWorld } from "./aiCoaches.js";
+import { coachesByClub, countriesCoaching, fullTierClubs, withCoachWorld, type AiCoach, type CoachWorld } from "./aiCoaches.js";
 
 const coachesOf = (state: GameState): CoachWorld => {
   if (!state.coaches) throw new Error("the game has no AI coaches");
   return state.coaches;
 };
 
+/** Each club's AI coach, in the full tier and in every result-only country. */
+const coachesOfGame = (state: GameState): Map<string, AiCoach> =>
+  new Map([...coachesByClub(coachesOf(state)), ...countriesCoaching(state).flatMap(([, country]) => [...coachesByClub(country.coaching)])]);
+
 describe("the AI coaches on day one", () => {
   const game = loadNewGame(5, { coachClubId: "flamengo-rj", world: loadSouthAmerica(2026) });
-  const byClub = coachesByClub(coachesOf(game));
+  const byClub = coachesOfGame(game);
 
   it("gives every club of the game a named coach but the player's", () => {
-    const unnamed = [...clubsOfWorld(game).keys()].filter((id) => id !== "flamengo-rj" && !byClub.get(id)?.name);
+    const clubs = [...fullTierClubs(game).keys(), ...Object.values(game.world ?? {}).flatMap((country) => Object.keys(country.clubs))];
+    const unnamed = clubs.filter((id) => id !== "flamengo-rj" && !byClub.get(id)?.name);
+    expect(clubs.length).toBeGreaterThan(400);
     expect(unnamed).toEqual([]);
     expect(byClub.has("flamengo-rj")).toBe(false);
+  });
+
+  it("keeps a result-only country's coaches and pool in the country", () => {
+    const argentina = game.world?.ar?.coaching;
+    expect(Object.values(argentina?.coaches ?? {}).some((coach) => coach.clubId === "tm-209")).toBe(true);
+    expect(Object.values(coachesOf(game).coaches).some((coach) => coach.clubId === "tm-209")).toBe(false);
+    expect(Object.values(argentina?.coaches ?? {}).filter((coach) => coach.clubId === null).length).toBeGreaterThan(1);
   });
 
   it("puts each club's real coach from Transfermarkt in charge, in Brazil and in the result-only world", () => {
@@ -43,12 +56,13 @@ describe("the AI coaches on day one", () => {
   });
 
   it("gives a save from before AI coaches the same coaches from its seed whenever it loads", () => {
-    const old = JSON.parse(saveGame(game)) as Record<string, unknown>;
+    const old = loadGame(saveGame(game));
     delete old.coaches;
-    const first = withCoachWorld(loadGame(JSON.stringify(old)));
-    const again = withCoachWorld(loadGame(JSON.stringify(old)));
-    expect(first.coaches).toEqual(game.coaches);
-    expect(again.coaches).toEqual(first.coaches);
+    for (const country of Object.values(old.world ?? {})) delete country.coaching;
+    const first = withCoachWorld(loadGame(saveGame(old)));
+    const again = withCoachWorld(loadGame(saveGame(old)));
+    expect(first).toEqual(game);
+    expect(again).toEqual(first);
   });
 });
 
