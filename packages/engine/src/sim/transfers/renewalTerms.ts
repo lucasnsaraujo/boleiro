@@ -4,7 +4,7 @@ import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
 import { clubMood } from "../morale/clubMood.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
 import { coachMarketOf } from "./coachMarket.js";
-import { CONTRACT_MONTHS, contractEndAfter, contractTerms, preferredMonths, type ContractMonths, type ContractTerm, type TalkMood } from "./contractTerms.js";
+import { CONTRACT_MONTHS, contractEndOn, contractTerms, preferredMonths, type ContractMonths, type ContractTerm, type TalkMood } from "./contractTerms.js";
 import { goingRate } from "./wageDemand.js";
 
 // guess: asking to leave counts against a renewal for a year.
@@ -26,9 +26,9 @@ export function contractMonthsOf(years: number): ContractMonths {
   return CONTRACT_MONTHS.reduce((best, length) => (Math.abs(length - months) < Math.abs(best - months) ? length : best));
 }
 
-/** The last day of his contract after a renewal of `months`: counted from the end of the one he has. */
+/** The last day of his contract after a renewal of `months` signed on `date`: counted from the end of the one he has, within five years of `date`. */
 export function renewedUntil(player: Pick<SimPlayer, "contractUntil">, date: IsoDate, months: number): IsoDate {
-  return contractEndAfter(player.contractUntil > date ? player.contractUntil : date, months);
+  return contractEndOn(date, months, player.contractUntil > date ? player.contractUntil : date);
 }
 
 /** What weighs on his talks today: his squad's morale, a request to leave in the last year, and a club's offer for him waiting. */

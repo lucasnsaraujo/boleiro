@@ -11,7 +11,7 @@ import type { BoardDesk } from "@boleiro/game-client/market/boardDesk";
 import { clauseRequest, requestOptions } from "@boleiro/game-client/market/coachRequests";
 import { signingTerms } from "@boleiro/game-client/market/contracts";
 import { formatContractLength } from "@boleiro/game-client/format/formatContractLength";
-import { assistantPick, contractEndAfter, type ContractTerm } from "@boleiro/engine/sim/transfers/contractTerms";
+import { assistantPick, contractEndOn, type ContractTerm } from "@boleiro/engine/sim/transfers/contractTerms";
 import { STANCE_LABELS } from "../contracts/renewalText.js";
 import type { Scouting } from "@boleiro/game-client/market/scouting";
 import { RangeSlider } from "../controls/RangeSlider.js";
@@ -474,7 +474,7 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
             )}
             {hasLength && term && (
               <p className={`market-len-note ${term.stance}`}>
-                {STANCE_LABELS[term.stance]} · pede {formatMoney(term.wage)} · até {formatMonthYear(contractEndAfter(state.date, months))}
+                {STANCE_LABELS[term.stance]} · pede {formatMoney(term.wage)} · até {formatMonthYear(contractEndOn(state.date, months))}
               </p>
             )}
           </div>

@@ -8,7 +8,7 @@ import type { CoachRequest } from "./coachRequest.js";
 import { isClubFull } from "./squadCap.js";
 import type { Counter } from "./transferMarket.js";
 import { contractEnd } from "./expireContracts.js";
-import { contractEndAfter, contractTerms, lengthPremium, NEUTRAL_TALKS, preferredMonths, type ContractMonths, type Stance } from "./contractTerms.js";
+import { contractEndOn, contractTerms, lengthPremium, NEUTRAL_TALKS, preferredMonths, type ContractMonths, type Stance } from "./contractTerms.js";
 import { contractMonthsOf, renewalTermsOf, renewedUntil } from "./renewalTerms.js";
 import { releaseClauseOf } from "./releaseClause.js";
 import { LENDER_WAGE_SHARE, LOAN_MAX_AGE, loanLimitOf, loanUntil } from "./loans.js";
@@ -134,7 +134,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       const refused = boardRefusal(finance, bill, { upFront: fee + 3 * wage, wageChange: wage });
       if (refused) return refuse(state, request, refused);
       if (!isWilling(view, state, player, coachClubId, wage / length.premium, random)) return refuse(state, request, "playerUnwilling");
-      const contract = { wage, until: length.months === null ? contractEnd(year + 1, random) : contractEndAfter(state.date, length.months) };
+      const contract = { wage, until: length.months === null ? contractEnd(year + 1, random) : contractEndOn(state.date, length.months) };
       if (preContract) {
         const signed = { ...state, market: { ...state.market, preContracts: { ...state.market.preContracts, [player.id]: coachClubId } } };
         return approve(signed, request, null, [{ type: "preContractSigned", playerId: player.id, fromClubId: player.clubId, toClubId: coachClubId }]);
@@ -156,7 +156,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       const refused = boardRefusal(finance, bill, { upFront: fee + 3 * wage, wageChange: wage });
       if (refused) return refuse(state, request, refused);
       if (!isWilling(view, state, player, coachClubId, wage / length.premium, random)) return refuse(state, request, "playerUnwilling");
-      const until = length.months === null ? contractEnd(year + 1, random) : contractEndAfter(state.date, length.months);
+      const until = length.months === null ? contractEnd(year + 1, random) : contractEndOn(state.date, length.months);
       return approve(state, request, { playerId: player.id, kind: "releaseClause", toClubId: coachClubId, fee, contract: { wage, until } });
     }
     case "sell": {

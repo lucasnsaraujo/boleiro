@@ -117,6 +117,12 @@ describe("a renewal the coach asks for", () => {
     expect(decideCoachRequest(capped, { kind: "renew", playerId: ours.id, years: 2 }, yes).events[0]).toMatchObject({ approved: false, reason: "wageCap" });
   });
 
+  it("never runs past the half-season end five years after the day it is signed (Lei 14.597/2023 art. 86)", () => {
+    const october = { ...withPlayer(rich, { age: 31, contractUntil: "2027-12-31" }), date: "2026-10-18" };
+    const { state } = decideCoachRequest(october, { kind: "renew", playerId: ours.id, years: 5 }, yes);
+    expect(state.players[ours.id]?.contractUntil).toBe("2031-06-30");
+  });
+
   it("sets his release clause from the new contract: a raise lifts the legal cap on it", () => {
     const lowPaid = withPlayer(rich, { wage: 1_000 });
     const before = releaseClauseOf({ ...ours, wage: 1_000 }, "A", lowPaid.market.eurBrl);
@@ -153,6 +159,11 @@ describe("a signing with a contract length", () => {
   it("runs his contract to the half-season end nearest the length chosen", () => {
     const { state } = decideCoachRequest(freeAgent({ age: 27 }), { kind: "sign", playerId: best.id, wage: best.wage * 3, years: 2 }, yes);
     expect(state.players[best.id]).toMatchObject({ clubId: COACH, contractUntil: contractEndAfter(start.date, 24), wage: best.wage * 3 });
+  });
+
+  it("runs at most to the half-season end five years after the day he signs", () => {
+    const { state } = decideCoachRequest({ ...freeAgent({ age: 32 }), date: "2026-10-18" }, { kind: "sign", playerId: best.id, wage: best.wage * 3, years: 5 }, yes);
+    expect(state.players[best.id]?.contractUntil).toBe("2031-06-30");
   });
 
   it("is refused for a length he won't talk about", () => {

@@ -47,8 +47,8 @@ describe("renewalSheet", () => {
       [12, "2028-12-31", "hard"],
       [24, "2029-12-31", "agrees"],
       [36, "2030-12-31", "wants"],
-      [48, "2031-12-31", "agrees"],
-      [60, "2032-12-31", "hard"],
+      [48, "2031-06-30", "agrees"],
+      [60, "2031-06-30", "hard"],
     ]);
     const two = sheet?.options.find((o) => o.months === 24);
     expect(two).toMatchObject({ isAssistantPick: true, ageAtEnd: 32, total: (two?.wage ?? 0) * 24 });

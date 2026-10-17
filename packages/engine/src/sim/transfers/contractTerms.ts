@@ -63,6 +63,21 @@ export function contractEndAfter(from: IsoDate, months: number): IsoDate {
   return endsIn % 12 === 5 ? `${endYear}-06-30` : `${endYear}-12-31`;
 }
 
+/** The last day a contract signed on `date` may run to: the 30 June or 31 December at or before five years on (art. 86). */
+export function latestContractEnd(date: IsoDate): IsoDate {
+  const year = Number(date.slice(0, 4)) + 5;
+  const day = date.slice(5);
+  if (day >= "12-31") return `${year}-12-31`;
+  return day >= "06-30" ? `${year}-06-30` : `${year - 1}-12-31`;
+}
+
+/** The last day of a deal of `months` signed on `signedOn` and counted from `from` (a renewal's old end), within the law's five years. */
+export function contractEndOn(signedOn: IsoDate, months: number, from: IsoDate = signedOn): IsoDate {
+  const end = contractEndAfter(from, months);
+  const latest = latestContractEnd(signedOn);
+  return end < latest ? end : latest;
+}
+
 type Talker = Pick<SimPlayer, "id" | "age" | "strength">;
 
 /** The contract length in months a player wants, from his age and his place in his squad. */
