@@ -5,6 +5,7 @@ import type { GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { clubMood } from "../morale/clubMood.js";
+import { EVENT_BANK } from "./eventBank.js";
 import { eventMemoryOf, eventsOf, pendingEventOf } from "./eventMemory.js";
 import type { EventType, PressQuestionType } from "./eventType.js";
 import { fillSlots } from "./fillSlots.js";
@@ -149,6 +150,23 @@ describe("event texts", () => {
     const stories = eventMemoryOf(ran).news.filter((item) => item.headline.startsWith("Gripe"));
     expect(stories.length).toBeGreaterThan(0);
     for (const story of stories) expect(story.topic).toBe("health");
+  });
+
+  it("keeps a whole conference below a win: any answers to any press type move morale less than 5 and the fans less than 7", () => {
+    const player = Object.values(start.players).find((p) => p.clubId === CLUB);
+    const cast = { playerId: player?.id ?? "", rivalId: "vasco-rj" };
+    const press = EVENT_BANK.filter((type) => type.look === "press");
+    expect(press.length).toBeGreaterThan(0);
+    for (const type of press) {
+      const always: EventType = { ...type, weight: 1, cast: () => cast, followUps: type.followUps?.map((q) => ({ ...q, cast: (_scene, given) => given })) };
+      const pending = pendingEventOf(untilPending(start, [always]), CLUB);
+      expect(pending?.questions, type.id).toHaveLength(3);
+      for (const [axis, win] of [["morale", 5], ["fans", 7]] as const) {
+        const most = (pick: (values: number[]) => number) => (pending?.questions ?? []).reduce((sum, q) => sum + pick(q.choices.map((c) => c.effects[axis] ?? 0)), 0);
+        expect(most((values) => Math.max(...values)), `${type.id}: ${axis} up`).toBeLessThan(win);
+        expect(-most((values) => Math.min(...values)), `${type.id}: ${axis} down`).toBeLessThan(win);
+      }
+    }
   });
 
   it("names the AI club's own coach", () => {

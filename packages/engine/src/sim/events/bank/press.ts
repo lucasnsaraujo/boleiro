@@ -19,6 +19,9 @@ import {
   wageBill,
 } from "./sceneReaders.js";
 
+// A press conference's opening answer moves the squad by 2 and the fans by 4 at most, so with its two
+// follow-ups (pressQuestions.ts) a whole conference weighs less than a win.
+
 /** Press conferences, interviews, columnists and cameras. */
 export const PRESS_EVENTS: readonly EventType[] = [
   {
@@ -37,7 +40,7 @@ export const PRESS_EVENTS: readonly EventType[] = [
     ],
     choices: [
       { label: "“Respeito o {rival}. Mas a gente se fala no campo.”", effects: { morale: 2, fans: 1, rivalry: 1 } },
-      { label: "“Quem fala muito é quem tem pouco a mostrar.”", detail: "Vira manchete amanhã", effects: { morale: 3, board: -2, fans: 5, rivalry: 4 }, news: "{coach} alfineta o {rival}: “Quem fala muito tem pouco a mostrar”" },
+      { label: "“Quem fala muito é quem tem pouco a mostrar.”", detail: "Vira manchete amanhã", effects: { morale: 2, board: -2, fans: 4, rivalry: 4 }, news: "{coach} alfineta o {rival}: “Quem fala muito tem pouco a mostrar”" },
       { label: "“Não falo do {rival}. Falo do {club}.”", effects: { board: 2, fans: -1 } },
     ],
     assistantChoice: 2,
@@ -58,8 +61,8 @@ export const PRESS_EVENTS: readonly EventType[] = [
       { headline: "Coletiva: a fase ruim do {club}", body: "“Duas derrotas nos últimos três jogos. Onde o time está errando?”" },
     ],
     choices: [
-      { label: "“A responsabilidade é minha. O grupo está comigo.”", effects: { morale: 3, board: -1, fans: 1 } },
-      { label: "“Faltou atitude de alguns jogadores.”", detail: "O vestiário não vai gostar", effects: { morale: -4, fans: 3, board: 2 }, news: "{coach} cobra o elenco do {club} em público" },
+      { label: "“A responsabilidade é minha. O grupo está comigo.”", effects: { morale: 2, board: -1, fans: 1 } },
+      { label: "“Faltou atitude de alguns jogadores.”", detail: "O vestiário não vai gostar", effects: { morale: -2, fans: 3, board: 2 }, news: "{coach} cobra o elenco do {club} em público" },
       { label: "“Não penso nisso. Penso no próximo jogo.”", effects: { board: 1 } },
     ],
     assistantChoice: 2,
@@ -132,7 +135,7 @@ export const PRESS_EVENTS: readonly EventType[] = [
     ],
     choices: [
       { label: "“Sonhar é de graça. Trabalhar é o que decide.”", effects: { morale: 2, fans: 1 } },
-      { label: "“Quem tem que se preocupar são os outros. A gente depende só da gente.”", detail: "Vira manchete", effects: { morale: 3, fans: 4, board: -2 }, news: "{coach}: “O {club} depende só de si”" },
+      { label: "“Quem tem que se preocupar são os outros. A gente depende só da gente.”", detail: "Vira manchete", effects: { morale: 2, fans: 4, board: -2 }, news: "{coach}: “O {club} depende só de si”" },
       { label: "“Ainda não ganhamos nada.”", effects: { board: 2, fans: -1 } },
     ],
     assistantChoice: 2,
@@ -154,7 +157,7 @@ export const PRESS_EVENTS: readonly EventType[] = [
     ],
     choices: [
       { label: "“O grupo tem qualidade para sair dessa.”", effects: { morale: 2, fans: 1 } },
-      { label: "“Quem não tiver coragem que peça para sair.”", detail: "Cobrança pública ao elenco", effects: { morale: -3, fans: 3, board: 1 }, news: "{coach} cobra coragem do elenco do {club}" },
+      { label: "“Quem não tiver coragem que peça para sair.”", detail: "Cobrança pública ao elenco", effects: { morale: -2, fans: 3, board: 1 }, news: "{coach} cobra coragem do elenco do {club}" },
       { label: "“Não é hora de falar, é hora de trabalhar.”", effects: { board: 1 } },
     ],
     assistantChoice: 0,
@@ -175,7 +178,7 @@ export const PRESS_EVENTS: readonly EventType[] = [
       { headline: "Coletiva: o momento do {club}", body: "“O torcedor está empolgado. O senhor também?”" },
     ],
     choices: [
-      { label: "“O segredo é o grupo. Todo mundo comprou a ideia.”", effects: { morale: 3 } },
+      { label: "“O segredo é o grupo. Todo mundo comprou a ideia.”", effects: { morale: 2 } },
       { label: "“Ainda não fizemos nada.”", effects: { morale: -1, board: 2 } },
       { label: "“O torcedor merece esse momento.”", effects: { fans: 3, morale: 1 } },
     ],
