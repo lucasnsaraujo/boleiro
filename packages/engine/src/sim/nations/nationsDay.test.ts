@@ -27,11 +27,25 @@ describe("national football over 2026", () => {
   let march: GameState;
   let afterMarch: GameState;
   let afterWorldCup: GameState;
+  let september: GameState;
   beforeAll(() => {
     march = playTo(start, "2026-03-23", events);
     afterMarch = playTo(march, "2026-04-01", events);
     afterWorldCup = playTo(afterMarch, "2026-07-21", events);
-  }, 120_000);
+    september = playTo(afterWorldCup, "2026-09-22", events);
+  }, 180_000);
+
+  it("gives a team a different friendly opponent on each day of a four-match window", () => {
+    const friendlies = (september.nations?.matches ?? []).filter((m) => m.round === "friendly" && m.date >= "2026-09-21" && m.date <= "2026-10-06");
+    expect(friendlies.length).toBeGreaterThan(20);
+    const opponents = new Map<string, string[]>();
+    for (const m of friendlies) {
+      opponents.set(m.homeId, [...(opponents.get(m.homeId) ?? []), m.awayId]);
+      opponents.set(m.awayId, [...(opponents.get(m.awayId) ?? []), m.homeId]);
+    }
+    const rematches = [...opponents].filter(([, met]) => new Set(met).size < met.length).map(([team]) => team);
+    expect(rematches).toEqual([]);
+  });
 
   it("opens the 2026 World Cup with its real twelve groups and the Nations League's League A", () => {
     const worldCup = start.nations?.competitions["world-cup-2026"];

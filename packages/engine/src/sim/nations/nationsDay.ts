@@ -199,19 +199,29 @@ function playMatch(nations: Nations, match: NationalMatch, players: Readonly<Rec
   return { result, fielded: [...home.fielded, ...away.fielded] };
 }
 
-/** The friendlies of a window: on each of its match days the teams without a match that day pair up, close in confederation and points. */
+/**
+ * The friendlies of a window: on each of its match days every team without a match that day meets the closest
+ * free team in confederation and points it hasn't met in the window yet.
+ */
 function windowFriendlies(nations: Nations, window: FifaWindow, random: () => number): NationalMatch[] {
   const season = Number(window.from.slice(0, 4));
   const order = Object.values(nations.teams).sort((a, b) => a.confederation.localeCompare(b.confederation) || b.points - a.points || a.id.localeCompare(b.id));
-  return window.matchDays.flatMap((date, day) => {
+  const met = new Set<string>();
+  const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
+  return window.matchDays.flatMap((date) => {
     const busy = new Set(nations.matches.filter((m) => Math.abs(daysBetween(m.date, date)) <= 1).flatMap((m) => [m.homeId, m.awayId]));
     const free = order.filter((t) => !busy.has(t.id)).map((t) => t.id);
-    const shifted = day % 2 === 1 && free.length > 2 ? [...free.slice(1), free[0] as string] : free;
+    const paired = new Set<string>();
     const pairs: NationalMatch[] = [];
-    for (let i = 0; i + 1 < shifted.length; i += 2) {
-      const [a, b] = random() < 0.5 ? [shifted[i], shifted[i + 1]] : [shifted[i + 1], shifted[i]];
-      if (a && b) pairs.push({ id: `friendly-${date}-${a}`, competitionId: `friendlies-${season}`, round: "friendly", date, homeId: a, awayId: b, result: null });
-    }
+    free.forEach((team, i) => {
+      if (paired.has(team)) return;
+      const rival = free.slice(i + 1).find((other) => !paired.has(other) && !met.has(pairKey(team, other)));
+      if (!rival) return;
+      paired.add(team).add(rival);
+      met.add(pairKey(team, rival));
+      const [homeId, awayId] = random() < 0.5 ? [team, rival] : [rival, team];
+      pairs.push({ id: `friendly-${date}-${homeId}`, competitionId: `friendlies-${season}`, round: "friendly", date, homeId, awayId, result: null });
+    });
     return pairs;
   });
 }
