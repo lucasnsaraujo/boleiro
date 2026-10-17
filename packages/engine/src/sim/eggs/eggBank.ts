@@ -221,7 +221,7 @@ export const EGG_BANK: readonly EggType[] = [
   {
     id: "eight-goal-draw",
     on: "match",
-    title: "Empate de oito gols",
+    title: "Chuva de gols no empate",
     rarity: "veryRare",
     look: "clipping",
     isAboutBothSides: true,
@@ -238,9 +238,13 @@ export const EGG_BANK: readonly EggType[] = [
     title: "Dois dígitos",
     rarity: "legendary",
     look: "page",
-    find: (tale) => sidesWhere(tale, (clubId) => scoreFor(tale, clubId)[0] >= 10),
+    find: (tale) =>
+      sidesWhere(tale, (clubId) => {
+        const [own] = scoreFor(tale, clubId);
+        return own >= 10 && { count: inWords(own) };
+      }),
     note: "O {club} fez dois dígitos no placar.",
-    texts: [{ headline: "{club} faz dez", body: "{score}. O placar eletrônico precisou de dois dígitos." }],
+    texts: [{ headline: "{club} faz {count}", body: "{score}. O placar eletrônico precisou de dois dígitos." }],
   },
   {
     id: "penalty-hat-trick",

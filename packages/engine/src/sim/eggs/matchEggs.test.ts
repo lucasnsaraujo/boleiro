@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import type { PositionGroup } from "../../engine/match.js";
 import type { MatchEvent } from "../live/matchTimeline.js";
+import { fillSlots } from "../events/fillSlots.js";
 import { EGG_BANK } from "./eggBank.js";
 import type { MatchEgg, MatchTale } from "./eggType.js";
 
@@ -137,6 +138,21 @@ test("a draw with eight goals or more is a story", () => {
   expect(sidesOf("eight-goal-draw", { score: [4, 4] })).toEqual([HOME]);
   expect(sidesOf("eight-goal-draw", { score: [3, 3] })).toEqual([]);
   expect(sidesOf("eight-goal-draw", { score: [5, 3] })).toEqual([]);
+});
+
+/** Everything the egg tells of a match it was found in: its caption, the page's note and its stories. */
+function toldOf(id: string, score: [number, number]): string {
+  const found = egg(id);
+  const [hit] = found.find(tale({ score }));
+  const slots = { club: "Casa", opponent: "Fora", score: `Casa ${score[0]} × ${score[1]} Fora`, goals: String(score[0] + score[1]), ...hit?.slots };
+  return [found.title, fillSlots(found.note, slots), ...found.texts.flatMap((text) => [fillSlots(text.headline, slots), fillSlots(text.body, slots)])].join(" ");
+}
+
+test("a big draw's and a double-figure score's captions and stories tell the goals the match had", () => {
+  expect(toldOf("eight-goal-draw", [5, 5])).not.toMatch(/oito/);
+  expect(toldOf("double-digits", [11, 0])).not.toMatch(/\bdez\b/);
+  expect(toldOf("double-digits", [11, 0])).toMatch(/\b11\b/);
+  expect(toldOf("double-digits", [10, 0])).toMatch(/\bdez\b/);
 });
 
 test("ten goals or more by one side make double figures", () => {
