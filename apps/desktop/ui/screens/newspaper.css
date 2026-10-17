@@ -152,6 +152,28 @@
   color: #1a1a17;
 }
 
+/* An event's section: its mark printed in reverse beside the name, as the VAR monitor is. */
+.paper-kick.section {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.paper-kick.section i {
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: currentColor;
+  font-size: 10px;
+}
+
+.paper-kick.section i::before {
+  color: #fbf7ec;
+}
+
+[data-theme="dark"] .paper-kick.section i::before {
+  color: #e9e2cf;
+}
+
 /* The almanac's rare finds: a boxed curiosity cut with dashes, as papers set their "você sabia?" boxes. */
 .paper-st.egg {
   padding: 8px 10px 9px;

@@ -94,7 +94,7 @@ export function Club() {
         {back}
       </div>
       <section className="page hub-squad" aria-label="Elenco">
-        {rows.length ? <SquadTable rows={rows} clubName={club.shortName} selectedId={shown?.id ?? null} onSelect={setSelectedId} /> : <p className="hub-squad-none">Sem jogadores no elenco.</p>}
+        {rows.length ? <SquadTable rows={rows} clubName={club.shortName} clubId={club.id} selectedId={shown?.id ?? null} onSelect={setSelectedId} /> : <p className="hub-squad-none">Sem jogadores no elenco.</p>}
       </section>
     </div>
   );

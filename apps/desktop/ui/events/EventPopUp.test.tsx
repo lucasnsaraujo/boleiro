@@ -39,7 +39,7 @@ const event: PendingEvent = {
 };
 
 function popUp(onAnswer = vi.fn()) {
-  render(<EventPopUp event={event} club={club} rival={null} player={null} today="2026-03-02" standing={null} isBusy={false} hasFailed={false} answered={null} onAnswer={onAnswer} onClose={vi.fn()} />);
+  render(<EventPopUp event={event} club={club} rival={null} player={null} today="2026-03-02" standing={null} isBusy={false} hasFailed={false} answered={null} onAnswer={onAnswer} onNext={vi.fn()} onClose={vi.fn()} />);
   return { onAnswer, dialog: screen.getByRole("dialog", { name: event.headline }) };
 }
 
@@ -69,4 +69,41 @@ test("leaving it to the assistant answers with no choice of the coach's", () => 
   const { onAnswer } = popUp();
   fireEvent.click(screen.getByRole("button", { name: /Deixa com o auxiliar/ }));
   expect(onAnswer).toHaveBeenCalledWith(null);
+});
+
+const answers = (prefix: string) => [
+  { label: `“${prefix} um.”`, effects: { morale: 2 } },
+  { label: `“${prefix} dois.”`, effects: { fans: 3, rivalry: 4 } },
+  { label: `“${prefix} três.”`, effects: { board: 1 } },
+];
+
+const conference: PendingEvent = {
+  ...event,
+  typeId: "press-rival",
+  look: "press",
+  headline: "Coletiva: o Vasco na pauta",
+  body: "“E o próximo jogo?”",
+  choices: answers("Segunda"),
+  questions: [
+    { id: "press-rival", ask: "“O Vasco provoca. Responde?”", choices: answers("Primeira"), assistantChoice: 2 },
+    { id: "q-next-match", ask: "“E o próximo jogo?”", choices: answers("Segunda"), assistantChoice: 0 },
+    { id: "q-title", ask: "“Dá para falar em título?”", choices: answers("Terceira"), assistantChoice: 0 },
+  ],
+  answers: [1],
+};
+
+test("a press conference asks one question at a time, counting them, and offers the next once an answer lands", () => {
+  const onNext = vi.fn();
+  const props = { event: conference, club, rival: null, player: null, today: "2026-03-02", standing: null, isBusy: false, hasFailed: false, onAnswer: vi.fn(), onNext, onClose: vi.fn() };
+  const { rerender } = render(<EventPopUp {...props} answered={null} />);
+  const dialog = screen.getByRole("dialog");
+  expect(within(dialog).getByRole("heading", { name: "“E o próximo jogo?”" })).toBeTruthy();
+  expect(dialog.textContent).toMatch(/Pergunta 2 de 3/);
+  expect(within(dialog).getAllByRole("radio")).toHaveLength(3);
+  const landed = { type: "eventAnswered" as const, clubId: club.id, typeId: "press-rival", choice: 0, byAssistant: false, topic: conference.headline, answer: "“Segunda um.”", headline: "", questionsLeft: 1 };
+  rerender(<EventPopUp {...props} answered={landed} />);
+  expect(within(dialog).getByRole("status").textContent).toMatch(/Falta uma pergunta/);
+  fireEvent.click(within(dialog).getByRole("button", { name: /Próxima pergunta/ }));
+  expect(onNext).toHaveBeenCalledTimes(1);
+  expect(within(dialog).getByRole("button", { name: "Fechar" })).toBeTruthy();
 });

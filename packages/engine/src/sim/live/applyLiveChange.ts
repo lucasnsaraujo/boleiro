@@ -16,8 +16,10 @@ import { tieBreakOf } from "../tieBreaks.js";
 import { aiSubstitutions, EXTRA_TIME_SUBSTITUTIONS, EXTRA_TIME_WINDOWS, isFreeWindow, MAX_SUBSTITUTION_WINDOWS, MAX_SUBSTITUTIONS, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
 import { describeGoals, drawPenaltyMisses, type GoalEvent, type GoalSide } from "./goalDetails.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
-import { drawMinute, EXTRA_TIME_END, FULL_TIME, goalMinuteWeights, inMatchOrder, isWhistle, matchEndOf, sentOffMinute, whistlesTo, type MatchEvent } from "./matchTimeline.js";
+import { drawMinute, EXTRA_TIME_END, FULL_TIME, goalMinuteWeights, HALF_TIME, inMatchOrder, isWhistle, matchEndOf, sentOffMinute, whistlesTo, type MatchEvent } from "./matchTimeline.js";
+import { formStrength } from "./formOfTheDay.js";
 import { playExtraTime } from "./playExtraTime.js";
+import { isDerbyFor, talkEffect, type TalkTone } from "./teamTalk.js";
 
 export type Substitution = { offId: string; onId: string };
 
@@ -29,6 +31,8 @@ export type LiveChange = {
   marking?: Marking;
   play?: Play;
   penaltyTakerId?: string | null;
+  /** The coach's talk in the dressing room; only at half-time, once a match. */
+  talk?: TalkTone;
 };
 
 type Side = "home" | "away";
@@ -265,6 +269,19 @@ function refereeOf(live: LiveDay, coachMatch: CoachMatch, match: LiveMatch, even
   return { seed: live.state.seed, fixtureId: match.fixtureId, officials, home: side("home"), away: side("away") };
 }
 
+/**
+ * The open match after `clubId`'s coach talked to his side at half-time with `talk`: each of his players
+ * plays the second half at the strength the talk's form shift gives him.
+ */
+function withHalfTimeTalk(live: LiveDay, coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEvent[], clubId: string, talk: TalkTone): CoachMatch {
+  if (coachMatch.halfTimeTalks?.[clubId]) throw new Error(`${clubId} already talked at half-time`);
+  const goals = (own: boolean) => kept.filter((e) => e.type === "goal" && (e.clubId === clubId) === own).length;
+  const effect = talkEffect(talk, { lead: goals(true) - goals(false), morale: clubMood(live.state, clubId).squad, isDerby: isDerbyFor(live.state, match, clubId) });
+  const lift = formStrength(effect.form);
+  const strengths = Object.fromEntries(Object.entries(coachMatch.strengths).map(([id, strength]) => [id, live.state.players[id]?.clubId === clubId ? strength + lift : strength]));
+  return { ...coachMatch, strengths, halfTimeTalks: { ...coachMatch.halfTimeTalks, [clubId]: { tone: talk, ...effect } } };
+}
+
 /** The open match a human coach's club plays today: the seated coach's, or a waiting coach's in a hot-seat game. */
 function openMatchOf(live: LiveDay, clubId: string): CoachMatch | undefined {
   const plays = (open: CoachMatch) => live.matches.some((m) => m.fixtureId === open.fixtureId && (m.homeId === clubId || m.awayId === clubId));
@@ -273,7 +290,7 @@ function openMatchOf(live: LiveDay, clubId: string): CoachMatch | undefined {
 
 /**
  * A human coach changes his side at `minute` of his match: substitutions, formation, posture,
- * marking, play or penalty taker. Everything up to that minute stays; the rest of his match is drawn again. The day's
+ * marking, play, penalty taker or, at half-time, his talk. Everything up to that minute stays; the rest of his match is drawn again. The day's
  * other matches are untouched. Changes come in minute order. The coach is the one in the seat unless
  * `clubId` names a hot-seat coach waiting for his turn.
  */
@@ -307,8 +324,10 @@ export function applyLiveChange(live: LiveDay, minute: number, change: LiveChang
     ...(change.play ?? before.play ? { play: change.play ?? before.play } : {}),
     penaltyTakerId: change.penaltyTakerId === undefined ? before.penaltyTakerId : change.penaltyTakerId,
   };
+  if (change.talk && minute !== HALF_TIME) throw new Error("a team talk comes at half-time");
   const random = randomStream(coachMatch.rngState);
-  const next: CoachMatch = isRival ? { ...coachMatch, rivalTactics: tactics, lastChangeMinute: minute, isChanged: true } : { ...coachMatch, tactics, lastChangeMinute: minute, isChanged: true };
+  const changed: CoachMatch = isRival ? { ...coachMatch, rivalTactics: tactics, lastChangeMinute: minute, isChanged: true } : { ...coachMatch, tactics, lastChangeMinute: minute, isChanged: true };
+  const next = change.talk ? withHalfTimeTalk(live, changed, match, kept, clubId, change.talk) : changed;
   const sofar = [...kept, ...substitutions];
   const ninety = [...sofar, ...(minute < FULL_TIME ? redraw(next, match, sofar, ownerSide, minute, random.next, live.state.seed) : [])];
   const extraTime = extraTimeAfter(live, next, match, ninety, ownerSide, minute, random.next);

@@ -32,7 +32,7 @@ const eleven = starters.map((p) => p.id);
 const tactics: Tactics = { formation: "4-4-2", posture: "balanced", penaltyTakerId: "s10" };
 const preMatch: SheetMode = { kind: "preMatch" };
 
-const coach: CoachSide = { fixtureId: "f", side: "home", starters: eleven, benchIds: bench.map((p) => p.id), squad, tactics, rivalFormation: "4-4-2", lastChangeMinute: 0, incidentHandling: "askCoach", shootout: { kickers: [], isOverruled: false }, opponent: { clubId: "rival", name: "Rival", starters: [], bench: [], formation: "4-4-2", rivalTactics: null, form: [] } };
+const coach: CoachSide = { fixtureId: "f", side: "home", starters: eleven, benchIds: bench.map((p) => p.id), squad, tactics, rivalFormation: "4-4-2", lastChangeMinute: 0, incidentHandling: "askCoach", shootout: { kickers: [], isOverruled: false }, opponent: { clubId: "rival", name: "Rival", starters: [], bench: [], formation: "4-4-2", rivalTactics: null, form: [] }, halfTimeTalk: { moment: { lead: 0, morale: 50, isDerby: false }, suggested: "calm", given: null } };
 const sub = (minute: number, onId: string, offId: string): MatchEvent => ({ type: "substitution", minute, clubId: "bahia", playerId: onId, offId });
 const live = (events: MatchEvent[], minute: number): SheetMode => ({ kind: "live", ...liveLimits(coach, events, "bahia", minute) });
 

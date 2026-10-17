@@ -3,7 +3,7 @@ import { playLiveRoundUntil, startAtClub } from "./flows.js";
 
 // A game seed whose 2026 Recopa second leg, Flamengo at home, ends level on aggregate after ninety
 // minutes and after extra time, and goes to penalties (searched with the engine on the seeds 1 to 59).
-const RECOPA_TO_PENALTIES = 11;
+const RECOPA_TO_PENALTIES = 6;
 const RECOPA_SECOND_LEG = "2026-02-26";
 
 /** Starts the coach's game over from `seed`'s world, through the e2e build's engine hook. */

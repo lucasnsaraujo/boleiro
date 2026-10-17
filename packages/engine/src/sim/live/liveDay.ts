@@ -9,6 +9,7 @@ import type { MatchSheets } from "../history/recordMatches.js";
 import type { MatchContext } from "../players/effectiveStrength.js";
 import type { MatchPlay } from "./matchPlay.js";
 import type { MatchEvent } from "./matchTimeline.js";
+import type { TalkEffect, TalkTone } from "./teamTalk.js";
 
 /** One of today's matches as the live round shows it: who plays in which shape, and everything that happens, in order. */
 export type LiveMatch = {
@@ -54,6 +55,8 @@ export type CoachMatch = {
   strengths: Record<string, number>;
   /** The coach's tactics as of his last change. */
   tactics: Tactics;
+  /** Each human coach's half-time talk in this match, by his club, with what it did; none before one is given. */
+  halfTimeTalks?: Record<string, TalkEffect & { tone: TalkTone }>;
   lastChangeMinute: number;
   /** Redraws come from a stream of their own, so a change leaves every other match as it was. */
   rngState: number;

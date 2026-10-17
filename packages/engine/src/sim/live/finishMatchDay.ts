@@ -20,6 +20,7 @@ import { countCards, type Booking } from "../discipline/drawCards.js";
 import { endSeason } from "../endSeason.js";
 import type { LeagueOutcome } from "../leagueFormats.js";
 import { runSponsorDay } from "../sponsors/sponsorDeals.js";
+import { coolRivalries } from "../events/eventMemory.js";
 import { findEggs } from "../eggs/findEggs.js";
 import { recordNews } from "../events/recordNews.js";
 import { runEvents } from "../events/runEvents.js";
@@ -36,6 +37,7 @@ import { recordStrengths } from "../history/recordStrengths.js";
 import { recordDayEvents } from "../history/recordDayEvents.js";
 import { recordMatches } from "../history/recordMatches.js";
 import { recordFeats } from "../history/recordFeats.js";
+import { withTalkMorale } from "./teamTalk.js";
 import { recordRatings } from "../history/recordRatings.js";
 import { recordElevens } from "../chemistry/recordElevens.js";
 import { clubMood } from "../morale/clubMood.js";
@@ -233,7 +235,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const built = buildStadiums(closed.state, closed.state.date);
   events.push(...built.events);
   const reacted = reactToDay(built.state, played, closed.events, random.next);
-  next = reacted.state;
+  next = withTalkMorale(reacted.state, live);
   events.push(...reacted.events);
   const career = coachCareerDay(next, played, decisions.acceptOffer, random.next, (decisions.waiting ?? []).map((own) => own.acceptOffer));
   const moved = moveAiCoaches(career.state, state, career.vacancies, state.date);
@@ -274,7 +276,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };
     if (next.world) next = { ...next, world: endWorldSeason(next.world, next.season, unifiedDatesOf(next.calendar)) };
     next = closeCoachSeason(openContinentalCups(next, continentalField), state.season, runs, retired);
-    next = recordFormerPlayers(next, academies.state, developed.events);
+    next = coolRivalries(recordFormerPlayers(next, academies.state, developed.events));
     seasonOutcomes = ended.outcomes;
   }
   const sponsorDay = runSponsorDay(state, next, seasonOutcomes);

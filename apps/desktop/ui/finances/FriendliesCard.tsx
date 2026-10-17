@@ -14,6 +14,7 @@ import { formatBarDate, formatDayMonth } from "@boleiro/game-client/format/forma
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import { Select } from "../controls/Select.js";
 import { Crest } from "../clubs/Crest.js";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 export type FriendlyState = BookingState & Pick<GameState, "seed">;
 
@@ -61,7 +62,7 @@ export function FriendliesCard({ state, isBusy, onBook }: Props) {
             <div className="t">
               <Crest club={host} size={34} />
               <div>
-                <b>Amistoso no {host.shortName}</b>
+                <b>Amistoso {withArticle(host.shortName, clubArticle(host.id), "em")}</b>
                 <small>
                   {host.stadium} · {formatBarDate(offer.date)}
                 </small>
@@ -159,8 +160,8 @@ function BookingForm({ state, isBusy, onBook, onClose }: { state: FriendlyState;
               ? "Nenhuma data livre para os dois nos próximos dois meses."
               : `Não dá: ${REFUSALS[answer.reason]}.`
             : isHome
-            ? `Você paga ${formatMoney(answer.friendly.fee)} de cachê ao ${opponent.shortName} e fica com a bilheteria.`
-            : `O ${opponent.shortName} paga ${formatMoney(answer.friendly.fee)} de cachê e fica com a bilheteria.`}
+            ? `Você paga ${formatMoney(answer.friendly.fee)} de cachê ${withArticle(opponent.shortName, clubArticle(opponent.id), "a")} e fica com a bilheteria.`
+            : `${clubArticle(opponent.id).toUpperCase()} ${opponent.shortName} paga ${formatMoney(answer.friendly.fee)} de cachê e fica com a bilheteria.`}
       </p>
       <div className="bs">
         <button className="btn go" disabled={isBusy || !answer?.booked || !date} onClick={() => date && void onBook(opponentId, date, isHome)}>

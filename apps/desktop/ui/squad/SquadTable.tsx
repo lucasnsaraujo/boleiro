@@ -7,6 +7,7 @@ import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springTiming } from "../motion/springEasing.js";
 import { useFlip } from "../motion/useFlip.js";
 import { nextSort, sortedSquad, statusText, type SquadRow, type SquadSort, type SquadSortKey } from "./squadRows.js";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 type Column = { title: string; label?: string; sortKey: SquadSortKey | null; className: string };
 
@@ -56,7 +57,7 @@ function energyClass(energy: number): string {
   return energy < 85 ? "en mid" : "en";
 }
 
-type Props = { rows: readonly SquadRow[]; clubName: string; selectedId: string | null; onSelect: (id: string) => void };
+type Props = { rows: readonly SquadRow[]; clubName: string; clubId: string; selectedId: string | null; onSelect: (id: string) => void };
 
 /** Where a key moves the pick, from the row at `index` of `count`; null for a key that doesn't move it. */
 function rowAfterKey(key: string, index: number, count: number): number | null {
@@ -71,7 +72,7 @@ function rowAfterKey(key: string, index: number, count: number): number | null {
  * The squad as Brasfoot lists it, by position; a click picks a player for the sticker, his name opens his screen.
  * From the keyboard, Tab stops on the picked row alone, the arrows (Home, End) move the pick, Enter and Space pick the focused row.
  */
-export function SquadTable({ rows, clubName, selectedId, onSelect }: Props) {
+export function SquadTable({ rows, clubName, clubId, selectedId, onSelect }: Props) {
   const [sort, setSort] = useState<SquadSort>(BY_STRENGTH);
   const groups = useMemo(() => sortedSquad(rows, sort), [rows, sort]);
   const table = useRef<HTMLTableElement>(null);
@@ -96,7 +97,7 @@ export function SquadTable({ rows, clubName, selectedId, onSelect }: Props) {
   }
 
   return (
-    <table ref={table} className="tb hub-table" aria-label={`Elenco do ${clubName}`}>
+    <table ref={table} className="tb hub-table" aria-label={`Elenco ${withArticle(clubName, clubArticle(clubId), "de")}`}>
       <thead>
         <tr>
           {COLUMNS.map((column) => {
