@@ -69,6 +69,7 @@ export function connectEngine(port: EngineWorker): EngineClient {
     desk: () => send({ method: "desk", args: [] }),
     hotSeat: () => send({ method: "hotSeat", args: [] }),
     marketClock: () => send({ method: "marketClock", args: [] }),
+    scouting: () => send({ method: "scouting", args: [] }),
     pendingEvent: () => send({ method: "pendingEvent", args: [] }),
     newspaper: (...args) => send({ method: "newspaper", args }),
     newspaperEditions: () => send({ method: "newspaperEditions", args: [] }),

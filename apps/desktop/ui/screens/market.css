@@ -1193,3 +1193,34 @@
 .market-auction-stop {
   align-self: flex-start;
 }
+
+/* Scouting: the watch star in the list, saved searches and the release clause */
+.market-star {
+  margin-left: 6px;
+  color: var(--yellow-d);
+  font-size: 12px;
+  vertical-align: -1px;
+}
+
+.market-chosen-watch {
+  align-self: flex-start;
+  margin-left: auto;
+}
+
+.market-save-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.market-save-search .field {
+  width: 160px;
+}
+
+.market-clause {
+  width: 100%;
+}
+
+.market-clause[disabled]:hover {
+  transform: none;
+}

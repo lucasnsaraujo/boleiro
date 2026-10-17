@@ -27,6 +27,8 @@ import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { isCoachMatchDay, playToMatchDay, stopReason, type StopReason } from "../hub/playToMatchDay.js";
 import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
 import { boardNotes, dueRequests, EMPTY_DESK, withRequest, type BoardDesk } from "../market/boardDesk.js";
+import type { MarketFilters } from "../market/marketFilters.js";
+import { EMPTY_SCOUTING, forgetFilter, keepFilter, watch, type Scouting } from "../market/scouting.js";
 import { isSigning, marketClockView, spendMarketTime, type MarketClock, type MarketClockView } from "../market/marketClock.js";
 import { chemistryPage, type ChemistryPage } from "../chemistry/chemistryPage.js";
 import { matchPageOf, type MatchPage } from "../matchPage/matchPageOf.js";
@@ -99,6 +101,12 @@ type CommandFields = {
   handToAssistant: { area: EventArea; isHanded: boolean };
   /** The coach in the seat hands the armband to one of his players. */
   nameCaptain: { playerId: string };
+  /** The coach in the seat puts a player on his watch list (`isWatched`) or takes him off it. */
+  watchPlayer: { playerId: string; isWatched: boolean };
+  /** The coach in the seat keeps a market search under `name`, in place of one saved under it before. */
+  saveFilter: { name: string; filters: MarketFilters };
+  /** The coach in the seat forgets the market search saved under `name`. */
+  deleteFilter: { name: string };
 };
 
 /** What a move on a kid of the academy answers: null when it went through, and the sale it made. */
@@ -142,6 +150,9 @@ export type CommandResults = {
   answerEvent: EventAnswered;
   handToAssistant: undefined;
   nameCaptain: undefined;
+  watchPlayer: Scouting;
+  saveFilter: Scouting;
+  deleteFilter: Scouting;
 };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
@@ -152,6 +163,11 @@ const DESK_FORCED_SALES = 10;
 
 function summaryOf({ date, season, coachClubId }: GameState): GameSummary {
   return { date, season, coachClubId };
+}
+
+/** A coach's scouting as a save keeps it: left out while he has none. */
+function scoutingToSave(scouting: Scouting): { scouting?: Scouting } {
+  return scouting.watchList.length || scouting.savedFilters.length ? { scouting } : {};
 }
 
 function pick<T, K extends keyof T>(source: T, keys: readonly K[]): Pick<T, K> {
@@ -180,7 +196,9 @@ export function createEngineSession(files: GameFiles) {
   let split: SplitGame | null = null;
   /** The time the coach in the seat spent on the market screens this window; saved with the game. */
   let clock: MarketClock | null = null;
-  /** Each waiting hot-seat coach's inbox, desk, turning points and clock, in the game's waiting order; none in a one-coach game. */
+  /** The watch list and saved searches of the coach in the seat; saved with the game. */
+  let scouting: Scouting = EMPTY_SCOUTING;
+  /** Each waiting hot-seat coach's inbox, desk, turning points, clock and scouting, in the game's waiting order; none in a one-coach game. */
   let waiting: SeatParts[] = [];
   /** The place in turn order of the hot-seat coach in the seat. */
   let seated = 0;
@@ -215,6 +233,7 @@ export function createEngineSession(files: GameFiles) {
     turningPoints = [];
     split = null;
     clock = null;
+    scouting = EMPTY_SCOUTING;
     waiting = waitingCoachesOf(next).map(() => ({ news: [], desk: EMPTY_DESK, turningPoints: [], clock: null }));
     seated = 0;
     passed = [];
@@ -225,8 +244,9 @@ export function createEngineSession(files: GameFiles) {
   function rotateSeat() {
     const [next, ...rest] = waiting;
     if (!next) return;
-    waiting = [...rest, { news, desk, turningPoints, clock }];
+    waiting = [...rest, { news, desk, turningPoints, clock, ...scoutingToSave(scouting) }];
     ({ news, desk, turningPoints, clock } = next);
+    scouting = next.scouting ?? EMPTY_SCOUTING;
     state = passTheSeat(current());
     seated = (seated + 1) % (waiting.length + 1);
   }
@@ -301,10 +321,14 @@ export function createEngineSession(files: GameFiles) {
     return hotSeatViewOf(current(), seated);
   }
 
-  /** The session's hot-seat and clock parts a save keeps; a one-coach game without the clock adds none, so its saves stay as they were. */
+  /**
+   * The session's hot-seat, clock and scouting parts a save keeps; a one-coach game without the clock or
+   * scouting adds none, so its saves stay as they were.
+   */
   function seatsToSave() {
     return {
       ...(clock ? { clock } : {}),
+      ...scoutingToSave(scouting),
       ...(waiting.length ? { seats: { waiting: waiting.map((parts) => ({ ...parts, news: [] })), seated, passed } } : {}),
     };
   }
@@ -354,6 +378,7 @@ export function createEngineSession(files: GameFiles) {
       desk = loaded.desk;
       turningPoints = loaded.turningPoints;
       clock = loaded.clock ?? null;
+      scouting = loaded.scouting ?? EMPTY_SCOUTING;
       if (loaded.seats) {
         waiting = loaded.seats.waiting;
         seated = loaded.seats.seated;
@@ -572,6 +597,18 @@ export function createEngineSession(files: GameFiles) {
       if (!game.coachClubId) throw new Error("a coach without a club names no captain");
       state = nameCaptain(game, game.coachClubId, playerId);
     },
+    watchPlayer({ playerId, isWatched }) {
+      scouting = watch(scouting, playerId, isWatched);
+      return scouting;
+    },
+    saveFilter({ name, filters }) {
+      scouting = keepFilter(scouting, name, filters);
+      return scouting;
+    },
+    deleteFilter({ name }) {
+      scouting = forgetFilter(scouting, name);
+      return scouting;
+    },
     spendMarketTime({ seconds, playerId }) {
       const game = current();
       const isOwnPlayer = playerId !== undefined && game.coachClubId !== null && game.players[playerId]?.clubId === game.coachClubId;
@@ -629,6 +666,10 @@ export function createEngineSession(files: GameFiles) {
     /** The newspaper's editions, newest first. */
     newspaperEditions(): EditionTitle[] {
       return newspaperEditions(current());
+    },
+    /** The watch list and saved market searches of the coach in the seat. */
+    scouting(): Scouting {
+      return scouting;
     },
     /** The seated coach's market clock for the window open today; null without the clock or a window. */
     marketClock(): MarketClockView | null {

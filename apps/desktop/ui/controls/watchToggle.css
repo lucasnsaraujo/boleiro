@@ -1,0 +1,32 @@
+.watch-toggle {
+  flex: none;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.watch-toggle.on {
+  border-color: transparent;
+  background: var(--yellow-l);
+  color: var(--ink);
+}
+
+.watch-toggle.on i {
+  color: var(--yellow-d);
+}
+
+.watch-toggle:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}

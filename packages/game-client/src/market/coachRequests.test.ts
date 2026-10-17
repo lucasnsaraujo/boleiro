@@ -3,7 +3,7 @@ import { pickLineup } from "@boleiro/engine/engine/match";
 import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
-import { needsWindow, requestOptions } from "./coachRequests.js";
+import { clauseRequest, needsWindow, requestOptions } from "./coachRequests.js";
 
 const COACH = "sport-pe";
 const game = newGameFromFiles(5, { coachClubId: COACH }, bundledGameFiles);
@@ -71,6 +71,12 @@ describe("the requests the coach can make for a player", () => {
     expect(requestOptions({ ...state, market: { ...state.market, loans: { [loanee.id]: { ...clause, buyOption: null } } } }, loanee.id)).toEqual([]);
   });
 
+  test("a player the coach lent out can be called back", () => {
+    const lent = { ...firstOf(COACH), clubId: "vitoria-ba" };
+    const loans = { [lent.id]: { fromClubId: COACH, until: "2026-06-30", lenderWageShare: 0.5, buyOption: null } };
+    expect(requestOptions({ ...withPlayer(game, lent), market: { ...game.market, loans } }, lent.id)).toEqual([{ label: "Chamar de volta", request: { kind: "recall", playerId: lent.id } }]);
+  });
+
   test("an own player who signed a pre-contract elsewhere can't be renewed", () => {
     const leaving = { ...firstOf(COACH), age: 30 };
     const state = { ...withPlayer(game, leaving), market: { ...game.market, preContracts: { [leaving.id]: "palmeiras-sp" } } };
@@ -84,6 +90,30 @@ describe("the requests the coach can make for a player", () => {
     const preContracts = { [lent.id]: "palmeiras-sp" };
     expect(requestOptions({ ...game, market: { ...game.market, preContracts } }, lent.id)).toEqual([]);
     expect(requestOptions(game, "nobody")).toEqual([]);
+  });
+});
+
+describe("paying a release clause", () => {
+  test("is open for a player under contract at another club, his last months included", () => {
+    const ending = { ...firstOf("vitoria-ba"), contractUntil: "2026-06-30" };
+    expect(clauseRequest(longContract(game), reserve.id)).toEqual({ kind: "payClause", playerId: reserve.id });
+    expect(clauseRequest(withPlayer(game, ending), ending.id)).toEqual({ kind: "payClause", playerId: ending.id });
+  });
+
+  test("is closed for the coach's own player, a free agent, a loanee and one who signed elsewhere", () => {
+    const own = firstOf(COACH);
+    const free = { ...firstOf("vitoria-ba"), id: "free-1" };
+    const lent = firstOf("vitoria-ba");
+    const loans = { [lent.id]: { fromClubId: "palmeiras-sp", until: "2026-06-30", lenderWageShare: 0.5, buyOption: null } };
+    expect(clauseRequest(game, own.id)).toBeNull();
+    expect(clauseRequest({ ...game, market: { ...game.market, freeAgents: { [free.id]: free } } }, free.id)).toBeNull();
+    expect(clauseRequest({ ...game, market: { ...game.market, loans } }, lent.id)).toBeNull();
+    expect(clauseRequest({ ...game, market: { ...game.market, preContracts: { [lent.id]: "palmeiras-sp" } } }, lent.id)).toBeNull();
+    expect(clauseRequest({ ...game, coachClubId: null }, reserve.id)).toBeNull();
+  });
+
+  test("waits for the transfer window", () => {
+    expect(needsWindow(longContract(game), { kind: "payClause", playerId: reserve.id })).toBe(true);
   });
 });
 

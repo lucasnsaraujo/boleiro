@@ -31,7 +31,7 @@ const membersOf = (state: GameState, division: Division) =>
 describe("a full season", () => {
   // CPU time, not wall time: other test files run in parallel processes and would inflate a wall clock.
   const started = process.cpuUsage();
-  const lastDay = playUntil(loadNewGame(3, { coachClubId: null }), "2026-12-31");
+  const lastDay = playUntil(loadNewGame(4, { coachClubId: null }), "2026-12-31");
   const { state: next, events } = playUntil(lastDay.state, "2027-01-01");
   const used = process.cpuUsage(started);
   const elapsed = (used.user + used.system) / 1000;

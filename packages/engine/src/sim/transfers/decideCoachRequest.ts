@@ -8,7 +8,8 @@ import type { CoachRequest } from "./coachRequest.js";
 import { isClubFull } from "./squadCap.js";
 import type { Counter } from "./transferMarket.js";
 import { contractEnd } from "./expireContracts.js";
-import { LENDER_WAGE_SHARE, LOAN_MAX_AGE, loanUntil } from "./loans.js";
+import { releaseClauseOf } from "./releaseClause.js";
+import { LENDER_WAGE_SHARE, LOAN_MAX_AGE, loanLimitOf, loanUntil } from "./loans.js";
 import { marketView, type MarketView } from "./marketView.js";
 import { movePlayer, type Transfer } from "./movePlayer.js";
 import { ASKING_PREMIUM, isInPreContractWindow, MIN_SQUAD } from "./tradeBetweenClubs.js";
@@ -87,9 +88,14 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (own) return refuse(state, request, "alreadyAtClub");
       // The borrower can't sell what it doesn't own, and the owner can't sell a player it lent out.
       if (loan) return refuse(state, request, "onLoan");
+      // Another coach's request or an AI club may have got there first, earlier the same day.
+      if (state.market.preContracts[player.id]) return refuse(state, request, "preContractSigned");
       if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
       const free = !state.players[player.id];
       const preContract = !free && isInPreContractWindow(player, state.date);
+      // A free agent signs any day: FIFA RSTP art. 6(1), which CBF's registration rules follow, lets a player
+      // whose contract expired before a window closed register outside one (https://www.football-legal.com/content/players-registration-out-of-the-transfer-windows-its-exception-and-a-possible-fraud-to-the-rules).
+      // guess: every free agent counts, released or expired, whenever it happened. A pre-contract only takes effect when his contract ends.
       if (!free && !preContract && !isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       if (!free && !preContract && view.squad(player.clubId).length <= MIN_SQUAD) return refuse(state, request, "sellerWillNotSell");
       let fee = 0;
@@ -113,6 +119,21 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
         return approve(signed, request, null, [{ type: "preContractSigned", playerId: player.id, fromClubId: player.clubId, toClubId: coachClubId }]);
       }
       return approve(state, request, { playerId: player.id, kind: free ? "freeAgent" : "transfer", toClubId: coachClubId, fee, contract });
+    }
+    case "payClause": {
+      if (own) return refuse(state, request, "alreadyAtClub");
+      if (!state.players[player.id]) return refuse(state, request, "notAvailable");
+      if (loan) return refuse(state, request, "onLoan");
+      if (state.market.preContracts[player.id]) return refuse(state, request, "preContractSigned");
+      if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
+      if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
+      // His club has no say: the clause is paid and only the board and the player decide.
+      const fee = releaseClauseOf(player, view.tier(player.clubId), state.market.eurBrl);
+      const wage = request.wage !== undefined ? Math.max(1, Math.round(request.wage)) : wageDemand(player, squad);
+      const refused = boardRefusal(finance, bill, { upFront: fee + 3 * wage, wageChange: wage });
+      if (refused) return refuse(state, request, refused);
+      if (!isWilling(view, state, player, coachClubId, wage, random)) return refuse(state, request, "playerUnwilling");
+      return approve(state, request, { playerId: player.id, kind: "releaseClause", toClubId: coachClubId, fee, contract: { wage, until: contractEnd(year + 1, random) } });
     }
     case "sell": {
       if (!own || loan) return refuse(state, request, "notAtClub");
@@ -149,6 +170,8 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       if (RANK[view.tier(player.clubId)] <= RANK[view.tier(coachClubId)]) return refuse(state, request, "lenderNotBigger");
       if (pickLineup([...view.squad(player.clubId)]).includes(player)) return refuse(state, request, "lenderNeedsHim");
+      const limit = loanLimitOf(state, player.clubId, coachClubId, player);
+      if (limit) return refuse(state, request, limit);
       const share = Math.round(player.wage * (1 - LENDER_WAGE_SHARE));
       const refused = boardRefusal(finance, bill, { upFront: 0, wageChange: share });
       if (refused) return refuse(state, request, refused);
@@ -157,12 +180,19 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       const until = loanUntil(state.date);
       return approve(state, request, { playerId: player.id, kind: "loan", toClubId: coachClubId, fee: 0, loan: { fromClubId: player.clubId, until, lenderWageShare: LENDER_WAGE_SHARE, buyOption } });
     }
+    case "recall": {
+      if (loan?.fromClubId !== coachClubId) return refuse(state, request, "notAtClub");
+      // guess: a loan deal lets the lender call the player back, as Brazilian loans usually do; he must be registered again, so only in a window.
+      if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
+      if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
+      return approve(state, request, { playerId: player.id, kind: "loanReturn", toClubId: coachClubId, fee: 0 });
+    }
     case "loanOut": {
       if (!own || loan) return refuse(state, request, "notAtClub");
       if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       if (player.age > LOAN_MAX_AGE) return refuse(state, request, "tooOld");
       const borrowerId = Object.keys(state.finances).sort().find((id) =>
-        RANK[view.tier(id)] < RANK[view.tier(coachClubId)] && pickLineup([...view.squad(id)]).some((p) => p.group === player.group && p.strength < player.strength));
+        RANK[view.tier(id)] < RANK[view.tier(coachClubId)] && !loanLimitOf(state, coachClubId, id, player) && pickLineup([...view.squad(id)]).some((p) => p.group === player.group && p.strength < player.strength));
       if (!borrowerId) return refuse(state, request, "noBorrower");
       return approve(state, request, { playerId: player.id, kind: "loan", toClubId: borrowerId, fee: 0, loan: { fromClubId: coachClubId, until: loanUntil(state.date), lenderWageShare: LENDER_WAGE_SHARE, buyOption: null } });
     }

@@ -23,7 +23,7 @@ export type Transfer = {
 
 // guess: luvas (the signing bonus) are three months' wages for a player who comes without a fee,
 // one month for one bought from another club, who already cost a fee.
-const SIGNING_BONUS_MONTHS: Partial<Record<MoveKind, number>> = { transfer: 1, loanBuy: 1, freeAgent: 3, preContract: 3, fromAbroad: 3 };
+const SIGNING_BONUS_MONTHS: Partial<Record<MoveKind, number>> = { transfer: 1, releaseClause: 1, loanBuy: 1, freeAgent: 3, preContract: 3, fromAbroad: 3 };
 // FIFA Football Agent Regulations (2023) art. 15: an agent acting for the player takes at most 3% of
 // his pay over the contract when it is above USD 200,000 a year (5% below; 3% used for every contract).
 const AGENT_SHARE_OF_PAY = 0.03;
@@ -60,7 +60,7 @@ export function movePlayer(
   const player = atClub ?? state.market.freeAgents[playerId] ?? transfer.incoming;
   if (!player) throw new Error(`no player ${playerId}`);
   const fromClubId = atClub ? atClub.clubId : null;
-  const isSale = fromClubId !== null && fee > 0 && (kind === "transfer" || kind === "abroad");
+  const isSale = fromClubId !== null && fee > 0 && (kind === "transfer" || kind === "releaseClause" || kind === "abroad");
   // Fans react while the player is still in the squad, so they can tell an idol from a reserve.
   let next = isSale ? reactToIdolSale(state, playerId, squadOf) : state;
   if (fee > 0 && fromClubId) next = bookMoney(next, fromClubId, { revenue: "playerSales", amount: fee });

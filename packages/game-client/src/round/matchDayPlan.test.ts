@@ -28,3 +28,15 @@ test("the plan brings the opponent's last five results, oldest first", () => {
   const fixtures = [...results.toReversed(), ...matchDay.fixtures];
   expect(matchDayPlan({ ...matchDay, fixtures }).opponentForm).toEqual(["win", "draw", "win", "loss", "win"]);
 });
+
+test("a player on loan from today's opponent is marked and left out of the assistant's eleven", () => {
+  const plan = matchDayPlan(matchDay);
+  const opponentId = plan.homeId === CLUB ? plan.awayId : plan.homeId;
+  const best = Object.values(matchDay.players).filter((p) => p.clubId === opponentId).sort((a, b) => b.strength - a.strength)[0];
+  if (!best) throw new Error("the opponent has players");
+  const loan = { fromClubId: opponentId, until: "2026-12-31", lenderWageShare: 0.5, buyOption: null };
+  const borrowed = { ...matchDay, players: { ...matchDay.players, [best.id]: { ...best, clubId: CLUB, strength: 99 } }, market: { ...matchDay.market, loans: { [best.id]: loan } } };
+  const withHim = matchDayPlan(borrowed);
+  expect(withHim.squad.find((p) => p.id === best.id)?.status).toBe("facesOwner");
+  expect(withHim.lineup).not.toContain(best.id);
+});

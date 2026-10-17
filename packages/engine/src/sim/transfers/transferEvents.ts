@@ -3,9 +3,9 @@ import type { CoachRequest } from "./coachRequest.js";
 
 /**
  * How a player changed clubs. `abroad` is a sale to Europe, `fromAbroad` a signing from a club
- * outside Brazil, `released` a contract that ended with nobody waiting.
+ * outside Brazil, `released` a contract that ended with nobody waiting, `releaseClause` a buyer who paid the clause.
  */
-export type MoveKind = "transfer" | "freeAgent" | "preContract" | "abroad" | "fromAbroad" | "loan" | "loanReturn" | "loanBuy" | "released";
+export type MoveKind = "transfer" | "freeAgent" | "preContract" | "abroad" | "fromAbroad" | "loan" | "loanReturn" | "loanBuy" | "released" | "releaseClause";
 
 export type PlayerMoved = {
   type: "playerMoved";
