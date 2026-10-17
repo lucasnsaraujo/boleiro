@@ -9,7 +9,11 @@ import type { GameState, IsoDate } from "../gameState.js";
  */
 export type DealBasis = "press" | "estimate" | "game";
 
-/** Title and continental qualification bonuses a deal pays at the season's end, in BRL. */
+/**
+ * Title and continental qualification bonuses a deal signed in the game pays at the season's end, in BRL:
+ * its own terms, which it pays instead of the tenth sponsors usually pay for a title or a promotion
+ * (renewFinances.ts). A deal without terms of its own pays that tenth.
+ */
 export type DealBonuses = { title?: number; continental?: number };
 
 /** A brand on the club's kit: `yearly` BRL until the end of `untilSeason`; `isEndKnown` false when that end is the game's guess. */

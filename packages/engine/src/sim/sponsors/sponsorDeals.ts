@@ -122,8 +122,8 @@ function drawOffers(state: GameState, clubId: string, places: readonly Place[], 
       const spread = OFFER_SPREAD[0] + random() * (OFFER_SPREAD[1] - OFFER_SPREAD[0]);
       const yearly = roundDeal(going * SIZE_PREMIUM[brand.size] * spread * (isBetting ? BETTING_PREMIUM : 1) * premium);
       const bonusRoll = random();
-      const bonuses: DealBonuses | undefined =
-        bonusRoll < BONUS_CHANCE / 2 ? { title: roundDeal(yearly * TITLE_BONUS_SHARE) } : bonusRoll < BONUS_CHANCE ? { continental: roundDeal(yearly * CONTINENTAL_BONUS_SHARE) } : undefined;
+      const bonuses: DealBonuses =
+        bonusRoll < BONUS_CHANCE / 2 ? { title: roundDeal(yearly * TITLE_BONUS_SHARE) } : bonusRoll < BONUS_CHANCE ? { continental: roundDeal(yearly * CONTINENTAL_BONUS_SHARE) } : {};
       offers.push({
         id: `${state.date}:${slot}:${brand.id}`,
         slot,
@@ -132,7 +132,7 @@ function drawOffers(state: GameState, clubId: string, places: readonly Place[], 
         isBetting,
         yearly,
         years: dealYears(slot, random),
-        ...(bonuses ? { bonuses } : {}),
+        bonuses,
         decideBy,
         ...(replaces ? { replacesBrandId: replaces.brandId } : {}),
         placeValue,

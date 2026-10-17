@@ -17,6 +17,11 @@ import { tierOf } from "./tierOf.js";
 // guess: sponsors pay a tenth of the yearly deal as a bonus for a title or a promotion.
 const SPONSOR_BONUS_SHARE = 0.1;
 
+/** What a club's deals with bonus terms of their own pay a year: they pay those bonuses (sponsorDeals.ts) instead of the usual tenth. */
+function ownTermsYearly(state: Pick<GameState, "sponsors">, clubId: string): number {
+  return (state.sponsors?.[clubId]?.contracts ?? []).reduce((sum, c) => sum + (c.bonuses ? c.yearly : 0), 0);
+}
+
 // guess: a club earning more than anyone in its division's data loses a quarter of the excess (in
 // log terms) from sponsorship, membership and other income each season.
 const CEILING_PULL = 0.25;
@@ -78,7 +83,7 @@ export function renewFinances(
     const to = tierOf(club);
     const step = Math.sqrt(economy.typicalRevenue[to] / economy.typicalRevenue[from]);
     const crowdRatio = Math.sqrt(economy.matchday[to].attendance / economy.matchday[from].attendance);
-    const bonus = rewarded.has(id) ? Math.round(SPONSOR_BONUS_SHARE * finance.sponsorship) : 0;
+    const bonus = rewarded.has(id) ? Math.round(SPONSOR_BONUS_SHARE * Math.max(0, finance.sponsorship - ownTermsYearly(ended, id))) : 0;
     // A price the coach set keeps its distance from the average; everyone else's stays on it.
     const ticketPrice = Math.round(economy.matchday[to].price * (finance.ticketPrice / economy.matchday[from].price));
     const baseCrowd = Math.round(finance.baseCrowd * crowdRatio);
