@@ -411,7 +411,7 @@ td.coaches-pos {
 
 .coaches-job {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1.3fr) minmax(0, 1fr) 132px minmax(210px, auto);
+  grid-template-columns: 40px minmax(0, 1.3fr) minmax(0, 1fr) 132px 240px;
   align-items: center;
   column-gap: 14px;
   min-height: 62px;
@@ -493,7 +493,7 @@ td.coaches-pos {
 /* A narrow page (the window at its 1024 px minimum) drops the size meter so the rest keeps its room. */
 @container (max-width: 760px) {
   .coaches-job {
-    grid-template-columns: 34px minmax(0, 1fr) auto auto;
+    grid-template-columns: 34px minmax(0, 1fr) auto 240px;
     column-gap: 12px;
   }
 
