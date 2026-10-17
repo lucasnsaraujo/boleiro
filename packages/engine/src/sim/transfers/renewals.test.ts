@@ -134,6 +134,26 @@ describe("a renewal the coach asks for", () => {
   });
 });
 
+describe("a player's renewal counter on the market's day", () => {
+  const counter = { months: 24, wage: 1, until: "2026-03-25", contractUntil: ours.contractUntil };
+  const day = { ...start, date: "2026-03-20" };
+  const withCounter = (state: GameState): GameState => withCoachMarket(state, { ...coachMarketOf(state), renewalCounters: { [ours.id]: counter } });
+
+  it("outlives a club's offer for him that lapses", () => {
+    const bid = { playerId: ours.id, buyerId: "palmeiras-sp", fee: 1, feeEur: null, ceiling: 1, isFinal: false, madeOn: "2026-03-17", until: "2026-03-19" };
+    const offered = withCounter(withCoachMarket(day, { ...coachMarketOf(day), bids: { [ours.id]: bid } }));
+    const coach = coachMarketOf(runTransferDay(offered, []).state);
+    expect(coach.bids[ours.id]).toBeUndefined();
+    expect(coach.renewalCounters?.[ours.id]).toEqual(counter);
+  });
+
+  it("goes once it lapses or he leaves the club", () => {
+    expect(coachMarketOf(runTransferDay({ ...withCounter(day), date: "2026-03-26" }, []).state)).not.toHaveProperty("renewalCounters");
+    const gone = withPlayer(withCounter(day), { clubId: "palmeiras-sp" });
+    expect(coachMarketOf(runTransferDay(gone, []).state)).not.toHaveProperty("renewalCounters");
+  });
+});
+
 describe("talkMoodOf", () => {
   it("remembers a request to leave for a year, and sees a club's offer waiting", () => {
     const asked: GameState = { ...start, eventMemory: { ...EMPTY_MEMORY, log: [{ typeId: "player-wants-out", date: "2025-11-01", clubId: COACH, playerId: ours.id }] } };

@@ -22,12 +22,13 @@ import { isMarketDay, isWindowOpen, type CoachWindows } from "./transferWindows.
 type Step = (state: GameState, random: () => number) => { state: GameState; events: TransferEvent[] };
 
 /**
- * Whether the coach's market has anything to do today: offers, counters and auctions to lapse or close,
- * listings to find buyers inside the window, or a market day for clubs to bid. Most days it has not.
+ * Whether the coach's market has anything to do today: offers, counters (renewal ones too) and auctions
+ * to lapse or close, listings to find buyers inside the window, or a market day for clubs to bid. Most
+ * days it has not.
  */
 function hasCoachBusiness(coach: CoachMarket | undefined, coachClubId: string | null, rules: CoachWindows, date: IsoDate): boolean {
   const has = (entries: Record<string, unknown> | undefined) => !!entries && Object.keys(entries).length > 0;
-  if (has(coach?.bids) || has(coach?.counters) || has(coach?.auctions)) return true;
+  if (has(coach?.bids) || has(coach?.counters) || has(coach?.auctions) || has(coach?.renewalCounters)) return true;
   return (has(coach?.listings) && isWindowOpen(rules, date)) || (coachClubId !== null && isMarketDay(rules, date));
 }
 

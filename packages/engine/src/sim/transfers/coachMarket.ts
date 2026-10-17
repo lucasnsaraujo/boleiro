@@ -28,14 +28,14 @@ function without<T>(record: Record<string, T>, id: string): Record<string, T> {
   return rest;
 }
 
-/** The coach's business with nothing left about this player: no listing, auction, offer or counter. */
+/** The coach's business with no sale left about this player: no listing, auction, offer or counter. His renewal talks stay. */
 export function withoutPlayer(coach: CoachMarket, playerId: string): CoachMarket {
   return {
+    ...coach,
     listings: without(coach.listings, playerId),
     auctions: without(coach.auctions, playerId),
     bids: without(coach.bids, playerId),
     counters: without(coach.counters, playerId),
-    ...(coach.renewalCounters ? { renewalCounters: without(coach.renewalCounters, playerId) } : {}),
   };
 }
 
