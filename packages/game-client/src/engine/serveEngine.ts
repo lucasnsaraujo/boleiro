@@ -11,6 +11,8 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.liveRound();
     case "chemistry":
       return session.chemistry();
+    case "awards":
+      return session.awards();
     case "matchPage":
       return session.matchPage(...request.args);
     case "turningPoint":
