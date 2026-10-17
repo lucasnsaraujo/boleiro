@@ -103,7 +103,8 @@ describe("a save from before the album", () => {
     let state = loadNewGame(SEED, { coachClubId: FIRST });
     const playedBy = (game: GameState) => game.fixtures.filter((f) => f.result && (f.homeId === FIRST || f.awayId === FIRST)).length;
     while (playedBy(state) < 2) state = advanceDay(state, {}).state;
-    const { squads: _dropped, ...current } = state.history.current;
+    const current = { ...state.history.current };
+    Reflect.deleteProperty(current, "squads");
     state = { ...state, history: { ...state.history, current } };
     while (playedBy(state) < 3) state = advanceDay(state, {}).state;
     const since = state.history.current.squadsSince;

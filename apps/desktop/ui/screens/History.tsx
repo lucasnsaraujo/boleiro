@@ -1,26 +1,34 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import type { Club } from "@boleiro/data/clubs";
 import type { GameState } from "@boleiro/engine/sim/gameState";
-import type { CrowdMark, MatchMark, TransferMark } from "@boleiro/engine/sim/history/history";
-import type { EggAlbum } from "@boleiro/game-client/eggs/eggAlbum";
+import type { MatchMark } from "@boleiro/engine/sim/history/history";
+import type { Album, AlbumSeason, TitlePage as Title } from "@boleiro/game-client/album/albumOf";
 import { useServices } from "../app/ServicesContext.js";
+import { CareerRecords } from "../album/CareerRecords.js";
+import { matchText, MoreRecords, RecordLine } from "../album/RecordLines.js";
+import { SeasonBook } from "../album/SeasonBook.js";
+import { TitlePage } from "../album/TitlePage.js";
+import { TitlePlate } from "../album/TitlePlate.js";
+import { TrophyRoom } from "../album/TrophyRoom.js";
+import { plateColours } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { competitionKeyName } from "@boleiro/game-client/format/competitionName";
 import { formatMonthYear } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
-import { championRoll, clubPast, coachCareer, rollKeys, scorerRoll, type CareerStint } from "../history/historySelectors.js";
+import { championRoll, clubPast, coachCareer, rollKeys, scorerRoll, type CareerStint, type ClubPast } from "../history/historySelectors.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import { useMatchFile } from "../matchPage/MatchFile.js";
 import { EggAlbumPanel } from "../eggs/EggAlbumPanel.js";
+import "../album/album.css";
 import "./history.css";
 
 const HISTORY_KEYS = ["season", "coachClubId", "clubs", "history", "coach", "fixtures"] as const;
 type HistoryState = Pick<GameState, (typeof HISTORY_KEYS)[number]>;
-type Clubs = Readonly<Record<string, Club>>;
 
 const TABS = [
   { id: "clube", title: "Clube" },
+  { id: "titulos", title: "Títulos" },
+  { id: "recordes", title: "Recordes" },
   { id: "campeoes", title: "Campeões" },
   { id: "artilheiros", title: "Artilheiros" },
   { id: "carreira", title: "Carreira" },
@@ -28,46 +36,55 @@ const TABS = [
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
-const IDOLS_SHOWN = 8;
+const IDOLS_SHOWN = 4;
 
 const isTabId = (value: string | null): value is TabId => TABS.some((tab) => tab.id === value);
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
-/** Champions, top scorers, a club's records and idols, and the coach's career, kept across seasons. */
+/**
+ * The career's history as its album: each club's seasons as sticker pages, the title pages, the
+ * records, then the champions and top scorers of every year, the coach's career and the rare stickers.
+ * In a hot-seat game each coach opens his own album.
+ */
 export function History() {
   const { engine, game } = useServices();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [state, setState] = useState<HistoryState | null>(null);
-  const [album, setAlbum] = useState<EggAlbum | null>(null);
+  const [album, setAlbum] = useState<Album | null>(null);
+  const [seat, setSeat] = useState(0);
   const [failed, setFailed] = useState(false);
   const [pickedTab, setPickedTab] = useState<TabId | null>(null);
   const [pickedClubId, setPickedClubId] = useState<string | null>(null);
+  const [openTitle, setOpenTitle] = useState<Title | null>(null);
+  const matchFile = useMatchFile();
   const round = usePlayRound(() => navigate("/hub"));
 
   useEffect(() => {
     let current = true;
-    Promise.all([engine.read(HISTORY_KEYS), engine.eggAlbum()]).then(
-      ([read, eggs]) => {
+    Promise.all([engine.read(HISTORY_KEYS), engine.album(seat)]).then(
+      ([read, pages]) => {
         if (!current) return;
         setState(read);
-        setAlbum(eggs);
+        setAlbum(pages);
       },
       () => current && setFailed(true),
     );
     return () => {
       current = false;
     };
-  }, [engine]);
+  }, [engine, seat]);
 
   const keys = useMemo(() => (state ? rollKeys(state.clubs, state.coachClubId) : []), [state]);
 
   if (failed) return <p className="status error">Nenhum jogo aberto.</p>;
-  if (!state) return <p className="status">Abrindo a história…</p>;
+  if (!state || !album) return <p className="status">Abrindo a história…</p>;
 
-  const clubId = pickedClubId ?? state.coachClubId ?? state.history.coach.stints.at(-1)?.clubId ?? null;
-  // The rarities stay out of sight until the career finds its first one.
-  const tabs = TABS.filter((tab) => (tab.id !== "clube" || clubId) && (tab.id !== "raridades" || album?.found.length));
+  const isSeated = album.shown === 0;
+  const coachName = album.coachName || game.current?.coachName || "Técnico";
+  const clubId = pickedClubId ?? (isSeated ? state.coachClubId : null) ?? album.seasons[0]?.clubId ?? state.history.coach.stints.at(-1)?.clubId ?? null;
+  // The rarities stay out of sight until the career finds its first one; another coach's album has no career page here.
+  const tabs = TABS.filter((tab) => (tab.id !== "clube" || clubId) && (tab.id !== "raridades" || album.eggs.found.length) && (tab.id !== "carreira" || isSeated));
   const asked = params.get("aba");
   const wanted = pickedTab ?? (isTabId(asked) ? asked : "clube");
   const shown = tabs.find((tab) => tab.id === wanted) ?? tabs[0];
@@ -75,6 +92,11 @@ export function History() {
   function openClub(id: string) {
     setPickedClubId(id);
     setPickedTab("clube");
+  }
+
+  function openSeat(index: number) {
+    setSeat(index);
+    setPickedClubId(null);
   }
 
   return (
@@ -88,6 +110,15 @@ export function History() {
             </button>
           ))}
         </div>
+        {album.coaches.length > 1 && (
+          <div className="seg history-seats" role="group" aria-label="Álbum de">
+            {album.coaches.map((name, index) => (
+              <button key={name} className={index === album.shown ? "on" : undefined} aria-pressed={index === album.shown} onClick={() => openSeat(index)}>
+                {name}
+              </button>
+            ))}
+          </div>
+        )}
         <Link className="btn-quiet history-awards" to="/awards">
           <i className="ph-bold ph-trophy" aria-hidden="true" />
           Prêmios e recordes
@@ -98,12 +129,26 @@ export function History() {
       </header>
       {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
       <div className="history-body" role="tabpanel" aria-label={shown?.title}>
-        {shown?.id === "clube" && clubId && <ClubPanel state={state} clubId={clubId} />}
+        {shown?.id === "clube" && clubId && <ClubAlbum state={state} album={album} clubId={clubId} coachName={coachName} onOpenTitle={setOpenTitle} onOpenMatch={matchFile.open} />}
+        {shown?.id === "titulos" && <TrophyRoom titles={album.titles} clubs={state.clubs} onOpen={setOpenTitle} />}
+        {shown?.id === "recordes" && <CareerRecords records={album.records} clubs={state.clubs} coachName={coachName} />}
         {shown?.id === "campeoes" && <ChampionsPanel state={state} keys={keys} onOpenClub={openClub} />}
         {shown?.id === "artilheiros" && <ScorersPanel state={state} keys={keys} />}
         {shown?.id === "carreira" && <CareerPanel state={state} coachName={game.current?.coachName ?? "Técnico"} />}
-        {shown?.id === "raridades" && album && <EggAlbumPanel album={album} />}
+        {shown?.id === "raridades" && <EggAlbumPanel album={album.eggs} />}
       </div>
+      {openTitle && (
+        <TitlePage
+          title={openTitle}
+          clubs={state.clubs}
+          onClose={() => setOpenTitle(null)}
+          onOpenMatch={(ref) => {
+            setOpenTitle(null);
+            matchFile.open(ref);
+          }}
+        />
+      )}
+      {matchFile.file}
     </div>
   );
 }
@@ -115,45 +160,40 @@ function recordFixtureId(state: HistoryState, clubId: string, mark: MatchMark | 
   return state.fixtures.find((f) => f.result && f.date === mark.date && f.homeId === homeId && f.awayId === awayId)?.id ?? null;
 }
 
-function ClubPanel({ state, clubId }: { state: HistoryState; clubId: string }) {
-  const matchFile = useMatchFile();
+type ClubAlbumProps = { state: HistoryState; album: Album; clubId: string; coachName: string; onOpenTitle: (title: Title) => void; onOpenMatch: (ref: string) => void };
+
+/** The club in the album: the coach's seasons there, one spread each, or for a club he never ran its titles, campaigns, idols and records. */
+function ClubAlbum({ state, album, clubId, coachName, onOpenTitle, onOpenMatch }: ClubAlbumProps) {
   const club = state.clubs[clubId];
   const past = clubPast(state, clubId);
-  const titleCount = past.titles.reduce((sum, t) => sum + t.seasons.length, 0);
+  const seasons = album.seasons.filter((season) => season.clubId === clubId);
   if (!club) return null;
+  const right = (season: AlbumSeason | null) => (
+    <ClubPage state={state} clubId={clubId} past={past} titles={album.titles.filter((t) => season?.titleIds.includes(t.id))} season={season?.season ?? null} onOpenTitle={onOpenTitle} onOpenMatch={onOpenMatch} />
+  );
+  if (seasons.length) {
+    return (
+      <SeasonBook key={`${album.shown}-${clubId}`} clubId={clubId} seasons={seasons} clubs={state.clubs} coachName={coachName}>
+        {right}
+      </SeasonBook>
+    );
+  }
+  const titleCount = past.titles.reduce((sum, t) => sum + t.seasons.length, 0);
+  const colours = plateColours(club.colours);
   return (
-    <>
-      <section className="history-band">
-        <Crest club={club} size={64} />
-        <h2 className="history-band-name">{club.shortName}</h2>
-        <p className="history-count">
-          <span className="history-count-n">{titleCount}</span>
-          <span className="history-count-l">{titleCount === 1 ? "título" : "títulos"}</span>
-        </p>
-      </section>
-      <div className="history-columns">
-        <div>
-          <section aria-labelledby="history-titles-title">
-            <h3 id="history-titles-title" className="history-section-title">
-              Títulos
-            </h3>
-            {past.titles.length === 0 ? (
-              <p className="history-empty">Nenhum título desde {state.history.seasons[0]?.season ?? state.season}.</p>
-            ) : (
-              <ul className="history-list" aria-labelledby="history-titles-title">
-                {past.titles.map((title) => (
-                  <li key={title.key} className="history-line">
-                    <span className="history-line-main">
-                      <b className="history-times">{title.seasons.length}x</b> {competitionKeyName(title.key)}
-                    </span>
-                    <span className="history-line-side">{title.seasons.join(", ")}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+    <div className="ab-book" style={{ "--c": colours.background, "--ic": colours.text } as CSSProperties}>
+      <div className="ab-spread">
+        <section className="ab-page is-left" aria-labelledby="ab-club-name">
+          <header className="ab-ph">
+            <Crest club={club} size={56} />
+            <div className="ab-ph-text">
+              <h2 id="ab-club-name">{club.shortName}</h2>
+              <p>{titleCount === 1 ? "1 título no jogo" : `${titleCount} títulos no jogo`}</p>
+            </div>
+          </header>
+          <ClubTitles state={state} past={past} />
           <section aria-labelledby="history-finishes-title">
-            <h3 id="history-finishes-title" className="history-section-title">
+            <h3 id="history-finishes-title" className="ab-sec">
               Campanhas
             </h3>
             {past.finishes.length === 0 ? (
@@ -171,84 +211,96 @@ function ClubPanel({ state, clubId }: { state: HistoryState; clubId: string }) {
               </ul>
             )}
           </section>
-        </div>
-        <div>
-          <section aria-labelledby="history-records-title">
-            <h3 id="history-records-title" className="history-section-title">
-              Recordes
-            </h3>
-            <dl className="history-records">
-              <RecordLine term="Maior vitória" mark={matchText(past.records.biggestWin, state.clubs)} matchRef={recordFixtureId(state, clubId, past.records.biggestWin)} onOpen={matchFile.open} />
-              <RecordLine term="Maior derrota" mark={matchText(past.records.biggestLoss, state.clubs)} matchRef={recordFixtureId(state, clubId, past.records.biggestLoss)} onOpen={matchFile.open} />
-              <RecordLine term="Maior público" mark={crowdText(past.records.biggestCrowd, state.clubs)} />
-              <RecordLine term="Maior venda" mark={transferText(past.records.recordSale, state.clubs, "para")} />
-              <RecordLine term="Maior contratação" mark={transferText(past.records.recordSigning, state.clubs, "de")} />
-            </dl>
-          </section>
-          <section aria-labelledby="history-idols-title">
-            <h3 id="history-idols-title" className="history-section-title">
-              Ídolos
-            </h3>
-            {past.idols.length === 0 ? (
-              <p className="history-empty">Nenhum ídolo ainda.</p>
-            ) : (
-              <ol className="history-list" aria-labelledby="history-idols-title">
-                {past.idols.slice(0, IDOLS_SHOWN).map((idol) => (
-                  <li key={idol.playerId} className="history-line">
-                    <span className="history-line-main">{idol.name}</span>
-                    <span className="history-line-side">
-                      {plural(idol.apps, "jogo", "jogos")} · {plural(idol.goals, "gol", "gols")}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </section>
-        </div>
+        </section>
+        <section className="ab-page is-right" aria-label={`Ídolos e recordes: ${club.shortName}`}>
+          {right(null)}
+        </section>
       </div>
-      {matchFile.file}
-    </>
-  );
-}
-
-type RecordText = { main: string; detail: string } | null;
-
-/** A record's line; a record match still on this season's calendar opens its ficha. */
-function RecordLine({ term, mark, matchRef = null, onOpen }: { term: string; mark: RecordText; matchRef?: string | null; onOpen?: (matchRef: string) => void }) {
-  const main = mark ? mark.main : "–";
-  return (
-    <div>
-      <dt>{term}</dt>
-      <dd>
-        {matchRef && onOpen ? (
-          <button type="button" className="history-record-open" aria-label={`${term}: ${main}, ficha do jogo`} onClick={() => onOpen(matchRef)}>
-            {main}
-          </button>
-        ) : (
-          main
-        )}
-        {mark && <small>{mark.detail}</small>}
-      </dd>
     </div>
   );
 }
 
-const nameOf = (clubs: Clubs, id: string) => clubs[id]?.shortName ?? id;
-
-function matchText(mark: MatchMark | null, clubs: Clubs): RecordText {
-  if (!mark) return null;
-  return { main: `${mark.goalsFor} x ${mark.goalsAgainst} ${nameOf(clubs, mark.opponentId)}`, detail: `${competitionKeyName(mark.competition)} ${mark.season}` };
+function ClubTitles({ state, past }: { state: HistoryState; past: ClubPast }) {
+  return (
+    <section aria-labelledby="history-titles-title">
+      <h3 id="history-titles-title" className="ab-sec">
+        Títulos do clube
+      </h3>
+      {past.titles.length === 0 ? (
+        <p className="history-empty">Nenhum título desde {state.history.seasons[0]?.season ?? state.season}.</p>
+      ) : (
+        <ul className="history-list" aria-labelledby="history-titles-title">
+          {past.titles.map((title) => (
+            <li key={title.key} className="history-line">
+              <span className="history-line-main">
+                <b className="history-times">{title.seasons.length}x</b> {competitionKeyName(title.key)}
+              </span>
+              <span className="history-line-side">{title.seasons.join(", ")}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
 }
 
-function crowdText(mark: CrowdMark | null, clubs: Clubs): RecordText {
-  if (!mark) return null;
-  return { main: mark.crowd.toLocaleString("pt-BR"), detail: `x ${nameOf(clubs, mark.opponentId)}, ${competitionKeyName(mark.competition)} ${mark.season}` };
-}
+type ClubPageProps = { state: HistoryState; clubId: string; past: ClubPast; titles: readonly Title[]; season: number | null; onOpenTitle: (title: Title) => void; onOpenMatch: (ref: string) => void };
 
-function transferText(mark: TransferMark | null, clubs: Clubs, preposition: "para" | "de"): RecordText {
-  if (!mark) return null;
-  const other = mark.otherClubId ? nameOf(clubs, mark.otherClubId) : preposition === "para" ? "o exterior" : "fora";
-  return { main: formatMoney(mark.fee), detail: `${mark.name}, ${preposition} ${other}` };
+/** The right page: the season's titles, then the club's idols, records and titles. */
+function ClubPage({ state, clubId, past, titles, season, onOpenTitle, onOpenMatch }: ClubPageProps) {
+  const club = state.clubs[clubId];
+  const records = past.records;
+  return (
+    <>
+      {season !== null && titles.length > 0 && (
+        <section aria-labelledby="ab-season-titles">
+          <h3 id="ab-season-titles" className="ab-sec">
+            Títulos de {season} <span>páginas especiais</span>
+          </h3>
+          <ul className="ab-plates">
+            {titles.map((title, i) => (
+              <li key={title.id}>
+                <TitlePlate title={title} clubs={state.clubs} order={i} onOpen={onOpenTitle} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      <section aria-labelledby="history-idols-title">
+        <h3 id="history-idols-title" className="ab-sec">
+          Ídolos <span>brilham para sempre no álbum</span>
+        </h3>
+        {past.idols.length === 0 ? (
+          <p className="history-empty">Nenhum ídolo ainda.</p>
+        ) : (
+          <ol className="ab-idols" aria-labelledby="history-idols-title">
+            {past.idols.slice(0, IDOLS_SHOWN).map((idol, i) => (
+              <li key={idol.playerId} className="ab-idol" style={{ "--i": i } as CSSProperties}>
+                <span className="ab-idol-art" aria-hidden="true">
+                  <b>{idol.name.trim().charAt(0).toUpperCase()}</b>
+                </span>
+                <span className="ab-idol-name">{idol.name}</span>
+                <span className="ab-idol-sub">
+                  {plural(idol.apps, "jogo", "jogos")} · {plural(idol.goals, "gol", "gols")}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+      <section aria-labelledby="history-records-title">
+        <h3 id="history-records-title" className="ab-sec">
+          Recordes
+        </h3>
+        <dl className="history-records">
+          <RecordLine term="Maior vitória" mark={matchText(records.biggestWin, state.clubs)} matchRef={recordFixtureId(state, clubId, records.biggestWin)} onOpen={onOpenMatch} />
+          <RecordLine term="Maior derrota" mark={matchText(records.biggestLoss, state.clubs)} matchRef={recordFixtureId(state, clubId, records.biggestLoss)} onOpen={onOpenMatch} />
+          <MoreRecords records={records} clubs={state.clubs} />
+        </dl>
+      </section>
+      {season !== null && club && <ClubTitles state={state} past={past} />}
+    </>
+  );
 }
 
 function ChampionsPanel({ state, keys, onOpenClub }: { state: HistoryState; keys: readonly string[]; onOpenClub: (id: string) => void }) {

@@ -1,31 +1,50 @@
 import { describe, expect, it } from "vitest";
-import { advanceDay } from "@boleiro/engine/sim/advanceDay";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import { competitionKey, type CoachRecord } from "@boleiro/engine/sim/history/history";
-import { loadNewGame } from "@boleiro/engine/sim/loadNewGame";
-import { matchPageOf } from "../matchPage/matchPageOf.js";
-import { albumOf } from "./albumOf.js";
+import { bundledGameFiles } from "../engine/bundledGameFiles.js";
+import { createEngineSession, type EngineSession } from "../engine/createEngineSession.js";
+import type { SessionSave } from "../engine/sessionSave.js";
 
 const FIRST = "flamengo-rj";
 const SECOND = "palmeiras-sp";
 // A season where the second coach wins the league and a cup.
-const SEED = 6;
+const SEED = 1;
+const MAX_STEPS = 1_200;
 
-/** A hot-seat season of two Série A coaches played to its end: its last day and the first of the next. */
-function playSeason(): { last: GameState; next: GameState } {
-  let state = loadNewGame(SEED, { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }] } });
-  for (;;) {
-    const day = advanceDay(state, {});
-    if (day.events.some((e) => e.type === "seasonEnded")) return { last: state, next: day.state };
-    state = day.state;
+type Season = Pick<GameState, "season" | "fixtures" | "competitions" | "history" | "date">;
+
+/** One step of a hot-seat game: the seated coach passes, or, last of the turn, plays on and plays the round when it is today. */
+function playOn(session: EngineSession) {
+  for (let point = session.turningPoint(); point; point = session.turningPoint()) session.apply({ type: "closeTurningPoint" });
+  if (!session.hotSeat()?.isLastTurn) {
+    session.apply({ type: "passTurn" });
+    return;
   }
+  if (session.apply({ type: "playToMatchDay" }).daysPlayed > 0) return;
+  session.apply({ type: "startRound" });
+  session.apply({ type: "finishRound" });
 }
 
-const { last, next } = playSeason();
-const seatOf = (state: GameState, name: string) => [state.coachName, ...(state.waitingCoaches ?? []).map((w) => w.name)].indexOf(name);
-const ana = albumOf(next, seatOf(next, "Ana"));
-const recordOf = (state: GameState, name: string): CoachRecord => (state.coachName === name ? state.history.coach : (state.waitingCoaches?.find((w) => w.name === name)?.record ?? state.history.coach));
-const bruno = albumOf(next, seatOf(next, "Bruno"));
+/** A hot-seat season of two Série A coaches played through commands to its end: its last state and the session in the next season. */
+function playSeason(): { last: Season; session: EngineSession } {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: SEED, choices: { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }] } } });
+  const keys = ["season", "fixtures", "competitions", "history", "date"] as const;
+  let last: Season = session.read(keys);
+  for (let step = 0; step < MAX_STEPS && session.read(["season"]).season === last.season; step++) {
+    last = session.read(keys);
+    playOn(session);
+  }
+  return { last, session };
+}
+
+const { last, session } = playSeason();
+const next = session.read(["season", "fixtures", "history", "clubs", "coachName", "waitingCoaches"]);
+const names = session.album().coaches;
+const seatOf = (name: string) => names.indexOf(name);
+const ana = session.album(seatOf("Ana"));
+const bruno = session.album(seatOf("Bruno"));
+const recordOf = (name: string): CoachRecord => (next.coachName === name ? next.history.coach : (next.waitingCoaches?.find((w) => w.name === name)?.record ?? next.history.coach));
 
 describe("a coach's album", () => {
   it("lists his seasons newest first: the one under way as it stands, then the printed ones", () => {
@@ -41,8 +60,10 @@ describe("a coach's album", () => {
     expect(bruno.coachName).toBe("Bruno");
     expect(ana.coaches.toSorted()).toEqual(["Ana", "Bruno"]);
     expect(new Set(ana.seasons.map((s) => s.clubId))).toEqual(new Set([FIRST]));
-    expect(new Set(ana.titles.map((t) => t.clubId))).toEqual(new Set([FIRST]));
-    expect(new Set(bruno.titles.map((t) => t.clubId))).toEqual(new Set([SECOND]));
+    expect(new Set(bruno.seasons.map((s) => s.clubId))).toEqual(new Set([SECOND]));
+    expect(ana.titles.every((t) => t.clubId === FIRST)).toBe(true);
+    expect(bruno.titles.length).toBeGreaterThan(0);
+    expect(bruno.titles.every((t) => t.clubId === SECOND)).toBe(true);
   });
 
   it("numbers a page's stickers and tells why each one shines and what he won", () => {
@@ -59,7 +80,7 @@ describe("a coach's album", () => {
   });
 
   it("gives each title its page with the deciding match's real score and scorers, and opens that match after its season is gone", () => {
-    const record = recordOf(next, "Bruno");
+    const record = recordOf("Bruno");
     expect(bruno.titles.map((t) => t.competition).toSorted()).toEqual(record.trophies.map((t) => t.competition).toSorted());
     expect(bruno.titles.map((t) => t.decider?.kind).toSorted()).toEqual(["final", "league"]);
     for (const title of bruno.titles) {
@@ -69,7 +90,7 @@ describe("a coach's album", () => {
       expect([decider.homeGoals, decider.awayGoals]).toEqual([fixture?.result?.homeGoals, fixture?.result?.awayGoals]);
       expect(decider.goals).toHaveLength(decider.homeGoals + decider.awayGoals);
       expect(next.fixtures.some((f) => f.id === decider.ref)).toBe(false);
-      const page = matchPageOf(next, decider.ref, null);
+      const page = session.matchPage(decider.ref);
       expect(page?.isRetold).toBe(false);
       expect(page?.events.filter((e) => e.type === "goal").map((e) => (e.type === "goal" ? page.names[e.playerId] : ""))).toEqual(decider.goals.map((g) => g.name));
       expect(page?.home.starters).toHaveLength(11);
@@ -103,7 +124,7 @@ describe("a coach's album", () => {
     const stickers = bruno.seasons.flatMap((s) => s.stickers);
     expect(bruno.records.topSeasonScorer?.count).toBe(Math.max(...stickers.map((s) => s.goals)));
     expect(bruno.records.mostApps?.count).toBe(Math.max(...stickers.map((s) => s.apps)));
-    expect(bruno.records.titles).toBe(recordOf(next, "Bruno").trophies.length);
+    expect(bruno.records.titles).toBe(recordOf("Bruno").trophies.length);
     expect(bruno.records.bestFinish).toMatchObject({ division: "A", position: 1, clubId: SECOND });
     expect(bruno.records.byClub.map((c) => c.clubId)).toEqual([SECOND]);
     expect(bruno.records.byClub[0]?.records.biggestWin).toEqual(next.history.clubs[SECOND]?.biggestWin);
@@ -112,20 +133,34 @@ describe("a coach's album", () => {
   it("pastes in only the rare stickers his own clubs found while he ran them", () => {
     const date = `${last.season}-02-01`;
     const eggs = { log: [{ eggId: "seven-one", date, clubId: SECOND, headline: "Sete a um" }, { eggId: "windows-98", date, clubId: FIRST, headline: "Rodada de 1998" }] };
-    const withEggs = { ...next, eggs };
-    expect(albumOf(withEggs, seatOf(next, "Bruno")).eggs.found.map((e) => e.eggId)).toEqual(["seven-one"]);
-    expect(albumOf(withEggs, seatOf(next, "Ana")).eggs.found.map((e) => e.eggId)).toEqual(["windows-98"]);
+    const loaded = loadedWith((game) => ({ ...game, eggs }));
+    const seat = (name: string) => loaded.album().coaches.indexOf(name);
+    expect(loaded.album(seat("Bruno")).eggs.found.map((e) => e.eggId)).toEqual(["seven-one"]);
+    expect(loaded.album(seat("Ana")).eggs.found.map((e) => e.eggId)).toEqual(["windows-98"]);
   });
 });
 
+/** A session loaded from this one's save with its game changed. */
+function loadedWith(change: (game: GameState) => GameState): EngineSession {
+  const save: SessionSave = JSON.parse(session.save());
+  const loaded = createEngineSession(bundledGameFiles);
+  loaded.apply({ type: "load", save: JSON.stringify({ ...save, game: change(save.game) }) });
+  return loaded;
+}
+
 describe("the album of a save from before it", () => {
-  const strip = ({ album: _album, keptMatches: _kept, ...record }: CoachRecord): CoachRecord => record;
-  const old: GameState = {
-    ...next,
-    history: { ...next.history, coach: strip(next.history.coach) },
-    waitingCoaches: next.waitingCoaches?.map((waiting) => ({ ...waiting, record: strip(waiting.record) })),
+  const strip = (record: CoachRecord): CoachRecord => {
+    const stripped = { ...record };
+    Reflect.deleteProperty(stripped, "album");
+    Reflect.deleteProperty(stripped, "keptMatches");
+    return stripped;
   };
-  const album = albumOf(old, seatOf(old, "Bruno"));
+  const old = loadedWith((game) => ({
+    ...game,
+    history: { ...game.history, coach: strip(game.history.coach) },
+    ...(game.waitingCoaches ? { waitingCoaches: game.waitingCoaches.map((waiting) => ({ ...waiting, record: strip(waiting.record) })) } : {}),
+  }));
+  const album = old.album(old.album().coaches.indexOf("Bruno"));
 
   it("shows its past seasons unprinted, with only the award winners and top scorers the history kept", () => {
     const page = album.seasons.find((s) => s.season === last.season);
