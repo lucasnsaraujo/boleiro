@@ -29,6 +29,8 @@ import { closeSeasonHistory } from "../history/closeSeasonHistory.js";
 import { recordStrengths } from "../history/recordStrengths.js";
 import { recordDayEvents } from "../history/recordDayEvents.js";
 import { recordMatches } from "../history/recordMatches.js";
+import { recordFeats } from "../history/recordFeats.js";
+import { recordRatings } from "../history/recordRatings.js";
 import { recordElevens } from "../chemistry/recordElevens.js";
 import { clubMood } from "../morale/clubMood.js";
 import { reactToDay } from "../morale/reactToDay.js";
@@ -102,7 +104,8 @@ function redrawnOutcome(state: GameState, coachMatch: CoachMatch, events: readon
   const penaltyWinnerId = shootoutWinnerOf(events, fixture.homeId, fixture.awayId) ?? shootoutOfOldSave(state, coachMatch, { ...fixture, result: score }, events, random.next);
   const played = { ...fixture, result: penaltyWinnerId ? { ...score, penaltyWinnerId } : score };
   const { home, away, minutes } = playedBy(coachMatch, events, fixture.homeId, fixture.awayId);
-  const injuries = new Map(events.flatMap((e) => (e.type === "injury" ? [[e.playerId, e.days] as const] : [])));
+  // A match saved before injury kinds calls its injuries knocks.
+  const injuries = new Map(events.flatMap((e) => (e.type === "injury" ? [[e.playerId, { days: e.days, kind: e.kind ?? "knock", isRecurrence: e.isRecurrence === true }] as const] : [])));
   const scorers = { home: scorersFor(events, fixture.homeId), away: scorersFor(events, fixture.awayId) };
   const match = { played, context: coachMatch.context, awayTravelKm: coachMatch.awayTravelKm, lineups: { home, away }, minutes, bookings, injuries, scorers };
   return coachOutcome(state, competition, match, random.next);
@@ -203,7 +206,10 @@ export function finishMatchDay(live: LiveDay): DayResult {
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: day.discipline, coach };
   if (state.waitingCoaches) next = { ...next, waitingCoaches: withWaitingTactics(state.waitingCoaches, decisions.waiting ?? [], (clubId) => liveTacticsOf(live, clubId)) };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
-  const bonuses = payTitleBonuses(next, recordMatches(recordElevens(next, played, day.sheets, state), played, day.sheets));
+  const elevens = recordElevens(next, played, day.sheets, state);
+  const feats = recordFeats(recordMatches(elevens, played, day.sheets), elevens, played, day.sheets);
+  events.push(...feats.events);
+  const bonuses = payTitleBonuses(next, recordRatings(feats.state, state, played, day.sheets, live.matches));
   next = bonuses.state;
   events.push(...bonuses.events);
   next = recordMatchFinances(next, played);
@@ -243,7 +249,9 @@ export function finishMatchDay(live: LiveDay): DayResult {
   if (next.date.slice(0, 4) !== String(state.season)) {
     const continentalField = seasonEndField(next);
     const runs = seasonRuns(next);
-    const academies = turnOverAcademies(closeSeasonHistory(next));
+    const filed = closeSeasonHistory(next);
+    const awards = filed.history.seasons.at(-1)?.awards;
+    const academies = turnOverAcademies(filed);
     const developed = developPlayers(academies.state);
     const retired = retiredPlayers(academies.state, developed.events);
     const ended = endSeason(developed.state);
@@ -253,7 +261,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     // The clubs that change coach before the season, and any whose human coach's contract ended, open their jobs on the coaches' own stream.
     const started = { ...begun, state: moveAiCoaches(begun.state, marked, begun.vacancies, state.date).state };
     started.waitingEvents.forEach((own, index) => waitingEvents[index]?.push(...own));
-    events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...academies.events, ...developed.events, ...started.events);
+    events.push({ type: "seasonEnded", season: state.season, outcomes: ended.outcomes }, ...(awards ? [{ type: "seasonAwarded" as const, season: state.season, awards }] : []), ...academies.events, ...developed.events, ...started.events);
     // Bans still pending when a competition ends lapse with it.
     const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
     next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };

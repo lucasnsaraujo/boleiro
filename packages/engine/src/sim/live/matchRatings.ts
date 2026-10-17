@@ -52,6 +52,11 @@ const SCORES: Record<PositionGroup, { mean: number; sd: number }> = {
 const LOWEST = 3;
 const HIGHEST = 10;
 
+/** The mean match rating FotMob gives a player of the group in Série A; ratings here land on the same spread. */
+export function typicalRating(group: PositionGroup): number {
+  return FOTMOB[group].mean;
+}
+
 /** A player's score; the result counts by the share of the match (`end` minutes long) he played. */
 function scoreOf(s: PlayerStats, margin: number, isCleanSheet: boolean, end: number): number {
   // Missed penalties cost their own price, so they leave the taker's other shots.

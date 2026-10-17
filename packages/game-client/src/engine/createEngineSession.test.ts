@@ -14,8 +14,8 @@ import { createEngineSession, type CommandResults, type CommandType, type GameCo
 
 const CLUB = "flamengo-rj";
 const SEED = 7;
-// The season test needs a coach the board keeps all year; the board sacks him on seeds 1, 2, 3, 7 and 8 of today's engine.
-const SEASON_SEED = 4;
+// The season test needs a coach the board keeps all year, and the events test an event that asks him within it: seed 8 gives both on today's engine.
+const SEASON_SEED = 8;
 // Enough steps for a season of play-ons and match days; a stuck loop fails instead of hanging.
 const MAX_STEPS = 400;
 
@@ -363,6 +363,21 @@ function playCaptain() {
   return { recorded, before, kid, named, plan, save: session.save() };
 }
 
+/** Retires one of the coach's players and asks a veteran who announced his last season to stay. */
+function playPlayerLife() {
+  const recorded = recordedSession();
+  const { session, apply } = recorded;
+  apply({ type: "newGame", seed: SEED, choices: { coachClubId: CLUB } });
+  const [retiring, veteran] = Object.values(session.read(["players"]).players).filter((p) => p.clubId === CLUB);
+  if (!retiring || !veteran) throw new Error("the coach's club has players");
+  apply({ type: "retirePlayer", playerId: retiring.id });
+  const saved = JSON.parse(session.save()) as { game: { players: Record<string, SimPlayer> } };
+  saved.game.players[veteran.id] = { ...veteran, retiring: { afterSeason: 2026, hasBeenAsked: false } };
+  apply({ type: "load", save: JSON.stringify(saved) });
+  apply({ type: "persuadeToStay", playerId: veteran.id });
+  return { recorded };
+}
+
 let season: Season;
 let career: ReturnType<typeof playCareerStart>;
 let marketWindow: ReturnType<typeof playMarketWindow>;
@@ -578,7 +593,7 @@ test("the money commands survive JSON and replay alike from the same seed", () =
 });
 
 test("the season, career, market, money, academy and hot-seat logs between them send every kind of command", () => {
-  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, scouting, playHotSeatTurn()].flatMap(({ recorded }) => recorded.applied);
+  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, scouting, playHotSeatTurn(), playPlayerLife()].flatMap(({ recorded }) => recorded.applied);
   const sent = new Set(logs.map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
@@ -615,6 +630,8 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     watchPlayer: true,
     saveFilter: true,
     deleteFilter: true,
+    retirePlayer: true,
+    persuadeToStay: true,
   };
   expect([...sent].sort()).toEqual(Object.keys(every).sort());
 });

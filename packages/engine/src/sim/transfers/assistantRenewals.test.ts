@@ -69,6 +69,16 @@ describe("the assistant's renewals", () => {
     expect(after.players[star.id]?.contractUntil).toBe("2026-12-31");
   });
 
+  it("leaves alone a player who announced his last season, whichever day he looks", () => {
+    const retiring = { ...ending, retiring: { afterSeason: 2026, hasBeenAsked: false } };
+    const rich = withFinance(start, { wageCap: 1e10 });
+    for (const date of ["2026-03-03", "2026-12-31"]) {
+      const { state: after, events } = runTransferDay(on(rich, date, retiring), []);
+      expect(renewalsOf(events).map((e) => e.playerId)).not.toContain(star.id);
+      expect(after.players[star.id]?.contractUntil).toBe("2026-12-31");
+    }
+  });
+
   it("does nothing for a coach who took contracts back", () => {
     const state = on(withFinance(start, { wageCap: 1e10 }), "2026-03-03", ending);
     const handsOff = { ...state, coach: withAssistantDuty(state.coach, "contracts", false) };

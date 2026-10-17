@@ -15,6 +15,7 @@ import { finishMatchDay } from "@boleiro/engine/sim/live/finishMatchDay";
 import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
 import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
 import { withPackPositions } from "@boleiro/engine/sim/players/withPackPositions";
+import { persuadeToStay, retirePlayer, type PlayerPersuaded } from "@boleiro/engine/sim/players/retirement";
 import { newGameFromFiles, type GameFiles } from "@boleiro/engine/sim/loadNewGame";
 import type { NewGameOptions } from "@boleiro/engine/sim/newGame";
 import { answerBid, type BidAnswer, type BidOutcome } from "@boleiro/engine/sim/transfers/answerBid";
@@ -30,10 +31,11 @@ import { eventsOfWaitingCoach, hotSeatViewOf, isHumanMatchDay, type HotSeatView 
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { isCoachMatchDay, playToMatchDay, stopReason, type StopReason } from "../hub/playToMatchDay.js";
 import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
-import { boardNotes, dueRequests, EMPTY_DESK, withRequest, type BoardDesk } from "../market/boardDesk.js";
+import { boardNotes, dueRequests, EMPTY_DESK, withoutLeavers, withRequest, type BoardDesk } from "../market/boardDesk.js";
 import type { MarketFilters } from "../market/marketFilters.js";
 import { EMPTY_SCOUTING, forgetFilter, keepFilter, watch, type Scouting } from "../market/scouting.js";
 import { isSigning, marketClockView, spendMarketTime, type MarketClock, type MarketClockView } from "../market/marketClock.js";
+import { awardsBook, type AwardsBook } from "../awards/awardsBook.js";
 import { chemistryPage, type ChemistryPage } from "../chemistry/chemistryPage.js";
 import { coachesPage, coachProfile, type CoachesPage, type CoachProfile } from "../coaches/coachesPage.js";
 import { matchPageOf, type MatchPage } from "../matchPage/matchPageOf.js";
@@ -118,6 +120,10 @@ type CommandFields = {
   saveFilter: { name: string; filters: MarketFilters };
   /** The coach in the seat forgets the market search saved under `name`. */
   deleteFilter: { name: string };
+  /** The coach in the seat retires one of his players now. */
+  retirePlayer: { playerId: string };
+  /** The coach in the seat asks one of his players who announced his last season to play one more year. */
+  persuadeToStay: { playerId: string };
 };
 
 /** What a move on a kid of the academy answers: null when it went through, and the sale it made. */
@@ -167,6 +173,8 @@ export type CommandResults = {
   watchPlayer: Scouting;
   saveFilter: Scouting;
   deleteFilter: Scouting;
+  retirePlayer: undefined;
+  persuadeToStay: PlayerPersuaded;
 };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
@@ -368,10 +376,14 @@ export function createEngineSession(files: GameFiles) {
     live = { ...live, day: { ...live.day, decisions: { ...decisions, requests: change(decisions.requests ?? []) } } };
   }
 
-  /** The desk after a day: the board's notes added, and the pending requests dropped if the coach changed club, since they were for the old board. */
+  /**
+   * The desk after a day: the board's notes added, and the pending requests dropped if the coach changed
+   * club, since they were for the old board, or if their player left the game.
+   */
   function noted(on: BoardDesk, before: GameState, day: { state: GameState; events: DayEvent[] }): BoardDesk {
     const notes = boardNotes(before, day.state, day.events);
-    const pending = day.state.coachClubId === before.coachClubId ? on.pending : [];
+    const kept = day.state.coachClubId === before.coachClubId ? withoutLeavers(on.pending, day.state) : [];
+    const pending = kept.length === on.pending.length ? on.pending : kept;
     if (!notes.answers.length && !notes.forcedSales.length) return pending === on.pending ? on : { ...on, pending };
     return {
       pending,
@@ -637,6 +649,20 @@ export function createEngineSession(files: GameFiles) {
       scouting = forgetFilter(scouting, name);
       return scouting;
     },
+    retirePlayer({ playerId }) {
+      const before = betweenDays("a player can't be retired");
+      const retired = retirePlayer(before, playerId);
+      state = retired.state;
+      desk = { ...desk, pending: withoutLeavers(desk.pending, retired.state) };
+      addNews(inboxLines(before, retired.state, [retired.event]));
+    },
+    persuadeToStay({ playerId }) {
+      const before = betweenDays("a player can't be asked to stay");
+      const asked = persuadeToStay(before, playerId);
+      state = asked.state;
+      addNews(inboxLines(before, asked.state, [asked.event]));
+      return asked.event;
+    },
     spendMarketTime({ seconds, playerId }) {
       const game = current();
       const isOwnPlayer = playerId !== undefined && game.coachClubId !== null && game.players[playerId]?.clubId === game.coachClubId;
@@ -654,6 +680,10 @@ export function createEngineSession(files: GameFiles) {
     /** The lineup sheet before kick-off on the coach's match day; with a formation, the assistant's eleven in it. */
     matchDayPlan(formation?: Formation): MatchDayPlan {
       return matchDayPlan(current(), formation);
+    },
+    /** The awards screen: the season under way so far, the filed seasons and the records. */
+    awards(): AwardsBook {
+      return awardsBook(current());
     },
     /** The coaches screen: the rankings as of `season` (the latest when left out), the job centre and the seated coach's own profile. */
     coaches(season?: number): CoachesPage {

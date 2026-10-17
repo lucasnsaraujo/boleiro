@@ -2,6 +2,7 @@ import type { Booking } from "../discipline/drawCards.js";
 import { openDisciplineDay } from "../discipline/recordCards.js";
 import type { Competition, Fixture, GameState, SimPlayer } from "../gameState.js";
 import type { MatchContext } from "../players/effectiveStrength.js";
+import type { Injury } from "../players/matchInjuryChance.js";
 import { recordMatchLoad } from "../players/recordMatchLoad.js";
 import type { MatchOutcome } from "./liveDay.js";
 
@@ -14,7 +15,7 @@ type PlayedCoachMatch = {
   /** Minutes of the players who did not play the whole match. */
   minutes: ReadonlyMap<string, number>;
   bookings: readonly Booking[];
-  injuries: ReadonlyMap<string, number>;
+  injuries: ReadonlyMap<string, Injury>;
   scorers: { home: readonly string[]; away: readonly string[] };
 };
 

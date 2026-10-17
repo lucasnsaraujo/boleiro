@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { advanceDay } from "../advanceDay.js";
 import type { Competition, Fixture, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { drawInjury } from "../players/matchInjuryChance.js";
+import { injuryStreamOf } from "../players/recordMatchLoad.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { applyLiveChange } from "./applyLiveChange.js";
 import { finishMatchDay } from "./finishMatchDay.js";
@@ -111,6 +113,27 @@ describe("extra time", () => {
     expect(straightReds).toBeGreaterThan(0);
   });
 
+  it("draws an injury in extra time from the player's own injury stream, and keeps him out with its kind", () => {
+    let injuries = 0;
+    for (let seed = 0; seed < SEEDS; seed++) {
+      const day = { ...extraTimeDay, seed };
+      const live = startMatchDay(day, {});
+      const after = finishMatchDay(live).state;
+      for (const match of live.matches) {
+        for (const e of match.events) {
+          if (e.type !== "injury" || e.minute <= FULL_TIME) continue;
+          const player = day.players[e.playerId];
+          if (!player) throw new Error("an injured player is in the game");
+          const { kind, days } = drawInjury(player, day.date, injuryStreamOf(seed, match.fixtureId)(e.playerId));
+          expect(e).toMatchObject({ kind, days });
+          expect(after.players[e.playerId]?.condition.injury).toBe(kind);
+          injuries++;
+        }
+      }
+    }
+    expect(injuries).toBeGreaterThan(0);
+  });
+
   it("counts extra time's minutes in what the players did and in their season's minutes", () => {
     const match = withExtraTime.matches.find((m) => isLevelAt(m, FULL_TIME) && m.fixtureId !== withExtraTime.coachMatch?.fixtureId);
     if (!match?.play) throw new Error("a match goes to extra time");
@@ -123,7 +146,7 @@ describe("extra time", () => {
 });
 
 // The day's stream salted so the coach's match ends level after ninety minutes (searched once).
-const LEVEL_COACH_MATCH_SALT = 3;
+const LEVEL_COACH_MATCH_SALT = 10;
 const levelDay = startMatchDay({ ...extraTimeDay, rngState: (extraTimeDay.rngState ^ LEVEL_COACH_MATCH_SALT) >>> 0 }, {});
 const coachMatchOf = (live: typeof levelDay) => {
   const match = live.matches.find((m) => m.fixtureId === live.coachMatch?.fixtureId);

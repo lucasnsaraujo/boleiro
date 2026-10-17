@@ -216,13 +216,16 @@ export function Hub() {
         )}
         {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
 
-        {club && loaded.event && selectedId === null ? (
-          <EventNote key={`${loaded.event.typeId}:${loaded.event.date}`} event={loaded.event} today={state.date} onOpen={() => loaded.event && openEventPopUp(loaded.event)} />
-        ) : club && shown ? (
-          <PlayerSticker key={shown.id} state={state} row={shown} club={club} />
-        ) : (
-          <div className="slot hub-card-empty" />
-        )}
+        <div className="hub-slot">
+          {club && loaded.event && selectedId === null ? (
+            <EventNote key={`${loaded.event.typeId}:${loaded.event.date}`} event={loaded.event} today={state.date} onOpen={() => loaded.event && openEventPopUp(loaded.event)} />
+          ) : club && shown ? (
+            <PlayerSticker key={shown.id} state={state} row={shown} club={club} />
+          ) : (
+            <div className="slot hub-card-empty" />
+          )}
+          {isPaperOpen && <Paper news={news} onClose={() => setPaperOpen(false)} />}
+        </div>
         {club && openEvent && (
           <EventPopUp
             event={openEvent}
@@ -282,7 +285,6 @@ export function Hub() {
             <span>elenco</span>
           </span>
         </nav>
-        {isPaperOpen && <Paper news={news} onClose={() => setPaperOpen(false)} />}
       </div>
 
       <section className="page hub-squad" aria-label="Elenco">

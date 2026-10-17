@@ -6,7 +6,7 @@ import { drawExtraTimeCards, type Booking } from "../discipline/drawCards.js";
 import type { SimPlayer } from "../gameState.js";
 import { scorersOf } from "../history/scorersOf.js";
 import type { MatchContext } from "../players/effectiveStrength.js";
-import { injuryLayoffDays, matchInjuryChance } from "../players/matchInjuryChance.js";
+import { drawInjury, matchInjuryChance } from "../players/matchInjuryChance.js";
 import { EXTRA_TIME_SUBSTITUTIONS, MAX_SUBSTITUTIONS, onPitchAt, whoPlayed } from "./aiSubstitutions.js";
 import { describeGoals, type GoalEvent, type GoalSide } from "./goalDetails.js";
 import { EXTRA_HALF_TIME, EXTRA_TIME_END, FULL_TIME, inMatchOrder, lastAction, scorersFor, sentOffMinute, whistlesTo, type KickOffTimeline, type MatchEvent } from "./matchTimeline.js";
@@ -37,6 +37,8 @@ export type ExtraTimeMatch = {
   params: EngineParams;
   cardRates: CardRates;
   context: MatchContext;
+  /** The stream an injury draws its kind and days from, per player (injuryStreamOf); extra time's own when missing. */
+  injuryStream?: (playerId: string) => () => number;
 };
 
 /**
@@ -78,10 +80,10 @@ export function playExtraTime(match: ExtraTimeMatch, events: readonly MatchEvent
   added.push(...cards);
   const injuries: MatchEvent[] = [...start.home, ...start.away].flatMap((player): MatchEvent[] => {
     if (random() >= matchInjuryChance(player, match.context) * ((EXTRA_TIME_END - from) / FULL_TIME)) return [];
-    const days = injuryLayoffDays(random);
+    const { days, kind, isRecurrence } = drawInjury(player, match.context.date, match.injuryStream?.(player.id) ?? random);
     const earliest = Math.max(from + 1, ...cards.flatMap((e) => (e.type === "card" && e.playerId === player.id ? [e.minute] : [])));
     const latest = sentOffMinute(cards, player.id) ?? EXTRA_TIME_END;
-    return [{ type: "injury", minute: earliest + Math.floor(random() * (latest - earliest + 1)), clubId: player.clubId, playerId: player.id, days }];
+    return [{ type: "injury", minute: earliest + Math.floor(random() * (latest - earliest + 1)), clubId: player.clubId, playerId: player.id, days, kind, ...(isRecurrence ? { isRecurrence } : {}) }];
   });
   added.push(...injuries);
 
