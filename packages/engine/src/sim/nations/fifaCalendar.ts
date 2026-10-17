@@ -11,8 +11,8 @@ export type Span = { from: IsoDate; until: IsoDate };
 // The men's international match calendar 2026–2030, FIFA's, as the Wikipedia table "FIFA International Match
 // Calendar" lists it (read 13 Oct 2026, .claude/research/immersion-sources.md §3); 2026's March and June windows
 // from the CBF's 2026 Série A table (Portal Tela, https://www.portaltela.com/esporte/futebol/2026/01/27/paralisacoes-do-brasileirao-2026-coincidem-com-a-copa-do-mundo-confira/).
-// That table rests Série A in every window and from 1 Jun to 21 Jul for the World Cup; the game's club
-// calendars play through them (guess, kept so the club calendar stays as it was), and the called-up miss those games.
+// That table rests Série A in every window and from 1 Jun to 21 Jul for the World Cup; a game with national
+// football rests it in the windows (seasonCalendar) but plays it through the World Cup (guess), its called-up missing those games.
 const WINDOWS: Record<number, [IsoDate, IsoDate][]> = {
   2026: [["2026-03-23", "2026-03-31"], ["2026-06-01", "2026-06-09"], ["2026-09-21", "2026-10-06"], ["2026-11-09", "2026-11-17"]],
   2027: [["2027-03-22", "2027-03-30"], ["2027-06-07", "2027-06-15"], ["2027-09-20", "2027-10-05"], ["2027-11-08", "2027-11-16"]],
@@ -62,4 +62,14 @@ export function worldCupOf(season: number): Span | null {
   const last = WORLD_CUPS[LAST_KNOWN] as Span;
   const from = inSeason(last.from, season);
   return { from, until: addDays(from, daysBetween(last.from, last.until)) };
+}
+
+const windowsBySeason = new Map<number, FifaWindow[]>();
+
+/** Whether `date` falls inside one of its season's FIFA windows. */
+export function isInFifaWindow(date: IsoDate): boolean {
+  const season = Number(date.slice(0, 4));
+  let windows = windowsBySeason.get(season);
+  if (!windows) windowsBySeason.set(season, (windows = fifaWindowsOf(season)));
+  return windows.some((w) => date >= w.from && date <= w.until);
 }
