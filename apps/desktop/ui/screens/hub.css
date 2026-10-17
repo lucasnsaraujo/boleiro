@@ -80,6 +80,33 @@
   transform: rotate(-2deg) scale(1.06);
 }
 
+/* The betting sponsor's mark stuck on the club's sticker (hub.html). */
+.hub-spon {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  height: 19px;
+  padding: 0 7px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  background: #fff;
+  transform: rotate(3deg);
+  box-shadow:
+    0 0 0 1px rgba(20, 35, 26, 0.14),
+    0 2px 4px -1px rgba(20, 35, 26, 0.4);
+  transition: transform var(--t-base) var(--e-out);
+}
+
+.hub-spon:hover {
+  transform: rotate(-2deg) scale(1.06);
+}
+
+.hub-spon:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}
+
 .hub-money {
   padding: 10px 12px;
   display: grid;
@@ -129,7 +156,39 @@
 }
 
 .hub-next {
+  position: relative;
   padding: 10px 12px;
+}
+
+/* The betting sponsor's odds for the next match, stuck on at a slant under it (hub.html). */
+.hub-odds.odds-sticker {
+  width: max-content;
+  margin: 12px 4px 2px auto;
+  padding: 13px 4px 4px;
+  border-radius: 8px;
+  animation: hub-odds-in var(--t-slow) var(--e-slap) both;
+}
+
+.hub-odds.odds-sticker > span {
+  padding: 0 7px;
+  font-size: 9px;
+}
+
+.hub-odds.odds-sticker b {
+  font-size: 12.5px;
+}
+
+@keyframes hub-odds-in {
+  from {
+    transform: rotate(-8deg) scale(1.3);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-odds.odds-sticker {
+    animation: none;
+  }
 }
 
 .hub-next-none {

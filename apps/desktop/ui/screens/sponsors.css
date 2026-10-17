@@ -1,0 +1,508 @@
+/* Patrocínio: the approved sponsors mock (design/mocks/sponsors.html). */
+.sponsors {
+  height: 100%;
+  min-height: 0;
+  padding: 18px 14px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 410px;
+  gap: 14px;
+}
+
+.spo {
+  min-height: 0;
+  padding: 20px 24px 18px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.spo-hd {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.spo-hd h1 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.spo-hd p {
+  margin-top: 5px;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.spo-hd p b {
+  color: var(--ink);
+}
+
+.spo-board {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 10px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.25;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow var(--t-base) var(--e-out), transform var(--t-fast) var(--e-out);
+}
+
+.spo-board:hover {
+  box-shadow: inset 0 0 0 1.5px var(--ink-2);
+}
+
+.spo-board:active {
+  transform: scale(0.98);
+}
+
+.spo-board:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 3px;
+}
+
+.spo-board b {
+  display: block;
+  font-weight: 800;
+}
+
+.spo-board small {
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.spo-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 370px minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.spo-body .shirt {
+  justify-self: center;
+  transform: scale(1.08);
+}
+
+.spo-list {
+  min-height: 0;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.spo-tabs {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.spo-tabs button {
+  padding: 0 10px 0 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 15px;
+  color: var(--mute);
+  cursor: pointer;
+  transition: color var(--t-base) var(--e-out);
+}
+
+.spo-tabs button.on {
+  color: var(--ink);
+}
+
+.spo-tabs button:not(.on):hover {
+  color: var(--ink-2);
+}
+
+.spo-tabs button:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.spo-tabs small {
+  margin-left: auto;
+  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.spo-rows {
+  list-style: none;
+  min-height: 0;
+  overflow: auto;
+}
+
+.spo-row {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px dotted var(--line-2);
+}
+
+.spo-row > b {
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.spo-row > small {
+  grid-column: 2;
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--mute);
+  overflow-wrap: anywhere;
+}
+
+.spo-row > small em {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--later);
+}
+
+.spo-row.fresh {
+  animation: spo-fresh 2.4s var(--e-out) both;
+}
+
+@keyframes spo-fresh {
+  0%,
+  35% {
+    background: var(--yellow-l);
+    box-shadow: -8px 0 0 var(--yellow-l), 8px 0 0 var(--yellow-l);
+  }
+  100% {
+    background: transparent;
+    box-shadow: -8px 0 0 transparent, 8px 0 0 transparent;
+  }
+}
+
+.spo-mk {
+  grid-row: 1 / 3;
+  height: 28px;
+  min-width: 0;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+
+.spo-mk.txt {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  font-weight: 800;
+  font-size: 11px;
+  color: var(--mute);
+}
+
+/* A brand without a logo in the data: its name in the kit's heavy lettering. */
+.logo-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: #14231a;
+}
+
+.spo-row .v,
+.spo-or .v {
+  grid-row: 1 / 3;
+  grid-column: 3;
+  text-align: right;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 15px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.spo-row .v small,
+.spo-or .v small {
+  display: block;
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--mute);
+}
+
+.spo-tot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 10px;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.spo-tot small {
+  display: block;
+  font-size: 11px;
+}
+
+.spo-tot b {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 16px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.spo-more {
+  margin-top: auto;
+  padding: 10px 2px 2px;
+  border-top: 1px dotted var(--line-2);
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--mute);
+}
+
+.spo-none {
+  padding: 14px 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--mute);
+}
+
+/* Right side */
+.spo-side {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.spo-off {
+  flex: 1;
+  min-height: 0;
+  padding: 14px 16px 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.spo-off h2,
+.spo-bet h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 17px;
+}
+
+.spo-off h2 small {
+  margin-left: auto;
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.spo-offers {
+  list-style: none;
+  min-height: 0;
+  overflow: auto;
+  margin: 4px -8px 0;
+  padding: 2px 8px;
+}
+
+.spo-offers li + li .spo-or {
+  border-top-color: var(--line-2);
+}
+
+.spo-or {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  gap: 2px 10px;
+  align-items: center;
+  padding: 12px 8px;
+  border: 0;
+  border-top: 1px dotted transparent;
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--t-base) var(--e-out), box-shadow var(--t-base) var(--e-out);
+}
+
+.spo-or:hover {
+  background: var(--rule);
+}
+
+.spo-or:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+.spo-or.sel {
+  background: var(--yellow-l);
+  box-shadow: 0 0 0 2px var(--ink);
+  border-top-color: transparent;
+}
+
+.spo-offers li:has(.spo-or.sel) + li .spo-or {
+  border-top-color: transparent;
+}
+
+.spo-or .spo-mk {
+  height: 30px;
+}
+
+.spo-or > b {
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.spo-or > small {
+  grid-column: 2;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.spo-or .v {
+  font-size: 14px;
+}
+
+.spo-bet {
+  padding: 14px 16px;
+}
+
+.spo-bet h2 {
+  align-items: center;
+}
+
+.spo-bet-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-top: 8px;
+}
+
+.spo-bet ul {
+  list-style: none;
+  flex: 1;
+  display: grid;
+  gap: 6px;
+  font-size: 12.5px;
+}
+
+.spo-bet li {
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+  line-height: 1.35;
+}
+
+.spo-bet li i {
+  margin-top: 1px;
+  font-size: 15px;
+}
+
+.spo-bet li i.up {
+  color: var(--green);
+}
+
+.spo-bet li i.dn {
+  color: var(--red);
+}
+
+.spo-bet li i.nt {
+  color: var(--ink-2);
+}
+
+.spo-bet li b {
+  font-weight: 800;
+}
+
+.spo-bet-odds {
+  flex: none;
+  margin-top: 8px;
+}
+
+.spo-bet-odds .cap {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--mute);
+  text-align: center;
+  transform: rotate(3deg);
+}
+
+.spo-go {
+  width: 100%;
+  height: 50px;
+  font-size: 16px;
+}
+
+.spo-board-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 50px;
+  padding: 10px 16px;
+  border-radius: var(--r-l);
+  background: var(--paper);
+  outline: 1.5px dashed var(--line-2);
+  outline-offset: -1.5px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--ink-2);
+}
+
+.spo-board-note i {
+  font-size: 18px;
+  color: var(--green);
+}
+
+.spo-board-note b {
+  color: var(--ink);
+}
+
+.spo-error {
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--red);
+}
+
+[data-theme="dark"] .spo-mk {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .spo-or.sel {
+  background: color-mix(in srgb, var(--yellow) 18%, var(--card));
+  box-shadow: 0 0 0 2px var(--yellow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spo-row.fresh {
+    animation: none;
+  }
+}
