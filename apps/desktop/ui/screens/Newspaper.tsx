@@ -16,7 +16,7 @@ type Loaded = { state: PaperState; edition: Edition | null; editions: EditionTit
 const ARCHIVE = 7;
 // The side column fits four stories under the masthead; the rest run in the lead's columns.
 const SIDE_STORIES = 4;
-const KICKER_CLASSES: Record<Story["kind"], string> = { match: "", event: "v", signing: "m", sacking: "d", upset: "z", rivalry: "q", var: "var", controversy: "", award: "d", record: "z" };
+const KICKER_CLASSES: Record<Story["kind"], string> = { match: "", event: "v", signing: "m", sacking: "d", upset: "z", rivalry: "q", var: "var", controversy: "", award: "d", record: "z", egg: "egg" };
 
 /** The round's newspaper: the edition of the coach's last match day, or of the day picked in the archive. */
 export function Newspaper() {

@@ -3,6 +3,7 @@ import type { Formation } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
 import { neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
+import { matchEggNotes, type EggNote } from "@boleiro/engine/sim/eggs/findEggs";
 import { attendance } from "@boleiro/engine/sim/finances/recordMatchFinances";
 import type { Fixture, GameState, IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
 import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
@@ -55,6 +56,8 @@ export type MatchPage = {
   officials: Officials;
   meetings: Meeting[];
   curiosities: string[];
+  /** The easter eggs the match laid, once it is over. */
+  eggs: EggNote[];
 };
 
 const WORLD_REF = "world:";
@@ -244,5 +247,6 @@ export function matchPageOf(state: GameState, ref: string, live: { day: LiveDay;
     officials: officialsOf(state, fixture),
     meetings: meetingsOf(located),
     curiosities,
+    eggs: isLive || !result ? [] : matchEggNotes(state, before.history, { ...fixture, result }, story),
   };
 }

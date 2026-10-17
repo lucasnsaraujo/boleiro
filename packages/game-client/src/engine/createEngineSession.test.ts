@@ -303,7 +303,7 @@ function playHotSeatTurn() {
 
 const STRIKERS = { ...NO_FILTERS, group: "ATT" as const, minStrength: 70 };
 
-/** A hot-seat game whose two coaches each watch a player and save a search, one of them forgetting another. */
+/** A hot-seat game whose two coaches each watch a player and save a search, one of them forgetting another; the first types BRASFOOT. */
 function playScouting() {
   const recorded = recordedSession();
   const { session, apply } = recorded;
@@ -315,6 +315,7 @@ function playScouting() {
   const { players } = session.read(["players"]);
   const [first, second] = Object.values(players).filter((p) => p.clubId === "vitoria-ba");
   if (!first || !second) throw new Error("Vitória has players");
+  apply({ type: "findEgg", eggId: "windows-98" });
   apply({ type: "watchPlayer", playerId: first.id, isWatched: true });
   apply({ type: "saveFilter", name: "Atacantes", filters: STRIKERS });
   apply({ type: "saveFilter", name: "Rascunho", filters: NO_FILTERS });
@@ -698,6 +699,7 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     deleteFilter: true,
     signSponsor: true,
     pickSponsors: true,
+    findEgg: true,
     retirePlayer: true,
     persuadeToStay: true,
   };
