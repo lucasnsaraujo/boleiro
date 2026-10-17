@@ -1,4 +1,4 @@
-import type { Confederation, RealFixture } from "@boleiro/data/nationalFootball";
+import { CONFEDERATIONS, type Confederation, type RealFixture } from "@boleiro/data/nationalFootball";
 import { addDays, daysBetween } from "../dates.js";
 import type { IsoDate } from "../gameState.js";
 import { roundRobin } from "../roundRobin.js";
@@ -30,6 +30,8 @@ const COPA_AMERICA_GUESTS = 6;
 const EURO_SIZE = 24;
 const EURO_HOSTS = ["england", "scotland", "wales", "republic-of-ireland"];
 const NATIONS_LEAGUE_A = 16;
+/** The confederations whose World Cup qualifiers the game plays; the others' places go to their best-ranked teams. */
+export const CONFEDERATIONS_WITH_QUALIFIERS: readonly Confederation[] = ["CONMEBOL", "UEFA"];
 
 const REAL_ROUNDS: Record<string, string> = { "1/16": "round-of-32", "1/8": "round-of-16", "1/4": "quarter-finals", "1/2": "semi-finals", bronze: "third-place", final: "final" };
 
@@ -184,10 +186,10 @@ function worldCupField(season: number, size: number, hosts: readonly string[], s
   const hostsOf = (confederation: Confederation) => [...field].filter((id) => source.teams[id]?.confederation === confederation).length;
   const places = (confederation: Confederation) => Math.round((WORLD_CUP_PLACES[confederation] * size) / 48) - hostsOf(confederation);
   const qualifiers = (confederation: Confederation) => source.competitions[`qualifiers-${confederation.toLowerCase()}-${season}`];
-  for (const confederation of ["CONMEBOL", "UEFA"] as const) {
+  for (const confederation of CONFEDERATIONS_WITH_QUALIFIERS) {
     for (const id of qualifiedFrom(qualifiers(confederation), source.matches, Math.max(0, places(confederation)), field, points)) field.add(id);
   }
-  for (const confederation of ["CAF", "AFC", "CONCACAF", "OFC"] as const) {
+  for (const confederation of CONFEDERATIONS.filter((own) => !CONFEDERATIONS_WITH_QUALIFIERS.includes(own))) {
     for (const id of confederationTeams(source, confederation).filter((own) => !field.has(own)).slice(0, Math.max(0, places(confederation)))) field.add(id);
   }
   for (const id of Object.keys(source.teams).sort(byPoints(source.teams))) if (field.size < size) field.add(id);

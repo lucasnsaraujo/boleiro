@@ -1,10 +1,11 @@
+import type { Confederation } from "@boleiro/data/nationalFootball";
 import type { Role } from "@boleiro/data/players";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import { CALL_UP_PLACES, nationalsByTeam, OUTSIDER_MARK, pickCallUp, roleOf } from "@boleiro/engine/sim/nations/callUps";
 import { fifaWindowsOf, type FifaWindow } from "@boleiro/engine/sim/nations/fifaCalendar";
 import { daysBetween } from "@boleiro/engine/sim/dates";
 import { TOURNAMENT_CAMP_DAYS } from "@boleiro/engine/sim/nations/nationsDay";
-import { groupTable } from "@boleiro/engine/sim/nations/nationalCompetitions";
+import { CONFEDERATIONS_WITH_QUALIFIERS, groupTable } from "@boleiro/engine/sim/nations/nationalCompetitions";
 import type { NationalCompetition, NationalMatch, Nations } from "@boleiro/engine/sim/nations/nations";
 import { poolOf } from "@boleiro/engine/sim/nations/nationalJobs";
 import { nationalTeamName } from "../format/nationalTeamName.js";
@@ -38,7 +39,8 @@ export type RankingRowView = { rank: number; teamId: string | null; name: string
 export type LeavingPlayer = { id: string; name: string; role: Role; age: number; strength: number; teamId: string; team: string; until: IsoDate };
 
 export type NationalTeamPage = {
-  team: { id: string; name: string; code: string; colours: { primary: string; secondary: string }; rank: number; points: number };
+  /** `qualifiesByRanking` when the game leaves its confederation's World Cup qualifiers out: its places go by the ranking. */
+  team: { id: string; name: string; code: string; colours: { primary: string; secondary: string }; rank: number; points: number; confederation: Confederation; qualifiesByRanking: boolean };
   /** Every national team, by name, to pick another, with its code and colours for its crest. */
   teams: { id: string; name: string; code: string; colours: { primary: string; secondary: string } }[];
   /** Since when the human coach runs this team; null when he doesn't. */
@@ -190,7 +192,7 @@ export function nationalTeamPage(state: GameState, teamId?: string): NationalTea
 
   const near = rows.filter((row) => row.rank <= TOP_OF_RANKING || Math.abs(row.rank - rank) <= 2);
   return {
-    team: { id, name: teamName(nations, id), code: team.code, colours: team.colours, rank, points: Math.round(team.points) },
+    team: { id, name: teamName(nations, id), code: team.code, colours: team.colours, rank, points: Math.round(team.points), confederation: team.confederation, qualifiesByRanking: !CONFEDERATIONS_WITH_QUALIFIERS.includes(team.confederation) },
     teams: Object.values(nations.teams).map((t) => ({ id: t.id, name: teamName(nations, t.id), code: t.code, colours: t.colours })).sort((a, b) => a.name.localeCompare(b.name, "pt")),
     coach: nations.job?.teamId === id ? { since: nations.job.since } : null,
     window: window && { from: window.from, until, tournament: tournament?.name ?? null },

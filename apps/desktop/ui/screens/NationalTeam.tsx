@@ -92,6 +92,9 @@ function FixtureLine({ row, page }: { row: NationalFixtureRow; page: NationalTea
   );
 }
 
+/** A group's heading: a competition of one table (CONMEBOL's qualifiers) has a standing, not a group. */
+const groupLabel = (competition: NationalCompetitionView, name: string) => (competition.groups.length === 1 ? "Classificação" : name.length <= 2 ? `Grupo ${name}` : name);
+
 function CompetitionTables({ competition, page }: { competition: NationalCompetitionView; page: NationalTeamPage }) {
   const [own, ...others] = competition.groups;
   const [isAll, setAll] = useState(false);
@@ -105,10 +108,10 @@ function CompetitionTables({ competition, page }: { competition: NationalCompeti
       </h3>
       <div className="nt-groups">
         {shown.map((group) => (
-          <table key={group.name} className="nt-table" aria-label={`${competition.name}, ${group.name.length <= 2 ? `grupo ${group.name}` : group.name}`}>
+          <table key={group.name} className="nt-table" aria-label={`${competition.name}, ${competition.groups.length === 1 ? "classificação" : group.name.length <= 2 ? `grupo ${group.name}` : group.name}`}>
             <thead>
               <tr>
-                <th scope="col" className="nt-tn">{group.name.length <= 2 ? `Grupo ${group.name}` : group.name}</th>
+                <th scope="col" className="nt-tn">{groupLabel(competition, group.name)}</th>
                 <th scope="col" title="Jogos">J</th>
                 <th scope="col" title="Vitórias">V</th>
                 <th scope="col" title="Empates">E</th>
@@ -349,7 +352,7 @@ export function NationalTeam() {
       <section className="page nt-alb" aria-labelledby="nt-title">
         <header className="nt-hd">
           <h2 id="nt-title">{TABS.find((t) => t.id === tab)?.label}</h2>
-          <span>{tab === "callUp" ? callUpNote : tab === "ranking" ? `Ranking de ${formatDayMonth(page.ranking.date)}, atualizado jogo a jogo` : `${page.competitions.length} competições`}</span>
+          <span>{tab === "callUp" ? callUpNote : tab === "ranking" ? `Ranking de ${formatDayMonth(page.ranking.date)}, atualizado jogo a jogo` : page.competitions.length === 1 ? "1 competição" : `${page.competitions.length} competições`}</span>
           {tab === "callUp" && (
             <span className="nt-cnt">
               {count} <em>de {callUp.size}</em>
@@ -418,6 +421,7 @@ export function NationalTeam() {
         {tab === "tables" && (
           <div className="nt-tables" role="tabpanel" aria-label="Jogos e tabelas">
             {page.competitions.length ? page.competitions.map((c) => <CompetitionTables key={c.id} competition={c} page={page} />) : <p className="nt-empty">{team.name} não está em nenhuma competição agora: joga amistosos nas datas Fifa.</p>}
+            {team.qualifiesByRanking && <p className="nt-empty">As eliminatórias da {team.confederation} não estão no jogo: as vagas dela na Copa do Mundo vão para as seleções mais bem colocadas no ranking da Fifa.</p>}
             {page.titles.length > 0 && (
               <section className="nt-comp" aria-label="Campeões">
                 <h3>Campeões</h3>

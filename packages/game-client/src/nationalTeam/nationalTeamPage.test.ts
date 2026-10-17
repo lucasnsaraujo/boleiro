@@ -44,4 +44,10 @@ describe("the national-team screen", () => {
     expect(worldCup?.groups[0]?.rows.map((r) => r.teamId)).toEqual(expect.arrayContaining(["brazil", "morocco"]));
     expect(nationalTeamPage(start, "argentina")?.team.name).toBe("Argentina");
   });
+
+  test("labels a team whose confederation's qualifiers the game leaves out as going to the World Cup on its ranking", () => {
+    expect(nationalTeamPage(start, "japan")?.team).toMatchObject({ confederation: "AFC", qualifiesByRanking: true });
+    expect(nationalTeamPage(start)?.team).toMatchObject({ confederation: "CONMEBOL", qualifiesByRanking: false });
+    expect(nationalTeamPage(start, "germany")?.team.qualifiesByRanking).toBe(false);
+  });
 });
