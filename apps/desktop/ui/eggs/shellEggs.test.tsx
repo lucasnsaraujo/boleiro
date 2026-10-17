@@ -7,6 +7,7 @@ import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { unlockedFakeSound } from "../sound/fakeAudioContext.js";
 import { SoundProvider } from "../sound/SoundProvider.js";
+import { useCommands } from "../app/AppCommands.js";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
 import { Shell } from "../app/Shell.js";
 
@@ -60,6 +61,31 @@ test("typing brasfoot in a game dresses it as Windows 98 until the coach's next 
   await given.engine.apply({ type: "finishRound" });
   await act(() => router.navigate("/hub"));
   await waitFor(() => expect(skin()).toBeUndefined());
+});
+
+/** A stand-in live round, whose T opens the live table. */
+function LiveTable({ onTable }: { onTable: () => void }) {
+  useCommands({ tabelaAoVivo: onTable });
+  return <h1>rodada ao vivo</h1>;
+}
+
+test("typing brasfoot in a live round turns it to 98 without its last letter opening the live table", async () => {
+  const given = await services();
+  let tables = 0;
+  const router = createMemoryRouter([{ element: <Shell />, children: [{ path: "/round", element: <LiveTable onTable={() => tables++} /> }] }], { initialEntries: ["/round"] });
+  render(
+    <ServicesContext value={given}>
+      <SoundProvider engine={unlockedFakeSound().engine} store={localStorage}>
+        <RouterProvider router={router} />
+      </SoundProvider>
+    </ServicesContext>,
+  );
+  await screen.findByRole("heading", { name: "rodada ao vivo" });
+  await userEvent.keyboard("brasfoot");
+  await waitFor(() => expect(skin()).toBe("win98"));
+  expect(tables).toBe(0);
+  await userEvent.keyboard("t");
+  expect(tables).toBe(1);
 });
 
 test("Iniciar takes the game back to 2026, and the start menu's brasfoot belongs to the tribute", async () => {
