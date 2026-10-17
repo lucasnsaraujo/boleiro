@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { Role } from "@boleiro/data/players";
 import type { GameState } from "@boleiro/engine/sim/gameState";
+import { addDays } from "@boleiro/engine/sim/dates";
 import { formatDayMonth, formatMonthYear } from "@boleiro/game-client/format/formatGameDate";
+import { withPreposition } from "@boleiro/game-client/format/nationalTeamName";
 import type { NationalCompetitionView, NationalFixtureRow, NationalPlayerCard, NationalTeamPage } from "@boleiro/game-client/nationalTeam/nationalTeamPage";
 import { useServices } from "../app/ServicesContext.js";
 import { Crest } from "../clubs/Crest.js";
@@ -143,6 +145,18 @@ function CompetitionTables({ competition, page }: { competition: NationalCompeti
           </table>
         ))}
       </div>
+      {competition.matches.length > 0 && (
+        <ul className="nt-games" aria-label={`Jogos ${withPreposition(page.team.id)}, ${competition.name}`}>
+          {competition.matches.map((match) => (
+            <li key={match.id}>
+              <span className="nt-gd">{formatDayMonth(match.date)}</span>
+              <span className={match.homeId === page.team.id ? "own" : undefined}>{match.home}</span>
+              <b>{scoreOf(match) ?? "×"}</b>
+              <span className={match.awayId === page.team.id ? "own" : undefined}>{match.away}</span>
+            </li>
+          ))}
+        </ul>
+      )}
       {others.length > 0 && (
         <button type="button" className="btn sm flat nt-more" aria-expanded={isAll} onClick={() => setAll(!isAll)}>
           {isAll ? "Só o grupo da seleção" : `Ver os outros ${others.length} grupos`}
@@ -241,10 +255,12 @@ export function NationalTeam() {
   };
   let number = 0;
   const windowTitle = window?.tournament ?? "Data Fifa";
+  // The national coaches call up on the eve of a window (nationsDay).
+  const deadline = window ? formatDayMonth(addDays(window.from, -1)) : null;
   const callUpNote = isEditing
-    ? `Sua lista para a data Fifa${window ? ` de ${spanLabel(window.from, window.until)}` : ""}`
+    ? `Sua lista para ${window?.tournament ? `a ${window.tournament}` : `a data Fifa${window ? ` de ${spanLabel(window.from, window.until)}` : ""}`}`
     : callUp.isProvisional
-    ? `Prévia: a lista sai na véspera da data Fifa${window ? `, ${formatDayMonth(window.from)}` : ""}`
+    ? `Prévia: a lista sai em ${deadline ?? "breve"}, véspera da data Fifa`
     : (window?.tournament ?? (window ? `Data Fifa de ${spanLabel(window.from, window.until)}` : ""));
 
   return (
@@ -295,7 +311,7 @@ export function NationalTeam() {
 
         <section className="stk nt-box" aria-label={windowTitle}>
           <h2>
-            {windowTitle} <small>{window ? spanLabel(window.from, window.until) : "sem data marcada"}</small>
+            <span>{windowTitle}</span> <small>{window ? spanLabel(window.from, window.until) : "sem data marcada"}</small>
           </h2>
           {page.fixtures.length ? (
             <ul className="nt-fixtures">
@@ -330,6 +346,7 @@ export function NationalTeam() {
               </ul>
             ) : null}
             <p className="nt-nb">
+              {leaving.isProvisional ? "Prévia pelas listas prováveis. " : ""}
               {leaving.players.length === 0
                 ? `Ninguém do ${club.shortName} está com uma seleção agora.`
                 : leaving.clubMatches === 0
@@ -344,22 +361,16 @@ export function NationalTeam() {
               <i className="ph-bold ph-check-fat" aria-hidden="true" />
               Confirmar convocação
             </button>
-            <p>{error ?? (coaching?.isOwnPick && draft === null ? "Lista confirmada. " : "") + (window ? `Prazo: ${formatDayMonth(window.from)}, véspera da data Fifa` : "")}</p>
+            <p>{error ?? (coaching?.isOwnPick && draft === null ? "Lista confirmada. " : "") + (deadline ? `Prazo: ${deadline}, véspera da data Fifa` : "")}</p>
           </div>
         )}
       </aside>
 
       <section className="page nt-alb" aria-labelledby="nt-title">
         <header className="nt-hd">
-          <h2 id="nt-title">{TABS.find((t) => t.id === tab)?.label}</h2>
-          <span>{tab === "callUp" ? callUpNote : tab === "ranking" ? `Ranking de ${formatDayMonth(page.ranking.date)}, atualizado jogo a jogo` : page.competitions.length === 1 ? "1 competição" : `${page.competitions.length} competições`}</span>
-          {tab === "callUp" && (
-            <span className="nt-cnt">
-              {count} <em>de {callUp.size}</em>
-            </span>
-          )}
-        </header>
-        <div className="nt-tools">
+          <h2 id="nt-title" className="sr-only">
+            {TABS.find((t) => t.id === tab)?.label}
+          </h2>
           <div className="seg nt-tabs" role="tablist" aria-label="Seções da seleção">
             {TABS.map((t) => (
               <button key={t.id} type="button" role="tab" aria-selected={tab === t.id} className={tab === t.id ? "on" : undefined} onClick={() => setTab(t.id)}>
@@ -367,8 +378,14 @@ export function NationalTeam() {
               </button>
             ))}
           </div>
+          <span className="nt-note">{tab === "callUp" ? callUpNote : tab === "ranking" ? `Parte do ranking da Fifa de ${formatDayMonth(page.ranking.date)} ${page.ranking.date.slice(0, 4)} e muda jogo a jogo` : page.competitions.length === 1 ? "1 competição" : `${page.competitions.length} competições`}</span>
+          {tab === "callUp" && (
+            <span className="nt-cnt">
+              {count} <em>de {callUp.size}</em>
+            </span>
+          )}
           <Select label="Seleção" value={team.id} options={options} onChange={(id) => setTeamId(id)} className="nt-pick" />
-        </div>
+        </header>
 
         {tab === "callUp" && (
           <div className="nt-callup" role="tabpanel" aria-label="Convocação" key={`${team.id}-${callUp.isProvisional}`}>

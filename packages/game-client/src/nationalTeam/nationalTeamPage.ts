@@ -31,8 +31,16 @@ export type NationalFixtureRow = {
 /** A table's row; `isThrough` when the team would go on as the tables stand. */
 export type NationalTableRow = { teamId: string; name: string; code: string; played: number; won: number; drawn: number; lost: number; goalsFor: number; goalsAgainst: number; points: number; isThrough: boolean };
 
-/** A competition the team plays: its groups (its own first) and its knockout rounds so far. */
-export type NationalCompetitionView = { id: string; name: string; kind: NationalCompetition["kind"]; groups: { name: string; rows: NationalTableRow[] }[]; knockout: { round: string; matches: NationalFixtureRow[] }[]; winnerId: string | null };
+/** A competition the team plays: its groups (its own first), its knockout rounds so far, and the team's own matches in it by date. */
+export type NationalCompetitionView = {
+  id: string;
+  name: string;
+  kind: NationalCompetition["kind"];
+  groups: { name: string; rows: NationalTableRow[] }[];
+  knockout: { round: string; matches: NationalFixtureRow[] }[];
+  matches: NationalFixtureRow[];
+  winnerId: string | null;
+};
 
 export type RankingRowView = { rank: number; teamId: string | null; name: string; code: string | null; points: number };
 
@@ -52,7 +60,8 @@ export type NationalTeamPage = {
   /** The call-up of the window under way; between windows, the national coach's likely one (`isProvisional`). */
   callUp: { isProvisional: boolean; size: number; count: number; groups: CallUpGroup[] };
   /** The coach's club's players the window takes, and its matches in it; null without a club. */
-  leaving: { clubId: string; players: LeavingPlayer[]; clubMatches: number } | null;
+  /** The coach's club's players away with a national team, its matches without them; between windows (`isProvisional`) those the next window's likely call-ups take. Null without a club. */
+  leaving: { clubId: string; players: LeavingPlayer[]; clubMatches: number; isProvisional: boolean } | null;
   competitions: NationalCompetitionView[];
   ranking: { date: IsoDate; rows: RankingRowView[] };
   titles: { name: string; season: number; winner: string }[];
@@ -117,7 +126,8 @@ function competitionView(nations: Nations, competition: NationalCompetition, tea
     const matches = own.filter((m) => m.round === round).map((m) => fixtureRow(nations, m));
     return matches.length ? [{ round, matches }] : [];
   });
-  return { id: competition.id, name: competition.name, kind: competition.kind, groups, knockout, winnerId: competition.winnerId || null };
+  const matches = own.filter((m) => m.homeId === teamId || m.awayId === teamId).sort((a, b) => a.date.localeCompare(b.date)).map((m) => fixtureRow(nations, m));
+  return { id: competition.id, name: competition.name, kind: competition.kind, groups, knockout, matches, winnerId: competition.winnerId || null };
 }
 
 function callUpRefs(state: GameState, nations: Nations, teamId: string): { refs: string[]; isProvisional: boolean } {
@@ -163,11 +173,13 @@ export function nationalTeamPage(state: GameState, teamId?: string): NationalTea
   const isAway = running !== undefined && running.from <= state.date && state.date <= running.until;
   const window = isAway ? { from: running.from, until: running.until } : windowAround(state.date);
   // A tournament starting within a few weeks of the window keeps the call-up together until it ends (nationsDay).
-  const tournament = Object.values(nations.competitions).find((c) => {
-    if ((c.kind !== "world-cup" && c.kind !== "continental-cup") || !window || !Object.values(c.groups).some((ids) => ids.includes(id))) return false;
-    const first = nations.matches.filter((m) => m.competitionId === c.id).map((m) => m.date).sort()[0];
-    return first !== undefined && first >= window.from && daysBetween(window.until, first) <= TOURNAMENT_CAMP_DAYS;
-  });
+  const tournamentAfter = (teamId: string, days: { from: IsoDate; until: IsoDate }) =>
+    Object.values(nations.competitions).find((c) => {
+      if ((c.kind !== "world-cup" && c.kind !== "continental-cup") || !Object.values(c.groups).some((ids) => ids.includes(teamId))) return false;
+      const first = nations.matches.filter((m) => m.competitionId === c.id).map((m) => m.date).sort()[0];
+      return first !== undefined && first >= days.from && daysBetween(days.until, first) <= TOURNAMENT_CAMP_DAYS;
+    });
+  const tournament = window ? tournamentAfter(id, window) : undefined;
   const until = isAway ? running.until : tournament && window && tournament.until > window.until ? tournament.until : (window?.until ?? state.date);
   const fixtures = window
     ? nations.matches.filter((m) => (m.homeId === id || m.awayId === id) && m.date >= window.from && m.date <= until).sort((a, b) => a.date.localeCompare(b.date)).map((m) => fixtureRow(nations, m))
@@ -180,15 +192,28 @@ export function nationalTeamPage(state: GameState, teamId?: string): NationalTea
   let leaving: NationalTeamPage["leaving"] = null;
   const clubId = state.coachClubId;
   if (clubId) {
-    const duty = Object.entries(nations.duty).filter(([playerId]) => state.players[playerId]?.clubId === clubId);
-    const players = duty.flatMap(([playerId, own]): LeavingPlayer[] => {
+    const leaver = (playerId: string, teamId: string, until: IsoDate): LeavingPlayer[] => {
       const p = state.players[playerId];
-      return p ? [{ id: p.id, name: p.name, role: roleOf(p), age: p.age, strength: Math.round(p.strength), teamId: own.teamId, team: teamName(nations, own.teamId), until: own.until }] : [];
-    });
-    const lastAway = players.reduce((last, p) => (p.until > last ? p.until : last), window?.until ?? state.date);
-    const from = window && state.date > window.from ? state.date : (window?.from ?? state.date);
-    const clubMatches = window ? state.fixtures.filter((f) => (f.homeId === clubId || f.awayId === clubId) && f.date >= from && f.date <= lastAway).length : 0;
-    leaving = { clubId, players: players.sort((a, b) => b.strength - a.strength), clubMatches };
+      return p?.clubId === clubId ? [{ id: p.id, name: p.name, role: roleOf(p), age: p.age, strength: Math.round(p.strength), teamId, team: teamName(nations, teamId), until }] : [];
+    };
+    let players = Object.entries(nations.duty).flatMap(([playerId, own]) => leaver(playerId, own.teamId, own.until));
+    let days = window;
+    const next = windowAround(state.date);
+    const isProvisional = players.length === 0 && next !== null && next.from > state.date;
+    if (isProvisional) {
+      // Between windows: the players each national coach would call up today, away until the window or the tournament after it ends.
+      const nationals = nationalsByTeam(state.players, nations.teams);
+      players = Object.keys(nations.teams).flatMap((teamId) => {
+        const refs = nations.job?.teamId === teamId && nations.picks ? nations.picks : pickCallUp(nationals.get(teamId) ?? [], nations.outsiders[teamId], state.date);
+        const until = tournamentAfter(teamId, next)?.until ?? next.until;
+        return refs.flatMap((ref) => leaver(ref, teamId, until));
+      });
+      days = next;
+    }
+    const lastAway = players.reduce((last, p) => (p.until > last ? p.until : last), days?.until ?? state.date);
+    const from = days && state.date > days.from ? state.date : (days?.from ?? state.date);
+    const clubMatches = days ? state.fixtures.filter((f) => (f.homeId === clubId || f.awayId === clubId) && f.date >= from && f.date <= lastAway).length : 0;
+    leaving = { clubId, players: players.sort((a, b) => b.strength - a.strength), clubMatches, isProvisional };
   }
 
   const competitions = Object.values(nations.competitions)

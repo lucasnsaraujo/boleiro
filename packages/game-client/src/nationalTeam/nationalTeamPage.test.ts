@@ -45,6 +45,7 @@ describe("the national-team screen", () => {
     const worldCup = page?.competitions.find((c) => c.id === "world-cup-2026");
     expect(worldCup?.groups[0]?.rows.map((r) => r.teamId)).toEqual(expect.arrayContaining(["brazil", "morocco"]));
     expect(worldCup?.groups.flatMap((g) => g.rows).filter((r) => r.isThrough)).toHaveLength(32);
+    expect(worldCup?.matches.map((m) => [m.date, m.home, m.away])).toEqual([["2026-06-13", "Brasil", "Marrocos"], ["2026-06-20", "Brasil", "Haiti"], ["2026-06-24", "Escócia", "Brasil"]]);
     expect(nationalTeamPage(start, "argentina")?.team.name).toBe("Argentina");
   });
 
@@ -60,5 +61,13 @@ describe("the national-team screen", () => {
     expect(page?.fixtures.some((f) => f.competition === "Copa do Mundo 2026")).toBe(true);
     expect(page?.callUp.isProvisional).toBe(false);
     expect(page?.callUp.count).toBeGreaterThan(20);
+  });
+
+  test("between windows previews the coach's club's players the next window's likely call-ups take", () => {
+    const leaving = nationalTeamPage(start)?.leaving;
+    expect(leaving?.isProvisional).toBe(true);
+    expect(leaving?.players.length).toBeGreaterThan(0);
+    expect(leaving?.players.every((p) => p.until === "2026-03-31")).toBe(true);
+    expect(nationalTeamPage(inWindow)?.leaving?.isProvisional).toBe(false);
   });
 });

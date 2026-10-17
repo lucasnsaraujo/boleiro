@@ -1,4 +1,13 @@
 /* Seleção: the approved national-team mock (design/mocks/national-team.html). */
+.nt .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .nt {
   height: 100%;
   min-height: 0;
@@ -81,12 +90,18 @@
   font-weight: 900;
   font-size: 15px;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
-  gap: 8px;
+  column-gap: 8px;
+}
+
+.nt-box h2 > span {
+  white-space: nowrap;
 }
 
 .nt-box h2 small {
+  margin-left: auto;
   font-stretch: 100%;
   font-weight: 600;
   font-size: 11.5px;
@@ -137,7 +152,13 @@
   gap: 6px;
   font-weight: 800;
   font-size: 13px;
-  flex-wrap: wrap;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.nt-m > span:not(.nt-score, .nt-x) {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .nt-x {
@@ -197,7 +218,7 @@
 
 .nt-alb {
   min-height: 0;
-  padding: 16px 22px 14px;
+  padding: 14px 22px 6px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -205,23 +226,22 @@
 
 .nt-hd {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
 }
 
-.nt-hd h2 {
-  font-stretch: var(--wide);
-  font-weight: 900;
-  font-size: 22px;
-}
-
-.nt-hd > span {
+.nt-note {
+  flex: 1;
+  min-width: 0;
   font-size: 12px;
   color: var(--mute);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .nt-hd .nt-cnt {
-  margin-left: auto;
+  flex: none;
   font-stretch: var(--semi);
   font-weight: 900;
   font-size: 14px;
@@ -232,13 +252,6 @@
   font-style: normal;
   color: var(--mute);
   font-weight: 700;
-}
-
-.nt-tools {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 10px;
 }
 
 .nt-tabs button {
@@ -266,7 +279,7 @@
 }
 
 .nt-pick {
-  margin-left: auto;
+  flex: none;
 }
 
 .nt-callup,
@@ -280,7 +293,7 @@
 }
 
 .nt-grp {
-  margin-top: 12px;
+  margin-top: 6px;
 }
 
 .nt-gl {
@@ -292,7 +305,7 @@
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .nt-gl::after {
@@ -530,6 +543,55 @@
 
 .nt-more {
   margin-top: 6px;
+}
+
+/* The team's own matches in a competition, under its table. */
+.nt-games {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  max-width: 520px;
+}
+
+.nt-games li {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  height: 26px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+  border-bottom: 1px dotted var(--line-2);
+}
+
+.nt-games li > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nt-games li > span:nth-child(2) {
+  text-align: right;
+}
+
+.nt-games .nt-gd {
+  font-size: 11px;
+  color: var(--mute);
+}
+
+.nt-games .own {
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.nt-games b {
+  min-width: 44px;
+  text-align: center;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 11.5px;
+  color: var(--ink);
 }
 
 .nt-ko {
