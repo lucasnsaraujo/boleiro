@@ -59,15 +59,16 @@ export function matchInjuryChance(player: SimPlayer, context: MatchContext): num
 }
 
 // Match injuries in the UEFA Elite Club Injury Study, 2000/01–2018/19 (Ekstrand et al. 2021, BJSM
-// 55(19):1084–1092, table 2): muscle injuries 40.3% at 18 days on average (SD 20), ligament injuries
-// 16.7% at 32 (SD 52), all injuries 21 (SD 34); the other 43% (contusions, joints, fractures) then
-// average 19.5 days (SD 34.7). Those means count re-injuries; first injuries average 18 days
-// (Ekstrand, Hägglund & Waldén 2011), so each kind's mean and spread is scaled by 18/21.
-const FIRST_INJURY_SCALE = 18 / 21;
-const KINDS: readonly { kind: InjuryKind; share: number; mean: number; sd: number }[] = [
-  { kind: "muscle", share: 0.403, mean: 18, sd: 20 },
-  { kind: "ligament", share: 0.167, mean: 32, sd: 52 },
-  { kind: "knock", share: 0.43, mean: 19.5, sd: 34.7 },
+// 55(19):1084–1092, table 2): muscle injuries 40.3%, ligament injuries 16.7%, the other 43% contusions,
+// joints and fractures. Days out of each kind are log-normal, fitted to its shares in UEFA's severity
+// bands at Copa Libertadores clubs in 2016 (Bengtsson, Ortega Gallo & Ekstrand 2021, BMJ Open Sport
+// Exerc Med 7(4):e001172, table 5): muscle 20/21/53/6%, ligament 11/20/45/24%, the rest 28/25/26/21%.
+// The fitted medians (9.1, 13.1 and 7.8 days) are scaled by 0.88 so first injuries average 18 days
+// (Ekstrand, Hägglund & Waldén 2011); the mix then has 24/23/39/14% against the table's 21/22/42/15%.
+const KINDS: readonly { kind: InjuryKind; share: number; median: number; sigma: number }[] = [
+  { kind: "muscle", share: 0.403, median: 8, sigma: 0.9 },
+  { kind: "ligament", share: 0.167, median: 11.5, sigma: 1.1 },
+  { kind: "knock", share: 0.43, median: 6.9, sigma: 1.54 },
 ];
 // Re-injuries keep players out 24 days against 18 for first injuries (Ekstrand, Hägglund & Waldén 2011).
 const RECURRENCE_LAYOFF = 24 / 18;
@@ -76,12 +77,10 @@ const LAYOFF_PER_YEAR = 0.02;
 // guess: nobody is out longer than ten months; a torn cruciate takes six to seven.
 const LONGEST_LAYOFF = 300;
 
-/** A day count drawn from a log-normal with this mean and standard deviation, at least one day. */
-function logNormalDays(mean: number, sd: number, random: () => number): number {
-  const sigma = Math.sqrt(Math.log(1 + (sd / mean) ** 2));
-  const mu = Math.log(mean) - (sigma * sigma) / 2;
+/** A day count drawn from a log-normal with this median and log spread, at least one day. */
+function logNormalDays(median: number, sigma: number, random: () => number): number {
   const z = Math.sqrt(-2 * Math.log(1 - random())) * Math.cos(2 * Math.PI * random());
-  return Math.min(LONGEST_LAYOFF, Math.max(1, Math.round(Math.exp(mu + sigma * z))));
+  return Math.min(LONGEST_LAYOFF, Math.max(1, Math.round(median * Math.exp(sigma * z))));
 }
 
 /** What an injury picked up on `date` is and how long it keeps the player out: his last one again inside its recurrence window. */
@@ -92,8 +91,8 @@ export function drawInjury(player: SimPlayer, date: IsoDate, random: () => numbe
   const type = (isRecurrence && KINDS.find((k) => k.kind === last)) || (KINDS.find((k) => (roll -= k.share) < 0) ?? KINDS.at(-1));
   if (!type) throw new Error("no injury kinds");
   const age = Math.max(0.5, 1 + LAYOFF_PER_YEAR * (player.age - MEDIAN_AGE));
-  const scale = FIRST_INJURY_SCALE * age * (isRecurrence ? RECURRENCE_LAYOFF : 1);
-  return { kind: type.kind, days: logNormalDays(type.mean * scale, type.sd * scale, random), isRecurrence };
+  const scale = age * (isRecurrence ? RECURRENCE_LAYOFF : 1);
+  return { kind: type.kind, days: logNormalDays(type.median * scale, type.sigma, random), isRecurrence };
 }
 
 export function injurySeverity(days: number): InjurySeverity {

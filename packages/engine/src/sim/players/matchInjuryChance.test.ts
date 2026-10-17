@@ -4,7 +4,7 @@ import { addDays } from "../dates.js";
 import type { SimPlayer } from "../gameState.js";
 import { advanceDay } from "../advanceDay.js";
 import { loadNewGame } from "../loadNewGame.js";
-import { drawInjury, injurySeverity, MATCH_HOURS, MATCH_INJURIES_PER_HOUR, matchInjuryChance, type Injury } from "./matchInjuryChance.js";
+import { drawInjury, injurySeverity, MATCH_HOURS, MATCH_INJURIES_PER_HOUR, matchInjuryChance, type Injury, type InjurySeverity } from "./matchInjuryChance.js";
 
 const game = loadNewGame(3, { coachClubId: null });
 const date = game.date;
@@ -67,6 +67,15 @@ describe("match injuries", () => {
     const longAgo: SimPlayer = { ...returned, condition: { ...returned.condition, injuredUntil: addDays(date, -90) } };
     expect(matchInjuryChance(longAgo, natural)).toBeCloseTo(matchInjuryChance(aged(26), natural), 6);
     expect(draws(longAgo, 100).some((i) => i.isRecurrence)).toBe(false);
+  });
+
+  // Shares of all injuries at Copa Libertadores clubs in 2016 (Bengtsson, Ortega Gallo & Ekstrand 2021,
+  // BMJ Open Sport Exerc Med 7(4):e001172, table 5).
+  it("fall into UEFA's severity bands as often as at Copa Libertadores clubs", () => {
+    const injuries = draws(aged(26), 20_000);
+    const bandShare = (severity: InjurySeverity) => injuries.filter((i) => injurySeverity(i.days) === severity).length / injuries.length;
+    const study: [InjurySeverity, number][] = [["slight", 0.21], ["minor", 0.22], ["moderate", 0.42], ["severe", 0.15]];
+    for (const [severity, expected] of study) expect(Math.abs(bandShare(severity) - expected), severity).toBeLessThan(0.04);
   });
 
   it("fall into UEFA's severity bands", () => {
