@@ -10,6 +10,7 @@ import type { Fixture, GameState } from "./gameState.js";
 import type { LeagueOutcome } from "./leagueFormats.js";
 import { finishMatchDay } from "./live/finishMatchDay.js";
 import { startMatchDay } from "./live/startMatchDay.js";
+import type { TalkTone } from "./live/teamTalk.js";
 import type { SupporterEvent } from "./morale/escalateSupporters.js";
 import type { PlayerRetired, YouthPromoted } from "./players/developPlayers.js";
 import type { RecordBroken } from "./history/recordFeats.js";
@@ -29,6 +30,8 @@ export type DayDecisions = {
   lineup?: readonly string[];
   /** The coach's formation, posture and penalty taker from today on. */
   tactics?: Tactics;
+  /** The coach's talk in the dressing room before kick-off; left out, no talk beyond the usual. */
+  talk?: TalkTone;
   /** The club whose open job offer the coach accepts today. */
   acceptOffer?: string;
   /** Transfer requests to the board, decided at the start of the next day. */

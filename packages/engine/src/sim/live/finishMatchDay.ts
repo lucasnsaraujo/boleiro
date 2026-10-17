@@ -32,6 +32,7 @@ import { recordStrengths } from "../history/recordStrengths.js";
 import { recordDayEvents } from "../history/recordDayEvents.js";
 import { recordMatches } from "../history/recordMatches.js";
 import { recordFeats } from "../history/recordFeats.js";
+import { withTalkMorale } from "./teamTalk.js";
 import { recordRatings } from "../history/recordRatings.js";
 import { recordElevens } from "../chemistry/recordElevens.js";
 import { clubMood } from "../morale/clubMood.js";
@@ -228,7 +229,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const built = buildStadiums(closed.state, closed.state.date);
   events.push(...built.events);
   const reacted = reactToDay(built.state, played, closed.events, random.next);
-  next = reacted.state;
+  next = withTalkMorale(reacted.state, live);
   events.push(...reacted.events);
   const career = coachCareerDay(next, played, decisions.acceptOffer, random.next, (decisions.waiting ?? []).map((own) => own.acceptOffer));
   const moved = moveAiCoaches(career.state, state, career.vacancies, state.date);

@@ -25,6 +25,7 @@ import { waitingCoachesOf } from "../coach/humanCoaches.js";
 import { withLoaneesFacingOwner } from "../transfers/loans.js";
 import { coachOutcome } from "./coachOutcome.js";
 import { formOfTheDay, formStrength } from "./formOfTheDay.js";
+import { kickOffMoment, kickOffTalksOf, talkEffect, type TalkTone } from "./teamTalk.js";
 import { incidentHandling } from "./incidentHandling.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
 import { drawMatchPlay } from "./matchPlay.js";
@@ -78,20 +79,29 @@ export function waitingPlansOf(state: GameState, decisions: DayDecisions): Recor
 
 /**
  * A fixture's two sides as the match engine lines them up on its day, and the engine's parameters for it:
- * without the players `suspended` from it, with each human coach's plan and each player's form of the day.
+ * without the players `suspended` from it, with each human coach's plan and each player's form of the day,
+ * which a human coach's talk before kick-off (`talks`, by club) shifts.
  */
 export function fixtureSides(
   state: GameState,
   fixture: Fixture,
   competition: Competition,
   squad: (clubId: string) => readonly SimPlayer[],
-  plans: { coach: CoachPlan; waiting: Readonly<Record<string, CoachPlan>>; suspended: ReadonlySet<string> },
+  plans: { coach: CoachPlan; waiting: Readonly<Record<string, CoachPlan>>; suspended: ReadonlySet<string>; talks?: Readonly<Record<string, TalkTone>> },
 ) {
   const available = (clubId: string) => squad(clubId).filter((p) => !plans.suspended.has(p.id));
   const forms = new Map<string, number>();
+  const talkShift = (clubId: string) => {
+    const talk = plans.talks?.[clubId];
+    return talk ? talkEffect(talk, kickOffMoment(state, fixture, clubId)).form : 0;
+  };
   const formOf = (p: SimPlayer) => {
     let form = forms.get(p.id);
-    if (form === undefined) forms.set(p.id, (form = formOfTheDay(state.seed, fixture.id, p.id, { morale: clubMood(state, p.clubId).squad, fatigue: fatigueOn(p, state.date) })));
+    if (form === undefined) {
+      const drawn = formOfTheDay(state.seed, fixture.id, p.id, { morale: clubMood(state, p.clubId).squad, fatigue: fatigueOn(p, state.date) });
+      const shift = talkShift(p.clubId);
+      forms.set(p.id, (form = shift ? Math.max(-1, Math.min(1, drawn + shift)) : drawn));
+    }
     return form;
   };
   const formStrengthOf = (p: SimPlayer) => formStrength(formOf(p));
@@ -117,6 +127,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
   const squad = squadsOf(state);
   const coach: CoachPlan = { lineup: coachLineupOf(state, decisions), tactics: decisions.tactics ?? state.coach.tactics };
   const waiting = waitingPlansOf(state, decisions);
+  const talks = kickOffTalksOf(state, decisions);
   const playedToday: SimPlayer[] = [];
   const cards = openDisciplineDay(state.discipline);
   const sheets: MatchSheets = {};
@@ -132,7 +143,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const coachClubId = [fixture.homeId, fixture.awayId].find((id) => id === state.coachClubId);
     if (coachClubId) refuseSuspended(coach.lineup ?? [], suspended);
     for (const clubId of [fixture.homeId, fixture.awayId]) refuseSuspended(waiting[clubId]?.lineup ?? [], suspended);
-    const { available, formOf, formStrengthOf, setup, params } = fixtureSides(state, fixture, competition, squad, { coach, waiting, suspended });
+    const { available, formOf, formStrengthOf, setup, params } = fixtureSides(state, fixture, competition, squad, { coach, waiting, suspended, talks });
     const officials = matchOfficials(state.seed, competition, fixture);
     const cardRates = refereedCardRates(CARD_RATES[cardCompetitionOf(competition)], officials);
     const markingOf = (clubId: string) => planOf(clubId)?.tactics.marking;
