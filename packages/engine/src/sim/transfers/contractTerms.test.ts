@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { SimPlayer } from "../gameState.js";
-import { assistantPick, CONTRACT_MONTHS, contractEndAfter, contractTerms, NEUTRAL_TALKS, preferredMonths, type ContractTerm } from "./contractTerms.js";
+import { assistantPick, CONTRACT_MONTHS, contractEndAfter, contractTerms, NEUTRAL_TALKS, preferredMonths, wishPick, type ContractTerm } from "./contractTerms.js";
 
 type Talker = Pick<SimPlayer, "id" | "age" | "wage" | "strength">;
 const player = (id: string, age: number, strength: number, wage = 100_000): Talker => ({ id, age, strength, wage });
@@ -86,5 +86,18 @@ describe("assistantPick", () => {
   it("takes none when the player agrees to nothing", () => {
     const sour = { morale: 10, hasAskedToLeave: true, offerFrom: "abroad" };
     expect(assistantPick(contractTerms(300_000, 36, sour))).toBeNull();
+  });
+});
+
+describe("wishPick", () => {
+  it("takes the length nearest the one the player wants that he agrees to, the shorter on a tie", () => {
+    expect(wishPick(contractTerms(300_000, 36, NEUTRAL_TALKS), 36)?.months).toBe(36);
+    expect(wishPick(contractTerms(300_000, 12, NEUTRAL_TALKS), 12)?.months).toBe(12);
+    expect(wishPick(contractTerms(300_000, 30, NEUTRAL_TALKS), 30)?.months).toBe(24);
+  });
+
+  it("takes none when the player agrees to nothing", () => {
+    const sour = { morale: 10, hasAskedToLeave: true, offerFrom: "abroad" };
+    expect(wishPick(contractTerms(300_000, 36, sour), 36)).toBeNull();
   });
 });

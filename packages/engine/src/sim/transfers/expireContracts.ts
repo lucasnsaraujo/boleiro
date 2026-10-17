@@ -4,7 +4,7 @@ import type { GameState, SimPlayer, Tier } from "../gameState.js";
 import { squadsOfGame, withReplacedPlayers } from "../players/squadsByClub.js";
 import { keyedStream } from "../../engine/random.js";
 import { isSeasonLastDay, isWorthKeeping } from "./assistantRenewals.js";
-import { assistantPick, type ContractTerm } from "./contractTerms.js";
+import { wishPick, type ContractTerm } from "./contractTerms.js";
 import { renewalTermsOf, renewedUntil } from "./renewalTerms.js";
 import { movePlayer } from "./movePlayer.js";
 import type { PlayerContractRenewed, PlayerMoved } from "./transferEvents.js";
@@ -12,11 +12,11 @@ import { wageDemand } from "./wageDemand.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
 
 // guess: an AI club offers a new deal to the players it wants to keep (isWorthKeeping), and four in five of
-// them talk; those sign for the length they agree to nearest two years, at their ask (the coach's assistant's
-// model). The rest leave as free agents. The four in five come from a stream keyed to the player and the
-// day, so renewals never shift the market's other draws. Contracts that run to the season's last day are
-// talked over that day, before the season turn moves the wages toward the boards' caps; any other contract
-// when it ends.
+// them talk; those sign for the length they agree to nearest the one they want (wishPick), at their ask.
+// The rest leave as free agents. The four in five come from a stream keyed to the player and the day, so
+// renewals never shift the market's other draws. Contracts that run to the season's last day are talked
+// over that day, before the season turn moves the wages toward the boards' caps; any other contract when
+// it ends.
 const RENEWAL_CHANCE = 0.8;
 // guess: free-transfer deals run one to three seasons.
 const NEW_CONTRACT_YEARS = 3;
@@ -61,7 +61,8 @@ function squadEnd(squad: readonly SimPlayer[]): string {
 function aiRenewal(state: GameState, player: SimPlayer, squad: readonly SimPlayer[], tier: Tier): ContractTerm | null {
   if (isHumanClub(state, player.clubId) || !isWorthKeeping(player, squad, tier)) return null;
   if (keyedStream(state.market.rngState, `renewal:${player.id}`)() >= RENEWAL_CHANCE) return null;
-  return assistantPick(renewalTermsOf(state, player, squad).terms);
+  const { preferred, terms } = renewalTermsOf(state, player, squad);
+  return wishPick(terms, preferred);
 }
 
 /**

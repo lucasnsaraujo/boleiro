@@ -42,7 +42,7 @@ const OFFER_PREMIUM = 0.1;
 // guess: squad morale moves every ask up to 10% either way around a neutral 50; below 30 he is a step harder too.
 const MORALE_PREMIUM_PER_POINT = 0.002;
 const SOUR_MORALE = 30;
-// guess: a club's usual deal is two years; the assistant and AI clubs offer the agreed length nearest it.
+// guess: a club's usual deal is two years; the coach's assistant offers the agreed length nearest it.
 const USUAL_MONTHS = 24;
 
 /**
@@ -110,14 +110,23 @@ export function contractTerms(anchor: number, preferred: number, mood: TalkMood)
   }));
 }
 
-/** The deal a club offers: the length nearest two years that the player wants or agrees to, the cheaper on a tie; null when he agrees to none. */
-export function assistantPick(terms: readonly ContractTerm[]): ContractTerm | null {
+/** The length he wants or agrees to nearest `months`, the cheaper (then the shorter) on a tie; null when he agrees to none. */
+function pickNearest(terms: readonly ContractTerm[], months: number): ContractTerm | null {
   let best: ContractTerm | null = null;
   for (const term of terms) {
     if (term.stance !== "wants" && term.stance !== "agrees") continue;
-    const off = Math.abs(term.months - USUAL_MONTHS);
-    const bestOff = best ? Math.abs(best.months - USUAL_MONTHS) : Infinity;
+    const off = Math.abs(term.months - months);
+    const bestOff = best ? Math.abs(best.months - months) : Infinity;
     if (off < bestOff || (off === bestOff && best && term.wage < best.wage)) best = term;
   }
   return best;
 }
+
+/** The deal the coach's assistant offers: the length nearest two years that the player wants or agrees to, the cheaper on a tie; null when he agrees to none. */
+export const assistantPick = (terms: readonly ContractTerm[]): ContractTerm | null => pickNearest(terms, USUAL_MONTHS);
+
+/**
+ * The deal an AI club offers: the length nearest the `preferred` one that the player wants or agrees to, so
+ * a squad's contracts end over several seasons as its players' ages differ; null when he agrees to none.
+ */
+export const wishPick = (terms: readonly ContractTerm[], preferred: number): ContractTerm | null => pickNearest(terms, preferred);

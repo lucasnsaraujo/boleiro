@@ -4,7 +4,7 @@ import { EMPTY_MEMORY } from "../events/eventMemory.js";
 import type { ClubFinance, GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { coachMarketOf, withCoachMarket, withRenewalCounter } from "./coachMarket.js";
-import { assistantPick } from "./contractTerms.js";
+import { assistantPick, wishPick } from "./contractTerms.js";
 import { expireContracts } from "./expireContracts.js";
 import { nextAssistantReview } from "./assistantRenewals.js";
 import { renewalTermsOf, renewedUntil } from "./renewalTerms.js";
@@ -122,18 +122,21 @@ describe("nextAssistantReview", () => {
 describe("AI clubs' renewals", () => {
   const lastDay = { ...start, date: "2026-12-31" };
 
-  it("renew on the season's last day the key players whose contract ends then, for the length nearest two years they agree to, at their ask", () => {
+  it("renew on the season's last day the key players whose contract ends then, for the length they agree to nearest the one they want, at their ask", () => {
     const { events, state } = runTransferDay(lastDay, []);
     const renewed = renewalsOf(events).filter((e) => e.clubId !== COACH);
     expect(renewed.length).toBeGreaterThan(100);
     for (const event of renewed.slice(0, 50)) {
       const before = lastDay.players[event.playerId];
       if (!before) throw new Error("a renewed player was nowhere");
-      const pick = assistantPick(renewalTermsOf(lastDay, before).terms);
-      expect(event).toMatchObject({ until: "2028-12-31", wage: pick?.wage });
+      const { preferred, terms } = renewalTermsOf(lastDay, before);
+      const pick = wishPick(terms, preferred);
+      if (!pick) throw new Error("he agrees to nothing");
+      expect(event).toMatchObject({ until: renewedUntil(before, lastDay.date, pick.months), wage: pick.wage });
       expect(event).not.toHaveProperty("byAssistant");
-      expect(state.players[event.playerId]?.wage).toBe(pick?.wage);
+      expect(state.players[event.playerId]?.wage).toBe(pick.wage);
     }
+    expect(new Set(renewed.map((e) => e.until)).size).toBeGreaterThanOrEqual(3);
   });
 
   it("renew the players they lent out whose contract ends with the loan, judged against their own squad", () => {
