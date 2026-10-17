@@ -326,11 +326,12 @@ a.ab-stk:hover::after {
 .ab-nums {
   display: flex;
   justify-content: center;
-  gap: 7px;
+  gap: 5px;
   margin-top: 3px;
-  font-stretch: var(--semi);
+  font-stretch: var(--narrow);
   font-size: 9.5px;
   color: #5c584b;
+  white-space: nowrap;
 }
 
 .ab-nums b {
