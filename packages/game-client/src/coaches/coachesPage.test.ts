@@ -24,6 +24,16 @@ describe("the coaches screen before the first season ends", () => {
   });
 });
 
+test("a save from before AI coaches loads with every club's coach drawn from its seed", () => {
+  const saved = session();
+  const old = JSON.parse(saved.save()) as { game: Record<string, unknown> };
+  delete old.game.coaches;
+  const loaded = createEngineSession(bundledGameFiles);
+  loaded.apply({ type: "load", save: JSON.stringify(old) });
+  expect(loaded.coachProfile("palmeiras-sp")).toEqual(saved.coachProfile("palmeiras-sp"));
+  expect(loaded.read(["coaches"]).coaches).toEqual(saved.read(["coaches"]).coaches);
+});
+
 describe("the coaches screen after a season", () => {
   const played = session();
   const days = 365;

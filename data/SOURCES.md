@@ -167,6 +167,14 @@ How the game uses these files (`packages/engine/src/sim/finances/openingFinances
 | `matchday.C` | 2025 crowds about 2,700–2,950 (A União); ticket price derived from reported takings. |
 | `matchday.D` | `guess`: no league-wide figure; 2,000 crowd and R$20 ticket. |
 
+## Coach career (`packages/engine/src/sim/coach/`)
+
+- Série A boards fire about 20 coaches a season (`judgeCoaches.ts`, Band: 22 changes in the 2025 Brasileirão with two rounds left, 17 in 2024) and 30% of Série A clubs change coach before a season (`startCoachSeason.ts`, Jornal de Brasília). Both now move named AI coaches: the fired one goes to the free pool and the club hires from it two weeks later (`moveAiCoaches.ts`; the two weeks are a guess, the time an offer waits for the player).
+- Result-only countries judge their coaches on the first of each month from the table against the clubs' squad strength, calibrated to CIES's count for 2022/23: 484 of 850 teams (56.9%) changed coach during the season (https://football-observatory.com/Less-than-one-in-two-coaches-finished-the-season). Each country keeps its own coaches and pool; coaches don't move between countries (`guess`).
+- National ranking, the CBF's Ranking Nacional de Clubes convention (`rankingPoints.ts`): Série A champion 800, B 400, C 200, D 100; runner-up 80%, third 75%, fourth 70%, then one percentage point less per place; Copa do Brasil 600 champion, 480 runner-up, 450 semi-finalists, 200 quarter-finalists, 100, 50, 25, 15 for the earlier rounds; the last five seasons weigh 5, 4, 3, 2, 1 (https://trivela.com.br/brasil/como-funciona-o-ranking-da-cbf/, https://www.tupi.fm/?p=1934999). The CBF changed its convention for 2026 with the bigger Copa do Brasil (https://www.band.com.br/esportes/ranking-de-clubes-da-cbf-flamengo-segue-lider-e-corinthians-supera-rivais-202512241006); the new values weren't found, so the game keeps these.
+- World club ranking and coach ranking (`guess`, after UEFA's and IFFHS's rankings, kept to what every country files): a top league's first ten places score the CBF's way from 800, a second level's champion 400, a national cup's finalists 600 and 480, all weighed by the country's factor (its top division's squad level against the strongest country's, squared); continental winners score whole (Club World Cup 1500, Libertadores and Champions League 1000, Intercontinental 700, Sul-Americana and Europa League 500, Recopa and UEFA Super Cup 300). A coach earns his clubs' points for the share of the year he ran each.
+- Guesses: resigning costs 2 reputation points and the old club won't hire the coach for two seasons; a player who peaked at strength 76 or more starts coaching two to four seasons after retiring; AI coaches retire at 72.
+
 ## Cards and suspensions (`packages/engine/src/sim/discipline/`, `packages/engine/src/engine/sendOffRates.ts`)
 
 | Value | Source |
