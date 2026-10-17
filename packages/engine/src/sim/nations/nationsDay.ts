@@ -78,6 +78,25 @@ function bracketOrder(size: number): number[] {
   return order;
 }
 
+/**
+ * A knockout's first round from its seeds in order: the bracket's pairs (seed 1 against the last), the second
+ * team of a pair from the first's group swapped with another pair's second team when that clears both.
+ */
+export function firstRoundPairs(seeds: readonly string[], groupOf: (id: string) => string): [string, string][] {
+  const order = bracketOrder(seeds.length);
+  const pairs: [string, string][] = [];
+  for (let i = 0; i + 1 < order.length; i += 2) pairs.push([seeds[(order[i] ?? 1) - 1] ?? "", seeds[(order[i + 1] ?? 1) - 1] ?? ""]);
+  const clashes = (home: string, away: string) => groupOf(home) === groupOf(away);
+  pairs.forEach((pair, i) => {
+    if (!clashes(...pair)) return;
+    const other = pairs.findIndex((candidate, j) => j !== i && !clashes(pair[0], candidate[1]) && !clashes(candidate[0], pair[1]));
+    const swap = pairs[other];
+    if (!swap) return;
+    [pair[1], swap[1]] = [swap[1], pair[1]];
+  });
+  return pairs;
+}
+
 /** The teams through a competition's groups in seeding order: each place's teams best first, then the best of the next place. */
 function groupQualifiers(competition: NationalCompetition, matches: readonly NationalMatch[], points: (id: string) => number): string[] {
   const own = matches.filter((m) => m.competitionId === competition.id && m.round === "group");
@@ -134,10 +153,8 @@ function progress(nations: Nations, competition: NationalCompetition, today: Iso
     const round = current.knockout[index] as KnockoutRound;
     let pairs: [string, string][];
     if (index === 0) {
-      const seeds = groupQualifiers(current, own, points);
-      const order = bracketOrder(seeds.length);
-      pairs = [];
-      for (let i = 0; i + 1 < order.length; i += 2) pairs.push([seeds[(order[i] ?? 1) - 1] ?? "", seeds[(order[i + 1] ?? 1) - 1] ?? ""]);
+      const groups = new Map(Object.entries(current.groups).flatMap(([group, ids]) => ids.map((id) => [id, group] as const)));
+      pairs = firstRoundPairs(groupQualifiers(current, own, points), (id) => groups.get(id) ?? id);
     } else {
       const fromIndex = round.from ?? index - 1;
       const from = current.knockout[fromIndex] as KnockoutRound;

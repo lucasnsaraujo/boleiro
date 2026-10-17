@@ -6,7 +6,7 @@ import { startMatchDay } from "../live/startMatchDay.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { isInjured } from "../players/isInjured.js";
 import { CALL_UP_PLACES, CALL_UP_SIZE, OUTSIDER_MARK, nationalSide } from "./callUps.js";
-import { onDutyOn } from "./nationsDay.js";
+import { firstRoundPairs, onDutyOn } from "./nationsDay.js";
 
 const football = loadNationalFootball();
 const start = loadNewGame(5, { coachClubId: "flamengo-rj", nationalFootball: football });
@@ -156,4 +156,21 @@ describe("national football and the rest of the game", () => {
     expect(withNations.rngState).toBe(before.rngState);
     expect(withNations.fixtures.filter((f) => f.result).map((f) => f.result)).toEqual(before.fixtures.filter((f) => f.result).map((f) => f.result));
   }, 60_000);
+});
+
+describe("a knockout's first round", () => {
+  const groupOf = (id: string) => id.charAt(0);
+
+  it("meets the best seeds against the worst and keeps two teams of the same group apart", () => {
+    const winners = ["A1", "B1", "C1", "D1"];
+    const pairs = firstRoundPairs([...winners, "B2", "C2", "D2", "A2"], groupOf);
+    expect(pairs).toHaveLength(4);
+    expect(pairs.filter(([home, away]) => groupOf(home) === groupOf(away))).toEqual([]);
+    expect(pairs.map(([home]) => home)).toEqual(expect.arrayContaining(winners));
+    expect(pairs.flat().sort()).toEqual(["A1", "A2", "B1", "B2", "C1", "C2", "D1", "D2"]);
+  });
+
+  it("leaves a draw with no clash as the seeding gives it", () => {
+    expect(firstRoundPairs(["A1", "B1", "C1", "D1", "B2", "A2", "D2", "C2"], groupOf)).toEqual([["A1", "C2"], ["D1", "B2"], ["B1", "D2"], ["C1", "A2"]]);
+  });
 });
