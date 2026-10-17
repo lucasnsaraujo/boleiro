@@ -112,9 +112,7 @@ function humansOf(state: GameState) {
 export function coachesPage(state: GameState, season?: number): CoachesPage {
   const seasons = rankedSeasons(state);
   const asOf = season !== undefined && seasons.includes(season) ? season : seasons.at(-1);
-  // The latest season ranks live from its points; an earlier one shows its standings as they were kept.
-  const kept = asOf === seasons.at(-1) ? undefined : state.coaches?.standings?.find((standing) => standing.season === asOf);
-  const ranked = kept ? kept.coaches : asOf === undefined ? [] : coachRanking(state, asOf);
+  const ranked = asOf === undefined ? [] : coachRanking(state, asOf);
   const humans = humansOf(state);
   const humanByKey = new Map(humans.map((human) => [humanKey(human.name), human]));
   const aiById = new Map(everyCoach(state).map((coach) => [coach.id, coach]));
@@ -133,9 +131,9 @@ export function coachesPage(state: GameState, season?: number): CoachesPage {
     season: asOf ?? null,
     seasons,
     coaches,
-    national: kept ? clubs(kept.national) : asOf === undefined ? [] : clubs(nationalRanking(state, asOf)),
-    world: kept ? clubs(kept.world) : asOf === undefined ? [] : clubs(worldRanking(state, asOf)),
-    waitingCountries: kept || asOf === undefined ? [] : countriesCoaching(state).flatMap(([id, country]) => (country.seasons.length ? [] : [id])),
+    national: asOf === undefined ? [] : clubs(nationalRanking(state, asOf)),
+    world: asOf === undefined ? [] : clubs(worldRanking(state, asOf)),
+    waitingCountries: asOf === undefined || asOf !== seasons.at(-1) ? [] : countriesCoaching(state).flatMap(([id, country]) => (country.seasons.length ? [] : [id])),
     jobs: jobCentre(state),
     you: humanProfile(seated?.name, state.coachClubId, state.coach.reputation, state.history.coach, standingOf(ranked)),
   };

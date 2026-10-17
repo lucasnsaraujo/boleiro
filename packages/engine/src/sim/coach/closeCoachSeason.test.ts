@@ -175,14 +175,23 @@ describe("the coaches' turn of the season", () => {
     expect(closed.seasons.map((filed) => filed.season)).toEqual([2022, 2023, 2024, 2025, 2026]);
     expect(closed.national.map((filed) => filed.season)).toEqual([2022, 2023, 2024, 2025, 2026]);
     const standing = closed.standings?.at(-1);
+    const kept = 800 * (4 + 3 + 2 + 1);
     expect(standing?.season).toBe(2026);
-    expect(standing?.national[0]).toEqual(["palmeiras-sp", 800 * (4 + 3 + 2 + 1)]);
-    expect(standing?.coaches[0]?.[0]).toBe(abel.id);
+    expect(standing?.national?.[0]).toEqual(["palmeiras-sp", kept]);
+    expect(standing?.clubs).toEqual([["palmeiras-sp", "br", kept]]);
+    expect(standing?.coaches).toContainEqual([abel.id, "br", kept]);
+    expect(standing?.coaches.filter(([key]) => key !== abel.id).every(([key]) => key.startsWith("human:"))).toBe(true);
     expect(standing?.coaches.some(([key]) => key === humanKey(undefined))).toBe(true);
-    expect(Math.max(standing?.coaches.length ?? 0, standing?.national.length ?? 0, standing?.world.length ?? 0)).toBeLessThanOrEqual(51);
+
+    // A season on, 2026's points are no longer all there, and its rankings read as they were kept.
+    const later = closeCoachSeason({ ...state, season: 2028, coaches: closed }, 2027, NO_RUNS, []);
+    expect(coachesOf(later).seasons[0]?.season).toBe(2023);
+    expect(nationalRanking(later, 2026)[0]).toEqual(["palmeiras-sp", kept]);
+    expect(coachRanking(later, 2026)[0]?.[0]).toBe(abel.id);
+    expect(worldRanking(later, 2026)[0]?.[0]).toBe("palmeiras-sp");
   });
 
-  it("forgets the retired coaches nobody remembers, and keeps a coach's last eight spells", () => {
+  it("forgets the retired coaches nobody remembers, and keeps a coach's last five spells", () => {
     const world = coachesOf(game);
     const [forgotten, champion] = Object.values(world.coaches).filter((coach) => coach.clubId === null);
     const travelled = coachesByClub(world).get("santos-sp");
@@ -199,10 +208,10 @@ describe("the coaches' turn of the season", () => {
     expect(closed.coaches[forgotten.id]).toBeUndefined();
     expect(closed.coaches[champion.id]?.titles).toHaveLength(1);
     expect(closed.coaches[champion.id]?.stints.map((stint) => stint.clubId)).toEqual(["club-5"]);
-    expect(closed.coaches[travelled.id]?.stints).toEqual(career.slice(-8));
+    expect(closed.coaches[travelled.id]?.stints).toEqual(career.slice(-5));
   });
 
-  it("retires a coach three seasons out of work, and keeps one fired a season ago", () => {
+  it("retires a coach two seasons out of work, and keeps one fired a season ago", () => {
     const world = coachesOf(game);
     const [idle, recent] = Object.values(world.coaches).filter((coach) => coach.clubId === null && coach.born > 1975);
     if (!idle || !recent) throw new Error("the pool is too small");

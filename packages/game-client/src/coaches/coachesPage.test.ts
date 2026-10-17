@@ -51,20 +51,28 @@ describe("the coaches screen after a season", () => {
 
   test("shows a season the rankings no longer read as its standings were kept", () => {
     const saved = JSON.parse(played.save()) as { game: { coaches: { standings?: unknown[] } } };
+    // Raw points, before the country's weight the ranking applies when read.
     const palmeiras = played.coachProfile("palmeiras-sp");
     const coach = palmeiras?.key ?? "";
-    const old = { season: 2019, coaches: [[coach, 900], ["human:", 10]], national: [["palmeiras-sp", 4000]], world: [["palmeiras-sp", 5000]] };
+    const old = { season: 2019, clubs: [["palmeiras-sp", "br", 5000]], coaches: [[coach, "br", 900], ["human:", "br", 10]], national: [["palmeiras-sp", 4000]] };
     saved.game.coaches.standings = [old, ...(saved.game.coaches.standings ?? [])];
     const loaded = createEngineSession(bundledGameFiles);
     loaded.apply({ type: "load", save: JSON.stringify(saved) });
     const past = loaded.coaches(2019);
     expect(past.seasons).toEqual([2019, 2026]);
     expect(past.season).toBe(2019);
-    expect(past.coaches.map((row) => [row.key, row.position, row.points])).toEqual([[coach, 1, 900], ["human:", 2, 10]]);
+    const brazil = (past.world[0]?.points ?? 0) / 5000;
+    expect(brazil).toBeGreaterThan(0.2);
+    expect(brazil).toBeLessThanOrEqual(1);
+    expect(past.coaches.map((row) => [row.key, row.position, row.points])).toEqual([
+      [coach, 1, Math.round(900 * brazil)],
+      ["human:", 2, Math.round(10 * brazil)],
+    ]);
     expect(past.coaches[0]?.name).toBe(palmeiras?.name);
     expect(past.national).toEqual([{ position: 1, clubId: "palmeiras-sp", points: 4000, country: "br" }]);
-    expect(past.world).toEqual([{ position: 1, clubId: "palmeiras-sp", points: 5000, country: "br" }]);
-    expect(past.you.ranking).toEqual({ position: 2, points: 10 });
+    expect(past.world.map((row) => [row.position, row.clubId, row.country])).toEqual([[1, "palmeiras-sp", "br"]]);
+    expect(past.you.ranking).toEqual({ position: 2, points: Math.round(10 * brazil) });
+    expect(past.waitingCountries).toEqual([]);
   });
 
   test("marks the coaches the game invented, never a real one, an ex-star or a human", () => {
