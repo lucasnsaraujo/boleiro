@@ -5,8 +5,7 @@ import { tieResults } from "../tieResults.js";
 
 // FIFA's annual format since 2024 (Wikipedia, "2024 FIFA Intercontinental Cup" and "2025 FIFA
 // Intercontinental Cup"): the six confederations' champions in single matches, level ones settled by
-// extra time and then penalties (the game's matches have no extra time yet, so a level one goes
-// straight to penalties, as in its other cups). The OFC's champion meets the AFC's or CAF's, in turn, in the
+// extra time and then penalties (tieBreaks.ts). The OFC's champion meets the AFC's or CAF's, in turn, in the
 // African–Asian–Pacific Cup play-off; its winner the other one in the African–Asian–Pacific Cup;
 // the Libertadores' and the CONCACAF Champions Cup's winners meet in the Derby of the Americas; the
 // two winners in the Challenger Cup; its winner the Champions League's in the final. FIFA played the

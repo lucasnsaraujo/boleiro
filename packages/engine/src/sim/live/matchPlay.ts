@@ -2,7 +2,7 @@ import type { PositionGroup } from "../../engine/match.js";
 import { keyedStream } from "../../engine/random.js";
 import { CARD_RATES } from "../discipline/cardRates.js";
 import type { SimPlayer } from "../gameState.js";
-import { FULL_TIME, type MatchEvent } from "./matchTimeline.js";
+import { EXTRA_TIME_END, FULL_TIME, matchEndOf, type MatchEvent } from "./matchTimeline.js";
 
 type Shot = { minute: number; isOnTarget: boolean };
 
@@ -109,13 +109,11 @@ function count(mean: number, random: () => number): number {
   return n;
 }
 
-const minuteOf = (random: () => number) => 1 + Math.floor(random() * FULL_TIME);
-
-/** `count(mean)` minutes of the match in order. Drawn for every player of every match, so it sorts as it draws. */
-function minutesOf(mean: number, random: () => number): number[] {
+/** `count(mean)` minutes after `from` and up to `to`, in order. Drawn for every player of every match, so it sorts as it draws. */
+function minutesOf(mean: number, random: () => number, from = 0, to = FULL_TIME): number[] {
   const minutes: number[] = [];
   for (let left = count(mean, random); left > 0; left--) {
-    const minute = minuteOf(random);
+    const minute = from + 1 + Math.floor(random() * (to - from));
     let i = minutes.length;
     minutes.push(minute);
     for (; i > 0 && (minutes[i - 1] ?? 0) > minute; i--) minutes[i] = minutes[i - 1] ?? 0;
@@ -137,22 +135,50 @@ function playOf(player: SimPlayer, form: number, random: () => number): PlayerPl
   return { clubId: player.clubId, group: player.group, form, shots, tackles, fouls, passes, misplaced };
 }
 
+const EXTRA_TIME_SHARE = (EXTRA_TIME_END - FULL_TIME) / FULL_TIME;
+
+/** A player's play of the ninety minutes with his shots, tackles and fouls of extra time added, at his rates over its thirty minutes. */
+function withExtraTimePlay(own: PlayerPlay, player: SimPlayer, random: () => number): PlayerPlay {
+  const rates = PER_90[player.group];
+  const { form } = own;
+  const onTarget = SAVED_SHARE * (1 + FORM_ON_TARGET * form);
+  const more = (mean: number) => minutesOf(mean * EXTRA_TIME_SHARE, random, FULL_TIME, EXTRA_TIME_END);
+  const shots = more(rates.missedShots).map((minute) => ({ minute, isOnTarget: random() < onTarget }));
+  return {
+    ...own,
+    shots: [...own.shots, ...shots],
+    tackles: [...own.tackles, ...more(rates.tackles * (1 + FORM_TACKLES * form))],
+    fouls: [...own.fouls, ...more(Math.max(0, rates.fouls - CARDS_PER_90) * (1 - FORM_FOULS * form))],
+  };
+}
+
 /**
  * The play of a match drawn at kick-off for the starters and everyone who may come on, each from a
  * stream seeded by the save's seed, the fixture and the player: a change during the match never
- * changes what came before it, and a substitute brings his own form.
+ * changes what came before it, and a substitute brings his own form. A match that may go to extra
+ * time (`mayGoToExtraTime`) draws its thirty minutes too, from streams of their own.
  */
-export function drawMatchPlay(seed: number, fixtureId: string, starters: readonly SimPlayer[], others: readonly SimPlayer[], formOf: (player: SimPlayer) => number): MatchPlay {
+export function drawMatchPlay(
+  seed: number,
+  fixtureId: string,
+  starters: readonly SimPlayer[],
+  others: readonly SimPlayer[],
+  formOf: (player: SimPlayer) => number,
+  mayGoToExtraTime = false,
+): MatchPlay {
   const players: Record<string, PlayerPlay> = {};
   for (const player of [...starters, ...others]) {
-    players[player.id] ??= playOf(player, formOf(player), keyedStream(seed ^ PLAY_STREAM_SALT, `${fixtureId}/${player.id}`));
+    if (players[player.id]) continue;
+    const own = playOf(player, formOf(player), keyedStream(seed ^ PLAY_STREAM_SALT, `${fixtureId}/${player.id}`));
+    players[player.id] = mayGoToExtraTime ? withExtraTimePlay(own, player, keyedStream(seed ^ PLAY_STREAM_SALT, `${fixtureId}/${player.id}/extra-time`)) : own;
   }
   return { starters: starters.map((p) => p.id), players };
 }
 
 /** When each player of the match was on the pitch: after `from`, up to and including `to`. */
 function spellsOf(play: MatchPlay, events: readonly MatchEvent[]): Map<string, { from: number; to: number }> {
-  const spells = new Map(play.starters.map((id) => [id, { from: 0, to: FULL_TIME }]));
+  const last = matchEndOf(events);
+  const spells = new Map(play.starters.map((id) => [id, { from: 0, to: last }]));
   const end = (playerId: string, minute: number) => {
     const spell = spells.get(playerId);
     if (spell) spell.to = Math.min(spell.to, minute);
@@ -160,7 +186,7 @@ function spellsOf(play: MatchPlay, events: readonly MatchEvent[]): Map<string, {
   for (const e of events) {
     if (e.type === "substitution") {
       end(e.offId, e.minute);
-      spells.set(e.playerId, { from: e.minute, to: FULL_TIME });
+      spells.set(e.playerId, { from: e.minute, to: last });
     }
     if ((e.type === "card" && e.card !== "yellow") || e.type === "injury") end(e.playerId, e.minute);
   }

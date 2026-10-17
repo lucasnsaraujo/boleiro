@@ -1,4 +1,4 @@
-import { simulateMatch } from "../../engine/match.js";
+import { extraTimeExpectedGoals, simulateMatch } from "../../engine/match.js";
 import { keyedStream, randomStream } from "../../engine/random.js";
 import type { DayDecisions, DayEvent } from "../advanceDay.js";
 import { guestClubOf, guestSquadOf } from "../continental/guestClubs.js";
@@ -18,7 +18,8 @@ import { matchSetup, playingStrength, type CoachPlan } from "../players/matchSet
 import { fatigueOn } from "../players/fatigueOn.js";
 import { drawMatchInjuries, recordMatchLoad } from "../players/recordMatchLoad.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
-import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
+import { isDecidingLeg, isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
+import { tieBreakOf } from "../tieBreaks.js";
 import { aiBench, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
 import { waitingCoachesOf } from "../coach/humanCoaches.js";
 import { coachOutcome } from "./coachOutcome.js";
@@ -26,7 +27,8 @@ import { formOfTheDay, formStrength } from "./formOfTheDay.js";
 import { incidentHandling } from "./incidentHandling.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
 import { drawMatchPlay } from "./matchPlay.js";
-import { detailStream, FULL_TIME, inMatchOrder, kickOffTimeline, scorerStream } from "./matchTimeline.js";
+import { detailStream, EXTRA_TIME_END, FULL_TIME, inMatchOrder, kickOffTimeline, scorerStream } from "./matchTimeline.js";
+import { bookingsOf, extraTimeStream, playExtraTime, withExtraTime } from "./playExtraTime.js";
 
 const LINEUP_SIZE = 11;
 // Goal minutes and redraws of the coach's match draw from streams of their own, so the day's
@@ -113,9 +115,11 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const bookings = drawCards(setup.homeLineup, setup.awayLineup, markedCardRates(cardRates, { home: markingOf(fixture.homeId), away: markingOf(fixture.awayId) }), random.next);
     const params = withoutCrowd(paramsForCompetition(competition, fixture.stage), clubMood(state, fixture.homeId));
     const goals = simulateMatch(setup.home, setup.away, random.next, params, sendOffMinutes(bookings, fixture.homeId));
-    const score = { ...goals, cards: countCards(bookings, fixture.homeId) };
-    const shootout = isShootoutDue(state, { ...fixture, result: score }) ? shootoutSeed(random.next) : null;
-    const injuries = drawMatchInjuries([...setup.homeLineup, ...setup.awayLineup], setup.context, random.next);
+    const afterNinety = { ...goals, cards: countCards(bookings, fixture.homeId) };
+    // A tie level after ninety minutes always takes its shootout's draw, so the day's stream runs the same whatever settles it.
+    const shootout = isShootoutDue(state, { ...fixture, result: afterNinety }) ? shootoutSeed(random.next) : null;
+    const tieBreak = shootout === null ? null : tieBreakOf(competition, fixture.stage);
+    const ninetyInjuries = drawMatchInjuries([...setup.homeLineup, ...setup.awayLineup], setup.context, random.next);
     const { homeId, awayId } = fixture;
     // Each player's strength today, worked out once: goal kinds, penalties and substitutions ask for it again and again.
     const strengths = new Map<string, (p: SimPlayer) => number>();
@@ -136,7 +140,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const humanBench = (clubId: string, lineup: readonly SimPlayer[]) => available(clubId).filter((p) => isFit(p) && !lineup.includes(p));
     const mayComeOn = (clubId: string, lineup: readonly SimPlayer[], bench: readonly SimPlayer[]) => (isHuman(clubId) ? humanBench(clubId, lineup) : bench);
     const takerOf = (clubId: string) => planOf(clubId)?.tactics.penaltyTakerId ?? null;
-    const timeline = kickOffTimeline(
+    const ninety = kickOffTimeline(
       {
         homeId,
         awayId,
@@ -148,20 +152,39 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
         tiredness: (p) => tirednessOn(p, state.date),
         goals,
         bookings,
-        injuries,
+        injuries: ninetyInjuries,
       },
       timelineRandom,
       scorerStream(state.seed, fixture.id),
       detailStream(state.seed, fixture.id),
     );
+    const extraTimeMatch = {
+      clubIds: { home: homeId, away: awayId },
+      starters: { home: setup.homeLineup, away: setup.awayLineup },
+      benches,
+      aiSides: { home: !isHuman(homeId), away: !isHuman(awayId) },
+      penaltyTakers: { home: takerOf(homeId), away: takerOf(awayId) },
+      strength,
+      tiredness: (p: SimPlayer) => tirednessOn(p, state.date),
+      expectedGoals: extraTimeExpectedGoals(setup.home, setup.away, params, sendOffMinutes(bookings, homeId)),
+      cardRates: markedCardRates(cardRates, { home: markingOf(homeId), away: markingOf(awayId) }),
+      context: setup.context,
+    };
+    const timeline = tieBreak === "extraTime" ? withExtraTime(ninety, playExtraTime(extraTimeMatch, ninety.events, extraTimeStream(state.seed, fixture.id)), extraTimeMatch) : ninety;
+    const isExtraTime = timeline !== ninety;
+    const allBookings = isExtraTime ? bookingsOf(timeline.events) : bookings;
+    const injuries = isExtraTime ? new Map([...ninetyInjuries, ...timeline.events.flatMap((e) => (e.type === "injury" && e.minute > FULL_TIME ? [[e.playerId, e.days] as const] : []))]) : ninetyInjuries;
+    const goalsOf = (clubId: string) => timeline.events.filter((e) => e.type === "goal" && e.clubId === clubId).length;
+    const score = isExtraTime ? { homeGoals: goalsOf(homeId), awayGoals: goalsOf(awayId), isAfterExtraTime: true as const, cards: countCards(allBookings, homeId) } : afterNinety;
+    const end = isExtraTime ? EXTRA_TIME_END : FULL_TIME;
     const shootoutSide = (clubId: string, lineup: readonly SimPlayer[], bench: readonly SimPlayer[]) => {
       const order = planOf(clubId)?.tactics.kickerOrder;
-      return { clubId, onPitch: onPitchAt(lineup, bench, timeline.events, clubId, FULL_TIME + 1), morale: clubMood(state, clubId).squad, ...(order ? { order } : {}) };
+      return { clubId, onPitch: onPitchAt(lineup, bench, timeline.events, clubId, end + 1), morale: clubMood(state, clubId).squad, ...(order ? { order } : {}) };
     };
-    const settled =
-      shootout === null
-        ? { fixture: { ...fixture, result: score }, events: [] }
-        : settleShootout({ ...fixture, result: score }, shootout, shootoutSide(homeId, setup.homeLineup, benches.home), shootoutSide(awayId, setup.awayLineup, benches.away), strength);
+    const isShootout = shootout !== null && tieBreak !== "betterSeed" && (!isExtraTime || isShootoutDue(state, { ...fixture, result: score }));
+    const settled = isShootout
+      ? settleShootout({ ...fixture, result: score }, shootout, shootoutSide(homeId, setup.homeLineup, benches.home), shootoutSide(awayId, setup.awayLineup, benches.away), strength, end)
+      : { fixture: { ...fixture, result: score }, events: [] };
     const played = settled.fixture;
     const play = drawMatchPlay(
       state.seed,
@@ -169,6 +192,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
       [...setup.homeLineup, ...setup.awayLineup],
       [...mayComeOn(homeId, setup.homeLineup, benches.home), ...mayComeOn(awayId, setup.awayLineup, benches.away)],
       formOf,
+      isDecidingLeg(fixture, state.competitions) && tieBreakOf(competition, fixture.stage) === "extraTime",
     );
     const callSide = (clubId: string, lineup: readonly SimPlayer[], bench: readonly SimPlayer[]) => ({ clubId, onPitch: (minute: number) => onPitchAt(lineup, bench, timeline.events, clubId, minute) });
     const told = withRefereeCalls(inMatchOrder([...timeline.events, ...settled.events]), {
@@ -188,7 +212,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
       const kickOff = coachOutcome(
         state,
         competition,
-        { played, context: setup.context, awayTravelKm: setup.awayTravelKm, lineups, minutes: timeline.minutes, bookings, injuries, scorers: timeline.scorers },
+        { played, context: setup.context, awayTravelKm: setup.awayTravelKm, lineups, minutes: timeline.minutes, bookings: allBookings, injuries, scorers: timeline.scorers },
         random.next,
       );
       const coachLineup = ownerId === homeId ? setup.homeLineup : setup.awayLineup;
@@ -227,7 +251,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const load = recordMatchLoad({ ...setup, homeLineup: lineups.home, awayLineup: lineups.away, result: score }, injuries, timeline.minutes);
     playedToday.push(...load.players);
     events.push(...load.events);
-    events.push(...cards.record(competition, played, bookings, (id) => state.players[id]?.clubId, random.next));
+    events.push(...cards.record(competition, played, allBookings, (id) => state.players[id]?.clubId, random.next));
     sheets[played.id] = { ...lineups, scorers: timeline.scorers };
     return played;
   };

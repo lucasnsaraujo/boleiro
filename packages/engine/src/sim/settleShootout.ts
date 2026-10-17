@@ -14,9 +14,11 @@ const KICKS_EACH = 5;
 // guess: a squad whose morale sits below this ignores its coach's kicker order and lines up by who wants to take one.
 export const LOW_MORALE = 35;
 
-export type ShootoutKick = { type: "shootoutKick"; minute: 90; clubId: string; playerId: string; isScored: boolean };
+/** The minute a match ends and its shootout is kicked at: 90, or 120 after extra time. */
+type LastMinute = 90 | 120;
+export type ShootoutKick = { type: "shootoutKick"; minute: LastMinute; clubId: string; playerId: string; isScored: boolean };
 /** The coach's squad ignored his kicker order. */
-export type OrderOverruled = { type: "orderOverruled"; minute: 90; clubId: string };
+export type OrderOverruled = { type: "orderOverruled"; minute: LastMinute; clubId: string };
 
 /** A side going into a shootout: the players who ended the match on the pitch, and the coach's order when it is his side. */
 export type ShootoutSide = {
@@ -28,7 +30,8 @@ export type ShootoutSide = {
   morale: number;
 };
 
-function isDecidingLeg(fixture: Fixture, competitions: Record<string, Competition>): boolean {
+/** Whether a fixture is the last leg of a knockout tie, the one a level tie is settled in. */
+export function isDecidingLeg(fixture: Fixture, competitions: Record<string, Competition>): boolean {
   const stage = competitions[fixture.competitionId]?.stages[fixture.stage];
   return fixture.tie !== undefined && stage?.kind === "knockout" && stage.dates.at(-1) === fixture.date;
 }
@@ -86,11 +89,18 @@ export function playShootout(home: ShootoutSide, away: ShootoutSide, strength: (
   }
 }
 
-/** A just-played fixture with its shootout, when it is due, played from `seed` on its own stream. */
-export function settleShootout(played: Fixture, seed: number, home: ShootoutSide, away: ShootoutSide, strength: (p: SimPlayer) => number): { fixture: Fixture; events: (ShootoutKick | OrderOverruled)[] } {
+/** A just-played fixture with its shootout, when it is due, played from `seed` on its own stream at the minute the match ended. */
+export function settleShootout(
+  played: Fixture,
+  seed: number,
+  home: ShootoutSide,
+  away: ShootoutSide,
+  strength: (p: SimPlayer) => number,
+  minute: LastMinute = 90,
+): { fixture: Fixture; events: (ShootoutKick | OrderOverruled)[] } {
   if (!played.result) return { fixture: played, events: [] };
   const { events, winnerId } = playShootout(home, away, strength, randomStream(seed).next);
-  return { fixture: { ...played, result: { ...played.result, penaltyWinnerId: winnerId } }, events };
+  return { fixture: { ...played, result: { ...played.result, penaltyWinnerId: winnerId } }, events: minute === 90 ? events : events.map((e) => ({ ...e, minute })) };
 }
 
 /** The club that won a match's shootout, from its kicks; undefined when there was none. */

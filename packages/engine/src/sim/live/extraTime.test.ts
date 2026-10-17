@@ -1,0 +1,159 @@
+import { describe, expect, it } from "vitest";
+import { advanceDay } from "../advanceDay.js";
+import type { Competition, Fixture, GameState } from "../gameState.js";
+import { loadNewGame } from "../loadNewGame.js";
+import { applyLiveChange } from "./applyLiveChange.js";
+import { finishMatchDay } from "./finishMatchDay.js";
+import type { LiveMatch } from "./liveDay.js";
+import { playerStatsAt } from "./matchPlay.js";
+import { EXTRA_HALF_TIME, EXTRA_TIME_END, FULL_TIME, type MatchEvent } from "./matchTimeline.js";
+import { startMatchDay } from "./startMatchDay.js";
+
+const COACH_CLUB = "flamengo-rj";
+const start = loadNewGame(5, { coachClubId: COACH_CLUB });
+
+function advanceTo(state: GameState, date: string): GameState {
+  let current = state;
+  while (current.date < date) current = advanceDay(current, {}).state;
+  return current;
+}
+
+const matchDay = advanceTo(start, start.fixtures.find((f) => f.homeId === COACH_CLUB || f.awayId === COACH_CLUB)?.date ?? "");
+
+/**
+ * Today's matches made one-leg knockout ties of a Sul-Americana stage: its final, which plays extra
+ * time, or (`isFinal` false) its first stage, which goes straight to penalties.
+ */
+function asKnockoutDay(state: GameState, isFinal: boolean): GameState {
+  const today = state.fixtures.filter((f) => f.date === state.date);
+  const ties = today.map((f): [string, string] => [f.homeId, f.awayId]);
+  const competition: Competition = {
+    id: "ko",
+    kind: "continental",
+    cup: "sul-americana",
+    season: state.season,
+    clubIds: ties.flat(),
+    entries: [],
+    countries: {},
+    drawOrder: ties.flat(),
+    stages: [{ kind: "knockout", ties, dates: [state.date] }],
+    stageDates: isFinal ? [[state.date]] : [[state.date], ["2099-01-01"]],
+  };
+  const asTie = new Map(today.map((f, tie): [string, Fixture] => [f.id, { ...f, competitionId: "ko", stage: 0, tie }]));
+  return { ...state, competitions: { ...state.competitions, ko: competition }, fixtures: state.fixtures.map((f) => asTie.get(f.id) ?? f) };
+}
+
+const goalsBy = (match: LiveMatch, minute: number) => {
+  const goals = (clubId: string) => match.events.filter((e) => e.type === "goal" && e.clubId === clubId && e.minute <= minute).length;
+  return { home: goals(match.homeId), away: goals(match.awayId) };
+};
+const isLevelAt = (match: LiveMatch, minute: number) => {
+  const { home, away } = goalsBy(match, minute);
+  return home === away;
+};
+const isShootout = (e: MatchEvent) => e.type === "shootoutKick" || e.type === "orderOverruled";
+const untilFullTime = (events: readonly MatchEvent[]) => events.slice(0, events.findIndex((e) => e.type === "fullTime") + 1);
+
+const extraTimeDay = asKnockoutDay(matchDay, true);
+const penaltiesDay = asKnockoutDay(matchDay, false);
+const withExtraTime = startMatchDay(extraTimeDay, {});
+const straightToPenalties = startMatchDay(penaltiesDay, {});
+
+describe("extra time", () => {
+  it("is played in a knockout match level after ninety minutes: two halves of fifteen, then penalties only if still level", () => {
+    const level = withExtraTime.matches.filter((m) => isLevelAt(m, FULL_TIME));
+    expect(level.length).toBeGreaterThan(0);
+    for (const match of level) {
+      expect(match.events).toContainEqual({ type: "extraHalfTime", minute: EXTRA_HALF_TIME });
+      expect(match.events).toContainEqual({ type: "extraTimeEnd", minute: EXTRA_TIME_END });
+      const kicks = match.events.filter((e) => e.type === "shootoutKick");
+      expect(kicks.length > 0).toBe(isLevelAt(match, EXTRA_TIME_END));
+      for (const kick of kicks) expect(kick.minute).toBe(EXTRA_TIME_END);
+    }
+    for (const match of withExtraTime.matches.filter((m) => !isLevelAt(m, FULL_TIME))) {
+      expect(match.events.some((e) => e.minute > FULL_TIME)).toBe(false);
+    }
+  });
+
+  it("puts extra time's goals on the result and says it went to extra time", () => {
+    const { events } = finishMatchDay(withExtraTime);
+    const played = new Map(events.flatMap((e) => (e.type === "matchPlayed" ? [[e.fixture.id, e.fixture] as const] : [])));
+    for (const match of withExtraTime.matches) {
+      const result = played.get(match.fixtureId)?.result;
+      const final = goalsBy(match, EXTRA_TIME_END);
+      expect(result).toMatchObject({ homeGoals: final.home, awayGoals: final.away });
+      expect(result?.isAfterExtraTime ?? false).toBe(isLevelAt(match, FULL_TIME));
+      expect(result?.penaltyWinnerId !== undefined).toBe(isLevelAt(match, EXTRA_TIME_END));
+    }
+  });
+
+  it("leaves the ninety minutes of every match, every other result and the day's draws as straight-to-penalties plays them", () => {
+    expect(withExtraTime.rest.rngState).toBe(straightToPenalties.rest.rngState);
+    withExtraTime.matches.forEach((match, i) => {
+      const other = straightToPenalties.matches[i];
+      if (!other) throw new Error("both days play the same matches");
+      expect(untilFullTime(match.events)).toEqual(untilFullTime(other.events.filter((e) => !isShootout(e))));
+      if (!isLevelAt(match, FULL_TIME)) expect(match.events).toEqual(other.events);
+    });
+  });
+
+  it("counts extra time's minutes in what the players did and in their season's minutes", () => {
+    const match = withExtraTime.matches.find((m) => isLevelAt(m, FULL_TIME) && m.fixtureId !== withExtraTime.coachMatch?.fixtureId);
+    if (!match?.play) throw new Error("a match goes to extra time");
+    const stats = playerStatsAt(match.play, match.events, EXTRA_TIME_END);
+    const keeperId = match.play.starters.find((id) => stats[id]?.group === "GK" && stats[id]?.clubId === match.homeId) ?? "";
+    expect(stats[keeperId]?.minutes).toBe(EXTRA_TIME_END);
+    const next = finishMatchDay(withExtraTime).state;
+    expect(next.players[keeperId]?.condition.seasonMinutes).toBe((extraTimeDay.players[keeperId]?.condition.seasonMinutes ?? 0) + EXTRA_TIME_END);
+  });
+});
+
+// The day's stream salted so the coach's match ends level after ninety minutes (searched once).
+const LEVEL_COACH_MATCH_SALT = 3;
+const levelDay = startMatchDay({ ...extraTimeDay, rngState: (extraTimeDay.rngState ^ LEVEL_COACH_MATCH_SALT) >>> 0 }, {});
+const coachMatchOf = (live: typeof levelDay) => {
+  const match = live.matches.find((m) => m.fixtureId === live.coachMatch?.fixtureId);
+  if (!match) throw new Error("the coach has a match");
+  return match;
+};
+const isReplayed = (e: MatchEvent) => e.type === "goal" || e.type === "card" || e.type === "injury" || e.type === "substitution" || e.type === "penaltyMiss";
+
+describe("the coach's match in extra time", () => {
+  it("goes to extra time after ninety level minutes, and the coach can change his side during it, keeping everything before", () => {
+    const match = coachMatchOf(levelDay);
+    expect(isLevelAt(match, FULL_TIME)).toBe(true);
+    const changed = coachMatchOf(applyLiveChange(levelDay, 100, { posture: "attacking" }));
+    expect(changed.events.filter((e) => e.minute <= 100 && isReplayed(e))).toEqual(match.events.filter((e) => e.minute <= 100 && isReplayed(e)));
+    expect(changed.events).toContainEqual({ type: "extraTimeEnd", minute: EXTRA_TIME_END });
+  });
+
+  it("lets the coach make a sixth substitution in extra time, never before it", () => {
+    const coachId = levelDay.state.coachClubId ?? "";
+    const side = coachMatchOf(levelDay).homeId === coachId ? "home" : "away";
+    const starters = levelDay.coachMatch?.starters[side].filter((p) => p.group !== "GK") ?? [];
+    const bench = levelDay.coachMatch?.bench ?? [];
+    const swap = (i: number) => ({ offId: starters[i]?.id ?? "", onId: bench[i]?.id ?? "" });
+    expect(() => applyLiveChange(levelDay, 45, { substitutions: [0, 1, 2, 3, 4, 5].map(swap) })).toThrow();
+    const five = applyLiveChange(levelDay, FULL_TIME, { substitutions: [0, 1, 2, 3, 4].map(swap) });
+    const sixth = coachMatchOf(applyLiveChange(five, 95, { substitutions: [swap(5)] }));
+    expect(sixth.events.filter((e) => e.type === "substitution" && e.clubId === coachId)).toHaveLength(6);
+  });
+
+  it("plays extra time after a change exactly when the match is level after ninety minutes", () => {
+    for (const minute of [30, 60, 85]) {
+      for (const posture of ["defensive", "attacking"] as const) {
+        const match = coachMatchOf(applyLiveChange(levelDay, minute, { posture }));
+        expect(match.events.some((e) => e.type === "extraTimeEnd")).toBe(isLevelAt(match, FULL_TIME));
+        expect(match.events.some((e) => e.type === "shootoutKick")).toBe(isLevelAt(match, EXTRA_TIME_END));
+      }
+    }
+  });
+
+  it("records the redrawn extra time on the result", () => {
+    const changed = applyLiveChange(levelDay, 100, { posture: "attacking" });
+    const match = coachMatchOf(changed);
+    const played = finishMatchDay(changed).events.find((e) => e.type === "matchPlayed" && e.fixture.id === match.fixtureId);
+    const final = goalsBy(match, EXTRA_TIME_END);
+    expect(played?.type === "matchPlayed" && played.fixture.result).toMatchObject({ homeGoals: final.home, awayGoals: final.away, isAfterExtraTime: true });
+  });
+});

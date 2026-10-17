@@ -82,6 +82,37 @@ export function drawCardsAfter(
   ];
 }
 
+const EXTRA_TIME_END = 120;
+
+/**
+ * The cards of extra time after `from` (90, its start) for the players on the pitch then, at the
+ * minutes' share of a match's card rates, each at one of those minutes; `booked` already have a
+ * yellow, so another one sends them off. guess: cards fall evenly over extra time, with no late skew for reds.
+ */
+export function drawExtraTimeCards(
+  homeOnPitch: readonly SimPlayer[],
+  awayOnPitch: readonly SimPlayer[],
+  rates: CardRates,
+  booked: ReadonlySet<string>,
+  random: () => number,
+  from: number = MATCH_MINUTES,
+): Booking[] {
+  const share = (EXTRA_TIME_END - from) / MATCH_MINUTES;
+  const minuteOf = () => from + 1 + Math.floor(random() * (EXTRA_TIME_END - from));
+  const side = (onPitch: readonly SimPlayer[], count: CardCount): Booking[] => {
+    const yellowChance = count.yellows / STARTERS / AVERAGE_CARDS;
+    const straightRedChance = ((1 - rates.secondYellowShare) * count.reds) / STARTERS / AVERAGE_CARDS;
+    return onPitch.flatMap((player): Booking[] => {
+      const temper = player.trait === "aggressive" ? AGGRESSIVE_CARDS : 1;
+      const book = (card: Booking["card"]): Booking => ({ playerId: player.id, clubId: player.clubId, card, minute: minuteOf() });
+      if (random() < straightRedChance * temper * share) return [book("red")];
+      if (random() >= yellowChance * temper * share) return [];
+      return [book(booked.has(player.id) ? "secondYellow" : "yellow")];
+    });
+  };
+  return [...side(homeOnPitch, rates.home), ...side(awayOnPitch, rates.away)];
+}
+
 /** Yellows and reds per side; a second yellow counts as a red, its first yellow as a yellow. */
 export function countCards(bookings: readonly Booking[], homeId: string): MatchCards {
   const cards: MatchCards = { home: { yellows: 0, reds: 0 }, away: { yellows: 0, reds: 0 } };

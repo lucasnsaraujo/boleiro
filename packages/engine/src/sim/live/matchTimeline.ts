@@ -9,7 +9,10 @@ import type { OrderOverruled, ShootoutKick } from "../settleShootout.js";
 import { aiSubstitutions, onPitchAt, whoPlayed } from "./aiSubstitutions.js";
 import { describeGoals, drawPenaltyMisses, type GoalEvent, type GoalSide, type PenaltyMiss } from "./goalDetails.js";
 
-/** One thing that happened in a match, at a minute from 0 to 90; stoppage time counts as minute 45 or 90, a shootout as 90. */
+/**
+ * One thing that happened in a match, at a minute from 0 to 90, or to 120 with extra time; stoppage time
+ * counts as minute 45, 90, 105 or 120, a shootout as the minute the match ended.
+ */
 export type MatchEvent =
   | GoalEvent
   | PenaltyMiss
@@ -18,12 +21,35 @@ export type MatchEvent =
   | { type: "substitution"; minute: number; clubId: string; playerId: string; offId: string }
   | { type: "halfTime"; minute: typeof HALF_TIME }
   | { type: "fullTime"; minute: typeof FULL_TIME }
+  | { type: "extraHalfTime"; minute: typeof EXTRA_HALF_TIME }
+  | { type: "extraTimeEnd"; minute: typeof EXTRA_TIME_END }
   | RefereeCall
   | OrderOverruled
   | ShootoutKick;
 
 export const HALF_TIME = 45;
 export const FULL_TIME = 90;
+/** Extra time's two halves of fifteen minutes, its break after the first (IFAB Laws of the Game, Law 7.4). */
+export const EXTRA_HALF_TIME = 105;
+export const EXTRA_TIME_END = 120;
+
+/** The whistles of a match: half-time and full time, and extra time's break and end when it had one. */
+export type Whistle = Extract<MatchEvent, { type: "halfTime" | "fullTime" | "extraHalfTime" | "extraTimeEnd" }>;
+
+const WHISTLES: ReadonlySet<MatchEvent["type"]> = new Set(["halfTime", "fullTime", "extraHalfTime", "extraTimeEnd"]);
+export const isWhistle = (event: MatchEvent): event is Whistle => WHISTLES.has(event.type);
+
+/** Whether a match's timeline has extra time. */
+export const hasExtraTimeIn = (events: readonly MatchEvent[]): boolean => events.some((e) => e.type === "extraTimeEnd");
+
+/** The minute a match ends: 120 after extra time, else 90. */
+export const matchEndOf = (events: readonly MatchEvent[]): number => (hasExtraTimeIn(events) ? EXTRA_TIME_END : FULL_TIME);
+
+/** The whistles of a match that ran to `end`. */
+export function whistlesTo(end: number): Whistle[] {
+  const normal: Whistle[] = [{ type: "halfTime", minute: HALF_TIME }, { type: "fullTime", minute: FULL_TIME }];
+  return end > FULL_TIME ? [...normal, { type: "extraHalfTime", minute: EXTRA_HALF_TIME }, { type: "extraTimeEnd", minute: EXTRA_TIME_END }] : normal;
+}
 
 // Goals in each 15-minute band, stoppage time in the band it ends: the 1,889 goals of the 760 Série A
 // matches of 2024 and 2025 in ESPN's public match summaries (keyEvents), fetched 2026-10-10.
@@ -88,16 +114,23 @@ const RANK: Record<MatchEvent["type"], number> = {
   varCheck: 0.5,
   wrongCall: 0.5,
   halfTime: 1,
+  extraHalfTime: 1,
   substitution: 2,
   fullTime: 3,
+  extraTimeEnd: 3,
   orderOverruled: 4,
   shootoutKick: 5,
 };
 
-// VAR gives a penalty or a red card before it is taken or shown, and checks a goal after it goes in.
-const rankOf = (e: MatchEvent) => (e.type === "varCheck" && (e.decision === "penaltyAwarded" || e.decision === "redCardGiven") ? -0.5 : RANK[e.type]);
+// VAR gives a penalty or a red card before it is taken or shown, and checks a goal after it goes in. A
+// substitution at minute 90 is only ever made in the break before extra time, after the whistle.
+const rankOf = (e: MatchEvent) => {
+  if (e.type === "varCheck" && (e.decision === "penaltyAwarded" || e.decision === "redCardGiven")) return -0.5;
+  if (e.type === "substitution" && e.minute === FULL_TIME) return RANK.fullTime + 0.5;
+  return RANK[e.type];
+};
 
-/** Events in the order they happened; substitutions at minute 45 are made at half-time, a shootout comes after full time. */
+/** Events in the order they happened; substitutions at minute 45 are made at half-time (at 90 and 105, in extra time's breaks), a shootout comes after the last whistle. */
 export function inMatchOrder(events: readonly MatchEvent[]): MatchEvent[] {
   return [...events].sort((a, b) => a.minute - b.minute || rankOf(a) - rankOf(b));
 }

@@ -318,3 +318,36 @@ export function simulateMatch(
   }
   return { homeGoals: MAX_GOALS, awayGoals: MAX_GOALS };
 }
+
+// Extra time scores at normal time's rate: Euro 2020's eight knockout matches level after ninety
+// minutes had 7 goals in extra time, 0.0292 a minute, against 0.0294 in normal time ("UEFA EURO 2020:
+// a 'pure game of chance'?", https://arxiv.org/pdf/2203.07531). A small sample; no larger study was found.
+export const EXTRA_TIME_RATE = 0.0292 / 0.0294;
+export const EXTRA_TIME_MINUTES = 30;
+const MATCH_MINUTES = 90;
+
+/** Each side's expected goals over the thirty minutes of extra time; players sent off in the ninety minutes are missing from its start. */
+export function extraTimeExpectedGoals(home: Team, away: Team, params: EngineParams = CALIBRATED, sentOff: SendOffs = NO_SEND_OFFS): { home: number; away: number } {
+  const fromStart = { home: sentOff.home.map(() => 0), away: sentOff.away.map(() => 0) };
+  const odds = matchOdds(home, away, params, fromStart);
+  const share = (EXTRA_TIME_MINUTES / MATCH_MINUTES) * EXTRA_TIME_RATE;
+  return { home: odds.expectedHomeGoals * share, away: odds.expectedAwayGoals * share };
+}
+
+function poissonDraw(mean: number, random: () => number): number {
+  let roll = random();
+  let p = Math.exp(-mean);
+  let count = 0;
+  while (roll > p && count < MAX_GOALS) {
+    roll -= p;
+    count++;
+    p *= mean / count;
+  }
+  return count;
+}
+
+/** Extra time's goals, drawn for each side from its expected goals. */
+export function simulateExtraTime(home: Team, away: Team, random: () => number, params: EngineParams = CALIBRATED, sentOff: SendOffs = NO_SEND_OFFS): Score {
+  const expected = extraTimeExpectedGoals(home, away, params, sentOff);
+  return { homeGoals: poissonDraw(expected.home, random), awayGoals: poissonDraw(expected.away, random) };
+}
