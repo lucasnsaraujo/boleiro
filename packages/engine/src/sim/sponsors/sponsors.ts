@@ -36,6 +36,13 @@ export type SponsorOffer = {
   years: number;
   bonuses?: DealBonuses;
   decideBy: IsoDate;
+  /** The brand on the kit whose deal it would replace; left out for an empty place. */
+  replacesBrandId?: string;
+  /**
+   * What the place pays the club today: the deal it would replace, or an empty place's part of the
+   * sponsorship no deal holds. Signing moves the club's sponsorship by `yearly` less this.
+   */
+  placeValue: number;
 };
 
 /** A deal that left the kit: replaced by another brand, or ended. */
@@ -69,6 +76,9 @@ export const SLOT_SHARE: Record<SponsorSlot, number> = {
   socks: 0.018,
   number: 0.02,
 };
+
+/** The share of a club's sponsorship Flamengo's places leave off the kit: licensing and the sponsors off the shirt. */
+export const OFF_KIT_SHARE = 1 - SPONSOR_SLOTS.reduce((sum, slot) => sum + SLOT_SHARE[slot], 0);
 // guess: the deals on a kit leave at least a twentieth of a club's sponsorship to licensing and the
 // sponsors off the shirt (Flamengo's leave 14%).
 const SHIRT_SHARE_CAP = 0.95;

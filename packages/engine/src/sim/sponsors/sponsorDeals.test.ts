@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Brand, ShirtDeal } from "@boleiro/data/sponsors";
 import type { GameState } from "../gameState.js";
+import { addDays } from "../dates.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { clubMood } from "../morale/clubMood.js";
 import { runSponsorDay, sendSponsorOffers, signSponsorOffer, type SponsorEvent } from "./sponsorDeals.js";
@@ -52,14 +53,14 @@ describe("sponsor offers", () => {
     for (const [clubId, sponsors] of Object.entries(sent.state.sponsors ?? {})) if (clubId !== COACH) expect(sponsors.offers).toEqual([]);
   });
 
-  it("puts the brand the coach picks on his kit at once, moves the money into the club's sponsorship and drops the other offers for that place", () => {
+  it("puts the brand the coach picks on his kit at once, moves the sponsorship by what it pays over its empty place and drops the other offers for that place", () => {
     const offered = sendSponsorOffers(game()).state;
     const offer = own(offered).offers[0];
     if (!offer) throw new Error("no offer");
     const signed = signSponsorOffer(offered, COACH, offer.id);
     const contract = own(signed).contracts.find((c) => c.slot === offer.slot);
     expect(contract).toMatchObject({ brandId: offer.brandId, yearly: offer.yearly, untilSeason: offered.season - 1 + offer.years, basis: "game" });
-    expect(signed.finances[COACH]?.sponsorship).toBe((offered.finances[COACH]?.sponsorship ?? 0) + offer.yearly);
+    expect(signed.finances[COACH]?.sponsorship).toBe((offered.finances[COACH]?.sponsorship ?? 0) + offer.yearly - offer.placeValue);
     expect(own(signed).offers.filter((o) => o.slot === offer.slot)).toEqual([]);
   });
 
@@ -67,31 +68,38 @@ describe("sponsor offers", () => {
     const start = game();
     const master = own(start).contracts.find((c) => c.slot === "master");
     if (!master) throw new Error("no master");
-    const offer = { id: "o1", slot: "master" as const, brandId: "bigbank", brandName: "BIGBANK", isBetting: false, yearly: master.yearly + 5 * MI, years: 2, decideBy: "2026-02-01" };
+    const offer = { id: "o1", slot: "master" as const, brandId: "bigbank", brandName: "BIGBANK", isBetting: false, yearly: master.yearly + 5 * MI, years: 2, decideBy: "2026-02-01", replacesBrandId: master.brandId, placeValue: master.yearly };
     const withOffer = { ...start, sponsors: { ...start.sponsors, [COACH]: { ...own(start), offers: [offer] } } };
     const signed = signSponsorOffer(withOffer, COACH, "o1");
     expect(signed.finances[COACH]?.sponsorship).toBe((start.finances[COACH]?.sponsorship ?? 0) + 5 * MI);
     expect(own(signed).past).toEqual([{ slot: "master", brandId: master.brandId, brandName: master.brandName, yearly: master.yearly, endedOn: start.date, reason: "replaced" }]);
   });
 
-  it("replaces only the first brand of a place two brands share, and takes only its money out", () => {
+  it("prices an offer for a shared place's deal in its last season from that deal, and replaces that deal alone", () => {
     const start = game();
     const fronts = [
       { slot: "front" as const, brandId: "one", brandName: "ONE", isBetting: false, yearly: 3 * MI, untilSeason: 2028, isEndKnown: true, basis: "estimate" as const },
-      { slot: "front" as const, brandId: "two", brandName: "TWO", isBetting: false, yearly: 2 * MI, untilSeason: 2028, isEndKnown: true, basis: "estimate" as const },
+      { slot: "front" as const, brandId: "two", brandName: "TWO", isBetting: false, yearly: 2 * MI, untilSeason: start.season, isEndKnown: true, basis: "estimate" as const },
     ];
-    const offer = { id: "o1", slot: "front" as const, brandId: "bank", brandName: "BANK", isBetting: false, yearly: 5 * MI, years: 2, decideBy: "2026-02-01" };
-    const withFronts = { ...start, sponsors: { ...start.sponsors, [COACH]: { ...own(start), contracts: [...own(start).contracts, ...fronts], offers: [offer] } } };
-    const signed = signSponsorOffer(withFronts, COACH, "o1");
-    expect(own(signed).contracts.filter((c) => c.slot === "front").map((c) => c.brandId).sort()).toEqual(["bank", "two"]);
-    expect(signed.finances[COACH]?.sponsorship).toBe((start.finances[COACH]?.sponsorship ?? 0) + 2 * MI);
-    expect(own(signed).past.map((p) => p.brandId)).toEqual(["one"]);
+    const ending = { ...start, sponsors: { ...start.sponsors, [COACH]: { ...own(start), contracts: [...own(start).contracts, ...fronts] } }, date: `${start.season}-09-30` };
+    const offered = runSponsorDay(ending, { ...ending, date: `${start.season}-10-01` }).state;
+    const offers = own(offered).offers.filter((o) => o.slot === "front");
+    expect(offers.length).toBeGreaterThan(0);
+    // The most an offer can beat its place by: the top of the spread, a giant's premium and a betting house's.
+    for (const offer of offers) expect(offer.yearly).toBeLessThanOrEqual(2 * MI * 1.2 * 1.15 * 1.35);
+    const best = offers.reduce((top, o) => (o.yearly > top.yearly ? o : top));
+    const signed = signSponsorOffer(offered, COACH, best.id);
+    expect(own(signed).contracts.filter((c) => c.slot === "front").map((c) => c.brandId).sort()).toEqual([best.brandId, "one"].sort());
+    expect(signed.finances[COACH]?.sponsorship).toBe((offered.finances[COACH]?.sponsorship ?? 0) + best.yearly - 2 * MI);
+    expect(own(signed).past.map((p) => p.brandId)).toEqual(["two"]);
   });
 
   it("costs a little fan mood to put a betting house on the kit in place of another brand, and gives it back when it leaves", () => {
     const start = game();
     const swap = (state: GameState, brandId: string, isBetting: boolean) => {
-      const offer = { id: brandId, slot: "master" as const, brandId, brandName: brandId, isBetting, yearly: 10 * MI, years: 1, decideBy: "2026-02-01" };
+      const master = own(state).contracts.find((c) => c.slot === "master");
+      if (!master) throw new Error("no master");
+      const offer = { id: brandId, slot: "master" as const, brandId, brandName: brandId, isBetting, yearly: 10 * MI, years: 1, decideBy: "2026-02-01", replacesBrandId: master.brandId, placeValue: master.yearly };
       return signSponsorOffer({ ...state, sponsors: { ...state.sponsors, [COACH]: { ...own(state), offers: [offer] } } }, COACH, brandId);
     };
     const clean = swap(start, "bigbank", false);
@@ -113,13 +121,13 @@ describe("the sponsors' day", () => {
     return { before, after: runSponsorDay(before, { ...before, date: decideBy }) };
   };
 
-  it("has the board sign the best offer for each place on its day when it negotiates", () => {
+  it("has the board sign the best offer for each place on its day when it negotiates and it pays more than the place does now", () => {
     const { before, after } = atDecision(false);
     const offers = own(before).offers;
     const slots = [...new Set(offers.map((o) => o.slot))];
     for (const slot of slots) {
       const best = offers.filter((o) => o.slot === slot).reduce((a, b) => (b.yearly > a.yearly ? b : a));
-      expect(own(after.state).contracts.find((c) => c.slot === slot)?.brandId).toBe(best.brandId);
+      expect(own(after.state).contracts.find((c) => c.slot === slot)?.brandId).toBe(best.yearly > best.placeValue ? best.brandId : undefined);
     }
     expect(own(after.state).offers).toEqual([]);
     expect(after.events.some((e: SponsorEvent) => e.type === "sponsorSigned" && e.byBoard)).toBe(true);
@@ -209,5 +217,41 @@ describe("the sponsors' day", () => {
     const champion = runSponsorDay(before, after, { "serie-a": { championId: COACH, promotedIds: [], relegatedIds: [] } }).state;
     const runnerUp = runSponsorDay(before, after, { "serie-a": { championId: "palmeiras-sp", promotedIds: [], relegatedIds: [] } }).state;
     expect((champion.finances[COACH]?.cash ?? 0) - (runnerUp.finances[COACH]?.cash ?? 0)).toBe(2 * MI);
+  });
+});
+
+describe("a human club's sponsorship over its board's meetings", () => {
+  /** Botafogo's sponsor days from the start of a real game, the rest of the game standing still. */
+  function sponsorDays(seasons: number) {
+    let state = loadNewGame(5, { coachClubId: COACH });
+    const base = state.finances[COACH]?.sponsorship ?? 0;
+    const firstMeeting = own(state).offers.reduce((first, o) => (o.decideBy < first ? o.decideBy : first), `${state.season + 1}-01-01`);
+    const end = `${state.season + seasons}-01-01`;
+    // What each deal the board signed pays over what its place paid before.
+    const gains: number[] = [];
+    let afterFirstMeeting = base;
+    while (state.date < end) {
+      const date = addDays(state.date, 1);
+      const offers = own(state).offers;
+      const day = runSponsorDay(state, { ...state, date, season: Number(date.slice(0, 4)) });
+      for (const event of day.events) {
+        if (event.type !== "sponsorSigned" || event.clubId !== COACH) continue;
+        const offer = offers.find((o) => o.slot === event.slot && o.brandName === event.brandName && o.yearly === event.yearly);
+        gains.push(offer ? offer.yearly - offer.placeValue : Number.NaN);
+      }
+      state = day.state;
+      if (date === firstMeeting) afterFirstMeeting = state.finances[COACH]?.sponsorship ?? 0;
+    }
+    return { base, afterFirstMeeting, gains, final: state.finances[COACH]?.sponsorship ?? 0 };
+  }
+
+  it("moves only by what the deals the board signs pay over their places, and stays near its data after the first meeting and three seasons", () => {
+    const { base, afterFirstMeeting, gains, final } = sponsorDays(3);
+    expect(gains.length).toBeGreaterThan(0);
+    for (const gain of gains) expect(gain).toBeGreaterThan(0);
+    expect(final - base).toBe(gains.reduce((sum, gain) => sum + gain, 0));
+    expect(afterFirstMeeting).toBeGreaterThanOrEqual(base);
+    expect(afterFirstMeeting).toBeLessThanOrEqual(base * 1.05);
+    expect(final).toBeLessThanOrEqual(base * 1.15);
   });
 });

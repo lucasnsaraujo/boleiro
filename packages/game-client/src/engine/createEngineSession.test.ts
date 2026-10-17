@@ -420,13 +420,13 @@ beforeAll(() => {
   sponsors = playSponsors();
 }, 120_000);
 
-test("the coach signs a sponsor offer: the brand goes on his kit, the club's yearly sponsorship grows by its value and a save keeps it", () => {
+test("the coach signs a sponsor offer: the brand goes on his kit, the club's yearly sponsorship grows by what it pays over its place and a save keeps it", () => {
   const { before, picking, offer, signed, finances, inbox, save } = sponsors;
   expect(before.isBoardNegotiating).toBe(true);
   expect(picking?.isBoardNegotiating).toBe(false);
   expect(signed?.contracts).toContainEqual(expect.objectContaining({ slot: offer.slot, brandId: offer.brandId, yearly: offer.yearly, basis: "game" }));
   expect(signed?.offers.filter((o) => o.slot === offer.slot)).toEqual([]);
-  expect(finances[SPONSORS_CLUB]?.sponsorship).toBe(before.sponsorship + offer.yearly);
+  expect(finances[SPONSORS_CLUB]?.sponsorship).toBe(before.sponsorship + offer.yearly - offer.placeValue);
   expect(inbox.at(-1)?.text).toContain(offer.brandName);
   const reloaded = createEngineSession(bundledGameFiles);
   reloaded.apply({ type: "load", save });

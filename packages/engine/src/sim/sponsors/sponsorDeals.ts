@@ -8,6 +8,7 @@ import {
   brandsForSlot,
   clubSizeOf,
   dealYears,
+  OFF_KIT_SHARE,
   pickOne,
   roundDeal,
   SLOT_SHARE,
@@ -78,15 +79,37 @@ function withFans(state: GameState, clubId: string, change: number): GameState {
   return { ...state, mood: { ...state.mood, [clubId]: { ...mood, fans: Math.min(100, Math.max(0, mood.fans + change)) } } };
 }
 
-/** The offers `slots` draw for a club today, from the pool's brands that fit it and are not already on its kit. */
-function drawOffers(state: GameState, clubId: string, slots: readonly SponsorSlot[], decideBy: IsoDate, premium = 1): SponsorOffer[] {
+/** A place on a club's kit brands bid for: an empty one, or one whose deal `replaces` they would take over. */
+type Place = { slot: SponsorSlot; replaces?: SponsorContract };
+
+/**
+ * What an empty place pays a club today: its share, by Flamengo's places, of the sponsorship no deal holds,
+ * split with the other empty places and the money that stays off the kit. The deals are a breakdown of the
+ * club's sponsorship, so a brand that takes the place takes this money over rather than adding to it.
+ */
+function emptyPlaceValue(state: GameState, clubId: string, slot: SponsorSlot): number {
+  const { contracts } = sponsorsOf(state, clubId);
+  const free = Math.max(0, (state.finances[clubId]?.sponsorship ?? 0) - contracts.reduce((sum, c) => sum + c.yearly, 0));
+  const emptyShare = SPONSOR_SLOTS.filter((s) => !contracts.some((c) => c.slot === s)).reduce((sum, s) => sum + SLOT_SHARE[s], 0);
+  return Math.round((free * SLOT_SHARE[slot]) / (emptyShare + OFF_KIT_SHARE));
+}
+
+/**
+ * The offers for `places` a club draws today, from the pool's brands that fit it and are not already on its
+ * kit. A brand bids around what the place pays now (a betting house's deal without its premium), so the
+ * board's choice moves the sponsorship only by what a better deal is worth.
+ */
+function drawOffers(state: GameState, clubId: string, places: readonly Place[], decideBy: IsoDate, premium = 1): SponsorOffer[] {
   const finance = state.finances[clubId];
   const pool: readonly PoolBrand[] = state.sponsorPool ?? [];
   if (!finance || !pool.length) return [];
   const random = sponsorStream(state.seed, `offers:${clubId}:${state.date}`);
   const size = clubSizeOf(finance.sponsorship);
   const taken = new Set(sponsorsOf(state, clubId).contracts.map((c) => c.brandId));
-  return slots.flatMap((slot) => {
+  return places.flatMap(({ slot, replaces }) => {
+    const placeValue = replaces ? replaces.yearly : emptyPlaceValue(state, clubId, slot);
+    const going = replaces?.isBetting ? placeValue / BETTING_PREMIUM : placeValue;
+    if (going <= 0) return [];
     const [low, high] = OFFERS_PER_SLOT[slot];
     const count = low + Math.floor(random() * (high - low + 1));
     const offers: SponsorOffer[] = [];
@@ -96,11 +119,23 @@ function drawOffers(state: GameState, clubId: string, slots: readonly SponsorSlo
       taken.add(brand.id);
       const isBetting = isBettingBrand(brand);
       const spread = OFFER_SPREAD[0] + random() * (OFFER_SPREAD[1] - OFFER_SPREAD[0]);
-      const yearly = roundDeal(SLOT_SHARE[slot] * finance.sponsorship * SIZE_PREMIUM[brand.size] * spread * (isBetting ? BETTING_PREMIUM : 1) * premium);
+      const yearly = roundDeal(going * SIZE_PREMIUM[brand.size] * spread * (isBetting ? BETTING_PREMIUM : 1) * premium);
       const bonusRoll = random();
       const bonuses: DealBonuses | undefined =
         bonusRoll < BONUS_CHANCE / 2 ? { title: roundDeal(yearly * TITLE_BONUS_SHARE) } : bonusRoll < BONUS_CHANCE ? { continental: roundDeal(yearly * CONTINENTAL_BONUS_SHARE) } : undefined;
-      offers.push({ id: `${state.date}:${slot}:${brand.id}`, slot, brandId: brand.id, brandName: brand.name, isBetting, yearly, years: dealYears(slot, random), ...(bonuses ? { bonuses } : {}), decideBy });
+      offers.push({
+        id: `${state.date}:${slot}:${brand.id}`,
+        slot,
+        brandId: brand.id,
+        brandName: brand.name,
+        isBetting,
+        yearly,
+        years: dealYears(slot, random),
+        ...(bonuses ? { bonuses } : {}),
+        decideBy,
+        ...(replaces ? { replacesBrandId: replaces.brandId } : {}),
+        placeValue,
+      });
     }
     return offers;
   });
@@ -113,14 +148,17 @@ function addOffers(state: GameState, clubId: string, offers: readonly SponsorOff
   return withClubSponsors(state, clubId, { ...sponsors, offers: [...sponsors.offers, ...offers] });
 }
 
-const emptySlots = (sponsors: ClubSponsors): SponsorSlot[] => SPONSOR_SLOTS.filter((slot) => !sponsors.contracts.some((c) => c.slot === slot) && !sponsors.offers.some((o) => o.slot === slot));
+const emptyPlaces = (sponsors: ClubSponsors): Place[] =>
+  SPONSOR_SLOTS.filter((slot) => !sponsors.contracts.some((c) => c.slot === slot) && !sponsors.offers.some((o) => o.slot === slot)).map((slot) => ({ slot }));
+/** Whether an offer bids for the same place as `other`: the same deal to replace, or the same empty place. */
+const isSamePlace = (offer: SponsorOffer, other: Pick<SponsorOffer, "slot" | "replacesBrandId">): boolean => offer.slot === other.slot && offer.replacesBrandId === other.replacesBrandId;
 
 /** Brands bid for the empty places on every human coach's kit: at the start of a game, or when he takes a club. */
 export function sendSponsorOffers(state: GameState): { state: GameState; events: SponsorEvent[] } {
   const events: SponsorEvent[] = [];
   let next = state;
   for (const clubId of humanClubIds(state)) {
-    next = addOffers(next, clubId, drawOffers(next, clubId, emptySlots(sponsorsOf(next, clubId)), boardMeetingAfter(state.date)), events);
+    next = addOffers(next, clubId, drawOffers(next, clubId, emptyPlaces(sponsorsOf(next, clubId)), boardMeetingAfter(state.date)), events);
   }
   return { state: next, events };
 }
@@ -131,19 +169,28 @@ export function seedGameSponsors(state: GameState, files: SponsorFiles): GameSta
   return sendSponsorOffers({ ...state, sponsors, sponsorPool: pool }).state;
 }
 
+/** The deal an offer would replace, while it is still on the kit. */
+const replacedBy = (sponsors: ClubSponsors, offer: SponsorOffer): SponsorContract | undefined =>
+  offer.replacesBrandId === undefined ? undefined : sponsors.contracts.find((c) => c.slot === offer.slot && c.brandId === offer.replacesBrandId);
+
+/** What the place an offer bids for pays today: the deal it would replace, or the empty place's money. */
+const placeValueOf = (sponsors: ClubSponsors, offer: SponsorOffer): number => replacedBy(sponsors, offer)?.yearly ?? offer.placeValue;
+
 /**
- * A brand goes on a club's kit in place of the first brand of its place (the others sharing the place
- * stay): the money and the fans follow the difference.
+ * A signed offer's brand goes on a club's kit in place of the deal it bid for (the others sharing the
+ * place stay), with the other bids for that place: the sponsorship and the fans follow the difference.
  */
-function putOnKit(state: GameState, clubId: string, contract: SponsorContract): GameState {
+function putOnKit(state: GameState, clubId: string, offer: SponsorOffer): GameState {
   const sponsors = sponsorsOf(state, clubId);
-  const old = sponsors.contracts.find((c) => c.slot === contract.slot);
+  const old = replacedBy(sponsors, offer);
+  const contract = contractOf(offer, state.season);
   const past = old ? [...sponsors.past, { slot: old.slot, brandId: old.brandId, brandName: old.brandName, yearly: old.yearly, endedOn: state.date, reason: "replaced" as const }] : sponsors.past;
   const contracts = [...sponsors.contracts.filter((c) => c !== old), contract].sort((a, b) => SPONSOR_SLOTS.indexOf(a.slot) - SPONSOR_SLOTS.indexOf(b.slot));
-  const kept = { contracts, offers: sponsors.offers.filter((o) => o.slot !== contract.slot), past };
+  const kept = { contracts, offers: sponsors.offers.filter((o) => !isSamePlace(o, offer)), past };
   const wasBetting = hasBettingSponsor(sponsors);
   const isBetting = hasBettingSponsor(kept);
-  const moved = withFinance(withClubSponsors(state, clubId, kept), clubId, (f) => ({ ...f, sponsorship: f.sponsorship + contract.yearly - (old?.yearly ?? 0) }));
+  const gain = contract.yearly - placeValueOf(sponsors, offer);
+  const moved = withFinance(withClubSponsors(state, clubId, kept), clubId, (f) => ({ ...f, sponsorship: f.sponsorship + gain }));
   return withFans(moved, clubId, wasBetting === isBetting ? 0 : isBetting ? -BETTING_FAN_COST : BETTING_FAN_COST);
 }
 
@@ -165,7 +212,7 @@ function contractOf(offer: SponsorOffer, season: number): SponsorContract {
 export function signSponsorOffer(state: GameState, clubId: string, offerId: string): GameState {
   const offer = sponsorsOf(state, clubId).offers.find((o) => o.id === offerId);
   if (!offer) throw new Error(`${clubId} has no sponsor offer ${offerId}`);
-  return putOnKit(state, clubId, contractOf(offer, state.season));
+  return putOnKit(state, clubId, offer);
 }
 
 /** Whether the coach of a human club leaves his sponsors to the board (the default). */
@@ -174,19 +221,21 @@ function boardNegotiates(state: GameState, clubId: string): boolean {
   return coach?.picksSponsors !== true;
 }
 
-/** On an offer's day, the board signs the best of each place's offers if it pays more than the deal there; the rest lapse, as all do when the coach picks himself. */
+/** On an offer's day, the board signs the best offer for each place if it pays more than the place does now; the rest lapse, as all do when the coach picks himself. */
 function decideOffers(state: GameState, clubId: string, events: SponsorEvent[]): GameState {
   const due = sponsorsOf(state, clubId).offers.filter((o) => o.decideBy <= state.date);
   if (!due.length) return state;
   let next = state;
   if (boardNegotiates(state, clubId)) {
+    const bests = due.filter((offer) => !due.some((other) => isSamePlace(other, offer) && other.yearly > offer.yearly));
     for (const slot of SPONSOR_SLOTS) {
-      const best = due.filter((o) => o.slot === slot).reduce<SponsorOffer | null>((top, o) => (!top || o.yearly > top.yearly ? o : top), null);
-      const current = sponsorsOf(next, clubId).contracts.find((c) => c.slot === slot);
-      // A deal that pays as much stays: one in its last season renews at the turn for the same money.
-      if (!best || (current && current.yearly >= best.yearly)) continue;
-      next = putOnKit(next, clubId, contractOf(best, state.season));
-      events.push({ type: "sponsorSigned", clubId, slot, brandName: best.brandName, yearly: best.yearly, years: best.years, byBoard: true });
+      for (const best of bests.filter((o) => o.slot === slot)) {
+        const sponsors = sponsorsOf(next, clubId);
+        // A deal that pays as much stays: one in its last season renews at the turn for the same money.
+        if (!sponsors.offers.includes(best) || best.yearly <= placeValueOf(sponsors, best)) continue;
+        next = putOnKit(next, clubId, best);
+        events.push({ type: "sponsorSigned", clubId, slot, brandName: best.brandName, yearly: best.yearly, years: best.years, byBoard: true });
+      }
     }
   }
   const dueIds = new Set(due.map((o) => o.id));
@@ -258,9 +307,9 @@ function turnSeason(before: GameState, after: GameState, outcomes: Readonly<Reco
   for (const clubId of humans) {
     if (!champions.has(clubId) && !continental.has(clubId)) continue;
     const random = sponsorStream(next.seed, `big:${clubId}:${next.season}`);
-    const occupied: SponsorSlot[] = sponsorsOf(next, clubId).contracts.map((c) => c.slot).filter((slot) => slot !== "kit");
-    const slots = [...new Set(Array.from({ length: BIG_RESULT_OFFERS }, () => pickOne(occupied, random)).filter((slot) => slot !== undefined))];
-    next = addOffers(next, clubId, drawOffers(next, clubId, slots, boardMeetingAfter(next.date), BIG_RESULT_PREMIUM), events);
+    const occupied = sponsorsOf(next, clubId).contracts.filter((c) => c.slot !== "kit");
+    const deals = [...new Set(Array.from({ length: BIG_RESULT_OFFERS }, () => pickOne(occupied, random)).filter((deal) => deal !== undefined))];
+    next = addOffers(next, clubId, drawOffers(next, clubId, deals.map((deal) => ({ slot: deal.slot, replaces: deal })), boardMeetingAfter(next.date), BIG_RESULT_PREMIUM), events);
   }
   return next;
 }
@@ -282,13 +331,13 @@ export function runSponsorDay(before: GameState, after: GameState, outcomes: Rea
     if (!humans.has(clubId) && sponsors?.offers.length) next = withClubSponsors(next, clubId, { ...sponsors, offers: [] });
   }
   for (const clubId of humans) {
-    if (!wereHuman.has(clubId)) next = addOffers(next, clubId, drawOffers(next, clubId, emptySlots(sponsorsOf(next, clubId)), boardMeetingAfter(next.date)), events);
+    if (!wereHuman.has(clubId)) next = addOffers(next, clubId, drawOffers(next, clubId, emptyPlaces(sponsorsOf(next, clubId)), boardMeetingAfter(next.date)), events);
   }
   for (const clubId of humans) {
     if (next.date === `${next.season}-${RENEWAL_OFFERS_ON}`) {
       const sponsors = sponsorsOf(next, clubId);
-      const ending = [...new Set(sponsors.contracts.filter((c) => c.untilSeason === next.season && !sponsors.offers.some((o) => o.slot === c.slot)).map((c) => c.slot))];
-      next = addOffers(next, clubId, drawOffers(next, clubId, ending, boardMeetingAfter(next.date)), events);
+      const ending = sponsors.contracts.filter((c) => c.untilSeason === next.season && !sponsors.offers.some((o) => isSamePlace(o, { slot: c.slot, replacesBrandId: c.brandId })));
+      next = addOffers(next, clubId, drawOffers(next, clubId, ending.map((deal) => ({ slot: deal.slot, replaces: deal })), boardMeetingAfter(next.date)), events);
     }
     next = decideOffers(next, clubId, events);
   }

@@ -98,7 +98,9 @@ export function sponsorsPageOf(state: GameState): SponsorsPage | null {
     contracts,
     total: contracts.reduce((sum, c) => sum + c.yearly, 0),
     sponsorship: state.finances[clubId]?.sponsorship ?? 0,
-    offers: [...sponsors.offers].sort((a, b) => bySlot(a, b) || b.yearly - a.yearly).map((offer) => ({ ...offer, replaces: sponsors.contracts.find((c) => c.slot === offer.slot)?.brandName ?? null })),
+    offers: [...sponsors.offers]
+      .sort((a, b) => bySlot(a, b) || b.yearly - a.yearly)
+      .map((offer) => ({ ...offer, replaces: sponsors.contracts.find((c) => c.slot === offer.slot && c.brandId === offer.replacesBrandId)?.brandName ?? null })),
     past: [...sponsors.past].reverse(),
     isBoardNegotiating: state.coach.picksSponsors !== true,
     bet: betStickerOf(state),
