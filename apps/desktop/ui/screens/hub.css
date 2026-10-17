@@ -178,6 +178,18 @@
   font-size: 12.5px;
 }
 
+/* On a short window the sticker rides the card's top corner, over the label's free end, so the paper's
+   slot under Jogar rodada keeps room for a whole line of news. */
+@media (max-height: 760px) {
+  .hub-odds.odds-sticker {
+    position: absolute;
+    top: -12px;
+    right: 8px;
+    margin: 0;
+    padding-top: 11px;
+  }
+}
+
 @keyframes hub-odds-in {
   from {
     transform: rotate(-8deg) scale(1.3);
