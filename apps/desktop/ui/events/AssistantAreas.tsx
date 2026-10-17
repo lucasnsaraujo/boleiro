@@ -21,6 +21,14 @@ const DUTIES: Record<AssistantDuty, { label: string; note: string; icon: string 
   selling: { label: "Vender quem sobra", note: "Aceita propostas por quem está fora dos planos", icon: "hand-coins" },
 };
 
+/** The set with `item` in it or out of it. */
+function toggled<T>(set: ReadonlySet<T> | null, item: T, isIn: boolean): Set<T> {
+  const next = new Set(set);
+  if (isIn) next.add(item);
+  else next.delete(item);
+  return next;
+}
+
 type Props = {
   /** After a switch reached the game, so the screen around it can read what changed. */
   onChange?: () => void;
@@ -49,34 +57,27 @@ export function AssistantAreas({ onChange }: Props) {
     };
   }, [engine]);
 
+  // Each switch flips on the click and flips back if the game refuses it (during a round, say).
   async function hand(area: EventArea, isHanded: boolean) {
     setFailed(false);
+    setHanded((areas) => toggled(areas, area, isHanded));
     try {
       await engine.apply({ type: "handToAssistant", area, isHanded });
-      setHanded((areas) => {
-        const next = new Set(areas);
-        if (isHanded) next.add(area);
-        else next.delete(area);
-        return next;
-      });
       onChange?.();
     } catch {
+      setHanded((areas) => toggled(areas, area, !isHanded));
       setFailed(true);
     }
   }
 
   async function runDuty(duty: AssistantDuty, isOn: boolean) {
     setFailed(false);
+    setDuties((current) => toggled(current, duty, isOn));
     try {
       await engine.apply({ type: "setAssistantDuty", duty, isOn });
-      setDuties((current) => {
-        const next = new Set(current);
-        if (isOn) next.add(duty);
-        else next.delete(duty);
-        return next;
-      });
       onChange?.();
     } catch {
+      setDuties((current) => toggled(current, duty, !isOn));
       setFailed(true);
     }
   }
