@@ -1,4 +1,5 @@
 import type { IsoDate } from "../gameState.js";
+import type { InjuryKind } from "./matchInjuryChance.js";
 
 export type Trait = "injuryProne" | "poorOnArtificialTurf" | "aggressive";
 
@@ -9,6 +10,8 @@ export type Condition = {
   fatigueOn: IsoDate;
   /** Fit again from this day on. */
   injuredUntil: IsoDate | null;
+  /** What his latest injury was; a save from before injury kinds, or a player never hurt, has none. */
+  injury?: InjuryKind;
   /** Set when a foreign player joins a club; null once he has always been there. */
   arrivedOn: IsoDate | null;
   seasonMinutes: number;

@@ -20,6 +20,7 @@ export const SCREEN_PATHS = [
   "/turn",
   "/newspaper",
   "/chemistry",
+  "/awards",
 ] as const;
 
 export type ScreenPath = (typeof SCREEN_PATHS)[number];
@@ -36,7 +37,7 @@ export const NAV = [
   { id: "times", label: "Times", icon: "t-shirt", key: "F5", path: "/hub", paths: ["/finances", "/squad", "/newspaper", "/chemistry"] },
   { id: "busca", label: "Busca", icon: "magnifying-glass", key: "F6", path: "/market", paths: ["/club"] },
   { id: "tecnicos", label: "Técnicos", icon: "chalkboard-teacher", key: "F7", path: "/coaches", paths: ["/offers"] },
-  { id: "historico", label: "Histórico", icon: "book-open-text", key: "F8", path: "/history", paths: [] },
+  { id: "historico", label: "Histórico", icon: "book-open-text", key: "F8", path: "/history", paths: ["/awards"] },
   { id: "opcoes", label: "Opções", icon: "gear-six", key: "F9", path: "/options", paths: ["/saves"] },
 ] as const satisfies readonly NavItem[];
 

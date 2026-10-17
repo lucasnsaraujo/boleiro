@@ -35,7 +35,7 @@ export type PendingEvent = EventRecord & {
   expiresOn: IsoDate;
 };
 
-export type NewsKind = "event" | "match" | "signing" | "sacking" | "upset" | "rivalry" | "var" | "controversy";
+export type NewsKind = "event" | "match" | "signing" | "sacking" | "upset" | "rivalry" | "var" | "controversy" | "award" | "record";
 
 /** One story for the round's newspaper. `clubIds` are the clubs it is about, the main one first. */
 export type NewsItem = { date: IsoDate; kind: NewsKind; clubIds: string[]; headline: string; body: string };

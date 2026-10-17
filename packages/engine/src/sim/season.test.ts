@@ -136,6 +136,17 @@ describe("a full season", () => {
     expect(count("fansViolence")).toBeLessThan(clubs / 15);
   });
 
+  it("files the Brasileirão's awards and the Ballon d'Or, and starts the season's ratings over", () => {
+    const filed = next.history.seasons.at(-1);
+    const awards = filed?.awards;
+    expect(awards?.bolaDePrata).toHaveLength(11);
+    expect(awards?.bolaDeOuro?.average).toBeGreaterThan(6.5);
+    expect(awards?.bolaDeOuro?.apps).toBeGreaterThanOrEqual(19);
+    expect(awards?.topScorer?.goals).toBe(filed?.topScorers["serie-a"]?.goals);
+    expect(awards?.ballonDor).toHaveLength(3);
+    expect(next.history.current.ratings).toEqual({});
+  });
+
   it("starts the next season with a fresh calendar", () => {
     expect(next.season).toBe(2027);
     expect(next.fixtures.every((f) => f.date.startsWith("2027-") && !f.result)).toBe(true);

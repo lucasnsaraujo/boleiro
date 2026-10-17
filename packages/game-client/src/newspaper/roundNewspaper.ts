@@ -42,6 +42,8 @@ const KICKERS: Record<NewsKind, string> = {
   rivalry: "Rivalidade",
   var: "VAR",
   controversy: "Arbitragem",
+  award: "Prêmios",
+  record: "Recorde",
 };
 // The paper's side column fits five stories at 1280x800 (mock design/mocks/newspaper.html), and the lead's
 // columns a few more.
@@ -49,7 +51,7 @@ const SIDE_STORIES = 8;
 // The results row holds the round's ten games of a 20-club league.
 const RESULTS = 10;
 // The coach's own news first, then the beats in the mock's order.
-const SIDE_ORDER: readonly NewsKind[] = ["upset", "controversy", "var", "sacking", "signing", "rivalry", "event"];
+const SIDE_ORDER: readonly NewsKind[] = ["award", "record", "upset", "controversy", "var", "sacking", "signing", "rivalry", "event"];
 
 const isAbout = (item: NewsItem, clubId: string | null) => clubId !== null && item.clubIds.includes(clubId);
 

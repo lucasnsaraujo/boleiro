@@ -11,6 +11,7 @@ import type { Friendly } from "./friendlies/friendlies.js";
 import type { History } from "./history/history.js";
 import type { ClubMood } from "./morale/clubMood.js";
 import type { PlayerProfile } from "./players/playerProfile.js";
+import type { Retiring } from "./players/retirement.js";
 import type { TransferMarket } from "./transfers/transferMarket.js";
 import type { EuropeanCups } from "./continental/uefaCups.js";
 import type { Guests } from "./world/guests.js";
@@ -28,8 +29,9 @@ export type UsualLineup = { formation: Formation; starters: string[] };
 /**
  * `wage` is the monthly wage in BRL; the contract runs to the end of `contractUntil`. A player who came
  * up through an academy keeps his hidden `potential`, the strength he grows toward by his late twenties.
+ * A human coach's veteran who announced his last season is `retiring`.
  */
-export type SimPlayer = Player & { id: string; clubId: string; wage: number; contractUntil: IsoDate; potential?: number } & PlayerProfile;
+export type SimPlayer = Player & { id: string; clubId: string; wage: number; contractUntil: IsoDate; potential?: number; retiring?: Retiring } & PlayerProfile;
 
 export type MatchResult = {
   homeGoals: number;

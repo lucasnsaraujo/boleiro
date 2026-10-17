@@ -83,6 +83,11 @@ describe("the requests the coach can make for a player", () => {
     expect(labels(state, leaving.id)).toEqual(["Vender"]);
   });
 
+  test("an own player who announced his last season can't be renewed", () => {
+    const retiring = { ...firstOf(COACH), age: 36, retiring: { afterSeason: 2026, hasBeenAsked: false } };
+    expect(labels(withPlayer(game, retiring), retiring.id)).toEqual(["Vender"]);
+  });
+
   test("nothing can be asked for a player on loan or one who already signed elsewhere", () => {
     const lent = firstOf("vitoria-ba");
     const loans = { [lent.id]: { fromClubId: "palmeiras-sp", until: "2026-06-30", lenderWageShare: 0.5, buyOption: null } };

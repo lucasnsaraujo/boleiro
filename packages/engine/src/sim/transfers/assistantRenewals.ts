@@ -1,6 +1,5 @@
 import { doesAssistantHandle } from "../coach/assistantDuties.js";
 import { tierOf } from "../finances/tierOf.js";
-import { retiresAtSeasonTurn } from "../players/developPlayers.js";
 import type { ClubFinance, GameState, IsoDate, SimPlayer, Tier } from "../gameState.js";
 import { squadsOfGame, withReplacedPlayers } from "../players/squadsByClub.js";
 import { boardRefusal } from "./boardRefusal.js";
@@ -50,10 +49,10 @@ export function assistantVerdict(state: TalkState, player: SimPlayer, squad: rea
   return { kind: "renew", term };
 }
 
-/** The coach's players the assistant looks at: in their last year, his own, and tied to no loan or pre-contract. */
+/** The coach's players the assistant looks at: in their last year, his own, tied to no loan or pre-contract, and not playing their announced last season. */
 export function renewalCandidates(state: Pick<GameState, "date" | "market">, squad: readonly SimPlayer[]): SimPlayer[] {
   return squad
-    .filter((p) => isInLastContractYear(p, state.date) && !state.market.loans[p.id] && !state.market.preContracts[p.id])
+    .filter((p) => isInLastContractYear(p, state.date) && !state.market.loans[p.id] && !state.market.preContracts[p.id] && !p.retiring)
     .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
 }
 
@@ -73,8 +72,8 @@ export function assistantRenewals(state: GameState): { state: GameState; events:
   const renewed: SimPlayer[] = [];
   const events: (PlayerContractRenewed | RenewalSkipped)[] = [];
   for (const player of renewalCandidates(state, squad)) {
-    // The coach is talking to him himself, or he stops playing tonight.
-    if (standingRenewalCounter(state, player.id) || (isSeasonLastDay(state.date) && retiresAtSeasonTurn(state, player))) continue;
+    // The coach is talking to him himself.
+    if (standingRenewalCounter(state, player.id)) continue;
     const verdict = assistantVerdict(state, player, squad, tier, finance, bill);
     if (verdict.kind === "skip") {
       if (verdict.reason !== "notInPlans" || nextLook > player.contractUntil) events.push({ type: "renewalSkipped", playerId: player.id, clubId, until: player.contractUntil, reason: verdict.reason });
