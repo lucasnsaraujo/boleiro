@@ -37,6 +37,9 @@ const BALLON_PLACES = 3;
 const WORLD_CANDIDATES_PER_CLUB = 3;
 const ROLE_OF_GROUP: Record<PositionGroup, Role> = { GK: "goleiro", DEF: "zagueiro", MID: "meia", ATT: "atacante" };
 
+/** What the awards read of the game. */
+export type AwardsState = Pick<GameState, "season" | "players" | "clubs" | "competitions" | "history" | "world" | "europe">;
+
 /** The season's awards as they were handed out at its close. */
 export type SeasonAwarded = { type: "seasonAwarded"; season: number; awards: SeasonAwards };
 
@@ -74,7 +77,7 @@ const TOP_LEAGUE_TITLE = 2;
 const LOWER_TITLE = 0.5;
 const STATE_TITLE = 0.3;
 
-function titlePoints(state: GameState, key: CompetitionKey): number {
+function titlePoints(state: AwardsState, key: CompetitionKey): number {
   if (key in TITLE_POINTS) return TITLE_POINTS[key] ?? 0;
   if (key.startsWith("state-")) return STATE_TITLE;
   const competition = Object.values(state.competitions).find((c) => competitionKey(c.id) === key);
@@ -83,7 +86,7 @@ function titlePoints(state: GameState, key: CompetitionKey): number {
 }
 
 /** Each club's titles this season, by competition: the game's own and those its result-only countries and UEFA filed. */
-function titlesByClub(state: GameState, champions: Readonly<Record<CompetitionKey, string>>): Map<string, { keys: CompetitionKey[]; points: number }> {
+function titlesByClub(state: AwardsState, champions: Readonly<Record<CompetitionKey, string>>): Map<string, { keys: CompetitionKey[]; points: number }> {
   const titles = new Map<string, { keys: CompetitionKey[]; points: number }>();
   const add = (clubId: string | undefined, key: CompetitionKey, points: number) => {
     if (!clubId) return;
@@ -106,7 +109,7 @@ function titlesByClub(state: GameState, champions: Readonly<Record<CompetitionKe
 }
 
 /** The world's best three: full-tier players on their season in every competition, result-only stars on strength and titles. */
-function ballonDor(state: GameState, champions: Readonly<Record<CompetitionKey, string>>): BallonDorVote[] {
+function ballonDor(state: AwardsState, champions: Readonly<Record<CompetitionKey, string>>): BallonDorVote[] {
   const { ratings = {}, goals } = state.history.current;
   const totals = new Map<string, SeasonMark>();
   for (const tally of Object.values(ratings)) {
@@ -152,7 +155,7 @@ function ballonDor(state: GameState, champions: Readonly<Record<CompetitionKey, 
  * de Prata team, top scorer and best young player, and the world's Ballon d'Or. `champions` are the
  * season's champions by competition.
  */
-export function seasonAwards(state: GameState, champions: Readonly<Record<CompetitionKey, string>>): SeasonAwards {
+export function seasonAwards(state: AwardsState, champions: Readonly<Record<CompetitionKey, string>>): SeasonAwards {
   const league = Object.values(state.competitions).find((c) => c.kind === "league" && c.division === "A");
   const key = league ? competitionKey(league.id) : "serie-a";
   const rounds = league && league.kind === "league" ? (league.clubIds.length - 1) * (league.legs ?? 2) : 0;

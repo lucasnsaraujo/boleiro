@@ -1,5 +1,5 @@
 import { NO_RECORDS, type ClubRecords, type LeagueRecords, type PlayerAtClub, type SeasonAwards } from "@boleiro/engine/sim/history/history";
-import { seasonAwards } from "@boleiro/engine/sim/history/seasonAwards";
+import { seasonAwards, type AwardsState } from "@boleiro/engine/sim/history/seasonAwards";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 
 /** A filed season's awards and its Brasileirão champion. */
@@ -18,7 +18,7 @@ export type AwardsBook = {
 // The records page lists the club's five most capped players and its five top scorers.
 const LEADERS = 5;
 
-export function awardsBook(state: GameState): AwardsBook {
+export function awardsBook(state: AwardsState & Pick<GameState, "fixtures" | "coachClubId">): AwardsBook {
   const { history } = state;
   const league = Object.values(state.competitions).find((c) => c.kind === "league" && c.division === "A");
   const played = league ? state.fixtures.filter((f) => f.competitionId === league.id && f.result) : [];
