@@ -1,5 +1,6 @@
 import { keyedStream } from "../../engine/random.js";
 import type { GameState, SimPlayer } from "../gameState.js";
+import type { TransferMarket } from "../transfers/transferMarket.js";
 import type { PlayerRetired } from "./developPlayers.js";
 
 /** A human coach's player who has announced his last season: he retires at the turn of the year after `afterSeason`. */
@@ -57,14 +58,23 @@ function coachsPlayer(state: GameState, playerId: string): SimPlayer {
   return player;
 }
 
-/** The game without a player who stopped: his pre-contract and loan go with him. */
-export function withoutPlayer(state: GameState, playerId: string): GameState {
+/** The market with only the players `isPlaying` keeps: a player who stopped takes his pre-contract, loan, listing, auction and offers with him. */
+export function marketOf(market: TransferMarket, isPlaying: (playerId: string) => boolean): TransferMarket {
+  const kept = <T>(byPlayer: Record<string, T>) => Object.fromEntries(Object.entries(byPlayer).filter(([id]) => isPlaying(id)));
+  const { coach } = market;
+  return {
+    ...market,
+    preContracts: kept(market.preContracts),
+    loans: kept(market.loans),
+    ...(coach ? { coach: { ...coach, listings: kept(coach.listings), auctions: kept(coach.auctions), bids: kept(coach.bids) } } : {}),
+  };
+}
+
+/** The game without a player who stopped, and without his business on the market. */
+function withoutPlayer(state: GameState, playerId: string): GameState {
   const { [playerId]: gone, ...players } = state.players;
   if (!gone) return state;
-  const { [playerId]: preContract, ...preContracts } = state.market.preContracts;
-  const { [playerId]: loan, ...loans } = state.market.loans;
-  const market = preContract === undefined && loan === undefined ? state.market : { ...state.market, preContracts, loans };
-  return { ...state, players, market };
+  return { ...state, players, market: marketOf(state.market, (id) => id !== playerId) };
 }
 
 /** The coach retires one of his players now, whatever his age. */

@@ -8,6 +8,8 @@ import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { Awards } from "./Awards.js";
 
+// Each test plays part of a season in the worker before it opens the screen.
+const PLAYS_A_SEASON_MS = 60_000;
 const closers: (() => void)[] = [];
 
 afterEach(() => {
@@ -48,12 +50,12 @@ test("mid-season the awards show the provisional Bola de Ouro and the Bola de Pr
   const team = screen.getByRole("list", { name: "Bola de Prata" });
   expect(within(team).getAllByRole("listitem", { name: /, (goleiro|lateral|zagueiro|meia|atacante), / })).toHaveLength(11);
   expect(screen.getByRole("listitem", { name: /^Ballon d'Or: / })).toBeTruthy();
-});
+}, PLAYS_A_SEASON_MS);
 
 test("before the Brasileirão kicks off the awards page waits for its first round", async () => {
   openAwards(await services(null));
   expect(await screen.findByText(/Os prêmios do Brasileirão saem a partir da primeira rodada/)).toBeTruthy();
-});
+}, PLAYS_A_SEASON_MS);
 
 test("the records tab shows the Brasileirão's records and the coach's club's leaders", async () => {
   openAwards(await services("2026-06-01"));
@@ -61,7 +63,7 @@ test("the records tab shows the Brasileirão's records and the coach's club's le
   expect(screen.getByRole("heading", { name: "Brasileirão" })).toBeTruthy();
   expect(screen.getByRole("heading", { name: "Bahia" })).toBeTruthy();
   expect(within(screen.getByRole("region", { name: "Mais jogos" })).getAllByRole("listitem")).toHaveLength(5);
-});
+}, PLAYS_A_SEASON_MS);
 
 test("the seasons tab lists the season under way as partial and opens it", async () => {
   openAwards(await services("2026-06-01"));
@@ -70,4 +72,4 @@ test("the seasons tab lists the season under way as partial and opens it", async
   expect(within(table).getByText("parcial")).toBeTruthy();
   await userEvent.click(within(table).getByRole("button", { name: "Ver os prêmios de 2026" }));
   expect(screen.getByRole("tab", { name: "Prêmios", selected: true })).toBeTruthy();
-});
+}, PLAYS_A_SEASON_MS);

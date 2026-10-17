@@ -106,6 +106,20 @@ describe("retiring a player by hand", () => {
     expect(retired.event).toEqual({ type: "playerRetired", playerId: player.id, clubId: COACH_CLUB, name: player.name, age: player.age });
   });
 
+  it("takes him off the market: his listing, his auction and the offers for him go", () => {
+    const market = {
+      ...start.market,
+      coach: {
+        listings: { [player.id]: { mode: "cheap" as const, price: 1_000_000 } },
+        auctions: { [player.id]: { minBid: 1_000_000, closesOn: start.date, bids: [] } },
+        bids: { [player.id]: { playerId: player.id, buyerId: "palmeiras-sp", fee: 2_000_000, feeEur: null, ceiling: 2_500_000, isFinal: false, madeOn: start.date, until: start.date } },
+        counters: {},
+      },
+    };
+    const retired = retirePlayer({ ...start, market }, player.id).state.market.coach;
+    expect([retired?.listings[player.id], retired?.auctions[player.id], retired?.bids[player.id]]).toEqual([undefined, undefined, undefined]);
+  });
+
   it("refuses a player of another club", () => {
     const other = Object.values(start.players).find((p) => p.clubId !== COACH_CLUB);
     if (!other) throw new Error("no other player");

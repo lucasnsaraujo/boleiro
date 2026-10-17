@@ -7,7 +7,7 @@ import { wageRateOf, type WageRate } from "../transfers/wageDemand.js";
 import type { Prospect } from "../youth/academy.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
 import { inventName } from "./inventName.js";
-import { retirementChance, retirementWeight, type PlayerWantsToRetire } from "./retirement.js";
+import { marketOf, retirementChance, retirementWeight, type PlayerWantsToRetire } from "./retirement.js";
 import { freshCondition, rollTrait } from "./openingProfile.js";
 
 export type PlayerRetired = { type: "playerRetired"; playerId: string; clubId: string; name: string; age: number };
@@ -254,9 +254,7 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
       events.push({ type: "youthPromoted", playerId: youth.id, clubId: club.id });
     });
   }
-  // A retired player's pre-contract and loan go with him.
-  const stillPlaying = <T>(byPlayer: Record<string, T>) => Object.fromEntries(Object.entries(byPlayer).filter(([id]) => players[id]));
-  const market = { ...state.market, preContracts: stillPlaying(state.market.preContracts), loans: stillPlaying(state.market.loans) };
+  const market = marketOf(state.market, (id) => id in players);
   const youth = state.youth && { ...state.youth, prospects: Object.fromEntries(Object.entries(prospects).filter(([id]) => !taken.has(id))) };
   return { state: { ...state, players, market, ...(youth ? { youth } : {}), rngState: random.state() }, events };
 }
