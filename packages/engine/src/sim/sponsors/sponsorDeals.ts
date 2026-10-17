@@ -131,12 +131,15 @@ export function seedGameSponsors(state: GameState, files: SponsorFiles): GameSta
   return sendSponsorOffers({ ...state, sponsors, sponsorPool: pool }).state;
 }
 
-/** A brand goes on a club's kit in place of whoever was there: the money and the fans follow the difference. */
+/**
+ * A brand goes on a club's kit in place of the first brand of its place (the others sharing the place
+ * stay): the money and the fans follow the difference.
+ */
 function putOnKit(state: GameState, clubId: string, contract: SponsorContract): GameState {
   const sponsors = sponsorsOf(state, clubId);
   const old = sponsors.contracts.find((c) => c.slot === contract.slot);
   const past = old ? [...sponsors.past, { slot: old.slot, brandId: old.brandId, brandName: old.brandName, yearly: old.yearly, endedOn: state.date, reason: "replaced" as const }] : sponsors.past;
-  const contracts = [...sponsors.contracts.filter((c) => c.slot !== contract.slot), contract].sort((a, b) => SPONSOR_SLOTS.indexOf(a.slot) - SPONSOR_SLOTS.indexOf(b.slot));
+  const contracts = [...sponsors.contracts.filter((c) => c !== old), contract].sort((a, b) => SPONSOR_SLOTS.indexOf(a.slot) - SPONSOR_SLOTS.indexOf(b.slot));
   const kept = { contracts, offers: sponsors.offers.filter((o) => o.slot !== contract.slot), past };
   const wasBetting = hasBettingSponsor(sponsors);
   const isBetting = hasBettingSponsor(kept);
@@ -284,7 +287,7 @@ export function runSponsorDay(before: GameState, after: GameState, outcomes: Rea
   for (const clubId of humans) {
     if (next.date === `${next.season}-${RENEWAL_OFFERS_ON}`) {
       const sponsors = sponsorsOf(next, clubId);
-      const ending = sponsors.contracts.filter((c) => c.untilSeason === next.season && !sponsors.offers.some((o) => o.slot === c.slot)).map((c) => c.slot);
+      const ending = [...new Set(sponsors.contracts.filter((c) => c.untilSeason === next.season && !sponsors.offers.some((o) => o.slot === c.slot)).map((c) => c.slot))];
       next = addOffers(next, clubId, drawOffers(next, clubId, ending, boardMeetingAfter(next.date)), events);
     }
     next = decideOffers(next, clubId, events);
