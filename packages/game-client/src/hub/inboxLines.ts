@@ -15,7 +15,7 @@ import { competitionKeyName, competitionName } from "../format/competitionName.j
 import { formatContractLength } from "../format/formatContractLength.js";
 import { formatDayMonth, formatMonthYear, monthName } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
-import { nationalTeamName, withArticle, withPreposition } from "../format/nationalTeamName.js";
+import { championWord, nationalTeamName, withArticle, withPreposition } from "../format/nationalTeamName.js";
 import { boardGoal } from "../screens/clubChoices.js";
 import { copinhaRoundName } from "../format/copinhaRoundName.js";
 import { SLOT_NAMES } from "../sponsors/sponsorsPage.js";
@@ -181,7 +181,7 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         const isJob = after.nations?.job?.teamId === event.winnerId;
         if (!isJob && !event.competitionId.startsWith("world-cup")) return null;
         const over = event.runnerUpId ? `, sobre ${withArticle(event.runnerUpId)}` : "";
-        return [`${nationalTeamName(event.winnerId)} campeã da ${event.name}${over}`, isJob ? "good" : "neutral"];
+        return [`${nationalTeamName(event.winnerId)} ${championWord(event.winnerId)} da ${event.name}${over}`, isJob ? "good" : "neutral"];
       }
       case "playerSuspended":
         return isOurs(event.clubId) ? [`${playerName(event.playerId)} suspenso: ${plural(event.matches, "jogo", "jogos")}`, "bad"] : null;

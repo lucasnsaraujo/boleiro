@@ -25,7 +25,7 @@ export function nationalTeamName(id: string, fallback = id): string {
 
 // The article Portuguese puts before each name ("o Brasil", "os Estados Unidos", "Portugal"); left out, "a".
 const ARTICLES: Record<string, "o" | "os" | "as" | ""> = {
-  brazil: "o", uruguay: "o", paraguay: "o", ecuador: "o", chile: "o", peru: "o", mexico: "o", canada: "o", japan: "o", morocco: "os",
+  brazil: "o", uruguay: "o", paraguay: "o", ecuador: "o", chile: "o", peru: "o", mexico: "o", canada: "o", japan: "o", morocco: "o",
   senegal: "o", qatar: "o", iran: "o", iraq: "o", egypt: "o", haiti: "o", panama: "o", kosovo: "o", azerbaijan: "o", kazakhstan: "o",
   uzbekistan: "o", luxembourg: "o", wales: "o", "united-states": "os", "faroe-islands": "as", portugal: "", israel: "", ghana: "",
   "cape-verde": "", malta: "", andorra: "", "san-marino": "", liechtenstein: "", gibraltar: "", cyprus: "", curacao: "", montenegro: "", belarus: "",
@@ -43,4 +43,15 @@ const OF: Record<string, string> = { o: "do", os: "dos", as: "das", a: "da" };
 export function withPreposition(id: string): string {
   const article = ARTICLES[id] ?? "a";
   return `${article ? (OF[article] ?? "de") : "de"} ${nationalTeamName(id)}`;
+}
+
+// The names said without an article that are feminine: "Malta campeã".
+const FEMININE_WITHOUT_ARTICLE = new Set(["malta", "andorra"]);
+const CHAMPION: Record<string, string> = { o: "campeão", os: "campeões", as: "campeãs", a: "campeã" };
+
+/** "Campeão" agreeing with a national team: "Brasil campeão", "Espanha campeã", "Estados Unidos campeões". */
+export function championWord(id: string): string {
+  const article = ARTICLES[id] ?? "a";
+  if (article) return CHAMPION[article] ?? "campeã";
+  return FEMININE_WITHOUT_ARTICLE.has(id) ? "campeã" : "campeão";
 }

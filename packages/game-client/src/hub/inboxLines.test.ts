@@ -429,6 +429,15 @@ describe("national teams", () => {
   test("a World Cup's champion makes the news", () => {
     expect(line({ type: "nationalTitle", competitionId: "world-cup-2026", name: "Copa do Mundo 2026", winnerId: "spain", runnerUpId: "argentina" })?.text).toBe("Espanha campeã da Copa do Mundo 2026, sobre a Argentina");
   });
+
+  test("a champion's title agrees with the team's gender and number", () => {
+    const champion = (winnerId: string) => line({ type: "nationalTitle", competitionId: "world-cup-2030", name: "Copa do Mundo 2030", winnerId })?.text;
+    expect(champion("brazil")).toBe("Brasil campeão da Copa do Mundo 2030");
+    expect(champion("morocco")).toBe("Marrocos campeão da Copa do Mundo 2030");
+    expect(champion("united-states")).toBe("Estados Unidos campeões da Copa do Mundo 2030");
+    expect(champion("portugal")).toBe("Portugal campeão da Copa do Mundo 2030");
+    expect(champion("malta")).toBe("Malta campeã da Copa do Mundo 2030");
+  });
 });
 
 describe("national-team jobs", () => {
