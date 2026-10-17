@@ -142,6 +142,62 @@ describe("the coaches' turn of the season", () => {
     expect(closed?.coaches[hired.id]?.titles).toEqual([{ season: 2026, competition: "ar-1", clubId: "tm-209" }]);
   });
 
+  it("keeps only the five seasons the rankings read, and each closed season's rankings as they stood", () => {
+    const old = [2020, 2021, 2022, 2023, 2024, 2025];
+    const world = coachesOf(game);
+    const abel = coachesByClub(world).get("palmeiras-sp");
+    if (!abel) throw new Error("Palmeiras has no coach");
+    const seasons = old.map((season) => ({ season, domestic: { "palmeiras-sp": 800 }, continental: {}, credits: { [abel.id]: [["palmeiras-sp", 1]] as [string, number][] } }));
+    const state = { ...game, season: 2027, coaches: { ...world, seasons, national: old.map((season) => ({ season, clubs: { "palmeiras-sp": 800 } })) } };
+    const closed = coachesOf(closeCoachSeason(state, 2026, NO_RUNS, []));
+    expect(closed.seasons.map((filed) => filed.season)).toEqual([2022, 2023, 2024, 2025, 2026]);
+    expect(closed.national.map((filed) => filed.season)).toEqual([2022, 2023, 2024, 2025, 2026]);
+    const standing = closed.standings?.at(-1);
+    expect(standing?.season).toBe(2026);
+    expect(standing?.national[0]).toEqual(["palmeiras-sp", 800 * (4 + 3 + 2 + 1)]);
+    expect(standing?.coaches[0]?.[0]).toBe(abel.id);
+    expect(standing?.coaches.some(([key]) => key === humanKey(undefined))).toBe(true);
+    expect(Math.max(standing?.coaches.length ?? 0, standing?.national.length ?? 0, standing?.world.length ?? 0)).toBeLessThanOrEqual(51);
+  });
+
+  it("forgets the retired coaches nobody remembers, and keeps a coach's last eight spells", () => {
+    const world = coachesOf(game);
+    const [forgotten, champion] = Object.values(world.coaches).filter((coach) => coach.clubId === null);
+    const travelled = coachesByClub(world).get("santos-sp");
+    if (!forgotten || !champion || !travelled) throw new Error("the pool is too small");
+    const spells: AiCoach["stints"] = Array.from({ length: 12 }, (_, i) => ({ clubId: `club-${i}`, from: `${2010 + i}-01-01`, until: `${2010 + i}-12-31`, left: "fired" }));
+    const career = [...spells.slice(1), { clubId: "santos-sp", from: "2022-01-01", until: null, left: null }];
+    const coaches = {
+      ...world.coaches,
+      [forgotten.id]: { ...forgotten, retiredIn: 2020, stints: spells.slice(0, 2) },
+      [champion.id]: { ...champion, retiredIn: 2020, stints: spells, titles: [{ season: 2015, competition: "serie-a", clubId: "club-5" }] },
+      [travelled.id]: { ...travelled, stints: career },
+    };
+    const closed = coachesOf(closeCoachSeason({ ...game, season: 2027, coaches: { ...world, coaches } }, 2026, NO_RUNS, []));
+    expect(closed.coaches[forgotten.id]).toBeUndefined();
+    expect(closed.coaches[champion.id]?.titles).toHaveLength(1);
+    expect(closed.coaches[champion.id]?.stints.map((stint) => stint.clubId)).toEqual(["club-5"]);
+    expect(closed.coaches[travelled.id]?.stints).toEqual(career.slice(-8));
+  });
+
+  it("retires a coach three seasons out of work, and keeps one fired a season ago", () => {
+    const world = coachesOf(game);
+    const [idle, recent] = Object.values(world.coaches).filter((coach) => coach.clubId === null && coach.born > 1975);
+    if (!idle || !recent) throw new Error("the pool is too small");
+    const spell = (until: string) => [{ clubId: "palmeiras-sp", from: "2020-01-01", until, left: "fired" as const }];
+    const coaches = { ...world.coaches, [idle.id]: { ...idle, stints: spell("2023-11-30") }, [recent.id]: { ...recent, stints: spell("2026-05-01") } };
+    // A retired coach with no title and no points is forgotten at once, so either way he leaves the pool.
+    const isInPool = (coach: AiCoach | undefined) => coach !== undefined && coach.clubId === null && coach.retiredIn === undefined;
+    const pooled = (seed: number) => {
+      const closed = coachesOf(closeCoachSeason({ ...game, season: 2027, coaches: { ...world, coaches, rngState: seed } }, 2026, NO_RUNS, []));
+      return [isInPool(closed.coaches[idle.id]), isInPool(closed.coaches[recent.id])];
+    };
+    // Whatever the coaches' stream draws, only the one idle since 2023 is sure to retire.
+    const seeds = [1, 2, 3, 4, 5, 6, 7, 8];
+    for (const seed of seeds) expect(pooled(seed)[0]).toBe(false);
+    expect(seeds.filter((seed) => pooled(seed)[1]).length).toBeGreaterThan(4);
+  });
+
   it("retires a coach of 72 and opens his club's job", () => {
     const abel = coachesByClub(coachesOf(game)).get("palmeiras-sp");
     if (!abel) throw new Error("Palmeiras has no coach");
@@ -151,6 +207,22 @@ describe("the coaches' turn of the season", () => {
     expect(coachesOf(closed).coaches[abel.id]?.stints.at(-1)).toMatchObject({ clubId: "palmeiras-sp", until: old.date, left: "retired" });
     expect(coachesOf(closed).openJobs["palmeiras-sp"]).toBe(old.date);
   });
+});
+
+describe("seasons played", () => {
+  it("keep a game's coaching data from growing with every season", () => {
+    let state = loadNewGame(7, { coachClubId: "flamengo-rj", world: loadSouthAmerica(2026) });
+    const size = () => JSON.stringify([state.coaches, ...Object.values(state.world ?? {}).map((country) => country.coaching)]).length;
+    const sizes: number[] = [];
+    while (state.season < 2035) {
+      state = advanceDay(state, {}).state;
+      if (state.date.endsWith("-01-01")) sizes.push(size());
+    }
+    // The rankings' five seasons of points, every coach's last spells and the pool stop growing; only the
+    // standings and the retired coaches with titles keep adding, a little each season.
+    const [afterOne = 0, afterTwo = 0, , , , , , afterEight = 0, afterNine = 0] = sizes;
+    expect(afterNine - afterEight).toBeLessThan(0.4 * (afterTwo - afterOne));
+  }, 120_000);
 });
 
 describe("a season played", () => {

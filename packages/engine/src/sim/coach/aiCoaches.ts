@@ -50,16 +50,23 @@ export type SeasonPoints = { season: number; domestic: Record<string, number>; c
 /**
  * A part of the game's AI coaches, on a random stream of its own so their moves never reshuffle the
  * matches: the coaches, in a job or in the pool; the clubs without a coach and the day each job opened;
- * and every filed season's ranking points.
+ * and the ranking points of the seasons the rankings read.
  */
 export type Coaching = { rngState: number; nextId: number; coaches: Record<string, AiCoach>; openJobs: Record<string, IsoDate>; seasons: SeasonPoints[] };
 
+/** A ranking, best first: each coach's key or club's id with its points. */
+export type Ranked = [key: string, points: number][];
+
+/** The rankings as they stood at the end of a season, kept for history: the top of each, and the human coaches wherever they stood. */
+export type SeasonStandings = { season: number; coaches: Ranked; national: Ranked; world: Ranked };
+
 /**
  * The full tier's coaches (Brazil's clubs, the clubs abroad in the full tier, the Club World Cup's
- * guests) and its pool; the retired stars on their way into it; the CBF-style national points of each
- * filed season; and how many of UEFA's winners the rankings have read.
+ * guests) and its pool; the retired stars on their way into it; the CBF-style national points of the
+ * seasons the rankings read; how many of UEFA's winners they have read; and each closed season's
+ * standings, which a save from before them lacks.
  */
-export type CoachWorld = Coaching & { rookies: Rookie[]; national: { season: number; clubs: Record<string, number> }[]; uefaFiled?: number };
+export type CoachWorld = Coaching & { rookies: Rookie[]; national: { season: number; clubs: Record<string, number> }[]; uefaFiled?: number; standings?: SeasonStandings[] };
 
 /** A result-only country's coaches and pool, apart from the rest, and how many of its filed seasons the rankings have read. */
 export type CountryCoaching = Coaching & { filed: number };

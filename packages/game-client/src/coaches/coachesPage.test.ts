@@ -49,6 +49,24 @@ describe("the coaches screen after a season", () => {
     expect(page.world.length).toBeGreaterThanOrEqual(10);
   });
 
+  test("shows a season the rankings no longer read as its standings were kept", () => {
+    const saved = JSON.parse(played.save()) as { game: { coaches: { standings?: unknown[] } } };
+    const palmeiras = played.coachProfile("palmeiras-sp");
+    const coach = palmeiras?.key ?? "";
+    const old = { season: 2019, coaches: [[coach, 900], ["human:", 10]], national: [["palmeiras-sp", 4000]], world: [["palmeiras-sp", 5000]] };
+    saved.game.coaches.standings = [old, ...(saved.game.coaches.standings ?? [])];
+    const loaded = createEngineSession(bundledGameFiles);
+    loaded.apply({ type: "load", save: JSON.stringify(saved) });
+    const past = loaded.coaches(2019);
+    expect(past.seasons).toEqual([2019, 2026]);
+    expect(past.season).toBe(2019);
+    expect(past.coaches.map((row) => [row.key, row.position, row.points])).toEqual([[coach, 1, 900], ["human:", 2, 10]]);
+    expect(past.coaches[0]?.name).toBe(palmeiras?.name);
+    expect(past.national).toEqual([{ position: 1, clubId: "palmeiras-sp", points: 4000, country: "br" }]);
+    expect(past.world).toEqual([{ position: 1, clubId: "palmeiras-sp", points: 5000, country: "br" }]);
+    expect(past.you.ranking).toEqual({ position: 2, points: 10 });
+  });
+
   test("gives the leading coach's profile his place in the ranking", () => {
     const leader = page.coaches[0];
     expect(leader && played.coachProfile(leader.key)?.ranking).toEqual({ position: 1, points: leader?.points });

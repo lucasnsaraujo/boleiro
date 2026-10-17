@@ -3,8 +3,9 @@ import type { DayEvent } from "../advanceDay.js";
 import type { GameState, IsoDate } from "../gameState.js";
 import type { CoachStint, CompetitionKey } from "../history/history.js";
 import type { Country } from "../world/world.js";
-import { fullTierClubs, fullTierStatures, inventCoach, type AiCoach, type AiCoachStint, type Coaching, type CoachWorld, type Rookie, type SeasonPoints } from "./aiCoaches.js";
-import { countryPoints, fullTierPoints, nationalPoints, type ClubSeasonPoints, type SeasonRuns, type UefaWinner } from "./rankingPoints.js";
+import { fullTierClubs, fullTierStatures, inventCoach, type AiCoach, type AiCoachStint, type Coaching, type CoachWorld, type Ranked, type Rookie, type SeasonPoints, type SeasonStandings } from "./aiCoaches.js";
+import { countryPoints, fullTierPoints, nationalPoints, SEASON_WEIGHTS, type ClubSeasonPoints, type SeasonRuns, type UefaWinner } from "./rankingPoints.js";
+import { coachRanking, nationalRanking, STANDING_PLACES, worldRanking } from "./rankings.js";
 
 /** A retired player of the full tier: his name, his first nationality, the club he retired at, his best strength and his age. */
 export type RetiredPlayer = { name: string; nationality: string; clubId: string; peak: number; age: number };
@@ -28,9 +29,10 @@ const ROOKIE_WAIT = { min: 2, span: 3 };
 const ROOKIE_REPUTATION = 30;
 const ROOKIE_REPUTATION_PER_PEAK_POINT = 3;
 const ROOKIE_REPUTATION_PER_STATURE = 1 / 4;
-// guess: AI coaches retire at 72; one out of work retires earlier now and then.
+// guess: AI coaches retire at 72; one out of work retires earlier now and then, and for good after three seasons without a club.
 const RETIREMENT_AGE = 72;
 const IDLE_RETIREMENT_CHANCE = 0.12;
+const IDLE_SEASONS = 3;
 
 /** The ranking key of a human coach: his name in a hot-seat game, empty in a one-coach game. */
 export const humanKey = (name: string | undefined): string => `human:${name ?? ""}`;
@@ -75,7 +77,9 @@ function closeCoaching<T extends Coaching>(coaching: T, season: number, points: 
   for (const coach of Object.values(coaches)) {
     if (coach.retiredIn !== undefined) continue;
     const isOld = nextSeason - coach.born >= RETIREMENT_AGE;
-    if (!isOld && (coach.clubId !== null || random() >= IDLE_RETIREMENT_CHANCE)) continue;
+    const lastJobEnded = coach.clubId === null ? coach.stints.at(-1)?.until : null;
+    const isLongIdle = !!lastJobEnded && lastJobEnded < `${nextSeason - IDLE_SEASONS}-01-01`;
+    if (!isOld && !isLongIdle && (coach.clubId !== null || random() >= IDLE_RETIREMENT_CHANCE)) continue;
     if (coach.clubId) openJobs[coach.clubId] = date;
     const stints = coach.stints.map((stint) => (stint.until === null ? { ...stint, until: date, left: "retired" as const } : stint));
     coaches[coach.id] = { ...coach, clubId: null, stints, retiredIn: nextSeason };
@@ -99,12 +103,61 @@ function closeCountry(country: Country, season: number, uefaWinners: readonly Ue
   return { ...country, coaching: { ...closed, filed: country.seasons.length, rngState: stream.state() } };
 }
 
+// guess: a coach's page shows his last eight spells; the ones before are forgotten.
+const STINTS_KEPT = 8;
+
+/** The season's rankings as they stand, the top of each and the human coaches wherever they are. */
+function standingsOf(state: GameState, season: number): SeasonStandings {
+  const isHuman = (key: string) => key.startsWith(humanKey(""));
+  const coaches: Ranked = coachRanking(state, season).filter(([key], index) => index < STANDING_PLACES || isHuman(key));
+  return { season, coaches, national: nationalRanking(state, season).slice(0, STANDING_PLACES), world: worldRanking(state, season).slice(0, STANDING_PLACES) };
+}
+
+/** A retired coach as history keeps him: his spells at the clubs he won titles with, or his last one. */
+function compactRetired(coach: AiCoach): AiCoach {
+  const titled = coach.stints.filter((stint) => coach.titles.some((title) => title.clubId === stint.clubId));
+  return { ...coach, stints: titled.length ? titled : coach.stints.slice(-1) };
+}
+
+/** The coaching with only the seasons the rankings read from `from` on, each coach's last spells, and the retired coaches nobody remembers gone. */
+function forget<T extends Coaching>(coaching: T, from: number, remembered: ReadonlySet<string>): T {
+  const seasons = coaching.seasons.filter((filed) => filed.season >= from);
+  const credited = new Set(seasons.flatMap((filed) => Object.keys(filed.credits)));
+  const coaches: Record<string, AiCoach> = {};
+  for (const coach of Object.values(coaching.coaches)) {
+    const isRemembered = coach.retiredIn === undefined || coach.titles.length > 0 || remembered.has(coach.id) || credited.has(coach.id);
+    if (!isRemembered) continue;
+    const kept = coach.retiredIn === undefined ? coach : compactRetired(coach);
+    coaches[coach.id] = kept.stints.length > STINTS_KEPT ? { ...kept, stints: kept.stints.slice(-STINTS_KEPT) } : kept;
+  }
+  return { ...coaching, seasons, coaches };
+}
+
+/**
+ * The game after the season's standings are kept and what the rankings no longer read is forgotten:
+ * points older than the five seasons they weigh, spells beyond a coach's last eight, retired coaches
+ * with no title, no recent points and no place in a kept standing.
+ */
+function keepStandings(state: GameState, season: number): GameState {
+  const world = state.coaches;
+  if (!world) return state;
+  const standings = [...(world.standings ?? []).filter((kept) => kept.season !== season), standingsOf(state, season)];
+  const remembered = new Set(standings.flatMap((kept) => kept.coaches.map(([key]) => key)));
+  const from = season - SEASON_WEIGHTS.length + 1;
+  const coaches: CoachWorld = { ...forget(world, from, remembered), national: world.national.filter((filed) => filed.season >= from), standings };
+  const countries =
+    state.world &&
+    Object.fromEntries(Object.entries(state.world).map(([id, country]) => [id, country.coaching && !country.isFullTier ? { ...country, coaching: forget(country.coaching, from, remembered) } : country]));
+  return { ...state, coaches, ...(countries ? { world: countries } : {}) };
+}
+
 /**
  * The coaches' turn of the season (`season`, the one just played; `state` already in the next): every
  * club's ranking points and every coach's share of them filed, titles credited to the AI coaches in
  * charge, retired stars queued to start coaching a few seasons on and those due joining the full tier's
- * pool, old coaches retiring and their jobs opening. `runs` are the season as it ended (seasonRuns), read
- * before its fixtures went. Each result-only country files its own on its own stream.
+ * pool, old coaches retiring and their jobs opening, and the season's standings kept while what the
+ * rankings no longer read is forgotten. `runs` are the season as it ended (seasonRuns), read before its
+ * fixtures went. Each result-only country files its own on its own stream.
  */
 export function closeCoachSeason(state: GameState, season: number, runs: SeasonRuns, retired: readonly RetiredPlayer[]): GameState {
   const world = state.coaches;
@@ -153,5 +206,5 @@ export function closeCoachSeason(state: GameState, season: number, runs: SeasonR
     rngState: stream.state(),
   };
   const countries = state.world && Object.fromEntries(Object.entries(state.world).map(([id, country]) => [id, closeCountry(country, season, uefaWinners, state.date, state.season)]));
-  return { ...state, coaches: closed, ...(countries ? { world: countries } : {}) };
+  return keepStandings({ ...state, coaches: closed, ...(countries ? { world: countries } : {}) }, season);
 }

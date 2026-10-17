@@ -1,12 +1,14 @@
 import type { GameState } from "../gameState.js";
-import { countriesCoaching, fullTierClubs, type SeasonPoints } from "./aiCoaches.js";
+import { countriesCoaching, fullTierClubs, type Ranked, type SeasonPoints } from "./aiCoaches.js";
 import { countryFactors, SEASON_WEIGHTS } from "./rankingPoints.js";
 
-type Ranked = [key: string, points: number][];
+/** How many places of each ranking a closed season keeps for history. */
+export const STANDING_PLACES = 50;
 
-/** The seasons ranked so far, oldest first. */
+/** The seasons ranked so far, oldest first: those with standings kept and those whose points are. */
 export function rankedSeasons(state: Pick<GameState, "coaches">): number[] {
-  return (state.coaches?.national ?? []).map((filed) => filed.season);
+  const seasons = [...(state.coaches?.standings ?? []), ...(state.coaches?.national ?? [])].map((filed) => filed.season);
+  return [...new Set(seasons)].sort((a, b) => a - b);
 }
 
 /** The weight a filed season has in the ranking as of `season`: 5 for it, 4 for the one before, down to 1; 0 outside the five. */

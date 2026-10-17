@@ -3,7 +3,7 @@ import type { Posture } from "@boleiro/engine/engine/match";
 import { everyCoach, fullTierClubs, type AiCoach, type AiCoachStint, type CoachTitle } from "@boleiro/engine/sim/coach/aiCoaches";
 import { humanKey } from "@boleiro/engine/sim/coach/closeCoachSeason";
 import { jobCentre, type OpenJob } from "@boleiro/engine/sim/coach/jobCentre";
-import { coachRanking, nationalRanking, rankedSeasons, worldRanking } from "@boleiro/engine/sim/coach/rankings";
+import { coachRanking, nationalRanking, rankedSeasons, STANDING_PLACES, worldRanking } from "@boleiro/engine/sim/coach/rankings";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import type { CoachRecord, CoachStint } from "@boleiro/engine/sim/history/history";
 
@@ -53,8 +53,8 @@ export type CoachesPage = {
   you: CoachProfile;
 };
 
-// guess: the screen lists the top fifty of each ranking; the human coaches always show.
-const SHOWN = 50;
+// The screen lists the top of each ranking a season keeps for history; the human coaches always show.
+const SHOWN = STANDING_PLACES;
 
 type Standing = Map<string, { position: number; points: number }>;
 
@@ -110,7 +110,9 @@ function humansOf(state: GameState) {
 export function coachesPage(state: GameState, season?: number): CoachesPage {
   const seasons = rankedSeasons(state);
   const asOf = season !== undefined && seasons.includes(season) ? season : seasons.at(-1);
-  const ranked = asOf === undefined ? [] : coachRanking(state, asOf);
+  // The latest season ranks live from its points; an earlier one shows its standings as they were kept.
+  const kept = asOf === seasons.at(-1) ? undefined : state.coaches?.standings?.find((standing) => standing.season === asOf);
+  const ranked = kept ? kept.coaches : asOf === undefined ? [] : coachRanking(state, asOf);
   const humans = humansOf(state);
   const humanByKey = new Map(humans.map((human) => [humanKey(human.name), human]));
   const aiById = new Map(everyCoach(state).map((coach) => [coach.id, coach]));
@@ -129,8 +131,8 @@ export function coachesPage(state: GameState, season?: number): CoachesPage {
     season: asOf ?? null,
     seasons,
     coaches,
-    national: asOf === undefined ? [] : clubs(nationalRanking(state, asOf)),
-    world: asOf === undefined ? [] : clubs(worldRanking(state, asOf)),
+    national: kept ? clubs(kept.national) : asOf === undefined ? [] : clubs(nationalRanking(state, asOf)),
+    world: kept ? clubs(kept.world) : asOf === undefined ? [] : clubs(worldRanking(state, asOf)),
     jobs: jobCentre(state),
     you: humanProfile(seated?.name, state.coachClubId, state.coach.reputation, state.history.coach, standingOf(ranked)),
   };
