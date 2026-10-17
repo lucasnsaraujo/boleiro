@@ -1,5 +1,5 @@
 import type { Posture } from "@boleiro/engine/engine/match";
-import type { JobAnswer } from "@boleiro/engine/sim/coach/applyForJob";
+import type { JobAnswer, Refusal } from "@boleiro/engine/sim/coach/applyForJob";
 import { competitionKeyName } from "@boleiro/game-client/format/competitionName";
 import type { ProfileStint } from "@boleiro/game-client/coaches/coachesPage";
 
@@ -120,6 +120,9 @@ export function exitWord(left: ProfileStint["left"]): string {
   }
 }
 
+/** Why a club with an open job would turn the coach down, under its verdict. */
+export const REFUSAL_WORDS: Record<Refusal, string> = { tooBig: "quer um nome maior", notWelcome: "não esqueceu sua saída" };
+
 /** What a club answered the coach's application, for the toast. */
 export function answerText(answer: JobAnswer, club: string): string {
   switch (answer) {
@@ -130,7 +133,7 @@ export function answerText(answer: JobAnswer, club: string): string {
     case "notWelcome":
       return `${club} não esqueceu sua saída. Ainda não é bem-vindo.`;
     case "alreadyOffered":
-      return `A proposta do ${club} já está na mesa.`;
+      return `${club} já fez uma proposta. Ela está em Propostas.`;
     case "noOpening":
       return `${club} não tem vaga agora.`;
   }

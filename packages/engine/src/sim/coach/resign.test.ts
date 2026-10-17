@@ -74,6 +74,15 @@ describe("the job centre", () => {
     expect(row(big)).toMatchObject({ openedOn: game.date, wouldHire: false });
   });
 
+  it("says why a club would turn the coach down: too big for his name, or still sore at his exit", () => {
+    const sore = open({ ...unemployed, coach: { ...unemployed.coach, cooldowns: [{ clubId: small, untilSeason: game.season + 1 }] } }, small, big);
+    const jobs = jobCentre(sore);
+    const row = (clubId: string) => jobs.find((job) => job.clubId === clubId);
+    expect(row(small)).toMatchObject({ wouldHire: false, refusal: "notWelcome" });
+    expect(row(big)).toMatchObject({ wouldHire: false, refusal: "tooBig" });
+    expect(jobCentre(unemployed).find((job) => job.clubId === small)?.refusal).toBeNull();
+  });
+
   it("lists, after the open jobs, the clubs whose board is about to fire its coach", () => {
     const shaky = Object.keys(game.boards).find((id) => id !== "bahia-ba" && id !== small && id !== big) ?? "";
     const board = game.boards[shaky];

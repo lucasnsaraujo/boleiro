@@ -14,9 +14,18 @@ export type JobAnswer = "offered" | "noOpening" | "tooBig" | "notWelcome" | "alr
 // guess: a coach who asks for the job reaches a little further than the clubs that call him.
 export const APPLY_REACH = OFFER_REACH + 5;
 
+/** Why a club would turn down the coach in the seat. */
+export type Refusal = Extract<JobAnswer, "tooBig" | "notWelcome">;
+
+/** Why a club with an open job would turn down the coach in the seat: he walked out on it lately, or his reputation falls short of its stature; null when it would take him. */
+export function refusalOf(state: GameState, clubId: string, stature: number): Refusal | null {
+  if (isCoolingDown(state.coach, clubId, state.season)) return "notWelcome";
+  return stature <= state.coach.reputation + APPLY_REACH ? null : "tooBig";
+}
+
 /** Whether a club with an open job would take the coach in the seat: his reputation reaches its stature and it holds nothing against him. */
 export function wouldHire(state: GameState, clubId: string, stature: number): boolean {
-  return stature <= state.coach.reputation + APPLY_REACH && !isCoolingDown(state.coach, clubId, state.season);
+  return refusalOf(state, clubId, stature) === null;
 }
 
 /** The coach in the seat applies for a club's open job; the club answers at once. */

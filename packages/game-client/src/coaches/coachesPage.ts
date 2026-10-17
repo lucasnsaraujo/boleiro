@@ -7,8 +7,8 @@ import { coachRanking, nationalRanking, rankedSeasons, STANDING_PLACES, worldRan
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import type { CoachRecord, CoachStint } from "@boleiro/engine/sim/history/history";
 
-/** A coach's line in the ranking: AI coaches by id, human coaches by humanKey; `isSeated` marks the coach in the seat. */
-export type RankedCoach = { position: number; key: string; name: string; clubId: string | null; points: number; isHuman: boolean; isSeated: boolean };
+/** A coach's line in the ranking: AI coaches by id, human coaches by humanKey; `isSeated` marks the coach in the seat, `isInvented` a coach the game made up (neither real, an ex-star of the game nor human). */
+export type RankedCoach = { position: number; key: string; name: string; clubId: string | null; points: number; isHuman: boolean; isSeated: boolean; isInvented: boolean };
 
 /** A club's line in a ranking, with the country it plays in ("br" for Brazil). */
 export type RankedClub = { position: number; clubId: string; points: number; country: string };
@@ -119,9 +119,9 @@ export function coachesPage(state: GameState, season?: number): CoachesPage {
   const coaches = ranked.flatMap(([key, points], index): RankedCoach[] => {
     const human = humanByKey.get(key);
     if (index >= SHOWN && !human) return [];
-    if (human) return [{ position: index + 1, key, name: human.name ?? "", clubId: human.clubId, points, isHuman: true, isSeated: human.isSeated }];
+    if (human) return [{ position: index + 1, key, name: human.name ?? "", clubId: human.clubId, points, isHuman: true, isSeated: human.isSeated, isInvented: false }];
     const coach = aiById.get(key);
-    return coach ? [{ position: index + 1, key, name: coach.name, clubId: coach.clubId, points, isHuman: false, isSeated: false }] : [];
+    return coach ? [{ position: index + 1, key, name: coach.name, clubId: coach.clubId, points, isHuman: false, isSeated: false, isInvented: !coach.isReal && !coach.formerPlayer }] : [];
   });
   const countryOf = fullTierClubs(state);
   for (const [id, country] of Object.entries(state.world ?? {})) for (const clubId of Object.keys(country.clubs)) if (!countryOf.has(clubId)) countryOf.set(clubId, id);

@@ -52,15 +52,15 @@ test("a coach resigns, applies for an open job from the job centre and is hired 
 
   await bar(page).getByRole("link", { name: "Técnicos" }).click();
   await page.getByRole("button", { name: "Pedir demissão" }).click();
-  const question = page.getByRole("alertdialog", { name: "Pedir demissão do Bahia?" });
-  await expect(question).toContainText("não contrata você de novo até o fim de 2028");
+  const question = page.getByRole("alertdialog", { name: "Pedir demissão?" });
+  await expect(question).toContainText("Bahia não contrata você de novo até o fim de 2028");
   await question.getByRole("button", { name: "Pedir demissão" }).click();
 
   const jobs = page.getByRole("list", { name: "Vagas" });
   await expect(jobs).toBeVisible();
   await expect(page.getByText("Sem clube.")).toBeVisible();
   await expect(page.getByRole("complementary", { name: "Perfil de Lucas" })).toContainText("pediu demissão");
-  await jobs.getByRole("button", { name: `Candidatar-se ao ${club}` }).click();
+  await jobs.getByRole("button", { name: `Candidatar-se: ${club}` }).click();
   await expect(page.getByRole("status").filter({ hasText: `${club} fez uma proposta` })).toBeVisible();
 
   await jobs.getByRole("link", { name: "Proposta na mesa" }).click();

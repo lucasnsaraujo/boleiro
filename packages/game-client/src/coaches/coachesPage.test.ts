@@ -67,6 +67,14 @@ describe("the coaches screen after a season", () => {
     expect(past.you.ranking).toEqual({ position: 2, points: 10 });
   });
 
+  test("marks the coaches the game invented, never a real one, an ex-star or a human", () => {
+    const real = page.coaches.find((row) => !row.isHuman && played.coachProfile(row.key)?.isReal);
+    const invented = page.coaches.find((row) => !row.isHuman && !played.coachProfile(row.key)?.isReal && !played.coachProfile(row.key)?.formerPlayer);
+    expect(real?.isInvented).toBe(false);
+    expect(invented?.isInvented).toBe(true);
+    expect(page.coaches.filter((row) => row.isHuman).map((row) => row.isInvented)).toEqual([false]);
+  });
+
   test("gives the leading coach's profile his place in the ranking", () => {
     const leader = page.coaches[0];
     expect(leader && played.coachProfile(leader.key)?.ranking).toEqual({ position: 1, points: leader?.points });

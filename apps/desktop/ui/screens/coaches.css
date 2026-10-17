@@ -220,6 +220,22 @@ td.coaches-pos {
   font-size: 9.5px;
 }
 
+/* A coach the game made up: a pencilled note beside the name, never louder than it */
+.coaches-invented {
+  margin-left: 6px;
+  padding: 0 5px;
+  border: 1px dashed var(--rule);
+  border-radius: 3px;
+  font-size: 9.5px;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  line-height: 15px;
+  color: var(--mute);
+  vertical-align: 2px;
+  white-space: nowrap;
+}
+
 .coaches-club {
   display: inline-flex;
   align-items: center;
@@ -452,10 +468,18 @@ td.coaches-pos {
 }
 
 .coaches-verdict {
+  display: grid;
+  justify-items: end;
   font-size: 11.5px;
   font-weight: 700;
   color: var(--mute);
   white-space: nowrap;
+}
+
+.coaches-verdict small {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ink-2);
 }
 
 .coaches-verdict.is-yes {
@@ -502,10 +526,12 @@ td.coaches-pos {
   animation: coaches-stamp-in var(--t-stamp) var(--e-slap) both;
 }
 
-/* The picked coach's sticker */
+/* The picked coach's sticker: as tall as the coach's story, scrolling past the page's height */
 .coaches-profile {
   display: flex;
   flex-direction: column;
+  align-self: start;
+  max-height: 100%;
   min-height: 0;
   overflow: hidden auto;
   animation: coaches-profile-in 520ms var(--e-out) both;
@@ -751,11 +777,13 @@ td.coaches-pos {
 }
 
 .coaches-profile-acts {
+  position: sticky;
+  bottom: 0;
   display: flex;
   justify-content: flex-end;
-  margin-top: auto;
   padding: 12px 16px 14px;
   border-top: 1px solid var(--rule);
+  background: inherit;
 }
 
 /* Resigning: the letter on the board's desk */

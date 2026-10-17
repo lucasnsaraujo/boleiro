@@ -10,7 +10,7 @@ import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { clubFaceOf, plateColours, type ClubFace } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
-import { answerText, countryName, exitWord, nationalityName, STYLE_WORDS, titleName } from "../coaches/coachWords.js";
+import { answerText, countryName, exitWord, nationalityName, REFUSAL_WORDS, STYLE_WORDS, titleName } from "../coaches/coachWords.js";
 import { Select } from "../controls/Select.js";
 import { usePlayRound } from "../hub/usePlayRound.js";
 import { useFlip } from "../motion/useFlip.js";
@@ -281,6 +281,15 @@ function Movement({ now, before }: { now: number; before: number | undefined }) 
   );
 }
 
+/** The quiet tag on a coach the game made up, so nobody takes him for a real person. */
+function InventedMark() {
+  return (
+    <span className="coaches-invented" title="Técnico inventado pelo jogo">
+      fictício
+    </span>
+  );
+}
+
 function EmptyRanking({ title }: { title: string }) {
   return (
     <div className="coaches-empty">
@@ -327,6 +336,7 @@ function CoachTable({ page, before, face, youName, pickedKey, onPick }: { page: 
                   <Avatar name={name} club={club} size="row" />
                   {name}
                   {row.isSeated && <span className="chip ink coaches-you">você</span>}
+                  {row.isInvented && <InventedMark />}
                 </button>
               </td>
               <td className="l">
@@ -372,8 +382,8 @@ function ClubTable({ rows, state, face, kind, season }: { rows: readonly RankedC
       </table>
       <p className="coaches-foot">
         {kind === "cbf"
-          ? "Como a CBF conta: campeão da Série A 800 pontos, B 400, C 200, D 100; vice 80%, 3º 75%, 4º 70% e 1 ponto percentual a menos por posição. Copa do Brasil: 600 ao campeão, 480 ao vice."
-          : "Os dez primeiros de cada liga, o campeão da segunda divisão e os finalistas da copa nacional, pesados pela força da liga; os campeões continentais e do Mundial contam inteiro. Estimativa do jogo, à moda do IFFHS e da UEFA."}
+          ? "Como a CBF conta: campeão da Série A 800 pontos, B 400, C 200, D 100; vice 80%, 3º 75%, 4º 70% e 1 ponto percentual a menos por posição, até 51%. Copa do Brasil: 600 ao campeão, 480 ao vice, 450 na semifinal, 400 nas quartas."
+          : "Os dez primeiros de cada liga, o campeão da segunda divisão, os finalistas da copa nacional e os campeões continentais e do Mundial, tudo pesado pela força da liga do clube. Estimativa do jogo, à moda do IFFHS e da UEFA."}
       </p>
     </>
   );
@@ -475,8 +485,17 @@ function JobCentre({
                     </Link>
                   ) : job.openedOn ? (
                     <>
-                      <span className={job.wouldHire ? "coaches-verdict is-yes" : "coaches-verdict"}>{job.wouldHire ? "aceitaria você" : "fora do alcance"}</span>
-                      <button className="btn sm go" onClick={() => onApply(job)} disabled={!canApply} aria-label={`Candidatar-se ao ${club?.shortName ?? job.clubId}`}>
+                      <span className={job.wouldHire ? "coaches-verdict is-yes" : "coaches-verdict"}>
+                        {job.wouldHire ? "aceitaria você" : "fora do alcance"}
+                        {job.refusal && <small id={`coaches-why-${job.clubId}`}>{REFUSAL_WORDS[job.refusal]}</small>}
+                      </span>
+                      <button
+                        className="btn sm go"
+                        onClick={() => onApply(job)}
+                        disabled={!canApply || !job.wouldHire}
+                        aria-label={`Candidatar-se: ${club?.shortName ?? job.clubId}`}
+                        aria-describedby={job.refusal ? `coaches-why-${job.clubId}` : undefined}
+                      >
                         Candidatar
                       </button>
                     </>
@@ -518,6 +537,7 @@ function ProfileCard({
   const titlesByKey = new Map<string, number[]>();
   for (const title of profile.titles) titlesByKey.set(title.competition, [...(titlesByKey.get(title.competition) ?? []), title.season]);
   const isRetired = profile.stints.at(-1)?.left === "retired";
+  const isInvented = !profile.isHuman && !profile.isReal && !profile.formerPlayer;
   const formerClub = profile.formerPlayer ? face(profile.formerPlayer.clubId) : null;
   const who = [profile.nationality && nationalityName(profile.nationality), profile.age !== null && `${profile.age} anos`].filter(Boolean).join(" · ");
   return (
@@ -532,7 +552,10 @@ function ProfileCard({
           )}
         </div>
         <div className="coaches-profile-who">
-          <h2>{name}</h2>
+          <h2>
+            {name}
+            {isInvented && <InventedMark />}
+          </h2>
           <p>{isYou ? "Você" : who || "Técnico"}</p>
           <p className="coaches-profile-club">{club ? club.shortName : isRetired ? "Aposentado" : "Sem clube"}</p>
         </div>
@@ -576,7 +599,7 @@ function ProfileCard({
       </dl>
       {profile.formerPlayer && (
         <p className="note coaches-former">
-          Ex-craque: pendurou as chuteiras no <b>{formerClub?.shortName ?? "clube"}</b> com força {Math.round(profile.formerPlayer.strength)}.
+          Ex-craque do jogo, força {Math.round(profile.formerPlayer.strength)} no auge. Último clube como jogador: <b>{formerClub?.shortName ?? "–"}</b>.
         </p>
       )}
       {titlesByKey.size > 0 && (
@@ -641,7 +664,7 @@ function ProfileCard({
 
 function ResignQuestion({ club, reputation, season, isBusy, onResign, onStay }: { club: ClubFace | null; reputation: number; season: number; isBusy: boolean; onResign: () => void; onStay: () => void }) {
   const title = useDialogFocus<HTMLHeadingElement>(true, { isModal: true });
-  const name = club?.shortName ?? "o clube";
+  const name = club?.shortName ?? "O clube";
   return createPortal(
     <div className="coaches-veil">
       <section
@@ -661,16 +684,16 @@ function ResignQuestion({ club, reputation, season, isBusy, onResign, onStay }: 
           <i className="ph-bold ph-signature" />
         </div>
         <h2 id="coaches-resign-title" ref={title} tabIndex={-1}>
-          Pedir demissão do {name}?
+          Pedir demissão?
         </h2>
         <ul id="coaches-resign-what" className="coaches-resign-list">
           <li>
             Sua reputação cai de <b>{reputation}</b> para <b>{Math.max(0, reputation - RESIGN_REPUTATION_COST)}</b>.
           </li>
           <li>
-            O {name} não contrata você de novo até o fim de <b>{season + RESIGN_COOLDOWN_SEASONS}</b>.
+            {name} não contrata você de novo até o fim de <b>{season + RESIGN_COOLDOWN_SEASONS}</b>.
           </li>
-          <li>A vaga abre e outro técnico assume em duas semanas.</li>
+          <li>{name} abre a vaga, e outro técnico assume em duas semanas.</li>
           <li>Seus pedidos à diretoria são cancelados.</li>
         </ul>
         <div className="coaches-resign-acts">
@@ -678,7 +701,7 @@ function ResignQuestion({ club, reputation, season, isBusy, onResign, onStay }: 
             Pedir demissão
           </button>
           <button className="btn flat" onClick={onStay} disabled={isBusy}>
-            Ficar no {name}
+            Continuar no cargo
           </button>
         </div>
       </section>
