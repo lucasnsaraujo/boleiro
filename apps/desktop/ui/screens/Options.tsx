@@ -147,7 +147,7 @@ export function Options() {
                 <p className="options-row-note">Escalação, contratos, base, ingresso, vendas e os assuntos que ele responde: tudo no painel do auxiliar.</p>
               </div>
               <Link className="btn sm" to="/assistant">
-                Abrir o auxiliar
+                Ir ao auxiliar
               </Link>
             </div>
           </section>
