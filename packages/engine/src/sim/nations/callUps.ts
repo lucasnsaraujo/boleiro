@@ -72,9 +72,12 @@ function outsiderCandidates(outsiders: Outsiders | undefined, date: IsoDate): Ca
   });
 }
 
-/** The best 26 of `candidates` by position places, the leftover places going to the best outfield players left. */
-function bestByPlaces(candidates: readonly Candidate[]): string[] {
-  const sorted = [...candidates].sort((a, b) => b.strength - a.strength || a.ref.localeCompare(b.ref));
+/**
+ * The best 26 of `candidates` by position places, the leftover places going to the best outfield players left;
+ * those at least as strong as `bar` first, the rest only for places they would leave empty.
+ */
+function bestByPlaces(candidates: readonly Candidate[], bar: number): string[] {
+  const sorted = [...candidates].sort((a, b) => Number(b.strength >= bar) - Number(a.strength >= bar) || b.strength - a.strength || a.ref.localeCompare(b.ref));
   const taken = new Set<string>();
   for (const [role, places] of Object.entries(CALL_UP_PLACES)) {
     for (const candidate of sorted.filter((c) => c.role === role).slice(0, places)) taken.add(candidate.ref);
@@ -89,14 +92,15 @@ function bestByPlaces(candidates: readonly Candidate[]): string[] {
 /**
  * The call-up a national coach makes on `date`: the best fit players of his pool by position, the game's and the
  * outsiders, as refs (player ids, or OUTSIDER_MARK rows). The outsiders are the team's last real call-up, so a
- * player of the game's own makes it only at least as strong as the weakest of them (guess: a national coach
- * looks at the whole country's players, which the pack lists only as far as he last called them).
+ * player of the game's own weaker than the weakest of them makes it only to a place no one stronger fills
+ * (guess: a national coach looks at the whole country's players, which the pack lists only as far as he last
+ * called them).
  */
 export function pickCallUp(nationals: readonly SimPlayer[], outsiders: Outsiders | undefined, date: IsoDate): string[] {
   const others = outsiderCandidates(outsiders, date);
   const bar = others.length ? Math.min(...others.map((c) => c.strength)) : 0;
-  const own = nationals.filter((p) => !isInjured(p, date) && p.strength >= bar).map((p): Candidate => ({ ref: p.id, role: roleOf(p), strength: p.strength }));
-  return bestByPlaces([...own, ...others]);
+  const own = nationals.filter((p) => !isInjured(p, date)).map((p): Candidate => ({ ref: p.id, role: roleOf(p), strength: p.strength }));
+  return bestByPlaces([...own, ...others], bar);
 }
 
 /** Splits call-up refs into the game's player ids and outsider rows. */
