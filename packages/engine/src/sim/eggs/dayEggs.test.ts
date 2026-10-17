@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import type { DayEvent } from "../advanceDay.js";
 import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { fillSlots } from "../events/fillSlots.js";
 import { EGG_BANK } from "./eggBank.js";
 import type { DayEgg, DayScene } from "./eggType.js";
 
@@ -67,6 +68,13 @@ test("the academy trials sometimes bring a kid named after the coach", () => {
   expect(finds("namesake", { events: [trials(kids)], random: NEVER })).toBeNull();
   expect(finds("namesake", { events: [] })).toBeNull();
   expect(finds("namesake", { events: [trials(kids)], coach: { name: "", record: start.history.coach } })).toBeNull();
+});
+
+test("the stories of a kid named after the coach fit a coach of any name", () => {
+  const namesakes = EGG_BANK.filter((type) => type.id === "namesake" || type.id === "namesake-scores");
+  expect(namesakes).toHaveLength(2);
+  const told = namesakes.flatMap((type) => type.texts.map((text) => fillSlots(`${text.headline} ${text.body}`, { player: "Ana Souza", club: "Bahia", score: "Bahia 1 × 0 Vitória" })));
+  for (const story of told) expect(story).not.toMatch(/\b(o garoto|o menino|dele|filho)\b/i);
 });
 
 test("in a hot-seat game the trials can bring kids named after the cousins, the other human coaches", () => {

@@ -512,7 +512,7 @@ export const EGG_BANK: readonly EggType[] = [
         .slice(0, 1)
         .map((g) => ({ clubId: g.clubId, playerId: g.playerId, slots: { player: nameOf(tale, g.playerId) } })),
     note: "Gol de {player}, xará de técnico.",
-    texts: [{ headline: "Gol do xará: {player} marca", body: "{score}. O garoto que veio da peneira com nome de técnico deixou o dele." }],
+    texts: [{ headline: "Gol do xará: {player} marca", body: "{score}. Veio da peneira com nome de técnico e agora tem gol no currículo." }],
   },
   // Germany led Brazil 5–0 at half-time on their way to the 7–1 (https://pt.wikipedia.org/wiki/Brasil_1–7_Alemanha).
   {
@@ -624,7 +624,7 @@ export const EGG_BANK: readonly EggType[] = [
       if (!kid || !scene.coach.name || scene.random() >= NAMESAKE_CHANCE) return null;
       return { clubId: scene.clubId, playerId: kid, slots: { player: scene.coach.name }, rename: [{ prospectId: kid, name: scene.coach.name }] };
     },
-    texts: [{ headline: "Peneira do {club} revela um xará do técnico", body: "O garoto se chama {player}, tem 16 anos e jura que o nome é coincidência. O pai dele não confirma nem desmente." }],
+    texts: [{ headline: "Peneira do {club} revela xará de {coach}", body: "A revelação da peneira se chama {player}, tem 16 anos e jura que o nome é coincidência. A família não confirma nem desmente." }],
   },
   {
     id: "cousins",
