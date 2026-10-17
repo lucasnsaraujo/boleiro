@@ -1,5 +1,6 @@
 import type { Formation } from "@boleiro/engine/engine/formations";
 import { advanceDay, type DayDecisions, type DayEvent, type DayResult, type WaitingDecisions } from "@boleiro/engine/sim/advanceDay";
+import { fireAssistant, hireAssistant, type AssistantRefusal } from "@boleiro/engine/sim/coach/assistant";
 import { withAssistantDuty, type AssistantDuty } from "@boleiro/engine/sim/coach/assistantDuties";
 import { declineOffer } from "@boleiro/engine/sim/coach/declineOffer";
 import { withCoachWorld } from "@boleiro/engine/sim/coach/aiCoaches";
@@ -22,7 +23,7 @@ import { answerBid, type BidAnswer, type BidOutcome } from "@boleiro/engine/sim/
 import { declineCounter } from "@boleiro/engine/sim/transfers/coachMarket";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { listPlayer, type SaleWay } from "@boleiro/engine/sim/transfers/listPlayer";
-import { setTicketPrice } from "@boleiro/engine/sim/finances/setTicketPrice";
+import { setTicketPrice, withAssistantPricing } from "@boleiro/engine/sim/finances/setTicketPrice";
 import { repayBankLoan, takeBankLoan, type BankLoanAnswer } from "@boleiro/engine/sim/finances/bankLoan";
 import { bookFriendly, type FriendlyAnswer } from "@boleiro/engine/sim/friendlies/friendlies";
 import { requestStadiumWorks, type WorksAnswer } from "@boleiro/engine/sim/stadium/stadiumWorks";
@@ -35,6 +36,7 @@ import { boardNotes, dueRequests, EMPTY_DESK, withoutLeavers, withRequest, type 
 import type { MarketFilters } from "../market/marketFilters.js";
 import { EMPTY_SCOUTING, forgetFilter, keepFilter, watch, type Scouting } from "../market/scouting.js";
 import { isSigning, marketClockView, spendMarketTime, type MarketClock, type MarketClockView } from "../market/marketClock.js";
+import { assistantPage, type AssistantPage } from "../assistant/assistantPage.js";
 import { awardsBook, type AwardsBook } from "../awards/awardsBook.js";
 import { chemistryPage, type ChemistryPage } from "../chemistry/chemistryPage.js";
 import { coachesPage, coachProfile, type CoachesPage, type CoachProfile } from "../coaches/coachesPage.js";
@@ -110,8 +112,12 @@ type CommandFields = {
   answerEvent: { choice: number | null };
   /** From now on the assistant answers the events of `area` for the coach in the seat (`isHanded`), or stops doing it. */
   handToAssistant: { area: EventArea; isHanded: boolean };
-  /** The assistant runs `duty` for the coach in the seat from now on (`isOn`), or stops doing it. */
+  /** The assistant runs `duty` for the coach in the seat from now on (`isOn`), or stops doing it; handed back the ticket price, he sets his own at once. */
   setAssistantDuty: { duty: AssistantDuty; isOn: boolean };
+  /** The coach in the seat hires one of the assistant's screen's candidates in place of his assistant; his board answers at once. */
+  hireAssistant: { candidateId: string };
+  /** The coach in the seat lets his hired assistant go; his club's own takes over. */
+  fireAssistant: Record<never, never>;
   /** The coach in the seat hands the armband to one of his players. */
   nameCaptain: { playerId: string };
   /** The coach in the seat puts a player on his watch list (`isWatched`) or takes him off it. */
@@ -169,6 +175,8 @@ export type CommandResults = {
   answerEvent: EventAnswered;
   handToAssistant: undefined;
   setAssistantDuty: undefined;
+  hireAssistant: { refusal: AssistantRefusal | null };
+  fireAssistant: undefined;
   nameCaptain: undefined;
   watchPlayer: Scouting;
   saveFilter: Scouting;
@@ -630,7 +638,15 @@ export function createEngineSession(files: GameFiles) {
     },
     setAssistantDuty({ duty, isOn }) {
       const game = betweenDays("the assistant's duties can't change");
-      state = { ...game, coach: withAssistantDuty(game.coach, duty, isOn) };
+      state = duty === "ticketPrice" ? withAssistantPricing(game, isOn) : { ...game, coach: withAssistantDuty(game.coach, duty, isOn) };
+    },
+    hireAssistant({ candidateId }) {
+      const hired = hireAssistant(betweenDays("an assistant can't be hired"), candidateId);
+      state = hired.state;
+      return { refusal: hired.refusal };
+    },
+    fireAssistant() {
+      state = fireAssistant(betweenDays("the assistant can't be let go"));
     },
     nameCaptain({ playerId }) {
       const game = betweenDays("a captain can't be named");
@@ -692,6 +708,10 @@ export function createEngineSession(files: GameFiles) {
     /** A coach's page by his ranking key, or by a club's id for its AI coach; null when nobody has it. */
     coachProfile(key: string): CoachProfile | null {
       return coachProfile(current(), key);
+    },
+    /** The assistant's screen of the coach in the seat. */
+    assistant(): AssistantPage {
+      return assistantPage(current());
     },
     /** The chemistry screen of the seated coach's club; null without a club. */
     chemistry(): ChemistryPage | null {
