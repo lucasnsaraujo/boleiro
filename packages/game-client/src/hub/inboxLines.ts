@@ -12,6 +12,7 @@ import { formatDayMonth, monthName } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
 import { boardGoal } from "../screens/clubChoices.js";
 import { copinhaRoundName } from "../format/copinhaRoundName.js";
+import { SLOT_NAMES } from "../sponsors/sponsorsPage.js";
 
 export type DayEvent = AdvanceResult["events"][number];
 export type InboxTone = "good" | "bad" | "neutral";
@@ -237,6 +238,15 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         return !event.asksCoach && isOurs(event.clubId) ? [event.headline, "neutral"] : null;
       case "eventAnswered":
         return isOurs(event.clubId) ? [event.byAssistant ? `${event.topic}: o auxiliar respondeu “${event.answer.replace(/^“|”$/g, "")}”` : event.headline, "neutral"] : null;
+      case "sponsorOffers":
+        return isOurs(event.clubId) ? [`${plural(event.count, "proposta", "propostas")} de patrocínio na mesa`, "neutral"] : null;
+      case "sponsorSigned": {
+        if (!isOurs(event.clubId)) return null;
+        const who = event.byBoard ? "Diretoria fecha com" : "Fechado com";
+        return [`${who} ${event.brandName} (${SLOT_NAMES[event.slot].toLowerCase()}): ${formatMoney(event.yearly)} por ano, ${plural(event.years, "temporada", "temporadas")}`, "good"];
+      }
+      case "sponsorBonusPaid":
+        return isOurs(event.clubId) ? [`${event.brandName} paga bônus por ${event.reason === "title" ? "título" : "vaga continental"}: ${formatMoney(event.amount)}`, "good"] : null;
       case "requestDecided": {
         // The counter-offer's own line says what the club asks.
         if (event.reason === "counterOffer") return null;
