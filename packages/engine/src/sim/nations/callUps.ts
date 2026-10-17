@@ -110,11 +110,11 @@ export function splitRefs(refs: readonly string[]): { playerIds: string[]; outsi
   return { playerIds, outsiders };
 }
 
-/** A team's called-up players as the match engine fields them: its best eleven. */
-export function nationalSide(nations: Nations, teamId: string, players: Readonly<Record<string, SimPlayer>>): { team: Team; fielded: SimPlayer[] } {
+/** A team's called-up players as the match engine fields them on `date`: its best fit eleven. */
+export function nationalSide(nations: Nations, teamId: string, players: Readonly<Record<string, SimPlayer>>, date: IsoDate): { team: Team; fielded: SimPlayer[] } {
   const callUp = nations.callUps[teamId];
   const outsiders = nations.outsiders[teamId];
-  const own = (callUp?.playerIds ?? []).flatMap((id) => (players[id] ? [players[id]] : []));
+  const own = (callUp?.playerIds ?? []).flatMap((id) => (players[id] && !isInjured(players[id], date) ? [players[id]] : []));
   const others: Player[] = (callUp?.outsiders ?? []).flatMap((row) => {
     const name = outsiders?.names[row];
     if (name === undefined) return [];

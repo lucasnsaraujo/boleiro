@@ -182,8 +182,8 @@ function stillIn(competition: NationalCompetition, matches: readonly NationalMat
 
 /** A match drawn result-only from both sides' best elevens; a knockout match level after ninety minutes goes to extra time and an even shootout. */
 function playMatch(nations: Nations, match: NationalMatch, players: Readonly<Record<string, SimPlayer>>, random: () => number) {
-  const home = nationalSide(nations, match.homeId, players);
-  const away = nationalSide(nations, match.awayId, players);
+  const home = nationalSide(nations, match.homeId, players, match.date);
+  const away = nationalSide(nations, match.awayId, players, match.date);
   const params = match.isNeutral ? NEUTRAL : CALIBRATED;
   const ninety = simulateMatch(home.team, away.team, random, params);
   let result: NationalResult = { home: ninety.homeGoals, away: ninety.awayGoals };
@@ -270,7 +270,9 @@ export function nationsDay(state: GameState, today: IsoDate): { state: GameState
       const injuries = drawMatchInjuries(fielded, { date: today, pitch: "natural" }, random.next, (id) => keyedStream(state.seed ^ INJURY_STREAM_SALT, `${match.id}:${id}`));
       for (const player of fielded) {
         const injury = injuries.get(player.id);
-        const fitOn = injury ? addDays(today, injury.days) : player.condition.injuredUntil;
+        const hurtUntil = injury ? addDays(today, injury.days) : undefined;
+        const lastInjury = player.condition.injuredUntil;
+        const fitOn = hurtUntil && (!lastInjury || hurtUntil > lastInjury) ? hurtUntil : lastInjury;
         if (injury && fitOn) events.push({ type: "playerInjured", playerId: player.id, clubId: player.clubId, days: injury.days, fitOn, kind: injury.kind });
         changed.set(player.id, { ...player, condition: { ...player.condition, fatigue: fatigueOn(player, today) + MATCH_LOAD, fatigueOn: today, injuredUntil: fitOn, ...(injury ? { injury: injury.kind } : {}) } });
       }

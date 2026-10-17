@@ -5,7 +5,7 @@ import type { GameState } from "../gameState.js";
 import { startMatchDay } from "../live/startMatchDay.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { isInjured } from "../players/isInjured.js";
-import { CALL_UP_PLACES, CALL_UP_SIZE, OUTSIDER_MARK } from "./callUps.js";
+import { CALL_UP_PLACES, CALL_UP_SIZE, OUTSIDER_MARK, nationalSide } from "./callUps.js";
 import { onDutyOn } from "./nationsDay.js";
 
 const football = loadNationalFootball();
@@ -113,8 +113,21 @@ describe("national football over 2026", () => {
   });
 
   it("gives the game's players on national duty the club injury model's injuries", () => {
-    const onDutyInjuries = events.filter((e) => e.type === "playerInjured" && e.on !== undefined && (start.nations?.matches.some((m) => m.date === e.on) ?? false));
+    const clubPlays = (clubId: string, date: string) => afterWorldCup.fixtures.some((f) => f.date === date && (f.homeId === clubId || f.awayId === clubId));
+    const onDutyInjuries = events.filter((e) => e.type === "playerInjured" && e.on !== undefined && (afterWorldCup.nations?.matches.some((m) => m.date === e.on) ?? false) && !clubPlays(e.clubId, e.on));
     expect(onDutyInjuries.length).toBeGreaterThan(0);
+  });
+
+  it("leaves a hurt player out of his national team's eleven", () => {
+    const brazil = march.nations?.callUps.brazil;
+    const fielded = march.nations ? nationalSide(march.nations, "brazil", march.players, "2026-03-27").fielded : [];
+    const star = fielded[0];
+    expect(star).toBeDefined();
+    if (!star || !march.nations || !brazil) return;
+    const hurt = { ...march.players, [star.id]: { ...star, condition: { ...star.condition, injuredUntil: "2026-08-30" } } };
+    const side = nationalSide(march.nations, "brazil", hurt, "2026-03-27");
+    expect(side.fielded.map((p) => p.id)).not.toContain(star.id);
+    expect(side.team.players).toHaveLength(11);
   });
 
   it("plays the World Cup on its real days to a champion on 19 July and sends the knocked-out home before it", () => {
