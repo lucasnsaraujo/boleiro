@@ -141,6 +141,16 @@ describe("free agents", () => {
     expect(costs(state).signingFees).toBeGreaterThan(costs(before).signingFees);
     expect(costs(state).agentFees).toBeGreaterThan(costs(before).agentFees);
   });
+
+  it("sign with the window closed, when a player under contract can't", () => {
+    const free = serieBStandout(windowEve);
+    const players = { ...windowEve.players };
+    Reflect.deleteProperty(players, free.id);
+    const closed = rich({ ...windowEve, date: "2026-04-10", players, market: { ...windowEve.market, freeAgents: { ...windowEve.market.freeAgents, [free.id]: free } } });
+    expect(ask(closed, { kind: "sign", playerId: free.id }).decision).toMatchObject({ approved: true });
+    const contracted = rich({ ...windowEve, date: "2026-04-10" });
+    expect(ask(contracted, { kind: "sign", playerId: serieBStandout(contracted).id }).decision).toMatchObject({ approved: false, reason: "windowClosed" });
+  });
 });
 
 describe("loans", () => {

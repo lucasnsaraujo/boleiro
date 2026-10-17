@@ -93,6 +93,9 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
       const free = !state.players[player.id];
       const preContract = !free && isInPreContractWindow(player, state.date);
+      // A free agent signs any day: FIFA RSTP art. 6(1), which CBF's registration rules follow, lets a player
+      // whose contract expired before a window closed register outside one (https://www.football-legal.com/content/players-registration-out-of-the-transfer-windows-its-exception-and-a-possible-fraud-to-the-rules).
+      // guess: every free agent counts, released or expired, whenever it happened. A pre-contract only takes effect when his contract ends.
       if (!free && !preContract && !isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       if (!free && !preContract && view.squad(player.clubId).length <= MIN_SQUAD) return refuse(state, request, "sellerWillNotSell");
       let fee = 0;
