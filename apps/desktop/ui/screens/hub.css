@@ -449,13 +449,22 @@
 }
 
 /* The paper: the inbox on a slip pinned over the player's sticker, the dock left free under it. */
+/* The card's place under the play button; the paper pins over it and no higher. */
+.hub-desk {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .hub-paper {
   position: absolute;
   left: 6px;
   right: 6px;
-  bottom: 64px;
+  bottom: 0;
   z-index: 3;
-  max-height: 340px;
+  max-height: 100%;
   overflow: auto;
   padding: 16px 16px 12px;
   transform: rotate(-0.6deg);

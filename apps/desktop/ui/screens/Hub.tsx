@@ -210,28 +210,33 @@ export function Hub() {
         )}
         {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
 
-        {club && loaded.event && selectedId === null ? (
-          <EventNote key={`${loaded.event.typeId}:${loaded.event.date}`} event={loaded.event} today={state.date} onOpen={() => loaded.event && openEventPopUp(loaded.event)} />
-        ) : club && shown ? (
-          <PlayerSticker key={shown.id} state={state} row={shown} club={club} />
-        ) : (
-          <div className="slot hub-card-empty" />
-        )}
-        {club && openEvent && (
-          <EventPopUp
-            event={openEvent}
-            club={club}
-            rival={openEvent.rivalId ? (state.clubs[openEvent.rivalId] ?? null) : null}
-            player={openEvent.playerId ? (state.players[openEvent.playerId] ?? null) : null}
-            today={state.date}
-            standing={standing ? `${club.shortName} · ${standing.position}º lugar · ${standing.points} pts` : null}
-            isBusy={isAnswering}
-            hasFailed={hasAnswerFailed}
-            answered={answered}
-            onAnswer={(choice) => void answer(choice)}
-            onClose={closeEvent}
-          />
-        )}
+        {/* The paper pins over the card, never over the play button above it. */}
+        <div className="hub-desk">
+          {club && loaded.event && selectedId === null ? (
+            <EventNote key={`${loaded.event.typeId}:${loaded.event.date}`} event={loaded.event} today={state.date} onOpen={() => loaded.event && openEventPopUp(loaded.event)} />
+          ) : club && shown ? (
+            <PlayerSticker key={shown.id} state={state} row={shown} club={club} />
+          ) : (
+            <div className="slot hub-card-empty" />
+          )}
+          {club && openEvent && (
+            <EventPopUp
+              event={openEvent}
+              club={club}
+              rival={openEvent.rivalId ? (state.clubs[openEvent.rivalId] ?? null) : null}
+              player={openEvent.playerId ? (state.players[openEvent.playerId] ?? null) : null}
+              today={state.date}
+              standing={standing ? `${club.shortName} · ${standing.position}º lugar · ${standing.points} pts` : null}
+              isBusy={isAnswering}
+              hasFailed={hasAnswerFailed}
+              answered={answered}
+              onAnswer={(choice) => void answer(choice)}
+              onClose={closeEvent}
+            />
+          )}
+
+          {isPaperOpen && <Paper news={news} onClose={() => setPaperOpen(false)} />}
+        </div>
 
         <nav className="hub-dock" aria-label="Clube">
           {club ? (
@@ -287,7 +292,6 @@ export function Hub() {
             <span>elenco</span>
           </span>
         </nav>
-        {isPaperOpen && <Paper news={news} onClose={() => setPaperOpen(false)} />}
       </div>
 
       <section className="page hub-squad" aria-label="Elenco">
