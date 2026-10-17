@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { advanceDay } from "../advanceDay.js";
 import type { Competition, Fixture, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { loadGame, saveGame } from "../saveGame.js";
 import { applyLiveChange } from "./applyLiveChange.js";
 import { finishMatchDay } from "./finishMatchDay.js";
 import type { LiveMatch } from "./liveDay.js";
@@ -139,6 +140,16 @@ function asSecondLegDay(state: GameState): GameState {
   const asTie = new Map(today.map((f, tie): [string, Fixture] => [f.id, { ...f, competitionId: "recopa-ko", stage: 0, tie }]));
   return { ...state, competitions: { ...state.competitions, "recopa-ko": competition }, fixtures: [...firstLegs, ...state.fixtures.map((f) => asTie.get(f.id) ?? f)] };
 }
+
+describe("a save with extra time in it", () => {
+  it("loads a day that went to extra time exactly, and plays on from it as the original does", () => {
+    const after = finishMatchDay(withExtraTime).state;
+    expect(after.fixtures.some((f) => f.result?.isAfterExtraTime)).toBe(true);
+    const loaded = loadGame(saveGame(after));
+    expect(loaded).toStrictEqual(after);
+    expect(advanceDay(loaded, {})).toEqual(advanceDay(after, {}));
+  });
+});
 
 describe("extra time in a two-legged tie", () => {
   it("is played when the aggregate is level after the second leg's ninety minutes, whatever that leg's own score", () => {
