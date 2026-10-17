@@ -96,7 +96,7 @@ function emptyPlaceValue(state: GameState, clubId: string, slot: SponsorSlot): n
 
 /**
  * The offers for `places` a club draws today, from the pool's brands that fit it and are not already on its
- * kit. A brand bids around what the place pays now (a betting house's deal without its premium), so the
+ * kit or bidding for it. A brand bids around what the place pays now (a betting house's deal without its premium), so the
  * board's choice moves the sponsorship only by what a better deal is worth.
  */
 function drawOffers(state: GameState, clubId: string, places: readonly Place[], decideBy: IsoDate, premium = 1): SponsorOffer[] {
@@ -105,7 +105,8 @@ function drawOffers(state: GameState, clubId: string, places: readonly Place[], 
   if (!finance || !pool.length) return [];
   const random = sponsorStream(state.seed, `offers:${clubId}:${state.date}`);
   const size = clubSizeOf(finance.sponsorship);
-  const taken = new Set(sponsorsOf(state, clubId).contracts.map((c) => c.brandId));
+  const { contracts, offers: offered } = sponsorsOf(state, clubId);
+  const taken = new Set([...contracts, ...offered].map((deal) => deal.brandId));
   return places.flatMap(({ slot, replaces }) => {
     const placeValue = replaces ? replaces.yearly : emptyPlaceValue(state, clubId, slot);
     const going = replaces?.isBetting ? placeValue / BETTING_PREMIUM : placeValue;

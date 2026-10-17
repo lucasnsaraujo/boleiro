@@ -170,6 +170,17 @@ describe("the sponsors' day", () => {
     expect(own(day.state).offers.some((o) => o.slot === "master")).toBe(true);
   });
 
+  it("never brings the same brand twice when a club gets offers twice on one day", () => {
+    const start = game();
+    const contracts = own(start).contracts.map((c) => (c.slot === "master" ? { ...c, untilSeason: start.season } : c));
+    const club = { ...start, sponsors: { ...start.sponsors, [COACH]: { ...own(start), contracts } } };
+    // The coach takes the club on 1 October: offers for its empty places, then for its deal in its last season.
+    const day = runSponsorDay({ ...club, coachClubId: null, date: `${start.season}-09-30` }, { ...club, date: `${start.season}-10-01` });
+    const brands = own(day.state).offers.map((o) => o.brandId);
+    expect(own(day.state).offers.some((o) => o.slot === "master")).toBe(true);
+    expect(brands).toEqual([...new Set(brands)]);
+  });
+
   it("renews or replaces every ended deal at the season's turn at the same value, a betting house by another", () => {
     const start = game();
     const ended = Object.fromEntries(Object.entries(start.sponsors ?? {}).map(([id, s]) => [id, { ...s, contracts: s.contracts.map((c) => ({ ...c, untilSeason: start.season })) }]));
