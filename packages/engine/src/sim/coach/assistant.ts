@@ -38,12 +38,16 @@ export type AssistantCandidate = Assistant & { years: number };
 export type AssistantRefusal = "noClub" | "unknown" | "wageCap";
 
 /**
- * The wage a stranger of each level asks, as a share of the head coach's salary (coachSalary). One
- * published case: Flamengo's head coach on R$ 300k a month (Exame, 2025-11-30,
+ * The wage a stranger of each level asks, as a share of the in-game head coach's salary (coachSalary,
+ * a share of the squad's wages), not of any real salary. The real case only sets the ratio: Flamengo's
+ * head coach on R$ 300k a month (Exame, 2025-11-30,
  * https://exame.com/esporte/qual-o-salario-do-filipe-luis-tecnico-campeao-da-libertadores/) and his
  * staff of four assistants costing about R$ 800k with him (Terra Brasil Notícias, 2024-11,
  * https://terrabrasilnoticias.com/2024/11/voce-nao-vai-acreditar-no-salario-de-filipe-luis-como-tecnico-do-flamengo/),
- * about 40% of his salary each. guess: a top lead assistant earns that, a modest one far less.
+ * about R$ 125k each, 40% of his salary. Applied to the game's coach salary (about R$ 2.1M at
+ * Flamengo), a level-5 assistant there asks about R$ 840k: in step with the game's wage scale, about
+ * seven times the real figure as the game's coach salary is. guess: a top lead assistant earns that
+ * share, a modest one far less.
  */
 const WAGE_SHARE: Record<AssistantLevel, number> = { 1: 0, 2: 0.1, 3: 0.18, 4: 0.28, 5: 0.4 };
 // guess: a former player of the coach's asks for this share of a stranger's wage at his level: he wants the job.
