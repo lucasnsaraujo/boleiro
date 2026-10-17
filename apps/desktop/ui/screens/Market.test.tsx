@@ -169,3 +169,26 @@ test("a search saved under a name comes back from the saved searches", async () 
   const positions = within(screen.getByRole("table", { name: "Jogadores" })).getAllByRole("cell", { name: /^(GOL|DEF|MEI|ATA)$/ }).map((cell) => cell.textContent);
   expect(new Set(positions)).toEqual(new Set(["GOL"]));
 });
+
+test("the offer's contract length sets the wage he asks for it, and both go with the request", async () => {
+  const { engine } = await openMarket();
+  const name = await pickPricedPlayer();
+  const chosen = screen.getByRole("region", { name });
+  const lengths = within(chosen).getByRole("radiogroup", { name: "Tempo de contrato" });
+  const two = within(lengths).getByRole("radio", { name: /^2 anos: / });
+  await userEvent.click(two);
+  expect(two.getAttribute("aria-checked")).toBe("true");
+  const asked = /^2 anos: (R\$ [^ ]+(?: mi| mil)?) por mês/.exec(two.getAttribute("aria-label") ?? "")?.[1];
+  expect(within(chosen).getByRole("group", { name: "Salário" }).querySelector("output")?.textContent).toBe(asked);
+  await userEvent.click(within(chosen).getByRole("button", { name: "Comprar" }));
+  expect((await engine.desk()).pending).toMatchObject([{ kind: "sign", years: 2 }]);
+});
+
+test("a contract length he won't talk about can't be offered", async () => {
+  await openMarket();
+  const name = await pickPricedPlayer();
+  const lengths = within(screen.getByRole("region", { name })).getByRole("radiogroup", { name: "Tempo de contrato" });
+  for (const option of within(lengths).getAllByRole("radio")) {
+    if (option.getAttribute("aria-label")?.endsWith("Recusa")) expect(option).toHaveProperty("disabled", true);
+  }
+});
