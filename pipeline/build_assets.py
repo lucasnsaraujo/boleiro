@@ -13,9 +13,11 @@ app reads, and in the 64 and 128 px boxes only: these clubs appear in results, t
 never large, and Transfermarkt's crests are 181 px tall at most. That keeps the v1 world's images
 within SPEC §4.3's ~25 MB. They need the scrape's page cache (data/tm_cache) on disk.
 
-The sponsors' logos go to `sponsors/assets.json`, with their files under `sponsors/assets/logo/`: WebP
-only, in the 128 and 256 px boxes. A logo is wide, so its 128 px box is about 32 px tall, the smallest the
-game shows one at twice the pixels (the odds sticker's), and the 256 px box covers the master on the shirt.
+The sponsors' logos go to `sponsors/assets.json`, with their files under `sponsors/assets/logo/` (and
+`badge/`): WebP only, the format the app reads, in the 64, 128 and 256 px boxes; the 256 px box covers the
+master on the shirt. A logo is flat colour, so a 64-colour palette stored losslessly keeps it as it is at
+about a third of a lossy file; one the palette would change (a gradient, a photo) is stored lossy. A box a
+logo is too small to fill is left out, as its file would repeat the box below.
 
 Usage: .venv/bin/python pipeline/build_assets.py pipeline/boleiro.db packages/data/pack [snapshot id]
 """
@@ -27,7 +29,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageChops, ImageStat
 
 from build_pack import latest_snapshot
 from build_world_packs import latest_world_snapshot
@@ -42,7 +44,11 @@ FORMATS = {"webp": ("WEBP", {"quality": 80, "method": 6}), "avif": ("AVIF", {"qu
 WORLD_FORMATS = ("webp",)
 WORLD_BOXES = (64, 128)
 LOGO_FORMATS = ("webp",)
-LOGO_BOXES = (128, 256)
+LOGO_BOXES = BOXES
+LOGO_COLOURS = 64
+# guess: a palette that moves a pixel by under 2 of 255 on average looks the same; the worst logos it
+# would change (gradients) move by 12 to 41.
+PALETTE_TOLERANCE = 2.0
 CLUB_KEYS = {"crest": "crest", "scoreboard_crest": "scoreboardCrest"}
 
 
@@ -59,6 +65,14 @@ def encoded(image: Image.Image, format_name: str, options: dict[str, int]) -> by
     return buffer.getvalue()
 
 
+def logo_encoded(image: Image.Image, format_name: str, options: dict[str, int]) -> bytes:
+    """A logo in a 64-colour palette, stored losslessly, when the palette keeps its look; else as any image."""
+    palette = image.quantize(colors=LOGO_COLOURS, method=Image.Quantize.FASTOCTREE).convert("RGBA")
+    if sum(ImageStat.Stat(ImageChops.difference(image, palette)).mean) / 4 > PALETTE_TOLERANCE:
+        return encoded(image, format_name, options)
+    return encoded(palette, format_name, {"lossless": True, "quality": 100, "method": 6})
+
+
 def import_rows(db: sqlite3.Connection, snapshot: int) -> list[sqlite3.Row]:
     return db.execute("SELECT * FROM images WHERE snapshot_id = ? AND entity = 'club' ORDER BY entity, entity_id, kind", (snapshot,)).fetchall()
 
@@ -73,7 +87,9 @@ def world_crest_rows(db: sqlite3.Connection, snapshot: int, imported_clubs: set[
     return [row for row in rows if row["entity_id"] not in imported_clubs]
 
 
-def build(rows: list[sqlite3.Row], out: Path, formats: tuple[str, ...], boxes: tuple[int, ...] = BOXES) -> dict[str, object]:
+def build(rows: list[sqlite3.Row], out: Path, formats: tuple[str, ...], boxes: tuple[int, ...] = BOXES, are_logos: bool = False) -> dict[str, object]:
+    """The images of `rows` in every box and format; logos in a palette where it keeps them and without repeated boxes."""
+    encode = logo_encoded if are_logos else encoded
     images: dict[str, dict[str, object]] = {}
     clubs: dict[str, dict[str, str]] = {}
     brands: dict[str, dict[str, str]] = {}
@@ -87,14 +103,16 @@ def build(rows: list[sqlite3.Row], out: Path, formats: tuple[str, ...], boxes: t
         if key in images:
             continue
         source = Image.open(ROOT / row["path"]).convert("RGBA")
-        images[key] = {"kind": row["kind"], "width": row["width"], "height": row["height"], "boxes": list(boxes), "formats": list(formats)}
-        for box in boxes:
+        # Never upscaled, a box past a logo's own size would repeat the one below it.
+        kept = [box for i, box in enumerate(boxes) if not are_logos or i == 0 or fitted(source, boxes[i - 1]).size != fitted(source, box).size]
+        images[key] = {"kind": row["kind"], "width": row["width"], "height": row["height"], "boxes": kept, "formats": list(formats)}
+        for box in kept:
             variant = fitted(source, box)
             for extension in formats:
                 format_name, options = FORMATS[extension]
                 path = out / "assets" / f"{key}-{box}.{extension}"
                 path.parent.mkdir(parents=True, exist_ok=True)
-                data = encoded(variant, format_name, options)
+                data = encode(variant, format_name, options)
                 if not path.exists() or path.read_bytes() != data:
                     path.write_bytes(data)
                 written.add(path)
@@ -120,7 +138,7 @@ def main() -> None:
         snapshot = int(sys.argv[3]) if len(sys.argv) > 3 else latest_snapshot(db)
         manifest = build(import_rows(db, snapshot), out, tuple(FORMATS))
         write(manifest, out)
-        write(build(logo_rows(db, snapshot), out / "sponsors", LOGO_FORMATS, LOGO_BOXES), out / "sponsors")
+        write(build(logo_rows(db, snapshot), out / "sponsors", LOGO_FORMATS, LOGO_BOXES, are_logos=True), out / "sponsors")
         if db.execute("SELECT 1 FROM snapshots WHERE kind = 'transfermarkt'").fetchone():
             world = world_crest_rows(db, latest_world_snapshot(db), {club for club, uses in manifest["clubs"].items() if "crest" in uses})
             write(build(world, out / "world", WORLD_FORMATS, WORLD_BOXES), out / "world")

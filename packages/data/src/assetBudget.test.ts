@@ -16,21 +16,24 @@ const IMAGE_BUDGETS: Record<string, { largestFile: number; total: number }> = {
   // today 30,508 and 1,372,720 (40 ESPN logos)
   scoreboard_crest: { largestFile: 38_000, total: 1_700_000 },
 };
-// The sponsors' logos (pack/sponsors/), WebP in two boxes: marks on a clear ground and badges (opaque tiles).
+// The sponsors' logos (pack/sponsors/), WebP in three boxes, mostly in a lossless palette: marks on a clear
+// ground and badges (opaque tiles).
 const SPONSORS_PACK = join(PACK, "sponsors");
 const sponsorsManifest = parseAssetManifest(readFileSync(join(SPONSORS_PACK, "assets.json"), "utf8"));
 const LOGO_BUDGETS: Record<string, { largestFile: number; total: number }> = {
-  // today 18,732 and 2,114,206 (236 logos, 2 boxes)
-  logo: { largestFile: 24_000, total: 2_650_000 },
-  // today 18,284 and 384,104 (70 badges, 2 boxes)
-  badge: { largestFile: 24_000, total: 480_000 },
+  // today 12,242 and 1,029,458 (232 logos, 655 files)
+  logo: { largestFile: 15_500, total: 1_300_000 },
+  // today 17,486 and 250,870 (70 badges, 165 files)
+  badge: { largestFile: 22_000, total: 320_000 },
 };
 // Every image of the v1 world, Brazil's, the world scrape's (pack/world/) and the sponsors', against
-// SPEC §4.3's ~25 MB: today 18,050,650 bytes, 2,498,310 of them the sponsors' logos.
-const ALL_IMAGES_BUDGET = 20_000_000;
+// SPEC §4.3's ~25 MB: today 16,832,668 bytes, 1,280,328 of them the sponsors' logos. That is 832,668 over
+// the 16,000,000 held before the logos came, which they can't fit without dropping a box the screens show;
+// the cap is today's size and half a megabyte until the owner decides.
+const ALL_IMAGES_BUDGET = 17_330_000;
 const WORLD_PACK = join(PACK, "world");
 const worldManifest = parseAssetManifest(readFileSync(join(WORLD_PACK, "assets.json"), "utf8"));
-// today 60,278, 53,950, 24,707 and 45,520
+// today 68,366, 53,950, 23,353 and 45,538
 const FILE_BUDGETS: Record<string, number> = { [PACK_FILE]: 75_000, "assets.json": 67_000, [SPONSORS_PACK_FILE]: 31_000, "sponsors/assets.json": 57_000 };
 
 function filesOf(kind: string | null, of = manifest, root = PACK): string[] {
