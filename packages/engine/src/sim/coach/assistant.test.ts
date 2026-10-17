@@ -5,6 +5,7 @@ import { wageBillsOf } from "../transfers/wageBillsOf.js";
 import { scoutedStars } from "../youth/academy.js";
 import { coachSalary } from "./coachSalary.js";
 import { coachCareerDay } from "./coachCareerDay.js";
+import { swapSeat } from "./humanCoaches.js";
 import {
   assistantCandidates,
   assistantOf,
@@ -26,6 +27,11 @@ const withCash = (state: GameState, patch: { wageCap?: number; cash?: number }):
   const finance = state.finances[COACH];
   if (!finance) throw new Error("no finances for the coach's club");
   return { ...state, finances: { ...state.finances, [COACH]: { ...finance, ...patch } } };
+};
+// What each club books as wages on the first of February, the coach's and his assistant's salaries included.
+const februaryWages = (state: GameState): Record<string, number> => {
+  const paid = coachCareerDay({ ...state, date: "2026-02-01" }, [], undefined, () => 0.99).state;
+  return Object.fromEntries(Object.entries(paid.finances).map(([id, finance]) => [id, finance.month.costs.wages - (state.finances[id]?.month.costs.wages ?? 0)]));
 };
 const candidateAt = (state: GameState, level: AssistantLevel) => {
   const found = assistantCandidates(state).find((c) => c.level === level && !c.formerPlayer);
@@ -95,6 +101,22 @@ describe("the coach's assistant", () => {
     expect(fireAssistant(hired).coach).toEqual(start.coach);
   });
 
+  it("costs the club nothing once let go, and no club anything while the coach is out of work", () => {
+    const rich = withCash(start, { wageCap: 1e12 });
+    const hired = hireAssistant(rich, candidateAt(rich, 3).id).state;
+    expect(februaryWages(fireAssistant(hired))).toEqual(februaryWages(rich));
+    const sacked = (state: GameState): GameState => ({ ...state, coachClubId: null });
+    expect(februaryWages(sacked(hired))).toEqual(februaryWages(sacked(rich)));
+  });
+
+  it("is paid by a waiting hot-seat coach's club, as by the seated coach's", () => {
+    const twoCoaches = withCash(loadNewGame(4, { coachClubId: COACH, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "palmeiras-sp" }] } }), { wageCap: 1e12 });
+    const level3 = candidateAt(twoCoaches, 3);
+    const hired = hireAssistant(twoCoaches, level3.id).state;
+    const anaWaits = (state: GameState) => februaryWages(swapSeat(state, 0))[COACH] ?? 0;
+    expect(anaWaits(hired) - anaWaits(twoCoaches)).toBe(level3.wage);
+  });
+
   it("reads players off evenly, as often too high as too low", () => {
     const read = assistantReadOf(start, { id: "same-man", level: 1 });
     const players = Object.values(start.players);
@@ -142,7 +164,9 @@ describe("the assistant's read of the academy", () => {
     }, 0);
     const spreads = LEVELS.map(spread);
     for (let i = 1; i < spreads.length; i++) expect(spreads[i]).toBeLessThanOrEqual(spreads[i - 1] ?? 0);
-    expect(spreads[0]).toBe(spread(1));
+    const scouts = kids.reduce((sum, kid) => sum + scoutedStars(kid, start.season).high - scoutedStars(kid, start.season).low, 0);
+    expect(scouts).toBeGreaterThan(0);
+    expect(spreads[0]).toBe(scouts);
     expect(spreads[4]).toBe(0);
     expect(spreads[4]).toBeLessThan(spreads[0] ?? 0);
   });
@@ -167,6 +191,13 @@ describe("the hired assistant when the coach takes another job", () => {
     expect(assistantOf(state)).toMatchObject({ level: 5, wage: askedThere });
     expect(askedThere).toBeLessThan(assistantOf(hired).wage);
     expect(events.some((event) => event.type === "assistantLeft")).toBe(false);
+  });
+
+  it("is paid by the new club from then on, and no longer by the old one", () => {
+    const withHim = februaryWages(moved(withBoardCap(hired, 1e12)).state);
+    const without = februaryWages(moved(withBoardCap(fireAssistant(hired), 1e12)).state);
+    expect((withHim[serieC.id] ?? 0) - (without[serieC.id] ?? 0)).toBe(askedThere);
+    expect(withHim[COACH]).toBe(without[COACH]);
   });
 
   it("stays behind when the new club's board can't pay him, and the coach hears of it", () => {
