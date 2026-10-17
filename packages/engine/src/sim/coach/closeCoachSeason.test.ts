@@ -32,9 +32,16 @@ describe("the national ranking, the CBF's way", () => {
     expect(nationalPoints(filed, 2026, {})).toEqual({ a1: 800, a2: 640, a3: 600, a4: 560, a5: 552, a6: 544, d1: 100 });
   });
 
-  it("adds the Copa do Brasil: 600 to its champion, 480, 450, 200, 100, 50, 25 and 15 down the rounds", () => {
+  it("pays every league place from the 23rd down a flat 51% of the champion's points", () => {
+    const serieD = Array.from({ length: 30 }, (_, i) => `d${i + 1}`);
+    const points = nationalPoints({ ...history, seasons: [record({ A: serieD.map((id) => `a-${id}`), D: serieD })] }, 2026, {});
+    expect([points.d22, points.d23, points.d24, points.d30]).toEqual([52, 51, 51, 51]);
+    expect([points["a-d23"], points["a-d30"]]).toEqual([408, 408]);
+  });
+
+  it("adds the Copa do Brasil: 600 to its champion, 480 to the runner-up, 450, 400, 200, 100, 50 and 25 down the rounds", () => {
     const copa: CupRun = { championId: "c0", fromFinal: { c0: 0, c1: 0, c2: 1, c3: 2, c4: 3, c5: 4, c6: 5, c7: 6, c8: 8 } };
-    expect(nationalPoints({ ...history, seasons: [] }, 2026, { "copa-do-brasil": copa })).toEqual({ c0: 600, c1: 480, c2: 450, c3: 200, c4: 100, c5: 50, c6: 25, c7: 15, c8: 15 });
+    expect(nationalPoints({ ...history, seasons: [] }, 2026, { "copa-do-brasil": copa })).toEqual({ c0: 600, c1: 480, c2: 450, c3: 400, c4: 200, c5: 100, c6: 50, c7: 25, c8: 25 });
   });
 });
 

@@ -33,22 +33,26 @@ export function seasonRuns(state: Pick<GameState, "competitions" | "fixtures">):
 /**
  * The CBF's national ranking convention (Ranking Nacional de Clubes): a league's champion gets its
  * division's points, Série A 800, B 400, C 200, D 100; the runner-up 80%, third 75%, fourth 70%, then a
- * point of percentage less for each place below. The Copa do Brasil gives 600 to its champion, 480 to the
- * runner-up, 450 to semi-finalists, 200 to quarter-finalists, 100 for the round of 16 and 50, 25, 15 for
- * the rounds before. Seasons weigh 5 (the latest) down to 1 (the fifth). Sources:
- * https://trivela.com.br/brasil/como-funciona-o-ranking-da-cbf/ and https://www.tupi.fm/?p=1934999.
+ * point of percentage less for each place below down to 51% at the 23rd, which every place below keeps.
+ * The Copa do Brasil, since 2021, gives 600 to its champion, 480 to the runner-up, 450 to semi-finalists,
+ * 400 to quarter-finalists, 200 for the round of 16 and 100, 50, 25 for the three phases before. Seasons
+ * weigh 5 (the latest) down to 1 (the fifth). Sources: https://pt.wikipedia.org/wiki/Ranking_da_CBF and
+ * https://trivela.com.br/brasil/como-funciona-o-ranking-da-cbf/. guess: the 2026 format's longer early
+ * rounds map from the final back, so its first three phases all get the 25 of the old first phase.
  */
 const DIVISION_POINTS: Record<Division, number> = { A: 800, B: 400, C: 200, D: 100 };
-const COPA_POINTS = [480, 450, 200, 100, 50, 25, 15] as const;
+const COPA_POINTS = [480, 450, 400, 200, 100, 50, 25] as const;
 const COPA_CHAMPION = 600;
 export const SEASON_WEIGHTS = [5, 4, 3, 2, 1] as const;
+
+const LOWEST_SHARE = 0.51;
 
 /** A league place's share of the champion's points, the CBF's way. */
 export function placeShare(position: number): number {
   if (position <= 1) return 1;
   if (position === 2) return 0.8;
   if (position === 3) return 0.75;
-  return Math.max(0, 0.7 - 0.01 * (position - 4));
+  return Math.max(LOWEST_SHARE, 0.7 - 0.01 * (position - 4));
 }
 
 function copaPoints(run: CupRun, clubId: string): number {
