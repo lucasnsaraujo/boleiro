@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { addDays } from "../dates.js";
 import type { ClubFinance, GameState, SimPlayer } from "../gameState.js";
 import { EMPTY_MEMORY } from "../events/eventMemory.js";
 import { loadNewGame } from "../loadNewGame.js";
-import { coachMarketOf, withCoachMarket } from "./coachMarket.js";
+import { coachMarketOf, withCoachMarket, withRenewalCounter } from "./coachMarket.js";
 import { assistantPick, contractEndAfter, lengthPremium, type ContractTerm } from "./contractTerms.js";
 import { decideCoachRequest as decideOnLiveState } from "./decideCoachRequest.js";
 import { openDraft } from "./movePlayer.js";
@@ -94,6 +95,15 @@ describe("a renewal the coach asks for", () => {
     const { state, events } = runTransferDay(morning, [{ kind: "renew", playerId: ours.id, years: 2 }]);
     expect(events).toContainEqual(expect.objectContaining({ type: "requestDecided", approved: true }));
     expect(state.players[ours.id]).toMatchObject({ clubId: COACH, contractUntil: "2028-12-31" });
+  });
+
+  it("signs his counter when the coach takes it up on the last day it stands", () => {
+    const veteran = withPlayer(rich, { age: 31 });
+    const hard = termOf(veteran, 12);
+    const counter = { months: 12, wage: hard.wage, until: veteran.date, contractUntil: ours.contractUntil };
+    const lastDay = withCoachMarket(veteran, withRenewalCounter(coachMarketOf(veteran), ours.id, counter));
+    const { events } = runTransferDay({ ...lastDay, date: addDays(veteran.date, 1) }, [{ kind: "renew", playerId: ours.id, years: 1, wage: hard.wage }]);
+    expect(events).toContainEqual(expect.objectContaining({ type: "requestDecided", approved: true }));
   });
 
   it("is refused outright when the wage offered is far below his ask", () => {

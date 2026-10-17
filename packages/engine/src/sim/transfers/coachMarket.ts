@@ -50,10 +50,13 @@ export function withRenewalCounter(coach: CoachMarket, playerId: string, counter
   return next;
 }
 
-/** The player's renewal counter that still stands today, if any: in time, and made against the contract he has. */
-export function standingRenewalCounter(state: Pick<GameState, "date" | "market" | "players">, playerId: string): RenewalCounter | null {
+/** The day the coach sent the requests his board answers on `date`: the day before, since answers come the next morning. */
+export const sentOn = (date: IsoDate): IsoDate => addDays(date, -1);
+
+/** The player's renewal counter that still stands on `day` (today by default), if any: in time, and made against the contract he has. */
+export function standingRenewalCounter(state: Pick<GameState, "date" | "market" | "players">, playerId: string, day: IsoDate = state.date): RenewalCounter | null {
   const counter = coachMarketOf(state).renewalCounters?.[playerId];
-  return counter && counter.until >= state.date && counter.contractUntil === state.players[playerId]?.contractUntil ? counter : null;
+  return counter && counter.until >= day && counter.contractUntil === state.players[playerId]?.contractUntil ? counter : null;
 }
 
 /** The coach turns down a selling club's counter to his offer; the rest of his business stays. */

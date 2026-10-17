@@ -3,7 +3,7 @@ import { addDays } from "../dates.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { sellerPrice } from "./askingPrice.js";
 import { boardRefusal } from "./boardRefusal.js";
-import { coachMarketOf, standingRenewalCounter, withCoachMarket, withRenewalCounter } from "./coachMarket.js";
+import { coachMarketOf, sentOn, standingRenewalCounter, withCoachMarket, withRenewalCounter } from "./coachMarket.js";
 import type { CoachRequest } from "./coachRequest.js";
 import { isClubFull } from "./squadCap.js";
 import type { Counter } from "./transferMarket.js";
@@ -44,10 +44,10 @@ function approve(state: GameState, request: CoachRequest, transfer: Transfer | n
   return { state: moved.state, events: [decided, moved.event, ...extra] };
 }
 
-/** What the selling club asks the coach in BRL: its counter while it stands, else its price by its need of the player. */
+/** What the selling club asks the coach in BRL: its counter if it stood the day he sent the offer, else its price by its need of the player. */
 function clubPrice(state: GameState, view: MarketView, player: SimPlayer): number {
   const standing = coachMarketOf(state).counters[player.id];
-  if (standing && standing.clubId === player.clubId && standing.until >= state.date) return standing.fee;
+  if (standing && standing.clubId === player.clubId && standing.until >= sentOn(state.date)) return standing.fee;
   return sellerPrice(player, view.squad(player.clubId), view.tier(player.clubId), state.date, state.market.eurBrl);
 }
 
@@ -183,8 +183,8 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       const term = renewalTermsOf(state, player, squad).terms.find((t) => t.months === months);
       if (!term || term.stance === "refuses") return refuse(state, request, "lengthRefused");
       const offered = request.wage !== undefined ? Math.max(1, Math.round(request.wage)) : term.wage;
-      // A counter of his that still stands signs at its wage; otherwise he gives a little off his ask on a length he likes.
-      const standing = standingRenewalCounter(state, player.id);
+      // A counter of his that stood the day the coach sent this signs at its wage; otherwise he gives a little off his ask on a length he likes.
+      const standing = standingRenewalCounter(state, player.id, sentOn(state.date));
       const isCounterMet = !!standing && standing.months === months && offered >= standing.wage;
       const floor = isCounterMet ? offered : Math.round(term.wage * (1 - RENEWAL_GIVE[term.stance]));
       if (offered < floor) {
