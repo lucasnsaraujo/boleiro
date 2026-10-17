@@ -1,4 +1,4 @@
-import type { Fixture, GameState, IsoDate } from "../gameState.js";
+import type { Fixture, GameState, IsoDate, SimPlayer } from "../gameState.js";
 import { competitionKey, NO_RECORDS, type ClubRecords, type CompetitionKey, type GoalsMark, type LeagueRecords, type RunMark, type ScorerMark } from "./history.js";
 import type { MatchSheets } from "./recordMatches.js";
 
@@ -50,6 +50,12 @@ export function recordFeats(state: GameState, before: GameState, played: readonl
   const leagues = { ...history.leagues };
   const events: RecordBroken[] = [];
   const seasonGoals = (playerId: string) => Object.values(history.current.goals).reduce((sum, own) => sum + (own[playerId] ?? 0), 0);
+  // A player who joined this season scored for the club no more than his goals there.
+  const seasonGoalsFor = (player: SimPlayer, clubId: string) => {
+    const goals = seasonGoals(player.id);
+    const hasJoinedThisSeason = player.condition.arrivedOn?.slice(0, 4) === String(state.season);
+    return hasJoinedThisSeason ? Math.min(goals, history.players[clubId]?.[player.id]?.goals ?? 0) : goals;
+  };
   const tell = (event: Omit<RecordBroken, "type">) => events.push({ type: "recordBroken", ...event });
 
   for (const fixture of played) {
@@ -92,7 +98,7 @@ export function recordFeats(state: GameState, before: GameState, played: readonl
           }
           youngestScorer = mark;
         }
-        const goals = seasonGoals(playerId);
+        const goals = seasonGoalsFor(player, clubId);
         if (!mostSeasonGoals || goals > mostSeasonGoals.goals) {
           const isOthers = mostSeasonGoals && (mostSeasonGoals.playerId !== playerId || mostSeasonGoals.season !== state.season);
           if (mostSeasonGoals && isOthers && goals >= NOTABLE_CLUB_GOALS) {

@@ -53,6 +53,14 @@ describe("a club's records", () => {
     expect(records?.youngestScorer).toMatchObject({ playerId: striker.id, age: 17, opponentId: AWAY });
     expect(records?.mostSeasonGoals).toMatchObject({ playerId: striker.id, goals: 2, season: start.season });
   });
+
+  it("count only the goals a player scored for it, not those for the club he left this season", () => {
+    const arrived = { ...striker, condition: { ...striker.condition, arrivedOn: start.date } };
+    const goals = { "serie-a": { [striker.id]: 10 } };
+    const from = { ...start, players: { ...start.players, [striker.id]: arrived }, history: { ...start.history, current: { ...start.history.current, goals } } };
+    const { state } = play([{ homeGoals: 1, awayGoals: 0, scorers: [striker.id] }], from);
+    expect(state.history.clubs[HOME]?.mostSeasonGoals).toMatchObject({ playerId: striker.id, goals: 1 });
+  });
 });
 
 describe("a league's records", () => {
