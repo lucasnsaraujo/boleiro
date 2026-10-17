@@ -238,6 +238,8 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         return isOurs(event.clubId) ? [`Obra pronta: ${event.seats.toLocaleString("pt-BR")} lugares novos, ${event.capacity.toLocaleString("pt-BR")} no total`, "good"] : null;
       case "coachHired":
         return [`${clubName(event.clubId)} anuncia você como técnico até ${event.untilSeason}`, "good"];
+      case "assistantLeft":
+        return [`${clubName(event.clubId)} não paga o salário de ${event.name}: seu auxiliar não vem com você`, "bad"];
       case "coachFired":
         if (!event.isYou) return null;
         return [`${clubName(event.clubId)} demite você: ${event.position}º lugar, a meta era ${event.targetPosition}º`, "bad"];

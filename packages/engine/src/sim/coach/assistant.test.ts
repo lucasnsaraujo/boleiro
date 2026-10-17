@@ -140,3 +140,32 @@ describe("the assistant's read of the academy", () => {
     expect(spreads[4]).toBeLessThan(spreads[0] ?? 0);
   });
 });
+
+describe("the hired assistant when the coach takes another job", () => {
+  const serieC = Object.values(start.clubs).find((club) => club.division === "C" && start.finances[club.id]);
+  if (!serieC) throw new Error("no Série C club");
+  const withBoardCap = (state: GameState, wageCap: number): GameState => {
+    const finance = state.finances[serieC.id];
+    if (!finance) throw new Error("no finances for the new club");
+    return { ...state, finances: { ...state.finances, [serieC.id]: { ...finance, wageCap } } };
+  };
+  const offered = (state: GameState): GameState => ({ ...state, coach: { ...state.coach, offers: [{ clubId: serieC.id, salary: 20_000, untilSeason: 2027, expiresOn: "2026-12-31" }] } });
+  const hired = hireAssistant(withCash(start, { wageCap: 1e12 }), candidateAt(start, 5).id).state;
+  const moved = (state: GameState) => coachCareerDay(offered(state), [], serieC.id, () => 0.99);
+  // What a level-5 stranger asks at the new club, for a coach who just arrived there.
+  const askedThere = candidateAt({ ...start, coachClubId: serieC.id }, 5).wage;
+
+  it("follows him for the wage the new club pays a man of his level, when its board can pay it", () => {
+    const { state, events } = moved(withBoardCap(hired, 1e12));
+    expect(assistantOf(state)).toMatchObject({ level: 5, wage: askedThere });
+    expect(askedThere).toBeLessThan(assistantOf(hired).wage);
+    expect(events.some((event) => event.type === "assistantLeft")).toBe(false);
+  });
+
+  it("stays behind when the new club's board can't pay him, and the coach hears of it", () => {
+    const { state, events } = moved(withBoardCap(hired, 0));
+    expect(state.coachClubId).toBe(serieC.id);
+    expect(assistantOf(state).level).toBe(1);
+    expect(events).toContainEqual({ type: "assistantLeft", clubId: serieC.id, name: assistantOf(hired).name });
+  });
+});

@@ -45,7 +45,7 @@ export type AssistantRefusal = "noClub" | "unknown" | "wageCap";
  * https://terrabrasilnoticias.com/2024/11/voce-nao-vai-acreditar-no-salario-de-filipe-luis-como-tecnico-do-flamengo/),
  * about 40% of his salary each. guess: a top lead assistant earns that, a modest one far less.
  */
-const WAGE_SHARE: Record<Exclude<AssistantLevel, 1>, number> = { 2: 0.1, 3: 0.18, 4: 0.28, 5: 0.4 };
+const WAGE_SHARE: Record<AssistantLevel, number> = { 1: 0, 2: 0.1, 3: 0.18, 4: 0.28, 5: 0.4 };
 // guess: a former player of the coach's asks for this share of a stranger's wage at his level: he wants the job.
 const FORMER_PLAYER_DISCOUNT = 0.6;
 // guess: a retired star (peak 80+, a Série A star) reads the game like the best assistants; a solid
@@ -103,7 +103,12 @@ export function assistantReadOf(state: Pick<GameState, "seed" | "season">, assis
   return (playerId, strength) => strength + error * (2 * unitHash(`${state.seed}:${assistant.id}:${state.season}:${playerId}`) - 1);
 }
 
-const strangerWage = (state: Pick<GameState, "players">, clubId: string, level: Exclude<AssistantLevel, 1>) => Math.round(WAGE_SHARE[level] * coachSalary(state, clubId));
+const strangerWage = (state: Pick<GameState, "players">, clubId: string, level: AssistantLevel) => Math.round(WAGE_SHARE[level] * coachSalary(state, clubId));
+
+/** The monthly wage a man of `level` asks at `clubId`: a stranger's, or less for a former player of the coach's. */
+function askingWage(state: Pick<GameState, "players">, clubId: string, level: AssistantLevel, isFormerPlayer: boolean): number {
+  return isFormerPlayer ? Math.round(FORMER_PLAYER_DISCOUNT * strangerWage(state, clubId, level)) : strangerWage(state, clubId, level);
+}
 
 function formerPlayerLevel(peak: number): AssistantLevel {
   return FORMER_PLAYER_LEVELS.find(([minPeak]) => peak >= minPeak)?.[1] ?? 3;
@@ -128,7 +133,7 @@ export function assistantCandidates(state: Pick<GameState, "seed" | "season" | "
     const id = `former:${former.playerId}`;
     const level = formerPlayerLevel(former.peak);
     if (level <= current.level || id === current.id || level === 1) return [];
-    const wage = Math.round(FORMER_PLAYER_DISCOUNT * strangerWage(state, clubId, level));
+    const wage = askingWage(state, clubId, level, true);
     const age = former.age + state.season - former.retiredSeason;
     return [{ id, name: former.name, age, level, wage, years: state.season - former.retiredSeason, formerPlayer: { group: former.group, peak: former.peak } }];
   });
@@ -147,6 +152,25 @@ export function hireAssistant(state: GameState, candidateId: string): { state: G
   const { id, name, age, level, wage, formerPlayer } = candidate;
   const assistant: Assistant = { id, name, age, level, wage, since: state.date, ...(formerPlayer ? { formerPlayer } : {}) };
   return { state: { ...state, coach: { ...state.coach, assistant } }, refusal: null };
+}
+
+/** The coach's hired assistant did not follow him to `clubId`, whose board could not pay him. */
+export type AssistantLeft = { type: "assistantLeft"; clubId: string; name: string };
+
+/**
+ * The coach in the seat, just hired by his club, takes his hired assistant along for the wage the new
+ * club pays a man of his level, if its board can pay it; if not the assistant stays behind.
+ */
+export function assistantFollows(state: GameState): { state: GameState; event: AssistantLeft | null } {
+  const { assistant } = state.coach;
+  const clubId = state.coachClubId;
+  if (!assistant || !clubId) return { state, event: null };
+  const wage = askingWage(state, clubId, assistant.level, assistant.formerPlayer !== undefined);
+  const finance = state.finances[clubId];
+  if (!finance || boardRefusal(finance, wageBillsOf(state).get(clubId) ?? 0, { upFront: 0, wageChange: wage })) {
+    return { state: fireAssistant(state), event: { type: "assistantLeft", clubId, name: assistant.name } };
+  }
+  return { state: { ...state, coach: { ...state.coach, assistant: { ...assistant, wage } } }, event: null };
 }
 
 /** The coach in the seat lets his assistant go; the club's own takes over again. */
