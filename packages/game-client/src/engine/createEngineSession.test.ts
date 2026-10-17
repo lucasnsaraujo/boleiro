@@ -346,6 +346,10 @@ function playEvents() {
   const inbox = session.inbox();
   apply({ type: "handToAssistant", area: "press", isHanded: true });
   apply({ type: "setAssistantDuty", duty: "contracts", isOn: false });
+  const [candidate] = session.assistant().candidates;
+  if (!candidate) throw new Error("the coach can call another assistant");
+  apply({ type: "hireAssistant", candidateId: candidate.id });
+  apply({ type: "fireAssistant" });
   apply({ type: "playToMatchDay" });
   return { recorded, pending, answered, before, after, inbox };
 }
@@ -692,6 +696,8 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     answerEvent: true,
     handToAssistant: true,
     setAssistantDuty: true,
+    hireAssistant: true,
+    fireAssistant: true,
     nameCaptain: true,
     watchPlayer: true,
     saveFilter: true,

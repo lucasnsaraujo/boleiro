@@ -2,6 +2,7 @@ import { assistantTalk, kickOffMoment, type TalkMoment, type TalkTone } from "@b
 import type { Role } from "@boleiro/data/players";
 import type { Formation } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
+import { startersKept } from "@boleiro/engine/sim/coach/assistantDuties";
 import { DEFAULT_TACTICS, type Tactics } from "@boleiro/engine/sim/coach/tactics";
 import type { BoardSide, MatchMoment } from "@boleiro/engine/sim/coach/tacticsBoard";
 import { chemistryOf } from "@boleiro/engine/sim/chemistry/chemistryOf";
@@ -38,7 +39,12 @@ export type SquadPlayer = {
   isOneYellowFromBan?: boolean;
 };
 
-/** What the lineup sheet opens with before kick-off: the squad, the eleven the assistant would pick in the coach's formation (keeper first, in its slots' order), and his tactics. */
+/**
+ * What the lineup sheet opens with before kick-off: the squad, the eleven it opens on (keeper first, in
+ * its slots' order) and the coach's tactics. The sheet opens on the assistant's pick in the coach's
+ * formation (`assistantLineup`) while he runs the lineup, else on the coach's last eleven, with only
+ * those who can't play today replaced.
+ */
 export type MatchDayPlan = {
   fixtureId: string;
   clubId: string;
@@ -47,6 +53,7 @@ export type MatchDayPlan = {
   label: string;
   squad: SquadPlayer[];
   lineup: string[];
+  assistantLineup: string[];
   tactics: Tactics;
   /** The formation the opponent's coach plays. */
   opponentFormation: Formation;
@@ -150,7 +157,10 @@ export function matchDayPlan(state: GameState, formation?: Formation): MatchDayP
   const suspended = withLoaneesFacingOwner(openDisciplineDay(state.discipline).suspended(fixture.competitionId), state, fixture);
   const available = playersOf(state, clubId).filter((p) => !suspended.has(p.id));
   const tactics = formation ? { ...state.coach.tactics, formation } : state.coach.tactics;
-  const lineup = pickMatchLineup(available, context, tactics.formation, usualStartersOf(state, clubId)).map((p) => p.id);
+  const usual = usualStartersOf(state, clubId);
+  const assistantLineup = pickMatchLineup(available, context, tactics.formation, usual).map((p) => p.id);
+  const kept = startersKept(state.coach, state.chemistry?.[clubId]?.eleven);
+  const lineup = kept ? pickMatchLineup(available, context, tactics.formation, usual, kept).map((p) => p.id) : assistantLineup;
   const competition = state.competitions[fixture.competitionId];
   const label = competition ? fixtureLabel(competition, fixture) : "";
   const { homeId, awayId } = fixture;
@@ -180,5 +190,5 @@ export function matchDayPlan(state: GameState, formation?: Formation): MatchDayP
   const chemistry = { value: own.value, captainId: own.captain?.playerId ?? null, suggestedCaptainId: own.candidates[0]?.playerId ?? null };
   const talkMoment = kickOffMoment(state, fixture, clubId);
   const talk = { moment: talkMoment, suggested: assistantTalk(talkMoment) };
-  return { fixtureId: fixture.id, clubId, homeId, awayId, label, squad, lineup, tactics, opponentFormation, opponent, opponentForm, moment, chemistry, talk };
+  return { fixtureId: fixture.id, clubId, homeId, awayId, label, squad, lineup, assistantLineup, tactics, opponentFormation, opponent, opponentForm, moment, chemistry, talk };
 }

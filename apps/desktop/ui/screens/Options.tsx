@@ -4,7 +4,6 @@ import credits from "../../../../assets/sounds/CREDITS.md?raw";
 import { useRunCommand } from "../app/AppCommands.js";
 import { platformOf } from "../app/platform.js";
 import { NAV } from "../app/screens.js";
-import { AssistantAreas } from "../events/AssistantAreas.js";
 import { ServicesContext } from "../app/ServicesContext.js";
 import { shortcutKeys, type CommandId } from "../app/shortcuts.js";
 import { GAME_SLOT_IDS, slotLabel } from "@boleiro/game-client/saves/slotMeta";
@@ -137,7 +136,22 @@ export function Options() {
           </div>
         </section>
 
-        {opened && <AssistantAreas />}
+        {opened && (
+          <section className="options-group" aria-labelledby="options-assistant-title">
+            <h2 id="options-assistant-title" className="options-heading">
+              Auxiliar
+            </h2>
+            <div className="options-row">
+              <div className="options-row-text">
+                <p className="options-row-label">O que ele faz por você</p>
+                <p className="options-row-note">Escalação, contratos, base, ingresso, vendas e os assuntos que ele responde: tudo no painel do auxiliar.</p>
+              </div>
+              <Link className="btn sm" to="/assistant">
+                Ir ao auxiliar
+              </Link>
+            </div>
+          </section>
+        )}
 
         {opened && (
           <section className="options-group" aria-labelledby="options-saving-title">

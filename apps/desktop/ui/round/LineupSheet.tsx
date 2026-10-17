@@ -59,6 +59,8 @@ type Props = {
   onLeave?: () => void;
   /** Before kick-off, the assistant's best eleven for a formation (Escalar time). */
   onPickTeam?: (formation: Formation) => Promise<readonly string[]>;
+  /** Before kick-off, the assistant's eleven in the coach's formation when the sheet opens on another (the coach's own last eleven). */
+  assistantLineup?: readonly string[];
   opponent?: Opponent;
   coachStep?: CoachStep;
   /** What the tactics panel needs to open from the sheet. */
@@ -125,7 +127,7 @@ function MiniPitch({ formation }: { formation: Formation }) {
 }
 
 /** The lineup: the eleven on the pitch where the formation puts them, tactics and the bench, before kick-off or during the coach's match. */
-export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, opponent, coachStep, tacticsContext, chemistry, talk }: Props) {
+export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, assistantLineup, opponent, coachStep, tacticsContext, chemistry, talk }: Props) {
   const [sheet, setSheet] = useState(() => openSheet(lineup, tactics));
   const [captainId, setCaptainId] = useState(chemistry?.captainId ?? null);
   const [captainFailure, setCaptainFailure] = useState<string | null>(null);
@@ -146,7 +148,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
   const [isTacticsOpen, setTacticsOpen] = useState(false);
   const [pickFailure, setPickFailure] = useState<string | null>(null);
   // The assistant's latest eleven and its formation: the team strength is compared against it.
-  const [assistantPick, setAssistantPick] = useState(() => ({ lineup, formation: tactics.formation }));
+  const [assistantPick, setAssistantPick] = useState(() => ({ lineup: assistantLineup ?? lineup, formation: tactics.formation }));
   const title = useDialogFocus<HTMLHeadingElement>(true, { isModal: true });
   const byId = new Map(squad.map((p) => [p.id, p]));
   const starters = sheet.lineup.flatMap((id) => byId.get(id) ?? []);

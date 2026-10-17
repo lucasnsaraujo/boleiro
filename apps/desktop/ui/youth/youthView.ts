@@ -1,5 +1,6 @@
 import type { Club } from "@boleiro/data/clubs";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
+import { assistantOf, scoutSharpeningAt } from "@boleiro/engine/sim/coach/assistant";
 import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { NO_SQUAD_WAGE } from "@boleiro/engine/sim/players/developPlayers";
 import { SQUAD_CAP } from "@boleiro/engine/sim/transfers/squadCap";
@@ -9,7 +10,7 @@ import { academySquad, LEAVING_AGE, scoutedStars, type Copinha } from "@boleiro/
 import { copinhaDate, copinhaRun } from "@boleiro/engine/sim/youth/copinha";
 import { copinhaRoundName } from "@boleiro/game-client/format/copinhaRoundName";
 
-export const YOUTH_KEYS = ["youth", "players", "clubs", "season", "date", "coachClubId", "hasMidSeasonWindow", "coach"] as const;
+export const YOUTH_KEYS = ["youth", "players", "clubs", "season", "date", "coachClubId", "hasMidSeasonWindow", "coach", "seed"] as const;
 export type YouthState = Pick<GameState, (typeof YOUTH_KEYS)[number]>;
 
 /** The academy's age groups as the screen filters them. */
@@ -52,6 +53,8 @@ export type YouthView = {
   copinha: CopinhaNote;
   /** A kid can be sold only inside a transfer window. */
   isWindowOpen: boolean;
+  /** The coach's assistant reads the kids' potential sharper than the scouts alone. */
+  isAssistantSharper: boolean;
   detailOf: (id: string) => KidDetail | null;
 };
 
@@ -71,19 +74,20 @@ export function isInAgeGroup(kid: Pick<KidRow, "age">, filter: AgeFilter): boole
   return filter === "u17" ? kid.age <= UNDER_17 : kid.age > UNDER_17;
 }
 
-/** The coach's academy as the youth screen shows it, best first; null with no club. */
+/** The coach's academy as the youth screen shows it, best first, the kids' stars as his assistant reads them; null with no club. */
 export function youthView(state: YouthState): YouthView | null {
   const club = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
   if (!club) return null;
   const squad = Object.values(state.players).filter((p) => p.clubId === club.id);
   const rate = wageRateOf(squad);
+  const sharperBy = scoutSharpeningAt(assistantOf(state).level);
   const rowOf = (p: NonNullable<GameState["youth"]>["prospects"][string]): KidRow => ({
     id: p.id,
     name: p.name,
     group: p.group,
     age: p.age,
     strength: Math.round(p.strength),
-    stars: scoutedStars(p, state.season),
+    stars: scoutedStars(p, state.season, sharperBy),
     hometown: p.hometown,
     isNew: p.joinedSeason === state.season,
     isLeaving: p.age + 1 >= LEAVING_AGE,
@@ -100,6 +104,7 @@ export function youthView(state: YouthState): YouthView | null {
     squadCap: SQUAD_CAP,
     copinha: copinhaNote(state.youth?.copinha, state, club.id),
     isWindowOpen: isWindowOpen(state, state.date),
+    isAssistantSharper: sharperBy > 0,
     detailOf(id) {
       const prospect = state.youth?.prospects[id];
       if (!prospect || prospect.clubId !== club.id) return null;

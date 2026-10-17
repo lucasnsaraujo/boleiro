@@ -51,6 +51,13 @@ test("a hurt player is swapped for the strongest of his position on the bench", 
   expect(incident?.suggestions).toEqual([{ forId: "d2", offId: "d2", onId: "d6" }]);
 });
 
+test("a hurt player is swapped for the bench player of his position the assistant reads strongest, who may not be the strongest", () => {
+  const misread: CoachSide = { ...coach, assistantReads: { d6: 69, d5: 73 } };
+  const events: MatchEvent[] = [{ type: "injury", minute: 30, clubId: CLUB, playerId: "d2", days: 18 }];
+  const incident = incidentAt(misread, events, CLUB, liveLimits(misread, events, CLUB, 30));
+  expect(incident?.suggestions).toEqual([{ forId: "d2", offId: "d2", onId: "d5" }]);
+});
+
 test("a keeper sent off is replaced by the bench keeper, for the weakest forward", () => {
   const incident = at([{ type: "card", minute: 50, clubId: CLUB, playerId: "gk", card: "red" }], 50);
   expect(incident).toMatchObject({ sentOff: [{ playerId: "gk", card: "red" }], playersLeft: 10 });

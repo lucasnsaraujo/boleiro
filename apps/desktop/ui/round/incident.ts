@@ -18,8 +18,6 @@ export type Incident = {
   suggestions: Suggestion[];
 };
 
-const strongest = (players: readonly SquadPlayer[]) => [...players].sort((a, b) => b.strength - a.strength)[0];
-const weakest = (players: readonly SquadPlayer[]) => [...players].sort((a, b) => a.strength - b.strength)[0];
 
 /**
  * The red cards and injuries the coach's side took at the limits' minute, or null when none or when
@@ -27,7 +25,8 @@ const weakest = (players: readonly SquadPlayer[]) => [...players].sort((a, b) =>
  * assistant answers as the AI coaches do: a hurt player makes way for the strongest of his
  * position on the bench, and a keeper or defender sent off is replaced by one of his own for the
  * weakest forward; a midfielder or forward sent off leaves the side with ten. The man sent off
- * comes first when the substitutions left run short.
+ * comes first when the substitutions left run short. Strongest and weakest as the assistant reads
+ * them (`assistantReads`), so a worse assistant may pick the wrong man.
  */
 export function incidentAt(coach: CoachSide, events: readonly MatchEvent[], clubId: string, limits: LiveLimits): Incident | null {
   if (limits.minute >= matchEndOf(events)) return null;
@@ -36,6 +35,9 @@ export function incidentAt(coach: CoachSide, events: readonly MatchEvent[], club
   const hurt = now.flatMap((e) => (e.type === "injury" ? [{ playerId: e.playerId, days: e.days }] : []));
   if (!sentOff.length && !hurt.length) return null;
 
+  const readOf = (p: SquadPlayer) => coach.assistantReads?.[p.id] ?? p.strength;
+  const strongest = (players: readonly SquadPlayer[]) => [...players].sort((a, b) => readOf(b) - readOf(a))[0];
+  const weakest = (players: readonly SquadPlayer[]) => [...players].sort((a, b) => readOf(a) - readOf(b))[0];
   const byId = new Map(coach.squad.map((p) => [p.id, p]));
   const players = (ids: Iterable<string>) => [...ids].flatMap((id) => byId.get(id) ?? []);
   const onPitch = players(limits.onPitch.filter((id) => !limits.sentOff.has(id)));

@@ -6,3 +6,8 @@ test("a waiting coach doesn't hear the seated coach's player counter a renewal o
   const own = { type: "renewalCountered", playerId: "p2", months: 12, wage: 200 } as const;
   expect(eventsOfWaitingCoach([seated], [own])).toEqual([own]);
 });
+
+test("a waiting coach doesn't hear that the seated coach's assistant stayed behind", () => {
+  const seated = { type: "assistantLeft", clubId: "vitoria-ba", name: "Cláudio" } as const;
+  expect(eventsOfWaitingCoach([seated])).toEqual([]);
+});

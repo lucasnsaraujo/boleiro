@@ -43,9 +43,6 @@ const offersText = (count: number) => `${count} ${count === 1 ? "proposta" : "pr
 // The newspaper stays short: the newest lines only, everything else is on the other screens.
 const INBOX_LINES = 7;
 
-/** The features of the dock that have no screen yet, greyed out until their slices land. */
-const LATER = [{ label: "Auxiliar", icon: "user-switch", title: "Auxiliar técnico" }] as const;
-
 export function Hub() {
   const { engine, game: open } = useServices();
   const clock = useGameClock();
@@ -279,12 +276,10 @@ export function Hub() {
               Patrocínio
             </span>
           )}
-          {LATER.map(({ label, icon, title }) => (
-            <span key={label} className="hub-dock-item off" aria-disabled="true" title={`${title} · em breve`}>
-              <i className={`ph-bold ph-${icon}`} aria-hidden="true" />
-              {label}
-            </span>
-          ))}
+          <Link to="/assistant" className="hub-dock-item" title="Auxiliar técnico">
+            <i className="ph-bold ph-user-switch" aria-hidden="true" />
+            Auxiliar
+          </Link>
           {club ? (
             <Link to="/chemistry" className="hub-dock-item" title="Entrosamento">
               <i className="ph-bold ph-users-three" aria-hidden="true" />

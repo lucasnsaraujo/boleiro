@@ -590,7 +590,8 @@ export function Round() {
         error={error}
         onDone={(sheet) => void kickOff(sheet)}
         onLeave={() => navigate("/hub")}
-        onPickTeam={async (formation) => (await engine.matchDayPlan(formation)).lineup}
+        assistantLineup={plan.assistantLineup}
+        onPickTeam={async (formation) => (await engine.matchDayPlan(formation)).assistantLineup}
         talk={<KickOffTalk moment={plan.talk.moment} suggested={plan.talk.suggested} picked={kickOffTalk} onPick={setKickOffTalk} />}
         chemistry={{
           value: plan.chemistry.value,
