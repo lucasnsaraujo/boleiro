@@ -412,3 +412,21 @@ describe("contracts", () => {
     ]);
   });
 });
+
+describe("national teams", () => {
+  test("a call-up of one of the coach's players says for whom and until when", () => {
+    expect(line({ type: "calledUp", playerId: own.id, clubId: "bahia-ba", teamId: "uruguay", until: "2026-03-31" })).toEqual({ date: game.date, text: `${own.name} convocado pela seleção: Uruguai, até 31 mar`, tone: "neutral" });
+  });
+
+  test("another club's call-up is not the coach's news", () => {
+    expect(lines({ type: "calledUp", playerId: other.id, clubId: "vitoria-ba", teamId: "uruguay", until: "2026-03-31" })).toEqual([]);
+  });
+
+  test("a player back from his national team is back for the coach", () => {
+    expect(line({ type: "backFromDuty", playerId: own.id, clubId: "bahia-ba", teamId: "brazil" })?.text).toBe(`${own.name} volta da seleção (Brasil)`);
+  });
+
+  test("a World Cup's champion makes the news", () => {
+    expect(line({ type: "nationalTitle", competitionId: "world-cup-2026", name: "Copa do Mundo 2026", winnerId: "spain", runnerUpId: "argentina" })?.text).toBe("Espanha campeã da Copa do Mundo 2026, sobre a Argentina");
+  });
+});

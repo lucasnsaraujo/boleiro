@@ -57,6 +57,7 @@ import { onPitchAt, whoPlayed } from "./aiSubstitutions.js";
 import { tieBreakOf } from "../tieBreaks.js";
 import { FULL_TIME, hasExtraTimeIn, matchEndOf, scorersFor, type MatchEvent } from "./matchTimeline.js";
 import { recordCoachMeetings } from "../rivalries/coachRivalries.js";
+import { nationsDay } from "../nations/nationsDay.js";
 
 function fixturesByCompetition(fixtures: readonly Fixture[]): Map<string, Fixture[]> {
   const byCompetition = new Map<string, Fixture[]>();
@@ -250,6 +251,11 @@ export function finishMatchDay(live: LiveDay): DayResult {
   }
   if (state.world) next = { ...next, world: moveWorldCoaches(playWorldDay(state.world, state.date), state.date) };
   if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state)) };
+  if (next.nations) {
+    const national = nationsDay(next, state.date);
+    next = national.state;
+    events.push(...national.events);
+  }
   let seasonOutcomes: Record<string, LeagueOutcome> = {};
   if (next.date.slice(0, 4) !== String(state.season)) {
     const continentalField = seasonEndField(next);

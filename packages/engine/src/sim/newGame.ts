@@ -33,6 +33,8 @@ import type { CountryStructure, UnifiedDates, World, WorldClub } from "./world/w
 import { openAcademies } from "./youth/academy.js";
 import { seedGameSponsors } from "./sponsors/sponsorDeals.js";
 import type { SponsorFiles } from "./sponsors/sponsors.js";
+import type { NationalFootball } from "@boleiro/data/nationalFootball";
+import { openNations } from "./nations/openNations.js";
 
 /** A result-only country to start: its structure and its clubs level by level, top first. */
 export type CountryStart = { structure: CountryStructure; levels: readonly (readonly WorldClub[])[] };
@@ -68,6 +70,8 @@ export type NewGameOptions = {
   formats?: Formats;
   /** The kit deals and the brands of the offer pool (the sponsors pack); left out, the clubs have no sponsors on their kits. */
   sponsors?: SponsorFiles;
+  /** The national teams, their last squads, the FIFA ranking and 2026's draws (the national packs); left out, the game has no national football. */
+  nationalFootball?: NationalFootball;
 };
 
 /** The most human coaches one game takes, all on one computer (SPEC §14). */
@@ -156,7 +160,7 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, guests, stateChampionships = true, midSeasonWindow = true, hotSeat, marketClockSeconds, formats = REALISTA, sponsors }: NewGameOptions,
+  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, guests, stateChampionships = true, midSeasonWindow = true, hotSeat, marketClockSeconds, formats = REALISTA, sponsors, nationalFootball }: NewGameOptions,
 ): GameState {
   const countries = (world ?? []).map(({ structure, levels }) => ({ structure: inFormats(structure, formats), levels }));
   const fullTier = countriesOfHumans(countries, [coachClubId, ...(hotSeat?.otherCoaches ?? []).map((other) => other.clubId)], formats);
@@ -225,7 +229,8 @@ export function newGame(
   const withClock = marketClockSeconds === undefined ? game : { ...game, marketClockSeconds };
   const withAcademies = { ...withClock, youth: openAcademies(withClock) };
   const started = withCoachWorld(withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat));
-  return sponsors ? seedGameSponsors(started, sponsors) : started;
+  const sponsored = sponsors ? seedGameSponsors(started, sponsors) : started;
+  return nationalFootball ? { ...sponsored, nations: openNations(nationalFootball, sponsored.players, season, seed) } : sponsored;
 }
 
 /** The game with its other human coaches waiting for their turns; a one-coach game stays as it is. */

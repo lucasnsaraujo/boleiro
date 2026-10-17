@@ -15,6 +15,7 @@ import { competitionKeyName, competitionName } from "../format/competitionName.j
 import { formatContractLength } from "../format/formatContractLength.js";
 import { formatDayMonth, formatMonthYear, monthName } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
+import { nationalTeamName, withArticle } from "../format/nationalTeamName.js";
 import { boardGoal } from "../screens/clubChoices.js";
 import { copinhaRoundName } from "../format/copinhaRoundName.js";
 import { SLOT_NAMES } from "../sponsors/sponsorsPage.js";
@@ -24,7 +25,7 @@ export type InboxTone = "good" | "bad" | "neutral";
 /** One line of the hub's inbox, as a newspaper would print it. */
 export type InboxLine = { date: IsoDate; text: string; tone: InboxTone };
 
-export type NewsState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "competitions" | "market" | "world" | "youth"> & Partial<Pick<GameState, "history">>;
+export type NewsState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "competitions" | "market" | "world" | "youth"> & Partial<Pick<GameState, "history" | "nations">>;
 
 const REQUEST_NOUNS: Record<CoachRequest["kind"], string> = {
   sign: "a contratação",
@@ -166,6 +167,16 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
       }
       case "playerInjured":
         return isOurs(event.clubId) ? [injuryText(playerName(event.playerId), event), "bad"] : null;
+      case "calledUp":
+        return isOurs(event.clubId) ? [`${playerName(event.playerId)} convocado pela seleção: ${nationalTeamName(event.teamId)}, até ${formatDayMonth(event.until)}`, "neutral"] : null;
+      case "backFromDuty":
+        return isOurs(event.clubId) ? [`${playerName(event.playerId)} volta da seleção (${nationalTeamName(event.teamId)})`, "neutral"] : null;
+      case "nationalTitle": {
+        const isJob = after.nations?.job?.teamId === event.winnerId;
+        if (!isJob && !event.competitionId.startsWith("world-cup")) return null;
+        const over = event.runnerUpId ? `, sobre ${withArticle(event.runnerUpId)}` : "";
+        return [`${nationalTeamName(event.winnerId)} campeã da ${event.name}${over}`, isJob ? "good" : "neutral"];
+      }
       case "playerSuspended":
         return isOurs(event.clubId) ? [`${playerName(event.playerId)} suspenso: ${plural(event.matches, "jogo", "jogos")}`, "bad"] : null;
       case "playerBooked":
