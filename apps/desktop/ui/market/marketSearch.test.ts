@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
+import { releaseClauseOf } from "@boleiro/engine/sim/transfers/releaseClause";
 import { NO_FILTERS, type MarketFilters } from "@boleiro/game-client/market/marketFilters";
 import { marketClubs, marketLeagues, marketNationalities, searchMarket, strengthBounds, windowStatus } from "./marketSearch.js";
 
@@ -17,13 +18,13 @@ function anyPlayerOf(clubId: string): SimPlayer {
 }
 
 describe("searching the market", () => {
-  test("a player under contract shows his release clause, two thousand monthly wages; a free agent and a loanee have none to pay", () => {
+  test("a player under contract shows his release clause; a free agent and a loanee have none to pay", () => {
     const signed = anyPlayerOf("palmeiras-sp");
     const free = { ...anyPlayerOf("vitoria-ba"), id: "free-1" };
     const lent = anyPlayerOf("bahia-ba");
     const loans = { [lent.id]: { fromClubId: "palmeiras-sp", until: "2026-06-30", lenderWageShare: 0.5, buyOption: null } };
     const rows = search({}, { ...game, market: { ...game.market, freeAgents: { [free.id]: free }, loans } });
-    expect(rows.find((r) => r.id === signed.id)?.clause).toBe(2000 * signed.wage);
+    expect(rows.find((r) => r.id === signed.id)?.clause).toBe(releaseClauseOf(signed, "A", game.market.eurBrl));
     expect(rows.find((r) => r.id === free.id)?.clause).toBeNull();
     expect(rows.find((r) => r.id === lent.id)?.clause).toBeNull();
   });

@@ -128,7 +128,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
       if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       // His club has no say: the clause is paid and only the board and the player decide.
-      const fee = releaseClauseOf(player);
+      const fee = releaseClauseOf(player, view.tier(player.clubId), state.market.eurBrl);
       const wage = request.wage !== undefined ? Math.max(1, Math.round(request.wage)) : wageDemand(player, squad);
       const refused = boardRefusal(finance, bill, { upFront: fee + 3 * wage, wageChange: wage });
       if (refused) return refuse(state, request, refused);

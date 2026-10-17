@@ -103,7 +103,6 @@ test("paying a release clause takes the player whatever his club thinks", async 
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Tite" });
   await openWindowDay(page);
-  await openTheCheckbook(page);
   await barOf(page).getByRole("link", { name: "Busca" }).click();
   await pickOption(page.getByRole("combobox", { name: "Liga" }), "Série D");
   await page.getByRole("switch", { name: "Só quem toparia vir" }).check();

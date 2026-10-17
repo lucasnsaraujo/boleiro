@@ -208,7 +208,7 @@ export function searchMarket(state: MarketState, filters: MarketFilters, limit: 
       price: status === "onLoan" || status === "lentOut" || status === "preContract" ? null : fee,
       wage: wageOf(player, free),
       value: Math.round(valuePlayer(player, fromTier, date) * market.eurBrl),
-      clause: status === "freeAgent" || status === "onLoan" || status === "lentOut" || status === "preContract" ? null : releaseClauseOf(player),
+      clause: status === "freeAgent" || status === "onLoan" || status === "lentOut" || status === "preContract" ? null : releaseClauseOf(player, fromTier, market.eurBrl),
       isWatched: watched.has(player.id),
       currentWage: player.wage,
       contractUntil: player.contractUntil,
