@@ -727,8 +727,8 @@
 /* The player's season average, pencilled on the corner of his sticker. */
 .aw-avg {
   position: absolute;
-  right: -7px;
-  bottom: 14px;
+  top: -8px;
+  right: -8px;
   padding: 1px 6px;
   border-radius: var(--r-pill);
   background: var(--ink);
@@ -919,6 +919,153 @@
 [data-theme="dark"] .aw-lines::before,
 [data-theme="dark"] .aw-lines::after {
   border-color: var(--line);
+}
+
+/* The window's narrowest (1024 px): a slimmer left page and smaller stickers so the back four fit. */
+@media (max-width: 1180px) {
+  .awards-spread {
+    grid-template-columns: 500px minmax(0, 1fr);
+  }
+
+  .aw-pick .aw-stk {
+    --w: 96px;
+    --h: 56px;
+    --ini: 30px;
+  }
+
+  .aw-row-list {
+    gap: 10px;
+  }
+
+  .aw-row:nth-child(-n + 2) .aw-row-list {
+    gap: 28px;
+  }
+
+  .aw-gold {
+    grid-template-columns: 160px 1fr;
+    gap: 18px;
+  }
+
+  .aw-stk.is-hero {
+    --w: 152px;
+    --h: 150px;
+    --ini: 84px;
+  }
+
+  .aw-note {
+    right: 14px;
+    width: 160px;
+  }
+}
+
+/* A big window: a wider left page and bigger stickers, so the spread fills the album instead of floating in it. */
+@media (min-width: 1440px) and (min-height: 900px) {
+  .awards-spread {
+    grid-template-columns: 640px minmax(0, 1fr);
+  }
+
+  .aw-pick .aw-stk {
+    --w: 140px;
+    --h: 84px;
+    --ini: 46px;
+  }
+
+  .aw-pick .aw-name {
+    font-size: 13.5px;
+  }
+
+  .aw-row-list {
+    gap: 26px;
+  }
+
+  .aw-row:nth-child(-n + 2) .aw-row-list {
+    gap: 64px;
+  }
+
+  .aw-gold {
+    grid-template-columns: 236px 1fr;
+  }
+
+  .aw-stk.is-hero {
+    --w: 226px;
+    --h: 236px;
+    --ini: 128px;
+  }
+
+  .aw-gold h3 {
+    font-size: 38px;
+  }
+
+  .aw-rr {
+    min-height: 38px;
+    font-size: 13.5px;
+  }
+}
+
+/* A short window (down to 680 px): the hero shrinks and the pages close up, the club's run left to the records tab. */
+@media (max-height: 760px) {
+  .aw-stk.is-hero {
+    --w: 140px;
+    --h: 118px;
+    --ini: 70px;
+  }
+
+  .aw-gold {
+    grid-template-columns: 150px 1fr;
+    margin-top: 10px;
+  }
+
+  .aw-gold h3 {
+    font-size: 26px;
+  }
+
+  .aw-trio {
+    margin-top: 12px;
+    padding-top: 10px;
+  }
+
+  .aw-rec {
+    margin-top: 12px;
+  }
+
+  .aw-rr {
+    min-height: 28px;
+  }
+
+  .aw-rec .aw-rr:nth-child(4) {
+    display: none;
+  }
+
+  .aw-acts {
+    padding-top: 8px;
+  }
+
+  .aw-pick .aw-stk {
+    --h: 48px;
+    --ini: 26px;
+  }
+
+  .aw-pick .aw-cap {
+    padding: 3px 0 4px;
+  }
+}
+
+/* A sticker on the pitch lifts a little under the pointer, like one half peeled off the page. */
+.aw-pick .aw-stk {
+  transition:
+    transform var(--t-base) var(--e-out),
+    box-shadow var(--t-base) var(--e-out);
+}
+
+.aw-pick .aw-stk:hover {
+  transform: translateY(-3px) rotate(-1.2deg);
+  box-shadow: var(--sh-lift);
+}
+
+.aw-pick .aw-stk.is-win:hover {
+  box-shadow:
+    0 0 0 3px var(--yellow),
+    var(--sh-lift);
 }
 
 @media (prefers-reduced-motion: reduce) {
