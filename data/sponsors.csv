@@ -502,11 +502,9 @@ tm-13,master,0,riyadh-air,Riyadh Air,Riyadh Air,https://en.wikipedia.org/w/index
 tm-131,kit,0,nike,Nike,"Nike, Inc.",https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+La+Liga&oldid=1376368093
 tm-131,master,0,spotify,Spotify,Spotify,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+La+Liga&oldid=1376368093
 tm-940,kit,0,hummel,Hummel,Hummel International,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+La+Liga&oldid=1376368093
-tm-940,master,0,estrella-galicia-0,Estrella Galicia 0,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+La+Liga&oldid=1376368093
-tm-940,master,1,0,0,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+La+Liga&oldid=1376368093
+tm-940,master,0,estrella-galicia-0-0,"Estrella Galicia 0,0",Estrella Galicia,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+La+Liga&oldid=1376368093
 tm-897,kit,0,nike,Nike,"Nike, Inc.",https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+La+Liga&oldid=1376368093
-tm-897,master,0,estrella-galicia-0,Estrella Galicia 0,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+La+Liga&oldid=1376368093
-tm-897,master,1,0,0,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+La+Liga&oldid=1376368093
+tm-897,master,0,estrella-galicia-0-0,"Estrella Galicia 0,0",Estrella Galicia,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+La+Liga&oldid=1376368093
 tm-1531,kit,0,nike,Nike,"Nike, Inc.",https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+La+Liga&oldid=1376368093
 tm-1531,master,0,flexicar,Flexicar,Flexicar (Spain),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+La+Liga&oldid=1376368093
 tm-714,kit,0,kelme,Kelme,Kelme (company),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+La+Liga&oldid=1376368093
@@ -577,8 +575,7 @@ tm-2448,master,0,siroko,Siroko,,https://en.wikipedia.org/w/index.php?title=2026%
 tm-648,kit,0,macron,Macron,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Segunda+Divisi%C3%B3n&oldid=1376146495
 tm-648,master,0,tenerife,Tenerife,Island Council of Tenerife,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Segunda+Divisi%C3%B3n&oldid=1376146495
 tm-366,kit,0,reebok,Reebok,Reebok,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Segunda+Divisi%C3%B3n&oldid=1376146495
-tm-366,master,0,estrella-galicia-0,Estrella Galicia 0,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Segunda+Divisi%C3%B3n&oldid=1376146495
-tm-366,master,1,0,0,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Segunda+Divisi%C3%B3n&oldid=1376146495
+tm-366,master,0,estrella-galicia-0-0,"Estrella Galicia 0,0",Estrella Galicia,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Segunda+Divisi%C3%B3n&oldid=1376146495
 tm-800,kit,0,new-balance,New Balance,New Balance,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Serie+A&oldid=1376121194
 tm-800,master,0,lete,Lete,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Serie+A&oldid=1376121194
 tm-1025,kit,0,macron,Macron,Macron (sportswear),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Serie+A&oldid=1376121194
@@ -830,38 +827,38 @@ tm-1268,kit,0,errea,Erreà,Erreà,https://en.wikipedia.org/w/index.php?title=202
 tm-610,kit,0,adidas,Adidas,Adidas,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-610,master,0,ziggo,Ziggo,Ziggo,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-1090,kit,0,nike,Nike,"Nike, Inc.",https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-1090,master,0,afas-software-nl,AFAS Software [ nl ],,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-1090,master,0,afas-software,AFAS Software,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-133,kit,0,adidas,Adidas,Adidas,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-133,master,0,bouwgroep-dijkstra-draisma,Bouwgroep Dijkstra Draisma,Bouwgroep Dijkstra Draisma (page does not exist),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-798,kit,0,robey-it-nl,Robey [ it ; nl ],,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-798,master,0,dsw,DSW,DSW Zorgverzekeraar (page does not exist),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-133,master,0,bouwgroep-dijkstra-draisma,Bouwgroep Dijkstra Draisma,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-798,kit,0,robey,Robey,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-798,master,0,dsw,DSW,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-234,kit,0,castore,Castore,Castore,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-234,master,0,mediamarkt,MediaMarkt,MediaMarkt,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-385,kit,0,robey-it-nl,Robey [ it ; nl ],,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-385,master,0,hurkmans,Hurkmans,Fortuna Verbindt (page does not exist),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-1435,kit,0,stanno,Stanno,Stanno (page does not exist),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-1435,master,0,retro-bridge,Retro Bridge,Retro Bridge (page does not exist),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-1435,master,1,one-click-steel,One Click Steel,One Click Steel (page does not exist),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-202,kit,0,robey-it-nl,Robey [ it ; nl ],,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-202,master,0,og-clean-fuels,OG Clean Fuels,OG Clean Fuels (page does not exist),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-385,kit,0,robey,Robey,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-385,master,0,hurkmans,Hurkmans,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-1435,kit,0,stanno,Stanno,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-1435,master,0,retro-bridge,Retro Bridge,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-1435,master,1,one-click-steel,One Click Steel,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-202,kit,0,robey,Robey,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-202,master,0,og-clean-fuels,OG Clean Fuels,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-306,kit,0,macron,Macron,Macron (sportswear),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-306,master,0,wolkom-onbegrensd-fryslan,Wolkom Onbegrensd Fryslân,Wolkom Onbegrensd Fryslân (page does not exist),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-467,kit,0,robey-it-nl,Robey [ it ; nl ],,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-306,master,0,wolkom-onbegrensd-fryslan,Wolkom Onbegrensd Fryslân,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-467,kit,0,robey,Robey,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-467,master,0,nexperia,Nexperia,Nexperia,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-1269,kit,0,adidas,Adidas,Adidas,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-1269,master,0,zonneplan,Zonneplan,Zonneplan (page does not exist),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-1269,master,0,zonneplan,Zonneplan,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-383,kit,0,puma,Puma,Puma (brand),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-383,master,0,metropoolregio-brainport-eindhoven,Metropoolregio Brainport Eindhoven,Metropoolregio Eindhoven,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-468,kit,0,robey-it-nl,Robey [ it ; nl ],,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-468,master,0,de-goudse-verzekeringen-nl,De Goudse Verzekeringen [ nl ],,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-468,master,1,d-s-group,D&S Group,D&S Group (page does not exist),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-1434,kit,0,robey-it-nl,Robey [ it ; nl ],,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-1434,master,0,buko,BUKO,BUKO Group (page does not exist),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-468,kit,0,robey,Robey,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-468,master,0,de-goudse-verzekeringen,De Goudse Verzekeringen,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-468,master,1,d-s-group,D&S Group,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-1434,kit,0,robey,Robey,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-1434,master,0,buko,BUKO,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-317,kit,0,castore,Castore,Castore,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-317,master,0,thermosolutions-bv,ThermoSolutions BV,ThermoSolutions BV (page does not exist),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-317,master,0,thermosolutions-bv,ThermoSolutions BV,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-200,kit,0,castore,Castore,Castore,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-200,master,0,indeed,Indeed,Indeed,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
-tm-403,kit,0,robey-it-nl,Robey [ it ; nl ],,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
+tm-403,kit,0,robey,Robey,,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+Eredivisie&oldid=1376405034
 tm-11282,kit,0,puma,Puma,Puma (brand),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+S%C3%BCper+Lig&oldid=1376557426
 tm-6890,kit,0,puma,Puma,Puma (brand),https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+S%C3%BCper+Lig&oldid=1376557426
 tm-6890,master,0,todini-costruzioni-turkish-airlines-in-european-matches,Todini Costruzioni / Turkish Airlines (in European matches),,https://en.wikipedia.org/w/index.php?title=2026%E2%80%9327+S%C3%BCper+Lig&oldid=1376557426
@@ -1273,9 +1270,6 @@ manaus-am,kit,0,sj-sports,SJ Sports,,https://pt.wikipedia.org/w/index.php?title=
 manaus-am,master,0,ramsons,Ramsons,,https://pt.wikipedia.org/w/index.php?title=Manaus+Futebol+Clube&oldid=72395693
 nacional-am,kit,0,kappa,Kappa,pt:Kappa (empresa),https://pt.wikipedia.org/w/index.php?title=Nacional+Futebol+Clube+%28Amazonas%29&oldid=72987155
 nacional-am,master,0,avancard,Avancard,,https://pt.wikipedia.org/w/index.php?title=Nacional+Futebol+Clube+%28Amazonas%29&oldid=72987155
-nacional-am,master,1,atem,Atem,pt:Atem Distribuidora,https://pt.wikipedia.org/w/index.php?title=Nacional+Futebol+Clube+%28Amazonas%29&oldid=72987155
-nacional-am,master,2,amil,Amil,pt:Amil,https://pt.wikipedia.org/w/index.php?title=Nacional+Futebol+Clube+%28Amazonas%29&oldid=72987155
-nacional-am,master,3,jam-logistica,JAM Logística,,https://pt.wikipedia.org/w/index.php?title=Nacional+Futebol+Clube+%28Amazonas%29&oldid=72987155
 trem-dc-ap,kit,0,allprint,Allprint,,https://pt.wikipedia.org/w/index.php?title=Trem+Desportivo+Clube&oldid=72636352
 trem-dc-ap,master,0,bem-nosso-atacarejo,Bem Nosso Atacarejo,,https://pt.wikipedia.org/w/index.php?title=Trem+Desportivo+Clube&oldid=72636352
 alagoinhas-ba,kit,0,finta,Finta,pt:Finta,https://pt.wikipedia.org/w/index.php?title=Alagoinhas+Atl%C3%A9tico+Clube&oldid=72865437
@@ -1288,42 +1282,25 @@ iguatu-ce,kit,0,senagraff,SenaGraff,,https://pt.wikipedia.org/w/index.php?title=
 iguatu-ce,master,0,zenir-moveis-e-eletros,Zenir Móveis e Eletros,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Iguatu&oldid=72963631
 atletico-cearense-ce,kit,0,senagraff,SenaGraff,,https://pt.wikipedia.org/w/index.php?title=Futebol+Clube+Atl%C3%A9tico+Cearense&oldid=72736130
 atletico-cearense-ce,master,0,casa-do-celular,Casa do Celular,,https://pt.wikipedia.org/w/index.php?title=Futebol+Clube+Atl%C3%A9tico+Cearense&oldid=72736130
-atletico-cearense-ce,master,1,billions-acessorios,Billions Acessórios,,https://pt.wikipedia.org/w/index.php?title=Futebol+Clube+Atl%C3%A9tico+Cearense&oldid=72736130
-atletico-cearense-ce,master,2,rico-5g,Rico 5G,,https://pt.wikipedia.org/w/index.php?title=Futebol+Clube+Atl%C3%A9tico+Cearense&oldid=72736130
-atletico-cearense-ce,master,3,neqta-transportes,Neqta Transportes,,https://pt.wikipedia.org/w/index.php?title=Futebol+Clube+Atl%C3%A9tico+Cearense&oldid=72736130
-atletico-cearense-ce,master,4,arigool,Arigool,,https://pt.wikipedia.org/w/index.php?title=Futebol+Clube+Atl%C3%A9tico+Cearense&oldid=72736130
-atletico-cearense-ce,master,5,grupo-hdoc-saude,Grupo Hdoc Saúde,,https://pt.wikipedia.org/w/index.php?title=Futebol+Clube+Atl%C3%A9tico+Cearense&oldid=72736130
-atletico-cearense-ce,master,6,frutas-lessa,Frutas Lessa,,https://pt.wikipedia.org/w/index.php?title=Futebol+Clube+Atl%C3%A9tico+Cearense&oldid=72736130
-atletico-cearense-ce,master,7,pulse-centro-cardiologico,Pulse Centro Cardiológico,,https://pt.wikipedia.org/w/index.php?title=Futebol+Clube+Atl%C3%A9tico+Cearense&oldid=72736130
 ferroviario-ce,kit,0,bm9,BM9,,https://pt.wikipedia.org/w/index.php?title=Ferrovi%C3%A1rio+Atl%C3%A9tico+Clube+%28Cear%C3%A1%29&oldid=72810839
 ferroviario-ce,master,0,zenir-moveis-e-eletros,Zenir Móveis e Eletros,,https://pt.wikipedia.org/w/index.php?title=Ferrovi%C3%A1rio+Atl%C3%A9tico+Clube+%28Cear%C3%A1%29&oldid=72810839
 maracana-ce,kit,0,efy,Efy,,https://pt.wikipedia.org/w/index.php?title=Maracan%C3%A3+Esporte+Clube&oldid=73042931
 maracana-ce,master,0,prefeitura-de-maracanau,Prefeitura de Maracanaú,pt:Maracanaú,https://pt.wikipedia.org/w/index.php?title=Maracan%C3%A3+Esporte+Clube&oldid=73042931
 brasiliense-df,kit,0,diadora,Diadora,pt:Diadora,https://pt.wikipedia.org/w/index.php?title=Brasiliense+Futebol+Clube&oldid=72879758
 brasiliense-df,master,0,brb,BRB,pt:Banco de Brasília,https://pt.wikipedia.org/w/index.php?title=Brasiliense+Futebol+Clube&oldid=72879758
-brasiliense-df,master,1,metropoles,Metrópoles,pt:Metrópoles (jornal),https://pt.wikipedia.org/w/index.php?title=Brasiliense+Futebol+Clube&oldid=72879758
 ceilandia-df,kit,0,gato-preto,Gato Preto,,https://pt.wikipedia.org/w/index.php?title=Ceil%C3%A2ndia+Esporte+Clube&oldid=72608158
 ceilandia-df,master,0,atacadao-dia-a-dia,Atacadão Dia-a-Dia,,https://pt.wikipedia.org/w/index.php?title=Ceil%C3%A2ndia+Esporte+Clube&oldid=72608158
 gama-df,kit,0,kappa,Kappa,pt:Kappa (empresa),https://pt.wikipedia.org/w/index.php?title=Sociedade+Esportiva+do+Gama&oldid=73045191
 rio-branco-es,kit,0,volt,Volt Sport,pt:Volt Sport,https://pt.wikipedia.org/w/index.php?title=Rio+Branco+Atl%C3%A9tico+Clube&oldid=73045369
 rio-branco-es,master,0,banestes,Banestes,pt:Banestes,https://pt.wikipedia.org/w/index.php?title=Rio+Branco+Atl%C3%A9tico+Clube&oldid=73045369
-rio-branco-es,master,1,unimed,Unimed,pt:Unimed,https://pt.wikipedia.org/w/index.php?title=Rio+Branco+Atl%C3%A9tico+Clube&oldid=73045369
-rio-branco-es,master,2,https-apexpartners-com-br-apex-partners-blackbox,[https://apexpartners.com.br Apex Partners] Blackbox,,https://pt.wikipedia.org/w/index.php?title=Rio+Branco+Atl%C3%A9tico+Clube&oldid=73045369
 vitoria-es,kit,0,icone-sports,Icone Sports,,https://pt.wikipedia.org/w/index.php?title=Vit%C3%B3ria+Futebol+Clube+%28Brasil%29&oldid=72650572
 vitoria-es,master,0,marca-ambiental,Marca Ambiental,,https://pt.wikipedia.org/w/index.php?title=Vit%C3%B3ria+Futebol+Clube+%28Brasil%29&oldid=72650572
-vitoria-es,master,1,vistec,Vistec,,https://pt.wikipedia.org/w/index.php?title=Vit%C3%B3ria+Futebol+Clube+%28Brasil%29&oldid=72650572
 aparecidense-go,kit,0,super-bolla,Super Bolla,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Aparecidense&oldid=72958693
 aparecidense-go,master,0,prefeitura-de-aparecida,Prefeitura de Aparecida,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Aparecidense&oldid=72958693
-aparecidense-go,master,1,cristal-alimentos,Cristal Alimentos,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Aparecidense&oldid=72958693
-aparecidense-go,master,2,costa-atacadista,Costa Atacadista,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Aparecidense&oldid=72958693
-aparecidense-go,master,3,las,LAS,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Aparecidense&oldid=72958693
 abecat-ouvidorense-go,kit,0,octto-sports,Octto Sports,,https://pt.wikipedia.org/w/index.php?title=Agro+Esporte+Clube&oldid=72855436
 abecat-ouvidorense-go,master,0,wgo-telecom,WGO Telecom,,https://pt.wikipedia.org/w/index.php?title=Agro+Esporte+Clube&oldid=72855436
 crac-go,kit,0,tolledo-sports,Tolledo Sports,,https://pt.wikipedia.org/w/index.php?title=Clube+Recreativo+e+Atl%C3%A9tico+Catalano&oldid=72621543
 crac-go,master,0,rifertil,Rifertil,,https://pt.wikipedia.org/w/index.php?title=Clube+Recreativo+e+Atl%C3%A9tico+Catalano&oldid=72621543
-crac-go,master,1,hospital-nasr-faiad,Hospital Nasr Faiad,,https://pt.wikipedia.org/w/index.php?title=Clube+Recreativo+e+Atl%C3%A9tico+Catalano&oldid=72621543
-crac-go,master,2,arroz-cristal,Arroz Cristal,,https://pt.wikipedia.org/w/index.php?title=Clube+Recreativo+e+Atl%C3%A9tico+Catalano&oldid=72621543
-crac-go,master,3,nutrigesso,Nutrigesso,,https://pt.wikipedia.org/w/index.php?title=Clube+Recreativo+e+Atl%C3%A9tico+Catalano&oldid=72621543
 moto-ma,kit,0,super-bolla,Super Bolla,,https://pt.wikipedia.org/w/index.php?title=Moto+Club&oldid=72969953
 sampaio-correa-ma,kit,0,tolledo-sports,Tolledo Sports,,https://pt.wikipedia.org/w/index.php?title=Sampaio+Corr%C3%AAa+Futebol+Clube&oldid=72840805
 imperatriz-ma,kit,0,allprint,Allprint,,https://pt.wikipedia.org/w/index.php?title=Sociedade+Imperatriz+de+Desportos&oldid=72855471
@@ -1337,18 +1314,12 @@ luverdense-mt,kit,0,junpe-sports,Junpe Sports,,https://pt.wikipedia.org/w/index.
 luverdense-mt,master,0,sicredi,Sicredi,pt:Sicredi,https://pt.wikipedia.org/w/index.php?title=Luverdense+Esporte+Clube&oldid=72778134
 mixto-mt,kit,0,tubarao-sports,Tubarão Sports,,https://pt.wikipedia.org/w/index.php?title=Mixto+Esporte+Clube&oldid=72874378
 mixto-mt,master,0,sicredi,Sicredi,pt:Sicredi,https://pt.wikipedia.org/w/index.php?title=Mixto+Esporte+Clube&oldid=72874378
-mixto-mt,master,1,unimed,Unimed,pt:Unimed,https://pt.wikipedia.org/w/index.php?title=Mixto+Esporte+Clube&oldid=72874378
 uniao-rondonopolis-mt,kit,0,king-sports,King Sports,,https://pt.wikipedia.org/w/index.php?title=Uni%C3%A3o+Esporte+Clube&oldid=72662091
 uniao-rondonopolis-mt,master,0,rumo,Rumo,,https://pt.wikipedia.org/w/index.php?title=Uni%C3%A3o+Esporte+Clube&oldid=72662091
-uniao-rondonopolis-mt,master,1,elusmar,Elusmar,,https://pt.wikipedia.org/w/index.php?title=Uni%C3%A3o+Esporte+Clube&oldid=72662091
-uniao-rondonopolis-mt,master,2,sicredi,Sicredi,pt:Sicredi,https://pt.wikipedia.org/w/index.php?title=Uni%C3%A3o+Esporte+Clube&oldid=72662091
 tuna-luso-brasileira-pa,kit,0,golkiper,Golkiper,,https://pt.wikipedia.org/w/index.php?title=Tuna+Luso+Brasileira&oldid=72713124
 tuna-luso-brasileira-pa,master,0,governo-do-para,Governo do Pará,,https://pt.wikipedia.org/w/index.php?title=Tuna+Luso+Brasileira&oldid=72713124
-tuna-luso-brasileira-pa,master,1,hospital-beneficente-portuguesa,Hospital Beneficente Portuguesa,,https://pt.wikipedia.org/w/index.php?title=Tuna+Luso+Brasileira&oldid=72713124
-tuna-luso-brasileira-pa,master,2,hotel-sagres,Hotel Sagres,,https://pt.wikipedia.org/w/index.php?title=Tuna+Luso+Brasileira&oldid=72713124
 aguia-de-maraba-pa,kit,0,allprint,Allprint,,https://pt.wikipedia.org/w/index.php?title=%C3%81guia+de+Marab%C3%A1+Futebol+Clube&oldid=72620989
 aguia-de-maraba-pa,master,0,banpara,Banpará,pt:Banpará,https://pt.wikipedia.org/w/index.php?title=%C3%81guia+de+Marab%C3%A1+Futebol+Clube&oldid=72620989
-aguia-de-maraba-pa,master,1,tratorpecas,Tratorpeças,,https://pt.wikipedia.org/w/index.php?title=%C3%81guia+de+Marab%C3%A1+Futebol+Clube&oldid=72620989
 sousa-pb,kit,0,lance,Lance,,https://pt.wikipedia.org/w/index.php?title=Sousa+Esporte+Clube&oldid=72181170
 sousa-pb,master,0,concessionaria-novos-tempos,Concessionária Novos Tempos,,https://pt.wikipedia.org/w/index.php?title=Sousa+Esporte+Clube&oldid=72181170
 central-pe,kit,0,lwga-company,LWGA Company,,https://pt.wikipedia.org/w/index.php?title=Central+Sport+Club&oldid=73030785
@@ -1378,25 +1349,10 @@ nautico-marcilio-dias-sc,kit,0,spieler-sports,Spieler Sports,,https://pt.wikiped
 nautico-marcilio-dias-sc,master,0,portonave,Portonave,,https://pt.wikipedia.org/w/index.php?title=Clube+N%C3%A1utico+Marc%C3%ADlio+Dias&oldid=72680026
 lagarto-se,kit,0,kappa,Kappa,pt:Kappa (empresa),https://pt.wikipedia.org/w/index.php?title=Lagarto+Futebol+Clube&oldid=72849077
 lagarto-se,master,0,esportenet,EsporteNet,,https://pt.wikipedia.org/w/index.php?title=Lagarto+Futebol+Clube&oldid=72849077
-lagarto-se,master,1,diego-costa,Diego Costa,,https://pt.wikipedia.org/w/index.php?title=Lagarto+Futebol+Clube&oldid=72849077
-lagarto-se,master,2,supermercado-supercompras,Supermercado Supercompras,,https://pt.wikipedia.org/w/index.php?title=Lagarto+Futebol+Clube&oldid=72849077
-lagarto-se,master,3,minasnet-telecom,Minasnet Telecom,,https://pt.wikipedia.org/w/index.php?title=Lagarto+Futebol+Clube&oldid=72849077
 velo-clube-rioclarense-sp,kit,0,junpe-sports,Junpe Sports,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Esportiva+Velo+Clube+Rioclarense&oldid=72978719
 velo-clube-rioclarense-sp,master,0,freire-transportes,Freire Transportes,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Esportiva+Velo+Clube+Rioclarense&oldid=72978719
 xv-de-piracicaba-sp,kit,0,kappa,Kappa,pt:Kappa (empresa),https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
 xv-de-piracicaba-sp,master,0,raizen,Raízen,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
-xv-de-piracicaba-sp,master,1,unimed,Unimed,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
-xv-de-piracicaba-sp,master,2,catagua,Cataguá,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
-xv-de-piracicaba-sp,master,3,fmc,FMC,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
-xv-de-piracicaba-sp,master,4,pavinc,PAVINC,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
-xv-de-piracicaba-sp,master,5,ihara,IHARA,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
-xv-de-piracicaba-sp,master,6,betnacional,BetNacional,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
-xv-de-piracicaba-sp,master,7,uniodonto,Uniodonto,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
-xv-de-piracicaba-sp,master,8,obramax,Obramax,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
-xv-de-piracicaba-sp,master,9,poty,POTY,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
-xv-de-piracicaba-sp,master,10,coplacana,Coplacana,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
-xv-de-piracicaba-sp,master,11,zyone,Zyone,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
-xv-de-piracicaba-sp,master,12,adidas,Adidas,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+XV+de+Novembro+%28Piracicaba%29&oldid=72883584
 agua-santa-sp,kit,0,karilu,Karilu,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+%C3%81gua+Santa&oldid=72413695
 agua-santa-sp,master,0,dolly,Dolly,pt:Dolly (refrigerante),https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+%C3%81gua+Santa&oldid=72413695
 noroeste-sp,kit,0,physicus,Physicus,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+Noroeste&oldid=72912958
@@ -1407,31 +1363,16 @@ araguaina-to,kit,0,likos-confeccoes,Likos Confecções,,https://pt.wikipedia.org
 tocantinopolis-to,kit,0,pratic-sport,Pratic Sport,,https://pt.wikipedia.org/w/index.php?title=Tocantin%C3%B3polis+Esporte+Clube&oldid=72210424
 tocantinopolis-to,master,0,agronorte,Agronorte,,https://pt.wikipedia.org/w/index.php?title=Tocantin%C3%B3polis+Esporte+Clube&oldid=72210424
 senador-guiomard-ac,master,0,prefeitura-do-quinari,Prefeitura do Quinari,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Senador+Guiomard&oldid=72002890
-senador-guiomard-ac,master,1,governo-do-estado-do-acre,Governo do Estado do Acre,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Senador+Guiomard&oldid=72002890
-senador-guiomard-ac,master,2,araujo,Araújo,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Senador+Guiomard&oldid=72002890
 coruripe-al,kit,0,robrac,Robrac,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Coruripe&oldid=72935607
 coruripe-al,master,0,prefeitura-de-coruripe,Prefeitura de Coruripe,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Coruripe&oldid=72935607
-coruripe-al,master,1,usina-coruripe-e-cooperativa-pindorama,Usina Coruripe e Cooperativa Pindorama,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Coruripe&oldid=72935607
-coruripe-al,master,2,rios-moda-jovem,Rios Moda Jovem,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Coruripe&oldid=72935607
-coruripe-al,master,3,deputado-yvan-beltrao,Deputado Yvan Beltrão,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Coruripe&oldid=72935607
-coruripe-al,master,4,governo-de-alagoas,Governo de Alagoas,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Coruripe&oldid=72935607
-coruripe-al,master,5,acucar-coruripe,Açúcar Coruripe,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Coruripe&oldid=72935607
 princesa-do-solimoes-am,master,0,prefeitura-de-manacapuru,Prefeitura de Manacapuru,,https://pt.wikipedia.org/w/index.php?title=Princesa+do+Solim%C3%B5es+Esporte+Clube&oldid=71953501
-princesa-do-solimoes-am,master,1,rm-materiais-de-construcao,RM Materiais de Construção,,https://pt.wikipedia.org/w/index.php?title=Princesa+do+Solim%C3%B5es+Esporte+Clube&oldid=71953501
 macapa-ap,kit,0,nauru,Naurú,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+Macap%C3%A1&oldid=72972864
 macapa-ap,master,0,sem-patrocinador-fixo,Sem patrocinador fixo,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+Macap%C3%A1&oldid=72972864
 independente-ap,kit,0,golkiper,Golkiper,,https://pt.wikipedia.org/w/index.php?title=Independente+Esporte+Clube&oldid=71967608
 independente-ap,master,0,casa4,Casa4,,https://pt.wikipedia.org/w/index.php?title=Independente+Esporte+Clube&oldid=71967608
-independente-ap,master,1,grupo-madre-tereza,Grupo Madre Tereza,,https://pt.wikipedia.org/w/index.php?title=Independente+Esporte+Clube&oldid=71967608
-independente-ap,master,2,tork-casa-e-construcao,Tork Casa e Construção,,https://pt.wikipedia.org/w/index.php?title=Independente+Esporte+Clube&oldid=71967608
-independente-ap,master,3,tkt-informatica,TKT Informática,,https://pt.wikipedia.org/w/index.php?title=Independente+Esporte+Clube&oldid=71967608
 s-e-r-sao-jose-ap,kit,0,allprint,Allprint,,https://pt.wikipedia.org/w/index.php?title=Sociedade+Esportiva+e+Recreativa+S%C3%A3o+Jos%C3%A9&oldid=72013635
 s-e-r-sao-jose-ap,master,0,ford-concessionaria-moselli,Ford Concessionária Moselli,pt:Ford,https://pt.wikipedia.org/w/index.php?title=Sociedade+Esportiva+e+Recreativa+S%C3%A3o+Jos%C3%A9&oldid=72013635
 santos-ap,master,0,2a-importados,2A Importados,,https://pt.wikipedia.org/w/index.php?title=Santos+Futebol+Clube+%28Macap%C3%A1%29&oldid=72075164
-santos-ap,master,1,governo-do-estado-do-amapa,Governo do Estado do Amapá,pt:Governo do Estado do Amapá,https://pt.wikipedia.org/w/index.php?title=Santos+Futebol+Clube+%28Macap%C3%A1%29&oldid=72075164
-santos-ap,master,2,aguas-da-amazonia,Águas da Amazônia,,https://pt.wikipedia.org/w/index.php?title=Santos+Futebol+Clube+%28Macap%C3%A1%29&oldid=72075164
-santos-ap,master,3,l-m-s,L.M.S,,https://pt.wikipedia.org/w/index.php?title=Santos+Futebol+Clube+%28Macap%C3%A1%29&oldid=72075164
-santos-ap,master,4,natuvida,Natuvida,,https://pt.wikipedia.org/w/index.php?title=Santos+Futebol+Clube+%28Macap%C3%A1%29&oldid=72075164
 ypiranga-ap,kit,0,f2,F2,,https://pt.wikipedia.org/w/index.php?title=Ypiranga+Clube&oldid=72875412
 ypiranga-ap,master,0,grupo-amper,Grupo Amper,,https://pt.wikipedia.org/w/index.php?title=Ypiranga+Clube&oldid=72875412
 bahia-de-feira-ba,master,0,uniao-medica,União Médica,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Bahia+de+Feira&oldid=72988862
@@ -1441,41 +1382,21 @@ horizonte-ce,master,0,prefeitura-de-horizonte,Prefeitura de Horizonte,pt:Horizon
 sobradinho-df,kit,0,lider-sport,Lider Sport,,https://pt.wikipedia.org/w/index.php?title=Sobradinho+Esporte+Clube&oldid=72616069
 ferroviaria-es,kit,0,icone-sports,Icone Sports,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Ferrovi%C3%A1ria+Vale+do+Rio+Doce&oldid=72962934
 ferroviaria-es,master,0,sonotica,Sonótica,pt:Sonótica,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Ferrovi%C3%A1ria+Vale+do+Rio+Doce&oldid=72962934
-ferroviaria-es,master,1,banestes,Banestes,pt:Banestes,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Ferrovi%C3%A1ria+Vale+do+Rio+Doce&oldid=72962934
-ferroviaria-es,master,2,linsen,Linsen,pt:Linsen,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Ferrovi%C3%A1ria+Vale+do+Rio+Doce&oldid=72962934
-ferroviaria-es,master,3,construbom,Construbom,pt:Construbom,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Ferrovi%C3%A1ria+Vale+do+Rio+Doce&oldid=72962934
-ferroviaria-es,master,4,transamerica-fit,Transamerica Fit,pt:Transamerica Fit,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Ferrovi%C3%A1ria+Vale+do+Rio+Doce&oldid=72962934
-ferroviaria-es,master,5,bau-do-cabeleira,Baú do Cabeleira,pt:Baú do Cabeleira,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Ferrovi%C3%A1ria+Vale+do+Rio+Doce&oldid=72962934
-ferroviaria-es,master,6,politintas,Politintas,pt:Politintas,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Ferrovi%C3%A1ria+Vale+do+Rio+Doce&oldid=72962934
-ferroviaria-es,master,7,bluzz-saude,Bluzz Saúde,pt:Bluzz Saúde,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Ferrovi%C3%A1ria+Vale+do+Rio+Doce&oldid=72962934
-ferroviaria-es,master,8,tattica,Tattica,pt:Tattica,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Ferrovi%C3%A1ria+Vale+do+Rio+Doce&oldid=72962934
-ferroviaria-es,master,9,modani,Modani,pt:Modani,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Desportiva+Ferrovi%C3%A1ria+Vale+do+Rio+Doce&oldid=72962934
 rio-branco-de-venda-nova-es,kit,0,vettor,Vettor,,https://pt.wikipedia.org/w/index.php?title=Rio+Branco+Futebol+Clube&oldid=72952603
 rio-branco-de-venda-nova-es,master,0,sicoob,Sicoob,,https://pt.wikipedia.org/w/index.php?title=Rio+Branco+Futebol+Clube&oldid=72952603
-rio-branco-de-venda-nova-es,master,1,perim,Perim,,https://pt.wikipedia.org/w/index.php?title=Rio+Branco+Futebol+Clube&oldid=72952603
-rio-branco-de-venda-nova-es,master,2,pagotto,Pagotto,,https://pt.wikipedia.org/w/index.php?title=Rio+Branco+Futebol+Clube&oldid=72952603
 sd-serra-es,kit,0,vettor,Vettor,,https://pt.wikipedia.org/w/index.php?title=Serra+Futebol+Clube&oldid=72473724
 anapolina-go,kit,0,tolledo-sports,Tolledo Sports,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Anapolina&oldid=72906025
 anapolina-go,master,0,cristal-alimentos,Cristal Alimentos,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Anapolina&oldid=72906025
-anapolina-go,master,1,arte-trigo,Arte Trigo,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Atl%C3%A9tica+Anapolina&oldid=72906025
 nova-mutum-mt,kit,0,invicttus,Invicttus,,https://pt.wikipedia.org/w/index.php?title=Nova+Mutum+Esporte+Clube&oldid=71698275
 cameta-pa,kit,0,allprint,Allprint,,https://pt.wikipedia.org/w/index.php?title=Camet%C3%A1+Sport+Club&oldid=72064402
 cameta-pa,master,0,prefeitura-de-cameta,Prefeitura de Cametá,pt:Cametá,https://pt.wikipedia.org/w/index.php?title=Camet%C3%A1+Sport+Club&oldid=72064402
 castanhal-pa,kit,0,japiim-marca-propria,Japiim (marca própria),,https://pt.wikipedia.org/w/index.php?title=Castanhal+Esporte+Clube&oldid=72195272
 castanhal-pa,master,0,reinafarma,ReinaFarma,,https://pt.wikipedia.org/w/index.php?title=Castanhal+Esporte+Clube&oldid=72195272
-castanhal-pa,master,1,banpara,Banpará,pt:Banco do Estado do Pará,https://pt.wikipedia.org/w/index.php?title=Castanhal+Esporte+Clube&oldid=72195272
-castanhal-pa,master,2,governo-do-para,Governo do Pará,pt:Pará,https://pt.wikipedia.org/w/index.php?title=Castanhal+Esporte+Clube&oldid=72195272
-castanhal-pa,master,3,hileia,Hiléia,,https://pt.wikipedia.org/w/index.php?title=Castanhal+Esporte+Clube&oldid=72195272
-castanhal-pa,master,4,mafrinorte,Mafrinorte,,https://pt.wikipedia.org/w/index.php?title=Castanhal+Esporte+Clube&oldid=72195272
-castanhal-pa,master,5,mix-floratta,Mix Floratta,,https://pt.wikipedia.org/w/index.php?title=Castanhal+Esporte+Clube&oldid=72195272
-castanhal-pa,master,6,husqvarna,Husqvarna,pt:Husqvarna AB,https://pt.wikipedia.org/w/index.php?title=Castanhal+Esporte+Clube&oldid=72195272
-castanhal-pa,master,7,nbet91,NBET91,,https://pt.wikipedia.org/w/index.php?title=Castanhal+Esporte+Clube&oldid=72195272
 sao-raimundo-pa,kit,0,golkiper,Golkiper,,https://pt.wikipedia.org/w/index.php?title=S%C3%A3o+Raimundo+Esporte+Clube+%28Par%C3%A1%29&oldid=72353097
 sao-raimundo-pa,master,0,plainlist,{{plainlist|,,https://pt.wikipedia.org/w/index.php?title=S%C3%A3o+Raimundo+Esporte+Clube+%28Par%C3%A1%29&oldid=72353097
 boavista-rj,kit,0,kappa,Kappa,pt:Kappa (empresa),https://pt.wikipedia.org/w/index.php?title=Boavista+Sport+Club&oldid=72829351
 potiguar-rn,kit,0,kappa,Kappa,pt:Kappa (empresa),https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Cultural+e+Desportiva+Potiguar&oldid=72830562
 potiguar-rn,master,0,rede-a-construtora,Rede A Construtora,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Cultural+e+Desportiva+Potiguar&oldid=72830562
-potiguar-rn,master,1,voltalia,Voltalia,,https://pt.wikipedia.org/w/index.php?title=Associa%C3%A7%C3%A3o+Cultural+e+Desportiva+Potiguar&oldid=72830562
 globo-rn,kit,0,am-sports,AM Sports,,https://pt.wikipedia.org/w/index.php?title=Globo+Futebol+Clube&oldid=72902960
 globo-rn,master,0,dore,Dore,,https://pt.wikipedia.org/w/index.php?title=Globo+Futebol+Clube&oldid=72902960
 ji-parana-ro,master,0,cresol,Cresol,pt:Cresol,https://pt.wikipedia.org/w/index.php?title=Ji-Paran%C3%A1+Futebol+Clube&oldid=72811875
@@ -1486,13 +1407,8 @@ atletico-roraima-rr,master,0,chico-mozart,Chico Mozart,pt:Chico Mozart,https://p
 bare-rr,kit,0,personal-confeccoes,Personal Confecções,,https://pt.wikipedia.org/w/index.php?title=Bar%C3%A9+Esporte+Clube&oldid=72828712
 avenida-rs,kit,0,sbe-sports,SBE Sports,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+Avenida&oldid=72149616
 avenida-rs,master,0,ulfer,Ulfer,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+Avenida&oldid=72149616
-avenida-rs,master,1,unicesumar,Unicesumar,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+Avenida&oldid=72149616
-avenida-rs,master,2,supermercado-miller,Supermercado Miller,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+Avenida&oldid=72149616
 novo-hamburgo-rs,kit,0,dresch-sports,Dresch Sports,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+Novo+Hamburgo&oldid=72490601
 novo-hamburgo-rs,master,0,comusa,Comusa,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+Novo+Hamburgo&oldid=72490601
-novo-hamburgo-rs,master,1,doctor-clin,Doctor Clin,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+Novo+Hamburgo&oldid=72490601
-novo-hamburgo-rs,master,2,sebratel,Sebratel,,https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+Novo+Hamburgo&oldid=72490601
-novo-hamburgo-rs,master,3,nh-jornal,NH (jornal),pt:NH (jornal),https://pt.wikipedia.org/w/index.php?title=Esporte+Clube+Novo+Hamburgo&oldid=72490601
 concordia-sc,kit,0,megaplay,MegaPlay,,https://pt.wikipedia.org/w/index.php?title=Conc%C3%B3rdia+Atl%C3%A9tico+Clube&oldid=71597684
 concordia-sc,master,0,coperdia,Copérdia,,https://pt.wikipedia.org/w/index.php?title=Conc%C3%B3rdia+Atl%C3%A9tico+Clube&oldid=71597684
 america-se,kit,0,robrac,Robrac,,https://pt.wikipedia.org/w/index.php?title=Am%C3%A9rica+Futebol+Clube+%28Sergipe%29&oldid=72814716

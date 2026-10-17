@@ -132,17 +132,26 @@ def revision_url(host: str, title: str, revid: int) -> str:
     return f"https://{host}/w/index.php?" + urllib.parse.urlencode({"title": title, "oldid": revid})
 
 
+def cell_links(cell) -> dict[str, str]:
+    """A cell's link texts with the articles they link to, once its notes and its links to other Wikipedias
+    ("Robey [it; nl]") are gone; a link to a page that doesn't exist links to none."""
+    for extra in cell.find_all("sup") + cell.select(".noprint"):
+        extra.decompose()
+    return {a.get_text(" ", strip=True): "" if "new" in (a.get("class") or []) else a.get("title", "") for a in cell.find_all("a")}
+
+
 def cell_names(cell) -> list[tuple[str, str]]:
     """The names a cell lists, comma-separated, each with the article it links to ('' when none)."""
-    for note in cell.find_all("sup"):
-        note.decompose()
-    links = {a.get_text(" ", strip=True): a.get("title", "") for a in cell.find_all("a")}
-    text = cell.get_text(" ", strip=True)
-    return [(name, links.get(name, "")) for name in split_names(text)]
+    links = cell_links(cell)
+    return [(name, links.get(name, "")) for name in split_names(cell.get_text(" ", strip=True))]
+
+
+# A comma between names, not one inside a number ("Estrella Galicia 0,0").
+LIST_COMMA = r"(?<!\d),|,(?!\d)"
 
 
 def split_names(text: str) -> list[str]:
-    names = [re.sub(r"\s+", " ", part).strip(" .;") for part in re.split(r",|<br\s*/?>|\n", text)]
+    names = [re.sub(r"\s+", " ", part).strip(" .;") for part in re.split(rf"{LIST_COMMA}|<br\s*/?>|\n", text)]
     return [name for name in names if name and name.lower() not in {"none", "—", "-", "n/a"}]
 
 
@@ -212,9 +221,7 @@ def league_rows(league: str, title: str, clubs: dict[tuple[str, str], str]) -> l
                 add(slot, cell_names(cells[place_column]))
         if other_column is not None:
             other = cells[other_column]
-            for note in other.find_all("sup"):
-                note.decompose()
-            links = {a.get_text(" ", strip=True): a.get("title", "") for a in other.find_all("a")}
+            links = cell_links(other)
             text = re.sub(r"^List\s*", "", other.get_text(" ", strip=True))
             for place, listed in PLACE_PATTERN.findall(text):
                 add(PLACES[place], [(brand, links.get(brand, "")) for brand in split_names(listed)])
@@ -256,13 +263,25 @@ def wiki_names(value: str) -> list[tuple[str, str]]:
     """The names an infobox value lists (by line breaks or commas), each with the article it links to."""
     value = re.sub(r"<ref[^>]*/>|<ref[^>]*>.*?</ref>|<ref[^>]*>.*$", "", value)
     value = re.sub(r"\{\{[^{}]*\}\}|<!--.*?-->|'''?|<small>|</small>", "", value)
+    # An external link reads as its text: "[https://apexpartners.com.br Apex Partners]" is "Apex Partners".
+    value = re.sub(r"\[https?://[^\s\]]+(?:\s+([^\]]*))?\]", lambda link: link.group(1) or "", value)
     names: list[tuple[str, str]] = []
-    for part in re.split(r"<br\s*/?>|,|\s/\s|;", value):
+    for part in re.split(rf"<br\s*/?>|{LIST_COMMA}|\s/\s|;", value):
         link = re.search(r"\[\[([^|\]]+)(?:\|([^\]]+))?\]\]", part)
         text = re.sub(r"\[\[(?:[^|\]]+\|)?([^\]]+)\]\]", r"\1", part).strip(" .")
         if text and text.lower() not in {"nenhum", "sem patrocinador", "não possui", "—", "-"}:
             names.append((text, link.group(1).strip() if link else ""))
     return names
+
+
+def infobox_deals(wikitext: str) -> list[tuple[str, str, str]]:
+    """An infobox's kit makers and its master as (slot, brand, article). Its `patrocinio` lists every sponsor
+    in no stated place, so only the first that isn't a kit maker counts, as the master (guess: infoboxes
+    list the master first)."""
+    kit = wiki_names(infobox_field(wikitext, "material"))
+    makers = {name.lower() for name, _ in kit}
+    sponsors = [(name, link) for name, link in wiki_names(infobox_field(wikitext, "patrocinio")) if name.lower() not in makers]
+    return [("kit", name, link) for name, link in kit] + [("master", name, link) for name, link in sponsors[:1]]
 
 
 def infobox_rows(clubs: list[dict[str, str]]) -> list[dict[str, str]]:
@@ -280,8 +299,9 @@ def infobox_rows(clubs: list[dict[str, str]]) -> list[dict[str, str]]:
             continue
         wikitext = revision["slots"]["main"]["content"]
         source = revision_url(host, revision["title"], revision["revid"])
-        for slot, field in (("kit", "material"), ("master", "patrocinio")):
-            for rank, (brand, link) in enumerate(wiki_names(infobox_field(wikitext, field))):
+        deals = infobox_deals(wikitext)
+        for slot in ("kit", "master"):
+            for rank, (brand, link) in enumerate((brand, link) for own, brand, link in deals if own == slot):
                 rows.append({"club_id": club["id"], "slot": slot, "rank": str(rank), "brand_id": brand_id(brand), "brand": brand, "brand_link": link and f"pt:{link}", "source_url": source})
     return rows
 
