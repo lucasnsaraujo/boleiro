@@ -45,8 +45,8 @@ LOGO_WIDTH = 512
 FAVICON = "https://www.google.com/s2/favicons?domain={}&sz=128"
 # A favicon smaller than this is Google's stand-in globe or too blurry to show.
 MIN_FAVICON_PX = 48
-# Commons rations SVG renders; a logo still refused after this many tries waits for the next run.
-DOWNLOAD_ATTEMPTS = 2
+# Commons rations SVG renders; a logo refused is left for the next run instead of waited on.
+DOWNLOAD_ATTEMPTS = 1
 COMPANY = re.compile(
     r"compan|brand|bank|manufactur|retail|chain|bookmak|betting|gambl|insur|airline|cooperativ|supermarket|beer|brew|"
     r"sportswear|clothing|apparel|operator|conglomerat|restaurant|telecom|firm|platform|marketplace|shop|store|"
@@ -252,13 +252,14 @@ def main() -> None:
         path = LOGOS / f"{brand['id']}.png"
         kind = source = licence = ""
         found = logos.get(logo_file.replace("_", " ")) if logo_file else None
-        is_kept = (ROOT / path).exists() and kept.get(brand["id"]) == (found[1] if found else None)
+        # A logo on disk stays, but for a brand whose file was picked by hand since.
+        is_kept = (ROOT / path).exists() and (brand["id"] not in overrides or kept.get(brand["id"]) == (found[1] if found else None))
         if found and (is_kept or save_png(download(found[0]) or b"", ROOT / path)):
             kind = "svg" if logo_file.lower().endswith(".svg") else "commons"
             source, licence = found[1], found[2]
         elif website:
             favicon = FAVICON.format(domain_of(website))
-            if ((ROOT / path).exists() and kept.get(brand["id"]) == favicon) or save_png(download(favicon) or b"", ROOT / path, MIN_FAVICON_PX):
+            if ((ROOT / path).exists() and kept.get(brand["id"]) in {favicon, None}) or save_png(download(favicon) or b"", ROOT / path, MIN_FAVICON_PX):
                 kind, source, licence = "favicon", favicon, "favicon"
         shape = logo_shape(ROOT / path) if kind else ""
         sector = brand["sector"] or ("betting" if BETTING.search(brand["name"]) else "")

@@ -20,18 +20,18 @@ const IMAGE_BUDGETS: Record<string, { largestFile: number; total: number }> = {
 const SPONSORS_PACK = join(PACK, "sponsors");
 const sponsorsManifest = parseAssetManifest(readFileSync(join(SPONSORS_PACK, "assets.json"), "utf8"));
 const LOGO_BUDGETS: Record<string, { largestFile: number; total: number }> = {
-  // today 18,732 and 1,199,416 (135 logos, 2 boxes)
-  logo: { largestFile: 24_000, total: 1_500_000 },
-  // today 18,284 and 202,634 (37 badges, 2 boxes)
-  badge: { largestFile: 24_000, total: 260_000 },
+  // today 18,732 and 2,114,206 (236 logos, 2 boxes)
+  logo: { largestFile: 24_000, total: 2_650_000 },
+  // today 18,284 and 384,104 (70 badges, 2 boxes)
+  badge: { largestFile: 24_000, total: 480_000 },
 };
 // Every image of the v1 world, Brazil's, the world scrape's (pack/world/) and the sponsors', against
-// SPEC §4.3's ~25 MB: today 16,954,390 bytes, 1,402,050 of them the sponsors' logos.
-const ALL_IMAGES_BUDGET = 18_500_000;
+// SPEC §4.3's ~25 MB: today 18,050,650 bytes, 2,498,310 of them the sponsors' logos.
+const ALL_IMAGES_BUDGET = 20_000_000;
 const WORLD_PACK = join(PACK, "world");
 const worldManifest = parseAssetManifest(readFileSync(join(WORLD_PACK, "assets.json"), "utf8"));
-// today 60,278, 53,950, 13,187 and 25,339
-const FILE_BUDGETS: Record<string, number> = { [PACK_FILE]: 75_000, "assets.json": 67_000, [SPONSORS_PACK_FILE]: 17_000, "sponsors/assets.json": 32_000 };
+// today 60,278, 53,950, 24,707 and 45,520
+const FILE_BUDGETS: Record<string, number> = { [PACK_FILE]: 75_000, "assets.json": 67_000, [SPONSORS_PACK_FILE]: 31_000, "sponsors/assets.json": 57_000 };
 
 function filesOf(kind: string | null, of = manifest, root = PACK): string[] {
   return Object.entries(of.images)

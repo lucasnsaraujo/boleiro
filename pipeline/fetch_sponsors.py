@@ -1,7 +1,9 @@
 """Reads each club's shirt sponsors and kit maker from Wikipedia into data/sponsors.csv.
 
 Séries A, B and C come from the "Personnel and kits" table of the English Wikipedia season article
-(kit maker, main sponsor, and the other sponsors by place on the kit where the table lists them).
+(kit maker, main sponsor, and the other sponsors by place on the kit where the table lists them), and so
+do the clubs of the leagues abroad a coach can take (the world packs' first and second divisions of the
+countries in ABROAD_ARTICLES), whose tables name the kit maker and the chest, sleeve and back sponsors.
 Série D and the state-only clubs come from the `material` and `patrocinio` fields of each club's
 Portuguese Wikipedia infobox, found through Wikidata by Transfermarkt id (P7223).
 
@@ -16,6 +18,7 @@ Usage: .venv/bin/python pipeline/fetch_sponsors.py
 from __future__ import annotations
 
 import csv
+import gzip
 import hashlib
 import json
 import re
@@ -43,7 +46,20 @@ LEAGUE_ARTICLES = {
     "B": "2026 Campeonato Brasileiro Série B",
     "C": "2026 Campeonato Brasileiro Série C",
 }
-KITS_SECTION = "Personnel and kits"
+# "Personnel and kits", "Personnel and sponsoring", "Personnel and sponsorship", "Personnel and sponsors".
+KITS_SECTION = "Personnel and"
+WORLD_PACKS = ROOT / "packages" / "data" / "pack" / "world"
+# The season articles of the leagues abroad whose tables list kits, by the world packs' league id.
+ABROAD_ARTICLES = {
+    "gb-eng-1": "2026–27 Premier League", "gb-eng-2": "2026–27 EFL Championship",
+    "es-1": "2026–27 La Liga", "es-2": "2026–27 Segunda División",
+    "it-1": "2026–27 Serie A", "it-2": "2026–27 Serie B",
+    "de-1": "2026–27 Bundesliga", "de-2": "2026–27 2. Bundesliga",
+    "fr-1": "2026–27 Ligue 1", "fr-2": "2026–27 Ligue 2",
+    "pt-1": "2026–27 Primeira Liga", "nl-1": "2026–27 Eredivisie", "be-1": "2026–27 Belgian Pro League",
+    "tr-1": "2026–27 Süper Lig", "gb-sct-1": "2026–27 Scottish Premiership", "ar-1": "2026 Argentine Primera División",
+    "sa-1": "2026–27 Saudi Pro League", "us-1": "2026 Major League Soccer season", "mx-1": "2026–27 Liga MX season",
+}
 # The table's places on the kit, as the game names them.
 PLACES = {"Front": "front", "Back": "back", "Sleeves": "sleeves", "Shorts": "shorts", "Socks": "socks", "Number": "number"}
 PLACE_PATTERN = re.compile(r"(Front|Back|Sleeves|Shorts|Socks|Number):\s*(.*?)(?=\s*(?:Front|Back|Sleeves|Shorts|Socks|Number):|$)")
@@ -130,39 +146,70 @@ def split_names(text: str) -> list[str]:
     return [name for name in names if name and name.lower() not in {"none", "—", "-", "n/a"}]
 
 
-def league_rows(division: str, title: str, clubs: dict[tuple[str, str], str]) -> list[dict[str, str]]:
+def column_of(header: list[str], *words: str, without: tuple[str, ...] = ()) -> int | None:
+    """The first column whose name holds every word and none of `without`, case aside."""
+    for i, name in enumerate(header):
+        lower = name.lower()
+        if all(word in lower for word in words) and not any(word in lower for word in without):
+            return i
+    return None
+
+
+def one_club_by_words(league: str, key: str, clubs: dict[tuple[str, str], str]) -> str | None:
+    """The league's one club whose name's words hold the table's, or are held by them: "Napoli" is "SSC Napoli"."""
+    words = set(key.split("-"))
+    found = {club_id for (own, other), club_id in clubs.items() if own == league and (words <= set(other.split("-")) or set(other.split("-")) <= words)}
+    return found.pop() if len(found) == 1 else None
+
+
+def league_rows(league: str, title: str, clubs: dict[tuple[str, str], str]) -> list[dict[str, str]]:
+    """The kit table of a league's season article, club by club; `league` is a Série's letter or a world pack's league id."""
     host = "en.wikipedia.org"
     revision = revision_before_ban(host, title)
     if revision is None:
-        raise RuntimeError(f"{title} has no revision before the ban")
+        print(f"{title} has no revision before the ban")
+        return []
     sections = api(host, action="parse", oldid=revision["revid"], prop="sections")["parse"]["sections"]
-    index = next(s["index"] for s in sections if s["line"] == KITS_SECTION)
+    index = next((s["index"] for s in sections if s["line"].startswith(KITS_SECTION)), None)
+    if index is None:
+        print(f"{title} has no kit table")
+        return []
     html = api(host, action="parse", oldid=revision["revid"], section=index, prop="text")["parse"]["text"]
-    table = BeautifulSoup(html, "lxml").find("table")
+    # The kit table, not a maintenance banner above it.
+    table = next((t for t in BeautifulSoup(html, "lxml").find_all("table") if re.search(r"sponsor|kit", t.find("tr").get_text(" ", strip=True), re.IGNORECASE)), None)
+    if table is None:
+        print(f"{title} has no kit table")
+        return []
     header = [cell.get_text(" ", strip=True) for cell in table.find("tr").find_all(["th", "td"])]
-    column = {name: i for i, name in enumerate(header)}
-    kit_column = column["Kit manufacturer"]
-    main_column = next(i for name, i in column.items() if "main sponsor" in name.lower())
-    other_column = column.get("Other sponsors")
+    kit_column = column_of(header, "kit", without=("sponsor",))
+    main_column = column_of(header, "sponsor", without=("sleeve", "back", "other", "short"))
+    places = {"sleeves": column_of(header, "sleeve"), "back": column_of(header, "back", "sponsor")}
+    other_column = column_of(header, "other sponsor")
     source = revision_url(host, revision["title"], revision["revid"])
     rows: list[dict[str, str]] = []
     for tr in table.find_all("tr")[1:]:
-        cells = tr.find_all(["th", "td"])
+        # A cell spanning columns (one sponsor on the chest and sleeves, a "—" over two) counts in each.
+        cells = [cell for cell in tr.find_all(["th", "td"]) for _ in range(int(cell.get("colspan") or 1))]
         if len(cells) < len(header):
             continue
         name = cells[0].get_text(" ", strip=True)
         key = team_key(name)
-        club_id = ALIASES.get((division, key)) or clubs.get((division, key))
+        club_id = ALIASES.get((league, key)) or clubs.get((league, key)) or one_club_by_words(league, key, clubs)
         if club_id is None:
-            print(f"Série {division}: no club for {name!r} ({key})")
+            print(f"{league}: no club for {name!r} ({key})")
             continue
 
         def add(slot: str, names: list[tuple[str, str]]) -> None:
             for rank, (brand, link) in enumerate(names):
                 rows.append({"club_id": club_id, "slot": slot, "rank": str(rank), "brand_id": brand_id(brand), "brand": brand, "brand_link": link, "source_url": source})
 
-        add("kit", cell_names(cells[kit_column]))
-        add("master", cell_names(cells[main_column]))
+        if kit_column is not None:
+            add("kit", cell_names(cells[kit_column]))
+        if main_column is not None:
+            add("master", cell_names(cells[main_column]))
+        for slot, place_column in places.items():
+            if place_column is not None:
+                add(slot, cell_names(cells[place_column]))
         if other_column is not None:
             other = cells[other_column]
             for note in other.find_all("sup"):
@@ -172,6 +219,20 @@ def league_rows(division: str, title: str, clubs: dict[tuple[str, str], str]) ->
             for place, listed in PLACE_PATTERN.findall(text):
                 add(PLACES[place], [(brand, links.get(brand, "")) for brand in split_names(listed)])
     return rows
+
+
+def world_clubs() -> dict[tuple[str, str], str]:
+    """The world packs' league clubs by (league id, team key of their name or short name)."""
+    found: dict[tuple[str, str], str] = {}
+    for path in sorted(WORLD_PACKS.glob("*.pack.json.gz")):
+        clubs = json.loads(gzip.decompress(path.read_bytes())).get("clubs")
+        if not clubs:
+            continue
+        for club_id, name, short, league in zip(clubs["id"], clubs["name"], clubs["shortName"], clubs["league"]):
+            if league:
+                for label in (name, short):
+                    found.setdefault((league, team_key(label)), club_id)
+    return found
 
 
 def ptwiki_titles(tm_ids: list[str]) -> dict[str, str]:
@@ -235,6 +296,11 @@ def main() -> None:
     for division, title in LEAGUE_ARTICLES.items():
         found = league_rows(division, title, by_name)
         print(f"Série {division}: {len({row['club_id'] for row in found})} clubs, {len(found)} rows")
+        rows += found
+    abroad = world_clubs()
+    for league, title in ABROAD_ARTICLES.items():
+        found = league_rows(league, title, abroad)
+        print(f"{league}: {len({row['club_id'] for row in found})} clubs, {len(found)} rows")
         rows += found
     covered = {row["club_id"] for row in rows}
     rest = [club for club in clubs if club["id"] not in covered]
