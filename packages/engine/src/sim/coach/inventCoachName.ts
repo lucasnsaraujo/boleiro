@@ -1,3 +1,4 @@
+import { COACH_ROSTER } from "@boleiro/data/coachRoster";
 import { inventName } from "../players/inventName.js";
 
 // Common given names and surnames by language, combined at random, so the coaches the game invents
@@ -137,10 +138,19 @@ function pick(list: readonly string[], random: () => number): string {
   return list[Math.floor(random() * list.length)] ?? "";
 }
 
-/** An invented coach for a club of `country` (a country id of the game, "br" for Brazil): a local name and nationality. */
+const REAL_NAMES = new Set(Object.values(COACH_ROSTER).map((coach) => coach.name));
+// A draw that keeps landing on real coaches' names gives up after this many and keeps the last.
+const REDRAWS = 20;
+
+/** An invented coach for a club of `country` (a country id of the game, "br" for Brazil): a local name no real coach in Transfermarkt's lists has, and a nationality. */
 export function inventCoachName(country: string, random: () => number): { name: string; nationality: string } {
   const { language, nationality } = COUNTRIES[country] ?? { language: "en", nationality: "England" };
-  if (language === "br") return { name: inventName(random), nationality };
-  const names = NAMES[language];
-  return { name: `${pick(names.given, random)} ${pick(names.surnames, random)}`, nationality };
+  const draw = () => {
+    if (language === "br") return inventName(random);
+    const names = NAMES[language];
+    return `${pick(names.given, random)} ${pick(names.surnames, random)}`;
+  };
+  let name = draw();
+  for (let tries = 1; tries < REDRAWS && REAL_NAMES.has(name); tries++) name = draw();
+  return { name, nationality };
 }
