@@ -487,71 +487,6 @@
   width: 62px;
 }
 
-.money {
-  flex: 1;
-  min-width: 0;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 6px 0 12px;
-  border-radius: 10px;
-  background: var(--card);
-  box-shadow: inset 0 0 0 2px var(--ink);
-}
-
-.money-value {
-  font-stretch: var(--semi);
-  font-weight: 900;
-  font-size: 17px;
-  white-space: nowrap;
-}
-
-.money-hint {
-  min-width: 0;
-  margin-left: auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 11.5px;
-  color: var(--mute);
-  white-space: nowrap;
-}
-
-.money-steps {
-  display: flex;
-  gap: 2px;
-  margin-left: auto;
-}
-
-.money-hint + .money-steps {
-  margin-left: 0;
-}
-
-.money-steps button {
-  width: 24px;
-  height: 24px;
-  display: grid;
-  place-items: center;
-  border-radius: 6px;
-  background: var(--paper-2);
-  font-size: 12px;
-  transition: background-color var(--t-fast) var(--e-out), transform var(--t-fast) var(--e-out);
-}
-
-.money-steps button:hover:not(:disabled) {
-  background: var(--yellow);
-  color: var(--on-yellow);
-}
-
-.money-steps button:active:not(:disabled) {
-  transform: scale(0.92);
-}
-
-.money-steps button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
 .market-fit {
   display: grid;
   gap: 6px;
@@ -1223,4 +1158,96 @@
 
 .market-clause[disabled]:hover {
   transform: none;
+}
+
+/* The contract length of an offer: one segment per length, the player's take on it as a mark under the unit. */
+.market-lengths {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.market-len {
+  position: relative;
+  height: 40px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1px;
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+  transition:
+    background-color var(--t-fast) var(--e-out),
+    box-shadow var(--t-fast) var(--e-out),
+    transform var(--t-fast) var(--e-out);
+}
+
+.market-len b {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.market-len small {
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--mute);
+}
+
+.market-len::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.market-len.wants::after {
+  background: var(--green);
+}
+
+.market-len.hard::after {
+  background: var(--yellow-d);
+}
+
+.market-len:hover:not(:disabled):not(.on) {
+  box-shadow: inset 0 0 0 1.5px var(--ink-2);
+  transform: translateY(-1px);
+}
+
+.market-len.on {
+  background: var(--ink);
+  color: var(--card);
+  box-shadow: 0 2px 0 var(--edge);
+}
+
+.market-len.on small {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.market-len:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.market-len:disabled b {
+  text-decoration: line-through;
+}
+
+.market-len-note {
+  margin: -2px 0 0 72px;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.market-len-note.hard {
+  color: var(--later);
 }

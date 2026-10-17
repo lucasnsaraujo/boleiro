@@ -1,5 +1,6 @@
 import type { Formation } from "@boleiro/engine/engine/formations";
 import { advanceDay, type DayDecisions, type DayEvent, type DayResult, type WaitingDecisions } from "@boleiro/engine/sim/advanceDay";
+import { withAssistantDuty, type AssistantDuty } from "@boleiro/engine/sim/coach/assistantDuties";
 import { declineOffer } from "@boleiro/engine/sim/coach/declineOffer";
 import { nameCaptain } from "@boleiro/engine/sim/chemistry/nameCaptain";
 import { pendingEventOf, type EventArea, type PendingEvent } from "@boleiro/engine/sim/events/eventMemory";
@@ -99,6 +100,8 @@ type CommandFields = {
   answerEvent: { choice: number | null };
   /** From now on the assistant answers the events of `area` for the coach in the seat (`isHanded`), or stops doing it. */
   handToAssistant: { area: EventArea; isHanded: boolean };
+  /** The assistant runs `duty` for the coach in the seat from now on (`isOn`), or stops doing it. */
+  setAssistantDuty: { duty: AssistantDuty; isOn: boolean };
   /** The coach in the seat hands the armband to one of his players. */
   nameCaptain: { playerId: string };
   /** The coach in the seat puts a player on his watch list (`isWatched`) or takes him off it. */
@@ -149,6 +152,7 @@ export type CommandResults = {
   spendMarketTime: MarketClockView | null;
   answerEvent: EventAnswered;
   handToAssistant: undefined;
+  setAssistantDuty: undefined;
   nameCaptain: undefined;
   watchPlayer: Scouting;
   saveFilter: Scouting;
@@ -591,6 +595,10 @@ export function createEngineSession(files: GameFiles) {
       const game = betweenDays("the assistant can't take an area");
       const areas = (game.coach.assistantAreas ?? []).filter((own) => own !== area);
       state = { ...game, coach: { ...game.coach, assistantAreas: isHanded ? [...areas, area] : areas } };
+    },
+    setAssistantDuty({ duty, isOn }) {
+      const game = betweenDays("the assistant's duties can't change");
+      state = { ...game, coach: withAssistantDuty(game.coach, duty, isOn) };
     },
     nameCaptain({ playerId }) {
       const game = betweenDays("a captain can't be named");

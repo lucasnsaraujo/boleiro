@@ -332,6 +332,7 @@ function playEvents() {
   const after = session.read(["mood", "boards", "finances"]);
   const inbox = session.inbox();
   apply({ type: "handToAssistant", area: "press", isHanded: true });
+  apply({ type: "setAssistantDuty", duty: "contracts", isOn: false });
   apply({ type: "playToMatchDay" });
   return { recorded, pending, answered, before, after, inbox };
 }
@@ -579,6 +580,7 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     spendMarketTime: true,
     answerEvent: true,
     handToAssistant: true,
+    setAssistantDuty: true,
     nameCaptain: true,
     watchPlayer: true,
     saveFilter: true,

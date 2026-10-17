@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
-import { developPlayers } from "./developPlayers.js";
+import { developPlayers, retiresAtSeasonTurn } from "./developPlayers.js";
 
 const start = loadNewGame(9, { coachClubId: null });
 const regular = (p: SimPlayer) => Number(p.id.slice(1)) % 2 === 0;
@@ -47,6 +47,11 @@ describe("developPlayers at the end of a season", () => {
     const old = all.filter((p) => p.age >= 39);
     expect(old.filter((p) => retired.has(p.id)).length / old.length).toBeGreaterThan(0.4);
     expect(retired.size).toBeGreaterThan(200);
+  });
+
+  it("retires exactly the players foreseen to retire at the season's turn", () => {
+    const retired = events.filter((e) => e.type === "playerRetired").map((e) => e.playerId).sort();
+    expect(retired).toEqual(Object.values(playedSeason.players).filter((p) => retiresAtSeasonTurn(playedSeason, p)).map((p) => p.id).sort());
   });
 
   it("replaces retirees with Brazilian teenagers, stronger at bigger clubs", () => {
