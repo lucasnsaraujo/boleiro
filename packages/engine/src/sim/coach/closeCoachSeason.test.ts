@@ -154,7 +154,8 @@ describe("the coaches' turn of the season", () => {
 });
 
 describe("a season played", () => {
-  let state = loadNewGame(3, { coachClubId: "bahia-ba" });
+  // The player runs a Série D club, so Série A's champion always has an AI coach.
+  let state = loadNewGame(3, { coachClubId: "csa-al" });
   while (state.date < "2026-12-31") state = advanceDay(state, {}).state;
   const lastDay = seasonRuns(state);
   state = advanceDay(state, {}).state;
@@ -184,13 +185,14 @@ describe("a season played", () => {
     expect(open.filter((id) => coachesByClub(world).has(id))).toEqual([]);
   });
 
-  it("credits the Série A title to the AI coach in charge at the end and ranks the coaches, the player among them", () => {
-    // The coach in charge on the last day, even if his club let him go before the new season.
-    const coach = Object.values(world.coaches).find((c) => c.stints.some((stint) => stint.clubId === champion && (stint.until === null || stint.until >= "2026-12-31")));
-    if (champion !== "bahia-ba") expect(coach?.titles).toContainEqual({ season: 2026, competition: "serie-a", clubId: champion });
+  it("credits the Série A title to the AI coach in charge on the day of its final and ranks the coaches, the player among them", () => {
+    const finalDay = lastDay.finals["serie-a"] ?? "";
+    const coach = Object.values(world.coaches).find((c) => c.stints.some((stint) => stint.clubId === champion && stint.from <= finalDay && (stint.until === null || stint.until >= finalDay)));
+    if (!coach) throw new Error(`no AI coach ran ${champion} on ${finalDay}`);
+    expect(coach.titles).toContainEqual({ season: 2026, competition: "serie-a", clubId: champion });
     const ranking = coachRanking(state);
     expect(ranking.length).toBeGreaterThan(100);
     expect(ranking.some(([key]) => key === humanKey(undefined))).toBe(true);
-    if (champion !== "bahia-ba" && coach) expect(ranking.findIndex(([key]) => key === coach.id)).toBeLessThan(20);
+    expect(ranking.findIndex(([key]) => key === coach.id)).toBeLessThan(20);
   });
 });

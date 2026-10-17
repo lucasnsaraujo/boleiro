@@ -4,7 +4,18 @@ import type { GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { loadSouthAmerica } from "../world/loadSouthAmerica.js";
+import type { World } from "../world/world.js";
 import { coachesByClub, countriesCoaching, fullTierClubs, withCoachWorld, type AiCoach, type CoachWorld } from "./aiCoaches.js";
+
+/** The world without its countries' coaches. */
+const stripCoaching = (world: World): World =>
+  Object.fromEntries(
+    Object.entries(world).map(([id, country]) => {
+      const stripped = { ...country };
+      delete stripped.coaching;
+      return [id, stripped];
+    }),
+  );
 
 const coachesOf = (state: GameState): CoachWorld => {
   if (!state.coaches) throw new Error("the game has no AI coaches");
@@ -81,5 +92,23 @@ describe("the AI coaches and the rest of the game", () => {
     expect(a.finances).toEqual(b.finances);
     expect(a.rngState).toBe(b.rngState);
     expect(Object.values(a.coaches?.coaches ?? {}).some((coach) => coach.stints.some((stint) => stint.left === "fired"))).toBe(true);
+  });
+
+  it("leave the result-only world's matches as they were too", () => {
+    const withCoaches = loadNewGame(11, { coachClubId: "bahia-ba", world: loadSouthAmerica(2026) });
+    const without: GameState = { ...withCoaches, world: stripCoaching(withCoaches.world ?? {}) };
+    delete without.coaches;
+    let a = withCoaches;
+    let b = without;
+    while (a.date < "2026-05-01") {
+      a = advanceDay(a, {}).state;
+      b = advanceDay(b, {}).state;
+    }
+    expect(stripCoaching(a.world ?? {})).toEqual(b.world);
+    expect(a.fixtures).toEqual(b.fixtures);
+    expect(a.finances).toEqual(b.finances);
+    expect(a.rngState).toBe(b.rngState);
+    const fired = countriesCoaching(a).flatMap(([, country]) => Object.values(country.coaching.coaches)).filter((coach) => coach.stints.some((stint) => stint.left === "fired"));
+    expect(fired.length).toBeGreaterThan(0);
   });
 });
