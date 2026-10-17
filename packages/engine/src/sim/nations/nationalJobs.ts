@@ -1,5 +1,5 @@
 import { addDays } from "../dates.js";
-import type { GameState, IsoDate } from "../gameState.js";
+import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
 import { CALL_UP_PLACES, CALL_UP_SIZE, OUTSIDER_MARK, nationalsByTeam, pickCallUp, roleOf } from "./callUps.js";
 import type { NationalCompetition, NationalMatch, Nations } from "./nations.js";
 
@@ -125,10 +125,12 @@ export function setCallUp(state: GameState, refs: readonly string[]): GameState 
   return { ...state, nations: { ...nations, picks: [...refs] } };
 }
 
-/** The call-up the coach's team makes on `date`: his own picks, those fit, filled from his assistant's by position; another team's coach picks his own. */
-export function callUpRefsOf(state: GameState, nations: Nations, teamId: string, date: IsoDate): string[] {
-  const nationals = nationalsByTeam(state.players, nations.teams).get(teamId) ?? [];
-  const assistant = pickCallUp(nationals, nations.outsiders[teamId], date);
+/**
+ * The call-up the coach's team makes on `date`: his own picks, those fit, filled from his assistant's by position;
+ * another team's coach picks his own. `nationals` are the game's players by national team, when already sorted.
+ */
+export function callUpRefsOf(state: GameState, nations: Nations, teamId: string, date: IsoDate, nationals: ReadonlyMap<string, readonly SimPlayer[]> = nationalsByTeam(state.players, nations.teams)): string[] {
+  const assistant = pickCallUp(nationals.get(teamId) ?? [], nations.outsiders[teamId], date);
   if (nations.job?.teamId !== teamId || !nations.picks) return assistant;
   const isFit = (ref: string) => ref.startsWith(OUTSIDER_MARK) || (state.players[ref] && !(state.players[ref].condition.injuredUntil && date < state.players[ref].condition.injuredUntil));
   const own = nations.picks.filter(isFit);

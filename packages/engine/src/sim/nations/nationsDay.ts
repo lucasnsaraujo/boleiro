@@ -5,7 +5,7 @@ import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
 import { fatigueOn } from "../players/fatigueOn.js";
 import { drawMatchInjuries, type PlayerInjured } from "../players/recordMatchLoad.js";
 import { withReplacedPlayers } from "../players/squadsByClub.js";
-import { nationalSide, splitRefs } from "./callUps.js";
+import { nationalSide, nationalsByTeam, splitRefs } from "./callUps.js";
 import { callUpRefsOf, nationalJobsAfter, withLiveOffer, type NationalJobEvent } from "./nationalJobs.js";
 import { fifaWindowsOf, type FifaWindow } from "./fifaCalendar.js";
 import { matchImportance, rankingPointsAfter } from "./fifaRanking.js";
@@ -221,8 +221,8 @@ function windowFriendlies(nations: Nations, window: FifaWindow, random: () => nu
 }
 
 /** The game's players a team calls up on `date` and its pool's others, away until `until`: the game's coach's own picks for his team. */
-function callUp(state: GameState, nations: Nations, teamId: string, date: IsoDate, until: IsoDate): CallUp {
-  return { teamId, ...splitRefs(callUpRefsOf(state, nations, teamId, date)), from: date, until };
+function callUp(state: GameState, nations: Nations, teamId: string, date: IsoDate, until: IsoDate, nationals: ReadonlyMap<string, readonly SimPlayer[]>): CallUp {
+  return { teamId, ...splitRefs(callUpRefsOf(state, nations, teamId, date, nationals)), from: date, until };
 }
 
 /** The final tournament a team goes to from this window, if one starts soon after it. */
@@ -252,7 +252,8 @@ export function nationsDay(state: GameState, today: IsoDate): { state: GameState
   const uncalled = [...new Set(todays.flatMap((m) => [m.homeId, m.awayId]))].filter((id) => !nations.callUps[id]);
   if (uncalled.length) {
     // A save opened mid-window has teams to play without a call-up: their coaches pick on the day.
-    nations = { ...nations, callUps: { ...nations.callUps, ...Object.fromEntries(uncalled.map((id) => [id, callUp(state, nations, id, today, today)])) } };
+    const nationals = nationalsByTeam(state.players, nations.teams);
+    nations = { ...nations, callUps: { ...nations.callUps, ...Object.fromEntries(uncalled.map((id) => [id, callUp(state, nations, id, today, today, nationals)])) } };
   }
   if (todays.length) {
     const changed = new Map<string, SimPlayer>();
@@ -344,11 +345,12 @@ export function nationsDay(state: GameState, today: IsoDate): { state: GameState
     const callUps = { ...nations.callUps };
     const duty = { ...nations.duty };
     const calling = { ...state, players };
+    const nationals = nationalsByTeam(players, nations.teams);
     for (const teamId of Object.keys(nations.teams)) {
       const plays = nations.matches.some((m) => (m.homeId === teamId || m.awayId === teamId) && m.date >= window.from && m.date <= window.until);
       const tournament = tournamentAfter(nations, teamId, window);
       if (!plays && !tournament) continue;
-      const own = callUp(calling, nations, teamId, window.from, tournament?.until ?? window.until);
+      const own = callUp(calling, nations, teamId, window.from, tournament?.until ?? window.until, nationals);
       callUps[teamId] = own;
       for (const id of own.playerIds) {
         const player = players[id];
