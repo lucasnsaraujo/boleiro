@@ -1,3 +1,4 @@
+import { hiredAssistantAt } from "../../coach/assistant.js";
 import { addDays } from "../../dates.js";
 import type { EventType } from "../eventType.js";
 import { byStrength, fit, fringe, injured, isRelegationFight, isRun, pickFrom, playedToday, playerCast, playsWithin, round, wageBill, winless } from "./sceneReaders.js";
@@ -110,15 +111,16 @@ export const STAFF_EVENTS: readonly EventType[] = [
     topic: "staff",
     weight: 0.5,
     cooldownDays: 365,
-    cast: () => ({}),
+    // Only an assistant the coach hired gets offers; the club's own level-1 man is nobody's target.
+    cast: (scene) => (hiredAssistantAt(scene.state, scene.clubId) ? {} : null),
     setting: "Por telefone",
     texts: [
-      { headline: "Auxiliar do {club} recebe proposta para ser técnico", body: "Um clube da Série B quer o seu braço direito como treinador principal. Ele pediu para conversar." },
-      { headline: "Seu auxiliar pode sair", body: "“Professor, é a chance da minha vida.” A proposta é para começar na semana que vem." },
-      { headline: "Assédio ao auxiliar do {club}", body: "O empresário do auxiliar confirmou a sondagem. A diretoria pode cobrir a oferta, se o senhor pedir." },
+      { headline: "{assistant}, auxiliar do {club}, recebe proposta para ser técnico", body: "Um clube da Série B quer o seu braço direito como treinador principal. Ele pediu para conversar." },
+      { headline: "Seu auxiliar {assistant} pode sair", body: "“Professor, é a chance da minha vida.” A proposta é para começar na semana que vem." },
+      { headline: "Assédio a {assistant}, auxiliar do {club}", body: "O empresário de {assistant} confirmou a sondagem. A diretoria pode cobrir a oferta, se o senhor pedir." },
     ],
     choices: [
-      { label: "Dar a bênção", detail: "Perde um braço direito", effects: { morale: -1, board: 1 } },
+      { label: "Dar a bênção", detail: "{assistant} sai e o auxiliar do clube volta", effects: { morale: -1, board: 1, releasesAssistant: true }, news: "{assistant} deixa o {club} para ser técnico" },
       { label: "Pedir à diretoria que cubra a proposta", effects: (scene) => ({ money: -round(wageBill(scene) * 0.03), morale: 1 }) },
       { label: "Pedir para ficar até o fim do ano", effects: { morale: 1, board: -1 } },
     ],

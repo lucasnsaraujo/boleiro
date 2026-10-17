@@ -12,7 +12,7 @@ type ByCast<T extends number | Effects> = T | ((scene: EventScene, cast: Cast) =
 /** One answer an event offers. `news` is the headline its outcome prints; left out, the event's own. */
 export type ChoiceType = { label: string; detail?: string; effects: ByCast<Effects>; news?: string };
 
-/** One headline and body; slots in braces ({player}, {club}, {rival}, {age}, {stadium}, {coach}) take real names. */
+/** One headline and body; slots in braces ({player}, {club}, {rival}, {age}, {stadium}, {coach}, {assistant}) take real names. */
 export type EventText = { headline: string; body: string };
 
 /**

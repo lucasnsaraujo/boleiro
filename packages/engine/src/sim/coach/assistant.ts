@@ -177,6 +177,19 @@ export function assistantFollows(state: GameState): { state: GameState; event: A
   return { state: { ...state, coach: { ...state.coach, assistant: { ...assistant, wage } } }, event: null };
 }
 
+/** The assistant the human coach who runs `clubId` hired, in the seat or waiting; none when he keeps the club's own. */
+export function hiredAssistantAt(state: Pick<GameState, "coach" | "coachClubId" | "waitingCoaches">, clubId: string): Assistant | undefined {
+  if (clubId === state.coachClubId) return state.coach.assistant;
+  return waitingCoachesOf(state).find((waiting) => waiting.clubId === clubId)?.coach.assistant;
+}
+
+/** The human coach who runs `clubId` loses the assistant he hired; his club's own takes over again. */
+export function releaseAssistantAt(state: GameState, clubId: string): GameState {
+  if (clubId === state.coachClubId) return fireAssistant(state);
+  const index = waitingCoachesOf(state).findIndex((waiting) => waiting.clubId === clubId);
+  return index < 0 ? state : asWaitingCoach(state, index, (seated) => ({ state: fireAssistant(seated) })).state;
+}
+
 /** The coach in the seat lets his assistant go; the club's own takes over again. */
 export function fireAssistant(state: GameState): GameState {
   if (!state.coach.assistant) return state;

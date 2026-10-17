@@ -5,7 +5,16 @@ import type { GameState, IsoDate } from "../gameState.js";
  * `board` in points of the board's confidence meter, `money` in BRL (in when positive, out when
  * negative), `rivalry` in heat points with the event's rival, `outDays` days the event's player misses.
  */
-export type Effects = { morale?: number; fans?: number; board?: number; money?: number; rivalry?: number; outDays?: number };
+export type Effects = {
+  morale?: number;
+  fans?: number;
+  board?: number;
+  money?: number;
+  rivalry?: number;
+  outDays?: number;
+  /** The coach's hired assistant leaves, and the club's own takes over again. */
+  releasesAssistant?: true;
+};
 
 /** The area of a club's life an event touches, and the switch that hands its events to the assistant. */
 export type EventArea = "players" | "squad" | "board" | "fans" | "press";

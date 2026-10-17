@@ -14,7 +14,7 @@ const CLUB = "flamengo-rj";
 const start = loadNewGame(5, { coachClubId: CLUB });
 const squad = squadsOfGame(start).get(CLUB) ?? [];
 const rivalId = [...(rivalsOf(start.clubs).get(CLUB) ?? [])].sort()[0] ?? "";
-const SLOTS = new Set(["player", "teammate", "club", "rival", "age", "position", "stadium", "coach"]);
+const SLOTS = new Set(["player", "teammate", "club", "rival", "age", "position", "stadium", "coach", "assistant"]);
 const TOPICS: readonly EventTopic[] = ["players", "squad", "board", "fans", "press", "staff", "rivals", "sponsors", "life", "discipline", "health"];
 const monthlyWages = squad.reduce((sum, player) => sum + player.wage, 0);
 

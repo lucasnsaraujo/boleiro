@@ -1,6 +1,7 @@
 import { clubArticle, stadiumArticle } from "@boleiro/data/articles";
 import { keyedStream } from "../../engine/random.js";
 import { coachesByClub, type AiCoach } from "../coach/aiCoaches.js";
+import { assistantOfClub } from "../coach/assistant.js";
 import { humanClubIds, waitingCoachesOf } from "../coach/humanCoaches.js";
 import { addDays } from "../dates.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
@@ -65,6 +66,7 @@ function slotsOf(state: GameState, clubId: string, cast: Cast): Slots {
     club: club?.shortName ?? clubId,
     stadium: club?.stadium ?? "",
     coach: coachNameOf(state, clubId) ?? "o técnico",
+    assistant: assistantOfClub(state, clubId).name,
     rival: cast.rivalId ? (state.clubs[cast.rivalId]?.shortName ?? cast.rivalId) : "",
     player: player?.name ?? "",
     teammate: cast.teammateId ? (state.players[cast.teammateId]?.name ?? "") : "",

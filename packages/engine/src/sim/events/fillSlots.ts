@@ -1,11 +1,14 @@
 import { agreeArticles, type Article } from "@boleiro/data/articles";
 
-const SLOT_NAMES = ["player", "teammate", "club", "rival", "age", "position", "stadium", "coach"] as const;
+const SLOT_NAMES = ["player", "teammate", "club", "rival", "age", "position", "stadium", "coach", "assistant"] as const;
 type SlotName = (typeof SLOT_NAMES)[number];
 const isSlotName = (slot: string): slot is SlotName => SLOT_NAMES.some((name) => name === slot);
 
-/** The real names an event's text takes, by slot, and the article each club and stadium takes ("o" when left out). */
-export type Slots = Record<SlotName, string> & { articles?: Partial<Record<"club" | "rival" | "stadium", Article>> };
+/**
+ * The real names an event's text takes, by slot (the coach's assistant only where a text names him),
+ * and the article each club and stadium takes ("o" when left out).
+ */
+export type Slots = Record<Exclude<SlotName, "assistant">, string> & { assistant?: string; articles?: Partial<Record<"club" | "rival" | "stadium", Article>> };
 
 // A club without a named coach is "o técnico", which a preposition before it takes in: "do técnico".
 const JOINED = { de: "do", em: "no", a: "ao", por: "pelo" } as const;
@@ -21,7 +24,11 @@ const capitalised = (name: string) => name.charAt(0).toUpperCase() + name.slice(
  */
 export function fillSlots(text: string, slots: Slots): string {
   const filled = text
-    .replace(/\{(\w+)\}/g, (whole, slot: string, at: number) => (isSlotName(slot) ? (SENTENCE_START.test(text.slice(0, at)) ? capitalised(slots[slot]) : slots[slot]) : whole))
+    .replace(/\{(\w+)\}/g, (whole, slot: string, at: number) => {
+      const name = isSlotName(slot) ? slots[slot] : undefined;
+      if (name === undefined) return whole;
+      return SENTENCE_START.test(text.slice(0, at)) ? capitalised(name) : name;
+    })
     .replace(/\b(de|em|a|por) o técnico/g, (_whole, word: keyof typeof JOINED) => `${JOINED[word]} técnico`);
   const named = (["club", "rival", "stadium"] as const).map((slot) => ({ name: slots[slot], article: slots.articles?.[slot] ?? "o" }));
   return capitalised(agreeArticles(filled, named));

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { advanceDay } from "../advanceDay.js";
+import { assistantCandidates, assistantOf, hireAssistant } from "../coach/assistant.js";
 import { addDays } from "../dates.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
@@ -152,7 +153,7 @@ describe("event engine", () => {
   });
 
   it("fills every text of the bank with real names", () => {
-    const slots = new Set(["player", "teammate", "club", "rival", "age", "position", "stadium", "coach"]);
+    const slots = new Set(["player", "teammate", "club", "rival", "age", "position", "stadium", "coach", "assistant"]);
     for (const type of EVENT_BANK) {
       const texts = [...type.texts.flatMap((t) => [t.headline, t.body]), type.setting ?? "", ...(type.choices ?? []).flatMap((c) => [c.label, c.detail ?? "", c.news ?? ""])];
       for (const text of texts) for (const [, slot] of text.matchAll(/\{(\w+)\}/g)) expect(slots, `${type.id}: {${slot}}`).toContain(slot);
@@ -219,6 +220,26 @@ describe("event engine", () => {
     const flamengo = storyAt(CLUB);
     expect(flamengo?.headline).toBe(`Presidente do Flamengo cobra o elenco no ${start.clubs[CLUB]?.stadium}`);
     expect(flamengo?.body).toBe(`O Flamengo encara a Ponte Preta. A torcida do Flamengo lota o ${start.clubs[CLUB]?.stadium}.`);
+  });
+
+  it("offers the coach's hired assistant a job elsewhere, by name, and lets him go with the blessing", () => {
+    const offer = EVENT_BANK.find((t) => t.id === "staff-assistant-offer");
+    if (!offer) throw new Error("the bank has the assistant's job offer");
+    const sceneOf = (state: GameState) => ({ state, clubId: CLUB, squad: [], date: state.date, played: [], random: () => 0 });
+    expect(offer.cast(sceneOf(start))).toBeNull();
+    const candidate = assistantCandidates(start)[0];
+    if (!candidate) throw new Error("the coach can call an assistant");
+    const hired = hireAssistant(start, candidate.id).state;
+    expect(hired.coach.assistant?.name).toBe(candidate.name);
+    let asked = hired;
+    for (let day = 0; day < 200 && !pendingEventOf(asked, CLUB); day++) asked = runEvents({ ...asked, date: addDays(hired.date, day + 1) }, addDays(hired.date, day), [], [offer]).state;
+    const pending = pendingEventOf(asked, CLUB);
+    expect(pending?.typeId).toBe("staff-assistant-offer");
+    expect(`${pending?.headline} ${pending?.body}`).toContain(candidate.name);
+    const blessed = answerEvent(asked, CLUB, 0).state;
+    expect(blessed.coach.assistant).toBeUndefined();
+    expect(assistantOf(blessed).level).toBe(1);
+    expect(answerEvent(asked, CLUB, 2).state.coach.assistant?.name).toBe(candidate.name);
   });
 
   it("offers a press conference whose answers move morale, board, fans and rivalry", () => {
