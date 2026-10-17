@@ -3,6 +3,7 @@ import { doesAssistantHandle, withAssistantDuty } from "../coach/assistantDuties
 import { EMPTY_MEMORY } from "../events/eventMemory.js";
 import type { ClubFinance, GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { retiresAtSeasonTurn } from "../players/developPlayers.js";
 import { coachMarketOf, withCoachMarket, withRenewalCounter } from "./coachMarket.js";
 import { assistantPick, wishPick } from "./contractTerms.js";
 import { expireContracts } from "./expireContracts.js";
@@ -159,6 +160,17 @@ describe("AI clubs' renewals", () => {
     expect(renewalsOf(talked.events).filter((e) => ids.has(e.playerId))).toEqual(renewedAtHome);
     const back = runTransferDay({ ...talked.state, date: "2027-01-01" }, []).state;
     for (const event of renewedAtHome) expect(back.players[event.playerId]).toMatchObject({ clubId: LENDER, contractUntil: event.until });
+  });
+
+  it("leave alone the players who retire when the year turns, as does the assistant", () => {
+    const retiring = (p: SimPlayer) => p.contractUntil === lastDay.date && retiresAtSeasonTurn(lastDay, p);
+    const veteran = Object.values(start.players).map((p) => ({ ...p, age: 33 })).find((p) => p.clubId !== COACH && retiresAtSeasonTurn(lastDay, p));
+    if (!veteran) throw new Error("nobody retires");
+    const ours = { ...veteran, clubId: COACH, strength: star.strength, contractUntil: lastDay.date };
+    const state = on(withFinance(lastDay, { wageCap: 1e10 }), lastDay.date, ours);
+    const retiringIds = new Set(Object.values(state.players).filter(retiring).map((p) => p.id));
+    expect(retiringIds.size).toBeGreaterThan(20);
+    expect(renewalsOf(runTransferDay(state, []).events).filter((e) => retiringIds.has(e.playerId))).toEqual([]);
   });
 
   it("let the others go when the year turns, without talking again", () => {

@@ -1,6 +1,6 @@
 import type { Division } from "@boleiro/data/players";
 import type { PositionGroup } from "../../engine/match.js";
-import { randomStream } from "../../engine/random.js";
+import { keyedStream, randomStream } from "../../engine/random.js";
 import { divisionOf, tierOf } from "../finances/tierOf.js";
 import type { GameState, IsoDate, SimPlayer, Tier } from "../gameState.js";
 import { wageRateOf, type WageRate } from "../transfers/wageDemand.js";
@@ -87,6 +87,16 @@ const clamp = (strength: number) => Math.min(99, Math.max(1, strength));
 
 function retirementChance(age: number): number {
   return RETIREMENT.find(([minAge]) => age >= minAge)?.[1] ?? 0;
+}
+
+const RETIREMENT_STREAM_SALT = 0x7e71e;
+
+/**
+ * Whether he retires when `state.season` turns. The roll is his own, keyed to the save's seed, the season
+ * and him, so the clubs talking contracts on the season's last day already know who stops that night.
+ */
+export function retiresAtSeasonTurn(state: Pick<GameState, "seed" | "season">, player: Pick<SimPlayer, "id" | "age">): boolean {
+  return keyedStream(state.seed ^ RETIREMENT_STREAM_SALT, `${state.season}/${player.id}`)() < retirementChance(player.age);
 }
 
 /**
@@ -212,7 +222,7 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
       const target = p.potential === undefined ? clubTarget : Math.max(clubTarget, p.potential + ageOffset(p.age) - ageOffset(PEAK_AGE));
       const drift = ageOffset(p.age + 1) - ageOffset(p.age) + PULL_TO_CLUB_LEVEL * (target - p.strength);
       const strength = clamp(p.strength + drift + minutes + form + SEASON_NOISE_SD * normal(random.next));
-      if (random.next() < retirementChance(p.age)) {
+      if (retiresAtSeasonTurn(state, p)) {
         events.push({ type: "playerRetired", playerId: p.id, clubId, name: p.name, age: p.age });
         continue;
       }

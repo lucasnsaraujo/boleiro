@@ -1,5 +1,6 @@
 import { doesAssistantHandle } from "../coach/assistantDuties.js";
 import { tierOf } from "../finances/tierOf.js";
+import { retiresAtSeasonTurn } from "../players/developPlayers.js";
 import type { ClubFinance, GameState, IsoDate, SimPlayer, Tier } from "../gameState.js";
 import { squadsOfGame, withReplacedPlayers } from "../players/squadsByClub.js";
 import { boardRefusal } from "./boardRefusal.js";
@@ -72,8 +73,8 @@ export function assistantRenewals(state: GameState): { state: GameState; events:
   const renewed: SimPlayer[] = [];
   const events: (PlayerContractRenewed | RenewalSkipped)[] = [];
   for (const player of renewalCandidates(state, squad)) {
-    // The coach is talking to him himself.
-    if (standingRenewalCounter(state, player.id)) continue;
+    // The coach is talking to him himself, or he stops playing tonight.
+    if (standingRenewalCounter(state, player.id) || (isSeasonLastDay(state.date) && retiresAtSeasonTurn(state, player))) continue;
     const verdict = assistantVerdict(state, player, squad, tier, finance, bill);
     if (verdict.kind === "skip") {
       if (verdict.reason !== "notInPlans" || nextLook > player.contractUntil) events.push({ type: "renewalSkipped", playerId: player.id, clubId, until: player.contractUntil, reason: verdict.reason });

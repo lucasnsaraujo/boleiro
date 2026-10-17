@@ -10,6 +10,7 @@ import { movePlayer } from "./movePlayer.js";
 import type { PlayerContractRenewed, PlayerMoved } from "./transferEvents.js";
 import { wageDemand } from "./wageDemand.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
+import { retiresAtSeasonTurn } from "../players/developPlayers.js";
 
 // guess: an AI club offers a new deal to the players it wants to keep (isWorthKeeping), and four in five of
 // them talk; those sign for the length they agree to nearest the one they want (wishPick), at their ask.
@@ -68,14 +69,14 @@ function aiRenewal(state: GameState, player: SimPlayer, squad: readonly SimPlaye
 /**
  * On the season's last day, every AI club talks over the contracts that end that day, its players out
  * on loan included (weighed against its own squad): it renews the players it wants to keep who agree,
- * and the rest leave when the year turns.
+ * and the rest leave when the year turns. Nobody talks to a player who retires that night.
  */
 export function renewAiContracts(state: GameState): { state: GameState; events: PlayerContractRenewed[] } {
   const renewed: SimPlayer[] = [];
   const events: PlayerContractRenewed[] = [];
   const squads = squadsOfGame(state);
   const talk = (player: SimPlayer, clubId: string, squad: readonly SimPlayer[]) => {
-    if (player.contractUntil !== state.date || state.market.preContracts[player.id]) return;
+    if (player.contractUntil !== state.date || state.market.preContracts[player.id] || retiresAtSeasonTurn(state, player)) return;
     const term = aiRenewal(state, { ...player, clubId }, squad, tierOf(state.clubs[clubId] ?? { division: null }));
     if (!term) return;
     const until = renewedUntil(player, state.date, term.months);
