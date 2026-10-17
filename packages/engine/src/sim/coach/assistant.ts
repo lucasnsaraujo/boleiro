@@ -142,8 +142,8 @@ export function hireAssistant(state: GameState, candidateId: string): { state: G
   if (!clubId || !finance) return { state, refusal: "noClub" };
   const candidate = assistantCandidates(state).find((c) => c.id === candidateId);
   if (!candidate) return { state, refusal: "unknown" };
-  const wageChange = candidate.wage - assistantOf(state).wage;
-  if (boardRefusal(finance, wageBillsOf(state).get(clubId) ?? 0, { upFront: 0, wageChange })) return { state, refusal: "wageCap" };
+  // The wage bill holds the players' wages only, so the board weighs his whole wage, not what he adds to the man he replaces.
+  if (boardRefusal(finance, wageBillsOf(state).get(clubId) ?? 0, { upFront: 0, wageChange: candidate.wage })) return { state, refusal: "wageCap" };
   const { id, name, age, level, wage, formerPlayer } = candidate;
   const assistant: Assistant = { id, name, age, level, wage, since: state.date, ...(formerPlayer ? { formerPlayer } : {}) };
   return { state: { ...state, coach: { ...state.coach, assistant } }, refusal: null };

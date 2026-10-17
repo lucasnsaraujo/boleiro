@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { wageBillsOf } from "../transfers/wageBillsOf.js";
 import { scoutedStars } from "../youth/academy.js";
 import { coachSalary } from "./coachSalary.js";
 import { coachCareerDay } from "./coachCareerDay.js";
@@ -78,6 +79,14 @@ describe("the coach's assistant", () => {
     const hired = hireAssistant(capped, candidateAt(capped, 5).id);
     expect(hired.refusal).toBe("wageCap");
     expect(assistantOf(hired.state).level).toBe(1);
+  });
+
+  it("is refused by the board when his whole wage on top of the squad's breaks the wage cap, whoever he replaces", () => {
+    const level2 = hireAssistant(withCash(start, { wageCap: 1e12 }), candidateAt(start, 2).id).state;
+    const level5 = candidateAt(level2, 5);
+    const bill = wageBillsOf(level2).get(COACH) ?? 0;
+    expect(hireAssistant(withCash(level2, { wageCap: bill + level5.wage - 1 }), level5.id).refusal).toBe("wageCap");
+    expect(hireAssistant(withCash(level2, { wageCap: bill + level5.wage }), level5.id).refusal).toBeNull();
   });
 
   it("goes when fired, and the club's own level-1 assistant is back", () => {
