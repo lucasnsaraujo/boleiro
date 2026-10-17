@@ -72,6 +72,22 @@ test("on the renewal screen, a length and Renovar put the renewal at his ask on 
   expect((await engine.desk()).pending).toEqual([{ kind: "renew", playerId: player?.id, years: 2, wage: ask }]);
 });
 
+test("the arrow keys move the length to the next one he'll talk about, as a radio group does", async () => {
+  await openHub();
+  await openFirstRenewal();
+  const open = screen.getAllByRole("radio").filter((option) => !option.hasAttribute("disabled"));
+  const checked = () => screen.getAllByRole("radio").find((option) => option.getAttribute("aria-checked") === "true");
+  const first = open[0];
+  if (!first || open.length < 2) throw new Error("he talks about fewer than two lengths");
+  await userEvent.click(first);
+  expect(screen.getAllByRole("radio").filter((option) => option.tabIndex === 0)).toEqual([first]);
+  await userEvent.keyboard("{ArrowRight}");
+  expect(checked()).toBe(open[1]);
+  expect(document.activeElement).toBe(open[1]);
+  await userEvent.keyboard("{ArrowLeft}{ArrowLeft}");
+  expect(checked()).toBe(open.at(-1));
+});
+
 test("a length he won't talk about can't be picked", async () => {
   await openHub();
   await openFirstRenewal();

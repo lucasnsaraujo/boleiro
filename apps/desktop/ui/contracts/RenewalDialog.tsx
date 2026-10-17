@@ -136,6 +136,19 @@ export function RenewalDialog({ playerId, onClose: close, onChange }: Props) {
     setOffer(null);
   }
 
+  // A radio group: the arrows move the choice to the next length he'll talk about, focus going with it.
+  function moveChoice(event: KeyboardEvent<HTMLDivElement>) {
+    const step = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
+    const open = sheet?.options.filter((option) => option.stance !== "refuses") ?? [];
+    if (!step || !chosen || !open.length) return;
+    event.preventDefault();
+    const at = open.findIndex((option) => option.months === chosen.months);
+    const next = open[(at + step + open.length) % open.length];
+    if (!next) return;
+    pick(next);
+    event.currentTarget.querySelector<HTMLButtonElement>(`[data-months="${next.months}"]`)?.focus();
+  }
+
   function onKeyDown(event: KeyboardEvent) {
     if (event.key === "Escape" && !isBusy) onClose();
     const number = Number(event.key);
@@ -274,7 +287,7 @@ export function RenewalDialog({ playerId, onClose: close, onChange }: Props) {
             <p>{say}</p>
           </div>
 
-          <div className="ct-opts" role="radiogroup" aria-label="Tempo de contrato">
+          <div className="ct-opts" role="radiogroup" aria-label="Tempo de contrato" onKeyDown={moveChoice}>
             {sheet.options.map((option, index) => {
               const isOn = option.months === chosen.months;
               return (
@@ -283,6 +296,8 @@ export function RenewalDialog({ playerId, onClose: close, onChange }: Props) {
                   type="button"
                   role="radio"
                   aria-checked={isOn}
+                  tabIndex={isOn ? 0 : -1}
+                  data-months={option.months}
                   aria-label={`${formatContractLength(option.months)}: ${formatMoney(option.wage)} por mês, ${STANCE_LABELS[option.stance]}`}
                   className={`ct-o${isOn ? " on" : ""}${option.stance === "refuses" ? " no" : ""}`}
                   style={{ "--i": index } as CSSProperties}
