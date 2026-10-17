@@ -3,6 +3,7 @@ import { bookMoney } from "../finances/bookMoney.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { recordCoachEvents } from "../history/recordDayEvents.js";
 import { acceptOffer, type CoachHired } from "./acceptOffer.js";
+import { assistantFollows, type AssistantLeft } from "./assistant.js";
 import { asWaitingCoach, isHumanClub, waitingCoachesOf } from "./humanCoaches.js";
 import { judgeCoaches, type CoachFired } from "./judgeCoaches.js";
 import { offerJobs, type JobOffered } from "./offerJobs.js";
@@ -10,20 +11,28 @@ import { offerJobs, type JobOffered } from "./offerJobs.js";
 // guess: a firing costs the coach a few reputation points on top of the bad results behind it.
 export const FIRING_REPUTATION_COST = 5;
 
-type CareerEvent = CoachHired | CoachFired | JobOffered;
+type CareerEvent = CoachHired | AssistantLeft | CoachFired | JobOffered;
 
-/** The coach in the seat after the day's offer he accepted and his salary on the first of the month. */
+/**
+ * The coach in the seat after the day's offer he accepted, with his hired assistant if the new club
+ * can pay him, and his and his hired assistant's salaries on the first of the month.
+ */
 function hireAndPay(state: GameState, accepted: string | undefined, events: CareerEvent[]): GameState {
   let next = state;
   // Another hot-seat coach may have taken the club since it made the offer.
   if (accepted && !isHumanClub(next, accepted)) {
     const hired = acceptOffer(next, accepted);
-    next = hired.state;
     events.push(hired.event);
+    const follows = assistantFollows(hired.state);
+    next = follows.state;
+    if (follows.event) events.push(follows.event);
   }
-  const { contract } = next.coach;
+  const { contract, assistant } = next.coach;
   if (next.date.endsWith("-01") && next.coachClubId && contract) {
     next = bookMoney(next, next.coachClubId, { cost: "wages", amount: contract.salary });
+  }
+  if (next.date.endsWith("-01") && next.coachClubId && assistant?.wage) {
+    next = bookMoney(next, next.coachClubId, { cost: "wages", amount: assistant.wage });
   }
   return next;
 }

@@ -30,7 +30,8 @@ export function Stadium() {
   const [state, setState] = useState<StadiumState | null>(null);
   const [failed, setFailed] = useState(false);
   const [draft, setDraft] = useState<number | null>(null);
-  const [isManual, setManual] = useState<boolean | null>(null);
+  /** The switch as the coach just flipped it, until the game has it. */
+  const [switched, setSwitched] = useState<boolean | null>(null);
   const [chosenSeats, setChosenSeats] = useState<number | null>(null);
   const [answer, setAnswer] = useState<WorksAnswer | null>(null);
   const [isBusy, setBusy] = useState(false);
@@ -62,7 +63,7 @@ export function Stadium() {
   }
 
   const price = draft ?? view.price;
-  const isAssistant = !(isManual ?? view.price !== view.assistantPrice);
+  const isAssistant = switched ?? view.isAssistantPricing;
 
   /** Runs a command against the game; a refusal (during a round, say) shows instead of changing anything. */
   async function run(command: () => Promise<void>) {
@@ -78,16 +79,25 @@ export function Stadium() {
     }
   }
 
-  const applyPrice = (next: number, isByAssistant = false) =>
+  const applyPrice = (next: number) =>
     run(async () => {
       await engine.apply({ type: "priceTickets", price: next });
       setDraft(null);
-      if (isByAssistant) setManual(false);
     });
 
+  /**
+   * The switch is the assistant's ticket price duty: handed back, he sets his price at once. It flips on
+   * the click, so the price controls answer straight away; the game follows in order.
+   */
   function toggleAssistant() {
-    if (isAssistant) setManual(true);
-    else void applyPrice(view?.assistantPrice ?? price, true);
+    const isOn = !isAssistant;
+    setSwitched(isOn);
+    setDraft(null);
+    engine
+      .apply({ type: "setAssistantDuty", duty: "ticketPrice", isOn })
+      .then(reload)
+      .catch((failure: unknown) => setError(failure instanceof Error ? failure.message : String(failure)))
+      .finally(() => setSwitched(null));
   }
 
   const askWorks = (seatsAsked: number) =>

@@ -18,6 +18,8 @@ export type PlayerMoved = {
   toClubId: string | null;
   /** Transfer fee in BRL. */
   fee: number;
+  /** A human coach's assistant took the offer for him (assistantSales). */
+  byAssistant?: true;
 };
 /** A contract extended to `until` at `wage` BRL a month; `byAssistant` when a human coach's assistant did it for him. */
 export type PlayerContractRenewed = { type: "playerContractRenewed"; playerId: string; clubId: string; until: IsoDate; wage: number; byAssistant?: true };

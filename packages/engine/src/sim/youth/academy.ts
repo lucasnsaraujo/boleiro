@@ -72,9 +72,12 @@ export function starsOf(potential: number): number {
   return STAR_FLOORS.filter((floor) => potential >= floor).length;
 }
 
-/** The stars the club's scouts give him in `season`: a range that always holds his true stars and narrows each season he stays. */
-export function scoutedStars(prospect: Pick<Prospect, "potential" | "scoutDraw" | "joinedSeason">, season: number): { low: number; high: number } {
-  const span = Math.max(0, FIRST_SCOUT_SPAN - (season - prospect.joinedSeason));
+/**
+ * The stars the club's scouts give him in `season`: a range that always holds his true stars and narrows
+ * each season he stays, and by `sharperBy` stars more when a good assistant looks too (scoutSharpeningAt).
+ */
+export function scoutedStars(prospect: Pick<Prospect, "potential" | "scoutDraw" | "joinedSeason">, season: number, sharperBy = 0): { low: number; high: number } {
+  const span = Math.max(0, FIRST_SCOUT_SPAN - (season - prospect.joinedSeason) - sharperBy);
   const truth = starsOf(prospect.potential);
   const low = Math.max(1, truth - Math.floor(prospect.scoutDraw * (span + 1)));
   return { low, high: Math.min(5, low + span) };

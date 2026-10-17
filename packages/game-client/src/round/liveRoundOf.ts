@@ -1,6 +1,7 @@
 import type { Club } from "@boleiro/data/clubs";
 import type { Formation } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
+import { assistantOfClub, assistantReadOf } from "@boleiro/engine/sim/coach/assistant";
 import { aiPosture, DEFAULT_TACTICS, type Tactics } from "@boleiro/engine/sim/coach/tactics";
 import { neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
 import type { BoardPlayer, BoardSide, MatchMoment } from "@boleiro/engine/sim/coach/tacticsBoard";
@@ -49,6 +50,8 @@ export type CoachSide = {
   shootout: { kickers: string[]; isOverruled: boolean };
   /** Who the opponent may field, to read its side at any minute for the tactics board (tacticsViewAt). */
   opponent: OpponentRoster;
+  /** Each squad player's strength today as the coach's assistant reads it, off by up to his level's error; his substitutions go by it. */
+  assistantReads?: Record<string, number>;
 };
 
 /** The opponent of a coach's match: its starters and bench at today's strength, its formation, its coach's tactics when he is human, and its last five results before today. */
@@ -121,12 +124,15 @@ function sideOf(live: LiveDay, open: CoachMatch, clubId: string, fixture: Fixtur
   };
   const order = tactics.kickerOrder;
   const shootout = shootoutKickers({ clubId, onPitch, morale: clubMood(state, clubId).squad, ...(order ? { order } : {}) }, (p) => open.strengths[p.id] ?? p.strength);
+  const squad = squadOf(state, clubId, fixture, (p) => open.strengths[p.id] ?? p.strength);
+  const read = assistantReadOf(state, assistantOfClub(state, clubId));
   return {
     fixtureId: open.fixtureId,
     side,
     starters: open.starters[side].map((p) => p.id),
     benchIds: bench.map((p) => p.id),
-    squad: squadOf(state, clubId, fixture, (p) => open.strengths[p.id] ?? p.strength),
+    squad,
+    assistantReads: Object.fromEntries(squad.map((p) => [p.id, read(p.id, p.strength)])),
     tactics,
     rivalFormation: (isOwner ? open.rivalTactics : open.tactics)?.formation ?? aiFormationOf(state, side === "home" ? fixture.awayId : fixture.homeId),
     lastChangeMinute: open.lastChangeMinute,

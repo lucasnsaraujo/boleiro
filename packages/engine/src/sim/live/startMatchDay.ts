@@ -21,6 +21,7 @@ import { squadsOfGame } from "../players/squadsByClub.js";
 import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
 import { hasExtraTime, tieBreakOf } from "../tieBreaks.js";
 import { aiBench, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
+import { startersKept } from "../coach/assistantDuties.js";
 import { waitingCoachesOf } from "../coach/humanCoaches.js";
 import { withLoaneesFacingOwner } from "../transfers/loans.js";
 import { coachOutcome } from "./coachOutcome.js";
@@ -71,7 +72,8 @@ export function waitingPlansOf(state: GameState, decisions: DayDecisions): Recor
   waitingCoachesOf(state).forEach((waiting, index) => {
     if (!waiting.clubId) return;
     const own = decisions.waiting?.[index] ?? {};
-    plans[waiting.clubId] = { lineup: coachLineupOf({ ...state, coachClubId: waiting.clubId }, own), tactics: own.tactics ?? waiting.coach.tactics };
+    const kept = startersKept(waiting.coach, state.chemistry?.[waiting.clubId]?.eleven);
+    plans[waiting.clubId] = { lineup: coachLineupOf({ ...state, coachClubId: waiting.clubId }, own), tactics: own.tactics ?? waiting.coach.tactics, ...(kept ? { kept } : {}) };
   });
   return plans;
 }
@@ -115,7 +117,8 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
   const timelineRandom = randomStream(state.rngState ^ TIMELINE_STREAM_SALT).next;
   const events: DayEvent[] = [];
   const squad = squadsOf(state);
-  const coach: CoachPlan = { lineup: coachLineupOf(state, decisions), tactics: decisions.tactics ?? state.coach.tactics };
+  const kept = state.coachClubId ? startersKept(state.coach, state.chemistry?.[state.coachClubId]?.eleven) : undefined;
+  const coach: CoachPlan = { lineup: coachLineupOf(state, decisions), tactics: decisions.tactics ?? state.coach.tactics, ...(kept ? { kept } : {}) };
   const waiting = waitingPlansOf(state, decisions);
   const playedToday: SimPlayer[] = [];
   const cards = openDisciplineDay(state.discipline);

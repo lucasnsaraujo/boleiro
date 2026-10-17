@@ -91,13 +91,18 @@ type Props = {
   onWatch: (playerId: string, isWatched: boolean) => void;
   onSaveFilter: (name: string, filters: MarketFilters) => void;
   onDeleteFilter: (name: string) => void;
+  /** The player the screen opens on, found by his name: the one the assistant's screen sent the coach to. */
+  focusId?: string | null;
+  /** The signings the assistant suggests for his weak-position tip, best first. */
+  suggested?: readonly Pick<MarketRow, "id" | "name">[];
 };
 
 /** Busca: other clubs' players and free agents, and the offer the coach makes for the one he picks. */
-export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDeclineCounter, scouting, onWatch, onSaveFilter, onDeleteFilter }: Props) {
-  const [filters, setFilters] = useState<MarketFilters>(NO_FILTERS);
+export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDeclineCounter, scouting, onWatch, onSaveFilter, onDeleteFilter, focusId = null, suggested = [] }: Props) {
+  const focusName = focusId ? (state.players[focusId] ?? state.market.freeAgents[focusId])?.name : undefined;
+  const [filters, setFilters] = useState<MarketFilters>(focusName ? { ...NO_FILTERS, name: focusName } : NO_FILTERS);
   const [limit, setLimit] = useState(PAGE);
-  const [chosenId, setChosenId] = useState<string | null>(null);
+  const [chosenId, setChosenId] = useState<string | null>(focusName ? focusId : null);
   const [savedName, setSavedName] = useState(NO_SAVED);
   const [naming, setNaming] = useState<string | null>(null);
 
@@ -114,6 +119,12 @@ export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDe
     setFilters((current) => ({ ...current, ...patch }));
     setLimit(PAGE);
     setSavedName(NO_SAVED);
+  }
+
+  /** Shows a suggested player alone, found by his name, and opens his offer. */
+  function showSuggested(player: Pick<MarketRow, "id" | "name">) {
+    filter({ ...NO_FILTERS, name: player.name });
+    setChosenId(player.id);
   }
 
   function runSaved(name: string) {
@@ -235,6 +246,19 @@ export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDe
           )}
 
         </div>
+        {suggested.length > 0 && (
+          <div className="market-advice" role="group" aria-label="O auxiliar indica">
+            <span className="market-advice-who">
+              <i className="ph-bold ph-user-switch" aria-hidden="true" />
+              Auxiliar indica
+            </span>
+            {suggested.map((player) => (
+              <button key={player.id} type="button" className={chosen?.id === player.id ? "market-advice-name on" : "market-advice-name"} onClick={() => showSuggested(player)}>
+                {player.name}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="market-tabs-row">
           {tabs}
           <label className="market-toggle">

@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { withAssistantDuty } from "@boleiro/engine/sim/coach/assistantDuties";
 import { loadNewGame } from "@boleiro/engine/sim/loadNewGame";
 import { matchDayPlan } from "./matchDayPlan.js";
 
@@ -39,4 +40,21 @@ test("a player on loan from today's opponent is marked and left out of the assis
   const withHim = matchDayPlan(borrowed);
   expect(withHim.squad.find((p) => p.id === best.id)?.status).toBe("facesOwner");
   expect(withHim.lineup).not.toContain(best.id);
+});
+
+test("with the lineup in the coach's hands the sheet opens on his last eleven, and the assistant's own pick comes apart for Escalar time", () => {
+  const squad = matchDayPlan(matchDay).squad.filter((p) => p.status === null);
+  const keeper = squad.filter((p) => p.group === "GK").at(-1);
+  if (!keeper) throw new Error("Flamengo has a fit keeper");
+  const own = [keeper, ...squad.filter((p) => p.group !== "GK").slice(-10)].map((p) => p.id);
+  const lastMatch = { ...matchDay, chemistry: { ...matchDay.chemistry, [CLUB]: { eleven: own, settled: 0, steadyGames: 0, kept: 11, was: 50 } } };
+  const handsOn = { ...lastMatch, coach: withAssistantDuty(lastMatch.coach, "lineup", false) };
+
+  const assistants = matchDayPlan(lastMatch);
+  expect(assistants.lineup).toEqual(assistants.assistantLineup);
+  expect([...assistants.lineup].sort()).not.toEqual([...own].sort());
+
+  const coachs = matchDayPlan(handsOn);
+  expect([...coachs.lineup].sort()).toEqual([...own].sort());
+  expect(coachs.assistantLineup).toEqual(assistants.assistantLineup);
 });
