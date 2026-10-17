@@ -1,5 +1,5 @@
 import type { Formation } from "../../engine/formations.js";
-import { EXTRA_TIME_MINUTES, EXTRA_TIME_RATE, matchOdds, type Marking, type Play, type Posture, type Team } from "../../engine/match.js";
+import { matchOdds, type Marking, type Play, type Posture, type Team } from "../../engine/match.js";
 import { randomStream } from "../../engine/random.js";
 import { aiPosture, DEFAULT_TACTICS, type Tactics } from "../coach/tactics.js";
 import { drawCardsAfter, markedCardRates } from "../discipline/drawCards.js";
@@ -233,9 +233,6 @@ function extraTimeAfter(live: LiveDay, coachMatch: CoachMatch, match: LiveMatch,
   const lead = goals(clubIds[aiSide]) - goals(clubIds[coachSide]);
   const team = (side: Side): Team =>
     engineTeam(clubIds[side], onPitch(coachMatch, events, side, clubIds[side]), strength, humanTactics(side) ?? { ...DEFAULT_TACTICS, formation: match.formations[side], posture: aiPosture(lead, start + 1) });
-  const reds = (side: Side) => events.flatMap((e) => (e.type === "card" && e.card !== "yellow" && e.clubId === clubIds[side] ? [0] : []));
-  const odds = matchOdds(team("home"), team("away"), coachMatch.params, { home: reds("home"), away: reds("away") });
-  const share = (EXTRA_TIME_MINUTES / FULL_TIME) * EXTRA_TIME_RATE;
   const markingOf = (side: Side) => humanTactics(side)?.marking;
   const benches = { home: benchOf(coachMatch, "home", coachSide), away: benchOf(coachMatch, "away", coachSide) };
   const extraTime = {
@@ -246,7 +243,8 @@ function extraTimeAfter(live: LiveDay, coachMatch: CoachMatch, match: LiveMatch,
     penaltyTakers: { home: humanTactics("home")?.penaltyTakerId ?? null, away: humanTactics("away")?.penaltyTakerId ?? null },
     strength,
     tiredness: (p: SimPlayer) => tirednessOn(p, coachMatch.context.date),
-    expectedGoals: { home: odds.expectedHomeGoals * share, away: odds.expectedAwayGoals * share },
+    teams: { home: team("home"), away: team("away") },
+    params: coachMatch.params,
     cardRates: markedCardRates(coachMatch.cardRates, { home: markingOf("home"), away: markingOf("away") }),
     context: coachMatch.context,
   };

@@ -1,4 +1,4 @@
-import { extraTimeExpectedGoals, simulateMatch } from "../../engine/match.js";
+import { simulateMatch } from "../../engine/match.js";
 import { keyedStream, randomStream } from "../../engine/random.js";
 import type { DayDecisions, DayEvent } from "../advanceDay.js";
 import { guestClubOf, guestSquadOf } from "../continental/guestClubs.js";
@@ -173,7 +173,8 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
       penaltyTakers: { home: takerOf(homeId), away: takerOf(awayId) },
       strength,
       tiredness: (p: SimPlayer) => tirednessOn(p, state.date),
-      expectedGoals: extraTimeExpectedGoals(setup.home, setup.away, params, sendOffMinutes(bookings, homeId)),
+      teams: { home: setup.home, away: setup.away },
+      params,
       cardRates: markedCardRates(cardRates, { home: markingOf(homeId), away: markingOf(awayId) }),
       context: setup.context,
     };

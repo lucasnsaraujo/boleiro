@@ -1,3 +1,4 @@
+import { extraTimeExpectedGoals, type EngineParams, type Team } from "../../engine/match.js";
 import { keyedStream } from "../../engine/random.js";
 import { scoringFactor } from "../../engine/sendOffRates.js";
 import type { CardRates } from "../discipline/cardRates.js";
@@ -31,8 +32,9 @@ export type ExtraTimeMatch = {
   penaltyTakers: Sides<string | null>;
   strength: (player: SimPlayer) => number;
   tiredness: (player: SimPlayer) => number;
-  /** Each side's expected goals over extra time with eleven men against eleven. */
-  expectedGoals: Sides<number>;
+  /** Each side's eleven and tactics, as the engine sees them; extra time's expected goals start from them at eleven against eleven. */
+  teams: Sides<Team>;
+  params: EngineParams;
   cardRates: CardRates;
   context: MatchContext;
 };
@@ -85,12 +87,13 @@ export function playExtraTime(match: ExtraTimeMatch, events: readonly MatchEvent
 
   const reds = (side: Side) => all().flatMap((e) => (e.type === "card" && e.card !== "yellow" && e.clubId === match.clubIds[side] ? [e.minute] : []));
   const injuredAt = new Map(injuries.flatMap((e) => (e.type === "injury" ? [[e.playerId, e.minute] as const] : [])));
+  const expectedGoals = extraTimeExpectedGoals(match.teams.home, match.teams.away, match.params);
   const drawn: GoalEvent[] = [];
   for (let minute = from + 1; minute <= EXTRA_TIME_END; minute++) {
     for (const side of sides) {
       const other: Side = side === "home" ? "away" : "home";
       const down = (s: Side) => reds(s).filter((red) => red < minute).length;
-      const mean = (match.expectedGoals[side] / EXTRA_TIME_MINUTES) * scoringFactor(down(side), down(other));
+      const mean = (expectedGoals[side] / EXTRA_TIME_MINUTES) * scoringFactor(down(side), down(other));
       const scorers = start[side].filter((p) => (sentOffMinute(all(), p.id) ?? Infinity) >= minute && (injuredAt.get(p.id) ?? Infinity) >= minute);
       const count = random() < 1 - Math.exp(-mean) ? 1 : 0;
       for (const playerId of scorersOf(scorers, count, random)) drawn.push({ type: "goal", minute, clubId: match.clubIds[side], playerId });
