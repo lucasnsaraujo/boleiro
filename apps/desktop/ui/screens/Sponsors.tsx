@@ -282,7 +282,9 @@ export function Sponsors() {
 function BetCard({ page, brand, chosen, oddsMatch }: { page: SponsorsPage; brand: { id: string; name: string }; chosen: OfferRow | null; oddsMatch: SponsorsPage["nextMatch"] }) {
   const isOffer = chosen?.isBetting === true && chosen.brandId === brand.id;
   const cleanBest = isOffer ? page.offers.filter((o) => o.slot === chosen.slot && !o.isBetting).reduce((top, o) => Math.max(top, o.yearly), 0) : (page.bestOtherMaster ?? 0);
-  const paysMore = isOffer ? chosen.yearly - cleanBest : page.contracts.find((c) => c.slot === "master" && c.isBetting) && cleanBest ? (page.contracts.find((c) => c.slot === "master")?.yearly ?? 0) - cleanBest : 0;
+  // Only against a real offer outside betting for the same place; without one the card says the going premium.
+  const betYearly = isOffer ? chosen.yearly : (page.contracts.find((c) => c.slot === "master" && c.isBetting)?.yearly ?? 0);
+  const paysMore = cleanBest > 0 ? betYearly - cleanBest : 0;
   const hasBetOnKit = page.contracts.some((c) => c.isBetting);
   return (
     <section className="stk spo-bet" aria-label={`${brand.name} é casa de aposta`}>
