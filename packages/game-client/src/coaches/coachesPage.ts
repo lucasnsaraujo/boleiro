@@ -5,6 +5,8 @@ import { humanKey } from "@boleiro/engine/sim/coach/closeCoachSeason";
 import { jobCentre, type OpenJob } from "@boleiro/engine/sim/coach/jobCentre";
 import { coachRanking, nationalRanking, rankedSeasons, STANDING_PLACES, worldRanking } from "@boleiro/engine/sim/coach/rankings";
 import type { GameState } from "@boleiro/engine/sim/gameState";
+import { coachNameOf, coachRivalriesOf, FREGUESIA_WINS, RIVALRY_POINTS } from "@boleiro/engine/sim/rivalries/coachRivalries";
+import { idolClubsOf } from "@boleiro/engine/sim/rivalries/idols";
 import type { CoachRecord, CoachStint } from "@boleiro/engine/sim/history/history";
 
 /** A coach's line in the ranking: AI coaches by id, human coaches by humanKey; `isSeated` marks the coach in the seat, `isInvented` a coach the game made up (neither real, an ex-star of the game nor human). */
@@ -15,6 +17,28 @@ export type RankedClub = { position: number; clubId: string; points: number; cou
 
 /** A spell at a club, an AI coach's or a human's. */
 export type ProfileStint = AiCoachStint | CoachStint;
+
+/**
+ * Another coach as a coach's profile lists him among his rivals: his record against him (wins and
+ * defeats from the profile's coach's side), the finals and press clashes between them, whether the
+ * papers call it a rivalry and which of them, if either, is the other's freguês.
+ */
+export type ProfileRival = {
+  key: string;
+  name: string;
+  clubId: string | null;
+  meetings: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  finals: number;
+  clashes: number;
+  isRivalry: boolean;
+  fregues: "them" | "us" | null;
+};
+
+// The profile shows a coach's most heated rivalries.
+const RIVALS_SHOWN = 5;
 
 /**
  * A coach's page: who he is, his career club by club, his titles and where he stands in the ranking.
@@ -36,6 +60,9 @@ export type CoachProfile = {
   stints: ProfileStint[];
   titles: CoachTitle[];
   ranking: { position: number; points: number } | null;
+  rivals: ProfileRival[];
+  /** The clubs a human coach is an idol of (rivalries/idols.ts); none for an AI coach. */
+  idolOf: string[];
 };
 
 /**
@@ -60,7 +87,33 @@ const SHOWN = STANDING_PLACES;
 
 type Standing = Map<string, { position: number; points: number }>;
 
-function humanProfile(name: string | undefined, clubId: string | null, reputation: number, record: CoachRecord, standing: Standing): CoachProfile {
+/** A coach's most heated rivalries with other coaches, as his profile lists them. */
+function rivalsOf(state: GameState, key: string): ProfileRival[] {
+  const aiById = new Map(everyCoach(state).map((coach) => [coach.id, coach]));
+  const humans = new Map(humansOf(state).map((human) => [humanKey(human.name), human]));
+  return coachRivalriesOf(state, key)
+    .slice(0, RIVALS_SHOWN)
+    .map((r) => {
+      const other = aiById.get(r.opponent);
+      const human = humans.get(r.opponent);
+      const fregues = r.wins >= FREGUESIA_WINS && r.losses === 0 ? "them" : r.losses >= FREGUESIA_WINS && r.wins === 0 ? "us" : null;
+      return {
+        key: r.opponent,
+        name: coachNameOf(state, r.opponent),
+        clubId: other?.clubId ?? human?.clubId ?? null,
+        meetings: r.meetings,
+        wins: r.wins,
+        losses: r.losses,
+        draws: r.draws,
+        finals: r.finals,
+        clashes: r.clashes,
+        isRivalry: r.score >= RIVALRY_POINTS,
+        fregues,
+      };
+    });
+}
+
+function humanProfile(state: GameState, name: string | undefined, clubId: string | null, reputation: number, record: CoachRecord, standing: Standing): CoachProfile {
   const key = humanKey(name);
   return {
     key,
@@ -77,6 +130,8 @@ function humanProfile(name: string | undefined, clubId: string | null, reputatio
     stints: record.stints,
     titles: record.trophies,
     ranking: standing.get(key) ?? null,
+    rivals: rivalsOf(state, key),
+    idolOf: idolClubsOf(state, { name, record }),
   };
 }
 
@@ -96,6 +151,8 @@ function aiProfile(state: GameState, coach: AiCoach, standing: Standing): CoachP
     stints: coach.stints,
     titles: coach.titles,
     ranking: standing.get(coach.id) ?? null,
+    rivals: rivalsOf(state, coach.id),
+    idolOf: [],
   };
 }
 
@@ -135,7 +192,7 @@ export function coachesPage(state: GameState, season?: number): CoachesPage {
     world: asOf === undefined ? [] : clubs(worldRanking(state, asOf)),
     waitingCountries: asOf === undefined || asOf !== seasons.at(-1) ? [] : countriesCoaching(state).flatMap(([id, country]) => (country.seasons.length ? [] : [id])),
     jobs: jobCentre(state),
-    you: humanProfile(seated?.name, state.coachClubId, state.coach.reputation, state.history.coach, standingOf(ranked)),
+    you: humanProfile(state, seated?.name, state.coachClubId, state.coach.reputation, state.history.coach, standingOf(ranked)),
   };
 }
 
@@ -143,7 +200,7 @@ export function coachesPage(state: GameState, season?: number): CoachesPage {
 export function coachProfile(state: GameState, key: string): CoachProfile | null {
   const standing = standingOf(coachRanking(state));
   const human = humansOf(state).find((h) => humanKey(h.name) === key);
-  if (human) return humanProfile(human.name, human.clubId, human.reputation, human.record, standing);
+  if (human) return humanProfile(state, human.name, human.clubId, human.reputation, human.record, standing);
   const coaches = everyCoach(state);
   const coach = coaches.find((c) => c.id === key) ?? coaches.find((c) => c.clubId === key);
   return coach ? aiProfile(state, coach, standing) : null;
