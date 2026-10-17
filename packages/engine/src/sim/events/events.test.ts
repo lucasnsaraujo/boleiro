@@ -4,6 +4,8 @@ import { addDays } from "../dates.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { clubMood } from "../morale/clubMood.js";
+import { BLOCK_FROM_INTENSITY } from "../rivalries/idols.js";
+import { rivalryOf } from "../rivalries/rivalryOf.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { EVENT_BANK } from "./eventBank.js";
 import { eventMemoryOf, eventsOf, pendingEventOf, rivalryKey } from "./eventMemory.js";
@@ -178,6 +180,15 @@ describe("event engine", () => {
       if (!type || typeof type.weight !== "function") throw new Error(`${id} weighs by its rivalry`);
       expect(type.weight(scene(heated), { rivalId })).toBeGreaterThan(type.weight(scene(start), { rivalId }));
     }
+  });
+
+  it("casts a club's big derby rival in its provocations, never a minor one: Bahia hears from Vitória, not Galícia", () => {
+    const type = EVENT_BANK.find((t) => t.id === "rival-provocation");
+    if (!type || typeof type.cast !== "function") throw new Error("rival-provocation casts a rival");
+    const cast = type.cast;
+    const rivals = Array.from({ length: 20 }, (_, i) => cast({ state: start, clubId: "bahia-ba", squad: [], date: start.date, played: [], random: () => i / 20 })?.rivalId);
+    expect(rivals.length).toBeGreaterThan(0);
+    for (const rivalId of rivals) expect(rivalryOf("bahia-ba", rivalId ?? "")?.intensity ?? 0).toBeGreaterThanOrEqual(BLOCK_FROM_INTENSITY);
   });
 
   it("offers a press conference whose answers move morale, board, fans and rivalry", () => {
