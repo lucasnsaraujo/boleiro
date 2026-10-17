@@ -22,6 +22,13 @@ function play(world: World, europe: EuropeanCups, from: string, to: string, onDa
   return current;
 }
 
+describe("a knockout tie of a save from before extra time", () => {
+  it("settled straight on penalties is not said to have gone to extra time", () => {
+    const tie = knockoutTie({ name: "round-of-16", dates: ["2027-03-03", "2027-03-10"], ties: [["a", "b"]], results: "10100" }, 0);
+    expect(tie).toEqual({ clubIds: ["a", "b"], legs: expect.any(Array), winnerId: "a", onPenalties: true });
+  });
+});
+
 describe("a season of UEFA's cups", () => {
   const world = startEurope();
   const opening = openingEuropeanCups(world, 7, 2026);
@@ -61,6 +68,12 @@ describe("a season of UEFA's cups", () => {
     expect(playoffs?.ties.flat().toSorted()).toEqual(table.slice(8, 24).toSorted());
     const playoffWinners = playoffs?.ties.map((_, i) => knockoutTie(playoffs, i).winnerId) ?? [];
     expect(roundOf16?.ties.flat().toSorted()).toEqual([...table.slice(0, 8), ...playoffWinners].toSorted());
+  });
+
+  it("plays extra time in a knockout tie level after the last leg's ninety minutes, and penalties only if still level", () => {
+    const ties = [championsLeague, europaLeague].flatMap((cup) => cup?.knockout.flatMap((round) => round.ties.map((_, i) => knockoutTie(round, i))) ?? []);
+    for (const tie of ties.filter((t) => t.onPenalties)) expect(tie.isAfterExtraTime).toBe(true);
+    expect(ties.some((t) => t.isAfterExtraTime && !t.onPenalties)).toBe(true);
   });
 
   it("crowns a Champions League, a Europa League and a Super Cup winner", () => {

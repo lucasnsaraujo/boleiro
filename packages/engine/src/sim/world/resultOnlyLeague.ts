@@ -1,4 +1,5 @@
-import { CALIBRATED, pickLineup, simulateMatch, type PositionGroup, type Team } from "../../engine/match.js";
+import { CALIBRATED, pickLineup, simulateExtraTime, simulateMatch, type PositionGroup, type Team } from "../../engine/match.js";
+import { randomStream } from "../../engine/random.js";
 import { addDays, daysBetween } from "../dates.js";
 import type { IsoDate, MatchResult } from "../gameState.js";
 import { roundRobin, type Pairing } from "../roundRobin.js";
@@ -46,6 +47,23 @@ function teamOf(club: WorldClub): Team {
   const team = { name: club.name, players: pickLineup(players) };
   teams.set(club, team);
   return team;
+}
+
+// A level tie's extra time and shootout draw from a stream seeded by the one draw of `random` such a
+// tie has always taken (its shootout's coin toss), so the stream runs on as before.
+const EXTRA_TIME_STREAM_SALT = 0xe7a1;
+
+/**
+ * How a result-only tie level after ninety minutes goes on, from one draw of `random`: extra time's
+ * goals (none when the competition goes straight to penalties) and, should the tie still be level,
+ * whether the away side wins the shootout. guess: a result-only shootout is an even draw.
+ */
+export function settleLevelTie(home: WorldClub, away: WorldClub, hasExtraTime: boolean, random: () => number): { extraTime: { homeGoals: number; awayGoals: number } | null; isAwayShootoutWinner: boolean } {
+  const toss = random();
+  if (!hasExtraTime) return { extraTime: null, isAwayShootoutWinner: toss < 0.5 };
+  const stream = randomStream((Math.floor(toss * 2 ** 32) ^ EXTRA_TIME_STREAM_SALT) >>> 0);
+  const extraTime = simulateExtraTime(teamOf(home), teamOf(away), stream.next, CALIBRATED);
+  return { extraTime, isAwayShootoutWinner: stream.next() < 0.5 };
 }
 
 /**

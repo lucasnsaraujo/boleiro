@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { HALF_TIME } from "@boleiro/engine/sim/live/matchTimeline";
+import { FULL_TIME, HALF_TIME } from "@boleiro/engine/sim/live/matchTimeline";
 import type { VarDecision, WrongCallKind } from "@boleiro/engine/sim/referees/refereeCalls";
 import { PRESSURE_MINUTES, type MatchView, type PageEvent } from "@boleiro/game-client/matchPage/matchPageAt";
 import type { MatchPage, PagePlayer } from "@boleiro/game-client/matchPage/matchPageOf";
@@ -21,9 +21,9 @@ const TABS = [
 type Tab = (typeof TABS)[number]["id"];
 
 const GROUP_LETTERS = { GK: "G", DEF: "Z", MID: "M", ATT: "A" } as const;
-const PRESSURE_SPELLS = 90 / PRESSURE_MINUTES;
-const FIRST_HALF_SPELLS = HALF_TIME / PRESSURE_MINUTES;
-const AXIS = [0, 15, 30, 45, 60, 75, 90];
+// The breaks the wave marks: half-time, and the end of normal time when extra time follows.
+const BREAK_SPELLS = [HALF_TIME, FULL_TIME].map((minute) => minute / PRESSURE_MINUTES);
+const AXIS_STEP = 15;
 // A report longer than this sets in two columns, like the paper's.
 const LONG_COPY = 220;
 
@@ -205,21 +205,21 @@ function Pressure({ page, view }: TabProps) {
           a cada {PRESSURE_MINUTES} minutos · acima: {page.home.club.shortName} · abaixo: {page.away.club.shortName}
         </small>
       </header>
-      <div className="mf-wave">
-        {Array.from({ length: PRESSURE_SPELLS }, (_, i) => (
-          <span key={i} className={["spell", i === FIRST_HALF_SPELLS && "half", i >= view.pressure.home.length && "later"].filter(Boolean).join(" ")} style={{ ["--i" as string]: i }}>
+      <div className="mf-wave" style={{ ["--spells" as string]: view.end / PRESSURE_MINUTES }}>
+        {Array.from({ length: view.end / PRESSURE_MINUTES }, (_, i) => (
+          <span key={i} className={["spell", BREAK_SPELLS.includes(i) && "half", i >= view.pressure.home.length && "later"].filter(Boolean).join(" ")} style={{ ["--i" as string]: i }}>
             <i className="h" style={{ ["--v" as string]: view.pressure.home[i] ?? 0 }} />
             <i className="a" style={{ ["--v" as string]: view.pressure.away[i] ?? 0 }} />
           </span>
         ))}
         {goals.map((g, index) => (
-          <span key={index} className={`mf-pin ${g.side}`} style={{ left: `clamp(14px, ${(g.minute / 90) * 100}%, calc(100% - 14px))` }}>
+          <span key={index} className={`mf-pin ${g.side}`} style={{ left: `clamp(14px, ${(g.minute / view.end) * 100}%, calc(100% - 14px))` }}>
             {g.minute}'
           </span>
         ))}
       </div>
       <div className="mf-axis" aria-hidden="true">
-        {AXIS.map((m) => (
+        {Array.from({ length: view.end / AXIS_STEP + 1 }, (_, i) => i * AXIS_STEP).map((m) => (
           <span key={m}>{m}'</span>
         ))}
       </div>
@@ -231,7 +231,8 @@ function Incidents({ page, view }: TabProps) {
   const name = (id: string) => page.names[id] ?? "Um jogador";
   const halves = [
     { label: "1º tempo", events: view.events.filter((e) => e.minute <= HALF_TIME) },
-    { label: "2º tempo", events: view.events.filter((e) => e.minute > HALF_TIME) },
+    { label: "2º tempo", events: view.events.filter((e) => e.minute > HALF_TIME && e.minute <= FULL_TIME) },
+    { label: "Prorrogação", events: view.events.filter((e) => e.minute > FULL_TIME) },
   ].filter((half) => half.events.length > 0);
   return (
     <section className="mf-incidents" aria-label="Lances">

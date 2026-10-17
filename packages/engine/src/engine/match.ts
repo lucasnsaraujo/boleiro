@@ -318,3 +318,37 @@ export function simulateMatch(
   }
   return { homeGoals: MAX_GOALS, awayGoals: MAX_GOALS };
 }
+
+// Extra time scores a little below normal time's rate: the men's World Cups of 1986 to 2022, leaving out
+// 1998's and 2002's golden goal, had 34 goals in 45 extra times, 0.0252 a minute, against 0.0270 a minute
+// in their 476 matches' ninety minutes (Joshua C. Fjelstul, The Fjelstul World Cup Database, matches.csv
+// and goals.csv, https://github.com/jfjelstul/worldcup).
+const EXTRA_TIME_RATE = 0.0252 / 0.027;
+const EXTRA_TIME_MINUTES = 30;
+const MATCH_MINUTES = 90;
+
+/** Each side's expected goals over the thirty minutes of extra time; players sent off in the ninety minutes are missing from its start. */
+export function extraTimeExpectedGoals(home: Team, away: Team, params: EngineParams = CALIBRATED, sentOff: SendOffs = NO_SEND_OFFS): { home: number; away: number } {
+  const fromStart = { home: sentOff.home.map(() => 0), away: sentOff.away.map(() => 0) };
+  const odds = matchOdds(home, away, params, fromStart);
+  const share = (EXTRA_TIME_MINUTES / MATCH_MINUTES) * EXTRA_TIME_RATE;
+  return { home: odds.expectedHomeGoals * share, away: odds.expectedAwayGoals * share };
+}
+
+function poissonDraw(mean: number, random: () => number): number {
+  let roll = random();
+  let p = Math.exp(-mean);
+  let count = 0;
+  while (roll > p && count < MAX_GOALS) {
+    roll -= p;
+    count++;
+    p *= mean / count;
+  }
+  return count;
+}
+
+/** Extra time's goals, drawn for each side from its expected goals. */
+export function simulateExtraTime(home: Team, away: Team, random: () => number, params: EngineParams = CALIBRATED, sentOff: SendOffs = NO_SEND_OFFS): Score {
+  const expected = extraTimeExpectedGoals(home, away, params, sentOff);
+  return { homeGoals: poissonDraw(expected.home, random), awayGoals: poissonDraw(expected.away, random) };
+}

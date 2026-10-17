@@ -1,6 +1,6 @@
 import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
 import type { PlayerStats } from "@boleiro/engine/sim/live/matchPlay";
-import { FULL_TIME } from "@boleiro/engine/sim/live/matchTimeline";
+import { matchEndOf } from "@boleiro/engine/sim/live/matchTimeline";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { playerStatsOf, type LiveRound, type Side } from "@boleiro/game-client/round/liveRoundOf";
 import { Crest } from "../clubs/Crest.js";
@@ -26,7 +26,7 @@ export function MatchReport({ round }: { round: LiveRound }) {
   const nameOf = (id: string) => round.names[id] ?? "Um jogador";
   const best = [...ratings.home, ...ratings.away].reduce((top, r) => (r.rating > top.rating ? r : top), { playerId: "", rating: -1 });
   const goals = match.events.flatMap((e) => (e.type === "goal" ? [e] : []));
-  const stats = playerStatsOf(match, FULL_TIME);
+  const stats = playerStatsOf(match, matchEndOf(match.events));
 
   const side = (where: Side) => {
     const club = round.clubs[where === "home" ? match.homeId : match.awayId];

@@ -3,6 +3,7 @@ import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
 import type { MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import { matchPageAt } from "@boleiro/game-client/matchPage/matchPageAt";
 import type { MatchPage, PageSide } from "@boleiro/game-client/matchPage/matchPageOf";
+import { clockLabel } from "./matchFileParts.js";
 import { headlineOf, reportOf } from "./matchStory.js";
 
 const side = (id: string, shortName: string, place: PageSide["place"] = null): PageSide => ({
@@ -32,6 +33,7 @@ function pageOf(events: MatchEvent[], change: Partial<MatchPage> = {}): MatchPag
     home: side("fla", "Flamengo", { before: 5, after: 3 }),
     away: side("pal", "Palmeiras", { before: 2, after: 2 }),
     penaltyWinnerId: null,
+    isAfterExtraTime: false,
     events,
     play: null,
     ratings: {},
@@ -79,5 +81,16 @@ describe("the newspaper's account of a match", () => {
       "Flamengo vence Palmeiras por 2 a 1 no Maracanã e sobe do 5º para o 3º lugar.",
       "Pedro abriu o placar aos 23', de cabeça, depois de passe de Arrascaeta. Vitor Roque empatou aos 51', de pênalti. Bruno Henrique fez o gol da vitória aos 88'.",
     ]);
+  });
+
+  it("says a match was won in extra time, or went through it to penalties", () => {
+    const whistles: MatchEvent[] = [{ type: "extraHalfTime", minute: 105 }, { type: "extraTimeEnd", minute: 120 }];
+    const wonLate = pageOf([goal(30, "fla", "pedro"), goal(70, "pal", "roque"), goal(112, "fla", "bh"), ...whistles], { isAfterExtraTime: true });
+    expect(story(wonLate).headline).toBe("Bruno Henrique decide na prorrogação");
+    expect(story(wonLate).report[0]).toBe("Flamengo vence Palmeiras por 2 a 1 na prorrogação no Maracanã e sobe do 5º para o 3º lugar.");
+    const shootout = pageOf([goal(30, "fla", "pedro"), goal(70, "pal", "roque"), ...whistles], { isAfterExtraTime: true, penaltyWinnerId: "pal" });
+    expect(story(shootout).report[0]).toBe("Flamengo e Palmeiras empatam em 1 a 1 no Maracanã depois da prorrogação, e Palmeiras passa nos pênaltis.");
+    expect(clockLabel(wonLate, matchPageAt(wonLate, 120))).toBe("Encerrado · prorrogação");
+    expect(clockLabel(shootout, matchPageAt(shootout, 120))).toBe("Encerrado · prorrogação e pênaltis");
   });
 });
