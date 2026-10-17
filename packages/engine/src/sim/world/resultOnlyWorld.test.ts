@@ -76,6 +76,7 @@ describe("a result-only country", () => {
         promoted: [[], championship.slice(0, 3), leagueOne.slice(0, 4)],
         relegated: [premier.slice(17), championship.slice(16), []],
         continental: { champions: premier.slice(0, 4), europa: premier.slice(4, 6) },
+        finals: { league: country?.leagues[0]?.dates.at(-1) },
       },
     ]);
   });
@@ -154,5 +155,12 @@ describe("a result-only country whose season crosses the new year", () => {
     expect(country?.leagues.map((league) => league.season)).toEqual([2027, 2027]);
     expect(country?.cup?.season).toBe(2027);
     expect(country?.leagues[0]?.dates[0]).toBe("2027-08-15");
+  });
+
+  it("keeps the days its league and cup were decided, before its rollover day", () => {
+    const finals = rolled.yy?.seasons.at(-1)?.finals;
+    expect(finals).toEqual({ league: finished.yy?.leagues[0]?.dates.at(-1), cup: finished.yy?.cup?.dates.at(-1) });
+    expect(finals?.league).toBe("2027-05-23");
+    expect(finals?.cup ?? "").toMatch(/^2027-0[45]-/);
   });
 });

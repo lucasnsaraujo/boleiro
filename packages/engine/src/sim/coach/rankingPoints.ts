@@ -1,7 +1,7 @@
 import type { Division } from "@boleiro/data/players";
-import type { GameState } from "../gameState.js";
+import type { GameState, IsoDate } from "../gameState.js";
 import { championOf } from "../history/championOf.js";
-import { competitionKey } from "../history/history.js";
+import { competitionKey, type CompetitionKey } from "../history/history.js";
 import { standings } from "../standings.js";
 import type { Country } from "../world/world.js";
 import { squadLevel } from "./aiCoaches.js";
@@ -9,13 +9,19 @@ import { squadLevel } from "./aiCoaches.js";
 /** How far each club got in a cup of the season just played: stages short of the final (0 the final), and the winner. */
 export type CupRun = { fromFinal: Record<string, number>; championId: string | null };
 
-/** The full tier's season as it ended: each cup's runs by competition key, and each full-tier league abroad's final order with its level. Read before the season's fixtures go. */
-export type SeasonRuns = { cups: Record<string, CupRun>; leaguesAbroad: { level: number; order: string[] }[] };
+/**
+ * The full tier's season as it ended: each cup's runs by competition key, each full-tier league abroad's
+ * final order with its level, and the day each competition's last stage was played. Read before the
+ * season's fixtures go.
+ */
+export type SeasonRuns = { cups: Record<string, CupRun>; leaguesAbroad: { level: number; order: string[] }[]; finals: Record<CompetitionKey, IsoDate> };
 
 export function seasonRuns(state: Pick<GameState, "competitions" | "fixtures">): SeasonRuns {
-  const runs: SeasonRuns = { cups: {}, leaguesAbroad: [] };
+  const runs: SeasonRuns = { cups: {}, leaguesAbroad: [], finals: {} };
   for (const competition of Object.values(state.competitions)) {
     const fixtures = state.fixtures.filter((f) => f.competitionId === competition.id);
+    const lastStage = fixtures.filter((f) => f.stage === competition.stageDates.length - 1).map((f) => f.date);
+    if (lastStage.length) runs.finals[competitionKey(competition.id)] = lastStage.reduce((latest, date) => (date > latest ? date : latest));
     if (competition.kind === "league" && competition.abroad) {
       const championId = championOf(competition, fixtures);
       const table = standings(competition.clubIds, fixtures.filter((f) => f.stage === 0), competition.drawOrder).map((row) => row.clubId);

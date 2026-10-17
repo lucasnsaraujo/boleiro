@@ -1,7 +1,7 @@
 import { randomStream } from "../../engine/random.js";
 import type { DayEvent } from "../advanceDay.js";
 import type { GameState, IsoDate } from "../gameState.js";
-import type { CoachStint } from "../history/history.js";
+import type { CoachStint, CompetitionKey } from "../history/history.js";
 import type { Country } from "../world/world.js";
 import { fullTierClubs, fullTierStatures, inventCoach, type AiCoach, type AiCoachStint, type Coaching, type CoachWorld, type Rookie, type SeasonPoints } from "./aiCoaches.js";
 import { countryPoints, fullTierPoints, nationalPoints, type ClubSeasonPoints, type SeasonRuns, type UefaWinner } from "./rankingPoints.js";
@@ -51,17 +51,18 @@ function creditsOf(stints: readonly (AiCoachStint | CoachStint)[], season: numbe
   });
 }
 
-/** The coaching after the season: titles credited to the coaches in charge, each coach's share of his clubs' season, the old ones retired and their jobs open. */
-function closeCoaching<T extends Coaching>(coaching: T, season: number, points: ClubSeasonPoints, titles: readonly [string, string][], date: IsoDate, nextSeason: number, random: () => number, humans: Record<string, [string, number][]> = {}): T {
+/** A title of the season: the competition, its champion and the day of its final. */
+type Title = [competition: CompetitionKey, clubId: string, finalDay: IsoDate];
+
+/** The AI coach who ran `clubId` on `day`, the one who left that day included. */
+const inChargeOn = (coaching: Coaching, clubId: string, day: IsoDate): AiCoach | undefined =>
+  Object.values(coaching.coaches).find((coach) => coach.stints.some((stint) => stint.clubId === clubId && stint.from <= day && (stint.until === null || stint.until >= day)));
+
+/** The coaching after the season: titles credited to the coaches in charge on the day of each final, each coach's share of his clubs' season, the old ones retired and their jobs open. */
+function closeCoaching<T extends Coaching>(coaching: T, season: number, points: ClubSeasonPoints, titles: readonly Title[], date: IsoDate, nextSeason: number, random: () => number, humans: Record<string, [string, number][]> = {}): T {
   const coaches: Record<string, AiCoach> = { ...coaching.coaches };
-  // The coach in charge on the season's last day wins its titles, even if his club let him go before the next.
-  const lastDay = `${season}-12-31`;
-  const byClub = new Map<string, AiCoach>();
-  for (const coach of Object.values(coaching.coaches)) {
-    for (const stint of coach.stints) if (stint.from <= lastDay && (stint.until === null || stint.until >= lastDay)) byClub.set(stint.clubId, coach);
-  }
-  for (const [competition, clubId] of titles) {
-    const coach = byClub.get(clubId);
+  for (const [competition, clubId, finalDay] of titles) {
+    const coach = inChargeOn(coaching, clubId, finalDay);
     if (coach) coaches[coach.id] = { ...coach, titles: [...(coaches[coach.id]?.titles ?? coach.titles), { season, competition, clubId }] };
   }
   const credits: SeasonPoints["credits"] = {};
@@ -89,9 +90,10 @@ function closeCountry(country: Country, season: number, uefaWinners: readonly Ue
   const stream = randomStream(coaching.rngState);
   const filed = country.seasons.slice(coaching.filed);
   const id = country.structure.id;
-  const titles = filed.flatMap((record): [string, string][] => [
-    ...(record.champions[0] ? [[`${id}-1`, record.champions[0]] as [string, string]] : []),
-    ...(record.cup ? [[`${id}-cup`, record.cup.championId] as [string, string]] : []),
+  // A season filed before its finals' days were kept counts its titles as of today.
+  const titles = filed.flatMap((record): Title[] => [
+    ...(record.champions[0] ? [[`${id}-1`, record.champions[0], record.finals?.league ?? date] satisfies Title] : []),
+    ...(record.cup ? [[`${id}-cup`, record.cup.championId, record.finals?.cup ?? date] satisfies Title] : []),
   ]);
   const closed = closeCoaching(coaching, season, countryPoints(country, coaching.filed, uefaWinners), titles, date, nextSeason, stream.next);
   return { ...country, coaching: { ...closed, filed: country.seasons.length, rngState: stream.state() } };
@@ -113,7 +115,8 @@ export function closeCoachSeason(state: GameState, season: number, runs: SeasonR
   const clubs = fullTierClubs(state);
   const national = nationalPoints(state.history, season, runs.cups);
   const points = fullTierPoints(state.history, season, runs, uefaWinners, (clubId) => clubs.has(clubId));
-  const titles = Object.entries(state.history.seasons.find((record) => record.season === season)?.champions ?? {});
+  const champions = Object.entries(state.history.seasons.find((record) => record.season === season)?.champions ?? {});
+  const titles = champions.map(([competition, clubId]): Title => [competition, clubId, runs.finals[competition] ?? `${season}-12-31`]);
   const humans = {
     [humanKey(state.coachName)]: creditsOf(state.history.coach.stints, season),
     ...Object.fromEntries((state.waitingCoaches ?? []).map((waiting) => [humanKey(waiting.name), creditsOf(waiting.record.stints, season)])),

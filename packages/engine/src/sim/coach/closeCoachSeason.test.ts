@@ -3,9 +3,10 @@ import { advanceDay } from "../advanceDay.js";
 import type { GameState } from "../gameState.js";
 import type { SeasonRecord } from "../history/history.js";
 import { loadNewGame } from "../loadNewGame.js";
-import { coachesByClub, type CoachWorld } from "./aiCoaches.js";
+import { loadSouthAmerica } from "../world/loadSouthAmerica.js";
+import { coachesByClub, type AiCoach, type Coaching, type CoachWorld } from "./aiCoaches.js";
 import { closeCoachSeason, humanKey, retiredPlayers } from "./closeCoachSeason.js";
-import { fullTierPoints, nationalPoints, type CupRun, type SeasonRuns } from "./rankingPoints.js";
+import { fullTierPoints, nationalPoints, seasonRuns, type CupRun, type SeasonRuns } from "./rankingPoints.js";
 import { coachRanking, nationalRanking, worldRanking } from "./rankings.js";
 
 const coachesOf = (state: GameState): CoachWorld => {
@@ -13,7 +14,17 @@ const coachesOf = (state: GameState): CoachWorld => {
   return state.coaches;
 };
 
-const NO_RUNS: SeasonRuns = { cups: {}, leaguesAbroad: [] };
+const NO_RUNS: SeasonRuns = { cups: {}, leaguesAbroad: [], finals: {} };
+
+/** The coaching with the coach of `clubId` fired on `firedOn` and a pool coach in charge from `hiredOn`; both coaches. */
+function changeCoach(coaching: Coaching, clubId: string, firedOn: string, hiredOn: string): { coaches: Coaching["coaches"]; fired: AiCoach; hired: AiCoach } {
+  const fired = coachesByClub(coaching).get(clubId);
+  const pooled = Object.values(coaching.coaches).find((coach) => coach.clubId === null && !coach.stints.length);
+  if (!fired || !pooled) throw new Error(`no coach to swap at ${clubId}`);
+  const out: AiCoach = { ...fired, clubId: null, stints: fired.stints.map((stint) => ({ ...stint, until: firedOn, left: "fired" })) };
+  const hired: AiCoach = { ...pooled, clubId, stints: [{ clubId, from: hiredOn, until: null, left: null }] };
+  return { coaches: { ...coaching.coaches, [out.id]: out, [hired.id]: hired }, fired: out, hired };
+}
 
 const record = (tables: Partial<SeasonRecord["tables"]>): SeasonRecord => ({
   season: 2026,
@@ -57,6 +68,7 @@ describe("the world ranking's points", () => {
         libertadores: { championId: "a5", fromFinal: { a5: 0, x: 0, y: 1 } },
       },
       leaguesAbroad: [],
+      finals: {},
     };
     const { domestic, continental } = fullTierPoints(filed, 2026, runs, [], () => true);
     expect(Object.keys(domestic).filter((id) => id.startsWith("a")).sort()).toEqual(serieA.slice(0, 10).sort());
@@ -109,6 +121,27 @@ describe("the coaches' turn of the season", () => {
     expect(retired?.nationality).toBe(player.nationalities[0]);
   });
 
+  it("credits each title to the AI coach in charge on the day of its final", () => {
+    const { coaches, fired, hired } = changeCoach(coachesOf(game), "palmeiras-sp", "2026-07-10", "2026-07-24");
+    const filed = { ...record({}), champions: { "state-sp": "palmeiras-sp", "serie-a": "palmeiras-sp" } };
+    const state = { ...game, season: 2027, history: { ...game.history, seasons: [filed] }, coaches: { ...coachesOf(game), coaches } };
+    const closed = coachesOf(closeCoachSeason(state, 2026, { ...NO_RUNS, finals: { "state-sp": "2026-03-08", "serie-a": "2026-12-02" } }, []));
+    expect(closed.coaches[fired.id]?.titles).toEqual([{ season: 2026, competition: "state-sp", clubId: "palmeiras-sp" }]);
+    expect(closed.coaches[hired.id]?.titles).toEqual([{ season: 2026, competition: "serie-a", clubId: "palmeiras-sp" }]);
+  });
+
+  it("credits a result-only country's cup to the coach who won its final, months before the season was filed", () => {
+    const southAmerica = loadNewGame(3, { coachClubId: "bahia-ba", world: loadSouthAmerica(2026) });
+    const argentina = southAmerica.world?.ar;
+    if (!argentina?.coaching) throw new Error("Argentina has no coaches");
+    const { coaches, fired, hired } = changeCoach(argentina.coaching, "tm-209", "2026-07-01", "2026-07-15");
+    const filed = { season: 2026, champions: ["tm-209"], promoted: [], relegated: [], continental: {}, cup: { championId: "tm-209", runnerUpId: "tm-1234" }, finals: { league: "2026-12-14", cup: "2026-05-20" } };
+    const world = { ...southAmerica.world, ar: { ...argentina, seasons: [...argentina.seasons, filed], coaching: { ...argentina.coaching, coaches } } };
+    const closed = closeCoachSeason({ ...southAmerica, season: 2027, world }, 2026, NO_RUNS, []).world?.ar?.coaching;
+    expect(closed?.coaches[fired.id]?.titles).toEqual([{ season: 2026, competition: "ar-cup", clubId: "tm-209" }]);
+    expect(closed?.coaches[hired.id]?.titles).toEqual([{ season: 2026, competition: "ar-1", clubId: "tm-209" }]);
+  });
+
   it("retires a coach of 72 and opens his club's job", () => {
     const abel = coachesByClub(coachesOf(game)).get("palmeiras-sp");
     if (!abel) throw new Error("Palmeiras has no coach");
@@ -122,7 +155,15 @@ describe("the coaches' turn of the season", () => {
 
 describe("a season played", () => {
   let state = loadNewGame(3, { coachClubId: "bahia-ba" });
-  while (state.date < "2027-01-01") state = advanceDay(state, {}).state;
+  while (state.date < "2026-12-31") state = advanceDay(state, {}).state;
+  const lastDay = seasonRuns(state);
+  state = advanceDay(state, {}).state;
+
+  it("knows each competition's final day as the season ends, from the real calendar", () => {
+    expect(lastDay.finals["copa-do-brasil"]).toBe("2026-12-06");
+    expect(lastDay.finals["serie-a"]).toBe("2026-12-02");
+    expect(lastDay.finals["state-sp"] ?? "").toMatch(/^2026-0[23]-/);
+  });
   const world = coachesOf(state);
   const filed = state.history.seasons.at(-1);
   const champion = filed?.tables.A[0] ?? "";

@@ -65,6 +65,8 @@ type CountrySeason = {
   continental: Record<string, string[]>;
   /** Its cup's final, when it plays one. */
   cup?: CupFinal;
+  /** The days its top league's last round and its cup's final were played; a season filed before they were kept has none. */
+  finals?: { league: IsoDate; cup?: IsoDate };
 };
 
 /** A result-only country in the game: its own random stream, so it plays and saves apart from the rest. */
