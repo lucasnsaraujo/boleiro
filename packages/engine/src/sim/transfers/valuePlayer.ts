@@ -17,11 +17,19 @@ const DIVISION_FACTOR: Record<Tier, number> = { A: 1, B: 0.9, C: 0.8, D: 0.7, st
 const FULL_VALUE_MONTHS = 24;
 const VALUE_AT_EXPIRY = 0.3;
 
-/** Market value in EUR of a player at a club of `tier` on `date`. */
-export function valuePlayer(player: Pick<SimPlayer, "strength" | "age" | "contractUntil">, tier: Tier, date: IsoDate): number {
+/** His value in EUR at a Série A club before his contract and division count. */
+function valueOfPlayerAlone(player: Pick<SimPlayer, "strength" | "age">): number {
   const strength = VALUE_AT_70_EUR * GROWTH_PER_STRENGTH_POINT ** (player.strength - 70);
   const age = player.age <= PEAK_VALUE_AGE ? PER_YEAR_YOUNGER ** (PEAK_VALUE_AGE - player.age) : PER_YEAR_OLDER ** (player.age - PEAK_VALUE_AGE);
+  return strength * age;
+}
+
+/** Market value in EUR of a player at a club of `tier` with two years or more left on his contract. */
+export const valueOnFullContract = (player: Pick<SimPlayer, "strength" | "age">, tier: Tier): number => Math.round(valueOfPlayerAlone(player) * DIVISION_FACTOR[tier]);
+
+/** Market value in EUR of a player at a club of `tier` on `date`. */
+export function valuePlayer(player: Pick<SimPlayer, "strength" | "age" | "contractUntil">, tier: Tier, date: IsoDate): number {
   const monthsLeft = Math.max(0, daysBetween(date, player.contractUntil) / 30.4);
   const contract = VALUE_AT_EXPIRY + (1 - VALUE_AT_EXPIRY) * Math.min(1, monthsLeft / FULL_VALUE_MONTHS);
-  return Math.round(strength * age * contract * DIVISION_FACTOR[tier]);
+  return Math.round(valueOfPlayerAlone(player) * contract * DIVISION_FACTOR[tier]);
 }

@@ -10,7 +10,7 @@ import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
 import type { CommandResults, CommandType, GameCommand } from "@boleiro/game-client/engine/createEngineSession";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
-import { HALF_TIME, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
+import { EXTRA_HALF_TIME, EXTRA_TIME_END, FULL_TIME, HALF_TIME, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import { Round } from "./Round.js";
 
 const closers: (() => void)[] = [];
@@ -502,6 +502,46 @@ test("an injury in first-half stoppage time opens the incident window at half-ti
   expect(shownMinute()).toBe(HALF_TIME);
   expect(await screen.findByRole("dialog", { name: /^Machucou:/ })).toBeTruthy();
 });
+
+/** The round with one match other than the coach's played on to extra time, its whistles at 105 and 120. */
+function withExtraTimeElsewhere(engine: EngineClient): EngineClient {
+  const whistles: MatchEvent[] = [
+    { type: "extraHalfTime", minute: EXTRA_HALF_TIME },
+    { type: "extraTimeEnd", minute: EXTRA_TIME_END },
+  ];
+  const extend = <R extends { coach: { fixtureId: string } | null; matches: { fixtureId: string; events: MatchEvent[] }[] }>(round: R): R => {
+    const other = round.matches.find((m) => m.fixtureId !== round.coach?.fixtureId);
+    return { ...round, matches: round.matches.map((m) => (m === other ? { ...m, events: [...m.events, ...whistles] } : m)) };
+  };
+  function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+  async function apply(command: GameCommand): Promise<unknown> {
+    const result = await engine.apply(command);
+    return command.type === "startRound" ? extend(result as CommandResults["startRound"]) : result;
+  }
+  async function liveRound() {
+    const round = await engine.liveRound();
+    return round && extend(round);
+  }
+  return { ...engine, apply, liveRound };
+}
+
+test("when only another match goes to extra time, the coach's match ended at ninety: no window for its last minute's injury, and its clock stays on 90'", async () => {
+  await kickOff(await onMatchDay((engine) => withExtraTimeElsewhere(withIncidentAt(FULL_TIME, hurtForward(FULL_TIME))(engine))));
+  const playOnTo = async (to: number) => {
+    while (shownMinute() < to) {
+      const before = shownMinute();
+      play(1);
+      if (shownMinute() === before) await user().click(screen.getByRole("button", { name: "1x" }));
+    }
+  };
+  await playOnTo(FULL_TIME);
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  expect(screen.queryByRole("dialog", { name: /^Machucou:/ })).toBeNull();
+  await user().click(screen.getByRole("button", { name: "1x" }));
+  for (let minute = FULL_TIME; minute < FULL_TIME + 6; minute++) play(1);
+  expect(shownMinute()).toBe(FULL_TIME);
+  expect(screen.getByText("Fim de jogo")).toBeTruthy();
+}, 60_000);
 
 test("coming back to a round stopped on an incident opens its window again", async () => {
   const MINUTE = 6;

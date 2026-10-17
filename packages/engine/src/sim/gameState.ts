@@ -35,6 +35,8 @@ export type MatchResult = {
   homeGoals: number;
   awayGoals: number;
   penaltyWinnerId?: string;
+  /** The match went to extra time; its goals are in the score. */
+  isAfterExtraTime?: true;
   cards?: MatchCards;
 };
 

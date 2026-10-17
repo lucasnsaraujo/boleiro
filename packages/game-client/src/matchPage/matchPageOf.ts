@@ -8,7 +8,7 @@ import type { Fixture, GameState, IsoDate, SimPlayer } from "@boleiro/engine/sim
 import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
 import type { MatchPlay } from "@boleiro/engine/sim/live/matchPlay";
 import { matchRatings } from "@boleiro/engine/sim/live/matchRatings";
-import { scorersFor, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
+import { hasExtraTimeIn, scorersFor, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import { regenerateMatch } from "@boleiro/engine/sim/live/regenerateMatch";
 import { standings } from "@boleiro/engine/sim/standings";
 import { leagueMatches } from "@boleiro/engine/sim/world/resultOnlyLeague";
@@ -44,6 +44,7 @@ export type MatchPage = {
   home: PageSide;
   away: PageSide;
   penaltyWinnerId: string | null;
+  isAfterExtraTime: boolean;
   events: MatchEvent[];
   play: MatchPlay | null;
   /** Every player's 0–10 mark over the whole timeline; the page shows them once the match is over. */
@@ -234,6 +235,7 @@ export function matchPageOf(state: GameState, ref: string, live: { day: LiveDay;
     home: side(home, "home"),
     away: side(away, "away"),
     penaltyWinnerId: result?.penaltyWinnerId ?? null,
+    isAfterExtraTime: result?.isAfterExtraTime ?? hasExtraTimeIn(story.events),
     events: story.events,
     play: story.play,
     ratings,

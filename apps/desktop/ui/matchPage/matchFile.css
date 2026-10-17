@@ -958,7 +958,7 @@
 .mf-wave {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(30, 1fr);
+  grid-template-columns: repeat(var(--spells, 30), 1fr);
   gap: 3px;
   height: 104px;
   /* Room above and below the bars for the goal pins, clear of the title and the minutes. */

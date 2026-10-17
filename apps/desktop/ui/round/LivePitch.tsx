@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Formation } from "@boleiro/engine/engine/formations";
-import { FULL_TIME } from "@boleiro/engine/sim/live/matchTimeline";
+import { matchEndOf } from "@boleiro/engine/sim/live/matchTimeline";
 import type { RoundClub, RoundMatch, Side } from "@boleiro/game-client/round/liveRoundOf";
 import { plateColours } from "../clubs/clubCatalog.js";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
@@ -202,6 +202,7 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
   // whole minute after every start or change of speed, so the board plays out the rest of the minute over that time.
   // `overrun` is how far past a stop on a goal the board played on, in minutes, so a resume carries on from there.
   const clock = useRef({ minute, tickAt: performance.now(), from: 0, frozen: 0, overrun: 0, isRunning, msPerMinute });
+  const matchEnd = matchEndOf(match.events);
   useEffect(() => {
     const c = clock.current;
     const now = performance.now();
@@ -213,7 +214,7 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
       c.frozen = 0;
       c.overrun = 0;
     }
-    const isPlaying = isRunning && minute < FULL_TIME;
+    const isPlaying = isRunning && minute < matchEnd;
     if (!isPlaying && c.isRunning) {
       c.frozen = ran();
       c.overrun = 0;
@@ -225,7 +226,7 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
     }
     c.isRunning = isPlaying;
     c.msPerMinute = msPerMinute;
-  }, [minute, isRunning, msPerMinute]);
+  }, [minute, isRunning, msPerMinute, matchEnd]);
 
   const tokenEls = useRef(new Map<string, HTMLDivElement>());
   const ballEl = useRef<HTMLDivElement>(null);

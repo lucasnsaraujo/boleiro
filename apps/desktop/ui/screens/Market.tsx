@@ -6,6 +6,8 @@ import type { SaleWay } from "@boleiro/engine/sim/transfers/listPlayer";
 import { formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import type { BoardDesk } from "@boleiro/game-client/market/boardDesk";
+import type { MarketFilters } from "@boleiro/game-client/market/marketFilters";
+import type { Scouting } from "@boleiro/game-client/market/scouting";
 import { useServices } from "../app/ServicesContext.js";
 import { boardSummary } from "../finances/financeSummary.js";
 import { bidSheets } from "../market/bidSheets.js";
@@ -24,17 +26,19 @@ export function Market() {
   const tab: Tab = params.get(TAB_PARAM) === "propostas" ? "propostas" : "busca";
   const [state, setState] = useState<MarketState | null>(null);
   const [desk, setDesk] = useState<BoardDesk | null>(null);
+  const [scouting, setScouting] = useState<Scouting | null>(null);
   const [failed, setFailed] = useState(false);
   const [hasActionFailed, setActionFailed] = useState(false);
   const [isOutOfTime, setOutOfTime] = useState(false);
 
   const load = useCallback(
     (isCurrent: () => boolean = () => true) =>
-      Promise.all([engine.read(MARKET_KEYS), engine.desk(), engine.marketClock()]).then(
-        ([read, onDesk, clock]) => {
+      Promise.all([engine.read(MARKET_KEYS), engine.desk(), engine.marketClock(), engine.scouting()]).then(
+        ([read, onDesk, clock, scouted]) => {
           if (!isCurrent()) return;
           setState(read);
           setDesk(onDesk);
+          setScouting(scouted);
           setOutOfTime(clock?.leftSeconds === 0);
         },
         () => isCurrent() && setFailed(true),
@@ -51,7 +55,7 @@ export function Market() {
   }, [load]);
 
   if (failed) return <p className="status error">Nenhum jogo aberto.</p>;
-  if (!state || !desk) return <p className="status">Abrindo o mercado…</p>;
+  if (!state || !desk || !scouting) return <p className="status">Abrindo o mercado…</p>;
 
   const club = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
   if (!club) {
@@ -82,6 +86,11 @@ export function Market() {
   const withdraw = (playerId: string) => void act(() => engine.apply({ type: "withdraw", playerId })).catch(() => undefined);
   const declineCounter = (playerId: string) => void act(() => engine.apply({ type: "declineCounter", playerId })).catch(() => undefined);
   const list = (playerId: string, way: SaleWay | null) => void act(() => engine.apply({ type: "listPlayer", playerId, way })).catch(() => undefined);
+  // Scouting changes nothing in the game, so the screen takes the session's answer instead of reading the market again.
+  const scout = (run: () => Promise<Scouting>) => void run().then(setScouting, () => setActionFailed(true));
+  const watch = (playerId: string, isWatched: boolean) => scout(() => engine.apply({ type: "watchPlayer", playerId, isWatched }));
+  const saveFilter = (name: string, filters: MarketFilters) => scout(() => engine.apply({ type: "saveFilter", name, filters }));
+  const deleteFilter = (name: string) => scout(() => engine.apply({ type: "deleteFilter", name }));
   const answer = (playerId: string, given: BidAnswer) => act(() => engine.apply({ type: "answerBid", playerId, answer: given }));
 
   const transferWindow = windowStatus(state.date, state);
@@ -124,7 +133,19 @@ export function Market() {
   return (
     <div className="market fills-screen">
       {tab === "busca" ? (
-        <BuyView state={state} desk={desk} tabs={tabs} windowLine={windowLine} onAsk={ask} onWithdraw={withdraw} onDeclineCounter={declineCounter} />
+        <BuyView
+          state={state}
+          desk={desk}
+          tabs={tabs}
+          windowLine={windowLine}
+          onAsk={ask}
+          onWithdraw={withdraw}
+          onDeclineCounter={declineCounter}
+          scouting={scouting}
+          onWatch={watch}
+          onSaveFilter={saveFilter}
+          onDeleteFilter={deleteFilter}
+        />
       ) : (
         <SellView state={state} tabs={tabs} onAnswer={answer} onList={list} />
       )}

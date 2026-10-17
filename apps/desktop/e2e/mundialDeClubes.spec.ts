@@ -3,7 +3,7 @@ import { bar, playLiveRound, startAtClub } from "./flows.js";
 
 const MAX_PRESSES = 12;
 // A game seed whose 2026 Libertadores Flamengo wins with no decisions taken, keeping its coach.
-const LIBERTADORES_WON = 49;
+const LIBERTADORES_WON = 68;
 
 /** Plays every day before `date` in the worker with no decisions, through the e2e build's engine hook. */
 async function playDaysBefore(page: Page, date: string) {
@@ -51,7 +51,7 @@ test("Flamengo, the 2026 Libertadores champion, finds the Mundial de Clubes on i
   await page.getByRole("tab", { name: "Mundial de Clubes" }).click();
   await expect(ladder.getByLabel(/Flamengo/)).toHaveClass(/mine/);
   // The note under the next tie carries no blank strip over its text.
-  const note = page.getByText(/^Empate vai direto para os/);
+  const note = page.getByText(/^Empate vai para a prorrogação/);
   await expect(note).toBeVisible();
   expect(await note.evaluate((el) => getComputedStyle(el, "::before").content)).toBe("none");
 

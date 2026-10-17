@@ -1,6 +1,6 @@
 import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
 import { playerStatsAt, type PlayerStats } from "@boleiro/engine/sim/live/matchPlay";
-import { FULL_TIME, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
+import { matchEndOf, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import type { VarDecision, WrongCallKind } from "@boleiro/engine/sim/referees/refereeCalls";
 import type { Side } from "../round/liveRoundOf.js";
 import type { MatchPage } from "./matchPageOf.js";
@@ -29,6 +29,8 @@ export type StatLine = { key: StatKey; label: string; home: number; away: number
 /** A match as it stood at a minute: the page's whole match when the minute is the final whistle. */
 export type MatchView = {
   minute: number;
+  /** The minute the match ends: 90, or 120 after extra time. */
+  end: number;
   isOver: boolean;
   score: { home: number; away: number };
   events: PageEvent[];
@@ -124,7 +126,7 @@ function statLines(page: MatchPage, minute: number, events: readonly PageEvent[]
 
 /** Each side's pressure per spell of three minutes up to `minute`, from its shots, goals and passes in the spell. */
 function pressureOf(page: MatchPage, minute: number): MatchView["pressure"] {
-  const spells = Math.ceil(Math.min(minute, FULL_TIME) / PRESSURE_MINUTES);
+  const spells = Math.ceil(Math.min(minute, matchEndOf(page.events)) / PRESSURE_MINUTES);
   if (!page.play || spells === 0) return { home: [], away: [] };
   const weightAt = (at: number) => {
     const { home, away } = sideTotals(page, at);
@@ -147,15 +149,17 @@ function pressureOf(page: MatchPage, minute: number): MatchView["pressure"] {
 
 /** The match at `minute`: its score, what happened so far, its numbers and pressure, and its marks once it is over. */
 export function matchPageAt(page: MatchPage, minute: number): MatchView {
-  const at = Math.min(minute, FULL_TIME);
-  const isOver = !page.isLive || at >= FULL_TIME;
-  const shown = isOver ? FULL_TIME : at;
+  const end = matchEndOf(page.events);
+  const at = Math.min(minute, end);
+  const isOver = !page.isLive || at >= end;
+  const shown = isOver ? end : at;
   const events = page.events.filter((e): e is PlayerEvent => isPlayerEvent(e) && e.minute <= shown).map((e) => pageEvent(e, page.home.club.id));
   const goals = (side: Side) => events.filter((e) => e.kind === "goal" && e.side === side).length;
   const ratings = isOver ? page.ratings : null;
   const bestPlayerId = ratings ? (Object.entries(ratings).reduce<[string, number] | null>((best, entry) => (!best || entry[1] > best[1] ? entry : best), null)?.[0] ?? null) : null;
   return {
     minute: shown,
+    end,
     isOver,
     score: { home: goals("home"), away: goals("away") },
     events,

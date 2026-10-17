@@ -49,6 +49,8 @@ function actionOf(event: MatchEvent, sideOf: (clubId: string) => Side, nameOf: (
     case "halfTime":
       return { kind: "halfTime", minute: event.minute };
     case "fullTime":
+    case "extraHalfTime":
+    case "extraTimeEnd":
     case "shootoutKick":
     case "orderOverruled":
     case "varCheck":
@@ -58,7 +60,7 @@ function actionOf(event: MatchEvent, sideOf: (clubId: string) => Side, nameOf: (
 }
 
 /**
- * What the live pitch plays of a match: every real event of its ninety minutes as a pitch action and, when the
+ * What the live pitch plays of a match: every real event of its ninety minutes (and extra time) as a pitch action and, when the
  * match has its players' play, every shot that doesn't go in, all in minute order. The passes and the build-up
  * around them are the board's own presentation.
  */

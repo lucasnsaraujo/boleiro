@@ -2,15 +2,17 @@ import { addDays, daysBetween } from "../dates.js";
 import type { IsoDate, MatchResult } from "../gameState.js";
 import { shuffle } from "../shuffle.js";
 import type { CupFinal } from "./continentalPlaces.js";
-import { scoreDraw, windowDates } from "./resultOnlyLeague.js";
+import { hasNationalCupExtraTime } from "../tieBreaks.js";
+import { scoreDraw, settleLevelTie, windowDates } from "./resultOnlyLeague.js";
 import type { WorldClub } from "./world.js";
 
 /**
  * One season of a result-only national cup: single matches, a club's draw settled on penalties.
  * `bracket` is the first round's draw in pairs, home club first, "" for a bye; each later match
  * brings the winners of two neighbouring ones together. `results` holds every match round after
- * round as its score in two characters (goals counted from "0") and the winning side, "0" home or
- * "1" away; a bye as "xx" and its club's side; "---" before it is played.
+ * round as its score in two characters (goals counted from "0", extra time's included) and the winning
+ * side, "0" home or "1" away ("2" or "3" when won in extra time, "4" or "5" on penalties after it); a bye
+ * as "xx" and its club's side; "---" before it is played. A level score went to penalties.
  */
 export type ResultOnlyCup = { id: string; season: number; bracket: string[]; dates: IsoDate[]; results: string };
 
@@ -18,6 +20,8 @@ const BYE = "";
 const UNPLAYED = "---";
 const BYE_SCORE = "xx";
 const ZERO_GOALS = "0".charCodeAt(0);
+const WON_IN_EXTRA_TIME = 2;
+const WON_ON_PENALTIES_AFTER_EXTRA_TIME = 4;
 // The first round comes about five weeks into the league season and the final a week before its end.
 const FIRST_ROUND_DELAY = 35;
 const FINAL_BEFORE_END = 7;
@@ -78,16 +82,20 @@ export function cupMatches(cup: ResultOnlyCup): CupMatch[] {
   const matches: CupMatch[] = [];
   let entrants = cup.bracket;
   let offset = 0;
-  roundSizes(cup.bracket).forEach((size, round) => {
+  const sizes = roundSizes(cup.bracket);
+  sizes.forEach((size, round) => {
     const winners: string[] = [];
     for (let i = 0; i < size; i++) {
       const homeId = entrants[2 * i] ?? BYE;
       const awayId = entrants[2 * i + 1] ?? BYE;
       const code = cup.results.slice(3 * (offset + i), 3 * (offset + i) + 3);
       const isPlayed = code !== UNPLAYED;
-      const winnerId = isPlayed ? (code[2] === "1" ? awayId : homeId) : null;
+      const side = Number(code[2]);
+      const winnerId = isPlayed ? (side % 2 ? awayId : homeId) : null;
       const isBye = code.startsWith(BYE_SCORE);
-      const result = isPlayed && !isBye ? { homeGoals: code.charCodeAt(0) - ZERO_GOALS, awayGoals: code.charCodeAt(1) - ZERO_GOALS } : null;
+      const score = { homeGoals: code.charCodeAt(0) - ZERO_GOALS, awayGoals: code.charCodeAt(1) - ZERO_GOALS };
+      const isAfterExtraTime = side >= WON_IN_EXTRA_TIME;
+      const result = isPlayed && !isBye ? { ...score, ...(isAfterExtraTime ? { isAfterExtraTime: true as const } : {}) } : null;
       matches.push({ round, homeId, awayId, result, winnerId });
       winners.push(winnerId ?? BYE);
     }
@@ -96,6 +104,9 @@ export function cupMatches(cup: ResultOnlyCup): CupMatch[] {
   });
   return matches;
 }
+
+/** The country of a cup, from its id ("de-cup-2026"). */
+const countryOf = (cup: ResultOnlyCup) => cup.id.replace(/-cup-\d+$/, "");
 
 /** The cup with today's round played, or the same cup when today has none or its clubs are not known yet. */
 export function playCupDay(cup: ResultOnlyCup, date: IsoDate, clubOf: (id: string) => WorldClub, random: () => number): ResultOnlyCup {
@@ -106,15 +117,22 @@ export function playCupDay(cup: ResultOnlyCup, date: IsoDate, clubOf: (id: strin
   const today = matches.filter((m) => m.round === round);
   if (today.some((m) => m.winnerId !== null) || today.some((m) => m.homeId === BYE && m.awayId === BYE)) return cup;
   let played = "";
+  const hasExtraTime = hasNationalCupExtraTime(countryOf(cup), round, cup.dates.length);
   for (const { homeId, awayId } of today) {
     if (awayId === BYE || homeId === BYE) {
       played += `${BYE_SCORE}${awayId === BYE ? "0" : "1"}`;
       continue;
     }
-    const { homeGoals, awayGoals } = scoreDraw(clubOf(homeId), clubOf(awayId), random);
-    // guess: a draw goes straight to penalties, an even draw; extra time is not played.
-    const awayWins = awayGoals > homeGoals || (awayGoals === homeGoals && random() < 0.5);
-    played += String.fromCharCode(ZERO_GOALS + homeGoals, ZERO_GOALS + awayGoals) + (awayWins ? "1" : "0");
+    let { homeGoals, awayGoals } = scoreDraw(clubOf(homeId), clubOf(awayId), random);
+    let side = awayGoals > homeGoals ? 1 : 0;
+    if (homeGoals === awayGoals) {
+      const { extraTime, isAwayShootoutWinner } = settleLevelTie(clubOf(homeId), clubOf(awayId), hasExtraTime, random);
+      homeGoals += extraTime?.homeGoals ?? 0;
+      awayGoals += extraTime?.awayGoals ?? 0;
+      const settledBy = homeGoals !== awayGoals ? WON_IN_EXTRA_TIME : extraTime ? WON_ON_PENALTIES_AFTER_EXTRA_TIME : 0;
+      side = settledBy + Number(homeGoals === awayGoals ? isAwayShootoutWinner : awayGoals > homeGoals);
+    }
+    played += String.fromCharCode(ZERO_GOALS + homeGoals, ZERO_GOALS + awayGoals) + String(side);
   }
   return { ...cup, results: cup.results.slice(0, 3 * from) + played + cup.results.slice(3 * (from + today.length)) };
 }

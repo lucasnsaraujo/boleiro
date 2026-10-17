@@ -7,6 +7,7 @@ import { sellerPrice } from "@boleiro/engine/sim/transfers/askingPrice";
 import { beforeAll, expect, test } from "vitest";
 import type { TurningPoint } from "../hub/turningPoints.js";
 import type { BoardAnswer } from "../market/boardDesk.js";
+import { NO_FILTERS } from "../market/marketFilters.js";
 import type { LiveRound } from "../round/liveRoundOf.js";
 import { bundledGameFiles } from "./bundledGameFiles.js";
 import { createEngineSession, type CommandResults, type CommandType, type GameCommand } from "./createEngineSession.js";
@@ -298,6 +299,31 @@ function playHotSeatTurn() {
   return { recorded };
 }
 
+const STRIKERS = { ...NO_FILTERS, group: "ATT" as const, minStrength: 70 };
+
+/** A hot-seat game whose two coaches each watch a player and save a search, one of them forgetting another. */
+function playScouting() {
+  const recorded = recordedSession();
+  const { session, apply } = recorded;
+  apply({
+    type: "newGame",
+    seed: SEED,
+    choices: { coachClubId: CLUB, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "palmeiras-sp" }] } },
+  });
+  const { players } = session.read(["players"]);
+  const [first, second] = Object.values(players).filter((p) => p.clubId === "vitoria-ba");
+  if (!first || !second) throw new Error("Vitória has players");
+  apply({ type: "watchPlayer", playerId: first.id, isWatched: true });
+  apply({ type: "saveFilter", name: "Atacantes", filters: STRIKERS });
+  apply({ type: "saveFilter", name: "Rascunho", filters: NO_FILTERS });
+  apply({ type: "deleteFilter", name: "Rascunho" });
+  const anas = session.scouting();
+  apply({ type: "passTurn" });
+  const brunosFirst = session.scouting();
+  apply({ type: "watchPlayer", playerId: second.id, isWatched: true });
+  return { recorded, anas, brunosFirst, brunos: session.scouting(), watched: [first.id, second.id] as const, save: session.save(), shards: session.saveShards() };
+}
+
 /** Plays on until an event asks the coach, answers it, hands one area to the assistant and plays on. */
 function playEvents() {
   const recorded = recordedSession();
@@ -317,6 +343,7 @@ function playEvents() {
   const after = session.read(["mood", "boards", "finances"]);
   const inbox = session.inbox();
   apply({ type: "handToAssistant", area: "press", isHanded: true });
+  apply({ type: "setAssistantDuty", duty: "contracts", isOn: false });
   apply({ type: "playToMatchDay" });
   return { recorded, pending, answered, before, after, inbox };
 }
@@ -344,6 +371,7 @@ let academy: ReturnType<typeof playAcademy>;
 let events: ReturnType<typeof playEvents>;
 let captain: ReturnType<typeof playCaptain>;
 let coachMoves: ReturnType<typeof playCoachMoves>;
+let scouting: ReturnType<typeof playScouting>;
 
 beforeAll(() => {
   season = playSeason();
@@ -354,6 +382,7 @@ beforeAll(() => {
   events = playEvents();
   captain = playCaptain();
   coachMoves = playCoachMoves();
+  scouting = playScouting();
 }, 120_000);
 
 test("a coach who resigns is out of work with his old club's job open, and the club won't take him back", () => {
@@ -381,6 +410,31 @@ test("the coach names a captain: the chemistry screen and the lineup sheet show 
   const reloaded = createEngineSession(bundledGameFiles);
   reloaded.apply({ type: "load", save });
   expect(reloaded.chemistry()?.captain?.playerId).toBe(kid.playerId);
+});
+
+test("each hot-seat coach watches players and saves searches of his own", () => {
+  const [anasPlayer, brunosPlayer] = scouting.watched;
+  expect(scouting.anas).toEqual({ watchList: [anasPlayer], savedFilters: [{ name: "Atacantes", filters: STRIKERS }] });
+  expect(scouting.brunosFirst).toEqual({ watchList: [], savedFilters: [] });
+  expect(scouting.brunos.watchList).toEqual([brunosPlayer]);
+});
+
+test("a save keeps every coach's scouting, whole or in shards, and a load gives each his own back", () => {
+  for (const save of [scouting.save, scouting.shards]) {
+    const reloaded = createEngineSession(bundledGameFiles);
+    reloaded.apply({ type: "load", save });
+    expect(reloaded.scouting()).toEqual(scouting.brunos);
+    reloaded.apply({ type: "advance", days: [{}] });
+    expect(reloaded.scouting()).toEqual(scouting.anas);
+  }
+});
+
+test("the scouting commands survive JSON and replay alike from the same seed", () => {
+  const { session, applied } = scouting.recorded;
+  for (const { command } of applied) expect(JSON.parse(JSON.stringify(command))).toStrictEqual(command);
+  const twin = replay(applied);
+  expect(twin.results).toEqual(applied.map(({ result }) => result));
+  expect(sha256(twin.session.save())).toBe(sha256(session.save()));
 });
 
 test("the chemistry screen draws the eleven in its formation with lines between known players", () => {
@@ -524,7 +578,7 @@ test("the money commands survive JSON and replay alike from the same seed", () =
 });
 
 test("the season, career, market, money, academy and hot-seat logs between them send every kind of command", () => {
-  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, playHotSeatTurn()].flatMap(({ recorded }) => recorded.applied);
+  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, scouting, playHotSeatTurn()].flatMap(({ recorded }) => recorded.applied);
   const sent = new Set(logs.map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
@@ -556,7 +610,11 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     spendMarketTime: true,
     answerEvent: true,
     handToAssistant: true,
+    setAssistantDuty: true,
     nameCaptain: true,
+    watchPlayer: true,
+    saveFilter: true,
+    deleteFilter: true,
   };
   expect([...sent].sort()).toEqual(Object.keys(every).sort());
 });

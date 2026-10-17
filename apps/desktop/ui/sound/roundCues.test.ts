@@ -41,6 +41,15 @@ test("the referee whistles the kick-off, half-time, the second half and full tim
   expect(roundCues(round, 10, 11)).toEqual([]);
 });
 
+test("with a match in extra time the referee whistles the end of normal time, extra time's two halves and its end", () => {
+  const round = roundWith([{ type: "extraHalfTime", minute: 105 }, { type: "extraTimeEnd", minute: 120 }]);
+  expect(roundCues(round, 89, 90)).toEqual(["halfTime"]);
+  expect(roundCues(round, 90, 91)).toEqual(["kickOff"]);
+  expect(roundCues(round, 104, 105)).toEqual(["halfTime"]);
+  expect(roundCues(round, 105, 106)).toEqual(["kickOff"]);
+  expect(roundCues(round, 119, 120)).toEqual(["fullTime"]);
+});
+
 test("the coach's goals roar, the goals he concedes boo, and goals elsewhere sound from afar", () => {
   const round = roundWith([goal(10, "bahia"), goal(20, "vit")], [goal(10, "fla")]);
   expect(roundCues(round, 9, 10)).toEqual(["otherGoal", "coachGoal"]);

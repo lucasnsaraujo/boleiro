@@ -114,6 +114,16 @@ describe("contracts", () => {
     expect(joined.state.players[target.id]?.clubId).toBe(COACH);
     expect(joined.events).toContainEqual(expect.objectContaining({ type: "playerMoved", kind: "preContract", playerId: target.id, fee: 0 }));
   });
+
+  it("refuse a pre-contract with a player who already signed one with another club", () => {
+    const target = { ...serieBStandout(windowEve), contractUntil: addDays(windowEve.date, 120) };
+    const rival = Object.values(windowEve.clubs).find((c) => c.division === "A" && c.id !== COACH)?.id ?? "";
+    const signed = rich(withPlayer(windowEve, target));
+    const before = { ...signed, market: { ...signed.market, preContracts: { ...signed.market.preContracts, [target.id]: rival } } };
+    const { state, decision } = ask(before, { kind: "sign", playerId: target.id });
+    expect(decision).toMatchObject({ approved: false, reason: "preContractSigned" });
+    expect(state.market.preContracts[target.id]).toBe(rival);
+  });
 });
 
 describe("free agents", () => {
@@ -130,6 +140,16 @@ describe("free agents", () => {
     expect(costs(state).transferFees).toBe(costs(before).transferFees);
     expect(costs(state).signingFees).toBeGreaterThan(costs(before).signingFees);
     expect(costs(state).agentFees).toBeGreaterThan(costs(before).agentFees);
+  });
+
+  it("sign with the window closed, when a player under contract can't", () => {
+    const free = serieBStandout(windowEve);
+    const players = { ...windowEve.players };
+    Reflect.deleteProperty(players, free.id);
+    const closed = rich({ ...windowEve, date: "2026-04-10", players, market: { ...windowEve.market, freeAgents: { ...windowEve.market.freeAgents, [free.id]: free } } });
+    expect(ask(closed, { kind: "sign", playerId: free.id }).decision).toMatchObject({ approved: true });
+    const contracted = rich({ ...windowEve, date: "2026-04-10" });
+    expect(ask(contracted, { kind: "sign", playerId: serieBStandout(contracted).id }).decision).toMatchObject({ approved: false, reason: "windowClosed" });
   });
 });
 
@@ -151,6 +171,18 @@ describe("loans", () => {
     const back = advanceDay(ended, {});
     expect(back.state.players[youngster.id]?.clubId).toBe(COACH);
     expect(back.state.market.loans[youngster.id]).toBeUndefined();
+  });
+
+  it("bring a lent player back early when the coach recalls him inside a window, and not outside one", () => {
+    const youngster = { ...(squadOf(windowEve, COACH).sort((a, b) => a.strength - b.strength)[0] ?? serieBStandout(windowEve)), age: 19 };
+    const lent = ask(withPlayer(windowEve, youngster), { kind: "loanOut", playerId: youngster.id }).state;
+    const borrower = lent.players[youngster.id]?.clubId ?? "";
+    expect(ask({ ...lent, date: "2026-04-10" }, { kind: "recall", playerId: youngster.id }).decision).toMatchObject({ approved: false, reason: "windowClosed" });
+    const { state, decision, events } = ask(lent, { kind: "recall", playerId: youngster.id });
+    expect(decision.approved).toBe(true);
+    expect(state.players[youngster.id]?.clubId).toBe(COACH);
+    expect(state.market.loans[youngster.id]).toBeUndefined();
+    expect(events).toContainEqual(expect.objectContaining({ type: "playerMoved", kind: "loanReturn", fromClubId: borrower, toClubId: COACH, fee: 0 }));
   });
 
   it("borrow a reserve from a bigger club with a purchase clause the coach can trigger", () => {

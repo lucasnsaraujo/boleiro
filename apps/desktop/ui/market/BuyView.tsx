@@ -8,14 +8,21 @@ import { SQUAD_CAP, isSquadFull } from "@boleiro/engine/sim/transfers/squadCap";
 import { formatDayMonth, formatMonthYear } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import type { BoardDesk } from "@boleiro/game-client/market/boardDesk";
-import { requestOptions } from "@boleiro/game-client/market/coachRequests";
+import { clauseRequest, requestOptions } from "@boleiro/game-client/market/coachRequests";
+import { signingTerms } from "@boleiro/game-client/market/contracts";
+import { formatContractLength } from "@boleiro/game-client/format/formatContractLength";
+import { assistantPick, contractEndOn, type ContractTerm } from "@boleiro/engine/sim/transfers/contractTerms";
+import { STANCE_LABELS } from "../contracts/renewalText.js";
+import type { Scouting } from "@boleiro/game-client/market/scouting";
 import { RangeSlider } from "../controls/RangeSlider.js";
 import { Select } from "../controls/Select.js";
+import { WatchToggle } from "../controls/WatchToggle.js";
 import { Crest } from "../clubs/Crest.js";
 import { plateColours } from "../clubs/clubCatalog.js";
 import { POSITION_GROUP_NAMES, POSITION_NAMES } from "../format/playerLabels.js";
 import { BoardRequests } from "./BoardRequests.js";
-import { marketClubs, marketLeagues, marketNationalities, NO_FILTERS, searchMarket, strengthBounds, type MarketFilters, type MarketRow, type MarketStatus, type Willingness } from "./marketSearch.js";
+import { NO_FILTERS, type MarketFilters, type MarketStatus } from "@boleiro/game-client/market/marketFilters";
+import { marketClubs, marketLeagues, marketNationalities, searchMarket, strengthBounds, type MarketRow, type Willingness } from "./marketSearch.js";
 import { MoneyStepper, roundStep } from "./MoneyStepper.js";
 import { offerAdvice } from "./offerAdvice.js";
 import { pendingText, requestTitle } from "./requestText.js";
@@ -23,6 +30,8 @@ import { pendingText, requestTitle } from "./requestText.js";
 export const MARKET_KEYS = ["date", "coachClubId", "clubs", "players", "market", "finances", "boards", "history", "hasMidSeasonWindow", "coach"] as const;
 export type MarketState = Pick<GameState, (typeof MARKET_KEYS)[number]>;
 
+// guess: with no length he takes, a signing offers the club's usual two years.
+const DEFAULT_SIGNING_MONTHS = 24;
 // The list stays short; "Ver mais" adds another page.
 const PAGE = 40;
 const DESK_ANSWERS = 3;
@@ -36,7 +45,9 @@ const STATUSES: readonly { value: MarketStatus; label: string }[] = [
   { value: "freeAgent", label: "Sem clube" },
   { value: "contractEnding", label: "Fim de contrato" },
   { value: "lendable", label: "Para empréstimo" },
+  { value: "lentOut", label: "Emprestados por você" },
 ];
+const NO_SAVED = "";
 const WILLING: Record<Willingness, string> = { yes: "Toparia vir", maybe: "Talvez venha", no: "Não quer vir" };
 // guess: young is 23 or under, old 33 or over, as the approved mock colours ages.
 const YOUNG_AGE = 23;
@@ -52,6 +63,8 @@ function situation(row: MarketRow): ReactNode {
       return <span className="market-st quiet">Pré-contrato assinado</span>;
     case "onLoan":
       return <span className="market-st quiet">Emprestado</span>;
+    case "lentOut":
+      return <span className="market-st quiet">Emprestado por você</span>;
     case "lendable":
       return <span className="market-st sale">Para empréstimo</span>;
     default:
@@ -73,15 +86,23 @@ type Props = {
   onAsk: (request: CoachRequest) => void;
   onWithdraw: (playerId: string) => void;
   onDeclineCounter: (playerId: string) => void;
+  /** The coach's watch list and saved searches. */
+  scouting: Scouting;
+  onWatch: (playerId: string, isWatched: boolean) => void;
+  onSaveFilter: (name: string, filters: MarketFilters) => void;
+  onDeleteFilter: (name: string) => void;
 };
 
 /** Busca: other clubs' players and free agents, and the offer the coach makes for the one he picks. */
-export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDeclineCounter }: Props) {
+export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDeclineCounter, scouting, onWatch, onSaveFilter, onDeleteFilter }: Props) {
   const [filters, setFilters] = useState<MarketFilters>(NO_FILTERS);
   const [limit, setLimit] = useState(PAGE);
   const [chosenId, setChosenId] = useState<string | null>(null);
+  const [savedName, setSavedName] = useState(NO_SAVED);
+  const [naming, setNaming] = useState<string | null>(null);
 
-  const found = useMemo(() => searchMarket(state, filters, limit), [state, filters, limit]);
+  const watched = useMemo(() => new Set(scouting.watchList), [scouting.watchList]);
+  const found = useMemo(() => searchMarket(state, filters, limit, watched), [state, filters, limit, watched]);
   const bounds = useMemo(() => strengthBounds(state), [state]);
   const leagues = useMemo(() => marketLeagues(state), [state]);
   const clubs = useMemo(() => marketClubs(state, filters.division), [state, filters.division]);
@@ -92,6 +113,22 @@ export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDe
   function filter(patch: Partial<MarketFilters>) {
     setFilters((current) => ({ ...current, ...patch }));
     setLimit(PAGE);
+    setSavedName(NO_SAVED);
+  }
+
+  function runSaved(name: string) {
+    const saved = scouting.savedFilters.find((entry) => entry.name === name);
+    setFilters(saved?.filters ?? NO_FILTERS);
+    setLimit(PAGE);
+    setSavedName(saved ? name : NO_SAVED);
+  }
+
+  function keepSearch() {
+    const name = naming?.trim() ?? "";
+    if (!name) return;
+    onSaveFilter(name, filters);
+    setSavedName(name);
+    setNaming(null);
   }
 
   const isFull = isSquadFull(squadSize);
@@ -154,10 +191,57 @@ export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDe
             options={[{ value: "", label: "Qualquer" }, ...MIN_MINUTES.map((minutes) => ({ value: String(minutes), label: `${minutes.toLocaleString("pt-BR")}+ na temporada` }))]}
             onChange={(value) => filter({ minMinutes: value ? Number(value) : null })}
           />
+          {scouting.savedFilters.length > 0 && (
+            <Select
+              label="Buscas salvas"
+              value={savedName}
+              options={[{ value: NO_SAVED, label: "Nenhuma" }, ...scouting.savedFilters.map((saved) => ({ value: saved.name, label: saved.name }))]}
+              onChange={runSaved}
+            />
+          )}
+          {savedName !== NO_SAVED && (
+            <button
+              type="button"
+              className="btn sm flat"
+              onClick={() => {
+                onDeleteFilter(savedName);
+                setSavedName(NO_SAVED);
+              }}
+            >
+              Apagar busca
+            </button>
+          )}
+          {naming === null ? (
+            <button type="button" className="btn sm flat" onClick={() => setNaming("")}>
+              <i className="ph-bold ph-bookmark-simple" aria-hidden="true" />
+              Salvar busca
+            </button>
+          ) : (
+            <form
+              className="market-save-search"
+              aria-label="Salvar busca"
+              onSubmit={(event) => {
+                event.preventDefault();
+                keepSearch();
+              }}
+            >
+              <label className="field">
+                <input aria-label="Nome da busca" placeholder="Nome da busca" value={naming} autoFocus onChange={(e) => setNaming(e.target.value)} onKeyDown={(e) => e.key === "Escape" && setNaming(null)} />
+              </label>
+              <button className="btn sm go" disabled={!naming.trim()}>
+                Salvar
+              </button>
+            </form>
+          )}
 
         </div>
         <div className="market-tabs-row">
           {tabs}
+          <label className="market-toggle">
+            Só observados
+            <input type="checkbox" role="switch" className="sw-input" checked={filters.isWatchedOnly} onChange={(e) => filter({ isWatchedOnly: e.target.checked })} />
+            <span className={filters.isWatchedOnly ? "sw on" : "sw"} aria-hidden="true" />
+          </label>
           <label className="market-toggle">
             Só quem toparia vir
             <input type="checkbox" role="switch" className="sw-input" checked={filters.isWillingOnly} onChange={(e) => filter({ isWillingOnly: e.target.checked })} />
@@ -204,6 +288,7 @@ export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDe
                         <button className="market-name" aria-pressed={isChosen} onClick={() => setChosenId(row.id)}>
                           {row.name}
                         </button>
+                        {row.isWatched && <i className="ph-fill ph-star market-star" role="img" aria-label="Observado" />}
                       </td>
                       <td className="l">
                         {owner ? (
@@ -240,7 +325,7 @@ export function BuyView({ state, desk, tabs, windowLine, onAsk, onWithdraw, onDe
 
       <aside className="stk market-pick" aria-label="Jogador escolhido">
         {chosen ? (
-          <Chosen key={chosen.id} row={chosen} state={state} desk={desk} squadSize={squadSize} onAsk={onAsk} onWithdraw={onWithdraw} onDeclineCounter={onDeclineCounter} />
+          <Chosen key={chosen.id} row={chosen} state={state} desk={desk} squadSize={squadSize} onAsk={onAsk} onWithdraw={onWithdraw} onDeclineCounter={onDeclineCounter} onWatch={onWatch} />
         ) : (
           <p className="market-empty">Escolha um jogador na lista.</p>
         )}
@@ -261,15 +346,23 @@ type ChosenProps = {
   onAsk: (request: CoachRequest) => void;
   onWithdraw: (playerId: string) => void;
   onDeclineCounter: (playerId: string) => void;
+  onWatch: (playerId: string, isWatched: boolean) => void;
 };
 
-function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCounter }: ChosenProps) {
+/** The length a signing offers first: the one nearest two years he takes, as the assistant would. */
+const firstTerm = (terms: readonly ContractTerm[]): ContractTerm | undefined => assistantPick(terms) ?? terms.find((term) => term.stance !== "refuses");
+
+function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCounter, onWatch }: ChosenProps) {
+  const terms = useMemo(() => signingTerms(state, row.id, row.wage), [state, row.id, row.wage]);
   const [fee, setFee] = useState(row.price ?? 0);
-  const [wage, setWage] = useState(row.wage);
+  const [months, setMonths] = useState(() => firstTerm(terms)?.months ?? DEFAULT_SIGNING_MONTHS);
+  const [wage, setWage] = useState(() => firstTerm(terms)?.wage ?? row.wage);
   useEffect(() => {
+    const first = firstTerm(terms);
     setFee(row.price ?? 0);
-    setWage(row.wage);
-  }, [row.price, row.wage]);
+    setMonths(first?.months ?? DEFAULT_SIGNING_MONTHS);
+    setWage(first?.wage ?? row.wage);
+  }, [row.price, row.wage, terms]);
 
   const owner = row.clubId ? state.clubs[row.clubId] : undefined;
   const options = requestOptions(state, row.id);
@@ -279,14 +372,23 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
   const isFull = isSquadFull(squadSize);
   const buy = options.find((option) => option.request.kind === "sign");
   const loanIn = options.find((option) => option.request.kind === "loanIn");
+  const recall = options.find((option) => option.request.kind === "recall");
+  const clause = row.clause !== null ? clauseRequest(state, row.id) : null;
+  const clauseShortBy = row.clause !== null ? -offerAdvice(state, row, row.clause, wage).budgetLeft : 0;
   const hasFee = !!row.price && buy?.label === "Comprar";
   const colours = owner ? plateColours(owner.colours) : null;
   const best = advice.atPosition[0]?.strength ?? row.strength;
   const scale = (strength: number) => `${Math.max(8, Math.min(100, strength))}%`;
 
+  // A loanee's purchase keeps his contract, and a pre-contract takes the club's usual deal when it starts
+  // (the market keeps only the club he joins); every other signing offers a length.
+  const hasLength = row.clubId !== state.coachClubId && row.status !== "contractEnding";
+  const length = hasLength ? { years: months / 12 } : {};
+  const term = terms.find((t) => t.months === months);
+
   function sign() {
     if (!buy || buy.request.kind !== "sign") return;
-    onAsk(hasFee ? { ...buy.request, fee, wage } : { ...buy.request, wage });
+    onAsk(hasFee ? { ...buy.request, fee, wage, ...length } : { ...buy.request, wage, ...length });
   }
 
   return (
@@ -310,6 +412,9 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
           <b>{Math.round(row.strength)}</b>
           <span>força</span>
         </p>
+        <span className="market-chosen-watch">
+          <WatchToggle isWatched={row.isWatched} onToggle={() => onWatch(row.id, !row.isWatched)} />
+        </span>
       </header>
       <div className="market-chosen-body">
         <dl className="market-kv">
@@ -321,6 +426,12 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
           <dd>{formatMoney(row.currentWage)}</dd>
           <dt>Contrato</dt>
           <dd>até {formatMonthYear(row.contractUntil)}</dd>
+          {row.clause !== null && (
+            <>
+              <dt>Multa</dt>
+              <dd>{formatMoney(row.clause)}</dd>
+            </>
+          )}
         </dl>
 
         {buy && !pending && !counter && (
@@ -335,6 +446,37 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
               <span className="lbl">Salário</span>
               <MoneyStepper label="Salário" value={wage} step={roundStep(row.wage)} hint="por mês" onChange={setWage} />
             </div>
+            {hasLength && (
+              <div className="market-offer-row">
+                <span className="lbl">Prazo</span>
+                <div className="market-lengths" role="radiogroup" aria-label="Tempo de contrato">
+                  {terms.map((t) => (
+                    <button
+                      key={t.months}
+                      type="button"
+                      role="radio"
+                      aria-checked={t.months === months}
+                      aria-label={`${formatContractLength(t.months)}: ${formatMoney(t.wage)} por mês, ${STANCE_LABELS[t.stance]}`}
+                      title={`${formatMoney(t.wage)} por mês · ${STANCE_LABELS[t.stance]}`}
+                      className={`market-len ${t.stance}${t.months === months ? " on" : ""}`}
+                      disabled={t.stance === "refuses"}
+                      onClick={() => {
+                        setMonths(t.months);
+                        setWage(t.wage);
+                      }}
+                    >
+                      <b>{t.months < 12 ? t.months : t.months / 12}</b>
+                      <small>{t.months < 12 ? "meses" : t.months === 12 ? "ano" : "anos"}</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {hasLength && term && (
+              <p className={`market-len-note ${term.stance}`}>
+                {STANCE_LABELS[term.stance]} · pede {formatMoney(term.wage)} · até {formatMonthYear(contractEndOn(state.date, months))}
+              </p>
+            )}
           </div>
         )}
 
@@ -414,6 +556,13 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
             <p className="market-note full" role="status">
               Elenco cheio: {squadSize} de {SQUAD_CAP} jogadores. Venda ou empreste alguém antes de contratar.
             </p>
+          ) : recall ? (
+            <div className="market-acts">
+              <button className="btn" onClick={() => onAsk(recall.request)}>
+                <i className="ph-bold ph-arrow-u-up-left" aria-hidden="true" />
+                {recall.label}
+              </button>
+            </div>
           ) : !buy && !loanIn ? (
             <p className="market-note">{row.status === "onLoan" ? "Está emprestado; não dá para negociar agora." : "Já assinou com outro clube."}</p>
           ) : null}
@@ -431,6 +580,14 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
                 </button>
               )}
             </div>
+          )}
+          {!pending && !counter && clause && row.clause !== null && (
+            <>
+              <button className="btn flat market-clause" disabled={clauseShortBy > 0} onClick={() => onAsk({ kind: "payClause", playerId: row.id, wage, ...length })}>
+                Pagar a multa: {formatMoney(row.clause)}
+              </button>
+              {clauseShortBy > 0 && <p className="market-note">A multa não cabe na verba: faltam {formatMoney(clauseShortBy)}.</p>}
+            </>
           )}
           {row.clubId && (
             <Link className="market-card-link" to={`/squad/${row.id}`}>

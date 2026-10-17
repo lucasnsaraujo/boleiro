@@ -17,6 +17,18 @@ const FIXTURES = Array.from({ length: 300 }, (_, i) => `fixture-${i}`);
 
 const total = (rows: readonly (PlayerStats | undefined)[], pick: (s: PlayerStats) => number) => rows.reduce((sum, s) => sum + (s ? pick(s) : 0), 0);
 
+describe("a match's play in extra time", () => {
+  const whistles: MatchEvent[] = [{ type: "extraHalfTime", minute: 105 }, { type: "extraTimeEnd", minute: 120 }];
+
+  it("counts the minutes and shots of extra time as it is played, and its thirty minutes once it is over", () => {
+    const at = (minute: number) =>
+      FIXTURES.map((id) => playerStatsAt(drawMatchPlay(1, id, starters, [], () => 0, true), whistles, minute)["home-9"]);
+    expect(at(100)[0]?.minutes).toBe(100);
+    expect(at(120)[0]?.minutes).toBe(120);
+    expect(total(at(120), (s) => s.shots)).toBeGreaterThan(total(at(90), (s) => s.shots) * 1.2);
+  });
+});
+
 describe("a match's play", () => {
   it("has a player on a bad day miss the target and misplace passes more often than on a good day", () => {
     const statsOf = (form: number) => FIXTURES.map((id) => playerStatsAt(drawMatchPlay(1, id, starters, [], () => form), [], 90)["home-9"]);

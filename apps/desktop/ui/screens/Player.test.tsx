@@ -75,3 +75,38 @@ test("a player opened with no screen behind him goes back to the squad", async (
   await userEvent.click(await screen.findByRole("button", { name: "Voltar" }));
   expect(await screen.findByText("Elenco aberto")).toBeTruthy();
 });
+
+test("another club's player can be watched from his page", async () => {
+  const { engine, playerId } = await openPlayerOf("palmeiras-sp");
+  await userEvent.click(await screen.findByRole("button", { name: "Observar" }));
+  expect(await screen.findByRole("button", { name: "Observando" })).toBeTruthy();
+  expect((await engine.scouting()).watchList).toEqual([playerId]);
+});
+
+type SavedLoans = { game: { players: Record<string, { clubId: string }>; market: { loans: Record<string, unknown> } } };
+
+test("a player the coach lent out can be called back from his page", async () => {
+  const { engine, playerId } = await openPlayerOf("sport-pe");
+  const save: SavedLoans = JSON.parse(await engine.save());
+  const lent = save.game.players[playerId];
+  if (!lent) throw new Error("no lent player");
+  lent.clubId = "vitoria-ba";
+  save.game.market.loans[playerId] = { fromClubId: "sport-pe", until: "2026-06-30", lenderWageShare: 0.5, buyOption: null };
+  await engine.apply({ type: "load", save: JSON.stringify(save) });
+  cleanup();
+  const router = createMemoryRouter([{ path: "/squad/:playerId", element: <Player /> }], { initialEntries: [`/squad/${playerId}`] });
+  render(
+    <ServicesContext value={{ engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } }}>
+      <RouterProvider router={router} />
+    </ServicesContext>,
+  );
+  await userEvent.click(await screen.findByRole("button", { name: "Chamar de volta" }));
+  expect((await engine.desk()).pending).toEqual([{ kind: "recall", playerId }]);
+});
+
+test("Negociar opens the renewal screen of the coach's player", async () => {
+  const { engine, playerId } = await openPlayerOf("sport-pe");
+  const { players } = await engine.read(["players"]);
+  await userEvent.click(await screen.findByRole("button", { name: "Negociar" }));
+  expect(await screen.findByRole("heading", { name: `Renovar com ${players[playerId]?.name}` })).toBeTruthy();
+});

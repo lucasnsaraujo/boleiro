@@ -65,6 +65,11 @@ describe("before kick-off", () => {
     expect(lineupProblem([...eleven.slice(0, 10), "x2"], squad)).toBe("Jogador x2 está suspenso.");
   });
 
+  test("a loanee can't kick off against the club that owns him, and is told why", () => {
+    const loanee = player("x3", "ATT", "facesOwner");
+    expect(lineupProblem([...eleven.slice(0, 10), "x3"], [...squad, loanee])).toBe("Jogador x3 não pode enfrentar o clube dono do passe.");
+  });
+
   test("nobody comes in until a starter is picked to go off", () => {
     expect(canBringOn(openSheet(eleven, tactics), preMatch, bench[3] as SquadPlayer)).toBe(false);
   });
@@ -150,6 +155,16 @@ test("each stoppage with substitutions uses one of the three, half-time none", (
   const stopsAt = (events: MatchEvent[], minute: number) => liveLimits(coach, events, "bahia", minute).stopsLeft;
   expect(stopsAt([], 10)).toBe(3);
   expect(stopsAt([sub(45, "b2", "s5"), sub(60, "b3", "s9"), sub(60, "b4", "s10")], 70)).toBe(2);
+});
+
+test("extra time gives the coach a sixth substitution and a fourth stoppage, its breaks using none", () => {
+  const extraTimeEnd: MatchEvent = { type: "extraTimeEnd", minute: 120 };
+  const five = [sub(45, "b2", "s5"), sub(60, "b3", "s9"), sub(70, "b4", "s10"), sub(80, "b5", "s6"), sub(80, "b6", "s7"), extraTimeEnd];
+  expect(liveLimits(coach, five, "bahia", 88).subsLeft).toBe(0);
+  expect(liveLimits(coach, five, "bahia", 90).subsLeft).toBe(1);
+  expect(liveLimits(coach, five, "bahia", 100).subsLeft).toBe(1);
+  expect(liveLimits(coach, [...five, sub(100, "b7", "s8")], "bahia", 110).subsLeft).toBe(0);
+  expect(liveLimits(coach, five, "bahia", 120).subsLeft).toBe(0);
 });
 
 describe("dropping a bench player on a starter", () => {

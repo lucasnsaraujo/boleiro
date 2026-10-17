@@ -3,9 +3,9 @@ import type { CoachRequest } from "./coachRequest.js";
 
 /**
  * How a player changed clubs. `abroad` is a sale to Europe, `fromAbroad` a signing from a club
- * outside Brazil, `released` a contract that ended with nobody waiting.
+ * outside Brazil, `released` a contract that ended with nobody waiting, `releaseClause` a buyer who paid the clause.
  */
-export type MoveKind = "transfer" | "freeAgent" | "preContract" | "abroad" | "fromAbroad" | "loan" | "loanReturn" | "loanBuy" | "released";
+export type MoveKind = "transfer" | "freeAgent" | "preContract" | "abroad" | "fromAbroad" | "loan" | "loanReturn" | "loanBuy" | "released" | "releaseClause";
 
 export type PlayerMoved = {
   type: "playerMoved";
@@ -19,7 +19,14 @@ export type PlayerMoved = {
   /** Transfer fee in BRL. */
   fee: number;
 };
-export type PlayerContractRenewed = { type: "playerContractRenewed"; playerId: string; clubId: string; until: IsoDate; wage: number };
+/** A contract extended to `until` at `wage` BRL a month; `byAssistant` when a human coach's assistant did it for him. */
+export type PlayerContractRenewed = { type: "playerContractRenewed"; playerId: string; clubId: string; until: IsoDate; wage: number; byAssistant?: true };
+/** A player's answer to a renewal offered too low: he signs for `months` at `wage` BRL a month. */
+export type RenewalCountered = { type: "renewalCountered"; playerId: string; months: number; wage: number };
+/** Why a human coach's assistant left a contract running out: the player is not in the club's plans, he agrees to no length, or the wage cap has no room. */
+export type RenewalSkipReason = "notInPlans" | "playerUnwilling" | "wageCap";
+/** A human coach's assistant looked at a contract ending on `until` and didn't renew it. */
+export type RenewalSkipped = { type: "renewalSkipped"; playerId: string; clubId: string; until: IsoDate; reason: RenewalSkipReason };
 export type PreContractSigned = { type: "preContractSigned"; playerId: string; fromClubId: string; toClubId: string };
 export type EuropeBid = { type: "europeBid"; playerId: string; clubId: string; feeEur: number; fee: number; accepted: boolean };
 /** The board's answer to one coach request; `reason` says why it refused. */
@@ -31,4 +38,14 @@ export type AuctionClosed = { type: "auctionClosed"; playerId: string; sold: boo
 /** The seller's answer to an offer of the coach that was too low: it would sell for `fee`. */
 export type CounterOffered = { type: "counterOffered"; playerId: string; clubId: string; fee: number };
 
-export type TransferEvent = PlayerMoved | PlayerContractRenewed | PreContractSigned | EuropeBid | RequestDecided | BidReceived | AuctionClosed | CounterOffered;
+export type TransferEvent =
+  | PlayerMoved
+  | PlayerContractRenewed
+  | RenewalCountered
+  | RenewalSkipped
+  | PreContractSigned
+  | EuropeBid
+  | RequestDecided
+  | BidReceived
+  | AuctionClosed
+  | CounterOffered;

@@ -1,18 +1,25 @@
 import { addDays } from "../dates.js";
 import { tierOf } from "../finances/tierOf.js";
-import type { GameState, SimPlayer } from "../gameState.js";
-import { squadsOfGame } from "../players/squadsByClub.js";
-import { SQUAD_TARGET } from "./squadNeeds.js";
+import type { GameState, SimPlayer, Tier } from "../gameState.js";
+import { squadsOfGame, withReplacedPlayers } from "../players/squadsByClub.js";
+import { keyedStream } from "../../engine/random.js";
+import { isSeasonLastDay, isWorthKeeping } from "./assistantRenewals.js";
+import { wishPick, type ContractTerm } from "./contractTerms.js";
+import { renewalTermsOf, renewedUntil } from "./renewalTerms.js";
 import { movePlayer } from "./movePlayer.js";
 import type { PlayerContractRenewed, PlayerMoved } from "./transferEvents.js";
 import { wageDemand } from "./wageDemand.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
+import { retiresAtSeasonTurn } from "../players/developPlayers.js";
 
-// guess: an AI club offers a new deal to the players inside its usual squad size (SQUAD_TARGET) who
-// are under 34, and four in five of them sign it; the rest leave as free agents.
-const RENEWAL_MAX_AGE = 34;
+// guess: an AI club offers a new deal to the players it wants to keep (isWorthKeeping), and four in five of
+// them talk; those sign for the length they agree to nearest the one they want (wishPick), at their ask.
+// The rest leave as free agents. The four in five come from a stream keyed to the player and the day, so
+// renewals never shift the market's other draws. Contracts that run to the season's last day are talked
+// over that day, before the season turn moves the wages toward the boards' caps; any other contract when
+// it ends.
 const RENEWAL_CHANCE = 0.8;
-// guess: renewals and free-transfer deals run one to three seasons.
+// guess: free-transfer deals run one to three seasons.
 const NEW_CONTRACT_YEARS = 3;
 // guess: a free agent nobody signs within a year retires or leaves Brazilian football.
 const FREE_AGENT_DAYS = 365;
@@ -51,6 +58,42 @@ function squadEnd(squad: readonly SimPlayer[]): string {
   return earliest;
 }
 
+/** The deal an AI club strikes with a player whose contract ends, or null when they part. */
+function aiRenewal(state: GameState, player: SimPlayer, squad: readonly SimPlayer[], tier: Tier): ContractTerm | null {
+  if (isHumanClub(state, player.clubId) || !isWorthKeeping(player, squad, tier)) return null;
+  if (keyedStream(state.market.rngState, `renewal:${player.id}`)() >= RENEWAL_CHANCE) return null;
+  const { preferred, terms } = renewalTermsOf(state, player, squad);
+  return wishPick(terms, preferred);
+}
+
+/**
+ * On the season's last day, every AI club talks over the contracts that end that day, its players out
+ * on loan included (weighed against its own squad): it renews the players it wants to keep who agree,
+ * and the rest leave when the year turns. Nobody talks to a player who retires that night.
+ */
+export function renewAiContracts(state: GameState): { state: GameState; events: PlayerContractRenewed[] } {
+  const renewed: SimPlayer[] = [];
+  const events: PlayerContractRenewed[] = [];
+  const squads = squadsOfGame(state);
+  const talk = (player: SimPlayer, clubId: string, squad: readonly SimPlayer[]) => {
+    if (player.contractUntil !== state.date || state.market.preContracts[player.id] || retiresAtSeasonTurn(state, player)) return;
+    const term = aiRenewal(state, { ...player, clubId }, squad, tierOf(state.clubs[clubId] ?? { division: null }));
+    if (!term) return;
+    const until = renewedUntil(player, state.date, term.months);
+    renewed.push({ ...player, wage: term.wage, contractUntil: until });
+    events.push({ type: "playerContractRenewed", playerId: player.id, clubId, until, wage: term.wage });
+  };
+  for (const [clubId, squad] of squads) {
+    if (squadEnd(squad) > state.date || isHumanClub(state, clubId)) continue;
+    for (const player of squad) if (!state.market.loans[player.id]) talk(player, clubId, squad);
+  }
+  for (const [playerId, loan] of Object.entries(state.market.loans).sort(([a], [b]) => a.localeCompare(b))) {
+    const player = state.players[playerId];
+    if (player) talk(player, loan.fromClubId, squads.get(loan.fromClubId) ?? []);
+  }
+  return { state: renewed.length ? { ...state, players: withReplacedPlayers(state.players, renewed) } : state, events };
+}
+
 /** Whether any contract ran out before today or any free agent has waited a year. */
 export function hasExpiries(state: GameState): boolean {
   for (const squad of squadsOfGame(state).values()) if (squadEnd(squad) < state.date) return true;
@@ -60,8 +103,8 @@ export function hasExpiries(state: GameState): boolean {
 
 /**
  * Ends every contract that ran out before today. A player with a pre-contract joins that club for
- * free; an AI club renews its key players and releases the rest; the coach's club keeps only those
- * it renewed through the board. Free agents left unsigned for a year leave the game.
+ * free; an AI club renews its key players and releases the rest; a human coach's club keeps only those
+ * he or his assistant renewed before. Free agents left unsigned for a year leave the game.
  */
 export function expireContracts(state: GameState, random: () => number): { state: GameState; events: (PlayerMoved | PlayerContractRenewed)[] } {
   const expired = Object.values(state.players).filter((p) => p.contractUntil < state.date);
@@ -95,13 +138,12 @@ export function expireContracts(state: GameState, random: () => number): { state
   const released = { ...next.market.freeAgents };
   for (const player of staying) {
     const squad = squads.get(player.clubId) ?? [];
-    const rank = squad.filter((p) => p.strength > player.strength).length;
     const tier = tierOf(state.clubs[player.clubId] ?? { division: null });
-    const keeps = !isHumanClub(state, player.clubId) && rank < SQUAD_TARGET[tier] && player.age < RENEWAL_MAX_AGE && random() < RENEWAL_CHANCE;
-    if (keeps) {
-      const until = contractEnd(year, random);
-      players[player.id] = { ...player, contractUntil: until };
-      events.push({ type: "playerContractRenewed", playerId: player.id, clubId: player.clubId, until, wage: player.wage });
+    const term = isSeasonLastDay(player.contractUntil) ? null : aiRenewal(state, player, squad, tier);
+    if (term) {
+      const until = renewedUntil(player, state.date, term.months);
+      players[player.id] = { ...player, wage: term.wage, contractUntil: until };
+      events.push({ type: "playerContractRenewed", playerId: player.id, clubId: player.clubId, until, wage: term.wage });
       continue;
     }
     Reflect.deleteProperty(players, player.id);

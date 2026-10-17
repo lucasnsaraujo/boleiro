@@ -1,0 +1,65 @@
+/* The money stepper (MoneyStepper.tsx): an amount in BRL set with − and + presses. */
+.money {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px 0 12px;
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.money-value {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 17px;
+  white-space: nowrap;
+}
+
+.money-hint {
+  min-width: 0;
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11.5px;
+  color: var(--mute);
+  white-space: nowrap;
+}
+
+.money-steps {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.money-hint + .money-steps {
+  margin-left: 0;
+}
+
+.money-steps button {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--paper-2);
+  font-size: 12px;
+  transition: background-color var(--t-fast) var(--e-out), transform var(--t-fast) var(--e-out);
+}
+
+.money-steps button:hover:not(:disabled) {
+  background: var(--yellow);
+  color: var(--on-yellow);
+}
+
+.money-steps button:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.money-steps button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

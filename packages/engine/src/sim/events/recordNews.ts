@@ -90,7 +90,10 @@ const CONTROVERSIES: readonly Variant[] = [
 function scoreLine(state: GameState, fixture: Fixture): string {
   const name = (id: string) => state.clubs[id]?.shortName ?? id;
   const result = fixture.result;
-  return result ? `${name(fixture.homeId)} ${result.homeGoals} × ${result.awayGoals} ${name(fixture.awayId)}` : "";
+  if (!result) return "";
+  const extraTime = result.isAfterExtraTime ? " (prorr.)" : "";
+  const shootout = result.penaltyWinnerId ? `, ${name(result.penaltyWinnerId)} nos pênaltis` : "";
+  return `${name(fixture.homeId)} ${result.homeGoals} × ${result.awayGoals} ${name(fixture.awayId)}${extraTime}${shootout}`;
 }
 
 /** Who scored, by side: "Gols: Pedro (2), Arrascaeta; Luciano Juba." */
@@ -183,7 +186,7 @@ export function recordNews(state: GameState, date: IsoDate, events: readonly Day
       const isHumans = (event.toClubId !== null && humans.has(event.toClubId)) || (event.fromClubId !== null && humans.has(event.fromClubId));
       if (event.kind === "abroad" && (isHumans || (isMajor(event.fromClubId) && event.fee >= SALE_ABROAD_FEE))) {
         add("signing", [event.fromClubId ?? ""], event.fee / SALE_ABROAD_FEE, pick(SALES_ABROAD, `sale:${event.playerId}`, { ...names, fee: millions(event.fee) }));
-      } else if (["transfer", "fromAbroad", "freeAgent", "preContract", "loanBuy"].includes(event.kind) && event.toClubId && (isHumans || (isMajor(event.toClubId) && event.fee >= SIGNING_FEE))) {
+      } else if (["transfer", "releaseClause", "fromAbroad", "freeAgent", "preContract", "loanBuy"].includes(event.kind) && event.toClubId && (isHumans || (isMajor(event.toClubId) && event.fee >= SIGNING_FEE))) {
         add("signing", [event.toClubId, ...(event.fromClubId ? [event.fromClubId] : [])], isHumans ? 10 : event.fee / SIGNING_FEE, pick(SIGNINGS, `signing:${event.playerId}`, names));
       }
     }

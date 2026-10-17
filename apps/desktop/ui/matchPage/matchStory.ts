@@ -48,10 +48,11 @@ export function headlineOf(page: MatchPage, view: MatchView): string {
   if (view.score.home === view.score.away) return `${club(winner)} passa nos pênaltis`;
   const margin = Math.abs(view.score.home - view.score.away);
   const away = winner === "away" ? " fora de casa" : "";
-  if (margin >= ROUT) return `${club(winner)} goleia ${club(other(winner))}${away}`;
+  const late = page.isAfterExtraTime ? " na prorrogação" : "";
+  if (margin >= ROUT) return `${club(winner)} goleia ${club(other(winner))}${late || away}`;
   const decisive = winningGoal(view, winner);
-  if (margin === 1 && decisive && decisive.goalKind !== "ownGoal") return `${name(decisive.playerId)} decide${DECIDES[decisive.goalKind ?? "openPlay"] ?? ""}`;
-  return `${club(winner)} vence${margin > 1 ? " com folga" : ""}${away}`;
+  if (margin === 1 && decisive && decisive.goalKind !== "ownGoal") return `${name(decisive.playerId)} decide${DECIDES[decisive.goalKind ?? "openPlay"] ?? ""}${late}`;
+  return `${club(winner)} vence${margin > 1 ? " com folga" : ""}${late || away}`;
 }
 
 /** What each goal did to the score, as the report tells it. */
@@ -74,12 +75,14 @@ export function reportOf(page: MatchPage, view: MatchView): string[] {
   else if (!winner || view.score.home === view.score.away) {
     // A goalless draw's headline already says 0 a 0: its report starts from where it was played.
     const draw = view.score.home === 0 ? `Nenhum gol${where || " no jogo"}` : `${club("home")} e ${club("away")} empatam em ${view.score.home} a ${view.score.away}${where}`;
-    lead = `${draw}${winner ? `, e ${club(winner)} passa nos pênaltis` : ""}.`;
+    const late = page.isAfterExtraTime ? " depois da prorrogação" : "";
+    lead = `${draw}${late}${winner ? `, e ${club(winner)} passa nos pênaltis` : ""}.`;
   } else {
     const [own, against] = winner === "home" ? [view.score.home, view.score.away] : [view.score.away, view.score.home];
     const place = page[winner].place;
     const climb = place?.after && place.after < place.before ? ` e sobe do ${place.before}º para o ${place.after}º lugar` : "";
-    lead = `${club(winner)} vence ${club(other(winner))} por ${own} a ${against}${where}${climb}.`;
+    const late = page.isAfterExtraTime ? " na prorrogação" : "";
+    lead = `${club(winner)} vence ${club(other(winner))} por ${own} a ${against}${late}${where}${climb}.`;
   }
   const score = { home: 0, away: 0 };
   const decisive = winner && view.isOver ? winningGoal(view, winner) : undefined;

@@ -138,3 +138,30 @@ export async function playLiveRound(page: Page): Promise<number> {
   await expect(band).toBeHidden();
   return stops;
 }
+
+/**
+ * Plays the live round at 4x a match minute a step, as playLiveRound does, until it stands paused at the
+ * minute `stop` ("90'"), or, with no `stop`, until the result is in; it leaves the round open there.
+ */
+export async function playLiveRoundUntil(page: Page, stop: string | null): Promise<void> {
+  const band = page.getByRole("region", { name: "Seu jogo" });
+  const back = page.getByRole("button", { name: "Voltar ao clube" });
+  const finishing = page.getByRole("button", { name: "Encerrando…" });
+  const paused = page.getByRole("button", { name: "Pausar", pressed: true, disabled: false });
+  const fourX = page.getByRole("button", { name: "4x" });
+  const minute = band.getByLabel("Minuto");
+  const varCheck = band.getByRole("status").filter({ hasText: "VAR checando" });
+  const isThere = async () => (stop ? (await minute.textContent()) === stop && (await paused.isVisible()) : await back.isVisible());
+  await pauseClock(page);
+  await fourX.click();
+  while (!(await isThere())) {
+    const before = await minute.textContent();
+    await page.clock.runFor(FOUR_X_MINUTE_MS);
+    await expect
+      .poll(async () => (await minute.textContent()) !== before || (await paused.or(finishing).or(back).or(varCheck).count()) > 0, { intervals: [0, 20, 50, 100] })
+      .toBe(true);
+    if (await finishing.isVisible()) await page.clock.resume();
+    if ((await paused.isVisible()) && !(await isThere()) && !(await leaveIncident(page))) await fourX.click();
+  }
+}
+

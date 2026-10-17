@@ -32,7 +32,7 @@ import { MARKING_LABEL, PLAY_LABEL, POSTURE_LABEL, POSTURES } from "./tacticsLab
 import { TacticsPanel, type TacticsContext } from "./TacticsPanel.js";
 import "./lineupSheet.css";
 
-const STATUS_LABEL = { injured: "Machucado", suspended: "Suspenso" } as const;
+const STATUS_LABEL = { injured: "Machucado", suspended: "Suspenso", facesOwner: "Não enfrenta o dono" } as const;
 // Up to this long, the sticker keeps the whole name; past it, the surname.
 const SHIRT_NAME_LENGTH = 12;
 // Below this much energy a player is marked tired, as the bench's energy bars turn amber and then red.
