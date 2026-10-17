@@ -28,11 +28,23 @@ async function fillSquadTo(engine: EngineClient, size: number): Promise<void> {
   await engine.apply({ type: "load", save: JSON.stringify(save) });
 }
 
-async function openMarket(coachClubId = "sport-pe", squadSize?: number): Promise<Services> {
+type SavedFinances = { game: { coachClubId: string; finances: Record<string, { transferBudget: number }> } };
+
+/** Sets the coach's transfer budget, through a save loaded back. */
+async function setTransferBudget(engine: EngineClient, transferBudget: number): Promise<void> {
+  const save: SavedFinances = JSON.parse(await engine.save());
+  const finance = save.game.finances[save.game.coachClubId];
+  if (!finance) throw new Error("the coach's club has no finances");
+  finance.transferBudget = transferBudget;
+  await engine.apply({ type: "load", save: JSON.stringify(save) });
+}
+
+async function openMarket(coachClubId = "sport-pe", squadSize?: number, transferBudget?: number): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
   await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId } });
   if (squadSize !== undefined) await fillSquadTo(engine, squadSize);
+  if (transferBudget !== undefined) await setTransferBudget(engine, transferBudget);
   const services: Services = { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
   const router = createMemoryRouter([{ path: "/market", element: <Market /> }], { initialEntries: ["/market"] });
   render(
@@ -117,13 +129,21 @@ test("the Propostas tab shows the offers for the coach's own players and his pla
 });
 
 test("paying a player's release clause puts that request on the board's desk", async () => {
-  const { engine } = await openMarket();
+  const { engine } = await openMarket("flamengo-rj");
   const name = await pickPricedPlayer();
   const chosen = screen.getByRole("region", { name });
   const pay = within(chosen).getByRole("button", { name: /^Pagar a multa: R\$/ });
   await userEvent.click(pay);
   expect(within(screen.getByRole("list", { name: "Pedidos à diretoria" })).getByText(`Multa rescisória de ${name}`)).toBeTruthy();
   expect((await engine.desk()).pending).toMatchObject([{ kind: "payClause" }]);
+});
+
+test("a release clause over the transfer budget can't be paid, and the screen says why", async () => {
+  await openMarket("sport-pe", undefined, 0);
+  const name = await pickPricedPlayer();
+  const chosen = screen.getByRole("region", { name });
+  expect(within(chosen).getByRole("button", { name: /^Pagar a multa: R\$/ })).toHaveProperty("disabled", true);
+  expect(within(chosen).getByText(/^A multa não cabe na verba/)).toBeTruthy();
 });
 
 test("a starred player is on the watch list, and the watched-only switch lists just him", async () => {

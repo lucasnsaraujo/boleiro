@@ -1220,3 +1220,7 @@
 .market-clause {
   width: 100%;
 }
+
+.market-clause[disabled]:hover {
+  transform: none;
+}

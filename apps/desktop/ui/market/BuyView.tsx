@@ -361,6 +361,7 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
   const loanIn = options.find((option) => option.request.kind === "loanIn");
   const recall = options.find((option) => option.request.kind === "recall");
   const clause = row.clause !== null ? clauseRequest(state, row.id) : null;
+  const clauseShortBy = row.clause !== null ? -offerAdvice(state, row, row.clause, wage).budgetLeft : 0;
   const hasFee = !!row.price && buy?.label === "Comprar";
   const colours = owner ? plateColours(owner.colours) : null;
   const best = advice.atPosition[0]?.strength ?? row.strength;
@@ -531,9 +532,12 @@ function Chosen({ row, state, desk, squadSize, onAsk, onWithdraw, onDeclineCount
             </div>
           )}
           {!pending && !counter && clause && row.clause !== null && (
-            <button className="btn flat market-clause" onClick={() => onAsk({ kind: "payClause", playerId: row.id, wage })}>
-              Pagar a multa: {formatMoney(row.clause)}
-            </button>
+            <>
+              <button className="btn flat market-clause" disabled={clauseShortBy > 0} onClick={() => onAsk({ kind: "payClause", playerId: row.id, wage })}>
+                Pagar a multa: {formatMoney(row.clause)}
+              </button>
+              {clauseShortBy > 0 && <p className="market-note">A multa não cabe na verba: faltam {formatMoney(clauseShortBy)}.</p>}
+            </>
           )}
           {row.clubId && (
             <Link className="market-card-link" to={`/squad/${row.id}`}>
