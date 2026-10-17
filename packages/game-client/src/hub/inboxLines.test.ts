@@ -45,6 +45,11 @@ describe("the coach's matches", () => {
     expect(line(played({ homeGoals: 0, awayGoals: 0, penaltyWinnerId: "bahia-ba" }))).toMatchObject({ text: "Baiano: Bahia 0 x 0 Vitória, Bahia nos pênaltis", tone: "good" });
   });
 
+  test("a match that went to extra time says so, before its shootout", () => {
+    expect(line(played({ homeGoals: 2, awayGoals: 1, isAfterExtraTime: true }))?.text).toBe("Baiano: Bahia 2 x 1 Vitória (prorr.)");
+    expect(line(played({ homeGoals: 1, awayGoals: 1, isAfterExtraTime: true, penaltyWinnerId: "vitoria-ba" }))?.text).toBe("Baiano: Bahia 1 x 1 Vitória (prorr.), Vitória nos pênaltis");
+  });
+
   test("other clubs' games stay out", () => {
     expect(lines(played({ homeGoals: 1, awayGoals: 0 }, "vitoria-ba", "juazeirense-ba"))).toEqual([]);
   });

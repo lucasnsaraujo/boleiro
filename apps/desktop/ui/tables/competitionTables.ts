@@ -32,6 +32,8 @@ export type TieView = {
   aggregate: [number, number] | null;
   winnerId: string | null;
   onPenalties: boolean;
+  /** The tie went to extra time in its last leg. */
+  isAfterExtraTime: boolean;
   isPlayoff: boolean;
 };
 /** The tie's latest leg with a score: the one its ficha opens on. */
@@ -360,6 +362,7 @@ function tieView(competition: Competition, stage: KnockoutStage, tie: number, cl
     aggregate: played.length > 0 ? [aggregate(clubIds[0], played), aggregate(clubIds[1], played)] : null,
     winnerId: result?.winnerId ?? null,
     onPenalties: legFixtures.some((f) => f.result?.penaltyWinnerId !== undefined),
+    isAfterExtraTime: legFixtures.some((f) => f.result?.isAfterExtraTime === true),
   };
 }
 
