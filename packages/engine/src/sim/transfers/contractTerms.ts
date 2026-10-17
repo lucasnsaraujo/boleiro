@@ -23,12 +23,13 @@ export const NEUTRAL_TALKS: TalkMood = { morale: 50, hasAskedToLeave: false, off
 // No public data measures how players weigh contract lengths, so the model below is a guess, tuned to read
 // like the approved renewal mock (a 29-year-old centre-forward wants three years, takes two for a little more,
 // asks 30% more for six months and refuses it).
-// guess: a player wants a year at 21 and three months more for every year older, up to three years at 29.
-const SHORTEST_WISH = 12;
+// guess: a player wants two years up to 21 and three months more for every year older, up to three years at 25.
+const YOUNG_WISH = 24;
 const WISH_AGE = 21;
 const WISH_MONTHS_PER_YEAR = 3;
 const LONGEST_WISH = 36;
 // guess: a young star (24 or under, among his squad's three strongest) wants a year, to move up soon.
+const STAR_WISH = 12;
 const STAR_AGE = 24;
 const STAR_RANK = 3;
 // guess: every year a length is off his wish costs 5% of the wage, squared: 5% one year off, 20% two years off.
@@ -67,8 +68,8 @@ type Talker = Pick<SimPlayer, "id" | "age" | "strength">;
 /** The contract length in months a player wants, from his age and his place in his squad. */
 export function preferredMonths(player: Talker, squad: readonly Pick<SimPlayer, "id" | "strength">[]): number {
   const stronger = squad.filter((p) => p.id !== player.id && p.strength > player.strength).length;
-  if (player.age <= STAR_AGE && stronger < STAR_RANK) return SHORTEST_WISH;
-  return Math.min(LONGEST_WISH, Math.max(SHORTEST_WISH, SHORTEST_WISH + (player.age - WISH_AGE) * WISH_MONTHS_PER_YEAR));
+  if (player.age <= STAR_AGE && stronger < STAR_RANK) return STAR_WISH;
+  return Math.min(LONGEST_WISH, Math.max(YOUNG_WISH, YOUNG_WISH + (player.age - WISH_AGE) * WISH_MONTHS_PER_YEAR));
 }
 
 function stanceOf(yearsOff: number, mood: TalkMood): Stance {

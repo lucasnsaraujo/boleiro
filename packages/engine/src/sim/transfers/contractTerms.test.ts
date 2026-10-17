@@ -26,7 +26,8 @@ describe("contractEndAfter", () => {
 });
 
 describe("preferredMonths", () => {
-  it("has older players wanting longer deals, up to three years", () => {
+  it("has a young prospect wanting two years, and older players longer deals, up to three years", () => {
+    expect(preferredMonths(player("kid", 19, 60), squad)).toBe(24);
     expect(preferredMonths(player("x", 22, 60), squad)).toBeLessThan(preferredMonths(player("y", 27, 60), squad));
     expect(preferredMonths(player("z", 29, 60), squad)).toBe(36);
     expect(preferredMonths(player("w", 34, 60), squad)).toBe(36);
