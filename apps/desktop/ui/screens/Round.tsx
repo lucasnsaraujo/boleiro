@@ -864,6 +864,8 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
   // The cover builds itself only at kick-off, not when the coach comes back to a match under way.
   const [isKickOff] = useState(minute === 0);
   const isStopped = isFinished || minute >= end;
+  // The coach's clock stops when his match does, though another match of the round plays on to extra time.
+  const matchEnd = Math.min(end, matchEndOf(match.events));
   const { isLifted, isGoalHeld } = useStickerLift(match.score.home + match.score.away, isRunning && minute >= 1 && !isStopped);
   const home = round.clubs[match.homeId];
   const away = round.clubs[match.awayId];
@@ -911,11 +913,11 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
             </span>
           )}
           <div className="live-clock">
-            <span>{clockNote(minute, speed, isFinished, Math.min(end, matchEndOf(match.events)))}</span>
+            <span>{clockNote(minute, speed, isFinished, matchEnd)}</span>
             <span className="live-track" aria-hidden="true">
-              <i style={{ transform: `scaleX(${Math.min(minute, end) / end})` }} />
+              <i style={{ transform: `scaleX(${Math.min(minute, matchEnd) / matchEnd})` }} />
             </span>
-            <b aria-label="Minuto">{varHold ? "VAR" : `${Math.min(minute, end)}'`}</b>
+            <b aria-label="Minuto">{varHold ? "VAR" : `${Math.min(minute, matchEnd)}'`}</b>
           </div>
           <div className="live-speed" role="group" aria-label="Velocidade">
             <button aria-label="Pausar" aria-pressed={speed === 0} disabled={isStopped} onClick={() => onSpeed(0)}>
