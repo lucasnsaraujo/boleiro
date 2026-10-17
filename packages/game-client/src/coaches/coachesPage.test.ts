@@ -75,6 +75,12 @@ describe("the coaches screen after a season", () => {
     expect(page.coaches.filter((row) => row.isHuman).map((row) => row.isInvented)).toEqual([false]);
   });
 
+  test("names the leagues the world ranking still lacks: Europe's first season ends in July, South America's with the year", () => {
+    expect(page.waitingCountries).toContain("gb-eng");
+    expect(page.waitingCountries).not.toContain("ar");
+    expect(session().coaches().waitingCountries).toEqual([]);
+  });
+
   test("gives the leading coach's profile his place in the ranking", () => {
     const leader = page.coaches[0];
     expect(leader && played.coachProfile(leader.key)?.ranking).toEqual({ position: 1, points: leader?.points });

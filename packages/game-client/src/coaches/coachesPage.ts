@@ -1,6 +1,6 @@
 import type { Formation } from "@boleiro/engine/engine/formations";
 import type { Posture } from "@boleiro/engine/engine/match";
-import { everyCoach, fullTierClubs, type AiCoach, type AiCoachStint, type CoachTitle } from "@boleiro/engine/sim/coach/aiCoaches";
+import { countriesCoaching, everyCoach, fullTierClubs, type AiCoach, type AiCoachStint, type CoachTitle } from "@boleiro/engine/sim/coach/aiCoaches";
 import { humanKey } from "@boleiro/engine/sim/coach/closeCoachSeason";
 import { jobCentre, type OpenJob } from "@boleiro/engine/sim/coach/jobCentre";
 import { coachRanking, nationalRanking, rankedSeasons, STANDING_PLACES, worldRanking } from "@boleiro/engine/sim/coach/rankings";
@@ -40,8 +40,9 @@ export type CoachProfile = {
 
 /**
  * The coaches screen: the rankings as they stood at the end of `season` (the latest ranked when left
- * out; null before the first), the seasons it can show, the job centre for the coach in the seat and
- * his own profile.
+ * out; null before the first), the seasons it can show, the result-only countries the latest world
+ * ranking still lacks because they haven't finished a season in the game, the job centre for the coach
+ * in the seat and his own profile.
  */
 export type CoachesPage = {
   season: number | null;
@@ -49,6 +50,7 @@ export type CoachesPage = {
   coaches: RankedCoach[];
   national: RankedClub[];
   world: RankedClub[];
+  waitingCountries: string[];
   jobs: OpenJob[];
   you: CoachProfile;
 };
@@ -133,6 +135,7 @@ export function coachesPage(state: GameState, season?: number): CoachesPage {
     coaches,
     national: kept ? clubs(kept.national) : asOf === undefined ? [] : clubs(nationalRanking(state, asOf)),
     world: kept ? clubs(kept.world) : asOf === undefined ? [] : clubs(worldRanking(state, asOf)),
+    waitingCountries: kept || asOf === undefined ? [] : countriesCoaching(state).flatMap(([id, country]) => (country.seasons.length ? [] : [id])),
     jobs: jobCentre(state),
     you: humanProfile(seated?.name, state.coachClubId, state.coach.reputation, state.history.coach, standingOf(ranked)),
   };

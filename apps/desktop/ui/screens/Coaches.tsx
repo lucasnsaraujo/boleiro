@@ -207,7 +207,7 @@ export function Coaches() {
         <section className="stk coaches-board" role="tabpanel" aria-label={TABS.find((own) => own.id === tab)?.title}>
           {tab === "tecnicos" && <CoachTable page={page} before={loaded.before} face={face} youName={coachName} pickedKey={profile.key} onPick={setPickedKey} />}
           {tab === "cbf" && <ClubTable rows={page.national} state={state} face={face} kind="cbf" season={page.season} />}
-          {tab === "mundial" && <ClubTable rows={page.world} state={state} face={face} kind="mundial" season={page.season} />}
+          {tab === "mundial" && <ClubTable rows={page.world} state={state} face={face} kind="mundial" season={page.season} waiting={page.waitingCountries} />}
           {tab === "vagas" && (
             <JobCentre
               jobs={page.jobs}
@@ -281,6 +281,15 @@ function Movement({ now, before }: { now: number; before: number | undefined }) 
   );
 }
 
+// The world ranking's note names this many countries still out, then counts the rest.
+const WAITING_NAMED = 3;
+
+/** Names in a sentence: "A, B e C", or the first `named` and "mais N". */
+function listOf(names: readonly string[], named: number): string {
+  if (names.length > named) return `${names.slice(0, named).join(", ")} e mais ${names.length - named}`;
+  return names.length > 1 ? `${names.slice(0, -1).join(", ")} e ${names.at(-1)}` : (names[0] ?? "");
+}
+
 /** The quiet tag on a coach the game made up, so nobody takes him for a real person. */
 function InventedMark() {
   return (
@@ -351,7 +360,21 @@ function CoachTable({ page, before, face, youName, pickedKey, onPick }: { page: 
   );
 }
 
-function ClubTable({ rows, state, face, kind, season }: { rows: readonly RankedClub[]; state: CoachesState; face: Face; kind: "cbf" | "mundial"; season: number | null }) {
+function ClubTable({
+  rows,
+  state,
+  face,
+  kind,
+  season,
+  waiting = [],
+}: {
+  rows: readonly RankedClub[];
+  state: CoachesState;
+  face: Face;
+  kind: "cbf" | "mundial";
+  season: number | null;
+  waiting?: readonly string[];
+}) {
   if (season === null) return <EmptyRanking title={kind === "cbf" ? "O ranking da CBF sai no fim da temporada." : "O ranking mundial sai no fim da temporada."} />;
   return (
     <>
@@ -385,6 +408,11 @@ function ClubTable({ rows, state, face, kind, season }: { rows: readonly RankedC
           ? "Como a CBF conta: campeão da Série A 800 pontos, B 400, C 200, D 100; vice 80%, 3º 75%, 4º 70% e 1 ponto percentual a menos por posição, até 51%. Copa do Brasil: 600 ao campeão, 480 ao vice, 450 na semifinal, 400 nas quartas."
           : "Os dez primeiros de cada liga, o campeão da segunda divisão, os finalistas da copa nacional e os campeões continentais e do Mundial, tudo pesado pela força da liga do clube. Estimativa do jogo, à moda do IFFHS e da UEFA."}
       </p>
+      {waiting.length > 0 && (
+        <p className="coaches-foot coaches-waiting">
+          Ainda fora: {listOf(waiting.map(countryName), WAITING_NAMED)}. Entram quando fecharem a primeira temporada no jogo; as ligas europeias fecham em julho.
+        </p>
+      )}
     </>
   );
 }
