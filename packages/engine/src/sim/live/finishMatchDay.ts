@@ -19,6 +19,7 @@ import { countCards, type Booking } from "../discipline/drawCards.js";
 import { endSeason } from "../endSeason.js";
 import type { LeagueOutcome } from "../leagueFormats.js";
 import { runSponsorDay } from "../sponsors/sponsorDeals.js";
+import { coolRivalries } from "../events/eventMemory.js";
 import { recordNews } from "../events/recordNews.js";
 import { runEvents } from "../events/runEvents.js";
 import { closeMonth } from "../finances/closeMonth.js";
@@ -273,7 +274,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };
     if (next.world) next = { ...next, world: endWorldSeason(next.world, next.season, unifiedDatesOf(next.calendar)) };
     next = closeCoachSeason(openContinentalCups(next, continentalField), state.season, runs, retired);
-    next = recordFormerPlayers(next, academies.state, developed.events);
+    next = coolRivalries(recordFormerPlayers(next, academies.state, developed.events));
     seasonOutcomes = ended.outcomes;
   }
   const sponsorDay = runSponsorDay(state, next, seasonOutcomes);

@@ -242,6 +242,20 @@ describe("event engine", () => {
     expect(answerEvent(asked, CLUB, 2).state.coach.assistant?.name).toBe(candidate.name);
   });
 
+  it("lets a feud make a rival's provocation at most a few weights likelier, however hot it got", () => {
+    const type = EVENT_BANK.find((t) => t.id === "press-rival");
+    if (!type || typeof type.weight !== "function") throw new Error("press-rival weighs the rivalry's heat");
+    const weigh = type.weight;
+    const cast = { rivalId: "fluminense-rj" };
+    const weightAt = (heat: number) => {
+      const state: GameState = { ...start, eventMemory: { ...eventMemoryOf(start), rivalry: { [rivalryKey(CLUB, "fluminense-rj")]: heat } } };
+      return weigh({ state, clubId: CLUB, squad: [], date: start.date, played: [], random: () => 0 }, cast);
+    };
+    expect(weightAt(10)).toBeGreaterThan(weightAt(0));
+    expect(weightAt(38)).toBeLessThanOrEqual(weightAt(0) + 2);
+    expect(weightAt(1000)).toBe(weightAt(38));
+  });
+
   it("offers a press conference whose answers move morale, board, fans and rivalry", () => {
     const press = EVENT_BANK.filter((type) => type.look === "press");
     expect(press.length).toBeGreaterThan(0);

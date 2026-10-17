@@ -131,12 +131,15 @@ export function rivalNext(scene: EventScene): string | undefined {
 // guess: a squad whose chemistry is this low fights twice as often after a defeat.
 export const LOW_CHEMISTRY = 40;
 
-// guess: every five points of heat between two clubs (rivalryKey) make their rivalry events one weight more likely.
+// guess: every five points of heat between two clubs (rivalryKey) make their rivalry events one weight more
+// likely, up to two weights: a feud makes a provocation likelier, never the only thing a club hears about.
 const HEAT_PER_WEIGHT = 5;
+const HEAT_WEIGHT_MOST = 2;
 
 /** How much the heat the event's rivalry built up adds to its odds. */
 export function heatOf(scene: EventScene, cast: Cast): number {
-  return cast.rivalId ? (eventMemoryOf(scene.state).rivalry[rivalryKey(scene.clubId, cast.rivalId)] ?? 0) / HEAT_PER_WEIGHT : 0;
+  const heat = cast.rivalId ? (eventMemoryOf(scene.state).rivalry[rivalryKey(scene.clubId, cast.rivalId)] ?? 0) : 0;
+  return Math.min(HEAT_WEIGHT_MOST, heat / HEAT_PER_WEIGHT);
 }
 
 /** A rival of the club: the one it played today when it did, else one of its big derby rivals (any, if it has none that big). */

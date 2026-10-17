@@ -79,6 +79,21 @@ export const EMPTY_MEMORY: EventMemory = { log: [], pending: {}, news: [], rival
 /** The game's event memory; a save from before events has an empty one. */
 export const eventMemoryOf = (state: Pick<GameState, "eventMemory">): EventMemory => state.eventMemory ?? EMPTY_MEMORY;
 
+// guess: a feud the clubs leave alone loses half its heat every season, so one hot year fades in two or three.
+const HEAT_KEPT_PER_SEASON = 0.5;
+
+/** The game at the turn of the season, each pair's rivalry heat cooled and the pairs gone cold dropped. */
+export function coolRivalries(state: GameState): GameState {
+  const memory = state.eventMemory;
+  if (!memory || !Object.keys(memory.rivalry).length) return state;
+  const rivalry: Record<string, number> = {};
+  for (const [key, heat] of Object.entries(memory.rivalry)) {
+    const kept = Math.floor(heat * HEAT_KEPT_PER_SEASON);
+    if (kept > 0) rivalry[key] = kept;
+  }
+  return { ...state, eventMemory: { ...memory, rivalry } };
+}
+
 /** The key of a pair of clubs in `EventMemory.rivalry`, the same either way round. */
 export const rivalryKey = (a: string, b: string): string => (a < b ? `${a}|${b}` : `${b}|${a}`);
 
