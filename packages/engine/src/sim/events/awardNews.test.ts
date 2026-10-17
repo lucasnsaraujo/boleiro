@@ -12,7 +12,7 @@ const storiesOf = (events: DayEvent[]) => eventMemoryOf(recordNews(start, start.
 const record = { type: "recordBroken", scope: "club", competition: null, kind: "longestUnbeaten", clubId: CLUB, playerId: null, name: null, value: 14, previous: 13 } as const;
 
 describe("the newspaper", () => {
-  it("prints a record a human coach's club breaks, and a league's record whoever breaks it", () => {
+  it("prints a record a human coach's club breaks, and a Série A record whoever breaks it", () => {
     const [own] = storiesOf([record]);
     expect(own).toMatchObject({ kind: "record", clubIds: [CLUB] });
     expect(own?.headline).toContain("14 jogos");
@@ -20,6 +20,7 @@ describe("the newspaper", () => {
     const league = storiesOf([{ ...record, clubId: AI_CLUB, scope: "league", competition: "serie-a", kind: "mostSeasonGoals", playerId: "p1", name: "Fulano", value: 30, previous: 29 }]);
     expect(league).toEqual([expect.objectContaining({ kind: "record", clubIds: [AI_CLUB] })]);
     expect(league[0]?.headline).toContain("Fulano");
+    expect(storiesOf([{ ...record, clubId: AI_CLUB, scope: "league", competition: "serie-d", kind: "biggestWin", value: 7, previous: 6 }])).toEqual([]);
   });
 
   it("prints the season's Bola de Ouro and Ballon d'Or", () => {

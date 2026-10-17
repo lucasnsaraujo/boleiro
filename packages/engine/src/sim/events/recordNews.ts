@@ -186,8 +186,8 @@ export function recordNews(state: GameState, date: IsoDate, events: readonly Day
         add("controversy", [against, call.clubId], isHumans ? 10 : 1, pick(CONTROVERSIES, `referee:${key}`, { ...names, what: WRONG_CALLS[call.call](names) }));
       }
     } else if (event.type === "recordBroken") {
-      // A human coach's club's records always make the paper; a league's whoever breaks them.
-      if (event.scope === "club" && !humans.has(event.clubId)) continue;
+      // A human coach's club's records always make the paper; the Série A's whoever breaks them.
+      if (!humans.has(event.clubId) && (event.scope === "club" || event.competition !== "serie-a")) continue;
       const leagueName = event.competition && Object.values(state.competitions).find((c) => competitionKey(c.id) === event.competition && c.kind === "league");
       const whose = event.scope === "league" ? `da ${leagueName && leagueName.kind === "league" && leagueName.division ? `Série ${leagueName.division}` : "liga"}` : `do ${name(event.clubId)}`;
       const names = { player: event.name ?? "", club: name(event.clubId), whose, value: String(event.value), previous: String(event.previous) };
