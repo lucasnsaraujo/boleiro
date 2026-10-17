@@ -30,8 +30,7 @@ export type ShootoutSide = {
   morale: number;
 };
 
-/** Whether a fixture is the last leg of a knockout tie, the one a level tie is settled in. */
-export function isDecidingLeg(fixture: Fixture, competitions: Record<string, Competition>): boolean {
+function isDecidingLeg(fixture: Fixture, competitions: Record<string, Competition>): boolean {
   const stage = competitions[fixture.competitionId]?.stages[fixture.stage];
   return fixture.tie !== undefined && stage?.kind === "knockout" && stage.dates.at(-1) === fixture.date;
 }

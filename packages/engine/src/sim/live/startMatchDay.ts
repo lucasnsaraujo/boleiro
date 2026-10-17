@@ -18,8 +18,8 @@ import { matchSetup, playingStrength, type CoachPlan } from "../players/matchSet
 import { fatigueOn } from "../players/fatigueOn.js";
 import { drawMatchInjuries, recordMatchLoad } from "../players/recordMatchLoad.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
-import { isDecidingLeg, isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
-import { tieBreakOf } from "../tieBreaks.js";
+import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
+import { hasExtraTime, tieBreakOf } from "../tieBreaks.js";
 import { aiBench, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
 import { waitingCoachesOf } from "../coach/humanCoaches.js";
 import { coachOutcome } from "./coachOutcome.js";
@@ -201,7 +201,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
       [...setup.homeLineup, ...setup.awayLineup],
       [...mayComeOn(homeId, setup.homeLineup, benches.home), ...mayComeOn(awayId, setup.awayLineup, benches.away)],
       formOf,
-      isDecidingLeg(fixture, state.competitions) && tieBreakOf(competition, fixture.stage) === "extraTime",
+      fixture.tie !== undefined && hasExtraTime(competition, fixture.stage, competition.stageDates[fixture.stage]?.indexOf(fixture.date) ?? -1),
     );
     const callSide = (clubId: string, lineup: readonly SimPlayer[], bench: readonly SimPlayer[]) => ({ clubId, onPitch: (minute: number) => onPitchAt(lineup, bench, timeline.events, clubId, minute) });
     const told = withRefereeCalls(inMatchOrder([...timeline.events, ...settled.events]), {
