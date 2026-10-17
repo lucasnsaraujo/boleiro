@@ -90,7 +90,8 @@ function redrawnOutcome(state: GameState, coachMatch: CoachMatch, events: readon
   const penaltyWinnerId = shootoutWinnerOf(events, fixture.homeId, fixture.awayId) ?? shootoutOfOldSave(state, coachMatch, { ...fixture, result: score }, events, random.next);
   const played = { ...fixture, result: penaltyWinnerId ? { ...score, penaltyWinnerId } : score };
   const { home, away, minutes } = playedBy(coachMatch, events, fixture.homeId, fixture.awayId);
-  const injuries = new Map(events.flatMap((e) => (e.type === "injury" ? [[e.playerId, e.days] as const] : [])));
+  // A match saved before injury kinds calls its injuries knocks.
+  const injuries = new Map(events.flatMap((e) => (e.type === "injury" ? [[e.playerId, { days: e.days, kind: e.kind ?? "knock", isRecurrence: e.isRecurrence === true }] as const] : [])));
   const scorers = { home: scorersFor(events, fixture.homeId), away: scorersFor(events, fixture.awayId) };
   const match = { played, context: coachMatch.context, awayTravelKm: coachMatch.awayTravelKm, lineups: { home, away }, minutes, bookings, injuries, scorers };
   return coachOutcome(state, competition, match, random.next);

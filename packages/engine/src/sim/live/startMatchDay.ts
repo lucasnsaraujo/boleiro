@@ -16,7 +16,7 @@ import { paramsForCompetition } from "../paramsForCompetition.js";
 import { isInjured } from "../players/isInjured.js";
 import { matchSetup, playingStrength, type CoachPlan } from "../players/matchSetup.js";
 import { fatigueOn } from "../players/fatigueOn.js";
-import { drawMatchInjuries, recordMatchLoad } from "../players/recordMatchLoad.js";
+import { drawMatchInjuries, injuryStreamOf, recordMatchLoad } from "../players/recordMatchLoad.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
 import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
 import { aiBench, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
@@ -116,7 +116,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const goals = simulateMatch(setup.home, setup.away, random.next, params, sendOffMinutes(bookings, fixture.homeId));
     const score = { ...goals, cards: countCards(bookings, fixture.homeId) };
     const shootout = isShootoutDue(state, { ...fixture, result: score }) ? shootoutSeed(random.next) : null;
-    const injuries = drawMatchInjuries([...setup.homeLineup, ...setup.awayLineup], setup.context, random.next);
+    const injuries = drawMatchInjuries([...setup.homeLineup, ...setup.awayLineup], setup.context, random.next, injuryStreamOf(state.seed, fixture.id));
     const { homeId, awayId } = fixture;
     // Each player's strength today, worked out once: goal kinds, penalties and substitutions ask for it again and again.
     const strengths = new Map<string, (p: SimPlayer) => number>();

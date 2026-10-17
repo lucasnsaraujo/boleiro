@@ -3,6 +3,7 @@ import { keyedStream } from "../../engine/random.js";
 import { scoringFactor } from "../../engine/sendOffRates.js";
 import type { Booking } from "../discipline/drawCards.js";
 import type { SimPlayer } from "../gameState.js";
+import type { Injury, InjuryKind } from "../players/matchInjuryChance.js";
 import { scorersOf } from "../history/scorersOf.js";
 import type { RefereeCall } from "../referees/refereeCalls.js";
 import type { OrderOverruled, ShootoutKick } from "../settleShootout.js";
@@ -14,7 +15,8 @@ export type MatchEvent =
   | GoalEvent
   | PenaltyMiss
   | { type: "card"; minute: number; clubId: string; playerId: string; card: Booking["card"] }
-  | { type: "injury"; minute: number; clubId: string; playerId: string; days: number }
+  /** `kind` is missing in a match saved before injury kinds; `isRecurrence` marks his last injury coming back. */
+  | { type: "injury"; minute: number; clubId: string; playerId: string; days: number; kind?: InjuryKind; isRecurrence?: true }
   | { type: "substitution"; minute: number; clubId: string; playerId: string; offId: string }
   | { type: "halfTime"; minute: typeof HALF_TIME }
   | { type: "fullTime"; minute: typeof FULL_TIME }
@@ -139,8 +141,8 @@ type KickOffMatch = {
   tiredness: (player: SimPlayer) => number;
   goals: Score;
   bookings: readonly Booking[];
-  /** Player id to days out, for the players hurt in this match. */
-  injuries: ReadonlyMap<string, number>;
+  /** The players hurt in this match, by id. */
+  injuries: ReadonlyMap<string, Injury>;
 };
 
 export type KickOffTimeline = {
@@ -188,11 +190,11 @@ export function kickOffTimeline(match: KickOffMatch, random: () => number, score
   const misses = drawPenaltyMisses(sides, match.strength, 0, () => drawMinute(ELEVEN_A_SIDE_WEIGHTS, detailRandom), detailRandom);
   const actions: MatchEvent[] = [...goals, ...misses];
   const clubOf = new Map([...match.homeLineup, ...match.awayLineup].map((p) => [p.id, p.clubId]));
-  const injuries: MatchEvent[] = [...match.injuries].map(([playerId, days]) => {
+  const injuries: MatchEvent[] = [...match.injuries].map(([playerId, { days, kind, isRecurrence }]) => {
     const earliest = Math.max(1, lastAction(actions, playerId));
     const latest = Math.max(earliest, sentOffMinute(cards, playerId) ?? FULL_TIME);
     const minute = earliest + Math.floor(random() * (latest - earliest + 1));
-    return { type: "injury", minute, clubId: clubOf.get(playerId) ?? "", playerId, days };
+    return { type: "injury", minute, clubId: clubOf.get(playerId) ?? "", playerId, days, kind, ...(isRecurrence ? { isRecurrence } : {}) };
   });
   const before = [...cards, ...actions, ...injuries];
   const goalDifferenceAt = (clubId: string) => (minute: number) =>
