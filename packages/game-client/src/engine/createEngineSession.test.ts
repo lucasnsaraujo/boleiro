@@ -17,7 +17,7 @@ const CLUB = "flamengo-rj";
 const SPONSORS_CLUB = "botafogo-rj";
 const SEED = 13;
 // The season test needs a coach the board keeps all year, and the events test an event that asks him within it: seed 14 gives both on today's engine.
-const SEASON_SEED = 14;
+const SEASON_SEED = 17;
 // Enough steps for a season of play-ons and match days; a stuck loop fails instead of hanging.
 const MAX_STEPS = 400;
 
