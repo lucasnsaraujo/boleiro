@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { matchOdds, simulateExtraTime, type Player, type Team } from "./match.js";
+import { extraTimeExpectedGoals, matchOdds, simulateExtraTime, type Player, type Team } from "./match.js";
 import { randomStream } from "./random.js";
 
 const side = (name: string, strength: number): Team => ({
@@ -28,6 +28,15 @@ describe("extra time", () => {
     expect(totals.home / MATCHES).toBeCloseTo(odds.expectedHomeGoals * EXTRA_TIME_SHARE, 1);
     expect(totals.away / MATCHES).toBeCloseTo(odds.expectedAwayGoals * EXTRA_TIME_SHARE, 1);
     expect(totals.home).toBeGreaterThan(totals.away);
+  });
+
+  it("expects each side to score at 0.93 of its normal-time rate a minute, as World Cup extra times did", () => {
+    const home = side("home", 72);
+    const away = side("away", 66);
+    const odds = matchOdds(home, away);
+    const expected = extraTimeExpectedGoals(home, away);
+    expect(expected.home / (odds.expectedHomeGoals / 3)).toBeCloseTo(0.93, 2);
+    expect(expected.away / (odds.expectedAwayGoals / 3)).toBeCloseTo(0.93, 2);
   });
 
   it("scores less for a side that lost a man in the ninety minutes", () => {
