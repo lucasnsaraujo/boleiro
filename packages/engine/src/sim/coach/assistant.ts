@@ -115,17 +115,17 @@ function formerPlayerLevel(peak: number): AssistantLevel {
 }
 
 /**
- * Who the coach in the seat can call: a stranger for each level above his assistant's, the season's
- * market, and each player who retired under him at a level above it, for less than a stranger asks.
- * Without a club nobody comes.
+ * Who the coach in the seat can call: a stranger for each level above his assistant's, his own market
+ * for the season (another hot-seat coach meets other men), and each player who retired under him at a
+ * level above it, for less than a stranger asks. Without a club nobody comes.
  */
-export function assistantCandidates(state: Pick<GameState, "seed" | "season" | "coach" | "coachClubId" | "players">): AssistantCandidate[] {
+export function assistantCandidates(state: Pick<GameState, "seed" | "season" | "coach" | "coachClubId" | "coachName" | "players">): AssistantCandidate[] {
   const clubId = state.coachClubId;
   if (!clubId) return [];
   const current = assistantOf(state);
   const strangers = ASSISTANT_LEVELS.flatMap((level): AssistantCandidate[] => {
     if (level === 1 || level <= current.level) return [];
-    const id = `market:${state.season}:${level}`;
+    const id = `market:${state.coachName ?? ""}:${state.season}:${level}`;
     const { name, age } = invented(state, id);
     return [{ id, name, age, level, wage: strangerWage(state, clubId, level), years: age - AGES.startedAt }];
   });

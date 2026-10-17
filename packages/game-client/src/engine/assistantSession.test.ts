@@ -67,6 +67,20 @@ test("each hot-seat coach hires his own assistant", () => {
   expect(session.assistant().assistant.level).toBe(1);
 });
 
+test("each hot-seat coach is offered strangers of his own", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 3, choices: { coachClubId: ANA.clubId, hotSeat: { coachName: ANA.name, otherCoaches: [BRUNO] } } });
+  const strangers = () => session.assistant().candidates.filter((c) => !c.formerPlayer);
+  const anas = strangers();
+  session.apply({ type: "passTurn" });
+  const brunos = strangers();
+  expect(brunos.map((c) => c.level)).toEqual(anas.map((c) => c.level));
+  for (const [index, stranger] of brunos.entries()) {
+    expect(stranger.id).not.toBe(anas[index]?.id);
+    expect(stranger.name).not.toBe(anas[index]?.name);
+  }
+});
+
 test("in the live round each player is read off by no more than the coach's assistant's error, and a better one reads closer", () => {
   const largestMisread = (hireBest: boolean) => {
     const session = startAt();
