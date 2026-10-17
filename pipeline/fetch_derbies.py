@@ -8,7 +8,7 @@ of each Transfermarkt club id (property P7223) the packs carry, and the lists' l
 through redirects to the same titles (the API's links of each page, redirects resolved).
 
 Intensity 1-5: the pairs in HAND_RATED keep the rating written there; the others are ranked by
-Wikipedia attention over the last twelve full months (Wikimedia pageviews API): the derby article's
+Wikipedia attention over the last 60 days (Wikimedia pageviews, through the Action API): the derby article's
 views when the line links one, else the smaller club's article views times the median ratio of
 derby to club views among the pairs that have both. The rank sets the intensity (INTENSITY_SHARES).
 
@@ -29,6 +29,7 @@ import json
 import math
 import re
 import time
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -51,15 +52,15 @@ LISTS = (
     "List of association football club rivalries in Africa",
     "List of association football club rivalries in Asia and Oceania",
 )
-PAGEVIEWS = "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/user"
-# The pageviews API serves up to 100 requests a second; a few a second is polite.
-REST_DELAY = 0.25
-# The twelve full months before the data was read.
-VIEWS_FROM, VIEWS_TO = "2025100100", "2026093000"
+# Days of pageviews the Action API keeps (PageViewInfo's longest window), read through it 50 articles a
+# request: the REST pageviews API answers a generic User-Agent once every ~17 seconds (HTTP 429).
+VIEWS_DAYS = 60
 # Share of the unrated pairs at intensity 1, 2, 3 and 4, from the least watched up (guess: most
 # derbies on the lists are local matches between small clubs; a tenth draws national attention).
 INTENSITY_SHARES = (0.35, 0.35, 0.2, 0.1)
 MAX_CLUBS_IN_A_LINE = 4
+# guess: clubs of two countries meet only in a continental cup now and then, so their rivalry stays small.
+INTERNATIONAL_MAX = 2
 # A request told to slow down (HTTP 429) waits as asked and tries again, this many times in all.
 RETRIES = 6
 
@@ -153,6 +154,10 @@ LINK = re.compile(r"\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]*))?\]\]")
 REF = re.compile(r"<ref[^>/]*/>|<ref[^>]*>.*?</ref>", re.S)
 TEMPLATE = re.compile(r"\{\{[^{}]*\}\}")
 MAIN = re.compile(r"\{\{\s*main(?: article)?\s*\|([^}]*)\}\}", re.I)
+# Where a line's derby clause ends and its prose begins: a verb or the end of a sentence outside a link.
+PROSE = re.compile(r"\s(?:was|is|are|were|has|have|had|who|which|since|until|after|when|while)\s|(?<!vs)(?<!\sv)[.;](?:\s|$)")
+# Words in a derby article's title; a heading link without them is a city or a region, not the derby.
+DERBY_WORDS = ("derby", "derbi", "dérbi", "rivalr", "clásico", "clássico", "classico", "classique", "klassiker", "superclás", "old firm", "–", "-")
 
 
 def plain(text: str) -> str:
@@ -171,6 +176,10 @@ def derbies_in_line(line: str, clubs: dict[str, str], resolve: Callable[[str], s
         text = TEMPLATE.sub("", text)
     head, has_colon, _ = text.partition(":")
     name = plain(head) if has_colon else ""
+    masked = LINK.sub(lambda m: "x" * len(m.group(0)), text)
+    prose = PROSE.search(masked, len(head) + 1 if has_colon else 0)
+    if prose:
+        text = text[: prose.start()]
     found: list[str] = []
     article = ""
     for match in LINK.finditer(text):
@@ -178,7 +187,7 @@ def derbies_in_line(line: str, clubs: dict[str, str], resolve: Callable[[str], s
         club = clubs.get(title, "")
         if club and club not in found:
             found.append(club)
-        elif not club and not article and has_colon and plain(head) == plain(match.group(0)) and match.start() < len(head):
+        elif not club and not article and has_colon and plain(head) == plain(match.group(0)) and match.start() < len(head) and any(w in title.lower() for w in DERBY_WORDS):
             article = title
     if not 2 <= len(found) <= MAX_CLUBS_IN_A_LINE:
         return []
@@ -186,14 +195,61 @@ def derbies_in_line(line: str, clubs: dict[str, str], resolve: Callable[[str], s
     return [Derby(clubs=(a, b), name=name[:60], article=article) for i, a in enumerate(ordered) for b in ordered[i + 1:]]
 
 
-def intensities_by_views(views: dict[tuple[str, str], float]) -> dict[tuple[str, str], int]:
-    """Intensity 1-4 for each pair by its rank in attention, INTENSITY_SHARES of the pairs at each level."""
+BRAZIL_LIST = "List of Brazilian football derbies"
+STATE_CODES = {
+    "acre": "AC", "alagoas": "AL", "amapa": "AP", "amazonas": "AM", "bahia": "BA", "ceara": "CE", "federal district": "DF",
+    "distrito federal": "DF", "espirito santo": "ES", "goias": "GO", "maranhao": "MA", "mato grosso": "MT",
+    "mato grosso do sul": "MS", "minas gerais": "MG", "para": "PA", "paraiba": "PB", "parana": "PR", "pernambuco": "PE",
+    "piaui": "PI", "rio de janeiro": "RJ", "rio grande do norte": "RN", "rio grande do sul": "RS", "rondonia": "RO",
+    "roraima": "RR", "santa catarina": "SC", "sao paulo": "SP", "sergipe": "SE", "tocantins": "TO",
+}
+HEADING = re.compile(r"^==([^=].*?)==\s*$")
+
+
+def folded(text: str) -> str:
+    """Lower case without accents, as names are compared."""
+    return "".join(c for c in unicodedata.normalize("NFD", text.lower()) if unicodedata.category(c) != "Mn").strip()
+
+
+def brazilian_club_titles(wikitext: str, clubs: list[dict[str, str]], resolve: Callable[[str], str]) -> dict[str, str]:
+    """
+    The game's Brazilian clubs Wikidata leaves unmatched, found in Brazil's derby list: a link whose label
+    is a club's short name (without its "-PB" state mark) in the state section it sits under.
+    """
+    by_state: dict[tuple[str, str], str] = {}
+    for club in clubs:
+        state = club["state"]
+        name = folded(re.sub(rf"-{state}$", "", club["short_name"]))
+        by_state.setdefault((state, name), club["id"])
+    found: dict[str, str] = {}
+    state = ""
+    for line in wikitext.splitlines():
+        heading = HEADING.match(line)
+        if heading:
+            state = STATE_CODES.get(folded(re.sub(r"\s*\(.*\)", "", plain(heading.group(1)))), "")
+            continue
+        if not state or not line.startswith("*"):
+            continue
+        for match in LINK.finditer(REF.sub("", line)):
+            club = by_state.get((state, folded(match.group(2) or match.group(1))))
+            if club:
+                found.setdefault(resolve(match.group(1).strip()), club)
+    return found
+
+
+def intensities_by_views(views: dict[tuple[str, str], float], countries: dict[str, str] | None = None) -> dict[tuple[str, str], int]:
+    """
+    Intensity 1-4 for each pair by its rank in attention, INTENSITY_SHARES of the pairs at each level;
+    a pair from two countries (given `countries`) no higher than INTERNATIONAL_MAX.
+    """
     ranked = sorted(views, key=lambda pair: (views[pair], pair))
     bounds = [sum(INTENSITY_SHARES[: level + 1]) for level in range(len(INTENSITY_SHARES))]
     scale = {}
     for rank, pair in enumerate(ranked):
         share = (rank + 1) / len(ranked)
-        scale[pair] = next(level + 1 for level, bound in enumerate(bounds) if share <= bound + 1e-9)
+        level = next(level + 1 for level, bound in enumerate(bounds) if share <= bound + 1e-9)
+        is_international = countries is not None and countries.get(pair[0]) != countries.get(pair[1])
+        scale[pair] = min(level, INTERNATIONAL_MAX) if is_international else level
     return scale
 
 
@@ -221,7 +277,7 @@ class Wiki:
                 if error.code != 429 or attempt == RETRIES - 1:
                     raise
                 time.sleep(float(error.headers.get("Retry-After") or 0) or 10 * (attempt + 1))
-        time.sleep(REST_DELAY if url.startswith(PAGEVIEWS) else self.delay)
+        time.sleep(self.delay)
         self.cache.mkdir(parents=True, exist_ok=True)
         cached.write_bytes(gzip.compress(body.encode("utf-8"), mtime=0))
         return body
@@ -266,10 +322,39 @@ class Wiki:
                 found.setdefault(row["tm"]["value"], row["title"]["value"])
         return found
 
-    def views(self, title: str) -> int:
-        article = urllib.parse.quote(title.replace(" ", "_"), safe="")
-        url = f"{PAGEVIEWS}/{article}/monthly/{VIEWS_FROM}/{VIEWS_TO}"
-        return sum(item["views"] for item in json.loads(self.get(url)).get("items", []))
+    def views(self, titles: list[str]) -> dict[str, int]:
+        """Each article's pageviews over the last VIEWS_DAYS days, 50 articles a request."""
+        found: dict[str, int] = {}
+        for start in range(0, len(titles), 50):
+            batch = titles[start:start + 50]
+            cont: dict[str, str] = {}
+            while True:
+                answer = self.api(action="query", prop="pageviews", pvipdays=str(VIEWS_DAYS), redirects="1", titles="|".join(batch), **cont)
+                query = answer.get("query", {})
+                back = {item["to"]: item["from"] for item in query.get("normalized", []) + query.get("redirects", [])}
+                for page in query.get("pages", []):
+                    if "pageviews" in page:
+                        title = page["title"]
+                        while title in back and title not in batch:
+                            title = back[title]
+                        found[title] = sum(views or 0 for views in page["pageviews"].values())
+                if "continue" not in answer:
+                    break
+                cont = {key: str(value) for key, value in answer["continue"].items()}
+        return found
+
+
+def countries_of_clubs() -> dict[str, str]:
+    """Each game club's country, by its pack ("br" for Brazil's slugs)."""
+    countries: dict[str, str] = {}
+    with BRAZIL_CLUBS.open(encoding="utf-8") as rows:
+        for row in csv.DictReader(rows):
+            countries[row["id"]] = "br"
+    for pack in sorted(WORLD_PACKS.glob("*.pack.json.gz")):
+        table = json.loads(gzip.decompress(pack.read_bytes())).get("clubs", {})
+        for club_id in table.get("id", []):
+            countries.setdefault(club_id, pack.name.split(".")[0])
+    return countries
 
 
 def game_clubs() -> dict[str, str]:
@@ -360,6 +445,13 @@ def main() -> None:
     for page in pages:
         landing.update(wiki.landings(page))
     resolve = lambda title: landing.get(title, landing.get(title[:1].upper() + title[1:], title))  # noqa: E731
+    # Wikidata may still name a club by a title that now redirects to its article.
+    club_of_title = {**{resolve(title): club for title, club in club_of_title.items()}, **club_of_title}
+    with BRAZIL_CLUBS.open(encoding="utf-8") as rows:
+        unmatched = [row for row in csv.DictReader(rows) if row["id"] not in set(club_of_title.values())]
+    by_name = brazilian_club_titles(pages.get(BRAZIL_LIST, ""), unmatched, resolve)
+    club_of_title = {**by_name, **club_of_title}
+    print(f"{len(by_name)} more Brazilian clubs matched by name in their state's derbies")
 
     found: dict[tuple[str, str], tuple[Derby, str]] = {}
     for page, text in pages.items():
@@ -376,13 +468,16 @@ def main() -> None:
     print(f"{len(found)} derbies")
 
     title_of_club = {club: title for title, club in club_of_title.items()}
-    club_views = {club: wiki.views(title_of_club[club]) for club in sorted({c for pair in found for c in pair})}
-    article_views = {pair: wiki.views(derby.article) for pair, (derby, _) in sorted(found.items()) if derby.article}
+    clubs_in_derbies = sorted({c for pair in found for c in pair if c in title_of_club})
+    articles = sorted({derby.article for derby, _ in found.values() if derby.article})
+    views = wiki.views(sorted({title_of_club[c] for c in clubs_in_derbies} | set(articles)))
+    club_views = {club: views.get(title_of_club[club], 0) if club in title_of_club else 0 for club in sorted({c for pair in found for c in pair})}
+    article_views = {pair: views.get(derby.article, 0) for pair, (derby, _) in sorted(found.items()) if derby.article}
     ratios = sorted(article_views[pair] / min(club_views[c] for c in pair) for pair in article_views if min(club_views[c] for c in pair) > 0)
     ratio = ratios[len(ratios) // 2] if ratios else 0.05
     print(f"derby article / smaller club views, median of {len(ratios)}: {ratio:.3f}")
     attention = {pair: article_views.get(pair) or ratio * min(club_views[c] for c in pair) for pair in found}
-    by_views = intensities_by_views({pair: views for pair, views in attention.items() if pair not in HAND_RATED})
+    by_views = intensities_by_views({pair: views for pair, views in attention.items() if pair not in HAND_RATED}, countries_of_clubs())
 
     rows = []
     for pair in sorted(found):

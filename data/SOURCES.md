@@ -66,6 +66,16 @@ Each club's head coach from Transfermarkt's league manager lists (`https://www.t
 
 Clubs without a row (Venezuela's, state-only clubs, the Club World Cup's guests) get invented coaches with local names (`packages/engine/src/sim/coach/inventCoachName.ts`); no real person is meant, a draw that lands on a name in this roster is drawn again, and the coaches screen tags them "fictício". The lists hold only coaches in a job, so real coaches out of work on that day (Fernando Diniz, say) aren't in the data: the free pool on day one is invented, plus the real coach of each club a human takes.
 
+## derbies.csv and packages/data/src/derbies.ts
+
+Every derby between two of the game's clubs, from English Wikipedia's rivalry lists on 2026-10-17, by `pipeline/fetch_derbies.py`: the four continental lists ([Europe](https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Europe), [the Americas](https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_the_Americas), [Africa](https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Africa), [Asia and Oceania](https://en.wikipedia.org/wiki/List_of_association_football_club_rivalries_in_Asia_and_Oceania)) and the 20 country lists they point to with `{{Main}}` ([Brazil's](https://en.wikipedia.org/wiki/List_of_Brazilian_football_derbies) among them). Each row keeps the list page it came from (`source`). A line that links two to four of the game's clubs, before its prose starts, is a derby between each pair. Clubs are matched by their English article, which Wikidata gives for each Transfermarkt club id (property P7223; 1,055 of 1,344 clubs); 17 more Brazilian clubs are matched by short name inside their state's section of Brazil's list. Brazil's list has 113 derby lines; 69 are between two clubs the game has. 547 pairs in all.
+
+Intensity, 1 to 5:
+- 71 pairs rated by hand (`basis` hand), each citing the derby's article, or the list that has it when it has none: 5 for the derbies that stop a country (Fla-Flu, Gre-Nal, Derby Paulista, Clássico Mineiro, Ba-Vi, Clássico dos Milhões, Superclásico, Uruguay's Clásico, El Clásico, the Old Firm, Derby della Madonnina, Liverpool–Manchester United, the Intercontinental Derby, Olympiacos–Panathinaikos), 4 for a big city's or state's main derby, 3 for its second ones. The ratings are `guess`.
+- The rest by Wikipedia attention over the 60 days to 2026-10-16 (Wikimedia pageviews through the Action API's `prop=pageviews`; the REST pageviews API answered this generic User-Agent once every ~17 s): the derby article's views when the line links one, else the smaller club's article views times the median derby-to-club ratio (0.036 over 159 pairs with both). By rank, 35% of these pairs get 1, 35% 2, 20% 3 and 10% 4 (`guess`); a pair from two countries (the cross-border rivalries in Europe's list) gets at most 2 (`guess`).
+
+Rivalry rules that read it (`packages/engine/src/sim/rivalries/`), all `guess`: a coach is a club's idol at 5 points (1 a year in charge, 1.5 a title, 0.25 a derby won); from intensity 3 an idol coach gets no offer or job from the rival, which won't sell him players (a release clause still works, the club has no say), and the rival's crowd boos him; a player who is his club's idol (150 games or 40 goals, as the history counts idols) won't join its rival from intensity 3. Coaches' rivalries: 1 point a meeting, 3 a final, 2 a press provocation; from 6 points the papers call their meetings a reencontro, and four wins without a defeat make a freguesia.
+
 ## Historical results
 
 | File | Source | Rebuilt by |
@@ -115,7 +125,7 @@ Notes:
 |---|---|
 | Disorder at a home game (CBJD art. 213): a fine of R$100–100,000, or for serious cases one to ten home games lost, not both | [ABC do ABC](https://abcdoabc.com.br/santos-pode-ser-punido-com-10-jogos/) quoting the article, [Migalhas](https://www.migalhas.com.br/depeso/101156/a-cronica-de-uma-violencia-anunciada---iv) on the one-or-the-other rule. The game plays those home games behind closed doors (no ticket money). How often disorder happens, the share that costs home games and the one-to-three-game range are `guess`. |
 | Closed doors halve home advantage | Home sides' goal edge fell from 0.29 to 0.15 a game without fans ([McCarrick et al. 2021](https://northumbria.ac.uk/about-us/news-events/news/football-without-the-fans-new-study-reveals-effect-of-empty-stadiums-during-pandemic), Psychology of Sport and Exercise 56:101969). A larger 10-season study found a smaller, non-significant drop, so this may overstate it. |
-| Rivals | `guess`: each state's four biggest fanbases are each other's rivals. |
+| Rivals | Real derbies, `derbies.csv` (below). A derby's crowd grows 5% per level of intensity and its result weighs 1 + 0.25 × intensity for the fans; a rival's result elsewhere moves fan mood in proportion to intensity / 4 (`guess`). |
 
 Mood swings, escalation thresholds, the strength effect of morale (at most one point either way) and the crowd effect of fan mood (at most 10%) are all `guess`, marked in the code.
 
