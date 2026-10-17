@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import { randomStream } from "../../engine/random.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { fifaWindowsOf } from "./fifaCalendar.js";
-import { competitionsOf, COPA_AMERICA_2028_HOST, throughNow, WORLD_CUP_2030_SIZE, type DrawSource } from "./nationalCompetitions.js";
+import { competitionsOf, COPA_AMERICA_2028_HOST, qualifiedFrom, throughNow, WORLD_CUP_2030_SIZE, type DrawSource } from "./nationalCompetitions.js";
+import type { NationalCompetition, NationalMatch } from "./nations.js";
 
 const game = loadNewGame(2, { coachClubId: null, nationalFootball: loadNationalFootball() });
 const teams = game.nations?.teams ?? {};
@@ -72,5 +73,15 @@ describe("who a competition sends through as its tables stand", () => {
     const worldCup = game.nations?.competitions["world-cup-2026"];
     const through = worldCup && game.nations ? throughNow(worldCup, game.nations) : new Set<string>();
     expect(through.size).toBe(32);
+  });
+});
+
+describe("a qualifying competition's qualified teams", () => {
+  it("are its group winners, then the runners-up best on their table, not on their FIFA points", () => {
+    const competition: NationalCompetition = { id: "qualifiers-uefa-2030", name: "Eliminatórias", kind: "qualifiers", confederation: "UEFA", groups: { A: ["a1", "a2", "a3"], B: ["b1", "b2", "b3"] }, places: 1, knockout: [], opened: 0, until: "2029-11-20" };
+    const played = (homeId: string, awayId: string, home: number, away: number): NationalMatch => ({ id: `${homeId}-${awayId}`, competitionId: competition.id, round: "group", date: "2029-03-20", homeId, awayId, result: { home, away } });
+    const matches = [played("a1", "a2", 1, 0), played("a2", "a3", 3, 0), played("a1", "a3", 2, 0), played("b1", "b2", 1, 0), played("b2", "b3", 0, 0), played("b1", "b3", 2, 0)];
+    const fifaPoints: Record<string, number> = { a1: 1500, a2: 1100, a3: 1000, b1: 1600, b2: 1800, b3: 1000 };
+    expect(qualifiedFrom(competition, matches, 3, new Set(), (id) => fifaPoints[id] ?? 0)).toEqual(["b1", "a1", "a2"]);
   });
 });

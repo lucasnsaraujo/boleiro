@@ -179,12 +179,28 @@ function worldCupOfSeason(season: number, source: DrawSource, random: () => numb
 /** The teams that qualified from a qualifying competition: its group winners, then the best runners-up, `count` in all, leaving out `already`. */
 export function qualifiedFrom(competition: NationalCompetition | undefined, matches: readonly NationalMatch[], count: number, already: ReadonlySet<string>, points: (id: string) => number): string[] {
   if (!competition) return [];
-  const tables = Object.values(competition.groups).map((ids) => groupTable(ids, matches.filter((m) => m.competitionId === competition.id), points).filter((id) => !already.has(id)));
+  const own = matches.filter((m) => m.competitionId === competition.id);
+  const best = byTable(own, points);
+  const tables = Object.values(competition.groups).map((ids) => groupTable(ids, own, points).filter((id) => !already.has(id)));
   const out: string[] = [];
   for (let place = 0; out.length < count && tables.some((table) => table.length > place); place++) {
-    out.push(...tables.flatMap((table) => table.slice(place, place + 1)).sort((a, b) => points(b) - points(a)).slice(0, count - out.length));
+    out.push(...tables.flatMap((table) => table.slice(place, place + 1)).sort(best).slice(0, count - out.length));
   }
   return out;
+}
+
+/** Teams of different groups compared on their group matches: points, goal difference, goals for, then FIFA points. */
+function byTable(matches: readonly NationalMatch[], points: (id: string) => number): (a: string, b: string) => number {
+  const stats = new Map<string, { pts: number; gd: number; gf: number }>();
+  for (const m of matches) {
+    if (!m.result || m.round !== "group") continue;
+    for (const [id, f, a] of [[m.homeId, m.result.home, m.result.away], [m.awayId, m.result.away, m.result.home]] as const) {
+      const row = stats.get(id) ?? { pts: 0, gd: 0, gf: 0 };
+      stats.set(id, { pts: row.pts + (f > a ? 3 : f === a ? 1 : 0), gd: row.gd + f - a, gf: row.gf + f });
+    }
+  }
+  const row = (id: string) => stats.get(id) ?? { pts: 0, gd: 0, gf: 0 };
+  return (a, b) => row(b).pts - row(a).pts || row(b).gd - row(a).gd || row(b).gf - row(a).gf || points(b) - points(a);
 }
 
 function worldCupField(season: number, size: number, hosts: readonly string[], source: DrawSource): string[] {
@@ -206,16 +222,7 @@ function worldCupField(season: number, size: number, hosts: readonly string[], s
 /** The teams through a competition's groups in seeding order: each place's teams best first, then the best of the next place. */
 export function groupQualifiers(competition: NationalCompetition, matches: readonly NationalMatch[], points: (id: string) => number): string[] {
   const own = matches.filter((m) => m.competitionId === competition.id && m.round === "group");
-  const stats = new Map<string, { pts: number; gd: number; gf: number }>();
-  for (const m of own) {
-    if (!m.result) continue;
-    for (const [id, f, a] of [[m.homeId, m.result.home, m.result.away], [m.awayId, m.result.away, m.result.home]] as const) {
-      const row = stats.get(id) ?? { pts: 0, gd: 0, gf: 0 };
-      stats.set(id, { pts: row.pts + (f > a ? 3 : f === a ? 1 : 0), gd: row.gd + f - a, gf: row.gf + f });
-    }
-  }
-  const row = (id: string) => stats.get(id) ?? { pts: 0, gd: 0, gf: 0 };
-  const best = (a: string, b: string) => row(b).pts - row(a).pts || row(b).gd - row(a).gd || row(b).gf - row(a).gf || points(b) - points(a);
+  const best = byTable(own, points);
   const tables = Object.values(competition.groups).map((ids) => groupTable(ids, own, points));
   const through: string[] = [];
   for (let place = 0; place < competition.places; place++) through.push(...tables.flatMap((table) => table.slice(place, place + 1)).sort(best));
