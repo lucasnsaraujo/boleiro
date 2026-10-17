@@ -53,6 +53,8 @@ export type YouthView = {
   copinha: CopinhaNote;
   /** A kid can be sold only inside a transfer window. */
   isWindowOpen: boolean;
+  /** The coach's assistant reads the kids' potential sharper than the scouts alone. */
+  isAssistantSharper: boolean;
   detailOf: (id: string) => KidDetail | null;
 };
 
@@ -102,6 +104,7 @@ export function youthView(state: YouthState): YouthView | null {
     squadCap: SQUAD_CAP,
     copinha: copinhaNote(state.youth?.copinha, state, club.id),
     isWindowOpen: isWindowOpen(state, state.date),
+    isAssistantSharper: sharperBy > 0,
     detailOf(id) {
       const prospect = state.youth?.prospects[id];
       if (!prospect || prospect.clubId !== club.id) return null;

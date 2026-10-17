@@ -74,6 +74,9 @@ test("with a level-5 assistant every kid's potential shows as his true stars, wh
   const sharp = await starLabels(engine);
   expect(sharp).toHaveLength(scouts.length);
   expect(sharp.every((label) => label && !label.includes(" a "))).toBe(true);
+  openYouth(engine);
+  const card = await screen.findByRole("complementary", { name: /^Garoto: / });
+  expect(within(card).getByText(/Seu auxiliar e os olheiros já conhecem bem o garoto/)).toBeTruthy();
 });
 
 test("the 20-year-olds' banner says who turns 21, and picking a kid shows his card", async () => {
