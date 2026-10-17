@@ -11,6 +11,7 @@ import { finishMatchDay } from "@boleiro/engine/sim/live/finishMatchDay";
 import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
 import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
 import { withPackPositions } from "@boleiro/engine/sim/players/withPackPositions";
+import { persuadeToStay, retirePlayer, type PlayerPersuaded } from "@boleiro/engine/sim/players/retirement";
 import { newGameFromFiles, type GameFiles } from "@boleiro/engine/sim/loadNewGame";
 import type { NewGameOptions } from "@boleiro/engine/sim/newGame";
 import { answerBid, type BidAnswer, type BidOutcome } from "@boleiro/engine/sim/transfers/answerBid";
@@ -107,6 +108,10 @@ type CommandFields = {
   saveFilter: { name: string; filters: MarketFilters };
   /** The coach in the seat forgets the market search saved under `name`. */
   deleteFilter: { name: string };
+  /** The coach in the seat retires one of his players now. */
+  retirePlayer: { playerId: string };
+  /** The coach in the seat asks one of his players who announced his last season to play one more year. */
+  persuadeToStay: { playerId: string };
 };
 
 /** What a move on a kid of the academy answers: null when it went through, and the sale it made. */
@@ -153,6 +158,8 @@ export type CommandResults = {
   watchPlayer: Scouting;
   saveFilter: Scouting;
   deleteFilter: Scouting;
+  retirePlayer: undefined;
+  persuadeToStay: PlayerPersuaded;
 };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
@@ -608,6 +615,19 @@ export function createEngineSession(files: GameFiles) {
     deleteFilter({ name }) {
       scouting = forgetFilter(scouting, name);
       return scouting;
+    },
+    retirePlayer({ playerId }) {
+      const before = betweenDays("a player can't be retired");
+      const retired = retirePlayer(before, playerId);
+      state = retired.state;
+      addNews(inboxLines(before, retired.state, [retired.event]));
+    },
+    persuadeToStay({ playerId }) {
+      const before = betweenDays("a player can't be asked to stay");
+      const asked = persuadeToStay(before, playerId);
+      state = asked.state;
+      addNews(inboxLines(before, asked.state, [asked.event]));
+      return asked.event;
     },
     spendMarketTime({ seconds, playerId }) {
       const game = current();

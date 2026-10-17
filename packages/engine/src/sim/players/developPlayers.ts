@@ -5,7 +5,9 @@ import { divisionOf, tierOf } from "../finances/tierOf.js";
 import type { GameState, IsoDate, SimPlayer, Tier } from "../gameState.js";
 import { wageRateOf, type WageRate } from "../transfers/wageDemand.js";
 import type { Prospect } from "../youth/academy.js";
+import { isHumanClub } from "../coach/humanCoaches.js";
 import { inventName } from "./inventName.js";
+import { retirementChance, retirementWeight, type PlayerWantsToRetire } from "./retirement.js";
 import { freshCondition, rollTrait } from "./openingProfile.js";
 
 export type PlayerRetired = { type: "playerRetired"; playerId: string; clubId: string; name: string; age: number };
@@ -52,16 +54,6 @@ const FORM_EFFECT = 0.5;
 const AVERAGE_POINTS_PER_GAME = 1.35;
 const FORM_MIN_MINUTES = 450;
 
-/**
- * Chance of leaving the game at the end of a season by age. Smoothed from how much smaller each
- * age group is than the one a year younger in the 2026 squads (data/players.csv: 350 aged 28,
- * 345, 312, 295, 216, 247 at 33, 226, 149 at 35, 136, 113, 79, 41 at 39, 41, 12 at 41): about 6%
- * a year from 29 (players dropping out of professional squads), rising to 70% past 40.
- */
-const RETIREMENT: readonly [minAge: number, chance: number][] = [
-  [40, 0.7], [39, 0.55], [38, 0.45], [37, 0.3], [36, 0.25], [35, 0.2], [34, 0.15], [33, 0.08], [29, 0.06],
-];
-
 // The 2026 squads have 24 players a club on average (data/players.csv). guess: no club drops
 // below 18, enough for an eleven plus injuries and rotation.
 export const MIN_SQUAD = 18;
@@ -84,10 +76,6 @@ export function normal(random: () => number): number {
 }
 
 const clamp = (strength: number) => Math.min(99, Math.max(1, strength));
-
-function retirementChance(age: number): number {
-  return RETIREMENT.find(([minAge]) => age >= minAge)?.[1] ?? 0;
-}
 
 /**
  * The position groups a squad adds from its academy: `leaving` replaced one for one, then the
@@ -179,17 +167,25 @@ function tierWageRates(clubs: GameState["clubs"], players: readonly SimPlayer[])
 /**
  * The end-of-season turnover of every squad: each player ages a year and his strength drifts
  * with age, minutes and form toward his club's level (an academy graduate toward his potential, when
- * higher); veterans retire; the academy's best teenagers at each position replace them and fill any squad
+ * higher); veterans retire, sooner when they barely played or fell below their club's level, and a
+ * human coach's veterans announce their last season instead; the academy's best teenagers at each position replace them and fill any squad
  * below 18, and Brazilian teenagers with invented names stand in where the academy has nobody (a club
  * without one). Runs on the first day of the new year,
  * before promotions and relegations, so each academy produces players for the division it played in.
  */
-export function developPlayers(state: GameState): { state: GameState; events: (PlayerRetired | YouthPromoted)[] } {
+export function developPlayers(state: GameState): { state: GameState; events: (PlayerRetired | PlayerWantsToRetire | YouthPromoted)[] } {
   const random = randomStream(state.rngState);
-  const events: (PlayerRetired | YouthPromoted)[] = [];
+  const events: (PlayerRetired | PlayerWantsToRetire | YouthPromoted)[] = [];
   const levelOf = (clubId: string) => {
     const club = state.clubs[clubId];
     return CLUB_LEVEL[(club && divisionOf(club)) ?? "none"];
+  };
+  // The strength a player drifts toward. A loaned player goes for minutes, not to settle at the
+  // borrower's level: he drifts toward his own club's. An academy graduate grows toward his own
+  // potential, reached at the peak age, when it beats his club's level.
+  const targetOf = (p: SimPlayer, clubId: string) => {
+    const clubTarget = levelOf(state.market.loans[p.id]?.fromClubId ?? clubId) + ageOffset(p.age);
+    return p.potential === undefined ? clubTarget : Math.max(clubTarget, p.potential + ageOffset(p.age) - ageOffset(PEAK_AGE));
   };
   const squads = new Map<string, SimPlayer[]>();
   for (const p of Object.values(state.players)) {
@@ -202,22 +198,34 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
   for (const [clubId, squad] of squads) {
     const mostMinutes = Math.max(1, ...squad.map((p) => p.condition.seasonMinutes));
     const averageShare = squad.reduce((sum, p) => sum + p.condition.seasonMinutes / mostMinutes, 0) / squad.length;
+    // Minutes and strength choose which veterans stop; the age table keeps how many a squad loses.
+    const weights = new Map(squad.map((p) => [p.id, retirementWeight(p.condition.seasonMinutes / mostMinutes, p.strength - targetOf(p, clubId))]));
+    const byAge = squad.reduce((sum, p) => sum + retirementChance(p.age), 0);
+    const weighted = squad.reduce((sum, p) => sum + retirementChance(p.age) * (weights.get(p.id) ?? 1), 0);
+    const keepVolume = weighted > 0 ? byAge / weighted : 1;
     for (const p of squad) {
       const { seasonMinutes, seasonPoints } = p.condition;
       const minutes = MINUTES_EFFECT * (seasonMinutes / mostMinutes - averageShare);
       const form = seasonMinutes >= FORM_MIN_MINUTES ? FORM_EFFECT * ((seasonPoints * 90) / seasonMinutes - AVERAGE_POINTS_PER_GAME) : 0;
-      // A loaned player goes for minutes, not to settle at the borrower's level: he drifts toward his own club's.
-      const clubTarget = levelOf(state.market.loans[p.id]?.fromClubId ?? clubId) + ageOffset(p.age);
-      // An academy graduate grows toward his own potential, reached at the peak age, when it beats his club's level.
-      const target = p.potential === undefined ? clubTarget : Math.max(clubTarget, p.potential + ageOffset(p.age) - ageOffset(PEAK_AGE));
+      const target = targetOf(p, clubId);
       const drift = ageOffset(p.age + 1) - ageOffset(p.age) + PULL_TO_CLUB_LEVEL * (target - p.strength);
       const strength = clamp(p.strength + drift + minutes + form + SEASON_NOISE_SD * normal(random.next));
-      if (random.next() < retirementChance(p.age)) {
+      const isStopping = random.next() < Math.min(1, retirementChance(p.age) * (weights.get(p.id) ?? 1) * keepVolume);
+      // A human coach's veteran announces his last season a year ahead, and keeps his word unless talked round.
+      const isHumans = isHumanClub(state, clubId);
+      if ((isStopping && !isHumans) || (p.retiring && p.retiring.afterSeason <= state.season)) {
         events.push({ type: "playerRetired", playerId: p.id, clubId, name: p.name, age: p.age });
         continue;
       }
       const condition = { ...p.condition, seasonMinutes: 0, seasonPoints: 0 };
-      players[p.id] = { ...p, age: p.age + 1, strength: Math.round(strength * 10) / 10, condition };
+      const developed = { ...p, age: p.age + 1, strength: Math.round(strength * 10) / 10, condition };
+      if (isStopping && isHumans && !p.retiring) {
+        const afterSeason = state.season + 1;
+        players[p.id] = { ...developed, retiring: { afterSeason, hasBeenAsked: false } };
+        events.push({ type: "playerWantsToRetire", playerId: p.id, clubId, name: p.name, age: developed.age, afterSeason });
+        continue;
+      }
+      players[p.id] = developed;
     }
   }
 

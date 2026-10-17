@@ -164,6 +164,11 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         if (event.reason === "cash") return [`${against}: o mandante ficou sem caixa para o cachê`, "bad"];
         return [against, "neutral"];
       }
+      case "playerWantsToRetire":
+        return isOurs(event.clubId) ? [`${event.name} anuncia que ${event.afterSeason} será sua última temporada. Converse com ele na página do jogador`, "neutral"] : null;
+      case "playerPersuaded":
+        if (!isOurs(event.clubId)) return null;
+        return event.stays ? [`${event.name} aceita jogar mais um ano`, "good"] : [`${event.name} não muda de ideia e para no fim da temporada`, "bad"];
       case "fansPressure":
         return isOurs(event.clubId) ? ["Torcida cobra o time", "bad"] : null;
       case "fansProtest":
