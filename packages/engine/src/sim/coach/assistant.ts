@@ -88,6 +88,12 @@ export function assistantOf(state: Pick<GameState, "seed" | "coach" | "coachClub
   return state.coach.assistant ?? clubAssistant(state, state.coachClubId);
 }
 
+/** The assistant of the human coach who runs `clubId`, in the seat or waiting; any other club's is its own. */
+export function assistantOfClub(state: Pick<GameState, "seed" | "coach" | "coachClubId" | "waitingCoaches">, clubId: string): Assistant {
+  if (clubId === state.coachClubId) return assistantOf(state);
+  return waitingCoachesOf(state).find((waiting) => waiting.clubId === clubId)?.coach.assistant ?? clubAssistant(state, clubId);
+}
+
 /**
  * How the assistant reads a player: his strength off by up to his level's error, the same each time he
  * looks at that player in a season and different from what another assistant sees.

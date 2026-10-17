@@ -66,3 +66,24 @@ test("each hot-seat coach hires his own assistant", () => {
   expect(session.read(["coachName"]).coachName).toBe(BRUNO.name);
   expect(session.assistant().assistant.level).toBe(1);
 });
+
+test("in the live round each player is read off by no more than the coach's assistant's error, and a better one reads closer", () => {
+  const largestMisread = (hireBest: boolean) => {
+    const session = startAt();
+    if (hireBest) {
+      const best = session.assistant().candidates.find((c) => c.level === 5);
+      if (!best) throw new Error("no level-5 assistant to call");
+      expect(session.apply({ type: "hireAssistant", candidateId: best.id })).toEqual({ refusal: null });
+    }
+    for (let step = 0; step < 40 && session.apply({ type: "playToMatchDay" }).stop !== "matchDay"; step++);
+    const coach = session.apply({ type: "startRound" }).coach;
+    if (!coach?.assistantReads) throw new Error("no coach side in the round");
+    const reads = coach.assistantReads;
+    return Math.max(...coach.squad.map((p) => Math.abs((reads[p.id] ?? p.strength) - p.strength)));
+  };
+  const own = largestMisread(false);
+  const best = largestMisread(true);
+  expect(own).toBeLessThanOrEqual(8);
+  expect(best).toBeLessThanOrEqual(1);
+  expect(best).toBeLessThan(own);
+});
