@@ -31,6 +31,7 @@ import { boardNotes, dueRequests, EMPTY_DESK, withRequest, type BoardDesk } from
 import type { MarketFilters } from "../market/marketFilters.js";
 import { EMPTY_SCOUTING, forgetFilter, keepFilter, watch, type Scouting } from "../market/scouting.js";
 import { isSigning, marketClockView, spendMarketTime, type MarketClock, type MarketClockView } from "../market/marketClock.js";
+import { awardsBook, type AwardsBook } from "../awards/awardsBook.js";
 import { chemistryPage, type ChemistryPage } from "../chemistry/chemistryPage.js";
 import { matchPageOf, type MatchPage } from "../matchPage/matchPageOf.js";
 import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
@@ -646,6 +647,10 @@ export function createEngineSession(files: GameFiles) {
     /** The lineup sheet before kick-off on the coach's match day; with a formation, the assistant's eleven in it. */
     matchDayPlan(formation?: Formation): MatchDayPlan {
       return matchDayPlan(current(), formation);
+    },
+    /** The awards screen: the season under way so far, the filed seasons and the records. */
+    awards(): AwardsBook {
+      return awardsBook(current());
     },
     /** The chemistry screen of the seated coach's club; null without a club. */
     chemistry(): ChemistryPage | null {
