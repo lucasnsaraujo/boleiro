@@ -20,6 +20,7 @@ import type { CopinhaPlayed } from "./youth/copinha.js";
 import type { SquadToppedUp } from "./youth/fillShortSquads.js";
 import type { RefereeCallEvent } from "./referees/refereeCalls.js";
 import type { YouthEvent } from "./youth/turnOverAcademies.js";
+import type { SponsorEvent } from "./sponsors/sponsorDeals.js";
 
 export type DayDecisions = {
   lineup?: readonly string[];
@@ -56,7 +57,8 @@ export type DayEvent =
   | CopinhaPlayed
   | SquadToppedUp
   | RefereeCallEvent
-  | EventDayEvent;
+  | EventDayEvent
+  | SponsorEvent;
 
 /** A day played: the game after it and its events; in a hot-seat game, each waiting coach's own news apart, in waiting order. */
 export type DayResult = { state: GameState; events: DayEvent[]; waitingEvents?: DayEvent[][] };

@@ -12,6 +12,8 @@ import { buildStadiums } from "../stadium/stadiumWorks.js";
 import { addDays } from "../dates.js";
 import { countCards, type Booking } from "../discipline/drawCards.js";
 import { endSeason } from "../endSeason.js";
+import type { LeagueOutcome } from "../leagueFormats.js";
+import { runSponsorDay } from "../sponsors/sponsorDeals.js";
 import { recordNews } from "../events/recordNews.js";
 import { runEvents } from "../events/runEvents.js";
 import { closeMonth } from "../finances/closeMonth.js";
@@ -235,6 +237,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
   }
   if (state.world) next = { ...next, world: playWorldDay(state.world, state.date) };
   if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state)) };
+  let seasonOutcomes: Record<string, LeagueOutcome> = {};
   if (next.date.slice(0, 4) !== String(state.season)) {
     const continentalField = seasonEndField(next);
     const academies = turnOverAcademies(closeSeasonHistory(next));
@@ -250,7 +253,11 @@ export function finishMatchDay(live: LiveDay): DayResult {
     next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };
     if (next.world) next = { ...next, world: endWorldSeason(next.world, next.season, unifiedDatesOf(next.calendar)) };
     next = openContinentalCups(next, continentalField);
+    seasonOutcomes = ended.outcomes;
   }
+  const sponsorDay = runSponsorDay(state, next, seasonOutcomes);
+  next = sponsorDay.state;
+  events.push(...sponsorDay.events);
   const market = runTransferDay(next, decisions.requests ?? [], (decisions.waiting ?? []).map((own) => own.requests ?? []));
   events.push(...market.events);
   market.waitingEvents.forEach((own, index) => waitingEvents[index]?.push(...own));

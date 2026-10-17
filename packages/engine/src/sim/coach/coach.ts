@@ -19,6 +19,8 @@ export type Coach = {
   personalWindowUntil?: IsoDate;
   /** The areas whose events the assistant answers for him at once; left out, every event asks the coach. */
   assistantAreas?: EventArea[];
+  /** True when the coach picks his club's sponsors himself; left out, the board signs the best offer on its day. */
+  picksSponsors?: true;
 };
 
 // guess: an unknown coach starts at the reputation of the smallest national clubs.
