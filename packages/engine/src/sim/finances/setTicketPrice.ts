@@ -1,3 +1,4 @@
+import { doesAssistantHandle, withAssistantDuty } from "../coach/assistantDuties.js";
 import type { ClubFinance, GameState } from "../gameState.js";
 import { tierOf } from "./tierOf.js";
 
@@ -37,4 +38,21 @@ export function setTicketPrice(state: GameState, price: number): GameState {
   const { min, max } = ticketPriceBounds(state, clubId);
   if (!Number.isInteger(price) || price < min || price > max) throw new Error(`a ticket costs from R$ ${min} to R$ ${max} in whole reais`);
   return { ...state, finances: { ...state.finances, [clubId]: { ...finance, ticketPrice: price } } };
+}
+
+/**
+ * Whether the assistant prices the coach's tickets: while his duty is on and the club's price is still
+ * his, as it is from the start. A price of the coach's own means the coach took it over.
+ */
+export function doesAssistantPriceTickets(state: Pick<GameState, "coach" | "coachClubId" | "clubs" | "economy" | "finances">): boolean {
+  const clubId = state.coachClubId;
+  const finance = clubId ? state.finances[clubId] : undefined;
+  if (!clubId || !finance) return doesAssistantHandle(state.coach, "ticketPrice");
+  return doesAssistantHandle(state.coach, "ticketPrice") && finance.ticketPrice === assistantTicketPrice(state, clubId);
+}
+
+/** The coach hands his ticket price to the assistant, who sets it back to his own at once, or takes it over. */
+export function withAssistantPricing(state: GameState, isOn: boolean): GameState {
+  const handed = { ...state, coach: withAssistantDuty(state.coach, "ticketPrice", isOn) };
+  return isOn && handed.coachClubId ? setTicketPrice(handed, assistantTicketPrice(handed, handed.coachClubId)) : handed;
 }

@@ -42,6 +42,7 @@ function isOwnNews(event: DayEvent): boolean {
     case "counterOffered":
     case "renewalCountered":
     case "coachHired":
+    case "assistantLeft":
     case "jobOffered":
     case "coachSeasonReviewed":
     case "contractRenewed":

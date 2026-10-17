@@ -13,20 +13,30 @@ const ROTATION_COST = 6;
 // guess: a coach sticks with his usual starters over a fit backup up to this many points stronger,
 // so a club opens the game with its real eleven and comes back to it after rotating.
 const USUAL_STARTER_BONUS = 5;
+// A coach's own eleven outweighs anyone else in any slot: only a player who can't play today leaves it.
+const KEPT_STARTER_BONUS = 1_000;
 
 /**
  * The AI coach's starting eleven in `formation`, in its slot order: fit players worth most in a slot,
  * by the strength they would play at today less a cost for the fatigue they carry, times their fit
  * in the slot (arrange). Injured players never start. A squad short in one position borrows the
- * players who fit its slots best from the others.
+ * players who fit its slots best from the others. The `kept` players, a coach's own eleven, start
+ * whenever they are fit.
  */
-export function pickMatchLineup(squad: readonly SimPlayer[], context: MatchContext, formation: Formation = "4-4-2", usual: ReadonlySet<string> = new Set()): SimPlayer[] {
+export function pickMatchLineup(
+  squad: readonly SimPlayer[],
+  context: MatchContext,
+  formation: Formation = "4-4-2",
+  usual: ReadonlySet<string> = new Set(),
+  kept: ReadonlySet<string> = new Set(),
+): SimPlayer[] {
   const fit: SimPlayer[] = [];
   const scores: number[] = [];
   const score = new Map<SimPlayer, number>();
   for (const p of squad) {
     if (isInjured(p, context.date)) continue;
-    const value = effectiveStrength(p, context) - (ROTATION_COST * fatigueOn(p, context.date)) / 100 + (usual.has(p.id) ? USUAL_STARTER_BONUS : 0);
+    const value =
+      effectiveStrength(p, context) - (ROTATION_COST * fatigueOn(p, context.date)) / 100 + (usual.has(p.id) ? USUAL_STARTER_BONUS : 0) + (kept.has(p.id) ? KEPT_STARTER_BONUS : 0);
     fit.push(p);
     scores.push(value);
     score.set(p, value);
