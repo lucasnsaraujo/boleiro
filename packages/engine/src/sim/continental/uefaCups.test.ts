@@ -63,6 +63,12 @@ describe("a season of UEFA's cups", () => {
     expect(roundOf16?.ties.flat().toSorted()).toEqual([...table.slice(0, 8), ...playoffWinners].toSorted());
   });
 
+  it("plays extra time in a knockout tie level after the last leg's ninety minutes, and penalties only if still level", () => {
+    const ties = [championsLeague, europaLeague].flatMap((cup) => cup?.knockout.flatMap((round) => round.ties.map((_, i) => knockoutTie(round, i))) ?? []);
+    for (const tie of ties.filter((t) => t.onPenalties)) expect(tie.isAfterExtraTime).toBe(true);
+    expect(ties.some((t) => t.isAfterExtraTime && !t.onPenalties)).toBe(true);
+  });
+
   it("crowns a Champions League, a Europa League and a Super Cup winner", () => {
     expect(championsLeague && cupChampion(championsLeague)).toBeTruthy();
     expect(europaLeague && cupChampion(europaLeague)).toBeTruthy();

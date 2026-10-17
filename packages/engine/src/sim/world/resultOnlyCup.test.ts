@@ -57,3 +57,46 @@ describe("a result-only national cup", () => {
     }
   });
 });
+
+describe("a result-only national cup's level matches", () => {
+  const openIn = (country: string, seed: number) => openCup(`${country}-cup-2026`, 2026, [top, second], ["08-15", "05-23"], leagueDates, seededRandom(seed));
+  const playWith = (cup: ReturnType<typeof open>, random: () => number) => cup.dates.reduce((played, date) => playCupDay(played, date, clubOf, random), cup);
+  const SEEDS = 40;
+
+  it("go to extra time where the country's cup plays it, and on to penalties only when still level", () => {
+    let wonInExtraTime = 0;
+    for (let seed = 0; seed < SEEDS; seed++) {
+      for (const { result } of cupMatches(playWith(openIn("de", seed), seededRandom(seed + 100)))) {
+        if (!result) continue;
+        if (result.homeGoals === result.awayGoals) expect(result.isAfterExtraTime).toBe(true);
+        if (result.isAfterExtraTime && result.homeGoals !== result.awayGoals) wonInExtraTime++;
+      }
+    }
+    expect(wonInExtraTime).toBeGreaterThan(0);
+  });
+
+  it("go straight to penalties before a French cup's final, which plays extra time", () => {
+    for (let seed = 0; seed < SEEDS; seed++) {
+      const matches = cupMatches(playWith(openIn("fr", seed), seededRandom(seed + 100)));
+      const final = matches.at(-1);
+      for (const { result } of matches.slice(0, -1)) expect(result?.isAfterExtraTime).toBeUndefined();
+      if (final?.result?.homeGoals === final?.result?.awayGoals) expect(final?.result?.isAfterExtraTime).toBe(true);
+    }
+  });
+
+  it("leave every match level after ninety minutes the only one extra time changes, and the round's stream as it was", () => {
+    for (let seed = 0; seed < SEEDS; seed++) {
+      const [withExtraTime, straight] = [seededRandom(seed + 100), seededRandom(seed + 100)];
+      const playFirstRound = (country: string, random: () => number) => {
+        const cup = openIn(country, seed);
+        return cupMatches(playCupDay(cup, cup.dates[0] ?? "", clubOf, random)).filter((m) => m.round === 0);
+      };
+      const de = playFirstRound("de", withExtraTime);
+      const fr = playFirstRound("fr", straight);
+      expect(withExtraTime()).toBe(straight());
+      fr.forEach((match, i) => {
+        if (match.result && match.result.homeGoals !== match.result.awayGoals) expect(de[i]).toEqual(match);
+      });
+    }
+  });
+});
