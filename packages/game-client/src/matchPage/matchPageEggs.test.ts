@@ -18,7 +18,7 @@ test("a played match's page tapes the eggs the book wrote down for it, and anoth
   if (!ours || !theirs) throw new Error("the club has matches");
   const find = { eggId: "olympic-goal", date: ours.date, clubId: CLUB, fixtureId: ours.id, headline: "Gol olímpico de Pedro" };
   const booked: GameState = { ...played(), eggs: { log: [find] } };
-  expect(matchPageOf(booked, ours.id, null)?.eggs).toContainEqual({ eggId: "olympic-goal", title: "Gol olímpico", look: "sticker", text: "Gol olímpico de Pedro" });
+  expect(matchPageOf(booked, ours.id, null)?.eggs).toContainEqual({ eggId: "olympic-goal", title: "Gol olímpico", rarity: "rare", look: "sticker", text: "Gol olímpico de Pedro" });
   expect(matchPageOf(booked, theirs.id, null)?.eggs.some((note) => note.eggId === "olympic-goal")).toBe(false);
 });
 

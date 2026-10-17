@@ -172,9 +172,10 @@ function Sheet({ state, edition, number }: { state: PaperState; edition: Edition
         <div className="paper-side">
           {sideStories.length === 0 && <p className="paper-quiet">Dia calmo no futebol brasileiro.</p>}
           {sideStories.map((story) => (
-            <div key={`${story.date}${story.kind}${story.headline}`} className={story.kind === "rivalry" ? "paper-st quote" : "paper-st"}>
+            <div key={`${story.date}${story.kind}${story.headline}`} className={story.kind === "rivalry" ? "paper-st quote" : story.kind === "egg" ? "paper-st egg" : "paper-st"}>
               <span className={`paper-kick ${KICKER_CLASSES[story.kind]}`}>
                 {story.kind === "var" && <i className="ph-fill ph-monitor-play" aria-hidden="true" />}
+                {story.kind === "egg" && <i className="ph-fill ph-star" aria-hidden="true" />}
                 {story.kicker}
               </span>
               <h3>{story.headline}</h3>

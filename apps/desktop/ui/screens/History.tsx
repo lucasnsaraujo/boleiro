@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router";
 import type { Club } from "@boleiro/data/clubs";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import type { CrowdMark, MatchMark, TransferMark } from "@boleiro/engine/sim/history/history";
+import type { EggAlbum } from "@boleiro/game-client/eggs/eggAlbum";
 import { useServices } from "../app/ServicesContext.js";
 import { Crest } from "../clubs/Crest.js";
 import { competitionKeyName } from "@boleiro/game-client/format/competitionName";
@@ -11,6 +12,7 @@ import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import { championRoll, clubPast, coachCareer, rollKeys, scorerRoll, type CareerStint } from "../history/historySelectors.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import { useMatchFile } from "../matchPage/MatchFile.js";
+import { EggAlbumPanel } from "../eggs/EggAlbumPanel.js";
 import "./history.css";
 
 const HISTORY_KEYS = ["season", "coachClubId", "clubs", "history", "coach", "fixtures"] as const;
@@ -22,6 +24,7 @@ const TABS = [
   { id: "campeoes", title: "Campeões" },
   { id: "artilheiros", title: "Artilheiros" },
   { id: "carreira", title: "Carreira" },
+  { id: "raridades", title: "Raridades" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -36,6 +39,7 @@ export function History() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [state, setState] = useState<HistoryState | null>(null);
+  const [album, setAlbum] = useState<EggAlbum | null>(null);
   const [failed, setFailed] = useState(false);
   const [pickedTab, setPickedTab] = useState<TabId | null>(null);
   const [pickedClubId, setPickedClubId] = useState<string | null>(null);
@@ -43,8 +47,12 @@ export function History() {
 
   useEffect(() => {
     let current = true;
-    engine.read(HISTORY_KEYS).then(
-      (read) => current && setState(read),
+    Promise.all([engine.read(HISTORY_KEYS), engine.eggAlbum()]).then(
+      ([read, eggs]) => {
+        if (!current) return;
+        setState(read);
+        setAlbum(eggs);
+      },
       () => current && setFailed(true),
     );
     return () => {
@@ -58,7 +66,8 @@ export function History() {
   if (!state) return <p className="status">Abrindo a história…</p>;
 
   const clubId = pickedClubId ?? state.coachClubId ?? state.history.coach.stints.at(-1)?.clubId ?? null;
-  const tabs = TABS.filter((tab) => tab.id !== "clube" || clubId);
+  // The rarities stay out of sight until the career finds its first one.
+  const tabs = TABS.filter((tab) => (tab.id !== "clube" || clubId) && (tab.id !== "raridades" || album?.found.length));
   const asked = params.get("aba");
   const wanted = pickedTab ?? (isTabId(asked) ? asked : "clube");
   const shown = tabs.find((tab) => tab.id === wanted) ?? tabs[0];
@@ -93,6 +102,7 @@ export function History() {
         {shown?.id === "campeoes" && <ChampionsPanel state={state} keys={keys} onOpenClub={openClub} />}
         {shown?.id === "artilheiros" && <ScorersPanel state={state} keys={keys} />}
         {shown?.id === "carreira" && <CareerPanel state={state} coachName={game.current?.coachName ?? "Técnico"} />}
+        {shown?.id === "raridades" && album && <EggAlbumPanel album={album} />}
       </div>
     </div>
   );

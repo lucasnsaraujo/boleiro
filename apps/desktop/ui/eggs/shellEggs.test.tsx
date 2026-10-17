@@ -27,7 +27,7 @@ async function services(): Promise<Services> {
 
 function open(given: Services, at: string) {
   const router = createMemoryRouter(
-    [{ element: <Shell />, children: ["/", "/hub", "/tables", "/round"].map((path) => ({ path, element: <h1>tela {path}</h1> })) }],
+    [{ element: <Shell />, children: ["/", "/hub", "/tables", "/round", "/history"].map((path) => ({ path, element: <h1>tela {path}</h1> })) }],
     { initialEntries: [at] },
   );
   render(
@@ -75,4 +75,30 @@ test("Iniciar takes the game back to 2026, and the start menu's brasfoot belongs
   await act(() => router.navigate("/"));
   await userEvent.keyboard("brasfoot");
   expect(skin()).toBeUndefined();
+});
+
+test("a rare sticker found in play is revealed as a status the coach can close or follow to the album, once", async () => {
+  const given = await services();
+  const router = open(given, "/hub");
+  await screen.findByRole("navigation", { name: "Telas" });
+  await userEvent.keyboard("brasfoot");
+  const reveal = await screen.findByRole("status", { name: "Figurinha rara" });
+  expect(within(reveal).getByText("Rodada de 1998")).toBeTruthy();
+  await userEvent.click(within(reveal).getByRole("button", { name: "Fechar" }));
+  await waitFor(() => expect(screen.queryByRole("status", { name: "Figurinha rara" })).toBeNull());
+
+  await act(() => router.navigate("/tables"));
+  await act(() => router.navigate("/hub"));
+  expect(screen.queryByRole("status", { name: "Figurinha rara" })).toBeNull();
+});
+
+test("Ver no álbum opens the history's rarities", async () => {
+  const given = await services();
+  const router = open(given, "/hub");
+  await screen.findByRole("navigation", { name: "Telas" });
+  await userEvent.keyboard("brasfoot");
+  const reveal = await screen.findByRole("status", { name: "Figurinha rara" });
+  await userEvent.click(within(reveal).getByRole("link", { name: "Ver no álbum" }));
+  expect(router.state.location.pathname).toBe("/history");
+  expect(router.state.location.search).toBe("?aba=raridades");
 });

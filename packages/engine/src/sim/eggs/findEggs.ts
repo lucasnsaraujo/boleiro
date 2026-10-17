@@ -9,7 +9,7 @@ import type { CoachRecord } from "../history/history.js";
 import type { LiveMatch } from "../live/liveDay.js";
 import { eggBookOf, eggsOfMatch, type EggFind, type EggFound } from "./eggBook.js";
 import { EGG_BANK } from "./eggBank.js";
-import type { EggHit, EggLook, EggType, MatchTale } from "./eggType.js";
+import type { EggHit, EggLook, EggRarity, EggType, MatchTale } from "./eggType.js";
 import { matchTaleOf } from "./matchTale.js";
 
 // Eggs draw from streams of their own per day, club and egg, so finding one never moves another draw of the game.
@@ -83,7 +83,7 @@ function record(state: GameState, date: IsoDate, finds: readonly Found[], humans
 }
 
 /** An egg a match laid, as its page tapes it beside the match. */
-export type EggNote = { eggId: string; title: string; look: EggLook; text: string };
+export type EggNote = { eggId: string; title: string; rarity: EggRarity; look: EggLook; text: string };
 
 /**
  * The eggs of a played match for its page: those its story lays (its timeline and play, real or told
@@ -95,11 +95,11 @@ export function matchEggNotes(state: GameState, history: GameState["history"], f
   const notes: EggNote[] = [];
   for (const egg of bank) {
     const hit = egg.on === "match" ? egg.find(tale)[0] : undefined;
-    if (egg.on === "match" && hit) notes.push({ eggId: egg.id, title: egg.title, look: egg.look, text: fillSlots(egg.note, slotsOf(state, hit, fixture, humans)) });
+    if (egg.on === "match" && hit) notes.push({ eggId: egg.id, title: egg.title, rarity: egg.rarity, look: egg.look, text: fillSlots(egg.note, slotsOf(state, hit, fixture, humans)) });
   }
   for (const find of eggsOfMatch(state, fixture.id)) {
     const egg = bank.find((type) => type.id === find.eggId);
-    if (egg && !notes.some((note) => note.eggId === egg.id)) notes.push({ eggId: egg.id, title: egg.title, look: egg.look, text: find.headline });
+    if (egg && !notes.some((note) => note.eggId === egg.id)) notes.push({ eggId: egg.id, title: egg.title, rarity: egg.rarity, look: egg.look, text: find.headline });
   }
   return notes;
 }

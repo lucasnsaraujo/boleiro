@@ -104,9 +104,9 @@ describe("finding eggs", () => {
   it("tells a played match's eggs as notes for its page: those its story lays and those the book wrote down", () => {
     const story = { events: [], play: null };
     const notes = matchEggNotes(start, start.history, { ...ours, result: { homeGoals: 7, awayGoals: 1 } }, story);
-    expect(notes).toEqual([{ eggId: "seven-one", title: "Sete a um", look: "page", text: "Sete a um. O Mineirão viu esse placar em 8 de julho de 2014, na semifinal da Copa." }]);
+    expect(notes).toEqual([{ eggId: "seven-one", title: "Sete a um", rarity: "legendary", look: "page", text: "Sete a um. O Mineirão viu esse placar em 8 de julho de 2014, na semifinal da Copa." }]);
     const booked = { ...start, eggs: { log: [{ eggId: "olympic-goal", date: DATE, clubId: CLUB, fixtureId: "ours", headline: "Gol olímpico de Pedro" }] } };
-    expect(matchEggNotes(booked, start.history, { ...ours, result: { homeGoals: 1, awayGoals: 0 } }, story)).toEqual([{ eggId: "olympic-goal", title: "Gol olímpico", look: "sticker", text: "Gol olímpico de Pedro" }]);
+    expect(matchEggNotes(booked, start.history, { ...ours, result: { homeGoals: 1, awayGoals: 0 } }, story)).toEqual([{ eggId: "olympic-goal", title: "Gol olímpico", rarity: "rare", look: "sticker", text: "Gol olímpico de Pedro" }]);
     expect(matchEggNotes(start, start.history, { ...ours, result: { homeGoals: 1, awayGoals: 0 } }, story)).toEqual([]);
   });
 

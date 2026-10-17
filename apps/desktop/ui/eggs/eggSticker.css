@@ -1,0 +1,212 @@
+/*
+ * An egg's sticker, cut like the album's player stickers: a printed face over a white strip with the
+ * name. The face's print tells the rarity at a glance: flag green, blue foil, gold holo.
+ */
+.egg-stk {
+  --stk-w: 132px;
+  position: relative;
+  width: var(--stk-w);
+  flex: none;
+  padding: 6px 6px 0;
+  border-radius: 12px;
+  background: #fff;
+  color: #14231a;
+  box-shadow:
+    0 0 0 1px rgba(20, 35, 26, 0.1),
+    0 2px 3px -1px rgba(20, 35, 26, 0.25),
+    0 12px 20px -10px rgba(20, 35, 26, 0.45);
+}
+
+.egg-stk.page {
+  --stk-w: 276px;
+}
+
+.egg-stk-face {
+  position: relative;
+  height: 128px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 7px;
+  color: #f2ead9;
+  --plate: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.13) 0 45px, rgba(255, 255, 255, 0.28) 45px 46.5px, transparent 47px);
+  background:
+    var(--plate),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 14px, transparent 14px 28px),
+    var(--green);
+  isolation: isolate;
+}
+
+.egg-stk.veryRare .egg-stk-face {
+  background:
+    var(--plate),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 14px, transparent 14px 28px),
+    linear-gradient(160deg, #2a56c8, #1b3f9e 55%, #12307e);
+}
+
+.egg-stk.legendary .egg-stk-face {
+  color: #3b2a00;
+  --plate: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.3) 0 45px, rgba(120, 80, 0, 0.3) 45px 46.5px, transparent 47px);
+  background: var(--plate), linear-gradient(135deg, #fff1b0 0%, #f0c43c 24%, #ffe68a 44%, #d9a514 66%, #fff3c4 84%, #e9b726 100%);
+}
+
+/* Foil: a band of light the print catches, still on the page, running when the sticker moves. */
+.egg-stk.veryRare .egg-stk-face::before,
+.egg-stk.legendary .egg-stk-face::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.5) 45%, rgba(190, 255, 236, 0.35) 50%, rgba(255, 210, 250, 0.3) 55%, transparent 70%);
+  transform: translateX(-30%);
+  mix-blend-mode: soft-light;
+}
+
+.egg-stk.legendary .egg-stk-face::before {
+  mix-blend-mode: overlay;
+  background: linear-gradient(115deg, transparent 28%, rgba(255, 255, 255, 0.85) 44%, rgba(150, 240, 220, 0.55) 50%, rgba(255, 170, 240, 0.5) 56%, transparent 72%);
+}
+
+.egg-stk-no {
+  position: absolute;
+  top: 7px;
+  right: 9px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
+.egg-stk-stars {
+  position: absolute;
+  top: 8px;
+  left: 9px;
+  display: flex;
+  gap: 2px;
+}
+
+.egg-stk-stars svg {
+  fill: currentColor;
+}
+
+.egg-art {
+  width: 70px;
+  height: 70px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.18));
+}
+
+.egg-art .thin {
+  stroke-width: 1.5;
+  opacity: 0.75;
+}
+
+.egg-art .fill {
+  fill: currentColor;
+  stroke: none;
+}
+
+.egg-art .red {
+  fill: #d7322a;
+  stroke: #f2ead9;
+  stroke-width: 1.5;
+}
+
+.egg-stk.legendary .egg-art .red {
+  stroke: #3b2a00;
+}
+
+.egg-art .gold {
+  fill: #ffcc00;
+}
+
+.egg-art-score {
+  width: auto;
+  height: auto;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 58px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  stroke: none;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.18);
+}
+
+.egg-art-score i {
+  font-style: normal;
+  font-size: 0.5em;
+  margin: 0 0.12em;
+  vertical-align: 0.35em;
+  opacity: 0.8;
+}
+
+.egg-stk-ribbon {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  padding: 2px 9px;
+  border-radius: 3px;
+  background: #14231a;
+  color: #ffcc00;
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.egg-stk figcaption {
+  display: grid;
+  gap: 1px;
+  padding: 6px 2px 7px;
+  text-align: center;
+}
+
+.egg-stk figcaption b {
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.egg-stk figcaption small {
+  font-size: 10.5px;
+  color: #5c584b;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .egg-stk.veryRare:hover .egg-stk-face::before,
+  .egg-stk.legendary:hover .egg-stk-face::before,
+  .egg-stk.shine .egg-stk-face::before {
+    animation: egg-foil 1400ms var(--e-in-out) both;
+  }
+}
+
+@keyframes egg-foil {
+  from {
+    transform: translateX(-30%);
+  }
+  to {
+    transform: translateX(30%);
+  }
+}
+
+/* The 98 round prints its stickers flat and square, like everything else on that screen. */
+[data-skin="win98"] .egg-stk {
+  border-radius: 0;
+  box-shadow: var(--w98-raised);
+  background: var(--w98-face);
+  color: var(--ink);
+}
+
+[data-skin="win98"] .egg-stk-face {
+  border-radius: 0;
+}

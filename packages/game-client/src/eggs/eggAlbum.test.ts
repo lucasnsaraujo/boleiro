@@ -13,7 +13,7 @@ test("the album shows each egg found once, oldest first, out of every egg in the
     ["sobrenatural", "2026-03-01", "Trave, trave, trave", 2],
     ["seven-one", "2026-04-01", "Sete a um", 1],
   ]);
-  expect(album.found[1]).toMatchObject({ title: "Sete a um", look: "page", rarity: "legendary" });
+  expect(album.found[1]).toMatchObject({ title: "Sete a um", look: "page", rarity: "legendary", number: EGG_BANK.findIndex((egg) => egg.id === "seven-one") + 1 });
   expect(album.total).toBe(EGG_BANK.length);
   expect(eggAlbumOf({}).found).toEqual([]);
 });
