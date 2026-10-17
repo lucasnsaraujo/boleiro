@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import type { GameState } from "@boleiro/engine/sim/gameState";
+import type { Retiring } from "@boleiro/engine/sim/players/retirement";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { Select } from "../controls/Select.js";
 import { useServices } from "../app/ServicesContext.js";
@@ -79,6 +80,7 @@ export function Player() {
   const [desk, setDesk] = useState<BoardDesk | null>(null);
   const [watchList, setWatchList] = useState<readonly string[]>([]);
   const [failed, setFailed] = useState(false);
+  const [reads, setReads] = useState(0);
 
   useEffect(() => {
     let current = true;
@@ -94,7 +96,7 @@ export function Player() {
     return () => {
       current = false;
     };
-  }, [engine]);
+  }, [engine, reads]);
 
   // The squad, the market and the tables all open players; a player opened straight from a link has no screen behind him.
   const hasScreenBehind = location.key !== "default";
@@ -234,7 +236,71 @@ export function Player() {
           onWithdraw={() => void engine.apply({ type: "withdraw", playerId: card.id }).then(setDesk)}
         />
       )}
+      {card.isCoachsPlayer && (
+        <RetirementActions
+          name={card.name}
+          retiring={state.players[card.id]?.retiring ?? null}
+          onRetire={() => void engine.apply({ type: "retirePlayer", playerId: card.id }).then(() => navigate("/hub"))}
+          onPersuade={() => engine.apply({ type: "persuadeToStay", playerId: card.id }).then((answer) => {
+            setReads((n) => n + 1);
+            return answer.stays;
+          })}
+        />
+      )}
     </div>
+  );
+}
+
+type RetirementProps = { name: string; retiring: Retiring | null; onRetire: () => void; onPersuade: () => Promise<boolean> };
+
+/**
+ * A player who announced his last season can be asked once to play one more year; any of the coach's
+ * players can be retired now, after a confirm, since it can't be undone.
+ */
+function RetirementActions({ name, retiring, onRetire, onPersuade }: RetirementProps) {
+  const [isConfirming, setConfirming] = useState(false);
+  const [stays, setStays] = useState<boolean | null>(null);
+  return (
+    <section className="player-retire" aria-labelledby="retire-title">
+      <h2 id="retire-title" className="player-facts-title">
+        Fim de carreira
+      </h2>
+      {stays === true && <p className="player-retire-line is-good">{name} aceitou jogar mais um ano.</p>}
+      {retiring && stays !== true && (
+        <p className="player-retire-line">
+          {name} anunciou que {retiring.afterSeason} será sua última temporada.
+          {retiring.hasBeenAsked && " Você pediu mais um ano e ele não mudou de ideia."}
+        </p>
+      )}
+      <div className="player-retire-acts">
+        {retiring && !retiring.hasBeenAsked && stays === null && (
+          <button className="btn-main" onClick={() => void onPersuade().then(setStays)}>
+            Pedir mais um ano
+          </button>
+        )}
+        <button className="btn-quiet" onClick={() => setConfirming(true)} aria-expanded={isConfirming}>
+          Aposentar {name}
+        </button>
+        {isConfirming && (
+          <div
+            className="note player-retire-confirm"
+            role="alertdialog"
+            aria-labelledby="retire-confirm-title"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") setConfirming(false);
+            }}
+          >
+            <p id="retire-confirm-title">Aposentar {name} agora? Ele deixa o elenco e não volta.</p>
+            <button className="btn sm no" onClick={onRetire}>
+              Aposentar
+            </button>
+            <button className="btn sm" onClick={() => setConfirming(false)}>
+              Cancelar
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
