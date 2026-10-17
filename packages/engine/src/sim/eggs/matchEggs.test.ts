@@ -279,8 +279,10 @@ test("a red card inside the first ten minutes", () => {
   expect(sidesOf("early-red", { score: [0, 0], events: [red(AWAY, "a5", 11)] })).toEqual([]);
 });
 
-test("a goalkeeper sent off", () => {
+test("a goalkeeper sent off and his side still not beaten", () => {
   expect(sidesOf("keeper-sent-off", { score: [0, 0], events: [red(HOME, "gk", 50)], groups: { gk: "GK" } })).toEqual([HOME]);
+  expect(sidesOf("keeper-sent-off", { score: [1, 0], events: [red(HOME, "gk", 50), goal(HOME, "h", 60)], groups: { gk: "GK" } })).toEqual([HOME]);
+  expect(sidesOf("keeper-sent-off", { score: [0, 1], events: [red(HOME, "gk", 50), goal(AWAY, "a", 60)], groups: { gk: "GK" } })).toEqual([]);
   expect(sidesOf("keeper-sent-off", { score: [0, 0], events: [red(HOME, "zag", 50)], groups: { zag: "DEF" } })).toEqual([]);
 });
 

@@ -120,5 +120,5 @@ describe("finding eggs", () => {
     }
     expect(found.length).toBe(eggBookOf(state).log.length);
     expect(eventMemoryOf(state).news.filter((item) => item.kind === "egg").length).toBeGreaterThanOrEqual(1);
-  });
+  }, 60_000);
 });

@@ -539,7 +539,7 @@ export const EGG_BANK: readonly EggType[] = [
     id: "early-red",
     on: "match",
     title: "Banho mais cedo",
-    rarity: "rare",
+    rarity: "veryRare",
     look: "clipping",
     find: (tale) =>
       tale.events
@@ -552,16 +552,16 @@ export const EGG_BANK: readonly EggType[] = [
   {
     id: "keeper-sent-off",
     on: "match",
-    title: "Goleiro expulso",
+    title: "Sem goleiro, sem derrota",
     rarity: "veryRare",
     look: "clipping",
     find: (tale) =>
       tale.events
-        .filter((e) => e.type === "card" && e.card !== "yellow" && tale.groups[e.playerId] === "GK")
+        .filter((e) => e.type === "card" && e.card !== "yellow" && tale.groups[e.playerId] === "GK" && scoreFor(tale, e.clubId)[0] >= scoreFor(tale, e.clubId)[1])
         .slice(0, 1)
         .flatMap((e) => (e.type === "card" ? [{ clubId: e.clubId, playerId: e.playerId, slots: { player: nameOf(tale, e.playerId) } }] : [])),
-    note: "O goleiro {player} foi expulso.",
-    texts: [{ headline: "Goleiro {player} é expulso", body: "{score}. Alguém teve que vestir a camisa de goleiro." }],
+    note: "O goleiro {player} foi expulso e o {club} não perdeu.",
+    texts: [{ headline: "Sem o goleiro {player}, o {club} segura", body: "{score}. Expulso o goleiro, alguém da linha vestiu a camisa dele, e o time não perdeu." }],
   },
   {
     id: "assist-hat-trick",
@@ -649,7 +649,7 @@ export const EGG_BANK: readonly EggType[] = [
     id: "football-day",
     on: "day",
     title: "Dia do Futebol",
-    rarity: "rare",
+    rarity: "veryRare",
     look: "clipping",
     find: (scene) => (scene.date.endsWith("-07-19") && playsToday(scene) ? { clubId: scene.clubId } : null),
     texts: [{ headline: "{club} joga no Dia Nacional do Futebol", body: "19 de julho: em 1900 nascia o Sport Club Rio Grande, o clube mais antigo do Brasil ainda em atividade. A data virou o dia do futebol em 1976." }],
