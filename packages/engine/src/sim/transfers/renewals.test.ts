@@ -76,6 +76,17 @@ describe("a renewal the coach asks for", () => {
     expect(coachMarketOf(signed.state).renewalCounters?.[ours.id]).toBeUndefined();
   });
 
+  it("drops his counter once his contract changes before the coach takes it up", () => {
+    const veteran = withPlayer(rich, { age: 31 });
+    const hard = termOf(veteran, 12);
+    const countered = decideCoachRequest(veteran, { kind: "renew", playerId: ours.id, years: 1, wage: Math.round(hard.wage * 0.9) }, no);
+    expect(countered.events).toContainEqual({ type: "renewalCountered", playerId: ours.id, months: 12, wage: hard.wage });
+    const accept = { kind: "renew", playerId: ours.id, years: 1, wage: hard.wage } as const;
+    expect(decideCoachRequest(countered.state, accept, no).events[0]).toMatchObject({ approved: true });
+    const extended = withPlayer(countered.state, { age: 31, contractUntil: "2028-12-31" });
+    expect(decideCoachRequest(extended, accept, no).events[0]).toMatchObject({ approved: false, reason: "playerUnwilling" });
+  });
+
   it("is refused outright when the wage offered is far below his ask", () => {
     const { wage } = termOf(rich, 24);
     const { events } = decideCoachRequest(rich, { kind: "renew", playerId: ours.id, years: 2, wage: Math.round(wage / 2) }, yes);

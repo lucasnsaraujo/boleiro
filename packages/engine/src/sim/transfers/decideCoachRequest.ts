@@ -189,7 +189,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       const floor = isCounterMet ? offered : Math.round(term.wage * (1 - RENEWAL_GIVE[term.stance]));
       if (offered < floor) {
         if (offered < floor * RENEWAL_COUNTER_BAND) return refuse(state, request, "wageTooLow");
-        const counter = { months, wage: term.wage, until: addDays(state.date, COUNTER_DAYS) };
+        const counter = { months, wage: term.wage, until: addDays(state.date, COUNTER_DAYS), contractUntil: player.contractUntil };
         return {
           state: withCoachMarket(state, withRenewalCounter(coachMarketOf(state), player.id, counter)),
           events: [

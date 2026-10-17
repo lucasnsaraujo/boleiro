@@ -3,6 +3,7 @@ import { doesAssistantHandle, withAssistantDuty } from "../coach/assistantDuties
 import { EMPTY_MEMORY } from "../events/eventMemory.js";
 import type { ClubFinance, GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { coachMarketOf, withCoachMarket, withRenewalCounter } from "./coachMarket.js";
 import { assistantPick } from "./contractTerms.js";
 import { expireContracts } from "./expireContracts.js";
 import { nextAssistantReview } from "./assistantRenewals.js";
@@ -56,6 +57,15 @@ describe("the assistant's renewals", () => {
     const rich = withFinance(start, { wageCap: 1e10 });
     expect(renewalsOf(runTransferDay(on(rich, "2026-12-31", ending), []).events).map((e) => e.playerId)).toContain(star.id);
     expect(renewalsOf(runTransferDay(on(rich, "2026-03-02", ending), []).events)).toEqual([]);
+  });
+
+  it("leaves alone a player whose counter to the coach's offer still stands", () => {
+    const state = on(withFinance(start, { wageCap: 1e10 }), "2026-03-03", ending);
+    const counter = { months: 36, wage: ending.wage * 2, until: "2026-03-08", contractUntil: ending.contractUntil };
+    const inTalks = withCoachMarket(state, withRenewalCounter(coachMarketOf(state), star.id, counter));
+    const { state: after, events } = runTransferDay(inTalks, []);
+    expect(renewalsOf(events).map((e) => e.playerId)).not.toContain(star.id);
+    expect(after.players[star.id]?.contractUntil).toBe("2026-12-31");
   });
 
   it("does nothing for a coach who took contracts back", () => {
