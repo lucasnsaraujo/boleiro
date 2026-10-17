@@ -27,7 +27,7 @@ import { eventsOfWaitingCoach, hotSeatViewOf, isHumanMatchDay, type HotSeatView 
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { isCoachMatchDay, playToMatchDay, stopReason, type StopReason } from "../hub/playToMatchDay.js";
 import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
-import { boardNotes, dueRequests, EMPTY_DESK, withRequest, type BoardDesk } from "../market/boardDesk.js";
+import { boardNotes, dueRequests, EMPTY_DESK, withoutLeavers, withRequest, type BoardDesk } from "../market/boardDesk.js";
 import type { MarketFilters } from "../market/marketFilters.js";
 import { EMPTY_SCOUTING, forgetFilter, keepFilter, watch, type Scouting } from "../market/scouting.js";
 import { isSigning, marketClockView, spendMarketTime, type MarketClock, type MarketClockView } from "../market/marketClock.js";
@@ -362,10 +362,14 @@ export function createEngineSession(files: GameFiles) {
     live = { ...live, day: { ...live.day, decisions: { ...decisions, requests: change(decisions.requests ?? []) } } };
   }
 
-  /** The desk after a day: the board's notes added, and the pending requests dropped if the coach changed club, since they were for the old board. */
+  /**
+   * The desk after a day: the board's notes added, and the pending requests dropped if the coach changed
+   * club, since they were for the old board, or if their player left the game.
+   */
   function noted(on: BoardDesk, before: GameState, day: { state: GameState; events: DayEvent[] }): BoardDesk {
     const notes = boardNotes(before, day.state, day.events);
-    const pending = day.state.coachClubId === before.coachClubId ? on.pending : [];
+    const kept = day.state.coachClubId === before.coachClubId ? withoutLeavers(on.pending, day.state) : [];
+    const pending = kept.length === on.pending.length ? on.pending : kept;
     if (!notes.answers.length && !notes.forcedSales.length) return pending === on.pending ? on : { ...on, pending };
     return {
       pending,
@@ -621,6 +625,7 @@ export function createEngineSession(files: GameFiles) {
       const before = betweenDays("a player can't be retired");
       const retired = retirePlayer(before, playerId);
       state = retired.state;
+      desk = { ...desk, pending: withoutLeavers(desk.pending, retired.state) };
       addNews(inboxLines(before, retired.state, [retired.event]));
     },
     persuadeToStay({ playerId }) {

@@ -43,3 +43,14 @@ test("a player can't be retired during a match day", () => {
   const [player] = Object.values(game.read(["players"]).players).filter((p) => p.clubId === CLUB);
   expect(() => game.apply({ type: "retirePlayer", playerId: player?.id ?? "" })).toThrow(/match day is under way/);
 });
+
+test("a request on the board's desk for a player who retires leaves it, and the board never answers it", () => {
+  const game = session();
+  const [player] = Object.values(game.read(["players"]).players).filter((p) => p.clubId === CLUB);
+  if (!player) throw new Error("no Flamengo player");
+  game.apply({ type: "ask", request: { kind: "sell", playerId: player.id } });
+  game.apply({ type: "retirePlayer", playerId: player.id });
+  expect(game.desk().pending).toEqual([]);
+  game.apply({ type: "playToMatchDay" });
+  expect(game.desk().answers.filter((a) => a.request.playerId === player.id)).toEqual([]);
+});
