@@ -3,6 +3,7 @@ import { addDays } from "../dates.js";
 import { bookMoney } from "../finances/bookMoney.js";
 import type { GameState, IsoDate } from "../gameState.js";
 import { clubMood } from "../morale/clubMood.js";
+import { CLASH_HEAT, recordPressClash } from "../rivalries/coachRivalries.js";
 import { eventMemoryOf, rivalryKey, type Cast, type Effects } from "./eventMemory.js";
 
 // The board's meter is half full on target and empties as its pressure grows by 2 (hubSelectors' boardConfidence),
@@ -13,7 +14,7 @@ const PRESSURE_RANGE = { min: -1, max: 2 };
 
 const meter = (value: number) => Math.min(100, Math.max(0, value));
 
-/** The game after an event's effects land on `clubId`: its mood, board, cash, a player out and the rivalry's heat. */
+/** The game after an event's effects land on `clubId`: its mood, board, cash, a player out, the rivalry's heat and, for a provocation, a clash with the rival's coach. */
 export function applyEffects(state: GameState, clubId: string, cast: Cast, effects: Effects, date: IsoDate): GameState {
   let next = state;
   if (effects.morale || effects.fans) {
@@ -41,6 +42,7 @@ export function applyEffects(state: GameState, clubId: string, cast: Cast, effec
     const memory = eventMemoryOf(next);
     const key = rivalryKey(clubId, cast.rivalId);
     next = { ...next, eventMemory: { ...memory, rivalry: { ...memory.rivalry, [key]: Math.max(0, (memory.rivalry[key] ?? 0) + effects.rivalry) } } };
+    if (effects.rivalry >= CLASH_HEAT) next = recordPressClash(next, clubId, cast.rivalId);
   }
   return next;
 }

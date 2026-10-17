@@ -11,6 +11,8 @@ import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { ClubSticker, clubColours, EventMark, GoalNote, LiveChip, RollingDigit, refereeLine, StatBar, venueLine } from "./matchFileParts.js";
 import { MatchPitch } from "./MatchPitch.js";
 import { MatchSheet } from "./MatchSheet.js";
+import { DerbyBadge } from "../rivalries/DerbyBadge.js";
+import { duelLine } from "../rivalries/duelLine.js";
 import "./matchFile.css";
 
 // The panel and the sheet leave over this long before they unmount.
@@ -158,7 +160,13 @@ function MatchPanel({ page, view, isReturning, isLeaving, onFull, onClose, onSub
           </div>
           <ClubSticker page={page} side="away" />
         </div>
+        {page.derby && (
+          <div className="mf-derby">
+            <DerbyBadge rivalry={page.derby} isNamed />
+          </div>
+        )}
         <p className="mf-venue">{venueLine(page).join(" · ")}</p>
+        {page.coachDuel && <p className="mf-venue mf-duel">{duelLine(page.coachDuel)}</p>}
         {refereeLine(page) && <p className="mf-venue mf-ref">{refereeLine(page)}</p>}
         {goals.length > 0 && (
           <ol className="mf-goals" aria-label="Gols">

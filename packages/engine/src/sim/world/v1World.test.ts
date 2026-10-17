@@ -43,7 +43,7 @@ function playSeason(first: GameState) {
 
 // The season before FIFA's 2029 edition, which the game's titles draw, then the edition's.
 describe("two seasons of the v1 world", () => {
-  const start = loadNewGame(9, { coachClubId: "flamengo-rj", world, guests, season: 2028 });
+  const start = loadNewGame(15, { coachClubId: "flamengo-rj", world, guests, season: 2028 });
   const before = playSeason(start);
   const { lastDay, next, paidUsd, seconds } = playSeason(before.next);
   const cup = clubWorldCupOf(lastDay);

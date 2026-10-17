@@ -3,6 +3,8 @@ import { addDays } from "../dates.js";
 import type { Fixture, SimPlayer } from "../gameState.js";
 import { clubMood } from "../morale/clubMood.js";
 import { rivalsOf } from "../morale/rivalsOf.js";
+import { BLOCK_FROM_INTENSITY } from "../rivalries/idols.js";
+import { rivalryOf } from "../rivalries/rivalryOf.js";
 import { isInjured } from "../players/isInjured.js";
 import { tierOf } from "../finances/tierOf.js";
 import { eventMemoryOf, rivalryKey, type Cast } from "./eventMemory.js";
@@ -57,12 +59,14 @@ function heatOf(scene: EventScene, cast: Cast): number {
   return cast.rivalId ? (eventMemoryOf(scene.state).rivalry[rivalryKey(scene.clubId, cast.rivalId)] ?? 0) / HEAT_PER_WEIGHT : 0;
 }
 
-/** A rival of the club: the one it played today when it did, else any of them. */
+/** A rival of the club: the one it played today when it did, else one of its big derby rivals (any, if it has none that big). */
 function rivalCast(scene: EventScene): Cast | null {
-  const rivals = [...(rivalsOf(scene.state.clubs).get(scene.clubId) ?? [])].sort();
+  const every = [...(rivalsOf(scene.state.clubs).get(scene.clubId) ?? [])].sort();
+  const big = every.filter((id) => (rivalryOf(scene.clubId, id)?.intensity ?? 0) >= BLOCK_FROM_INTENSITY);
+  const rivals = big.length ? big : every;
   const today = playedToday(scene);
   const opponent = today && (today.homeId === scene.clubId ? today.awayId : today.homeId);
-  const rivalId = opponent && rivals.includes(opponent) ? opponent : pickFrom(scene, rivals);
+  const rivalId = opponent && every.includes(opponent) ? opponent : pickFrom(scene, rivals);
   return rivalId ? { rivalId } : null;
 }
 

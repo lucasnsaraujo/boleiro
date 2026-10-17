@@ -42,6 +42,7 @@ import copaDoBrasil from "../../../../design/mocks/img/competitions/copa-do-bras
 import serieA from "../../../../design/mocks/img/competitions/serie-a.svg";
 import serieB from "../../../../design/mocks/img/competitions/serie-b.svg";
 import "./round.css";
+import { DerbyBadgeOf } from "../rivalries/DerbyBadge.js";
 
 type Speed = 0 | 1 | 2 | 4;
 type Running = Exclude<Speed, 0>;
@@ -1018,7 +1019,10 @@ const MatchRow = memo(function MatchRow({ match, clubs, flash, alert, isHidden, 
     <li className={match.isHuman ? "live-r human" : "live-r"} hidden={isHidden} aria-label={`${home.shortName} ${match.score.home} x ${match.score.away} ${away.shortName}`}>
       {flash && <i key={flash.count} className="flash" style={{ background: `linear-gradient(90deg, transparent 12%, ${flash.colour} 40%, transparent 95%)` }} />}
       <button type="button" className="live-open" aria-label={`Ficha do jogo: ${home.shortName} x ${away.shortName}`} onClick={() => onOpen(match.fixtureId)} />
-      <span className="std">{match.ground ?? home.stadium}</span>
+      <span className="std">
+        <DerbyBadgeOf homeId={match.homeId} awayId={match.awayId} />
+        <span className="std-nm">{match.ground ?? home.stadium}</span>
+      </span>
       <RowPlate club={home} red={match.reds.home > 0} />
       <Digit value={match.score.home} className={lead("home") ? "sbox lead" : "sbox"} flash={flash?.side === "home" ? flash.colour : undefined} isSettled={!flash} />
       <Digit value={match.score.away} className={lead("away") ? "sbox lead" : "sbox"} flash={flash?.side === "away" ? flash.colour : undefined} isSettled={!flash} />

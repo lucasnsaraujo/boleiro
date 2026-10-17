@@ -120,8 +120,17 @@ export function exitWord(left: ProfileStint["left"]): string {
   }
 }
 
-/** Why a club with an open job would turn the coach down, under its verdict. */
-export const REFUSAL_WORDS: Record<Refusal, string> = { tooBig: "quer um nome maior", notWelcome: "não esqueceu sua saída" };
+/** Why a club with an open job would turn the coach down, under its verdict; `idolOf` names the rival club he is an idol of. */
+export function jobRefusalText(refusal: Refusal, idolOf: string): string {
+  switch (refusal) {
+    case "tooBig":
+      return "quer um nome maior";
+    case "notWelcome":
+      return "não esqueceu sua saída";
+    case "rivalIdol":
+      return `não contrata ídolo do ${idolOf}`;
+  }
+}
 
 /** What a club answered the coach's application, for the toast. */
 export function answerText(answer: JobAnswer, club: string): string {
@@ -132,6 +141,8 @@ export function answerText(answer: JobAnswer, club: string): string {
       return `${club} quer um nome maior.`;
     case "notWelcome":
       return `${club} não esqueceu sua saída. Ainda não é bem-vindo.`;
+    case "rivalIdol":
+      return `${club} não contrata ídolo de rival. A torcida não aceitaria.`;
     case "alreadyOffered":
       return `${club} já fez uma proposta. Ela está em Propostas.`;
     case "noOpening":

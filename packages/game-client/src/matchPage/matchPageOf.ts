@@ -11,6 +11,9 @@ import type { MatchPlay } from "@boleiro/engine/sim/live/matchPlay";
 import { matchRatings } from "@boleiro/engine/sim/live/matchRatings";
 import { hasExtraTimeIn, scorersFor, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import { regenerateMatch } from "@boleiro/engine/sim/live/regenerateMatch";
+import { coachKeyAt, coachNameOf } from "@boleiro/engine/sim/rivalries/coachRivalries";
+import { pairKeyOf, rivalryMemoryOf } from "@boleiro/engine/sim/rivalries/rivalryMemory";
+import { rivalryOf, type Rivalry } from "@boleiro/engine/sim/rivalries/rivalryOf";
 import { standings } from "@boleiro/engine/sim/standings";
 import { leagueMatches } from "@boleiro/engine/sim/world/resultOnlyLeague";
 import { competitionName, fixtureLabel } from "../format/competitionName.js";
@@ -25,6 +28,9 @@ export type PagePlayer = { id: string; name: string; group: PositionGroup; stren
 export type TablePlace = { before: number; after: number | null };
 
 export type PageSide = { club: RoundClub; formation: Formation; starters: PagePlayer[]; bench: PagePlayer[]; place: TablePlace | null };
+
+/** The two coaches' record against each other before or after this match, when a human coach is one of them and they have met: their names, each one's wins and the draws. */
+export type CoachDuel = { home: string; away: string; meetings: number; homeWins: number; awayWins: number; draws: number };
 
 /** An earlier meeting of the two clubs this season. */
 export type Meeting = { date: IsoDate; homeId: string; awayId: string; homeGoals: number; awayGoals: number };
@@ -58,6 +64,9 @@ export type MatchPage = {
   curiosities: string[];
   /** The easter eggs the match laid, once it is over; a match told again shows only those the egg book wrote down. */
   eggs: EggNote[];
+  /** The derby the match is, with its name and intensity; null for an ordinary match. */
+  derby?: Rivalry | null;
+  coachDuel?: CoachDuel | null;
 };
 
 const WORLD_REF = "world:";
@@ -141,6 +150,16 @@ function venueOf(state: GameState, fixture: Fixture, club: RoundClub): MatchPage
   if (booked) return { stadium, crowd: booked.crowd, gate: booked.gate };
   const crowd = attendance(state, finance, fixture.homeId, fixture.awayId, fixture);
   return { stadium, crowd, gate: Math.round(crowd * finance.ticketPrice) };
+}
+
+/** The record of the coaches on the two benches, from a human coach's rivalries as the game stands. */
+function coachDuelOf(state: GameState, fixture: Fixture): CoachDuel | null {
+  const home = coachKeyAt(state, fixture.homeId);
+  const away = coachKeyAt(state, fixture.awayId);
+  const rivalry = home && away ? rivalryMemoryOf(state).coaches[pairKeyOf(home, away)] : undefined;
+  if (!home || !away || !rivalry) return null;
+  const winsOf = (key: string) => (key === rivalry.a ? rivalry.aWins : rivalry.bWins);
+  return { home: coachNameOf(state, home), away: coachNameOf(state, away), meetings: rivalry.meetings, homeWins: winsOf(home), awayWins: winsOf(away), draws: rivalry.draws };
 }
 
 /** Who started and who could come on, from the match's play: the starters first in the play's order. */
@@ -248,5 +267,7 @@ export function matchPageOf(state: GameState, ref: string, live: { day: LiveDay;
     meetings: meetingsOf(located),
     curiosities,
     eggs: isLive || !result ? [] : matchEggNotes(state, before.history, { ...fixture, result }, real ? story : null),
+    derby: rivalryOf(fixture.homeId, fixture.awayId),
+    coachDuel: coachDuelOf(state, fixture),
   };
 }
