@@ -9,6 +9,7 @@ import type { WaitingCoach } from "./coach/humanCoaches.js";
 import type { Discipline, MatchCards } from "./discipline/discipline.js";
 import type { Friendly } from "./friendlies/friendlies.js";
 import type { History } from "./history/history.js";
+import type { RivalryMemory } from "./rivalries/rivalryMemory.js";
 import type { ClubMood } from "./morale/clubMood.js";
 import type { PlayerProfile } from "./players/playerProfile.js";
 import type { TransferMarket } from "./transfers/transferMarket.js";
@@ -263,4 +264,6 @@ export type GameState = {
   coaches?: CoachWorld;
   /** Each club's chemistry between matches, from its first match in the game; a save from before chemistry has none. */
   chemistry?: Record<string, ClubChemistry>;
+  /** The human coaches' rivalries with other coaches and the derbies they won; a save from before rivalries has none. */
+  rivalries?: RivalryMemory;
 };

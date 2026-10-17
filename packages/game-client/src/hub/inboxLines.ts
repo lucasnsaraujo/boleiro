@@ -39,6 +39,8 @@ const REFUSALS: Record<string, string> = {
   windowClosed: "janela fechada",
   playerUnwilling: "o jogador não quer vir",
   sellerWillNotSell: "o clube dele não vende",
+  rivalWillNotSell: "o clube dele não negocia com ídolo de rival",
+  idolRefusesRival: "ídolo do clube dele, ele não veste a camisa do rival",
   noBuyer: "ninguém fez proposta",
   noBorrower: "nenhum clube quis",
   lenderNotBigger: "o clube dele não é maior que o nosso",

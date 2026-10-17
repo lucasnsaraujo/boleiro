@@ -6,6 +6,10 @@ import { addDays } from "../dates.js";
 import type { Fixture, GameState, IsoDate } from "../gameState.js";
 import type { MatchSheets } from "../history/recordMatches.js";
 import { rivalsOf } from "../morale/rivalsOf.js";
+import { coachKeyAt, coachNameOf, coachRivalryScore, freguesOf, humanCoachesOf, RIVALRY_POINTS } from "../rivalries/coachRivalries.js";
+import { BLOCK_FROM_INTENSITY, idolClubsOf } from "../rivalries/idols.js";
+import { pairKeyOf, rivalryMemoryOf } from "../rivalries/rivalryMemory.js";
+import { rivalryOf } from "../rivalries/rivalryOf.js";
 import { reviewLength, type VarDecision, type WrongCallKind } from "../referees/refereeCalls.js";
 import { eventMemoryOf, type NewsItem, type NewsKind } from "./eventMemory.js";
 
@@ -53,6 +57,16 @@ const DERBIES: readonly Variant[] = [
   (n) => ({ headline: `Clássico é do ${n.winner}`, body: `${n.score}. O ${n.loser} ouve a provocação até o próximo encontro.` }),
 ];
 const DERBY_DRAWS: readonly Variant[] = [(n) => ({ headline: `${n.home} e ${n.away} empatam o clássico`, body: `${n.score}. O clássico fica sem dono desta vez.` })];
+const REUNIONS: readonly Variant[] = [
+  (n) => ({ headline: `Reencontro: ${n.coach} e ${n.rival} frente a frente de novo`, body: `${n.score}. Foi o ${n.meetings}º duelo entre os dois: ${n.record}.` }),
+  (n) => ({ headline: `Reencontro de velhos rivais à beira do campo`, body: `${n.coach} e ${n.rival} se enfrentaram pela ${n.meetings}ª vez. ${n.score}; ${n.record}.` }),
+];
+const FREGUESIAS: readonly Variant[] = [
+  (n) => ({ headline: `Freguesia: ${n.winner} vence ${n.loser} pela ${n.wins}ª vez`, body: `${n.score}. Em ${n.meetings} jogos, ${n.loser} ainda não sabe o que é ganhar de ${n.winner}.` }),
+];
+const BOOS: readonly Variant[] = [
+  (n) => ({ headline: `Torcida do ${n.home} vaia ${n.coach}`, body: `Ídolo do ${n.idolOf}, ${n.coach} ouviu vaias do começo ao fim. ${n.score}.` }),
+];
 const WINS: readonly Variant[] = [
   (n) => ({ headline: `${n.winner} vence o ${n.loser}`, body: `${n.score}. ${n.goals}` }),
   (n) => ({ headline: `${n.winner} passa pelo ${n.loser}`, body: `${n.score}. ${n.goals}` }),
@@ -110,8 +124,8 @@ function goalsLine(state: GameState, sheets: MatchSheets, fixture: Fixture): str
 }
 
 /**
- * The day's stories for the round's newspaper: the human coaches' matches, signings, sackings, upsets
- * and derbies. They go into the event memory's archive, which keeps about five months.
+ * The day's stories for the round's newspaper: the human coaches' matches and their duels with rival
+ * coaches, signings, sackings, upsets and derbies. They go into the event memory's archive, which keeps about five months.
  */
 export function recordNews(state: GameState, date: IsoDate, events: readonly DayEvent[], sheets: MatchSheets): GameState {
   const humans = new Set(humanClubIds(state));
@@ -126,6 +140,32 @@ export function recordNews(state: GameState, date: IsoDate, events: readonly Day
   const stories: { story: NewsItem; rank: number }[] = [];
   const add = (kind: NewsKind, clubIds: string[], rank: number, text: { headline: string; body: string }) => stories.push({ story: { date, kind, clubIds, ...text }, rank });
   const rivals = rivalsOf(state.clubs);
+  const humanCoaches = humanCoachesOf(state);
+  /** The coaches' side of a human coach's match: a reencontro of rivals, a freguesia, a rival crowd booing an idol. */
+  const addCoachStories = (fixture: Fixture, winner: string | null, names: Record<string, string>) => {
+    const home = coachKeyAt(state, fixture.homeId);
+    const away = coachKeyAt(state, fixture.awayId);
+    const rivalry = home && away ? rivalryMemoryOf(state).coaches[pairKeyOf(home, away)] : undefined;
+    if (home && away && rivalry) {
+      const [coach, rival] = humans.has(fixture.homeId) ? [home, away] : [away, home];
+      const winnerKey = winner === fixture.homeId ? home : winner === fixture.awayId ? away : null;
+      const fregues = freguesOf(rivalry);
+      const ofKey = (key: string) => (key === rivalry.a ? rivalry.aWins : rivalry.bWins);
+      const record = `${coachNameOf(state, coach)} ${ofKey(coach)} vitórias, ${coachNameOf(state, rival)} ${ofKey(rival)}, ${rivalry.draws} empates`;
+      const told = { ...names, coach: coachNameOf(state, coach), rival: coachNameOf(state, rival), meetings: String(rivalry.meetings), record };
+      if (fregues && winnerKey && fregues !== winnerKey && rivalry.lastMet === date) {
+        const loser = fregues;
+        add("rivalry", [fixture.homeId, fixture.awayId], 10, pick(FREGUESIAS, `fregues:${fixture.id}`, { ...told, winner: coachNameOf(state, winnerKey), loser: coachNameOf(state, loser), wins: String(ofKey(winnerKey)) }));
+      } else if (coachRivalryScore(rivalry) >= RIVALRY_POINTS) {
+        add("rivalry", [fixture.homeId, fixture.awayId], 10, pick(REUNIONS, `reunion:${fixture.id}`, told));
+      }
+    }
+    for (const coach of humanCoaches) {
+      if (!coach.clubId || coach.clubId !== fixture.awayId) continue;
+      const idolOf = idolClubsOf(state, coach).find((clubId) => (rivalryOf(clubId, fixture.homeId)?.intensity ?? 0) >= BLOCK_FROM_INTENSITY);
+      if (idolOf) add("rivalry", [fixture.homeId, coach.clubId], 10, pick(BOOS, `boo:${fixture.id}`, { ...names, coach: coach.name || "o técnico", idolOf: name(idolOf) }));
+    }
+  };
 
   for (const event of events) {
     if (event.type === "matchPlayed") {
@@ -141,6 +181,7 @@ export function recordNews(state: GameState, date: IsoDate, events: readonly Day
         const variants = winner === null ? DRAWS : Math.abs(margin) >= 3 ? BIG_WINS : WINS;
         add("match", [homeId, awayId], 0, pick(variants, fixture.id, names));
       }
+      if (humans.has(homeId) || humans.has(awayId)) addCoachStories(fixture, winner, names);
       const isDerby = rivals.get(homeId)?.has(awayId) ?? false;
       if (isDerby && (isMajor(homeId) || isMajor(awayId))) add("rivalry", winner && loser ? [winner, loser] : [homeId, awayId], 1, pick(winner ? DERBIES : DERBY_DRAWS, `derby:${fixture.id}`, names));
       if (!winner || !loser) continue;

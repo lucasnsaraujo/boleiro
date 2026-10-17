@@ -10,7 +10,7 @@ import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { clubFaceOf, plateColours, type ClubFace } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
-import { answerText, countryName, exitWord, nationalityName, REFUSAL_WORDS, STYLE_WORDS, titleName } from "../coaches/coachWords.js";
+import { answerText, countryName, exitWord, nationalityName, jobRefusalText, STYLE_WORDS, titleName } from "../coaches/coachWords.js";
 import { Select } from "../controls/Select.js";
 import { usePlayRound } from "../hub/usePlayRound.js";
 import { useFlip } from "../motion/useFlip.js";
@@ -514,8 +514,8 @@ function JobCentre({
                   ) : job.openedOn ? (
                     <>
                       <span className={job.wouldHire ? "coaches-verdict is-yes" : "coaches-verdict"}>
-                        {job.wouldHire ? "aceitaria você" : "fora do alcance"}
-                        {job.refusal && <small id={`coaches-why-${job.clubId}`}>{REFUSAL_WORDS[job.refusal]}</small>}
+                        {job.wouldHire ? "aceitaria você" : job.refusal === "rivalIdol" ? "porta fechada" : "fora do alcance"}
+                        {job.refusal && <small id={`coaches-why-${job.clubId}`}>{jobRefusalText(job.refusal, state.clubs[job.idolOf ?? ""]?.shortName ?? "rival")}</small>}
                       </span>
                       <button
                         className="btn sm go"
