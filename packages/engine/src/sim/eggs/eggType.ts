@@ -16,8 +16,11 @@ type EggText = { headline: string; body: string };
 /** One of a human coach's club's matches, played, as the eggs read it. */
 export type MatchTale = {
   fixture: Fixture & { result: MatchResult };
-  /** The last tie of a knockout competition. */
-  isFinal: boolean;
+  /**
+   * When the match is the last of its competition's final: the club that won the final's tie (on
+   * aggregate over both legs, or on penalties) and by how many goals, none when penalties decided it.
+   */
+  final: { championId: string; margin: number } | null;
   isDerby: boolean;
   events: readonly MatchEvent[];
   /** The position group of everyone who took part, by player id. */

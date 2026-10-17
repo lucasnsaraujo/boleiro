@@ -3,16 +3,21 @@ import type { Fixture, GameState, MatchResult } from "../gameState.js";
 import type { MatchPlay } from "../live/matchPlay.js";
 import type { MatchEvent } from "../live/matchTimeline.js";
 import { rivalsOf } from "../morale/rivalsOf.js";
+import { aggregate, tieResults } from "../tieResults.js";
 import type { MatchTale } from "./eggType.js";
 import { woodworkOf } from "./woodwork.js";
 
 type Story = { events: readonly MatchEvent[]; play: MatchPlay | null };
 
-/** Whether the fixture is the last match of its competition's final. */
-function isFinalOf(state: Pick<GameState, "competitions" | "fixtures">, fixture: Fixture): boolean {
+/** The final's champion and its margin over the tie's legs, when the fixture is the last match of its competition's final. */
+function finalOf(state: Pick<GameState, "competitions" | "fixtures">, fixture: Fixture & { result: MatchResult }): MatchTale["final"] {
   const stage = state.competitions[fixture.competitionId]?.stages[fixture.stage];
-  if (stage?.kind !== "knockout" || stage.ties.length !== 1) return false;
-  return !state.fixtures.some((f) => f.competitionId === fixture.competitionId && f.stage === fixture.stage && f.date > fixture.date);
+  if (stage?.kind !== "knockout" || stage.ties.length !== 1) return null;
+  const legs = state.fixtures.filter((f) => f.competitionId === fixture.competitionId && f.stage === fixture.stage && f.id !== fixture.id);
+  if (legs.some((f) => f.date > fixture.date)) return null;
+  const [tie] = tieResults(stage, [...legs, fixture]);
+  if (!tie) return null;
+  return { championId: tie.winnerId, margin: aggregate(tie.winnerId, [...legs, fixture]) - aggregate(tie.loserId, [...legs, fixture]) };
 }
 
 /**
@@ -54,7 +59,7 @@ export function matchTaleOf(
   const debutants = new Set([...scorers].filter((playerId) => clubOf[playerId] && isDebut(history, clubOf[playerId], playerId)));
   return {
     fixture,
-    isFinal: isFinalOf(state, fixture),
+    final: finalOf(state, fixture),
     isDerby: rivalsOf(state.clubs).get(fixture.homeId)?.has(fixture.awayId) ?? false,
     events: story.events,
     groups,

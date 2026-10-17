@@ -15,6 +15,9 @@ type TaleFields = {
   ages?: Record<string, number>;
   names?: Record<string, string>;
   isFinal?: boolean;
+  /** The final's champion and its winning margin over the tie, when it differs from this match's. */
+  champion?: { clubId: string; margin: number };
+  isAfterExtraTime?: boolean;
   isDerby?: boolean;
   debutants?: string[];
   date?: string;
@@ -43,9 +46,11 @@ function tale(fields: TaleFields): MatchTale {
       date: fields.date ?? "2026-05-10",
       homeId: HOME,
       awayId: AWAY,
-      result: { homeGoals, awayGoals, ...(fields.penaltyWinnerId ? { penaltyWinnerId: fields.penaltyWinnerId } : {}) },
+      result: { homeGoals, awayGoals, ...(fields.penaltyWinnerId ? { penaltyWinnerId: fields.penaltyWinnerId } : {}), ...(fields.isAfterExtraTime ? { isAfterExtraTime: true } : {}) },
     },
-    isFinal: fields.isFinal ?? false,
+    final: fields.isFinal
+      ? { championId: fields.champion?.clubId ?? fields.penaltyWinnerId ?? (homeGoals > awayGoals ? HOME : AWAY), margin: fields.champion?.margin ?? Math.abs(homeGoals - awayGoals) }
+      : null,
     isDerby: fields.isDerby ?? false,
     events: fields.events ?? [],
     groups: fields.groups ?? {},
@@ -221,6 +226,18 @@ test("a final won by a goal in stoppage time", () => {
   expect(sidesOf("final-stoppage-winner", { score: [2, 1], isFinal: true, events: [goal(HOME, "h", 10), goal(AWAY, "a", 50), goal(HOME, "h", 90)] })).toEqual([HOME]);
   expect(sidesOf("final-stoppage-winner", { score: [2, 1], isFinal: false, events: [goal(HOME, "h", 10), goal(AWAY, "a", 50), goal(HOME, "h", 90)] })).toEqual([]);
   expect(sidesOf("final-stoppage-winner", { score: [3, 1], isFinal: true, events: [goal(HOME, "h", 10), goal(HOME, "h", 50), goal(AWAY, "a", 60), goal(HOME, "h", 90)] })).toEqual([]);
+});
+
+test("a two-legged final's late winner on the night is the title goal only for the club that lifts the cup by that one goal on aggregate", () => {
+  const night = [goal(HOME, "h", 10), goal(AWAY, "a", 50), goal(HOME, "h", 90)];
+  expect(sidesOf("final-stoppage-winner", { score: [2, 1], isFinal: true, champion: { clubId: AWAY, margin: 1 }, events: night })).toEqual([]);
+  expect(sidesOf("final-stoppage-winner", { score: [2, 1], isFinal: true, champion: { clubId: HOME, margin: 2 }, events: night })).toEqual([]);
+  expect(sidesOf("final-stoppage-winner", { score: [2, 1], isFinal: true, champion: { clubId: HOME, margin: 1 }, events: night })).toEqual([HOME]);
+});
+
+test("a final won in extra time has no stoppage-time title goal", () => {
+  const extra = [goal(HOME, "h", 10), goal(AWAY, "a", 50), goal(HOME, "h", 112)];
+  expect(sidesOf("final-stoppage-winner", { score: [2, 1], isFinal: true, isAfterExtraTime: true, events: extra })).toEqual([]);
 });
 
 test("one player hitting the woodwork three times", () => {

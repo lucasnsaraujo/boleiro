@@ -61,7 +61,6 @@ function scoreBefore90(tale: MatchTale, clubId: string): [number, number] {
 
 const kicksIn = (tale: MatchTale) => tale.events.filter((e): e is Extract<MatchEvent, { type: "shootoutKick" }> => e.type === "shootoutKick");
 const dayOf = (tale: MatchTale) => tale.fixture.date.slice(5);
-const winnerOf = (tale: MatchTale) => sidesOf(tale).find((clubId) => hasWon(tale, clubId));
 
 // guess: about one season in six, the trials bring a kid named after the coach, and one in six kids named after the cousins.
 const NAMESAKE_CHANCE = 1 / 6;
@@ -413,11 +412,10 @@ export const EGG_BANK: readonly EggType[] = [
     rarity: "legendary",
     look: "page",
     find: (tale) => {
-      const winner = winnerOf(tale);
       const last = goalsIn(tale).at(-1);
-      if (!tale.isFinal || !winner || !last || last.clubId !== winner || last.minute < 90 || tale.fixture.result.penaltyWinnerId) return [];
-      const [own, other] = scoreFor(tale, winner);
-      return own - other === 1 ? [{ clubId: winner }] : [];
+      if (!tale.final || tale.fixture.result.isAfterExtraTime || !last || last.minute < 90) return [];
+      const { championId, margin } = tale.final;
+      return last.clubId === championId && margin === 1 ? [{ clubId: championId }] : [];
     },
     note: "O gol do título saiu depois dos 89 minutos.",
     texts: [{ headline: "{club} campeão no último minuto", body: "{score}. O gol do título saiu quando o relógio já tinha passado dos 89." }],
