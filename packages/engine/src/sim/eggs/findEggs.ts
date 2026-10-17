@@ -86,15 +86,16 @@ function record(state: GameState, date: IsoDate, finds: readonly Found[], humans
 export type EggNote = { eggId: string; title: string; rarity: EggRarity; look: EggLook; text: string };
 
 /**
- * The eggs of a played match for its page: those its story lays (its timeline and play, real or told
- * again, read against `history` as it stood before the match), then any other the book wrote down for it.
+ * The eggs of a played match for its page: those its real story lays (its timeline and play, read
+ * against `history` as it stood before the match), then any other the book wrote down for it. A match
+ * told again from its seed (`story` null) has scorers drawn anew, so only the book speaks for it.
  */
-export function matchEggNotes(state: GameState, history: GameState["history"], fixture: Played, story: Parameters<typeof matchTaleOf>[3], bank: readonly EggType[] = EGG_BANK): EggNote[] {
+export function matchEggNotes(state: GameState, history: GameState["history"], fixture: Played, story: Parameters<typeof matchTaleOf>[3] | null, bank: readonly EggType[] = EGG_BANK): EggNote[] {
   const humans = humansOf(state);
-  const tale: MatchTale = matchTaleOf(state, history, fixture, story, humans.map((human) => human.name).filter(Boolean));
+  const tale: MatchTale | null = story && matchTaleOf(state, history, fixture, story, humans.map((human) => human.name).filter(Boolean));
   const notes: EggNote[] = [];
   for (const egg of bank) {
-    const hit = egg.on === "match" ? egg.find(tale)[0] : undefined;
+    const hit = tale && egg.on === "match" ? egg.find(tale)[0] : undefined;
     if (egg.on === "match" && hit) notes.push({ eggId: egg.id, title: egg.title, rarity: egg.rarity, look: egg.look, text: fillSlots(egg.note, slotsOf(state, hit, fixture, humans)) });
   }
   for (const find of eggsOfMatch(state, fixture.id)) {

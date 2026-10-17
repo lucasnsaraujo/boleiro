@@ -22,8 +22,8 @@ test("a played match's page tapes the eggs the book wrote down for it, and anoth
   expect(matchPageOf(booked, theirs.id, null)?.eggs.some((note) => note.eggId === "olympic-goal")).toBe(false);
 });
 
-test("a played 7–1 tapes the special page's note", () => {
+test("a match told again from its seed tapes only the eggs the book wrote down, not ones its retelling would lay", () => {
   if (!ours) throw new Error("the club has matches");
   const seven = { ...played(), fixtures: fresh.fixtures.map((f) => (f.id === ours.id ? { ...f, result: { homeGoals: 7, awayGoals: 1 } } : f)) };
-  expect(matchPageOf(seven, ours.id, null)?.eggs.map((note) => note.eggId)).toContain("seven-one");
+  expect(matchPageOf(seven, ours.id, null)?.eggs).toEqual([]);
 });

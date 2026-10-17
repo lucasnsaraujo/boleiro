@@ -56,7 +56,7 @@ export type MatchPage = {
   officials: Officials;
   meetings: Meeting[];
   curiosities: string[];
-  /** The easter eggs the match laid, once it is over. */
+  /** The easter eggs the match laid, once it is over; a match told again shows only those the egg book wrote down. */
   eggs: EggNote[];
 };
 
@@ -247,6 +247,6 @@ export function matchPageOf(state: GameState, ref: string, live: { day: LiveDay;
     officials: officialsOf(state, fixture),
     meetings: meetingsOf(located),
     curiosities,
-    eggs: isLive || !result ? [] : matchEggNotes(state, before.history, { ...fixture, result }, story),
+    eggs: isLive || !result ? [] : matchEggNotes(state, before.history, { ...fixture, result }, real ? story : null),
   };
 }
