@@ -45,8 +45,6 @@ export type RenewalOption = ContractTerm & {
   total: number;
   billAfter: number;
   clauseAfter: number;
-  /** Whether the board's wage cap has room for it. */
-  fitsCap: boolean;
   isAssistantPick: boolean;
 };
 
@@ -126,7 +124,6 @@ export function renewalSheet(state: ContractsState, playerId: string): RenewalSh
       total: term.wage * term.months,
       billAfter,
       clauseAfter: releaseClauseOf({ ...player, wage: term.wage }, tier, state.market.eurBrl),
-      fitsCap: term.wage <= player.wage || billAfter <= finance.wageCap,
       isAssistantPick: term === pick,
     };
   });
