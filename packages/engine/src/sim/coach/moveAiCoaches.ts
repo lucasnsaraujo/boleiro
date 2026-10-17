@@ -23,7 +23,7 @@ const FIT_RANGE = 20;
  * CIES counted 484 of 850 teams in 2022/23 (56.9%) across its leagues
  * (https://football-observatory.com/Less-than-one-in-two-coaches-finished-the-season).
  */
-const MONTHLY_SACKING = 0.09;
+const MONTHLY_SACKING = 0.115;
 const UNDERPERFORMANCE_WEIGHT = 2.5;
 // guess: no club abroad judges its coach before four rounds.
 const GRACE_ROUNDS = 4;
