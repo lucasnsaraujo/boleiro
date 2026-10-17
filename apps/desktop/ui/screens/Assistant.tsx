@@ -280,12 +280,18 @@ export function Assistant() {
                       {row.willing === "yes" ? "Topa vir" : "Talvez"}
                     </span>
                     <div className="asst-sr-act">
-                      <button className="btn sm" aria-pressed={row.isWatched} disabled={busyId !== null} onClick={() => void watch(row)}>
+                      <button
+                        className="btn sm asst-eye"
+                        aria-pressed={row.isWatched}
+                        aria-label={`Observar ${row.name}`}
+                        title={row.isWatched ? "Observando" : "Observar"}
+                        disabled={busyId !== null}
+                        onClick={() => void watch(row)}
+                      >
                         <i className={row.isWatched ? "ph-fill ph-eye" : "ph-bold ph-eye"} aria-hidden="true" />
-                        {row.isWatched ? "Observando" : "Observar"}
                       </button>
-                      <Link className="btn sm go" to={`/market?jogador=${encodeURIComponent(row.id)}`} aria-label={`Fazer proposta por ${row.name}`}>
-                        Proposta
+                      <Link className="btn sm go" to={`/market?jogador=${encodeURIComponent(row.id)}`} aria-label={`Fazer proposta por ${row.name}`} title="Fazer proposta">
+                        <span className="asst-go-label">Proposta</span>
                         <i className="ph-bold ph-arrow-right" aria-hidden="true" />
                       </Link>
                     </div>

@@ -300,6 +300,7 @@
 
 .asst-sg {
   margin-top: 18px;
+  container-type: inline-size;
 }
 
 .asst-sg h3,
@@ -411,6 +412,29 @@
 
 .asst-sr-act a.btn {
   text-decoration: none;
+}
+
+.asst-sr-act .asst-eye {
+  width: 30px;
+  padding: 0;
+  font-size: 15px;
+}
+
+/* A narrow list (a 1024 px window) keeps the name readable: the offer link shrinks to its arrow. */
+@container (max-width: 700px) {
+  .asst-sr {
+    grid-template-columns: 28px minmax(0, 1fr) 40px 100px 76px auto;
+    gap: 10px;
+  }
+
+  .asst-sr-act .go {
+    width: 30px;
+    padding: 0;
+  }
+
+  .asst-go-label {
+    display: none;
+  }
 }
 
 .asst-sr-act .btn[aria-pressed="true"] {

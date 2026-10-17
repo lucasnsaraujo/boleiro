@@ -90,6 +90,18 @@ test("switching the lineup off leaves the coach's last eleven, and the tips say 
   expect((await engine.assistant()).duties.lineup).toBe(false);
 });
 
+test("a suggestion's eye button, named for the player, puts him on the watch list", async () => {
+  const engine = await startGame();
+  openAssistant(engine);
+  const suggestions = await screen.findByRole("list", { name: "Indicações do auxiliar" });
+  const [watch] = within(suggestions).getAllByRole("button", { name: /^Observar / });
+  if (!watch) throw new Error("no suggestion");
+  const name = watch.getAttribute("aria-label") ?? "";
+  expect(watch.getAttribute("aria-pressed")).toBe("false");
+  await userEvent.setup().click(watch);
+  expect(await within(suggestions).findByRole("button", { name, pressed: true })).toBeTruthy();
+});
+
 test("a suggestion's offer opens the market on that player", async () => {
   const engine = await startGame();
   const router = openAssistant(engine);
