@@ -1,5 +1,7 @@
 import { randomStream } from "../../engine/random.js";
 import { asWaitingCoach, waitingCoachesOf } from "../coach/humanCoaches.js";
+import { addDays } from "../dates.js";
+import { assistantRenewals, isSeasonLastDay, nextAssistantReview } from "./assistantRenewals.js";
 import type { GameState, IsoDate } from "../gameState.js";
 import { unitHash } from "./coachMarket.js";
 import { coachMarketDay } from "./coachMarketDay.js";
@@ -7,7 +9,7 @@ import type { CoachRequest } from "./coachRequest.js";
 import { decideCoachRequest } from "./decideCoachRequest.js";
 import { driftExchangeRate } from "./driftExchangeRate.js";
 import { europeBids } from "./europeBids.js";
-import { expireContracts, hasExpiries } from "./expireContracts.js";
+import { expireContracts, hasExpiries, renewAiContracts } from "./expireContracts.js";
 import { lendYoungPlayers, returnLoans } from "./loans.js";
 import { openDraft } from "./movePlayer.js";
 import { signFreeAgents } from "./signFreeAgents.js";
@@ -35,8 +37,9 @@ const isCoachNews = (event: TransferEvent) =>
 
 /**
  * The transfer market's day, run at the start of `state.date`: loans and contracts that ended, the
- * coach's requests and his own business (offers, listings, auctions), then on market days Europe's bids
- * and the AI clubs' business. Draws come from the market's own random stream. In a hot-seat game each
+ * coach's requests, his assistant's renewals on the days he looks (and the AI clubs' on the season's last
+ * day), and his own business (offers, listings,
+ * auctions), then on market days Europe's bids and the AI clubs' business. Draws come from the market's own random stream. In a hot-seat game each
  * waiting coach's requests (`waitingRequests`, in waiting order) and business run as if he sat in the
  * seat; his own news comes back apart, in `waitingEvents`.
  */
@@ -53,6 +56,9 @@ export function runTransferDay(
   if (Object.values(state.market.loans).some((loan) => loan.until < state.date)) add((s) => returnLoans(s));
   if (hasExpiries(state)) add(expireContracts);
   for (const request of requests) add((s, r) => decideCoachRequest(s, request, r));
+  const isReviewDay = nextAssistantReview(state, addDays(state.date, -1)) === state.date;
+  if (isReviewDay) add((s) => assistantRenewals(s));
+  if (isSeasonLastDay(state.date)) add((s) => renewAiContracts(s));
   if (hasCoachBusiness(state.market.coach, state.coachClubId, state, state.date)) {
     // The coach's business draws from its own stream, salted with the day, so it never shifts the AI clubs' draws.
     const coachRandom = randomStream(Math.floor(unitHash(`${state.market.rngState}:${state.date}`) * 2 ** 32));
@@ -63,6 +69,7 @@ export function runTransferDay(
     for (const request of waitingRequests[waitingIndex] ?? []) {
       steps.push({ step: (s, r) => asWaitingCoach(s, waitingIndex, (seated) => decideCoachRequest(seated, request, r)), waitingIndex });
     }
+    if (isReviewDay) steps.push({ step: (s) => asWaitingCoach(s, waitingIndex, assistantRenewals), waitingIndex });
     if (!hasCoachBusiness(coach.market, coach.clubId, { ...state, coach: coach.coach }, state.date)) return;
     const waitingRandom = randomStream(Math.floor(unitHash(`${state.market.rngState}:${state.date}:${waitingIndex}`) * 2 ** 32));
     steps.push({ step: (s) => asWaitingCoach(s, waitingIndex, (seated) => coachMarketDay(seated, waitingRandom.next)), waitingIndex });

@@ -326,4 +326,16 @@ describe("contracts", () => {
     expect(skipped("wageCap")).toBe(`O auxiliar não renovou com ${own.name} (contrato até dez 2026): o salário passa do teto da folha`);
     expect(lines({ type: "renewalSkipped", playerId: other.id, clubId: "vitoria-ba", until: "2026-12-31", reason: "notInPlans" })).toEqual([]);
   });
+
+  test("a look at many contracts is one line per outcome, so it doesn't flood the inbox", () => {
+    const squad = Object.values(game.players).filter((p) => p.clubId === "bahia-ba").slice(0, 4);
+    const [a, b, c, d] = squad;
+    if (!a || !b || !c || !d) throw new Error("Bahia has four players");
+    const renewed = (p: typeof a): DayEvent => ({ type: "playerContractRenewed", playerId: p.id, clubId: "bahia-ba", until: "2028-12-31", wage: 1, byAssistant: true });
+    const skipped = (p: typeof a): DayEvent => ({ type: "renewalSkipped", playerId: p.id, clubId: "bahia-ba", until: "2026-12-31", reason: "notInPlans" });
+    expect(lines(renewed(a), renewed(b), skipped(c), skipped(d)).map((l) => l.text)).toEqual([
+      `O auxiliar renovou 2 contratos: ${a.name} e ${b.name}`,
+      `O auxiliar deixa acabar 2 contratos: ${c.name} e ${d.name} (fora dos planos)`,
+    ]);
+  });
 });

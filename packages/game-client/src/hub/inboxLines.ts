@@ -221,13 +221,13 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         return [`${name} vendido por ${formatMoney(fee)} (${to})`, "neutral"];
       }
       case "playerContractRenewed":
-        if (!isOurs(event.clubId)) return null;
-        if (event.byAssistant) return [`O auxiliar renovou com ${playerName(event.playerId)} até ${formatMonthYear(event.until)}, por ${formatMoney(event.wage)} por mês`, "good"];
+        // The assistant's renewals are told together (assistantLines).
+        if (!isOurs(event.clubId) || event.byAssistant) return null;
         return [`${playerName(event.playerId)} renova até ${event.until.slice(0, 4)}`, "neutral"];
       case "renewalCountered":
         return [`${playerName(event.playerId)} pede ${formatMoney(event.wage)} por mês para renovar por ${formatContractLength(event.months)}. Responda na renovação`, "neutral"];
       case "renewalSkipped":
-        return isOurs(event.clubId) ? [skippedRenewalText(playerName(event.playerId), event.until, event.reason), "neutral"] : null;
+        return null;
       case "preContractSigned":
         if (isOurs(event.toClubId)) return [`${playerName(event.playerId)} assina pré-contrato com ${clubName(event.toClubId)}`, "good"];
         if (isOurs(event.fromClubId)) return [`${playerName(event.playerId)} assina pré-contrato com ${clubName(event.toClubId)}`, "bad"];
@@ -262,7 +262,28 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
     const found = lineOf(event);
     return found ? [{ date: before.date, text: found[0], tone: found[1] }] : [];
   });
-  return [...lines, ...lastYearWarnings(before, after), ...preContractWarnings(before, after)];
+  const assistant = assistantLines(events.filter((e) => "clubId" in e && isOurs(e.clubId)), playerName).map(([text, tone]) => ({ date: before.date, text, tone }));
+  return [...lines, ...assistant, ...lastYearWarnings(before, after), ...preContractWarnings(before, after)];
+}
+
+const SKIP_REASONS: readonly RenewalSkipReason[] = ["notInPlans", "playerUnwilling", "wageCap"];
+
+/** What the coach's assistant did with the contracts in one look: a line for his renewals and one per reason he left others. */
+function assistantLines(events: readonly DayEvent[], playerName: (id: string) => string): [string, InboxTone][] {
+  const renewed = events.flatMap((e) => (e.type === "playerContractRenewed" && e.byAssistant ? [e] : []));
+  const skipped = events.flatMap((e) => (e.type === "renewalSkipped" ? [e] : []));
+  const lines: [string, InboxTone][] = [];
+  const [onlyRenewed] = renewed;
+  if (renewed.length === 1 && onlyRenewed) {
+    lines.push([`O auxiliar renovou com ${playerName(onlyRenewed.playerId)} até ${formatMonthYear(onlyRenewed.until)}, por ${formatMoney(onlyRenewed.wage)} por mês`, "good"]);
+  } else if (renewed.length > 1) lines.push([`O auxiliar renovou ${renewed.length} contratos: ${listNames(renewed.map((e) => playerName(e.playerId)))}`, "good"]);
+  for (const reason of SKIP_REASONS) {
+    const left = skipped.filter((e) => e.reason === reason);
+    const [only] = left;
+    if (!only) continue;
+    lines.push([left.length === 1 ? skippedRenewalText(playerName(only.playerId), only.until, reason) : skippedRenewalsText(left.map((e) => playerName(e.playerId)), reason), "neutral"]);
+  }
+  return lines;
 }
 
 function skippedRenewalText(name: string, until: IsoDate, reason: RenewalSkipReason): string {
@@ -273,6 +294,17 @@ function skippedRenewalText(name: string, until: IsoDate, reason: RenewalSkipRea
       return `O auxiliar não renovou com ${name} (contrato até ${formatMonthYear(until)}): ele não aceita nenhum tempo de contrato`;
     case "wageCap":
       return `O auxiliar não renovou com ${name} (contrato até ${formatMonthYear(until)}): o salário passa do teto da folha`;
+  }
+}
+
+function skippedRenewalsText(names: readonly string[], reason: RenewalSkipReason): string {
+  switch (reason) {
+    case "notInPlans":
+      return `O auxiliar deixa acabar ${names.length} contratos: ${listNames(names)} (fora dos planos)`;
+    case "playerUnwilling":
+      return `O auxiliar não renovou com ${listNames(names)}: não aceitam nenhum tempo de contrato`;
+    case "wageCap":
+      return `O auxiliar não renovou com ${listNames(names)}: os salários passam do teto da folha`;
   }
 }
 
