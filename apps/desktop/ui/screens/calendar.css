@@ -515,3 +515,22 @@
 .agenda-match:has(> .agenda-open) > :not(.agenda-open) {
   pointer-events: none;
 }
+
+/* A derby on the agenda: a small sticker after the opponent, the named one under the next match's title. */
+.agenda-match b .derby-badge {
+  height: 15px;
+  margin-left: 6px;
+  padding: 0 5px;
+  font-size: 8.5px;
+  vertical-align: 1px;
+}
+
+.agenda-derby {
+  display: flex;
+  justify-content: center;
+  margin: 2px 0 10px;
+}
+
+.agenda-derby:empty {
+  display: none;
+}

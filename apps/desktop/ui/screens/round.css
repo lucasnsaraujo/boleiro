@@ -550,13 +550,20 @@
 }
 
 .live-r .std {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  min-width: 0;
   padding-right: 8px;
-  overflow: hidden;
-  text-align: right;
-  text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 500;
   font-size: 12.5px;
+}
+
+.live-r .std-nm {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .live-r .plate {

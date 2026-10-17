@@ -1,5 +1,6 @@
 import { REFEREE_ROSTER } from "@boleiro/data/refereeRoster";
 import { beforeAll, describe, expect, it } from "vitest";
+import { rivalryOf } from "@boleiro/engine/sim/rivalries/rivalryOf";
 import { leagueMatches } from "@boleiro/engine/sim/world/resultOnlyLeague";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
 import { createEngineSession, type EngineSession } from "../engine/createEngineSession.js";
@@ -120,6 +121,16 @@ describe("the match page of the round under way", () => {
   });
 });
 
+describe("the match page of a derby", () => {
+  it("names the derby and its intensity, and an ordinary match has none", () => {
+    const derby = round.matches.find((m) => rivalryOf(m.homeId, m.awayId));
+    const ordinary = round.matches.find((m) => !rivalryOf(m.homeId, m.awayId));
+    if (!derby || !ordinary) throw new Error("the round has no derby or no ordinary match");
+    expect(openPage(session, derby.fixtureId).derby).toEqual(rivalryOf(derby.homeId, derby.awayId));
+    expect(openPage(session, ordinary.fixtureId).derby).toBeNull();
+  });
+});
+
 describe("the match page of a played match", () => {
   let played: MatchPage;
   let retold: MatchPage;
@@ -129,6 +140,14 @@ describe("the match page of a played match", () => {
     played = openPage(session, otherFixtureId);
     session.apply({ type: "advance", days: [{}] });
     retold = openPage(session, otherFixtureId);
+  });
+
+  it("shows the coach's record against the coach across the touchline once they have met", () => {
+    const page = openPage(session, coachFixtureId);
+    expect(page.coachDuel).toMatchObject({ meetings: 1 });
+    const { homeWins, awayWins, draws } = page.coachDuel ?? { homeWins: 0, awayWins: 0, draws: 0 };
+    expect(homeWins + awayWins + draws).toBe(1);
+    expect(openPage(session, otherFixtureId).coachDuel).toBeNull();
   });
 
   it("keeps the real timeline of the round just played until the next day", () => {
