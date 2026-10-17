@@ -11,8 +11,8 @@ import type { WorldClub } from "./world.js";
  * `bracket` is the first round's draw in pairs, home club first, "" for a bye; each later match
  * brings the winners of two neighbouring ones together. `results` holds every match round after
  * round as its score in two characters (goals counted from "0", extra time's included) and the winning
- * side, "0" home or "1" away ("2" or "3" when won in extra time); a bye as "xx" and its club's side;
- * "---" before it is played. A level score went to penalties, after extra time where the round plays it.
+ * side, "0" home or "1" away ("2" or "3" when won in extra time, "4" or "5" on penalties after it); a bye
+ * as "xx" and its club's side; "---" before it is played. A level score went to penalties.
  */
 export type ResultOnlyCup = { id: string; season: number; bracket: string[]; dates: IsoDate[]; results: string };
 
@@ -21,6 +21,7 @@ const UNPLAYED = "---";
 const BYE_SCORE = "xx";
 const ZERO_GOALS = "0".charCodeAt(0);
 const WON_IN_EXTRA_TIME = 2;
+const WON_ON_PENALTIES_AFTER_EXTRA_TIME = 4;
 // The first round comes about five weeks into the league season and the final a week before its end.
 const FIRST_ROUND_DELAY = 35;
 const FINAL_BEFORE_END = 7;
@@ -83,7 +84,6 @@ export function cupMatches(cup: ResultOnlyCup): CupMatch[] {
   let offset = 0;
   const sizes = roundSizes(cup.bracket);
   sizes.forEach((size, round) => {
-    const hasExtraTime = hasNationalCupExtraTime(countryOf(cup), round, sizes.length);
     const winners: string[] = [];
     for (let i = 0; i < size; i++) {
       const homeId = entrants[2 * i] ?? BYE;
@@ -94,7 +94,7 @@ export function cupMatches(cup: ResultOnlyCup): CupMatch[] {
       const winnerId = isPlayed ? (side % 2 ? awayId : homeId) : null;
       const isBye = code.startsWith(BYE_SCORE);
       const score = { homeGoals: code.charCodeAt(0) - ZERO_GOALS, awayGoals: code.charCodeAt(1) - ZERO_GOALS };
-      const isAfterExtraTime = side >= WON_IN_EXTRA_TIME || (hasExtraTime && score.homeGoals === score.awayGoals);
+      const isAfterExtraTime = side >= WON_IN_EXTRA_TIME;
       const result = isPlayed && !isBye ? { ...score, ...(isAfterExtraTime ? { isAfterExtraTime: true as const } : {}) } : null;
       matches.push({ round, homeId, awayId, result, winnerId });
       winners.push(winnerId ?? BYE);
@@ -129,7 +129,8 @@ export function playCupDay(cup: ResultOnlyCup, date: IsoDate, clubOf: (id: strin
       const { extraTime, isAwayShootoutWinner } = settleLevelTie(clubOf(homeId), clubOf(awayId), hasExtraTime, random);
       homeGoals += extraTime?.homeGoals ?? 0;
       awayGoals += extraTime?.awayGoals ?? 0;
-      side = homeGoals === awayGoals ? Number(isAwayShootoutWinner) : WON_IN_EXTRA_TIME + Number(awayGoals > homeGoals);
+      const settledBy = homeGoals !== awayGoals ? WON_IN_EXTRA_TIME : extraTime ? WON_ON_PENALTIES_AFTER_EXTRA_TIME : 0;
+      side = settledBy + Number(homeGoals === awayGoals ? isAwayShootoutWinner : awayGoals > homeGoals);
     }
     played += String.fromCharCode(ZERO_GOALS + homeGoals, ZERO_GOALS + awayGoals) + String(side);
   }

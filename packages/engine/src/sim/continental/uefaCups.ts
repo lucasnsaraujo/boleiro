@@ -19,8 +19,9 @@ export type KnockoutRoundName = (typeof KNOCKOUT_ROUNDS)[number];
 /**
  * A knockout round as drawn: each tie's clubs, the better-placed one first, who hosts the second
  * leg (or the single match, when `dates` holds one). `results` holds each tie's legs in order, two characters a leg (goals from "0", home side
- * first, extra time's in the last leg), then its winner's side, "0" first club or "1" second ("2" or "3" when won in extra time); "-" for
- * what is not played yet. A tie level on aggregate went to extra time, then penalties.
+ * first, extra time's in the last leg), then its winner's side, "0" first club or "1" second ("2" or "3" when won in extra time, "4" or
+ * "5" on penalties after it); "-" for what is not played yet. A tie level on aggregate went to penalties, after extra time unless
+ * a save from before the game played it says "0" or "1".
  */
 export type KnockoutRound = { name: KnockoutRoundName; dates: IsoDate[]; ties: [string, string][]; results: string };
 
@@ -58,6 +59,7 @@ const MATCHDAY_SIZE = LEAGUE_PHASE_CLUBS / 2;
 const UNPLAYED = "-";
 const ZERO_GOALS = "0".charCodeAt(0);
 const WON_IN_EXTRA_TIME = 2;
+const WON_ON_PENALTIES_AFTER_EXTRA_TIME = 4;
 
 // The 2026/27 calendars (Wikipedia, "2026–27 UEFA Champions League" and "... Europa League", read
 // 2026-10-15), one day per matchday and leg where UEFA spreads one over two or three. guess: the
@@ -167,7 +169,7 @@ export function knockoutTie(round: KnockoutRound, index: number): { clubIds: [st
   const winnerId = decider === UNPLAYED ? null : (clubIds[side % 2] ?? null);
   const [first, second] = aggregateOf(clubIds, legs);
   const onPenalties = winnerId !== null && first === second;
-  return { clubIds, legs, winnerId, onPenalties, ...(onPenalties || side >= WON_IN_EXTRA_TIME ? { isAfterExtraTime: true as const } : {}) };
+  return { clubIds, legs, winnerId, onPenalties, ...(side >= WON_IN_EXTRA_TIME ? { isAfterExtraTime: true as const } : {}) };
 }
 
 /** Each club's goals over the tie's legs played so far, in the order of `clubIds`. */
@@ -247,7 +249,7 @@ function playRoundDay(round: KnockoutRound, date: IsoDate, clubOf: ClubOf, rando
           awayGoals += extraTime?.awayGoals ?? 0;
           const [afterFirst, afterSecond] = aggregate({ homeGoals, awayGoals });
           const isHostFirst = today.homeId === tie.clubIds[0];
-          side = afterFirst === afterSecond ? Number(isAwayShootoutWinner === isHostFirst) : WON_IN_EXTRA_TIME + Number(afterSecond > afterFirst);
+          side = afterFirst === afterSecond ? WON_ON_PENALTIES_AFTER_EXTRA_TIME + Number(isAwayShootoutWinner === isHostFirst) : WON_IN_EXTRA_TIME + Number(afterSecond > afterFirst);
         }
         code = code.slice(0, length - 1) + String(side);
       }

@@ -84,6 +84,13 @@ describe("a result-only national cup's level matches", () => {
     }
   });
 
+  it("of a save from before extra time, settled straight on penalties, are not said to have gone to extra time", () => {
+    const cup = openIn("de", 0);
+    const first = cupMatches(cup).findIndex((m) => m.round === 0 && m.homeId !== "" && m.awayId !== "");
+    const beforeExtraTime = { ...cup, results: cup.results.slice(0, 3 * first) + "110" + cup.results.slice(3 * first + 3) };
+    expect(cupMatches(beforeExtraTime)[first]?.result).toEqual({ homeGoals: 1, awayGoals: 1 });
+  });
+
   it("leave every match level after ninety minutes the only one extra time changes, and the round's stream as it was", () => {
     for (let seed = 0; seed < SEEDS; seed++) {
       const [withExtraTime, straight] = [seededRandom(seed + 100), seededRandom(seed + 100)];

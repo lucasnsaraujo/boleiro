@@ -22,6 +22,13 @@ function play(world: World, europe: EuropeanCups, from: string, to: string, onDa
   return current;
 }
 
+describe("a knockout tie of a save from before extra time", () => {
+  it("settled straight on penalties is not said to have gone to extra time", () => {
+    const tie = knockoutTie({ name: "round-of-16", dates: ["2027-03-03", "2027-03-10"], ties: [["a", "b"]], results: "10100" }, 0);
+    expect(tie).toEqual({ clubIds: ["a", "b"], legs: expect.any(Array), winnerId: "a", onPenalties: true });
+  });
+});
+
 describe("a season of UEFA's cups", () => {
   const world = startEurope();
   const opening = openingEuropeanCups(world, 7, 2026);
