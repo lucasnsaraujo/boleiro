@@ -77,11 +77,11 @@ function FixtureLine({ row, page }: { row: NationalFixtureRow; page: NationalTea
       </div>
       <div>
         <div className="nt-m">
-          {home && <NationalCrest code={home.code} colours={home.colours} size={20} label={home.name} />}
+          {home && <NationalCrest teamId={home.id} code={home.code} colours={home.colours} size={20} label={home.name} />}
           <span>{row.home}</span>
           <span className={score ? "nt-score" : "nt-x"}>{score ?? "×"}</span>
           <span>{row.away}</span>
-          {away && <NationalCrest code={away.code} colours={away.colours} size={20} label={away.name} />}
+          {away && <NationalCrest teamId={away.id} code={away.code} colours={away.colours} size={20} label={away.name} />}
         </div>
         <small>
           {row.competition}
@@ -124,7 +124,7 @@ function CompetitionTables({ competition, page }: { competition: NationalCompeti
                     <span className="nt-pos">{i + 1}</span>
                     {(() => {
                       const looks = page.teams.find((t) => t.id === row.teamId);
-                      return looks ? <NationalCrest code={looks.code} colours={looks.colours} size={18} label={looks.name} /> : null;
+                      return looks ? <NationalCrest teamId={looks.id} code={looks.code} colours={looks.colours} size={18} label={looks.name} /> : null;
                     })()}
                     {row.name}
                   </th>
@@ -264,7 +264,7 @@ export function NationalTeam() {
           </section>
         )}
         <div className="stk nt-card">
-          <NationalCrest code={team.code} colours={team.colours} size={52} label={team.name} />
+          <NationalCrest teamId={team.id} code={team.code} colours={team.colours} size={52} label={team.name} />
           <div>
             <h1>{team.name}</h1>
             <p>
@@ -443,7 +443,7 @@ export function NationalTeam() {
                 return (
                   <li key={`${row.rank}-${row.name}`} className={[row.teamId === team.id ? "own" : "", gap ? "gap" : ""].filter(Boolean).join(" ") || undefined}>
                     <span className="nt-rank">{row.rank}º</span>
-                    {looks ? <NationalCrest code={looks.code} colours={looks.colours} size={20} label={looks.name} /> : <span className="nt-nocrest" aria-hidden="true" />}
+                    {looks ? <NationalCrest teamId={looks.id} code={looks.code} colours={looks.colours} size={20} label={looks.name} /> : <span className="nt-nocrest" aria-hidden="true" />}
                     <span className="nt-rn">{row.name}</span>
                     <b>{row.points.toLocaleString("pt-BR")}</b>
                   </li>
