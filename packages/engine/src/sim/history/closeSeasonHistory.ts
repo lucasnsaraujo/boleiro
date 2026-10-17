@@ -4,6 +4,7 @@ import { LEAGUE_FORMATS } from "../leagueFormats.js";
 import { standings } from "../standings.js";
 import { championOf } from "./championOf.js";
 import { competitionKey, type History, type PlayerAtClub, type SeasonRecord, type TopScorer } from "./history.js";
+import { seasonAwards } from "./seasonAwards.js";
 
 // guess: a player who left a club after fewer games than this is not worth remembering there; it keeps
 // the per-club tallies from growing with every loanee and youth player who passed through.
@@ -47,7 +48,7 @@ function forgetPassersBy(state: GameState): History["players"] {
   );
 }
 
-/** Files the season that just finished, before its competitions and fixtures are replaced by the next one's. */
+/** Files the season that just finished, with its awards, before its competitions and fixtures are replaced by the next one's. */
 export function closeSeasonHistory(state: GameState): GameState {
   const { history } = state;
   const empty = (): Record<Division, string[]> => ({ A: [], B: [], C: [], D: [] });
@@ -74,12 +75,13 @@ export function closeSeasonHistory(state: GameState): GameState {
     const top = topScorerOf(goals, state);
     if (top) record.topScorers[key] = top;
   }
+  record.awards = seasonAwards(state, record.champions);
   return {
     ...state,
     history: {
       ...history,
       seasons: [...history.seasons, record],
-      current: { season: state.season + 1, champions: {}, goals: {} },
+      current: { season: state.season + 1, champions: {}, goals: {}, ratings: {} },
       players: forgetPassersBy(state),
     },
   };

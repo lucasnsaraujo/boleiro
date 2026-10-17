@@ -1,4 +1,4 @@
-import type { Division } from "@boleiro/data/players";
+import type { Division, Role } from "@boleiro/data/players";
 import type { IsoDate } from "../gameState.js";
 
 /** Competition ids without the season, so titles line up across years: `serie-a`, `copa-do-brasil`, `state-sp`. */
@@ -19,12 +19,62 @@ export type CrowdMark = { season: number; date: IsoDate; competition: Competitio
 /** `otherClubId` is the buyer of a sale or the seller of a signing; null means abroad. */
 export type TransferMark = { season: number; date: IsoDate; playerId: string; name: string; otherClubId: string | null; fee: number };
 
+/** A player's goals for one club, or in one league, over a season. */
+export type GoalsMark = { season: number; playerId: string; name: string; clubId: string; goals: number };
+
+/** A goal by a player of `age`, the youngest so far. */
+export type ScorerMark = { season: number; date: IsoDate; competition: CompetitionKey; playerId: string; name: string; clubId: string; opponentId: string; age: number };
+
+/** Games in a row without defeat, in every competition, from the first game's date to the last's. */
+export type RunMark = { games: number; from: IsoDate; until: IsoDate };
+
+/**
+ * The league records a club's history keeps; saves from before them lack `mostSeasonGoals`,
+ * `longestUnbeaten`, `youngestScorer` and the run under way (`unbeaten`), which start empty.
+ */
 export type ClubRecords = {
   biggestWin: MatchMark | null;
   biggestLoss: MatchMark | null;
   biggestCrowd: CrowdMark | null;
   recordSale: TransferMark | null;
   recordSigning: TransferMark | null;
+  mostSeasonGoals?: GoalsMark | null;
+  longestUnbeaten?: RunMark | null;
+  youngestScorer?: ScorerMark | null;
+  unbeaten?: RunMark | null;
+};
+
+/** A league's biggest win, from the home side's view. */
+export type LeagueWin = { season: number; date: IsoDate; homeId: string; awayId: string; homeGoals: number; awayGoals: number };
+
+/** A league's records across seasons. */
+export type LeagueRecords = { biggestWin: LeagueWin | null; mostSeasonGoals: GoalsMark | null; youngestScorer: ScorerMark | null };
+
+/** A player's season in one competition: games rated, the sum of his ratings in tenths, and his assists. */
+export type SeasonMark = [apps: number, ratingTenths: number, assists: number];
+
+/** A player picked for an award, with his season in the league that awards it. */
+export type AwardedPlayer = { playerId: string; name: string; clubId: string; role: Role; age: number; apps: number; goals: number; assists: number; average: number };
+
+/**
+ * One of the Ballon d'Or's top three: a player of the full tier with his season in every competition,
+ * or one of a club played result-only, known only by his strength and his club's titles.
+ */
+export type BallonDorVote = { playerId: string; name: string; clubId: string; clubName: string; score: number; titles: CompetitionKey[]; apps: number | null; goals: number | null; average: number | null };
+
+/**
+ * The season's awards: the Brasileirão's Bola de Ouro (with the next two), its Bola de Prata team (the
+ * season's team, goalkeeper first and attack last), top scorer and best young player, and the world's
+ * Ballon d'Or top three. Each is null, or empty, when nobody played enough to win it.
+ */
+export type SeasonAwards = {
+  competition: CompetitionKey;
+  bolaDeOuro: AwardedPlayer | null;
+  runnersUp: AwardedPlayer[];
+  bolaDePrata: AwardedPlayer[];
+  topScorer: AwardedPlayer | null;
+  bestYoung: AwardedPlayer | null;
+  ballonDor: BallonDorVote[];
 };
 
 /** A player's running totals for one club, in every competition. */
@@ -40,6 +90,8 @@ export type SeasonRecord = {
   relegated: Record<Division, string[]>;
   /** Each division's final order, champion first. */
   tables: Record<Division, string[]>;
+  /** A season filed before awards has none. */
+  awards?: SeasonAwards;
 };
 
 /** A player's strength as it stood through one season; it only changes at the yearly turnover. */
@@ -58,13 +110,21 @@ export type CoachRecord = {
 export type History = {
   seasons: SeasonRecord[];
   /** The season being played: champions decided so far and goals per competition and player. */
-  current: { season: number; champions: Record<CompetitionKey, string>; goals: Record<CompetitionKey, Record<string, number>> };
+  current: {
+    season: number;
+    champions: Record<CompetitionKey, string>;
+    goals: Record<CompetitionKey, Record<string, number>>;
+    /** Per competition, then per player; a save from before ratings starts the season's with none. */
+    ratings?: Record<CompetitionKey, Record<string, SeasonMark>>;
+  };
   clubs: Record<string, ClubRecords>;
   /** Per club, then per player. */
   players: Record<string, Record<string, PlayerAtClub>>;
   /** Per player, one mark per season since the save began or he arrived, oldest first. */
   strength: Record<string, StrengthMark[]>;
   coach: CoachRecord;
+  /** Each full-tier league's records, by competition; a save from before them has none. */
+  leagues?: Record<CompetitionKey, LeagueRecords>;
 };
 
 export const NO_RECORDS: ClubRecords = { biggestWin: null, biggestLoss: null, biggestCrowd: null, recordSale: null, recordSigning: null };

@@ -125,6 +125,59 @@ describe("the squad", () => {
     expect(line({ type: "playerSuspended", playerId: own.id, clubId: "bahia-ba", ...card, matches: 2 })?.text).toBe(`${own.name} suspenso: 2 jogos`);
   });
 
+  test("an injury says what it is, and one coming back says he got hurt again", () => {
+    const injury: DayEvent = { type: "playerInjured", playerId: own.id, clubId: "bahia-ba", days: 30, fitOn: "2026-03-01", kind: "ligament" };
+    expect(line(injury)).toMatchObject({ text: `${own.name} lesionado: lesão ligamentar, 30 dias fora`, tone: "bad" });
+    expect(line({ ...injury, kind: "muscle", days: 9, isRecurrence: true })?.text).toBe(`${own.name} volta a se lesionar: lesão muscular, 9 dias fora`);
+    expect(line({ ...injury, kind: "knock", days: 2 })?.text).toBe(`${own.name} sente uma pancada: 2 dias fora`);
+    expect(line({ ...injury, kind: "knock", days: 40 })?.text).toBe(`${own.name} lesionado: 40 dias fora`);
+  });
+
+  test("a veteran announcing his last season asks the coach to talk him round, and his answer is news", () => {
+    expect(line({ type: "playerWantsToRetire", playerId: own.id, clubId: "bahia-ba", name: "Gilberto", age: 38, afterSeason: 2027 })).toMatchObject({
+      text: "Gilberto anuncia que 2027 será sua última temporada. Converse com ele na página do jogador",
+      tone: "neutral",
+    });
+    const asked: DayEvent = { type: "playerPersuaded", playerId: own.id, clubId: "bahia-ba", name: "Gilberto", stays: true };
+    expect(line(asked)).toMatchObject({ text: "Gilberto aceita jogar mais um ano", tone: "good" });
+    expect(line({ ...asked, stays: false })).toMatchObject({ text: "Gilberto não muda de ideia e para no fim da temporada", tone: "bad" });
+  });
+
+  test("a record one of the coach's players or his club breaks is news, and other clubs' records are not", () => {
+    const record: DayEvent = { type: "recordBroken", scope: "league", competition: "serie-a", kind: "mostSeasonGoals", clubId: "bahia-ba", playerId: own.id, name: "Gilberto", value: 19, previous: 18 };
+    expect(line(record)).toMatchObject({ text: "Recorde: Gilberto chega a 19 gols e passa o recorde da Série A numa temporada (18)", tone: "good" });
+    expect(line({ ...record, scope: "club", competition: null, kind: "youngestScorer", value: 16, previous: 17 })?.text).toBe("Recorde: Gilberto, 16 anos, é o goleador mais jovem da história do clube");
+    expect(line({ ...record, scope: "club", competition: null, kind: "longestUnbeaten", playerId: null, name: null, value: 14, previous: 13 })?.text).toBe("Recorde: 14 jogos sem perder, a maior invencibilidade do clube");
+    expect(line({ ...record, kind: "biggestWin", playerId: null, name: null, value: 6, previous: 5 })?.text).toBe("Recorde: a maior goleada da história da Série A, por 6 gols de diferença");
+    expect(lines({ ...record, clubId: "palmeiras-sp" })).toEqual([]);
+  });
+
+  test("the season's awards tell the coach every prize his players won", () => {
+    const ours = { playerId: own.id, name: "Gilberto", clubId: "bahia-ba", age: 20, apps: 30, goals: 21, assists: 2, average: 7.4 };
+    const theirs = { ...ours, playerId: "x", name: "Outro", clubId: "palmeiras-sp" };
+    const awards: DayEvent = {
+      type: "seasonAwarded",
+      season: 2026,
+      awards: {
+        competition: "serie-a",
+        bolaDeOuro: { ...ours, role: "atacante" },
+        runnersUp: [],
+        bolaDePrata: [{ ...ours, role: "atacante" }, { ...theirs, role: "goleiro" }],
+        topScorer: { ...ours, role: "atacante" },
+        bestYoung: { ...ours, role: "atacante" },
+        ballonDor: [{ playerId: own.id, name: "Gilberto", clubId: "bahia-ba", clubName: "Bahia", score: 90, titles: [], apps: 30, goals: 21, average: 7.4 }],
+      },
+    };
+    expect(lines(awards).map((l) => [l.text, l.tone])).toEqual([
+      ["Gilberto ganha a Bola de Ouro de 2026: o melhor do Brasileirão", "good"],
+      ["Gilberto ganha a Bola de Prata de atacante", "good"],
+      ["Gilberto é o artilheiro do Brasileirão, com 21 gols", "good"],
+      ["Gilberto é a revelação do Brasileirão", "good"],
+      ["Gilberto ganha a Bola de Ouro da France Football: o melhor do mundo", "good"],
+    ]);
+    expect(lines({ ...awards, awards: { ...awards.awards, bolaDeOuro: null, bolaDePrata: [], topScorer: null, bestYoung: null, ballonDor: [] } })).toEqual([]);
+  });
+
   test("bookings and sending-offs stay out; the suspension is the news", () => {
     expect(lines({ type: "playerBooked", playerId: own.id, clubId: "bahia-ba", ...card, minute: 10 })).toEqual([]);
     expect(lines({ type: "playerSentOff", playerId: own.id, clubId: "bahia-ba", ...card, minute: 10, secondYellow: false })).toEqual([]);

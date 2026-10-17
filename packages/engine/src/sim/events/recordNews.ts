@@ -7,6 +7,8 @@ import type { Fixture, GameState, IsoDate } from "../gameState.js";
 import type { MatchSheets } from "../history/recordMatches.js";
 import { rivalsOf } from "../morale/rivalsOf.js";
 import { reviewLength, type VarDecision, type WrongCallKind } from "../referees/refereeCalls.js";
+import type { RecordKind } from "../history/recordFeats.js";
+import { competitionKey } from "../history/history.js";
 import { eventMemoryOf, type NewsItem, type NewsKind } from "./eventMemory.js";
 
 // The newspaper's stories draw their wording from a stream of their own per day and story.
@@ -21,7 +23,7 @@ const UPSET_PLACES = 10;
 const UPSET_FROM_GAMES = 5;
 const DIVISION_RANK = { A: 0, B: 1, C: 2, D: 3 } as const;
 // guess: the day's busiest beats print a few stories each; the rest is in the results.
-const PER_DAY: Record<Exclude<NewsKind, "event" | "match">, number> = { signing: 3, sacking: 3, upset: 2, rivalry: 2, var: 2, controversy: 3 };
+const PER_DAY: Record<Exclude<NewsKind, "event" | "match">, number> = { signing: 3, sacking: 3, upset: 2, rivalry: 2, var: 2, controversy: 3, award: 2, record: 3 };
 
 type Variant = (names: Record<string, string>) => { headline: string; body: string };
 
@@ -73,6 +75,16 @@ const VAR_STORIES: Record<Exclude<VarDecision, "goalStands">, Variant> = {
   redCardGiven: (n) => ({ headline: `VAR expulsa ${n.player}`, body: `O árbitro foi ao monitor aos ${n.minute}' e trocou o amarelo pelo vermelho. O ${n.club} jogou com um a menos.${n.referee}` }),
   redCardCancelled: (n) => ({ headline: `VAR devolve ${n.player} ao jogo`, body: `O vermelho aos ${n.minute}' caiu depois de ${n.review} de revisão. Alívio no ${n.club}.${n.referee}` }),
 };
+// A record beaten: `whose` is "do Flamengo" or "da Série A".
+const RECORDS: Record<RecordKind, Variant> = {
+  mostSeasonGoals: (n) => ({ headline: `${n.player} faz ${n.value} gols e quebra recorde`, body: `É a maior marca de gols numa temporada ${n.whose}. O recorde anterior era ${n.previous}.` }),
+  youngestScorer: (n) => ({ headline: `${n.player}, ${n.value} anos, entra para a história`, body: `É o goleador mais jovem ${n.whose}. A marca anterior era de um jogador de ${n.previous}.` }),
+  longestUnbeaten: (n) => ({ headline: `${n.club} chega a ${n.value} jogos sem perder`, body: `É a maior invencibilidade ${n.whose}; a série anterior parou em ${n.previous}.` }),
+  biggestWin: (n) => ({ headline: `${n.club} aplica a maior goleada ${n.whose}`, body: `${n.value} gols de diferença; a maior até aqui tinha sido por ${n.previous}.` }),
+};
+const BOLA_DE_OURO: Variant = (n) => ({ headline: `${n.player} é o Bola de Ouro do Brasileirão`, body: `Média ${n.average} em ${n.apps} jogos pelo ${n.club}. A Bola de Prata premia os melhores de cada posição.` });
+const BALLON_DOR: Variant = (n) => ({ headline: `${n.player} ganha a Bola de Ouro da France Football`, body: `O jogador do ${n.club} é eleito o melhor do mundo da temporada.` });
+
 // A wrong call that stood, told as the side it cost (`against`) tells it.
 const WRONG_CALLS: Record<WrongCallKind, (n: Record<string, string>) => string> = {
   goalShouldNotStand: (n) => `O gol de ${n.player} (${n.club}) aos ${n.minute}' saiu em impedimento e valeu.`,
@@ -173,6 +185,21 @@ export function recordNews(state: GameState, date: IsoDate, events: readonly Day
       } else {
         add("controversy", [against, call.clubId], isHumans ? 10 : 1, pick(CONTROVERSIES, `referee:${key}`, { ...names, what: WRONG_CALLS[call.call](names) }));
       }
+    } else if (event.type === "recordBroken") {
+      // A human coach's club's records always make the paper; a league's whoever breaks them.
+      if (event.scope === "club" && !humans.has(event.clubId)) continue;
+      const leagueName = event.competition && Object.values(state.competitions).find((c) => competitionKey(c.id) === event.competition && c.kind === "league");
+      const whose = event.scope === "league" ? `da ${leagueName && leagueName.kind === "league" && leagueName.division ? `Série ${leagueName.division}` : "liga"}` : `do ${name(event.clubId)}`;
+      const names = { player: event.name ?? "", club: name(event.clubId), whose, value: String(event.value), previous: String(event.previous) };
+      add("record", [event.clubId], humans.has(event.clubId) ? 10 : 1, RECORDS[event.kind](names));
+    } else if (event.type === "seasonAwarded") {
+      const { bolaDeOuro, ballonDor } = event.awards;
+      if (bolaDeOuro) {
+        const average = bolaDeOuro.average.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        add("award", [bolaDeOuro.clubId], 2, BOLA_DE_OURO({ player: bolaDeOuro.name, club: name(bolaDeOuro.clubId), average, apps: String(bolaDeOuro.apps) }));
+      }
+      const [best] = ballonDor;
+      if (best) add("award", [best.clubId], 1, BALLON_DOR({ player: best.name, club: best.clubName }));
     } else if (event.type === "coachFired") {
       if (!event.isYou && !(isMajor(event.clubId) || state.clubs[event.clubId]?.division === "B")) continue;
       const names = { club: name(event.clubId), position: String(event.position), target: String(event.targetPosition), coach: state.coachName || "o técnico" };
@@ -190,7 +217,7 @@ export function recordNews(state: GameState, date: IsoDate, events: readonly Day
   }
   if (!stories.length) return state;
   const kept: NewsItem[] = [];
-  for (const kind of ["match", "event", "signing", "sacking", "upset", "rivalry", "var", "controversy"] as const) {
+  for (const kind of ["match", "event", "award", "record", "signing", "sacking", "upset", "rivalry", "var", "controversy"] as const) {
     const own = stories.filter(({ story }) => story.kind === kind).sort((a, b) => b.rank - a.rank);
     const limit = kind === "match" || kind === "event" ? own.length : PER_DAY[kind];
     kept.push(...own.slice(0, limit).map(({ story }) => story));

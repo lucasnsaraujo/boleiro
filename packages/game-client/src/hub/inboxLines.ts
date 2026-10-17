@@ -1,13 +1,15 @@
 import { WRONG_CALL_WORDS } from "../format/refereeCallWords.js";
 import { guestClubOf } from "@boleiro/engine/sim/continental/guestClubs";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
+import type { InjuryKind } from "@boleiro/engine/sim/players/matchInjuryChance";
+import type { Role } from "@boleiro/data/players";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { squadsOfGame } from "@boleiro/engine/sim/players/squadsByClub";
 import { SQUAD_CAP } from "@boleiro/engine/sim/transfers/squadCap";
 import { isInPreContractWindow } from "@boleiro/engine/sim/transfers/tradeBetweenClubs";
 import { copinhaRun } from "@boleiro/engine/sim/youth/copinha";
 import type { AdvanceResult } from "../engine/createEngineSession.js";
-import { competitionName } from "../format/competitionName.js";
+import { competitionKeyName, competitionName } from "../format/competitionName.js";
 import { formatDayMonth, monthName } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
 import { boardGoal } from "../screens/clubChoices.js";
@@ -58,6 +60,48 @@ const REFUSALS: Record<string, string> = {
 export const refusalText = (reason: string | null): string => (reason && REFUSALS[reason]) ?? "pedido negado";
 
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+
+const INJURY_NAMES: Record<Exclude<InjuryKind, "knock">, string> = { muscle: "lesão muscular", ligament: "lesão ligamentar" };
+// A knock that keeps him out more than a week (UEFA's minor band) is news as an injury, not a knock.
+const KNOCK_DAYS = 7;
+
+const ROLE_NAMES: Record<Role, string> = { goleiro: "goleiro", lateral: "lateral", zagueiro: "zagueiro", meia: "meio-campista", atacante: "atacante" };
+
+/** Every prize of the season one of the coach's players won, the biggest first. */
+function awardLines({ season, awards }: Extract<DayEvent, { type: "seasonAwarded" }>, isOurs: (clubId: string) => boolean): [string, InboxTone][] {
+  const lines: [string, InboxTone][] = [];
+  const { bolaDeOuro, bolaDePrata, topScorer, bestYoung, ballonDor } = awards;
+  if (bolaDeOuro && isOurs(bolaDeOuro.clubId)) lines.push([`${bolaDeOuro.name} ganha a Bola de Ouro de ${season}: o melhor do Brasileirão`, "good"]);
+  for (const p of bolaDePrata) if (isOurs(p.clubId)) lines.push([`${p.name} ganha a Bola de Prata de ${ROLE_NAMES[p.role]}`, "good"]);
+  if (topScorer && isOurs(topScorer.clubId)) lines.push([`${topScorer.name} é o artilheiro do Brasileirão, com ${topScorer.goals} gols`, "good"]);
+  if (bestYoung && isOurs(bestYoung.clubId)) lines.push([`${bestYoung.name} é a revelação do Brasileirão`, "good"]);
+  const [best] = ballonDor;
+  if (best && isOurs(best.clubId)) lines.push([`${best.name} ganha a Bola de Ouro da France Football: o melhor do mundo`, "good"]);
+  return lines;
+}
+
+/** A record the coach's club or player broke, in the club's or the league's history. */
+function recordText({ scope, competition, kind, name, value, previous }: Extract<DayEvent, { type: "recordBroken" }>): string {
+  const whose = scope === "league" && competition ? `da ${competitionKeyName(competition)}` : "do clube";
+  switch (kind) {
+    case "mostSeasonGoals":
+      return `Recorde: ${name} chega a ${value} gols e passa o recorde ${whose} numa temporada (${previous})`;
+    case "youngestScorer":
+      return `Recorde: ${name}, ${value} anos, é o goleador mais jovem da história ${whose}`;
+    case "longestUnbeaten":
+      return `Recorde: ${value} jogos sem perder, a maior invencibilidade ${whose}`;
+    case "biggestWin":
+      return `Recorde: a maior goleada da história ${whose}, por ${value} gols de diferença`;
+  }
+}
+
+/** "Pedro lesionado: lesão muscular, 12 dias fora"; a recurrence "volta a se lesionar", a short knock "sente uma pancada". */
+function injuryText(name: string, { kind, days, isRecurrence }: Extract<DayEvent, { type: "playerInjured" }>): string {
+  const out = `${days} dias fora`;
+  if (kind === "knock" && days <= KNOCK_DAYS) return `${name} sente uma pancada: ${out}`;
+  const what = kind && kind !== "knock" ? `${INJURY_NAMES[kind]}, ${out}` : out;
+  return `${name} ${isRecurrence ? "volta a se lesionar" : "lesionado"}: ${what}`;
+}
 
 /**
  * The inbox lines one day's events give the player's coach: his matches, his club's
@@ -111,7 +155,7 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         return [`Diretoria vendeu ${playerName(event.playerId)} por ${formatMoney(event.fee)} (${buyer})`, "bad"];
       }
       case "playerInjured":
-        return isOurs(event.clubId) ? [`${playerName(event.playerId)} lesionado: ${event.days} dias fora`, "bad"] : null;
+        return isOurs(event.clubId) ? [injuryText(playerName(event.playerId), event), "bad"] : null;
       case "playerSuspended":
         return isOurs(event.clubId) ? [`${playerName(event.playerId)} suspenso: ${plural(event.matches, "jogo", "jogos")}`, "bad"] : null;
       case "playerBooked":
@@ -120,6 +164,15 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         return null;
       case "playerRetired":
         return isOurs(event.clubId) ? [`${event.name} se aposenta aos ${event.age} anos`, "neutral"] : null;
+      case "playerWantsToRetire":
+        return isOurs(event.clubId) ? [`${event.name} anuncia que ${event.afterSeason} será sua última temporada. Converse com ele na página do jogador`, "neutral"] : null;
+      case "playerPersuaded":
+        if (!isOurs(event.clubId)) return null;
+        return event.stays ? [`${event.name} aceita jogar mais um ano`, "good"] : [`${event.name} não muda de ideia e para no fim da temporada`, "bad"];
+      case "seasonAwarded":
+        return null;
+      case "recordBroken":
+        return isOurs(event.clubId) ? [recordText(event), "good"] : null;
       case "youthPromoted":
         return isOurs(event.clubId) ? [`${playerName(event.playerId)} sobe da base`, "neutral"] : null;
       case "prospectReleased":
@@ -164,11 +217,6 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         if (event.reason === "cash") return [`${against}: o mandante ficou sem caixa para o cachê`, "bad"];
         return [against, "neutral"];
       }
-      case "playerWantsToRetire":
-        return isOurs(event.clubId) ? [`${event.name} anuncia que ${event.afterSeason} será sua última temporada. Converse com ele na página do jogador`, "neutral"] : null;
-      case "playerPersuaded":
-        if (!isOurs(event.clubId)) return null;
-        return event.stays ? [`${event.name} aceita jogar mais um ano`, "good"] : [`${event.name} não muda de ideia e para no fim da temporada`, "bad"];
       case "fansPressure":
         return isOurs(event.clubId) ? ["Torcida cobra o time", "bad"] : null;
       case "fansProtest":
@@ -253,8 +301,8 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
   }
 
   const lines = events.flatMap((event) => {
-    const found = lineOf(event);
-    return found ? [{ date: before.date, text: found[0], tone: found[1] }] : [];
+    const found = event.type === "seasonAwarded" ? awardLines(event, isOurs) : [lineOf(event)];
+    return found.flatMap((line) => (line ? [{ date: before.date, text: line[0], tone: line[1] }] : []));
   });
   return [...lines, ...preContractWarnings(before, after)];
 }

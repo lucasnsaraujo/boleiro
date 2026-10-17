@@ -12,6 +12,8 @@ import { finishMatchDay } from "./live/finishMatchDay.js";
 import { startMatchDay } from "./live/startMatchDay.js";
 import type { SupporterEvent } from "./morale/escalateSupporters.js";
 import type { PlayerRetired, YouthPromoted } from "./players/developPlayers.js";
+import type { RecordBroken } from "./history/recordFeats.js";
+import type { SeasonAwarded } from "./history/seasonAwards.js";
 import type { PlayerInjured } from "./players/recordMatchLoad.js";
 import type { PlayerPersuaded, PlayerWantsToRetire } from "./players/retirement.js";
 import type { StadiumOpened } from "./stadium/stadiumWorks.js";
@@ -47,6 +49,8 @@ export type DayEvent =
   | PlayerRetired
   | PlayerWantsToRetire
   | PlayerPersuaded
+  | RecordBroken
+  | SeasonAwarded
   | YouthPromoted
   | PrizePaid
   | FriendlyEvent
