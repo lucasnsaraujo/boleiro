@@ -156,6 +156,8 @@ TEMPLATE = re.compile(r"\{\{[^{}]*\}\}")
 MAIN = re.compile(r"\{\{\s*main(?: article)?\s*\|([^}]*)\}\}", re.I)
 # Where a line's derby clause ends and its prose begins: a verb or the end of a sentence outside a link.
 PROSE = re.compile(r"\s(?:was|is|are|were|has|have|had|who|which|since|until|after|when|while)\s|(?<!vs)(?<!\sv)[.;](?:\s|$)")
+# A list's name for a derby in English ("Black Country derby") is left out: the game shows "Clássico".
+ENGLISH_NAME = re.compile(r"\b(?:derby|derbies|rivalry|rivalries)\b", re.I)
 # Words in a derby article's title; a heading link without them is a city or a region, not the derby.
 DERBY_WORDS = ("derby", "derbi", "dérbi", "rivalr", "clásico", "clássico", "classico", "classique", "klassiker", "superclás", "old firm", "–", "-")
 
@@ -175,7 +177,7 @@ def derbies_in_line(line: str, clubs: dict[str, str], resolve: Callable[[str], s
     while TEMPLATE.search(text):
         text = TEMPLATE.sub("", text)
     head, has_colon, _ = text.partition(":")
-    name = plain(head) if has_colon else ""
+    name = plain(head) if has_colon and not ENGLISH_NAME.search(plain(head)) else ""
     masked = LINK.sub(lambda m: "x" * len(m.group(0)), text)
     prose = PROSE.search(masked, len(head) + 1 if has_colon else 0)
     if prose:

@@ -20,6 +20,10 @@ class DerbyLinesTest(unittest.TestCase):
         self.assertEqual(fetch_derbies.derbies_in_line(line, CLUBS, resolve),
                          [Derby(clubs=("bahia-ba", "vitoria-ba"), name="Ba–Vi", article="")])
 
+    def test_leaves_an_english_name_out_for_the_game_to_call_it_a_classico(self) -> None:
+        line = "* Rivalry of the Andes derby: [[Atlético Nacional]] vs. [[Millonarios F.C.|Millonarios]]"
+        self.assertEqual(fetch_derbies.derbies_in_line(line, CLUBS, resolve)[0].name, "")
+
     def test_keeps_the_derby_article_the_line_links_to(self) -> None:
         line = "* [[Atlético Nacional–Millonarios F.C. rivalry|Rivalry amongst Atlético Nacional and Millonarios]]"
         self.assertEqual(fetch_derbies.derbies_in_line(line, CLUBS | {"Atlético Nacional–Millonarios F.C. rivalry": ""}, resolve), [])
