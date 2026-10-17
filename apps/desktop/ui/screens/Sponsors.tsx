@@ -286,6 +286,8 @@ function BetCard({ page, brand, chosen, oddsMatch }: { page: SponsorsPage; brand
   const betYearly = isOffer ? chosen.yearly : (page.contracts.find((c) => c.slot === "master" && c.isBetting)?.yearly ?? 0);
   const paysMore = cleanBest > 0 ? betYearly - cleanBest : 0;
   const hasBetOnKit = page.contracts.some((c) => c.isBetting);
+  // To a tenth of a point, as the card shows it.
+  const giveBack = Number(page.fanCostLeft.toFixed(1));
   return (
     <section className="stk spo-bet" aria-label={`${brand.name} é casa de aposta`}>
       <h2>
@@ -302,14 +304,18 @@ function BetCard({ page, brand, chosen, oddsMatch }: { page: SponsorsPage; brand
             <i className="ph-bold ph-arrow-down dn" aria-hidden="true" />
             <span>
               {!isOffer ? (
-                <>
-                  Sem aposta na camisa, a torcida ganha <b>+{BETTING_FAN_COST}</b>
-                </>
+                giveBack > 0 ? (
+                  <>
+                    Sem aposta na camisa, a torcida recupera <b>+{giveBack.toLocaleString("pt-BR")}</b>
+                  </>
+                ) : (
+                  <>A torcida já se acostumou com a aposta na camisa</>
+                )
               ) : hasBetOnKit ? (
                 <>A camisa já tem aposta: a torcida não muda</>
               ) : (
                 <>
-                  Torcida <b>−{BETTING_FAN_COST}</b> enquanto durar
+                  Torcida <b>−{BETTING_FAN_COST}</b> ao fechar, que passa aos poucos com os jogos
                 </>
               )}
             </span>

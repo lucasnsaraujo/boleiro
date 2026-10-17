@@ -4,6 +4,7 @@ import type { ClubFinance, GameState, IsoDate } from "../gameState.js";
 import { humanClubIds, waitingCoachesOf } from "../coach/humanCoaches.js";
 import type { LeagueOutcome } from "../leagueFormats.js";
 import { clubMood } from "../morale/clubMood.js";
+import { MOOD_MEMORY } from "../morale/reactToDay.js";
 import {
   brandsForSlot,
   clubSizeOf,
@@ -40,7 +41,7 @@ const SIZE_PREMIUM = { giant: 1.15, large: 1, medium: 0.9, small: 0.8 } as const
 // guess: a betting house outbids the rest by about a third (Betano pays Flamengo far more than any brand
 // outside betting would; the approved mock's "R$ 150 mi a mais" is that one deal).
 const BETTING_PREMIUM = 1.35;
-/** Fan mood a betting house on the kit costs while it stays there (approved sponsors mock: "Torcida −2%"). */
+/** Fan mood a betting house costs when it goes on the kit (approved sponsors mock: "Torcida −2%"); it fades with the matches as any mood does. */
 export const BETTING_FAN_COST = 2;
 // guess: a game deal pays a tenth of its yearly value for a title and a twentieth for a continental place.
 const TITLE_BONUS_SHARE = 0.1;
@@ -72,6 +73,18 @@ function withFinance(state: GameState, clubId: string, change: (finance: ClubFin
 
 /** Whether a club's kit shows a betting house in any place. */
 const hasBettingSponsor = (sponsors: Pick<ClubSponsors, "contracts">): boolean => sponsors.contracts.some((c) => c.isBetting);
+
+/**
+ * What is left today of the fans' cost for the betting house the club signed: it fades match by match as the
+ * fans' mood does (reactToDay.ts). Nothing for a kit without one, or one the data put there; and a cost from
+ * an earlier season, faded over its matches, which a new season's fixtures no longer list.
+ */
+export function bettingFanCostLeft(state: Pick<GameState, "sponsors" | "fixtures" | "season">, clubId: string): number {
+  const since = state.sponsors?.[clubId]?.bettingSince;
+  if (!since || Number(since.slice(0, 4)) < state.season) return 0;
+  const matches = state.fixtures.filter((f) => f.result && f.date >= since && (f.homeId === clubId || f.awayId === clubId)).length;
+  return BETTING_FAN_COST * MOOD_MEMORY ** matches;
+}
 
 function withFans(state: GameState, clubId: string, change: number): GameState {
   if (change === 0) return state;
@@ -187,12 +200,14 @@ function putOnKit(state: GameState, clubId: string, offer: SponsorOffer): GameSt
   const contract = contractOf(offer, state.season);
   const past = old ? [...sponsors.past, { slot: old.slot, brandId: old.brandId, brandName: old.brandName, yearly: old.yearly, endedOn: state.date, reason: "replaced" as const }] : sponsors.past;
   const contracts = [...sponsors.contracts.filter((c) => c !== old), contract].sort((a, b) => SPONSOR_SLOTS.indexOf(a.slot) - SPONSOR_SLOTS.indexOf(b.slot));
-  const kept = { contracts, offers: sponsors.offers.filter((o) => !isSamePlace(o, offer)), past };
   const wasBetting = hasBettingSponsor(sponsors);
-  const isBetting = hasBettingSponsor(kept);
+  const isBetting = hasBettingSponsor({ contracts });
+  const bettingSince = !isBetting ? undefined : wasBetting ? sponsors.bettingSince : state.date;
+  const kept: ClubSponsors = { contracts, offers: sponsors.offers.filter((o) => !isSamePlace(o, offer)), past, ...(bettingSince ? { bettingSince } : {}) };
   const gain = contract.yearly - placeValueOf(sponsors, offer);
   const moved = withFinance(withClubSponsors(state, clubId, kept), clubId, (f) => ({ ...f, sponsorship: f.sponsorship + gain }));
-  return withFans(moved, clubId, wasBetting === isBetting ? 0 : isBetting ? -BETTING_FAN_COST : BETTING_FAN_COST);
+  // The fans pay for a betting house when it comes and get back what is left of that when the last one goes.
+  return withFans(moved, clubId, wasBetting === isBetting ? 0 : isBetting ? -BETTING_FAN_COST : bettingFanCostLeft(state, clubId));
 }
 
 function contractOf(offer: SponsorOffer, season: number): SponsorContract {

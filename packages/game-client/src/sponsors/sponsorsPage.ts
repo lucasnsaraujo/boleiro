@@ -1,6 +1,7 @@
 import { SPONSOR_SLOTS, type SponsorSlot } from "@boleiro/data/sponsors";
 import type { Fixture, GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import { bookmakerOdds, type MatchPrices } from "@boleiro/engine/sim/sponsors/bookmakerOdds";
+import { bettingFanCostLeft } from "@boleiro/engine/sim/sponsors/sponsorDeals";
 import type { DealBasis, DealBonuses, PastDeal, SponsorContract, SponsorOffer } from "@boleiro/engine/sim/sponsors/sponsors";
 import { matchClubOf } from "@boleiro/engine/sim/players/matchSetup";
 
@@ -45,6 +46,8 @@ export type SponsorsPage = {
   nextMatch: MatchOddsSticker | null;
   /** The best yearly offer outside betting for the master, when the master is a betting house and such an offer is on the table. */
   bestOtherMaster: number | null;
+  /** The fan mood taking the betting houses off the kit would give back: what is left of their cost (bettingFanCostLeft). */
+  fanCostLeft: number;
 };
 
 const bySlot = (a: { slot: SponsorSlot }, b: { slot: SponsorSlot }) => SPONSOR_SLOTS.indexOf(a.slot) - SPONSOR_SLOTS.indexOf(b.slot);
@@ -106,5 +109,6 @@ export function sponsorsPageOf(state: GameState): SponsorsPage | null {
     bet: betStickerOf(state),
     nextMatch: sponsors.offers.some((o) => o.isBetting) ? nextMatchOdds(state) : null,
     bestOtherMaster: master?.isBetting && otherMasters.length ? Math.max(...otherMasters) : null,
+    fanCostLeft: bettingFanCostLeft(state, clubId),
   };
 }

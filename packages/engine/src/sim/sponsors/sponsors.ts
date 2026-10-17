@@ -52,8 +52,11 @@ export type SponsorOffer = {
 /** A deal that left the kit: replaced by another brand, or ended. */
 export type PastDeal = { slot: SponsorSlot; brandId: string; brandName: string; yearly: number; endedOn: IsoDate; reason: "replaced" | "ended" };
 
-/** A club's deals; only a human coach's club gets offers and keeps its past deals. */
-export type ClubSponsors = { contracts: SponsorContract[]; offers: SponsorOffer[]; past: PastDeal[] };
+/**
+ * A club's deals; only a human coach's club gets offers and keeps its past deals. `bettingSince` is the day
+ * a betting house signed in the game went on a kit that had none, which cost the fans; left out otherwise.
+ */
+export type ClubSponsors = { contracts: SponsorContract[]; offers: SponsorOffer[]; past: PastDeal[]; bettingSince?: IsoDate };
 
 /** A brand of the offer pool, kept with the game. */
 export type PoolBrand = Pick<Brand, "id" | "name" | "sector"> & { size: BrandSize };

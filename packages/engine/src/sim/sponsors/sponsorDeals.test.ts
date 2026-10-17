@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Brand, ShirtDeal } from "@boleiro/data/sponsors";
 import type { GameState } from "../gameState.js";
+import { advanceDay } from "../advanceDay.js";
 import { addDays } from "../dates.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { clubMood } from "../morale/clubMood.js";
@@ -106,6 +107,27 @@ describe("sponsor offers", () => {
     const betting = swap(clean, "bet", true);
     expect(clubMood(betting, COACH).fans).toBe(clubMood(clean, COACH).fans - 2);
     expect(clubMood(swap(betting, "bank", false), COACH).fans).toBe(clubMood(clean, COACH).fans);
+  });
+
+  it("gives the fans back only what a betting house's cost still weighs when it leaves, so putting one on and off gains them nothing", () => {
+    const swap = (state: GameState, brandId: string, isBetting: boolean) => {
+      const master = own(state).contracts.find((c) => c.slot === "master");
+      if (!master) throw new Error("no master");
+      const offer = { id: brandId, slot: "master" as const, brandId, brandName: brandId, isBetting, yearly: 10 * MI, years: 1, decideBy: "2026-02-01", replacesBrandId: master.brandId, placeValue: master.yearly };
+      return signSponsorOffer({ ...state, sponsors: { ...state.sponsors, [COACH]: { ...own(state), offers: [offer] } } }, COACH, brandId);
+    };
+    const playMatches = (state: GameState, count: number) => {
+      let next = state;
+      const played = () => next.fixtures.filter((f) => f.result && (f.homeId === COACH || f.awayId === COACH)).length;
+      while (played() < count) next = advanceDay(next, {}).state;
+      return next;
+    };
+    const start = game();
+    const clean = swap({ ...start, coach: { ...start.coach, picksSponsors: true } }, "bigbank", false);
+    const betting = playMatches(swap(clean, "bet", true), 3);
+    const twin = playMatches(clean, 3);
+    expect(clubMood(betting, COACH).fans).toBeLessThan(clubMood(twin, COACH).fans);
+    expect(clubMood(swap(betting, "bank", false), COACH).fans).toBeCloseTo(clubMood(twin, COACH).fans, 9);
   });
 
   it("refuses an offer the coach's club doesn't have", () => {
