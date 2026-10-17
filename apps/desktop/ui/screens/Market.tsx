@@ -1,30 +1,38 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
+import type { GameState } from "@boleiro/engine/sim/gameState";
 import type { BidAnswer } from "@boleiro/engine/sim/transfers/answerBid";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import type { SaleWay } from "@boleiro/engine/sim/transfers/listPlayer";
 import { formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
+import type { AssistantPage } from "@boleiro/game-client/assistant/assistantPage";
 import type { BoardDesk } from "@boleiro/game-client/market/boardDesk";
 import type { MarketFilters } from "@boleiro/game-client/market/marketFilters";
 import type { Scouting } from "@boleiro/game-client/market/scouting";
 import { useServices } from "../app/ServicesContext.js";
+import { signingSuggestions } from "../assistant/signingSuggestions.js";
 import { boardSummary } from "../finances/financeSummary.js";
 import { bidSheets } from "../market/bidSheets.js";
-import { BuyView, MARKET_KEYS, type MarketState } from "../market/BuyView.js";
+import { BuyView, MARKET_KEYS } from "../market/BuyView.js";
 import { windowStatus } from "../market/marketSearch.js";
 import { SellView } from "../market/SellView.js";
 import "./market.css";
 
 type Tab = "busca" | "propostas";
 const TAB_PARAM = "aba";
+// The player the screen opens on, sent from the assistant's suggestions.
+const FOCUS_PARAM = "jogador";
+const KEYS = [...MARKET_KEYS, "seed", "season"] as const;
 
 /** Busca: the coach's market, buying on one tab and the offers for his own players on the other. */
 export function Market() {
   const { engine } = useServices();
   const [params, setParams] = useSearchParams();
   const tab: Tab = params.get(TAB_PARAM) === "propostas" ? "propostas" : "busca";
-  const [state, setState] = useState<MarketState | null>(null);
+  const [state, setState] = useState<Pick<GameState, (typeof KEYS)[number]> | null>(null);
+  const [advice, setAdvice] = useState<AssistantPage | null>(null);
+  const focusId = params.get(FOCUS_PARAM);
   const [desk, setDesk] = useState<BoardDesk | null>(null);
   const [scouting, setScouting] = useState<Scouting | null>(null);
   const [failed, setFailed] = useState(false);
@@ -33,10 +41,11 @@ export function Market() {
 
   const load = useCallback(
     (isCurrent: () => boolean = () => true) =>
-      Promise.all([engine.read(MARKET_KEYS), engine.desk(), engine.marketClock(), engine.scouting()]).then(
-        ([read, onDesk, clock, scouted]) => {
+      Promise.all([engine.read(KEYS), engine.desk(), engine.marketClock(), engine.scouting(), engine.assistant()]).then(
+        ([read, onDesk, clock, scouted, assistantPage]) => {
           if (!isCurrent()) return;
           setState(read);
+          setAdvice(assistantPage);
           setDesk(onDesk);
           setScouting(scouted);
           setOutOfTime(clock?.leftSeconds === 0);
@@ -44,6 +53,12 @@ export function Market() {
         () => isCurrent() && setFailed(true),
       ),
     [engine],
+  );
+
+  // The assistant's suggestions for his weak-position tip, as his own screen lists them.
+  const suggested = useMemo(
+    () => (state && advice?.tip && scouting ? signingSuggestions(state, advice.assistant, advice.tip, new Set(scouting.watchList)).rows : []),
+    [state, advice, scouting],
   );
 
   useEffect(() => {
@@ -145,6 +160,8 @@ export function Market() {
           onWatch={watch}
           onSaveFilter={saveFilter}
           onDeleteFilter={deleteFilter}
+          focusId={focusId}
+          suggested={suggested}
         />
       ) : (
         <SellView state={state} tabs={tabs} onAnswer={answer} onList={list} />

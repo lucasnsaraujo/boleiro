@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { Navigate, type RouteObject } from "react-router";
+import { Assistant } from "../screens/Assistant.js";
 import { Awards } from "../screens/Awards.js";
 import { Calendar } from "../screens/Calendar.js";
 import { Chemistry } from "../screens/Chemistry.js";
@@ -48,6 +49,7 @@ const ELEMENTS: Record<ScreenPath, ReactElement> = {
   "/newspaper": <Newspaper />,
   "/chemistry": <Chemistry />,
   "/awards": <Awards />,
+  "/assistant": <Assistant />,
 };
 
 export const routes: RouteObject[] = [

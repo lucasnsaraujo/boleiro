@@ -41,10 +41,7 @@ const offersText = (count: number) => `${count} ${count === 1 ? "proposta" : "pr
 const INBOX_LINES = 7;
 
 /** The features of the dock that have no screen yet, greyed out until their slices land. */
-const LATER = [
-  { label: "Patrocínio", icon: "handshake", title: "Patrocínios" },
-  { label: "Auxiliar", icon: "user-switch", title: "Auxiliar técnico" },
-] as const;
+const LATER = [{ label: "Patrocínio", icon: "handshake", title: "Patrocínios" }] as const;
 
 export function Hub() {
   const { engine, game: open } = useServices();
@@ -260,6 +257,10 @@ export function Hub() {
               {label}
             </span>
           ))}
+          <Link to="/assistant" className="hub-dock-item" title="Auxiliar técnico">
+            <i className="ph-bold ph-user-switch" aria-hidden="true" />
+            Auxiliar
+          </Link>
           {club ? (
             <Link to="/chemistry" className="hub-dock-item" title="Entrosamento">
               <i className="ph-bold ph-users-three" aria-hidden="true" />
