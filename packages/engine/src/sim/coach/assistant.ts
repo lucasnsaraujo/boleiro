@@ -43,9 +43,9 @@ export type AssistantRefusal = "noClub" | "unknown" | "wageCap";
  * https://exame.com/esporte/qual-o-salario-do-filipe-luis-tecnico-campeao-da-libertadores/) and his
  * staff of four assistants costing about R$ 800k with him (Terra Brasil Notícias, 2024-11,
  * https://terrabrasilnoticias.com/2024/11/voce-nao-vai-acreditar-no-salario-de-filipe-luis-como-tecnico-do-flamengo/),
- * about 40% of his salary each. guess: a top lead assistant earns more than that average, a modest one far less.
+ * about 40% of his salary each. guess: a top lead assistant earns that, a modest one far less.
  */
-const WAGE_SHARE: Record<Exclude<AssistantLevel, 1>, number> = { 2: 0.12, 3: 0.22, 4: 0.38, 5: 0.55 };
+const WAGE_SHARE: Record<Exclude<AssistantLevel, 1>, number> = { 2: 0.1, 3: 0.18, 4: 0.28, 5: 0.4 };
 // guess: a former player of the coach's asks for this share of a stranger's wage at his level: he wants the job.
 const FORMER_PLAYER_DISCOUNT = 0.6;
 // guess: a retired star (peak 80+, a Série A star) reads the game like the best assistants; a solid
