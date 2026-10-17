@@ -1,3 +1,4 @@
+import { EggNoteCard } from "../eggs/EggNoteCard.js";
 import { useLayoutEffect, useRef, useState } from "react";
 import { FULL_TIME, HALF_TIME } from "@boleiro/engine/sim/live/matchTimeline";
 import type { VarDecision, WrongCallKind } from "@boleiro/engine/sim/referees/refereeCalls";
@@ -178,11 +179,14 @@ function Summary({ page, view }: TabProps) {
         <Incidents page={page} view={view} />
       </div>
       <aside className="mf-notes" aria-label="Curiosidades">
-        {page.curiosities.length === 0 ? (
+        {page.eggs.map((note, index) => (
+          <EggNoteCard key={note.eggId} note={note} className="mf-note mf-egg" style={{ ["--i" as string]: index }} />
+        ))}
+        {page.curiosities.length === 0 && page.eggs.length === 0 ? (
           <p className="note mf-note">Nada fora do comum neste jogo.</p>
         ) : (
           page.curiosities.map((text, index) => (
-            <p key={index} className="note mf-note" style={{ ["--i" as string]: index }}>
+            <p key={index} className="note mf-note" style={{ ["--i" as string]: page.eggs.length + index }}>
               <span className="lbl">Curiosidade</span>
               {text}
             </p>

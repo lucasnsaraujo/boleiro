@@ -10,7 +10,7 @@ import { applyEffects } from "./applyEffects.js";
 import { EVENT_BANK } from "./eventBank.js";
 import { eventMemoryOf, type Cast, type EventMemory, type EventRecord, type NewsItem, type PendingEvent, type PendingQuestion } from "./eventMemory.js";
 import { byCast, type EventScene, type EventType, type PressQuestionType } from "./eventType.js";
-import { fillSlots, type Slots } from "./fillSlots.js";
+import { fillSlots, type SlotArticles } from "./fillSlots.js";
 
 /** An event happened at a club; `asksCoach` when it waits for a human coach's answer as a pop-up. */
 export type EventHappened = { type: "eventHappened"; clubId: string; typeId: string; headline: string; asksCoach: boolean };
@@ -58,11 +58,16 @@ function assistantAreasOf(state: GameState, clubId: string) {
   return waitingCoachesOf(state).find((coach) => coach.clubId === clubId)?.coach.assistantAreas ?? [];
 }
 
-function slotsOf(state: GameState, clubId: string, cast: Cast): Slots {
+/** The names an event's texts take at `clubId`, and the articles its club, rival and stadium take. */
+type EventSlots = { names: Record<string, string>; articles: SlotArticles };
+
+const filled = (text: string, slots: EventSlots) => fillSlots(text, slots.names, slots.articles);
+
+function slotsOf(state: GameState, clubId: string, cast: Cast): EventSlots {
   const club = state.clubs[clubId];
   const player = cast.playerId ? state.players[cast.playerId] : undefined;
-  return {
-    articles: { club: clubArticle(clubId), rival: cast.rivalId ? clubArticle(cast.rivalId) : "o", stadium: stadiumArticle(club?.stadium ?? "") },
+  const articles: SlotArticles = { club: clubArticle(clubId), rival: cast.rivalId ? clubArticle(cast.rivalId) : "o", stadium: stadiumArticle(club?.stadium ?? "") };
+  const names = {
     club: club?.shortName ?? clubId,
     stadium: club?.stadium ?? "",
     coach: coachNameOf(state, clubId) ?? "o técnico",
@@ -73,6 +78,7 @@ function slotsOf(state: GameState, clubId: string, cast: Cast): Slots {
     age: player ? String(player.age) : "",
     position: player ? POSITION_WORDS[player.group] : "",
   };
+  return { names, articles };
 }
 
 const POSITION_WORDS: Record<SimPlayer["group"], string> = { GK: "goleiro", DEF: "defensor", MID: "meia", ATT: "atacante" };
@@ -128,7 +134,7 @@ function settle(state: GameState, pending: PendingEvent, answers: readonly numbe
   const { clubId } = pending;
   const cast = castOf(pending);
   const news = questions.map((question, index) => newsOf(type, question.id, answers[index] ?? -1)).find((headline) => headline !== undefined);
-  const headline = news ? fillSlots(news, slotsOf(state, clubId, cast)) : pending.headline;
+  const headline = news ? filled(news, slotsOf(state, clubId, cast)) : pending.headline;
   const isConference = pending.questions !== undefined;
   const record: EventRecord = { typeId: pending.typeId, date: pending.date, clubId, ...cast, choice: answers.at(-1) ?? 0, ...(isConference ? { questionIds: questions.map((q) => q.id), answers: [...answers] } : {}) };
   const said = (label: string) => label.replace(/[^.!?”]$/, "$&.");
@@ -173,7 +179,7 @@ export function answerEvent(state: GameState, clubId: string, choice: number | n
     const waiting: PendingEvent = { ...pending, answers: [...given, choice], body: next.ask, choices: next.choices, assistantChoice: next.assistantChoice };
     const asked = withMemory(state, (memory) => ({ ...memory, pending: { ...memory.pending, [clubId]: waiting } }));
     const news = newsOf(type, current.id, choice);
-    const headline = news ? fillSlots(news, slotsOf(state, clubId, castOf(pending))) : "";
+    const headline = news ? filled(news, slotsOf(state, clubId, castOf(pending))) : "";
     return { state: applyEffects(asked, clubId, castOf(pending), answer.effects, date), event: answered(headline, questions.length - given.length - 1) };
   }
   const answers = [...given, picked, ...questions.slice(given.length + 1).map((question) => question.assistantChoice)];
@@ -258,15 +264,15 @@ function happen(state: GameState, scene: EventScene, drawn: { type: EventType; c
   const followUps = type.choices?.length && type.followUps ? followUpsFor(scene, drawn.cast, type.followUps, random) : null;
   const cast = followUps?.cast ?? drawn.cast;
   const slots = slotsOf(state, clubId, cast);
-  const headline = fillSlots(text.headline, slots);
-  const body = fillSlots(text.body, slots);
+  const headline = filled(text.headline, slots);
+  const body = filled(text.body, slots);
   const record: EventRecord = { typeId: type.id, date, clubId, ...cast };
   const happened: EventHappened = { type: "eventHappened", clubId, typeId: type.id, headline, asksCoach };
   if (type.choices?.length) {
     const choicesOf = (choices: NonNullable<EventType["choices"]>) =>
       choices.map((choice) => ({
-        label: fillSlots(choice.label, slots),
-        ...(choice.detail ? { detail: fillSlots(choice.detail, slots) } : {}),
+        label: filled(choice.label, slots),
+        ...(choice.detail ? { detail: filled(choice.detail, slots) } : {}),
         effects: byCast(choice.effects, scene, cast),
       }));
     const choices = choicesOf(type.choices);
@@ -276,7 +282,7 @@ function happen(state: GameState, scene: EventScene, drawn: { type: EventType; c
           { id: type.id, ask: body, choices, assistantChoice },
           ...followUps.asked.map((question) => ({
             id: question.id,
-            ask: fillSlots(question.asks[Math.floor(random() * question.asks.length)] ?? "", slots),
+            ask: filled(question.asks[Math.floor(random() * question.asks.length)] ?? "", slots),
             choices: choicesOf(question.choices),
             assistantChoice: question.assistantChoice ?? 0,
           })),
@@ -289,7 +295,7 @@ function happen(state: GameState, scene: EventScene, drawn: { type: EventType; c
       look: type.look ?? "card",
       headline,
       body,
-      setting: fillSlots(type.setting ?? "", slots),
+      setting: filled(type.setting ?? "", slots),
       choices,
       assistantChoice,
       expiresOn: nextMatchDay(state, clubId, date) ?? addDays(date, ANSWER_DAYS_WITHOUT_MATCH),

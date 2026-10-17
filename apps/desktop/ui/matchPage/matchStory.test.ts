@@ -42,6 +42,7 @@ function pageOf(events: MatchEvent[], change: Partial<MatchPage> = {}): MatchPag
     officials: { referee: null, hasVar: false },
     meetings: [],
     curiosities: [],
+    eggs: [],
     ...change,
   };
 }

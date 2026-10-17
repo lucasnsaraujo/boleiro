@@ -77,6 +77,7 @@ export function connectEngine(port: EngineWorker): EngineClient {
     marketClock: () => send({ method: "marketClock", args: [] }),
     scouting: () => send({ method: "scouting", args: [] }),
     pendingEvent: () => send({ method: "pendingEvent", args: [] }),
+    eggAlbum: () => send({ method: "eggAlbum", args: [] }),
     newspaper: (...args) => send({ method: "newspaper", args }),
     newspaperEditions: () => send({ method: "newspaperEditions", args: [] }),
     save: () => send({ method: "save", args: [] }),

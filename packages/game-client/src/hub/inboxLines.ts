@@ -316,6 +316,8 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
       case "eventAnswered":
         // A press conference reaches the inbox once, when its last question is answered.
         return isOurs(event.clubId) && !event.questionsLeft ? [event.byAssistant ? `${event.topic}: o auxiliar respondeu “${event.answer.replace(/^“|”$/g, "")}”` : event.headline, "neutral"] : null;
+      case "eggFound":
+        return isOurs(event.clubId) ? [`Raridade: ${event.headline}`, "good"] : null;
       case "sponsorOffers":
         return isOurs(event.clubId) ? [`${plural(event.count, "proposta", "propostas")} de patrocínio na mesa`, "neutral"] : null;
       case "sponsorSigned": {

@@ -77,3 +77,13 @@ test("files the events of the round under their own sections, and a story from a
     "Atraso no treino": "Bastidores",
   });
 });
+
+test("an easter egg prints in the side column under Almanaque, ahead of the other beats", () => {
+  const latest = newspaperOf(game);
+  if (!latest) throw new Error("no edition");
+  const memory = eventMemoryOf(game);
+  const egg = { date: latest.date, kind: "egg" as const, clubIds: ["palmeiras-sp"], headline: "Gol olímpico de alguém", body: "Direto do escanteio." };
+  const withEgg = { ...game, eventMemory: { ...memory, news: [...memory.news, egg] } };
+  const side = newspaperOf(withEgg, latest.date)?.side ?? [];
+  expect(side[0]).toMatchObject({ kicker: "Almanaque", headline: "Gol olímpico de alguém" });
+});

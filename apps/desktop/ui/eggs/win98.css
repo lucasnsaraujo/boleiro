@@ -1,0 +1,484 @@
+/*
+ * The 98 round: the Álbum's tokens swapped for the grey of a 1998 PC window, drawn here from scratch.
+ * Every surface keeps its job; only the paint changes, so the round plays exactly as before.
+ * Faces #c0c0c0, light #dfdfdf, shadow #808080, dark #000, title bars navy into blue, the desktop teal.
+ * Text stays at 4.5:1 or more on its face in both themes.
+ */
+[data-skin="win98"] {
+  --w98-face: #c0c0c0;
+  --w98-light: #dfdfdf;
+  --w98-hi: #ffffff;
+  --w98-shadow: #808080;
+  --w98-dark: #000000;
+  --w98-desktop: #008b8b;
+  --w98-title-a: #000080;
+  --w98-title-b: #1084d0;
+  --w98-field: #ffffff;
+  --w98-progress: #000080;
+  --w98-raised: inset -1px -1px var(--w98-dark), inset 1px 1px var(--w98-hi), inset -2px -2px var(--w98-shadow), inset 2px 2px var(--w98-light);
+  --w98-sunken: inset -1px -1px var(--w98-hi), inset 1px 1px var(--w98-shadow), inset -2px -2px var(--w98-light), inset 2px 2px var(--w98-dark);
+
+  --paper: var(--w98-face);
+  --paper-2: var(--w98-light);
+  --paper-tex: none;
+  --card: var(--w98-face);
+  --ink: #000000;
+  --ink-2: #000000;
+  --mute: #404040;
+  --line: var(--w98-shadow);
+  --line-2: var(--w98-shadow);
+  --rule: #b4b4b4;
+  --edge: var(--w98-dark);
+
+  --green: #005800;
+  --green-d: #003800;
+  --green-l: #c8e0c8;
+  --yellow: #ffff00;
+  --yellow-d: #a8a800;
+  --yellow-l: #ffffe1;
+  --blue: #000080;
+  --red: #a00000;
+  --red-l: #ffd8d8;
+  --later: #604000;
+  --note: #ffffe1;
+  --note-ink: #000000;
+  --foil: var(--w98-face);
+
+  --on-green: #ffffff;
+  --on-yellow: #000000;
+  --on-red: #ffffff;
+
+  --bar: var(--w98-face);
+  --bar-d: var(--w98-shadow);
+  --bar-ink: #000000;
+
+  --pos-g: #808000;
+  --pos-l: #000080;
+  --pos-z: #000080;
+  --pos-m: #005800;
+  --pos-a: #a00000;
+
+  --f: Tahoma, "MS Sans Serif", "Microsoft Sans Serif", Verdana, sans-serif;
+  --r-s: 0px;
+  --r-m: 0px;
+  --r-l: 0px;
+  --r-pill: 0px;
+
+  --sh-sticker: var(--w98-raised);
+  --sh-lift: var(--w98-raised), 2px 2px 0 rgba(0, 0, 0, 0.35);
+  --sh-page: var(--w98-raised);
+  --sh-pop: var(--w98-raised), 0 0 0 1px var(--w98-dark);
+  --sh-press: var(--w98-raised);
+  --veil: rgba(0, 0, 0, 0.18);
+}
+
+/* At night the same machine in its dark scheme: charcoal faces, white text, the same navy title bars. */
+[data-skin="win98"][data-theme="dark"] {
+  --w98-face: #2f2f2f;
+  --w98-light: #4a4a4a;
+  --w98-hi: #6a6a6a;
+  --w98-shadow: #1a1a1a;
+  --w98-dark: #000000;
+  --w98-desktop: #004c4c;
+  --w98-field: #1c1c1c;
+  --w98-progress: #5b8cff;
+
+  --ink: #ffffff;
+  --ink-2: #ffffff;
+  --mute: #c0c0c0;
+  --rule: #3c3c3c;
+  --green: #5fd35f;
+  --green-d: #2e8b2e;
+  --green-l: #1f3a1f;
+  --yellow-l: #3a3a10;
+  --blue: #9a9aff;
+  --red: #ff6a6a;
+  --red-l: #4a1c1c;
+  --later: #e8c15a;
+  --note: #3a3a10;
+  --note-ink: #ffffe1;
+  --on-green: #000000;
+  --on-red: #000000;
+  --bar-ink: #ffffff;
+  --pos-g: #8a8a20;
+  --pos-l: #3d4fd0;
+  --pos-z: #3d4fd0;
+  --pos-m: #2e7d2e;
+  --pos-a: #b02020;
+}
+
+[data-skin="win98"] body {
+  font-stretch: 100%;
+  -webkit-font-smoothing: none;
+}
+
+[data-skin="win98"] ::selection {
+  background: var(--w98-title-a);
+  color: #fff;
+}
+
+[data-skin="win98"] :focus-visible {
+  outline: 1px dotted var(--ink);
+  outline-offset: -4px;
+}
+
+/* The desktop shows round the game's window, which runs from the title bar down to the taskbar. */
+[data-skin="win98"] .app {
+  background: var(--w98-desktop);
+  padding: 4px 4px 0;
+}
+
+[data-skin="win98"] .app > .bar,
+[data-skin="win98"] .app > .screen {
+  background: var(--w98-face);
+  box-shadow:
+    inset 1px 0 var(--w98-hi),
+    inset -1px 0 var(--w98-dark),
+    inset 2px 0 var(--w98-light),
+    inset -2px 0 var(--w98-shadow);
+}
+
+[data-skin="win98"] .app > .screen {
+  box-shadow:
+    inset 1px 0 var(--w98-hi),
+    inset -1px 0 var(--w98-dark),
+    inset 2px 0 var(--w98-light),
+    inset -2px 0 var(--w98-shadow),
+    inset 0 -1px var(--w98-dark),
+    inset 0 -2px var(--w98-shadow);
+}
+
+/* The flag's stitched stripe under the bar has no place on a 1998 toolbar. */
+[data-skin="win98"] .bar::after,
+[data-skin="win98"] .bar::before {
+  display: none;
+}
+
+[data-skin="win98"] .bar .ic {
+  color: #000;
+}
+
+[data-skin="win98"][data-theme="dark"] .bar .ic {
+  color: #fff;
+}
+
+[data-skin="win98"] .bar .ic:hover {
+  box-shadow: inset -1px -1px var(--w98-shadow), inset 1px 1px var(--w98-hi);
+}
+
+[data-skin="win98"] .bar .ic-plate {
+  background: var(--w98-light);
+  color: inherit;
+  box-shadow: var(--w98-sunken);
+  transform: none;
+}
+
+/* Buttons: a raised grey face that sinks when pressed, and never moves. */
+[data-skin="win98"] .btn,
+[data-skin="win98"] .btn.go,
+[data-skin="win98"] .btn.y,
+[data-skin="win98"] .btn.no {
+  border: none;
+  box-shadow: var(--w98-raised);
+  font-stretch: 100%;
+  letter-spacing: 0;
+  transition: none;
+}
+
+[data-skin="win98"] .btn:not(.go, .y, .no) {
+  background: var(--w98-face);
+}
+
+[data-skin="win98"] .btn:hover {
+  transform: none;
+  box-shadow: var(--w98-raised);
+}
+
+[data-skin="win98"] .btn:active {
+  transform: none;
+  box-shadow: var(--w98-sunken);
+  padding-top: 1px;
+}
+
+[data-skin="win98"] .chip {
+  font-stretch: 100%;
+  box-shadow: inset -1px -1px var(--w98-shadow), inset 1px 1px var(--w98-hi);
+}
+
+[data-skin="win98"] .x,
+[data-skin="win98"] .t-display,
+[data-skin="win98"] .t-title,
+[data-skin="win98"] .t-head,
+[data-skin="win98"] .t-score,
+[data-skin="win98"] .lbl {
+  font-stretch: 100%;
+  letter-spacing: 0;
+}
+
+[data-skin="win98"] .meter {
+  box-shadow: var(--w98-sunken);
+  background: var(--w98-field);
+  padding: 2px;
+}
+
+/* Progress bars of the time filled in blocks. */
+[data-skin="win98"] .meter > i {
+  background: repeating-linear-gradient(90deg, var(--w98-progress) 0 8px, transparent 8px 10px);
+}
+
+[data-skin="win98"] ::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+[data-skin="win98"] ::-webkit-scrollbar-track {
+  background: repeating-conic-gradient(var(--w98-face) 0 25%, var(--w98-hi) 0 50%) 0 0 / 2px 2px;
+}
+
+[data-skin="win98"] ::-webkit-scrollbar-thumb {
+  background: var(--w98-face);
+  border: none;
+  border-radius: 0;
+  box-shadow: var(--w98-raised);
+}
+
+/* The title bar the window wears for the round. */
+.w98-title {
+  flex: none;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 3px 0 4px;
+  background: linear-gradient(90deg, var(--w98-title-a), var(--w98-title-b));
+  color: #fff;
+  font: 700 12px/1 var(--f);
+  box-shadow:
+    -2px -2px 0 var(--w98-face),
+    2px -2px 0 var(--w98-face),
+    -3px -3px 0 var(--w98-hi),
+    3px -3px 0 var(--w98-dark);
+  margin: 3px 2px 0;
+}
+
+.w98-title-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.w98-caps {
+  display: flex;
+  gap: 0;
+}
+
+.w98-cap {
+  width: 16px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  color: #000;
+  background: #c0c0c0;
+  box-shadow: inset -1px -1px #000, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+
+.w98-cap.close {
+  margin-left: 2px;
+  cursor: default;
+}
+
+.w98-cap.close:active {
+  box-shadow: inset -1px -1px #fff, inset 1px 1px #000, inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+}
+
+.w98-icon {
+  flex: none;
+}
+
+/* The taskbar: Iniciar, the game's task, and the tray clock. */
+.w98-taskbar {
+  flex: none;
+  position: relative;
+  z-index: 30;
+  height: 30px;
+  margin: 0 -4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 3px 2px;
+  background: var(--w98-face);
+  color: var(--ink);
+  font: 400 12px/1 var(--f);
+  box-shadow: inset 0 1px var(--w98-light), inset 0 2px var(--w98-hi);
+}
+
+.w98-start-wrap {
+  position: relative;
+  height: 100%;
+}
+
+.w98-start {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px 0 4px;
+  font: 700 12px/1 var(--f);
+  color: var(--ink);
+  background: var(--w98-face);
+  box-shadow: var(--w98-raised);
+}
+
+.w98-start.pressed,
+.w98-start:active {
+  box-shadow: var(--w98-sunken);
+}
+
+.w98-task {
+  height: 100%;
+  width: 180px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  font-weight: 700;
+  background: repeating-conic-gradient(var(--w98-face) 0 25%, var(--w98-hi) 0 50%) 0 0 / 2px 2px;
+  box-shadow: var(--w98-sunken);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+[data-theme="dark"] .w98-task {
+  background: var(--w98-shadow);
+}
+
+.w98-tray {
+  margin-left: auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  box-shadow: inset 1px 1px var(--w98-shadow), inset -1px -1px var(--w98-hi);
+  font-variant-numeric: tabular-nums;
+}
+
+.w98-menu {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 2px);
+  min-width: 210px;
+  display: flex;
+  padding: 3px;
+  background: var(--w98-face);
+  box-shadow: var(--w98-raised);
+}
+
+/* The menu's side banner, written bottom to top as the menus of the time did. */
+.w98-menu-side {
+  width: 22px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 6px;
+  background: linear-gradient(0deg, var(--w98-title-a), var(--w98-title-b));
+  color: #c0c0c0;
+  font: 400 15px/1 var(--f);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.w98-menu-side b {
+  color: #fff;
+  font-weight: 900;
+}
+
+.w98-menu-item {
+  flex: 1;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px 0 8px;
+  color: var(--ink);
+  font: 400 12px/1 var(--f);
+  text-align: left;
+}
+
+.w98-menu-item:hover,
+.w98-menu-item:focus-visible {
+  background: var(--w98-title-a);
+  color: #fff;
+  outline: none;
+}
+
+/* Switching the skin is a CRT going off to a bright line and coming back on with the other picture. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-skin-switch="off"] .app {
+    animation: w98-off 240ms cubic-bezier(0.6, 0, 0.8, 0.4) both;
+  }
+
+  [data-skin-switch="on"] .app {
+    animation: w98-on 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  [data-skin-switch] body {
+    background: #000;
+  }
+
+  [data-skin="win98"]:not([data-skin-switch]) .w98-taskbar {
+    animation: w98-rise 260ms steps(5, end) both;
+  }
+
+  [data-skin="win98"][data-skin-switch="on"] .w98-taskbar {
+    animation: w98-rise 260ms 300ms steps(5, end) both;
+  }
+}
+
+@keyframes w98-off {
+  0% {
+    transform: scale(1, 1);
+    filter: brightness(1);
+  }
+  70% {
+    transform: scale(1, 0.006);
+    filter: brightness(2.6) saturate(0.2);
+  }
+  100% {
+    transform: scale(0.02, 0.004);
+    filter: brightness(4) saturate(0);
+  }
+}
+
+@keyframes w98-on {
+  0% {
+    transform: scale(0.02, 0.004);
+    filter: brightness(4) saturate(0);
+  }
+  30% {
+    transform: scale(1, 0.006);
+    filter: brightness(3) saturate(0.3);
+  }
+  62% {
+    transform: scale(1, 1.012);
+    filter: brightness(1.25) saturate(0.9);
+  }
+  100% {
+    transform: scale(1, 1);
+    filter: brightness(1) saturate(1);
+  }
+}
+
+@keyframes w98-rise {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+/* Tahoma runs wider than Archivo's narrow cut: the dock's labels drop a size to keep their row. */
+[data-skin="win98"] .hub-dock {
+  font-size: 10.5px;
+  letter-spacing: -0.01em;
+}

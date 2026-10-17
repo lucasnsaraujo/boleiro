@@ -17,7 +17,7 @@ type Loaded = { state: PaperState; edition: Edition | null; editions: EditionTit
 const ARCHIVE = 7;
 // The side column fits four stories under the masthead; the rest run in the lead's columns.
 const SIDE_STORIES = 4;
-const KICKER_CLASSES: Record<Story["kind"], string> = { match: "", event: "v", signing: "m", sacking: "d", upset: "z", rivalry: "q", var: "var", controversy: "", award: "d", record: "z" };
+const KICKER_CLASSES: Record<Story["kind"], string> = { match: "", event: "v", signing: "m", sacking: "d", upset: "z", rivalry: "q", var: "var", controversy: "", award: "d", record: "z", egg: "egg" };
 // Each section of the round's events prints its own mark beside its name, as VAR's does.
 const SECTION_MARKS: Record<EventTopic, { icon: string; className: string }> = {
   players: { icon: "chat-circle-text", className: "v" },
@@ -41,6 +41,7 @@ function Kicker({ story }: { story: Story }) {
   return (
     <span className={mark ? `paper-kick section ${mark.className}` : `paper-kick ${KICKER_CLASSES[story.kind]}`}>
       {story.kind === "var" && <i className="ph-fill ph-monitor-play" aria-hidden="true" />}
+      {story.kind === "egg" && <i className="ph-fill ph-star" aria-hidden="true" />}
       {mark && <i className={`ph-fill ph-${mark.icon}`} aria-hidden="true" />}
       {story.kicker}
     </span>
@@ -201,7 +202,7 @@ function Sheet({ state, edition, number }: { state: PaperState; edition: Edition
         <div className="paper-side">
           {sideStories.length === 0 && <p className="paper-quiet">Dia calmo no futebol brasileiro.</p>}
           {sideStories.map((story) => (
-            <div key={`${story.date}${story.kind}${story.headline}`} className={story.kind === "rivalry" ? "paper-st quote" : "paper-st"}>
+            <div key={`${story.date}${story.kind}${story.headline}`} className={story.kind === "rivalry" ? "paper-st quote" : story.kind === "egg" ? "paper-st egg" : "paper-st"}>
               <Kicker story={story} />
               <h3>{story.headline}</h3>
               {story.body && <p>{story.body}</p>}

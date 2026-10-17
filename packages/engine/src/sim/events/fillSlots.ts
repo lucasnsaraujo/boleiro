@@ -1,14 +1,7 @@
 import { agreeArticles, type Article } from "@boleiro/data/articles";
 
-const SLOT_NAMES = ["player", "teammate", "club", "rival", "age", "position", "stadium", "coach", "assistant"] as const;
-type SlotName = (typeof SLOT_NAMES)[number];
-const isSlotName = (slot: string): slot is SlotName => SLOT_NAMES.some((name) => name === slot);
-
-/**
- * The real names an event's text takes, by slot (the coach's assistant only where a text names him),
- * and the article each club and stadium takes ("o" when left out).
- */
-export type Slots = Record<Exclude<SlotName, "assistant">, string> & { assistant?: string; articles?: Partial<Record<"club" | "rival" | "stadium", Article>> };
+/** The article each slot that names a club or a stadium takes, by slot ({club}, {rival}...); one left out takes "o". */
+export type SlotArticles = Readonly<Record<string, Article>>;
 
 // A club without a named coach is "o técnico", which a preposition before it takes in: "do técnico".
 const JOINED = { de: "do", em: "no", a: "ao", por: "pelo" } as const;
@@ -22,14 +15,14 @@ const capitalised = (name: string) => name.charAt(0).toUpperCase() + name.slice(
  * ("o técnico" opens one as "O técnico"); a slot the text doesn't know stays as it is. Texts write a
  * club or a stadium after the masculine article ("do {club}"); a feminine one takes the feminine ("da Chapecoense").
  */
-export function fillSlots(text: string, slots: Slots): string {
+export function fillSlots(text: string, slots: Readonly<Record<string, string>>, articles: SlotArticles = {}): string {
   const filled = text
     .replace(/\{(\w+)\}/g, (whole, slot: string, at: number) => {
-      const name = isSlotName(slot) ? slots[slot] : undefined;
+      const name = Object.hasOwn(slots, slot) ? slots[slot] : undefined;
       if (name === undefined) return whole;
       return SENTENCE_START.test(text.slice(0, at)) ? capitalised(name) : name;
     })
     .replace(/\b(de|em|a|por) o técnico/g, (_whole, word: keyof typeof JOINED) => `${JOINED[word]} técnico`);
-  const named = (["club", "rival", "stadium"] as const).map((slot) => ({ name: slots[slot], article: slots.articles?.[slot] ?? "o" }));
+  const named = Object.entries(articles).map(([slot, article]) => ({ name: slots[slot] ?? "", article }));
   return capitalised(agreeArticles(filled, named));
 }

@@ -59,7 +59,7 @@ export type PendingEvent = EventRecord & {
   questions?: PendingQuestion[];
 };
 
-export type NewsKind = "event" | "match" | "signing" | "sacking" | "upset" | "rivalry" | "var" | "controversy" | "award" | "record";
+export type NewsKind = "event" | "match" | "signing" | "sacking" | "upset" | "rivalry" | "var" | "controversy" | "award" | "record" | "egg";
 
 /**
  * One story for the round's newspaper. `clubIds` are the clubs it is about, the main one first; an
@@ -70,7 +70,8 @@ export type NewsItem = { date: IsoDate; kind: NewsKind; clubIds: string[]; headl
 /**
  * Everything the event engine remembers: the events that happened (`log`, oldest first), each human
  * club's event waiting for an answer, the newspaper's recent stories, and rivalry heat between pairs of
- * clubs (`rivalryKey`). Easter eggs and match pages read the same memory through `eventsOf`.
+ * clubs (`rivalryKey`). Match pages read the same memory through `eventsOf`; easter eggs print their
+ * stories in its newspaper and keep their finds in an egg book of their own (`eggBookOf`).
  */
 export type EventMemory = { log: EventRecord[]; pending: Record<string, PendingEvent>; news: NewsItem[]; rivalry: Record<string, number> };
 

@@ -20,6 +20,7 @@ import { endSeason } from "../endSeason.js";
 import type { LeagueOutcome } from "../leagueFormats.js";
 import { runSponsorDay } from "../sponsors/sponsorDeals.js";
 import { coolRivalries } from "../events/eventMemory.js";
+import { findEggs } from "../eggs/findEggs.js";
 import { recordNews } from "../events/recordNews.js";
 import { runEvents } from "../events/runEvents.js";
 import { closeMonth } from "../finances/closeMonth.js";
@@ -292,7 +293,9 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const released = leftClubIds(state, filled.state).reduce(releaseTicketPrice, releaseTicketPrice(filled.state, state.coachClubId));
   const happened = runEvents(recordNews(recordCoachMeetings(released, played, state), state.date, events, day.sheets), state.date, played);
   events.push(...happened.events);
-  const recorded = recordDayEvents(happened.state, events, state);
+  const eggs = findEggs(happened.state, state, state.date, events, live.matches);
+  events.push(...eggs.events);
+  const recorded = recordDayEvents(eggs.state, events, state);
   return state.waitingCoaches ? { state: recorded, events, waitingEvents } : { state: recorded, events };
 }
 
