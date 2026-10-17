@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { Club } from "@boleiro/data/clubs";
 import { FORMATION_NAMES, FORMATIONS, type Formation } from "@boleiro/engine/engine/formations";
@@ -65,6 +65,8 @@ type Props = {
   tacticsContext?: TacticsContext;
   /** Before kick-off, the club's chemistry meter and its captain, whom the coach can change. */
   chemistry?: Captaincy;
+  /** Before kick-off, the coach's talk to his side, over the sheet's foot. */
+  talk?: ReactNode;
 };
 
 /** The club's chemistry meter, its captain, the assistant's pick for the armband, and how the coach names another. */
@@ -123,7 +125,7 @@ function MiniPitch({ formation }: { formation: Formation }) {
 }
 
 /** The lineup: the eleven on the pitch where the formation puts them, tactics and the bench, before kick-off or during the coach's match. */
-export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, opponent, coachStep, tacticsContext, chemistry }: Props) {
+export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, opponent, coachStep, tacticsContext, chemistry, talk }: Props) {
   const [sheet, setSheet] = useState(() => openSheet(lineup, tactics));
   const [captainId, setCaptainId] = useState(chemistry?.captainId ?? null);
   const [captainFailure, setCaptainFailure] = useState<string | null>(null);
@@ -467,6 +469,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
               Desfazer
             </button>
           </div>
+          {talk}
           <footer className="lineup-foot">
             <div className="lineup-strength">
               <span>Força do time</span>

@@ -18,6 +18,7 @@ import { hasOwnArrows } from "../round/hasOwnArrows.js";
 import { HotSeatPitches, type Seat } from "../round/HotSeatPitches.js";
 import { incidentAt, type Incident } from "../round/incident.js";
 import { IncidentWindow } from "../round/IncidentWindow.js";
+import { HalfTimeTalk, KickOffTalk } from "../round/TeamTalk.js";
 import { LineupSheet } from "../round/LineupSheet.js";
 import { MatchFile } from "../matchPage/MatchFile.js";
 import { LivePitch } from "../round/LivePitch.js";
@@ -26,6 +27,7 @@ import { MatchReport } from "../round/MatchReport.js";
 import { MiniScore } from "../round/MiniScore.js";
 import { kickOffOf, liveChangeOf, liveLimits, type Sheet } from "../round/lineupDraft.js";
 import type { LiveChange } from "@boleiro/engine/sim/live/applyLiveChange";
+import type { TalkTone } from "@boleiro/engine/sim/live/teamTalk";
 import type { VarCheck } from "@boleiro/engine/sim/referees/refereeCalls";
 import { tacticsViewAt, type CoachSide, type HumanSide, type LiveRound, type RoundClub, type Side } from "@boleiro/game-client/round/liveRoundOf";
 import { liveTable, shortTable, type LiveTableRow } from "../round/liveTable.js";
@@ -132,6 +134,8 @@ const VAR_CHECK_MS: Record<Running, number> = { 1: 3200, 2: 2400, 4: 1600 };
 const VAR_DECIDED_MS: Record<Running, number> = { 1: 1700, 2: 1400, 4: 1100 };
 const VAR_PEEL_MS = 380;
 const AVERAGE_CHECK_SECONDS = 100;
+// How long a hot-seat coach's half-time card shows the group's reaction before the next coach's comes up.
+const TALK_REACTION_MS = 2400;
 // How the band notes a goal that did not come from open play.
 const GOAL_NOTES: Partial<Record<GoalKind, string>> = { penalty: "pên.", freeKick: "falta", olympic: "olímpico", ownGoal: "contra" };
 
@@ -140,6 +144,10 @@ export function Round() {
   const { engine: sound } = useSound();
   const navigate = useNavigate();
   const [preMatch, setPreMatch] = useState<PreMatch | null>(null);
+  // The coach's talk before kick-off, if he picked one in the lineup sheet.
+  const [kickOffTalk, setKickOffTalk] = useState<TalkTone | null>(null);
+  // The club whose half-time talk was just given: its card shows how the group took it for a moment.
+  const [talkedClubId, setTalkedClubId] = useState<string | null>(null);
   const [round, setRound] = useState<LiveRound | null>(null);
   const [failure, setFailure] = useState<"noMatch" | "unreachable" | null>(null);
   const [hotSeat, setHotSeat] = useState<HotSeatView | null>(null);
@@ -338,7 +346,7 @@ export function Round() {
     setBusy(true);
     setError(null);
     try {
-      const chosen = kickOffOf(sheet, preMatch.plan.lineup, preMatch.plan.tactics);
+      const chosen = { ...kickOffOf(sheet, preMatch.plan.lineup, preMatch.plan.tactics), ...(kickOffTalk ? { talk: kickOffTalk } : {}) };
       if (hotSeat && !hotSeat.isLastTurn) {
         await engine.apply({ type: "passTurn", ...chosen });
         navigate("/turn");
@@ -394,6 +402,22 @@ export function Round() {
     const fixtureId = sideOf(changed, clubId)?.fixtureId;
     if (change.substitutions?.length && fixtureId) substituted.current.add(fixtureId);
     return changed;
+  }
+
+  /** A human coach's half-time talk; his card then shows how the group took it, and in a hot-seat round makes way for the next coach's. */
+  async function talkAtHalfTime(clubId: string, talk: TalkTone) {
+    setBusy(true);
+    setError(null);
+    try {
+      const changed = await changeLive(clubId, { talk });
+      setTalkedClubId(clubId);
+      const isNextWaiting = coachedSides(changed, hotSeat).some((other) => other.clubId !== clubId && !other.side.halfTimeTalk.given);
+      if (isNextWaiting) window.setTimeout(() => setTalkedClubId((current) => (current === clubId ? null : current)), TALK_REACTION_MS);
+    } catch {
+      setError("A conversa não aconteceu. Tente de novo.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   /** Sends what the coach changed in his lineup sheet, if anything; false when the session refused it. */
@@ -567,6 +591,7 @@ export function Round() {
         onDone={(sheet) => void kickOff(sheet)}
         onLeave={() => navigate("/hub")}
         onPickTeam={async (formation) => (await engine.matchDayPlan(formation)).lineup}
+        talk={<KickOffTalk moment={plan.talk.moment} suggested={plan.talk.suggested} picked={kickOffTalk} onPick={setKickOffTalk} />}
         chemistry={{
           value: plan.chemistry.value,
           captainId: plan.chemistry.captainId,
@@ -595,6 +620,10 @@ export function Round() {
   };
   const limits = limitsOf(coach, round.coachClubId);
   const coached = coachedSides(round, hotSeat);
+  // The dressing room at the break: the coach's card, or in a hot-seat round each coach's in turn.
+  const isAtBreak = minute === HALF_TIME && speed === 0 && result === null && !isLineupOpen && !isTableOpen && incident === null && varHold === null && fileRef === null;
+  const talker = isAtBreak ? (coached.find((c) => c.clubId === talkedClubId) ?? coached.find((c) => !c.side.halfTimeTalk.given)) : undefined;
+  const talkMatch = talker && matches.find((m) => m.fixtureId === talker.side.fixtureId);
   const lineupSide = coached.find((c) => c.clubId === lineupClubId);
   const lineupLimits = lineupSide ? limitsOf(lineupSide.side, lineupSide.clubId) : null;
   const incidentLimits = incident ? limitsOf(incident.side, incident.clubId) : null;
@@ -733,6 +762,22 @@ export function Round() {
           onLeave={() => leaveIncident()}
           onOpenLineup={openLineupFromIncident}
           onSubstitute={(substitutions) => void substituteFromIncident(substitutions)}
+        />
+      )}
+
+      {talker && talkMatch && (
+        <HalfTimeTalk
+          key={talker.clubId}
+          club={round.clubs[talker.clubId]?.shortName ?? ""}
+          home={round.clubs[talkMatch.homeId]?.shortName ?? ""}
+          away={round.clubs[talkMatch.awayId]?.shortName ?? ""}
+          score={`${talkMatch.score.home} × ${talkMatch.score.away}`}
+          {...(talker.coachName && coached.length > 1 ? { coachName: talker.coachName } : {})}
+          moment={talker.side.halfTimeTalk.moment}
+          suggested={talker.side.halfTimeTalk.suggested}
+          given={talker.side.halfTimeTalk.given}
+          isBusy={isBusy}
+          onTalk={(talk) => void talkAtHalfTime(talker.clubId, talk)}
         />
       )}
 

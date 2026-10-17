@@ -1,0 +1,412 @@
+/* The dressing-room talk: a card taped over the live round at half-time with four tone stickers, and
+   the row of tone pills in the lineup sheet before kick-off. Each tone keeps one colour everywhere:
+   calm blue, faith green, demand red, praise yellow. */
+.talk {
+  --tone: var(--ink-2);
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 8;
+  width: min(680px, calc(100vw - 48px));
+  padding: 18px 20px 14px;
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--sh-pop);
+  transform: translateX(-50%) rotate(-0.4deg);
+  animation: talk-in var(--t-stamp) var(--e-slap) both;
+}
+
+@keyframes talk-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 40px) rotate(-3deg) scale(1.04);
+  }
+}
+
+.talk-tape {
+  position: absolute;
+  left: 50%;
+  top: -11px;
+  width: 92px;
+  height: 22px;
+  margin-left: -46px;
+  background: var(--yellow-l);
+  opacity: 0.85;
+  transform: rotate(-2deg);
+  box-shadow: 0 1px 2px rgba(20, 35, 26, 0.18);
+}
+
+.talk-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: 16px;
+}
+
+.talk-head .lbl {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.talk-head h2 {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.talk-head h2 b {
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: var(--r-s);
+  background: var(--ink);
+  color: var(--card);
+  font-variant-numeric: tabular-nums;
+}
+
+.talk-head p {
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.talk-tones {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.talk-tone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 132px;
+  padding: 12px 12px 14px;
+  border-radius: var(--r-m);
+  background: var(--paper);
+  color: var(--ink);
+  text-align: left;
+  box-shadow: inset 0 0 0 1.5px var(--line);
+  cursor: pointer;
+  transform: rotate(var(--tilt, 0deg));
+  transition:
+    transform var(--t-fast) var(--e-out),
+    box-shadow var(--t-fast) var(--e-out),
+    background-color var(--t-fast) var(--e-out);
+  animation: talk-deal var(--t-slow) var(--e-out) backwards;
+}
+
+.talk-tone:nth-child(1) {
+  --tilt: -1.2deg;
+  animation-delay: 120ms;
+}
+
+.talk-tone:nth-child(2) {
+  --tilt: 0.8deg;
+  animation-delay: 170ms;
+}
+
+.talk-tone:nth-child(3) {
+  --tilt: -0.6deg;
+  animation-delay: 220ms;
+}
+
+.talk-tone:nth-child(4) {
+  --tilt: 1.1deg;
+  animation-delay: 270ms;
+}
+
+@keyframes talk-deal {
+  from {
+    opacity: 0;
+    transform: translateY(16px) rotate(-6deg);
+  }
+}
+
+.talk-tone:hover:not(:disabled) {
+  transform: translateY(-3px) rotate(0deg);
+  box-shadow:
+    inset 0 0 0 2px var(--tone),
+    var(--sh-lift);
+}
+
+.talk-tone:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.talk-tone:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+.talk-tone:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.talk-ic {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  background: var(--tone);
+  color: #fff;
+  font-size: 19px;
+  box-shadow: 0 2px 0 rgba(20, 35, 26, 0.18);
+}
+
+.talk-tone b {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.talk-tone q {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--ink-2);
+  quotes: "“" "”";
+}
+
+.talk-tag {
+  position: absolute;
+  right: -6px;
+  top: -9px;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  background: var(--yellow);
+  color: var(--on-yellow);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  transform: rotate(3deg);
+  box-shadow: 0 2px 4px rgba(20, 35, 26, 0.22);
+  animation: talk-tag var(--t-stamp) var(--e-slap) 420ms backwards;
+}
+
+@keyframes talk-tag {
+  from {
+    opacity: 0;
+    transform: rotate(18deg) scale(0.4);
+  }
+}
+
+.tone-calm {
+  --tone: var(--blue);
+}
+
+.tone-faith {
+  --tone: var(--green);
+}
+
+.tone-demand {
+  --tone: var(--red);
+}
+
+.tone-praise {
+  --tone: var(--yellow-d);
+}
+
+.talk-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 2px dotted var(--line-2);
+}
+
+.talk-foot p {
+  margin-right: auto;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+/* Once said: the tone stamped on the card and how the group took it. */
+.talk.said {
+  padding: 16px 20px;
+}
+
+.talk-said {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+}
+
+.talk-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--r-m);
+  border: 2.5px solid var(--tone);
+  color: var(--tone);
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transform: rotate(-4deg);
+  animation: talk-stamp var(--t-stamp) var(--e-slap) both;
+}
+
+.talk-stamp i {
+  font-size: 20px;
+}
+
+@keyframes talk-stamp {
+  from {
+    opacity: 0;
+    transform: rotate(-16deg) scale(1.9);
+  }
+}
+
+.talk-said p {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--ink-2);
+  animation: talk-line var(--t-slow) var(--e-out) 200ms backwards;
+}
+
+.talk-said p b {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+@keyframes talk-line {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+.talk-moves {
+  display: flex;
+  gap: 6px;
+  animation: talk-line var(--t-slow) var(--e-out) 320ms backwards;
+}
+
+.talk-moves span {
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: var(--paper);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.talk-moves .up {
+  color: var(--green);
+}
+
+.talk-moves .dn {
+  color: var(--red);
+}
+
+.talk-moves .eq {
+  color: var(--mute);
+}
+
+/* The talk before kick-off, a row of pills in the lineup sheet. */
+.talk-kick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.talk-kick-lbl {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 2px;
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.talk-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px 5px 8px;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-2);
+  font-weight: 700;
+  font-size: 12px;
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+  cursor: pointer;
+  transition:
+    background-color var(--t-fast) var(--e-out),
+    color var(--t-fast) var(--e-out),
+    box-shadow var(--t-fast) var(--e-out),
+    transform var(--t-fast) var(--e-out);
+}
+
+.talk-pill i {
+  color: var(--tone);
+  font-size: 14px;
+  transition: color var(--t-fast) var(--e-out);
+}
+
+.talk-pill:hover {
+  box-shadow: inset 0 0 0 1.5px var(--tone);
+}
+
+.talk-pill:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.talk-pill.on {
+  background: var(--tone);
+  color: #fff;
+  box-shadow: none;
+  transform: rotate(-2deg) scale(1.04);
+}
+
+.talk-pill.on i {
+  color: #fff;
+}
+
+.talk-dot {
+  position: absolute;
+  right: -2px;
+  top: -2px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 0 0 0 2px var(--card);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .talk,
+  .talk-tone,
+  .talk-tag,
+  .talk-stamp,
+  .talk-said p,
+  .talk-moves {
+    animation: none;
+  }
+}
