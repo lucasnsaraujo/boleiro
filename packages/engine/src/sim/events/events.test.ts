@@ -18,6 +18,7 @@ const AI_CLUB = Object.values(start.clubs).find((club) => club.division === "A" 
 const newsType = (id: string, fields: Partial<EventType> = {}): EventType => ({
   id,
   area: "players",
+  topic: "players",
   weight: 1,
   cooldownDays: 0,
   cast: () => ({}),
@@ -154,8 +155,8 @@ describe("event engine", () => {
       for (const text of texts) for (const [, slot] of text.matchAll(/\{(\w+)\}/g)) expect(slots, `${type.id}: {${slot}}`).toContain(slot);
       expect(type.texts.length, type.id).toBeGreaterThanOrEqual(2);
     }
-    expect(EVENT_BANK).toHaveLength(31);
-    expect(new Set(EVENT_BANK.map((type) => type.id)).size).toBe(31);
+    expect(EVENT_BANK).toHaveLength(155);
+    expect(new Set(EVENT_BANK.map((type) => type.id)).size).toBe(155);
     expect(new Set(EVENT_BANK.map((type) => type.area))).toEqual(new Set(["players", "squad", "board", "fans", "press"]));
 
     const named = runDays({ ...start, coachName: "Lucas Araujo" }, 365, EVENT_BANK);
