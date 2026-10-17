@@ -1,5 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { useState } from "react";
 import { afterEach, expect, test, vi } from "vitest";
+import type { TalkTone } from "@boleiro/engine/sim/live/teamTalk";
 import { HalfTimeTalk, KickOffTalk } from "./TeamTalk.js";
 
 afterEach(cleanup);
@@ -43,4 +45,26 @@ test("before kick-off the talk is optional: a tone picked toggles off when picke
   expect(screen.getByRole("radio", { name: /Calma/ }).getAttribute("aria-checked")).toBe("true");
   fireEvent.click(screen.getByRole("radio", { name: /Calma/ }));
   expect(onPick).toHaveBeenLastCalledWith(null);
+});
+
+test("before kick-off the arrow keys move the talk round the four tones, focus going with it, one tab stop for the group", () => {
+  function Picker() {
+    const [picked, setPicked] = useState<TalkTone | null>(null);
+    return <KickOffTalk moment={{ lead: 0, morale: 50, isDerby: false }} suggested="calm" picked={picked} onPick={setPicked} />;
+  }
+  render(<Picker />);
+  const radios = screen.getAllByRole("radio");
+  expect(radios.filter((radio) => radio.tabIndex === 0)).toHaveLength(1);
+  radios[0]?.focus();
+  fireEvent.keyDown(document.activeElement ?? document.body, { key: "ArrowRight" });
+  const faith = screen.getByRole("radio", { name: /^Confiança/ });
+  expect(faith.getAttribute("aria-checked")).toBe("true");
+  expect(document.activeElement).toBe(faith);
+  expect(faith.tabIndex).toBe(0);
+  fireEvent.keyDown(faith, { key: "ArrowLeft" });
+  fireEvent.keyDown(document.activeElement ?? document.body, { key: "ArrowUp" });
+  const praise = screen.getByRole("radio", { name: /^Elogio/ });
+  expect(praise.getAttribute("aria-checked")).toBe("true");
+  expect(document.activeElement).toBe(praise);
+  expect(screen.getAllByRole("radio").filter((radio) => radio.tabIndex === 0)).toEqual([praise]);
 });

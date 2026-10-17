@@ -1,6 +1,7 @@
+import type { KeyboardEvent } from "react";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 import { TALK_TONES, type TalkEffect, type TalkMoment, type TalkTone } from "@boleiro/engine/sim/live/teamTalk";
 import "./teamTalk.css";
-import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 const TONES: Record<TalkTone, { name: string; icon: string }> = {
   calm: { name: "Calma", icon: "hourglass-medium" },
@@ -125,8 +126,19 @@ type KickOffProps = { moment: TalkMoment; suggested: TalkTone; picked: TalkTone 
 
 /** The talk before kick-off, in the lineup sheet: optional, one tone or none; the assistant's pick marked. */
 export function KickOffTalk({ moment, suggested, picked, onPick }: KickOffProps) {
+  // A radio group: one tab stop (the picked tone, else the first), the arrows moving the pick round the tones, focus going with it.
+  const focusable = picked ?? TALK_TONES[0];
+  function movePick(event: KeyboardEvent<HTMLDivElement>) {
+    const step = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
+    if (!step) return;
+    event.preventDefault();
+    const at = TALK_TONES.indexOf(focusable);
+    const next = TALK_TONES[(at + step + TALK_TONES.length) % TALK_TONES.length] ?? focusable;
+    onPick(next);
+    event.currentTarget.querySelector<HTMLButtonElement>(`[data-tone="${next}"]`)?.focus();
+  }
   return (
-    <div className="talk-kick" role="radiogroup" aria-label="Preleção">
+    <div className="talk-kick" role="radiogroup" aria-label="Preleção" onKeyDown={movePick}>
       <span className="talk-kick-lbl">
         <i className="ph-bold ph-chalkboard-teacher" aria-hidden="true" />
         Preleção
@@ -139,6 +151,8 @@ export function KickOffTalk({ moment, suggested, picked, onPick }: KickOffProps)
             type="button"
             role="radio"
             aria-checked={isOn}
+            tabIndex={tone === focusable ? 0 : -1}
+            data-tone={tone}
             aria-label={`${TONES[tone].name}: ${quoteOf(tone, moment, true)}`}
             title={quoteOf(tone, moment, true)}
             className={`talk-pill tone-${tone}${isOn ? " on" : ""}`}
