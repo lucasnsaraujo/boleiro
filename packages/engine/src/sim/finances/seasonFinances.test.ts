@@ -56,6 +56,24 @@ describe("club finances across a season change", () => {
     expect(financeOf(after, champion).cash - closing.cash - transferMoney - revenue.prizes).toBe(revenue.sponsorship);
   });
 
+  it("pays a champion's deal with its own title bonus that bonus in place of the sponsors' usual tenth on its value, not on top", () => {
+    const champion = outcome("a").championId;
+    const sponsors = before.sponsors?.[champion];
+    const master = sponsors?.contracts.find((c) => c.slot === "master");
+    if (!sponsors || !master) throw new Error(`${champion} has no master sponsor`);
+    const bonus = 1_234_000;
+    const contracts = sponsors.contracts.map((c) => (c === master ? { ...c, bonuses: { title: bonus } } : c));
+    const coached: GameState = {
+      ...before,
+      coachClubId: champion,
+      coach: { ...before.coach, contract: { salary: 100_000, untilSeason: 2030 } },
+      sponsors: { ...before.sponsors, [champion]: { ...sponsors, contracts } },
+    };
+    const turned = advanceDay(coached, {}).state;
+    const usual = Math.round(0.1 * (financeOf(before, champion).sponsorship - master.yearly));
+    expect(financeOf(turned, champion).month.revenue.sponsorship).toBe(usual + bonus);
+  });
+
   it("keeps money booked on 1 January before the season turns in January's books", () => {
     const salary = 123_456;
     const coached: GameState = { ...before, coachClubId: "flamengo-rj", coach: { ...before.coach, contract: { salary, untilSeason: 2030 } } };

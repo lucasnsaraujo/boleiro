@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS images (
   snapshot_id INTEGER NOT NULL REFERENCES snapshots(id),
   entity TEXT NOT NULL,                -- club | competition | sponsor
   entity_id TEXT NOT NULL,
-  kind TEXT NOT NULL,                  -- crest | scoreboard_crest | kit | logo
+  kind TEXT NOT NULL,                  -- crest | scoreboard_crest | kit | logo | badge (a logo on an opaque tile)
   path TEXT NOT NULL,
   sha256 TEXT NOT NULL,
   width INTEGER NOT NULL,
@@ -231,4 +231,36 @@ CREATE TABLE IF NOT EXISTS competition_money (
   season INTEGER NOT NULL,
   body TEXT NOT NULL,
   PRIMARY KEY (snapshot_id, country_code, season)
+);
+
+-- Brands on kits and in the sponsors' offer pool (data/brands.csv). `sector` is betting, kit (a kit
+-- maker) or the pool's sector, empty when unknown; `size` only for the pool's brands.
+CREATE TABLE IF NOT EXISTS brands (
+  snapshot_id INTEGER NOT NULL REFERENCES snapshots(id),
+  id TEXT NOT NULL,
+  seq INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  sector TEXT NOT NULL,
+  size TEXT,                           -- giant | large | medium | small
+  is_pool INTEGER NOT NULL,
+  wikidata TEXT,
+  website TEXT,
+  logo_licence TEXT,                   -- the Commons licence, "favicon" for a site icon
+  PRIMARY KEY (snapshot_id, id)
+);
+
+-- The brands on each club's kit before the betting ban (data/sponsors.csv, from Wikipedia), with the
+-- yearly value and end the press reported where it did (data/sponsor-values.csv).
+CREATE TABLE IF NOT EXISTS sponsor_deals (
+  snapshot_id INTEGER NOT NULL REFERENCES snapshots(id),
+  seq INTEGER NOT NULL,
+  club_id TEXT NOT NULL,
+  slot TEXT NOT NULL,                  -- master | kit | front | back | sleeves | shorts | socks | number
+  rank INTEGER NOT NULL,
+  brand_id TEXT NOT NULL,
+  yearly_value INTEGER,
+  until_season INTEGER,
+  value_source TEXT NOT NULL,
+  source TEXT NOT NULL,
+  PRIMARY KEY (snapshot_id, seq)
 );

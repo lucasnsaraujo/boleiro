@@ -21,6 +21,7 @@ import type { Formats } from "./formats.js";
 import type { Youth } from "./youth/academy.js";
 import type { EventMemory } from "./events/eventMemory.js";
 import type { ClubChemistry } from "./chemistry/chemistryOf.js";
+import type { ClubSponsors, PoolBrand } from "./sponsors/sponsors.js";
 
 export type IsoDate = string;
 
@@ -268,4 +269,8 @@ export type GameState = {
   chemistry?: Record<string, ClubChemistry>;
   /** The human coaches' rivalries with other coaches and the derbies they won; a save from before rivalries has none. */
   rivalries?: RivalryMemory;
+  /** Each club's kit deals, a breakdown of its `sponsorship`; a save from before sponsors gets them seeded from the data when loaded. */
+  sponsors?: Record<string, ClubSponsors>;
+  /** The brands that can bid for a place on a kit, kept from the pack the career started with. */
+  sponsorPool?: PoolBrand[];
 };

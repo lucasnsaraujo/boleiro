@@ -1,6 +1,7 @@
 """Loads the repo's data files into the master database as a new snapshot.
 
-Reads the files the game is built from (clubs, players, finances, prize money, crests) plus
+Reads the files the game is built from (clubs, players, finances, prize money, crests, sponsors and
+their logos) plus
 Transfermarkt's squad file for ids, foot, contract and value, and FotMob's files
 (scrape_fotmob.py) for the players' other positions and the clubs' last elevens. The raw scrape outputs that
 build_clubs.py and rate_players.py already folded into those (club facts, wiki colours,
@@ -202,7 +203,37 @@ def import_snapshot(data: Path, db: sqlite3.Connection) -> int:
         )
 
     db.execute("INSERT INTO competition_money VALUES (?, ?, ?, ?)", (snapshot, COUNTRY, money["season"], json.dumps(money, ensure_ascii=False)))
+    import_sponsors(data, db, snapshot)
     return snapshot
+
+
+def import_sponsors(data: Path, db: sqlite3.Connection, snapshot: int) -> None:
+    """The brands, their logos and the kit deals, with the press's values joined in by club, place and brand."""
+    brands = read_csv(data / "brands.csv")
+    for seq, brand in enumerate(brands):
+        db.execute(
+            "INSERT INTO brands VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (snapshot, brand["id"], seq, brand["name"], brand["sector"], brand["size"] or None, int(brand["is_pool"]),
+             brand["wikidata"] or None, brand["website"] or None, brand["logo_licence"] or None),
+        )
+        if brand["logo_path"]:
+            path = ROOT / brand["logo_path"]
+            width, height = png_size(path)
+            # A badge is an opaque tile (a site icon); the game prints it on a shirt as a patch, not in the kit's ink.
+            kind = "badge" if brand["logo_shape"] == "badge" else "logo"
+            db.execute(
+                "INSERT INTO images VALUES (?, 'sponsor', ?, ?, ?, ?, ?, ?, ?)",
+                (snapshot, brand["id"], kind, brand["logo_path"], sha256_of(path), width, height, brand["logo_source"]),
+            )
+    values = {(row["club_id"], row["slot"], row["brand_id"]): row for row in read_csv(data / "sponsor-values.csv")}
+    for seq, deal in enumerate(read_csv(data / "sponsors.csv")):
+        value = values.get((deal["club_id"], deal["slot"], deal["brand_id"]))
+        db.execute(
+            "INSERT INTO sponsor_deals VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (snapshot, seq, deal["club_id"], deal["slot"], int(deal["rank"]), deal["brand_id"],
+             whole(value["yearly_value"]) if value else None, whole(value["until_season"]) if value else None,
+             value["source"] if value else "", deal["source_url"]),
+        )
 
 
 def main() -> None:

@@ -53,6 +53,8 @@ const OUTCOME_OF: { [T in CommandType]: (command: GameCommand<T>, result: Comman
   watchPlayer: () => "autosave",
   saveFilter: () => "autosave",
   deleteFilter: () => "autosave",
+  signSponsor: () => "autosave",
+  pickSponsors: () => "autosave",
   retirePlayer: () => "autosave",
   persuadeToStay: () => "autosave",
 };
@@ -61,7 +63,7 @@ const OUTCOME_OF: { [T in CommandType]: (command: GameCommand<T>, result: Comman
  * The engine, writing the autosave slot after every advance that played a round of matches or signed an offer, every
  * play-on that moved the game, every kick-off and live change of a live round and every quarter of an hour shown of
  * it, every live round's final whistle, every offer turned down, every resignation and every application that brought an offer, every request asked or withdrawn, every player listed, every club's offer answered, every counter turned down, every ticket price set, every stadium works the board approved, every bank loan taken or paid off, every friendly booked, every hot-seat turn passed, every academy kid promoted, released or sold, every event answered, every area handed to or taken back from the assistant, every player watched or unwatched, every market search saved or
- * forgotten, every player retired or asked to stay, and every turning point closed. Autosaves go one
+ * forgotten, every player retired or asked to stay, every sponsor signed, every switch of who picks the sponsors, and every turning point closed. Autosaves go one
  * at a time; those asked for while one is under way become a single save of the latest game. Every change, autosaved
  * or not, counts in the open game's unsaved changes.
  */

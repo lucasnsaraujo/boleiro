@@ -12,7 +12,7 @@ import { rivalsOf } from "./rivalsOf.js";
 const AVERAGE_POINTS = 1.35;
 // guess: how much of the gap to neutral (50) fans and squad keep after each match; about the
 // last ten games count.
-const MEMORY = 0.9;
+export const MOOD_MEMORY = 0.9;
 // guess: mood points per league point above the average, for fans and for the squad.
 const FAN_SWING = 4;
 const SQUAD_SWING = 3;
@@ -35,7 +35,7 @@ const LATE_WAGES_MAX_MONTHS = 3;
 const FORCED_SALE_FANS = 3;
 
 const clamp = (value: number) => Math.min(100, Math.max(0, value));
-const remember = (value: number) => 50 + (value - 50) * MEMORY;
+const remember = (value: number) => 50 + (value - 50) * MOOD_MEMORY;
 const pointsOf = (fixture: Fixture, clubId: string): number => {
   if (!fixture.result) return AVERAGE_POINTS;
   const { homeGoals, awayGoals } = fixture.result;

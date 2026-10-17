@@ -20,6 +20,8 @@ export type Coach = {
   personalWindowUntil?: IsoDate;
   /** The areas whose events the assistant answers for him at once; left out, every event asks the coach. */
   assistantAreas?: EventArea[];
+  /** True when the coach picks his club's sponsors himself; left out, the board signs the best offer on its day. */
+  picksSponsors?: true;
   /** Clubs he walked out on, which won't hire him again before the end of `untilSeason`; a coach who never resigned has none. */
   cooldowns?: { clubId: string; untilSeason: number }[];
   /** The duties he set apart from their defaults (assistantDuties.ts); left out, the assistant runs the defaults. */
