@@ -8,6 +8,7 @@ import { decideCoachRequest as decideOnLiveState } from "./decideCoachRequest.js
 import { openDraft } from "./movePlayer.js";
 import { releaseClauseOf } from "./releaseClause.js";
 import { renewalTermsOf, talkMoodOf } from "./renewalTerms.js";
+import { runTransferDay } from "./runTransferDay.js";
 import { wageBillsOf } from "./wageBillsOf.js";
 import { willingToJoin } from "./willingToJoin.js";
 
@@ -85,6 +86,14 @@ describe("a renewal the coach asks for", () => {
     expect(decideCoachRequest(countered.state, accept, no).events[0]).toMatchObject({ approved: true });
     const extended = withPlayer(countered.state, { age: 31, contractUntil: "2028-12-31" });
     expect(decideCoachRequest(extended, accept, no).events[0]).toMatchObject({ approved: false, reason: "playerUnwilling" });
+  });
+
+  it("is answered before his contract runs out when sent on its last day", () => {
+    const lastDay = withPlayer(rich, { contractUntil: "2026-12-31" });
+    const morning = { ...lastDay, date: "2027-01-01" };
+    const { state, events } = runTransferDay(morning, [{ kind: "renew", playerId: ours.id, years: 2 }]);
+    expect(events).toContainEqual(expect.objectContaining({ type: "requestDecided", approved: true }));
+    expect(state.players[ours.id]).toMatchObject({ clubId: COACH, contractUntil: "2028-12-31" });
   });
 
   it("is refused outright when the wage offered is far below his ask", () => {
