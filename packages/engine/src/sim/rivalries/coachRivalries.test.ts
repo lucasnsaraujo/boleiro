@@ -6,6 +6,7 @@ import { answerEvent } from "../events/runEvents.js";
 import { eventMemoryOf, type PendingEvent } from "../events/eventMemory.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { loadGame, saveGame } from "../saveGame.js";
 import { coachRivalriesOf, coachRivalryScore, recordCoachMeetings, winnerOf } from "./coachRivalries.js";
 import { pairKeyOf, rivalryMemoryOf } from "./rivalryMemory.js";
 
@@ -95,5 +96,16 @@ describe("coach rivalries in the newspaper", () => {
     const booed = newsOf(advanceDay(idol, {}).state).filter((n) => n.headline.includes("vaia"));
     expect(booed.map((n) => n.headline)).toEqual(["Torcida do Fluminense vaia Ana"]);
     expect(newsOf(advanceDay({ ...eve, fixtures }, {}).state).some((n) => n.headline.includes("vaia"))).toBe(false);
+  });
+});
+
+describe("saves and rivalries", () => {
+  it("keep a coach's rivalries across a save, and a save from before rivalries loads and starts keeping them", () => {
+    const played = advanceDay(eve, {}).state;
+    expect(coachRivalriesOf(loadGame(saveGame(played)), ANA)).toEqual(coachRivalriesOf(played, ANA));
+    const old = JSON.parse(saveGame({ ...eve, rivalries: { coaches: {}, derbyWins: {} } })) as Record<string, unknown>;
+    delete old.rivalries;
+    const after = advanceDay(loadGame(JSON.stringify(old)), {}).state;
+    expect(coachRivalriesOf(after, ANA)).toHaveLength(1);
   });
 });
