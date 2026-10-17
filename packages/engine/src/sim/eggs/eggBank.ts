@@ -432,7 +432,8 @@ export const EGG_BANK: readonly EggType[] = [
       const posts = new Map<string, number>();
       for (const shot of tale.woodwork) posts.set(shot.playerId, (posts.get(shot.playerId) ?? 0) + 1);
       const unlucky = [...posts].find(([, hits]) => hits >= 3);
-      return unlucky ? [{ clubId: tale.clubOf[unlucky[0]] ?? tale.woodwork.find((shot) => shot.playerId === unlucky[0])?.clubId ?? "", playerId: unlucky[0], slots: { player: nameOf(tale, unlucky[0]), count: inWords(unlucky[1]) } }] : [];
+      const shot = unlucky && tale.woodwork.find((own) => own.playerId === unlucky[0]);
+      return unlucky && shot ? [{ clubId: shot.clubId, playerId: unlucky[0], slots: { player: nameOf(tale, unlucky[0]), count: inWords(unlucky[1]) } }] : [];
     },
     note: "{player} acertou a trave {count} vezes.",
     texts: [{ headline: "{player} acerta a trave {count} vezes", body: "{score}. O travessão do estádio já sabe o nome dele." }],

@@ -2,7 +2,7 @@ import { keyedStream } from "../../engine/random.js";
 import { missedShotsOf, type MatchPlay } from "../live/matchPlay.js";
 import type { MatchEvent } from "../live/matchTimeline.js";
 
-export type WoodworkShot = { clubId: string; playerId: string; minute: number };
+type WoodworkShot = { clubId: string; playerId: string; minute: number };
 
 // The woodwork draws from a stream of its own per match, so telling it never moves a match's other draws.
 const WOODWORK_SALT = 0x7a3e5;

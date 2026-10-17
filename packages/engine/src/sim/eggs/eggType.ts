@@ -11,7 +11,7 @@ export type EggRarity = "rare" | "veryRare" | "legendary";
 export type EggLook = "clipping" | "sticker" | "page";
 
 /** A newspaper story; slots in braces ({club}, {opponent}, {player}, {coach}, {score} and the egg's own) take real names. */
-export type EggText = { headline: string; body: string };
+type EggText = { headline: string; body: string };
 
 /** One of a human coach's club's matches, played, as the eggs read it. */
 export type MatchTale = {
@@ -75,6 +75,6 @@ export type MatchEgg = EggBase & { on: "match"; note: string; find: (tale: Match
 /** An egg of the calendar, the academy or the season, looked for at the end of each day. */
 export type DayEgg = EggBase & { on: "day"; find: (scene: DayScene) => EggHit | null };
 /** An egg the coach finds on the screen (a word typed), told to the game as a command. */
-export type CoachEgg = EggBase & { on: "coach" };
+type CoachEgg = EggBase & { on: "coach" };
 
 export type EggType = MatchEgg | DayEgg | CoachEgg;
