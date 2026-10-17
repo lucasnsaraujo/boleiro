@@ -5,6 +5,7 @@ import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import type { ContractRow } from "@boleiro/game-client/market/contracts";
 import { POSITION_BADGES } from "../format/playerLabels.js";
 import "./contractsEnding.css";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 const SKIP_WORDS = { notInPlans: "fora dos planos", playerUnwilling: "ele não topa", wageCap: "sem espaço na folha" } as const;
 
@@ -19,7 +20,7 @@ type Props = {
 };
 
 function situation(row: ContractRow, clubs: Props["clubs"]) {
-  if (row.leavesForId) return <span className="chip bad">Assinou com o {clubs[row.leavesForId]?.shortName ?? "outro clube"}</span>;
+  if (row.leavesForId) return <span className="chip bad">Assinou com {clubs[row.leavesForId] ? withArticle(clubs[row.leavesForId]?.shortName ?? "", clubArticle(row.leavesForId)) : "outro clube"}</span>;
   if (row.isPreContractOpen) return <span className="chip wait">Pré-contrato liberado</span>;
   return <span className="chip off">Último ano</span>;
 }

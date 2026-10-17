@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { Role } from "@boleiro/data/players";
 import type { GameState } from "@boleiro/engine/sim/gameState";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 import { addDays } from "@boleiro/engine/sim/dates";
 import { formatDayMonth, formatMonthYear } from "@boleiro/game-client/format/formatGameDate";
-import { withPreposition } from "@boleiro/game-client/format/nationalTeamName";
+import { nationalTeamWithPreposition } from "@boleiro/game-client/format/nationalTeamName";
 import type { NationalCompetitionView, NationalFixtureRow, NationalPlayerCard, NationalTeamPage } from "@boleiro/game-client/nationalTeam/nationalTeamPage";
 import { useServices } from "../app/ServicesContext.js";
 import { Crest } from "../clubs/Crest.js";
@@ -146,7 +147,7 @@ function CompetitionTables({ competition, page }: { competition: NationalCompeti
         ))}
       </div>
       {competition.matches.length > 0 && (
-        <ul className="nt-games" aria-label={`Jogos ${withPreposition(page.team.id)}, ${competition.name}`}>
+        <ul className="nt-games" aria-label={`Jogos ${nationalTeamWithPreposition(page.team.id)}, ${competition.name}`}>
           {competition.matches.map((match) => (
             <li key={match.id}>
               <span className="nt-gd">{formatDayMonth(match.date)}</span>
@@ -242,6 +243,9 @@ export function NationalTeam() {
   if (!page || !state) return <p className="status">Abrindo a seleção…</p>;
 
   const club = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
+  // "o Flamengo", "da Chapecoense": the club with the article the press gives it.
+  const theClub = club ? (preposition?: "de") => withArticle(club.shortName, clubArticle(club.id), preposition) : null;
+  const capitalized = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
   const { team, window, callUp, leaving, coaching, offer } = page;
   // The coach picks his own list between windows; a call-up under way is his national coach's to keep.
   const isEditing = coaching !== null && callUp.isProvisional;
@@ -270,7 +274,7 @@ export function NationalTeam() {
           <section className="stk nt-offer" aria-label={`Proposta: ${offer.team}`}>
             <span className="lbl">Proposta</span>
             <p>
-              A federação quer você no comando: <b>{offer.team}</b>, junto com {club ? `o ${club.shortName}` : "o seu trabalho"}. Responda até {formatDayMonth(offer.expiresOn)}.
+              A federação quer você no comando: <b>{offer.team}</b>, junto com {theClub ? theClub() : "o seu trabalho"}. Responda até {formatDayMonth(offer.expiresOn)}.
             </p>
             <div className="nt-offer-go">
               <button type="button" className="btn go sm" disabled={isBusy} onClick={() => void run(() => engine.apply({ type: "acceptNationalJob" }).then(() => setTeamId(offer.teamId)))}>
@@ -292,7 +296,7 @@ export function NationalTeam() {
                   Técnico <b>{game.current?.coachName ?? "você"}</b>
                   <br />
                   desde {formatMonthYear(page.coach.since)}
-                  {club ? `, junto com o ${club.shortName}` : ""}
+                  {theClub ? `, junto com ${theClub()}` : ""}
                 </>
               ) : (
                 <>
@@ -324,10 +328,10 @@ export function NationalTeam() {
           )}
         </section>
 
-        {leaving && club && (
-          <section className="stk nt-box" aria-label={`Saem do ${club.shortName}`}>
+        {leaving && club && theClub && (
+          <section className="stk nt-box" aria-label={`Saem ${theClub("de")}`}>
             <h2>
-              Saem do {club.shortName} <small>{leaving.players.length === 1 ? "1 jogador" : `${leaving.players.length} jogadores`}</small>
+              Saem {theClub("de")} <small>{leaving.players.length === 1 ? "1 jogador" : `${leaving.players.length} jogadores`}</small>
             </h2>
             {leaving.players.length ? (
               <ul className="nt-out">
@@ -348,10 +352,10 @@ export function NationalTeam() {
             <p className="nt-nb">
               {leaving.isProvisional ? "Prévia pelas listas prováveis. " : ""}
               {leaving.players.length === 0
-                ? `Ninguém do ${club.shortName} está com uma seleção agora.`
+                ? `Ninguém ${theClub("de")} está com uma seleção agora.`
                 : leaving.clubMatches === 0
-                  ? `O ${club.shortName} não joga enquanto eles estão fora.`
-                  : `O ${club.shortName} joga ${leaving.clubMatches === 1 ? "1 vez" : `${leaving.clubMatches} vezes`} sem eles, até ${formatDayMonth(leaving.players.reduce((last, p) => (p.until > last ? p.until : last), ""))}.`}
+                  ? `${capitalized(theClub())} não joga enquanto eles estão fora.`
+                  : `${capitalized(theClub())} joga ${leaving.clubMatches === 1 ? "1 vez" : `${leaving.clubMatches} vezes`} sem eles, até ${formatDayMonth(leaving.players.reduce((last, p) => (p.until > last ? p.until : last), ""))}.`}
             </p>
           </section>
         )}

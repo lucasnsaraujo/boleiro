@@ -1,0 +1,339 @@
+import { eventMemoryOf } from "../eventMemory.js";
+import type { EventType } from "../eventType.js";
+import { followUpsBut } from "./pressQuestions.js";
+import {
+  board,
+  byStrength,
+  heatOf,
+  isRelegationFight,
+  isRun,
+  isTitleRace,
+  lastGames,
+  marginToday,
+  playedRivalToday,
+  playsWithin,
+  rivalCast,
+  rivalNext,
+  round,
+  topScorer,
+  wageBill,
+} from "./sceneReaders.js";
+
+// A press conference's opening answer moves the squad by 2 and the fans by 4 at most, so with its two
+// follow-ups (pressQuestions.ts) a whole conference weighs less than a win.
+
+/** Press conferences, interviews, columnists and cameras. */
+export const PRESS_EVENTS: readonly EventType[] = [
+  {
+    id: "press-rival",
+    area: "press",
+    topic: "press",
+    look: "press",
+    weight: (scene, cast) => (playedRivalToday(scene) ? 4 : 0.6) + heatOf(scene, cast),
+    cooldownDays: 21,
+    cast: rivalCast,
+    setting: "Coletiva no CT",
+    texts: [
+      { headline: "Coletiva: o {rival} na pauta", body: "“O {rival} anda dizendo que o {club} não assusta ninguém. O senhor concorda?”" },
+      { headline: "Coletiva: pergunta sobre o {rival}", body: "“No {rival} dizem que o seu time joga por uma bola. Qual é a resposta?”" },
+      { headline: "Coletiva: a provocação do {rival}", body: "“O técnico do {rival} disse que o {club} está devendo futebol. Quer responder?”" },
+    ],
+    choices: [
+      { label: "“Respeito o {rival}. Mas a gente se fala no campo.”", effects: { morale: 2, fans: 1, rivalry: 1 } },
+      { label: "“Quem fala muito é quem tem pouco a mostrar.”", detail: "Vira manchete amanhã", effects: { morale: 2, board: -2, fans: 4, rivalry: 4 }, news: "{coach} alfineta o {rival}: “Quem fala muito tem pouco a mostrar”" },
+      { label: "“Não falo do {rival}. Falo do {club}.”", effects: { board: 2, fans: -1 } },
+    ],
+    assistantChoice: 2,
+    followUps: followUpsBut("q-rival"),
+  },
+  {
+    id: "press-crisis",
+    area: "press",
+    topic: "press",
+    look: "press",
+    weight: 2,
+    cooldownDays: 21,
+    cast: (scene) => ((marginToday(scene) ?? 0) < 0 && lastGames(scene, 3).filter((p) => p === 0).length >= 2 ? {} : null),
+    setting: "Coletiva depois do jogo",
+    texts: [
+      { headline: "Coletiva: o cargo em jogo", body: "“Mais uma derrota. O senhor se sente ameaçado no cargo?”" },
+      { headline: "Coletiva: cobrança depois da derrota", body: "“Mais um jogo sem vitória. O que o senhor diz ao torcedor?”" },
+      { headline: "Coletiva: a fase ruim do {club}", body: "“Duas derrotas nos últimos três jogos. Onde o time está errando?”" },
+    ],
+    choices: [
+      { label: "“A responsabilidade é minha. O grupo está comigo.”", effects: { morale: 2, board: -1, fans: 1 } },
+      { label: "“Faltou atitude de alguns jogadores.”", detail: "O vestiário não vai gostar", effects: { morale: -2, fans: 3, board: 2 }, news: "{coach} cobra o elenco do {club} em público" },
+      { label: "“Não penso nisso. Penso no próximo jogo.”", effects: { board: 1 } },
+    ],
+    assistantChoice: 2,
+    followUps: followUpsBut("q-future", "q-good-run"),
+  },
+  {
+    id: "press-referee",
+    area: "press",
+    topic: "press",
+    look: "press",
+    weight: 6,
+    cooldownDays: 7,
+    // A wrong call that went against the club today made the paper (recordNews runs before the events).
+    cast: (scene) => {
+      const story = eventMemoryOf(scene.state).news.find((item) => item.kind === "controversy" && item.date === scene.date && item.clubIds[0] === scene.clubId);
+      return story ? (story.clubIds[1] && story.clubIds[1] !== scene.clubId ? { rivalId: story.clubIds[1] } : {}) : null;
+    },
+    setting: "Coletiva depois do jogo",
+    texts: [
+      { headline: "Coletiva: a arbitragem na pauta", body: "“O lance de hoje vai ser discutido a semana inteira. O {club} foi prejudicado?”" },
+      { headline: "Coletiva: o erro do árbitro", body: "“As imagens mostram que o árbitro errou contra o {club}. O que o senhor achou?”" },
+      { headline: "Coletiva: o lance que mudou o jogo", body: "“O senhor viu o replay? O que passou pela cabeça na hora do apito?”" },
+    ],
+    choices: [
+      { label: "“Fomos roubados. Isso precisa acabar.”", detail: "A torcida adora, a CBF anota", effects: { fans: 4, morale: 2, board: -2 }, news: "{coach} detona a arbitragem: “Fomos roubados”" },
+      { label: "“Vamos pedir o áudio do VAR à CBF.”", effects: { fans: 2, board: 1 }, news: "{club} pede à CBF o áudio da arbitragem" },
+      { label: "“Erro faz parte. A gente tem que fazer a nossa parte.”", effects: { board: 2, fans: -2, morale: -1 } },
+    ],
+    assistantChoice: 1,
+    followUps: followUpsBut("q-referee", "q-rival"),
+  },
+  {
+    id: "press-pre-derby",
+    area: "press",
+    topic: "press",
+    look: "press",
+    weight: (scene, cast) => 4 + heatOf(scene, cast),
+    cooldownDays: 14,
+    cast: (scene) => {
+      const rivalId = rivalNext(scene);
+      return rivalId && playsWithin(scene, 2) ? { rivalId } : null;
+    },
+    setting: "Coletiva antes do clássico",
+    texts: [
+      { headline: "Coletiva: semana de clássico", body: "“Semana de clássico contra o {rival}. Jogo de seis pontos?”" },
+      { headline: "Coletiva: véspera do clássico", body: "“O {rival} chega embalado. O {club} entra como favorito?”" },
+      { headline: "Coletiva: o clássico contra o {rival}", body: "“A cidade só fala do clássico. Como o grupo está lidando com isso?”" },
+    ],
+    choices: [
+      { label: "“Clássico não tem favorito. Vence quem errar menos.”", effects: { morale: 1, board: 1 } },
+      { label: "“A cidade é nossa e vamos provar no campo.”", detail: "Vira manchete e esquenta o clássico", effects: { morale: 2, fans: 4, board: -1, rivalry: 4 }, news: "{coach}: “A cidade é nossa”" },
+      { label: "“Respeito o {rival}, mas a gente joga em casa na cabeça.”", effects: { morale: 2, fans: 1, rivalry: 1 } },
+    ],
+    assistantChoice: 0,
+    followUps: followUpsBut("q-rival"),
+  },
+  {
+    id: "press-title-race",
+    area: "press",
+    topic: "press",
+    look: "press",
+    weight: 3,
+    cooldownDays: 21,
+    cast: (scene) => (isTitleRace(scene) && playsWithin(scene, 3) ? {} : null),
+    setting: "Coletiva no CT",
+    texts: [
+      { headline: "Coletiva: a briga pelo título", body: "“Faltam poucas rodadas e o {club} está lá em cima. Dá para sonhar com o título?”" },
+      { headline: "Coletiva: o {club} na ponta", body: "“O torcedor já faz conta. E o senhor, faz?”" },
+      { headline: "Coletiva: a reta final", body: "“Qual jogo decide o campeonato para o {club}?”" },
+    ],
+    choices: [
+      { label: "“Sonhar é de graça. Trabalhar é o que decide.”", effects: { morale: 2, fans: 1 } },
+      { label: "“Quem tem que se preocupar são os outros. A gente depende só da gente.”", detail: "Vira manchete", effects: { morale: 2, fans: 4, board: -2 }, news: "{coach}: “O {club} depende só de si”" },
+      { label: "“Ainda não ganhamos nada.”", effects: { board: 2, fans: -1 } },
+    ],
+    assistantChoice: 2,
+    followUps: followUpsBut("q-title"),
+  },
+  {
+    id: "press-relegation",
+    area: "press",
+    topic: "press",
+    look: "press",
+    weight: 3,
+    cooldownDays: 21,
+    cast: (scene) => (isRelegationFight(scene) && playsWithin(scene, 4) ? {} : null),
+    setting: "Coletiva no CT",
+    texts: [
+      { headline: "Coletiva: a luta contra o rebaixamento", body: "“O {club} está na zona. O que falta para sair?”" },
+      { headline: "Coletiva: o risco de cair", body: "“A torcida tem medo do rebaixamento. O senhor também tem?”" },
+      { headline: "Coletiva: a conta da permanência", body: "“Quantas vitórias o {club} precisa para escapar?”" },
+    ],
+    choices: [
+      { label: "“O grupo tem qualidade para sair dessa.”", effects: { morale: 2, fans: 1 } },
+      { label: "“Quem não tiver coragem que peça para sair.”", detail: "Cobrança pública ao elenco", effects: { morale: -2, fans: 3, board: 1 }, news: "{coach} cobra coragem do elenco do {club}" },
+      { label: "“Não é hora de falar, é hora de trabalhar.”", effects: { board: 1 } },
+    ],
+    assistantChoice: 0,
+    followUps: followUpsBut("q-relegation"),
+  },
+  {
+    id: "press-winning-run",
+    area: "press",
+    topic: "press",
+    look: "press",
+    weight: 2,
+    cooldownDays: 30,
+    cast: (scene) => (isRun(scene, 4, 3) ? {} : null),
+    setting: "Coletiva depois do jogo",
+    texts: [
+      { headline: "Coletiva: a sequência de vitórias", body: "“Quatro vitórias seguidas. Qual é o segredo?”" },
+      { headline: "Coletiva: o {club} embalado", body: "“O time engrenou. Quem foi a peça que faltava?”" },
+      { headline: "Coletiva: o momento do {club}", body: "“O torcedor está empolgado. O senhor também?”" },
+    ],
+    choices: [
+      { label: "“O segredo é o grupo. Todo mundo comprou a ideia.”", effects: { morale: 2 } },
+      { label: "“Ainda não fizemos nada.”", effects: { morale: -1, board: 2 } },
+      { label: "“O torcedor merece esse momento.”", effects: { fans: 3, morale: 1 } },
+    ],
+    assistantChoice: 0,
+    followUps: followUpsBut("q-good-run"),
+  },
+  {
+    id: "press-star-player",
+    area: "press",
+    topic: "press",
+    look: "press",
+    weight: 1.5,
+    cooldownDays: 45,
+    cast: (scene) => {
+      const best = topScorer(scene);
+      return best && best.goals >= 8 ? { playerId: best.player.id } : null;
+    },
+    setting: "Coletiva no CT",
+    texts: [
+      { headline: "Coletiva: a fase de {player}", body: "“{player} é o artilheiro do time. Dá para segurar ele até o fim do ano?”" },
+      { headline: "Coletiva: {player} na mira", body: "“Já tem clube de fora perguntando por {player}. O senhor teme perder o artilheiro?”" },
+      { headline: "Coletiva: os gols de {player}", body: "“O {club} depende demais dos gols de {player}?”" },
+    ],
+    choices: [
+      { label: "“Ele é fundamental, mas o time não depende de um só.”", effects: { morale: 2 } },
+      { label: "“{player} fica. Pode escrever.”", detail: "Promessa pública", effects: { fans: 4, board: -3 }, news: "{coach} garante {player} no {club}" },
+      { label: "“Ele está feliz aqui. O resto é com a diretoria.”", effects: { board: 1, fans: 1 } },
+    ],
+    assistantChoice: 2,
+    followUps: followUpsBut("q-star", "q-youth"),
+  },
+  {
+    id: "press-weekly",
+    area: "press",
+    topic: "press",
+    look: "press",
+    weight: 0.5,
+    cooldownDays: 28,
+    cast: (scene) => ((board(scene)?.games ?? 0) >= 2 && playsWithin(scene, 2) ? {} : null),
+    setting: "Coletiva de véspera",
+    texts: [
+      { headline: "Coletiva de véspera", body: "“Como está o grupo para amanhã?”" },
+      { headline: "Coletiva: o clima no CT", body: "“O que o senhor viu nos treinos desta semana?”" },
+      { headline: "Coletiva: a semana do {club}", body: "“Semana cheia de treinos. Vem novidade no time?”" },
+    ],
+    choices: [
+      { label: "“O grupo está pronto e motivado.”", effects: { morale: 2 } },
+      { label: "“Teve treino ruim esta semana e eu cobrei.”", detail: "O elenco lê os jornais", effects: { morale: -2, board: 2, fans: 1 } },
+      { label: "“Amanhã vocês vão ver.”", effects: { fans: 1 } },
+    ],
+    assistantChoice: 0,
+    followUps: followUpsBut("q-next-match"),
+  },
+  {
+    id: "tv-interview",
+    area: "press",
+    topic: "press",
+    weight: 1,
+    cooldownDays: 60,
+    cast: (scene) => ((board(scene)?.games ?? 0) >= 3 ? {} : null),
+    setting: "Por telefone",
+    texts: [
+      { headline: "Programa de TV convida {coach}", body: "O programa de domingo à noite quer o senhor ao vivo no estúdio, uma hora de entrevista." },
+      { headline: "Mesa redonda quer ouvir {coach}", body: "O apresentador ligou pessoalmente. O assunto é a temporada do {club}." },
+      { headline: "Convite para entrevista exclusiva", body: "O maior canal esportivo do país quer uma conversa longa, no CT, sobre o trabalho no {club}." },
+    ],
+    choices: [
+      { label: "Aceitar e ir ao estúdio", effects: { fans: 2, board: 1, morale: -1 } },
+      { label: "Mandar o auxiliar", effects: {} },
+      { label: "Recusar", detail: "Domingo é dia de descanso", effects: { fans: -1, morale: 1 } },
+    ],
+    assistantChoice: 1,
+  },
+  {
+    id: "press-podcast-invite",
+    area: "press",
+    topic: "press",
+    weight: 0.8,
+    cooldownDays: 60,
+    once: "player",
+    cast: (scene) => {
+      const star = byStrength(scene.squad).find((p) => p.age <= 28);
+      return star ? { playerId: star.id } : null;
+    },
+    setting: "Por mensagem do assessor",
+    texts: [
+      { headline: "{player} é convidado para podcast", body: "O podcast mais ouvido do futebol quer o {position} ao vivo, três horas de conversa, na véspera de jogo." },
+      { headline: "Podcast famoso quer {player}", body: "O assessor do jogador pergunta se pode. O programa costuma render polêmica." },
+      { headline: "{player} quer ir a um podcast", body: "“É bom para minha imagem, professor. Prometo não falar besteira.”" },
+    ],
+    choices: [
+      { label: "Liberar", detail: "Fica tarde, mas vale a exposição", effects: { fans: 2, morale: 1, board: -1 } },
+      { label: "Só depois do jogo", effects: { morale: 0, board: 1 } },
+      { label: "Vetar: imprensa só pela assessoria do clube", effects: { morale: -2, board: 2 } },
+    ],
+    assistantChoice: 1,
+  },
+  {
+    id: "press-lineup-leak",
+    area: "press",
+    topic: "press",
+    weight: 0.8,
+    cooldownDays: 60,
+    cast: (scene) => (playsWithin(scene, 2) ? {} : null),
+    setting: "Nas redes, de manhã",
+    texts: [
+      { headline: "Escalação do {club} vaza antes do jogo", body: "Um perfil de bastidores publicou o time titular exato, com a posição de cada um. Só o grupo sabia." },
+      { headline: "Vazamento no CT do {club}", body: "O treino foi fechado, mas a escalação e até a jogada ensaiada apareceram num site." },
+      { headline: "Quem vazou o time do {club}?", body: "O auxiliar desconfia de alguém do próprio elenco. A diretoria quer saber o que o senhor vai fazer." },
+    ],
+    choices: [
+      { label: "Caçar o responsável", detail: "Clima de desconfiança", effects: { morale: -2, board: 1 } },
+      { label: "Mudar o time por causa disso", effects: { morale: -1, fans: 1 } },
+      { label: "Ignorar e jogar como planejado", effects: { morale: 1 } },
+    ],
+    assistantChoice: 2,
+  },
+  {
+    id: "press-columnist",
+    area: "press",
+    topic: "press",
+    weight: (scene) => ((board(scene)?.pressure ?? 0) > 0.3 ? 1.5 : 0.4),
+    cooldownDays: 60,
+    cast: () => ({}),
+    setting: "No jornal de domingo",
+    texts: [
+      { headline: "Colunista ataca {coach}", body: "“O {club} tem elenco e não tem técnico”, escreveu o colunista mais lido da cidade. É a terceira coluna seguida." },
+      { headline: "Coluna de domingo mira o técnico do {club}", body: "O texto chama o time de “burocrático” e o técnico de “teimoso”. Rodou os grupos de torcedores." },
+      { headline: "Crítica dura a {coach} na imprensa", body: "Um comentarista de TV disse ao vivo que o {club} joga “sem ideia”. O vídeo tem milhares de compartilhamentos." },
+    ],
+    choices: [
+      { label: "Responder na coletiva", effects: { fans: 1, board: -1, morale: 1 } },
+      { label: "Convidar o jornalista para ver um treino", effects: { fans: 1, board: 1 } },
+      { label: "Ignorar", effects: { morale: -1 } },
+    ],
+    assistantChoice: 2,
+  },
+  {
+    id: "press-documentary",
+    area: "press",
+    topic: "press",
+    weight: 0.4,
+    cooldownDays: 365,
+    cast: () => ({}),
+    setting: "Na sede do clube",
+    texts: [
+      { headline: "Plataforma de streaming quer filmar o {club}", body: "A proposta é uma série documental da temporada, com câmeras no vestiário e no CT." },
+      { headline: "{club} pode virar série", body: "A produtora oferece um bom dinheiro e quer acesso total, inclusive às conversas no intervalo." },
+      { headline: "Documentário sobre o {club} na mesa", body: "O marketing adorou. O elenco está dividido: uns querem aparecer, outros não querem câmera no vestiário." },
+    ],
+    choices: [
+      { label: "Aceitar, com acesso total", detail: "Câmeras até no intervalo", effects: (scene) => ({ money: round(wageBill(scene) * 0.3), morale: -3, fans: 2 }), news: "{club} vai virar série documental" },
+      { label: "Aceitar, sem câmeras no vestiário", effects: (scene) => ({ money: round(wageBill(scene) * 0.15), morale: -1, fans: 1 }) },
+      { label: "Recusar", effects: { board: -1, morale: 1 } },
+    ],
+    assistantChoice: 1,
+  },
+];

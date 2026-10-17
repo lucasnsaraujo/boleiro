@@ -1,3 +1,4 @@
+import { agreeArticles, FEMININE_CLUB_IDS } from "@boleiro/data/articles";
 import { keyedStream } from "../../engine/random.js";
 import type { DayEvent } from "../advanceDay.js";
 import { humanClubIds } from "../coach/humanCoaches.js";
@@ -150,7 +151,13 @@ export function recordNews(state: GameState, date: IsoDate, events: readonly Day
     return variant(names);
   };
   const stories: { story: NewsItem; rank: number }[] = [];
-  const add = (kind: NewsKind, clubIds: string[], rank: number, text: { headline: string; body: string }) => stories.push({ story: { date, kind, clubIds, ...text }, rank });
+  const feminine = FEMININE_CLUB_IDS.flatMap((id) => {
+    const shown = state.clubs[id]?.shortName ?? guestClubOf(state, id)?.name;
+    return shown ? [{ name: shown, article: "a" as const }] : [];
+  });
+  const agreed = (text: string) => agreeArticles(text, feminine);
+  const add = (kind: NewsKind, clubIds: string[], rank: number, text: { headline: string; body: string }) =>
+    stories.push({ story: { date, kind, clubIds, headline: agreed(text.headline), body: agreed(text.body) }, rank });
   const rivals = rivalsOf(state.clubs);
   const humanCoaches = humanCoachesOf(state);
   /** The coaches' side of a human coach's match: a reencontro of rivals, a freguesia, a rival crowd booing an idol. */

@@ -1,0 +1,262 @@
+import { hiredAssistantAt } from "../../coach/assistant.js";
+import { addDays } from "../../dates.js";
+import type { EventType } from "../eventType.js";
+import { byStrength, fit, fringe, injured, isRelegationFight, isRun, pickFrom, playedToday, playerCast, playsWithin, round, wageBill, winless } from "./sceneReaders.js";
+
+/** The coaching staff and the people behind the team: fitness, medicine, analysis, kit, kitchen. */
+export const STAFF_EVENTS: readonly EventType[] = [
+  {
+    id: "staff-fitness-clash",
+    area: "squad",
+    topic: "staff",
+    weight: 0.8,
+    cooldownDays: 90,
+    cast: (scene) => (playsWithin(scene, 3) ? {} : null),
+    setting: "Na sala da comissão técnica",
+    texts: [
+      { headline: "Preparador físico discorda do técnico", body: "Ele quer dois dias de carga pesada. O senhor queria treino tático. A discussão foi ouvida no corredor." },
+      { headline: "Racha na comissão técnica do {club}", body: "O preparador físico diz que o time vai “morrer” no segundo tempo se não puxar a carga agora." },
+      { headline: "Bate-boca na comissão técnica", body: "O preparador físico mostrou os números do GPS e disse que o time corre menos que o adversário. Quer mudar a semana." },
+    ],
+    choices: [
+      { label: "Seguir o preparador físico", effects: { morale: -1, board: 1 } },
+      { label: "Manter o seu plano", effects: { morale: 1 } },
+      { label: "Dividir a semana entre os dois", effects: { morale: 0, board: 1 } },
+    ],
+    assistantChoice: 2,
+  },
+  {
+    id: "staff-kitman-farewell",
+    area: "squad",
+    topic: "staff",
+    weight: 0.3,
+    cooldownDays: 3650,
+    cast: () => ({}),
+    texts: [
+      { headline: "Roupeiro do {club} se aposenta", body: "Trinta e um anos lavando camisa e arrumando chuteira. O elenco fez um corredor e ele chorou do começo ao fim." },
+      { headline: "Despedida emocionante no CT do {club}", body: "O roupeiro mais antigo do clube pendurou o avental. Ganhou uma camisa com o nome dele e o número 31." },
+      { headline: "Adeus ao roupeiro que viu tudo", body: "Ele conta que guardou a chuteira de cada título do {club}. Os jogadores pediram uma foto com ele no centro." },
+    ],
+    effects: { morale: 2, fans: 1 },
+  },
+  {
+    id: "staff-analyst-software",
+    area: "board",
+    topic: "staff",
+    weight: 0.6,
+    cooldownDays: 180,
+    cast: () => ({}),
+    setting: "Na sala de análise",
+    texts: [
+      { headline: "Analista do {club} pede programa novo", body: "O software de análise de vídeo está velho e trava no meio do jogo. A licença nova custa caro." },
+      { headline: "Departamento de análise quer investimento", body: "“Os adversários já têm. A gente está vendo jogo com ferramenta de cinco anos atrás.”" },
+      { headline: "Analistas do {club} pedem drones e GPS novos", body: "O pedido chegou com orçamento anexado. A diretoria quer saber se o técnico banca." },
+    ],
+    choices: [
+      { label: "Bancar o pedido", detail: "Sai da verba do futebol", effects: (scene) => ({ money: -round(wageBill(scene) * 0.04), morale: 1, board: -1 }) },
+      { label: "Só o essencial", effects: (scene) => ({ money: -round(wageBill(scene) * 0.01) }) },
+      { label: "Deixar para o ano que vem", effects: { board: 1, morale: -1 } },
+    ],
+    assistantChoice: 1,
+  },
+  {
+    id: "staff-doctor-return",
+    area: "players",
+    topic: "staff",
+    weight: 1.2,
+    cooldownDays: 45,
+    cast: (scene) => {
+      const soon = scene.squad.filter((p) => p.condition.injuredUntil !== null && p.condition.injuredUntil > scene.date && p.condition.injuredUntil <= addDays(scene.date, 3));
+      return playerCast(byStrength(soon)[0]);
+    },
+    setting: "No departamento médico",
+    texts: [
+      { headline: "Médico segura a volta de {player}", body: "O {position} diz que está pronto. O médico quer mais uma semana de transição." },
+      { headline: "{player} quer voltar antes da hora", body: "“Estou bem, doutor.” O departamento médico do {club} não está tão certo assim." },
+      { headline: "Volta de {player} divide o {club}", body: "Os exames estão bons, mas o fisiologista vê risco. A decisão final ficou com o técnico." },
+    ],
+    choices: [
+      { label: "Seguir o médico", detail: "Mais uma semana fora", effects: { outDays: 7, board: 1 } },
+      { label: "Liberar para o banco", effects: { morale: 1 } },
+      { label: "Pedir uma segunda opinião", effects: (scene) => ({ money: -round(wageBill(scene) * 0.005), outDays: 3 }) },
+    ],
+    assistantChoice: 0,
+  },
+  {
+    id: "staff-keeper-coach",
+    area: "players",
+    topic: "staff",
+    weight: 0.6,
+    cooldownDays: 90,
+    cast: (scene) => {
+      const keepers = byStrength(fit(scene).filter((p) => p.group === "GK"));
+      return playerCast(keepers[1]);
+    },
+    setting: "No campo, depois do treino",
+    texts: [
+      { headline: "Preparador de goleiros pede chance para {player}", body: "“Ele está voando nos treinos. Merece um jogo.” O titular ouviu a conversa." },
+      { headline: "{player} impressiona nos treinos", body: "O preparador de goleiros diz que o reserva fecha o gol há duas semanas. Quer que o senhor veja." },
+      { headline: "Disputa no gol do {club}", body: "O preparador de goleiros mandou relatório: {player}, de {age} anos, está pronto para jogar." },
+    ],
+    choices: [
+      { label: "Dar um jogo a {player}", effects: { morale: 1 } },
+      { label: "Manter o titular", effects: { morale: -1 } },
+      { label: "Escalar na Copa, manter na liga", effects: { morale: 1, board: -1 } },
+    ],
+    assistantChoice: 1,
+  },
+  {
+    id: "staff-assistant-offer",
+    area: "squad",
+    topic: "staff",
+    weight: 0.5,
+    cooldownDays: 365,
+    // Only an assistant the coach hired gets offers; the club's own level-1 man is nobody's target.
+    cast: (scene) => (hiredAssistantAt(scene.state, scene.clubId) ? {} : null),
+    setting: "Por telefone",
+    texts: [
+      { headline: "{assistant}, auxiliar do {club}, recebe proposta para ser técnico", body: "Um clube da Série B quer o seu braço direito como treinador principal. Ele pediu para conversar." },
+      { headline: "Seu auxiliar {assistant} pode sair", body: "“Professor, é a chance da minha vida.” A proposta é para começar na semana que vem." },
+      { headline: "Assédio a {assistant}, auxiliar do {club}", body: "O empresário de {assistant} confirmou a sondagem. A diretoria pode cobrir a oferta, se o senhor pedir." },
+    ],
+    choices: [
+      { label: "Dar a bênção", detail: "{assistant} sai e o auxiliar do clube volta", effects: { morale: -1, board: 1, releasesAssistant: true }, news: "{assistant} deixa o {club} para ser técnico" },
+      { label: "Pedir à diretoria que cubra a proposta", effects: (scene) => ({ money: -round(wageBill(scene) * 0.03), morale: 1 }) },
+      { label: "Pedir para ficar até o fim do ano", effects: { morale: 1, board: -1 } },
+    ],
+    assistantChoice: 2,
+  },
+  {
+    id: "staff-scout-tip",
+    area: "board",
+    topic: "staff",
+    weight: 0.5,
+    cooldownDays: 120,
+    cast: () => ({}),
+    setting: "Por relatório",
+    texts: [
+      { headline: "Olheiro do {club} aponta joia no interior", body: "Um meia de dezessete anos de um time da Série D. O olheiro diz que nunca viu nada igual." },
+      { headline: "Relatório do olheiro anima o {club}", body: "O garoto joga no campeonato estadual sub-20 e tem proposta de dois clubes grandes. O olheiro pede pressa." },
+      { headline: "Olheiro pede viagem para observar garoto", body: "Três jogos, três cidades, uma semana fora. O olheiro garante que vale cada centavo." },
+    ],
+    choices: [
+      { label: "Bancar a viagem do olheiro", effects: (scene) => ({ money: -round(wageBill(scene) * 0.005), board: 1 }) },
+      { label: "Pedir vídeos primeiro", effects: {} },
+      { label: "Não é prioridade agora", effects: { board: -1 } },
+    ],
+    assistantChoice: 1,
+  },
+  {
+    id: "staff-nutritionist",
+    area: "squad",
+    topic: "staff",
+    weight: 0.5,
+    cooldownDays: 180,
+    cast: () => ({}),
+    setting: "No refeitório do CT",
+    texts: [
+      { headline: "Nutricionista corta a feijoada do {club}", body: "Acabou a feijoada de sábado na concentração. O elenco reagiu como se tivesse perdido um clássico." },
+      { headline: "Cardápio novo revolta o elenco do {club}", body: "Sem refrigerante, sem pizza depois do jogo e com salada no café da manhã. O capitão veio reclamar." },
+      { headline: "Dieta nova vira assunto no vestiário", body: "A nutricionista diz que os exames de gordura subiram. Os jogadores dizem que estão com fome." },
+    ],
+    choices: [
+      { label: "Bancar a nutricionista", effects: { morale: -2, board: 1 } },
+      { label: "Um dia livre por semana", effects: { morale: 1 } },
+      { label: "Deixar o grupo escolher", effects: { morale: 2, board: -1 } },
+    ],
+    assistantChoice: 1,
+  },
+  {
+    id: "staff-psychologist",
+    area: "squad",
+    topic: "staff",
+    weight: (scene) => (isRelegationFight(scene) ? 2 : 1),
+    cooldownDays: 180,
+    cast: (scene) => (winless(scene, 5) ? {} : null),
+    setting: "Na sala do técnico",
+    texts: [
+      { headline: "Psicóloga do esporte oferece ajuda ao {club}", body: "Ela trabalhou com seleções de base e diz que o grupo está travado. Quer um mês de trabalho." },
+      { headline: "{club} pensa em psicólogo para o elenco", body: "Cinco jogos sem vencer. O auxiliar acha que o problema é de cabeça, não de pernas." },
+      { headline: "Médico sugere acompanhamento psicológico", body: "“Tem jogador que não dorme antes do jogo.” O médico do {club} quer reforço na comissão." },
+    ],
+    choices: [
+      { label: "Contratar por um mês", effects: (scene) => ({ money: -round(wageBill(scene) * 0.01), morale: 3 }) },
+      { label: "Só para quem quiser", effects: (scene) => ({ money: -round(wageBill(scene) * 0.005), morale: 1 }) },
+      { label: "Resolver no treino", effects: { morale: -1 } },
+    ],
+    assistantChoice: 1,
+  },
+  {
+    id: "staff-physio-overload",
+    area: "board",
+    topic: "staff",
+    weight: 1,
+    cooldownDays: 90,
+    cast: (scene) => (injured(scene).length >= 4 ? {} : null),
+    setting: "No departamento médico",
+    texts: [
+      { headline: "Departamento médico do {club} lotado", body: "Quatro fisioterapeutas para tantos lesionados. O chefe do DM pede reforço urgente." },
+      { headline: "DM do {club} pede socorro", body: "Os jogadores fazem fila para a fisioterapia. Tem tratamento sendo feito à noite." },
+      { headline: "Fisioterapia do {club} no limite", body: "O médico avisa que, sem gente, a recuperação vai demorar mais. Ele precisa de dois profissionais." },
+    ],
+    choices: [
+      { label: "Contratar dois fisioterapeutas", effects: (scene) => ({ money: -round(wageBill(scene) * 0.01), morale: 2 }) },
+      { label: "Contratar um", effects: (scene) => ({ money: -round(wageBill(scene) * 0.005), morale: 1 }) },
+      { label: "Segurar os gastos", effects: { morale: -1, board: 1 } },
+    ],
+  },
+  {
+    id: "staff-pitch-repair",
+    area: "board",
+    topic: "staff",
+    weight: 0.4,
+    cooldownDays: 365,
+    cast: (scene) => (!playsWithin(scene, 3) ? {} : null),
+    setting: "No CT",
+    texts: [
+      { headline: "Gramado do CT do {club} está um pasto", body: "Buracos, grama alta e um campo inteiro interditado. O jardineiro diz que precisa de três semanas." },
+      { headline: "Campo de treino do {club} precisa de reforma", body: "A chuva destruiu o gramado principal. O elenco treina num campo menor, sem as marcações." },
+      { headline: "Gramado ruim atrapalha treinos do {club}", body: "Dois jogadores quase torceram o tornozelo no mesmo buraco. O preparador físico quer reforma já." },
+    ],
+    choices: [
+      { label: "Reformar agora", detail: "Treinos num campo alugado por três semanas", effects: (scene) => ({ money: -round(wageBill(scene) * 0.03), morale: -1 }) },
+      { label: "Remendar as piores partes", effects: (scene) => ({ money: -round(wageBill(scene) * 0.005) }) },
+      { label: "Esperar o fim da temporada", effects: { morale: -1 } },
+    ],
+    assistantChoice: 1,
+  },
+  {
+    id: "staff-lucky-kit",
+    area: "squad",
+    topic: "staff",
+    weight: 0.8,
+    cooldownDays: 90,
+    cast: (scene) => (isRun(scene, 3, 3) && playedToday(scene) ? {} : null),
+    texts: [
+      { headline: "Roupeiro não lava a camisa da sorte", body: "Três vitórias com o mesmo uniforme de treino. O roupeiro do {club} se recusa a lavar até perder." },
+      { headline: "Superstição toma conta do {club}", body: "Mesmo ônibus, mesma música, mesmo lugar no vestiário. O roupeiro jura que funciona." },
+      { headline: "Mandinga no vestiário do {club}", body: "O roupeiro guarda um pé de arruda atrás do armário desde a primeira vitória. Ninguém mexe." },
+    ],
+    effects: { morale: 1, fans: 1 },
+  },
+  {
+    id: "staff-youth-coach",
+    area: "players",
+    topic: "staff",
+    weight: 0.6,
+    cooldownDays: 90,
+    once: "player",
+    cast: (scene) => playerCast(pickFrom(scene, fringe(scene).filter((p) => p.age <= 20))),
+    setting: "No CT da base",
+    texts: [
+      { headline: "Técnico do sub-20 pede chance para {player}", body: "“Esse menino está pronto, professor. Se ficar mais um ano comigo, vai desandar.”" },
+      { headline: "Base do {club} empurra {player}", body: "O técnico do sub-20 diz que o {position} de {age} anos é o melhor que já treinou." },
+      { headline: "{player} bate na porta do time de cima", body: "O garoto fez gol em todos os jogos do sub-20. O treinador da base quer ver ele com os profissionais." },
+    ],
+    choices: [
+      { label: "Levar para treinar com o elenco", effects: { morale: 1, board: 1 } },
+      { label: "Relacionar no próximo jogo", effects: { board: 1, fans: 1 } },
+      { label: "Ainda não", effects: { board: -1 } },
+    ],
+  },
+];

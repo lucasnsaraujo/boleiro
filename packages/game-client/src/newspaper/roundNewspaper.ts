@@ -1,5 +1,5 @@
 import { guestClubOf } from "@boleiro/engine/sim/continental/guestClubs";
-import { eventMemoryOf, type NewsItem, type NewsKind } from "@boleiro/engine/sim/events/eventMemory";
+import { eventMemoryOf, type EventTopic, type NewsItem, type NewsKind } from "@boleiro/engine/sim/events/eventMemory";
 import type { Fixture, GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import { standings } from "@boleiro/engine/sim/standings";
 import { competitionName, fixtureLabel } from "../format/competitionName.js";
@@ -46,6 +46,20 @@ const KICKERS: Record<NewsKind, string> = {
   record: "Recorde",
   egg: "Almanaque",
 };
+// An event's story goes under its topic's section; a story saved before topics, under "Bastidores".
+const SECTIONS: Record<EventTopic, string> = {
+  players: "Vestiário",
+  squad: "Elenco",
+  board: "Diretoria",
+  fans: "Torcida",
+  press: "Coletiva",
+  staff: "Comissão técnica",
+  rivals: "Rivalidade",
+  sponsors: "Patrocínio",
+  life: "Vida pessoal",
+  discipline: "Disciplina",
+  health: "Departamento médico",
+};
 // The paper's side column fits five stories at 1280x800 (mock design/mocks/newspaper.html), and the lead's
 // columns a few more.
 const SIDE_STORIES = 8;
@@ -69,6 +83,7 @@ function editionDates(state: NewspaperState): IsoDate[] {
 }
 
 function storyOf(state: NewspaperState, item: NewsItem): Story {
+  if (item.kind === "event" && item.topic) return { ...item, kicker: SECTIONS[item.topic] };
   if (item.kind !== "match") return { ...item, kicker: KICKERS[item.kind] };
   const match = state.fixtures.find((f) => f.date === item.date && f.homeId === item.clubIds[0] && f.awayId === item.clubIds[1]);
   const competition = match && state.competitions[match.competitionId];

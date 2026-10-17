@@ -16,6 +16,7 @@ import { clubMeters } from "../hub/hubSelectors.js";
 import { BoardRequests } from "../market/BoardRequests.js";
 import { BrandLogo } from "../sponsors/BrandLogo.js";
 import "./finances.css";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 const FINANCE_KEYS = [
   "date", "season", "seed", "coachClubId", "clubs", "finances", "boards", "players", "market", "mood", "fixtures", "competitions", "friendlies", "hasMidSeasonWindow", "coach",
@@ -154,7 +155,7 @@ export function Finances() {
         <section className="fin-statement" aria-label={title}>
           <div className="fin-cash">
             <div className="fin-big">
-              <span>Caixa do {club.shortName}</span>
+              <span>Caixa {withArticle(club.shortName, clubArticle(club.id), "de")}</span>
               <b>{formatMoney(cash)}</b>
             </div>
             <div className="fin-k">
@@ -305,7 +306,7 @@ function Alerts({ board, desk, state }: { board: BoardSummary; desk: BoardDesk; 
       {desk.forcedSales.toReversed().map((sale, index) => (
         <li key={`${sale.date}-${index}`}>
           {formatDayMonth(sale.date)}: a diretoria vendeu {sale.name} por {formatMoney(sale.fee)}
-          {sale.buyerId ? ` ao ${state.clubs[sale.buyerId]?.shortName ?? sale.buyerId}` : " ao exterior"}.
+          {sale.buyerId ? ` ${withArticle(state.clubs[sale.buyerId]?.shortName ?? sale.buyerId, clubArticle(sale.buyerId), "a")}` : " ao exterior"}.
         </li>
       ))}
     </ul>

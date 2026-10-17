@@ -32,7 +32,7 @@ const ARTICLES: Record<string, "o" | "os" | "as" | ""> = {
 };
 
 /** A national team's name with its article: "o Brasil", "a Argentina", "Portugal". */
-export function withArticle(id: string): string {
+export function nationalTeamWithArticle(id: string): string {
   const article = ARTICLES[id] ?? "a";
   return article ? `${article} ${nationalTeamName(id)}` : nationalTeamName(id);
 }
@@ -40,7 +40,7 @@ export function withArticle(id: string): string {
 const OF: Record<string, string> = { o: "do", os: "dos", as: "das", a: "da" };
 
 /** A national team's name after "de": "do Brasil", "da Argentina", "de Portugal". */
-export function withPreposition(id: string): string {
+export function nationalTeamWithPreposition(id: string): string {
   const article = ARTICLES[id] ?? "a";
   return `${article ? (OF[article] ?? "de") : "de"} ${nationalTeamName(id)}`;
 }

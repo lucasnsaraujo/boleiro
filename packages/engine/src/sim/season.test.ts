@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Division } from "@boleiro/data/players";
 import { advanceDay, type DayEvent } from "./advanceDay.js";
+import { eventMemoryOf } from "./events/eventMemory.js";
 import type { GameState, LeagueCompetition } from "./gameState.js";
 import { loadNewGame } from "./loadNewGame.js";
 import { standings } from "./standings.js";
@@ -37,6 +38,13 @@ describe("a full season", () => {
   const elapsed = (used.user + used.system) / 1000;
   const before = lastDay.state;
   const outcomes = events.find((e) => e.type === "seasonEnded");
+
+  it("cools the rivalries' heat by half at the turn of the year", () => {
+    const heated: GameState = { ...lastDay.state, eventMemory: { ...eventMemoryOf(lastDay.state), rivalry: { "flamengo-rj|fluminense-rj": 38, "palmeiras-sp|santos-sp": 1 } } };
+    const turned = playUntil(heated, "2027-01-01").state;
+    expect(eventMemoryOf(turned).rivalry["flamengo-rj|fluminense-rj"]).toBe(19);
+    expect(eventMemoryOf(turned).rivalry["palmeiras-sp|santos-sp"]).toBeUndefined();
+  });
 
   it("runs in a few seconds", () => {
     expect(elapsed).toBeLessThan(5000);

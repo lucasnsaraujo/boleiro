@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { advanceDay } from "../advanceDay.js";
+import { assistantCandidates, assistantOf, hireAssistant } from "../coach/assistant.js";
 import { addDays } from "../dates.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { clubMood } from "../morale/clubMood.js";
 import { BLOCK_FROM_INTENSITY } from "../rivalries/idols.js";
 import { rivalryOf } from "../rivalries/rivalryOf.js";
+import { isDerbyFor } from "../live/teamTalk.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { EVENT_BANK } from "./eventBank.js";
 import { eventMemoryOf, eventsOf, pendingEventOf, rivalryKey } from "./eventMemory.js";
@@ -20,6 +22,7 @@ const AI_CLUB = Object.values(start.clubs).find((club) => club.division === "A" 
 const newsType = (id: string, fields: Partial<EventType> = {}): EventType => ({
   id,
   area: "players",
+  topic: "players",
   weight: 1,
   cooldownDays: 0,
   cast: () => ({}),
@@ -150,14 +153,14 @@ describe("event engine", () => {
   });
 
   it("fills every text of the bank with real names", () => {
-    const slots = new Set(["player", "teammate", "club", "rival", "age", "position", "stadium", "coach"]);
+    const slots = new Set(["player", "teammate", "club", "rival", "age", "position", "stadium", "coach", "assistant"]);
     for (const type of EVENT_BANK) {
       const texts = [...type.texts.flatMap((t) => [t.headline, t.body]), type.setting ?? "", ...(type.choices ?? []).flatMap((c) => [c.label, c.detail ?? "", c.news ?? ""])];
       for (const text of texts) for (const [, slot] of text.matchAll(/\{(\w+)\}/g)) expect(slots, `${type.id}: {${slot}}`).toContain(slot);
       expect(type.texts.length, type.id).toBeGreaterThanOrEqual(2);
     }
-    expect(EVENT_BANK).toHaveLength(31);
-    expect(new Set(EVENT_BANK.map((type) => type.id)).size).toBe(31);
+    expect(EVENT_BANK).toHaveLength(155);
+    expect(new Set(EVENT_BANK.map((type) => type.id)).size).toBe(155);
     expect(new Set(EVENT_BANK.map((type) => type.area))).toEqual(new Set(["players", "squad", "board", "fans", "press"]));
 
     const named = runDays({ ...start, coachName: "Lucas Araujo" }, 365, EVENT_BANK);
@@ -191,6 +194,68 @@ describe("event engine", () => {
     for (const rivalId of rivals) expect(rivalryOf("bahia-ba", rivalId ?? "")?.intensity ?? 0).toBeGreaterThanOrEqual(BLOCK_FROM_INTENSITY);
   });
 
+  it("takes a local match for no clássico: Bahia beating Galícia throws no derby party and needs no derby talk, beating Vitória does", () => {
+    const party = EVENT_BANK.find((t) => t.id === "rival-derby-party");
+    if (!party || typeof party.cast !== "function") throw new Error("rival-derby-party casts a rival");
+    const cast = party.cast;
+    const won = (awayId: string): Fixture => ({ id: `bahia-${awayId}`, competitionId: "state-ba", stage: 0, date: start.date, homeId: "bahia-ba", awayId, result: { homeGoals: 2, awayGoals: 0 } });
+    const castAfter = (fixture: Fixture) => cast({ state: start, clubId: "bahia-ba", squad: [], date: start.date, played: [fixture], random: () => 0 });
+    expect(castAfter(won("galicia-ba"))).toBeNull();
+    expect(castAfter(won("vitoria-ba"))).toEqual({ rivalId: "vitoria-ba" });
+    expect(isDerbyFor(start, won("galicia-ba"), "bahia-ba")).toBe(false);
+    expect(isDerbyFor(start, won("vitoria-ba"), "bahia-ba")).toBe(true);
+  });
+
+  it("writes a feminine club, rival or arena with the feminine article: da Chapecoense, na Arena Condá, contra a Ponte Preta", () => {
+    const text = { headline: "Presidente do {club} cobra o elenco no {stadium}", body: "O {club} encara o {rival}. A torcida do {club} lota o {stadium}." };
+    const storyAt = (clubId: string) => {
+      const state = loadNewGame(5, { coachClubId: clubId });
+      const bank = [newsType("cobranca", { texts: [text, text, text], cast: () => ({ rivalId: "ponte-preta-sp" }) })];
+      const ran = runDays(state, 60, bank).state;
+      return eventMemoryOf(ran).news.find((item) => item.clubIds[0] === clubId);
+    };
+    const chape = storyAt("chapecoense-sc");
+    expect(chape?.headline).toBe("Presidente da Chapecoense cobra o elenco na Arena Condá");
+    expect(chape?.body).toBe("A Chapecoense encara a Ponte Preta. A torcida da Chapecoense lota a Arena Condá.");
+    const flamengo = storyAt(CLUB);
+    expect(flamengo?.headline).toBe(`Presidente do Flamengo cobra o elenco no ${start.clubs[CLUB]?.stadium}`);
+    expect(flamengo?.body).toBe(`O Flamengo encara a Ponte Preta. A torcida do Flamengo lota o ${start.clubs[CLUB]?.stadium}.`);
+  });
+
+  it("offers the coach's hired assistant a job elsewhere, by name, and lets him go with the blessing", () => {
+    const offer = EVENT_BANK.find((t) => t.id === "staff-assistant-offer");
+    if (!offer) throw new Error("the bank has the assistant's job offer");
+    const sceneOf = (state: GameState) => ({ state, clubId: CLUB, squad: [], date: state.date, played: [], random: () => 0 });
+    expect(offer.cast(sceneOf(start))).toBeNull();
+    const candidate = assistantCandidates(start)[0];
+    if (!candidate) throw new Error("the coach can call an assistant");
+    const hired = hireAssistant(start, candidate.id).state;
+    expect(hired.coach.assistant?.name).toBe(candidate.name);
+    let asked = hired;
+    for (let day = 0; day < 200 && !pendingEventOf(asked, CLUB); day++) asked = runEvents({ ...asked, date: addDays(hired.date, day + 1) }, addDays(hired.date, day), [], [offer]).state;
+    const pending = pendingEventOf(asked, CLUB);
+    expect(pending?.typeId).toBe("staff-assistant-offer");
+    expect(`${pending?.headline} ${pending?.body}`).toContain(candidate.name);
+    const blessed = answerEvent(asked, CLUB, 0).state;
+    expect(blessed.coach.assistant).toBeUndefined();
+    expect(assistantOf(blessed).level).toBe(1);
+    expect(answerEvent(asked, CLUB, 2).state.coach.assistant?.name).toBe(candidate.name);
+  });
+
+  it("lets a feud make a rival's provocation at most a few weights likelier, however hot it got", () => {
+    const type = EVENT_BANK.find((t) => t.id === "press-rival");
+    if (!type || typeof type.weight !== "function") throw new Error("press-rival weighs the rivalry's heat");
+    const weigh = type.weight;
+    const cast = { rivalId: "fluminense-rj" };
+    const weightAt = (heat: number) => {
+      const state: GameState = { ...start, eventMemory: { ...eventMemoryOf(start), rivalry: { [rivalryKey(CLUB, "fluminense-rj")]: heat } } };
+      return weigh({ state, clubId: CLUB, squad: [], date: start.date, played: [], random: () => 0 }, cast);
+    };
+    expect(weightAt(10)).toBeGreaterThan(weightAt(0));
+    expect(weightAt(38)).toBeLessThanOrEqual(weightAt(0) + 2);
+    expect(weightAt(1000)).toBe(weightAt(38));
+  });
+
   it("offers a press conference whose answers move morale, board, fans and rivalry", () => {
     const press = EVENT_BANK.filter((type) => type.look === "press");
     expect(press.length).toBeGreaterThan(0);
@@ -205,6 +270,24 @@ describe("event engine", () => {
 });
 
 describe("the round's newspaper", () => {
+  it("prints a feminine club's stories with the feminine article: the Chapecoense sacks its coach and loses to the Flamengo", () => {
+    const CHAPE = "chapecoense-sc";
+    const lost: Fixture = { id: "f-chape", competitionId: "x", stage: 0, date: start.date, homeId: CLUB, awayId: CHAPE, result: { homeGoals: 2, awayGoals: 0 } };
+    const papered = recordNews(
+      start,
+      start.date,
+      [
+        { type: "matchPlayed", fixture: lost },
+        { type: "coachFired", clubId: CHAPE, date: start.date, isYou: false, position: 18, targetPosition: 6 },
+      ],
+      {},
+    );
+    const texts = eventMemoryOf(papered).news.flatMap((item) => [item.headline, item.body]);
+    expect(texts.join(" ")).toContain("Chapecoense");
+    for (const text of texts) expect(text).not.toMatch(/(^|\s)(o|do|no|ao|pelo|O|Do|No|Ao|Pelo) Chapecoense/);
+    expect(texts.some((text) => /(^|\s)(a|da|na|à|pela|A|Da|Na) Chapecoense/.test(text))).toBe(true);
+  });
+
   it("prints the coach's match, a sacking, a signing and an upset from the day's events", () => {
     const players = Object.values(start.players);
     const signing = players.find((p) => p.clubId === AI_CLUB);

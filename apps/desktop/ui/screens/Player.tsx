@@ -18,6 +18,7 @@ import { statusText } from "../squad/squadRows.js";
 import { WatchToggle } from "../controls/WatchToggle.js";
 import { RenewalDialog } from "../contracts/RenewalDialog.js";
 import "./player.css";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 const PLAYER_KEYS = ["date", "season", "coachClubId", "clubs", "players", "discipline", "competitions", "fixtures", "history", "market", "hasMidSeasonWindow", "coach"] as const;
 type PlayerState = Pick<GameState, (typeof PLAYER_KEYS)[number]>;
@@ -149,7 +150,7 @@ export function Player() {
           <WatchToggle isWatched={isWatched} onToggle={watch} />
         )}
         {club && (
-          <Link className="player-club" to={`/club/${club.id}`} aria-label={`Ver o elenco do ${club.shortName}`}>
+          <Link className="player-club" to={`/club/${club.id}`} aria-label={`Ver o elenco ${withArticle(club.shortName, clubArticle(club.id), "de")}`}>
             <Crest club={club} size={40} />
             <ClubPlate club={club} size="row" />
           </Link>
@@ -216,7 +217,7 @@ export function Player() {
               <div>
                 <dt>Emprestado</dt>
                 <dd>
-                  pelo {lender?.shortName ?? card.contract.loan.fromClubId} até {formatGameDate(card.contract.loan.until)}
+                  {withArticle(lender?.shortName ?? card.contract.loan.fromClubId, clubArticle(card.contract.loan.fromClubId), "por")} até {formatGameDate(card.contract.loan.until)}
                 </dd>
               </div>
             )}

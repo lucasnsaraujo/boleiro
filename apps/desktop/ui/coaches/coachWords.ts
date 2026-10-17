@@ -120,7 +120,7 @@ export function exitWord(left: ProfileStint["left"]): string {
   }
 }
 
-/** Why a club with an open job would turn the coach down, under its verdict; `idolOf` names the rival club he is an idol of. */
+/** Why a club with an open job would turn the coach down, under its verdict; `idolOf` names the rival club he is an idol of, after "de" ("do Vasco"). */
 export function jobRefusalText(refusal: Refusal, idolOf: string): string {
   switch (refusal) {
     case "tooBig":
@@ -128,7 +128,7 @@ export function jobRefusalText(refusal: Refusal, idolOf: string): string {
     case "notWelcome":
       return "não esqueceu sua saída";
     case "rivalIdol":
-      return `não contrata ídolo do ${idolOf}`;
+      return `não contrata ídolo ${idolOf}`;
   }
 }
 

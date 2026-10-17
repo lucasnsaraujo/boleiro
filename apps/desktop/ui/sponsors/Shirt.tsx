@@ -6,6 +6,7 @@ import { Crest } from "../clubs/Crest.js";
 import { springTiming } from "../motion/springEasing.js";
 import { logoOf } from "./brandLogos.js";
 import "./shirt.css";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 /** A brand printed on the shirt. */
 export type Print = { brandId: string; name: string };
@@ -89,7 +90,7 @@ export function Shirt({ club, prints, previewing = null }: Props) {
   const trim = club.colours.secondary.toLowerCase() === background.toLowerCase() ? text : club.colours.secondary;
   const style = { "--press-ease": PRESS.easing, "--press-ms": `${PRESS.duration}ms` } as CSSProperties;
   return (
-    <figure className="shirt" style={style} aria-label={`Camisa do ${club.shortName}`}>
+    <figure className="shirt" style={style} aria-label={`Camisa ${withArticle(club.shortName, clubArticle(club.id), "de")}`}>
       <svg width="330" height="360" viewBox="0 0 330 360" aria-hidden="true">
         <defs>
           <clipPath id="shirt-cut">

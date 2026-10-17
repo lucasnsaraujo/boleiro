@@ -14,3 +14,12 @@ const BY_PAIR: ReadonlyMap<string, Rivalry> = new Map(DERBIES.map(({ clubs: [a, 
 export function rivalryOf(clubA: string, clubB: string): Rivalry | null {
   return clubA === clubB ? null : (BY_PAIR.get(pairKey(clubA, clubB)) ?? null);
 }
+
+// guess: a local match (intensity 1) is not a clássico yet; from a city's or a region's derby up (2) the
+// papers, the fans' parties and a derby team talk treat it as one.
+const CLASSICO_FROM_INTENSITY = 2;
+
+/** Whether two clubs' derby is a clássico, not just a local match. */
+export function isClassico(clubA: string, clubB: string): boolean {
+  return (rivalryOf(clubA, clubB)?.intensity ?? 0) >= CLASSICO_FROM_INTENSITY;
+}
