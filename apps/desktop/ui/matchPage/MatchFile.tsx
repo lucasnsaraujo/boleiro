@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { FULL_TIME } from "@boleiro/engine/sim/live/matchTimeline";
+import { EXTRA_TIME_END } from "@boleiro/engine/sim/live/matchTimeline";
 import { matchPageAt, type MatchView } from "@boleiro/game-client/matchPage/matchPageAt";
 import type { MatchPage } from "@boleiro/game-client/matchPage/matchPageOf";
 import type { Side } from "@boleiro/game-client/round/liveRoundOf";
@@ -50,7 +50,7 @@ function useMatchPage(matchRef: string | null, version: unknown): MatchPage | nu
  * The ficha do jogo: a side panel over the screen, any match swapping into it, and from it the full
  * tabbed sheet. Escape steps back: from the sheet to the panel, then closed.
  */
-export function MatchFile({ matchRef, minute = FULL_TIME, version, onSubstitute, onClose }: Props) {
+export function MatchFile({ matchRef, minute = EXTRA_TIME_END, version, onSubstitute, onClose }: Props) {
   const page = useMatchPage(matchRef, version);
   const [isFull, setFull] = useState(false);
   // A leave belongs to the match it started on: another match opened meanwhile cancels it.

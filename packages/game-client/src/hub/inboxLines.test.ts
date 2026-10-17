@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { Fixture, MatchResult } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
-import { inboxLines, type DayEvent } from "./inboxLines.js";
+import { inboxLines, type DayEvent, type InboxLine } from "./inboxLines.js";
 
 const game = newGameFromFiles(3, { coachClubId: "bahia-ba" }, bundledGameFiles);
 const own = Object.values(game.players).find((p) => p.clubId === "bahia-ba");
@@ -43,6 +43,11 @@ describe("the coach's matches", () => {
 
   test("a tie settled on penalties says who went through", () => {
     expect(line(played({ homeGoals: 0, awayGoals: 0, penaltyWinnerId: "bahia-ba" }))).toMatchObject({ text: "Baiano: Bahia 0 x 0 Vitória, Bahia nos pênaltis", tone: "good" });
+  });
+
+  test("a match that went to extra time says so, before its shootout", () => {
+    expect(line(played({ homeGoals: 2, awayGoals: 1, isAfterExtraTime: true }))?.text).toBe("Baiano: Bahia 2 x 1 Vitória (prorr.)");
+    expect(line(played({ homeGoals: 1, awayGoals: 1, isAfterExtraTime: true, penaltyWinnerId: "vitoria-ba" }))?.text).toBe("Baiano: Bahia 1 x 1 Vitória (prorr.), Vitória nos pênaltis");
   });
 
   test("other clubs' games stay out", () => {
@@ -300,6 +305,11 @@ describe("the coach's career", () => {
     expect(line({ type: "contractEnded", clubId: "bahia-ba", season: 2026 })).toMatchObject({ text: "Fim do contrato com Bahia", tone: "bad" });
   });
 
+  test("a club he once coached naming its new coach is his news; any other club's is not", () => {
+    expect(line({ type: "coachAppointed", clubId: "bahia-ba", coachId: "c1", name: "Rogério Ceni" })).toMatchObject({ text: "Bahia anuncia Rogério Ceni como novo técnico", tone: "neutral" });
+    expect(lines({ type: "coachAppointed", clubId: "vitoria-ba", coachId: "c2", name: "Jair Ventura" })).toEqual([]);
+  });
+
   test("on the day he takes a new job, the new club's news is his too", () => {
     const hired = { ...game, coachClubId: "vitoria-ba" };
     expect(inboxLines(game, hired, [{ type: "fansProtest", clubId: "vitoria-ba", fans: 20, moraleLost: 5 }])).toHaveLength(1);
@@ -332,4 +342,63 @@ describe("the season", () => {
 test("every line is dated the day it happened", () => {
   const before = { ...game, date: "2026-01-11" };
   expect(inboxLines(before, game, [{ type: "fansPressure", clubId: "bahia-ba", fans: 30 }])[0]?.date).toBe("2026-01-11");
+});
+
+describe("contracts", () => {
+  const ending = (until: string, players = [own]) => ({ ...game, players: { ...game.players, ...Object.fromEntries(players.map((p) => [p.id, { ...p, contractUntil: until }])) } });
+
+  test("players entering their contract's last year are one warning, before other clubs may sign them", () => {
+    const lastYear = (lines: readonly InboxLine[]) => lines.filter((l) => l.text.includes("último ano de contrato"));
+    const today = { ...ending("2027-06-30"), date: "2026-06-30" };
+    const tomorrow = { ...today, date: "2026-07-01" };
+    expect(lastYear(inboxLines(today, tomorrow, []))).toEqual([
+      { date: "2026-06-30", text: `${own.name} entra no último ano de contrato (até jun 2027): renove antes que outros clubes possam assinar pré-contrato com ele`, tone: "neutral" },
+    ]);
+    expect(lastYear(inboxLines(tomorrow, { ...tomorrow, date: "2026-07-02" }, []))).toEqual([]);
+    const second = Object.values(game.players).find((p) => p.clubId === "bahia-ba" && p.id !== own.id);
+    if (!second) throw new Error("Bahia has one player");
+    const both = { ...ending("2027-06-30", [own, second]), date: "2026-06-30" };
+    expect(lastYear(inboxLines(both, { ...both, date: "2026-07-01" }, [])).map((l) => l.text)).toEqual([
+      `2 jogadores entram no último ano de contrato: ${[own.name, second.name].sort((a, b) => a.localeCompare(b, "pt-BR")).join(" e ")}`,
+    ]);
+  });
+
+  test("a player's counter to a renewal says what he asks and for how long", () => {
+    expect(line({ type: "renewalCountered", playerId: own.id, months: 24, wage: 450_000 })).toMatchObject({
+      text: `${own.name} pede R$ 450 mil por mês para renovar por 2 anos. Responda na renovação`,
+      tone: "neutral",
+    });
+    expect(line({ type: "renewalCountered", playerId: own.id, months: 6, wage: 450_000 })?.text).toContain("por 6 meses");
+    expect(lines({ type: "requestDecided", request: { kind: "renew", playerId: own.id, years: 2, wage: 1 }, approved: false, reason: "playerCounter" })).toEqual([]);
+  });
+
+  test("a renewal turned down by the player says why", () => {
+    const refused = (reason: string) => line({ type: "requestDecided", request: { kind: "renew", playerId: own.id, years: 0.5 }, approved: false, reason })?.text;
+    expect(refused("lengthRefused")).toBe(`Diretoria recusa a renovação de ${own.name}: ele não aceita esse tempo de contrato`);
+    expect(refused("wageTooLow")).toBe(`Diretoria recusa a renovação de ${own.name}: ele quer bem mais do que o oferecido`);
+  });
+
+  test("what the assistant did with the contracts is his own news", () => {
+    expect(line({ type: "playerContractRenewed", playerId: own.id, clubId: "bahia-ba", until: "2029-12-31", wage: 320_000, byAssistant: true })).toMatchObject({
+      text: `O auxiliar renovou com ${own.name} até dez 2029, por R$ 320 mil por mês`,
+      tone: "good",
+    });
+    const skipped = (reason: "notInPlans" | "playerUnwilling" | "wageCap") => line({ type: "renewalSkipped", playerId: own.id, clubId: "bahia-ba", until: "2026-12-31", reason })?.text;
+    expect(skipped("notInPlans")).toBe(`O auxiliar deixa acabar o contrato de ${own.name} (dez 2026): está fora dos planos`);
+    expect(skipped("playerUnwilling")).toBe(`O auxiliar não renovou com ${own.name} (contrato até dez 2026): ele não aceita nenhum tempo de contrato`);
+    expect(skipped("wageCap")).toBe(`O auxiliar não renovou com ${own.name} (contrato até dez 2026): o salário passa do teto da folha`);
+    expect(lines({ type: "renewalSkipped", playerId: other.id, clubId: "vitoria-ba", until: "2026-12-31", reason: "notInPlans" })).toEqual([]);
+  });
+
+  test("a look at many contracts is one line per outcome, so it doesn't flood the inbox", () => {
+    const squad = Object.values(game.players).filter((p) => p.clubId === "bahia-ba").slice(0, 4);
+    const [a, b, c, d] = squad;
+    if (!a || !b || !c || !d) throw new Error("Bahia has four players");
+    const renewed = (p: typeof a): DayEvent => ({ type: "playerContractRenewed", playerId: p.id, clubId: "bahia-ba", until: "2028-12-31", wage: 1, byAssistant: true });
+    const skipped = (p: typeof a): DayEvent => ({ type: "renewalSkipped", playerId: p.id, clubId: "bahia-ba", until: "2026-12-31", reason: "notInPlans" });
+    expect(lines(renewed(a), renewed(b), skipped(c), skipped(d)).map((l) => l.text)).toEqual([
+      `O auxiliar renovou 2 contratos: ${a.name} e ${b.name}`,
+      `O auxiliar deixa acabar 2 contratos: ${c.name} e ${d.name} (fora dos planos)`,
+    ]);
+  });
 });

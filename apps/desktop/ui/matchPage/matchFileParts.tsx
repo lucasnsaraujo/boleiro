@@ -24,7 +24,9 @@ export function venueLine(page: MatchPage): string[] {
 /** The match's clock as its header shows it: the minute while it runs, else how it ended. */
 export function clockLabel(page: MatchPage, view: MatchView): string {
   if (!view.isOver) return `${view.minute}'`;
-  return page.penaltyWinnerId && view.score.home === view.score.away ? "Encerrado · pênaltis" : "Encerrado";
+  const isShootout = page.penaltyWinnerId && view.score.home === view.score.away;
+  if (page.isAfterExtraTime) return isShootout ? "Encerrado · prorrogação e pênaltis" : "Encerrado · prorrogação";
+  return isShootout ? "Encerrado · pênaltis" : "Encerrado";
 }
 
 // The card the bars and shirts sit on, in each theme (album.css --card).

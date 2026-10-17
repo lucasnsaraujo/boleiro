@@ -16,6 +16,7 @@ import { pendingText, requestTitle } from "../market/requestText.js";
 import { playerCard, type PlayerCard } from "../squad/playerCard.js";
 import { statusText } from "../squad/squadRows.js";
 import { WatchToggle } from "../controls/WatchToggle.js";
+import { RenewalDialog } from "../contracts/RenewalDialog.js";
 import "./player.css";
 
 const PLAYER_KEYS = ["date", "season", "coachClubId", "clubs", "players", "discipline", "competitions", "fixtures", "history", "market", "hasMidSeasonWindow", "coach"] as const;
@@ -82,6 +83,7 @@ export function Player() {
   const [failed, setFailed] = useState(false);
   const [reads, setReads] = useState(0);
   const [isRoundUnderWay, setRoundUnderWay] = useState(false);
+  const [isNegotiating, setNegotiating] = useState(false);
 
   useEffect(() => {
     let current = true;
@@ -236,6 +238,7 @@ export function Player() {
           desk={desk}
           onAsk={(request) => void engine.apply({ type: "ask", request }).then(setDesk)}
           onWithdraw={() => void engine.apply({ type: "withdraw", playerId: card.id }).then(setDesk)}
+          onNegotiate={() => setNegotiating(true)}
         />
       )}
       {card.isCoachsPlayer && !card.contract.loan && (
@@ -250,6 +253,7 @@ export function Player() {
           })}
         />
       )}
+      {isNegotiating && <RenewalDialog playerId={card.id} onClose={() => setNegotiating(false)} onChange={() => void engine.desk().then(setDesk)} />}
     </div>
   );
 }
@@ -334,10 +338,15 @@ type ActionsProps = {
   desk: BoardDesk;
   onAsk: (request: CoachRequest) => void;
   onWithdraw: () => void;
+  /** Opens the renewal screen, where each length has its own wage. */
+  onNegotiate: () => void;
 };
 
-/** Renovar, Vender and Emprestar, or Chamar de volta for a player lent out, go to the board's desk; a request already there can be withdrawn. */
-function ContractActions({ state, playerId, name, desk, onAsk, onWithdraw }: ActionsProps) {
+/**
+ * Renovar (at his ask, for the years chosen), Vender and Emprestar, or Chamar de volta for a player lent out,
+ * go to the board's desk; Negociar opens the renewal screen; a request already there can be withdrawn.
+ */
+function ContractActions({ state, playerId, name, desk, onAsk, onWithdraw, onNegotiate }: ActionsProps) {
   const [years, setYears] = useState<number>(DEFAULT_RENEWAL_YEARS);
   const pending = desk.pending.find((request) => request.playerId === playerId);
   if (pending) {
@@ -365,6 +374,9 @@ function ContractActions({ state, playerId, name, desk, onAsk, onWithdraw }: Act
               <Select label="Anos" caption={null} value={String(years)} options={RENEWAL_YEARS.map((n) => ({ value: String(n), label: String(n) }))} onChange={(value) => setYears(Number(value))} />
               {years === 1 ? "ano" : "anos"}
             </label>
+            <button className="btn-quiet" onClick={onNegotiate}>
+              Negociar
+            </button>
           </span>
         ) : (
           <button key={option.label} className="btn-quiet" onClick={() => onAsk(option.request)}>

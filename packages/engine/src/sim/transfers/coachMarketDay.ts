@@ -1,7 +1,7 @@
 import type { GameState, SimPlayer } from "../gameState.js";
 import { buyerWage, sellToBidder } from "./answerBid.js";
 import { boardRefusal } from "./boardRefusal.js";
-import { answerBy, coachMarketOf, unitHash, withCoachMarket, withoutPlayer } from "./coachMarket.js";
+import { answerBy, coachMarketOf, standingRenewalCounter, unitHash, withCoachMarket, withoutPlayer, withRenewalCounter } from "./coachMarket.js";
 import { marketView, type MarketView } from "./marketView.js";
 import { isClubFull } from "./squadCap.js";
 import { REPLACEMENT_BAND } from "./squadNeeds.js";
@@ -68,7 +68,7 @@ function pickBuyer(state: GameState, view: MarketView, player: SimPlayer, fee: n
   return random() < willingToJoin({ player, from: view.tier(player.clubId), to, wage }) ? buyerId : null;
 }
 
-/** Drops what no longer stands: business about players who left the coach, lapsed offers and counters. */
+/** Drops what no longer stands: business about players who left the coach, lapsed offers and counters, renewal counters that lapsed. */
 function prune(state: GameState, coach: CoachMarket): CoachMarket {
   let kept = coach;
   const isOurs = (playerId: string) => state.players[playerId]?.clubId === state.coachClubId;
@@ -78,6 +78,9 @@ function prune(state: GameState, coach: CoachMarket): CoachMarket {
   for (const [id, bid] of Object.entries(kept.bids)) if (bid.until < state.date) kept = withoutPlayer(kept, id);
   for (const [id, counter] of Object.entries(kept.counters)) {
     if (counter.until < state.date || state.players[id]?.clubId !== counter.clubId) kept = withoutPlayer(kept, id);
+  }
+  for (const id of Object.keys(kept.renewalCounters ?? {})) {
+    if (!isOurs(id) || !standingRenewalCounter(state, id)) kept = withRenewalCounter(kept, id, null);
   }
   return kept;
 }

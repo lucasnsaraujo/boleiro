@@ -30,6 +30,15 @@ const SUPPORTER_PRESSURE: Record<SupporterStep, number> = { calm: 0, pressure: 0
 const FIRING_LINE = 0.8;
 const FIRING_CHANCE_PER_GAME = 0.15;
 
+// guess: a board this close to its firing line has the press talking about the coach's job.
+const BRINK_MARGIN = 0.25;
+
+/** Whether the club's board is close to firing its coach: past the grace games and near the firing line. */
+export function isOnTheBrink(state: Pick<GameState, "boards" | "mood">, clubId: string): boolean {
+  const board = state.boards[clubId];
+  return !!board && board.games >= GRACE_GAMES && board.pressure + crowdPressure(state, clubId) > FIRING_LINE - BRINK_MARGIN;
+}
+
 const clamp = (value: number) => Math.min(GAP_RANGE.max, Math.max(GAP_RANGE.min, value));
 
 /** Pressure from the stands: unhappy fans and escalating organised supporters. */

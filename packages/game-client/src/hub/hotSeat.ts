@@ -40,6 +40,7 @@ function isOwnNews(event: DayEvent): boolean {
     case "bidReceived":
     case "auctionClosed":
     case "counterOffered":
+    case "renewalCountered":
     case "coachHired":
     case "jobOffered":
     case "coachSeasonReviewed":

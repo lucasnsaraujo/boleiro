@@ -1,13 +1,19 @@
-import { FULL_TIME, HALF_TIME } from "@boleiro/engine/sim/live/matchTimeline";
+import { EXTRA_HALF_TIME, FULL_TIME, HALF_TIME } from "@boleiro/engine/sim/live/matchTimeline";
 import type { LiveRound } from "@boleiro/game-client/round/liveRoundOf";
+import { roundEndOf } from "../round/roundAt.js";
 import { CUES, type Cue } from "./soundCatalog.js";
 
-/** The sounds of the minutes after `from` up to `to`: whistles, every goal of the round, and the cards and injuries of the coach's match. */
+/**
+ * The sounds of the minutes after `from` up to `to`: whistles (extra time's breaks whistled as half-time),
+ * every goal of the round, and the cards and injuries of the coach's match.
+ */
 export function roundCues(round: LiveRound, from: number, to: number): Cue[] {
   const cues: Cue[] = [];
   const isNew = (minute: number) => minute > from && minute <= to;
-  if (from === 0 || from === HALF_TIME) cues.push("kickOff");
-  if (isNew(HALF_TIME)) cues.push("halfTime");
+  const end = roundEndOf(round);
+  const breaks = end > FULL_TIME ? [HALF_TIME, FULL_TIME, EXTRA_HALF_TIME] : [HALF_TIME];
+  if (from === 0 || breaks.includes(from)) cues.push("kickOff");
+  if (breaks.some(isNew)) cues.push("halfTime");
 
   const coachClubId = round.coachClubId;
   for (const match of round.matches) {
@@ -37,7 +43,7 @@ export function roundCues(round: LiveRound, from: number, to: number): Cue[] {
     }
   }
 
-  if (isNew(FULL_TIME)) cues.push("fullTime");
+  if (isNew(end)) cues.push("fullTime");
   return cues;
 }
 

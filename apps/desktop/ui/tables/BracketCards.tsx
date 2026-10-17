@@ -1,9 +1,30 @@
+import type { ReactNode } from "react";
 import type { ClubFace } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
+import type { TieBreak } from "@boleiro/engine/sim/tieBreaks";
 import type { GroupTable } from "./competitionTables.js";
 
 type Clubs = Readonly<Record<string, ClubFace>>;
+
+// How a level tie goes on, as the card under the bracket tells the coach.
+const TIE_BREAK_NOTES: Record<TieBreak, ReactNode> = {
+  extraTime: (
+    <>
+      vai para a <b>prorrogação</b> e, se seguir empatado, para os <b>pênaltis</b>
+    </>
+  ),
+  penalties: (
+    <>
+      vai direto para os <b>pênaltis</b>
+    </>
+  ),
+  betterSeed: (
+    <>
+      classifica o <b>melhor colocado</b>
+    </>
+  ),
+};
 
 const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
 const nameOf = (clubs: Clubs, id: string) => clubs[id]?.shortName ?? id;
@@ -76,7 +97,7 @@ export function GroupCard({ group, clubs, coachClubId }: { group: GroupTable; cl
 
 /** The coach's next continental match with its first leg when it is a return, or why there is none. */
 export type NextTie =
-  | { title: string; sub: string; homeId: string; awayId: string; date: string; ground: string | null; firstLeg: string | null; isTwoLegged: boolean }
+  | { title: string; sub: string; homeId: string; awayId: string; date: string; ground: string | null; firstLeg: string | null; isTwoLegged: boolean; tieBreak: TieBreak }
   | { title: string; sub: string; none: string };
 
 export function NextTieCard({ next, clubs }: { next: NextTie; clubs: Clubs }) {
@@ -123,8 +144,8 @@ export function NextTieCard({ next, clubs }: { next: NextTie; clubs: Clubs }) {
         </dl>
       </div>
       <p className="note">
-        {next.isTwoLegged ? "Empate no agregado vai para os " : "Empate vai direto para os "}
-        <b>pênaltis</b>.{next.isTwoLegged ? " Não existe gol fora de casa." : ""}
+        {next.isTwoLegged ? "Empate no agregado " : "Empate "}
+        {TIE_BREAK_NOTES[next.tieBreak]}.{next.isTwoLegged ? " Não existe gol fora de casa." : ""}
       </p>
     </section>
   );

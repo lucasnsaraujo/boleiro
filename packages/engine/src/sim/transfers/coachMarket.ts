@@ -1,6 +1,6 @@
 import { addDays } from "../dates.js";
 import type { GameState, IsoDate } from "../gameState.js";
-import type { CoachMarket } from "./transferMarket.js";
+import type { CoachMarket, RenewalCounter } from "./transferMarket.js";
 import { windowClosesOn, type CoachWindows } from "./transferWindows.js";
 
 const EMPTY: CoachMarket = { listings: {}, auctions: {}, bids: {}, counters: {} };
@@ -28,14 +28,35 @@ function without<T>(record: Record<string, T>, id: string): Record<string, T> {
   return rest;
 }
 
-/** The coach's business with nothing left about this player: no listing, auction, offer or counter. */
+/** The coach's business with no sale left about this player: no listing, auction, offer or counter. His renewal talks stay. */
 export function withoutPlayer(coach: CoachMarket, playerId: string): CoachMarket {
   return {
+    ...coach,
     listings: without(coach.listings, playerId),
     auctions: without(coach.auctions, playerId),
     bids: without(coach.bids, playerId),
     counters: without(coach.counters, playerId),
   };
+}
+
+/** The coach's business with the player's renewal counter as `counter`, or without one when null. */
+export function withRenewalCounter(coach: CoachMarket, playerId: string, counter: RenewalCounter | null): CoachMarket {
+  const rest = without(coach.renewalCounters ?? {}, playerId);
+  const renewalCounters = counter ? { ...rest, [playerId]: counter } : rest;
+  if (Object.keys(renewalCounters).length) return { ...coach, renewalCounters };
+  // The last counter gone, the field goes too, so the save reads as one from before counters.
+  const next = { ...coach };
+  Reflect.deleteProperty(next, "renewalCounters");
+  return next;
+}
+
+/** The day the coach sent the requests his board answers on `date`: the day before, since answers come the next morning. */
+export const sentOn = (date: IsoDate): IsoDate => addDays(date, -1);
+
+/** The player's renewal counter that still stands on `day` (today by default), if any: in time, and made against the contract he has. */
+export function standingRenewalCounter(state: Pick<GameState, "date" | "market" | "players">, playerId: string, day: IsoDate = state.date): RenewalCounter | null {
+  const counter = coachMarketOf(state).renewalCounters?.[playerId];
+  return counter && counter.until >= day && counter.contractUntil === state.players[playerId]?.contractUntil ? counter : null;
 }
 
 /** The coach turns down a selling club's counter to his offer; the rest of his business stays. */

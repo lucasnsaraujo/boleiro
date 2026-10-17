@@ -334,6 +334,8 @@ function exitText(stint: CareerStint): string {
       return "fim de contrato";
     case "moved":
       return "trocou de clube";
+    case "resigned":
+      return "pediu demissão";
   }
 }
 

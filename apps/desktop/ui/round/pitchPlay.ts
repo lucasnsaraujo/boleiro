@@ -257,7 +257,8 @@ export function playScript(actions: readonly PitchAction[], fixtureId: string, m
     kickOff(restart + ms(KICKOFF_MS), other(anchor.side));
     cursor = restart + ms(KICKOFF_MS);
   });
-  fill(cursor, FULL_TIME * msPerMinute);
+  // A match in extra time plays on to its last action.
+  fill(cursor, Math.max(FULL_TIME, ...actions.map((action) => action.minute)) * msPerMinute);
 
   for (const action of actions) {
     if (action.kind !== "card" && action.kind !== "injury" && action.kind !== "substitution") continue;

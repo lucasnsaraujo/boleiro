@@ -159,3 +159,10 @@ test("a veteran who announced his last season can be asked once to play one more
   else expect(await screen.findByText(/aceitou jogar mais um ano\./)).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Pedir mais um ano" })).toBeNull();
 });
+
+test("Negociar opens the renewal screen of the coach's player", async () => {
+  const { engine, playerId } = await openPlayerOf("sport-pe");
+  const { players } = await engine.read(["players"]);
+  await userEvent.click(await screen.findByRole("button", { name: "Negociar" }));
+  expect(await screen.findByRole("heading", { name: `Renovar com ${players[playerId]?.name}` })).toBeTruthy();
+});

@@ -479,10 +479,73 @@
   font-size: 12px;
 }
 
-/* The squad table fills the right page and scrolls under its own header. */
+/* The squad page: its tabs (the squad, the contracts ending) over a list that scrolls under its own header. */
 .hub-squad {
   min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.hub-squad-scroll {
+  min-height: 0;
   overflow: auto;
+}
+
+.hub-squad-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 8px 10px 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  border-radius: var(--r-s) var(--r-s) 0 0;
+}
+
+.hub-squad-tab {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-radius: 8px 8px 0 0;
+  font-weight: 800;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  transition:
+    background-color var(--t-fast) var(--e-out),
+    color var(--t-fast) var(--e-out);
+}
+
+.hub-squad-tab:hover {
+  color: var(--ink);
+}
+
+.hub-squad-tab[aria-selected="true"] {
+  margin-bottom: -1px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow:
+    0 -1px 0 var(--line),
+    1px 0 0 var(--line),
+    -1px 0 0 var(--line);
+}
+
+.hub-squad-n {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  background: var(--paper-2);
+  font-stretch: var(--semi);
+  font-size: 10.5px;
+  color: var(--ink-2);
+}
+
+.hub-squad-n.urgent {
+  background: var(--yellow);
+  color: var(--on-yellow);
 }
 
 .hub-squad-none {

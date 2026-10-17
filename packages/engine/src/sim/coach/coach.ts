@@ -1,5 +1,6 @@
 import type { IsoDate } from "../gameState.js";
 import type { EventArea } from "../events/eventMemory.js";
+import type { AssistantDuty } from "./assistantDuties.js";
 import type { Tactics } from "./tactics.js";
 
 /** `salary` is monthly, in BRL; the contract runs to the end of `untilSeason`. */
@@ -19,7 +20,16 @@ export type Coach = {
   personalWindowUntil?: IsoDate;
   /** The areas whose events the assistant answers for him at once; left out, every event asks the coach. */
   assistantAreas?: EventArea[];
+  /** Clubs he walked out on, which won't hire him again before the end of `untilSeason`; a coach who never resigned has none. */
+  cooldowns?: { clubId: string; untilSeason: number }[];
+  /** The duties he set apart from their defaults (assistantDuties.ts); left out, the assistant runs the defaults. */
+  assistantDuties?: Partial<Record<AssistantDuty, boolean>>;
 };
+
+/** Whether the club still holds the coach's resignation against him. */
+export function isCoolingDown(coach: Pick<Coach, "cooldowns">, clubId: string, season: number): boolean {
+  return coach.cooldowns?.some((cooldown) => cooldown.clubId === clubId && cooldown.untilSeason >= season) ?? false;
+}
 
 // guess: an unknown coach starts at the reputation of the smallest national clubs.
 export const CAREER_START_REPUTATION = 5;

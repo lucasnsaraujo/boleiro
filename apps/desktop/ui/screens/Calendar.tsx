@@ -191,7 +191,7 @@ function MatchChip({ match, opponent, isToday, onOpen }: { match: PageMatch; opp
   const { result } = match;
   // The coach's goals first, as the outcome letter reads.
   const score = result
-    ? `${match.isHome ? result.homeGoals : result.awayGoals}×${match.isHome ? result.awayGoals : result.homeGoals}${result.onPenalties ? " pên." : ""} · `
+    ? `${match.isHome ? result.homeGoals : result.awayGoals}×${match.isHome ? result.awayGoals : result.homeGoals}${result.isAfterExtraTime ? " (prorr.)" : ""}${result.onPenalties ? " pên." : ""} · `
     : "";
   return (
     <li className={result ? `agenda-match played ${result.outcome}` : "agenda-match"} style={{ gridRow: match.row, gridColumn: match.column }}>

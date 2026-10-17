@@ -15,7 +15,7 @@ export type MatchEntry = {
   competition: string;
   isHome: boolean;
   opponentId: string;
-  result: { homeGoals: number; awayGoals: number; outcome: Outcome; onPenalties: boolean } | null;
+  result: { homeGoals: number; awayGoals: number; outcome: Outcome; onPenalties: boolean; isAfterExtraTime?: true } | null;
 };
 
 export type CalendarEntry = MatchEntry | { kind: "window"; date: IsoDate; opens: boolean };
@@ -52,6 +52,7 @@ function matchEntry(f: Fixture, coachClubId: string, competitions: GameState["co
         ? outcomeOf(result.homeGoals, result.awayGoals, result.penaltyWinnerId, coachClubId)
         : outcomeOf(result.awayGoals, result.homeGoals, result.penaltyWinnerId, coachClubId),
       onPenalties: result.penaltyWinnerId !== undefined,
+      ...(result.isAfterExtraTime ? { isAfterExtraTime: true as const } : {}),
     },
   };
 }

@@ -64,6 +64,8 @@ export function connectEngine(port: EngineWorker): EngineClient {
     liveRound: () => send({ method: "liveRound", args: [] }),
     chemistry: () => send({ method: "chemistry", args: [] }),
     awards: () => send({ method: "awards", args: [] }),
+    coaches: (...args) => send({ method: "coaches", args }),
+    coachProfile: (...args) => send({ method: "coachProfile", args }),
     matchPage: (...args) => send({ method: "matchPage", args }),
     turningPoint: () => send({ method: "turningPoint", args: [] }),
     inbox: () => send({ method: "inbox", args: [] }),

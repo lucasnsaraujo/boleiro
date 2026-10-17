@@ -192,6 +192,17 @@ function playCareerStart() {
   return { recorded, declined: declined.clubId, signed: signed.clubId };
 }
 
+/** A coach who walks out of his club, applies for a job (his old club's, which won't have him back) and plays on unemployed. */
+function playCoachMoves() {
+  const recorded = recordedSession();
+  recorded.apply({ type: "newGame", seed: SEED, choices: { coachClubId: "bahia-ba" } });
+  recorded.apply({ type: "advance", days: [{}, {}] });
+  recorded.apply({ type: "resign" });
+  const answer = recorded.apply({ type: "applyForJob", clubId: "bahia-ba" });
+  recorded.apply({ type: "advance", days: [{}, {}, {}] });
+  return { recorded, answer, page: recorded.session.coaches() };
+}
+
 /**
  * The coach's own market in the January window: weak players listed cheap, one put at auction and
  * taken off, an offer under a club's price that draws its counter, which he turns down, and the first
@@ -332,6 +343,7 @@ function playEvents() {
   const after = session.read(["mood", "boards", "finances"]);
   const inbox = session.inbox();
   apply({ type: "handToAssistant", area: "press", isHanded: true });
+  apply({ type: "setAssistantDuty", duty: "contracts", isOn: false });
   apply({ type: "playToMatchDay" });
   return { recorded, pending, answered, before, after, inbox };
 }
@@ -373,6 +385,7 @@ let money: ReturnType<typeof playMoney>;
 let academy: ReturnType<typeof playAcademy>;
 let events: ReturnType<typeof playEvents>;
 let captain: ReturnType<typeof playCaptain>;
+let coachMoves: ReturnType<typeof playCoachMoves>;
 let scouting: ReturnType<typeof playScouting>;
 
 beforeAll(() => {
@@ -383,8 +396,24 @@ beforeAll(() => {
   academy = playAcademy();
   events = playEvents();
   captain = playCaptain();
+  coachMoves = playCoachMoves();
   scouting = playScouting();
 }, 120_000);
+
+test("a coach who resigns is out of work with his old club's job open, and the club won't take him back", () => {
+  const { recorded, answer, page } = coachMoves;
+  expect(recorded.session.read(["coachClubId"]).coachClubId).toBeNull();
+  expect(answer).toBe("notWelcome");
+  expect(page.jobs.find((job) => job.clubId === "bahia-ba")).toMatchObject({ wouldHire: false });
+  expect(page.you.stints.at(-1)).toMatchObject({ clubId: "bahia-ba", left: "resigned" });
+});
+
+test("the coach-move commands survive JSON and replay alike from the same seed", () => {
+  const { session, applied } = coachMoves.recorded;
+  const twin = replay(applied);
+  expect(twin.results).toEqual(applied.map(({ result }) => result));
+  expect(sha256(twin.session.save())).toBe(sha256(session.save()));
+});
 
 test("the coach names a captain: the chemistry screen and the lineup sheet show him, a save keeps him, and the meter pays for his lack of standing", () => {
   const { before, kid, named, plan, save } = captain;
@@ -564,7 +593,7 @@ test("the money commands survive JSON and replay alike from the same seed", () =
 });
 
 test("the season, career, market, money, academy and hot-seat logs between them send every kind of command", () => {
-  const logs = [season, career, marketWindow, money, academy, events, captain, scouting, playHotSeatTurn(), playPlayerLife()].flatMap(({ recorded }) => recorded.applied);
+  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, scouting, playHotSeatTurn(), playPlayerLife()].flatMap(({ recorded }) => recorded.applied);
   const sent = new Set(logs.map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
@@ -577,6 +606,8 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     finishRound: true,
     closeTurningPoint: true,
     declineOffer: true,
+    resign: true,
+    applyForJob: true,
     ask: true,
     withdraw: true,
     listPlayer: true,
@@ -594,6 +625,7 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     spendMarketTime: true,
     answerEvent: true,
     handToAssistant: true,
+    setAssistantDuty: true,
     nameCaptain: true,
     watchPlayer: true,
     saveFilter: true,

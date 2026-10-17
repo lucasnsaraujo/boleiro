@@ -9,13 +9,14 @@ export function aggregate(clubId: string, fixtures: readonly Fixture[]): number 
   );
 }
 
+/** Each tie's winner: more goals on aggregate, else the shootout's winner, else (a liguilla tie, which has none) the better seed, listed first. */
 export function tieResults(stage: KnockoutStage, stageFixtures: readonly Fixture[]): TieResult[] {
   return stage.ties.map(([a, b], tie) => {
     const legs = stageFixtures.filter((f) => f.tie === tie);
     const goalsA = aggregate(a, legs);
     const goalsB = aggregate(b, legs);
     const shootout = legs.find((f) => f.result?.penaltyWinnerId)?.result?.penaltyWinnerId;
-    const aWins = goalsA > goalsB || (goalsA === goalsB && shootout === a);
+    const aWins = goalsA > goalsB || (goalsA === goalsB && (shootout === a || shootout === undefined));
     return aWins ? { winnerId: a, loserId: b } : { winnerId: b, loserId: a };
   });
 }

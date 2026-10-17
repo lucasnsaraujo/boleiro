@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
-import { developPlayers } from "./developPlayers.js";
+import { developPlayers, retiresAtSeasonTurn } from "./developPlayers.js";
 import { persuadeToStay, retirePlayer } from "./retirement.js";
 
 const COACH_CLUB = "flamengo-rj";
@@ -15,12 +15,12 @@ const retiredIn = (state: GameState) => new Set(developPlayers(state).events.fla
 const veterans = (state: GameState) => Object.values(state.players).filter((p) => p.age >= 33 && p.age <= 37 && p.clubId !== COACH_CLUB);
 const shareRetired = (players: readonly SimPlayer[], retired: ReadonlySet<string>) => players.filter((p) => retired.has(p.id)).length / players.length;
 
-/** Every veteran plays a full season except the odd-numbered ones, who barely play; over a few streams. */
+/** Every veteran plays a full season except the odd-numbered ones, who barely play; over a few saves. */
 function retirementsBy(change: (p: SimPlayer, isOdd: boolean) => SimPlayer, seeds = 6) {
   const odd: number[] = [];
   const even: number[] = [];
   for (let seed = 0; seed < seeds; seed++) {
-    const state = withPlayers({ ...start, rngState: seed }, (p) => change(p, Number(p.id.replace(/\D/g, "")) % 2 === 1));
+    const state = withPlayers({ ...start, seed }, (p) => change(p, Number(p.id.replace(/\D/g, "")) % 2 === 1));
     const retired = retiredIn(state);
     const old = veterans(state);
     odd.push(shareRetired(old.filter((p) => Number(p.id.replace(/\D/g, "")) % 2 === 1), retired));
@@ -70,6 +70,14 @@ describe("the coach's veterans", () => {
     const again = developPlayers(nextYear);
     expect(again.events.some((e) => e.type === "playerRetired" && e.playerId === first.playerId)).toBe(true);
     expect(again.state.players[first.playerId]).toBeUndefined();
+  });
+
+  it("are foreseen at each turn of the year as they go, so the clubs talking contracts the day before know", () => {
+    expect(Object.values(coachVeterans.players).filter((p) => p.clubId === COACH_CLUB && retiresAtSeasonTurn(coachVeterans, p))).toEqual([]);
+    const nextYear = { ...turned.state, season: start.season + 1 };
+    const retired = developPlayers(nextYear).events.flatMap((e) => (e.type === "playerRetired" ? [e.playerId] : []));
+    expect(Object.values(nextYear.players).filter((p) => retiresAtSeasonTurn(nextYear, p)).map((p) => p.id).sort()).toEqual(retired.sort());
+    for (const { playerId } of announced) expect(retired).toContain(playerId);
   });
 
   it("stay one more year about half the time when the coach asks, and can be asked only once", () => {

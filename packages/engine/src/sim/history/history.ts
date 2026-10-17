@@ -98,13 +98,15 @@ export type SeasonRecord = {
 /** A player's strength as it stood through one season; it only changes at the yearly turnover. */
 export type StrengthMark = { season: number; strength: number };
 
-export type CoachStint = { clubId: string; from: IsoDate; until: IsoDate | null; left: "fired" | "contractEnded" | "moved" | null };
+export type CoachStint = { clubId: string; from: IsoDate; until: IsoDate | null; left: "fired" | "contractEnded" | "moved" | "resigned" | null };
 
 export type CoachRecord = {
   stints: CoachStint[];
   trophies: { season: number; competition: CompetitionKey; clubId: string }[];
   firings: { clubId: string; date: IsoDate; position: number; targetPosition: number }[];
   seasons: { season: number; clubId: string; position: number; targetPosition: number }[];
+  /** The clubs he walked out on; a record from before resigning existed has none. */
+  resignations?: { clubId: string; date: IsoDate }[];
 };
 
 /** Everything a save remembers about its past. Sizes grow per season and per player-club pair, never per match. */

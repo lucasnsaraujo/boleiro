@@ -43,12 +43,22 @@ export type Auction = { minBid: number; closesOn: IsoDate; bids: AuctionBid[] };
 /** A selling club's answer to an offer of the coach that was too low: it sells for `fee` BRL until the end of `until`. */
 export type Counter = { clubId: string; fee: number; until: IsoDate };
 
-/** The coach's own business, keyed by player id: his players for sale or at auction, clubs' offers for them, and sellers' counters to his offers. */
+/**
+ * One of the coach's players answering a renewal offered too low: he signs for `months` at `wage` BRL a month
+ * until the end of `until`, while his contract still ends on `contractUntil`, the day it ended when he answered.
+ */
+export type RenewalCounter = { months: number; wage: number; until: IsoDate; contractUntil: IsoDate };
+
+/**
+ * The coach's own business, keyed by player id: his players for sale or at auction, clubs' offers for them,
+ * sellers' counters to his offers, and his players' counters to his renewal offers (absent until the first).
+ */
 export type CoachMarket = {
   listings: Record<string, Listing>;
   auctions: Record<string, Auction>;
   bids: Record<string, Bid>;
   counters: Record<string, Counter>;
+  renewalCounters?: Record<string, RenewalCounter>;
 };
 
 /** The transfer market's own state. */

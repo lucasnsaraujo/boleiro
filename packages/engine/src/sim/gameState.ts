@@ -4,6 +4,7 @@ import type { Formation } from "../engine/formations.js";
 import type { Player } from "../engine/match.js";
 import type { Board } from "./coach/boardExpectations.js";
 import type { Coach } from "./coach/coach.js";
+import type { CoachWorld } from "./coach/aiCoaches.js";
 import type { WaitingCoach } from "./coach/humanCoaches.js";
 import type { Discipline, MatchCards } from "./discipline/discipline.js";
 import type { Friendly } from "./friendlies/friendlies.js";
@@ -36,6 +37,8 @@ export type MatchResult = {
   homeGoals: number;
   awayGoals: number;
   penaltyWinnerId?: string;
+  /** The match went to extra time; its goals are in the score. */
+  isAfterExtraTime?: true;
   cards?: MatchCards;
 };
 
@@ -258,6 +261,8 @@ export type GameState = {
   formats?: Formats;
   /** What the event engine remembers: past events, answers waiting, the newspaper's stories; a save from before events has none. */
   eventMemory?: EventMemory;
+  /** Every club's AI coach, the free pool and the rankings; a save from before AI coaches gets them from its seed when it loads (withCoachWorld). */
+  coaches?: CoachWorld;
   /** Each club's chemistry between matches, from its first match in the game; a save from before chemistry has none. */
   chemistry?: Record<string, ClubChemistry>;
 };

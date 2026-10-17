@@ -69,13 +69,14 @@ function reviewCoach(state: GameState, outcomes: readonly LeagueOutcome[]): { st
 
 /**
  * The coach career at the turn of the year, after the new season's competitions open: the player's
- * coach is reviewed, every board sets its expectations, and pre-season coach changes open jobs.
+ * coach is reviewed, every board sets its expectations, and pre-season coach changes open jobs
+ * (`vacancies`, the clubs that let their coach go).
  */
 export function startCoachSeason(
   state: GameState,
   outcomes: readonly LeagueOutcome[],
   random: () => number,
-): { state: GameState; events: CoachSeasonEvent[]; waitingEvents: CoachSeasonEvent[][] } {
+): { state: GameState; events: CoachSeasonEvent[]; waitingEvents: CoachSeasonEvent[][]; vacancies: string[] } {
   const reviewed = reviewCoach(state, outcomes);
   // A waiting hot-seat coach is reviewed as the one in the seat is, against the season just ended, before the boards set new targets.
   let next = reviewed.state;
@@ -101,5 +102,5 @@ export function startCoachSeason(
     next = own.state;
     waitingEvents[index]?.push(...own.events);
   }
-  return { state: next, events: [...reviewed.events, ...set.events, ...offered.events], waitingEvents };
+  return { state: next, events: [...reviewed.events, ...set.events, ...offered.events], waitingEvents, vacancies };
 }
