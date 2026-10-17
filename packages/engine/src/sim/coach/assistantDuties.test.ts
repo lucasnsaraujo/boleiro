@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { advanceDay } from "../advanceDay.js";
+import { nameCaptain } from "../chemistry/nameCaptain.js";
 import { assistantTicketPrice, doesAssistantPriceTickets, setTicketPrice, withAssistantPricing } from "../finances/setTicketPrice.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
@@ -89,11 +90,24 @@ describe("the selling duty", () => {
     return withCoachMarket({ ...state, players, date: "2026-01-07" }, { ...coach, bids: { [star.id]: bidFor(star), [surplus.id]: bidFor(surplus) } });
   };
 
-  it("switched on, takes an offer for a player outside the plans and leaves the offer for a key player to the coach", () => {
+  it("switched on, sells a player outside the plans for the most the buyer would pay and leaves the offer for a key player to the coach", () => {
     const day = runTransferDay(withDuty(offered(start), "selling", true), []);
     expect(day.state.players[surplus.id]?.clubId).toBe("palmeiras-sp");
-    expect(day.events).toContainEqual(expect.objectContaining({ type: "playerMoved", playerId: surplus.id, toClubId: "palmeiras-sp", fee: 1_000_000, byAssistant: true }));
+    expect(day.events).toContainEqual(expect.objectContaining({ type: "playerMoved", playerId: surplus.id, toClubId: "palmeiras-sp", fee: 1_200_000, byAssistant: true }));
     expect(coachMarketOf(day.state).bids[star.id]).toBeDefined();
+  });
+
+  it("switched on, leaves to the coach an offer for a veteran who starts in the eleven", () => {
+    const veteran = (state: GameState): GameState => ({ ...state, players: { ...state.players, [star.id]: { ...star, age: 35 } } });
+    const day = runTransferDay(withDuty(veteran(offered(start)), "selling", true), []);
+    expect(day.state.players[star.id]?.clubId).toBe(COACH);
+    expect(coachMarketOf(day.state).bids[star.id]).toBeDefined();
+  });
+
+  it("switched on, leaves to the coach an offer for the captain", () => {
+    const day = runTransferDay(withDuty(nameCaptain(offered(start), COACH, surplus.id), "selling", true), []);
+    expect(day.state.players[surplus.id]?.clubId).toBe(COACH);
+    expect(coachMarketOf(day.state).bids[surplus.id]).toBeDefined();
   });
 
   it("switched off, leaves every offer to the coach", () => {
