@@ -33,6 +33,10 @@
   color: var(--mute);
 }
 
+.bk-cap-wide {
+  white-space: nowrap;
+}
+
 .bk-tie {
   position: absolute;
   padding: 5px 7px;
@@ -192,6 +196,23 @@
     0 3px 0 4px var(--yellow-d);
 }
 
+/* A FIFA cup's logo on the final's medallion: a white sticker in both themes, as the logos' dark lettering needs one. */
+.bk-trophy.bk-mark {
+  width: 56px;
+  height: 56px;
+  margin-top: -44px;
+  background: #fffdf7;
+  box-shadow:
+    0 0 0 4px var(--card),
+    0 3px 0 4px var(--line-2);
+}
+
+.bk-trophy.bk-mark img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
 .bk-final h3 {
   font-stretch: var(--wide);
   font-weight: 900;
@@ -295,6 +316,11 @@
   width: 230px;
 }
 
+/* On the card's paper the album's tape strip reads as a blank box over the note. */
+.bk-next .note::before {
+  content: none;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .bk-tie,
   .bk-final {
@@ -325,6 +351,15 @@
   font-stretch: var(--wide);
   font-weight: 900;
   font-size: 18px;
+}
+
+.bk-title-mark {
+  align-self: center;
+  padding: 3px;
+  border-radius: 50%;
+  background: #fffdf7;
+  box-shadow: 0 0 0 1px var(--line);
+  object-fit: contain;
 }
 
 .bk-title span {

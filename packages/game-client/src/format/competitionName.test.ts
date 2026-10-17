@@ -52,3 +52,9 @@ test("CONMEBOL's cups go by the names Brazilian fans give them", () => {
   expect(competitionName({ ...libertadores, cup: "recopa" })).toBe("Recopa");
   expect(["libertadores", "sul-americana", "recopa"].map(competitionKeyName)).toEqual(["Libertadores", "Sul-Americana", "Recopa"]);
 });
+
+test("FIFA's yearly cup is the Mundial de Clubes and its 32-club one every four years the Super Mundial, in the tables and the history alike", () => {
+  expect(competitionName({ ...libertadores, cup: "intercontinental-cup" })).toBe("Mundial de Clubes");
+  expect(competitionName({ ...libertadores, cup: "club-world-cup" })).toBe("Super Mundial");
+  expect(["intercontinental-cup", "club-world-cup"].map(competitionKeyName)).toEqual(["Mundial de Clubes", "Super Mundial"]);
+});

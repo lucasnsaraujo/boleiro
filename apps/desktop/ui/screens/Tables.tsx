@@ -2,6 +2,7 @@ import { createContext, use, useEffect, useMemo, useRef, useState, type ReactNod
 import { Link, useNavigate } from "react-router";
 import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
 import type { Competition, Fixture, GameState } from "@boleiro/engine/sim/gameState";
+import { neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
 import { superCupScore, superCupWinner, type LeaguePhaseCup, type SuperCup } from "@boleiro/engine/sim/continental/uefaCups";
 import { useServices } from "../app/ServicesContext.js";
 import { WORLD_FACES, type ClubFace } from "../clubs/clubCatalog.js";
@@ -15,13 +16,15 @@ import { springTiming } from "../motion/springEasing.js";
 import { useFlip } from "../motion/useFlip.js";
 import { Select } from "../controls/Select.js";
 import { useMatchFile } from "../matchPage/MatchFile.js";
-import { Bracket } from "../tables/Bracket.js";
+import { Bracket, LadderBracket } from "../tables/Bracket.js";
+import { competitionMarkOf } from "../tables/competitionMarks.js";
 import { GroupCard, NextTieCard, type NextTie } from "../tables/BracketCards.js";
 import { uefaBracket, uefaLeaguePhase, uefaPlayoffs } from "../tables/uefaTables.js";
 import {
   competitionStages,
   defaultStage,
   groupTables,
+  intercontinentalLadder,
   knockoutBracket,
   knockoutTies,
   lastPlayedLeg,
@@ -259,7 +262,26 @@ function StagePicker({ stages, stage, onStage }: { stages: StageTab[]; stage: nu
 }
 
 // What winning the tie leads to, by the name of the round after it.
-const NEXT_ROUND: Record<string, string> = { Quartas: "quem passar joga as quartas", Semifinal: "quem passar joga a semifinal", Final: "quem passar joga a final" };
+const NEXT_ROUND: Record<string, string> = {
+  Quartas: "quem passar joga as quartas",
+  Semifinal: "quem passar joga a semifinal",
+  Final: "quem passar joga a final",
+  "Copa África-Ásia-Pacífico": "quem passar joga a Copa África-Ásia-Pacífico",
+  "Copa Challenger": "quem passar joga a Copa Challenger",
+};
+
+/** The panel's title over a bracket: the cup's logo when it has one, its name, season and "mata-mata". */
+function BracketTitle({ competition }: { competition: Competition }) {
+  const mark = competitionMarkOf(competition);
+  const name = competitionName(competition);
+  return (
+    <h2 className="bk-title">
+      {mark && <img className="bk-title-mark" src={mark} alt="" width={28} height={28} />}
+      {name} {competition.season}
+      <span>mata-mata</span>
+    </h2>
+  );
+}
 
 /** The coach's next match in the cup, for the card under the bracket. */
 function nextTieOf(competition: Competition, fixtures: readonly Fixture[], stages: readonly StageTab[], clubs: Clubs, coachClubId: string | null): NextTie {
@@ -278,6 +300,7 @@ function nextTieOf(competition: Competition, fixtures: readonly Fixture[], stage
     homeId: next.homeId,
     awayId: next.awayId,
     date: next.date,
+    ground: neutralGround(competition, next),
     firstLeg,
     isTwoLegged: legs.length > 1,
   };
@@ -297,14 +320,32 @@ function BracketPanel({ competition, state, clubs, stage, onStage, picker }: Omi
         <div className="tables-sub">
           {picker}
           <StagePicker stages={stages} stage={stage} onStage={onStage} />
-          <h2 className="bk-title">
-            {name} {competition.season}
-            <span>mata-mata</span>
-          </h2>
+          <BracketTitle competition={competition} />
         </div>
-        <Bracket name={name} rounds={knockoutBracket(competition, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} onOpenMatch={onOpenMatch} />
+        <Bracket name={name} rounds={knockoutBracket(competition, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} mark={competitionMarkOf(competition)} onOpenMatch={onOpenMatch} />
         <div className="bk-low">
           {group && <GroupCard group={group} clubs={clubs} coachClubId={state.coachClubId} />}
+          <NextTieCard next={nextTieOf(competition, state.fixtures, stages, clubs, state.coachClubId)} clubs={clubs} />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/** The Intercontinental Cup, at every stage: its whole ladder, every round at once, and the coach's next tie in it. */
+function LadderPanel({ competition, state, clubs, picker }: Omit<PanelProps, "round" | "stage" | "onStage">) {
+  const onOpenMatch = use(OpenMatchContext);
+  const stages = competitionStages(competition, state.calendar);
+  const name = competitionName(competition);
+  return (
+    <div className="tables-body wide" role="tabpanel" aria-label={name}>
+      <section className="tables-main">
+        <div className="tables-sub">
+          {picker}
+          <BracketTitle competition={competition} />
+        </div>
+        <LadderBracket name={name} rounds={intercontinentalLadder(competition, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} mark={competitionMarkOf(competition)} onOpenMatch={onOpenMatch} />
+        <div className="bk-low">
           <NextTieCard next={nextTieOf(competition, state.fixtures, stages, clubs, state.coachClubId)} clubs={clubs} />
         </div>
       </section>
@@ -368,6 +409,9 @@ function UefaPanel({ cup, superCup, clubs, coachClubId, picker }: { cup: LeagueP
 /** The shown competition's stage: its table or ties, with its scorers and zones beside them; a continental cup's bracket from its round of 16. */
 function CompetitionPanel({ competition, state, clubs, stage, round, onStage, picker }: PanelProps) {
   const onOpenMatch = use(OpenMatchContext);
+  if (intercontinentalLadder(competition, state.fixtures).length > 0) {
+    return <LadderPanel competition={competition} state={state} clubs={clubs} picker={picker} />;
+  }
   if (knockoutBracket(competition, state.fixtures).some((r) => r.stage === stage)) {
     return <BracketPanel competition={competition} state={state} clubs={clubs} stage={stage} onStage={onStage} picker={picker} />;
   }

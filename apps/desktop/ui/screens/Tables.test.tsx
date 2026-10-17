@@ -83,7 +83,7 @@ test("a coach without a club waits for offers from the tables instead of playing
   expect(screen.queryByRole("button", { name: "Jogar rodada" })).toBeNull();
 });
 
-test("every national division has a tab, next to the cup, CONMEBOL's cups, the Club World Cup in its year and the club's state championship", async () => {
+test("every national division has a tab, next to the cup, CONMEBOL's cups, the Super Mundial in its year, the Mundial de Clubes and the club's state championship", async () => {
   openTables(await services("bahia-ba", CLUB_WORLD_CUP_SEASON));
   await screen.findByRole("tab", { name: "Baiano" });
   expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
@@ -94,6 +94,7 @@ test("every national division has a tab, next to the cup, CONMEBOL's cups, the C
     "Copa do Brasil",
     "Libertadores",
     "Sul-Americana",
+    "Super Mundial",
     "Mundial de Clubes",
     "Baiano",
     "Outras ligas",
@@ -239,15 +240,60 @@ test("a played tie on the Libertadores bracket opens its last game's ficha", asy
   expect(within(panel).getByLabelText(new RegExp(`^${home} \\d+ x \\d+ ${away}$`))).toBeTruthy();
 });
 
-test("a Club World Cup semi-final on the bracket is one match, not a first leg", async () => {
+test("a Super Mundial semi-final on the bracket is one match, not a first leg", async () => {
   const given = await services("flamengo-rj", CLUB_WORLD_CUP_SEASON);
   const { date } = await given.engine.read(["date"]);
   const days = Math.round((Date.parse("2029-07-13") - Date.parse(date)) / 86_400_000);
   await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
   openTables(given);
-  await userEvent.click(await screen.findByRole("tab", { name: "Mundial de Clubes" }));
+  await userEvent.click(await screen.findByRole("tab", { name: "Super Mundial" }));
   await userEvent.click(within(screen.getByRole("group", { name: "Fases" })).getByRole("button", { name: "Final" }));
-  const bracket = screen.getByRole("group", { name: "Mundial de Clubes, mata-mata" });
+  expect(screen.getByRole("heading", { name: /^Super Mundial 2029/ }).querySelector("img")?.getAttribute("src")).toMatch(/club-world-cup/);
+  const bracket = screen.getByRole("group", { name: "Super Mundial, mata-mata" });
   expect(within(bracket).getAllByText(/^Jogo único/)).toHaveLength(2);
   expect(within(bracket).queryByText(/^Ida/)).toBeNull();
+});
+
+test("the Mundial de Clubes tab shows its logo and its ladder from the play-off, the Libertadores' and the Champions League's champions still to come", async () => {
+  openTables(await services("flamengo-rj"));
+  await userEvent.click(await screen.findByRole("tab", { name: "Mundial de Clubes" }));
+  expect(screen.getByRole("heading", { name: /^Mundial de Clubes 2026/ }).querySelector("img")?.getAttribute("src")).toMatch(/intercontinental-cup/);
+  const ladder = screen.getByRole("group", { name: "Mundial de Clubes, mata-mata" });
+  expect(within(ladder).getAllByText(/^(Play-off|Copa África-Ásia-Pacífico|Dérbi das Américas|Copa Challenger|Final)$/).map((caption) => caption.textContent)).toEqual([
+    "Play-off",
+    "Copa África-Ásia-Pacífico",
+    "Dérbi das Américas",
+    "Copa Challenger",
+    "Final",
+  ]);
+  expect(within(ladder).getByLabelText(/ x /)).toBeTruthy();
+  expect(within(ladder).getByText("Campeão da Libertadores")).toBeTruthy();
+  expect(within(ladder).getByText("Campeão da Champions")).toBeTruthy();
+});
+
+
+test("the Mundial de Clubes ladder shows every round at once, with no round picker that would change nothing", async () => {
+  openTables(await services("flamengo-rj"));
+  await userEvent.click(await screen.findByRole("tab", { name: "Mundial de Clubes" }));
+  expect(screen.getByRole("group", { name: "Mundial de Clubes, mata-mata" })).toBeTruthy();
+  expect(screen.queryByRole("group", { name: "Fases" })).toBeNull();
+});
+
+test("the Mundial de Clubes heading names it once, its logo beside the name", async () => {
+  openTables(await services("flamengo-rj"));
+  await userEvent.click(await screen.findByRole("tab", { name: "Mundial de Clubes" }));
+  const heading = screen.getByRole("heading", { name: /^Mundial de Clubes 2026/ });
+  expect(heading.querySelector("img")?.getAttribute("src")).toMatch(/intercontinental-cup/);
+});
+
+test("a Super Mundial semi-final on the bracket is played at MetLife, not at the first club's ground", async () => {
+  const given = await services("flamengo-rj", CLUB_WORLD_CUP_SEASON);
+  const { date } = await given.engine.read(["date"]);
+  const days = Math.round((Date.parse("2029-07-06") - Date.parse(date)) / 86_400_000);
+  await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+  openTables(given);
+  await userEvent.click(await screen.findByRole("tab", { name: "Super Mundial" }));
+  await userEvent.click(within(screen.getByRole("group", { name: "Fases" })).getByRole("button", { name: "Final" }));
+  const bracket = screen.getByRole("group", { name: "Super Mundial, mata-mata" });
+  expect(within(bracket).getAllByText(/Jogo único/).map((line) => line.textContent)).toEqual(expect.arrayContaining([expect.stringMatching(/ · MetLife Stadium$/)]));
 });

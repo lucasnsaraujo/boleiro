@@ -1,3 +1,4 @@
+import { neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
 import { addDays } from "@boleiro/engine/sim/dates";
 import type { Fixture, GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import { isInjured } from "@boleiro/engine/sim/players/isInjured";
@@ -66,8 +67,8 @@ function coachMatches(state: MatchesState): MatchEntry[] {
   return coachClubId ? coachFixtures(state).map((f) => matchEntry(f, coachClubId, competitions)) : [];
 }
 
-/** A game still to play, with its competition and round: "Série A · 31ª rodada". */
-export type UpcomingMatch = MatchEntry & { competitionId: string; label: string };
+/** A game still to play, with its competition and round: "Série A · 31ª rodada"; `ground` names a neutral ground. */
+export type UpcomingMatch = MatchEntry & { competitionId: string; label: string; ground: string | null };
 
 /** The coach's next `count` games from today on, the first of them the one the play button leads to. */
 export function upcomingMatches(state: Pick<GameState, "date"> & MatchesState, count: number): UpcomingMatch[] {
@@ -78,7 +79,7 @@ export function upcomingMatches(state: Pick<GameState, "date"> & MatchesState, c
     .slice(0, count)
     .map((f) => {
       const competition = competitions[f.competitionId];
-      return { ...matchEntry(f, coachClubId, competitions), competitionId: f.competitionId, label: competition ? fixtureLabel(competition, f) : "" };
+      return { ...matchEntry(f, coachClubId, competitions), competitionId: f.competitionId, label: competition ? fixtureLabel(competition, f) : "", ground: competition ? neutralGround(competition, f) : null };
     });
 }
 

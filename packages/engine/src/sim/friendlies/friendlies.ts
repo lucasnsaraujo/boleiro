@@ -6,7 +6,8 @@ import { copyRecord } from "../copyRecord.js";
 import { addDays } from "../dates.js";
 import { bookMoneyInDraft } from "../finances/bookMoney.js";
 import { attendance } from "../finances/recordMatchFinances.js";
-import type { Fixture, GameState, IsoDate } from "../gameState.js";
+import { DERBY_OF_THE_AMERICAS } from "../continental/intercontinentalCup.js";
+import type { Competition, Fixture, GameState, IsoDate } from "../gameState.js";
 import { matchSetup } from "../players/matchSetup.js";
 import { squadsByClub } from "../players/squadsByClub.js";
 
@@ -73,12 +74,25 @@ export function friendlyFee(state: Pick<GameState, "clubs">, club: Club): number
 /** What booking a friendly reads of the game. */
 export type BookingState = Pick<GameState, "date" | "season" | "fixtures" | "competitions" | "clubs" | "finances" | "friendlies" | "coachClubId">;
 
-/** Whether a club has nothing on `date` or a day either side: no fixture, no stage of its competitions, no friendly. */
+const clubsIn = (stage: Competition["stages"][number]) => (stage.kind === "groups" ? stage.groups.flat() : stage.ties.flat());
+
+/** Whether a club plays a competition: entered in it, or drawn into one of its stages, as a Libertadores club dropping into the Sul-Americana. */
+const isInCompetition = (competition: Competition, clubId: string) => competition.clubIds.includes(clubId) || competition.stages.some((stage) => clubsIn(stage).includes(clubId));
+
+/** The days a competition may still want a club: all its stages' for a club in it, and the Intercontinental Cup's from the Derby of the Americas on for any club of the season's Libertadores, whose winner joins there. */
+function datesWanted(state: BookingState, competition: Competition, clubId: string): IsoDate[] {
+  if (isInCompetition(competition, clubId)) return competition.stageDates.flat();
+  if (competition.kind !== "continental" || competition.cup !== "intercontinental-cup") return [];
+  const isInLibertadores = Object.values(state.competitions).some((c) => c.kind === "continental" && c.cup === "libertadores" && c.season === competition.season && isInCompetition(c, clubId));
+  return isInLibertadores ? competition.stageDates.slice(DERBY_OF_THE_AMERICAS).flat() : [];
+}
+
+/** Whether a club has nothing on `date` or a day either side: no fixture, no stage its competitions may want it for, no friendly. */
 function isFree(state: BookingState, clubId: string, date: IsoDate): boolean {
   const near = new Set([addDays(date, -REST_DAYS), date, addDays(date, REST_DAYS)]);
   if (state.fixtures.some((f) => near.has(f.date) && (f.homeId === clubId || f.awayId === clubId))) return false;
   if ((state.friendlies ?? []).some((f) => near.has(f.date) && (f.homeId === clubId || f.awayId === clubId))) return false;
-  return !Object.values(state.competitions).some((c) => c.clubIds.includes(clubId) && c.stageDates.some((dates) => dates.some((d) => near.has(d))));
+  return !Object.values(state.competitions).some((c) => datesWanted(state, c, clubId).some((d) => near.has(d)));
 }
 
 /** Whether `date` is after today, inside the booking window and this season. */

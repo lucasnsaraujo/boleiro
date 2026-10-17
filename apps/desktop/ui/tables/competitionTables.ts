@@ -1,4 +1,6 @@
 import { CUP_STAGES } from "@boleiro/engine/sim/continental/conmebolCups";
+import { isLibertadoresFirstInDerby } from "@boleiro/engine/sim/continental/intercontinentalCup";
+import { neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
 import { CONTINENTAL_CUPS, type Competition, type Fixture, type GameState, type GroupStage, type KnockoutStage, type LeagueFormatId, type SeasonCalendar, type StateCompetition } from "@boleiro/engine/sim/gameState";
 import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
 import { continentalQualifiers } from "@boleiro/engine/sim/finances/continentalQualifiers";
@@ -21,7 +23,8 @@ export type Outcome = "win" | "draw" | "loss";
 export type TableRow = StandingRow & { position: number; zone: ZoneKind | null; form: Outcome[]; formRefs?: string[]; movement: number };
 export type GroupTable = { label: string | null; rows: TableRow[] };
 
-export type Leg = { fixtureId: string; date: string; homeId: string; awayId: string; homeGoals: number | null; awayGoals: number | null };
+/** `ground` names a neutral ground; null when the home club hosts. */
+export type Leg = { fixtureId: string; date: string; homeId: string; awayId: string; homeGoals: number | null; awayGoals: number | null; ground: string | null };
 /** `aggregate` follows `clubIds`; the first club hosts the last leg. `isPlayoff` marks a tie for a place, not a step toward the final. */
 export type TieView = {
   clubIds: [string, string];
@@ -104,6 +107,10 @@ const CONTINENTAL_STAGE_NAMES: Record<string, string> = {
   "quarter-finals": "Quartas",
   "semi-finals": "Semifinal",
   final: "Final",
+  "play-off": "Play-off",
+  "african-asian-pacific-cup": "Copa África-Ásia-Pacífico",
+  "derby-of-the-americas": "Dérbi das Américas",
+  "challenger-cup": "Copa Challenger",
 };
 const LEAGUE_STAGE_NAMES: Record<string, readonly string[]> = {
   "serie-c": ["Primeira fase", "Quadrangular", "Final"],
@@ -334,7 +341,7 @@ const SERIE_D_SEMI_FINALS = 2;
 const isPlayoff = (competition: Competition, stage: number, tie: number) =>
   competition.kind === "league" && competition.format === "serie-d" && stage === SERIE_D_PLAYOFF_STAGE && tie >= SERIE_D_SEMI_FINALS;
 
-function tieView(stage: KnockoutStage, tie: number, clubIds: [string, string], stageFixtures: readonly Fixture[]): Omit<TieView, "isPlayoff"> {
+function tieView(competition: Competition, stage: KnockoutStage, tie: number, clubIds: [string, string], stageFixtures: readonly Fixture[]): Omit<TieView, "isPlayoff"> {
   const legFixtures = stageFixtures.filter((f) => f.tie === tie).sort((a, b) => a.date.localeCompare(b.date));
   const played = legFixtures.filter((f) => f.result);
   const isOver = legFixtures.length > 0 && played.length === legFixtures.length;
@@ -348,6 +355,7 @@ function tieView(stage: KnockoutStage, tie: number, clubIds: [string, string], s
       awayId: f.awayId,
       homeGoals: f.result?.homeGoals ?? null,
       awayGoals: f.result?.awayGoals ?? null,
+      ground: neutralGround(competition, f),
     })),
     aggregate: played.length > 0 ? [aggregate(clubIds[0], played), aggregate(clubIds[1], played)] : null,
     winnerId: result?.winnerId ?? null,
@@ -360,7 +368,7 @@ export function knockoutTies(competition: Competition, stage: number, fixtures: 
   const shape = competition.stages[stage];
   if (shape?.kind !== "knockout") return [];
   const stageFixtures = stageFixturesOf(competition, stage, fixtures);
-  return shape.ties.map((clubIds, tie) => ({ ...tieView(shape, tie, clubIds, stageFixtures), isPlayoff: isPlayoff(competition, stage, tie) }));
+  return shape.ties.map((clubIds, tie) => ({ ...tieView(competition, shape, tie, clubIds, stageFixtures), isPlayoff: isPlayoff(competition, stage, tie) }));
 }
 
 /** A continental guest's player, `<club>#<n>`, as his club's history names him. */
@@ -440,3 +448,31 @@ export function knockoutBracket(competition: Competition, fixtures: readonly Fix
     return { stage: index, name: CONTINENTAL_STAGE_NAMES[stage.name] ?? stage.name, dates: competition.stageDates[index] ?? [], ties: Array.from({ length: places }, (_, tie) => drawn[tie] ?? null) };
   });
 }
+
+/** A place of the Intercontinental Cup's ladder before its tie is drawn: a club already in, the winner of an earlier round, or a cup's champion still to come. */
+export type LadderPlace = { clubId: string } | { from: number } | { title: "Libertadores" | "Champions League" };
+
+/** A round of the Intercontinental Cup's ladder: its one tie once drawn, else the places waiting for it. */
+export type LadderRound = { stage: number; name: string; dates: string[]; tie: TieView | null; places: [LadderPlace, LadderPlace] };
+
+/**
+ * The Intercontinental Cup's five rounds as one ladder: the play-off's winner goes on to the
+ * African–Asian–Pacific Cup, whose winner meets the Derby of the Americas' in the Challenger Cup, and
+ * its winner the Champions League's in the final. Empty for any other competition.
+ */
+export function intercontinentalLadder(competition: Competition, fixtures: readonly Fixture[]): LadderRound[] {
+  if (competition.kind !== "continental" || competition.cup !== "intercontinental-cup") return [];
+  const entrant = (stage: number, at = 0): LadderPlace => ({ clubId: competition.entries[stage]?.[at] ?? "" });
+  const places: [LadderPlace, LadderPlace][] = [
+    [entrant(0), entrant(0, 1)],
+    [entrant(1), { from: 0 }],
+    isLibertadoresFirstInDerby(competition.season) ? [{ title: "Libertadores" }, entrant(2)] : [entrant(2), { title: "Libertadores" }],
+    [{ from: 2 }, { from: 1 }],
+    [{ title: "Champions League" }, { from: 3 }],
+  ];
+  return places.map((pair, index) => {
+    const name = CUP_STAGES[competition.cup][index]?.name ?? "";
+    return { stage: index, name: CONTINENTAL_STAGE_NAMES[name] ?? name, dates: competition.stageDates[index] ?? [], tie: knockoutTies(competition, index, fixtures)[0] ?? null, places: pair };
+  });
+}
+

@@ -93,12 +93,12 @@ export type StateCompetition = CompetitionBase & { kind: "state"; state: State }
 /** `clubIds` is the ranking order, best first; `entries[stage]` are the clubs that join at that stage. */
 export type CupCompetition = CompetitionBase & { kind: "cup"; entries: string[][] };
 
-/** CONMEBOL's club cups the game plays, and FIFA's Club World Cup. */
-export const CONTINENTAL_CUPS = ["libertadores", "sul-americana", "recopa", "club-world-cup"] as const;
+/** CONMEBOL's club cups the game plays, and FIFA's: the four-yearly Club World Cup and the yearly Intercontinental Cup. */
+export const CONTINENTAL_CUPS = ["libertadores", "sul-americana", "recopa", "club-world-cup", "intercontinental-cup"] as const;
 export type ContinentalCup = (typeof CONTINENTAL_CUPS)[number];
 
 /**
- * A CONMEBOL cup or the Club World Cup: `entries[stage]` are the clubs that join at that stage, best seed first, and
+ * A CONMEBOL cup or one of FIFA's: `entries[stage]` are the clubs that join at that stage, best seed first, and
  * `countries` names each club's country ("br", "ar", ...), which the draws keep apart.
  */
 export type ContinentalCompetition = CompetitionBase & { kind: "continental"; cup: ContinentalCup; entries: string[][]; countries: Record<string, string> };

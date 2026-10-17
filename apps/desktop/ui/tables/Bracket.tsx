@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { ClubFace } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
-import { lastPlayedLeg, type BracketRound, type TieView } from "./competitionTables.js";
+import { lastPlayedLeg, type BracketRound, type LadderPlace, type LadderRound, type TieView } from "./competitionTables.js";
 import "./bracket.css";
 
 type Clubs = Readonly<Record<string, ClubFace>>;
@@ -15,9 +15,10 @@ const FINAL_WIDTH = 188;
 const FINAL_HEIGHT = 172;
 const CAPTION_HEIGHT = 22;
 const COLUMN_GAP = 14;
+const CAPTION_SPREAD = 80;
 
-/** With `onOpenMatch`, a tie with a game played opens its latest game's ficha. */
-type Props = { name: string; rounds: BracketRound[]; clubs: Clubs; coachClubId: string | null; onOpenMatch?: (matchRef: string) => void };
+/** With `onOpenMatch`, a tie with a game played opens its latest game's ficha; `mark` is the cup's logo, on the final's medallion. */
+type Props = { name: string; rounds: BracketRound[]; clubs: Clubs; coachClubId: string | null; mark?: string | null; onOpenMatch?: (matchRef: string) => void };
 
 /** Where each card sits: the left half's rounds run in from the left edge, the right half's from the right, the final in the middle. */
 function layoutOf(width: number, height: number) {
@@ -62,7 +63,7 @@ function LegLines({ tie, clubs }: { tie: TieView; clubs: Clubs }) {
   return (
     <div className="bk-legs">
       {tie.legs.map((leg, i) => {
-        const ground = clubs[leg.homeId]?.stadium;
+        const ground = leg.ground ?? clubs[leg.homeId]?.stadium;
         const played = leg.homeGoals !== null && leg.awayGoals !== null;
         return (
           <p key={leg.fixtureId}>
@@ -108,11 +109,32 @@ function TieCard({ tie, feeders, clubs, coachClubId, isSemi, style, onOpenMatch 
   );
 }
 
-/**
- * The knockout bracket as the album pastes it: the round of 16 at both edges, the halves meeting at
- * the final in the middle, the coach's tie lifted in yellow.
- */
-export function Bracket({ name, rounds, clubs, coachClubId, onOpenMatch }: Props) {
+/** The final's card: the cup's logo, or a trophy, on its medallion, its day, and its two clubs or the places still open. */
+function FinalCard({ tie, date, pending, clubs, coachClubId, mark, style, onOpenMatch }: { tie: TieView | null; date: string | undefined; pending: [string, string]; clubs: Clubs; coachClubId: string | null; mark: string | null | undefined; style: React.CSSProperties; onOpenMatch: Props["onOpenMatch"] }) {
+  return (
+    <div className="stk bk-final" style={style}>
+      <div className={mark ? "bk-trophy bk-mark" : "bk-trophy"} aria-hidden="true">
+        {mark ? <img src={mark} alt="" /> : <i className="ph-fill ph-trophy" />}
+      </div>
+      <h3>Final</h3>
+      <p>{date ? `${formatBarDate(date)} · jogo único` : "Jogo único"}</p>
+      {tie && <TieOpener tie={tie} clubs={clubs} onOpenMatch={onOpenMatch} />}
+      {tie ? (
+        <TieRows tie={tie} clubs={clubs} coachClubId={coachClubId} crest={20} />
+      ) : (
+        pending.map((name, side) => (
+          <div key={side} className="slot bk-slot">
+            <i className="ph-bold ph-question" aria-hidden="true" />
+            <span>{name}</span>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+/** The bracket's box and its size, measured again whenever it changes. */
+function useBoxSize() {
   const box = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   useLayoutEffect(() => {
@@ -125,6 +147,15 @@ export function Bracket({ name, rounds, clubs, coachClubId, onOpenMatch }: Props
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
+  return { box, size };
+}
+
+/**
+ * The knockout bracket as the album pastes it: the round of 16 at both edges, the halves meeting at
+ * the final in the middle, the coach's tie lifted in yellow.
+ */
+export function Bracket({ name, rounds, clubs, coachClubId, mark, onOpenMatch }: Props) {
+  const { box, size } = useBoxSize();
 
   const [sixteen, quarters, semis, final] = rounds;
   const cards: React.ReactNode[] = [];
@@ -177,27 +208,18 @@ export function Bracket({ name, rounds, clubs, coachClubId, onOpenMatch }: Props
       const finalEdge = half === 0 ? size.width / 2 - FINAL_WIDTH / 2 : size.width / 2 + FINAL_WIDTH / 2;
       lines.push({ d: `M${semiOut} ${centreY}H${finalEdge}`, isToFinal: true });
     });
-    const finalTie = final.ties[0] ?? null;
-    const finalDate = final.dates[0];
     cards.push(
-      <div key="final" className="stk bk-final" style={{ left: size.width / 2 - FINAL_WIDTH / 2, top: centreY - FINAL_HEIGHT / 2, width: FINAL_WIDTH, minHeight: FINAL_HEIGHT }}>
-        <div className="bk-trophy" aria-hidden="true">
-          <i className="ph-fill ph-trophy" />
-        </div>
-        <h3>Final</h3>
-        <p>{finalDate ? `${formatBarDate(finalDate)} · jogo único` : "Jogo único"}</p>
-        {finalTie && <TieOpener tie={finalTie} clubs={clubs} onOpenMatch={onOpenMatch} />}
-        {finalTie ? (
-          <TieRows tie={finalTie} clubs={clubs} coachClubId={coachClubId} crest={20} />
-        ) : (
-          [0, 1].map((side) => (
-            <div key={side} className="slot bk-slot">
-              <i className="ph-bold ph-question" aria-hidden="true" />
-              <span>{pendingName(clubs, semis.ties[side])}</span>
-            </div>
-          ))
-        )}
-      </div>,
+      <FinalCard
+        key="final"
+        tie={final.ties[0] ?? null}
+        date={final.dates[0]}
+        pending={[pendingName(clubs, semis.ties[0]), pendingName(clubs, semis.ties[1])]}
+        clubs={clubs}
+        coachClubId={coachClubId}
+        mark={mark}
+        onOpenMatch={onOpenMatch}
+        style={{ left: size.width / 2 - FINAL_WIDTH / 2, top: centreY - FINAL_HEIGHT / 2, width: FINAL_WIDTH, minHeight: FINAL_HEIGHT }}
+      />,
     );
   }
 
@@ -229,3 +251,105 @@ export function Bracket({ name, rounds, clubs, coachClubId, onOpenMatch }: Props
     </div>
   );
 }
+
+const TITLE_NAMES: Record<Extract<LadderPlace, { title: string }>["title"], string> = { Libertadores: "Campeão da Libertadores", "Champions League": "Campeão da Champions" };
+
+/** A ladder place still open: the club already in, the winner of the round it waits on, or the champion of the cup that fills it. */
+function placeName(clubs: Clubs, rounds: readonly LadderRound[], place: LadderPlace): string {
+  if ("clubId" in place) return nameOf(clubs, place.clubId);
+  if ("from" in place) return pendingName(clubs, rounds[place.from]?.tie);
+  return TITLE_NAMES[place.title];
+}
+
+type LadderProps = { name: string; rounds: LadderRound[]; clubs: Clubs; coachClubId: string | null; mark: string | null; onOpenMatch?: (matchRef: string) => void };
+
+/**
+ * The Intercontinental Cup's ladder, pasted left to right: the play-off feeding the
+ * African–Asian–Pacific Cup, which meets the Derby of the Americas' winner in the Challenger Cup,
+ * whose winner goes on to the final against the Champions League's.
+ */
+export function LadderBracket({ name, rounds, clubs, coachClubId, mark, onOpenMatch }: LadderProps) {
+  const { box, size } = useBoxSize();
+  const [playOff, africanAsianPacific, derby, challenger, final] = rounds;
+  const cards: React.ReactNode[] = [];
+  const captions: React.ReactNode[] = [];
+  const lines: { d: string; isToFinal: boolean }[] = [];
+  if (size && playOff && africanAsianPacific && derby && challenger && final) {
+    const body = size.height - CAPTION_HEIGHT;
+    const upper = CAPTION_HEIGHT + body * 0.28;
+    const lower = CAPTION_HEIGHT + body * 0.78;
+    const centre = (upper + lower) / 2;
+    const finalLeft = size.width - FINAL_WIDTH;
+    const step = finalLeft / 3;
+    const placed = [
+      { round: playOff, left: 0, centreY: upper, width: TIE_WIDTH, height: TIE_HEIGHT },
+      { round: africanAsianPacific, left: step, centreY: upper, width: TIE_WIDTH, height: TIE_HEIGHT },
+      { round: derby, left: step, centreY: lower, width: TIE_WIDTH, height: TIE_HEIGHT },
+      { round: challenger, left: 2 * step, centreY: centre, width: SEMI_WIDTH, height: SEMI_HEIGHT },
+    ];
+    for (const { round, left, centreY, width, height } of placed) {
+      const top = centreY - height / 2;
+      const isSemi = round === challenger;
+      // A round's name may run wider than its card, so its caption spreads over the gaps either side.
+      captions.push(
+        <span key={`cap-${round.stage}`} className="bk-cap bk-cap-wide" style={{ left: left - CAPTION_SPREAD / 2, width: width + CAPTION_SPREAD, top: top - CAPTION_HEIGHT }}>
+          {round.name}
+        </span>,
+      );
+      cards.push(
+        round.tie ? (
+          <TieCard key={round.stage} tie={round.tie} feeders={[]} clubs={clubs} coachClubId={coachClubId} isSemi={isSemi} onOpenMatch={onOpenMatch} style={{ left, top, width, minHeight: height }} />
+        ) : (
+          <div key={round.stage} className="stk bk-tie pending" style={{ left, top, width, minHeight: height }}>
+            {round.places.map((place, side) => (
+              <div key={side} className="slot bk-slot">
+                <span>{placeName(clubs, rounds, place)}</span>
+              </div>
+            ))}
+          </div>
+        ),
+      );
+    }
+    const join = (from: (typeof placed)[number], to: (typeof placed)[number]) => {
+      const outX = from.left + from.width;
+      const midX = (outX + to.left) / 2;
+      lines.push({ d: `M${outX} ${from.centreY}H${midX}V${to.centreY}H${to.left}`, isToFinal: false });
+    };
+    const [first, second, third, fourth] = placed;
+    if (first && second && third && fourth) {
+      join(first, second);
+      join(second, fourth);
+      join(third, fourth);
+      lines.push({ d: `M${fourth.left + fourth.width} ${centre}H${finalLeft}`, isToFinal: true });
+    }
+    cards.push(
+      <FinalCard
+        key="final"
+        tie={final.tie}
+        date={final.dates[0]}
+        pending={[placeName(clubs, rounds, final.places[0]), placeName(clubs, rounds, final.places[1])]}
+        clubs={clubs}
+        coachClubId={coachClubId}
+        mark={mark}
+        onOpenMatch={onOpenMatch}
+        style={{ left: finalLeft, top: centre - FINAL_HEIGHT / 2, width: FINAL_WIDTH, minHeight: FINAL_HEIGHT }}
+      />,
+    );
+  }
+  return (
+    <div className="bk bk-ladder" ref={box} role="group" aria-label={`${name}, mata-mata`}>
+      {size && (
+        <>
+          {captions}
+          <svg className="bk-lines" aria-hidden="true" width={size.width} height={size.height}>
+            {lines.map((line) => (
+              <path key={line.d} d={line.d} className={line.isToFinal ? "to-final" : undefined} />
+            ))}
+          </svg>
+          {cards}
+        </>
+      )}
+    </div>
+  );
+}
+

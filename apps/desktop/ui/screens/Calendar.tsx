@@ -269,10 +269,10 @@ function NextMatch({ match, state }: { match: UpcomingMatch; state: CalendarStat
             <dd>{formatBarDate(match.date)}</dd>
           </>
         )}
-        {home?.stadium && (
+        {(match.ground ?? home?.stadium) && (
           <>
             <dt>Onde</dt>
-            <dd>{home.stadium}</dd>
+            <dd>{match.ground ?? home?.stadium}</dd>
           </>
         )}
         <dt>Desfalques</dt>

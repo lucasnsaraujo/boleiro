@@ -35,6 +35,7 @@ function tieViews(cup: LeaguePhaseCup, round: KnockoutRound): TieView[] {
         awayId: leg.awayId,
         homeGoals: leg.result?.homeGoals ?? null,
         awayGoals: leg.result?.awayGoals ?? null,
+        ground: null,
       })),
       aggregate: isStarted ? aggregateOf(clubIds, legs) : null,
       winnerId,

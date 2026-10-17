@@ -2,6 +2,7 @@ import type { Role } from "@boleiro/data/players";
 import type { Formation } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
+import { neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
 import { attendance } from "@boleiro/engine/sim/finances/recordMatchFinances";
 import type { Fixture, GameState, IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
 import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
@@ -124,8 +125,11 @@ function meetingsOf(located: Located): Meeting[] {
     .flatMap((f) => (f.result ? [{ date: f.date, homeId: f.homeId, awayId: f.awayId, homeGoals: f.result.homeGoals, awayGoals: f.result.awayGoals }] : []));
 }
 
-/** The crowd and the gate: as booked for a human coach's home game, else what the home club draws for this game today. */
+/** The crowd and the gate: as booked for a human coach's home game, else what the home club draws for this game today; none on a neutral ground. */
 function venueOf(state: GameState, fixture: Fixture, club: RoundClub): MatchPage["venue"] {
+  const competition = state.competitions[fixture.competitionId];
+  const ground = competition ? neutralGround(competition, fixture) : null;
+  if (ground) return { stadium: ground, crowd: null, gate: null };
   const stadium = club.stadium || null;
   const finance = state.finances[fixture.homeId];
   if (!finance) return { stadium, crowd: null, gate: null };
@@ -199,7 +203,7 @@ export function matchPageOf(state: GameState, ref: string, live: { day: LiveDay;
   );
   const ratings = Object.fromEntries([...rated.home, ...rated.away].map((r) => [r.playerId, r.rating]));
   const places = placesOf(located, !isLive && !!result);
-  const venue = state.clubs[fixture.homeId] ? venueOf(before, fixture, home) : { stadium: null, crowd: null, gate: null };
+  const venue = venueOf(before, fixture, home);
   const goals = (clubId: string) => story.events.filter((e) => e.type === "goal" && e.clubId === clubId).length;
   const score = isLive ? null : { home: goals(fixture.homeId), away: goals(fixture.awayId) };
   const curiosities = curiositiesOf({
