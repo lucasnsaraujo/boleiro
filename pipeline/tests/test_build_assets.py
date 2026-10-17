@@ -45,5 +45,19 @@ class WorldCrestsTest(unittest.TestCase):
         self.assertEqual(rows, [])
 
 
+    def test_writes_sponsor_logos_in_their_own_manifest_by_brand_and_keeps_them_out_of_the_crests(self) -> None:
+        png = self.root / "betano.png"
+        png.write_bytes(tiny_png(300, 60))
+        sha = hashlib.sha256(png.read_bytes()).hexdigest()
+        self.db.execute("INSERT INTO images VALUES (?, 'sponsor', 'betano', 'logo', ?, ?, 300, 60, 'test')", (self.csv, str(png), sha))
+        crests = build_assets.build(build_assets.import_rows(self.db, self.csv), self.root / "pack", tuple(build_assets.FORMATS))
+        self.assertEqual(list(crests["clubs"]), ["arsenal"])
+        self.assertNotIn("brands", crests)
+        logos = build_assets.build(build_assets.logo_rows(self.db, self.csv), self.root / "pack" / "sponsors", build_assets.LOGO_FORMATS, build_assets.LOGO_BOXES)
+        logo = logos["brands"]["betano"]["logo"]
+        self.assertEqual(logos["images"][logo]["boxes"], [128, 256])
+        self.assertEqual(logos["images"][logo]["formats"], ["webp"])
+
+
 if __name__ == "__main__":
     unittest.main()

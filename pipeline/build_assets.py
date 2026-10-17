@@ -13,6 +13,10 @@ app reads, and in the 64 and 128 px boxes only: these clubs appear in results, t
 never large, and Transfermarkt's crests are 181 px tall at most. That keeps the v1 world's images
 within SPEC §4.3's ~25 MB. They need the scrape's page cache (data/tm_cache) on disk.
 
+The sponsors' logos go to `sponsors/assets.json`, with their files under `sponsors/assets/logo/`: WebP
+only, in the 128 and 256 px boxes. A logo is wide, so its 128 px box is about 32 px tall, the smallest the
+game shows one at twice the pixels (the odds sticker's), and the 256 px box covers the master on the shirt.
+
 Usage: .venv/bin/python pipeline/build_assets.py pipeline/boleiro.db packages/data/pack [snapshot id]
 """
 from __future__ import annotations
@@ -37,6 +41,8 @@ HASH_LENGTH = 16
 FORMATS = {"webp": ("WEBP", {"quality": 80, "method": 6}), "avif": ("AVIF", {"quality": 60})}
 WORLD_FORMATS = ("webp",)
 WORLD_BOXES = (64, 128)
+LOGO_FORMATS = ("webp",)
+LOGO_BOXES = (128, 256)
 CLUB_KEYS = {"crest": "crest", "scoreboard_crest": "scoreboardCrest"}
 
 
@@ -54,7 +60,11 @@ def encoded(image: Image.Image, format_name: str, options: dict[str, int]) -> by
 
 
 def import_rows(db: sqlite3.Connection, snapshot: int) -> list[sqlite3.Row]:
-    return db.execute("SELECT * FROM images WHERE snapshot_id = ? ORDER BY entity, entity_id, kind", (snapshot,)).fetchall()
+    return db.execute("SELECT * FROM images WHERE snapshot_id = ? AND entity = 'club' ORDER BY entity, entity_id, kind", (snapshot,)).fetchall()
+
+
+def logo_rows(db: sqlite3.Connection, snapshot: int) -> list[sqlite3.Row]:
+    return db.execute("SELECT * FROM images WHERE snapshot_id = ? AND entity = 'sponsor' ORDER BY entity_id", (snapshot,)).fetchall()
 
 
 def world_crest_rows(db: sqlite3.Connection, snapshot: int, imported_clubs: set[str]) -> list[sqlite3.Row]:
@@ -66,11 +76,14 @@ def world_crest_rows(db: sqlite3.Connection, snapshot: int, imported_clubs: set[
 def build(rows: list[sqlite3.Row], out: Path, formats: tuple[str, ...], boxes: tuple[int, ...] = BOXES) -> dict[str, object]:
     images: dict[str, dict[str, object]] = {}
     clubs: dict[str, dict[str, str]] = {}
+    brands: dict[str, dict[str, str]] = {}
     written: set[Path] = set()
     for row in rows:
         key = f"{row['kind']}/{row['sha256'][:HASH_LENGTH]}"
         if row["entity"] == "club":
             clubs.setdefault(row["entity_id"], {})[CLUB_KEYS[row["kind"]]] = key
+        elif row["entity"] == "sponsor":
+            brands[row["entity_id"]] = {"logo": key}
         if key in images:
             continue
         source = Image.open(ROOT / row["path"]).convert("RGBA")
@@ -88,7 +101,10 @@ def build(rows: list[sqlite3.Row], out: Path, formats: tuple[str, ...], boxes: t
     for stale in (out / "assets").rglob("*.*"):
         if stale not in written:
             stale.unlink()
-    return {"format": MANIFEST_FORMAT, "images": images, "clubs": dict(sorted(clubs.items()))}
+    manifest: dict[str, object] = {"format": MANIFEST_FORMAT, "images": images, "clubs": dict(sorted(clubs.items()))}
+    if brands:
+        manifest["brands"] = dict(sorted(brands.items()))
+    return manifest
 
 
 def write(manifest: dict[str, object], out: Path) -> None:
@@ -104,6 +120,7 @@ def main() -> None:
         snapshot = int(sys.argv[3]) if len(sys.argv) > 3 else latest_snapshot(db)
         manifest = build(import_rows(db, snapshot), out, tuple(FORMATS))
         write(manifest, out)
+        write(build(logo_rows(db, snapshot), out / "sponsors", LOGO_FORMATS, LOGO_BOXES), out / "sponsors")
         if db.execute("SELECT 1 FROM snapshots WHERE kind = 'transfermarkt'").fetchone():
             world = world_crest_rows(db, latest_world_snapshot(db), {club for club, uses in manifest["clubs"].items() if "crest" in uses})
             write(build(world, out / "world", WORLD_FORMATS, WORLD_BOXES), out / "world")
