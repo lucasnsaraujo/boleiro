@@ -200,7 +200,9 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       }
       const refused = boardRefusal(finance, bill, { upFront: 0, wageChange: offered - player.wage });
       if (refused) return refuse(state, request, refused);
-      if (term.stance === "hard" && !isCounterMet && random() >= HARD_LENGTH_CHANCE) return refuse(state, request, "playerUnwilling");
+      // His answer draws once from the market's stream whatever the length, so a renewal never shifts the draws after it.
+      const draw = random();
+      if (term.stance === "hard" && !isCounterMet && draw >= HARD_LENGTH_CHANCE) return refuse(state, request, "playerUnwilling");
       const until = renewedUntil(player, state.date, months);
       const renewed = { ...state, players: { ...state.players, [player.id]: { ...player, wage: offered, contractUntil: until } } };
       const settled = standing ? withCoachMarket(renewed, withRenewalCounter(coachMarketOf(renewed), player.id, null)) : renewed;
