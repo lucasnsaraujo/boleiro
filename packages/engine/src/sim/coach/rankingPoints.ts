@@ -86,9 +86,10 @@ export function nationalPoints(history: GameState["history"], season: number, cu
 /**
  * guess, after UEFA's and IFFHS's club rankings, kept to what every country's filed seasons hold: a
  * top league's first ten places score the CBF's way from 800, a second level's champion 400, a national
- * cup's finalists 600 and 480, all weighed by the country when ranked; a continental cup's winner scores
- * whole: the Club World Cup 1500, the Libertadores and the Champions League 1000, the Sul-Americana and
- * the Europa League 500, the Intercontinental 700, the Recopa and the UEFA Super Cup 300.
+ * cup's finalists 600 and 480; a continental cup's winner: the Club World Cup 1500, the Libertadores and
+ * the Champions League 1000, the Sul-Americana and the Europa League 500, the Intercontinental 700, the
+ * Recopa and the UEFA Super Cup 300. All of them are weighed by the club's country when ranked, so a
+ * Libertadores won by a Brazilian club counts below a Champions League won by an English one.
  */
 const TOP_PLACES = 10;
 const CONTINENTAL_POINTS: Record<string, number> = {
@@ -101,7 +102,7 @@ const CONTINENTAL_POINTS: Record<string, number> = {
 const UEFA_POINTS = { championsLeague: 1000, europaLeague: 500, superCup: 300 } as const;
 const CUP_FINAL_POINTS = { champion: 600, runnerUp: 480 } as const;
 
-/** A season's points of one part of the game: domestic ones, weighed by each club's country when ranked, and continental ones, counted whole. */
+/** A season's points of one part of the game, before each club's country weighs them when ranked: domestic ones and continental ones. */
 export type ClubSeasonPoints = { domestic: Points; continental: Points };
 
 export type UefaWinner = NonNullable<GameState["europe"]>["winners"][number];

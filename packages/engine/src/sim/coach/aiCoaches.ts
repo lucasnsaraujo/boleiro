@@ -41,8 +41,8 @@ export type AiCoach = {
 export type Rookie = { name: string; born: number; nationality: string; clubId: string; strength: number; reputation: number; season: number };
 
 /**
- * One season's ranking points, filed at its end: each club's domestic points, before its country's
- * weight (rankings.ts applies it), and continental ones; and for each coach (an AI coach by id, a human
+ * One season's ranking points, filed at its end: each club's domestic and continental points, before its
+ * country's weight (rankings.ts applies it); and for each coach (an AI coach by id, a human
  * by humanKey) the clubs he ran that season with the share of the year at each.
  */
 export type SeasonPoints = { season: number; domestic: Record<string, number>; continental: Record<string, number>; credits: Record<string, [clubId: string, share: number][]> };

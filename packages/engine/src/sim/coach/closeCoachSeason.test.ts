@@ -3,10 +3,11 @@ import { advanceDay } from "../advanceDay.js";
 import type { GameState } from "../gameState.js";
 import type { SeasonRecord } from "../history/history.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { loadEurope } from "../world/loadEurope.js";
 import { loadSouthAmerica } from "../world/loadSouthAmerica.js";
 import { coachesByClub, type AiCoach, type Coaching, type CoachWorld } from "./aiCoaches.js";
 import { closeCoachSeason, humanKey, retiredPlayers } from "./closeCoachSeason.js";
-import { fullTierPoints, nationalPoints, seasonRuns, type CupRun, type SeasonRuns } from "./rankingPoints.js";
+import { countryFactors, fullTierPoints, nationalPoints, seasonRuns, type CupRun, type SeasonRuns } from "./rankingPoints.js";
 import { coachRanking, nationalRanking, worldRanking } from "./rankings.js";
 
 const coachesOf = (state: GameState): CoachWorld => {
@@ -76,6 +77,27 @@ describe("the world ranking's points", () => {
     expect(domestic.b2).toBeUndefined();
     expect(domestic.c2).toBeUndefined();
     expect(continental).toEqual({ a5: 1000 });
+  });
+});
+
+describe("the world ranking", () => {
+  it("weighs a continental title by the winner's country, as its league points are", () => {
+    const game = loadNewGame(3, { coachClubId: null, world: [...loadSouthAmerica(2026), ...loadEurope(2026)] });
+    const england = game.world?.["gb-eng"];
+    const liverpool = Object.values(england?.clubs ?? {}).find((club) => club.name === "Liverpool FC");
+    if (!england?.coaching || !liverpool) throw new Error("the game has no Liverpool");
+    const won = (clubId: string) => [{ season: 2026, domestic: {}, continental: { [clubId]: 1000 }, credits: {} }];
+    const state: GameState = {
+      ...game,
+      coaches: { ...coachesOf(game), seasons: won("flamengo-rj"), national: [{ season: 2026, clubs: {} }] },
+      world: { ...game.world, "gb-eng": { ...england, coaching: { ...england.coaching, seasons: won(liverpool.id) } } },
+    };
+    const factors = countryFactors(state);
+    expect(factors.get("br")).toBeLessThan(factors.get("gb-eng") ?? 0);
+    expect(worldRanking(state)).toEqual([
+      [liverpool.id, Math.round(5000 * (factors.get("gb-eng") ?? 0))],
+      ["flamengo-rj", Math.round(5000 * (factors.get("br") ?? 0))],
+    ]);
   });
 });
 

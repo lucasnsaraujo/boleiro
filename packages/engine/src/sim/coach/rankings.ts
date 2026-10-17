@@ -39,12 +39,12 @@ export function nationalRanking(state: Pick<GameState, "coaches">, season?: numb
   return sorted(total);
 }
 
-/** A club's points in one filed season, its domestic ones weighed by its country. */
+/** A club's points in one filed season, weighed by its country. */
 function seasonPointsOf(filed: SeasonPoints, clubId: string, factor: number): number {
-  return (filed.domestic[clubId] ?? 0) * factor + (filed.continental[clubId] ?? 0);
+  return ((filed.domestic[clubId] ?? 0) + (filed.continental[clubId] ?? 0)) * factor;
 }
 
-/** Every club of the game ranked by its domestic points weighed by its country and its continental ones, over the five seasons to `season`. */
+/** Every club of the game ranked by its domestic and continental points weighed by its country, over the five seasons to `season`. */
 export function worldRanking(state: Pick<GameState, "coaches" | "world" | "clubs" | "guests" | "players">, season?: number): Ranked {
   const asOf = asOfSeason(state, season);
   const factors = countryFactors(state);
