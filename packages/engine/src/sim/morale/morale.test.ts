@@ -6,6 +6,7 @@ import { clubMood, type ClubMood } from "./clubMood.js";
 import { moraleStrength } from "./moraleStrength.js";
 import { reactToDay } from "./reactToDay.js";
 import { reactToIdolSale } from "./reactToIdolSale.js";
+import { rivalryOf } from "../rivalries/rivalryOf.js";
 import { rivalsOf } from "./rivalsOf.js";
 
 const start = loadNewGame(9, { coachClubId: null });
@@ -118,6 +119,30 @@ describe("fan mood", () => {
       return clubMood(reactToDay(leagueDay, [fixture], [], () => 0.99).state, "palmeiras-sp").fans;
     };
     expect(lostAtHomeTo("corinthians-sp")).toBeLessThan(lostAtHomeTo("santos-sp"));
+  });
+
+  describe("a rival's result elsewhere", () => {
+    const stranger = Object.keys(leagueDay.clubs).find((id) => !rivalsOf(leagueDay.clubs).has(id));
+    if (!stranger) throw new Error("no club without a derby");
+    const lostElsewhere = (clubId: string) => ({ id: `${clubId}-elsewhere`, competitionId: "x", stage: 0, date: leagueDay.date, homeId: clubId, awayId: stranger, result: { homeGoals: 0, awayGoals: 1 } });
+    const fansAfter = (clubId: string, losers: readonly string[]) => clubMood(reactToDay(withMood(leagueDay, clubId, { fans: 50 }), losers.map(lostElsewhere), [], () => 0.99).state, clubId).fans;
+
+    it("lifts Flamengo's fans when Fluminense, Vasco and Botafogo all lose no more than Fluminense losing alone", () => {
+      const alone = fansAfter("flamengo-rj", ["fluminense-rj"]);
+      expect(alone).toBeGreaterThan(50);
+      expect(fansAfter("flamengo-rj", ["fluminense-rj", "vasco-rj", "botafogo-rj"])).toBeCloseTo(alone, 6);
+    });
+
+    it("moves the fans less than their own team's win would", () => {
+      const own = { id: "own", competitionId: "x", stage: 0, date: leagueDay.date, homeId: "flamengo-rj", awayId: stranger, result: { homeGoals: 1, awayGoals: 0 } };
+      const won = clubMood(reactToDay(withMood(leagueDay, "flamengo-rj", { fans: 50 }), [own], [], () => 0.99).state, "flamengo-rj").fans;
+      expect(fansAfter("flamengo-rj", ["fluminense-rj", "vasco-rj", "botafogo-rj"]) - 50).toBeLessThan((won - 50) / 4);
+    });
+
+    it("leaves the fans as they were when it is a small local derby's rival (intensity 1)", () => {
+      expect(rivalryOf("bahia-ba", "galicia-ba")?.intensity).toBe(1);
+      expect(fansAfter("bahia-ba", ["galicia-ba"])).toBe(50);
+    });
   });
 
   it("sours at the monthly closing when tickets cost far more than the division's average", () => {
