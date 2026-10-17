@@ -1,9 +1,10 @@
+import { clubArticle } from "@boleiro/data/articles";
 import { keyedStream } from "../../engine/random.js";
 import type { DayEvent } from "../advanceDay.js";
 import { waitingCoachesOf } from "../coach/humanCoaches.js";
 import { addDays } from "../dates.js";
 import { eventMemoryOf, type NewsItem } from "../events/eventMemory.js";
-import { fillSlots } from "../events/fillSlots.js";
+import { fillSlots, type SlotArticles } from "../events/fillSlots.js";
 import type { Fixture, GameState, IsoDate, MatchResult } from "../gameState.js";
 import type { CoachRecord } from "../history/history.js";
 import type { LiveMatch } from "../live/liveDay.js";
@@ -49,6 +50,12 @@ function slotsOf(state: GameState, hit: EggHit, fixture: Played | undefined, hum
   };
 }
 
+/** The articles a find's club and opponent take ("da Chapecoense"). */
+function articlesOf(hit: EggHit, fixture: Played | undefined): SlotArticles {
+  const opponentId = fixture ? (fixture.homeId === hit.clubId ? fixture.awayId : fixture.homeId) : "";
+  return { club: clubArticle(hit.clubId), ...(opponentId ? { opponent: clubArticle(opponentId) } : {}) };
+}
+
 /** The game with the day's finds written down: the book, the newspaper, and the kids named after coaches. */
 function record(state: GameState, date: IsoDate, finds: readonly Found[], humans: readonly Human[]): { state: GameState; events: EggFound[] } {
   const book = eggBookOf(state);
@@ -64,8 +71,9 @@ function record(state: GameState, date: IsoDate, finds: readonly Found[], humans
     const random = keyedStream(state.seed ^ EGG_SALT, `${date}:${egg.id}:${fixture?.id ?? hit.clubId}:text`);
     const text = egg.texts[Math.floor(random() * egg.texts.length)] ?? egg.texts[0];
     if (!text) throw new Error(`egg ${egg.id} has no text`);
-    const headline = fillSlots(text.headline, slots);
-    const body = fillSlots(text.body, slots);
+    const articles = articlesOf(hit, fixture);
+    const headline = fillSlots(text.headline, slots, articles);
+    const body = fillSlots(text.body, slots, articles);
     stories.push({ date, kind: "egg", clubIds: [hit.clubId, ...(opponentId ? [opponentId] : [])], headline, body });
     const find: EggFind = { eggId: egg.id, date, clubId: hit.clubId, ...(fixture ? { fixtureId: fixture.id } : {}), ...(hit.playerId ? { playerId: hit.playerId } : {}), headline };
     log.push(find);
@@ -102,7 +110,7 @@ export function matchEggNotes(state: GameState, history: GameState["history"], f
   const notes: EggNote[] = [];
   for (const egg of bank) {
     const hit = tale && egg.on === "match" ? humanHitsOf(egg, tale, humanIds)[0] : undefined;
-    if (egg.on === "match" && hit) notes.push({ eggId: egg.id, title: egg.title, rarity: egg.rarity, look: egg.look, text: fillSlots(egg.note, slotsOf(state, hit, fixture, humans)) });
+    if (egg.on === "match" && hit) notes.push({ eggId: egg.id, title: egg.title, rarity: egg.rarity, look: egg.look, text: fillSlots(egg.note, slotsOf(state, hit, fixture, humans), articlesOf(hit, fixture)) });
   }
   for (const find of eggsOfMatch(state, fixture.id)) {
     const egg = bank.find((type) => type.id === find.eggId);

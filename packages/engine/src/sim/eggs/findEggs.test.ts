@@ -32,6 +32,17 @@ const everyDay: DayEgg = { id: "every-day", on: "day", title: "Todo dia", rarity
 const run = (bank: readonly EggType[], state: GameState = start) => findEggs({ ...state, date: "2026-05-11" }, state, DATE, playedEvents, matches, bank);
 
 describe("finding eggs", () => {
+  it("writes a feminine club and opponent with the feminine article: a find of the Chapecoense against the Ponte Preta", () => {
+    const CHAPE = "chapecoense-sc";
+    const chape = loadNewGame(5, { coachClubId: CHAPE });
+    const game = fixture("chape", CHAPE, "ponte-preta-sp");
+    const egg: MatchEgg = { ...everyMatch, texts: [{ headline: "Achado do {club} contra o {opponent}", body: "O {club} venceu." }] };
+    const found = findEggs({ ...chape, date: "2026-05-11" }, chape, DATE, [{ type: "matchPlayed", fixture: game }], [live(game)], [egg]);
+    const story = eventMemoryOf(found.state).news.find((item) => item.kind === "egg");
+    expect(story?.headline).toBe("Achado da Chapecoense contra a Ponte Preta");
+    expect(story?.body).toBe("A Chapecoense venceu.");
+  });
+
   it("writes a find into the egg book, the newspaper and the day's events, only for a human coach's club", () => {
     const found = run([everyMatch, everyDay]);
     expect(eggBookOf(found.state).log.map((find) => [find.eggId, find.clubId, find.fixtureId ?? null])).toEqual([
