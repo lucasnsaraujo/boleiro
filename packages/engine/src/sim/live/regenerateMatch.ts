@@ -1,4 +1,5 @@
 import type { Formation } from "../../engine/formations.js";
+import type { Score } from "../../engine/match.js";
 import { keyedStream } from "../../engine/random.js";
 import { guestClubOf, guestSquadOf } from "../continental/guestClubs.js";
 import { CARD_RATES, cardCompetitionOf, type CardRates } from "../discipline/cardRates.js";
@@ -11,6 +12,7 @@ import { matchSetup } from "../players/matchSetup.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
 import { matchOfficials } from "../referees/matchOfficials.js";
 import { withRefereeCalls } from "../referees/refereeCalls.js";
+import { aggregate } from "../tieResults.js";
 import { aiBench, onPitchAt, tirednessOn } from "./aiSubstitutions.js";
 import { formOfTheDay } from "./formOfTheDay.js";
 import { drawMatchPlay, type MatchPlay } from "./matchPlay.js";
@@ -73,7 +75,7 @@ function bookingsOf(lineup: readonly SimPlayer[], count: CardCount, secondYellow
  * would pick from today's squads; the real score and, when known, each side's real cards are spread
  * over the match as a live one spreads them. Scorers, goal details and substitutions draw from the
  * same streams as the live match did, so a side that lines up the same names the same scorers. A match
- * that went to extra time was level after ninety minutes: its winner's extra goals go in extra time.
+ * that went to extra time left its tie level after ninety minutes (ninetyMinutesOf).
  */
 export function regenerateMatch(state: GameState, fixture: Fixture & { result: MatchResult }): RegeneratedMatch {
   const squadOf = (clubId: string): readonly SimPlayer[] => {
@@ -91,8 +93,8 @@ export function regenerateMatch(state: GameState, fixture: Fixture & { result: M
   const bookings = cards
     ? [...bookingsOf(setup.homeLineup, cards.home, rates.secondYellowShare, cardsRandom), ...bookingsOf(setup.awayLineup, cards.away, rates.secondYellowShare, cardsRandom)]
     : drawCards(setup.homeLineup, setup.awayLineup, rates, cardsRandom);
-  const { homeGoals, awayGoals, isAfterExtraTime } = fixture.result;
-  const ninety = isAfterExtraTime ? { homeGoals: Math.min(homeGoals, awayGoals), awayGoals: Math.min(homeGoals, awayGoals) } : { homeGoals, awayGoals };
+  const { isAfterExtraTime } = fixture.result;
+  const ninety = isAfterExtraTime ? ninetyMinutesOf(state, fixture) : fixture.result;
   const told = kickOffTimeline(
     {
       homeId: fixture.homeId,
@@ -105,7 +107,7 @@ export function regenerateMatch(state: GameState, fixture: Fixture & { result: M
       strength: (p) => p.strength,
       // A substitute counts as fresher than any starter, so a side with no fatigue on record (a club abroad) never takes off the man it just sent on.
       tiredness: (p) => tirednessOn(p, fixture.date) - (starters.has(p.id) ? 0 : FRESH_SUBSTITUTE),
-      goals: ninety,
+      goals: { homeGoals: ninety.homeGoals, awayGoals: ninety.awayGoals },
       bookings,
       injuries: new Map(),
     },
@@ -113,7 +115,7 @@ export function regenerateMatch(state: GameState, fixture: Fixture & { result: M
     scorerStream(state.seed, fixture.id),
     detailStream(state.seed, fixture.id),
   );
-  const timeline = isAfterExtraTime ? withExtraTimeGoals(told, fixture, { home: setup.homeLineup, away: setup.awayLineup }, benches, keyedStream(state.seed ^ EXTRA_TIME_STREAM_SALT, fixture.id)) : told;
+  const timeline = isAfterExtraTime ? withExtraTimeGoals(told, fixture, ninety, { home: setup.homeLineup, away: setup.awayLineup }, benches, keyedStream(state.seed ^ EXTRA_TIME_STREAM_SALT, fixture.id)) : told;
   const pullOf = (p: SimPlayer) => (state.clubs[p.clubId] ? { morale: clubMood(state, p.clubId).squad, fatigue: NEUTRAL_PULL.fatigue } : NEUTRAL_PULL);
   const play = drawMatchPlay(state.seed, fixture.id, [...setup.homeLineup, ...setup.awayLineup], [...benches.home, ...benches.away], (p) =>
     formOfTheDay(state.seed, fixture.id, p.id, pullOf(p)),
@@ -132,23 +134,38 @@ export function regenerateMatch(state: GameState, fixture: Fixture & { result: M
 }
 
 /**
- * A retold match's extra time: the winner's goals over the level ninety minutes, at minutes spread over its
- * thirty, scored by players on the pitch then, with extra time's whistles. guess: no cards or substitutions in it.
+ * The score after ninety minutes of a match that went to extra time: one that leaves its tie level on
+ * aggregate with the tie's other legs. guess: as few of the match's goals as that allows go in extra time.
  */
-function withExtraTimeGoals(told: KickOffTimeline, fixture: Fixture & { result: MatchResult }, starters: Sides<SimPlayer[]>, benches: Sides<SimPlayer[]>, random: () => number): KickOffTimeline {
+function ninetyMinutesOf(state: GameState, fixture: Fixture & { result: MatchResult }): Score {
   const { homeGoals, awayGoals } = fixture.result;
-  const side = homeGoals > awayGoals ? "home" : "away";
-  const clubId = side === "home" ? fixture.homeId : fixture.awayId;
+  const otherLegs = state.fixtures.filter((f) => fixture.tie !== undefined && f.competitionId === fixture.competitionId && f.stage === fixture.stage && f.tie === fixture.tie && f.id !== fixture.id);
+  // How many goals more than the visitors the home side must score in the ninety minutes to level the tie.
+  const margin = aggregate(fixture.awayId, otherLegs) - aggregate(fixture.homeId, otherLegs);
+  const home = Math.max(0, Math.min(homeGoals, awayGoals + margin));
+  return { homeGoals: home, awayGoals: Math.max(0, home - margin) };
+}
+
+/**
+ * A retold match's extra time: the goals over its ninety minutes' score, at minutes spread over its thirty,
+ * scored by players on the pitch then, with extra time's whistles. guess: no cards or substitutions in it.
+ */
+function withExtraTimeGoals(told: KickOffTimeline, fixture: Fixture & { result: MatchResult }, ninety: Score, starters: Sides<SimPlayer[]>, benches: Sides<SimPlayer[]>, random: () => number): KickOffTimeline {
   const onPitch = (s: "home" | "away", minute: number) => onPitchAt(starters[s], benches[s], told.events, s === "home" ? fixture.homeId : fixture.awayId, minute);
-  const minutes = Array.from({ length: Math.abs(homeGoals - awayGoals) }, () => FULL_TIME + 1 + Math.floor(random() * (EXTRA_TIME_END - FULL_TIME))).sort((a, b) => a - b);
-  const drawn = minutes.flatMap((minute): GoalEvent[] => scorersOf(onPitch(side, minute), 1, random).map((playerId) => ({ type: "goal", minute, clubId, playerId })));
+  const extraGoals = (side: "home" | "away") => {
+    const clubId = side === "home" ? fixture.homeId : fixture.awayId;
+    const count = side === "home" ? fixture.result.homeGoals - ninety.homeGoals : fixture.result.awayGoals - ninety.awayGoals;
+    return Array.from({ length: count }, () => FULL_TIME + 1 + Math.floor(random() * (EXTRA_TIME_END - FULL_TIME))).map((minute) => ({ side, clubId, minute }));
+  };
+  const minutes = [...extraGoals("home"), ...extraGoals("away")].sort((a, b) => a.minute - b.minute);
+  const drawn = minutes.flatMap(({ side, clubId, minute }): GoalEvent[] => scorersOf(onPitch(side, minute), 1, random).map((playerId) => ({ type: "goal", minute, clubId, playerId })));
   const sides = {
     home: { clubId: fixture.homeId, onPitch: (minute: number) => onPitch("home", minute), penaltyTakerId: null },
     away: { clubId: fixture.awayId, onPitch: (minute: number) => onPitch("away", minute), penaltyTakerId: null },
   };
   const goals = describeGoals(drawn, sides, (p) => p.strength, random);
   const events = inMatchOrder([...told.events, ...goals, ...whistlesTo(EXTRA_TIME_END).filter((w) => w.minute > FULL_TIME)]);
-  const scorers = goals.filter((g) => g.kind !== "ownGoal").map((g) => g.playerId);
-  return { ...told, events, scorers: { ...told.scorers, [side]: [...told.scorers[side], ...scorers] } };
+  const scorers = (clubId: string) => goals.filter((g) => g.clubId === clubId && g.kind !== "ownGoal").map((g) => g.playerId);
+  return { ...told, events, scorers: { home: [...told.scorers.home, ...scorers(fixture.homeId)], away: [...told.scorers.away, ...scorers(fixture.awayId)] } };
 }
 
