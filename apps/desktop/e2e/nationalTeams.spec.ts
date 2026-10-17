@@ -12,6 +12,16 @@ async function fastForward(page: Page, date: string) {
   }, date);
 }
 
+/** Starts the coach's game over in `season` from world `seed`, through the e2e build's engine hook. */
+async function startOverIn(page: Page, season: number, seed: number) {
+  await page.evaluate(async ([first, world]) => {
+    const engine = window.boleiroEngine;
+    if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
+    const { coachClubId } = await engine.read(["coachClubId"]);
+    await engine.apply({ type: "newGame", seed: world, choices: { coachClubId, season: first } });
+  }, [season, seed] as const);
+}
+
 async function openNationalTeam(page: Page) {
   await bar(page).getByRole("link", { name: "Agenda" }).click();
   await bar(page).getByRole("link", { name: "Times" }).click();
@@ -51,4 +61,20 @@ test("the March FIFA window takes a called-up player from the coach's club and g
   await expect(await news(page)).toContainText("volta da seleção");
   await openNationalTeam(page);
   await expect(page.getByRole("region", { name: "Saem do Flamengo" })).toContainText("Ninguém do Flamengo está com uma seleção agora.");
+});
+
+test("Brazil's screen shows the South American qualifiers' table with the two matches the September 2027 window has played", async ({ page }) => {
+  test.setTimeout(8 * 60_000);
+  await page.goto("/");
+  await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Filipe" });
+  // The app starts every game in 2026; CONMEBOL's 2030 qualifiers open in 2027 and start in its September window.
+  // World 2 keeps Flamengo's coach in the job until then (the e2e world sacks him in April).
+  await startOverIn(page, 2027, 2);
+  await fastForward(page, "2027-09-28");
+  await openNationalTeam(page);
+  await page.getByRole("tab", { name: "Jogos e tabelas" }).click();
+  const table = page.getByRole("table", { name: "Eliminatórias Sul-Americanas 2030, classificação" });
+  await expect(table.getByRole("row")).toHaveCount(11);
+  const brazil = table.getByRole("row", { name: /Brasil/ });
+  await expect(brazil.getByRole("cell").first()).toHaveText("2");
 });
