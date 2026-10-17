@@ -7,7 +7,7 @@ import type { AssistantPage } from "@boleiro/game-client/assistant/assistantPage
 import { formatBarDate, formatDayMonth, formatMonthYear } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import { useServices } from "../app/ServicesContext.js";
-import { signingSuggestions, type Suggestion } from "../assistant/signingSuggestions.js";
+import { readWorthSigning, signingSuggestions, type Suggestion } from "../assistant/signingSuggestions.js";
 import { Crest } from "../clubs/Crest.js";
 import { AssistantAreas } from "../events/AssistantAreas.js";
 import { useCountUp } from "../finances/useCountUp.js";
@@ -244,7 +244,7 @@ export function Assistant() {
                 {tip.backup
                   ? `O reserva, ${tip.backup.name}, tem ${Math.round(tip.backup.read)} e ${tip.backup.age} anos. `
                   : "Não há reserva da posição no elenco. "}
-                Vale um {ROLE_NAME[tip.role].toLowerCase()} de {Math.round(tip.read) + 3} ou mais.
+                Vale um {ROLE_NAME[tip.role].toLowerCase()} de {Math.round(readWorthSigning(tip))} ou mais.
               </p>
             </div>
           </div>

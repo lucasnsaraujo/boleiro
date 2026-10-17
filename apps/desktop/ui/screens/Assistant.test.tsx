@@ -7,6 +7,7 @@ import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
+import { readWorthSigning } from "../assistant/signingSuggestions.js";
 import { Assistant } from "./Assistant.js";
 
 const CLUB = "flamengo-rj";
@@ -53,6 +54,17 @@ test("the club's own level-1 assistant names the weakest starter and suggests si
   const suggestions = screen.getByRole("list", { name: "Indicações do auxiliar" });
   expect(within(suggestions).getAllByRole("listitem").length).toBeGreaterThan(0);
   expect(within(suggestions).getAllByText(/Topa vir|Talvez/).length).toBe(within(suggestions).getAllByRole("listitem").length);
+});
+
+test("the tip asks for the read the suggestions start from, and every suggestion reads at least that", async () => {
+  const engine = await startGame();
+  openAssistant(engine);
+  const { tip } = await engine.assistant();
+  if (!tip) throw new Error("no tip for Flamengo");
+  const least = Math.round(readWorthSigning(tip));
+  expect(await screen.findByText(new RegExp(`de ${least} ou mais\\.$`))).toBeTruthy();
+  const suggestions = screen.getByRole("list", { name: "Indicações do auxiliar" });
+  for (const strength of within(suggestions).getAllByTitle("Força, como ele vê")) expect(Number(strength.textContent)).toBeGreaterThanOrEqual(least);
 });
 
 test("calling a better assistant the board can pay makes him the coach's, with his level and wage", async () => {
