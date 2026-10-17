@@ -59,6 +59,9 @@ const OUTCOME_OF: { [T in CommandType]: (command: GameCommand<T>, result: Comman
   pickSponsors: () => "autosave",
   retirePlayer: () => "autosave",
   persuadeToStay: () => "autosave",
+  acceptNationalJob: () => "autosave",
+  declineNationalJob: () => "autosave",
+  setCallUp: () => "autosave",
 };
 
 /**

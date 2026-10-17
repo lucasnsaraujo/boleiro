@@ -17,6 +17,7 @@ import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
 import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
 import { withPackPositions } from "@boleiro/engine/sim/players/withPackPositions";
 import { withNations } from "@boleiro/engine/sim/nations/withNations";
+import { acceptNationalOffer, declineNationalOffer, setCallUp } from "@boleiro/engine/sim/nations/nationalJobs";
 import { persuadeToStay, retirePlayer, type PlayerPersuaded } from "@boleiro/engine/sim/players/retirement";
 import { newGameFromFiles, type GameFiles } from "@boleiro/engine/sim/loadNewGame";
 import type { NewGameOptions } from "@boleiro/engine/sim/newGame";
@@ -47,6 +48,7 @@ import { liveRoundOf, type LiveRound } from "../round/liveRoundOf.js";
 import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
 import { newspaperEditions, newspaperOf, type Edition, type EditionTitle } from "../newspaper/roundNewspaper.js";
 import { betStickerOf, sponsorsPageOf, type BetSticker, type SponsorsPage } from "../sponsors/sponsorsPage.js";
+import { nationalTeamPage, type NationalTeamPage } from "../nationalTeam/nationalTeamPage.js";
 import { readStoredSave, splitGame, writeSessionSave, writeSessionShards, type SaveShards, type SeatParts, type SplitGame, type StoredSave } from "./sessionSave.js";
 
 /** What a new game is started with; the app's new-game screen leaves `season` out, for the first season. */
@@ -137,6 +139,12 @@ type CommandFields = {
   retirePlayer: { playerId: string };
   /** The coach in the seat asks one of his players who announced his last season to play one more year. */
   persuadeToStay: { playerId: string };
+  /** The coach in the seat takes the national job on offer, keeping his club. */
+  acceptNationalJob: Record<never, never>;
+  /** The coach in the seat turns the national job on offer down. */
+  declineNationalJob: Record<never, never>;
+  /** The coach of a national team calls up these players (refs of his pool) for its next window. */
+  setCallUp: { refs: readonly string[] };
 };
 
 /** What a move on a kid of the academy answers: null when it went through, and the sale it made. */
@@ -192,6 +200,9 @@ export type CommandResults = {
   pickSponsors: undefined;
   retirePlayer: undefined;
   persuadeToStay: PlayerPersuaded;
+  acceptNationalJob: undefined;
+  declineNationalJob: undefined;
+  setCallUp: undefined;
 };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
@@ -709,6 +720,18 @@ export function createEngineSession(files: GameFiles) {
       addNews(inboxLines(before, asked.state, [asked.event]));
       return asked.event;
     },
+    acceptNationalJob() {
+      const before = betweenDays("a national job can't be taken");
+      const taken = acceptNationalOffer(before);
+      state = taken.state;
+      addNews(inboxLines(before, taken.state, [taken.event]));
+    },
+    declineNationalJob() {
+      state = declineNationalOffer(betweenDays("a national job can't be turned down"));
+    },
+    setCallUp({ refs }) {
+      state = setCallUp(betweenDays("a call-up can't change"), refs);
+    },
     spendMarketTime({ seconds, playerId }) {
       const game = current();
       const isOwnPlayer = playerId !== undefined && game.coachClubId !== null && game.players[playerId]?.clubId === game.coachClubId;
@@ -790,6 +813,10 @@ export function createEngineSession(files: GameFiles) {
     /** The sponsors screen of the seated coach's club; null without a club. */
     sponsors(): SponsorsPage | null {
       return sponsorsPageOf(current());
+    },
+    /** The national-team screen of `teamId`, the coach's national team or Brazil when left out; null in a game without national football. */
+    nationalTeam(teamId?: string): NationalTeamPage | null {
+      return nationalTeamPage(current(), teamId);
     },
     /** The odds the betting sponsor on the seated coach's kit posts for his next match; null without one. */
     betSticker(): BetSticker | null {

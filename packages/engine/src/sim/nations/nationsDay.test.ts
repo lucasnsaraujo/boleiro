@@ -76,18 +76,18 @@ describe("national football over 2026", () => {
     expect(events.filter((e) => e.type === "backFromDuty" && e.on === "2026-03-31").length).toBeGreaterThan(0);
   });
 
-  it("refuses the coach's eleven with a player away with his national team", () => {
+  it("refuses a coach's eleven with a player away with his national team", () => {
     const away = onDutyOn(march, march.date);
-    const flamengo = [...away].find((id) => march.players[id]?.clubId === "flamengo-rj");
-    expect(flamengo).toBeDefined();
-    const fixtureDay = march.fixtures.find((f) => f.date >= march.date && f.date <= "2026-03-31" && [f.homeId, f.awayId].includes("flamengo-rj"));
-    expect(fixtureDay).toBeDefined();
+    const fixture = march.fixtures.find((f) => f.date >= march.date && f.date <= "2026-03-31" && [...away].some((id) => [f.homeId, f.awayId].includes(march.players[id]?.clubId ?? "")));
+    expect(fixture).toBeDefined();
     let game = march;
-    while (fixtureDay && game.date < fixtureDay.date) game = advanceDay(game, {}).state;
-    const fit = Object.values(game.players).filter((p) => p.clubId === "flamengo-rj" && !away.has(p.id) && !isInjured(p, game.date));
-    const others = fit.filter((p) => p.group !== "GK").slice(0, 10).map((p) => p.id);
+    while (fixture && game.date < fixture.date) game = advanceDay(game, {}).state;
+    const calledUp = [...away].find((id) => [fixture?.homeId, fixture?.awayId].includes(game.players[id]?.clubId)) ?? "";
+    const clubId = game.players[calledUp]?.clubId ?? "";
+    const fit = Object.values(game.players).filter((p) => p.clubId === clubId && !away.has(p.id) && !isInjured(p, game.date));
     const keeper = fit.find((p) => p.group === "GK")?.id ?? "";
-    expect(() => advanceDay(game, { lineup: [keeper, ...others.slice(0, 9), flamengo ?? ""] })).toThrow(/national team/);
+    const others = fit.filter((p) => p.group !== "GK").slice(0, 9).map((p) => p.id);
+    expect(() => advanceDay({ ...game, coachClubId: clubId }, { lineup: [keeper, ...others, calledUp] })).toThrow(/national team/);
   });
 
   it("plays the window's matches result-only and moves the FIFA points", () => {

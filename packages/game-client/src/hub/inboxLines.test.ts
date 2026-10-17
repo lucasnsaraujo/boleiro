@@ -430,3 +430,13 @@ describe("national teams", () => {
     expect(line({ type: "nationalTitle", competitionId: "world-cup-2026", name: "Copa do Mundo 2026", winnerId: "spain", runnerUpId: "argentina" })?.text).toBe("Espanha campeã da Copa do Mundo 2026, sobre a Argentina");
   });
 });
+
+describe("national-team jobs", () => {
+  test("a federation's offer names the team with its article and the day it expires", () => {
+    expect(line({ type: "nationalJobOffered", teamId: "brazil", expiresOn: "2026-08-03" })?.text).toBe("A federação oferece a você o comando do Brasil, até 3 ago");
+  });
+
+  test("losing the job is bad news", () => {
+    expect(line({ type: "nationalCoachFired", teamId: "portugal" })).toMatchObject({ text: "Você não é mais o técnico de Portugal", tone: "bad" });
+  });
+});

@@ -8,9 +8,9 @@ export type NationalTeam = { id: string; name: string; confederation: Confederat
 /**
  * The players of a national team's pool the game keeps no squad place for (they play abroad, outside the full
  * tier), as columns: name, position letter (g goleiro, l lateral, z zagueiro, m meia, a atacante), strength from
- * their market value, birth year (0 unknown) and club.
+ * their market value, birth year (0 unknown), club and its world id ("tm-418", empty when unknown) for its crest.
  */
-export type Outsiders = { names: string[]; roles: string; strengths: number[]; born: number[]; clubs: string[] };
+export type Outsiders = { names: string[]; roles: string; strengths: number[]; born: number[]; clubs: string[]; clubIds: string[] };
 
 export type NationalResult = { home: number; away: number; penaltyWinnerId?: string; isAfterExtraTime?: true };
 

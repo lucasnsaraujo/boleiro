@@ -10,6 +10,7 @@ import { Finances } from "../screens/Finances.js";
 import { History } from "../screens/History.js";
 import { Hub } from "../screens/Hub.js";
 import { Market } from "../screens/Market.js";
+import { NationalTeam } from "../screens/NationalTeam.js";
 import { NewGame } from "../screens/NewGame.js";
 import { Newspaper } from "../screens/Newspaper.js";
 import { Offers } from "../screens/Offers.js";
@@ -52,6 +53,7 @@ const ELEMENTS: Record<ScreenPath, ReactElement> = {
   "/sponsors": <Sponsors />,
   "/awards": <Awards />,
   "/assistant": <Assistant />,
+  "/national-team": <NationalTeam />,
 };
 
 export const routes: RouteObject[] = [

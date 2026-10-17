@@ -282,6 +282,10 @@ export function Hub() {
               Entrosamento
             </span>
           )}
+          <Link to="/national-team" className="hub-dock-item" title="Seleção">
+            <i className="ph-bold ph-flag-banner" aria-hidden="true" />
+            Seleção
+          </Link>
           <button className="hub-dock-item" aria-expanded={isPaperOpen} aria-controls="hub-paper" title="Jornal" onClick={() => setPaperOpen(!isPaperOpen)}>
             <i className="ph-bold ph-newspaper" aria-hidden="true" />
             Jornal

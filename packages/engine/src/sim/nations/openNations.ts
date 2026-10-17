@@ -23,6 +23,7 @@ function outsidersOf(football: NationalFootball, nationals: ReadonlyMap<string, 
       strengths: squad.map((p) => strengthFromValue(p.marketValueEur ?? lowest)),
       born: squad.map((p) => Number(p.birthDate?.slice(0, 4) ?? 0)),
       clubs: squad.map((p) => p.clubName),
+      clubIds: squad.map((p) => (p.clubTransfermarktId ? `tm-${p.clubTransfermarktId}` : "")),
     };
   }
   return pools;

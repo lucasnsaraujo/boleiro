@@ -5,7 +5,8 @@ import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
 import { fatigueOn } from "../players/fatigueOn.js";
 import { drawMatchInjuries, type PlayerInjured } from "../players/recordMatchLoad.js";
 import { withReplacedPlayers } from "../players/squadsByClub.js";
-import { nationalSide, nationalsByTeam, pickCallUp, splitRefs } from "./callUps.js";
+import { nationalSide, splitRefs } from "./callUps.js";
+import { callUpRefsOf, nationalJobsAfter, withLiveOffer, type NationalJobEvent } from "./nationalJobs.js";
 import { fifaWindowsOf, type FifaWindow } from "./fifaCalendar.js";
 import { matchImportance, rankingPointsAfter } from "./fifaRanking.js";
 import { competitionsOf, groupTable } from "./nationalCompetitions.js";
@@ -14,11 +15,11 @@ import type { CallUp, KnockoutRound, NationalCompetition, NationalMatch, Nationa
 export type CalledUp = { type: "calledUp"; playerId: string; clubId: string; teamId: string; until: IsoDate };
 export type BackFromDuty = { type: "backFromDuty"; playerId: string; clubId: string; teamId: string };
 export type NationalTitleWon = { type: "nationalTitle"; competitionId: string; name: string; winnerId: string; runnerUpId?: string };
-export type NationsEvent = CalledUp | BackFromDuty | NationalTitleWon | PlayerInjured;
+export type NationsEvent = CalledUp | BackFromDuty | NationalTitleWon | PlayerInjured | NationalJobEvent;
 
 const NEUTRAL: EngineParams = { ...CALIBRATED, homeAdvantage: 0 };
 // guess: a team in a final tournament starting this soon after a window keeps its players from the window on.
-const TOURNAMENT_CAMP_DAYS = 20;
+export const TOURNAMENT_CAMP_DAYS = 20;
 // guess: a team knocked out sends its players home; they are back at their clubs two days after its last match.
 const DAYS_HOME = 2;
 const MATCH_LOAD = 100;
@@ -215,10 +216,9 @@ function windowFriendlies(nations: Nations, window: FifaWindow, random: () => nu
   });
 }
 
-/** The game's players a team calls up on `date` and its pool's others, away until `until`. */
-function callUp(nations: Nations, teamId: string, nationals: readonly SimPlayer[], date: IsoDate, until: IsoDate): CallUp {
-  const refs = pickCallUp(nationals, nations.outsiders[teamId], date);
-  return { teamId, ...splitRefs(refs), from: date, until };
+/** The game's players a team calls up on `date` and its pool's others, away until `until`: the game's coach's own picks for his team. */
+function callUp(state: GameState, nations: Nations, teamId: string, date: IsoDate, until: IsoDate): CallUp {
+  return { teamId, ...splitRefs(callUpRefsOf(state, nations, teamId, date)), from: date, until };
 }
 
 /** The final tournament a team goes to from this window, if one starts soon after it. */
@@ -248,8 +248,7 @@ export function nationsDay(state: GameState, today: IsoDate): { state: GameState
   const uncalled = [...new Set(todays.flatMap((m) => [m.homeId, m.awayId]))].filter((id) => !nations.callUps[id]);
   if (uncalled.length) {
     // A save opened mid-window has teams to play without a call-up: their coaches pick on the day.
-    const nationals = nationalsByTeam(players, nations.teams);
-    nations = { ...nations, callUps: { ...nations.callUps, ...Object.fromEntries(uncalled.map((id) => [id, callUp(nations, id, nationals.get(id) ?? [], today, today)])) } };
+    nations = { ...nations, callUps: { ...nations.callUps, ...Object.fromEntries(uncalled.map((id) => [id, callUp(state, nations, id, today, today)])) } };
   }
   if (todays.length) {
     const changed = new Map<string, SimPlayer>();
@@ -336,14 +335,14 @@ export function nationsDay(state: GameState, today: IsoDate): { state: GameState
     const friendlyId = `friendlies-${season}`;
     const competitions = friendlyId in nations.competitions ? nations.competitions : { ...nations.competitions, [friendlyId]: { id: friendlyId, name: `Amistosos ${season}`, kind: "friendlies" as const, groups: {}, places: 0, knockout: [], opened: 0, until: `${season}-12-31`, winnerId: "" } };
     nations = { ...nations, competitions, matches: [...nations.matches, ...friendlies] };
-    const nationals = nationalsByTeam(players, nations.teams);
     const callUps = { ...nations.callUps };
     const duty = { ...nations.duty };
+    const calling = { ...state, players };
     for (const teamId of Object.keys(nations.teams)) {
       const plays = nations.matches.some((m) => (m.homeId === teamId || m.awayId === teamId) && m.date >= window.from && m.date <= window.until);
       const tournament = tournamentAfter(nations, teamId, window);
       if (!plays && !tournament) continue;
-      const own = callUp(nations, teamId, nationals.get(teamId) ?? [], window.from, tournament?.until ?? window.until);
+      const own = callUp(calling, nations, teamId, window.from, tournament?.until ?? window.until);
       callUps[teamId] = own;
       for (const id of own.playerIds) {
         const player = players[id];
@@ -353,8 +352,20 @@ export function nationsDay(state: GameState, today: IsoDate): { state: GameState
       }
     }
     nations = { ...nations, callUps, duty };
+    if (nations.picks && nations.job && callUps[nations.job.teamId]?.from === window.from) {
+      nations = { ...nations };
+      delete nations.picks;
+    }
   }
 
-  nations = { ...nations, rngState: random.state() };
-  return { state: { ...state, players, nations }, events };
+  nations = { ...withLiveOffer(nations, state.date), rngState: random.state() };
+  let next: GameState = { ...state, players, nations };
+  for (const finished of events.flatMap((e) => (e.type === "nationalTitle" ? [e.competitionId] : []))) {
+    const competition = next.nations?.competitions[finished];
+    if (!competition) continue;
+    const jobs = nationalJobsAfter(next, competition, today);
+    next = jobs.state;
+    events.push(...jobs.events);
+  }
+  return { state: next, events };
 }

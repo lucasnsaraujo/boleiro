@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { addDays } from "@boleiro/engine/sim/dates";
 import { freeFriendlyDates, friendlyAnswer } from "@boleiro/engine/sim/friendlies/friendlies";
-import type { SimPlayer } from "@boleiro/engine/sim/gameState";
+import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import type { BidOutcome } from "@boleiro/engine/sim/transfers/answerBid";
 import { sellerPrice } from "@boleiro/engine/sim/transfers/askingPrice";
 import { beforeAll, expect, test } from "vitest";
@@ -400,6 +400,28 @@ function playPlayerLife() {
   return { recorded };
 }
 
+/** Takes a national job a federation offers, calls up a squad for it, and turns down the next offer. */
+function playNationalJob() {
+  const recorded = recordedSession();
+  const { session, apply } = recorded;
+  apply({ type: "newGame", seed: SEED, choices: { coachClubId: CLUB } });
+  const offering = (teamId: string) => {
+    const saved = JSON.parse(session.save()) as { game: GameState };
+    const nations = saved.game.nations;
+    if (!nations) throw new Error("the bundled game has national football");
+    saved.game.nations = { ...nations, offer: { teamId, expiresOn: "2026-01-14" } };
+    apply({ type: "load", save: JSON.stringify(saved) });
+  };
+  offering("brazil");
+  apply({ type: "acceptNationalJob" });
+  const page = session.nationalTeam();
+  const refs = page?.callUp.groups.flatMap((group) => group.players.map((player) => player.ref)) ?? [];
+  apply({ type: "setCallUp", refs: refs.slice(0, 23) });
+  offering("argentina");
+  apply({ type: "declineNationalJob" });
+  return { recorded, page };
+}
+
 let season: Season;
 let career: ReturnType<typeof playCareerStart>;
 let marketWindow: ReturnType<typeof playMarketWindow>;
@@ -663,7 +685,7 @@ test("the money commands survive JSON and replay alike from the same seed", () =
 });
 
 test("the season, career, market, money, academy and hot-seat logs between them send every kind of command", () => {
-  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, scouting, sponsors, playHotSeatTurn(), playPlayerLife()].flatMap(({ recorded }) => recorded.applied);
+  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, scouting, sponsors, playHotSeatTurn(), playPlayerLife(), playNationalJob()].flatMap(({ recorded }) => recorded.applied);
   const sent = new Set(logs.map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
@@ -706,6 +728,9 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     pickSponsors: true,
     retirePlayer: true,
     persuadeToStay: true,
+    acceptNationalJob: true,
+    declineNationalJob: true,
+    setCallUp: true,
   };
   expect([...sent].sort()).toEqual(Object.keys(every).sort());
 });
@@ -766,4 +791,12 @@ test("the academy's commands survive JSON and replay alike from the same seed", 
   const twin = replay(applied);
   expect(twin.results).toEqual(applied.map(({ result }) => result));
   expect(sha256(twin.session.save())).toBe(sha256(session.save()));
+});
+
+test("a national job taken from the session puts the coach on its screen and keeps his own call-up", () => {
+  const { recorded, page } = playNationalJob();
+  expect(page?.coach).not.toBeNull();
+  expect(page?.team.id).toBe("brazil");
+  expect(recorded.session.read(["nations"]).nations?.picks).toHaveLength(23);
+  expect(recorded.session.read(["nations"]).nations?.offer).toBeUndefined();
 });
