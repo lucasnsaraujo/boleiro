@@ -65,23 +65,29 @@ function aiRenewal(state: GameState, player: SimPlayer, squad: readonly SimPlaye
 }
 
 /**
- * On the season's last day, every AI club talks over the contracts that end that day: it renews the
- * players it wants to keep who agree, and the rest leave when the year turns.
+ * On the season's last day, every AI club talks over the contracts that end that day, its players out
+ * on loan included (weighed against its own squad): it renews the players it wants to keep who agree,
+ * and the rest leave when the year turns.
  */
 export function renewAiContracts(state: GameState): { state: GameState; events: PlayerContractRenewed[] } {
   const renewed: SimPlayer[] = [];
   const events: PlayerContractRenewed[] = [];
-  for (const [clubId, squad] of squadsOfGame(state)) {
+  const squads = squadsOfGame(state);
+  const talk = (player: SimPlayer, clubId: string, squad: readonly SimPlayer[]) => {
+    if (player.contractUntil !== state.date || state.market.preContracts[player.id]) return;
+    const term = aiRenewal(state, { ...player, clubId }, squad, tierOf(state.clubs[clubId] ?? { division: null }));
+    if (!term) return;
+    const until = renewedUntil(player, state.date, term.months);
+    renewed.push({ ...player, wage: term.wage, contractUntil: until });
+    events.push({ type: "playerContractRenewed", playerId: player.id, clubId, until, wage: term.wage });
+  };
+  for (const [clubId, squad] of squads) {
     if (squadEnd(squad) > state.date || isHumanClub(state, clubId)) continue;
-    const tier = tierOf(state.clubs[clubId] ?? { division: null });
-    for (const player of squad) {
-      if (player.contractUntil !== state.date || state.market.loans[player.id] || state.market.preContracts[player.id]) continue;
-      const term = aiRenewal(state, player, squad, tier);
-      if (!term) continue;
-      const until = renewedUntil(player, state.date, term.months);
-      renewed.push({ ...player, wage: term.wage, contractUntil: until });
-      events.push({ type: "playerContractRenewed", playerId: player.id, clubId, until, wage: term.wage });
-    }
+    for (const player of squad) if (!state.market.loans[player.id]) talk(player, clubId, squad);
+  }
+  for (const [playerId, loan] of Object.entries(state.market.loans).sort(([a], [b]) => a.localeCompare(b))) {
+    const player = state.players[playerId];
+    if (player) talk(player, loan.fromClubId, squads.get(loan.fromClubId) ?? []);
   }
   return { state: renewed.length ? { ...state, players: withReplacedPlayers(state.players, renewed) } : state, events };
 }

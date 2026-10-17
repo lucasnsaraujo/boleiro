@@ -126,6 +126,28 @@ describe("AI clubs' renewals", () => {
     }
   });
 
+  it("renew the players they lent out whose contract ends with the loan, judged against their own squad", () => {
+    const LENDER = "palmeiras-sp";
+    const ending = Object.values(start.players)
+      .filter((p) => p.clubId === LENDER && p.age < 30)
+      .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id))
+      .slice(0, 10)
+      .map((p) => ({ ...p, contractUntil: "2026-12-31" }));
+    const atHome = on(lastDay, lastDay.date, ...ending);
+    const borrowers = ending.map((_, i) => (i === 0 ? COACH : "vitoria-ba"));
+    const lent: GameState = {
+      ...on(lastDay, lastDay.date, ...ending.map((p, i) => ({ ...p, clubId: borrowers[i] ?? COACH }))),
+      market: { ...lastDay.market, loans: { ...lastDay.market.loans, ...Object.fromEntries(ending.map((p) => [p.id, { fromClubId: LENDER, until: "2026-12-31", lenderWageShare: 0.5, buyOption: null }])) } },
+    };
+    const ids = new Set(ending.map((p) => p.id));
+    const renewedAtHome = renewalsOf(runTransferDay(atHome, []).events).filter((e) => ids.has(e.playerId));
+    const talked = runTransferDay(lent, []);
+    expect(renewedAtHome.length).toBeGreaterThan(5);
+    expect(renewalsOf(talked.events).filter((e) => ids.has(e.playerId))).toEqual(renewedAtHome);
+    const back = runTransferDay({ ...talked.state, date: "2027-01-01" }, []).state;
+    for (const event of renewedAtHome) expect(back.players[event.playerId]).toMatchObject({ clubId: LENDER, contractUntil: event.until });
+  });
+
   it("let the others go when the year turns, without talking again", () => {
     const talked = runTransferDay(lastDay, []).state;
     const { events } = expireContracts({ ...talked, date: "2027-01-01" }, () => 0);
