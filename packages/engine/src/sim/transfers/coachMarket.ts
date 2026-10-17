@@ -1,6 +1,6 @@
 import { addDays } from "../dates.js";
 import type { GameState, IsoDate } from "../gameState.js";
-import type { CoachMarket } from "./transferMarket.js";
+import type { CoachMarket, RenewalCounter } from "./transferMarket.js";
 import { windowClosesOn, type CoachWindows } from "./transferWindows.js";
 
 const EMPTY: CoachMarket = { listings: {}, auctions: {}, bids: {}, counters: {} };
@@ -35,7 +35,25 @@ export function withoutPlayer(coach: CoachMarket, playerId: string): CoachMarket
     auctions: without(coach.auctions, playerId),
     bids: without(coach.bids, playerId),
     counters: without(coach.counters, playerId),
+    ...(coach.renewalCounters ? { renewalCounters: without(coach.renewalCounters, playerId) } : {}),
   };
+}
+
+/** The coach's business with the player's renewal counter as `counter`, or without one when null. */
+export function withRenewalCounter(coach: CoachMarket, playerId: string, counter: RenewalCounter | null): CoachMarket {
+  const rest = without(coach.renewalCounters ?? {}, playerId);
+  const renewalCounters = counter ? { ...rest, [playerId]: counter } : rest;
+  if (Object.keys(renewalCounters).length) return { ...coach, renewalCounters };
+  // The last counter gone, the field goes too, so the save reads as one from before counters.
+  const next = { ...coach };
+  Reflect.deleteProperty(next, "renewalCounters");
+  return next;
+}
+
+/** The player's renewal counter that still stands today, if any. */
+export function standingRenewalCounter(state: Pick<GameState, "date" | "market">, playerId: string): RenewalCounter | null {
+  const counter = coachMarketOf(state).renewalCounters?.[playerId];
+  return counter && counter.until >= state.date ? counter : null;
 }
 
 /** The coach turns down a selling club's counter to his offer; the rest of his business stays. */

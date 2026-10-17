@@ -4,11 +4,14 @@ import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { squadsOfGame } from "@boleiro/engine/sim/players/squadsByClub";
 import { SQUAD_CAP } from "@boleiro/engine/sim/transfers/squadCap";
+import { isInLastContractYear } from "@boleiro/engine/sim/transfers/renewalTerms";
 import { isInPreContractWindow } from "@boleiro/engine/sim/transfers/tradeBetweenClubs";
+import type { RenewalSkipReason } from "@boleiro/engine/sim/transfers/transferEvents";
 import { copinhaRun } from "@boleiro/engine/sim/youth/copinha";
 import type { AdvanceResult } from "../engine/createEngineSession.js";
 import { competitionName } from "../format/competitionName.js";
-import { formatDayMonth, monthName } from "../format/formatGameDate.js";
+import { formatContractLength } from "../format/formatContractLength.js";
+import { formatDayMonth, formatMonthYear, monthName } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
 import { boardGoal } from "../screens/clubChoices.js";
 import { copinhaRoundName } from "../format/copinhaRoundName.js";
@@ -51,6 +54,8 @@ const REFUSALS: Record<string, string> = {
   notAvailable: "ele não está disponível",
   squadFull: `o elenco já tem ${SQUAD_CAP} jogadores`,
   offerTooLow: "o clube dele nem quis conversar com essa oferta",
+  lengthRefused: "ele não aceita esse tempo de contrato",
+  wageTooLow: "ele quer bem mais do que o oferecido",
   counterOffer: "o clube dele fez uma contraproposta",
 };
 
@@ -216,7 +221,13 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         return [`${name} vendido por ${formatMoney(fee)} (${to})`, "neutral"];
       }
       case "playerContractRenewed":
-        return isOurs(event.clubId) ? [`${playerName(event.playerId)} renova até ${event.until.slice(0, 4)}`, "neutral"] : null;
+        if (!isOurs(event.clubId)) return null;
+        if (event.byAssistant) return [`O auxiliar renovou com ${playerName(event.playerId)} até ${formatMonthYear(event.until)}, por ${formatMoney(event.wage)} por mês`, "good"];
+        return [`${playerName(event.playerId)} renova até ${event.until.slice(0, 4)}`, "neutral"];
+      case "renewalCountered":
+        return [`${playerName(event.playerId)} pede ${formatMoney(event.wage)} por mês para renovar por ${formatContractLength(event.months)}. Responda na renovação`, "neutral"];
+      case "renewalSkipped":
+        return isOurs(event.clubId) ? [skippedRenewalText(playerName(event.playerId), event.until, event.reason), "neutral"] : null;
       case "preContractSigned":
         if (isOurs(event.toClubId)) return [`${playerName(event.playerId)} assina pré-contrato com ${clubName(event.toClubId)}`, "good"];
         if (isOurs(event.fromClubId)) return [`${playerName(event.playerId)} assina pré-contrato com ${clubName(event.toClubId)}`, "bad"];
@@ -237,8 +248,8 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
       case "eventAnswered":
         return isOurs(event.clubId) ? [event.byAssistant ? `${event.topic}: o auxiliar respondeu “${event.answer.replace(/^“|”$/g, "")}”` : event.headline, "neutral"] : null;
       case "requestDecided": {
-        // The counter-offer's own line says what the club asks.
-        if (event.reason === "counterOffer") return null;
+        // The counter-offer's own line says what the club or the player asks.
+        if (event.reason === "counterOffer" || event.reason === "playerCounter") return null;
         const noun = REQUEST_NOUNS[event.request.kind];
         const player = playerName(event.request.playerId);
         if (event.approved) return [`Diretoria aprova ${noun} de ${player}`, "good"];
@@ -251,8 +262,37 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
     const found = lineOf(event);
     return found ? [{ date: before.date, text: found[0], tone: found[1] }] : [];
   });
-  return [...lines, ...preContractWarnings(before, after)];
+  return [...lines, ...lastYearWarnings(before, after), ...preContractWarnings(before, after)];
 }
+
+function skippedRenewalText(name: string, until: IsoDate, reason: RenewalSkipReason): string {
+  switch (reason) {
+    case "notInPlans":
+      return `O auxiliar deixa acabar o contrato de ${name} (${formatMonthYear(until)}): está fora dos planos`;
+    case "playerUnwilling":
+      return `O auxiliar não renovou com ${name} (contrato até ${formatMonthYear(until)}): ele não aceita nenhum tempo de contrato`;
+    case "wageCap":
+      return `O auxiliar não renovou com ${name} (contrato até ${formatMonthYear(until)}): o salário passa do teto da folha`;
+  }
+}
+
+/** The coach's players who entered the last year of their contract that day, as one line: he can still renew before anyone signs them. */
+function lastYearWarnings(before: NewsState, after: NewsState): InboxLine[] {
+  if (!after.coachClubId || after.coachClubId !== before.coachClubId || after.date === before.date) return [];
+  const entering = (squadsOfGame(after).get(after.coachClubId) ?? [])
+    .filter((p) => !after.market.preContracts[p.id] && !after.market.loans[p.id] && isInLastContractYear(p, after.date) && !isInLastContractYear(p, before.date))
+    .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  const [only] = entering;
+  if (!only) return [];
+  const text =
+    entering.length === 1
+      ? `${only.name} entra no último ano de contrato (até ${formatMonthYear(only.contractUntil)}): renove antes que outros clubes possam assinar pré-contrato com ele`
+      : `${entering.length} jogadores entram no último ano de contrato: ${listNames(entering.map((p) => p.name))}`;
+  return [{ date: before.date, text, tone: "neutral" }];
+}
+
+/** "A", "A e B", "A, B e C". */
+const listNames = (names: readonly string[]) => (names.length < 2 ? (names[0] ?? "") : `${names.slice(0, -1).join(", ")} e ${names.at(-1)}`);
 
 /** The coach's players who entered the last six months of their contract that day, when any club may sign them to a pre-contract. */
 function preContractWarnings(before: NewsState, after: NewsState): InboxLine[] {

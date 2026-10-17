@@ -3,11 +3,13 @@ import { addDays } from "../dates.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { sellerPrice } from "./askingPrice.js";
 import { boardRefusal } from "./boardRefusal.js";
-import { coachMarketOf, withCoachMarket } from "./coachMarket.js";
+import { coachMarketOf, standingRenewalCounter, withCoachMarket, withRenewalCounter } from "./coachMarket.js";
 import type { CoachRequest } from "./coachRequest.js";
 import { isClubFull } from "./squadCap.js";
 import type { Counter } from "./transferMarket.js";
 import { contractEnd } from "./expireContracts.js";
+import { contractEndAfter, contractTerms, lengthPremium, NEUTRAL_TALKS, preferredMonths, type ContractMonths, type Stance } from "./contractTerms.js";
+import { contractMonthsOf, renewalTermsOf, renewedUntil } from "./renewalTerms.js";
 import { releaseClauseOf } from "./releaseClause.js";
 import { LENDER_WAGE_SHARE, LOAN_MAX_AGE, loanLimitOf, loanUntil } from "./loans.js";
 import { marketView, type MarketView } from "./marketView.js";
@@ -21,8 +23,12 @@ import { willingToJoin } from "./willingToJoin.js";
 
 type Outcome = { state: GameState; events: TransferEvent[] };
 const RANK = { A: 4, B: 3, C: 2, D: 1, state: 0 } as const;
-// guess: a renewal or a new deal can run at most five seasons (Lei 14.597/2023 caps contracts at five years).
-const MAX_CONTRACT_YEARS = 5;
+// guess: a player gives 8% off his ask on the length he wants, 4% on one he agrees to, nothing on a hard one;
+// an offer within 15% under that gets his counter, at his ask, and a lower one he turns down.
+const RENEWAL_GIVE: Record<Stance, number> = { wants: 0.08, agrees: 0.04, hard: 0, refuses: 0 };
+const RENEWAL_COUNTER_BAND = 0.85;
+// guess: on a length he finds hard he signs his full ask one time in two.
+const HARD_LENGTH_CHANCE = 0.5;
 // guess: a club counters an offer of at least 60% of its price and ignores a lower one; its counter stands a week.
 const COUNTER_FLOOR = 0.6;
 const COUNTER_DAYS = 7;
@@ -61,6 +67,19 @@ function isWilling(view: MarketView, state: GameState, player: SimPlayer, clubId
   const club = state.clubs[clubId];
   const unemployed = !state.players[player.id];
   return !!club && random() < willingToJoin({ player, from: view.tier(player.clubId), to: { tier: view.tier(clubId), fanbase: club.fanbase }, wage, unemployed, loan });
+}
+
+/**
+ * The length a signing offers him, as months and how much it weighs against the wage (a length off the one
+ * he wants is worth less to him); "refused" for a length he won't talk about. Without `years`, the club's
+ * usual one to three seasons, which he takes as it comes.
+ */
+function signingLength(player: SimPlayer, squad: readonly SimPlayer[], years: number | undefined): { months: ContractMonths | null; premium: number } | "refused" {
+  if (years === undefined) return { months: null, premium: 1 };
+  const months = contractMonthsOf(years);
+  const preferred = preferredMonths(player, squad);
+  const stance = contractTerms(1, preferred, NEUTRAL_TALKS).find((term) => term.months === months)?.stance;
+  return stance === "refuses" ? "refused" : { months, premium: 1 + lengthPremium(months, preferred) };
 }
 
 /** The board's answer to one coach request, and the move it makes when it says yes and the player agrees. */
@@ -110,10 +129,12 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
         fee = offered;
       }
       const wage = request.wage !== undefined ? Math.max(1, Math.round(request.wage)) : free ? Math.max(1, goingRate(player.strength, squad)) : wageDemand(player, squad);
+      const length = signingLength(player, squad, request.years);
+      if (length === "refused") return refuse(state, request, "lengthRefused");
       const refused = boardRefusal(finance, bill, { upFront: fee + 3 * wage, wageChange: wage });
       if (refused) return refuse(state, request, refused);
-      if (!isWilling(view, state, player, coachClubId, wage, random)) return refuse(state, request, "playerUnwilling");
-      const contract = { wage, until: contractEnd(year + 1, random) };
+      if (!isWilling(view, state, player, coachClubId, wage / length.premium, random)) return refuse(state, request, "playerUnwilling");
+      const contract = { wage, until: length.months === null ? contractEnd(year + 1, random) : contractEndAfter(state.date, length.months) };
       if (preContract) {
         const signed = { ...state, market: { ...state.market, preContracts: { ...state.market.preContracts, [player.id]: coachClubId } } };
         return approve(signed, request, null, [{ type: "preContractSigned", playerId: player.id, fromClubId: player.clubId, toClubId: coachClubId }]);
@@ -130,10 +151,13 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       // His club has no say: the clause is paid and only the board and the player decide.
       const fee = releaseClauseOf(player, view.tier(player.clubId), state.market.eurBrl);
       const wage = request.wage !== undefined ? Math.max(1, Math.round(request.wage)) : wageDemand(player, squad);
+      const length = signingLength(player, squad, request.years);
+      if (length === "refused") return refuse(state, request, "lengthRefused");
       const refused = boardRefusal(finance, bill, { upFront: fee + 3 * wage, wageChange: wage });
       if (refused) return refuse(state, request, refused);
-      if (!isWilling(view, state, player, coachClubId, wage, random)) return refuse(state, request, "playerUnwilling");
-      return approve(state, request, { playerId: player.id, kind: "releaseClause", toClubId: coachClubId, fee, contract: { wage, until: contractEnd(year + 1, random) } });
+      if (!isWilling(view, state, player, coachClubId, wage / length.premium, random)) return refuse(state, request, "playerUnwilling");
+      const until = length.months === null ? contractEnd(year + 1, random) : contractEndAfter(state.date, length.months);
+      return approve(state, request, { playerId: player.id, kind: "releaseClause", toClubId: coachClubId, fee, contract: { wage, until } });
     }
     case "sell": {
       if (!own || loan) return refuse(state, request, "notAtClub");
@@ -155,14 +179,32 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
     case "renew": {
       if (!own || loan) return refuse(state, request, "notAtClub");
       if (state.market.preContracts[player.id]) return refuse(state, request, "preContractSigned");
-      const years = Math.min(MAX_CONTRACT_YEARS, Math.max(1, Math.round(request.years)));
-      const wage = Math.max(player.wage, goingRate(player.strength, squad));
-      const refused = boardRefusal(finance, bill, { upFront: 0, wageChange: wage - player.wage });
+      const months = contractMonthsOf(request.years);
+      const term = renewalTermsOf(state, player, squad).terms.find((t) => t.months === months);
+      if (!term || term.stance === "refuses") return refuse(state, request, "lengthRefused");
+      const offered = request.wage !== undefined ? Math.max(1, Math.round(request.wage)) : term.wage;
+      // A counter of his that still stands signs at its wage; otherwise he gives a little off his ask on a length he likes.
+      const standing = standingRenewalCounter(state, player.id);
+      const isCounterMet = !!standing && standing.months === months && offered >= standing.wage;
+      const floor = isCounterMet ? offered : Math.round(term.wage * (1 - RENEWAL_GIVE[term.stance]));
+      if (offered < floor) {
+        if (offered < floor * RENEWAL_COUNTER_BAND) return refuse(state, request, "wageTooLow");
+        const counter = { months, wage: term.wage, until: addDays(state.date, COUNTER_DAYS) };
+        return {
+          state: withCoachMarket(state, withRenewalCounter(coachMarketOf(state), player.id, counter)),
+          events: [
+            { type: "requestDecided", request, approved: false, reason: "playerCounter" },
+            { type: "renewalCountered", playerId: player.id, months, wage: term.wage },
+          ],
+        };
+      }
+      const refused = boardRefusal(finance, bill, { upFront: 0, wageChange: offered - player.wage });
       if (refused) return refuse(state, request, refused);
-      if (!isWilling(view, state, player, coachClubId, wage, random)) return refuse(state, request, "playerUnwilling");
-      const until = `${Math.max(year, Number(player.contractUntil.slice(0, 4))) + years}-12-31`;
-      const renewed = { ...state, players: { ...state.players, [player.id]: { ...player, wage, contractUntil: until } } };
-      return approve(renewed, request, null, [{ type: "playerContractRenewed", playerId: player.id, clubId: coachClubId, until, wage }]);
+      if (term.stance === "hard" && !isCounterMet && random() >= HARD_LENGTH_CHANCE) return refuse(state, request, "playerUnwilling");
+      const until = renewedUntil(player, state.date, months);
+      const renewed = { ...state, players: { ...state.players, [player.id]: { ...player, wage: offered, contractUntil: until } } };
+      const settled = standing ? withCoachMarket(renewed, withRenewalCounter(coachMarketOf(renewed), player.id, null)) : renewed;
+      return approve(settled, request, null, [{ type: "playerContractRenewed", playerId: player.id, clubId: coachClubId, until, wage: offered }]);
     }
     case "loanIn": {
       if (own || !state.players[player.id] || loan) return refuse(state, request, "notAvailable");

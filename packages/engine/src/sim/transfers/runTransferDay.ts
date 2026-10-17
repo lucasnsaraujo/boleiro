@@ -31,7 +31,7 @@ function hasCoachBusiness(coach: CoachMarket | undefined, coachClubId: string | 
 
 /** The events that are a coach's own news rather than the market's: his board's answers and his business. */
 const isCoachNews = (event: TransferEvent) =>
-  event.type === "requestDecided" || event.type === "bidReceived" || event.type === "auctionClosed" || event.type === "counterOffered";
+  event.type === "requestDecided" || event.type === "bidReceived" || event.type === "auctionClosed" || event.type === "counterOffered" || event.type === "renewalCountered";
 
 /**
  * The transfer market's day, run at the start of `state.date`: loans and contracts that ended, the
