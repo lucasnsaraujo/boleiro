@@ -21,8 +21,9 @@ const ROLE_ORDER: readonly Role[] = ["goleiro", "lateral", "zagueiro", "meia", "
 // Match ratings follow FotMob's spread per position, where keepers average 7.11 and forwards 6.67
 // (matchRatings), so raw averages would hand every Bola de Ouro to a keeper. guess: the Bola de Ouro,
 // the open places of the team and the Ballon d'Or rank players by their average above their position's.
-// guess: the Brasileirão's "revelação" is 21 or younger, as France Football's Kopa Trophy is for under-21s.
-const YOUNG_AGE = 21;
+// guess: the Brasileirão's "revelação" is under 21 through the season, as France Football's Kopa Trophy
+// is (topendsports.com/sport/soccer/awards/kopa-trophy.htm); the game's ages are the season's.
+const YOUNG_AGE = 20;
 
 // France Football judges the Ballon d'Or on individual performances, team performances and titles,
 // and class (Wikipedia, "Ballon d'Or", 2022 rules). guess, the whole model: a player's strength (one

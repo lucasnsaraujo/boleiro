@@ -73,12 +73,14 @@ describe("the Brasileirão's awards", () => {
     expect(awarded.bolaDeOuro?.playerId).toBe(forward.id);
   });
 
-  it("name the league's top scorer and its best player aged 21 or younger", () => {
+  it("name the league's top scorer and its best player under 21", () => {
     const [scorer] = players;
-    const young = players.filter((p) => p.age <= 21);
+    const young = players.filter((p) => p.age <= 20);
     const [kid] = young;
     if (!scorer || !kid) throw new Error("no players");
-    const awarded = seasonAwards(withSeason({ ...marks, [kid.id]: [20, 20 * 88, 4] }, { [scorer.id]: 23, [kid.id]: 4 }), {});
+    const twentyOne = players.find((p) => p.age === 21);
+    if (!twentyOne) throw new Error("nobody is 21");
+    const awarded = seasonAwards(withSeason({ ...marks, [kid.id]: [20, 20 * 88, 4], [twentyOne.id]: [30, 30 * 95, 0] }, { [scorer.id]: 23, [kid.id]: 4 }), {});
     expect(awarded.topScorer).toMatchObject({ playerId: scorer.id, goals: 23 });
     expect(awarded.bestYoung).toMatchObject({ playerId: kid.id, goals: 4, assists: 4, average: 8.8 });
   });
