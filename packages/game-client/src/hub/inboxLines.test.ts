@@ -231,6 +231,12 @@ describe("the squad", () => {
     expect(lines({ ...move, kind: "transfer", fromClubId: "vitoria-ba", toClubId: "juazeirense-ba" })).toEqual([]);
   });
 
+  test("a sale or a promotion the assistant made on his own says he did it", () => {
+    const sold: DayEvent = { type: "playerMoved", kind: "transfer", playerId: own.id, name: own.name, fromClubId: "bahia-ba", toClubId: "vitoria-ba", fee: 3_000_000, byAssistant: true };
+    expect(line(sold)).toMatchObject({ text: `O auxiliar vendeu ${own.name}, fora dos planos, por R$ 3 mi (Vitória)`, tone: "neutral" });
+    expect(line({ type: "youthPromoted", playerId: own.id, clubId: "bahia-ba", byAssistant: true })?.text).toBe(`O auxiliar subiu ${own.name} da base`);
+  });
+
   test("a player entering his contract's last six months is a warning that other clubs may now sign him for free", () => {
     const ending = (until: string) => ({ ...game, players: { ...game.players, [own.id]: { ...own, contractUntil: until } } });
     const today = { ...ending("2026-07-23"), date: "2026-01-20" };

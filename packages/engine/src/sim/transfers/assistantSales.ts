@@ -26,7 +26,7 @@ export function assistantSales(state: GameState): { state: GameState; events: Pl
     const sold = sellToBidder(next, bid, bid.fee);
     if (!sold) continue;
     next = withCoachMarket(sold.state, withoutPlayer(coachMarketOf(sold.state), bid.playerId));
-    events.push(sold.event);
+    events.push({ ...sold.event, byAssistant: true });
   }
   return { state: next, events };
 }

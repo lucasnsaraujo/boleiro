@@ -67,7 +67,7 @@ describe("the youth duty", () => {
 
   it("switched on, promotes a kid ready for the squad on a market day", () => {
     const done = assistantPromotions(withDuty(ready, "youth", true));
-    expect(done.events).toContainEqual({ type: "youthPromoted", playerId: prospect.id, clubId: COACH });
+    expect(done.events).toContainEqual({ type: "youthPromoted", playerId: prospect.id, clubId: COACH, byAssistant: true });
     expect(done.state.players[prospect.id]?.clubId).toBe(COACH);
   });
 
@@ -92,7 +92,7 @@ describe("the selling duty", () => {
   it("switched on, takes an offer for a player outside the plans and leaves the offer for a key player to the coach", () => {
     const day = runTransferDay(withDuty(offered(start), "selling", true), []);
     expect(day.state.players[surplus.id]?.clubId).toBe("palmeiras-sp");
-    expect(day.events).toContainEqual(expect.objectContaining({ type: "playerMoved", playerId: surplus.id, toClubId: "palmeiras-sp", fee: 1_000_000 }));
+    expect(day.events).toContainEqual(expect.objectContaining({ type: "playerMoved", playerId: surplus.id, toClubId: "palmeiras-sp", fee: 1_000_000, byAssistant: true }));
     expect(coachMarketOf(day.state).bids[star.id]).toBeDefined();
   });
 

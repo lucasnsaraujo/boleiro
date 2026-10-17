@@ -18,7 +18,7 @@ function promoteReady(state: GameState): { state: GameState; events: YouthPromot
     const promoted = promoteProspect(next, kid.id);
     if (promoted.refusal) continue;
     next = promoted.state;
-    events.push({ type: "youthPromoted", playerId: kid.id, clubId });
+    events.push({ type: "youthPromoted", playerId: kid.id, clubId, byAssistant: true });
   }
   return { state: next, events };
 }

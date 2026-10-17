@@ -181,7 +181,8 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
       case "recordBroken":
         return isOurs(event.clubId) ? [recordText(event), "good"] : null;
       case "youthPromoted":
-        return isOurs(event.clubId) ? [`${playerName(event.playerId)} sobe da base`, "neutral"] : null;
+        if (!isOurs(event.clubId)) return null;
+        return [event.byAssistant ? `O auxiliar subiu ${playerName(event.playerId)} da base` : `${playerName(event.playerId)} sobe da base`, "neutral"];
       case "prospectReleased":
         return isOurs(event.clubId) ? [`${event.name} fez 21 anos e deixou a base, dispensado`, "neutral"] : null;
       case "refereeCall": {
@@ -270,6 +271,7 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
           return [`${name} contratado por ${formatMoney(fee)}`, "good"];
         }
         if (!isOurs(fromClubId)) return null;
+        if (event.byAssistant) return [`O auxiliar vendeu ${name}, fora dos planos, por ${formatMoney(fee)} (${toClubId ? clubName(toClubId) : "exterior"})`, "neutral"];
         if (kind === "abroad") return [`${name} vendido ao exterior por ${formatMoney(fee)}`, "neutral"];
         if (kind === "released") return [`${name} deixa o clube no fim do contrato`, "neutral"];
         const to = toClubId ? clubName(toClubId) : "exterior";
