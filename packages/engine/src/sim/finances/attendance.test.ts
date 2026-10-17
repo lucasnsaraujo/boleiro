@@ -48,6 +48,15 @@ describe("the crowd at a home game", () => {
     expect(attendance(twin, finance, HOST, rival)).toBeGreaterThan(attendance(twin, finance, HOST, stranger.id));
   });
 
+  it("grows more for a bigger derby: the Derby Paulista outdraws Palmeiras' Clássico da Saudade with Santos", () => {
+    const palmeiras = present(roomy.clubs["palmeiras-sp"], "palmeiras-sp");
+    const corinthians = present(roomy.clubs["corinthians-sp"], "corinthians-sp");
+    const santos = present(roomy.clubs["santos-sp"], "santos-sp");
+    const twins: GameState = { ...roomy, clubs: { ...roomy.clubs, "palmeiras-sp": { ...palmeiras, capacity: 10_000_000 }, "santos-sp": { ...santos, fanbase: corinthians.fanbase } } };
+    const home = present(twins.finances["palmeiras-sp"], "palmeiras-sp finances");
+    expect(attendance(twins, home, "palmeiras-sp", "corinthians-sp")).toBeGreaterThan(attendance(twins, home, "palmeiras-sp", "santos-sp"));
+  });
+
   it("grows for a knockout tie and more for a final", () => {
     const cup = Object.values(roomy.competitions).find((c) => c.kind === "cup");
     if (!cup) throw new Error("no cup in the game");

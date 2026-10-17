@@ -5,6 +5,7 @@ import { tierOf } from "../finances/tierOf.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { clubMood, type ClubMood } from "./clubMood.js";
 import { DERBY_TROUBLE_CHANCE, escalateSupporters, type SupporterEvent } from "./escalateSupporters.js";
+import { rivalryOf } from "../rivalries/rivalryOf.js";
 import { rivalsOf } from "./rivalsOf.js";
 
 // guess: the league average points per game when a quarter of games are drawn, as in developPlayers.
@@ -15,12 +16,15 @@ const MEMORY = 0.9;
 // guess: mood points per league point above the average, for fans and for the squad.
 const FAN_SWING = 4;
 const SQUAD_SWING = 3;
-// guess: a derby counts double for the fans.
-const DERBY_WEIGHT = 2;
+// guess: a derby weighs a quarter more for the fans per level of intensity: double for a state's main
+// derby (level 4), two and a quarter times for one that stops the country.
+const DERBY_WEIGHT_PER_LEVEL = 0.25;
 // Derby trouble draws from a stream of its own per fixture and loser, so the day's other draws stay as they were.
 const DERBY_TROUBLE_SALT = 0xd3e2b7;
-// guess: fan mood points when a rival wins (lost) or loses (gained) a game against someone else.
+// guess: fan mood points when a state's main rival (intensity 4) wins (lost) or loses (gained) a game
+// against someone else, in proportion for bigger and smaller derbies.
 const RIVAL_RESULT = 1;
+const RIVAL_RESULT_INTENSITY = 4;
 // guess: monthly fan mood points per 100% the ticket price sits above the division's average,
 // capped either way.
 const PRICE_SWING = 3;
@@ -65,7 +69,7 @@ export function reactToDay(
     change(fixture.homeId, (mood) => ({ closedDoorGames: Math.max(0, mood.closedDoorGames - 1) }));
     for (const [id, opponent] of [[fixture.homeId, fixture.awayId], [fixture.awayId, fixture.homeId]] as const) {
       const above = pointsOf(fixture, id) - AVERAGE_POINTS;
-      const derby = rivals.get(id)?.has(opponent) ? DERBY_WEIGHT : 1;
+      const derby = 1 + DERBY_WEIGHT_PER_LEVEL * (rivals.get(id)?.has(opponent) ? (rivalryOf(id, opponent)?.intensity ?? 0) : 0);
       if (pointsOf(fixture, id) === 0) {
         lost.add(id);
         const trouble = derby > 1 ? keyedStream(state.seed ^ DERBY_TROUBLE_SALT, `${fixture.id}:${id}`) : null;
@@ -77,7 +81,8 @@ export function reactToDay(
       }));
       const swing = Math.sign(above) * (pointsOf(fixture, id) === 1 ? 0 : RIVAL_RESULT);
       for (const rival of rivals.get(id) ?? []) {
-        if (rival !== opponent && swing) change(rival, (mood) => ({ fans: clamp(mood.fans - swing) }));
+        const weight = (rivalryOf(id, rival)?.intensity ?? 0) / RIVAL_RESULT_INTENSITY;
+        if (rival !== opponent && swing) change(rival, (mood) => ({ fans: clamp(mood.fans - swing * weight) }));
       }
     }
   }
