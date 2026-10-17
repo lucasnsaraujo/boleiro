@@ -22,7 +22,7 @@ async function kickOffBeforeOwnGoal(page: Page): Promise<number> {
     async ({ maxSeeds, earliest, latest }) => {
       const engine = window.boleiroEngine;
       if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
-      for (let seed = 18; seed <= maxSeeds; seed++) {
+      for (let seed = 1; seed <= maxSeeds; seed++) {
         await engine.apply({ type: "newGame", seed, choices: { coachClubId: "bahia-ba" } });
         await engine.apply({ type: "playToMatchDay" });
         const round = await engine.apply({ type: "startRound" });
