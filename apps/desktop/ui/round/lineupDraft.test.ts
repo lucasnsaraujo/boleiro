@@ -65,6 +65,11 @@ describe("before kick-off", () => {
     expect(lineupProblem([...eleven.slice(0, 10), "x2"], squad)).toBe("Jogador x2 está suspenso.");
   });
 
+  test("a loanee can't kick off against the club that owns him, and is told why", () => {
+    const loanee = player("x3", "ATT", "facesOwner");
+    expect(lineupProblem([...eleven.slice(0, 10), "x3"], [...squad, loanee])).toBe("Jogador x3 não pode enfrentar o clube dono do passe.");
+  });
+
   test("nobody comes in until a starter is picked to go off", () => {
     expect(canBringOn(openSheet(eleven, tactics), preMatch, bench[3] as SquadPlayer)).toBe(false);
   });
