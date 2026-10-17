@@ -8,6 +8,7 @@ import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { eggBookOf } from "./eggBook.js";
 import type { DayEgg, EggType, MatchEgg } from "./eggType.js";
+import { EGG_BANK } from "./eggBank.js";
 import { findCoachEgg, findEggs, matchEggNotes } from "./findEggs.js";
 
 const CLUB = "flamengo-rj";
@@ -59,6 +60,18 @@ describe("finding eggs", () => {
     const found = run([aboutTheOpponent]);
     expect(found.events).toEqual([]);
     expect(eggBookOf(found.state).log).toEqual([]);
+  });
+
+  it.each([
+    ["april-fools", "04-01"],
+    ["secret-santa", "12-25"],
+  ])("tells the %s joke once in a club's career", (id, day) => {
+    const joke = EGG_BANK.find((type) => type.id === id);
+    if (joke?.on !== "day") throw new Error(`no day egg ${id}`);
+    const always: DayEgg = { ...joke, find: (scene) => joke.find({ ...scene, random: () => 0 }) };
+    const first = findEggs(start, start, `2026-${day}`, [], [], [always]);
+    expect(first.events.map((e) => e.eggId)).toEqual([id]);
+    expect(findEggs(first.state, first.state, `2027-${day}`, [], [], [always]).events).toEqual([]);
   });
 
   it("names a kid of the academy after the coach the game knows by name", () => {

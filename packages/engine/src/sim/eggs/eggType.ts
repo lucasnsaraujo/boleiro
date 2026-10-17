@@ -69,8 +69,8 @@ type EggBase = {
   rarity: EggRarity;
   look: EggLook;
   texts: readonly EggText[];
-  /** Found once per player in a career, not each time it happens. */
-  once?: "player";
+  /** Found once per player, or once per club, in a career, not each time it happens. */
+  once?: "player" | "club";
 };
 
 /** An egg a match lays: `note` is the line the match page tapes beside it. */

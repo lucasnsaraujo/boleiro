@@ -54,7 +54,7 @@ function record(state: GameState, date: IsoDate, finds: readonly Found[], humans
   const events: EggFound[] = [];
   let prospects = state.youth?.prospects;
   for (const { egg, hit, fixture } of finds) {
-    const isKnown = log.some((find) => find.eggId === egg.id && find.clubId === hit.clubId && egg.once === "player" && find.playerId === hit.playerId);
+    const isKnown = log.some((find) => find.eggId === egg.id && find.clubId === hit.clubId && (egg.once === "club" || (egg.once === "player" && find.playerId === hit.playerId)));
     if (isKnown) continue;
     const opponentId = fixture ? (fixture.homeId === hit.clubId ? fixture.awayId : fixture.homeId) : "";
     const slots = slotsOf(state, hit, fixture, humans);

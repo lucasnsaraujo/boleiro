@@ -64,7 +64,8 @@ const dayOf = (tale: MatchTale) => tale.fixture.date.slice(5);
 
 // guess: about one season in six, the trials bring a kid named after the coach, and one in six kids named after the cousins.
 const NAMESAKE_CHANCE = 1 / 6;
-// guess: the paper plays its April Fools' joke one year in three, and the squad does its secret Santa every other Christmas.
+// guess: the paper plays its April Fools' joke one year in three, and the squad does its secret Santa every other Christmas,
+// but each is told once in a club's career, as a joke told twice is no joke.
 const APRIL_FOOLS_CHANCE = 1 / 3;
 const SECRET_SANTA_CHANCE = 1 / 2;
 // The goalless and same-score runs the paper notices.
@@ -639,6 +640,7 @@ export const EGG_BANK: readonly EggType[] = [
     title: "Primeiro de abril",
     rarity: "rare",
     look: "clipping",
+    once: "club",
     find: (scene) => (scene.date.endsWith("-04-01") && scene.random() < APRIL_FOOLS_CHANCE ? { clubId: scene.clubId } : null),
     texts: [{ headline: "Exclusivo: {club} acerta com o melhor jogador do mundo", body: "Contrato de dez anos, salário pago em figurinhas. Atualização das 18h: a redação lembra que hoje é 1º de abril." }],
   },
@@ -659,6 +661,7 @@ export const EGG_BANK: readonly EggType[] = [
     title: "Amigo secreto",
     rarity: "rare",
     look: "clipping",
+    once: "club",
     find: (scene) => {
       if (!scene.date.endsWith("-12-25") || scene.random() >= SECRET_SANTA_CHANCE) return null;
       const squad = squadOf(scene);
