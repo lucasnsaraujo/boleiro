@@ -224,6 +224,7 @@ export const EGG_BANK: readonly EggType[] = [
     title: "Empate de oito gols",
     rarity: "veryRare",
     look: "clipping",
+    isAboutBothSides: true,
     find: (tale) => {
       const { homeGoals, awayGoals } = tale.fixture.result;
       return homeGoals === awayGoals && homeGoals >= 4 ? [{ clubId: tale.fixture.homeId }] : [];
@@ -400,6 +401,7 @@ export const EGG_BANK: readonly EggType[] = [
     title: "Jogo de cinco vermelhos",
     rarity: "legendary",
     look: "clipping",
+    isAboutBothSides: true,
     find: (tale) => {
       const reds = count(tale.events, (e) => e.type === "card" && e.card !== "yellow");
       return reds >= 5 ? [{ clubId: tale.fixture.homeId, slots: { count: String(reds) } }] : [];

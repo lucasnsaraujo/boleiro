@@ -73,8 +73,11 @@ type EggBase = {
   once?: "player" | "club";
 };
 
-/** An egg a match lays: `note` is the line the match page tapes beside it. */
-export type MatchEgg = EggBase & { on: "match"; note: string; find: (tale: MatchTale) => EggHit[] };
+/**
+ * An egg a match lays: `note` is the line the match page tapes beside it. A feat of the whole match,
+ * not of one side (`isAboutBothSides`), has its hit name the home side, and a human club on either side finds it.
+ */
+export type MatchEgg = EggBase & { on: "match"; note: string; find: (tale: MatchTale) => EggHit[]; isAboutBothSides?: true };
 /** An egg of the calendar, the academy or the season, looked for at the end of each day. */
 export type DayEgg = EggBase & { on: "day"; find: (scene: DayScene) => EggHit | null };
 /** An egg the coach finds on the screen (a word typed), told to the game as a command. */

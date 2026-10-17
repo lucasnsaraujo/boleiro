@@ -62,6 +62,15 @@ describe("finding eggs", () => {
     expect(eggBookOf(found.state).log).toEqual([]);
   });
 
+  it.each(["eight-goal-draw", "five-reds"])("finds %s, a feat of the whole match, for a human club on either side", (id) => {
+    const whole = EGG_BANK.find((type) => type.id === id);
+    if (whole?.on !== "match") throw new Error(`no match egg ${id}`);
+    const away = { ...fixture("away", RIVAL, CLUB), result: { homeGoals: 4, awayGoals: 4 } };
+    const reds = ["r1", "r2", "r3", "r4", "r5"].map((playerId, i) => ({ type: "card" as const, minute: 20 + i, clubId: i % 2 ? RIVAL : CLUB, playerId, card: "red" as const }));
+    const found = findEggs({ ...start, date: "2026-05-11" }, start, DATE, [{ type: "matchPlayed", fixture: away }], [{ ...live(away), events: reds }], [whole]);
+    expect(found.events.map((e) => [e.eggId, e.clubId])).toEqual([[id, CLUB]]);
+  });
+
   it.each([
     ["april-fools", "04-01"],
     ["secret-santa", "12-25"],

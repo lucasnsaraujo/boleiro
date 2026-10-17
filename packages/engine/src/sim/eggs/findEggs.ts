@@ -29,8 +29,11 @@ function humansOf(state: GameState): Human[] {
 type Found = { egg: EggType; hit: EggHit; fixture?: Fixture & { result: MatchResult } };
 type Played = Fixture & { result: MatchResult };
 
-/** A match egg's hits a human coach's club finds: those about the club itself, not about the opponent it played. */
-const humanHitsOf = (egg: MatchEgg, tale: MatchTale, humanIds: ReadonlySet<string>): EggHit[] => egg.find(tale).filter((hit) => humanIds.has(hit.clubId));
+/** A match egg's hits a human coach's club finds: those about the club itself, or about the whole match, not about the opponent it played. */
+function humanHitsOf(egg: MatchEgg, tale: MatchTale, humanIds: ReadonlySet<string>): EggHit[] {
+  const hits = egg.find(tale).flatMap((hit) => (egg.isAboutBothSides ? [tale.fixture.homeId, tale.fixture.awayId].map((clubId) => ({ ...hit, clubId })) : [hit]));
+  return hits.filter((hit) => humanIds.has(hit.clubId));
+}
 
 /** The names a find's texts take: its club, the opponent, the club's coach, the score and goals of its match, and the egg's own. */
 function slotsOf(state: GameState, hit: EggHit, fixture: Played | undefined, humans: readonly Human[]): Record<string, string> {
