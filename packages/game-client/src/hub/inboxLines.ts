@@ -18,6 +18,7 @@ import { formatMoney } from "../format/formatMoney.js";
 import { boardGoal } from "../screens/clubChoices.js";
 import { copinhaRoundName } from "../format/copinhaRoundName.js";
 import { SLOT_NAMES } from "../sponsors/sponsorsPage.js";
+import { clubArticle, withArticle, type Preposition } from "@boleiro/data/articles";
 
 export type DayEvent = AdvanceResult["events"][number];
 export type InboxTone = "good" | "bad" | "neutral";
@@ -121,6 +122,7 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
   // On the day he changes clubs, both the club he left and the one he joined are his news.
   const isOurs = (clubId: string | null) => clubId !== null && (clubId === coachClubId || clubId === after.coachClubId);
   const clubName = (clubId: string) => after.clubs[clubId]?.shortName ?? before.clubs[clubId]?.shortName ?? guestClubOf(after, clubId)?.name ?? clubId;
+  const theClub = (clubId: string, preposition?: Preposition) => withArticle(clubName(clubId), clubArticle(clubId), preposition);
   const playerName = (playerId: string) =>
     after.players[playerId]?.name ?? before.players[playerId]?.name ?? after.market.freeAgents[playerId]?.name ?? "Um jogador";
   const competition = (id: string) => before.competitions[id] ?? after.competitions[id];
@@ -204,7 +206,7 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         if (ours.isChampion) return [`${clubName(coachClubId)} campeão da Copinha`, "good"];
         const last = ours.matches.at(-1);
         const winner = last && (last.penaltyWinnerId ?? (last.homeGoals > last.awayGoals ? last.homeId : last.awayId));
-        const by = winner && winner !== coachClubId ? ` pelo ${clubName(winner)}` : "";
+        const by = winner && winner !== coachClubId ? ` ${theClub(winner, "por")}` : "";
         return [`Copinha: base eliminada na ${copinhaRoundName(ours.lastRoundSize)}${by}`, "bad"];
       }
       case "prizePaid": {
@@ -223,7 +225,7 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
       case "friendlyCalledOff": {
         const { homeId, awayId } = event.friendly;
         if (!(isOurs(homeId) || isOurs(awayId))) return null;
-        const against = `Amistoso contra o ${clubName(isOurs(homeId) ? awayId : homeId)} cancelado`;
+        const against = `Amistoso contra ${theClub(isOurs(homeId) ? awayId : homeId)} cancelado`;
         if (event.reason === "fixture") return [`${against}: a data virou jogo oficial`, "neutral"];
         if (event.reason === "cash") return [`${against}: o mandante ficou sem caixa para o cachê`, "bad"];
         return [against, "neutral"];
@@ -302,7 +304,7 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         if (!isOurs(event.clubId) || event.accepted) return null;
         return [`Proposta da Europa por ${playerName(event.playerId)} recusada: ${formatMoney(event.fee)}`, "neutral"];
       case "bidReceived": {
-        const buyer = event.buyerId ? `do ${clubName(event.buyerId)}` : "da Europa";
+        const buyer = event.buyerId ? theClub(event.buyerId, "de") : "da Europa";
         return [`Proposta ${buyer} por ${playerName(event.playerId)}: ${formatMoney(event.fee)}. Responda no mercado`, "neutral"];
       }
       case "auctionClosed":
@@ -312,7 +314,8 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
       case "eventHappened":
         return !event.asksCoach && isOurs(event.clubId) ? [event.headline, "neutral"] : null;
       case "eventAnswered":
-        return isOurs(event.clubId) ? [event.byAssistant ? `${event.topic}: o auxiliar respondeu “${event.answer.replace(/^“|”$/g, "")}”` : event.headline, "neutral"] : null;
+        // A press conference reaches the inbox once, when its last question is answered.
+        return isOurs(event.clubId) && !event.questionsLeft ? [event.byAssistant ? `${event.topic}: o auxiliar respondeu “${event.answer.replace(/^“|”$/g, "")}”` : event.headline, "neutral"] : null;
       case "eggFound":
         return isOurs(event.clubId) ? [`Raridade: ${event.headline}`, "good"] : null;
       case "sponsorOffers":

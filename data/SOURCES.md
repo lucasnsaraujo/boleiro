@@ -78,6 +78,10 @@ Intensity, 1 to 5:
 
 Rivalry rules that read it (`packages/engine/src/sim/rivalries/`), all `guess`: a coach is a club's idol at 5 points (1 a year in charge, 1.5 a title, 0.25 a derby won); from intensity 3 an idol coach gets no offer or job from the rival, which won't sell him players (a release clause or a pre-contract still works, the club has no say), and the rival's crowd boos him; a player who is his club's idol (150 games or 40 goals, as the history counts idols) won't join its rival from intensity 3, by any route: the coach's requests, offers for the coach's players and AI clubs' deals. Coaches' rivalries: 1 point a meeting, 3 a final, 2 a press provocation; from 6 points the papers call their meetings a reencontro, and four wins without a defeat make a freguesia.
 
+## Grammatical articles (`packages/data/src/articles.ts`)
+
+Whether a club's or a ground's name takes "o" or "a" ("do Flamengo", "da Chapecoense", "na Arena Condá"). Brazil's clubs: the usage in each club's pt.wikipedia article on 2026-10-17, "da/na/a X" counted against "do/no/o X" before its short name (Ferroviária 149 to 0, Chapecoense 130 to 0, Portuguesa 118 to 0, Anapolina 55 to 0, Inter de Limeira 15 to 0; Aparecidense, 3 to 6, stays "o"; counts of 1 or 2 are left at "o"), plus Ponte Preta, Rio's Portuguesa, Tuna Luso and Desportiva Ferroviária, whose articles the search missed and which are named for a feminine noun. Clubs abroad: the Italian clubs with a feminine name (Juventus, Roma, Lazio, Fiorentina, Atalanta, Udinese, Sampdoria, Cremonese, Carrarese, Juve Stabia, Inter) and the clubs named for a university or a league (LDU, the Universidades), as Brazilian papers write them (`guess`). Every other club is "o". Grounds: "a" when the name has Arena, Vila, Ilha, Fonte, Toca, Casa, Rua, Baixada, Ressacada, Fazendinha or Bombonera in it, else "o" (`guess`).
+
 ## Historical results
 
 | File | Source | Rebuilt by |

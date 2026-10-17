@@ -13,7 +13,8 @@ import { incidentHandling, type IncidentHandling } from "@boleiro/engine/sim/liv
 import type { CoachMatch, LiveDay } from "@boleiro/engine/sim/live/liveDay";
 import { playerStatsAt, type MatchPlay, type PlayerStats } from "@boleiro/engine/sim/live/matchPlay";
 import { matchRatings, type PlayerRating } from "@boleiro/engine/sim/live/matchRatings";
-import type { MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
+import { HALF_TIME, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
+import { assistantTalk, isDerbyFor, type TalkEffect, type TalkMoment, type TalkTone } from "@boleiro/engine/sim/live/teamTalk";
 import { clubMood } from "@boleiro/engine/sim/morale/clubMood";
 import { shootoutKickers } from "@boleiro/engine/sim/settleShootout";
 import { fixtureLabel } from "../format/competitionName.js";
@@ -52,6 +53,8 @@ export type CoachSide = {
   opponent: OpponentRoster;
   /** Each squad player's strength today as the coach's assistant reads it, off by up to his level's error; his substitutions go by it. */
   assistantReads?: Record<string, number>;
+  /** The half-time talk: where the side stands at the break, the assistant's tone for it, and the talk the coach gave with what it did. */
+  halfTimeTalk: { moment: TalkMoment; suggested: TalkTone; given: (TalkEffect & { tone: TalkTone }) | null };
 };
 
 /** The opponent of a coach's match: its starters and bench at today's strength, its formation, its coach's tactics when he is human, and its last five results before today. */
@@ -122,6 +125,8 @@ function sideOf(live: LiveDay, open: CoachMatch, clubId: string, fixture: Fixtur
     rivalTactics: (isOwner ? open.rivalTactics : open.tactics) ?? null,
     form: recentResultsOf(state.fixtures, opponentId),
   };
+  const goalsAtBreak = (isOwn: boolean) => events.filter((e) => e.type === "goal" && e.minute <= HALF_TIME && (e.clubId === clubId) === isOwn).length;
+  const talkMoment: TalkMoment = { lead: goalsAtBreak(true) - goalsAtBreak(false), morale: clubMood(state, clubId).squad, isDerby: isDerbyFor(state, fixture, clubId) };
   const order = tactics.kickerOrder;
   const shootout = shootoutKickers({ clubId, onPitch, morale: clubMood(state, clubId).squad, ...(order ? { order } : {}) }, (p) => open.strengths[p.id] ?? p.strength);
   const squad = squadOf(state, clubId, fixture, (p) => open.strengths[p.id] ?? p.strength);
@@ -139,6 +144,7 @@ function sideOf(live: LiveDay, open: CoachMatch, clubId: string, fixture: Fixtur
     incidentHandling: incidentHandling(state, clubId),
     shootout: { kickers: shootout.kickers.map((p) => p.id), isOverruled: shootout.isOverruled },
     opponent,
+    halfTimeTalk: { moment: talkMoment, suggested: assistantTalk(talkMoment), given: open.halfTimeTalks?.[clubId] ?? null },
   };
 }
 

@@ -7,6 +7,7 @@ import { Crest } from "../clubs/Crest.js";
 import { StadiumBowl } from "../stadium/StadiumBowl.js";
 import { STADIUM_KEYS, stadiumView, type Forecast, type StadiumState, type StadiumView } from "../stadium/stadiumView.js";
 import "./stadium.css";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 const seats = (n: number) => n.toLocaleString("pt-BR");
 
@@ -193,7 +194,7 @@ function Header({ view }: { view: StadiumView }) {
         <h1 id="std-title">{club.stadium}</h1>
         <p>
           <b>{seats(club.capacity)} lugares</b>
-          {sharedWith.length > 0 && ` · dividido com ${sharedWith.map((other) => `o ${other.shortName}`).join(" e ")}`}
+          {sharedWith.length > 0 && ` · dividido com ${sharedWith.map((other) => withArticle(other.shortName, clubArticle(other.id))).join(" e ")}`}
         </p>
       </div>
       {next ? (

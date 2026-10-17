@@ -7,6 +7,7 @@ import { Crest } from "../clubs/Crest.js";
 import { POSITION_BADGES, POSITION_NAMES } from "../format/playerLabels.js";
 import { AGE_FILTERS, isInAgeGroup, youthView, YOUTH_KEYS, type AgeFilter, type CopinhaNote, type KidDetail, type KidRow, type YouthState, type YouthView } from "../youth/youthView.js";
 import "./youth.css";
+import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 const FILTER_LABELS: Record<AgeFilter, string> = { all: "Todos", u17: "Sub-17", u20: "Sub-20" };
 const REFUSALS: Record<NonNullable<ProspectAnswer["refusal"]>, string> = {
@@ -243,7 +244,7 @@ export function Youth() {
       if (answer.refusal) setMessage(`Não deu: ${REFUSALS[answer.refusal]}.`);
       else if (kind === "promote") setMessage(`${kid.name} subiu ao profissional.`);
       else if (kind === "release") setMessage(`${kid.name} foi dispensado da base.`);
-      else if (answer.sale) setMessage(`${kid.name} vendido ao ${state?.clubs[answer.sale.buyerId]?.shortName ?? answer.sale.buyerId} por ${formatMoney(answer.sale.fee)}.`);
+      else if (answer.sale) setMessage(`${kid.name} vendido ${withArticle(state?.clubs[answer.sale.buyerId]?.shortName ?? answer.sale.buyerId, clubArticle(answer.sale.buyerId), "a")} por ${formatMoney(answer.sale.fee)}.`);
       await reload();
     } catch (failure) {
       setMessage(failure instanceof Error ? failure.message : String(failure));

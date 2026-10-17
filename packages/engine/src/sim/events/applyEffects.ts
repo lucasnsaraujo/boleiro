@@ -1,4 +1,5 @@
 import { withReplacedPlayers } from "../players/squadsByClub.js";
+import { releaseAssistantAt } from "../coach/assistant.js";
 import { addDays } from "../dates.js";
 import { bookMoney } from "../finances/bookMoney.js";
 import type { GameState, IsoDate } from "../gameState.js";
@@ -14,7 +15,7 @@ const PRESSURE_RANGE = { min: -1, max: 2 };
 
 const meter = (value: number) => Math.min(100, Math.max(0, value));
 
-/** The game after an event's effects land on `clubId`: its mood, board, cash, a player out, the rivalry's heat and, for a provocation, a clash with the rival's coach. */
+/** The game after an event's effects land on `clubId`: its mood, board, cash, a player out, the coach's hired assistant gone, the rivalry's heat and, for a provocation, a clash with the rival's coach. */
 export function applyEffects(state: GameState, clubId: string, cast: Cast, effects: Effects, date: IsoDate): GameState {
   let next = state;
   if (effects.morale || effects.fans) {
@@ -38,6 +39,7 @@ export function applyEffects(state: GameState, clubId: string, cast: Cast, effec
       next = { ...next, players: withReplacedPlayers(next.players, [{ ...player, condition: { ...player.condition, injuredUntil: until } }]) };
     }
   }
+  if (effects.releasesAssistant) next = releaseAssistantAt(next, clubId);
   if (effects.rivalry && cast.rivalId) {
     const memory = eventMemoryOf(next);
     const key = rivalryKey(clubId, cast.rivalId);

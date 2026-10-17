@@ -2,6 +2,7 @@ import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
 import type { MatchView, PageEvent } from "@boleiro/game-client/matchPage/matchPageAt";
 import type { MatchPage } from "@boleiro/game-client/matchPage/matchPageOf";
 import type { Side } from "@boleiro/game-client/round/liveRoundOf";
+import { stadiumArticle, withArticle } from "@boleiro/data/articles";
 
 const COUNT_WORDS: Record<number, string> = { 2: "dois", 3: "três", 4: "quatro", 5: "cinco", 6: "seis" };
 const DECIDES: Partial<Record<GoalKind, string>> = { header: " de cabeça", penalty: " de pênalti", freeKick: " de falta", olympic: " de gol olímpico" };
@@ -20,7 +21,7 @@ function winnerOf(page: MatchPage, view: MatchView): Side | null {
 }
 
 /** "no Maracanã", "na Arena da Baixada", "na Neo Química Arena", "na Vila Belmiro". */
-const atStadium = (stadium: string) => `${/^(arena|vila)\b|\barena$/i.test(stadium) ? "na" : "no"} ${stadium}`;
+const atStadium = (stadium: string) => withArticle(stadium, stadiumArticle(stadium), "em");
 
 /** The goal after which the winner led for good: the one that won the match. */
 function winningGoal(view: MatchView, winner: Side): PageEvent | undefined {

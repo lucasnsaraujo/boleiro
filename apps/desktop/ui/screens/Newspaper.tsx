@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
+import type { EventTopic } from "@boleiro/engine/sim/events/eventMemory";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import { formatBarDate, formatGameDate, formatMatchDate } from "@boleiro/game-client/format/formatGameDate";
 import type { Edition, EditionTitle, Story } from "@boleiro/game-client/newspaper/roundNewspaper";
@@ -17,6 +18,35 @@ const ARCHIVE = 7;
 // The side column fits four stories under the masthead; the rest run in the lead's columns.
 const SIDE_STORIES = 4;
 const KICKER_CLASSES: Record<Story["kind"], string> = { match: "", event: "v", signing: "m", sacking: "d", upset: "z", rivalry: "q", var: "var", controversy: "", award: "d", record: "z", egg: "egg" };
+// Each section of the round's events prints its own mark beside its name, as VAR's does.
+const SECTION_MARKS: Record<EventTopic, { icon: string; className: string }> = {
+  players: { icon: "chat-circle-text", className: "v" },
+  squad: { icon: "users-three", className: "v" },
+  board: { icon: "briefcase", className: "d" },
+  fans: { icon: "megaphone", className: "" },
+  press: { icon: "microphone", className: "v" },
+  staff: { icon: "users-four", className: "v" },
+  rivals: { icon: "flag-banner", className: "" },
+  sponsors: { icon: "handshake", className: "m" },
+  life: { icon: "smiley", className: "z" },
+  discipline: { icon: "gavel", className: "d" },
+  health: { icon: "first-aid", className: "" },
+};
+// The dateline under the masthead names the edition's first sections.
+const DATELINE_SECTIONS = 3;
+
+/** A story's kicker over its headline: the section's mark and name. */
+function Kicker({ story }: { story: Story }) {
+  const mark = story.kind === "event" && story.topic ? SECTION_MARKS[story.topic] : null;
+  return (
+    <span className={mark ? `paper-kick section ${mark.className}` : `paper-kick ${KICKER_CLASSES[story.kind]}`}>
+      {story.kind === "var" && <i className="ph-fill ph-monitor-play" aria-hidden="true" />}
+      {story.kind === "egg" && <i className="ph-fill ph-star" aria-hidden="true" />}
+      {mark && <i className={`ph-fill ph-${mark.icon}`} aria-hidden="true" />}
+      {story.kicker}
+    </span>
+  );
+}
 
 /** The round's newspaper: the edition of the coach's last match day, or of the day picked in the archive. */
 export function Newspaper() {
@@ -114,7 +144,7 @@ function Sheet({ state, edition, number }: { state: PaperState; edition: Edition
         </div>
       </header>
       <div className="paper-dl">
-        <span>{[edition.results.title, "Mercado", "Bastidores"].filter(Boolean).join(" · ")}</span>
+        <span>{[...new Set([edition.results.title, ...edition.side.map((story) => story.kicker)])].filter(Boolean).slice(0, DATELINE_SECTIONS + 1).join(" · ")}</span>
         {next && (
           <span>
             {capitalised(formatMatchDate(next.date).split(",")[0] ?? "")} tem {name(next.homeId)} × {name(next.awayId)}
@@ -173,11 +203,7 @@ function Sheet({ state, edition, number }: { state: PaperState; edition: Edition
           {sideStories.length === 0 && <p className="paper-quiet">Dia calmo no futebol brasileiro.</p>}
           {sideStories.map((story) => (
             <div key={`${story.date}${story.kind}${story.headline}`} className={story.kind === "rivalry" ? "paper-st quote" : story.kind === "egg" ? "paper-st egg" : "paper-st"}>
-              <span className={`paper-kick ${KICKER_CLASSES[story.kind]}`}>
-                {story.kind === "var" && <i className="ph-fill ph-monitor-play" aria-hidden="true" />}
-                {story.kind === "egg" && <i className="ph-fill ph-star" aria-hidden="true" />}
-                {story.kicker}
-              </span>
+              <Kicker story={story} />
               <h3>{story.headline}</h3>
               {story.body && <p>{story.body}</p>}
             </div>

@@ -11,6 +11,7 @@ import { plateColours } from "../clubs/clubCatalog.js";
 import { POSITION_NAMES } from "../format/playerLabels.js";
 import { bidSheets, saleRows, type BidSheet, type SaleRow, type SellState } from "./bidSheets.js";
 import { MoneyStepper, roundStep } from "./MoneyStepper.js";
+import { clubArticle, withArticle, type Preposition } from "@boleiro/data/articles";
 
 type Props = {
   state: SellState;
@@ -103,6 +104,7 @@ function BidCard({ sheet, state, buyer, onAnswer }: { sheet: BidSheet; state: Se
   const [counter, setCounter] = useState(Math.round(sheet.fee * COUNTER_OPENING));
   const club = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
   const buyerClub = sheet.buyerId ? state.clubs[sheet.buyerId] : undefined;
+  const theBuyer = (preposition?: Preposition) => (sheet.buyerId ? withArticle(buyer, clubArticle(sheet.buyerId), preposition) : withArticle("clube europeu", "o", preposition));
   const premium = sheet.value > 0 ? sheet.fee / sheet.value - 1 : 0;
   const colours = club ? plateColours(club.colours) : null;
   const stripes = club ? { background: `repeating-linear-gradient(180deg, ${club.colours.primary} 0 26px, ${club.colours.secondary} 26px 52px)` } : undefined;
@@ -170,8 +172,8 @@ function BidCard({ sheet, state, buyer, onAnswer }: { sheet: BidSheet; state: Se
               {sheet.newWage === null
                 ? "Quer ir para a Europa."
                 : sheet.wantsToGo
-                  ? `Quer ir. Salário de ${formatMoney(sheet.newWage)} no ${buyer}.`
-                  : `Prefere ficar: o ${buyer} pagaria ${formatMoney(sheet.newWage)}.`}
+                  ? `Quer ir. Salário de ${formatMoney(sheet.newWage)} ${theBuyer("em")}.`
+                  : `Prefere ficar: ${theBuyer()} pagaria ${formatMoney(sheet.newWage)}.`}
             </dd>
           </dl>
         </div>
@@ -186,7 +188,7 @@ function BidCard({ sheet, state, buyer, onAnswer }: { sheet: BidSheet; state: Se
           Aceitar {formatMoney(sheet.fee)}
         </button>
         {sheet.isFinal ? (
-          <p className="market-final">Última oferta do {buyer}: não aceita contraproposta.</p>
+          <p className="market-final">Última oferta {theBuyer("de")}: não aceita contraproposta.</p>
         ) : (
           <span className="market-counter-box">
             <MoneyStepper label="Contraproposta" value={counter} step={roundStep(sheet.fee)} min={sheet.fee} onChange={setCounter} />
