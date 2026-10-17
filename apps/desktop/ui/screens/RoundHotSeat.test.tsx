@@ -34,7 +34,7 @@ afterEach(() => {
 async function bothCoachesPlaying(): Promise<{ given: Services; sides: HumanSide[] }> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.apply({ type: "newGame", seed: 3, choices: { coachClubId: ANA.clubId, hotSeat: { coachName: ANA.name, otherCoaches: [BRUNO] } } });
+  await engine.apply({ type: "newGame", seed: 4, choices: { coachClubId: ANA.clubId, hotSeat: { coachName: ANA.name, otherCoaches: [BRUNO] } } });
   for (let step = 0; step < MAX_STEPS; step++) {
     if (!(await engine.hotSeat())?.isLastTurn) {
       await engine.apply({ type: "passTurn" });

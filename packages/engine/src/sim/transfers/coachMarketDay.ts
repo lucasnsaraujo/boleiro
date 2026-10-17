@@ -11,6 +11,7 @@ import { isMarketDay, isWindowOpen } from "./transferWindows.js";
 import { valuePlayer } from "./valuePlayer.js";
 import { willingToJoin } from "./willingToJoin.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
+import { idolRefusesMove } from "../rivalries/idols.js";
 
 type CoachMarketEvent = BidReceived | AuctionClosed | PlayerMoved;
 
@@ -33,11 +34,12 @@ const AUCTION_LIMIT = { min: 0.9, spread: 0.7 };
 // guess: a club pays the fee up front plus three months of the new wage, as the AI's own deals budget it.
 const WAGE_MONTHS_UP_FRONT = 3;
 
-/** Whether a club would buy `player` for `fee` today: room in the squad, he would play, and its board can pay. */
+/** Whether a club would buy `player` for `fee` today: room in the squad, he would play and go there, and its board can pay. */
 function canBuy(state: GameState, view: MarketView, player: SimPlayer, clubId: string, fee: number): boolean {
   const finance = state.finances[clubId];
   const squad = view.squad(clubId);
   if (isHumanClub(state, clubId) || !finance || squad.length < 11 || isClubFull(state, clubId, squad.length)) return false;
+  if (idolRefusesMove(state, player, clubId)) return false;
   if (player.strength < view.needs(clubId).level - REPLACEMENT_BAND.below) return false;
   const wage = buyerWage(player, squad);
   // guess: like the AI's own upgrades, the buyer counts on moving on its cheapest player at his

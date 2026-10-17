@@ -10,7 +10,7 @@ import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { clubFaceOf, plateColours, type ClubFace } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
-import { answerText, countryName, exitWord, nationalityName, REFUSAL_WORDS, STYLE_WORDS, titleName } from "../coaches/coachWords.js";
+import { answerText, countryName, exitWord, nationalityName, jobRefusalText, STYLE_WORDS, titleName } from "../coaches/coachWords.js";
 import { Select } from "../controls/Select.js";
 import { usePlayRound } from "../hub/usePlayRound.js";
 import { useFlip } from "../motion/useFlip.js";
@@ -514,8 +514,8 @@ function JobCentre({
                   ) : job.openedOn ? (
                     <>
                       <span className={job.wouldHire ? "coaches-verdict is-yes" : "coaches-verdict"}>
-                        {job.wouldHire ? "aceitaria você" : "fora do alcance"}
-                        {job.refusal && <small id={`coaches-why-${job.clubId}`}>{REFUSAL_WORDS[job.refusal]}</small>}
+                        {job.wouldHire ? "aceitaria você" : job.refusal === "rivalIdol" ? "porta fechada" : "fora do alcance"}
+                        {job.refusal && <small id={`coaches-why-${job.clubId}`}>{jobRefusalText(job.refusal, state.clubs[job.idolOf ?? ""]?.shortName ?? "rival")}</small>}
                       </span>
                       <button
                         className="btn sm go"
@@ -639,6 +639,49 @@ function ProfileCard({
               <small>{seasons.length > 1 ? `${seasons.length}× · ${seasons.join(", ")}` : seasons[0]}</small>
             </span>
           ))}
+        </section>
+      )}
+      {profile.idolOf.length > 0 && (
+        <section className="coaches-idol" aria-label="Ídolo">
+          {profile.idolOf.map((clubId) => {
+            const idolClub = face(clubId);
+            return (
+              <span key={clubId} className="coaches-idol-chip">
+                {idolClub && <Crest club={idolClub} size={16} />}
+                Ídolo do {idolClub?.shortName ?? clubId}
+              </span>
+            );
+          })}
+        </section>
+      )}
+      {profile.rivals.length > 0 && (
+        <section className="coaches-rivals" aria-labelledby="coaches-rivals-title">
+          <h3 id="coaches-rivals-title" className="lbl">
+            Duelos com técnicos
+          </h3>
+          <ol>
+            {profile.rivals.map((rival) => {
+              const at = face(rival.clubId);
+              return (
+                <li key={rival.key} className={rival.isRivalry ? "coaches-rival is-hot" : "coaches-rival"}>
+                  <Avatar name={rival.name} club={at} size="row" />
+                  <span className="coaches-rival-who">
+                    <b>{rival.name}</b>
+                    <small>{at?.shortName ?? "sem clube"}</small>
+                  </span>
+                  <span className="coaches-rival-record" aria-label={`${rival.wins} vitórias, ${rival.draws} empates, ${rival.losses} derrotas em ${rival.meetings} jogos`}>
+                    <b>{rival.wins}</b>V <b>{rival.draws}</b>E <b>{rival.losses}</b>D
+                  </span>
+                  <span className="coaches-rival-tags">
+                    {rival.isRivalry && <span className="chip bad">Rivalidade</span>}
+                    {rival.fregues === "them" && <span className="chip ok">Freguês</span>}
+                    {rival.fregues === "us" && <span className="chip off">Seu carrasco</span>}
+                    {rival.finals > 0 && <small>{rival.finals === 1 ? "1 final" : `${rival.finals} finais`}</small>}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
         </section>
       )}
       <section className="coaches-career" aria-labelledby="coaches-career-title">

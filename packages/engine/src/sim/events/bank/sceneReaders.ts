@@ -3,6 +3,8 @@ import type { Fixture, SimPlayer } from "../../gameState.js";
 import { clubMood } from "../../morale/clubMood.js";
 import { rivalsOf } from "../../morale/rivalsOf.js";
 import { isInjured } from "../../players/isInjured.js";
+import { BLOCK_FROM_INTENSITY } from "../../rivalries/idols.js";
+import { isClassico, rivalryOf } from "../../rivalries/rivalryOf.js";
 import { isWindowOpen } from "../../transfers/transferWindows.js";
 import { eventMemoryOf, rivalryKey, type Cast } from "../eventMemory.js";
 import type { EventScene } from "../eventType.js";
@@ -104,8 +106,8 @@ export function topScorer(scene: EventScene): { player: SimPlayer; goals: number
 /** The club's sponsor on the front of the shirt, if it has one. */
 export const masterSponsor = (scene: EventScene) => scene.state.sponsors?.[scene.clubId]?.contracts.find((deal) => deal.slot === "master");
 
-/** The club's rivals, in id order. This is the bank's one seam to the rivalries. */
-export const rivalIds = (scene: EventScene) => [...(rivalsOf(scene.state.clubs).get(scene.clubId) ?? [])].sort();
+/** The club's clássico rivals (rivalries/rivalryOf.ts), in id order. This is the bank's one seam to the rivalries. */
+export const rivalIds = (scene: EventScene) => [...(rivalsOf(scene.state.clubs).get(scene.clubId) ?? [])].filter((id) => isClassico(scene.clubId, id)).sort();
 
 /** The other club in the club's match today, if it played. */
 export function opponentToday(scene: EventScene): string | undefined {
@@ -137,11 +139,12 @@ export function heatOf(scene: EventScene, cast: Cast): number {
   return cast.rivalId ? (eventMemoryOf(scene.state).rivalry[rivalryKey(scene.clubId, cast.rivalId)] ?? 0) / HEAT_PER_WEIGHT : 0;
 }
 
-/** A rival of the club: the one it played today when it did, else any of them. */
+/** A rival of the club: the one it played today when it did, else one of its big derby rivals (any, if it has none that big). */
 export function rivalCast(scene: EventScene): Cast | null {
-  const rivals = rivalIds(scene);
+  const every = rivalIds(scene);
+  const big = every.filter((id) => (rivalryOf(scene.clubId, id)?.intensity ?? 0) >= BLOCK_FROM_INTENSITY);
   const opponent = opponentToday(scene);
-  const rivalId = opponent && rivals.includes(opponent) ? opponent : pickFrom(scene, rivals);
+  const rivalId = opponent && every.includes(opponent) ? opponent : pickFrom(scene, big.length ? big : every);
   return rivalId ? { rivalId } : null;
 }
 

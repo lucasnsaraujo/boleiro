@@ -4,13 +4,14 @@ import { refusalOf, type Refusal } from "./applyForJob.js";
 import { clubStatures } from "./clubStatures.js";
 import { isHumanClub } from "./humanCoaches.js";
 import { isOnTheBrink } from "./judgeCoaches.js";
+import { rivalBlockOf } from "../rivalries/idols.js";
 
 /**
  * A job the coach in the seat could go for: an open one since `openedOn`, or (`openedOn` null) a club
  * whose board is close to firing its coach, `coachName`. `wouldHire` says whether the club would take him
- * today, `refusal` why not.
+ * today, `refusal` why not; `idolOf` is the rival club he is an idol of when that is why.
  */
-export type OpenJob = { clubId: string; openedOn: IsoDate | null; coachName: string | null; stature: number; wouldHire: boolean; refusal: Refusal | null };
+export type OpenJob = { clubId: string; openedOn: IsoDate | null; coachName: string | null; stature: number; wouldHire: boolean; refusal: Refusal | null; idolOf: string | null };
 
 /** The open jobs at clubs a human coach can take, then the clubs about to sack their coach; biggest clubs first. */
 export function jobCentre(state: GameState): OpenJob[] {
@@ -23,7 +24,7 @@ export function jobCentre(state: GameState): OpenJob[] {
     const opened = openJobs[clubId];
     const stature = statures.get(clubId) ?? 0;
     const refusal = refusalOf(state, clubId, stature);
-    const verdict = { stature, wouldHire: refusal === null, refusal };
+    const verdict = { stature, wouldHire: refusal === null, refusal, idolOf: refusal === "rivalIdol" ? rivalBlockOf(state, clubId) : null };
     if (opened) jobs.push({ clubId, openedOn: opened, coachName: null, ...verdict });
     else if (isOnTheBrink(state, clubId)) jobs.push({ clubId, openedOn: null, coachName: byClub.get(clubId)?.name ?? null, ...verdict });
   }

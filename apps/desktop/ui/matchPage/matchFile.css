@@ -196,6 +196,41 @@
   animation-delay: 380ms;
 }
 
+/* A derby's sticker slaps on under the score, a beat after the digits land. */
+.mf-derby {
+  display: flex;
+  justify-content: center;
+  margin: -2px 0 6px;
+  animation: mf-derby-slap 460ms var(--e-out) 260ms both;
+}
+
+@keyframes mf-derby-slap {
+  from {
+    opacity: 0;
+    transform: scale(1.35) rotate(-8deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.96) rotate(1deg);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.mf-duel {
+  margin-top: 2px;
+  font-weight: 700;
+  color: var(--red);
+  animation-delay: 420ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mf-derby {
+    animation: none;
+  }
+}
+
 /* A VAR check reads in ink; a wrong call that stood, in the red of a protest. */
 .mf-incidents small.var {
   color: var(--ink);

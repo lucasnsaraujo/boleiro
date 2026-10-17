@@ -18,6 +18,7 @@ import { ASKING_PREMIUM, isInPreContractWindow, MIN_SQUAD } from "./tradeBetween
 import type { TransferEvent } from "./transferEvents.js";
 import { isWindowOpen } from "./transferWindows.js";
 import { valuePlayer } from "./valuePlayer.js";
+import { idolRefusesMove, rivalBlockOf } from "../rivalries/idols.js";
 import { goingRate, wageDemand } from "./wageDemand.js";
 import { willingToJoin } from "./willingToJoin.js";
 
@@ -117,6 +118,9 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       // guess: every free agent counts, released or expired, whenever it happened. A pre-contract only takes effect when his contract ends.
       if (!free && !preContract && !isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       if (!free && !preContract && view.squad(player.clubId).length <= MIN_SQUAD) return refuse(state, request, "sellerWillNotSell");
+      // A pre-contract is the player's to sign, as a paid clause is: his club has no say.
+      if (!free && !preContract && rivalBlockOf(state, player.clubId)) return refuse(state, request, "rivalWillNotSell");
+      if (!free && idolRefusesMove(state, player, coachClubId)) return refuse(state, request, "idolRefusesRival");
       let fee = 0;
       if (!free && !preContract) {
         // An offer without a fee pays what the club asks.
@@ -149,6 +153,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
       if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       // His club has no say: the clause is paid and only the board and the player decide.
+      if (idolRefusesMove(state, player, coachClubId)) return refuse(state, request, "idolRefusesRival");
       const fee = releaseClauseOf(player, view.tier(player.clubId), state.market.eurBrl);
       const wage = request.wage !== undefined ? Math.max(1, Math.round(request.wage)) : wageDemand(player, squad);
       const length = signingLength(player, squad, request.years);
@@ -167,6 +172,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
         .filter((id) => id !== coachClubId && !isClubFull(state, id, view.squad(id).length))
         .sort((a, b) => (state.clubs[b]?.fanbase ?? 0) - (state.clubs[a]?.fanbase ?? 0) || a.localeCompare(b))
         .find((id) => {
+          if (idolRefusesMove(state, player, id)) return false;
           const buyerFinance = state.finances[id];
           const wage = wageDemand(player, view.squad(id));
           return buyerFinance && !boardRefusal(buyerFinance, view.bill(id), { upFront: fee + 3 * wage, wageChange: wage })
@@ -213,6 +219,8 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
       if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       if (RANK[view.tier(player.clubId)] <= RANK[view.tier(coachClubId)]) return refuse(state, request, "lenderNotBigger");
+      if (rivalBlockOf(state, player.clubId)) return refuse(state, request, "rivalWillNotSell");
+      if (idolRefusesMove(state, player, coachClubId)) return refuse(state, request, "idolRefusesRival");
       if (pickLineup([...view.squad(player.clubId)]).includes(player)) return refuse(state, request, "lenderNeedsHim");
       const limit = loanLimitOf(state, player.clubId, coachClubId, player);
       if (limit) return refuse(state, request, limit);

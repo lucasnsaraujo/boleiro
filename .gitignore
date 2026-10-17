@@ -2,6 +2,7 @@ node_modules/
 .venv/
 data/tm_cache
 data/history_cache/
+data/wiki_cache/
 dist/
 coverage/
 .claude/

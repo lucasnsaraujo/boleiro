@@ -3,6 +3,7 @@ import { waitingCoachesOf } from "../coach/humanCoaches.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { clubMood } from "../morale/clubMood.js";
 import { rivalsOf } from "../morale/rivalsOf.js";
+import { isClassico } from "../rivalries/rivalryOf.js";
 import type { LiveDay } from "./liveDay.js";
 
 /** The tones of a dressing-room talk: ask for calm, show faith, demand more, praise. */
@@ -44,10 +45,10 @@ export function assistantTalk(moment: TalkMoment): TalkTone {
   return best;
 }
 
-/** Whether the fixture is a derby for `clubId`. */
+/** Whether the fixture is a clássico for `clubId` (rivalries/rivalryOf.ts). */
 export function isDerbyFor(state: Pick<GameState, "clubs">, fixture: Pick<Fixture, "homeId" | "awayId">, clubId: string): boolean {
   const opponent = fixture.homeId === clubId ? fixture.awayId : fixture.homeId;
-  return rivalsOf(state.clubs).get(clubId)?.has(opponent) ?? false;
+  return (rivalsOf(state.clubs).get(clubId)?.has(opponent) ?? false) && isClassico(clubId, opponent);
 }
 
 /** Where `clubId` stands before kick-off of `fixture`. */

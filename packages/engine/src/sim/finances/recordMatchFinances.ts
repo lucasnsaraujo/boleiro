@@ -2,7 +2,7 @@ import { copyRecord } from "../copyRecord.js";
 import type { ClubFinance, Fixture, GameState, HomeGate } from "../gameState.js";
 import { clubMood } from "../morale/clubMood.js";
 import { crowdTurnout } from "../morale/crowdTurnout.js";
-import { rivalsOf } from "../morale/rivalsOf.js";
+import { rivalryOf } from "../rivalries/rivalryOf.js";
 import { bookMoneyInDraft } from "./bookMoney.js";
 import { SELLABLE_SHARE_OF_CAPACITY } from "./openingFinances.js";
 import { tierOf } from "./tierOf.js";
@@ -16,9 +16,10 @@ const PRICE_ELASTICITY = -0.4;
 // at about 1.3 times the average (the gate peaks where 0.6 / r = 2 * PRICE_CHOKE * (r - 1)) and at
 // three times the average it takes a fraction of the usual gate.
 const PRICE_CHOKE = 0.77;
-// guess: a derby sells a fifth more tickets; a knockout tie a tenth more and a final a quarter more,
-// near Brasfoot's lift of 15% of the seats for a knockout game.
-const DERBY_LIFT = 1.2;
+// guess: a derby sells 5% more tickets per level of intensity (a fifth more for a state's main derby,
+// level 4, a quarter for one that stops the country); a knockout tie a tenth more and a final a quarter
+// more, near Brasfoot's lift of 15% of the seats for a knockout game.
+const DERBY_LIFT_PER_LEVEL = 0.05;
 const KNOCKOUT_LIFT = 1.1;
 const FINAL_LIFT = 1.25;
 // guess: a side on five straight wins draws 15% more than its usual crowd, one on five defeats 15% fewer.
@@ -73,7 +74,7 @@ export function attendance(state: GateState, home: ClubFinance, homeId: string, 
   const pull = visitor && club.fanbase > 0 ? (visitor.fanbase / club.fanbase) ** OPPONENT_PULL.exponent : 1;
   const opponent = Math.min(OPPONENT_PULL.max, Math.max(OPPONENT_PULL.min, pull));
   const price = priceDemand(home.ticketPrice / state.economy.matchday[tierOf(club)].price);
-  const derby = rivalsOf(state.clubs).get(homeId)?.has(awayId) ? DERBY_LIFT : 1;
+  const derby = 1 + DERBY_LIFT_PER_LEVEL * (rivalryOf(homeId, awayId)?.intensity ?? 0);
   const demand = home.baseCrowd * form * opponent * derby * stakesLift(state, fixture) * price * crowdTurnout(clubMood(state, homeId));
   return Math.round(Math.min(SELLABLE_SHARE_OF_CAPACITY * club.capacity, demand));
 }

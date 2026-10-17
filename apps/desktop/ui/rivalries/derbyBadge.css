@@ -1,0 +1,64 @@
+/* A derby sticker: die-cut red chip with a white edge, its intensity as five pips. */
+.derby-badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  height: 18px;
+  padding: 0 6px 0 7px;
+  border-radius: var(--r-pill);
+  background: var(--red);
+  color: var(--on-red);
+  box-shadow: 0 0 0 1.5px var(--card), 0 1px 2px rgb(20 35 26 / 0.28);
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: rotate(-2deg);
+}
+
+.derby-badge b {
+  font-weight: inherit;
+}
+
+.derby-pips {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.derby-pips i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.32;
+}
+
+.derby-pips i.on {
+  opacity: 1;
+}
+
+/* The biggest derbies get the album's foil edge. */
+.derby-badge.i5 {
+  box-shadow: 0 0 0 1.5px var(--yellow), 0 1px 3px rgb(20 35 26 / 0.35);
+}
+
+.derby-badge.named {
+  height: 24px;
+  gap: 7px;
+  padding: 0 9px 0 10px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+.derby-badge.named .derby-pips i {
+  width: 5px;
+  height: 5px;
+}
+
+[data-theme="dark"] .derby-badge:not(.i5) {
+  box-shadow: 0 0 0 1.5px #fff, 0 1px 3px rgb(0 0 0 / 0.6);
+}

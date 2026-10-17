@@ -94,3 +94,20 @@ describe("the coaches screen after a season", () => {
     expect(leader && played.coachProfile(leader.key)?.ranking).toEqual({ position: 1, points: leader?.points });
   });
 });
+
+describe("a coach's rivals on his profile", () => {
+  const played = session();
+  for (let step = 0; step < 20 && played.apply({ type: "playToMatchDay" }).stop !== "matchDay"; step++);
+  const round = played.apply({ type: "startRound" });
+  played.apply({ type: "finishRound" });
+  const coachMatch = round.matches.find((m) => m.fixtureId === round.coach?.fixtureId);
+  const opponentClub = coachMatch?.homeId === "bahia-ba" ? coachMatch.awayId : coachMatch?.homeId;
+
+  test("list the coach he faced with their record, and the other coach's profile lists him back", () => {
+    const opponent = played.coachProfile(opponentClub ?? "");
+    const [rival] = played.coaches().you.rivals;
+    expect(rival).toMatchObject({ key: opponent?.key, name: opponent?.name, meetings: 1 });
+    expect((rival?.wins ?? 0) + (rival?.losses ?? 0) + (rival?.draws ?? 0)).toBe(1);
+    expect(opponent?.rivals.map((r) => r.key)).toEqual([played.coaches().you.key]);
+  });
+});
