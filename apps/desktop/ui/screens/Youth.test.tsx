@@ -56,6 +56,29 @@ test("the academy lists its kids best first, with the scouts' stars, and the age
   expect(young).toHaveLength(kids.filter((p) => p.age <= 17).length);
 });
 
+test("with a level-5 assistant every kid's potential shows as his true stars, where the scouts alone give some a range", async () => {
+  const starLabels = async (engine: EngineClient) => {
+    openYouth(engine);
+    const table = await screen.findByRole("table", { name: "Garotos da base" });
+    const labels = within(table).getAllByRole("img", { name: /^Potencial de / }).map((img) => img.getAttribute("aria-label"));
+    cleanup();
+    return labels;
+  };
+  const scouts = await starLabels(await startGame());
+  expect(scouts.some((label) => label?.includes(" a "))).toBe(true);
+
+  const engine = await startGame();
+  const best = (await engine.assistant()).candidates.find((c) => c.level === 5 && !c.formerPlayer);
+  if (!best) throw new Error("no level-5 assistant to call");
+  expect(await engine.apply({ type: "hireAssistant", candidateId: best.id })).toEqual({ refusal: null });
+  const sharp = await starLabels(engine);
+  expect(sharp).toHaveLength(scouts.length);
+  expect(sharp.every((label) => label && !label.includes(" a "))).toBe(true);
+  openYouth(engine);
+  const card = await screen.findByRole("complementary", { name: /^Garoto: / });
+  expect(within(card).getByText(/Seu auxiliar e os olheiros já conhecem bem o garoto/)).toBeTruthy();
+});
+
 test("the 20-year-olds' banner says who turns 21, and picking a kid shows his card", async () => {
   const engine = await startGame();
   const kids = await academyOf(engine);

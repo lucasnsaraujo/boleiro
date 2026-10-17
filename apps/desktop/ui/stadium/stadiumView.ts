@@ -1,6 +1,6 @@
 import type { Club } from "@boleiro/data/clubs";
 import { attendance } from "@boleiro/engine/sim/finances/recordMatchFinances";
-import { assistantTicketPrice, ticketPriceBounds } from "@boleiro/engine/sim/finances/setTicketPrice";
+import { assistantTicketPrice, doesAssistantPriceTickets, ticketPriceBounds } from "@boleiro/engine/sim/finances/setTicketPrice";
 import type { Fixture, GameState, IsoDate, StadiumWorks } from "@boleiro/engine/sim/gameState";
 import { clubMood } from "@boleiro/engine/sim/morale/clubMood";
 import { rivalsOf } from "@boleiro/engine/sim/morale/rivalsOf";
@@ -8,7 +8,7 @@ import { boardAnswerToWorks, freeCash, withNewSeats, type WorksAnswer } from "@b
 import { competitionName } from "@boleiro/game-client/format/competitionName";
 import { clubMeters } from "../hub/hubSelectors.js";
 
-export const STADIUM_KEYS = ["date", "coachClubId", "clubs", "finances", "mood", "fixtures", "competitions", "economy", "boards"] as const;
+export const STADIUM_KEYS = ["date", "coachClubId", "clubs", "finances", "mood", "fixtures", "competitions", "economy", "boards", "coach"] as const;
 export type StadiumState = Pick<GameState, (typeof STADIUM_KEYS)[number]>;
 
 /** Seats the coach can ask the board for, smallest first. */
@@ -27,6 +27,8 @@ export type StadiumView = {
   next: { fixture: Fixture; opponent: Club; competition: string; weight: string | null } | null;
   price: number;
   assistantPrice: number;
+  /** Whether the assistant prices the tickets (his ticket price duty, shared with his screen). */
+  isAssistantPricing: boolean;
   bounds: { min: number; max: number };
   forecastAt: (price: number) => Forecast | null;
   /** What drives the next crowd besides the price. */
@@ -87,6 +89,7 @@ export function stadiumView(state: StadiumState): StadiumView | null {
     next: fixture && opponent && competition ? { fixture, opponent, competition: competitionName(competition), weight } : null,
     price: finance.ticketPrice,
     assistantPrice,
+    isAssistantPricing: doesAssistantPriceTickets(state),
     bounds: ticketPriceBounds(state, clubId),
     forecastAt: (price) => forecastIn(state, price),
     factors: (price) => {

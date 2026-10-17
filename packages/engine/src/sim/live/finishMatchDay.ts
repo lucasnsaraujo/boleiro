@@ -4,6 +4,8 @@ import type { DayEvent, DayResult, WaitingDecisions } from "../advanceDay.js";
 import { isHumanClub, waitingCoachesOf, type WaitingCoach } from "../coach/humanCoaches.js";
 import { coachCareerDay } from "../coach/coachCareerDay.js";
 import { moveAiCoaches, moveWorldCoaches } from "../coach/moveAiCoaches.js";
+import { recordFormerPlayers } from "../coach/assistant.js";
+import { assistantPromotions } from "../youth/assistantPromotions.js";
 import { closeCoachSeason, retiredPlayers } from "../coach/closeCoachSeason.js";
 import { seasonRuns } from "../coach/rankingPoints.js";
 import { seasonEndField } from "../continental/continentalField.js";
@@ -270,6 +272,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };
     if (next.world) next = { ...next, world: endWorldSeason(next.world, next.season, unifiedDatesOf(next.calendar)) };
     next = closeCoachSeason(openContinentalCups(next, continentalField), state.season, runs, retired);
+    next = recordFormerPlayers(next, academies.state, developed.events);
     seasonOutcomes = ended.outcomes;
   }
   const sponsorDay = runSponsorDay(state, next, seasonOutcomes);
@@ -278,8 +281,11 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const market = runTransferDay(next, decisions.requests ?? [], (decisions.waiting ?? []).map((own) => own.requests ?? []));
   events.push(...market.events);
   market.waitingEvents.forEach((own, index) => waitingEvents[index]?.push(...own));
+  const promoted = assistantPromotions(market.state);
+  events.push(...promoted.events);
+  promoted.waitingEvents.forEach((own, index) => waitingEvents[index]?.push(...own));
   // A day the market moved nobody leaves the players as they were.
-  const filled = market.state.players !== next.players ? fillShortSquads(market.state) : { state: market.state, events: [] };
+  const filled = promoted.state.players !== next.players ? fillShortSquads(promoted.state) : { state: promoted.state, events: [] };
   events.push(...filled.events);
   const released = leftClubIds(state, filled.state).reduce(releaseTicketPrice, releaseTicketPrice(filled.state, state.coachClubId));
   const happened = runEvents(recordNews(recordCoachMeetings(released, played, state), state.date, events, day.sheets), state.date, played);

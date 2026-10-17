@@ -12,7 +12,8 @@ import { freshCondition, rollTrait } from "./openingProfile.js";
 import { squadsOfGame } from "./squadsByClub.js";
 
 export type PlayerRetired = { type: "playerRetired"; playerId: string; clubId: string; name: string; age: number };
-export type YouthPromoted = { type: "youthPromoted"; playerId: string; clubId: string };
+/** A kid moved up into his club's squad; `byAssistant` when a human coach's assistant did it for him mid-season. */
+export type YouthPromoted = { type: "youthPromoted"; playerId: string; clubId: string; byAssistant?: true };
 
 // The level a club's players drift toward: the division baselines new players are rated from
 // (pipeline/rate_players.py DIVISION_PRIOR, data/SOURCES.md), 42 for clubs outside Série A–D.

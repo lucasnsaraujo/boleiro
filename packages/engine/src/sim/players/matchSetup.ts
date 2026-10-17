@@ -36,8 +36,11 @@ export function matchClubOf(state: GameState, clubId: string): MatchClub | null 
   return guest ? { id: guest.id, shortName: guest.name, pitch: "natural", state: null } : null;
 }
 
-/** The coach's choices for his club's match: his eleven, or none to let the AI pick it in his formation. */
-export type CoachPlan = { lineup: readonly SimPlayer[] | null; tactics: Tactics };
+/**
+ * The coach's choices for his club's match: his eleven, or none to let the AI pick it in his formation,
+ * keeping the `kept` starters of his own last eleven when he picks the team himself (startersKept).
+ */
+export type CoachPlan = { lineup: readonly SimPlayer[] | null; tactics: Tactics; kept?: ReadonlySet<string> };
 
 /** The strength each player of a club plays at in this match: effective strength plus morale, times the club's chemistry. */
 export function playingStrength(state: GameState, clubId: string, context: MatchContext, squad: readonly SimPlayer[]): (player: SimPlayer) => number {
@@ -83,7 +86,7 @@ export function matchSetup(
   const planOf = (clubId: string): CoachPlan | undefined => (clubId === state.coachClubId ? coach : waiting[clubId]);
   const tacticsOf = (clubId: string): Tactics => planOf(clubId)?.tactics ?? { ...DEFAULT_TACTICS, formation: formationOf(state, clubId, squadOf(clubId)) };
   const lineupOf = (clubId: string, tactics: Tactics, lineup = planOf(clubId)?.lineup) =>
-    lineup ? [...lineup] : pickMatchLineup(squadOf(clubId), context, tactics.formation, usualStartersOf(state, clubId));
+    lineup ? [...lineup] : pickMatchLineup(squadOf(clubId), context, tactics.formation, usualStartersOf(state, clubId), planOf(clubId)?.kept);
   const team = (clubId: string, name: string, lineup: readonly SimPlayer[], tactics: Tactics): Team => {
     const strength = playingStrength(state, clubId, context, squadOf(clubId));
     return engineTeam(name, lineup, (p) => strength(p) + formStrengthOf(p), tactics);

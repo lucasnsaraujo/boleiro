@@ -1,7 +1,9 @@
 import { randomStream } from "../../engine/random.js";
 import { asWaitingCoach, waitingCoachesOf } from "../coach/humanCoaches.js";
 import { addDays } from "../dates.js";
+import { doesAssistantHandle } from "../coach/assistantDuties.js";
 import { assistantRenewals, isSeasonLastDay, nextAssistantReview } from "./assistantRenewals.js";
+import { assistantSales } from "./assistantSales.js";
 import type { GameState, IsoDate } from "../gameState.js";
 import { unitHash } from "./coachMarket.js";
 import { coachMarketDay } from "./coachMarketDay.js";
@@ -43,7 +45,7 @@ const isCoachNews = (event: TransferEvent) =>
  * and his own business (offers, listings, auctions), then on market days Europe's bids and the AI clubs'
  * business. Draws come from the market's own random stream. In a hot-seat game each waiting coach's
  * requests (`waitingRequests`, in waiting order) and business run as if he sat in the seat; his own news
- * comes back apart, in `waitingEvents`.
+ * comes back apart, in `waitingEvents`. Last, the assistants who run their coach's sales take the offers for players outside the plans.
  */
 export function runTransferDay(
   state: GameState,
@@ -90,6 +92,13 @@ export function runTransferDay(
       if (coach.clubId) steps.push({ step: (s, r) => asWaitingCoach(s, waitingIndex, (seated) => europeBids(seated, r, coach.clubId ?? undefined)), waitingIndex });
     });
   }
+  // An assistant who runs his coach's sales answers the offers standing at the end of the day's business.
+  const mayGetBids = (coach: CoachMarket | undefined, coachClubId: string | null, rules: CoachWindows) => hasCoachBusiness(coach, coachClubId, rules, state.date) || isMarketDay(state, state.date);
+  if (doesAssistantHandle(state.coach, "selling") && mayGetBids(state.market.coach, state.coachClubId, state)) add((s) => assistantSales(s));
+  waiting.forEach((coach, waitingIndex) => {
+    if (!doesAssistantHandle(coach.coach, "selling") || !mayGetBids(coach.market, coach.clubId, { ...state, coach: coach.coach })) return;
+    steps.push({ step: (s) => asWaitingCoach(s, waitingIndex, assistantSales), waitingIndex });
+  });
   // Most days nothing moves; the draft (a copy of every player) is only made when something can.
   let next = steps.length ? openDraft(state) : state;
   const events: TransferEvent[] = [];

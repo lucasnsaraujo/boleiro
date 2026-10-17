@@ -105,7 +105,7 @@ function KidsTable({ kids, selectedId, onSelect }: { kids: readonly KidRow[]; se
 
 type CardProps = { view: YouthView; kid: KidDetail; isBusy: boolean; onMove: (move: Move, kid: KidDetail) => void };
 
-/** The picked kid as a sticker: who he is, what the scouts see and where he would fit. */
+/** The picked kid as a sticker: who he is, what the scouts and the assistant see and where he would fit. */
 function KidCard({ view, kid, isBusy, onMove }: CardProps) {
   const [isConfirmingRelease, setConfirmingRelease] = useState(false);
   const { club } = view;
@@ -138,7 +138,9 @@ function KidCard({ view, kid, isBusy, onMove }: CardProps) {
             <p>
               Potencial de <b>{span === 0 ? `${kid.stars.low} ${kid.stars.low === 1 ? "estrela" : "estrelas"}` : `${kid.stars.low} a ${kid.stars.high} estrelas`}</b>
               <br />
-              {span === 0 ? "Os olheiros já conhecem bem o garoto" : `Olheiros: podem errar por até ${span}`}
+              {span === 0
+                ? `${view.isAssistantSharper ? "Seu auxiliar e os olheiros já conhecem" : "Os olheiros já conhecem"} bem o garoto`
+                : `${view.isAssistantSharper ? "Olheiros e auxiliar" : "Olheiros"}: podem errar por até ${span}`}
             </p>
           </div>
         </div>
