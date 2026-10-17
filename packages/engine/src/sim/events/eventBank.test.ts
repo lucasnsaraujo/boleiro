@@ -3,6 +3,7 @@ import { addDays } from "../dates.js";
 import type { GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { rivalsOf } from "../morale/rivalsOf.js";
+import { CLASH_HEAT } from "../rivalries/coachRivalries.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
 import { EVENT_BANK } from "./eventBank.js";
 import { eventsOf, pendingEventOf, type Cast, type Effects, type EventTopic } from "./eventMemory.js";
@@ -86,6 +87,18 @@ describe("the event bank", () => {
         const asked = question.cast(scene, cast) ?? cast;
         for (const [index, choice] of question.choices.entries()) expectInBounds(byCast(choice.effects, scene, asked), `${question.id} #${index + 1}`);
       }
+    }
+  });
+
+  it("leaves a press clash with the rival's coach to the coach's own words: no assistant answer and no follow-up question starts one", () => {
+    const scene = sceneOf(start);
+    const clashes = (choice: ChoiceType | undefined, cast: Cast) => (choice ? (byCast(choice.effects, scene, cast).rivalry ?? 0) >= CLASH_HEAT : false);
+    const asked = EVENT_BANK.filter((type) => type.choices?.some((choice) => clashes(choice, castFor(type.cast, scene))));
+    expect(asked.length).toBeGreaterThan(0);
+    for (const type of EVENT_BANK) {
+      const cast = castFor(type.cast, scene);
+      expect(clashes(type.choices?.[type.assistantChoice ?? 0], cast), `${type.id}: the assistant's answer`).toBe(false);
+      for (const question of type.followUps ?? []) for (const choice of question.choices) expect(clashes(choice, question.cast(scene, cast) ?? cast), question.id).toBe(false);
     }
   });
 
