@@ -72,11 +72,23 @@ export function hasExtraTime(competition: Competition, stage: number, leg: numbe
 // - Belgium: straight to penalties in the first three of eleven rounds, extra time from the fourth (Wikipedia,
 //   "2025–26 Belgian Cup", https://en.wikipedia.org/wiki/2025%E2%80%9326_Belgian_Cup); the game's shorter cup
 //   counts its rounds back from the final.
-// - Every other country: guess, extra time in every round, as most national cups play it.
-const ROUNDS_WITHOUT_EXTRA_TIME_FROM_FINAL: Record<string, number> = { it: 2, fr: 1, be: 8 };
+// - Greece: extra time abolished up to the semi-finals, read as played in the final only (Wikipedia,
+//   "2025–26 Greek Football Cup", https://en.wikipedia.org/wiki/2025%E2%80%9326_Greek_Football_Cup).
+// - Ukraine and Slovakia: no extra time, straight to penalties in every round (Wikipedia, "2025–26 Ukrainian Cup",
+//   https://en.wikipedia.org/wiki/2025%E2%80%9326_Ukrainian_Cup; "2025–26 Slovak Cup", Format:
+//   https://en.wikipedia.org/wiki/2025%E2%80%9326_Slovak_Cup).
+// - Scotland, Turkey, Croatia, Norway, Slovenia, Israel: extra time in every round (Wikipedia, "Scottish Cup",
+//   https://en.wikipedia.org/wiki/Scottish_Cup; Turkish Wikipedia, "2025-26 Türkiye Kupası", https://tr.wikipedia.org/wiki/2025-26_T%C3%BCrkiye_Kupas%C4%B1;
+//   "Croatian Football Cup", https://en.wikipedia.org/wiki/Croatian_Football_Cup; "Norwegian Football Cup",
+//   https://en.wikipedia.org/wiki/Norwegian_Football_Cup; "Slovenian Football Cup", https://en.wikipedia.org/wiki/Slovenian_Football_Cup;
+//   "Israel State Cup", https://en.wikipedia.org/wiki/Israel_State_Cup).
+// - Portugal, the Netherlands, Austria, Poland, Czechia, Hungary, Bulgaria, Cyprus, Armenia, Azerbaijan: guess,
+//   extra time in every round, as most national cups play it (Portugal's 2026 final went to it).
+// The game's South American countries play no national cup.
+const ROUNDS_WITH_EXTRA_TIME_FROM_FINAL: Record<string, number> = { it: 2, fr: 1, be: 8, gr: 1, ua: 0, sk: 0 };
 
 /** Whether round `round` (0 the first) of a result-only national cup of `rounds` rounds in `country` plays extra time. */
 export function hasNationalCupExtraTime(country: string, round: number, rounds: number): boolean {
-  const lastRounds = ROUNDS_WITHOUT_EXTRA_TIME_FROM_FINAL[country];
+  const lastRounds = ROUNDS_WITH_EXTRA_TIME_FROM_FINAL[country];
   return lastRounds === undefined || rounds - round <= lastRounds;
 }

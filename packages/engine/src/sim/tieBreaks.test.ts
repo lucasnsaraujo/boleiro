@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { cupStageDates } from "./continental/conmebolCups.js";
 import { RAPIDO } from "./formats.js";
 import type { Competition, ContinentalCup, IsoDate, LeagueFormatId } from "./gameState.js";
-import { hasExtraTime, tieBreakOf } from "./tieBreaks.js";
+import { hasExtraTime, hasNationalCupExtraTime, tieBreakOf } from "./tieBreaks.js";
 import { tieResults } from "./tieResults.js";
 
 const base = { season: 2026, clubIds: [], stages: [], drawOrder: [] };
@@ -73,6 +73,24 @@ describe("a level tie's tie-break, as each real competition settles it", () => {
     expect(hasExtraTime(recopa, 0, 0)).toBe(false);
     expect(hasExtraTime(recopa, 0, 1)).toBe(true);
     expect(hasExtraTime(continental("libertadores"), 6, 1)).toBe(false);
+  });
+});
+
+describe("a result-only national cup's level match", () => {
+  const ROUNDS = 6;
+  const roundsWithExtraTime = (country: string) => Array.from({ length: ROUNDS }, (_, round) => hasNationalCupExtraTime(country, round, ROUNDS));
+
+  it("goes to extra time in every round of a cup that plays it throughout", () => {
+    for (const country of ["gb-eng", "es", "de", "gb-sct", "tr", "hr", "no", "si", "il"]) expect(roundsWithExtraTime(country)).toEqual(Array(ROUNDS).fill(true));
+  });
+
+  it("goes straight to penalties in every round of Ukraine's and Slovakia's cups", () => {
+    for (const country of ["ua", "sk"]) expect(roundsWithExtraTime(country)).toEqual(Array(ROUNDS).fill(false));
+  });
+
+  it("goes to extra time only in the final of the Greek and French cups, and from the semi-finals in Italy's", () => {
+    for (const country of ["gr", "fr"]) expect(roundsWithExtraTime(country)).toEqual([false, false, false, false, false, true]);
+    expect(roundsWithExtraTime("it")).toEqual([false, false, false, false, true, true]);
   });
 });
 
