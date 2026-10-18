@@ -23,6 +23,7 @@ import type { EggBook } from "./eggs/eggBook.js";
 import type { EventMemory } from "./events/eventMemory.js";
 import type { ClubChemistry } from "./chemistry/chemistryOf.js";
 import type { ClubSponsors, PoolBrand } from "./sponsors/sponsors.js";
+import type { Nations } from "./nations/nations.js";
 
 export type IsoDate = string;
 
@@ -274,6 +275,8 @@ export type GameState = {
   sponsors?: Record<string, ClubSponsors>;
   /** The brands that can bid for a place on a kit, kept from the pack the career started with. */
   sponsorPool?: PoolBrand[];
+  /** National teams, their competitions and call-ups; a game started without the national packs, or saved before them, gets them when loaded (withNations). */
+  nations?: Nations;
   /** The easter eggs the human coaches found; a save from before eggs, or a game where none was found, has none. */
   eggs?: EggBook;
 };

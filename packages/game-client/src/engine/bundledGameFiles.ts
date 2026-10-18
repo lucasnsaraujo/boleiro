@@ -1,6 +1,7 @@
 import { parsePack } from "@boleiro/data/dataPack";
 import { parseSponsorsPack } from "@boleiro/data/sponsors";
 import { parseWorldPack } from "@boleiro/data/worldPack";
+import { parseNationalFootball } from "@boleiro/data/nationalFootball";
 import pack from "@boleiro/data/pack/brazil.pack.json.gz?gunzip";
 import sponsors from "@boleiro/data/pack/sponsors.pack.json.gz?gunzip";
 import armenia from "@boleiro/data/pack/world/am.pack.json.gz?gunzip";
@@ -48,6 +49,8 @@ import morocco from "@boleiro/data/pack/world/ma.pack.json.gz?gunzip";
 import newZealand from "@boleiro/data/pack/world/nz.pack.json.gz?gunzip";
 import tunisia from "@boleiro/data/pack/world/tn.pack.json.gz?gunzip";
 import southAfrica from "@boleiro/data/pack/world/za.pack.json.gz?gunzip";
+import nationalTeams from "@boleiro/data/pack/world/national-teams.pack.json.gz?gunzip";
+import nationalFootball from "@boleiro/data/pack/national-football.pack.json.gz?gunzip";
 import type { GameFiles } from "@boleiro/engine/sim/loadNewGame";
 import { europeStart } from "@boleiro/engine/sim/world/europe";
 import { guestsStart } from "@boleiro/engine/sim/world/guests";
@@ -63,10 +66,11 @@ const EUROPE_PACKS = [
 const MARKET_PACKS = [saudiArabia, unitedStates, mexico].map((text) => parseWorldPack(text));
 const GUEST_PACKS = [emirates, egypt, japan, korea, morocco, newZealand, tunisia, southAfrica].map((text) => parseWorldPack(text));
 
-/** Brazil's pack, the result-only countries of South America, Europe and the market leagues, the Club World Cup's guests and the kit sponsors, as a new game in the app plays them. */
+/** Brazil's pack, the result-only countries of South America, Europe and the market leagues, the Club World Cup's guests, the kit sponsors and the national teams, as a new game in the app plays them. */
 export const bundledGameFiles: GameFiles = {
   ...parsePack(pack),
   world: [...southAmericaStart(SOUTH_AMERICA_PACKS, FIRST_SEASON), ...europeStart(EUROPE_PACKS, FIRST_SEASON), ...marketLeaguesStart(MARKET_PACKS, FIRST_SEASON)],
   guests: guestsStart(GUEST_PACKS, FIRST_SEASON),
   sponsors: parseSponsorsPack(sponsors),
+  nationalFootball: parseNationalFootball(nationalTeams, nationalFootball),
 };

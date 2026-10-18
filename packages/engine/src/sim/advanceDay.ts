@@ -26,6 +26,7 @@ import type { SquadToppedUp } from "./youth/fillShortSquads.js";
 import type { RefereeCallEvent } from "./referees/refereeCalls.js";
 import type { YouthEvent } from "./youth/turnOverAcademies.js";
 import type { SponsorEvent } from "./sponsors/sponsorDeals.js";
+import type { NationsEvent } from "./nations/nationsDay.js";
 
 export type DayDecisions = {
   lineup?: readonly string[];
@@ -70,6 +71,7 @@ export type DayEvent =
   | RefereeCallEvent
   | EventDayEvent
   | SponsorEvent
+  | NationsEvent
   | EggFound;
 
 /** A day played: the game after it and its events; in a hot-seat game, each waiting coach's own news apart, in waiting order. */

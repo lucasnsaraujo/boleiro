@@ -28,6 +28,7 @@ import { coachOutcome } from "./coachOutcome.js";
 import { formOfTheDay, formStrength } from "./formOfTheDay.js";
 import { kickOffMoment, kickOffTalksOf, talkEffect, type TalkTone } from "./teamTalk.js";
 import { incidentHandling } from "./incidentHandling.js";
+import { onDutyOn } from "../nations/nationsDay.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
 import { drawMatchPlay } from "./matchPlay.js";
 import { detailStream, EXTRA_TIME_END, FULL_TIME, inMatchOrder, kickOffTimeline, scorerStream } from "./matchTimeline.js";
@@ -62,6 +63,9 @@ function coachLineupOf(state: GameState, decisions: DayDecisions): SimPlayer[] |
   if (chosen.length !== lineup.length) throw new Error(`lineup has players who are not at ${state.coachClubId}`);
   const injured = chosen.filter((player) => isInjured(player, state.date));
   if (injured.length) throw new Error(`lineup has injured players: ${injured.map((p) => p.name).join(", ")}`);
+  const away = onDutyOn(state, state.date);
+  const onDuty = chosen.filter((player) => away.has(player.id));
+  if (onDuty.length) throw new Error(`lineup has players away with their national team: ${onDuty.map((p) => p.name).join(", ")}`);
   if (chosen.length !== LINEUP_SIZE || new Set(chosen).size !== LINEUP_SIZE) throw new Error(`lineup needs ${LINEUP_SIZE} different players`);
   if (chosen.filter((player) => player.group === "GK").length !== 1) throw new Error("lineup needs exactly one goalkeeper");
   return chosen;
@@ -138,11 +142,14 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
   let coachMatch: CoachMatch | null = null;
   const waitingMatches: CoachMatch[] = [];
   const planOf = (clubId: string): CoachPlan | undefined => (clubId === state.coachClubId ? coach : waiting[clubId]);
+  // Players away with their national teams miss their clubs' matches, as if banned from them.
+  const onDuty = onDutyOn(state, state.date);
 
   const playFixture = (fixture: Fixture): Fixture => {
     const competition = state.competitions[fixture.competitionId];
     if (!competition) throw new Error(`fixture ${fixture.id} has no competition ${fixture.competitionId}`);
-    const suspended = withLoaneesFacingOwner(cards.suspended(fixture.competitionId), state, fixture);
+    const banned = withLoaneesFacingOwner(cards.suspended(fixture.competitionId), state, fixture);
+    const suspended = onDuty.size ? new Set([...banned, ...onDuty]) : banned;
     const coachClubId = [fixture.homeId, fixture.awayId].find((id) => id === state.coachClubId);
     if (coachClubId) refuseSuspended(coach.lineup ?? [], suspended);
     for (const clubId of [fixture.homeId, fixture.awayId]) refuseSuspended(waiting[clubId]?.lineup ?? [], suspended);

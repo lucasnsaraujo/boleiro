@@ -217,3 +217,18 @@ How the game uses them (`packages/engine/src/sim/sponsors/`): a club's deals are
 | Copa do Brasil yellows are cleared once, when the Série A clubs join | [Lance](https://www.lance.com.br/flamengo/flamengo-tera-cartoes-zerados-para-a-final-saiba-o-que-diz-o-regulamento-da-copa-do-brasil.html) (2022: cleared after the second phase, the round before Série A entered). |
 | Estaduais: three yellows per ban, cleared at the knockout stage | `guess`: state federations differ. |
 | Aggressive trait: 10% of players, carded twice as often | `guess`: no public rate. |
+
+## National teams (`packages/engine/src/sim/nations/`, `packages/data/pack/national-football.pack.json.gz`)
+
+| What | Source |
+|---|---|
+| Teams, confederations and their last real squads (90 teams, 2,410 players with club and market value) | Transfermarkt national-team squad pages, `pipeline/scrape_world.py` → `world/national-teams.pack.json.gz` |
+| FIFA men's ranking, 211 teams with points, dated 7 Oct 2026 | FotMob, `https://www.fotmob.com/api/data/teams?id=8256&ccode3=BRA` (`details.fifaRanking`), `pipeline/fetch_national_football.py` |
+| 2026 World Cup groups and days (11 Jun–19 Jul), Nations League 2026-27 League A groups and days | FotMob, `https://www.fotmob.com/api/data/leagues?id=77` and `?id=9806` |
+| Federation crests (90 teams, WebP in 64 and 128 px, `packages/data/pack/national/`) | Transfermarkt `/wappen/head/<id>.png`, ids from the participants pages the world scrape read, `pipeline/fetch_national_crests.py` |
+| FIFA codes and kit colours (`national-teams.csv`) | Codes from [Wikipedia, List of FIFA country codes](https://en.wikipedia.org/wiki/List_of_FIFA_country_codes); colours hand-picked from each home kit (`guess`) |
+| FIFA windows 2026–2030 | Wikipedia "FIFA International Match Calendar" (read 13 Oct 2026); March and June 2026 from the CBF's Série A table ([Portal Tela](https://www.portaltela.com/esporte/futebol/2026/01/27/paralisacoes-do-brasileirao-2026-coincidem-com-a-copa-do-mundo-confira/)) |
+| Ranking update (SUM: P + I·(W − We), importance 10–60, no loss in a final tournament's knockout) | [FIFA, men's ranking procedure](https://inside.fifa.com/fifa-world-ranking/procedure-men) |
+| 2030 World Cup 8 Jun–21 Jul, six hosts qualified; Copa América 2028 host open; Euro 2028 9 Jun–9 Jul | `.claude/research/immersion-sources.md` §3 (Wikipedia, FIFA Council 4 Oct 2023); host and the 2030 size (48 or 64) are config values in `nationalCompetitions.ts` |
+
+Guesses: Série A rests in the FIFA windows as the CBF's 2026 table does, but plays on through the World Cup (that table rests it from 1 Jun to 21 Jul; with that break at most 36 of its 38 rounds fit around the continental days, state championships and Copa do Brasil), and Séries B to D and Rápido's shared grid play through the windows, so the called-up miss those games; formats not yet published (UEFA's 2030 qualifiers, CONMEBOL's start date, the confederations without qualifiers in the game) are simplified and labelled in the code.

@@ -33,6 +33,8 @@ import type { CountryStructure, UnifiedDates, World, WorldClub } from "./world/w
 import { openAcademies } from "./youth/academy.js";
 import { seedGameSponsors } from "./sponsors/sponsorDeals.js";
 import type { SponsorFiles } from "./sponsors/sponsors.js";
+import type { NationalFootball } from "@boleiro/data/nationalFootball";
+import { openNations } from "./nations/openNations.js";
 
 /** A result-only country to start: its structure and its clubs level by level, top first. */
 export type CountryStart = { structure: CountryStructure; levels: readonly (readonly WorldClub[])[] };
@@ -70,6 +72,8 @@ export type NewGameOptions = {
   formats?: Formats;
   /** The kit deals and the brands of the offer pool (the sponsors pack); left out, the clubs have no sponsors on their kits. */
   sponsors?: SponsorFiles;
+  /** The national teams, their last squads, the FIFA ranking and 2026's draws (the national packs); left out, the game has no national football. */
+  nationalFootball?: NationalFootball;
 };
 
 /** The most human coaches one game takes, all on one computer (SPEC §14). */
@@ -158,7 +162,7 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, guests, stateChampionships = true, midSeasonWindow = true, hotSeat, coachName, marketClockSeconds, formats = REALISTA, sponsors }: NewGameOptions,
+  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, guests, stateChampionships = true, midSeasonWindow = true, hotSeat, coachName, marketClockSeconds, formats = REALISTA, sponsors, nationalFootball }: NewGameOptions,
 ): GameState {
   const countries = (world ?? []).map(({ structure, levels }) => ({ structure: inFormats(structure, formats), levels }));
   const fullTier = countriesOfHumans(countries, [coachClubId, ...(hotSeat?.otherCoaches ?? []).map((other) => other.clubId)], formats);
@@ -189,7 +193,7 @@ export function newGame(
       return { id, clubId, name, group, strength, ...(roles?.length ? { positions: [...roles] } : {}), contractUntil, ...openingProfile(player, `${season}-01-01`, traitRandom.next) };
     });
   const squadPlayers = [...dataPlayers, ...academyTopUp(clubs, dataPlayers, `${season}-01-01`, randomStream(seed ^ ACADEMY_STREAM_SALT).next)];
-  const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION, stateChampionships, playsContinentalCups(countries), formats, gridRounds, fullTier.map((country) => country.structure), countries.length > 0 && guests !== undefined);
+  const { calendar, competitions, fixtures } = startSeason(season, clubsById, random.next, FIRST_QUALIFICATION, stateChampionships, playsContinentalCups(countries), formats, gridRounds, fullTier.map((country) => country.structure), countries.length > 0 && guests !== undefined, nationalFootball !== undefined);
   const { economy, finances: boardFinances, wages } = openingFinances(clubsById, squadPlayers, competitions, fixtures, financeData, competitionMoney);
   const finances = (hotSeat?.otherCoaches ?? []).map((other) => other.clubId).reduce(withNewCoachRoom, withNewCoachRoom(boardFinances, coachClubId));
   const simPlayers = Object.fromEntries(squadPlayers.map((player) => [player.id, { ...player, wage: wages[player.id] ?? 0 }]));
@@ -228,7 +232,8 @@ export function newGame(
   const withAcademies = { ...withClock, youth: openAcademies(withClock) };
   const started = withCoachWorld(withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat));
   const named = coachName && !hotSeat ? { ...started, eggs: { log: [], coachName } } : started;
-  return sponsors ? seedGameSponsors(named, sponsors) : named;
+  const sponsored = sponsors ? seedGameSponsors(named, sponsors) : named;
+  return nationalFootball ? { ...sponsored, nations: openNations(nationalFootball, sponsored.players, season, seed) } : sponsored;
 }
 
 /** The game with its other human coaches waiting for their turns; a one-coach game stays as it is. */
