@@ -65,11 +65,11 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
   const buyerTier = view.tier(buyerId);
   const needs = view.needs(buyerId);
   if (!needs.weakest) return null;
-  // A short squad replaces departures near its own level; a full one upgrades its weakest starter.
+  // A short squad replaces departures near the middle of its squad; a full one upgrades its weakest starter.
   const replacing = needs.short > 0;
   const group = replacing ? needs.thinnest : needs.weakest.group;
   const band = replacing
-    ? { min: needs.level - REPLACEMENT_BAND.below, max: needs.level + REPLACEMENT_BAND.above }
+    ? { min: needs.middle - REPLACEMENT_BAND.below, max: needs.middle + REPLACEMENT_BAND.above }
     : { min: needs.weakest.strength + UPGRADE.min, max: needs.weakest.strength + UPGRADE.max };
   const pool = pools[group];
   const lo = firstAbove(pool, band.min);
@@ -117,7 +117,7 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
 
 /**
  * One market day of AI clubs buying from each other, or signing pre-contracts, within board limits:
- * short squads replace departures near their level from clubs at or below their tier, full squads
+ * short squads replace departures near the middle of their squad from clubs at or below their tier, full squads
  * upgrade their weakest starter.
  */
 export function tradeBetweenClubs(state: GameState, random: () => number): { state: GameState; events: (PlayerMoved | PreContractSigned)[] } {

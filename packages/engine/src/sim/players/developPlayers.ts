@@ -10,6 +10,7 @@ import { inventName } from "./inventName.js";
 import { marketOf, retirementChance, retirementWeight, type PlayerWantsToRetire } from "./retirement.js";
 import { freshCondition, rollTrait } from "./openingProfile.js";
 import { squadsOfGame } from "./squadsByClub.js";
+import { isClubFull } from "../transfers/squadCap.js";
 
 export type PlayerRetired = { type: "playerRetired"; playerId: string; clubId: string; name: string; age: number };
 /** A kid moved up into his club's squad; `byAssistant` when a human coach's assistant did it for him mid-season. */
@@ -198,14 +199,32 @@ export function professionalOf(prospect: Prospect, clubId: string, wage: number,
   };
 }
 
-/** The academy's best teenager at `group` old enough for the squad, if any; its 20-year-olds finish their last youth year. */
-export function readyProspect(academy: readonly Prospect[], group: PositionGroup, taken: ReadonlySet<string>): Prospect | null {
+/**
+ * The academy's best teenager at `group` old enough for the squad, if the club would keep him (`isKept`);
+ * its 20-year-olds finish their last youth year.
+ */
+export function readyProspect(academy: readonly Prospect[], group: PositionGroup, taken: ReadonlySet<string>, isKept: (kid: Prospect) => boolean): Prospect | null {
   let best: Prospect | null = null;
   for (const p of academy) {
     if (taken.has(p.id) || p.group !== group || p.age < YOUTH_MIN_AGE || p.age >= YOUTH_MIN_AGE + YOUTH_AGES) continue;
     if (!best || p.strength > best.strength || (p.strength === best.strength && p.id < best.id)) best = p;
   }
-  return best;
+  return best && isKept(best) ? best : null;
+}
+
+// guess: a club keeps a kid who plays within 4 points of the middle of its squad at his position.
+const FIT_MARGIN = 4;
+
+/** Whether the kid plays near the middle of `squad` at his position. */
+export function isNearSquadMiddle(prospect: Pick<Prospect, "group" | "strength">, squad: readonly SimPlayer[]): boolean {
+  const rivals = squad.filter((p) => p.group === prospect.group).map((p) => p.strength).sort((a, b) => a - b);
+  const middle = rivals[rivals.length >> 1];
+  return middle === undefined || prospect.strength >= middle - FIT_MARGIN;
+}
+
+/** Whether the club with `squad` would keep the kid: there is room and he plays near the middle of its squad at his position. */
+export function isWorthPromoting(state: GameState, prospect: Prospect, squad: readonly SimPlayer[]): boolean {
+  return !isClubFull(state, prospect.clubId, squad.length) && isNearSquadMiddle(prospect, squad);
 }
 
 /** What each tier pays for a given strength, from the wages of everyone playing in it. */
@@ -226,9 +245,10 @@ function tierWageRates(clubs: GameState["clubs"], players: readonly SimPlayer[])
  * The end-of-season turnover of every squad: each player ages a year and his strength drifts
  * with age, minutes and form toward his club's level (an academy graduate toward his potential, when
  * higher); veterans retire, sooner when they barely played or fell below their club's level, and a
- * human coach's veterans announce their last season instead; the academy's best teenagers at each position replace them and fill any squad
- * below 18, and Brazilian teenagers with invented names stand in where the academy has nobody (a club
- * without one). Runs on the first day of the new year,
+ * human coach's veterans announce their last season instead; the academy's best teenagers at each
+ * position replace them and fill any squad below 18, at an AI club only those who play near the middle
+ * of its squad (isNearSquadMiddle), and Brazilian teenagers with invented names at the club's level stand
+ * in where the academy has nobody ready (or no academy at all). Runs on the first day of the new year,
  * before promotions and relegations, so each academy produces players for the division it played in.
  */
 export function developPlayers(state: GameState): { state: GameState; events: (PlayerRetired | PlayerWantsToRetire | YouthPromoted)[] } {
@@ -285,13 +305,17 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
     const staying = squad.filter((p) => players[p.id]);
     const retiredGroups = squad.filter((p) => !players[p.id]).map((p) => p.group);
     const rate = wageRate(tierOf(club));
+    const squadNow = staying.flatMap((p) => players[p.id] ?? []);
+    const isHuman = isHumanClub(state, club.id);
     groupsToFill(staying, retiredGroups).forEach((group, i) => {
-      const prospect = readyProspect(academies.get(club.id) ?? [], group, taken);
+      const prospect = readyProspect(academies.get(club.id) ?? [], group, taken, (kid) => isHuman || isNearSquadMiddle(kid, squadNow));
       if (prospect) taken.add(prospect.id);
       const youth = prospect
         ? professionalOf(prospect, club.id, 0, date, random.next)
         : academyPlayer(`y${intake}-${club.id}-${i}`, club.id, divisionOf(club), group, date, random.next);
-      players[youth.id] = { ...youth, wage: Math.max(1, rate(youth.strength)) };
+      const newcomer = { ...youth, wage: Math.max(1, rate(youth.strength)) };
+      players[youth.id] = newcomer;
+      squadNow.push(newcomer);
       events.push({ type: "youthPromoted", playerId: youth.id, clubId: club.id });
     });
   }

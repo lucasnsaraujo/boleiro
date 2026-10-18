@@ -6,7 +6,7 @@ import { expectDomesticMoves, expectForeignersMostlyInSerieA, expectTalentToEuro
 describe.skipIf(!process.env.LONG_RUN)("ten seasons of transfers", () => {
   let flows: SeasonFlow[] = [];
   beforeAll(() => {
-    ({ flows } = transferFlow(1, 10));
+    ({ flows } = transferFlow(2, 10));
   }, 300_000);
 
   it("covers ten seasons", () => {

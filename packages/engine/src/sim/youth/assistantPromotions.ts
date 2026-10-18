@@ -1,9 +1,9 @@
 import { doesAssistantHandle } from "../coach/assistantDuties.js";
 import { asWaitingCoach, waitingCoachesOf } from "../coach/humanCoaches.js";
 import type { GameState } from "../gameState.js";
-import type { YouthPromoted } from "../players/developPlayers.js";
+import { isWorthPromoting, type YouthPromoted } from "../players/developPlayers.js";
 import { isMarketDay } from "../transfers/transferWindows.js";
-import { isWorthPromoting, promoteProspect } from "./moveProspect.js";
+import { promoteProspect } from "./moveProspect.js";
 
 /** On a market day, the seated coach's assistant promotes each kid of his academy the club would keep, if he runs the youth. */
 function promoteReady(state: GameState): { state: GameState; events: YouthPromoted[] } {

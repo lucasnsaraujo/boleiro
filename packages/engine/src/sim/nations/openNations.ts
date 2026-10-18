@@ -1,6 +1,6 @@
 import type { NationalFootball } from "@boleiro/data/nationalFootball";
 import { randomStream } from "../../engine/random.js";
-import type { SimPlayer } from "../gameState.js";
+import type { GameState, SimPlayer } from "../gameState.js";
 import { strengthFromValue } from "../world/strengthYardstick.js";
 import { nationalsByTeam } from "./callUps.js";
 import { competitionsOf } from "./nationalCompetitions.js";
@@ -9,12 +9,17 @@ import { ROLE_LETTERS, type Nations, type NationalTeam, type Outsiders } from ".
 // National football draws from a stream of its own, so the clubs' matches and money stay as the seed always gave them.
 const NATIONS_STREAM_SALT = 0x5e1ec;
 
-/** Each team's pool players the game has no squad place for: the pack's last real squad less the game's own players of the same name and citizenship. */
-function outsidersOf(football: NationalFootball, nationals: ReadonlyMap<string, readonly SimPlayer[]>): Record<string, Outsiders> {
+/**
+ * Each team's pool players the game has no squad place for: the pack's last real squad less the game's own players
+ * of the same citizenship, name and club (by Transfermarkt id), so a star abroad stays an outsider when someone in
+ * Brazil shares his name.
+ */
+function outsidersOf(football: NationalFootball, nationals: ReadonlyMap<string, readonly SimPlayer[]>, clubs: GameState["clubs"]): Record<string, Outsiders> {
   const pools: Record<string, Outsiders> = {};
+  const key = (name: string, clubTransfermarktId: string | null | undefined) => `${name}@${clubTransfermarktId ?? ""}`;
   for (const team of football.teams) {
-    const inGame = new Set((nationals.get(team.id) ?? []).map((p) => p.name));
-    const squad = football.squads.filter((p) => p.teamId === team.id && !inGame.has(p.name));
+    const inGame = new Set((nationals.get(team.id) ?? []).map((p) => key(p.name, clubs[p.clubId]?.transfermarktId)));
+    const squad = football.squads.filter((p) => p.teamId === team.id && !(p.clubTransfermarktId && inGame.has(key(p.name, p.clubTransfermarktId))));
     const listed = squad.flatMap((p) => (p.marketValueEur ? [p.marketValueEur] : []));
     const lowest = listed.length ? Math.min(...listed) : 0;
     pools[team.id] = {
@@ -34,7 +39,7 @@ function outsidersOf(football: NationalFootball, nationals: ReadonlyMap<string, 
  * pool's outsiders, and the season's competitions drawn (2026's World Cup and Nations League as they really were).
  * guess: the ranking the pack carries (7 Oct 2026) stands in for the one of the day the career starts.
  */
-export function openNations(football: NationalFootball, players: Readonly<Record<string, SimPlayer>>, season: number, seed: number): Nations {
+export function openNations(football: NationalFootball, { players, clubs }: Pick<GameState, "players" | "clubs">, season: number, seed: number): Nations {
   const points = new Map(football.ranking.rows.map((row) => [row.teamId, row.points]));
   const lowest = Math.min(...football.ranking.rows.map((row) => row.points));
   const teams: Record<string, NationalTeam> = Object.fromEntries(
@@ -44,7 +49,7 @@ export function openNations(football: NationalFootball, players: Readonly<Record
   const opened = competitionsOf(season, { teams, competitions: {}, matches: [] }, random.next, season === 2026 ? football.fixtures : []);
   return {
     teams,
-    outsiders: outsidersOf(football, nationalsByTeam(players, teams)),
+    outsiders: outsidersOf(football, nationalsByTeam(players, teams), clubs),
     ranked: football.ranking.rows.filter((row) => !(row.teamId in teams)).map((row) => ({ name: row.name, points: row.points })),
     rankingSource: { date: football.ranking.date, source: football.ranking.source },
     competitions: Object.fromEntries(opened.competitions.map((c) => [c.id, c])),
