@@ -5,6 +5,7 @@ import { REALISTA } from "../formats.js";
 import type { GameState, LeagueCompetition } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
+import { uefaMatchDays } from "../continental/uefaCups.js";
 import { loadEurope } from "./loadEurope.js";
 import { loadSouthAmerica } from "./loadSouthAmerica.js";
 
@@ -119,5 +120,19 @@ describe("a Realista career at a club whose league plays the calendar year", () 
     expect(dates.length).toBeGreaterThan(20);
     expect((dates[0] ?? "") >= "2026-01-24").toBe(true);
     expect((dates.at(-1) ?? "9999") <= "2026-12-06").toBe(true);
+  });
+});
+
+describe("a Realista career at a European club whose league plays the calendar year", () => {
+  it("opens its next season's cup off its league's and UEFA's days after Brazil's turn of the year", () => {
+    const bodo = playUntil(loadNewGame(5, { coachClubId: "tm-501", world, formats: REALISTA }), "2027-01-02");
+    const leagueDays = new Set([
+      ...Object.values(bodo.competitions).flatMap((c) => (c.kind === "league" && c.abroad?.country === "no" && c.season === 2027 ? c.stageDates.flat() : [])),
+      ...uefaMatchDays(2027, REALISTA),
+    ]);
+    const cup = bodo.world?.["no"]?.cup;
+    expect(cup?.season).toBe(2027);
+    expect(leagueDays.size).toBeGreaterThan(20);
+    expect((cup?.dates ?? []).filter((date) => leagueDays.has(date))).toEqual([]);
   });
 });

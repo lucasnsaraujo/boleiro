@@ -16,7 +16,7 @@ import { formatsOf } from "./formats.js";
 import { fileFullTierSeason, mostRounds, seasonMoves } from "./world/resultOnlyWorld.js";
 import { unifiedDatesOf } from "./seasonCalendar.js";
 import type { Country } from "./world/world.js";
-import { isFinished, turnsOnItsOwn } from "./world/turnSeasonsAbroad.js";
+import { fullTierDaysOf, isFinished, turnsOnItsOwn } from "./world/turnSeasonsAbroad.js";
 
 function leagueOf(state: GameState, division: Division): LeagueCompetition {
   const competition = Object.values(state.competitions).find((c) => c.kind === "league" && c.division === division && c.season === state.season);
@@ -103,7 +103,7 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
   const finances = renewFinances(state, clubs, competitions, fixtures, [...byDivision.values()]);
   const players = driftWagesToCap(state.players, finances);
   const unified = unifiedDatesOf(calendar);
-  const world = abroad.length && state.world ? { ...state.world, ...Object.fromEntries(abroad.map(({ country, tables }) => [country.structure.id, fileFullTierSeason(country, tables, season, unified)])) } : state.world;
+  const world = abroad.length && state.world ? { ...state.world, ...Object.fromEntries(abroad.map(({ country, tables }) => [country.structure.id, fileFullTierSeason(country, tables, season, unified, fullTierDaysOf(country.structure.id, competitions, season, formatsOf(state)))])) } : state.world;
   return {
     state: { ...state, season, clubs, players, calendar, competitions, fixtures, finances, rngState: random.state(), ...(world ? { world } : {}) },
     outcomes,
