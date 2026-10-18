@@ -12,6 +12,7 @@ import type { EggFound } from "@boleiro/engine/sim/eggs/eggBook";
 import { findCoachEgg } from "@boleiro/engine/sim/eggs/findEggs";
 import { answerEvent, type EventAnswered } from "@boleiro/engine/sim/events/runEvents";
 import { passTheSeat, swapSeat, waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
+import { keysTakenByOthers, matchPlanOf, withMatchPlan, type MatchPlan } from "@boleiro/engine/sim/coach/matchPlan";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import { applyLiveChange, type LiveChange } from "@boleiro/engine/sim/live/applyLiveChange";
 import { finishMatchDay } from "@boleiro/engine/sim/live/finishMatchDay";
@@ -56,7 +57,7 @@ import { nationalTeamPage, type NationalTeamPage } from "../nationalTeam/nationa
 import { readStoredSave, splitGame, writeSessionSave, writeSessionShards, type SaveShards, type SeatParts, type SplitGame, type StoredSave } from "./sessionSave.js";
 
 /** What a new game is started with; the app's new-game screen leaves `season` out, for the first season. */
-export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode" | "stateChampionships" | "midSeasonWindow" | "hotSeat" | "coachName" | "marketClockSeconds" | "formats" | "season">;
+export type NewGameChoices = Pick<NewGameOptions, "coachClubId" | "careerMode" | "stateChampionships" | "midSeasonWindow" | "hotSeat" | "coachName" | "marketClockSeconds" | "manualChangesOnlyInFinals" | "formats" | "season">;
 export type GameSummary = Pick<GameState, "date" | "season" | "coachClubId">;
 export type AdvanceResult = { date: IsoDate; events: DayEvent[] };
 export type PlayResult = { date: IsoDate; stop: StopReason; daysPlayed: number };
@@ -129,6 +130,8 @@ type CommandFields = {
   fireAssistant: Record<never, never>;
   /** The coach in the seat hands the armband to one of his players. */
   nameCaptain: { playerId: string };
+  /** The coach in the seat keeps a new match plan; refused when one of its keys is another coach's. */
+  setMatchPlan: { plan: MatchPlan };
   /** The coach in the seat puts a player on his watch list (`isWatched`) or takes him off it. */
   watchPlayer: { playerId: string; isWatched: boolean };
   /** The coach in the seat keeps a market search under `name`, in place of one saved under it before. */
@@ -152,6 +155,9 @@ type CommandFields = {
   /** The coach in the seat found an easter egg on the screen (a word typed). */
   findEgg: { eggId: string };
 };
+
+/** The match plan screen's view of the seated coach: his plan, the keys the other coaches took, and the house rule. */
+export type MatchPlanView = { plan: MatchPlan; keysTaken: { key: string; coachName: string }[]; isFinalsOnly: boolean };
 
 /** What a move on a kid of the academy answers: null when it went through, and the sale it made. */
 export type ProspectAnswer = { refusal: ProspectRefusal | null; sale?: ProspectSold };
@@ -199,6 +205,7 @@ export type CommandResults = {
   hireAssistant: { refusal: AssistantRefusal | null };
   fireAssistant: undefined;
   nameCaptain: undefined;
+  setMatchPlan: undefined;
   watchPlayer: Scouting;
   saveFilter: Scouting;
   deleteFilter: Scouting;
@@ -693,6 +700,9 @@ export function createEngineSession(files: GameFiles) {
       if (!game.coachClubId) throw new Error("a coach without a club names no captain");
       state = nameCaptain(game, game.coachClubId, playerId);
     },
+    setMatchPlan({ plan }) {
+      state = withMatchPlan(betweenDays("the match plan can't change"), plan);
+    },
     watchPlayer({ playerId, isWatched }) {
       scouting = watch(scouting, playerId, isWatched);
       return scouting;
@@ -836,6 +846,11 @@ export function createEngineSession(files: GameFiles) {
     /** The sponsors screen of the seated coach's club; null without a club. */
     sponsors(): SponsorsPage | null {
       return sponsorsPageOf(current());
+    },
+    /** The seated coach's match plan, the keys the other coaches' plans took, and whether the game's house rule leaves non-finals to the plans. */
+    matchPlan(): MatchPlanView {
+      const game = current();
+      return { plan: matchPlanOf(game), keysTaken: keysTakenByOthers(game), isFinalsOnly: game.manualChangesOnlyInFinals === true };
     },
     /** The national-team screen of `teamId`, the coach's national team or Brazil when left out; null in a game without national football. */
     nationalTeam(teamId?: string): NationalTeamPage | null {

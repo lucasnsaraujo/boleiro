@@ -6,6 +6,7 @@ import { aiPosture, DEFAULT_TACTICS, type Tactics } from "@boleiro/engine/sim/co
 import { neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
 import type { BoardPlayer, BoardSide, MatchMoment } from "@boleiro/engine/sim/coach/tacticsBoard";
 import { humanClubIds, waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
+import { planOfClub, type MatchPlan } from "@boleiro/engine/sim/coach/matchPlan";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
 import type { Fixture, IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { onPitchAt } from "@boleiro/engine/sim/live/aiSubstitutions";
@@ -45,8 +46,12 @@ export type CoachSide = {
   /** The formation the other side plays: a human rival's as of his last change, else its AI coach's. */
   rivalFormation: Formation;
   lastChangeMinute: number;
-  /** Whether the screen asks the coach about his side's red cards and injuries, or something else answers them. */
+  /** Whether the screen asks the coach about his side's red cards and injuries, or something else answers them; "matchPlan" when the house rule leaves the match to the plans. */
   incidentHandling: IncidentHandling;
+  /** His side's red cards and injuries his match plan answered, so their windows stay shut; none when it answered nothing. */
+  answeredByPlan?: { minute: number; playerId: string }[];
+  /** What the round needs of his match plan: his two keys, the tactics they cycle through, and whether he is asked his shootout order; left out, an empty plan. */
+  plan?: LivePlan;
   /** Who would kick a shootout now, in order, and whether the squad overruled the coach's order to get it. */
   shootout: { kickers: string[]; isOverruled: boolean };
   /** Who the opponent may field, to read its side at any minute for the tactics board (tacticsViewAt). */
@@ -56,6 +61,18 @@ export type CoachSide = {
   /** The half-time talk: where the side stands at the break, the assistant's tone for it, and the talk the coach gave with what it did. */
   halfTimeTalk: { moment: TalkMoment; suggested: TalkTone; given: (TalkEffect & { tone: TalkTone }) | null };
 };
+
+/** A coach's match plan as the live round uses it. */
+export type LivePlan = { tacticsKey?: string; timeOutKey?: string; savedTactics: Tactics[]; asksBeforeShootout: boolean };
+
+function livePlanOf(plan: MatchPlan | undefined): LivePlan {
+  return {
+    ...(plan?.tacticsKey ? { tacticsKey: plan.tacticsKey } : {}),
+    ...(plan?.timeOutKey ? { timeOutKey: plan.timeOutKey } : {}),
+    savedTactics: plan?.savedTactics ?? [],
+    asksBeforeShootout: plan?.asksBeforeShootout === true,
+  };
+}
 
 /** The opponent of a coach's match: its starters and bench at today's strength, its formation, its coach's tactics when he is human, and its last five results before today. */
 export type OpponentRoster = { clubId: string; name: string; starters: BoardPlayer[]; bench: BoardPlayer[]; formation: Formation; rivalTactics: Tactics | null; form: MatchResult[] };
@@ -141,7 +158,9 @@ function sideOf(live: LiveDay, open: CoachMatch, clubId: string, fixture: Fixtur
     tactics,
     rivalFormation: (isOwner ? open.rivalTactics : open.tactics)?.formation ?? aiFormationOf(state, side === "home" ? fixture.awayId : fixture.homeId),
     lastChangeMinute: open.lastChangeMinute,
-    incidentHandling: incidentHandling(state, clubId),
+    incidentHandling: incidentHandling(state, clubId, fixture),
+    answeredByPlan: (open.answeredByPlan ?? []).flatMap((answer) => (answer.clubId === clubId ? [{ minute: answer.minute, playerId: answer.playerId }] : [])),
+    plan: livePlanOf(planOfClub(state, clubId)),
     shootout: { kickers: shootout.kickers.map((p) => p.id), isOverruled: shootout.isOverruled },
     opponent,
     halfTimeTalk: { moment: talkMoment, suggested: assistantTalk(talkMoment), given: open.halfTimeTalks?.[clubId] ?? null },

@@ -15,6 +15,8 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.assistant();
     case "sponsors":
       return session.sponsors();
+    case "matchPlan":
+      return session.matchPlan();
     case "nationalTeam":
       return session.nationalTeam(...request.args);
     case "betSticker":
