@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ContinentalCompetition } from "../gameState.js";
+import { isInFifaWindow } from "../nations/fifaCalendar.js";
 import { CONMEBOL_CUPS, cupStageDates } from "./conmebolCups.js";
 
 const GROUPS = 8;
@@ -36,5 +37,16 @@ describe("the Libertadores round of 16 draw", () => {
     expect(ties.map(([host]) => host).toSorted()).toEqual(hosts.toSorted());
     expect(ties.map(([, visitor]) => visitor).toSorted()).toEqual(visitors.toSorted());
     expect(ties.filter(([host, visitor]) => host.slice(1) === visitor.slice(1))).toEqual([]);
+  });
+});
+
+describe("the CONMEBOL quarter-finals", () => {
+  it("fall before the September FIFA window in every season of FIFA's published calendar, so no club plays one without its internationals", () => {
+    for (let season = 2026; season <= 2030; season++)
+      for (const cup of ["libertadores", "sul-americana"] as const) {
+        const quarterFinals = cupStageDates(cup, season).at(-3) ?? [];
+        expect(quarterFinals.length).toBeGreaterThan(0);
+        expect(quarterFinals.filter(isInFifaWindow), `${cup} ${season}`).toEqual([]);
+      }
   });
 });
