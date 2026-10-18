@@ -18,6 +18,10 @@
   margin: 0 0 10px auto;
 }
 
+.history-head .history-awards + .history-awards {
+  margin-left: 0;
+}
+
 .history-head .btn-main {
   flex: none;
   margin: 0 0 10px;

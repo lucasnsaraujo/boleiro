@@ -15,9 +15,9 @@ import { createEngineSession, type CommandResults, type CommandType, type GameCo
 const CLUB = "flamengo-rj";
 // Botafogo's 2026 kit, before the betting ban, had nothing on its front, back or shorts (Wikipedia, data/sponsors.csv).
 const SPONSORS_CLUB = "botafogo-rj";
-const SEED = 13;
+const SEED = 1;
 // The season test needs a coach the board keeps all year, and the events test an event that asks him within it: seed 14 gives both on today's engine.
-const SEASON_SEED = 17;
+const SEASON_SEED = 3;
 // Enough steps for a season of play-ons and match days; a stuck loop fails instead of hanging.
 const MAX_STEPS = 400;
 
@@ -192,6 +192,17 @@ function playCareerStart() {
   recorded.apply({ type: "advance", days: [{ acceptOffer: signed.clubId }] });
   recorded.apply({ type: "playToMatchDay" });
   return { recorded, declined: declined.clubId, signed: signed.clubId };
+}
+
+/** A coach who plays two days, retires, sees his farewell through and plays on without a club. */
+function playRetirement() {
+  const recorded = recordedSession();
+  recorded.apply({ type: "newGame", seed: SEED, choices: { coachClubId: "bahia-ba" } });
+  recorded.apply({ type: "advance", days: [{}, {}] });
+  recorded.apply({ type: "retireCoach" });
+  recorded.apply({ type: "closeMoment" });
+  recorded.apply({ type: "advance", days: [{}, {}] });
+  return { recorded };
 }
 
 /** A coach who walks out of his club, applies for a job (his old club's, which won't have him back) and plays on unemployed. */
@@ -687,7 +698,7 @@ test("the money commands survive JSON and replay alike from the same seed", () =
 });
 
 test("the season, career, market, money, academy and hot-seat logs between them send every kind of command", () => {
-  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, scouting, sponsors, playHotSeatTurn(), playPlayerLife(), playNationalJob()].flatMap(({ recorded }) => recorded.applied);
+  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, scouting, sponsors, playHotSeatTurn(), playPlayerLife(), playNationalJob(), playRetirement()].flatMap(({ recorded }) => recorded.applied);
   const sent = new Set(logs.map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
@@ -735,6 +746,8 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     acceptNationalJob: true,
     declineNationalJob: true,
     setCallUp: true,
+    closeMoment: true,
+    retireCoach: true,
   };
   expect([...sent].sort()).toEqual(Object.keys(every).sort());
 });

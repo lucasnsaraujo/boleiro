@@ -49,6 +49,7 @@ function openHub(given: Services) {
     ["/offers", "Propostas abertas"],
     ["/sacked", "Demissão aberta"],
     ["/season-end", "Fim de temporada aberto"],
+    ["/moment", "Momento aberto"],
     ["/", "Início"],
   ];
   renderApp(
@@ -178,6 +179,17 @@ test.each<[TurningPoint["kind"], string]>([
   expect(await screen.findByText(opened)).toBeTruthy();
 });
 
+test("a career moment waiting sends the hub to its scene, but only after the turning points", async () => {
+  const given = await services("bahia-ba");
+  await given.engine.apply({ type: "retireCoach" });
+  openHub(given);
+  expect(await screen.findByText("Momento aberto")).toBeTruthy();
+  cleanup();
+  const firing: TurningPoint = { kind: "fired", firing: { type: "coachFired", clubId: "bahia-ba", date: "2026-06-10", isYou: true, position: 18, targetPosition: 10 } };
+  openHub({ ...given, engine: { ...given.engine, turningPoint: async () => firing } });
+  expect(await screen.findByText("Demissão aberta")).toBeTruthy();
+});
+
 const columnOf = (table: HTMLElement, title: string) => within(table).getAllByRole("columnheader").findIndex((header) => header.textContent === title);
 const valuesIn = (group: HTMLElement, column: number) =>
   within(group)
@@ -284,4 +296,14 @@ test("the squad's old address opens the club screen, where the squad now lives",
 test("a coach without a club has no squad", async () => {
   openHub(await services(null));
   expect(await screen.findByText("Sem clube, sem elenco.")).toBeTruthy();
+});
+
+test("a retired coach's hub says the career is over, plays on and links his trajectory", async () => {
+  const given = await services("bahia-ba");
+  await given.engine.apply({ type: "retireCoach" });
+  await given.engine.apply({ type: "closeMoment" });
+  openHub(given);
+  expect(await screen.findByText(/Carreira encerrada\./)).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Seguir o campeonato" })).toBeTruthy();
+  expect(screen.getByRole("link", { name: "Ver a trajetória" })).toBeTruthy();
 });

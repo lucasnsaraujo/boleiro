@@ -63,8 +63,8 @@ export function nationalJobsAfter(state: GameState, competition: NationalCompeti
       events.push({ type: "nationalCoachFired", teamId: job.teamId });
     }
   }
-  // A hot-seat game's coaches would share one national job: the federations leave them to their clubs.
-  if (decidesJobs && !next.offer && !state.waitingCoaches?.length) {
+  // A hot-seat game's coaches would share one national job: the federations leave them to their clubs. A retired coach hears from none.
+  if (decidesJobs && !next.offer && !state.waitingCoaches?.length && !state.coach.retiredOn) {
     const open = teams.filter((id) => isEarlyOut(id) && id !== next.job?.teamId && reputationFor(nations, id) <= coach.reputation).sort((a, b) => rankOf(nations, a) - rankOf(nations, b));
     const best = open[0];
     if (best) {

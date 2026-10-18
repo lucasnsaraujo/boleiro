@@ -1,5 +1,6 @@
 import type { Division, Role } from "@boleiro/data/players";
 import type { AlbumPage, KeptMatch, SquadMark } from "../album/album.js";
+import type { CareerMoments } from "../moments/careerMoments.js";
 import type { IsoDate } from "../gameState.js";
 
 /** Competition ids without the season, so titles line up across years: `serie-a`, `copa-do-brasil`, `state-sp`. */
@@ -99,7 +100,7 @@ export type SeasonRecord = {
 /** A player's strength as it stood through one season; it only changes at the yearly turnover. */
 export type StrengthMark = { season: number; strength: number };
 
-export type CoachStint = { clubId: string; from: IsoDate; until: IsoDate | null; left: "fired" | "contractEnded" | "moved" | "resigned" | null };
+export type CoachStint = { clubId: string; from: IsoDate; until: IsoDate | null; left: "fired" | "contractEnded" | "moved" | "resigned" | "retired" | null };
 
 export type CoachRecord = {
   stints: CoachStint[];
@@ -112,6 +113,8 @@ export type CoachRecord = {
   album?: AlbumPage[];
   /** The finals his clubs played and the matches that won them a league, kept whole; a record from before the album has none. */
   keptMatches?: KeptMatch[];
+  /** His career's big moments, waiting and shown, and what the moments engine keeps to find them; a record from before moments has none. */
+  moments?: CareerMoments;
 };
 
 /** Everything a save remembers about its past. Sizes grow per season and per player-club pair, never per match. */

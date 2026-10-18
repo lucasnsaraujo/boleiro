@@ -62,6 +62,7 @@ import { tieBreakOf } from "../tieBreaks.js";
 import { FULL_TIME, hasExtraTimeIn, matchEndOf, scorersFor, type MatchEvent } from "./matchTimeline.js";
 import { recordCoachMeetings } from "../rivalries/coachRivalries.js";
 import { nationsDay } from "../nations/nationsDay.js";
+import { runMoments } from "../moments/runMoments.js";
 
 function fixturesByCompetition(fixtures: readonly Fixture[]): Map<string, Fixture[]> {
   const byCompetition = new Map<string, Fixture[]>();
@@ -302,8 +303,10 @@ export function finishMatchDay(live: LiveDay): DayResult {
   events.push(...happened.events);
   const eggs = findEggs(happened.state, state, state.date, events, live.matches);
   events.push(...eggs.events);
-  const recorded = recordDayEvents(eggs.state, events, state);
-  return state.waitingCoaches ? { state: recorded, events, waitingEvents } : { state: recorded, events };
+  const moments = runMoments(recordDayEvents(eggs.state, events, state), state, events);
+  events.push(...moments.events);
+  moments.waitingEvents.forEach((own, index) => waitingEvents[index]?.push(...own));
+  return state.waitingCoaches ? { state: moments.state, events, waitingEvents } : { state: moments.state, events };
 }
 
 /** The waiting coaches with the tactics they last chose: in their match today, else on their turn. */

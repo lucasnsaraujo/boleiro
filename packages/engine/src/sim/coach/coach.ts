@@ -8,7 +8,8 @@ import type { Tactics } from "./tactics.js";
 /** `salary` is monthly, in BRL; the contract runs to the end of `untilSeason`. */
 export type CoachContract = { salary: number; untilSeason: number };
 
-export type JobOffer = { clubId: string; salary: number; untilSeason: number; expiresOn: IsoDate };
+/** `isComeBack` marks a former club calling back the idol it lost. */
+export type JobOffer = { clubId: string; salary: number; untilSeason: number; expiresOn: IsoDate; isComeBack?: true };
 
 /** The player's coach. His club is `GameState.coachClubId`; `reputation` runs from 0 (unknown) to 100. */
 export type Coach = {
@@ -34,6 +35,8 @@ export type Coach = {
   assistant?: Assistant;
   /** The last players who retired at his club, who may come back as his assistant. */
   formerPlayers?: FormerPlayer[];
+  /** The day he hung up his clipboard: no club, and no club calls him again. A coach still working has none. */
+  retiredOn?: IsoDate;
 };
 
 /** Whether the club still holds the coach's resignation against him. */
