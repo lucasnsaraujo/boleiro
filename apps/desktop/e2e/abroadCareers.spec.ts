@@ -25,6 +25,19 @@ async function startAtArsenal(page: Page) {
   await expect(page).toHaveURL(/#\/hub$/);
 }
 
+// A game seed whose board keeps Arsenal's coach through 2026/27 and into the 2027/28 opener, with no decisions taken.
+const ARSENAL_KEEPS_ITS_COACH = 1;
+
+/** Starts the coach's game over from `seed`'s world at his club, through the e2e build's engine hook. */
+async function startOverFrom(page: Page, seed: number) {
+  await page.evaluate(async (from) => {
+    const engine = window.boleiroEngine;
+    if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
+    const { coachClubId } = await engine.read(["coachClubId"]);
+    await engine.apply({ type: "newGame", seed: from, choices: { coachClubId } });
+  }, seed);
+}
+
 /** The first date of the coach's games in the competitions whose ids start with `prefix`, from `from` on. */
 async function firstGameOf(page: Page, prefix: string, from = "0000"): Promise<string> {
   return page.evaluate(
@@ -78,6 +91,7 @@ test("a Realista career at Arsenal plays England's 2026/27 into Brazil's 2027, t
   await page.clock.install();
   await page.goto("/");
   await startAtArsenal(page);
+  await startOverFrom(page, ARSENAL_KEEPS_ITS_COACH);
   const firstGame = await firstGameOf(page, "gb-eng-1-2026");
   expect(firstGame >= "2026-08-15").toBe(true);
 
