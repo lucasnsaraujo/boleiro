@@ -36,6 +36,12 @@ describe("loadFinances", () => {
     expect(outside).toEqual([]);
   });
 
+  // Náutico earned about R$32M in Série C; Fortaleza R$444M in Série A before going down.
+  it("keeps the accounts of Série B clubs between R$20M and R$500M", () => {
+    const outside = clubs.filter((row) => row.division === "B" && (row.revenue.total < 20 * MILLION || row.revenue.total > 500 * MILLION));
+    expect(outside).toEqual([]);
+  });
+
   it("keeps every wage bill below 1.2 times revenue", () => {
     expect(rows.filter((row) => row.wageBill >= row.revenue.total * 1.2)).toEqual([]);
   });
