@@ -23,8 +23,14 @@ function ownTermsYearly(state: Pick<GameState, "sponsors">, clubId: string): num
 }
 
 // guess: a club earning more than anyone in its division's data loses a quarter of the excess (in
-// log terms) from sponsorship, membership and other income each season.
+// log terms) from sponsorship, membership and other income each season, from its second season there.
 const CEILING_PULL = 0.25;
+// Sponsorship, membership, other income and running costs move by the gap between the divisions' typical
+// revenues to this power: ×0.82 from Série A to B. Athletico's members paid 18% less in its 2025 Série B year
+// than in 2024 (R$59.3m to R$48.4m) while its sponsors and other commercial income held (R$132.2m to
+// R$133.0m) and its TV money fell 59% (club's 2025 accounts, note 18, copy hosted by Poder360,
+// https://static.poder360.com.br/uploads/2026/07/Relatorio_Club_Athletico_Paranaense_2025.pdf).
+const LOYALTY_EXPONENT = 0.13;
 
 /**
  * CONMEBOL's money for next season's continental entrants, in BRL at today's rate (the dollar moves
@@ -49,9 +55,9 @@ function continentalPrizes(ended: GameState, serieATable: readonly string[]): Ma
 /**
  * Season-start money: clubs that changed division get that division's TV money and ticket price
  * (scaled by how far the coach set his club's price from the old division's average).
- * Sponsorship, membership, other income, crowds and running costs move by the square root of the
- * gap between the divisions' typical revenues (guess: fans and sponsors stay partly loyal, and a
- * stadium does not shrink with the division).
+ * Crowds move by the square root of the gap between the divisions' typical crowds (guess); sponsorship,
+ * membership, other income and running costs move far less (LOYALTY_EXPONENT): sponsors and members
+ * stay mostly loyal, and a stadium does not shrink with the division.
  */
 export function renewFinances(
   ended: GameState,
@@ -81,7 +87,7 @@ export function renewFinances(
     if (!before || !club) return [id, finance];
     const from = tierOf(before);
     const to = tierOf(club);
-    const step = Math.sqrt(economy.typicalRevenue[to] / economy.typicalRevenue[from]);
+    const loyalty = (economy.typicalRevenue[to] / economy.typicalRevenue[from]) ** LOYALTY_EXPONENT;
     const crowdRatio = Math.sqrt(economy.matchday[to].attendance / economy.matchday[from].attendance);
     const bonus = rewarded.has(id) ? Math.round(SPONSOR_BONUS_SHARE * Math.max(0, finance.sponsorship - ownTermsYearly(ended, id))) : 0;
     // A price the coach set keeps its distance from the average; everyone else's stays on it.
@@ -97,9 +103,9 @@ export function renewFinances(
     // The prizes a club expects come out of its other income, so what last season took out goes back
     // in before this season's comes out; together they stay the club's unsimulated income.
     const unsimulated = finance.otherIncome + finance.prizesOutOfOtherIncome;
-    const commercial = (finance.sponsorship + finance.membership + unsimulated) * step;
+    const commercial = (finance.sponsorship + finance.membership + unsimulated) * loyalty;
     const excess = (tv + expectedTickets + commercial) / economy.revenueCeiling[to];
-    const pull = step * (excess > 1 ? excess ** -CEILING_PULL : 1);
+    const pull = loyalty * (excess > 1 && from === to ? excess ** -CEILING_PULL : 1);
     // The season turns on 1 January after December's closing, so `month` already holds January's
     // first day (coach salary, forced-sale fees); it carries over with the bonus and continental money added.
     const { revenue } = finance.month;
@@ -115,7 +121,7 @@ export function renewFinances(
       prizesOutOfOtherIncome,
       membership: Math.round(finance.membership * pull),
       membershipAnchor: Math.round(finance.membershipAnchor * pull),
-      infrastructure: Math.round(finance.infrastructure * step),
+      infrastructure: Math.round(finance.infrastructure * loyalty),
       ticketPrice,
       baseCrowd,
       expectedTickets,

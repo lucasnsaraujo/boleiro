@@ -44,6 +44,13 @@ describe("club finances across a season change", () => {
     for (const id of outcome("b").promotedIds) expect(financeOf(after, id).sponsorship).toBeGreaterThan(financeOf(before, id).sponsorship);
   });
 
+  it("keeps most of a relegated club's sponsors and members, as Athletico kept its sponsors and 82% of its members' money in Série B", () => {
+    for (const id of outcome("a").relegatedIds) {
+      expect(financeOf(after, id).sponsorship).toBeGreaterThanOrEqual(0.8 * financeOf(before, id).sponsorship);
+      expect(financeOf(after, id).membership).toBeGreaterThanOrEqual(0.8 * financeOf(before, id).membership);
+    }
+  });
+
   it("pays the Série A champion a sponsor bonus", () => {
     const champion = outcome("a").championId;
     expect(financeOf(after, champion).month.revenue.sponsorship).toBeGreaterThan(0);
