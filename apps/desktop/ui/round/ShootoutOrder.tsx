@@ -16,6 +16,7 @@ const FIRST_KICKS = 5;
 type Props = {
   club: RoundClub | undefined;
   opponent: RoundClub | undefined;
+  /** The match's score from the coach's side: his goals first. */
   score: string;
   /** In a hot-seat round, the coach the round stopped for. */
   coachName?: string;
@@ -104,7 +105,7 @@ export function ShootoutOrder({ club, opponent, score, coachName, kickers, squad
             <h2 id="shootout-title" ref={title} tabIndex={-1}>
               Pênaltis
             </h2>
-            <p>Empatou. Quem bate, e em que ordem? Só quem terminou em campo.</p>
+            <p>Vai para os pênaltis. Quem bate, e em que ordem? Só quem terminou em campo.</p>
           </div>
           <div className="inc-score">
             <div className="inc-sc" aria-label={`${club?.shortName ?? ""} contra ${opponent?.shortName ?? ""}, ${score}`}>

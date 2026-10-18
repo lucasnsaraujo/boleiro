@@ -147,8 +147,9 @@ const GOAL_NOTES: Partial<Record<GoalKind, string>> = { penalty: "pên.", freeKi
 // How long the note a plan key leaves on the band stays, before it peels off.
 const PLAN_NOTE_MS = 2600;
 
-/** What a coach's plan key did, noted on the band for a moment: his saved tactics now on, or why nothing happened. */
-type PlanNote = { title: string; text: string; tone: "plan" | "lock"; count: number };
+/** What a coach's plan key did, noted on the band for a moment: his saved tactics now on, the house rule's no, or why nothing happened. */
+type PlanNote = { title: string; text: string; tone: "plan" | "lock" | "warn"; count: number };
+const NOTE_ICONS: Record<PlanNote["tone"], string> = { plan: "ph-bold ph-swap", lock: "ph-bold ph-gavel", warn: "ph-bold ph-warning" };
 
 /** The first human coach whose match ended level at `minute` and whose plan asks him his shootout order before it, unless he gave it. */
 function shootoutAskOf(round: LiveRound, minute: number, hotSeat: HotSeatView | null, asked: ReadonlySet<string>): Coached | null {
@@ -197,8 +198,9 @@ export function Round() {
   // What a coach's plan key just did, on the band for a moment.
   const [planNote, setPlanNote] = useState<PlanNote | null>(null);
   const planNoteTimer = useRef<number | undefined>(undefined);
-  // A tactics key's change on its way; another press waits for it.
-  const isCyclingTactics = useRef(false);
+  // Tactics keys pressed and not yet sent, by club, in order: they go one at a time, and the clock holds while one is on its way.
+  const tacticsPresses = useRef<string[]>([]);
+  const [isTacticsInFlight, setTacticsInFlight] = useState(false);
   const [varHold, setVarHold] = useState<VarHold | null>(null);
   const varTimers = useRef<number[]>([]);
   // The clubs whose incident window was left at the minute the round stands on, so the next coach's opens.
@@ -258,7 +260,8 @@ export function Round() {
 
   // The round runs to 120 when one of its matches goes to extra time.
   const end = round ? roundEndOf(round) : FULL_TIME;
-  const isRunning = round !== null && speed > 0 && !isLineupOpen && !isTableOpen && incident === null && shootoutAsk === null && varHold === null && minute < end;
+  const isRunning =
+    round !== null && speed > 0 && !isLineupOpen && !isTableOpen && incident === null && shootoutAsk === null && varHold === null && !isTacticsInFlight && minute < end;
   useEffect(
     () => () => {
       varTimers.current.forEach((timer) => clearTimeout(timer));
@@ -319,7 +322,8 @@ export function Round() {
     const stopNow = () => {
       if (reason === "halfTime" || reason === "extraTimeBreak" || reason === "coachMatch" || askNow) pause();
       setIncident(incidentNow);
-      setShootoutAsk(askNow);
+      // One window at a time: a shootout order waits for the red card or injury window of the minute to close.
+      setShootoutAsk(incidentNow ? null : askNow);
     };
     // A shootout order asked for at the final whistle ends the round only once it is given.
     const finishNow = () => {
@@ -521,6 +525,8 @@ export function Round() {
     setIncident(next);
     if (next) return;
     callOutSubstitutions();
+    const ask = after && shootoutAskOf(after, minute, hotSeat, askedShootouts.current);
+    if (ask) return setShootoutAsk(ask);
     setSpeed(resumeSpeed.current);
   }
 
@@ -557,8 +563,10 @@ export function Round() {
       const next = shootoutAskOf(changed, minute, hotSeat, askedShootouts.current);
       setShootoutAsk(next);
       if (next) return;
-      if (minute >= roundEndOf(changed)) void finish();
-      else setSpeed(resumeSpeed.current);
+      const reason = pauseReason(changed, minute);
+      // Another coach's match may break here for its extra time: the round stays stopped for it.
+      if (reason === "fullTime") void finish();
+      else if (reason === null) setSpeed(resumeSpeed.current);
     } catch {
       setError("A ordem não valeu. Tente de novo.");
     } finally {
@@ -586,21 +594,36 @@ export function Round() {
     openLineup(clubId);
   }
 
-  /** A coach's tactics key: his side moves to the next tactics his plan keeps ready, at the minute on the clock, and the clock keeps running. */
-  async function cycleTactics(coached: Coached) {
-    const next = nextSavedTactics(coached.side);
-    const who = coached.coachName && (round?.humanSides?.length ?? 0) > 1 ? `${coached.coachName}: ` : "";
-    if (next === null) return noteOnBand({ title: "Plano de jogo", text: `${who}nenhuma tática salva no plano.`, tone: "lock" });
-    if (isCyclingTactics.current) return;
-    isCyclingTactics.current = true;
+  /**
+   * A coach's tactics key: his side moves to the next tactics his plan keeps ready, at the minute on the
+   * clock. Presses go one at a time, each from the tactics the one before put on, and the clock holds while
+   * one is on its way, so the board never plays minutes of the match as it was before the change.
+   */
+  async function cycleTactics(clubId: string) {
+    tacticsPresses.current.push(clubId);
+    if (tacticsPresses.current.length > 1) return;
+    setTacticsInFlight(true);
     try {
-      await changeLive(coached.clubId, { savedTactics: next });
-      const saved = coached.side.plan?.savedTactics[next];
-      if (saved) noteOnBand({ title: `Tática ${next + 1}`, text: `${who}${saved.formation} · ${POSTURE_LABEL[saved.posture].toLowerCase()}`, tone: "plan" });
-    } catch {
-      noteOnBand({ title: "Plano de jogo", text: "A tática não entrou. Tente de novo.", tone: "lock" });
+      for (let pressed = tacticsPresses.current[0]; pressed !== undefined; pressed = tacticsPresses.current[0]) {
+        const latest = roundRef.current;
+        const side = latest && sideOf(latest, pressed);
+        const human = latest?.humanSides?.find((other) => other.clubId === pressed);
+        const who = human && (latest?.humanSides?.length ?? 0) > 1 ? `${human.coachName}: ` : "";
+        const next = side ? nextSavedTactics(side) : null;
+        const saved = next === null ? undefined : side?.plan?.savedTactics[next];
+        if (next === null || !saved) noteOnBand({ title: "Plano de jogo", text: `${who}nenhuma tática salva no plano.`, tone: "warn" });
+        else {
+          try {
+            await changeLive(pressed, { savedTactics: next });
+            noteOnBand({ title: `Tática ${next + 1}`, text: `${who}${saved.formation} · ${POSTURE_LABEL[saved.posture].toLowerCase()}`, tone: "plan" });
+          } catch {
+            noteOnBand({ title: "Plano de jogo", text: "A tática não entrou. Tente de novo.", tone: "warn" });
+          }
+        }
+        tacticsPresses.current.shift();
+      }
     } finally {
-      isCyclingTactics.current = false;
+      setTacticsInFlight(false);
     }
   }
 
@@ -644,7 +667,7 @@ export function Round() {
       if (!press) return;
       event.preventDefault();
       const { coached } = press;
-      if (press.command === "tactics") return void cycleTactics(coached);
+      if (press.command === "tactics") return void cycleTactics(coached.clubId);
       if (isLockedToPlan(coached.clubId)) return noteLocked(coached.coachName);
       openLineup(coached.clubId);
       wasRunning.current = true;
@@ -861,7 +884,7 @@ export function Round() {
       {error && !isLineupOpen && !incident && !shootoutAsk && <p className="status error live-error">{error}</p>}
       {planNote && (
         <div key={planNote.count} className={`live-plan-note ${planNote.tone}`} role="status">
-          <i className={planNote.tone === "plan" ? "ph-bold ph-swap" : "ph-bold ph-gavel"} aria-hidden="true" />
+          <i className={NOTE_ICONS[planNote.tone]} aria-hidden="true" />
           <span>
             <b>{planNote.title}</b>
             {planNote.text}
@@ -914,7 +937,7 @@ export function Round() {
           key={shootoutAsk.clubId}
           club={round.clubs[shootoutAsk.clubId]}
           opponent={round.clubs[shootoutMatch.homeId === shootoutAsk.clubId ? shootoutMatch.awayId : shootoutMatch.homeId]}
-          score={`${shootoutMatch.score.home} × ${shootoutMatch.score.away}`}
+          score={shootoutMatch.homeId === shootoutAsk.clubId ? `${shootoutMatch.score.home} × ${shootoutMatch.score.away}` : `${shootoutMatch.score.away} × ${shootoutMatch.score.home}`}
           {...(shootoutAsk.coachName && coached.length > 1 ? { coachName: shootoutAsk.coachName } : {})}
           kickers={shootoutKickersOf(shootoutAsk.side, shootoutMatch.events, shootoutAsk.clubId)}
           squad={shootoutAsk.side.squad}

@@ -372,6 +372,7 @@
 .pln-sub-row {
   display: grid;
   grid-template-columns: 104px auto minmax(0, 250px) auto minmax(0, 250px) 28px;
+  justify-content: start;
   align-items: center;
   gap: 8px;
   animation: tac-row-in 240ms var(--e-out) backwards;
@@ -837,11 +838,8 @@
   }
 
   .pln-sub-row {
-    grid-template-columns: 96px minmax(0, 1fr) minmax(0, 1fr) 28px;
-  }
-
-  .pln-arrow {
-    display: none;
+    grid-template-columns: 92px auto minmax(0, 1fr) auto minmax(0, 1fr) 28px;
+    gap: 6px;
   }
 }
 

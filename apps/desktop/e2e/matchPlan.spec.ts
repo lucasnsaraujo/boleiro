@@ -72,8 +72,15 @@ test("a match plan answers a red card or injury without a window, the tactics ke
 
     if (!hasCycled) {
       await stepMinute(page);
-      await page.keyboard.press("q");
-      await expect(page.getByRole("status").filter({ hasText: "Tática 1" })).toContainText("4-3-3");
+      // Kicked off in the second saved tactics, the key goes to the first, then the second, then the first again.
+      for (const [place, formation] of [
+        [1, "4-3-3"],
+        [2, "4-4-2"],
+        [1, "4-3-3"],
+      ] as const) {
+        await page.keyboard.press("q");
+        await expect(page.getByRole("status").filter({ hasText: `Tática ${place}` })).toContainText(formation);
+      }
       await page.keyboard.press("p");
       await expect(lineup).toContainText(/· 4-3-3 · /);
       await expect(page.getByRole("button", { name: "Pausar" })).toHaveAttribute("aria-pressed", "true");

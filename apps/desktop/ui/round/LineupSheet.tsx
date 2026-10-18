@@ -77,7 +77,7 @@ type Props = {
 };
 
 /** What the lineup sheet needs to open the coach's match plan over it. */
-export type PlanAccess = { club: Pick<Club, "id" | "shortName" | "colours">; load: () => Promise<MatchPlanView>; save: (plan: MatchPlan) => Promise<void> };
+type PlanAccess = { club: Pick<Club, "id" | "shortName" | "colours">; load: () => Promise<MatchPlanView>; save: (plan: MatchPlan) => Promise<void> };
 
 /** The club's chemistry meter, its captain, the assistant's pick for the armband, and how the coach names another. */
 type Captaincy = { value: number; captainId: string | null; suggestedId: string | null; onName: (playerId: string) => Promise<number> };

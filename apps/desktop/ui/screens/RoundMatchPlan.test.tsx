@@ -189,3 +189,30 @@ test("in a hot-seat round each coach's time-out key opens his own match, whoever
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Escalação" })).toBeNull());
   }
 });
+
+test("the clock holds while a tactics key's change is on its way, so the board never runs ahead of the redrawn match", async () => {
+  const saved = { formation: "3-5-2" as const, posture: "attacking" as const, penaltyTakerId: null };
+  let release = () => {};
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const slowTactics = (engine: EngineClient): EngineClient => {
+    function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+    async function apply(command: GameCommand): Promise<unknown> {
+      if (command.type === "changeLive" && command.change.savedTactics !== undefined) await held;
+      return engine.apply(command);
+    }
+    return { ...engine, apply };
+  };
+  const given = await onMatchDay({ tacticsKey: "q", savedTactics: [saved] }, {}, slowTactics);
+  await kickOff(given);
+  play(3);
+  await user().keyboard("q");
+  const minute = shownMinute();
+  play(5);
+  expect(shownMinute()).toBe(minute);
+  release();
+  expect(await screen.findByText("Tática 1")).toBeTruthy();
+  play(3);
+  expect(shownMinute()).toBeGreaterThan(minute);
+});

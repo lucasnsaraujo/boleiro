@@ -1,8 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import type { Club } from "@boleiro/data/clubs";
-import { FORMATIONS, type Formation } from "@boleiro/engine/engine/formations";
+import { FORMATIONS } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
-import { MAX_SAVED_TACTICS, type MatchPlan, type MinuteSub } from "@boleiro/engine/sim/coach/matchPlan";
+import { MAX_SAVED_TACTICS, MOST_MINUTE_SUBS, type MatchPlan, type MinuteSub } from "@boleiro/engine/sim/coach/matchPlan";
 import type { Tactics } from "@boleiro/engine/sim/coach/tactics";
 import type { MatchPlanView } from "@boleiro/game-client/engine/createEngineSession";
 import type { SquadPlayer } from "@boleiro/game-client/round/matchDayPlan";
@@ -10,7 +10,7 @@ import { useDialogFocus } from "../app/useDialogFocus.js";
 import { Select, type SelectOption } from "../controls/Select.js";
 import { Crest } from "../clubs/Crest.js";
 import { mainRole, ROLE_LETTER, ROLE_NAME } from "./lineupBoard.js";
-import { planKeyProblem, redCardExample, shapeName, type PlanKey } from "./matchPlanDraft.js";
+import { linesOfEleven, planKeyProblem, redCardExample, shapeName, type PlanKey } from "./matchPlanDraft.js";
 import { MARKING_LABEL, PLAY_LABEL, POSTURE_LABEL } from "./tacticsLabels.js";
 import "./matchPlanPanel.css";
 
@@ -32,7 +32,6 @@ type Props = {
 const ENERGY_FLOORS = [40, 50, 60, 70] as const;
 const PLANNED_MINUTES = [30, 45, 55, 60, 65, 70, 75, 80, 85] as const;
 const KICKS = 5;
-const MOST_MINUTE_SUBS = 5;
 const ROWS_OF_LINE: readonly PositionGroup[] = ["ATT", "MID", "DEF"];
 const LINE_WORD: Record<PositionGroup, string> = { GK: "goleiro", DEF: "defensor", MID: "meio-campista", ATT: "atacante" };
 
@@ -96,12 +95,13 @@ function Seg<T extends string | number>({ label, options, value, labelOf, onPick
  * sent off: the card lands on a centre-back, a man of the line that gives way walks off, and a defender
  * runs on into the gap. It plays once each time the rule is switched on or the formation changes.
  */
-function ShapeKeeping({ formation, isOn }: { formation: Formation; isOn: boolean }) {
-  const { before, after, payer } = redCardExample(formation);
+function ShapeKeeping({ eleven, isOn }: { eleven: readonly SquadPlayer[]; isOn: boolean }) {
+  const { before, after, payer } = redCardExample(linesOfEleven(eleven));
+  const shape = shapeName(before);
   const victim = Math.floor((before.DEF - 1) / 2);
   return (
     <figure className={isOn ? "pln-shape on" : "pln-shape"} aria-label={`${shapeName(before)} com um defensor expulso fica ${shapeName(after)}`}>
-      <div className="pln-pitch" key={`${formation}-${isOn}`} aria-hidden="true">
+      <div className="pln-pitch" key={`${shape}-${isOn}`} aria-hidden="true">
         {ROWS_OF_LINE.map((line) => (
           <div key={line} className={`pln-line ${line}`}>
             {Array.from({ length: before[line] }, (_, i) => {
@@ -303,7 +303,7 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
           <p className="pln-house">
             <i className="ph-bold ph-gavel" aria-hidden="true" />
             <span>
-              <b>Regra da casa:</b> fora das finais ninguém mexe no time durante o jogo. Só este plano age.
+              <b>Regra da casa:</b> fora das finais ninguém mexe no time durante o jogo. Só o plano mexe no time.
             </span>
           </p>
         )}
@@ -322,7 +322,7 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
               <span className="k">A janela abre e você decide. O reserva de cada titular, abaixo, ainda entra se ele machucar.</span>
             )
           }
-          figure={<ShapeKeeping formation={tactics.formation} isOn={plan.keepsShape === true} />}
+          figure={<ShapeKeeping eleven={starters} isOn={plan.keepsShape === true} />}
         />
 
         <Rule
@@ -379,7 +379,7 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
 
         <Rule
           name="Reserva de cada um"
-          hint="Quem entra se ele machucar ou cansar"
+          hint="Quem entra se ele se machucar ou cansar"
           className="pln-named-rule"
           control={
             <ul className="pln-named" aria-label="Reserva de cada titular">
