@@ -1,6 +1,5 @@
 /* Live round: the coach's match as the cover over a striped pitch, every match of the round as a Brasfoot row below. */
 .live {
-  --expo-out: cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -356,7 +355,7 @@
 }
 
 .roll {
-  animation: digit-roll var(--t-slow) var(--expo-out) both;
+  animation: digit-roll var(--t-slow) var(--e-out) both;
 }
 
 @keyframes digit-roll {
@@ -545,10 +544,12 @@
 }
 
 /* The board: every match of the round, competition by competition. */
+/* No scroll anchoring: when the súmula lands above the rows, they move down and glide back (Round.tsx) the same in every engine. */
 .live-list {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  overflow-anchor: none;
   padding: 10px 0 16px;
 }
 
@@ -600,7 +601,7 @@
 }
 
 .live-others-toggle .ph-caret-right {
-  transition: transform 220ms var(--expo-out);
+  transition: transform var(--t-base) var(--e-out);
 }
 
 .live-others-toggle[aria-expanded="true"] .ph-caret-right {
@@ -661,8 +662,8 @@
 
 .live-r .sbox .roll {
   animation:
-    digit-roll 520ms var(--expo-out) 80ms both,
-    box-flash var(--box-flash) ease-out both;
+    digit-roll 520ms var(--e-out) 80ms both,
+    box-flash var(--box-flash) var(--e-out) both;
 }
 
 @keyframes box-flash {
@@ -731,7 +732,7 @@
   pointer-events: none;
   opacity: 0;
   transform-origin: left center;
-  animation: row-flood var(--flood, 1500ms) var(--expo-out) both;
+  animation: row-flood var(--flood, 1500ms) var(--e-out) both;
 }
 
 @keyframes row-flood {
@@ -843,8 +844,13 @@
   }
 }
 
-/* The coach's goal: an outlined GOL slides across the cover behind the score, holds, and leaves. */
+/*
+ * The coach's goal: an outlined GOL rushes in from the left, still speeding up when it slams into place on the
+ * stinger's brass hit (--gol-beat, set from the sound catalog), and the impact punches it a little larger; a
+ * filled shadow follows a beat behind for depth. It drifts while the crowd roars, then is pulled away.
+ */
 .gol-sweep {
+  --gol-hold: 1000ms;
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -860,25 +866,68 @@
   color: transparent;
   -webkit-text-stroke: 2px rgba(255, 204, 0, 0.65);
   opacity: 0;
-  animation: gol-sweep 1600ms var(--expo-out) both;
+  animation:
+    gol-in var(--gol-beat) var(--e-peel) both,
+    gol-impact var(--t-base) var(--e-out) var(--gol-beat) both,
+    gol-drift calc(var(--gol-hold) + var(--t-slow)) linear var(--gol-beat) both,
+    gol-out var(--t-slow) var(--e-peel) calc(var(--gol-beat) + var(--gol-hold)) forwards;
 }
 
-@keyframes gol-sweep {
-  0% {
+.gol-sweep::after {
+  content: "GOL";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 204, 0, 0.14);
+  -webkit-text-stroke: 0;
+  transform: translate(10px, 8px);
+  animation: gol-shadow calc(var(--gol-beat) + var(--t-base)) var(--e-out) both;
+}
+
+@keyframes gol-in {
+  from {
     opacity: 0;
-    transform: translateX(-28%) skewX(-12deg);
+    transform: translateX(-34%) skewX(-20deg) scaleX(1.12);
   }
-  28% {
+  to {
     opacity: 1;
-    transform: translateX(0) skewX(-12deg);
+    transform: skewX(-12deg);
   }
-  72% {
+}
+
+@keyframes gol-impact {
+  from {
+    scale: 1.07;
+  }
+}
+
+@keyframes gol-drift {
+  to {
+    translate: 3% 0;
+  }
+}
+
+@keyframes gol-out {
+  from {
     opacity: 1;
-    transform: translateX(2%) skewX(-12deg);
+    transform: skewX(-12deg);
   }
-  100% {
+  to {
     opacity: 0;
-    transform: translateX(22%) skewX(-12deg);
+    transform: translateX(24%) skewX(-6deg);
+  }
+}
+
+@keyframes gol-shadow {
+  from {
+    opacity: 0;
+    transform: translate(-60px, 8px);
+  }
+  40% {
+    opacity: 0;
   }
 }
 
@@ -965,13 +1014,13 @@
   flex-direction: column;
   width: 460px;
   color: var(--ink);
-  animation: round-sheet-in 340ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation: round-sheet-in 340ms var(--e-out) backwards;
 }
 
 .tsheet .trows {
   overflow: auto;
   padding: 0 14px 14px;
-  animation: round-sheet-rows-in 260ms cubic-bezier(0.16, 1, 0.3, 1) 70ms backwards;
+  animation: round-sheet-rows-in 260ms var(--e-out) 70ms backwards;
 }
 
 @keyframes round-sheet-in {
@@ -1053,7 +1102,7 @@
  * goal does, then the scorers line and the board come up. Nothing that takes a click moves.
  */
 .round-kickoff .live-track i {
-  animation: round-kickoff-line 640ms var(--expo-out) backwards;
+  animation: round-kickoff-line 640ms var(--e-out) backwards;
 }
 
 .round-kickoff .live-tm.h {
@@ -1065,7 +1114,7 @@
 }
 
 .round-kickoff .digit > span:not(.roll) {
-  animation: digit-roll 560ms var(--expo-out) 180ms backwards;
+  animation: digit-roll 560ms var(--e-out) 180ms backwards;
 }
 
 .round-kickoff .digit + .x + .digit > span:not(.roll) {
@@ -1076,11 +1125,11 @@
 .round-kickoff .live-stad,
 .round-kickoff .live-evs,
 .round-kickoff .live-right {
-  animation: round-fade-in 320ms ease-out 280ms backwards;
+  animation: round-fade-in 320ms var(--e-out) 280ms backwards;
 }
 
 .round-kickoff ~ .live-list {
-  animation: round-fade-in 360ms ease-out 200ms backwards;
+  animation: round-fade-in 360ms var(--e-out) 200ms backwards;
 }
 
 @keyframes round-kickoff-line {
@@ -1113,30 +1162,34 @@
 @media (prefers-reduced-motion: reduce) {
   .roll,
   .round-kickoff .digit > span:not(.roll) {
-    animation: round-fade-in 240ms ease-out both;
+    animation: round-fade-in 240ms var(--e-out) both;
   }
 
   .live-r .sbox .roll {
     animation:
-      round-fade-in 240ms ease-out both,
-      box-flash var(--box-flash) ease-out both;
+      round-fade-in 240ms var(--e-out) both,
+      box-flash var(--box-flash) var(--e-out) both;
   }
 
   .flash {
-    animation: round-flood-fade var(--flood, 1500ms) ease-out both;
+    animation: round-flood-fade var(--flood, 1500ms) var(--e-out) both;
   }
 
   .live-r .gol {
-    animation: round-gol-fade var(--flood, 1500ms) ease-out both;
+    animation: round-gol-fade var(--flood, 1500ms) var(--e-out) both;
   }
 
   .live-plan-note {
-    animation: round-gol-fade 2600ms ease-out both;
+    animation: round-gol-fade 2600ms var(--e-out) both;
   }
 
   .gol-sweep {
     transform: skewX(-12deg);
-    animation: round-gol-fade 1600ms ease-out both;
+    animation: round-gol-fade 1600ms var(--e-out) both;
+  }
+
+  .gol-sweep::after {
+    animation: none;
   }
 
   .round-kickoff .live-track i,
@@ -1144,7 +1197,7 @@
   .round-kickoff .live-tm.a,
   .tsheet,
   .tsheet .trows {
-    animation: round-fade-in 240ms ease-out backwards;
+    animation: round-fade-in 240ms var(--e-out) backwards;
   }
 
   .live-track i {

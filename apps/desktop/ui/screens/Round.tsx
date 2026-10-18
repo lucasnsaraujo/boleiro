@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState, type ReactNode } from "react";
+import { memo, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router";
 import type { Club } from "@boleiro/data/clubs";
@@ -12,7 +12,9 @@ import { Crest } from "../clubs/Crest.js";
 import type { AdvanceResult } from "@boleiro/game-client/engine/createEngineSession";
 import type { HotSeatView } from "@boleiro/game-client/hub/hotSeat";
 import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
+import { DURATION, EASE } from "../motion/easing.js";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
+import { tintRow } from "../motion/rowSlides.js";
 import { useFlip } from "../motion/useFlip.js";
 import { hasOwnArrows } from "../round/hasOwnArrows.js";
 import { HotSeatPitches, type Seat } from "../round/HotSeatPitches.js";
@@ -41,8 +43,9 @@ import { useStickerLift } from "../round/useStickerLift.js";
 import type { Substitution } from "@boleiro/engine/sim/live/applyLiveChange";
 import type { Formation } from "@boleiro/engine/engine/formations";
 import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
-import { crowdLevel, roundCues, thinCues } from "../sound/roundCues.js";
+import { crowdLevel, heardCues, roundCues, thinCues, varDecisionCues } from "../sound/roundCues.js";
 import { useSound } from "../sound/SoundProvider.js";
+import { stingerBeat } from "../sound/stingerBeat.js";
 import copaDoBrasil from "../../../../design/mocks/img/competitions/copa-do-brasil.svg";
 import serieA from "../../../../design/mocks/img/competitions/serie-a.svg";
 import serieB from "../../../../design/mocks/img/competitions/serie-b.svg";
@@ -65,7 +68,6 @@ const COMPETITION_LOGOS = [
 ] as const;
 // The slip of the table on the cover: the coach's club between its neighbours.
 const TABLE_CARD_ROWS = 3;
-const EXPO_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 const NO_COLOURS = { primary: "#eef3e8", secondary: "#0a1a10" };
 /** The crowd quietens while the clock stands still: half-time, a pause, a sheet open. */
 const PAUSED_CROWD = 0.6;
@@ -302,9 +304,10 @@ export function Round() {
     if (!live || minute <= from) return;
     shownMinute.current = minute;
     engine.apply({ type: "seeMinute", minute }).catch(() => undefined);
-    for (const cue of thinCues(roundCues(live, from, minute), resumeSpeed.current)) sound.play(cue);
-    // A VAR check holds back what it rules on: its match's goal or red card waits for the decision.
+    // A VAR check holds back what it rules on: its match's goal or red card, seen and heard, waits for the decision.
     const held = varCheckAt(live, minute);
+    const side = live.coach?.side ?? null;
+    for (const cue of heardCues(thinCues(roundCues(live, from, minute, held?.fixtureId ?? null), resumeSpeed.current), side)) sound.play(cue);
     const isHeldBack = (fixtureId: string) => held?.fixtureId === fixtureId;
     const goals = goalsBetween(live, from, minute);
     celebrate(live, goals.filter((goal) => !isHeldBack(goal.fixtureId)));
@@ -334,7 +337,9 @@ export function Round() {
       finishNow();
       return;
     }
+    sound.play("varCheck");
     holdForVar(held, () => {
+      for (const cue of heardCues(varDecisionCues(live, held), side)) sound.play(cue);
       celebrate(live, goals.filter((goal) => isHeldBack(goal.fixtureId)));
       stopNow();
     }, finishNow);
@@ -654,6 +659,19 @@ export function Round() {
     tabelaAoVivo: isDrivable && round.table !== null && (() => openSheet(setTableOpen)),
   });
 
+  // Where the board's rows sat at the last render, so they can glide down from there when the súmula lands above them.
+  const board = useRef<HTMLDivElement>(null);
+  const rowsTop = useRef<number | null>(null);
+  const hasReport = round !== null && minute >= end;
+  const hadReport = useRef(hasReport);
+  useLayoutEffect(() => {
+    const rows = board.current?.querySelector<HTMLElement>("[data-board-rows]");
+    if (!rows) return;
+    if (hasReport && !hadReport.current && rowsTop.current !== null) makeRoomForReport(rows, rowsTop.current - rows.offsetTop);
+    hadReport.current = hasReport;
+    rowsTop.current = rows.offsetTop;
+  });
+
   const crowd = round && result === null && minute < end ? crowdLevel(round, minute) * (isRunning ? 1 : PAUSED_CROWD) : null;
   useEffect(() => sound.setCrowd(crowd), [sound, crowd]);
   useEffect(() => () => sound.setCrowd(null), [sound]);
@@ -892,19 +910,21 @@ export function Round() {
         </div>
       )}
 
-      <div className="live-list">
+      <div ref={board} className="live-list">
         {minute >= end && <MatchReport round={round} />}
-        {openGroups.map((group) => groupSection(group, isOnlyMine && !group.rows.some((m) => m.isHuman)))}
-        {otherGroups.length > 0 && (
-          <div className="live-others" hidden={isOnlyMine}>
-            <button type="button" className="live-g live-others-toggle" aria-expanded={isOtherLeaguesOpen} aria-controls="live-other-leagues" onClick={() => setOtherLeaguesOpen(!isOtherLeaguesOpen)}>
-              <i className="ph-bold ph-caret-right" aria-hidden="true" />
-              Outras ligas
-              <small>{otherMatchCount === 1 ? "1 jogo" : `${otherMatchCount} jogos`}</small>
-            </button>
-            <div id="live-other-leagues">{otherGroups.map((group) => groupSection(group, !isOtherLeaguesOpen))}</div>
-          </div>
-        )}
+        <div data-board-rows>
+          {openGroups.map((group) => groupSection(group, isOnlyMine && !group.rows.some((m) => m.isHuman)))}
+          {otherGroups.length > 0 && (
+            <div className="live-others" hidden={isOnlyMine}>
+              <button type="button" className="live-g live-others-toggle" aria-expanded={isOtherLeaguesOpen} aria-controls="live-other-leagues" onClick={() => setOtherLeaguesOpen(!isOtherLeaguesOpen)}>
+                <i className="ph-bold ph-caret-right" aria-hidden="true" />
+                Outras ligas
+                <small>{otherMatchCount === 1 ? "1 jogo" : `${otherMatchCount} jogos`}</small>
+              </button>
+              <div id="live-other-leagues">{otherGroups.map((group) => groupSection(group, !isOtherLeaguesOpen))}</div>
+            </div>
+          )}
+        </div>
       </div>
 
       {isTableOpen && table && (
@@ -1119,7 +1139,7 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
   return (
     <section className={`live-cover has-pitch${hasSeats ? " has-seats" : ""}${isKickOff ? " round-kickoff" : ""}${varHold && varHold.phase !== "leaving" ? " is-var" : ""}`} aria-label="Seu jogo">
       {golCount > 0 && (
-        <div key={golCount} className="gol-sweep" aria-hidden="true">
+        <div key={golCount} className="gol-sweep" style={{ ["--gol-beat" as string]: `${stingerBeat("goalStinger")}ms` }} aria-hidden="true">
           GOL
         </div>
       )}
@@ -1339,24 +1359,14 @@ function TableSheet({ note, onClose, children }: { note: string; onClose: () => 
   );
 }
 
-const ROSE = "rgba(17, 132, 66, 0.2)";
-const FELL = "rgba(215, 50, 42, 0.16)";
-
-/** A table row slides to its new place, tinted green if it rose and red if it fell; with reduced motion only the tint fades. */
-function slideTableRow(row: HTMLElement, offset: number) {
-  if (typeof row.animate !== "function") return;
-  const tint = offset > 0 ? ROSE : FELL;
-  const slides = !prefersReducedMotion();
-  const at = (y: number) => (slides ? { transform: `translateY(${y}px)` } : {});
-  row.animate(
-    [
-      { ...at(offset), boxShadow: `inset 0 0 0 999px ${tint}` },
-      { ...at(0), boxShadow: `inset 0 0 0 999px ${tint}`, offset: 0.55 },
-      { ...at(0), boxShadow: "inset 0 0 0 999px transparent" },
-    ],
-    { duration: 1500, delay: 180, easing: EXPO_OUT, fill: "backwards" },
-  );
+/** At the final whistle the súmula lands above the board, and the rows glide down from where they were to make room for it. */
+function makeRoomForReport(rows: HTMLElement, offset: number) {
+  if (typeof rows.animate !== "function" || prefersReducedMotion()) return;
+  rows.animate([{ transform: `translateY(${offset}px)` }, { transform: "none" }], { duration: DURATION.slow, easing: EASE.out });
 }
+
+/** A live table row slides to its new place once the goal that moved it has flashed, glowing green if it rose and red if it fell. */
+const slideTableRow = tintRow({ duration: 1500, delay: 180 });
 
 /** Table rows that slide to their new places when the order changes (FLIP). */
 function TableRows({ rows, clubs, coachClubId, isFull = false }: { rows: readonly LiveTableRow[]; clubs: Readonly<Record<string, RoundClub>>; coachClubId: string | null; isFull?: boolean }) {

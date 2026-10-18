@@ -417,11 +417,11 @@
 /* Switching the skin is a CRT going off to a bright line and coming back on with the other picture. */
 @media (prefers-reduced-motion: no-preference) {
   [data-skin-switch="off"] .app {
-    animation: w98-off 240ms cubic-bezier(0.6, 0, 0.8, 0.4) both;
+    animation: w98-off 240ms var(--e-peel) both;
   }
 
   [data-skin-switch="on"] .app {
-    animation: w98-on 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: w98-on 520ms var(--e-out) both;
   }
 
   [data-skin-switch] body {

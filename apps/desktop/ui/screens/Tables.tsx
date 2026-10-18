@@ -11,8 +11,7 @@ import { competitionName } from "@boleiro/game-client/format/competitionName";
 import { formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import { nextMatch } from "../hub/hubSelectors.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
-import { prefersReducedMotion } from "../motion/reducedMotion.js";
-import { springTiming } from "../motion/springEasing.js";
+import { liftRow } from "../motion/rowSlides.js";
 import { useFlip } from "../motion/useFlip.js";
 import { Select } from "../controls/Select.js";
 import { useMatchFile } from "../matchPage/MatchFile.js";
@@ -542,31 +541,7 @@ const OUTCOMES: Record<Outcome, { letter: string; word: string }> = {
   loss: { letter: "D", word: "Derrota" },
 };
 
-// Damping ratio 0.94: rows settle with weight and no visible overshoot, as in the squad table.
-const ROW_SLIDE = springTiming({ stiffness: 500, damping: 42 });
-// A moving row rides one layer higher for each row it travels, up to 9, under the sticky header (tables.css) at 10.
-const ROW_HEIGHT = 28;
-const ROW_LAYERS = 9;
-
-/**
- * A row that changed place between two rounds slides from where it was, lifted with a shadow; the farther it
- * travels the higher it rides over the others. With reduced motion it only fades back in.
- */
-function slideStandingsRow(row: HTMLElement, offset: number) {
-  if (typeof row.animate !== "function") return;
-  if (prefersReducedMotion()) {
-    row.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
-    return;
-  }
-  const zIndex = String(Math.min(ROW_LAYERS, 1 + Math.round(Math.abs(offset) / ROW_HEIGHT)));
-  row.animate(
-    [
-      { transform: `translateY(${offset}px)`, boxShadow: "0 10px 22px rgba(20, 35, 26, 0.28)", zIndex },
-      { transform: "none", boxShadow: "0 0 0 rgba(20, 35, 26, 0)", zIndex },
-    ],
-    ROW_SLIDE,
-  );
-}
+const slideStandingsRow = liftRow(28);
 
 function Movement({ places }: { places: number }) {
   if (places === 0) return null;

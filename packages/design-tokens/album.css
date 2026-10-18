@@ -326,5 +326,6 @@ table.tb { width: 100%; border-collapse: collapse; }
 .dots { border: 0; border-top: 2px dotted var(--line-2); }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+  /* Everything lands in its last frame at once; a loop plays once, so it can't flicker at 1 ms a turn. */
+  *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
 }

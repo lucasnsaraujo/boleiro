@@ -212,7 +212,7 @@
 }
 
 .ab-leftpage:not(.is-settled) .ab-stk {
-  animation: ab-stick 540ms var(--e-slap) calc(var(--i, 0) * 22ms + 280ms) both;
+  animation: ab-stick var(--t-stamp) var(--e-slap) calc(var(--i, 0) * 22ms + 280ms) both;
 }
 
 /* Each sticker drops from just above the page, a little turned, and is pressed flat with a small overshoot. */
@@ -414,7 +414,7 @@ a.ab-stk:hover::after {
   color: var(--ink-2);
   transition:
     transform var(--t-base) var(--e-out),
-    background-color var(--t-fast) ease-out;
+    background-color var(--t-fast) var(--e-out);
 }
 
 .ab-years button small {
@@ -526,13 +526,13 @@ a.ab-stk:hover::after {
 .ab-turn.is-forward .ab-leaf {
   animation:
     ab-turn-forward 760ms var(--e-in-out) both,
-    ab-leaf-out 140ms ease-out 690ms both;
+    ab-leaf-out 140ms var(--e-out) 690ms both;
 }
 
 .ab-turn.is-back .ab-leaf {
   animation:
     ab-turn-back 760ms var(--e-in-out) both,
-    ab-leaf-out 140ms ease-out 690ms both;
+    ab-leaf-out 140ms var(--e-out) 690ms both;
 }
 
 @keyframes ab-turn-forward {
@@ -644,7 +644,7 @@ a.ab-stk:hover::after {
   transition:
     transform 320ms var(--e-out),
     box-shadow 320ms var(--e-out);
-  animation: ab-plate-in 520ms var(--e-slap) calc(var(--i, 0) * 70ms + 200ms) both;
+  animation: ab-plate-in var(--t-stamp) var(--e-slap) calc(var(--i, 0) * 70ms + 200ms) both;
 }
 
 li:nth-child(3n + 1) > .ab-plate {
@@ -732,7 +732,7 @@ li:nth-child(3n + 2) > .ab-plate {
   box-shadow:
     0 0 0 2.5px var(--yellow),
     0 10px 16px -8px rgba(20, 35, 26, 0.5);
-  animation: ab-plate-in 560ms var(--e-slap) calc(var(--i, 0) * 80ms + 360ms) both;
+  animation: ab-plate-in var(--t-stamp) var(--e-slap) calc(var(--i, 0) * 80ms + 360ms) both;
 }
 
 .ab-idol:nth-child(1) {
@@ -887,7 +887,7 @@ li:nth-child(3n + 2) > .ab-plate {
   box-shadow:
     0 3px 0 var(--yellow-d),
     0 0 0 4px rgba(255, 255, 255, 0.35);
-  animation: ab-slap 560ms var(--e-slap) 380ms both;
+  animation: ab-slap var(--t-stamp) var(--e-slap) 380ms both;
 }
 
 @keyframes ab-slap {
@@ -929,7 +929,7 @@ li:nth-child(3n + 2) > .ab-plate {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   transform: rotate(-8deg);
-  animation: ab-stamp 520ms var(--e-slap) 620ms both;
+  animation: ab-stamp var(--t-stamp) var(--e-slap) 620ms both;
 }
 
 @keyframes ab-stamp {
@@ -952,7 +952,7 @@ li:nth-child(3n + 2) > .ab-plate {
   background: rgba(0, 0, 0, 0.18);
   color: inherit;
   font-size: 16px;
-  transition: background-color var(--t-fast) ease-out;
+  transition: background-color var(--t-fast) var(--e-out);
 }
 
 .ab-tp-x:hover {
@@ -1009,7 +1009,7 @@ li:nth-child(3n + 2) > .ab-plate {
   font-stretch: var(--wide);
   font-weight: 900;
   font-size: 44px;
-  animation: ab-slap 480ms var(--e-slap) 760ms both;
+  animation: ab-slap var(--t-stamp) var(--e-slap) 760ms both;
 }
 
 .ab-tp-digits b:last-child {
@@ -1089,7 +1089,7 @@ li:nth-child(3n + 2) > .ab-plate {
 .ab-tp-story .note {
   max-width: 290px;
   font-size: 12.5px;
-  animation: ab-pin 520ms var(--e-slap) calc(var(--i, 0) * 130ms + 1150ms) both;
+  animation: ab-pin var(--t-stamp) var(--e-slap) calc(var(--i, 0) * 130ms + 1150ms) both;
 }
 
 .ab-tp-story .note:nth-child(even) {
@@ -1150,8 +1150,8 @@ li:nth-child(3n + 2) > .ab-plate {
   font-size: 12.5px;
   color: var(--ink-2);
   transition:
-    background-color var(--t-fast) ease-out,
-    color var(--t-fast) ease-out;
+    background-color var(--t-fast) var(--e-out),
+    color var(--t-fast) var(--e-out);
 }
 
 .ab-room-filter button small {
@@ -1219,7 +1219,7 @@ li:nth-child(3n + 2) > .ab-plate {
   border-radius: var(--r-m);
   background: var(--paper);
   box-shadow: inset 0 0 0 1px var(--line);
-  animation: ab-plate-in 520ms var(--e-slap) calc(var(--i, 0) * 90ms + 120ms) both;
+  animation: ab-plate-in var(--t-stamp) var(--e-slap) calc(var(--i, 0) * 90ms + 120ms) both;
 }
 
 .ab-counters b {

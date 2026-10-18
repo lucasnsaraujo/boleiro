@@ -9,14 +9,16 @@ import "./moments.css";
 export const ARTBOARD = { width: 1280, height: 720 };
 // The last frame holds a second after the choreography ends, as the mocks' clock does.
 const HOLD_MS = 1000;
+// A cue whose beat the clock passed more than this long ago (a frame held up by a busy tab) stays quiet rather than land late.
+const CUE_GRACE_MS = 400;
 
 type Clock = {
   addTick: (tick: Tick) => () => void;
+  /** Plays `cue` when the scene's clock passes `at` ms. */
+  addCue: (cue: Cue, at: number) => () => void;
   /** The milliseconds since the scene started, frozen while it isn't playing. */
   now: () => number;
   scale: number;
-  /** Whether the scene is playing now, not skipped or ended. */
-  isPlaying: () => boolean;
 };
 
 const ClockContext = createContext<Clock | null>(null);
@@ -57,18 +59,13 @@ export function useCanvasTick(make: (surface: Surface) => Tick) {
   return canvas;
 }
 
-/** Plays a sound once when the scene's clock passes `at`, while it plays; a skipped scene stays quiet. */
+/**
+ * Plays a sound once when the scene's clock passes `at`, while it plays; a skipped scene stays quiet. With
+ * less motion the scene shows its last frame at once, but its sounds still come on their beats.
+ */
 export function useCueAt(cue: Cue, at: number) {
-  const { engine } = useSound();
   const clock = useContext(ClockContext);
-  const played = useRef(false);
-  useTick((t) => {
-    if (t < at) played.current = false;
-    else if (!played.current && clock?.isPlaying() && t < at + 400) {
-      played.current = true;
-      engine.play(cue);
-    }
-  });
+  useEffect(() => clock?.addCue(cue, at), [clock, cue, at]);
 }
 
 type Props = {
@@ -91,7 +88,12 @@ type Props = {
  * to the last frame, "Ver de novo" plays it again; with less motion asked for, the last frame shows at once.
  */
 export function MomentStage({ durationMs, backdrop, tone, label, className, actions, children }: Props) {
+  const { engine } = useSound();
   const area = useRef<HTMLDivElement>(null);
+  const cues = useRef(new Set<{ cue: Cue; at: number }>());
+  // The last scene time the cues were checked against, so each plays as the clock crosses it.
+  const heardUntil = useRef(-1);
+  const cueTimers = useRef<number[]>([]);
   const stage = useRef<HTMLDivElement>(null);
   const ticks = useRef(new Set<Tick>());
   const time = useRef({ t0: 0, frozen: 0, isRunning: false });
@@ -99,7 +101,6 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
   const [scale, setScale] = useState(1);
   const [place, setPlace] = useState({ left: 0, top: 0 });
   const [isReady, setReady] = useState(false);
-  const playing = useRef(false);
   const [isEnded, setEnded] = useState(false);
   const end = durationMs + HOLD_MS;
 
@@ -108,19 +109,39 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
     for (const tick of ticks.current) tick(t);
   }, []);
 
+  /** Plays the cues the clock has crossed since it was last heard, unless the frame came too late for them to land on their beat. */
+  const hear = useCallback(
+    (t: number) => {
+      for (const { cue, at } of cues.current) if (at > heardUntil.current && at <= t && t < at + CUE_GRACE_MS) engine.play(cue);
+      heardUntil.current = t;
+    },
+    [engine],
+  );
+
+  const silence = useCallback(() => {
+    cueTimers.current.forEach((timer) => clearTimeout(timer));
+    cueTimers.current = [];
+  }, []);
+
   const animations = useCallback(() => stage.current?.getAnimations?.({ subtree: true }) ?? [], []);
 
   const seekEnd = useCallback(() => {
     cancelAnimationFrame(raf.current);
+    silence();
     time.current = { t0: 0, frozen: end, isRunning: false };
     for (const animation of animations()) {
       animation.pause();
       animation.currentTime = end;
     }
     draw(end);
-    playing.current = false;
     setEnded(true);
-  }, [animations, draw, end]);
+  }, [animations, draw, end, silence]);
+
+  /** Less motion: the last frame at once, and each sound on its own timer at its beat. */
+  const showEnd = useCallback(() => {
+    seekEnd();
+    cueTimers.current = [...cues.current].map(({ cue, at }) => window.setTimeout(() => engine.play(cue), at));
+  }, [engine, seekEnd]);
 
   const play = useCallback(() => {
     cancelAnimationFrame(raf.current);
@@ -129,20 +150,20 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
       animation.play();
     }
     time.current = { t0: performance.now(), frozen: 0, isRunning: true };
-    playing.current = true;
+    heardUntil.current = -1;
     setEnded(false);
     const loop = () => {
       const t = now();
+      hear(t);
       draw(Math.min(t, end));
       if (t >= durationMs) setEnded(true);
       if (t < end) raf.current = requestAnimationFrame(loop);
       else {
         time.current = { t0: 0, frozen: end, isRunning: false };
-        playing.current = false;
       }
     };
     raf.current = requestAnimationFrame(loop);
-  }, [animations, draw, durationMs, end, now]);
+  }, [animations, draw, durationMs, end, hear, now]);
 
   useLayoutEffect(() => {
     const element = area.current;
@@ -170,10 +191,13 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
 
   useEffect(() => {
     if (!isReady) return;
-    if (prefersReducedMotion()) seekEnd();
+    if (prefersReducedMotion()) showEnd();
     else play();
-    return () => cancelAnimationFrame(raf.current);
-  }, [isReady, play, seekEnd]);
+    return () => {
+      cancelAnimationFrame(raf.current);
+      silence();
+    };
+  }, [isReady, play, showEnd, silence]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -192,9 +216,13 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
         ticks.current.add(tick);
         return () => ticks.current.delete(tick);
       },
+      addCue: (cue, at) => {
+        const entry = { cue, at };
+        cues.current.add(entry);
+        return () => cues.current.delete(entry);
+      },
       now,
       scale,
-      isPlaying: () => playing.current,
     }),
     [now, scale],
   );

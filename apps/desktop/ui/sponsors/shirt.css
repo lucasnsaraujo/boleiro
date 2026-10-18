@@ -80,7 +80,7 @@
 }
 
 .shirt-print.off > * {
-  animation: shirt-peel calc(var(--press-ms) * 0.7) cubic-bezier(0.55, 0, 0.75, 0.2) forwards;
+  animation: shirt-peel calc(var(--press-ms) * 0.7) var(--e-peel) forwards;
 }
 
 @keyframes shirt-press {
@@ -112,7 +112,7 @@
   border-radius: 8px;
   outline: 2px dashed var(--yellow);
   outline-offset: 5px;
-  animation: shirt-target 1.6s ease-in-out infinite;
+  animation: shirt-target 1.6s var(--e-in-out) infinite;
 }
 
 .shirt-target.sleeves {

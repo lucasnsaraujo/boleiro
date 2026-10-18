@@ -333,7 +333,7 @@
   white-space: nowrap;
   box-shadow: 0 0 0 2px var(--card);
   transform: translate(-50%, -50%) rotate(-2deg);
-  animation: chem-stamp 460ms var(--e-slap) 900ms both;
+  animation: chem-stamp var(--t-stamp) var(--e-slap) 900ms both;
 }
 
 .chem-p {
@@ -347,7 +347,7 @@
   color: var(--ink);
   text-align: center;
   box-shadow: var(--sh-sticker);
-  animation: chem-slap 460ms var(--e-slap) both;
+  animation: chem-slap var(--t-stamp) var(--e-slap) both;
 }
 
 .chem-face {
