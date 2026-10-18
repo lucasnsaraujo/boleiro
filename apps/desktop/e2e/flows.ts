@@ -76,6 +76,34 @@ export async function news(page: Page): Promise<Locator> {
   return list;
 }
 
+/** The hub once it has read the game and no turning point or career moment took the screen instead: its dock's paper button. */
+export function hubLoaded(page: Page): Locator {
+  return page.locator('button[aria-controls="hub-paper"]');
+}
+
+/** A career moment's scene over the screen: a title, a call-up, a farewell, a quiet exit, the night of a sacking. */
+export function momentScene(page: Page): Locator {
+  return page.locator(".mo-stage");
+}
+
+/**
+ * Sees through each career moment that takes the screen when the hub comes back after days went by, as a player
+ * does: skips the scene to its end (Esc, as "Pular") and goes on with its main button ("Continuar", or the way on
+ * it offers, "Ver propostas" after a sacking). Waits until `then`, what the spec expects next, is up instead.
+ * `then` must show only once no moment is coming, such as the hub's own content, never the bar; returns how many
+ * moments it saw through.
+ */
+export async function passMoments(page: Page, then: Locator): Promise<number> {
+  const scene = momentScene(page);
+  for (let passed = 0; ; passed++) {
+    await expect(then.or(scene).first()).toBeVisible();
+    if (!(await scene.isVisible())) return passed;
+    await page.keyboard.press("Escape");
+    await scene.locator(".btn.go").click();
+    await expect(scene).toBeHidden();
+  }
+}
+
 /**
  * Stops the page clock a moment ahead. pauseAt only moves forward and the page's time keeps flowing until it
  * lands, so on a loaded machine the moment can pass before the call arrives; then it aims again.

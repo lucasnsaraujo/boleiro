@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar, startAtClub } from "./flows.js";
+import { bar, hubLoaded, passMoments, startAtClub } from "./flows.js";
 
 // Boards start judging their coaches with the league games in April; by the end of June one has fired his.
 const MAX_WAIT_DAYS = 200;
@@ -67,6 +67,8 @@ test("a coach resigns, applies for an open job from the job centre and is hired 
   const offers = page.getByRole("list", { name: "Propostas" });
   await offers.getByRole("button", { name: new RegExp(club) }).click();
   await page.getByRole("button", { name: `Assinar com ${club}` }).click();
+  // Back on the hub, his quiet exit from Bahia plays first.
+  await passMoments(page, hubLoaded(page));
   await expect(page).toHaveURL(/#\/hub$/);
   await expect(page.getByRole("heading", { name: club })).toBeVisible();
 });
@@ -79,6 +81,7 @@ test("after a season the coaches screen ranks the coaches with the player among 
 
   await playSeason(page);
   await bar(page).getByRole("link", { name: "Times" }).click();
+  await passMoments(page, hubLoaded(page));
   await bar(page).getByRole("link", { name: "Técnicos" }).click();
   await expect(page.getByText("Ranking ao fim de 2026")).toBeVisible();
   const coaches = page.getByRole("tabpanel", { name: "Técnicos" }).getByRole("row");

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar as barOf, news, startAtClub } from "./flows.js";
+import { bar as barOf, hubLoaded, news, passMoments, startAtClub } from "./flows.js";
 
 // About two seasons of play-ons; an event asks the coach every week or two, a press conference far less often.
 const MAX_STEPS = 400;
@@ -34,9 +34,10 @@ async function playUntilEvent(page: Page, look: "card" | "press"): Promise<numbe
     { wanted: look, maxSteps: MAX_STEPS },
   );
   expect(choice, `an event of look ${look} asks the coach within ${MAX_STEPS} play-ons`).toBeGreaterThanOrEqual(0);
-  // The hub reads the game when it opens.
+  // The hub reads the game when it opens, after the career moments the play-ons left waiting.
   await barOf(page).getByRole("link", { name: "Tabelas" }).click();
   await barOf(page).getByRole("link", { name: "Times" }).click();
+  await passMoments(page, hubLoaded(page));
   return choice;
 }
 

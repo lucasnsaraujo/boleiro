@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar, pickOption, playLiveRound } from "./flows.js";
+import { bar, hubLoaded, momentScene, passMoments, pickOption, playLiveRound } from "./flows.js";
 
 const MAX_PRESSES = 12;
 
@@ -69,11 +69,15 @@ async function startNextYear(page: Page, year: number) {
   if (await board.isVisible()) await board.click();
   await page.getByRole("button", { name: `Começar ${year}` }).click();
   await expect(page).toHaveURL(/#\/hub$/);
+  await passMoments(page, hubLoaded(page));
 }
 
 /** Presses "Jogar rodada" until the lineup sheet opens, then starts the live round. */
 async function startRound(page: Page) {
+  // Through another screen, so the hub reads the days the worker played, and any moment they left waiting.
+  await bar(page).getByRole("link", { name: "Agenda" }).click();
   await bar(page).getByRole("link", { name: "Times" }).click();
+  await passMoments(page, hubLoaded(page));
   const play = page.getByRole("button", { name: "Jogar rodada" });
   const sheet = page.getByRole("dialog", { name: "Escalação" });
   const paper = page.locator("#hub-paper");
@@ -81,7 +85,9 @@ async function startRound(page: Page) {
     // A day with news opens the hub's paper over the play button; the dock's paper button shuts it.
     if (await paper.isVisible()) await page.getByRole("button", { name: /^Jornal/ }).click();
     await play.click();
-    await expect(sheet.or(play)).toBeVisible({ timeout: 60_000 });
+    // A day that stops early can bring a career moment before the hub comes back.
+    await expect(sheet.or(play).or(momentScene(page)).first()).toBeVisible({ timeout: 60_000 });
+    await passMoments(page, sheet.or(play));
   }
   await sheet.getByRole("button", { name: "Começar a rodada" }).click();
 }
@@ -106,6 +112,7 @@ test("a Realista career at Arsenal plays England's 2026/27 into Brazil's 2027, t
 
   await playDaysBefore(page, "2027-07-03");
   await bar(page).getByRole("link", { name: "Times" }).click();
+  await passMoments(page, hubLoaded(page));
   await bar(page).getByRole("link", { name: "Tabelas" }).click();
   // On 1 July England filed 2026/27 and drew 2027/28: no game played yet, the promoted clubs in.
   await expect(premierLeague.getByRole("row")).toHaveCount(21);
@@ -132,6 +139,7 @@ test("Arsenal plays its Champions League match live, its result in the league ph
   const ownMatch = page.locator(".live-list").locator(".live-group", { has: page.getByRole("heading", { name: /Champions League/ }) }).locator(".live-r.human");
   await expect(ownMatch).toBeVisible();
   await playLiveRound(page);
+  await passMoments(page, hubLoaded(page));
 
   await bar(page).getByRole("link", { name: "Tabelas" }).click();
   await page.getByRole("tab", { name: "Outras ligas" }).click();
@@ -176,6 +184,8 @@ test("a Brazilian coach with a name hears from a club abroad and takes the job, 
   await expect(line).toHaveCount(1);
   await line.click();
   await page.getByRole("button", { name: /^Assinar com / }).click();
+  // Back on the hub, the titles of his Flamengo years play first.
+  await passMoments(page, hubLoaded(page));
   await expect(page).toHaveURL(/#\/hub$/);
   const { coachClubId, isFullTier, name } = await page.evaluate(async () => {
     const engine = window.boleiroEngine;
