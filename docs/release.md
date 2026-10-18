@@ -22,7 +22,9 @@ What fills the app: the web build is about 27 MB, half of it club crests (1,750 
 2. On GitHub, open Actions → Release → Run workflow, pick the branch to build, and run it. From a terminal: `gh workflow run release.yml --ref <branch>`.
 3. When both jobs finish (about 15–25 minutes; the macOS job compiles the Rust side twice, once per architecture), download the `boleiro-macos` and `boleiro-windows` artifacts from the run's summary page. GitHub keeps them for 90 days by default.
 
-Each run spends Actions minutes; macOS runners count ten times and Windows runners twice against a private repository's free minutes.
+Each run spends Actions minutes from the private repository's allowance: a macOS minute costs about ten times a Linux one and a Windows minute about 1.7 times.
+
+Not yet proven on a runner: the `.msi` step runs WiX, which needs Windows' optional VBScript feature (Tauri issue #13752). If the Windows job fails there, drop `msi` from its `--bundles` in `release.yml` and ship the NSIS `.exe`.
 
 ## Unsigned builds
 
@@ -37,8 +39,8 @@ Signing needs accounts and certificates only the owner can get; nothing in the r
 macOS (signing and notarization, so Gatekeeper opens the app without a warning):
 
 1. Join the Apple Developer Program (US$99 a year) and create a Developer ID Application certificate. Export it with its private key as a `.p12`.
-2. Add repository secrets: `APPLE_CERTIFICATE` (the `.p12`, base64), `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY` (the certificate's name, e.g. `Developer ID Application: Name (TEAMID)`), `KEYCHAIN_PASSWORD` (any string; Tauri creates a temporary keychain with it), and for notarization either an App Store Connect API key (`APPLE_API_ISSUER`, `APPLE_API_KEY`, and the `.p8` file written to `APPLE_API_KEY_PATH`) or an Apple ID (`APPLE_ID`, `APPLE_PASSWORD` as an app-specific password, `APPLE_TEAM_ID`).
-3. Remove `"signingIdentity": "-"` from `tauri.macos.conf.json` and pass those secrets as `env:` on the macOS build step of `release.yml`. Tauri signs, notarizes and staples during `tauri build`.
+2. Add repository secrets: `APPLE_CERTIFICATE` (the `.p12`, base64), `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY` (the certificate's name, e.g. `Developer ID Application: Name (TEAMID)`), and for notarization either an App Store Connect API key (`APPLE_API_ISSUER`, `APPLE_API_KEY`, and the `.p8` file written to `APPLE_API_KEY_PATH`) or an Apple ID (`APPLE_ID`, `APPLE_PASSWORD` as an app-specific password, `APPLE_TEAM_ID`).
+3. Pass those secrets as `env:` on the macOS build step of `release.yml`. `APPLE_SIGNING_IDENTITY` replaces the `"-"` in `tauri.macos.conf.json`; without it, Tauri stops with an error, because it looks for the identity's name in the certificate and `-` isn't there. Tauri signs, notarizes and staples during `tauri build`.
 
 Windows (so SmartScreen stops warning):
 
@@ -55,7 +57,7 @@ Run on a Windows 10 or 11 PC with the `boleiro-windows` artifact. Each step name
 3. New game → pick a club → Começar carreira → Jogar rodada → Começar a rodada; let the round reach full time. The round's sounds play (crowd, whistles, goals).
 4. Press F1–F9 and F5 in the hub: each opens a game screen; F5 must not reload the app and F3 must not open a find bar.
 5. Switch Opções → Tema between claro and escuro and drag the window's corner to grow it fast in each: the new area shows the theme's paper colour, never a white or cream band.
-6. Ctrl+S to save. In Explorer open `%APPDATA%\com.lucasnsaraujo.boleiro\saves\`: each slot is a folder holding `index.json` plus `game.<n>.json`, `session.<n>.json`, `world.<n>.json` and one `country-<id>.<n>.json` per country, and the files start with `{"packed":1`.
+6. Ctrl+S to save. In Explorer open `%APPDATA%\com.lucasnsaraujo.boleiro\saves\`: each slot is a folder holding `index.json` plus `game.<n>.json`, `session.<n>.json`, `world.<n>.json` and one `country-<id>.<n>.json` per country, and every file except `index.json` starts with `{"packed":1`.
 7. Play another round and save again: only the changed shards get a new number, the old ones are gone, and `index.json` points at the new ones.
 8. Close the window, launch again, click Continuar: the game opens on the same day with the same results.
 9. Uninstall from Settings → Apps. The saves stay in `%APPDATA%\com.lucasnsaraujo.boleiro\`; delete that folder (and `%LOCALAPPDATA%\com.lucasnsaraujo.boleiro\`, WebView2's data) for a clean machine.
