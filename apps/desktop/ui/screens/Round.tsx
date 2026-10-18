@@ -483,7 +483,8 @@ export function Round() {
       isStepping.current = false;
     });
     if (!sent) return;
-    const order = coachedSides(sent, hotSeat);
+    // A coach whose match the house rule leaves to his plan has no sheet to step to.
+    const order = coachedSides(sent, hotSeat).filter((coached) => coached.clubId === clubId || coached.side.incidentHandling !== "matchPlan");
     const place = order.findIndex((coached) => coached.clubId === clubId);
     const next = order[(place + step + order.length) % order.length];
     setError(null);

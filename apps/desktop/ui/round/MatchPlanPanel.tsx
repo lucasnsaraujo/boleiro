@@ -334,7 +334,7 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
               <span className="k">Ninguém sai por cansaço.</span>
             ) : (
               <>
-                <span className="k">Sai quem ficar abaixo de {floor}%; o goleiro fica.</span>
+                <span className="k">Sai quem ficar abaixo de {floor}%. Um jogo inteiro gasta uns 40%, mais nos veteranos; o goleiro fica.</span>
                 {tiredest ? (
                   <span>
                     Mais cansado hoje: <b>{tiredest.name}</b>, {energyOf(tiredest)}%

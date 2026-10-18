@@ -72,15 +72,18 @@ test("the coach's tactics key puts his next saved tactics on at the minute on th
   expect(screen.queryByRole("dialog")).toBeNull();
 });
 
-test("the coach's time-out key stops the round and opens his own match", async () => {
+test("the coach's time-out key stops the round and opens his own match, and going back runs it again", async () => {
   const given = await onMatchDay({ timeOutKey: "p" });
   await kickOff(given);
   play(2);
   await user().keyboard("p");
-  expect(await screen.findByRole("dialog", { name: "Escalação" })).toBeTruthy();
+  const sheet = await screen.findByRole("dialog", { name: "Escalação" });
   const minute = shownMinute();
   play(10);
   expect(shownMinute()).toBe(minute);
+  await user().click(within(sheet).getByRole("button", { name: "Voltar ao jogo" }));
+  play(3);
+  expect(shownMinute()).toBeGreaterThan(minute);
 });
 
 test("under the house rule a league match is the plan's: no lineup, and the time-out key only says why", async () => {
@@ -146,4 +149,43 @@ test("without asking, the round never stops for the shootout order", async () =>
   for (let step = 0; step < 30; step++) play(5);
   expect(screen.queryByRole("dialog", { name: "Pênaltis" })).toBeNull();
   expect(sent).toEqual([]);
+});
+
+test("in a hot-seat round each coach's time-out key opens his own match, whoever sits", async () => {
+  const { engine, close } = inMemoryEngine();
+  closers.push(close);
+  await engine.apply({ type: "newGame", seed: 4, choices: { coachClubId: "flamengo-rj", hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "palmeiras-sp" }] } } });
+  await engine.apply({ type: "setMatchPlan", plan: { timeOutKey: "a" } });
+  await engine.apply({ type: "passTurn" });
+  await engine.apply({ type: "setMatchPlan", plan: { timeOutKey: "b" } });
+  let isKickedOff = false;
+  for (let step = 0; step < 60 && !isKickedOff; step++) {
+    if (!(await engine.hotSeat())?.isLastTurn) {
+      await engine.apply({ type: "passTurn" });
+      continue;
+    }
+    if ((await engine.apply({ type: "playToMatchDay" })).daysPlayed > 0) continue;
+    const sides = (await engine.apply({ type: "startRound" })).humanSides ?? [];
+    if (sides.length === 2 && sides[0]?.fixtureId !== sides[1]?.fixtureId) isKickedOff = true;
+    else await engine.apply({ type: "finishRound" });
+  }
+  expect(isKickedOff).toBe(true);
+  const router = createMemoryRouter([{ path: "/round", element: <Round /> }], { initialEntries: ["/round"] });
+  render(
+    <ServicesContext value={{ engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Ana" } } }}>
+      <RouterProvider router={router} />
+    </ServicesContext>,
+  );
+  await screen.findByRole("region", { name: "Seu jogo" });
+  for (const [key, coach, club] of [
+    ["a", "Ana", "Flamengo"],
+    ["b", "Bruno", "Palmeiras"],
+  ] as const) {
+    await user().keyboard(key);
+    const sheet = await screen.findByRole("dialog", { name: "Escalação" });
+    expect(within(sheet).getByRole("group", { name: "Jogos dos técnicos" }).textContent).toContain(coach);
+    expect(within(sheet).getByRole("heading", { level: 2 }).parentElement?.textContent).toContain(club);
+    await user().click(within(sheet).getByRole("button", { name: "Voltar ao jogo" }));
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Escalação" })).toBeNull());
+  }
 });
