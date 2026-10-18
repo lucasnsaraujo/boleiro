@@ -84,8 +84,10 @@ export function upcomingMatches(state: Pick<GameState, "date"> & MatchesState, c
     });
 }
 
+/** The season's twelve months; a league abroad crossing the new year shows its games of each year in that year's months. */
 export function calendarMonths(state: Pick<GameState, "season" | "hasMidSeasonWindow"> & MatchesState): CalendarMonth[] {
-  const entries: CalendarEntry[] = coachMatches(state);
+  const year = String(state.season);
+  const entries: CalendarEntry[] = coachMatches(state).filter((match) => match.date.startsWith(year));
   const transferWindows = transferWindowsOf(state);
   for (const window of transferWindows) {
     entries.push({ kind: "window", date: `${state.season}-${window.opens}`, opens: true }, { kind: "window", date: `${state.season}-${window.closes}`, opens: false });

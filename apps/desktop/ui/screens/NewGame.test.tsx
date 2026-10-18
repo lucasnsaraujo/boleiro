@@ -244,12 +244,12 @@ test("Personalizar opens more options and starts the game with the coach's own m
   expect(calendar.leagueDates.A).toHaveLength(19);
 });
 
-test("a club abroad is picked from its league in the division filter and starts on the unified calendar", async () => {
+test("a club abroad is picked from its league in the division filter and starts on the calendar the coach picks", async () => {
   const { engine } = await openNewGame();
   await pickOption(screen.getByRole("combobox", { name: "Divisão" }), "Premier League · Inglaterra");
   await userEvent.click(clubList().getByRole("button", { name: "Arsenal FC" }));
-  expect(screen.getByRole("radio", { name: "Realista" })).toHaveProperty("disabled", true);
-  expect(screen.getByRole("radio", { name: "Rápido" })).toHaveProperty("checked", true);
+  expect(screen.getByRole("radio", { name: "Realista" })).toHaveProperty("checked", true);
+  await userEvent.click(screen.getByRole("radio", { name: "Rápido" }));
   await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico" }), "Rogério");
   await userEvent.click(screen.getByRole("button", { name: "Começar carreira" }));
   await screen.findByText("Clube aberto", {}, { timeout: 30_000 });
@@ -257,4 +257,17 @@ test("a club abroad is picked from its league in the division filter and starts 
   expect(coachClubId).toBe("tm-11");
   expect(formats?.calendar).toBe("unified");
   expect(clubs["tm-11"]?.abroad).toEqual({ country: "gb-eng", level: 0 });
+});
+
+test("a club abroad starts a Realista career on its country's own calendar", async () => {
+  const { engine } = await openNewGame();
+  await pickOption(screen.getByRole("combobox", { name: "Divisão" }), "Premier League · Inglaterra");
+  await userEvent.click(clubList().getByRole("button", { name: "Arsenal FC" }));
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico" }), "Rogério");
+  await userEvent.click(screen.getByRole("button", { name: "Começar carreira" }));
+  await screen.findByText("Clube aberto", {}, { timeout: 30_000 });
+  const { formats, competitions } = await engine.read(["formats", "competitions"]);
+  expect(formats).toBeUndefined();
+  const premier = Object.values(competitions).find((c) => c.kind === "league" && c.abroad?.country === "gb-eng" && c.abroad.level === 0);
+  expect(premier?.stageDates[0]?.[0]?.slice(0, 7)).toBe("2026-08");
 });

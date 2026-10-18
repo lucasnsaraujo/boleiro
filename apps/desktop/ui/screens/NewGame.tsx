@@ -103,10 +103,8 @@ export function NewGame() {
   const [clockMinutes, setClockMinutes] = useState<number | null>(DEFAULT_CLOCK_MINUTES);
   const pickedClubId = picked?.mode === "club" ? picked.choice.club.id : null;
   const pickedFormatsModeOrDefault = pickedFormatsMode ?? defaultFormatsMode(others.length + 1);
-  // A club abroad brings its league into the full tier, which plays only on the unified calendar.
-  const hasClubAbroad = [pickedClubId, ...others.map((other) => other.clubId)].some((id) => id !== null && clubById(id)?.abroad);
-  const formatsMode = hasClubAbroad && pickedFormatsModeOrDefault === "realista" ? "rapido" : pickedFormatsModeOrDefault;
-  const formats = formatsOfMode(formatsMode, hasClubAbroad ? { ...customFormats, calendar: "unified" } : customFormats);
+  const formatsMode = pickedFormatsModeOrDefault;
+  const formats = formatsOfMode(formatsMode, customFormats);
   const season = useDrawnSeason(seed, formats);
 
   function pickFormatsMode(mode: FormatsMode) {
@@ -365,8 +363,8 @@ export function NewGame() {
               </p>
               <div className="seg seg-radio" role="radiogroup" aria-labelledby="formats-title">
                 {FORMATS_MODES.map(({ mode, label }) => (
-                  <label key={mode} className={formatsMode === mode ? "on" : undefined} title={hasClubAbroad && mode === "realista" ? "Um time de fora joga no calendário único" : undefined}>
-                    <input type="radio" name="formats-mode" checked={formatsMode === mode} disabled={hasClubAbroad && mode === "realista"} onChange={() => pickFormatsMode(mode)} />
+                  <label key={mode} className={formatsMode === mode ? "on" : undefined}>
+                    <input type="radio" name="formats-mode" checked={formatsMode === mode} onChange={() => pickFormatsMode(mode)} />
                     {label}
                   </label>
                 ))}
@@ -380,10 +378,9 @@ export function NewGame() {
                       <div className="seg seg-radio" role="radiogroup" aria-labelledby={`formats-${key}`}>
                         {options.map((option) => {
                           const isOn = formats[key] === option.value;
-                          const isLocked = hasClubAbroad && key === "calendar" && option.value === "real";
                           return (
-                            <label key={option.value} className={isOn ? "on" : undefined} title={isLocked ? "Um time de fora joga no calendário único" : undefined}>
-                              <input type="radio" name={`formats-${key}`} checked={isOn} disabled={isLocked} onChange={() => setCustomFormats({ ...customFormats, [key]: option.value })} />
+                            <label key={option.value} className={isOn ? "on" : undefined}>
+                              <input type="radio" name={`formats-${key}`} checked={isOn} onChange={() => setCustomFormats({ ...customFormats, [key]: option.value })} />
                               {option.label}
                             </label>
                           );

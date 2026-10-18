@@ -5,6 +5,7 @@ import { CONTINENTAL_CUPS, type Competition, type Fixture, type GameState, type 
 import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
 import { continentalQualifiers } from "@boleiro/engine/sim/finances/continentalQualifiers";
 import { competitionKey } from "@boleiro/engine/sim/history/history";
+import { isCurrentOf } from "@boleiro/engine/sim/currentCompetitions";
 import { LEAGUE_FORMATS } from "@boleiro/engine/sim/leagueFormats";
 import { STATE_CHAMPIONSHIP } from "@boleiro/engine/sim/stateChampionship";
 import { standings, type StandingRow } from "@boleiro/engine/sim/standings";
@@ -52,11 +53,13 @@ const clubsIn = (stage: Competition["stages"][number]) => (stage.kind === "group
 /** Whether the club plays the competition: entered in it, or drawn into one of its stages, as a Libertadores club dropping into the Sul-Americana. */
 const isPlaying = (c: Competition, clubId: string) => c.clubIds.includes(clubId) || c.stages.some((stage) => clubsIn(stage).includes(clubId));
 
-/** What the coach's club plays this season, state championship first, or the Série A and the cup without a club. */
-export function coachCompetitions({ coachClubId, competitions, season }: Pick<GameState, "coachClubId" | "competitions" | "season">): Competition[] {
+/** What the coach's club plays this season (a league abroad crossing the new year until its next season opens), state championship first, or the Série A and the cup without a club. */
+export function coachCompetitions(state: Pick<GameState, "coachClubId" | "competitions" | "season">): Competition[] {
+  const { coachClubId, competitions } = state;
   const shown = (c: Competition) => (coachClubId ? isPlaying(c, coachClubId) : c.kind === "cup" || (c.kind === "league" && c.division === "A"));
+  const isCurrent = isCurrentOf(state);
   return Object.values(competitions)
-    .filter((c) => c.season === season && shown(c))
+    .filter((c) => isCurrent(c) && shown(c))
     .sort(byKind);
 }
 
@@ -73,7 +76,7 @@ export function openingCompetitionId(state: Pick<GameState, "coachClubId" | "com
  * waits behind "Outras ligas", with South America's leagues.
  */
 export function tableTabs(state: Pick<GameState, "coachClubId" | "competitions" | "season">): { tabs: Competition[]; otherStates: StateCompetition[] } {
-  const thisSeason = Object.values(state.competitions).filter((c) => c.season === state.season);
+  const thisSeason = Object.values(state.competitions).filter(isCurrentOf(state));
   const brazil = DIVISION_ORDER.flatMap((division) => thisSeason.filter((c) => c.kind === "league" && c.division === division));
   // Leagues abroad in the full tier, a country's levels top first; the coach's own come before Brazil's.
   const abroad = thisSeason.flatMap((c) => (c.kind === "league" && c.abroad ? [c] : [])).sort((a, b) => (a.abroad?.country ?? "").localeCompare(b.abroad?.country ?? "") || (a.abroad?.level ?? 0) - (b.abroad?.level ?? 0));
