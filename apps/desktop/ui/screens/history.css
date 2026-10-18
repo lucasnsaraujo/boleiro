@@ -362,6 +362,10 @@ button.history-cell:hover span {
     font-size: 15px;
   }
 
+  .history-awards-text {
+    display: none;
+  }
+
   .history-columns {
     gap: 32px;
   }
