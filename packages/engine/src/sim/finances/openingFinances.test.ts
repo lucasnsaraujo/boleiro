@@ -36,6 +36,18 @@ describe("a new game's club finances", () => {
     }
   });
 
+  it("pays each Série B club with accounts their wage share of what it can earn, never more than their bill", () => {
+    const serieBRows = data.clubs.filter((row) => row.division === "B");
+    expect(serieBRows.length).toBeGreaterThan(0);
+    for (const row of serieBRows) {
+      const finance = state.finances[row.clubId];
+      if (!finance) throw new Error(`no finances for ${row.clubId}`);
+      const share = row.wageBill / (row.revenue.total - row.revenue.playerSales);
+      const expected = Math.min(row.wageBill, share * projectedRevenue(finance));
+      expect(yearlyWageBill(state, row.clubId) / expected, row.clubId).toBeCloseTo(1, 2);
+    }
+  });
+
   it("pays the stronger players more inside a squad", () => {
     const squad = Object.values(state.players).filter((p) => p.clubId === "palmeiras-sp").sort((a, b) => a.strength - b.strength);
     expect(squad.at(-1)?.wage ?? 0).toBeGreaterThan(squad[0]?.wage ?? 0);
@@ -107,7 +119,16 @@ describe("a new game's club finances", () => {
     it("earns its division's TV and gates in place of the ones its accounts show", () => {
       expect(finance?.tv).toBe(game.economy.tvPerClub.B);
       const { total, playerSales, broadcasting, matchday, membership, sponsorship } = row.revenue;
-      expect((finance?.otherIncome ?? 0) + (finance?.prizesOutOfOtherIncome ?? 0)).toBe(total - playerSales - broadcasting - matchday - membership - sponsorship);
+      expect(finance?.otherIncome).toBe(total - playerSales - broadcasting - matchday - membership - sponsorship);
+    });
+
+    it("keeps the Copa prizes its accounts' broadcasting held as prizes it expects, counted once", () => {
+      expect(finance?.expectedPrizes).toBeGreaterThan(0);
+      expect(finance?.prizesOutOfOtherIncome).toBe(finance?.expectedPrizes);
+    });
+
+    it("opens with a month of the revenue it can earn in its division in the bank", () => {
+      expect(finance?.cash).toBe(Math.round(projected / 12));
     });
 
     it("pays its accounts' share of revenue in wages, on what it can earn in its division", () => {

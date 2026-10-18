@@ -188,17 +188,19 @@ export function openingFinances(
       const entryStage = cupEntryStage.get(club.id);
       const cupPrizes = entryStage === undefined ? 0 : expectedCopaPrize(economy.copaDoBrasil, entryStage, tier !== "A" && tier !== "B");
       // A Série A club's accounts set its revenue. Below it, a club's own accounts may hold another
-      // division's TV and crowds (a relegated club's Série A money), so its division's replace them.
-      const replaced = tier === "A" || !row ? tv + expectedTickets : base.broadcasting + base.matchday;
+      // division's TV, prizes and crowds (a relegated club's Série A money), so its division's TV and
+      // gates replace them, and the Copa prizes it can expect stay its unsimulated income, as for any club.
+      const ownAccountsBelowA = tier !== "A" && row !== undefined;
+      const replaced = ownAccountsBelowA ? base.broadcasting + base.matchday - Math.round(cupPrizes) : tv + expectedTickets;
       const beforePrizes = Math.max(0, Math.round(revenue - replaced - base.membership - base.sponsorship));
       const prizesOutOfOtherIncome = Math.min(beforePrizes, Math.round(cupPrizes));
       const otherIncome = beforePrizes - prizesOutOfOtherIncome;
       const projected = tv + expectedTickets + base.membership + base.sponsorship + otherIncome + cupPrizes;
       // Accounts from a richer division paid a richer squad: the club keeps their wage share of revenue.
-      const wageBill = tier === "A" || !row || revenue <= 0 ? base.wageBill : Math.min(base.wageBill, (base.wageBill / revenue) * projected);
+      const wageBill = ownAccountsBelowA && revenue > 0 ? Math.min(base.wageBill, (base.wageBill / revenue) * projected) : base.wageBill;
       for (const [id, wage] of wagesOf(squads.get(club.id) ?? [], wageBill / 12)) wages[id] = wage;
       const opening: ClubFinance = {
-        cash: Math.round(Math.max(-base.netDebt, (OPENING_CASH_MONTHS_OF_REVENUE * revenue) / 12)),
+        cash: Math.round(Math.max(-base.netDebt, (OPENING_CASH_MONTHS_OF_REVENUE * (ownAccountsBelowA ? projected : revenue)) / 12)),
         loans: 0,
         legacyDebt: Math.round(base.netDebt),
         wagesOwed: 0,

@@ -19,7 +19,7 @@ import sqlite3
 import struct
 import sys
 import unicodedata
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -118,6 +118,8 @@ def finance_source_problems(finances: list[dict[str, str]], sources: list[dict[s
     """Every figure a club's finances row doesn't guess needs one source with the same value, a URL and a page."""
     problems: list[str] = []
     rows = {row["club_id"]: row for row in finances if row["club_id"]}
+    counts = Counter(row["club_id"] for row in finances if row["club_id"])
+    problems += [f"{club_id}: {count} finances.csv rows" for club_id, count in counts.items() if count > 1]
     sourced = {(source["club_id"], source["field"]) for source in sources}
     for club_id, row in rows.items():
         if row["basis"] == "guess":
@@ -131,6 +133,9 @@ def finance_source_problems(finances: list[dict[str, str]], sources: list[dict[s
     for source in sources:
         label = f"{source['club_id']} {source['field']}"
         row = rows.get(source["club_id"])
+        if source["field"] not in FINANCE_FIELDS:
+            problems.append(f"{label}: not a finances column")
+            continue
         if row is None:
             problems.append(f"{label}: no finances.csv row")
             continue

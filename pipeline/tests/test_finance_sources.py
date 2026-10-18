@@ -57,9 +57,18 @@ class FinanceSourceProblemsTest(unittest.TestCase):
         self.assertEqual(finance_source_problems([row], [*sources_for(row), stray]), ["santos-sp revenue_total: no finances.csv row"])
 
     def test_needs_no_source_for_a_guess_or_a_division_estimate(self) -> None:
-        guess = finance_row(club_id="chapecoense-sc", basis="guess", guessed_fields=";".join(FIELDS))
+        guess = finance_row(club_id="chapecoense-sc", basis="guess", guessed_fields="")
         estimate = finance_row(club_id="", division="B", size="median", basis="estimate", guessed_fields="")
         self.assertEqual(finance_source_problems([guess, estimate], []), [])
+
+    def test_flags_a_source_for_a_column_finances_does_not_have(self) -> None:
+        row = finance_row()
+        stray = {**sources_for(row)[0], "field": "division", "value": "A"}
+        self.assertEqual(finance_source_problems([row], [*sources_for(row), stray]), ["flamengo-rj division: not a finances column"])
+
+    def test_flags_a_club_with_two_finances_rows(self) -> None:
+        row = finance_row()
+        self.assertEqual(finance_source_problems([row, row], sources_for(row)), ["flamengo-rj: 2 finances.csv rows"])
 
     def test_flags_a_published_row_that_guesses_every_field(self) -> None:
         row = finance_row(guessed_fields=";".join(FIELDS))
