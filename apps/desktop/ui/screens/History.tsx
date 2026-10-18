@@ -184,7 +184,7 @@ function ClubAlbum({ state, album, clubId, coachName, onPickClub, onOpenTitle, o
       clubId={clubId}
       past={past}
       titles={album.titles.filter((t) => season?.titleIds.includes(t.id))}
-      eggs={season ? album.eggs.found.filter((egg) => egg.date.startsWith(String(season.season))) : []}
+      eggs={season?.eggs ?? []}
       season={season?.season ?? null}
       onOpenTitle={onOpenTitle}
       onOpenMatch={onOpenMatch}

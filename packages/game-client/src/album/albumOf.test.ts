@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { GameState } from "@boleiro/engine/sim/gameState";
-import { competitionKey, type CoachRecord } from "@boleiro/engine/sim/history/history";
+import type { CoachRecord, SeasonRecord } from "@boleiro/engine/sim/history/history";
+import { rivalryOf } from "@boleiro/engine/sim/rivalries/rivalryOf";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
 import { createEngineSession, type EngineSession } from "../engine/createEngineSession.js";
 import type { SessionSave } from "../engine/sessionSave.js";
@@ -137,6 +138,36 @@ describe("a coach's album", () => {
     const seat = (name: string) => loaded.album().coaches.indexOf(name);
     expect(loaded.album(seat("Bruno")).eggs.found.map((e) => e.eggId)).toEqual(["seven-one"]);
     expect(loaded.album(seat("Ana")).eggs.found.map((e) => e.eggId)).toEqual(["windows-98"]);
+    const page = (name: string) => loaded.album(seat(name)).seasons.find((s) => s.season === last.season);
+    expect(page("Bruno")?.eggs.map((e) => e.eggId)).toEqual(["seven-one"]);
+    expect(page("Ana")?.eggs.map((e) => e.eggId)).toEqual(["windows-98"]);
+  });
+});
+
+describe("a title's story", () => {
+  const final = bruno.titles.find((t) => t.decider?.kind === "final");
+  if (!final?.decider) throw new Error("Bruno won a final");
+  const { competition } = final;
+  const earlier = final.season - 1;
+  const lost = recordOf("Bruno").keptMatches?.find((m) => m.isWon && m.kind === "final");
+  if (!lost) throw new Error("Bruno's record keeps his final");
+  const won: SeasonRecord = { season: earlier, champions: { [competition]: SECOND }, topScorers: {}, promoted: { A: [], B: [], C: [], D: [] }, relegated: { A: [], B: [], C: [], D: [] }, tables: { A: [], B: [], C: [], D: [] } };
+  const withPast = (record: CoachRecord): CoachRecord => (record.trophies.some((t) => t.competition === competition) ? { ...record, keptMatches: [{ ...lost, season: earlier, isWon: false }, ...(record.keptMatches ?? [])] } : record);
+  const told = loadedWith((game) => ({
+    ...game,
+    history: { ...game.history, seasons: [won, ...game.history.seasons], coach: withPast(game.history.coach) },
+    ...(game.waitingCoaches ? { waitingCoaches: game.waitingCoaches.map((waiting) => ({ ...waiting, record: withPast(waiting.record) })) } : {}),
+  }));
+  const story = told.album(told.album().coaches.indexOf("Bruno")).titles.find((t) => t.id === final.id)?.story;
+
+  it("names the club's last win of the competition and the finals he lost with it before", () => {
+    expect(story?.clubLastWon).toBe(earlier);
+    expect(story?.historyFrom).toBe(earlier);
+    expect(story?.lostFinals).toEqual([earlier]);
+  });
+
+  it("names the derby when the title was decided against a rival", () => {
+    expect(final.story.derby).toBe(rivalryOf(final.decider?.homeId ?? "", final.decider?.awayId ?? "")?.name ?? null);
   });
 });
 
@@ -172,7 +203,6 @@ describe("the album of a save from before it", () => {
   });
 
   it("keeps its titles, with no deciding match to open", () => {
-    expect(album.titles.map((t) => [t.competition, t.decider])).toEqual(bruno.titles.map((t) => [t.competition, null]));
-    expect(album.titles.every((t) => competitionKey(t.competition) === t.competition)).toBe(true);
+    expect(album.titles.map((t) => [t.competition, t.season, t.clubId, t.decider])).toEqual(bruno.titles.map((t) => [t.competition, t.season, t.clubId, null]));
   });
 });

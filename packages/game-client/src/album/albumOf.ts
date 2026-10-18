@@ -7,7 +7,7 @@ import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
 import { clubHistory } from "@boleiro/engine/sim/history/clubHistory";
 import { competitionKey, NO_RECORDS, type ClubRecords, type CoachRecord, type CompetitionKey, type PlayerAtClub, type SeasonRecord } from "@boleiro/engine/sim/history/history";
 import { rivalryOf } from "@boleiro/engine/sim/rivalries/rivalryOf";
-import { eggAlbumOf, type EggAlbum } from "../eggs/eggAlbum.js";
+import { eggAlbumOf, type EggAlbum, type EggSticker } from "../eggs/eggAlbum.js";
 import { competitionKeyName } from "../format/competitionName.js";
 
 export type StickerShine = keyof typeof SHINE;
@@ -42,6 +42,8 @@ export type AlbumSeason = {
   finish: { division: string; position: number } | null;
   /** The titles he won at the club that season, as `TitlePage.id`s. */
   titleIds: string[];
+  /** The rare stickers the club found that season while he ran it. */
+  eggs: EggSticker[];
 };
 
 export type Goal = { name: string; clubId: string; minute: number; kind: GoalKind | null };
@@ -132,7 +134,7 @@ function honoursOf(record: SeasonRecord | undefined): Map<string, string[]> {
   return honours;
 }
 
-function seasonOf(state: GameState, page: AlbumPage, status: AlbumSeason["status"], titleIds: string[]): AlbumSeason {
+function seasonOf(state: GameState, page: AlbumPage, status: AlbumSeason["status"], titleIds: string[], eggs: EggSticker[]): AlbumSeason {
   const record = state.history.seasons.find((s) => s.season === page.season);
   const honours = honoursOf(record);
   const finish = record ? (Object.entries(record.tables).find(([, order]) => order.includes(page.clubId)) ?? null) : null;
@@ -154,6 +156,7 @@ function seasonOf(state: GameState, page: AlbumPage, status: AlbumSeason["status
     })),
     finish: finish ? { division: finish[0], position: finish[1].indexOf(page.clubId) + 1 } : null,
     titleIds,
+    eggs,
   };
 }
 
@@ -266,10 +269,11 @@ function recordsOf(state: GameState, record: CoachRecord, seasons: readonly Albu
   };
 }
 
-/** The eggs the coach's clubs found while he ran them. */
-function eggsOf(state: GameState, record: CoachRecord): EggAlbum {
+/** The eggs the coach's clubs found while he ran them, or only those of one club in one season. */
+function eggsOf(state: GameState, record: CoachRecord, at?: { clubId: string; season: number }): EggAlbum {
   const isHis = (clubId: string, date: IsoDate) => record.stints.some((s) => s.clubId === clubId && s.from <= date && (s.until === null || date <= s.until));
-  return eggAlbumOf({ eggs: { log: (state.eggs?.log ?? []).filter((find) => isHis(find.clubId, find.date)) } });
+  const isAt = (clubId: string, date: IsoDate) => !at || (clubId === at.clubId && date.startsWith(String(at.season)));
+  return eggAlbumOf({ eggs: { log: (state.eggs?.log ?? []).filter((find) => isHis(find.clubId, find.date) && isAt(find.clubId, find.date)) } });
 }
 
 /** The human coaches in seat order: the one in the seat, then the waiting ones. */
@@ -300,10 +304,11 @@ export function albumOf(state: GameState, seat = 0): Album {
   const isPrinted = (season: number, clubId: string) => printed.some((page) => page.season === season && page.clubId === clubId);
   const filed = new Set(state.history.seasons.map((s) => s.season));
   const unprinted = seasonsAt(record, state.season).filter(([season, clubId]) => filed.has(season) && !isPrinted(season, clubId));
+  const season = (page: AlbumPage, status: AlbumSeason["status"]) => seasonOf(state, page, status, titleIdsOf(page.season, page.clubId), eggsOf(state, record, page).found);
   const seasons = [
-    ...livePages.map((page) => seasonOf(state, page, "live", titleIdsOf(page.season, page.clubId))),
-    ...printed.map((page) => seasonOf(state, page, "printed", titleIdsOf(page.season, page.clubId))),
-    ...unprinted.map(([season, clubId]) => seasonOf(state, unprintedPage(state, season, clubId), "unprinted", titleIdsOf(season, clubId))),
+    ...livePages.map((page) => season(page, "live")),
+    ...printed.map((page) => season(page, "printed")),
+    ...unprinted.map(([year, clubId]) => season(unprintedPage(state, year, clubId), "unprinted")),
   ].sort((a, b) => b.season - a.season);
   return {
     coachName: coach.name,
