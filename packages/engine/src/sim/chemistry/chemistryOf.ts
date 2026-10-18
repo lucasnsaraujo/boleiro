@@ -108,8 +108,10 @@ function formationOfClub(state: GameState, clubId: string, squad: readonly SimPl
   return waiting ? waiting.coach.tactics.formation : formationOf(state, clubId, squad);
 }
 
-/** Each squad player's standing in the dressing room, 0–100, the most first. */
-function standingsOf(state: GameState, clubId: string, squad: readonly SimPlayer[]): { playerId: string; standing: number }[] {
+type Standing = { playerId: string; standing: number };
+
+/** Each squad player's standing in the dressing room, 0–100, in the squad's order. */
+function unsortedStandingsOf(state: GameState, clubId: string, squad: readonly SimPlayer[]): Standing[] {
   const atClub = state.history.players[clubId] ?? {};
   const morale = clubMood(state, clubId).squad;
   const mostMinutes = Math.max(0, ...squad.map((p) => p.condition.seasonMinutes));
@@ -123,23 +125,37 @@ function standingsOf(state: GameState, clubId: string, squad: readonly SimPlayer
     }
     return low;
   };
-  return squad
-    .map((player) => {
-      const record = atClub[player.id];
-      const apps = record?.apps ?? 0;
-      const isIdol = apps >= IDOL_APPS || (record?.goals ?? 0) >= IDOL_GOALS;
-      const weaker = weakerThan(player.strength);
-      const rank = squad.length > 1 ? weaker / (squad.length - 1) : 1;
-      const isLeftOut = mostMinutes >= LEFT_OUT_AFTER_MINUTES && player.condition.seasonMinutes < LEFT_OUT_SHARE * mostMinutes;
-      const standing =
-        AGE_POINTS * clamp((player.age - AGE_FROM) / (AGE_TO - AGE_FROM), 0, 1) +
-        RANK_POINTS * rank +
-        APPS_POINTS * Math.min(1, apps / APPS_FOR_FULL) +
-        (isIdol ? IDOL_POINTS : 0) +
-        (isLeftOut ? 0 : (MORALE_POINTS * morale) / 100);
-      return { playerId: player.id, standing: Math.round(clamp(standing, 0, 100)) };
-    })
-    .sort((a, b) => b.standing - a.standing || (a.playerId < b.playerId ? -1 : 1));
+  return squad.map((player) => {
+    const record = atClub[player.id];
+    const apps = record?.apps ?? 0;
+    const isIdol = apps >= IDOL_APPS || (record?.goals ?? 0) >= IDOL_GOALS;
+    const weaker = weakerThan(player.strength);
+    const rank = squad.length > 1 ? weaker / (squad.length - 1) : 1;
+    const isLeftOut = mostMinutes >= LEFT_OUT_AFTER_MINUTES && player.condition.seasonMinutes < LEFT_OUT_SHARE * mostMinutes;
+    const standing =
+      AGE_POINTS * clamp((player.age - AGE_FROM) / (AGE_TO - AGE_FROM), 0, 1) +
+      RANK_POINTS * rank +
+      APPS_POINTS * Math.min(1, apps / APPS_FOR_FULL) +
+      (isIdol ? IDOL_POINTS : 0) +
+      (isLeftOut ? 0 : (MORALE_POINTS * morale) / 100);
+    return { playerId: player.id, standing: Math.round(clamp(standing, 0, 100)) };
+  });
+}
+
+const isStandingAbove = (a: Standing, b: Standing) => b.standing - a.standing || (a.playerId < b.playerId ? -1 : 1);
+
+/** Each squad player's standing in the dressing room, 0–100, the most first. */
+function standingsOf(state: GameState, clubId: string, squad: readonly SimPlayer[]): Standing[] {
+  return unsortedStandingsOf(state, clubId, squad).sort(isStandingAbove);
+}
+
+/** The captain the meter reads: the one the coach named while he is in the squad, else the squad's first by standing. */
+function captainOf(standings: readonly Standing[], record: ClubChemistry | undefined, isSorted: boolean): { captain: Standing | undefined; named: Standing | undefined } {
+  const named = record?.captainId !== undefined ? standings.find((c) => c.playerId === record.captainId) : undefined;
+  if (named || isSorted) return { captain: named ?? standings[0], named };
+  let first: Standing | undefined;
+  for (const candidate of standings) if (!first || isStandingAbove(candidate, first) < 0) first = candidate;
+  return { captain: first, named };
 }
 
 /**
@@ -186,26 +202,40 @@ const REACH: Record<Formation, { slot: number; distance: number }[][]> = (() => 
 
 /**
  * The pairs of the eleven who stand next to each other in its formation (arrange), each player with his
- * two nearest within reach (the lower id first between two as near), in id order.
+ * two nearest within reach (the lower id first between two as near), as the pair's two players, each pair once.
  */
-function neighboursOf(eleven: readonly SimPlayer[], formation: Formation): [string, string][] {
+function neighbourPairs(eleven: readonly SimPlayer[], formation: Formation): [SimPlayer, SimPlayer][] {
   const placed = arrange(eleven, formation);
-  const pairs = new Map<string, { ids: [string, string]; order: string }>();
+  const pairs: [SimPlayer, SimPlayer][] = [];
+  const isPaired = new Set<number>();
+  const slots = placed.length;
   REACH[formation].forEach((reach, s) => {
     const a = placed[s];
     if (!a) return;
-    const near: { id: string; distance: number }[] = [];
+    const near: { slot: number; id: string; distance: number }[] = [];
     for (const { slot, distance } of reach) {
       const b = placed[slot];
-      if (b) near.push({ id: b.id, distance });
+      if (b) near.push({ slot, id: b.id, distance });
     }
     near.sort((x, y) => x.distance - y.distance || (x.id < y.id ? -1 : 1));
-    for (const { id } of near.slice(0, NEIGHBOURS)) {
-      const ids: [string, string] = a.id < id ? [a.id, id] : [id, a.id];
-      pairs.set(ids.join("|"), { ids, order: ids.join() });
+    for (let i = 0; i < Math.min(NEIGHBOURS, near.length); i++) {
+      const t = near[i]?.slot ?? s;
+      const b = placed[t];
+      const key = Math.min(s, t) * slots + Math.max(s, t);
+      if (!b || isPaired.has(key)) continue;
+      isPaired.add(key);
+      pairs.push(a.id < b.id ? [a, b] : [b, a]);
     }
   });
-  return [...pairs.values()].sort((x, y) => (x.order < y.order ? -1 : 1)).map(({ ids }) => ids);
+  return pairs;
+}
+
+/** neighbourPairs as ids, in id order. */
+function neighboursOf(eleven: readonly SimPlayer[], formation: Formation): [string, string][] {
+  return neighbourPairs(eleven, formation)
+    .map(([a, b]): { ids: [string, string]; order: string } => ({ ids: [a.id, b.id], order: `${a.id},${b.id}` }))
+    .sort((x, y) => (x.order < y.order ? -1 : 1))
+    .map(({ ids }) => ids);
 }
 
 const mainPosition = (player: SimPlayer) => player.positions?.[0] ?? player.group;
@@ -259,6 +289,22 @@ export function chemistryOf(state: GameState, clubId: string): Chemistry {
 
 const known = new WeakMap<GameState, Map<string, Chemistry>>();
 
+/**
+ * The meter of chemistryOf alone, without the reasons, links and candidates the screens show: the match
+ * engine and the events read it for every club on every match day. Worked out once per game state and club.
+ */
+export function chemistryValueOf(state: GameState, clubId: string): number {
+  const full = known.get(state)?.get(clubId);
+  if (full) return full.value;
+  let byClub = knownValues.get(state);
+  if (!byClub) knownValues.set(state, (byClub = new Map()));
+  let value = byClub.get(clubId);
+  if (value === undefined) byClub.set(clubId, (value = meterOf(state, clubId, squadsOfGame(state).get(clubId) ?? [])));
+  return value;
+}
+
+const knownValues = new WeakMap<GameState, Map<string, number>>();
+
 const NEUTRAL: Omit<Chemistry, "formation"> = { value: NEUTRAL_CHEMISTRY, was: NEUTRAL_CHEMISTRY, reasons: [], eleven: [], captain: null, candidates: [], links: [] };
 
 function workOut(state: GameState, clubId: string, squad: readonly SimPlayer[]): Chemistry {
@@ -267,8 +313,7 @@ function workOut(state: GameState, clubId: string, squad: readonly SimPlayer[]):
   if (!squad.length) return { ...NEUTRAL, formation };
   const eleven = elevenOf(state, clubId, squad, formation, record);
   const candidates = standingsOf(state, clubId, squad);
-  const named = record?.captainId !== undefined ? candidates.find((c) => c.playerId === record.captainId) : undefined;
-  const captain = named ?? candidates[0];
+  const { captain, named } = captainOf(candidates, record, true);
 
   const reasons: ChemistryReason[] = [];
   const settled = Math.round(clamp(record?.settled ?? 0, -SETTLED_LIMIT, SETTLED_LIMIT));
@@ -295,4 +340,25 @@ function workOut(state: GameState, clubId: string, squad: readonly SimPlayer[]):
     candidates,
     links: [...good, ...rivals, ...fights],
   };
+}
+
+/** workOut's meter, from the same points, counting the pairs and players its reasons would list. */
+function meterOf(state: GameState, clubId: string, squad: readonly SimPlayer[]): number {
+  if (!squad.length) return NEUTRAL_CHEMISTRY;
+  const record = state.chemistry?.[clubId];
+  const formation = formationOfClub(state, clubId, squad);
+  const eleven = elevenOf(state, clubId, squad, formation, record);
+  const { captain } = captainOf(unsortedStandingsOf(state, clubId, squad), record, false);
+  let points = Math.round(clamp(record?.settled ?? 0, -SETTLED_LIMIT, SETTLED_LIMIT));
+  if (captain) points += Math.round((CAPTAIN_POINTS * (captain.standing - NEUTRAL_CHEMISTRY)) / NEUTRAL_CHEMISTRY);
+  const newcomers = eleven.filter((p) => p.condition.arrivedOn !== null && daysBetween(p.condition.arrivedOn, state.date) < NEW_FOR_DAYS).length;
+  if (newcomers) points += Math.max(NEWCOMERS_FLOOR, NEWCOMER_POINTS * newcomers);
+  const rivals = rivalPairs(eleven, squad, state.date).length;
+  const fights = fightPairs(state, clubId, squad).length;
+  if (rivals) points += RIVAL_POINTS * rivals;
+  if (fights) points += Math.max(FIGHTS_FLOOR, FIGHT_POINTS * fights);
+  let good = 0;
+  for (const [a, b] of neighbourPairs(eleven, formation)) if (hasSettled(a, state.date) && hasSettled(b, state.date)) good++;
+  points += Math.min(PAIRS_CAP, Math.floor(good / 2));
+  return clamp(Math.round(NEUTRAL_CHEMISTRY + points), 0, 100);
 }

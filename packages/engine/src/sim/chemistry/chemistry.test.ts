@@ -7,7 +7,7 @@ import { loadNewGame } from "../loadNewGame.js";
 import { isInjured } from "../players/isInjured.js";
 import { playingStrength } from "../players/matchSetup.js";
 import { loadGame, saveGame } from "../saveGame.js";
-import { chemistryOf, chemistryStrength, type Chemistry } from "./chemistryOf.js";
+import { chemistryOf, chemistryStrength, chemistryValueOf, type Chemistry } from "./chemistryOf.js";
 import { nameCaptain } from "./nameCaptain.js";
 
 const CLUB = "flamengo-rj";
@@ -171,6 +171,17 @@ describe("team chemistry", () => {
       expect(low(players[p.id] ?? p) / neutral(players[p.id] ?? p)).toBeGreaterThanOrEqual(0.97 - 1e-9);
     }
     expect(squad.some((p) => best(p) !== neutral(p))).toBe(true);
+  });
+
+  it("reads the same meter alone as with its reasons, for every club", () => {
+    const captain = squadOf(steady)[3];
+    if (!captain) throw new Error("a short squad");
+    const [a = "", b = ""] = chemistryOf(rotated, CLUB).eleven;
+    const log = [{ typeId: "dressing-room-fight", date: rotated.date, clubId: CLUB, playerId: a, teammateId: b }];
+    const fought = { ...rotated, eventMemory: { log, pending: {}, news: [], rivalry: {} } };
+    for (const state of [start, steady, rotated, nameCaptain(steady, CLUB, captain.id), fought]) {
+      for (const clubId of Object.keys(state.clubs)) expect([clubId, chemistryValueOf({ ...state }, clubId)]).toEqual([clubId, chemistryOf({ ...state }, clubId).value]);
+    }
   });
 
   it("is the same in two runs from the same seed", () => {
