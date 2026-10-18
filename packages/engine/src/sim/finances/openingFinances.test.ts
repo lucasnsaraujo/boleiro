@@ -11,6 +11,8 @@ const yearlyWageBill = (state: GameState, clubId: string) =>
 describe("a new game's club finances", () => {
   const state = loadNewGame(2026, { coachClubId: "flamengo-rj" });
   const data = loadFinances();
+  const serieARows = data.clubs.filter((row) => row.division === "A");
+  const hasAccounts = new Set(data.clubs.map((row) => row.clubId));
 
   it("gives every player a positive monthly wage", () => {
     expect(Object.values(state.players).every((p) => p.wage > 0)).toBe(true);
@@ -22,10 +24,10 @@ describe("a new game's club finances", () => {
     }
   });
 
-  it("keeps Série B–D wage bills between the small and large club estimates", () => {
+  it("keeps the wage bills of Série B–D clubs without accounts between the small and large club estimates", () => {
     for (const division of ["B", "C", "D"] satisfies Division[]) {
       const rows = data.divisionEstimates.filter((row) => row.division === division).map((row) => row.wageBill);
-      for (const club of Object.values(state.clubs).filter((c) => c.division === division)) {
+      for (const club of Object.values(state.clubs).filter((c) => c.division === division && !hasAccounts.has(c.id))) {
         const bill = yearlyWageBill(state, club.id);
         expect(bill).toBeGreaterThanOrEqual(Math.min(...rows) * 0.99);
         expect(bill).toBeLessThanOrEqual(Math.max(...rows) * 1.01);
@@ -54,7 +56,7 @@ describe("a new game's club finances", () => {
   });
 
   it("starts each Série A club's yearly revenue near its 2025 accounts without player sales", () => {
-    for (const row of data.clubs) {
+    for (const row of serieARows) {
       const finance = state.finances[row.clubId];
       if (!finance) throw new Error(`no finances for ${row.clubId}`);
       const projected = finance.tv + finance.sponsorship + finance.membership + finance.otherIncome + finance.expectedTickets + finance.expectedPrizes;
@@ -63,7 +65,7 @@ describe("a new game's club finances", () => {
   });
 
   it("counts the Copa do Brasil prizes a Série A club expects once, inside its 2025 revenue", () => {
-    for (const row of data.clubs) {
+    for (const row of serieARows) {
       const finance = state.finances[row.clubId];
       if (!finance || finance.otherIncome === 0) continue;
       expect(finance.expectedPrizes, row.clubId).toBeGreaterThan(0);
