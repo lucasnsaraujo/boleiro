@@ -91,13 +91,13 @@ type Props = {
  * to the last frame, "Ver de novo" plays it again; with less motion asked for, the last frame shows at once.
  */
 export function MomentStage({ durationMs, backdrop, tone, label, className, actions, children }: Props) {
-  const frame = useRef<HTMLDivElement>(null);
+  const area = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const ticks = useRef(new Set<Tick>());
   const time = useRef({ t0: 0, frozen: 0, isRunning: false });
   const raf = useRef(0);
   const [scale, setScale] = useState(1);
-  const [frameSize, setFrameSize] = useState({ width: ARTBOARD.width, height: ARTBOARD.height });
+  const [place, setPlace] = useState({ left: 0, top: 0 });
   const [isReady, setReady] = useState(false);
   const playing = useRef(false);
   const [isEnded, setEnded] = useState(false);
@@ -145,11 +145,12 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
   }, [animations, draw, durationMs, end, now]);
 
   useLayoutEffect(() => {
-    const element = frame.current;
+    const element = area.current;
     if (!element) return;
     const fit = () => {
-      setScale(Math.min(element.clientWidth / ARTBOARD.width, element.clientHeight / ARTBOARD.height) || 1);
-      setFrameSize({ width: element.clientWidth, height: element.clientHeight });
+      const k = Math.min(element.clientWidth / ARTBOARD.width, element.clientHeight / ARTBOARD.height) || 1;
+      setScale(k);
+      setPlace({ left: (element.clientWidth - ARTBOARD.width * k) / 2, top: element.offsetTop + (element.clientHeight - ARTBOARD.height * k) / 2 });
     };
     fit();
     if (typeof ResizeObserver !== "function") return;
@@ -200,41 +201,40 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
 
   return (
     // Where the artboard sits in the window, so a scene's backdrop can line its colours up with it.
-    <div
-      ref={frame}
-      className={`mo-frame is-${tone}`}
-      style={{ background: backdrop, "--mo-k": scale, "--mo-left": `${(frameSize.width - ARTBOARD.width * scale) / 2}px`, "--mo-top": `${(frameSize.height - ARTBOARD.height * scale) / 2}px` } as CSSProperties}
-    >
-      <ClockContext.Provider value={clock}>
-        <div
-          ref={stage}
-          role="region"
-          aria-label={label}
-          className={`mo-stage ${className}${isReady ? " is-ready" : ""}`}
-          data-state={isEnded ? "ended" : "playing"}
-          style={{ transform: `translate(-50%, -50%) scale(${scale})` }}
-        >
-          {children}
-          <div className="mo-acts">
-            {!isEnded && (
-              <button className="mo-skip" onClick={seekEnd}>
-                Pular <span className="kbd">Esc</span>
-              </button>
-            )}
-            {isEnded && (
-              <div className="mo-cta">
-                {!prefersReducedMotion() && (
-                  <button className="mo-replay" onClick={play}>
-                    <i className="ph-bold ph-arrows-clockwise" aria-hidden="true" />
-                    Ver de novo
-                  </button>
-                )}
-                {actions}
-              </div>
-            )}
+    <div className={`mo-frame is-${tone}`} style={{ background: backdrop, "--mo-k": scale, "--mo-left": `${place.left}px`, "--mo-top": `${place.top}px` } as CSSProperties}>
+      <div className="mo-drag" data-tauri-drag-region />
+      <div ref={area} className="mo-area">
+        <ClockContext.Provider value={clock}>
+          <div
+            ref={stage}
+            role="region"
+            aria-label={label}
+            className={`mo-stage ${className}${isReady ? " is-ready" : ""}`}
+            data-state={isEnded ? "ended" : "playing"}
+            style={{ transform: `translate(-50%, -50%) scale(${scale})` }}
+          >
+            {children}
+            <div className="mo-acts">
+              {!isEnded && (
+                <button className="mo-skip" onClick={seekEnd}>
+                  Pular <span className="kbd">Esc</span>
+                </button>
+              )}
+              {isEnded && (
+                <div className="mo-cta">
+                  {!prefersReducedMotion() && (
+                    <button className="mo-replay" onClick={play}>
+                      <i className="ph-bold ph-arrows-clockwise" aria-hidden="true" />
+                      Ver de novo
+                    </button>
+                  )}
+                  {actions}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </ClockContext.Provider>
+        </ClockContext.Provider>
+      </div>
     </div>
   );
 }

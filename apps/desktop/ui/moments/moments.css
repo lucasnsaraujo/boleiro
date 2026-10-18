@@ -1,7 +1,10 @@
 /* Career moments: the stage, stickers, the paper and the skip/continue bar, shared by every scene. Each scene's
    own rules live next to it, scoped under its class. */
 
+/* The window's chrome band (the traffic lights on macOS, the caption buttons on Windows) stays the scene's colour and drags the window, as the mocks' band does. */
 .mo-frame { position: fixed; inset: 0; z-index: 30; overflow: hidden; }
+.mo-drag { position: absolute; left: 0; right: 0; top: 0; height: var(--chrome-top, 0px); z-index: 70; }
+.mo-area { position: absolute; left: 0; right: 0; bottom: 0; top: var(--chrome-top, 0px); }
 .mo-stage { position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px; transform-origin: 50% 50%; overflow: hidden; visibility: hidden; contain: layout paint; }
 .mo-stage.is-ready { visibility: visible; }
 .mo-stage canvas.fill { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }

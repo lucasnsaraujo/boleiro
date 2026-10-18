@@ -739,7 +739,7 @@ function playerAwardView(state: GameState, moment: Extract<Moment, { kind: "play
       ...(first && first.apps ? [{ value: String(first.apps), label: `jogos em ${moment.season}`, isFoil: false }] : []),
       ...(first && first.goals ? [{ value: String(first.goals), label: "gols", isFoil: false }] : []),
       ...(mark ? [{ value: String(mark.apps), label: `jogos pelo ${club.name}`, isFoil: false }] : []),
-      { value: String(season.length), label: season.length === 1 ? "prêmio no ano" : "prêmios no ano", isFoil: true },
+      { value: String(season.length), label: season.length === 1 ? "conquista no ano" : "conquistas no ano", isFoil: true },
     ],
     season,
     career: Object.entries(state.history.players)
