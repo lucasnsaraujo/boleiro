@@ -111,6 +111,19 @@ test("the mid-season window is on by default and switched off starts a game with
   expect(await engine.read(["hasMidSeasonWindow"])).toEqual({ hasMidSeasonWindow: false });
 });
 
+test("the house rule 'changes only in finals' is off by default and switched on starts a game that leaves other matches to the plans", async () => {
+  const { engine } = await openNewGame();
+  const finalsOnly = screen.getByRole("button", { name: "Mudanças só nas finais" });
+  expect(finalsOnly.getAttribute("aria-pressed")).toBe("false");
+  await userEvent.click(finalsOnly);
+  expect(finalsOnly.getAttribute("aria-pressed")).toBe("true");
+  await userEvent.click(clubList().getByRole("button", { name: "Bahia" }));
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico" }), "Rogério");
+  await userEvent.click(screen.getByRole("button", { name: "Começar carreira" }));
+  await screen.findByText("Clube aberto", {}, { timeout: 10_000 });
+  expect(await engine.read(["manualChangesOnlyInFinals"])).toEqual({ manualChangesOnlyInFinals: true });
+});
+
 test("career mode starts with no club and offers from small clubs", async () => {
   const { engine } = await openNewGame();
   await userEvent.click(screen.getByRole("button", { name: "Modo carreira" }));

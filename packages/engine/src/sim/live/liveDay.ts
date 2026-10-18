@@ -8,6 +8,7 @@ import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import type { MatchSheets } from "../history/recordMatches.js";
 import type { MatchContext } from "../players/effectiveStrength.js";
 import type { MatchPlay } from "./matchPlay.js";
+import type { PlanAnswer } from "./planSubstitutions.js";
 import type { MatchEvent } from "./matchTimeline.js";
 import type { TalkEffect, TalkTone } from "./teamTalk.js";
 
@@ -58,6 +59,8 @@ export type CoachMatch = {
   /** Each human coach's half-time talk in this match, by his club, with what it did; none before one is given. */
   halfTimeTalks?: Record<string, TalkEffect & { tone: TalkTone }>;
   lastChangeMinute: number;
+  /** The red cards and injuries a human coach's match plan answered, by his club, so their windows don't open; none when no plan did. */
+  answeredByPlan?: (PlanAnswer & { clubId: string })[];
   /** Redraws come from a stream of their own, so a change leaves every other match as it was. */
   rngState: number;
   /** The match as drawn at kick-off, used when the coach changes nothing. */

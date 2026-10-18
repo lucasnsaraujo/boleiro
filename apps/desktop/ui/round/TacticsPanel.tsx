@@ -22,6 +22,8 @@ type Props = {
   isLive: boolean;
   onChange: (tactics: Tactics) => void;
   onClose: () => void;
+  /** Before kick-off, the way on to the coach's match plan, where he can keep these tactics ready. */
+  onOpenPlan?: () => void;
 };
 
 const LANE_LABEL: Record<Lane, string> = { left: "Esquerda", centre: "Centro", right: "Direita" };
@@ -213,7 +215,7 @@ function Sectors({ board, context }: { board: TacticsBoard; context: TacticsCont
  * word on it, and on the right where the coach's side wins, sector by sector and lane by lane, and how
  * the opponent's coach set up. Every change goes straight to the lineup sheet behind it.
  */
-export function TacticsPanel({ context, eleven, tactics, isLive, onChange, onClose }: Props) {
+export function TacticsPanel({ context, eleven, tactics, isLive, onChange, onClose, onOpenPlan }: Props) {
   const title = useDialogFocus<HTMLHeadingElement>(true);
   const board = tacticsBoard({ name: context.club.shortName, eleven, tactics }, context.opponent, context.moment);
   const { assistant } = board;
@@ -360,6 +362,12 @@ export function TacticsPanel({ context, eleven, tactics, isLive, onChange, onClo
             Escalação
           </button>
           <span className="n">{isLive ? "Vale a partir do próximo minuto." : "Dá pra mudar também durante o jogo."}</span>
+          {onOpenPlan && (
+            <button className="btn" onClick={onOpenPlan}>
+              <i className="ph-bold ph-chalkboard-teacher" aria-hidden="true" />
+              Plano de jogo
+            </button>
+          )}
           <button className="btn y" disabled={board.changes === 0} onClick={() => follow()}>
             <i className="ph-bold ph-user-switch" aria-hidden="true" />
             Seguir o auxiliar em tudo

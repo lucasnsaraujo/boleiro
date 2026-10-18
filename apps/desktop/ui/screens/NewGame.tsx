@@ -94,6 +94,8 @@ export function NewGame() {
   const [starting, setStarting] = useState(false);
   const [playsEstaduais, setPlaysEstaduais] = useState(true);
   const [hasMidSeasonWindow, setHasMidSeasonWindow] = useState(true);
+  // The house rule from the cousins' playtest: outside finals, only each coach's match plan changes his side during a match.
+  const [isFinalsOnly, setFinalsOnly] = useState(false);
   const [failed, setFailed] = useState(false);
   const [others, setOthers] = useState<OtherCoach[]>([]);
   // Which coach the club grid picks for: 0 is the first, 1 on the others in turn order.
@@ -181,6 +183,7 @@ export function NewGame() {
           careerMode: picked.mode === "career",
           stateChampionships: playsEstaduais,
           ...(hasMidSeasonWindow ? {} : { midSeasonWindow: false }),
+          ...(isFinalsOnly ? { manualChangesOnlyInFinals: true } : {}),
           formats,
           ...(hotSeat ? { hotSeat } : { coachName: name }),
           ...(clockMinutes === null ? {} : { marketClockSeconds: clockMinutes * 60 }),
@@ -327,6 +330,15 @@ export function NewGame() {
                 aria-pressed={hasMidSeasonWindow}
                 onClick={() => setHasMidSeasonWindow(!hasMidSeasonWindow)}
               />
+            </div>
+
+            <div className="career-new-free">
+              <p>
+                <b>Mudanças só nas finais</b>
+                <br />
+                <span className="mute">{isFinalsOnly ? "Regra da casa: nos outros jogos ninguém mexe no time, só o plano de jogo de cada técnico." : "Cada técnico mexe no time quando quiser durante o jogo."}</span>
+              </p>
+              <button type="button" className={isFinalsOnly ? "sw on" : "sw"} aria-label="Mudanças só nas finais" aria-pressed={isFinalsOnly} onClick={() => setFinalsOnly(!isFinalsOnly)} />
             </div>
 
             <div className="career-new-free career-new-clock">

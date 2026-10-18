@@ -68,6 +68,8 @@ export type NewGameOptions = {
   coachName?: string;
   /** Each coach's market time per transfer window, in seconds; left out, the market has no clock. */
   marketClockSeconds?: number;
+  /** True for the house rule "manual changes only in finals": in every other match only the coaches' match plans act. */
+  manualChangesOnlyInFinals?: boolean;
   /** The calendar and formats (Rápido, Realista or a custom mix); left out, Realista's. */
   formats?: Formats;
   /** The kit deals and the brands of the offer pool (the sponsors pack); left out, the clubs have no sponsors on their kits. */
@@ -162,7 +164,7 @@ function withNewCoachRoom(finances: Record<string, ClubFinance>, coachClubId: st
 
 export function newGame(
   seed: number,
-  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, guests, stateChampionships = true, midSeasonWindow = true, hotSeat, coachName, marketClockSeconds, formats = REALISTA, sponsors, nationalFootball }: NewGameOptions,
+  { clubs: brazilClubs, players: brazilPlayers, positions = [], lineups = [], finances: financeData, competitionMoney, packVersion, coachClubId, careerMode = false, season = FIRST_SEASON, world, guests, stateChampionships = true, midSeasonWindow = true, hotSeat, coachName, marketClockSeconds, manualChangesOnlyInFinals = false, formats = REALISTA, sponsors, nationalFootball }: NewGameOptions,
 ): GameState {
   const countries = (world ?? []).map(({ structure, levels }) => ({ structure: inFormats(structure, formats), levels }));
   const fullTier = countriesOfHumans(countries, [coachClubId, ...(hotSeat?.otherCoaches ?? []).map((other) => other.clubId)], formats);
@@ -226,6 +228,7 @@ export function newGame(
     ...(europe ? { europe } : {}),
     ...(stateChampionships ? {} : { playsStateChampionships: false as const }),
     ...(midSeasonWindow ? {} : { hasMidSeasonWindow: false as const }),
+    ...(manualChangesOnlyInFinals ? { manualChangesOnlyInFinals: true as const } : {}),
     ...(isRealista(formats) ? {} : { formats }),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
   const withClock = marketClockSeconds === undefined ? game : { ...game, marketClockSeconds };
