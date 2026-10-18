@@ -10,6 +10,7 @@ import { useServices } from "../app/ServicesContext.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { clubById, plateColours } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
+import { leagueAbroadOf } from "../newGame/leaguesAbroad.js";
 import { savedWhen } from "../start/savedWhen.js";
 import "./saves.css";
 
@@ -19,7 +20,16 @@ const SLOT_IDS = [AUTOSAVE_SLOT_ID, ...GAME_SLOT_IDS] as const;
 type Slots = { kind: "loading" } | { kind: "ready"; saved: SlotMeta[] } | { kind: "failed" };
 type Status = { text: string; isError: boolean } | null;
 
-const seriesOf = (meta: SlotMeta) => (meta.division ? `Série ${meta.division}` : "Sem clube");
+/** Where the saved coach's club played: its Série, its league abroad, only its state championship, or no club at all. */
+function seriesOf(meta: SlotMeta): string {
+  if (meta.division) return `Série ${meta.division}`;
+  const club = meta.coachClubId ? clubById(meta.coachClubId) : null;
+  if (!club) return "Sem clube";
+  const abroad = meta.abroad ?? club.abroad;
+  if (abroad) return leagueAbroadOf({ abroad })?.label ?? "Exterior";
+  return "Estadual";
+}
+
 const yearOf = (meta: SlotMeta) => `${formatDayMonth(meta.date)} ${meta.season}`;
 /** A game slot's number, the one in its name (Jogo 1 is 01); the autosave goes by its chip instead. */
 const numberOf = (id: string) => (id === AUTOSAVE_SLOT_ID ? null : String(GAME_SLOT_IDS.findIndex((slotId) => slotId === id) + 1).padStart(2, "0"));

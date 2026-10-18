@@ -13,12 +13,13 @@ import { musicFor, useSound } from "../sound/SoundProvider.js";
 import { useTheme } from "../theme/ThemeProvider.js";
 import { useCommands, useIsCommandAnswered, useRunCommand } from "./AppCommands.js";
 import { GameClockContext } from "./gameClock.js";
+import { isDialogOpen } from "./isDialogOpen.js";
 import { installNativeMenu, MENU } from "./nativeMenu.js";
 import { hasMica, platformOf, windowChrome, windowsVersion } from "./platform.js";
 import { screenDirection } from "./screenDirection.js";
 import { NAV, navIndexOf, showsBar, type NavId } from "./screens.js";
 import { useServices } from "./ServicesContext.js";
-import { commandForKey, MATCH_COMMAND_IDS, type CommandId } from "./shortcuts.js";
+import { commandForKey, isBrowserChord, MATCH_COMMAND_IDS, type CommandId } from "./shortcuts.js";
 import { useAskBeforeDiscarding } from "./useAskBeforeDiscarding.js";
 import { useWin98Round } from "../eggs/useWin98Round.js";
 import { Win98TaskBar, Win98TitleBar } from "../eggs/Win98Chrome.js";
@@ -35,11 +36,6 @@ const CHROME = windowChrome(PLATFORM, isTauri(), import.meta.env.DEV ? location.
 const TOAST_MS = 2600;
 // The menu bar belongs to the app, not to a screen: it is built once, the first time the shell mounts.
 let hasNativeMenu = false;
-
-/** Whether a dialog (a confirm, a sheet, the newspaper) or a select's list is up: the game's shortcuts wait until it closes, Escape closes it. */
-function isDialogOpen(): boolean {
-  return document.querySelector('[role="dialog"], [role="alertdialog"], [role="combobox"][aria-expanded="true"]') !== null;
-}
 
 // On a Mac the menu's key equivalents take the F-keys and Command-S before the page sees them; clicked, entries without one still run under a dialog.
 const MENU_SHORTCUT_IDS: ReadonlySet<CommandId> = new Set(MENU.flatMap(({ entries }) => entries.flatMap((entry) => ("command" in entry && entry.accelerator ? [entry.command] : []))));
@@ -191,16 +187,18 @@ export function Shell() {
   useEffect(() => {
     // A control the coach reached with Tab, where Space presses it as keyboard users expect. A click focuses a control too,
     // and Chromium then calls it :focus-visible on the next key, so that test alone would let Space re-press the last click.
+    // A title a dialog focuses by itself (tabIndex -1) is no control Tab reaches, so Space there is still the game's.
     let isTabbing = false;
     let tabbedTo: EventTarget | null = null;
     const onFocus = (event: FocusEvent) => {
-      tabbedTo = isTabbing ? event.target : null;
+      tabbedTo = isTabbing && event.target instanceof HTMLElement && event.target.tabIndex >= 0 ? event.target : null;
     };
     const onPointer = () => {
       isTabbing = false;
     };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Tab") isTabbing = true;
+      if (isBrowserChord(event, PLATFORM)) return event.preventDefault();
       const command = commandForKey(event, PLATFORM);
       if (!command || event.defaultPrevented || (event.key.length === 1 && !event.metaKey && !event.ctrlKey && isTyping(event.target))) return;
       if (event.key === " " && event.target === tabbedTo) return;

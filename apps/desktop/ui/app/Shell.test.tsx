@@ -86,6 +86,14 @@ test("a game key that does nothing on this screen still never reaches the browse
   expect(fireEvent.keyDown(document, { key: "F12" })).toBe(true);
 });
 
+test("outside a Mac the web view's reload, print, find and back keys never reach it, even under a dialog, while copy still does", async () => {
+  openShellWith(await services(), [{ path: "/hub", element: <ScreenUnderDialog /> }], "/hub");
+  expect(fireEvent.keyDown(document, { key: "r", ctrlKey: true })).toBe(false);
+  expect(fireEvent.keyDown(document, { key: "p", ctrlKey: true })).toBe(false);
+  expect(fireEvent.keyDown(document, { key: "ArrowLeft", altKey: true })).toBe(false);
+  expect(fireEvent.keyDown(document, { key: "c", ctrlKey: true })).toBe(true);
+});
+
 test("a match key off the round is left to the page, so Space still presses buttons and scrolls", async () => {
   open(await services(), "/hub");
   await screen.findByRole("navigation", { name: "Telas" });

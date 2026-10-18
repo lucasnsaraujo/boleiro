@@ -107,10 +107,10 @@ class FetcherTest(unittest.TestCase):
         pages = tm_fetch.Fetcher(self.cache)
         self.assertIn("Mozilla/5.0", pages.session.headers["User-Agent"])
 
-    def test_names_itself_and_its_repository_in_the_user_agent(self) -> None:
+    def test_names_itself_but_no_person_or_account_in_the_user_agent(self) -> None:
         agent = tm_fetch.Fetcher(self.cache).session.headers["User-Agent"]
         self.assertIn("Boleiro", agent)
-        self.assertIn("github.com/lucasnsaraujo/boleiro", agent)
+        self.assertNotRegex(agent, r"https?://|github|@")
 
     def test_waits_the_two_seconds_robots_txt_asks_for_after_every_page(self) -> None:
         network = Recorder(Answer(200))

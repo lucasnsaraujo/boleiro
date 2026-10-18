@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar as barOf, barDate, news, startAtClub } from "./flows.js";
+import { bar as barOf, barDate, hubLoaded, news, passMoments, startAtClub } from "./flows.js";
 
 type Save = {
   game: {
@@ -22,11 +22,12 @@ async function openTheCheckbook(page: Page): Promise<void> {
   });
 }
 
-/** Back to the hub from another screen, so it reads the game again. */
+/** Back to the hub from another screen, so it reads the game again, past any career moment waiting there. */
 async function reopenHub(page: Page): Promise<void> {
   const bar = barOf(page);
   await bar.getByRole("link", { name: "Agenda" }).click();
   await bar.getByRole("link", { name: "Times" }).click();
+  await passMoments(page, hubLoaded(page));
 }
 
 test("a player renewed for two years at his ask from the renewal screen gets the new contract the next day", async ({ page }) => {

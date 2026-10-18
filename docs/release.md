@@ -55,7 +55,7 @@ Run on a Windows 10 or 11 PC with the `boleiro-windows` artifact. Each step name
 1. Install with `Boleiro_<version>_x64-setup.exe` (per user, no admin). SmartScreen warns (unsigned); click More info → Run anyway. If WebView2 is missing (old Windows 10), the installer downloads it.
 2. Launch Boleiro from the Start menu. The window has the game's own header instead of Windows' title bar: drag it by the header, and check minimise, maximise and close. On Windows 11 the paper is slightly translucent (Mica); on Windows 10 the desktop must not show through.
 3. New game → pick a club → Começar carreira → Jogar rodada → Começar a rodada; let the round reach full time. The round's sounds play (crowd, whistles, goals).
-4. Press F1–F9 and F5 in the hub: each opens a game screen; F5 must not reload the app and F3 must not open a find bar.
+4. Press F1–F9 and F5 in the hub: each opens a game screen; F5 must not reload the app and F3 must not open a find bar. Ctrl+R, Ctrl+P, Ctrl+F and Alt+← must do nothing, in the hub and mid-round. In Opções → Créditos, click a sound's or a logo's name: its page opens in the default browser.
 5. Switch Opções → Tema between claro and escuro and drag the window's corner to grow it fast in each: the new area shows the theme's paper colour, never a white or cream band.
 6. Ctrl+S to save. In Explorer open `%APPDATA%\com.lucasnsaraujo.boleiro\saves\`: each slot is a folder holding `index.json` plus `game.<n>.json`, `session.<n>.json`, `world.<n>.json` and one `country-<id>.<n>.json` per country, and every file except `index.json` starts with `{"packed":1`.
 7. Play another round and save again: only the changed shards get a new number, the old ones are gone, and `index.json` points at the new ones.

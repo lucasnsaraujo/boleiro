@@ -4,7 +4,8 @@ The national-teams pack (`world/national-teams.pack.json.gz`) names its teams as
 and the participants pages the world scrape found them on (tm_world.NATIONAL_TEAM_LISTS) give each one's
 Transfermarkt id: its crest is `/wappen/head/<id>.png`, the federation's badge (the CBF's for Brazil). The crests go
 through build_assets.py's world settings, WebP in the 64 and 128 px boxes, into `national/assets.json` keyed by the
-pack's team ids, with their files under `national/assets/`. A pack team missing from the lists stops the build.
+pack's team ids, with their files under `national/assets/`, each in a lossless 128-colour palette where it keeps the
+crest's look. A pack team missing from the lists stops the build.
 
 Pages and images come through tm_fetch's cache (data/tm_cache) with a generic User-Agent and `--delay` seconds
 between page requests (never under 2). `--offline` reads only the cache.
@@ -32,6 +33,9 @@ ROOT = Path(__file__).resolve().parent.parent
 PACK = ROOT / "packages" / "data" / "pack"
 USER_AGENT = "Boleiro/0.1 (personal project)"
 CREST = "/wappen/head/{}.png"
+# A federation's badge is flat art: in a lossless palette of 128 colours, where it keeps the look (54 of the 90), the
+# crests take 471,536 bytes instead of q80 WebP's 663,548, and move a pixel by 2.6 of 255 on average instead of 4.9.
+PALETTE_COLOURS = 128
 
 
 def crest_ids(refs: list[tm_pages.ClubRef], teams: dict[str, str]) -> dict[str, str]:
@@ -62,7 +66,7 @@ def main() -> None:
         rows.append({"kind": "crest", "sha256": hashlib.sha256(file.read_bytes()).hexdigest(), "entity": "club", "entity_id": team,
                      "path": str(file.resolve()), "width": width, "height": height})
     out = PACK / "national"
-    write(build(rows, out, WORLD_FORMATS, WORLD_BOXES), out)
+    write(build(rows, out, WORLD_FORMATS, WORLD_BOXES, palette_colours=PALETTE_COLOURS), out)
 
 
 if __name__ == "__main__":

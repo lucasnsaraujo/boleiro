@@ -13,11 +13,12 @@ export function playRoundLabel(isPlaying: boolean, hasClub: boolean): string {
 
 /**
  * "Jogar rodada": plays on in the worker, then opens the live round on the coach's match day.
- * When a day stops it early, `onStopped` decides where the coach reads why. In a hot-seat game a
+ * When a day stops it early, `onStopped` decides where the coach reads why, and the button stays busy
+ * until what it returns settles (the hub reading the game, which may find a moment waiting). In a hot-seat game a
  * coach before the last one sets his eleven on his match day or passes his turn instead, and days
  * played hand the seat back to the first coach; both go behind the hand-off screen.
  */
-export function usePlayRound(onStopped: (result: PlayResult) => void): PlayRound {
+export function usePlayRound(onStopped: (result: PlayResult) => unknown): PlayRound {
   const { engine } = useServices();
   const navigate = useNavigate();
   const [isPlaying, setPlaying] = useState(false);
@@ -39,7 +40,7 @@ export function usePlayRound(onStopped: (result: PlayResult) => void): PlayRound
       const result = await engine.apply({ type: "playToMatchDay" });
       if (seats && result.daysPlayed > 0) navigate("/turn");
       else if (result.stop === "matchDay") navigate("/round");
-      else onStopped(result);
+      else await onStopped(result);
     } catch {
       setFailed(true);
     } finally {

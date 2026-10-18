@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, expect, test } from "vitest";
 import credits from "../../../../assets/sounds/CREDITS.md?raw";
+import { LOGO_CREDITS } from "@boleiro/data/logoCredits";
 import { parseCredits } from "../sound/credits.js";
 import { unlockedFakeSound } from "../sound/fakeAudioContext.js";
 import { MUSIC } from "../sound/soundCatalog.js";
@@ -113,5 +114,16 @@ test("the credits list every sound with its author, licence and source", () => {
     expect(item?.textContent).toContain(row.author);
     expect(item?.textContent).toContain(row.licence);
     expect(within(list).getByRole("link", { name: row.sound })).toHaveProperty("href", row.source);
+  }
+});
+
+test("next to the sounds, the credits list every sponsor logo whose licence asks for one, with its licence and its file's page", () => {
+  openOptions();
+  const list = screen.getByRole("list", { name: "Logos dos patrocinadores" });
+  expect(within(list).getAllByRole("listitem")).toHaveLength(LOGO_CREDITS.length);
+  for (const credit of LOGO_CREDITS) {
+    const link = within(list).getByRole("link", { name: credit.brand });
+    expect(link).toHaveProperty("href", credit.source);
+    expect(link.closest("li")?.textContent).toContain(credit.licence);
   }
 });

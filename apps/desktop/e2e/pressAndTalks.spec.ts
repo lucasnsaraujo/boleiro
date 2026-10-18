@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { news, playLiveRoundUntil, startAtClub } from "./flows.js";
+import { hubLoaded, news, passMoments, playLiveRoundUntil, startAtClub } from "./flows.js";
 
 // About two seasons of play-ons; a press conference with follow-ups asks the coach every month or two.
 const MAX_STEPS = 400;
@@ -27,9 +27,10 @@ async function playUntilConference(page: Page) {
     return false;
   }, MAX_STEPS);
   expect(found, `a press conference with follow-ups asks the coach within ${MAX_STEPS} play-ons`).toBe(true);
-  // The hub reads the game when it opens.
+  // The hub reads the game when it opens, after the career moments the play-ons left waiting.
   await page.getByRole("link", { name: "Tabelas" }).click();
   await page.getByRole("link", { name: "Times" }).click();
+  await passMoments(page, hubLoaded(page));
 }
 
 test("a press conference is answered one question at a time and its outcome reaches the paper", async ({ page }) => {

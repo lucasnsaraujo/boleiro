@@ -22,7 +22,6 @@ import { clubMeters, jobSecurity, leagueAbroadName, leagueStanding, nextMatch, t
 import { ConfidenceMeter } from "../finances/ConfidenceMeter.js";
 import { EventNote } from "../events/EventNote.js";
 import { EventPopUp } from "../events/EventPopUp.js";
-import { doMomentsInterrupt } from "../moments/momentsGate.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import { SQUAD_KEYS, squadRows } from "../squad/squadRows.js";
 import { ContractsEnding } from "../contracts/ContractsEnding.js";
@@ -66,7 +65,7 @@ export function Hub() {
     (isCurrent: () => boolean) =>
       Promise.all([engine.read(HUB_KEYS), engine.inbox(), engine.turningPoint(), engine.moment(), engine.hotSeat(), engine.pendingEvent(), engine.desk(), engine.betSticker()]).then(
         ([state, inbox, turningPoint, moment, seats, event, desk, bet]) =>
-          isCurrent() && setLoaded({ state, inbox, turningPoint, hasMoment: moment !== null && doMomentsInterrupt(localStorage, import.meta.env.VITE_E2E === "1"), seats, event, desk, bet }),
+          isCurrent() && setLoaded({ state, inbox, turningPoint, hasMoment: moment !== null, seats, event, desk, bet }),
         () => isCurrent() && setMissing(true),
       ),
     [engine],
@@ -83,7 +82,7 @@ export function Hub() {
   // A day that stops the coach early (a board answer, an offer) opens the paper on the news that stopped it.
   const seats = loaded?.seats ?? null;
   const round = usePlayRound(() =>
-    void load(() => true).then(() => {
+    load(() => true).then(() => {
       clock.refresh();
       setPaperOpen(true);
     }),

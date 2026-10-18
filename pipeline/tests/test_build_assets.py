@@ -85,6 +85,24 @@ class WorldCrestsTest(unittest.TestCase):
         on_white = lambda image: Image.alpha_composite(Image.new("RGBA", image.size, "white"), image).convert("RGB")
         self.assertEqual(ImageChops.difference(on_white(written), on_white(flat)).getextrema(), ((0, 0), (0, 0), (0, 0)))
 
+    def test_keeps_a_flat_crest_s_colours_exactly_when_given_a_palette(self) -> None:
+        # At the size of the 128 px box, so no resampling blends its colours.
+        crest = Image.new("RGBA", (98, 128), (0, 0, 0, 0))
+        ImageDraw.Draw(crest).polygon(((4, 4), (94, 4), (94, 80), (49, 124), (4, 80)), fill=(250, 220, 0, 255))
+        ImageDraw.Draw(crest).ellipse((24, 24, 74, 74), fill=(0, 120, 60, 255))
+        ImageDraw.Draw(crest).rectangle((40, 40, 58, 58), fill=(20, 40, 160, 255))
+        png = self.root / "brazil.png"
+        crest.save(png)
+        sha = hashlib.sha256(png.read_bytes()).hexdigest()
+        rows = [{"kind": "crest", "sha256": sha, "entity": "club", "entity_id": "brazil", "path": str(png), "width": 98, "height": 128}]
+        out = self.root / "national"
+        manifest = build_assets.build(rows, out, build_assets.WORLD_FORMATS, build_assets.WORLD_BOXES, palette_colours=128)
+        name = manifest["clubs"]["brazil"]["crest"].removeprefix("crest/")
+        written = Image.open(out / "assets" / "crest" / f"{name}-128.webp").convert("RGBA")
+        expected = build_assets.fitted(crest, 128)
+        on_white = lambda image: Image.alpha_composite(Image.new("RGBA", image.size, "white"), image).convert("RGB")
+        self.assertEqual(ImageChops.difference(on_white(written), on_white(expected)).getextrema(), ((0, 0), (0, 0), (0, 0)))
+
 
 if __name__ == "__main__":
     unittest.main()

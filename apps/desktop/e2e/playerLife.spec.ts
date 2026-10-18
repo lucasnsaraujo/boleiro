@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar as barOf, news, startAtClub } from "./flows.js";
+import { bar as barOf, hubLoaded, news, passMoments, startAtClub } from "./flows.js";
 
 // The last day of the first season; the next day played turns the year.
 const LAST_DAY = "2026-12-31";
@@ -31,15 +31,19 @@ test("a season ends and the awards screen shows the Bola de Prata team and the B
       .getByRole("button", { name: /^(Jogar rodada|Esperar propostas|Ver propostas)$/ })
       .or(seasonEnd)
       .first();
+    // A title or a farewell the year left waiting takes the screen before the hub comes back.
+    await passMoments(page, next);
     await expect(next).toBeVisible();
     if (await seasonEnd.isVisible()) break;
     await next.click();
+    await passMoments(page, page.getByRole("button", { name: /^(Jogar rodada|Esperar propostas|Ver propostas)$/ }).or(seasonEnd).first());
     await expect(page.getByRole("button", { name: /^(Jogar rodada|Esperar propostas|Ver propostas)$/ }).or(seasonEnd).first()).toBeVisible();
   }
   await expect(seasonEnd).toBeVisible();
   const board = page.getByRole("button", { name: "Ver a diretoria" });
   if (await board.isVisible()) await board.click();
   await page.getByRole("button", { name: "Começar 2027" }).click();
+  await passMoments(page, hubLoaded(page));
   await expect(page).toHaveURL(/#\/hub$/);
 
   const filed = await page.evaluate(async () => (await window.boleiroEngine?.awards())?.seasons[0]?.awards);

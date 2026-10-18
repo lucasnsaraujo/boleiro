@@ -2,6 +2,7 @@ mod slots;
 
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             slots::list_slots,
             slots::write_slot,

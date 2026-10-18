@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar, news, startAtClub } from "./flows.js";
+import { bar, hubLoaded, news, passMoments, startAtClub } from "./flows.js";
 
 /** Plays every day up to `date` in the worker with no decisions, through the e2e build's engine hook. */
 async function fastForward(page: Page, date: string) {
@@ -24,6 +24,7 @@ async function startOverIn(page: Page, season: number, seed: number, clubId: str
 async function openNationalTeam(page: Page) {
   await bar(page).getByRole("link", { name: "Agenda" }).click();
   await bar(page).getByRole("link", { name: "Times" }).click();
+  await passMoments(page, hubLoaded(page));
   await page.getByRole("link", { name: "Seleção", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Brasil" })).toBeVisible();
 }
@@ -57,6 +58,7 @@ test("the March FIFA window takes a called-up player from the coach's club and g
   // The day after the window he is back at the club; the box turns to a preview of the next window.
   await fastForward(page, "2026-04-01");
   await bar(page).getByRole("link", { name: "Times" }).click();
+  await passMoments(page, hubLoaded(page));
   await expect(await news(page)).toContainText("volta da seleção");
   await openNationalTeam(page);
   await expect(page.getByRole("region", { name: "Saem do Flamengo" })).toContainText("Prévia pelas listas prováveis.");

@@ -210,3 +210,15 @@ test("after a delete is confirmed, focus lands on the list of saves instead of f
   await waitFor(async () => expect(await given.slots.list()).toEqual([]));
   expect(document.activeElement).toBe(screen.getByRole("list", { name: "Vagas" }));
 });
+
+test("a save of a club abroad names its league where a Brazilian club's names its Série", async () => {
+  const { engine, close } = inMemoryEngine();
+  closers.push(close);
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "tm-11" } });
+  const given: Services = { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Arteta" } } };
+  await saveToSlot(given.engine, given.slots, "slot-1", { slotId: "slot-1", coachName: "Arteta" });
+  openSaves(given);
+  const card = await within(await slotsList()).findByRole("button", { name: /^Jogo 1 · Arsenal/ });
+  expect(card.textContent).toContain("Premier League · Inglaterra");
+  expect(card.textContent).not.toContain("Sem clube");
+});

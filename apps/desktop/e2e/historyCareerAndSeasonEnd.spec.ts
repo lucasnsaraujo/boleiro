@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar as barOf, news, startAtClub, startCareer } from "./flows.js";
+import { bar as barOf, hubLoaded, news, passMoments, startAtClub, startCareer } from "./flows.js";
 
 // The last day of the first season; the next day played turns the year.
 const LAST_DAY = "2026-12-31";
@@ -58,9 +58,12 @@ test("a season fast-forwarded to its last day ends on the end-of-season screen a
       .getByRole("button", { name: /^(Jogar rodada|Esperar propostas|Ver propostas)$/ })
       .or(seasonEnd)
       .first();
+    // A title or a farewell the year left waiting takes the screen before the hub comes back.
+    await passMoments(page, next);
     await expect(next).toBeVisible();
     if (await seasonEnd.isVisible()) break;
     await next.click();
+    await passMoments(page, page.getByRole("button", { name: /^(Jogar rodada|Esperar propostas|Ver propostas)$/ }).or(seasonEnd).first());
     await expect(page.getByRole("button", { name: /^(Jogar rodada|Esperar propostas|Ver propostas)$/ }).or(seasonEnd).first()).toBeVisible();
   }
   await expect(seasonEnd).toBeVisible();
@@ -72,6 +75,7 @@ test("a season fast-forwarded to its last day ends on the end-of-season screen a
     await expect(page.getByRole("region", { name: "Diretoria" })).toContainText(/Meta (não )?cumprida/);
   }
   await page.getByRole("button", { name: "Começar 2027" }).click();
+  await passMoments(page, hubLoaded(page));
 
   await expect(page).toHaveURL(/#\/hub$/);
   await expect(bar).toContainText("Sex, 1 jan");

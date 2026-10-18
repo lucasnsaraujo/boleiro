@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar, playLiveRound, startAtClub } from "./flows.js";
+import { bar, hubLoaded, momentScene, passMoments, playLiveRound, startAtClub } from "./flows.js";
 
 const MAX_PRESSES = 12;
 // A game seed whose 2026 Libertadores Flamengo wins with no decisions taken, keeping its coach.
@@ -56,6 +56,8 @@ test("Flamengo, the 2026 Libertadores champion, finds the Mundial de Clubes on i
   expect(await note.evaluate((el) => getComputedStyle(el, "::before").content)).toBe("none");
 
   await bar(page).getByRole("link", { name: "Times" }).click();
+  // The Libertadores title the worker's days won plays before the hub comes back.
+  await passMoments(page, hubLoaded(page));
   const play = page.getByRole("button", { name: "Jogar rodada" });
   const sheet = page.getByRole("dialog", { name: "Escalação" });
   const paper = page.getByRole("dialog", { name: /Jornal|Notícias|Edição/ }).or(page.locator("#hub-paper"));
@@ -63,13 +65,16 @@ test("Flamengo, the 2026 Libertadores champion, finds the Mundial de Clubes on i
     // A day with news opens the hub's paper over the play button; the dock's paper button shuts it.
     if (await paper.isVisible()) await page.getByRole("button", { name: /^Jornal/ }).click();
     await play.click();
-    await expect(sheet.or(play)).toBeVisible({ timeout: 60_000 });
+    // A day that stops early can bring a career moment before the hub comes back.
+    await expect(sheet.or(play).or(momentScene(page)).first()).toBeVisible({ timeout: 60_000 });
+    await passMoments(page, sheet.or(play));
   }
   await sheet.getByRole("button", { name: "Começar a rodada" }).click();
   const derby = page.locator(".live-list").locator(".live-group", { has: page.getByRole("heading", { name: /Mundial de Clubes/ }) }).locator(".live-r.human");
   await expect(derby).toBeVisible();
   await expect(derby).toContainText("Estádio Ahmad bin Ali");
   await playLiveRound(page);
+  await passMoments(page, hubLoaded(page));
 
   await bar(page).getByRole("link", { name: "Tabelas" }).click();
   await page.getByRole("tab", { name: "Mundial de Clubes" }).click();

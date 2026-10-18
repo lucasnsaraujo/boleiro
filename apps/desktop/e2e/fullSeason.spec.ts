@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar as barOf, barDate, news, pickOption, playLiveRound, startAtClub } from "./flows.js";
+import { bar as barOf, barDate, hubLoaded, momentScene, news, passMoments, pickOption, playLiveRound, startAtClub } from "./flows.js";
 
 const SEASON = 2026;
 // A Série C club plays about 40 matches a year, and some presses of "Jogar rodada" stop early for news.
@@ -77,7 +77,9 @@ test("a Série C club plays its whole first season through the screens and start
   const seasonEnd = page.getByRole("heading", { name: `Fim da temporada ${SEASON}` });
   const sacked = page.getByRole("heading", { name: "Demitido" });
   const offers = page.getByRole("heading", { name: "Propostas" });
-  const elsewhere = kickOff.or(band).or(seasonEnd).or(sacked).or(offers);
+  // A title, a call-up or a farewell takes the screen when the hub comes back; a sacking plays its night before the offers.
+  const moment = momentScene(page);
+  const elsewhere = kickOff.or(band).or(seasonEnd).or(sacked).or(offers).or(moment);
 
   const labels: string[] = [];
   const stops: number[] = [];
@@ -96,6 +98,11 @@ test("a Série C club plays its whole first season through the screens and start
     await expect(canPlay.or(elsewhere).first()).toBeVisible();
     if (await seasonEnd.isVisible()) break;
 
+    if (await moment.isVisible()) {
+      if (/#\/sacked$/.test(page.url())) hasBeenSacked = true;
+      await passMoments(page, canPlay.or(kickOff).or(band).or(seasonEnd).or(sacked).or(offers));
+      continue;
+    }
     if (await kickOff.isVisible()) {
       labels.push((await page.getByRole("dialog", { name: "Escalação" }).getByText(/ x .+ · /).textContent()) ?? "");
       await kickOff.click();
@@ -174,6 +181,7 @@ test("a Série C club plays its whole first season through the screens and start
     await expect(page.getByLabel("Campeões")).toContainText("Série C");
   }
   await page.getByRole("button", { name: `Começar ${SEASON + 1}` }).click();
+  await passMoments(page, hubLoaded(page));
   await expect(page).toHaveURL(/#\/hub$/);
   await expect(barOf(page)).toContainText("1 jan");
   await expect(barOf(page)).toContainText(`Temporada ${SEASON + 1}`);

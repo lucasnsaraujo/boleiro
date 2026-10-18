@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import userEvent from "@testing-library/user-event";
 import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider, type RouteObject } from "react-router";
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { routes } from "../app/routes.js";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
 import { Shell } from "../app/Shell.js";
@@ -92,6 +92,33 @@ test("Jogar rodada plays on to the first match day and opens the live round", as
   await userEvent.click(await screen.findByRole("button", { name: "Jogar rodada" }));
   await screen.findByText("Rodada aberta");
   expect(await given.engine.read(["date"])).toEqual({ date: firstMatch });
+});
+
+test("a day that stops early keeps Jogar rodada busy until the hub has read the game again, so a waiting moment can't be played past", async () => {
+  let isPlayed = false;
+  let release = (): void => undefined;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const given = await services("bahia-ba", (engine) => {
+    function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+    async function apply(command: GameCommand): Promise<unknown> {
+      if (command.type !== "playToMatchDay") return engine.apply(command);
+      const played = await engine.apply({ type: "advance", days: [{}] });
+      isPlayed = true;
+      return { date: played.date, stop: "jobOffer", daysPlayed: 1 } satisfies PlayResult;
+    }
+    // The hub's read after the day waits until the test lets it through.
+    const inbox = async () => (isPlayed ? held.then(() => engine.inbox()) : engine.inbox());
+    return { ...engine, apply, inbox };
+  });
+  openHub(given);
+  await userEvent.click(await screen.findByRole("button", { name: "Jogar rodada" }));
+  await vi.waitFor(() => expect(isPlayed).toBe(true));
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  expect(screen.queryByRole("button", { name: "Jogar rodada" })).toBeNull();
+  release();
+  expect(await screen.findByRole("button", { name: "Jogar rodada" })).toBeTruthy();
 });
 
 test("when a day stops the coach early, the hub stays, opens the paper on the news that stopped it, and the bar moves to the new day", async () => {

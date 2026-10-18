@@ -65,9 +65,9 @@ def encoded(image: Image.Image, format_name: str, options: dict[str, int]) -> by
     return buffer.getvalue()
 
 
-def logo_encoded(image: Image.Image, format_name: str, options: dict[str, int]) -> bytes:
-    """A logo in a 64-colour palette, stored losslessly, when the palette keeps its look; else as any image."""
-    palette = image.quantize(colors=LOGO_COLOURS, method=Image.Quantize.FASTOCTREE).convert("RGBA")
+def palette_encoded(image: Image.Image, format_name: str, options: dict[str, int], colours: int) -> bytes:
+    """An image in a palette of `colours`, stored losslessly, when the palette keeps its look; else as any image."""
+    palette = image.quantize(colors=colours, method=Image.Quantize.FASTOCTREE).convert("RGBA")
     if sum(ImageStat.Stat(ImageChops.difference(image, palette)).mean) / 4 > PALETTE_TOLERANCE:
         return encoded(image, format_name, options)
     return encoded(palette, format_name, {"lossless": True, "quality": 100, "method": 6})
@@ -87,9 +87,12 @@ def world_crest_rows(db: sqlite3.Connection, snapshot: int, imported_clubs: set[
     return [row for row in rows if row["entity_id"] not in imported_clubs]
 
 
-def build(rows: list[sqlite3.Row], out: Path, formats: tuple[str, ...], boxes: tuple[int, ...] = BOXES, are_logos: bool = False) -> dict[str, object]:
-    """The images of `rows` in every box and format; logos in a palette where it keeps them and without repeated boxes."""
-    encode = logo_encoded if are_logos else encoded
+def build(rows: list[sqlite3.Row], out: Path, formats: tuple[str, ...], boxes: tuple[int, ...] = BOXES, are_logos: bool = False,
+          palette_colours: int | None = None) -> dict[str, object]:
+    """The images of `rows` in every box and format; logos, or any images given `palette_colours`, in a palette where it
+    keeps them, and logos without repeated boxes."""
+    colours = palette_colours or (LOGO_COLOURS if are_logos else None)
+    encode = (lambda image, format_name, options: palette_encoded(image, format_name, options, colours)) if colours else encoded
     images: dict[str, dict[str, object]] = {}
     clubs: dict[str, dict[str, str]] = {}
     brands: dict[str, dict[str, str]] = {}

@@ -5,13 +5,16 @@
 .ph-fill { font-family: 'Phosphor-Fill' !important; speak: never; font-style: normal; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; letter-spacing: 0; -webkit-font-smoothing: antialiased; }
 .ph-airplane-takeoff:before { content: "\e504"; }
 .ph-archive:before { content: "\e00c"; }
+.ph-arrow-bend-up-right:before { content: "\e026"; }
 .ph-arrow-down:before { content: "\e03e"; }
 .ph-arrow-fat-up:before { content: "\e52e"; }
 .ph-arrow-left:before { content: "\e058"; }
 .ph-arrow-right:before { content: "\e06c"; }
+.ph-arrow-u-up-left:before { content: "\e08a"; }
 .ph-arrow-up:before { content: "\e08e"; }
 .ph-arrows-clockwise:before { content: "\e094"; }
 .ph-arrows-left-right:before { content: "\e0a0"; }
+.ph-article:before { content: "\e0a8"; }
 .ph-bank:before { content: "\e0b4"; }
 .ph-battery-low:before { content: "\e0c4"; }
 .ph-book-open-text:before { content: "\e8f2"; }
@@ -49,6 +52,7 @@
 .ph-handshake:before { content: "\e582"; }
 .ph-heartbeat:before { content: "\e2ac"; }
 .ph-hourglass-medium:before { content: "\e2b8"; }
+.ph-house:before { content: "\e2c2"; }
 .ph-identification-card:before { content: "\e2c8"; }
 .ph-list-numbers:before { content: "\e2f6"; }
 .ph-magnifying-glass:before { content: "\e30c"; }
@@ -56,6 +60,7 @@
 .ph-megaphone:before { content: "\e324"; }
 .ph-microphone:before { content: "\e326"; }
 .ph-minus:before { content: "\e32a"; }
+.ph-minus-circle:before { content: "\e32c"; }
 .ph-monitor-play:before { content: "\e58c"; }
 .ph-newspaper:before { content: "\e344"; }
 .ph-paper-plane-tilt:before { content: "\e398"; }
@@ -66,11 +71,14 @@
 .ph-play:before { content: "\e3d0"; }
 .ph-plus:before { content: "\e3d4"; }
 .ph-question:before { content: "\e3e8"; }
+.ph-seal-check:before { content: "\e606"; }
+.ph-shield:before { content: "\e40a"; }
 .ph-signature:before { content: "\ebac"; }
 .ph-smiley:before { content: "\e436"; }
 .ph-soccer-ball:before { content: "\e716"; }
 .ph-speaker-high:before { content: "\e44a"; }
 .ph-speaker-low:before { content: "\e44c"; }
+.ph-stamp:before { content: "\ea48"; }
 .ph-star:before { content: "\e46a"; }
 .ph-strategy:before { content: "\ea3a"; }
 .ph-swap:before { content: "\e83c"; }
@@ -89,3 +97,4 @@
 .ph-users-three:before { content: "\e68e"; }
 .ph-warning:before { content: "\e4e0"; }
 .ph-x:before { content: "\e4f6"; }
+.ph-x-circle:before { content: "\e4f8"; }

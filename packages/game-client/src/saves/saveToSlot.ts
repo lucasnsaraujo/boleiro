@@ -10,8 +10,10 @@ import type { SlotStore } from "./slotStore.js";
 export async function saveToSlot(engine: EngineClient, slots: SlotStore, id: string, game: CurrentGame, now = new Date()): Promise<void> {
   const changesWritten = game.unsavedChanges;
   const [save, { clubs, ...summary }] = await Promise.all([engine.saveShards(), engine.read(["date", "season", "coachClubId", "clubs"])]);
-  const division = summary.coachClubId ? (clubs[summary.coachClubId]?.division ?? null) : null;
-  await slots.write({ id, gameSlotId: game.slotId, coachName: game.coachName, savedAt: now.toISOString(), ...summary, division }, save);
+  const club = summary.coachClubId ? clubs[summary.coachClubId] : undefined;
+  // A club abroad goes up and down its country's pyramid, so the slot keeps the level it plays at now.
+  const abroad = club?.abroad ? { abroad: { country: club.abroad.country, level: club.abroad.level } } : {};
+  await slots.write({ id, gameSlotId: game.slotId, coachName: game.coachName, savedAt: now.toISOString(), ...summary, division: club?.division ?? null, ...abroad }, save);
   if (id === game.slotId && changesWritten !== undefined && game.unsavedChanges === changesWritten) game.unsavedChanges = 0;
 }
 
