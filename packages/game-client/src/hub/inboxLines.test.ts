@@ -106,6 +106,19 @@ describe("board and money", () => {
     );
   });
 
+  test("an offer the board sent on to another human coach waits for his answer, and his club's no is told apart", () => {
+    expect(line({ type: "requestDecided", request: { kind: "sign", playerId: other.id }, approved: true, reason: "sentToCoach" })).toMatchObject({
+      text: `Diretoria aprova a proposta por ${other.name}; agora o técnico do Vitória responde`,
+      tone: "neutral",
+    });
+    expect(line({ type: "requestDecided", request: { kind: "loanIn", playerId: other.id }, approved: false, reason: "otherCoachClub" })?.text).toBe(
+      `Diretoria recusa o empréstimo de ${other.name}: o clube dele é de outro técnico, que não empresta jogadores`,
+    );
+    expect(line({ type: "requestDecided", request: { kind: "sign", playerId: other.id }, approved: false, reason: "sellerHasOffer" })?.text).toBe(
+      `Diretoria recusa a contratação de ${other.name}: o técnico do clube dele já tem uma proposta por ele na mesa`,
+    );
+  });
+
   test("a signing the board approved is not reported twice", () => {
     const approved: DayEvent = { type: "requestDecided", request: { kind: "sign", playerId: other.id }, approved: true, reason: null };
     const moved: DayEvent = { type: "playerMoved", kind: "transfer", playerId: other.id, name: other.name, fromClubId: "vitoria-ba", toClubId: "bahia-ba", fee: 2_000_000 };

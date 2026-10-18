@@ -24,7 +24,7 @@ export type BidOutcome = "sold" | "declined" | "finalOffer" | "walkedAway";
  */
 export const buyerWage = (player: Pick<SimPlayer, "strength">, squad: readonly SimPlayer[]): number => Math.max(1, goingRate(player.strength, squad));
 
-/** Sells the player to the bidder for `fee`; null when the buyer can no longer register him. */
+/** Sells the player to the bidder for `fee`, on the contract the bid carries if any; null when the buyer can no longer register him. */
 export function sellToBidder(state: GameState, bid: Bid, fee: number): { state: GameState; event: PlayerMoved } | null {
   const player = state.players[bid.playerId];
   if (!player) return null;
@@ -34,8 +34,8 @@ export function sellToBidder(state: GameState, bid: Bid, fee: number): { state: 
   const squad = view.squad(bid.buyerId);
   if (isClubFull(state, bid.buyerId, squad.length)) return null;
   // A command has no random stream; the contract's length is hashed from the player and the day instead.
-  const until = contractEnd(Number(state.date.slice(0, 4)) + 1, () => unitHash(`${player.id}:${state.date}`));
-  return movePlayer(draft, { playerId: player.id, kind: "transfer", toClubId: bid.buyerId, fee, contract: { wage: buyerWage(player, squad), until } }, view.squad);
+  const contract = bid.contract ?? { wage: buyerWage(player, squad), until: contractEnd(Number(state.date.slice(0, 4)) + 1, () => unitHash(`${player.id}:${state.date}`)) };
+  return movePlayer(draft, { playerId: player.id, kind: "transfer", toClubId: bid.buyerId, fee, contract }, view.squad);
 }
 
 /**

@@ -1,12 +1,12 @@
 import { pickLineup } from "../../engine/match.js";
 import { addDays } from "../dates.js";
-import type { GameState, SimPlayer } from "../gameState.js";
+import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
 import { sellerPrice } from "./askingPrice.js";
 import { boardRefusal } from "./boardRefusal.js";
-import { coachMarketOf, sentOn, standingRenewalCounter, withCoachMarket, withRenewalCounter } from "./coachMarket.js";
+import { answerBy, coachMarketOf, sentOn, standingRenewalCounter, withCoachMarket, withRenewalCounter } from "./coachMarket.js";
 import type { CoachRequest } from "./coachRequest.js";
 import { isClubFull } from "./squadCap.js";
-import type { Counter } from "./transferMarket.js";
+import type { Bid, CoachMarket, Counter } from "./transferMarket.js";
 import { contractEnd } from "./expireContracts.js";
 import { contractEndOn, contractTerms, lengthPremium, NEUTRAL_TALKS, preferredMonths, type ContractMonths, type Stance } from "./contractTerms.js";
 import { contractMonthsOf, renewalTermsOf, renewedUntil } from "./renewalTerms.js";
@@ -19,6 +19,7 @@ import type { TransferEvent } from "./transferEvents.js";
 import { isWindowOpen } from "./transferWindows.js";
 import { valuePlayer } from "./valuePlayer.js";
 import { idolRefusesMove, rivalBlockOf } from "../rivalries/idols.js";
+import { isHumanClub, waitingCoachesOf } from "../coach/humanCoaches.js";
 import { goingRate, wageDemand } from "./wageDemand.js";
 import { willingToJoin } from "./willingToJoin.js";
 
@@ -62,6 +63,38 @@ function counter(state: GameState, request: CoachRequest, offered: Counter): Out
       { type: "counterOffered", playerId: request.playerId, clubId: offered.clubId, fee: offered.fee },
     ],
   };
+}
+
+/** The place in the waiting line of the human coach who runs `clubId`, or -1 for a club the AI runs; the coach asking sits in the seat. */
+const waitingCoachAt = (state: GameState, clubId: string): number => waitingCoachesOf(state).findIndex((coach) => coach.clubId === clubId);
+
+/** The business of the waiting coach at `index`, empty when he never had any. */
+function deskOf(state: GameState, index: number): CoachMarket {
+  return { listings: {}, auctions: {}, bids: {}, counters: {}, ...waitingCoachesOf(state)[index]?.market };
+}
+
+/** Why another human coach's desk can't take an offer of `fee` for his player: one already waits, or it doesn't beat his auction's best bid. */
+function deskRefusal(desk: CoachMarket, playerId: string, fee: number, date: IsoDate): string | null {
+  const auction = desk.auctions[playerId];
+  if (auction) return fee < auction.minBid || auction.bids.some((bid) => bid.fee >= fee) ? "auctionBidTooLow" : null;
+  const standing = desk.bids[playerId];
+  return standing && standing.until >= date ? "sellerHasOffer" : null;
+}
+
+/**
+ * The board's yes to an offer for a player of another human coach's club sends it to that coach's desk, as an
+ * AI club's offer reaches him; he answers on his turn. A player he has at auction gets it as a bid there.
+ */
+function offerToCoach(state: GameState, request: CoachRequest, index: number, bid: Bid): Outcome {
+  const desk = deskOf(state, index);
+  const auction = desk.auctions[bid.playerId];
+  const offered: CoachMarket = auction
+    ? { ...desk, auctions: { ...desk.auctions, [bid.playerId]: { ...auction, bids: [...auction.bids, { clubId: bid.buyerId ?? "", fee: bid.fee, date: bid.madeOn }] } } }
+    : { ...desk, bids: { ...desk.bids, [bid.playerId]: bid } };
+  const waitingCoaches = waitingCoachesOf(state).map((coach, at) => (at === index ? { ...coach, market: offered } : coach));
+  const decided: TransferEvent = { type: "requestDecided", request, approved: true, reason: "sentToCoach" };
+  const received: TransferEvent[] = auction ? [] : [{ type: "bidReceived", playerId: bid.playerId, buyerId: bid.buyerId, fee: bid.fee }];
+  return { state: { ...state, waitingCoaches }, events: [decided, ...received] };
 }
 
 function isWilling(view: MarketView, state: GameState, player: SimPlayer, clubId: string, wage: number, random: () => number, loan = false): boolean {
@@ -113,16 +146,22 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
       const free = !state.players[player.id];
       const preContract = !free && isInPreContractWindow(player, state.date);
+      // A transfer from another human coach's club is his to answer, not an AI board's; a pre-contract, like a paid clause, still skips him.
+      const sellerCoach = free || preContract ? -1 : waitingCoachAt(state, player.clubId);
       // A free agent signs any day: FIFA RSTP art. 6(1), which CBF's registration rules follow, lets a player
       // whose contract expired before a window closed register outside one (https://www.football-legal.com/content/players-registration-out-of-the-transfer-windows-its-exception-and-a-possible-fraud-to-the-rules).
       // guess: every free agent counts, released or expired, whenever it happened. A pre-contract only takes effect when his contract ends.
       if (!free && !preContract && !isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
-      if (!free && !preContract && view.squad(player.clubId).length <= MIN_SQUAD) return refuse(state, request, "sellerWillNotSell");
+      if (!free && !preContract && sellerCoach < 0 && view.squad(player.clubId).length <= MIN_SQUAD) return refuse(state, request, "sellerWillNotSell");
       // A pre-contract is the player's to sign, as a paid clause is: his club has no say.
-      if (!free && !preContract && rivalBlockOf(state, player.clubId)) return refuse(state, request, "rivalWillNotSell");
+      if (!free && !preContract && sellerCoach < 0 && rivalBlockOf(state, player.clubId)) return refuse(state, request, "rivalWillNotSell");
       if (!free && idolRefusesMove(state, player, coachClubId)) return refuse(state, request, "idolRefusesRival");
       let fee = 0;
-      if (!free && !preContract) {
+      if (sellerCoach >= 0) {
+        fee = Math.round(request.fee ?? clubPrice(state, view, player));
+        const refusal = deskRefusal(deskOf(state, sellerCoach), player.id, fee, state.date);
+        if (refusal) return refuse(state, request, refusal);
+      } else if (!free && !preContract) {
         // An offer without a fee pays what the club asks.
         const price = clubPrice(state, view, player);
         const offered = Math.round(request.fee ?? price);
@@ -139,6 +178,10 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (refused) return refuse(state, request, refused);
       if (!isWilling(view, state, player, coachClubId, wage / length.premium, random)) return refuse(state, request, "playerUnwilling");
       const contract = { wage, until: length.months === null ? contractEnd(year + 1, random) : contractEndOn(state.date, length.months) };
+      if (sellerCoach >= 0) {
+        const bid: Bid = { playerId: player.id, buyerId: coachClubId, fee, feeEur: null, ceiling: fee, isFinal: true, madeOn: state.date, until: answerBy(state, state.date), contract };
+        return offerToCoach(state, request, sellerCoach, bid);
+      }
       if (preContract) {
         const signed = { ...state, market: { ...state.market, preContracts: { ...state.market.preContracts, [player.id]: coachClubId } } };
         return approve(signed, request, null, [{ type: "preContractSigned", playerId: player.id, fromClubId: player.clubId, toClubId: coachClubId }]);
@@ -169,7 +212,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       const fee = Math.round(valuePlayer(player, view.tier(coachClubId), state.date) * state.market.eurBrl);
       const buyerId = Object.keys(state.finances)
-        .filter((id) => id !== coachClubId && !isClubFull(state, id, view.squad(id).length))
+        .filter((id) => !isHumanClub(state, id) && !isClubFull(state, id, view.squad(id).length))
         .sort((a, b) => (state.clubs[b]?.fanbase ?? 0) - (state.clubs[a]?.fanbase ?? 0) || a.localeCompare(b))
         .find((id) => {
           if (idolRefusesMove(state, player, id)) return false;
@@ -216,6 +259,8 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
     }
     case "loanIn": {
       if (own || !state.players[player.id] || loan) return refuse(state, request, "notAvailable");
+      // An offer at another human coach's desk is a sale; a loan has no desk of its own, so his club doesn't lend.
+      if (isHumanClub(state, player.clubId)) return refuse(state, request, "otherCoachClub");
       if (isClubFull(state, coachClubId, squad.length)) return refuse(state, request, "squadFull");
       if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       if (RANK[view.tier(player.clubId)] <= RANK[view.tier(coachClubId)]) return refuse(state, request, "lenderNotBigger");
@@ -244,7 +289,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (!isWindowOpen(state, state.date)) return refuse(state, request, "windowClosed");
       if (player.age > LOAN_MAX_AGE) return refuse(state, request, "tooOld");
       const borrowerId = Object.keys(state.finances).sort().find((id) =>
-        RANK[view.tier(id)] < RANK[view.tier(coachClubId)] && !loanLimitOf(state, coachClubId, id, player) && pickLineup([...view.squad(id)]).some((p) => p.group === player.group && p.strength < player.strength));
+        !isHumanClub(state, id) && RANK[view.tier(id)] < RANK[view.tier(coachClubId)] && !loanLimitOf(state, coachClubId, id, player) && pickLineup([...view.squad(id)]).some((p) => p.group === player.group && p.strength < player.strength));
       if (!borrowerId) return refuse(state, request, "noBorrower");
       return approve(state, request, { playerId: player.id, kind: "loan", toClubId: borrowerId, fee: 0, loan: { fromClubId: coachClubId, until: loanUntil(state.date), lenderWageShare: LENDER_WAGE_SHARE, buyOption: null } });
     }

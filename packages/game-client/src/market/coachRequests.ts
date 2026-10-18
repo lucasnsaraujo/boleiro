@@ -1,4 +1,5 @@
 import { pickLineup } from "@boleiro/engine/engine/match";
+import { isHumanClub } from "@boleiro/engine/sim/coach/humanCoaches";
 import { tierOf } from "@boleiro/engine/sim/finances/tierOf";
 import type { GameState, SimPlayer, Tier } from "@boleiro/engine/sim/gameState";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
@@ -6,7 +7,7 @@ import { LOAN_MAX_AGE } from "@boleiro/engine/sim/transfers/loans";
 import { isInPreContractWindow } from "@boleiro/engine/sim/transfers/tradeBetweenClubs";
 
 export type RequestOption = { label: string; request: CoachRequest };
-export type RequestState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "market">;
+export type RequestState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "market" | "waitingCoaches">;
 
 // guess: a renewal the coach doesn't size runs two more seasons.
 export const DEFAULT_RENEWAL_YEARS = 2;
@@ -20,9 +21,9 @@ export function findPlayer(state: Pick<GameState, "players" | "market">, playerI
   return state.players[playerId] ?? state.market.freeAgents[playerId] ?? null;
 }
 
-/** Whether a bigger club would lend him: the board refuses when the lender is no bigger or he is in its best eleven. */
-export function isLendable(state: Pick<GameState, "coachClubId" | "clubs" | "players">, player: SimPlayer, lineupOf: (clubId: string) => readonly SimPlayer[]): boolean {
-  if (!state.coachClubId || RANK[tierOfClub(state, player.clubId)] <= RANK[tierOfClub(state, state.coachClubId)]) return false;
+/** Whether a bigger club would lend him: the board refuses when the lender is no bigger, he is in its best eleven, or another human coach runs it. */
+export function isLendable(state: Pick<GameState, "coachClubId" | "clubs" | "players" | "waitingCoaches">, player: SimPlayer, lineupOf: (clubId: string) => readonly SimPlayer[]): boolean {
+  if (!state.coachClubId || isHumanClub(state, player.clubId) || RANK[tierOfClub(state, player.clubId)] <= RANK[tierOfClub(state, state.coachClubId)]) return false;
   return !lineupOf(player.clubId).some((p) => p.id === player.id);
 }
 

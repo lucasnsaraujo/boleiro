@@ -3,6 +3,7 @@ import { simulateMatch } from "../../engine/match.js";
 import { CUP_PARAMS } from "../../engine/paramsForDivision.js";
 import { keyedStream } from "../../engine/random.js";
 import { copyRecord } from "../copyRecord.js";
+import { isHumanClub } from "../coach/humanCoaches.js";
 import { addDays } from "../dates.js";
 import { bookMoneyInDraft } from "../finances/bookMoney.js";
 import { attendance } from "../finances/recordMatchFinances.js";
@@ -25,8 +26,12 @@ export type Friendly = {
   farewellOf?: { playerId: string; name: string };
 };
 
-/** Why a friendly can't be booked: a date that isn't free for the coach, the other club busy, no such club, a host short of the fee, or a big club that won't travel to a small one. */
-export type FriendlyRefusal = "date" | "busy" | "opponent" | "cash" | "refused";
+/**
+ * Why a friendly can't be booked: a date that isn't free for the coach, the other club busy, no such club, a host
+ * short of the fee, a big club that won't travel to a small one, or a club another human coach runs (a friendly
+ * moves his club's money and players, and he has no desk to answer one on).
+ */
+export type FriendlyRefusal = "date" | "busy" | "opponent" | "cash" | "refused" | "coach";
 
 export type FriendlyAnswer = { booked: true; friendly: Friendly } | { booked: false; reason: FriendlyRefusal };
 
@@ -76,7 +81,7 @@ export function friendlyFee(state: Pick<GameState, "clubs">, club: Club): number
 }
 
 /** What booking a friendly reads of the game. */
-export type BookingState = Pick<GameState, "date" | "season" | "fixtures" | "competitions" | "clubs" | "finances" | "friendlies" | "coachClubId">;
+export type BookingState = Pick<GameState, "date" | "season" | "fixtures" | "competitions" | "clubs" | "finances" | "friendlies" | "coachClubId" | "waitingCoaches">;
 
 const clubsIn = (stage: Competition["stages"][number]) => (stage.kind === "groups" ? stage.groups.flat() : stage.ties.flat());
 
@@ -122,6 +127,7 @@ export function friendlyAnswer(state: BookingState, opponentId: string, date: Is
   const opponent = state.clubs[opponentId];
   if (!clubId || !club) throw new Error("the coach has no club to play a friendly");
   if (!opponent || opponentId === clubId || !state.finances[opponentId]) return { booked: false, reason: "opponent" };
+  if (isHumanClub(state, opponentId)) return { booked: false, reason: "coach" };
   if (!isBookable(state, date) || !isFree(state, clubId, date)) return { booked: false, reason: "date" };
   if (!isFree(state, opponentId, date)) return { booked: false, reason: "busy" };
   const [home, away] = isHome ? [club, opponent] : [opponent, club];

@@ -35,6 +35,11 @@ describe("the requests the coach can make for a player", () => {
     ]);
   });
 
+  test("another human coach's club lends nobody, so only an offer for its reserve is offered", () => {
+    const hotSeat = newGameFromFiles(5, { coachClubId: COACH, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "palmeiras-sp" }] } }, bundledGameFiles);
+    expect(labels(longContract(hotSeat), reserve.id)).toEqual(["Comprar"]);
+  });
+
   test("a club at the coach's own level does not lend, so only buying is offered", () => {
     const rival = { ...firstOf("ceara-ce"), contractUntil: "2029-12-31" };
     expect(labels(withPlayer(game, rival), rival.id)).toEqual(["Comprar"]);
