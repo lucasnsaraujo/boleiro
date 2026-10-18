@@ -80,7 +80,7 @@ test.describe("career moments", () => {
     await openHub(page);
     const scene = page.getByRole("region", { name: "Campeão brasileiro: Série A" });
     await expect(scene).toHaveClass(/is-long/);
-    await expect(scene.getByText("Vice do Brasileirão com você")).toHaveCount(2);
+    await expect(scene.getByText("Vice da liga com você")).toHaveCount(2);
     // Still playing after the short party's whole length: the long one takes its time.
     await page.waitForTimeout(2_500);
     await expect(scene).toHaveAttribute("data-state", "playing");

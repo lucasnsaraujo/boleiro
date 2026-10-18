@@ -25,6 +25,10 @@ const SWEEP_FROM_MS = 300;
 const MARKER_GAP = 2.8;
 const ROWS = 3;
 const IDOL_LINE = 80;
+// The idol lane's place in the timeline (trajectory.css .tj-idol), and the room a line's name takes.
+const IDOL_TOP = 196;
+const IDOL_HEIGHT = 72;
+const LABEL_GAP = 13;
 
 /** Each marker's row in the moments lane, so nearby markers stack instead of covering each other. */
 function rowsOf(markers: readonly TrajectoryMarker[], at: (year: number) => number): Map<string, number> {
@@ -70,6 +74,25 @@ export function Trajectory() {
   const rows = rowsOf(markers, at);
   const picked = career.markers.find((marker) => marker.id === pickedId) ?? markers.at(-1) ?? null;
   const years = Array.from({ length: span }, (_, i) => career.from + i);
+  // Clubs in the same colour get a dashed line after the first, so each can be told apart.
+  const seenStrokes = new Set<string>();
+  const idolStrokes = career.idolLines.map((line) => {
+    const stroke = line.club.colours.primary.toUpperCase() === "#FFFFFF" ? line.club.colours.secondary : line.club.colours.primary;
+    const dash = seenStrokes.has(stroke.toUpperCase()) ? "5 4" : undefined;
+    seenStrokes.add(stroke.toUpperCase());
+    return { line, stroke, dash };
+  });
+  // Each line is named at its last point; names closer than a line apart are pushed down so none covers another.
+  const idolLabels = career.idolLines
+    .flatMap((line) => {
+      const last = line.points.at(-1);
+      return last ? [{ line, year: last[0], value: last[1], top: IDOL_TOP + (IDOL_HEIGHT * (100 - last[1])) / 100 }] : [];
+    })
+    .sort((a, b) => a.top - b.top)
+    .reduce<{ line: Career["idolLines"][number]; year: number; value: number; top: number }[]>((placed, label) => {
+      const above = placed.at(-1);
+      return [...placed, { ...label, top: above ? Math.max(label.top, above.top + LABEL_GAP) : label.top }];
+    }, []);
   const step = span > 12 ? 5 : span > 6 ? 2 : 1;
 
   return (
@@ -116,23 +139,20 @@ export function Trajectory() {
         <div className="tj-track">
           <svg className="tj-idol" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             <line x1="0" x2="100" y1={100 - IDOL_LINE} y2={100 - IDOL_LINE} className="tj-idol-line" />
-            {career.idolLines.map((line) => (
+            {idolStrokes.map(({ line, stroke, dash }) => (
               <polyline
                 key={line.club.id}
                 className="tj-idol-club"
-                style={{ stroke: line.club.colours.primary === "#FFFFFF" ? line.club.colours.secondary : line.club.colours.primary }}
+                style={{ stroke, strokeDasharray: dash }}
                 points={line.points.map(([year, value]) => `${at(year)},${100 - value}`).join(" ")}
               />
             ))}
           </svg>
-          {career.idolLines.map((line) => {
-            const last = line.points.at(-1);
-            return last ? (
-              <span key={`label-${line.club.id}`} className="tj-idol-label" style={{ left: `${at(last[0])}%`, top: 196 + (72 * (100 - last[1])) / 100 } as CSSProperties}>
-                {line.club.name} · {last[1]}
-              </span>
-            ) : null;
-          })}
+          {idolLabels.map(({ line, top, value, year }) => (
+            <span key={`label-${line.club.id}`} className="tj-idol-label" style={{ left: `${at(year)}%`, top } as CSSProperties}>
+              {line.club.name} · {value}
+            </span>
+          ))}
           {career.bands.map((band, index) => (
             <div
               key={`${band.club.id}-${index}`}

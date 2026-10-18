@@ -8,6 +8,9 @@ import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { closeMoment, nextMoment, type Moment } from "./careerMoments.js";
 import { retireCoach } from "./retireCoach.js";
+import { applyForJob } from "../coach/applyForJob.js";
+import { offerJobs } from "../coach/offerJobs.js";
+import { playFriendlies, type Friendly } from "../friendlies/friendlies.js";
 import { openMoments, runMoments } from "./runMoments.js";
 import { LONG_CELEBRATION_S } from "./titleStory.js";
 
@@ -96,6 +99,12 @@ describe("leaving a club", () => {
       ["vasco-rj", 0, 2],
       ["fluminense-rj", 0, 3],
     ]);
+  });
+
+  it("keeps an ultimatum from an older bad spell out of the night's build-up", () => {
+    const before = watched(atFlamengo, () => ({ ultimatumOn: "2025-03-01", pressure: [{ date: "2026-06-01", opponentId: "vasco-rj", isHome: true, goalsFor: 0, goalsAgainst: 1, board: 20, fans: 40 }] }));
+    const sacking = queueOf(runMoments({ ...left("fired"), history: { ...left("fired").history, coach: { ...left("fired").history.coach, moments: before.history.coach.moments } } }, before, []).state)[0];
+    expect(sacking).toMatchObject({ kind: "sacking", ultimatumOn: null });
   });
 
   it("prints the ultimatum only when the board is near its firing line", () => {
@@ -261,6 +270,20 @@ describe("former clubs asking him back", () => {
     expect(done.events).toMatchObject([{ type: "jobOffered", offer: { clubId: FLA } }]);
   });
 
+  it("leaves the idle coach's draw on the main stream where it was while a come-back offer waits", () => {
+    const out = withCoach(atBahia, null, { stints: [{ clubId: BAHIA, from: "2025-01-01", until: "2025-12-31", left: "contractEnded" }] });
+    const draws = (state: GameState) => {
+      let count = 0;
+      offerJobs(state, [], () => {
+        count++;
+        return 0.99;
+      });
+      return count;
+    };
+    const waiting = { ...out, coach: { ...out.coach, offers: [{ clubId: FLA, salary: 1, untilSeason: 2026, expiresOn: "2026-01-14", isComeBack: true as const }] } };
+    expect(draws(waiting)).toBe(draws(out));
+  });
+
   it("doesn't call when no job opens, nor a coach who was never its idol", () => {
     expect(kindsOf(runMoments(nextDay(idolElsewhere), idolElsewhere, []).state)).toEqual([]);
     const stranger = watched(withCoach(atBahia, BAHIA, { stints: [{ clubId: FLA, from: "2025-06-01", until: "2025-12-31", left: "contractEnded" }, { clubId: BAHIA, from: "2025-12-31", until: null, left: null }] }));
@@ -354,6 +377,18 @@ describe("saves", () => {
   });
 });
 
+describe("an idol's farewell match", () => {
+  it("is played by a club in the red, since it moves no money", () => {
+    const finance = base.finances[FLA];
+    if (!finance) throw new Error("no Flamengo finances");
+    const poor = { ...base, finances: { ...base.finances, [FLA]: { ...finance, cash: -5_000_000 } } };
+    const farewell: Friendly = { id: "farewell-x", date: today, homeId: FLA, awayId: "vasco-rj", fee: 0, result: null, farewellOf: { playerId: "x", name: "X" } };
+    const played = playFriendlies({ ...poor, friendlies: [farewell] }, today);
+    expect(played.events).toMatchObject([{ type: "friendlyPlayed", gate: 0 }]);
+    expect(played.state.finances[FLA]?.cash).toBe(-5_000_000);
+  });
+});
+
 describe("retirement", () => {
   it("puts the farewell first, leaves the club and hears from no club again", () => {
     const retired = retireCoach(watched(base));
@@ -364,6 +399,12 @@ describe("retirement", () => {
     for (let i = 0; i < 45; i++) later = advanceDay(later, {}).state;
     expect(later.coach.offers).toEqual([]);
     expect(kindsOf(later)).toEqual(["retirement"]);
+  });
+
+  it("applies for no job once retired", () => {
+    const retired = retireCoach(watched(atBahia));
+    const open = retired.coaches ? { ...retired, coaches: { ...retired.coaches, openJobs: { [FLA]: retired.date } } } : retired;
+    expect(applyForJob(open, FLA).answer).toBe("retired");
   });
 });
 

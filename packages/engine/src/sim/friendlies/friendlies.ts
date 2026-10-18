@@ -191,7 +191,8 @@ export function playFriendlies(state: GameState, date: IsoDate): { state: GameSt
     const clash = state.fixtures.some((f) => f.date === date && [f.homeId, f.awayId].some((id) => id === friendly.homeId || id === friendly.awayId));
     const home = finances[friendly.homeId];
     const isGone = !home || !finances[friendly.awayId] || !state.clubs[friendly.homeId] || !state.clubs[friendly.awayId];
-    const reason: CallOffReason | null = isGone ? "club" : clash ? "fixture" : home.cash < friendly.fee ? "cash" : null;
+    // A farewell moves no money, so a club in the red still plays it.
+    const reason: CallOffReason | null = isGone ? "club" : clash ? "fixture" : !friendly.farewellOf && home.cash < friendly.fee ? "cash" : null;
     if (reason || !home) {
       events.push({ type: "friendlyCalledOff", friendly, reason: reason ?? "club" });
       done.set(friendly.id, null);

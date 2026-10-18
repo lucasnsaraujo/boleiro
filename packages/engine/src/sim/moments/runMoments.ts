@@ -162,7 +162,10 @@ function leave(seat: Seat, coach: HumanCoach, moments: CareerMoments, found: Fou
     const coachName = coachNameIn(after);
     if (stint.left === "fired") {
       const firing = record.firings.findLast((f) => f.clubId === clubId);
-      found.moments.push({ id, kind: "sacking", date: today, clubId, position: firing?.position ?? 0, targetPosition: firing?.targetPosition ?? 0, run: moments.pressure, ultimatumOn: moments.ultimatumOn, protestOn: moments.protestOn, standing, games, months, rivalId });
+      // Only the pressure of the run on the screen builds up to the night; an ultimatum from an older bad spell doesn't.
+      const runFrom = moments.pressure[0]?.date ?? today;
+      const recent = (date: IsoDate | null) => (date && date >= runFrom ? date : null);
+      found.moments.push({ id, kind: "sacking", date: today, clubId, position: firing?.position ?? 0, targetPosition: firing?.targetPosition ?? 0, run: moments.pressure, ultimatumOn: recent(moments.ultimatumOn), protestOn: recent(moments.protestOn), standing, games, months, rivalId });
       if (standing >= IDOL_LINE) found.news.push(story(today, [clubId], `Torcida do ${club} vai à sede contra a diretoria`, `Faixas pedem a volta de ${coachName}. “Ídolo não se demite de madrugada.”`));
       if (rivalId) found.news.push(story(today, [rivalId, clubId], `Torcida do ${nameOf(after, rivalId)} faz festa nas redes`, `A queda de ${coachName} no ${club} virou piada do outro lado.`));
     } else if (stint.left === "resigned" || stint.left === "moved" || stint.left === "contractEnded") {
@@ -357,7 +360,7 @@ function callBack(seat: Seat, coach: HumanCoach, moments: CareerMoments, found: 
       position: board?.position ?? null,
       tableSize: board?.tableSize ?? null,
       successor: fired?.name ?? null,
-      ppg: yours && theirs ? { yours: ppgOf(yours), theirs: ppgOf(theirs) } : null,
+      ppg: yours && theirs && theirs[0] + theirs[1] + theirs[2] > 0 && yours[0] + yours[1] + yours[2] > 0 ? { yours: ppgOf(yours), theirs: ppgOf(theirs) } : null,
     });
     found.news.push(story(today, [clubId], `Volta, ${coachNameIn(after)}`, `A torcida do ${nameOf(after, clubId)} faz campanha nas redes e na porta da sede pela volta do ex-técnico.`));
     // The offer lapses the day the club would hire anyway, so the AI coaches' market keeps its own days.

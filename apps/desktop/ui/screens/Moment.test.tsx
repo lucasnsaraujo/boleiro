@@ -51,15 +51,14 @@ test("with less motion asked for, the farewell shows its last frame at once, and
   expect(await given.engine.moment()).toBeNull();
 });
 
-test("a moment replayed from the trajectory goes back to it and stays seen", async () => {
+test("replaying a moment goes back to the trajectory and closes nothing", async () => {
   const given = await retired();
   const farewell = await given.engine.moment();
   if (!farewell) throw new Error("no farewell waiting");
-  await given.engine.apply({ type: "closeMoment" });
   open(given, `/moment?replay=${encodeURIComponent(farewell.id)}`);
   await userEvent.click(await screen.findByRole("button", { name: "Voltar à trajetória" }));
   expect(await screen.findByText("Trajetória aberta")).toBeTruthy();
-  expect(await given.engine.moment()).toBeNull();
+  expect(await given.engine.moment()).toMatchObject({ id: farewell.id });
 });
 
 test("with no moment waiting, the screen goes back to the club", async () => {

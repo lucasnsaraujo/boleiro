@@ -106,14 +106,14 @@ function IdolBody({ view }: Pick<Props, "view">) {
               <div style={ms(3700)}>
                 <i className="ph-fill ph-x" />
                 <span>
-                  <b>{view.rivals.join(", ")}</b> não te fazem proposta, e as torcidas deles vaiam quando você entra.
+                  <b>{view.rivals.join(", ")}</b> não te fazem proposta, e as torcidas deles vaiam você na casa delas.
                 </span>
               </div>
             )}
             <div style={ms(3850)}>
               <i className="ph-fill ph-door-open" />
               <span>
-                <b>Quando sair, tem despedida.</b> E homenagem quando voltar como visitante.
+                <b>Saindo bem, tem despedida.</b> E homenagem quando voltar como visitante.
               </span>
             </div>
             <div style={ms(4000)}>

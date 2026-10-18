@@ -171,6 +171,8 @@ export type RetirementView = Common & {
   titles: string;
   strip: { from: number; to: number; bands: { from: number; to: number; club: ClubTag }[]; titles: number[]; idols: number[]; sackings: number[] };
   tributes: { club: ClubTag; text: string }[];
+  /** Former clubs whose tributes the page has no room for. */
+  moreTributes: number;
   farewell: { eleven: MomentSticker[]; score: [number, number]; note: string };
   games: number;
   lastClub: ClubTag;
@@ -475,7 +477,7 @@ function titleView(state: GameState, moment: Extract<Moment, { kind: "title" }>)
   const droughtYears = moment.season - story.droughtFrom;
   const standingNow = meterOf(idolStandingOf(state, { name: state.coachName, record: state.history.coach }, moment.clubId));
   const nearMisses = [
-    ...story.runnerUps.map((year) => ({ year, label: "Vice do Brasileirão com você", isYours: true })),
+    ...story.runnerUps.map((year) => ({ year, label: "Vice da liga com você", isYours: true })),
     ...story.lostFinals.map((final) => ({ year: final.season, label: `Final da ${competitionKeyName(final.competition)} perdida com você`, isYours: true })),
   ].sort((a, b) => a.year - b.year);
   const firstWords = story.careerTitles === 1 ? "Seu primeiro título" : story.seasonInSpell === 1 ? "Na sua primeira temporada" : `Na ${story.seasonInSpell}ª temporada`;
@@ -511,15 +513,20 @@ function titleView(state: GameState, moment: Extract<Moment, { kind: "title" }>)
     paper: {
       masthead: `${state.clubs[moment.clubId]?.state ?? ""} · ${formatGameDate(moment.date)}`,
       headline: "Finalmente",
-      deck: `${story.lastWon === null ? "Pela primeira vez no jogo" : `${plural(droughtYears, "ano", "anos")} depois`}, o ${club.name} é campeão${moment.competition.startsWith("serie-a") ? " brasileiro" : ` da ${name}`}. ${coachName}${nearMisses.length ? ` perdeu ${plural(nearMisses.length, "decisão", "decisões")} aqui antes desta` : " esperou por isso"} e foi o último a sair do gramado.`,
+      deck: `${story.lastWon === null ? "Pela primeira vez no jogo" : `${plural(droughtYears, "ano", "anos")} depois`}, o ${club.name} é campeão${moment.competition.startsWith("serie-a") ? " brasileiro" : ` da ${name}`}. ${coachName}${nearMisses.length ? ` viu ${nearMissList(story.runnerUps.length, story.lostFinals.length)} aqui antes deste` : " esperou por isso"} e foi o último a sair do gramado.`,
     },
   };
 }
 
-/** ", dois vices e uma final perdida com você": the near misses as the cause line says them. */
+/** "2 vices e 1 final perdida": the near misses, as a list; empty when there were none. */
+function nearMissList(runnerUps: number, lostFinals: number): string {
+  return [runnerUps ? plural(runnerUps, "vice", "vices") : "", lostFinals ? plural(lostFinals, "final perdida", "finais perdidas") : ""].filter(Boolean).join(" e ");
+}
+
+/** ", 2 vices e 1 final perdida com você": the near misses as the cause line says them. */
 function nearMissWords(runnerUps: number, lostFinals: number): string {
-  const parts = [runnerUps ? plural(runnerUps, "vice", "vices") : "", lostFinals ? plural(lostFinals, "final perdida", "finais perdidas") : ""].filter(Boolean);
-  return parts.length ? `, ${parts.join(" e ")} com você` : "";
+  const list = nearMissList(runnerUps, lostFinals);
+  return list ? `, ${list} com você` : "";
 }
 
 function tributeView(state: GameState, moment: Extract<Moment, { kind: "milestone" | "homecoming" | "idolRetired" }>): TributeView {
@@ -650,6 +657,8 @@ function comeBackView(state: GameState, moment: Extract<Moment, { kind: "comeBac
   const coachName = coachNameOf(state);
   const offer = state.coach.offers.find((o) => o.clubId === moment.clubId);
   const crisis = moment.position && moment.tableSize ? Math.round((100 * moment.position) / moment.tableSize) : 50;
+  // The engine's line: a club in the bottom third of its table is in crisis.
+  const isInCrisis = !!moment.position && !!moment.tableSize && moment.position > (2 / 3) * moment.tableSize;
   const fanbase = state.clubs[moment.clubId]?.fanbase ?? 1_000_000;
   // The campaign's numbers are the game's own: posts in thousands grow with the fanbase and how much the fans want him.
   const posts = Math.max(1, Math.round((fanbase / 100_000) * (moment.standing / 100)));
@@ -668,7 +677,7 @@ function comeBackView(state: GameState, moment: Extract<Moment, { kind: "comeBac
     when: dayOf(moment.date),
     club,
     coachName,
-    cause: `Você é ídolo do ${club.name} (${moment.standing}) e o clube abriu a vaga${moment.position ? ` em ${moment.position}º lugar` : ""}. Em crise, ele procura você primeiro.`,
+    cause: `Você é ídolo do ${club.name} (${moment.standing}) e o clube abriu a vaga${moment.position ? ` em ${moment.position}º lugar` : ""}. ${isInCrisis ? "Em crise, ele procura você primeiro." : "A torcida pediu, e a diretoria ouviu."}`,
     masthead: `${formatGameDate(moment.date)}`,
     strap: [`${club.name} sem técnico`, moment.position && moment.tableSize ? `${moment.position}º de ${moment.tableSize} na tabela` : "vaga aberta"],
     deck: `A faixa apareceu de madrugada no muro do CT. ${moment.successor ? `${moment.successor} caiu, e` : "Com a vaga aberta,"} o nome de ${coachName} virou o pedido de quem foi ao treino.`,
@@ -705,10 +714,10 @@ function comeBackView(state: GameState, moment: Extract<Moment, { kind: "comeBac
 }
 
 const AWARD_WORDS: Record<Extract<Moment, { kind: "playerAward" }>["award"], { name: string; plate: string; date: string }> = {
-  bolaDeOuro: { name: "Bola de Ouro", plate: "Melhor jogador do Brasileirão", date: "na festa da Bola de Prata" },
-  ballonDor: { name: "Melhor do mundo", plate: "Melhor jogador do mundo", date: "na votação do fim do ano" },
-  topScorer: { name: "Artilheiro", plate: "Artilheiro do Brasileirão", date: "no fim do campeonato" },
-  worldCup: { name: "Convocado para a Copa", plate: "Convocado para a Copa do Mundo", date: "na lista final" },
+  bolaDeOuro: { name: "Bola de Ouro", plate: "Melhor jogador do Brasileirão", date: "Entregue na festa da Bola de Prata." },
+  ballonDor: { name: "Melhor do mundo", plate: "Melhor jogador do mundo", date: "Na votação do fim do ano." },
+  topScorer: { name: "Artilheiro", plate: "Artilheiro do Brasileirão", date: "No fim do campeonato." },
+  worldCup: { name: "Convocado para a Copa", plate: "Convocado para a Copa do Mundo", date: "Na lista final." },
 };
 
 function playerAwardView(state: GameState, moment: Extract<Moment, { kind: "playerAward" }>): PlayerAwardView {
@@ -720,7 +729,7 @@ function playerAwardView(state: GameState, moment: Extract<Moment, { kind: "play
   const all = [...(state.history.coach.moments?.past ?? []), ...(state.history.coach.moments?.queue ?? [])];
   const season = all
     .filter((m): m is Extract<Moment, { kind: "playerAward" }> => m.kind === "playerAward" && m.season === moment.season && m.players.some((p) => p.playerId === first?.playerId))
-    .map((m) => ({ date: dayOf(m.date), title: AWARD_WORDS[m.award].name, detail: `Mostrado ${AWARD_WORDS[m.award].date}.`, isNow: m.id === moment.id }));
+    .map((m) => ({ date: dayOf(m.date), title: AWARD_WORDS[m.award].name, detail: AWARD_WORDS[m.award].date, isNow: m.id === moment.id }));
   const mark = first ? state.history.players[moment.clubId]?.[first.playerId] : undefined;
   return {
     kind: "playerAward",
@@ -846,6 +855,7 @@ function retirementView(state: GameState, moment: Extract<Moment, { kind: "retir
       sackings: record.firings.map((f) => toYear(f.date)),
     },
     tributes: tributes.slice(-4),
+    moreTributes: Math.max(0, tributes.length - 4),
     farewell: { eleven, score: farewellScore, note: eleven[0] ? `${eleven[0].name} abriu o placar. Você entrou aos 89'.` : "Você entrou aos 89'." },
     games,
     lastClub,

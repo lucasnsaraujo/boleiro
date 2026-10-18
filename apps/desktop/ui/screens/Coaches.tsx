@@ -227,7 +227,7 @@ export function Coaches() {
               state={state}
               face={face}
               stamped={stamped}
-              canApply={!isRoundUnderWay && !isBusy}
+              canApply={!isRoundUnderWay && !isBusy && !state.coach.retiredOn}
               onApply={(job) => void apply(job)}
               onWait={() => void wait.play()}
               isWaiting={wait.isPlaying}
@@ -242,6 +242,7 @@ export function Coaches() {
         isYou={profile.key === page.you.key}
         face={face}
         canResign={!isRoundUnderWay && !isBusy}
+        hasRetired={state.coach.retiredOn !== undefined}
         onResign={() => setResigning(true)}
         onRetire={() => setRetiring(true)}
         onBackToYou={() => setPickedKey(null)}
@@ -561,6 +562,7 @@ function ProfileCard({
   isYou,
   face,
   canResign,
+  hasRetired,
   onResign,
   onRetire,
   onBackToYou,
@@ -571,6 +573,8 @@ function ProfileCard({
   isYou: boolean;
   face: Face;
   canResign: boolean;
+  /** Whether the coach in the seat has ended his career, at a club or out of work. */
+  hasRetired: boolean;
   onResign: () => void;
   onRetire: () => void;
   onBackToYou: () => void;
@@ -581,7 +585,7 @@ function ProfileCard({
   const stints = [...profile.stints].reverse();
   const titlesByKey = new Map<string, number[]>();
   for (const title of profile.titles) titlesByKey.set(title.competition, [...(titlesByKey.get(title.competition) ?? []), title.season]);
-  const isRetired = profile.stints.at(-1)?.left === "retired";
+  const isRetired = (isYou && hasRetired) || profile.stints.at(-1)?.left === "retired";
   const isInvented = !profile.isHuman && !profile.isReal && !profile.formerPlayer;
   const formerClub = profile.formerPlayer ? face(profile.formerPlayer.clubId) : null;
   const who = [profile.nationality && nationalityName(profile.nationality), profile.age !== null && `${profile.age} anos`].filter(Boolean).join(" · ");
@@ -783,7 +787,7 @@ function RetireQuestion({ isBusy, onRetire, onStay }: { isBusy: boolean; onRetir
         <ul id="coaches-retire-what" className="coaches-resign-list">
           <li>Você deixa o clube e não volta a treinar ninguém.</li>
           <li>Nenhum clube faz proposta daqui pra frente.</li>
-          <li>A despedida passa a carreira inteira pelo álbum, com a homenagem de cada ex-clube.</li>
+          <li>A despedida passa a carreira inteira pelo álbum, com as homenagens dos ex-clubes.</li>
         </ul>
         <div className="coaches-resign-acts">
           <button className="btn no" onClick={onRetire} disabled={isBusy}>

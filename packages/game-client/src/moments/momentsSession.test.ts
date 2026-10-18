@@ -21,12 +21,15 @@ test("a coach who retires sees his farewell first, replayed as the album, then h
   expect(() => session.apply({ type: "retireCoach" })).toThrow("already retired");
 });
 
-test("an old save without moments loads and plays on with none waiting", () => {
+test("an old save without moments loads and plays on without celebrating what it already held", () => {
   const session = createEngineSession(bundledGameFiles);
   session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
   session.apply({ type: "advance", days: [{}] });
   const saved = JSON.parse(session.save());
   delete saved.game.history.coach.moments;
+  // Already won and five years in: a record the engine would celebrate if it took them for news.
+  saved.game.history.coach.trophies.push({ season: 2025, competition: "state-ba", clubId: "bahia-ba" });
+  saved.game.history.coach.stints[0].from = "2020-01-01";
   const loaded = createEngineSession(bundledGameFiles);
   loaded.apply({ type: "load", save: JSON.stringify(saved) });
   loaded.apply({ type: "advance", days: [{}, {}] });

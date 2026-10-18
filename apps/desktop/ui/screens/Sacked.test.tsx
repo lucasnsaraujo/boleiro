@@ -81,12 +81,12 @@ test("the sacking plays its stinger", async () => {
   expect(sound.ctx.notes()).toBe(CUES.sacked.tones.length);
 });
 
-test("a sacking the moments engine has waiting plays the night on this screen, and seeing the offers closes both", async () => {
+test("a sacking the moments engine has waiting plays the night on this screen, dated the day before the board's morning, and seeing the offers closes both", async () => {
   const { given, closed } = await services([firing]);
   const save = JSON.parse(await given.engine.save());
   const run = ["vitoria-ba", "sport-pe", "fortaleza-ce"].map((opponentId, index) => ({ date: "2026-06-0" + (index + 1), opponentId, isHome: true, goalsFor: 0, goalsAgainst: 2, board: 30 - index * 10, fans: 40 }));
   save.game.history.coach.moments = {
-    queue: [{ id: "fired:bahia-ba:2026-06-10", kind: "sacking", date: "2026-06-10", clubId: "bahia-ba", position: 18, targetPosition: 10, run, ultimatumOn: "2026-06-01", protestOn: null, standing: 20, games: [5, 3, 12], months: 5, rivalId: "vitoria-ba" }],
+    queue: [{ id: "fired:bahia-ba:2026-06-09", kind: "sacking", date: "2026-06-09", clubId: "bahia-ba", position: 18, targetPosition: 10, run, ultimatumOn: "2026-06-01", protestOn: null, standing: 20, games: [5, 3, 12], months: 5, rivalId: "vitoria-ba" }],
     shownOn: null,
     past: [],
     seen: { closedStints: 1, trophies: 0 },

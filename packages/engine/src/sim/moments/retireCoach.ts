@@ -1,11 +1,20 @@
 import { dropCoachFriendlies } from "../friendlies/friendlies.js";
 import { releaseTicketPrice } from "../finances/setTicketPrice.js";
 import type { GameState } from "../gameState.js";
+import type { Nations } from "../nations/nations.js";
 import { openMoments } from "./runMoments.js";
 
+function withoutNationalJob(nations: Nations): Nations {
+  const rest = { ...nations };
+  delete rest.job;
+  delete rest.picks;
+  delete rest.offer;
+  return rest;
+}
+
 /**
- * The coach in the seat hangs up his clipboard: he leaves his club, if he has one, without a contract or
- * offers, and no club calls him again. His farewell waits at the head of his moments: the career replayed.
+ * The coach in the seat hangs up his clipboard: he leaves his club, if he has one, and his national team,
+ * without a contract or offers, and no club or federation calls him again. His farewell waits at the head of his moments: the career replayed.
  */
 export function retireCoach(state: GameState): GameState {
   const { coach, history, date, coachClubId } = state;
@@ -18,8 +27,10 @@ export function retireCoach(state: GameState): GameState {
   const closedStints = stints.filter((stint) => stint.until !== null).length;
   const farewell = { id: `retirement:${date}`, kind: "retirement" as const, date, clubId: lastClubId };
   const board = coachClubId ? state.boards[coachClubId] : undefined;
+  const nations = state.nations && (state.nations.job || state.nations.offer) ? withoutNationalJob(state.nations) : state.nations;
   let retired: GameState = {
     ...state,
+    ...(nations ? { nations } : {}),
     coachClubId: null,
     coach: { ...coach, contract: null, offers: [], retiredOn: date },
     history: { ...history, coach: { ...record, stints, moments: { ...moments, seen: { ...moments.seen, closedStints }, queue: [farewell, ...moments.queue], shownOn: null } } },

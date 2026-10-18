@@ -55,7 +55,7 @@ function Strip({ strip }: { strip: RetirementView["strip"] }) {
       {strip.sackings.map((year, index) => (
         <i key={`x${index}`} className="tk x" style={{ left: at(year) }} />
       ))}
-      {marks.map((year) => (
+      {marks.filter((year) => year + 0.5 < strip.to).map((year) => (
         <span key={year} className="yr" style={{ left: at(year + 0.5) }}>
           {year}
         </span>
@@ -115,7 +115,7 @@ function RetirementBody({ view }: Pick<Props, "view">) {
     };
   });
   const firstName = (view.coachName.split(" ")[0] ?? view.coachName).toUpperCase();
-  const stand = useCanvasTick((surface) => mosaic(surface, { cell: 4, at: 7100, wave: 1200, flip: 300, back: "#2A1214", draw: mosaicFace(view.lastClub.colours, ["OBRIGADO,", firstName], 11, 2) }));
+  const stand = useCanvasTick((surface) => mosaic(surface, { cell: 3, at: 7100, wave: 1200, flip: 300, back: "#2A1214", draw: mosaicFace(view.lastClub.colours, ["OBRIGADO,", firstName], 11, 2) }));
   useCueAt("title", FINAL_AT + 550);
   return (
     <>
@@ -171,7 +171,7 @@ function RetirementBody({ view }: Pick<Props, "view">) {
         <section className="rt-pg rt-pr">
           <div className="rt-sec mo-up" style={ms(4700)}>
             <h3>Homenagens</h3>
-            <span>dos clubes por onde você passou</span>
+            <span>{view.moreTributes ? `dos clubes por onde você passou, e mais ${view.moreTributes}` : "dos clubes por onde você passou"}</span>
           </div>
           <div className="rt-tribs">
             {view.tributes.map((tribute, index) => (

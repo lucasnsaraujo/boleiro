@@ -54,7 +54,8 @@ export function offerJobs(state: GameState, vacancies: readonly string[], random
   const isNew = (clubId: string) =>
     !isHumanClub(state, clubId) && !offers.some((offer) => offer.clubId === clubId) && !isCoolingDown(coach, clubId, state.season) && rivalBlockOf(state, clubId) === null;
   const offering = vacancies.filter((id) => isWithinReach(id) && isNew(id));
-  if (!coachClubId && !offers.length && !offering.length && random() < IDLE_OFFER_CHANCE_PER_DAY) {
+  // A come-back offer comes from the career moments, on their own stream: it leaves the idle coach's draw where it was.
+  if (!coachClubId && !offers.some((offer) => !offer.isComeBack) && !offering.length && random() < IDLE_OFFER_CHANCE_PER_DAY) {
     const reachable = [...rank().statures.keys()].filter((id) => isWithinReach(id) && isNew(id)).sort();
     const pick = reachable[Math.floor(random() * reachable.length)];
     if (pick) offering.push(pick);

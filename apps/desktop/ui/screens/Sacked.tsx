@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router";
 import type { Club } from "@boleiro/data/clubs";
 import type { CoachFired } from "@boleiro/engine/sim/coach/judgeCoaches";
-import { departureMomentId } from "@boleiro/engine/sim/moments/careerMoments";
 import type { SackingView } from "@boleiro/game-client/moments/momentView";
 import { doMomentsInterrupt } from "../moments/momentsGate.js";
 import { SackingScene } from "../moments/scenes/SackingScene.js";
@@ -30,9 +29,9 @@ export function Sacked() {
     Promise.all([engine.turningPoint(), engine.read(["clubs", "coach", "history"])]).then(
       async ([point, { clubs, coach, history }]) => {
         if (point?.kind !== "fired") return current && setLoaded("none");
-        const id = departureMomentId("fired", point.firing.clubId, point.firing.date);
-        const isWaiting = history.coach.moments?.queue.some((moment) => moment.id === id) ?? false;
-        const view = isWaiting && doMomentsInterrupt(localStorage, import.meta.env.VITE_E2E === "1") ? await engine.momentView(id) : null;
+        // The board fires on the morning after the match day the moments engine dates the sacking with, so the club finds it.
+        const waiting = history.coach.moments?.queue.findLast((moment) => moment.kind === "sacking" && moment.clubId === point.firing.clubId);
+        const view = waiting && doMomentsInterrupt(localStorage, import.meta.env.VITE_E2E === "1") ? await engine.momentView(waiting.id) : null;
         if (current) setLoaded({ firing: point.firing, club: clubs[point.firing.clubId], offers: coach.offers.length, night: view?.kind === "sacking" ? view : null });
       },
       () => current && setFailed(true),

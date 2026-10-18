@@ -129,7 +129,7 @@ function TributeBody({ view }: Pick<Props, "view">) {
                 <i className="ph-fill ph-star" style={{ color: "var(--yellow-d)" }} />
                 Ídolo do {view.club.name}: {view.standing}
               </b>
-              {view.standing >= 80 ? "O clube vai lembrar disso na próxima crise." : "A torcida guarda a lembrança."}
+              {view.standing >= 80 ? "Se a vaga abrir, o clube procura você primeiro." : "A torcida guarda a lembrança."}
             </div>
           </div>
         </section>
