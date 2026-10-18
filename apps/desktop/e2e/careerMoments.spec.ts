@@ -51,8 +51,6 @@ async function openHub(page: Page) {
 
 test.describe("career moments", () => {
   test.beforeEach(async ({ page }) => {
-    // The e2e build lets moments take over the screen only for a test that asks (ui/moments/momentsGate.ts).
-    await page.addInitScript(() => localStorage.setItem("boleiro.e2eMoments", "1"));
     await page.goto("/");
     await startAtClub(page, { division: "Série A", search: "Flamengo", club: "Flamengo", coach: "Rui Tavares" });
   });

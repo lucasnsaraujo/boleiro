@@ -3,7 +3,6 @@ import { Navigate, useNavigate } from "react-router";
 import type { Club } from "@boleiro/data/clubs";
 import type { CoachFired } from "@boleiro/engine/sim/coach/judgeCoaches";
 import type { SackingView } from "@boleiro/game-client/moments/momentView";
-import { doMomentsInterrupt } from "../moments/momentsGate.js";
 import { SackingScene } from "../moments/scenes/SackingScene.js";
 import { useServices } from "../app/ServicesContext.js";
 import { ClubPlate } from "../clubs/ClubPlate.js";
@@ -31,7 +30,7 @@ export function Sacked() {
         if (point?.kind !== "fired") return current && setLoaded("none");
         // The board fires on the morning after the match day the moments engine dates the sacking with, so the club finds it.
         const waiting = history.coach.moments?.queue.findLast((moment) => moment.kind === "sacking" && moment.clubId === point.firing.clubId);
-        const view = waiting && doMomentsInterrupt(localStorage, import.meta.env.VITE_E2E === "1") ? await engine.momentView(waiting.id) : null;
+        const view = waiting ? await engine.momentView(waiting.id) : null;
         if (current) setLoaded({ firing: point.firing, club: clubs[point.firing.clubId], offers: coach.offers.length, night: view?.kind === "sacking" ? view : null });
       },
       () => current && setFailed(true),
