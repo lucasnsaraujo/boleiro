@@ -3,7 +3,7 @@ import type { VarCheck } from "@boleiro/engine/sim/referees/refereeCalls";
 import { VAR_WORDS, WRONG_CALL_WORDS } from "@boleiro/game-client/format/refereeCallWords";
 import { badDaysOf } from "@boleiro/engine/sim/live/matchPlay";
 import { EXTRA_HALF_TIME, FULL_TIME, HALF_TIME, isWhistle, matchEndOf, type MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
-import type { LiveRound, RoundMatch, Side } from "@boleiro/game-client/round/liveRoundOf";
+import type { CoachSide, LiveRound, RoundMatch, Side } from "@boleiro/game-client/round/liveRoundOf";
 
 export type EventKind = "goal" | "penaltyMiss" | "yellow" | "red" | "injury" | "substitution" | "varCheck" | "wrongCall";
 /** A match event as the rows and the band print it, like a radio ticker: "Gol de Arrascaeta". */
@@ -99,12 +99,13 @@ export function goalsBetween(round: LiveRound, from: number, to: number): { fixt
 
 /** A moment the board makes a show of; a player having a bad day comes with who he is. */
 export type Highlight =
-  | { fixtureId: string; kind: "goal" | "penaltyMiss" | "red" | "var"; side: Side; clubId: string }
+  | { fixtureId: string; kind: "goal" | "penaltyMiss" | "red" | "var" | "plan"; side: Side; clubId: string }
   | { fixtureId: string; kind: "badDay"; side: Side; clubId: string; playerId: string };
 
 /**
  * The moments of a stretch of minutes the board makes a show of, in order: goals, missed penalties,
- * red cards and VAR changing a call, then the human coaches' players the assistant notices having a bad day.
+ * red cards, VAR changing a call and the substitutions a match plan made, then the human coaches'
+ * players the assistant notices having a bad day.
  */
 export function highlightsBetween(round: LiveRound, from: number, to: number): Highlight[] {
   const humanClubIds = new Set([round.coachClubId, ...(round.otherHumanClubIds ?? [])]);
@@ -113,6 +114,7 @@ export function highlightsBetween(round: LiveRound, from: number, to: number): H
     const moments = match.events.flatMap((event): Highlight[] => {
       if (!isPlayerEvent(event) || event.minute <= from || event.minute > to) return [];
       if (event.type === "varCheck") return event.decision === "goalStands" ? [] : [{ fixtureId: match.fixtureId, kind: "var", side: sideOf(event.clubId), clubId: event.clubId }];
+      if (event.type === "substitution") return event.byPlan ? [{ fixtureId: match.fixtureId, kind: "plan", side: sideOf(event.clubId), clubId: event.clubId }] : [];
       const kind = kindOf(event);
       if (kind !== "goal" && kind !== "penaltyMiss" && kind !== "red") return [];
       return [{ fixtureId: match.fixtureId, kind, side: sideOf(event.clubId), clubId: event.clubId }];
@@ -149,6 +151,13 @@ export function calloutsBetween(round: LiveRound, from: number, to: number): Cal
 
 const isIncidentOf = (e: MatchEvent, clubId: string) => (e.type === "injury" || (e.type === "card" && e.card !== "yellow")) && e.clubId === clubId;
 
+/** Whether a red card or injury of a human coach's side at `minute` stops the round: neither his match plan answered it nor the house rule left his match to the plan. */
+function waitsForCoach(side: CoachSide, events: readonly MatchEvent[], clubId: string, minute: number): boolean {
+  if (side.incidentHandling === "matchPlan") return false;
+  const answered = side.answeredByPlan ?? [];
+  return events.some((e) => e.minute === minute && isIncidentOf(e, clubId) && "playerId" in e && !answered.some((a) => a.minute === minute && a.playerId === e.playerId));
+}
+
 /**
  * The VAR check a human coach's match stops for at `minute`, if any: the round stands still while it
  * runs. A check that only confirms a goal stops nothing.
@@ -171,7 +180,8 @@ export function roundEndOf(round: LiveRound): number {
 /**
  * Why the round stops by itself at `minute`: half-time, extra time's breaks (before it and at its
  * half-time), the final whistle, or something that needs a coach in his match: a red card or an
- * injury to any human coach's side. A goal never stops it.
+ * injury to any human coach's side that his match plan did not answer, in a match that asks him. A
+ * goal never stops it.
  */
 export function pauseReason(round: LiveRound, minute: number): "halfTime" | "extraTimeBreak" | "fullTime" | "coachMatch" | null {
   const end = roundEndOf(round);
@@ -180,11 +190,8 @@ export function pauseReason(round: LiveRound, minute: number): "halfTime" | "ext
   if (minute === FULL_TIME || minute === EXTRA_HALF_TIME) return "extraTimeBreak";
   const coachClubId = round.coachClubId;
   const match = round.matches.find((m) => m.fixtureId === round.coach?.fixtureId);
-  const needsCoach =
-    !!match && !!coachClubId && match.events.some((e) => e.minute === minute && "clubId" in e && isIncidentOf(e, coachClubId));
-  const needsOther = (round.humanSides ?? []).some((side) =>
-    round.matches.some((m) => m.fixtureId === side.fixtureId && m.events.some((e) => e.minute === minute && isIncidentOf(e, side.clubId))),
-  );
+  const needsCoach = !!match && !!coachClubId && !!round.coach && waitsForCoach(round.coach, match.events, coachClubId, minute);
+  const needsOther = (round.humanSides ?? []).some((side) => round.matches.some((m) => m.fixtureId === side.fixtureId && waitsForCoach(side, m.events, side.clubId, minute)));
   return needsCoach || needsOther ? "coachMatch" : null;
 }
 

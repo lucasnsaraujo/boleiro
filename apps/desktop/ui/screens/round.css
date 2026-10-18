@@ -1,6 +1,7 @@
 /* Live round: the coach's match as the cover over a striped pitch, every match of the round as a Brasfoot row below. */
 .live {
   --expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -475,6 +476,74 @@
   padding: 8px 24px;
 }
 
+/* Under the house rule, a coach's match outside a final is his plan's: the lineup button says so instead. */
+.live-act.live-act-locked {
+  background: var(--card);
+  color: var(--ink);
+}
+
+/*
+ * What a coach's plan key did, slapped onto the band under the clock for a moment: his saved tactics
+ * on a blue sticker, or the house rule's no on a plain one. It peels off on its own.
+ */
+.live-plan-note {
+  position: absolute;
+  top: 168px;
+  right: 24px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 340px;
+  padding: 10px 16px 10px 12px;
+  border-radius: var(--r-m);
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--sh-pop);
+  font-size: 12.5px;
+  line-height: 1.3;
+  transform-origin: 85% 0;
+  animation: plan-note 2600ms var(--e-slap) both;
+  pointer-events: none;
+}
+
+.live-plan-note.plan {
+  background: var(--blue);
+  color: #fff;
+}
+
+.live-plan-note i {
+  flex: none;
+  font-size: 22px;
+}
+
+.live-plan-note b {
+  display: block;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+@keyframes plan-note {
+  0% {
+    opacity: 0;
+    transform: translateY(-14px) rotate(6deg) scale(1.25);
+  }
+  14% {
+    opacity: 1;
+    transform: rotate(-2deg);
+  }
+  86% {
+    opacity: 1;
+    transform: rotate(-2deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px) rotate(-4deg) scale(0.96);
+  }
+}
+
 /* The board: every match of the round, competition by competition. */
 .live-list {
   flex: 1;
@@ -728,6 +797,13 @@
   max-width: 76px;
   background: var(--ink);
   color: var(--paper);
+}
+
+/* A substitution the coach's match plan made, in the plan's blue. */
+.live-r .gol.plan {
+  max-width: 76px;
+  background: var(--blue);
+  color: #fff;
 }
 
 /* VAR changing a call, in its dark chip with the yellow of the review sticker. */
@@ -1052,6 +1128,10 @@
 
   .live-r .gol {
     animation: round-gol-fade var(--flood, 1500ms) ease-out both;
+  }
+
+  .live-plan-note {
+    animation: round-gol-fade 2600ms ease-out both;
   }
 
   .gol-sweep {
