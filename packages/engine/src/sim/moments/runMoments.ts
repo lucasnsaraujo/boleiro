@@ -17,14 +17,14 @@ import { worldCupOf } from "../nations/fifaCalendar.js";
 import { isIdolPlayerAt, idolClubsOf } from "../rivalries/idols.js";
 import { derbyWinsOf } from "../rivalries/rivalryMemory.js";
 import { humanKey } from "../coach/closeCoachSeason.js";
-import type { AwardKind, CareerMoments, Moment, QuietHow, Tally } from "./careerMoments.js";
+import { departureMomentId, type AwardKind, type CareerMoments, type Moment, type QuietHow, type Tally } from "./careerMoments.js";
 import { IDOL_LINE, idolStandingOf, meterOf, type HumanCoach } from "./idolStanding.js";
 import { celebrationSeconds, standingWithout, titleStoryOf } from "./titleStory.js";
 
 // The moments draw their chances from a stream of their own per day and coach, so no match, event or market draw moves.
 const MOMENTS_SALT = 0x3a7e1d;
-// The sacking screen flips the coach's last nine results (design/mocks/moment-sacked-night.html).
-const PRESSURE_KEPT = 9;
+// The sacking screen flips the coach's last nine results (design/mocks/moment-sacked-night.html) from the meters before them.
+const PRESSURE_KEPT = 10;
 // guess: the papers print an ultimatum once in a bad stretch, again only after six weeks; protests are counted once a month.
 const ULTIMATUM_DAYS = 45;
 const PROTEST_DAYS = 30;
@@ -149,7 +149,8 @@ function leave(seat: Seat, coach: HumanCoach, moments: CareerMoments, found: Fou
     const standing = meterOf(idolStandingOf(after, coach, clubId));
     const games = moments.games[clubId] ?? EMPTY_TALLY;
     const months = monthsOf(stint, today);
-    const id = `${stint.left}:${clubId}:${today}`;
+    if (!stint.left) continue;
+    const id = departureMomentId(stint.left, clubId, today);
     const rivalId = topRivalOf(after, clubId);
     const index = record.stints.indexOf(stint);
     const toClubId = record.stints[index + 1]?.clubId ?? null;

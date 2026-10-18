@@ -1,0 +1,60 @@
+/* The send-off: a night stadium under the floodlights, in either theme; the cards take the theme's card. */
+
+.mo-sendoff { background: #0E1712; color: var(--ink); }
+.mo-sendoff .so-roof { position: absolute; left: 0; right: 0; top: 0; height: 30px; background: linear-gradient(180deg, #E9E4D6, #CFC8B4); box-shadow: 0 2px 0 rgba(0,0,0,.35); z-index: 3; display: flex; justify-content: space-around; align-items: flex-end; padding: 0 30px 5px; }
+.mo-sendoff .so-roof i { width: 14px; height: 6px; border-radius: 2px; background: #6E6A5C; animation: so-lamp 160ms steps(1) calc(var(--d) * 1ms) both; }
+@keyframes so-lamp { 0% { background: #6E6A5C; } 40% { background: #FFF7D1; } 60% { background: #9C977F; } 100% { background: #FFF7D1; box-shadow: 0 0 0 1px #fff; } }
+.mo-sendoff .so-dim { position: absolute; inset: 0; background: #07100B; z-index: 40; pointer-events: none; animation: so-lights 900ms var(--e-out) 200ms both; }
+@keyframes so-lights { from { opacity: .72; } to { opacity: 0; visibility: hidden; } }
+
+.mo-sendoff .so-upper { position: absolute; left: 0; right: 0; top: 30px; height: 150px; background: #1A0B0C; }
+.mo-sendoff .so-lower { position: absolute; left: 0; right: 0; top: 180px; height: 80px; background: #160E0E; }
+.mo-sendoff .so-lower::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: #0B0707; }
+.mo-sendoff .so-lower canvas { position: absolute; left: 0; top: 6px; width: 100%; height: 74px; }
+
+.mo-sendoff .so-banner { position: absolute; left: 110px; top: 216px; width: 680px; height: 44px; z-index: 4; display: grid; place-items: center; background: #FBF7EC; color: #14231A; box-shadow: 0 6px 10px -4px rgba(0,0,0,.6); clip-path: inset(0 100% 0 0); animation: so-unroll 900ms var(--e-out) 2300ms both; }
+.mo-sendoff .so-banner::before, .mo-sendoff .so-banner::after { content: ''; position: absolute; top: -6px; width: 3px; height: 56px; background: #8C8672; }
+.mo-sendoff .so-banner::before { left: 10px; }
+.mo-sendoff .so-banner::after { right: 10px; }
+.mo-sendoff .so-banner b { font-stretch: 70%; font-weight: 900; font-size: 26px; letter-spacing: .01em; text-transform: uppercase; white-space: nowrap; }
+@keyframes so-unroll { to { clip-path: inset(0 0 0 0); } }
+
+.mo-sendoff .so-boards { position: absolute; left: 0; right: 0; top: 260px; height: 22px; background: #111; z-index: 3; display: flex; align-items: center; gap: 70px; padding-left: 40px; overflow: hidden; white-space: nowrap; font-stretch: var(--wide); font-weight: 900; font-size: 12px; letter-spacing: .14em; color: #FBF7EC; }
+.mo-sendoff .so-boards span:nth-child(2n) { color: var(--yellow); }
+
+.mo-sendoff .so-pitch { position: absolute; left: 0; right: 0; top: 282px; bottom: 0; background: repeating-linear-gradient(180deg, #1C7A3E 0 50px, #217F43 50px 100px); }
+.mo-sendoff .so-pitch::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.38), rgba(0,0,0,0) 90px), radial-gradient(120% 90% at 50% 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,.28)); pointer-events: none; }
+.mo-sendoff .so-pitch svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mo-sendoff .so-trail { stroke-dasharray: 3 7; }
+.mo-sendoff .so-trail-mask { stroke-dasharray: 640; stroke-dashoffset: 640; animation: so-draw 2100ms var(--e-in-out) 3500ms both; }
+@keyframes so-draw { to { stroke-dashoffset: 0; } }
+
+.mo-sendoff .so-pl { position: absolute; width: 58px; margin: -40px 0 0 -29px; --h: 46px; --fs: 20px; --hoop: 4px; transform-origin: 50% 100%; animation: so-rise 520ms var(--e-slap) calc(var(--d) * 1ms) both; transform: scale(var(--k)) rotate(var(--r)); }
+.mo-sendoff .so-pl .nm { font-size: 9.5px; padding: 3px 1px 4px; }
+@keyframes so-rise { from { opacity: 0; transform: translateY(26px) scale(calc(var(--k) * .7)) rotate(var(--r)); } to { opacity: 1; transform: scale(var(--k)) rotate(var(--r)); } }
+.mo-sendoff .so-coach { position: absolute; left: 0; top: 0; width: 80px; --h: 60px; --fs: 30px; --hoop: 5px; z-index: 30; offset-anchor: 50% 85%; offset-rotate: 0deg; offset-distance: 0%; animation: so-walk 2100ms var(--e-in-out) 3500ms both, so-appear 300ms var(--e-out) 3300ms both; }
+.mo-sendoff .so-coach .nm { font-size: 10px; font-stretch: 80%; }
+@keyframes so-walk { to { offset-distance: 100%; } }
+@keyframes so-appear { from { opacity: 0; } to { opacity: 1; } }
+
+.mo-sendoff .so-title { position: absolute; left: 22px; top: 318px; width: 450px; z-index: 8; padding: 16px 20px 14px; background: var(--card); border-radius: 6px; box-shadow: var(--sh-page); transform: rotate(-.6deg); animation: so-slide 700ms var(--e-out) 1400ms both; }
+@keyframes so-slide { from { opacity: 0; transform: translateY(30px) rotate(-.6deg); } }
+.mo-sendoff .so-title .when { font-size: 11.5px; }
+.mo-sendoff .so-title h1 { font-stretch: var(--wide); font-weight: 900; font-size: 36px; line-height: .98; letter-spacing: -.02em; margin-top: 6px; }
+.mo-sendoff .so-title p { font-size: 13px; line-height: 1.45; color: var(--ink-2); margin-top: 8px; }
+.mo-sendoff .so-title .cause { margin-top: 10px; padding-top: 9px; border-top: 2px dotted var(--line-2); }
+
+.mo-sendoff .so-pg { position: absolute; right: 22px; top: 214px; width: 400px; z-index: 9; padding: 16px 18px; background: var(--card); border-radius: 6px; box-shadow: var(--sh-page), 0 30px 40px -20px rgba(0,0,0,.6); transform: rotate(1deg); animation: so-page 760ms var(--e-out) 4900ms both; }
+@keyframes so-page { from { opacity: 0; transform: translateX(80px) rotate(5deg); } }
+.mo-sendoff .so-pg .hd { display: flex; align-items: center; gap: 10px; }
+.mo-sendoff .so-pg .hd h2 { font-stretch: var(--wide); font-weight: 900; font-size: 15px; line-height: 1.05; }
+.mo-sendoff .so-pg .hd small { display: block; font-size: 11.5px; color: var(--mute); font-weight: 600; }
+.mo-sendoff .so-nums { margin-top: 14px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 10px; }
+.mo-sendoff .so-nums .nst b { font-size: 30px; }
+.mo-sendoff .so-tits { margin-top: 12px; font-size: 12px; line-height: 1.55; color: var(--ink-2); }
+.mo-sendoff .so-last { margin-top: 14px; display: grid; grid-template-columns: 92px 1fr; gap: 14px; align-items: center; padding-top: 12px; border-top: 2px dotted var(--line-2); }
+.mo-sendoff .so-last .slot { height: 104px; position: relative; border-radius: 10px; box-shadow: inset 0 0 0 2px var(--line-2); }
+.mo-sendoff .so-stick { position: absolute; inset: -4px -2px; --h: 72px; --fs: 34px; --hoop: 5px; animation: so-stick 620ms var(--e-slap) 6800ms both; transform: rotate(-3deg); }
+@keyframes so-stick { from { opacity: 0; transform: translate(-60px, -140px) rotate(-14deg) scale(1.35); } 70% { opacity: 1; } to { transform: rotate(-3deg); } }
+.mo-sendoff .so-last b { font-stretch: var(--semi); font-weight: 900; font-size: 15px; }
+.mo-sendoff .so-last p { font-size: 12px; color: var(--mute); line-height: 1.4; margin-top: 3px; }

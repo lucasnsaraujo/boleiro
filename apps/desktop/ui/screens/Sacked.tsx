@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router";
 import type { Club } from "@boleiro/data/clubs";
 import type { CoachFired } from "@boleiro/engine/sim/coach/judgeCoaches";
+import { departureMomentId } from "@boleiro/engine/sim/moments/careerMoments";
+import type { SackingView } from "@boleiro/game-client/moments/momentView";
+import { SackingScene } from "../moments/scenes/SackingScene.js";
 import { useServices } from "../app/ServicesContext.js";
 import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
@@ -10,7 +13,7 @@ import { useSound } from "../sound/SoundProvider.js";
 import { stingerBeat } from "../sound/stingerBeat.js";
 import "./career.css";
 
-type Loaded = { firing: CoachFired; club: Club | undefined; offers: number } | "none";
+type Loaded = { firing: CoachFired; club: Club | undefined; offers: number; night: SackingView | null } | "none";
 
 /** The board's sacking, before the coach looks at what else is on the table. */
 export function Sacked() {
@@ -23,10 +26,13 @@ export function Sacked() {
 
   useEffect(() => {
     let current = true;
-    Promise.all([engine.turningPoint(), engine.read(["clubs", "coach"])]).then(
-      ([point, { clubs, coach }]) => {
-        if (!current) return;
-        setLoaded(point?.kind === "fired" ? { firing: point.firing, club: clubs[point.firing.clubId], offers: coach.offers.length } : "none");
+    Promise.all([engine.turningPoint(), engine.read(["clubs", "coach", "history"])]).then(
+      async ([point, { clubs, coach, history }]) => {
+        if (point?.kind !== "fired") return current && setLoaded("none");
+        const id = departureMomentId("fired", point.firing.clubId, point.firing.date);
+        const isWaiting = history.coach.moments?.queue.some((moment) => moment.id === id) ?? false;
+        const view = isWaiting ? await engine.momentView(id) : null;
+        if (current) setLoaded({ firing: point.firing, club: clubs[point.firing.clubId], offers: coach.offers.length, night: view?.kind === "sacking" ? view : null });
       },
       () => current && setFailed(true),
     );
@@ -36,24 +42,47 @@ export function Sacked() {
   }, [engine]);
 
   const isSacked = loaded !== null && loaded !== "none";
+  const hasNight = isSacked && loaded.night !== null;
   useEffect(() => {
-    if (isSacked) sound.play("sacked");
-  }, [isSacked, sound]);
+    if (isSacked && !hasNight) sound.play("sacked");
+  }, [isSacked, hasNight, sound]);
 
   if (failed) return <p className="status error">Nenhum jogo aberto.</p>;
   if (!loaded) return <p className="status">Abrindo…</p>;
   if (loaded === "none") return <Navigate to="/hub" replace />;
 
-  const { firing, club, offers } = loaded;
+  const { firing, club, offers, night } = loaded;
 
-  async function seeOffers() {
+  async function leave(to: string) {
     setLeaving(true);
     try {
       await engine.apply({ type: "closeTurningPoint" });
-      navigate("/offers");
+      if (night) await engine.apply({ type: "closeMoment", id: night.id });
+      navigate(to);
     } catch {
       setFailed(true);
     }
+  }
+  const seeOffers = () => leave("/offers");
+
+  if (night) {
+    return (
+      <SackingScene
+        view={night}
+        actions={
+          <>
+            <button className="btn" disabled={isLeaving} onClick={() => void leave("/newspaper")}>
+              <i className="ph-bold ph-newspaper" aria-hidden="true" />
+              Jornal
+            </button>
+            <button className="btn go" autoFocus disabled={isLeaving} onClick={() => void seeOffers()}>
+              Ver propostas
+              <i className="ph-bold ph-arrow-right" aria-hidden="true" />
+            </button>
+          </>
+        }
+      />
+    );
   }
 
   return (

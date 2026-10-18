@@ -1,0 +1,60 @@
+/* Histórico › Trajetória: the career on one timeline. A playhead sweeps it once when the screen opens. */
+
+.trajectory { display: flex; flex-direction: column; gap: 12px; padding: 14px 18px 18px; min-height: 0; height: 100%; overflow: auto; }
+.trajectory .tj-head { display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; }
+.trajectory .tj-head .screen-title small { display: block; font-stretch: 100%; font-weight: 600; font-size: 12.5px; color: var(--mute); letter-spacing: 0; margin-top: 4px; }
+.trajectory .tj-sum { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.trajectory .tj-sum .nst { position: relative; background: var(--card); border-radius: 10px; padding: 6px 12px; min-width: 86px; box-shadow: var(--sh-sticker); animation: tj-pop 380ms var(--e-slap) both; }
+.trajectory .tj-sum .nst.foil { background: var(--foil); box-shadow: 0 0 0 2px var(--yellow), var(--sh-sticker); }
+.trajectory .tj-sum .nst b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 22px; line-height: 1; }
+.trajectory .tj-sum .nst span { display: block; font-size: 10.5px; font-weight: 600; color: var(--mute); margin-top: 1px; }
+.trajectory .tj-tools { display: flex; align-items: center; gap: 10px; }
+.trajectory .tj-tools .seg button { height: 28px; padding: 0 12px; border-radius: var(--r-pill); border: 0; background: none; font-family: inherit; font-weight: 700; font-size: 12.5px; color: var(--ink-2); cursor: pointer; }
+.trajectory .tj-tools .seg button.on { background: var(--ink); color: var(--card); }
+.trajectory .tj-tools .btn-quiet { margin-left: auto; }
+
+.trajectory .tj-line { position: relative; flex: none; height: 300px; background: var(--card); border-radius: 8px; box-shadow: var(--sh-page); overflow: hidden; }
+.trajectory .tj-lane { position: absolute; left: 14px; font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.trajectory .tj-track { position: absolute; left: 84px; right: 24px; top: 0; bottom: 0; }
+.trajectory .tj-idol { position: absolute; left: 0; width: 100%; top: 196px; height: 72px; overflow: visible; }
+.trajectory .tj-idol-line { stroke: var(--line-2); stroke-dasharray: 4 5; vector-effect: non-scaling-stroke; }
+.trajectory .tj-idol-club { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; clip-path: inset(0 100% 0 0); animation: tj-reveal 2700ms linear 300ms both; }
+@keyframes tj-reveal { to { clip-path: inset(0 0 0 0); } }
+.trajectory .tj-band { position: absolute; top: 130px; height: 46px; border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px; color: #fff; font-stretch: var(--semi); font-weight: 900; font-size: 13px; overflow: hidden; white-space: nowrap; box-shadow: var(--sh-sticker); text-shadow: 0 1px 2px rgba(0,0,0,.35); clip-path: inset(0 100% 0 0 round 8px); animation: tj-grow linear both; animation-delay: calc(var(--d) * 1ms); animation-duration: calc(var(--len) * 1ms); }
+.trajectory .tj-band small { font-stretch: 100%; font-weight: 600; font-size: 11px; opacity: .9; }
+@keyframes tj-grow { to { clip-path: inset(0 0 0 0 round 8px); } }
+.trajectory .tj-mk { position: absolute; width: 30px; height: 30px; margin-left: -15px; border-radius: 50%; border: 0; padding: 0; display: grid; place-items: center; font-size: 15px; background: var(--card); color: var(--ink); box-shadow: 0 0 0 2px var(--ink), 0 3px 0 var(--ink); cursor: pointer; animation: tj-pop 380ms var(--e-slap) calc(var(--d) * 1ms) both; z-index: 2; }
+.trajectory .tj-mk.is-title { background: var(--yellow); color: var(--on-yellow); }
+.trajectory .tj-mk.is-idol { background: var(--foil); box-shadow: 0 0 0 2px var(--yellow-d), 0 3px 0 var(--yellow-d); color: var(--yellow-d); }
+.trajectory .tj-mk.is-sacking { background: var(--red); color: #fff; box-shadow: 0 0 0 2px #8E1F1A, 0 3px 0 #8E1F1A; }
+.trajectory .tj-mk.is-exit { background: var(--paper-2); color: var(--mute); box-shadow: 0 0 0 2px var(--line-2), 0 3px 0 var(--line-2); }
+.trajectory .tj-mk.is-tribute, .trajectory .tj-mk.is-award { background: var(--green); color: #fff; box-shadow: 0 0 0 2px var(--green-d), 0 3px 0 var(--green-d); }
+.trajectory .tj-mk.on { box-shadow: 0 0 0 2px var(--ink), 0 0 0 6px var(--yellow), 0 3px 0 var(--ink); }
+.trajectory .tj-mk:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+@keyframes tj-pop { from { opacity: 0; transform: scale(.2); } }
+.trajectory .tj-yr { position: absolute; bottom: 8px; width: 40px; margin-left: -20px; text-align: center; font-stretch: var(--semi); font-weight: 800; font-size: 11px; color: var(--mute); }
+.trajectory .tj-yr.big { color: var(--ink); font-weight: 900; }
+.trajectory .tj-head-line { position: absolute; top: 0; bottom: 0; left: 0; width: 2px; background: var(--ink); z-index: 3; opacity: 0; animation: tj-sweep 2700ms linear 300ms both; pointer-events: none; }
+@keyframes tj-sweep { 0% { left: 0; opacity: 1; } 99% { opacity: 1; } 100% { left: 100%; opacity: 0; } }
+.trajectory .tj-today { position: absolute; top: 8px; right: 14px; font-size: 11px; font-weight: 700; color: var(--mute); }
+
+.trajectory .tj-low { flex: 1; min-height: 180px; display: grid; grid-template-columns: 1.25fr 1fr; gap: 14px; }
+.trajectory .tj-det { position: relative; padding: 16px 18px; background: var(--card); border-radius: 8px; box-shadow: var(--sh-pop); display: grid; grid-template-columns: 72px 1fr; gap: 16px; align-content: start; animation: tj-open 560ms var(--e-out) 3000ms both; }
+.trajectory .tj-det.is-empty { display: block; color: var(--mute); font-size: 13px; }
+@keyframes tj-open { from { opacity: 0; transform: translateY(18px) scale(.97); } }
+.trajectory .tj-det .kind { font-size: 11.5px; font-weight: 700; color: var(--mute); display: flex; gap: 6px; align-items: center; }
+.trajectory .tj-det h2 { font-stretch: var(--wide); font-weight: 900; font-size: 22px; line-height: 1.02; margin-top: 4px; }
+.trajectory .tj-det p { font-size: 12.5px; line-height: 1.45; color: var(--ink-2); margin-top: 6px; }
+.trajectory .tj-det .links { display: flex; gap: 8px; margin-top: 10px; }
+.trajectory .tj-rec { padding: 14px 18px; background: var(--card); border-radius: 8px; box-shadow: var(--sh-page); animation: tj-open 560ms var(--e-out) 3200ms both; }
+.trajectory .tj-rec h3 { font-stretch: var(--wide); font-weight: 900; font-size: 16px; }
+.trajectory .rr { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 31px; border-bottom: 1px solid var(--rule); font-size: 12.5px; }
+.trajectory .rr:last-child { border-bottom: 0; }
+.trajectory .rr span { color: var(--mute); }
+.trajectory .rr b { font-weight: 700; text-align: right; }
+.trajectory .tj-none { font-size: 12.5px; color: var(--mute); margin-top: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .trajectory .tj-band, .trajectory .tj-mk, .trajectory .tj-idol-club, .trajectory .tj-det, .trajectory .tj-rec, .trajectory .tj-sum .nst { animation: none; clip-path: none; }
+  .trajectory .tj-head-line { display: none; }
+}

@@ -120,6 +120,10 @@ export function History() {
             ))}
           </div>
         )}
+        <Link className="btn-quiet history-awards" to="/trajectory" aria-label="Trajetória">
+          <i className="ph-bold ph-path" aria-hidden="true" />
+          <span className="history-awards-text">Trajetória</span>
+        </Link>
         <Link className="btn-quiet history-awards" to="/awards" aria-label="Prêmios e recordes">
           <i className="ph-bold ph-trophy" aria-hidden="true" />
           <span className="history-awards-text">Prêmios</span>

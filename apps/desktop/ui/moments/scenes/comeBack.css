@@ -1,0 +1,46 @@
+/* A former club calling the coach back: the front page with the fans' campaign, and the written offer. */
+
+.mo-comeback { background: var(--paper) var(--paper-tex) center / cover; color: var(--ink); }
+.mo-comeback .cb-paper { position: absolute; left: 26px; top: 20px; width: 610px; bottom: 20px; padding: 16px 22px 18px; transform: rotate(-1deg); animation: cb-land 760ms var(--e-out) 0ms both; display: flex; flex-direction: column; }
+@keyframes cb-land { from { opacity: 0; transform: translate(-30px, -50px) rotate(-7deg) scale(1.05); } }
+.mo-comeback .cb-paper .mast h4 { font-size: 30px; }
+.mo-comeback .cb-dl { display: flex; justify-content: space-between; font-stretch: var(--semi); font-weight: 800; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; padding: 5px 0; border-bottom: 1px solid #1A1A17; }
+.mo-comeback .cb-paper .kick { margin-top: 10px; }
+.mo-comeback .cb-paper h3 { font-size: 96px; margin-top: 6px; animation: cb-stamp 520ms var(--e-slap) 450ms both; transform-origin: 30% 60%; }
+@keyframes cb-stamp { from { opacity: 0; transform: scale(1.25); } 50% { opacity: 1; } }
+.mo-comeback .cb-paper .deck { font-size: 14px; font-weight: 600; line-height: 1.38; margin-top: 8px; color: #2C2B26; }
+.mo-comeback .cb-photo { position: relative; margin-top: 12px; flex: 1; min-height: 0; background: #E9E2CF; overflow: hidden; }
+.mo-comeback .cb-photo canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mo-comeback .cb-photo figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 6px 10px; background: #FBF7EC; font-size: 11px; color: #4A473E; border-top: 1px solid #1A1A17; }
+.mo-comeback .cb-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 10px; padding-top: 8px; border-top: 1px solid #1A1A17; }
+.mo-comeback .cb-cols h5 { font-stretch: 80%; font-weight: 900; font-size: 16px; line-height: 1.05; }
+.mo-comeback .cb-cols p { font-size: 11.5px; margin-top: 3px; }
+
+.mo-comeback .cb-rt { position: absolute; left: 668px; right: 24px; top: 22px; bottom: 70px; display: flex; flex-direction: column; gap: 12px; }
+.mo-comeback .cb-camp { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 10px; }
+.mo-comeback .cb-camp .nst b { font-size: 26px; }
+.mo-comeback .cb-why { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mo-comeback .cb-why > div { padding: 10px 12px; border-radius: var(--r-m); box-shadow: inset 0 0 0 1.5px var(--line); background: var(--card); }
+.mo-comeback .cb-why .lbl { font-size: 10px; }
+.mo-comeback .cb-why b { display: flex; align-items: baseline; justify-content: space-between; font-stretch: var(--semi); font-weight: 900; font-size: 15px; margin-top: 4px; }
+.mo-comeback .cb-why b span { font-size: 22px; font-stretch: var(--wide); font-variant-numeric: tabular-nums; }
+.mo-comeback .cb-why .meter { margin-top: 6px; }
+.mo-comeback .cb-why small { display: block; font-size: 11px; color: var(--mute); margin-top: 5px; line-height: 1.35; }
+.mo-comeback .cb-offer { position: relative; flex: 1; padding: 16px 20px 14px; background: var(--card); border-radius: 8px; box-shadow: var(--sh-pop); animation: cb-offer 720ms var(--e-slap) 3500ms both; display: flex; flex-direction: column; transform: rotate(-.5deg); }
+@keyframes cb-offer { from { opacity: 0; transform: translateX(60px) rotate(4deg); } to { transform: rotate(-.5deg); } }
+.mo-comeback .cb-offer .hd { display: flex; align-items: center; gap: 12px; }
+.mo-comeback .cb-offer .kind { font-size: 11.5px; font-weight: 700; color: var(--mute); display: flex; align-items: center; gap: 6px; }
+.mo-comeback .cb-offer h2 { font-stretch: var(--wide); font-weight: 900; font-size: 22px; line-height: 1; letter-spacing: -.01em; margin-top: 3px; }
+.mo-comeback .cb-offer blockquote { margin-top: 10px; font-size: 13px; line-height: 1.45; color: var(--ink-2); }
+.mo-comeback .cb-terms { margin-top: 10px; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 2px solid var(--ink); }
+.mo-comeback .cb-terms div { padding: 8px 10px 0 0; }
+.mo-comeback .cb-terms div + div { padding-left: 12px; border-left: 1px solid var(--rule); }
+.mo-comeback .cb-terms .lbl { font-size: 10px; }
+.mo-comeback .cb-terms b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 15px; margin-top: 3px; }
+.mo-comeback .cb-terms small { display: block; font-size: 11px; color: var(--mute); }
+.mo-comeback .cb-back { margin-top: 12px; }
+.mo-comeback .cb-back .lbl { font-size: 10px; }
+.mo-comeback .cb-back .who { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px; }
+.mo-comeback .cb-back .ps { --h: 84px; --fs: 38px; --hoop: 5px; }
+.mo-comeback .cb-foot { margin-top: auto; padding-top: 10px; border-top: 2px dotted var(--line-2); }
+.mo-comeback .cb-foot p { max-width: 300px; font-size: 11.5px; color: var(--mute); line-height: 1.35; }

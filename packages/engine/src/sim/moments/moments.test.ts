@@ -278,7 +278,13 @@ describe("one moment at a time", () => {
     const closed = closeMoment(record, today);
     expect(nextMoment(closed, today)).toBeNull();
     expect(nextMoment(closed, addDays(today, 1))?.id).toBe("b");
-    expect(closed.moments?.past).toEqual([["playerAward", today, FLA]]);
+    expect(closed.moments?.past.map((moment) => moment.id)).toEqual(["a"]);
+  });
+
+  it("closes a moment further down the queue by its id, the rest keeping their order", () => {
+    const closed = closeMoment(three.history.coach, today, "b");
+    expect(closed.moments?.queue.map((moment) => moment.id)).toEqual(["a", "c"]);
+    expect(nextMoment(closed, today)).toBeNull();
   });
 });
 

@@ -34,7 +34,7 @@ import "./hub.css";
 
 const HUB_KEYS = [...SQUAD_KEYS, "boards", "coach", "mood", "finances", "eventMemory", "hasMidSeasonWindow"] as const;
 type HubState = Pick<GameState, (typeof HUB_KEYS)[number]>;
-type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null; seats: HotSeatView | null; event: PendingEvent | null; desk: BoardDesk; bet: BetSticker | null };
+type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null; hasMoment: boolean; seats: HotSeatView | null; event: PendingEvent | null; desk: BoardDesk; bet: BetSticker | null };
 type SquadTab = "squad" | "contracts";
 
 const TURNING_POINT_SCREENS: Record<TurningPoint["kind"], string> = { fired: "/sacked", seasonEnd: "/season-end" };
@@ -63,8 +63,8 @@ export function Hub() {
 
   const load = useCallback(
     (isCurrent: () => boolean) =>
-      Promise.all([engine.read(HUB_KEYS), engine.inbox(), engine.turningPoint(), engine.hotSeat(), engine.pendingEvent(), engine.desk(), engine.betSticker()]).then(
-        ([state, inbox, turningPoint, seats, event, desk, bet]) => isCurrent() && setLoaded({ state, inbox, turningPoint, seats, event, desk, bet }),
+      Promise.all([engine.read(HUB_KEYS), engine.inbox(), engine.turningPoint(), engine.moment(), engine.hotSeat(), engine.pendingEvent(), engine.desk(), engine.betSticker()]).then(
+        ([state, inbox, turningPoint, moment, seats, event, desk, bet]) => isCurrent() && setLoaded({ state, inbox, turningPoint, hasMoment: moment !== null, seats, event, desk, bet }),
         () => isCurrent() && setMissing(true),
       ),
     [engine],
@@ -143,6 +143,8 @@ export function Hub() {
   }
   if (!loaded) return <p className="status">Abrindo o jogo…</p>;
   if (loaded.turningPoint) return <Navigate to={TURNING_POINT_SCREENS[loaded.turningPoint.kind]} replace />;
+  // One career moment a day, after the turning points: it plays once and the hub comes back.
+  if (loaded.hasMoment) return <Navigate to="/moment" replace />;
 
   const { state, inbox } = loaded;
   const rows = squadRows(state);

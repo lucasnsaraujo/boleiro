@@ -76,9 +76,6 @@ export type Moment =
 
 export type MomentKind = Moment["kind"];
 
-/** A moment already shown, as the trajectory keeps it. */
-export type PastMoment = [kind: MomentKind, date: IsoDate, clubId: string];
-
 /**
  * What the moments engine keeps per human coach: the moments waiting to be shown (oldest first) and the
  * day the last one was, what it has already seen of his record, the clubs whose fans made him an idol,
@@ -87,7 +84,8 @@ export type PastMoment = [kind: MomentKind, date: IsoDate, clubId: string];
 export type CareerMoments = {
   queue: Moment[];
   shownOn: IsoDate | null;
-  past: PastMoment[];
+  /** The moments already shown, oldest first, which the trajectory replays. */
+  past: Moment[];
   seen: { closedStints: number; trophies: number };
   idolOf: string[];
   games: Record<string, Tally>;
@@ -104,6 +102,9 @@ export type CareerMoments = {
   farewells: Record<string, string>;
 };
 
+/** The id of the moment a departure from `clubId` on `date` brings: the night sacking, the send-off or the quiet note. */
+export const departureMomentId = (left: NonNullable<CoachStint["left"]>, clubId: string, date: IsoDate): string => `${left}:${clubId}:${date}`;
+
 /** The coach's moments as his record keeps them; a record from before moments has none. */
 export const careerMomentsOf = (record: Pick<CoachRecord, "moments">): CareerMoments | null => record.moments ?? null;
 
@@ -117,11 +118,10 @@ export function nextMoment(record: Pick<CoachRecord, "moments">, date: IsoDate):
   return moments.queue[0] ?? null;
 }
 
-/** The record with its next moment seen through on `date`: off the queue and into the trajectory. */
-export function closeMoment(record: CoachRecord, date: IsoDate): CoachRecord {
+/** The record with a waiting moment (`id`, the next one when left out) seen through on `date`: off the queue and into the trajectory. */
+export function closeMoment(record: CoachRecord, date: IsoDate, id?: string): CoachRecord {
   const moments = record.moments;
-  const shown = moments?.queue[0];
+  const shown = id === undefined ? moments?.queue[0] : moments?.queue.find((moment) => moment.id === id);
   if (!moments || !shown) return record;
-  const past: PastMoment = [shown.kind, shown.date, shown.clubId];
-  return { ...record, moments: { ...moments, queue: moments.queue.slice(1), shownOn: date, past: [...moments.past, past] } };
+  return { ...record, moments: { ...moments, queue: moments.queue.filter((moment) => moment !== shown), shownOn: date, past: [...moments.past, shown] } };
 }

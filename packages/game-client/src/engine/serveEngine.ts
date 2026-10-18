@@ -47,6 +47,12 @@ function run(session: EngineSession, request: EngineRequest): unknown {
       return session.album(...request.args);
     case "newspaper":
       return session.newspaper(...request.args);
+    case "moment":
+      return session.moment();
+    case "momentView":
+      return session.momentView(...request.args);
+    case "trajectory":
+      return session.trajectory(...request.args);
     case "newspaperEditions":
       return session.newspaperEditions();
     case "save":
