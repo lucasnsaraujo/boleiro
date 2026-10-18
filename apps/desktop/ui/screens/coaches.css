@@ -550,7 +550,7 @@ td.coaches-pos {
 
 .coaches-profile-face {
   position: relative;
-  animation: coaches-pop 560ms var(--e-slap) 90ms both;
+  animation: coaches-pop var(--t-stamp) var(--e-slap) 90ms both;
 }
 
 .coaches-profile-crest {
@@ -660,7 +660,7 @@ td.coaches-pos {
   background: var(--yellow-l);
   font-weight: 800;
   font-size: 11.5px;
-  animation: coaches-pop 480ms var(--e-slap) 280ms both;
+  animation: coaches-pop var(--t-stamp) var(--e-slap) 280ms both;
 }
 
 .coaches-title-chip i {
@@ -691,7 +691,7 @@ td.coaches-pos {
   color: var(--on-green);
   font-weight: 800;
   font-size: 11.5px;
-  animation: coaches-pop 480ms var(--e-slap) 320ms both;
+  animation: coaches-pop var(--t-stamp) var(--e-slap) 320ms both;
 }
 
 /* The coaches he keeps meeting: record from his side, the heated ones edged in red. */

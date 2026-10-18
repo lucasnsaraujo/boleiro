@@ -546,11 +546,11 @@
   }
 
   .asst-av-wrap .asst-av {
-    animation: asst-swap 520ms var(--e-slap) both;
+    animation: asst-swap var(--t-stamp) var(--e-slap) both;
   }
 
   .asst-weak-fig .pos {
-    animation: asst-stamp 460ms var(--e-slap) 260ms both;
+    animation: asst-stamp var(--t-stamp) var(--e-slap) 260ms both;
   }
 
   .asst-eleven li {

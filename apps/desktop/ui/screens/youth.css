@@ -232,7 +232,7 @@
   text-align: center;
   color: #14231a;
   position: relative;
-  animation: yth-stick 520ms var(--e-slap) both;
+  animation: yth-stick var(--t-stamp) var(--e-slap) both;
 }
 
 .yth-ph {
