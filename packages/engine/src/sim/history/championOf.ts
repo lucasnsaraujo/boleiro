@@ -16,5 +16,8 @@ export function championOf(competition: Competition, fixtures: readonly Fixture[
       return COPA_DO_BRASIL.finalists(competition, fixtures)?.championId ?? null;
     case "continental":
       return CONMEBOL_CUPS.finalists(competition, fixtures)?.championId ?? null;
+    case "cupAbroad":
+      // Its champion is the result-only cup's: the full tier plays only one club's matches.
+      return null;
   }
 }

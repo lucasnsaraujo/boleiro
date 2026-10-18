@@ -44,7 +44,7 @@ export type CopaFinalists = { championId: string; runnerUpId: string } | null;
 export type StageTab = { index: number; name: string; isDrawn: boolean };
 export type Scorer = { playerId: string; name: string; clubId: string; goals: number };
 
-const KIND_ORDER: Record<Competition["kind"], number> = { state: 0, league: 1, cup: 2, continental: 3 };
+const KIND_ORDER: Record<Competition["kind"], number> = { state: 0, league: 1, cup: 2, continental: 3, cupAbroad: 4 };
 const cupOrder = (c: Competition) => (c.kind === "continental" ? CONTINENTAL_CUPS.indexOf(c.cup) : 0);
 const byKind = (a: Competition, b: Competition) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || cupOrder(a) - cupOrder(b);
 
@@ -150,6 +150,8 @@ function stageNames(competition: Competition, calendar: SeasonCalendar): string[
     }
     case "continental":
       return CUP_STAGES[competition.cup].map((stage, i) => CONTINENTAL_STAGE_NAMES[stage.name] ?? `${i + 1}ª fase`);
+    case "cupAbroad":
+      return competition.stages.map((stage, i) => (stage.kind === "groups" ? "Fase de liga" : `${i + 1}ª fase`));
   }
 }
 
@@ -208,7 +210,7 @@ const CONTINENTAL_GROUP_ZONES: Record<string, Zoning> = {
 };
 
 function zoning(competition: Competition, stage: number, groups: readonly string[][], stageFixtures: readonly Fixture[], copa: CopaFinalists): Zoning {
-  if (competition.kind === "cup") return NO_ZONES;
+  if (competition.kind === "cup" || competition.kind === "cupAbroad") return NO_ZONES;
   if (competition.kind === "continental") return CONTINENTAL_GROUP_ZONES[competition.cup] ?? NO_ZONES;
   if (competition.kind === "state") {
     if (stage !== 0) return NO_ZONES;

@@ -36,6 +36,7 @@ import { seedGameSponsors } from "./sponsors/sponsorDeals.js";
 import type { SponsorFiles } from "./sponsors/sponsors.js";
 import type { NationalFootball } from "@boleiro/data/nationalFootball";
 import { openNations } from "./nations/openNations.js";
+import { syncCupsAbroad } from "./continental/cupsAbroad.js";
 
 /** A result-only country to start: its structure and its clubs level by level, top first. */
 export type CountryStart = { structure: CountryStructure; levels: readonly (readonly WorldClub[])[] };
@@ -231,7 +232,7 @@ export function newGame(
   const withAcademies = { ...withClock, youth: openAcademies(withClock) };
   const started = withCoachWorld(withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat));
   const named = coachName && !hotSeat ? { ...started, eggs: { log: [], coachName } } : started;
-  const sponsored = sponsors ? seedGameSponsors(named, sponsors) : named;
+  const sponsored = syncCupsAbroad(sponsors ? seedGameSponsors(named, sponsors) : named);
   return nationalFootball ? { ...sponsored, nations: openNations(nationalFootball, sponsored.players, season, seed) } : sponsored;
 }
 

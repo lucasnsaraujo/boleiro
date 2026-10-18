@@ -1,3 +1,4 @@
+import type { PlayedAbroad } from "../continental/cupsAbroad.js";
 import { randomStream } from "../../engine/random.js";
 import type { IsoDate, LeagueFormatId } from "../gameState.js";
 import { LEAGUE_FORMATS } from "../leagueFormats.js";
@@ -61,7 +62,7 @@ export function startCountry(structure: CountryStructure, levels: readonly (read
   return { structure, clubs, ...opened, seasons: [], rngState: random.state(), ...(isFullTier ? { isFullTier: true as const } : {}) };
 }
 
-function playCountryDay(country: Country, date: IsoDate): Country {
+function playCountryDay(country: Country, date: IsoDate, playedAbroad?: PlayedAbroad): Country {
   const random = randomStream(country.rngState);
   const clubOf = (id: string): WorldClub => {
     const club = country.clubs[id];
@@ -69,7 +70,7 @@ function playCountryDay(country: Country, date: IsoDate): Country {
     return club;
   };
   const leagues = country.leagues.map((league) => playLeagueDay(league, date, clubOf, random.next));
-  const cup = country.cup && playCupDay(country.cup, date, clubOf, random.next);
+  const cup = country.cup && playCupDay(country.cup, date, clubOf, random.next, playedAbroad);
   if (cup === country.cup && leagues.every((league, i) => league === country.leagues[i])) return country;
   return { ...country, leagues, ...(cup ? { cup } : {}), rngState: random.state() };
 }
@@ -84,13 +85,14 @@ function isRolloverDay(country: Country, date: IsoDate): boolean {
 
 /**
  * Today's result-only matches, and the rollover of a country whose season crosses the new year on its
- * day; a country with neither stays the same object, so its save shard stays as written.
+ * day; a country with neither stays the same object, so its save shard stays as written. A human club's
+ * cup match the full tier played today (`playedAbroad`) keeps its score there.
  */
-export function playWorldDay(world: World, date: IsoDate): World {
+export function playWorldDay(world: World, date: IsoDate, playedAbroad?: PlayedAbroad): World {
   let changed = false;
   const played = Object.fromEntries(
     Object.entries(world).map(([id, country]) => {
-      const today = playCountryDay(country, date);
+      const today = playCountryDay(country, date, playedAbroad);
       const next = isRolloverDay(today, date) ? endCountrySeason(today, Number(date.slice(0, 4))) : today;
       changed ||= next !== country;
       return [id, next];

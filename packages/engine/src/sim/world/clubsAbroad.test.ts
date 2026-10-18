@@ -54,7 +54,7 @@ describe("a career at a club abroad", () => {
   });
 
   it("keeps its clubs out of Brazil's competitions", () => {
-    const brazilian = Object.values(start.competitions).filter((c) => !(c.kind === "league" && c.abroad));
+    const brazilian = Object.values(start.competitions).filter((c) => !(c.kind === "league" && c.abroad) && c.kind !== "cupAbroad");
     for (const competition of brazilian) expect(competition.clubIds.some((id) => start.clubs[id]?.abroad)).toBe(false);
   });
 

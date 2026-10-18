@@ -54,6 +54,7 @@ import { isShootoutDue, settleShootout, shootoutSeed, shootoutWinnerOf } from ".
 import { runTransferDay } from "../transfers/runTransferDay.js";
 import { endWorldSeason, playWorldDay } from "../world/resultOnlyWorld.js";
 import { turnSeasonsAbroad } from "../world/turnSeasonsAbroad.js";
+import { playedAbroadOf, syncCupsAbroad } from "../continental/cupsAbroad.js";
 import { formatsOf } from "../formats.js";
 import { unifiedDatesOf } from "../seasonCalendar.js";
 import { coachOutcome } from "./coachOutcome.js";
@@ -256,8 +257,10 @@ export function finishMatchDay(live: LiveDay): DayResult {
     events.push(...copinha.events);
   }
   // The world as the coaches' day left it: a coach who took a club abroad brought its country into the full tier.
-  if (next.world) next = turnSeasonsAbroad({ ...next, world: moveWorldCoaches(playWorldDay(next.world, state.date), state.date) }, state.date);
-  if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state)) };
+  // A human club's cup matches abroad were played in the full tier today: the result-only cups take their scores.
+  const playedAbroad = playedAbroadOf(state, played);
+  if (next.world) next = turnSeasonsAbroad({ ...next, world: moveWorldCoaches(playWorldDay(next.world, state.date, playedAbroad), state.date) }, state.date);
+  if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state), playedAbroad) };
   if (next.nations) {
     const national = nationsDay(next, state.date);
     next = national.state;
@@ -288,6 +291,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     next = coolRivalries(recordFormerPlayers(next, academies.state, developed.events));
     seasonOutcomes = ended.outcomes;
   }
+  next = syncCupsAbroad(next);
   const sponsorDay = runSponsorDay(state, next, seasonOutcomes);
   next = sponsorDay.state;
   events.push(...sponsorDay.events);

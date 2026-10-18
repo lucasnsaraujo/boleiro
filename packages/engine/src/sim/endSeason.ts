@@ -89,8 +89,8 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
   );
   const opened = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false, state.economy.continentalStages !== undefined, formatsOf(state), gridRounds, abroad.map(({ country }) => country.structure), state.guests !== undefined, state.nations !== undefined);
   const { calendar } = opened;
-  // A league abroad whose season crosses the new year plays on into Brazil's next, its games and table with it.
-  const crossing = Object.values(state.competitions).filter((c) => c.kind === "league" && c.abroad && !isFinished(c, fixturesOf(state, c.id)));
+  // A league abroad whose season crosses the new year plays on into Brazil's next, its games and table with it, and so do a human club's cups abroad.
+  const crossing = Object.values(state.competitions).filter((c) => ((c.kind === "league" && c.abroad) || c.kind === "cupAbroad") && !isFinished(c, fixturesOf(state, c.id)));
   const competitions = { ...opened.competitions, ...Object.fromEntries(crossing.map((c) => [c.id, c])) };
   const crossingIds = new Set(crossing.map((c) => c.id));
   const fixtures = crossing.length ? [...opened.fixtures, ...state.fixtures.filter((f) => crossingIds.has(f.competitionId))] : opened.fixtures;

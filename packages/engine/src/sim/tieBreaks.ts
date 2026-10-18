@@ -51,6 +51,8 @@ export function tieBreakOf(competition: Competition, stage: number): TieBreak {
       return "penalties";
     case "state":
       return "penalties";
+    case "cupAbroad":
+      return competition.tieBreaks[stage] ?? "extraTime";
   }
 }
 

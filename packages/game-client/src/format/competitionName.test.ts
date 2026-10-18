@@ -58,3 +58,10 @@ test("FIFA's yearly cup is the Mundial de Clubes and its 32-club one every four 
   expect(competitionName({ ...libertadores, cup: "club-world-cup" })).toBe("Super Mundial");
   expect(["intercontinental-cup", "club-world-cup"].map(competitionKeyName)).toEqual(["Mundial de Clubes", "Super Mundial"]);
 });
+
+test("names the titles abroad by their competitions: a league level, a national cup, UEFA's cups", () => {
+  expect(competitionKeyName("gb-eng-1")).toBe("Premier League");
+  expect(competitionKeyName("es-2")).toBe("LaLiga2");
+  expect(competitionKeyName("gb-eng-cup")).toBe("FA Cup");
+  expect(competitionKeyName("champions-league")).toBe("Champions League");
+});
