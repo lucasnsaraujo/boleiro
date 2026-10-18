@@ -673,8 +673,9 @@ export function createEngineSession(files: GameFiles) {
       addNews(inboxLines(before, found.state, [found.event]));
       return found.event;
     },
+    /** Refused during a round, whose final whistle rebuilds the game from the kick-off copy and would undo it. */
     closeMoment({ id }) {
-      const game = current();
+      const game = betweenDays("a moment can't be closed");
       state = { ...game, history: { ...game.history, coach: closeMoment(game.history.coach, game.date, id) } };
     },
     /** His requests were for the board he leaves, so they go with him. */
@@ -840,9 +841,10 @@ export function createEngineSession(files: GameFiles) {
     album(seat?: number): Album {
       return albumOf(current(), seat);
     },
-    /** The career moment the seated coach sees next, at most one a day; null when none is waiting. */
+    /** The career moment the seated coach sees next, at most one a day; null when none is waiting or a round is under way. */
     moment(): MomentView | null {
       const game = current();
+      if (live) return null;
       const next = nextMoment(game.history.coach, game.date);
       return next && momentViewOf(game, next);
     },

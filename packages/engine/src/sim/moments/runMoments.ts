@@ -14,6 +14,7 @@ import type { CoachStint } from "../history/history.js";
 import { clubMood } from "../morale/clubMood.js";
 import { rivalsOf } from "../morale/rivalsOf.js";
 import { worldCupOf } from "../nations/fifaCalendar.js";
+import { squadsOfGame } from "../players/squadsByClub.js";
 import { isIdolPlayerAt, idolClubsOf } from "../rivalries/idols.js";
 import { derbyWinsOf } from "../rivalries/rivalryMemory.js";
 import { humanKey } from "../coach/closeCoachSeason.js";
@@ -45,7 +46,8 @@ const COME_BACK_CHANCE_MISSED = 0.8;
 const COME_BACK_CHANCE_IN_CRISIS = 0.9;
 // guess: a club in the bottom third of its table is in crisis.
 const CRISIS_SHARE = 2 / 3;
-// guess: a farewell match is booked at least a week ahead, on the season's first free date after that.
+// guess: an idol's farewell match is booked in his last season's last two months, at least a week ahead, on the first free date after that.
+const FAREWELL_FROM = "-11-01";
 const FAREWELL_NOTICE_DAYS = 7;
 // The World Cup squad is called up for the camp before the tournament (nationsDay's TOURNAMENT_CAMP_DAYS is 20).
 const WORLD_CUP_CALL_DAYS = 40;
@@ -253,24 +255,28 @@ function farewellOpponent(state: GameState, playerId: string, clubId: string, da
   return clubs.find(([id]) => state.clubs[id] && state.finances[id] && isFree(state, id, date))?.[0] ?? null;
 }
 
-/** An idol of the coach's club who retires: the tribute on the day he goes, and the farewell match booked when he announces it. */
+/** An idol of the coach's club who retires: the farewell match booked near the end of his last season and celebrated when played, and the tribute on the day he goes. */
 function honourIdols(seat: Seat, moments: CareerMoments, found: Found): CareerMoments {
   const story = storyIn(seat.after);
   const { before, after, today } = seat;
   let next = moments;
+  const clubId = after.coachClubId;
+  if (clubId && today >= `${after.season}${FAREWELL_FROM}`) {
+    for (const player of squadsOfGame(after).get(clubId) ?? []) {
+      if (player.retiring?.afterSeason !== after.season || next.farewells[player.id] || !isIdolPlayerAt(after, player.id, clubId)) continue;
+      const date = freeFriendlyDates(after).find((free) => free >= addDays(today, FAREWELL_NOTICE_DAYS));
+      const opponentId = date ? farewellOpponent(after, player.id, clubId, date) : null;
+      if (!date || !opponentId) continue;
+      const friendly: Friendly = { id: `farewell-${player.id}`, date, homeId: clubId, awayId: opponentId, fee: 0, result: null, farewellOf: { playerId: player.id, name: player.name } };
+      found.friendlies.push(friendly);
+      found.news.push(story(today, [clubId, opponentId], `Jogo de despedida de ${player.name} marcado`, `${nameOf(after, clubId)} e ${nameOf(after, opponentId)} jogam em ${date.slice(8, 10)}/${date.slice(5, 7)}. A renda vai para o ídolo.`));
+      next = { ...next, farewells: { ...next.farewells, [player.id]: friendly.id } };
+    }
+  }
   for (const event of seat.events) {
     if (event.type === "playerRetired" && event.clubId === before.coachClubId && isIdolPlayerAt(before, event.playerId, event.clubId)) {
       const mark = before.history.players[event.clubId]?.[event.playerId];
       found.moments.push({ id: `idolRetired:${event.playerId}`, kind: "idolRetired", date: today, clubId: event.clubId, playerId: event.playerId, name: event.name, apps: mark?.apps ?? 0, goals: mark?.goals ?? 0 });
-    }
-    if (event.type === "playerWantsToRetire" && event.clubId === after.coachClubId && !next.farewells[event.playerId] && isIdolPlayerAt(after, event.playerId, event.clubId)) {
-      const date = freeFriendlyDates(after).find((free) => free >= addDays(today, FAREWELL_NOTICE_DAYS));
-      const opponentId = date ? farewellOpponent(after, event.playerId, event.clubId, date) : null;
-      if (!date || !opponentId) continue;
-      const friendly: Friendly = { id: `farewell-${event.playerId}`, date, homeId: event.clubId, awayId: opponentId, fee: 0, result: null, farewellOf: { playerId: event.playerId, name: event.name } };
-      found.friendlies.push(friendly);
-      found.news.push(story(today, [event.clubId, opponentId], `Jogo de despedida de ${event.name} marcado`, `${nameOf(after, event.clubId)} e ${nameOf(after, opponentId)} jogam em ${date.slice(8, 10)}/${date.slice(5, 7)}. A renda vai para o ídolo.`));
-      next = { ...next, farewells: { ...next.farewells, [event.playerId]: friendly.id } };
     }
     if (event.type === "friendlyPlayed" && event.friendly.farewellOf && Object.values(next.farewells).includes(event.friendly.id) && event.friendly.result) {
       const { playerId, name } = event.friendly.farewellOf;

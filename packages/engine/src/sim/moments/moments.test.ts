@@ -179,17 +179,26 @@ describe("tributes", () => {
     expect(kindsOf(runMoments(nextDay(withApps(20)), withApps(20), [retired]).state)).not.toContain("idolRetired");
   });
 
-  it("books no farewell match for a squad player who announces his last season", () => {
-    const announced: DayEvent = { type: "playerWantsToRetire", playerId: veteran.id, clubId: FLA, name: veteran.name, age: 36, afterSeason: 2026 };
-    expect(runMoments(nextDay(withApps(20)), withApps(20), [announced]).state.friendlies?.some((f) => f.farewellOf) ?? false).toBe(false);
+  /** The veteran announced this is his last season, and the season is in its last weeks (`date`). */
+  const lastSeason = (apps: number, date: string) => {
+    const state = withApps(apps);
+    const player = state.players[veteran.id];
+    if (!player) throw new Error("no veteran");
+    return { ...state, date, players: { ...state.players, [veteran.id]: { ...player, retiring: { afterSeason: 2026, hasBeenAsked: false } } } };
+  };
+
+  it("books an idol's farewell match in his last season's last two months, not before, and not a squad player's", () => {
+    expect(runMoments(nextDay(lastSeason(160, "2026-07-01")), lastSeason(160, "2026-07-01"), []).state.friendlies?.some((f) => f.farewellOf) ?? false).toBe(false);
+    expect(runMoments(nextDay(lastSeason(20, "2026-11-05")), lastSeason(20, "2026-11-05"), []).state.friendlies?.some((f) => f.farewellOf) ?? false).toBe(false);
   });
 
-  it("books a farewell match for an idol who announces his last season, and celebrates it when it is played", () => {
-    const announced: DayEvent = { type: "playerWantsToRetire", playerId: veteran.id, clubId: FLA, name: veteran.name, age: 36, afterSeason: 2026 };
-    const booked = runMoments(nextDay(withApps(160)), withApps(160), [announced]).state;
+  it("books the farewell match of an idol in his last weeks, and celebrates it when it is played", () => {
+    const november = lastSeason(160, "2026-11-05");
+    const booked = runMoments(nextDay(november), november, []).state;
     const farewell = booked.friendlies?.find((friendly) => friendly.farewellOf?.playerId === veteran.id);
     expect(farewell).toMatchObject({ homeId: FLA, awayId: "vasco-rj", fee: 0 });
     if (!farewell) return;
+    expect(farewell.date >= "2026-11-12").toBe(true);
     const played: DayEvent = { type: "friendlyPlayed", friendly: { ...farewell, result: { homeGoals: 4, awayGoals: 3 } }, gate: 0 };
     const after = runMoments(nextDay(booked), booked, [played]).state;
     expect(queueOf(after)).toMatchObject([{ kind: "testimonial", playerId: veteran.id, homeGoals: 4, awayGoals: 3 }]);

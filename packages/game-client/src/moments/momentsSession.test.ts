@@ -33,3 +33,18 @@ test("an old save without moments loads and plays on with none waiting", () => {
   expect(loaded.moment()).toBeNull();
   expect(loaded.read(["history"]).history.coach.moments?.queue).toEqual([]);
 });
+
+test("no moment shows or closes while a round is under way, whose final whistle would undo it", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  session.apply({ type: "playToMatchDay" });
+  const saved = JSON.parse(session.save());
+  saved.game.history.coach.moments.queue = [{ id: "idol:bahia-ba", kind: "idol", date: saved.game.date, clubId: "bahia-ba", ledger: [], standing: 80 }];
+  session.apply({ type: "load", save: JSON.stringify(saved) });
+  expect(session.moment()).toMatchObject({ kind: "idol" });
+  session.apply({ type: "startRound" });
+  expect(session.moment()).toBeNull();
+  expect(() => session.apply({ type: "closeMoment" })).toThrow("while a match day is under way");
+  session.apply({ type: "finishRound" });
+  expect(session.moment()).toMatchObject({ kind: "idol" });
+});
