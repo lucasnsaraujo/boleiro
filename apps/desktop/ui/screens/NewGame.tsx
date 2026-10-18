@@ -471,12 +471,15 @@ export function NewGame() {
                 setFilter({ ...filter, division: DIVISIONS.find((division) => division === value) ?? null });
               }}
             />
-            <Select
-              label="Estado"
-              value={filter.state ?? ""}
-              options={[{ value: "", label: "Todos" }, ...states.map((state) => ({ value: state, label: state }))]}
-              onChange={(value) => setFilter({ ...filter, state: states.find((state) => state === value) ?? null })}
-            />
+            {/* Only Brazil's clubs have a state: a league abroad leaves the filter out. */}
+            {leagueAbroad === null && (
+              <Select
+                label="Estado"
+                value={filter.state ?? ""}
+                options={[{ value: "", label: "Todos" }, ...states.map((state) => ({ value: state, label: state }))]}
+                onChange={(value) => setFilter({ ...filter, state: states.find((state) => state === value) ?? null })}
+              />
+            )}
             <label className="field career-new-search">
               <i className="ph-bold ph-magnifying-glass" aria-hidden="true" />
               <input type="search" aria-label="Buscar clube" placeholder="Buscar time…" value={filter.query} onChange={(event) => setFilter({ ...filter, query: event.target.value })} />
