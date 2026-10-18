@@ -7,6 +7,7 @@ import { formatDayMonth, formatMonthYear } from "@boleiro/game-client/format/for
 import { nationalTeamWithPreposition } from "@boleiro/game-client/format/nationalTeamName";
 import type { NationalCompetitionView, NationalFixtureRow, NationalPlayerCard, NationalTeamPage } from "@boleiro/game-client/nationalTeam/nationalTeamPage";
 import { useServices } from "../app/ServicesContext.js";
+import { useMatchFile } from "../matchPage/MatchFile.js";
 import { Crest } from "../clubs/Crest.js";
 import { Select } from "../controls/Select.js";
 import { NationalCrest } from "../nationalTeam/NationalCrest.js";
@@ -68,7 +69,14 @@ function Sticker({ player, number, colours, index, onDrop }: { player: NationalP
   );
 }
 
-function FixtureLine({ row, page }: { row: NationalFixtureRow; page: NationalTeamPage }) {
+/** A played match's row opens its ficha: a button over the whole row, under its text. */
+function OpenMatch({ row, onOpen, className }: { row: NationalFixtureRow; onOpen: (matchRef: string) => void; className: string }) {
+  const ref = row.pageRef;
+  if (!ref) return null;
+  return <button type="button" className={className} aria-label={`Ficha do jogo: ${row.home} x ${row.away}`} onClick={() => onOpen(ref)} />;
+}
+
+function FixtureLine({ row, page, onOpen }: { row: NationalFixtureRow; page: NationalTeamPage; onOpen: (matchRef: string) => void }) {
   const day = new Date(row.date);
   const looks = (id: string) => page.teams.find((t) => t.id === id);
   const home = looks(row.homeId);
@@ -76,6 +84,7 @@ function FixtureLine({ row, page }: { row: NationalFixtureRow; page: NationalTea
   const score = scoreOf(row);
   return (
     <li className="nt-fx">
+      <OpenMatch row={row} onOpen={onOpen} className="nt-open" />
       <div className="nt-d">
         {WEEKDAYS[day.getUTCDay()]}
         <b>{day.getUTCDate()}</b>
@@ -100,7 +109,7 @@ function FixtureLine({ row, page }: { row: NationalFixtureRow; page: NationalTea
 /** A group's heading: a competition of one table (CONMEBOL's qualifiers) has a standing, not a group. */
 const groupLabel = (competition: NationalCompetitionView, name: string) => (competition.groups.length === 1 ? "Classificação" : name.length <= 2 ? `Grupo ${name}` : name);
 
-function CompetitionTables({ competition, page }: { competition: NationalCompetitionView; page: NationalTeamPage }) {
+function CompetitionTables({ competition, page, onOpen }: { competition: NationalCompetitionView; page: NationalTeamPage; onOpen: (matchRef: string) => void }) {
   const [own, ...others] = competition.groups;
   const [isAll, setAll] = useState(false);
   const shown = own ? [own, ...(isAll ? others : [])] : [];
@@ -173,6 +182,7 @@ function CompetitionTables({ competition, page }: { competition: NationalCompeti
               <ul>
                 {round.matches.map((match) => (
                   <li key={match.id} className={match.homeId === page.team.id || match.awayId === page.team.id ? "own" : undefined}>
+                    <OpenMatch row={match} onOpen={onOpen} className="nt-open" />
                     <span>{match.home}</span>
                     <b>{scoreOf(match) ?? formatDayMonth(match.date)}</b>
                     <span>{match.away}</span>
@@ -189,6 +199,7 @@ function CompetitionTables({ competition, page }: { competition: NationalCompeti
 
 export function NationalTeam() {
   const { engine, game } = useServices();
+  const matchFile = useMatchFile();
   const [teamId, setTeamId] = useState<string | undefined>(undefined);
   const [page, setPage] = useState<NationalTeamPage | null>(null);
   const [state, setState] = useState<NationalState | null>(null);
@@ -329,7 +340,7 @@ export function NationalTeam() {
           {page.fixtures.length ? (
             <ul className="nt-fixtures">
               {page.fixtures.map((row) => (
-                <FixtureLine key={row.id} row={row} page={page} />
+                <FixtureLine key={row.id} row={row} page={page} onOpen={matchFile.open} />
               ))}
             </ul>
           ) : (
@@ -452,7 +463,7 @@ export function NationalTeam() {
 
         {tab === "tables" && (
           <div className="nt-tables" role="tabpanel" aria-label="Jogos e tabelas">
-            {page.competitions.length ? page.competitions.map((c) => <CompetitionTables key={c.id} competition={c} page={page} />) : <p className="nt-empty">{team.name} não está em nenhuma competição agora: joga amistosos nas datas Fifa.</p>}
+            {page.competitions.length ? page.competitions.map((c) => <CompetitionTables key={c.id} competition={c} page={page} onOpen={matchFile.open} />) : <p className="nt-empty">{team.name} não está em nenhuma competição agora: joga amistosos nas datas Fifa.</p>}
             {team.qualifiesByRanking && <p className="nt-empty">As eliminatórias da {team.confederation} não estão no jogo: as vagas dela na Copa do Mundo vão para as seleções mais bem colocadas no ranking da Fifa.</p>}
             {page.titles.length > 0 && (
               <section className="nt-comp" aria-label="Campeões">
@@ -489,6 +500,7 @@ export function NationalTeam() {
           </div>
         )}
       </section>
+      {matchFile.file}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import type { Fixture } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
+import { syncNationalFixtures } from "@boleiro/engine/sim/nations/nationalFixtures";
 import { calendarMonths, calendarPage, matchAbsences, pageFor, pageStartOf, turnPage, upcomingMatches, type CalendarEntry } from "./calendarMonths.js";
 
 const game = newGameFromFiles(5, { coachClubId: "bahia-ba" }, bundledGameFiles);
@@ -179,4 +180,24 @@ test("a game of another year, a league abroad's crossing the new year, stays out
   expect(ids).not.toContain("next-year");
   expect(ids).not.toContain("last-year");
   expect(ids).toHaveLength(own.length);
+});
+
+test("a national coach's calendar has his national team's games beside his club's, as their own side", () => {
+  const nations = game.nations;
+  if (!nations) throw new Error("the game has no national football");
+  const coaching = syncNationalFixtures({ ...game, nations: { ...nations, job: { teamId: "brazil", since: game.date } } });
+  const national = matches(calendarMonths(coaching).flatMap((m) => m.entries)).filter((m) => m.competition === "Copa do Mundo 2026");
+  expect(national.map((m) => `${m.date} ${m.isHome ? "casa" : "fora"} ${m.opponentId}`)).toEqual(["2026-06-13 casa morocco", "2026-06-20 casa haiti", "2026-06-24 fora scotland"]);
+  const brazilOnly = { ...coaching, coachClubId: null, date: "2026-06-01" };
+  expect(upcomingMatches(brazilOnly, 1)[0]).toMatchObject({ opponentId: "morocco", label: "Copa do Mundo 2026 · Grupo C" });
+});
+
+test("a national team's game misses none of the coach's club players", () => {
+  const nations = game.nations;
+  const hurt = Object.values(game.players).find((p) => p.clubId === "bahia-ba");
+  if (!nations || !hurt) throw new Error("the game has no national football or no Bahia player");
+  const players = { ...game.players, [hurt.id]: { ...hurt, condition: { ...hurt.condition, injuredUntil: "2026-12-01" } } };
+  const coaching = syncNationalFixtures({ ...game, players, nations: { ...nations, job: { teamId: "brazil", since: game.date } } });
+  expect(matchAbsences(coaching, { date: "2026-06-13", competitionId: "national:world-cup-2026" })).toEqual([]);
+  expect(matchAbsences(coaching, { date: "2026-06-13", competitionId: "serie-a-2026" }).map((a) => a.name)).toContain(hurt.name);
 });

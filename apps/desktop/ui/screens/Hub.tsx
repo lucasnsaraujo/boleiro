@@ -32,7 +32,7 @@ import { BrandLogo } from "../sponsors/BrandLogo.js";
 import { OddsSticker } from "../sponsors/OddsSticker.js";
 import "./hub.css";
 
-const HUB_KEYS = [...SQUAD_KEYS, "boards", "coach", "mood", "finances", "eventMemory", "hasMidSeasonWindow"] as const;
+const HUB_KEYS = [...SQUAD_KEYS, "boards", "coach", "mood", "finances", "eventMemory", "hasMidSeasonWindow", "nations"] as const;
 type HubState = Pick<GameState, (typeof HUB_KEYS)[number]>;
 type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null; hasMoment: boolean; seats: HotSeatView | null; event: PendingEvent | null; desk: BoardDesk; bet: BetSticker | null };
 type SquadTab = "squad" | "contracts";

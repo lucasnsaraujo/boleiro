@@ -23,7 +23,7 @@ export type CalendarEntry = MatchEntry | { kind: "window"; date: IsoDate; opens:
 /** One month of the season: the coach's games and the transfer window's dates, in date order. */
 export type CalendarMonth = { month: number; entries: CalendarEntry[]; hasWindow: boolean };
 
-type MatchesState = Pick<GameState, "coachClubId" | "fixtures" | "competitions">;
+type MatchesState = Pick<GameState, "coachClubId" | "fixtures" | "competitions"> & Partial<Pick<GameState, "nations">>;
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 const monthOf = (date: IsoDate) => Number(date.slice(5, 7));
@@ -57,15 +57,20 @@ function matchEntry(f: Fixture, coachClubId: string, competitions: GameState["co
   };
 }
 
-/** The coach's fixtures of the season, in date order. */
-function coachFixtures({ coachClubId, fixtures }: Pick<GameState, "coachClubId" | "fixtures">): Fixture[] {
-  if (!coachClubId) return [];
-  return fixtures.filter((f) => f.homeId === coachClubId || f.awayId === coachClubId).toSorted((a, b) => a.date.localeCompare(b.date));
+/** The coach's fixtures of the season, his club's and his national team's, in date order, each with his side in it. */
+function coachFixtures({ coachClubId, fixtures, nations }: Pick<GameState, "coachClubId" | "fixtures"> & Partial<Pick<GameState, "nations">>): { fixture: Fixture; sideId: string }[] {
+  const sides = [coachClubId, nations?.job?.teamId].filter((id): id is string => id !== null && id !== undefined);
+  if (!sides.length) return [];
+  return fixtures
+    .flatMap((fixture) => {
+      const sideId = sides.find((id) => fixture.homeId === id || fixture.awayId === id);
+      return sideId ? [{ fixture, sideId }] : [];
+    })
+    .toSorted((a, b) => a.fixture.date.localeCompare(b.fixture.date));
 }
 
 function coachMatches(state: MatchesState): MatchEntry[] {
-  const { coachClubId, competitions } = state;
-  return coachClubId ? coachFixtures(state).map((f) => matchEntry(f, coachClubId, competitions)) : [];
+  return coachFixtures(state).map(({ fixture, sideId }) => matchEntry(fixture, sideId, state.competitions));
 }
 
 /** A game still to play, with its competition and round: "Série A · 31ª rodada"; `ground` names a neutral ground. */
@@ -73,14 +78,13 @@ export type UpcomingMatch = MatchEntry & { competitionId: string; label: string;
 
 /** The coach's next `count` games from today on, the first of them the one the play button leads to. */
 export function upcomingMatches(state: Pick<GameState, "date"> & MatchesState, count: number): UpcomingMatch[] {
-  const { date, coachClubId, competitions } = state;
-  if (!coachClubId) return [];
+  const { date, competitions } = state;
   return coachFixtures(state)
-    .filter((f) => !f.result && f.date >= date)
+    .filter(({ fixture }) => !fixture.result && fixture.date >= date)
     .slice(0, count)
-    .map((f) => {
+    .map(({ fixture: f, sideId }) => {
       const competition = competitions[f.competitionId];
-      return { ...matchEntry(f, coachClubId, competitions), competitionId: f.competitionId, label: competition ? fixtureLabel(competition, f) : "", ground: competition ? neutralGround(competition, f) : null };
+      return { ...matchEntry(f, sideId, competitions), competitionId: f.competitionId, label: competition ? fixtureLabel(competition, f) : "", ground: competition ? neutralGround(competition, f) : null };
     });
 }
 
@@ -99,11 +103,12 @@ export function calendarMonths(state: Pick<GameState, "season" | "hasMidSeasonWi
 
 export type Absence = { name: string; reason: "injured" | "suspended" };
 
-/** The coach's players who miss the game: still injured on its day, or banned in its competition. */
+/** The coach's players who miss the game: still injured on its day, or banned in its competition. A national team's game is not his club's: none. */
 export function matchAbsences(
-  { coachClubId, players, discipline }: Pick<GameState, "coachClubId" | "players" | "discipline">,
+  { coachClubId, players, discipline, competitions }: Pick<GameState, "coachClubId" | "players" | "discipline" | "competitions">,
   { date, competitionId }: Pick<UpcomingMatch, "date" | "competitionId">,
 ): Absence[] {
+  if (competitions[competitionId]?.kind === "national") return [];
   const records = discipline[competitionId] ?? {};
   return Object.values(players).flatMap((p): Absence[] => {
     if (p.clubId !== coachClubId) return [];

@@ -8,6 +8,7 @@ import { TOURNAMENT_CAMP_DAYS } from "@boleiro/engine/sim/nations/nationsDay";
 import { CONFEDERATIONS_WITH_QUALIFIERS, groupTable, throughNow } from "@boleiro/engine/sim/nations/nationalCompetitions";
 import type { NationalCompetition, NationalMatch, Nations } from "@boleiro/engine/sim/nations/nations";
 import { poolOf } from "@boleiro/engine/sim/nations/nationalJobs";
+import { nationalFixtureId } from "@boleiro/engine/sim/nations/nationalFixtures";
 import { nationalTeamName } from "../format/nationalTeamName.js";
 import { compareText } from "@boleiro/engine/sim/compareText";
 
@@ -17,8 +18,10 @@ export type NationalPlayerCard = { ref: string; name: string; role: Role; streng
 /** A call-up's places of one position and who fills them. */
 export type CallUpGroup = { role: Role; places: number; players: NationalPlayerCard[] };
 
+/** A national match as the screen lists it; `pageRef` opens its match page once it is played. */
 export type NationalFixtureRow = {
   id: string;
+  pageRef: string | null;
   date: IsoDate;
   competition: string;
   round: string;
@@ -81,6 +84,7 @@ const teamName = (nations: Nations, id: string) => nationalTeamName(id, nations.
 function fixtureRow(nations: Nations, match: NationalMatch): NationalFixtureRow {
   return {
     id: match.id,
+    pageRef: match.result ? nationalFixtureId(match.id) : null,
     date: match.date,
     competition: nations.competitions[match.competitionId]?.name ?? (match.round === "friendly" ? "Amistoso" : match.competitionId),
     round: match.round,

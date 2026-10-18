@@ -8,16 +8,17 @@ import { groupTables } from "../tables/competitionTables.js";
 
 export type NextMatch = { fixture: Fixture; opponentId: string; isHome: boolean; isToday: boolean; label: string };
 
-/** The coach's next unplayed fixture from today on, or null without a club or a known fixture. */
-export function nextMatch({ date, coachClubId, fixtures, competitions }: Pick<GameState, "date" | "coachClubId" | "fixtures" | "competitions">): NextMatch | null {
-  if (!coachClubId) return null;
+/** The coach's next unplayed fixture from today on, his club's or his national team's, or null when he has none. */
+export function nextMatch({ date, coachClubId, fixtures, competitions, nations }: Pick<GameState, "date" | "coachClubId" | "fixtures" | "competitions"> & Partial<Pick<GameState, "nations">>): NextMatch | null {
+  // His club's or, when he runs one, his national team's.
+  const sides = [coachClubId, nations?.job?.teamId].filter((id): id is string => id !== null && id !== undefined);
   let next: Fixture | null = null;
   for (const f of fixtures) {
-    if (f.result || f.date < date || (f.homeId !== coachClubId && f.awayId !== coachClubId)) continue;
+    if (f.result || f.date < date || !sides.some((id) => f.homeId === id || f.awayId === id)) continue;
     if (!next || f.date < next.date) next = f;
   }
   if (!next) return null;
-  const isHome = next.homeId === coachClubId;
+  const isHome = sides.includes(next.homeId);
   const competition = competitions[next.competitionId];
   return {
     fixture: next,

@@ -46,7 +46,10 @@ import morocco from "@boleiro/data/pack/world/ma.pack.json.gz?gunzip&keys=format
 import newZealand from "@boleiro/data/pack/world/nz.pack.json.gz?gunzip&keys=format,clubs";
 import tunisia from "@boleiro/data/pack/world/tn.pack.json.gz?gunzip&keys=format,clubs";
 import southAfrica from "@boleiro/data/pack/world/za.pack.json.gz?gunzip&keys=format,clubs";
+import nationalLooksJson from "@boleiro/data/pack/national-football.pack.json.gz?gunzip&keys=format,teams";
 import { imageFileOf, parseAssetManifest } from "@boleiro/data/assetManifest";
+import { parseNationalLooks } from "@boleiro/data/nationalFootball";
+import { nationalTeamName } from "@boleiro/game-client/format/nationalTeamName";
 import type { Club } from "@boleiro/data/clubs";
 import { parsePackClubs } from "@boleiro/data/dataPack";
 import { parseWorldPackClubs } from "@boleiro/data/worldPack";
@@ -117,9 +120,12 @@ export function clubById(id: string): Club | null {
   return BY_ID.get(id) ?? ABROAD_BY_ID.get(id) ?? null;
 }
 
-/** A club in the game's own `clubs`, or one of the world's from the packs; null when neither has it. */
+// National teams by their Portuguese names and kit colours, for a national coach's matches; their crests are the federations'.
+const NATIONAL_BY_ID = new Map(parseNationalLooks(nationalLooksJson).map(({ id, colours }): [string, ClubFace] => [id, { id, shortName: nationalTeamName(id), colours, stadium: "" }]));
+
+/** A club in the game's own `clubs`, one of the world's from the packs, or a national team; null when none has it. */
 export function clubFaceOf(clubs: Readonly<Record<string, ClubFace>>, id: string): ClubFace | null {
-  return clubs[id] ?? WORLD_BY_ID.get(id) ?? null;
+  return clubs[id] ?? WORLD_BY_ID.get(id) ?? NATIONAL_BY_ID.get(id) ?? null;
 }
 
 /** The club's crest in the smallest variant at least `size` device pixels tall or wide (or the largest it has), or null when it has none. */

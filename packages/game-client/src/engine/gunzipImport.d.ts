@@ -9,3 +9,9 @@ declare module "*?gunzip&keys=format,clubs" {
   const text: string;
   export default text;
 }
+
+/** The national-football pack's text with only its format and teams, for screens that show national teams' crests. */
+declare module "*?gunzip&keys=format,teams" {
+  const text: string;
+  export default text;
+}
