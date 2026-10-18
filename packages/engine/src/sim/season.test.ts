@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Division } from "@boleiro/data/players";
 import { advanceDay, type DayEvent } from "./advanceDay.js";
+import { cpuBudgetSeconds } from "./cpuBudgetSeconds.js";
 import { eventMemoryOf } from "./events/eventMemory.js";
 import type { GameState, LeagueCompetition } from "./gameState.js";
 import { loadNewGame } from "./loadNewGame.js";
@@ -35,7 +36,9 @@ describe("a full season", () => {
   const lastDay = playUntil(loadNewGame(4, { coachClubId: null }), "2026-12-31");
   const { state: next, events } = playUntil(lastDay.state, "2027-01-01");
   const used = process.cpuUsage(started);
-  const elapsed = (used.user + used.system) / 1000;
+  const seconds = (used.user + used.system) / 1e6;
+  // Five seconds on the machine the budget was set on; a slower machine gets as much longer as it is slower.
+  const budget = cpuBudgetSeconds(5);
   const before = lastDay.state;
   const outcomes = events.find((e) => e.type === "seasonEnded");
 
@@ -47,7 +50,7 @@ describe("a full season", () => {
   });
 
   it("runs in a few seconds", () => {
-    expect(elapsed).toBeLessThan(5000);
+    expect(seconds, `budget ${budget.toFixed(2)} s on this machine`).toBeLessThan(budget);
   });
 
   it("plays every league fixture before the year ends", () => {
