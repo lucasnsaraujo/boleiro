@@ -87,6 +87,7 @@ pnpm install
 pnpm test && pnpm typecheck && pnpm lint
 pnpm dev         # the game in the browser at http://localhost:5173 (saves go to IndexedDB)
 pnpm tauri dev   # the desktop app (needs Rust); saves go to <app data dir>/saves
+pnpm tauri build # the macOS .app and .dmg (Windows: .exe and .msi); docs/release.md covers CI builds, signing and the Windows smoke test
 pnpm e2e         # Playwright tests on the web build at port 4173 (first run: pnpm --filter @boleiro/desktop exec playwright install chromium)
                  # it reuses a server already on that port; set E2E_PORT when another checkout has one running
                  # the build runs with VITE_E2E=1, which exposes the engine on window so a test can skip days
