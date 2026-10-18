@@ -40,6 +40,7 @@ LEAGUES = {
     "D": ("br-serie-d", "Brasileirão Série D", 4),
 }
 CLUB_SOURCE_FIELDS = ("names", "state", "division", "stadium", "pitch", "colours", "fanbase")
+FINANCE_FIELDS = ("revenue_total", "broadcasting", "matchday", "membership", "sponsorship", "player_sales", "wage_bill", "net_debt")
 TM_DATE = re.compile(r"^(\d{2})/(\d{2})/(\d{4})$")
 
 
@@ -113,8 +114,59 @@ def import_fotmob(db: sqlite3.Connection, snapshot: int, players: list[dict[str,
         )
 
 
+def finance_source_problems(finances: list[dict[str, str]], sources: list[dict[str, str]]) -> list[str]:
+    """Every figure a club's finances row doesn't guess needs one source with the same value, a URL and a page."""
+    problems: list[str] = []
+    rows = {row["club_id"]: row for row in finances if row["club_id"]}
+    sourced = {(source["club_id"], source["field"]) for source in sources}
+    for club_id, row in rows.items():
+        if row["basis"] == "guess":
+            continue
+        guessed = set(filter(None, row["guessed_fields"].split(";")))
+        if row["basis"] == "published" and guessed >= set(FINANCE_FIELDS):
+            problems.append(f"{club_id}: published but every field is guessed")
+        for field in FINANCE_FIELDS:
+            if field not in guessed and (club_id, field) not in sourced:
+                problems.append(f"{club_id} {field}: no source")
+    for source in sources:
+        label = f"{source['club_id']} {source['field']}"
+        row = rows.get(source["club_id"])
+        if row is None:
+            problems.append(f"{label}: no finances.csv row")
+            continue
+        if source["field"] in row["guessed_fields"].split(";"):
+            problems.append(f"{label}: sourced but listed as guessed")
+        elif source["value"] != row[source["field"]]:
+            problems.append(f"{label}: source says {source['value']}, finances.csv {row[source['field']]}")
+        for column in ("url", "page"):
+            if not source[column].strip():
+                problems.append(f"{label}: no {column}")
+    return problems
+
+
+def import_finances(db: sqlite3.Connection, snapshot: int, finances: list[dict[str, str]], sources: list[dict[str, str]]) -> None:
+    """The finances rows and the source of each figure; refuses a figure with no source or a source that disagrees."""
+    problems = finance_source_problems(finances, sources)
+    if problems:
+        raise RuntimeError("finance sources: " + "; ".join(problems))
+    for seq, row in enumerate(finances):
+        db.execute(
+            "INSERT INTO finances VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (snapshot, seq, row["club_id"] or None, LEAGUES[row["division"]][0], row["size"] or None, int(row["season"]), CURRENCY,
+             int(row["revenue_total"]), int(row["broadcasting"]), int(row["matchday"]), int(row["membership"]),
+             int(row["sponsorship"]), int(row["player_sales"]), int(row["wage_bill"]), int(row["net_debt"]),
+             row["basis"], row["guessed_fields"], row["source"]),
+        )
+    for source in sources:
+        db.execute(
+            "INSERT INTO finance_sources VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (snapshot, source["club_id"], source["field"], int(source["value"]), source["document"], source["url"],
+             source["page"], source["published"], source["note"]),
+        )
+
+
 def import_snapshot(data: Path, db: sqlite3.Connection) -> int:
-    files = ["clubs.csv", "players.csv", "transfermarkt-players.csv", "finances.csv", "competition-money.json", "crests.csv",
+    files = ["clubs.csv", "players.csv", "transfermarkt-players.csv", "finances.csv", "finance-sources.csv", "competition-money.json", "crests.csv",
              "fotmob-players.csv", "fotmob-lineups.csv"]
     clubs = read_csv(data / "clubs.csv")
     players = read_csv(data / "players.csv")
@@ -193,14 +245,7 @@ def import_snapshot(data: Path, db: sqlite3.Connection) -> int:
 
     import_fotmob(db, snapshot, fotmob_players, fotmob_lineups)
 
-    for seq, row in enumerate(finances):
-        db.execute(
-            "INSERT INTO finances VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (snapshot, seq, row["club_id"] or None, LEAGUES[row["division"]][0], row["size"] or None, int(row["season"]), CURRENCY,
-             int(row["revenue_total"]), int(row["broadcasting"]), int(row["matchday"]), int(row["membership"]),
-             int(row["sponsorship"]), int(row["player_sales"]), int(row["wage_bill"]), int(row["net_debt"]),
-             row["basis"], row["guessed_fields"], row["source"]),
-        )
+    import_finances(db, snapshot, finances, read_csv(data / "finance-sources.csv"))
 
     db.execute("INSERT INTO competition_money VALUES (?, ?, ?, ?)", (snapshot, COUNTRY, money["season"], json.dumps(money, ensure_ascii=False)))
     import_sponsors(data, db, snapshot)
