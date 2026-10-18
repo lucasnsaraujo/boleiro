@@ -3,7 +3,10 @@ import { advanceDay, type DayEvent } from "../advanceDay.js";
 import { passTheSeat, waitingCoachesOf } from "../coach/humanCoaches.js";
 import { bookFriendly, freeFriendlyDates, isFree } from "../friendlies/friendlies.js";
 import type { ClubFinance, GameState, SimPlayer } from "../gameState.js";
+import { RAPIDO } from "../formats.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { loadEurope } from "../world/loadEurope.js";
+import { loadSouthAmerica } from "../world/loadSouthAmerica.js";
 import { answerBid } from "./answerBid.js";
 import { coachMarketOf } from "./coachMarket.js";
 import type { CoachRequest } from "./coachRequest.js";
@@ -133,5 +136,25 @@ describe("an offer for a player another human coach has at auction", () => {
   it("is refused below the auction's minimum bid", () => {
     const day = anaAsks(atAuction(60_000_000), { kind: "sign", playerId: star.id, fee: 50_000_000 });
     expect(decisionOf(day.events)).toMatchObject({ approved: false, reason: "auctionBidTooLow" });
+  });
+});
+
+describe("an offer for a player of a club abroad another human coach runs", () => {
+  const ARSENAL = "tm-11";
+  const world = [...loadSouthAmerica(2026), ...loadEurope(2026)];
+  let abroad = loadNewGame(3, { coachClubId: ANA, world, formats: RAPIDO, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: ARSENAL }] } });
+  while (abroad.date < "2026-01-05") abroad = advanceDay(abroad, {}).state;
+
+  it("waits on his desk too, and the player stays at his club", () => {
+    const star = bestOf(abroad, ARSENAL);
+    const day = anaAsks(rich(abroad, ANA), { kind: "sign", playerId: star.id });
+    expect(day.state.players[star.id]?.clubId).toBe(ARSENAL);
+    expect(waitingCoachesOf(day.state)[0]?.market?.bids[star.id]).toMatchObject({ buyerId: ANA });
+  });
+
+  it("refuses a friendly against his club", () => {
+    const date = freeFriendlyDates(abroad).find((d) => isFree(abroad, ARSENAL, d));
+    if (!date) throw new Error("no free date");
+    expect(bookFriendly(abroad, ARSENAL, date, true).answer).toEqual({ booked: false, reason: "coach" });
   });
 });
