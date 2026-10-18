@@ -2,6 +2,8 @@ import { GROUP_OF_ROLE, type PositionGroup, type Role } from "@boleiro/data/play
 import { pickLineup, type Player, type Team } from "../../engine/match.js";
 import type { IsoDate, SimPlayer } from "../gameState.js";
 import { isInjured } from "../players/isInjured.js";
+import { valueOnFullContract } from "../transfers/valuePlayer.js";
+import { strengthFromValue } from "../world/strengthYardstick.js";
 import type { Nations, NationalTeam, Outsiders } from "./nations.js";
 import { compareText } from "../compareText.js";
 
@@ -12,6 +14,8 @@ const ROLE_OF_LETTER: Record<string, Role> = { g: "goleiro", l: "lateral", z: "z
 const ROLE_OF_GROUP: Record<PositionGroup, Role> = { GK: "goleiro", DEF: "zagueiro", MID: "meia", ATT: "atacante" };
 // guess: a player the pack lists abroad leaves a national pool after his 36th birthday year.
 const OLDEST = 36;
+// A squad of 23, FIFA's limit before 2022: a coach with that many players at the bar doesn't add weaker ones to reach 26.
+const FULL_SQUAD = 23;
 /** An outsider's pick, as a call-up keeps it among player ids: "~" and his row in the team's Outsiders. */
 export const OUTSIDER_MARK = "~";
 
@@ -75,32 +79,38 @@ function outsiderCandidates(outsiders: Outsiders | undefined, date: IsoDate): Ca
 
 /**
  * The best 26 of `candidates` by position places, the leftover places going to the best outfield players left;
- * those at least as strong as `bar` first, the rest only for places they would leave empty.
+ * those at least as strong as `bar` first, the rest only for places they would leave empty, and for no place
+ * but a goalkeeper's once FULL_SQUAD of them are at the bar.
  */
 function bestByPlaces(candidates: readonly Candidate[], bar: number): string[] {
   const sorted = [...candidates].sort((a, b) => Number(b.strength >= bar) - Number(a.strength >= bar) || b.strength - a.strength || compareText(a.ref, b.ref));
+  const isFull = sorted.filter((c) => c.strength >= bar).length >= FULL_SQUAD;
+  const mayFill = (c: Candidate) => !isFull || c.strength >= bar || c.role === "goleiro";
   const taken = new Set<string>();
   for (const [role, places] of Object.entries(CALL_UP_PLACES)) {
-    for (const candidate of sorted.filter((c) => c.role === role).slice(0, places)) taken.add(candidate.ref);
+    for (const candidate of sorted.filter((c) => c.role === role && mayFill(c)).slice(0, places)) taken.add(candidate.ref);
   }
   for (const candidate of sorted) {
     if (taken.size >= CALL_UP_SIZE) break;
-    if (candidate.role !== "goleiro") taken.add(candidate.ref);
+    if (candidate.role !== "goleiro" && mayFill(candidate)) taken.add(candidate.ref);
   }
   return sorted.filter((c) => taken.has(c.ref)).map((c) => c.ref);
 }
 
+/** How a national coach rates a player of the game against his pool abroad: by market value, on the yardstick that rates the pool (strengthFromValue). */
+export const standingOf = (player: SimPlayer): number => strengthFromValue(valueOnFullContract(player, "A"));
+
 /**
  * The call-up a national coach makes on `date`: the best fit players of his pool by position, the game's and the
- * outsiders, as refs (player ids, or OUTSIDER_MARK rows). The outsiders are the team's last real call-up, so a
- * player of the game's own weaker than the weakest of them makes it only to a place no one stronger fills
- * (guess: a national coach looks at the whole country's players, which the pack lists only as far as he last
- * called them).
+ * outsiders, as refs (player ids, or OUTSIDER_MARK rows), the game's rated by market value as the outsiders are.
+ * The outsiders are the team's last real call-up, so a player of the game's own rated below the weakest of them
+ * makes it only to a place no one rated higher fills (guess: a national coach looks at the whole country's
+ * players, which the pack lists only as far as he last called them).
  */
 export function pickCallUp(nationals: readonly SimPlayer[], outsiders: Outsiders | undefined, date: IsoDate): string[] {
   const others = outsiderCandidates(outsiders, date);
   const bar = others.length ? Math.min(...others.map((c) => c.strength)) : 0;
-  const own = nationals.filter((p) => !isInjured(p, date)).map((p): Candidate => ({ ref: p.id, role: roleOf(p), strength: p.strength }));
+  const own = nationals.filter((p) => !isInjured(p, date)).map((p): Candidate => ({ ref: p.id, role: roleOf(p), strength: standingOf(p) }));
   return bestByPlaces([...own, ...others], bar);
 }
 

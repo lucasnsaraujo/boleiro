@@ -4,6 +4,7 @@ import { paySigningCosts } from "../finances/paySigningCosts.js";
 import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
 import { moveInSquads, shareSquads } from "../players/squadsByClub.js";
 import { reactToIdolSale } from "../morale/reactToIdolSale.js";
+import { withPlayerAbroad } from "../nations/withPlayerAbroad.js";
 import type { MoveKind, PlayerMoved } from "./transferEvents.js";
 import type { Loan } from "./transferMarket.js";
 
@@ -46,7 +47,8 @@ export function openDraft(state: GameState): GameState {
 }
 
 /**
- * Moves a player, books the fee and signing costs, and sets his new contract and arrival day.
+ * Moves a player, books the fee and signing costs, and sets his new contract and arrival day; a player sold
+ * abroad joins his national team's pool there.
  * `state` must be a draft (openDraft): its players and market maps are changed in place.
  * `squadOf`, when given, returns a club's current squad (see reactToIdolSale).
  */
@@ -65,6 +67,7 @@ export function movePlayer(
   let next = isSale ? reactToIdolSale(state, playerId, squadOf) : state;
   if (fee > 0 && fromClubId) next = bookMoney(next, fromClubId, { revenue: "playerSales", amount: fee });
   if (fee > 0 && toClubId) next = bookMoney(next, toClubId, { cost: "transferFees", amount: fee });
+  if (kind === "abroad" && next.nations) next = { ...next, nations: withPlayerAbroad(next.nations, player, state.date) };
   const bonusMonths = SIGNING_BONUS_MONTHS[kind];
   if (toClubId && contract && bonusMonths !== undefined) {
     const signingFee = Math.round(bonusMonths * contract.wage);
