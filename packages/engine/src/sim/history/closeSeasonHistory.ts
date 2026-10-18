@@ -1,4 +1,5 @@
 import type { Division } from "@boleiro/data/players";
+import { fileAlbumPages } from "../album/fileAlbumPages.js";
 import type { Fixture, GameState, LeagueCompetition } from "../gameState.js";
 import { LEAGUE_FORMATS } from "../leagueFormats.js";
 import { standings } from "../standings.js";
@@ -35,7 +36,10 @@ function forgetPassersBy(state: GameState): History["players"] {
   );
 }
 
-/** Files the season that just finished, with its awards, before its competitions and fixtures are replaced by the next one's. */
+/**
+ * Files the season that just finished, with its awards and the human coaches' album pages, before its
+ * competitions and fixtures are replaced by the next one's.
+ */
 export function closeSeasonHistory(state: GameState): GameState {
   const { history } = state;
   const empty = (): Record<Division, string[]> => ({ A: [], B: [], C: [], D: [] });
@@ -63,13 +67,16 @@ export function closeSeasonHistory(state: GameState): GameState {
     if (top) record.topScorers[key] = top;
   }
   record.awards = seasonAwards(state, record.champions);
+  const { coach, waitingCoaches } = fileAlbumPages(state, record);
   return {
     ...state,
+    ...(waitingCoaches ? { waitingCoaches } : {}),
     history: {
       ...history,
       seasons: [...history.seasons, record],
-      current: { season: state.season + 1, champions: {}, goals: {}, ratings: {} },
+      current: { season: state.season + 1, champions: {}, goals: {}, ratings: {}, squads: {} },
       players: forgetPassersBy(state),
+      coach,
     },
   };
 }
