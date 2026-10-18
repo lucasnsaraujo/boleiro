@@ -1201,8 +1201,8 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
         ) : (
           <>
             <div className="live-stad">
-              <b>{match.ground ?? home.stadium}</b>
-              {match.ground ? "Campo neutro" : `${home.shortName} em casa`}
+              <b>{match.ground ?? (match.isNeutral ? "" : home.stadium)}</b>
+              {match.ground || match.isNeutral ? "Campo neutro" : `${home.shortName} em casa`}
               {(match.officials?.referee || match.officials?.hasVar) && (
                 <div className="live-ref">
                   {match.officials.hasVar && <em>VAR</em>}
@@ -1279,7 +1279,7 @@ const MatchRow = memo(function MatchRow({ match, clubs, flash, alert, isHidden, 
       <button type="button" className="live-open" aria-label={`Ficha do jogo: ${home.shortName} x ${away.shortName}`} onClick={() => onOpen(match.fixtureId)} />
       <span className="std">
         <DerbyBadgeOf homeId={match.homeId} awayId={match.awayId} />
-        <span className="std-nm">{match.ground ?? home.stadium}</span>
+        <span className="std-nm">{match.ground ?? (match.isNeutral ? "Campo neutro" : home.stadium)}</span>
       </span>
       <RowPlate club={home} red={match.reds.home > 0} />
       <Digit value={match.score.home} className={lead("home") ? "sbox lead" : "sbox"} flash={flash?.side === "home" ? flash.colour : undefined} isSettled={!flash} />

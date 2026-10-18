@@ -103,3 +103,18 @@ describe("a save from before national matches were played live", () => {
     expect(fixtures.filter((f) => f.homeId === "brazil" || f.awayId === "brazil").map((f) => f.date)).toEqual(["2026-06-13", "2026-06-20", "2026-06-24"]);
   });
 });
+
+describe("a national coach's World Cup round", () => {
+  it("heads the day's World Cup matches by their phase and plays them on neutral ground", () => {
+    const session = brazilCoach();
+    const days = Math.round((Date.parse("2026-06-12") - Date.parse(session.read(["date"]).date)) / 86_400_000);
+    session.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
+    for (let step = 0; step < MAX_STEPS && session.apply({ type: "playToMatchDay" }).stop !== "matchDay"; step++);
+    const round = session.apply({ type: "startRound" });
+    const own = round.matches.find((m) => m.fixtureId === round.coach?.fixtureId);
+    expect([own?.homeId, own?.awayId]).toEqual(["brazil", "morocco"]);
+    expect(round.competitions.find((c) => c.id === own?.competitionId)?.label).toBe("Copa do Mundo 2026 · fase de grupos");
+    expect(own?.isNeutral).toBe(true);
+    expect(round.table?.clubIds.sort()).toEqual(["brazil", "haiti", "morocco", "scotland"]);
+  });
+});

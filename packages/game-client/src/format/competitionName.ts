@@ -104,6 +104,13 @@ function nationalLabel(competition: Extract<Competition, { kind: "national" }>, 
   return part ? `${name} · ${part}` : name;
 }
 
+/** A day of a competition, as the round heads its matches: a national tournament's day plays several groups, so it names its phase ("Copa do Mundo 2026 · fase de grupos"). */
+export function roundDayLabel(competition: Competition, fixture: Fixture): string {
+  if (competition.kind !== "national") return fixtureLabel(competition, fixture);
+  const isGroupDay = competition.rounds[fixture.stage] === "group" && (competition.groupNames[fixture.stage]?.some((name) => name !== "") ?? false);
+  return isGroupDay && competition.nationalKind !== "qualifiers" ? `${competitionName(competition)} · fase de grupos` : nationalLabel(competition, fixture);
+}
+
 function isState(code: string): code is State {
   return code in STATE_CHAMPIONSHIPS;
 }

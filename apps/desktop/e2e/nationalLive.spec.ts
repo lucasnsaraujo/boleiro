@@ -40,8 +40,8 @@ test("a CBF coach plays a South American qualifier live from Brazil's call-up an
   await page.clock.install();
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Filipe" });
-  // CONMEBOL's 2030 qualifiers open in 2027 and start in its September window; world 1 keeps Bahia's coach in the job until then.
-  await startWithCbfOffer(page, 2027, 1, "bahia-ba");
+  // CONMEBOL's 2030 qualifiers open in 2027 and start in its September window; world 2 keeps Bahia's coach in the job until then.
+  await startWithCbfOffer(page, 2027, 2, "bahia-ba");
   await openNationalTeam(page);
   const offer = page.getByRole("region", { name: "Proposta: Brasil" });
   await offer.getByRole("button", { name: "Aceitar" }).click();
