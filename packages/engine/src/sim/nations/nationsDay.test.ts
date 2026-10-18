@@ -142,9 +142,13 @@ describe("national football over 2026", () => {
 
   it("keeps a team's pool players abroad apart from the game's own players of that team", () => {
     const brazil = start.nations?.outsiders.brazil;
-    const own = new Set((nationalsByTeam(start.players, start.nations?.teams ?? {}).get("brazil") ?? []).map((p) => p.name));
+    const samePerson = (name: string, clubTransfermarktId: string | null | undefined) => `${name}@${clubTransfermarktId ?? ""}`;
+    const own = new Set(
+      (nationalsByTeam(start.players, start.nations?.teams ?? {}).get("brazil") ?? []).map((p) => samePerson(p.name, start.clubs[p.clubId]?.transfermarktId)),
+    );
+    const outsiders = football.squads.filter((p) => p.teamId === "brazil" && brazil?.names.includes(p.name));
     expect(brazil?.names.length).toBeGreaterThan(0);
-    expect(brazil?.names.filter((name) => own.has(name))).toEqual([]);
+    expect(outsiders.filter((p) => own.has(samePerson(p.name, p.clubTransfermarktId))).map((p) => p.name)).toEqual([]);
     const called = march.nations?.callUps.brazil?.outsiders ?? [];
     expect(called.every((row) => brazil?.names[row] !== undefined)).toBe(true);
   });

@@ -5,6 +5,7 @@ import type { GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { marketView } from "../transfers/marketView.js";
 import { openDraft } from "../transfers/movePlayer.js";
+import { REPLACEMENT_BAND, squadNeeds } from "../transfers/squadNeeds.js";
 import { forceSale } from "./forceSale.js";
 
 const COACH = "flamengo-rj";
@@ -27,6 +28,17 @@ describe("the board's forced sale", () => {
     expect(sold?.sale.playerId).toBeDefined();
     expect(sold?.sale.playerId).not.toBe(firstChoice.id);
     expect(sold?.state.market.loans[firstChoice.id]).toEqual(loan);
+  });
+
+  it("sells only to a club he would be a replacement for, never far below the middle of its squad", () => {
+    const sales = Array.from({ length: 40 }, (_, seed) => {
+      const draft = openDraft(start);
+      const view = marketView(draft);
+      const sold = forceSale(draft, sellerId, seededRandom(seed + 1), view);
+      return sold?.sale.buyerId ? { buyerLevel: squadNeeds(marketView(start).squad(sold.sale.buyerId), view.tier(sold.sale.buyerId)).middle, strength: start.players[sold.sale.playerId]?.strength ?? 0 } : null;
+    }).filter((sale) => sale !== null);
+    expect(sales.length).toBeGreaterThan(0);
+    for (const { buyerLevel, strength } of sales) expect(strength).toBeGreaterThanOrEqual(buyerLevel - REPLACEMENT_BAND.below);
   });
 
   it("never sells to the coach's club, which only buys through the coach's requests", () => {

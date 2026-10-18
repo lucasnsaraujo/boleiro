@@ -40,6 +40,7 @@ function canBuy(state: GameState, view: MarketView, player: SimPlayer, clubId: s
   const squad = view.squad(clubId);
   if (isHumanClub(state, clubId) || !finance || squad.length < 11 || isClubFull(state, clubId, squad.length)) return false;
   if (idolRefusesMove(state, player, clubId)) return false;
+  // He would play there: no further below its best eleven than a replacement may sit below its squad's middle.
   if (player.strength < view.needs(clubId).level - REPLACEMENT_BAND.below) return false;
   const wage = buyerWage(player, squad);
   // guess: like the AI's own upgrades, the buyer counts on moving on its cheapest player at his

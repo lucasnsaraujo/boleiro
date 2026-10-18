@@ -12,7 +12,7 @@ import { EGG_BANK } from "./eggBank.js";
 import { findCoachEgg, findEggs, matchEggNotes } from "./findEggs.js";
 
 const CLUB = "flamengo-rj";
-const start = loadNewGame(5, { coachClubId: CLUB });
+const start = loadNewGame(1, { coachClubId: CLUB });
 const [RIVAL = "", AI_HOME = "", AI_AWAY = ""] = Object.values(start.clubs)
   .filter((club) => club.division === "A" && club.id !== CLUB)
   .map((club) => club.id);

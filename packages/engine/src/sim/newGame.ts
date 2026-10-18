@@ -236,7 +236,7 @@ export function newGame(
   const started = withCoachWorld(withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat));
   const named = coachName && !hotSeat ? { ...started, eggs: { log: [], coachName } } : started;
   const sponsored = sponsors ? seedGameSponsors(named, sponsors) : named;
-  return nationalFootball ? { ...sponsored, nations: openNations(nationalFootball, sponsored.players, season, seed) } : sponsored;
+  return nationalFootball ? { ...sponsored, nations: openNations(nationalFootball, sponsored, season, seed) } : sponsored;
 }
 
 /** The game with its other human coaches waiting for their turns; a one-coach game stays as it is. */

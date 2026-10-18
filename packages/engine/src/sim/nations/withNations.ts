@@ -12,7 +12,7 @@ import { openNations } from "./openNations.js";
  */
 export function withNations(state: GameState, football: NationalFootball | undefined): GameState {
   if (state.nations || !football) return state;
-  let nations = openNations(football, state.players, state.season, state.seed);
+  let nations = openNations(football, state, state.season, state.seed);
   for (let day = `${state.season}-01-01`; day < state.date; day = addDays(day, 1)) {
     nations = nationsDay({ ...state, date: addDays(day, 1), nations }, day).state.nations ?? nations;
   }
