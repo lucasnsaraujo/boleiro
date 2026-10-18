@@ -2,7 +2,7 @@
  * The match plan turns over the lineup like the tactics page does (.tac): the rules on a page on the
  * left, the coach's keys, saved tactics and penalty takers as stickers on the right.
  */
-.mp-rules {
+.pln-rules {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -12,26 +12,26 @@
   animation: tac-page-in 300ms var(--e-out) backwards;
 }
 
-.mp-hd {
+.pln-hd {
   align-items: center;
 }
 
-.mp-hd .crest {
+.pln-hd .crest {
   flex: none;
 }
 
-.mp-sub {
+.pln-sub {
   margin-top: 4px;
   font-size: 12.5px;
   color: var(--mute);
 }
 
-.mp-hd .mp-fail {
+.pln-hd .pln-fail {
   margin: 0 0 0 auto;
 }
 
 /* The house rule, pinned over the rules as a yellow note: outside finals this page is all the coach has. */
-.mp-house {
+.pln-house {
   display: flex;
   align-items: flex-start;
   gap: 9px;
@@ -46,39 +46,39 @@
   animation: tac-note-in 280ms var(--e-slap) 120ms backwards;
 }
 
-.mp-house i {
+.pln-house i {
   font-size: 16px;
   margin-top: 1px;
 }
 
-.mp-rule {
+.pln-rule {
   display: grid;
   grid-template-columns: 150px minmax(0, 1fr);
   gap: 18px;
   align-items: center;
-  padding: 13px 0;
+  padding: 10px 0;
   border-bottom: 1px solid var(--rule);
   animation: tac-row-in 260ms var(--e-out) backwards;
 }
 
-.mp-rule:nth-of-type(1) {
+.pln-rule:nth-of-type(1) {
   animation-delay: 40ms;
 }
 
-.mp-rule:nth-of-type(2) {
+.pln-rule:nth-of-type(2) {
   animation-delay: 75ms;
 }
 
-.mp-rule:nth-of-type(3) {
+.pln-rule:nth-of-type(3) {
   animation-delay: 110ms;
 }
 
-.mp-rule:nth-of-type(4) {
+.pln-rule:nth-of-type(4) {
   animation-delay: 145ms;
   border-bottom: 0;
 }
 
-.mp-rule .nm b {
+.pln-rule .nm b {
   display: block;
   font-stretch: var(--semi);
   font-weight: 900;
@@ -86,7 +86,7 @@
   line-height: 1.1;
 }
 
-.mp-rule .nm span {
+.pln-rule .nm span {
   display: block;
   margin-top: 3px;
   font-size: 12px;
@@ -94,7 +94,7 @@
   color: var(--mute);
 }
 
-.mp-rule .ctl {
+.pln-rule .ctl {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -102,7 +102,7 @@
   min-width: 0;
 }
 
-.mp-rule .eff {
+.pln-rule .eff {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 14px;
@@ -111,20 +111,20 @@
   color: var(--ink-2);
 }
 
-.mp-rule .eff .k {
+.pln-rule .eff .k {
   color: var(--mute);
 }
 
-.mp-rule .eff b {
+.pln-rule .eff b {
   font-weight: 800;
   color: var(--ink);
 }
 
-.mp-shape-rule {
+.pln-shape-rule {
   grid-template-columns: 150px minmax(0, 1fr) 232px;
 }
 
-.mp-named-rule {
+.pln-named-rule {
   align-items: start;
 }
 
@@ -133,17 +133,17 @@
  * once: a red card spins down onto a centre-back, a man of the line in front walks off the bottom of
  * the pitch, and a defender runs into the gap with a yellow ring. Switched off, the lawn goes quiet.
  */
-.mp-shape {
+.pln-shape {
   margin: 0;
   display: flex;
   flex-direction: column;
   gap: 7px;
 }
 
-.mp-pitch {
+.pln-pitch {
   --dot: 11px;
   position: relative;
-  height: 112px;
+  height: 96px;
   overflow: hidden;
   border-radius: var(--r-s);
   background: repeating-linear-gradient(180deg, #0e8442 0 14px, #0b7a3b 14px 28px);
@@ -153,7 +153,7 @@
   transition: filter var(--t-slow) var(--e-out);
 }
 
-.mp-pitch::before {
+.pln-pitch::before {
   content: "";
   position: absolute;
   left: 32%;
@@ -164,11 +164,11 @@
   border-bottom: 0;
 }
 
-.mp-shape:not(.on) .mp-pitch {
+.pln-shape:not(.on) .pln-pitch {
   filter: saturate(0.25) brightness(0.92);
 }
 
-.mp-line {
+.pln-line {
   position: absolute;
   left: 8%;
   right: 8%;
@@ -176,19 +176,19 @@
   justify-content: space-around;
 }
 
-.mp-line.ATT {
+.pln-line.ATT {
   top: 14%;
 }
 
-.mp-line.MID {
+.pln-line.MID {
   top: 38%;
 }
 
-.mp-line.DEF {
+.pln-line.DEF {
   top: 62%;
 }
 
-.mp-pitch .dot {
+.pln-pitch .dot {
   position: relative;
   width: var(--dot);
   height: var(--dot);
@@ -197,7 +197,7 @@
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.22);
 }
 
-.mp-pitch .dot.gk {
+.pln-pitch .dot.gk {
   position: absolute;
   left: 50%;
   bottom: 7%;
@@ -205,7 +205,7 @@
   background: var(--yellow);
 }
 
-.mp-pitch .dot.in {
+.pln-pitch .dot.in {
   position: absolute;
   top: 62%;
   left: calc(8% + 84% * var(--slot));
@@ -214,7 +214,7 @@
   opacity: 0;
 }
 
-.mp-red {
+.pln-red {
   position: absolute;
   left: 50%;
   top: -13px;
@@ -227,26 +227,26 @@
   opacity: 0;
 }
 
-.mp-shape.on .mp-red {
-  animation: mp-card-drop 520ms var(--e-slap) 160ms both;
+.pln-shape.on .pln-red {
+  animation: pln-card-drop 520ms var(--e-slap) 160ms both;
 }
 
-.mp-shape.on .dot.off {
-  animation: mp-sent-off 360ms var(--e-out) 560ms both;
+.pln-shape.on .dot.off {
+  animation: pln-sent-off 360ms var(--e-out) 560ms both;
 }
 
-.mp-shape.on .dot.out {
-  animation: mp-walk-off 520ms var(--e-in-out) 820ms both;
+.pln-shape.on .dot.out {
+  animation: pln-walk-off 520ms var(--e-in-out) 820ms both;
 }
 
-.mp-shape.on .dot.in {
+.pln-shape.on .dot.in {
   animation:
-    mp-run-on 460ms var(--e-slap) 1220ms both,
-    mp-ring 900ms var(--e-out) 1560ms;
+    pln-run-on 460ms var(--e-slap) 1220ms both,
+    pln-ring 900ms var(--e-out) 1560ms;
 }
 
 /* The red card spins down from above the pitch and sticks over the centre-back. */
-@keyframes mp-card-drop {
+@keyframes pln-card-drop {
   from {
     opacity: 0;
     transform: translateY(-36px) rotate(-70deg) scale(1.7);
@@ -257,7 +257,7 @@
   }
 }
 
-@keyframes mp-sent-off {
+@keyframes pln-sent-off {
   to {
     background: var(--red);
     opacity: 0.45;
@@ -266,7 +266,7 @@
 }
 
 /* The man of the line that gives way walks off the bottom of the pitch, fading as he goes. */
-@keyframes mp-walk-off {
+@keyframes pln-walk-off {
   30% {
     opacity: 1;
     transform: translateY(6px);
@@ -277,7 +277,7 @@
   }
 }
 
-@keyframes mp-run-on {
+@keyframes pln-run-on {
   from {
     opacity: 0;
     transform: translateY(42px) scale(0.6);
@@ -288,7 +288,7 @@
   }
 }
 
-@keyframes mp-ring {
+@keyframes pln-ring {
   from {
     box-shadow:
       0 2px 0 rgba(0, 0, 0, 0.22),
@@ -306,20 +306,20 @@
   }
 }
 
-.mp-shape figcaption {
+.pln-shape figcaption {
   display: grid;
   grid-template-columns: auto auto 1fr;
   align-items: baseline;
   gap: 2px 7px;
 }
 
-.mp-shape figcaption i {
+.pln-shape figcaption i {
   font-size: 12px;
   color: var(--mute);
 }
 
-.mp-from,
-.mp-to {
+.pln-from,
+.pln-to {
   font-stretch: var(--wide);
   font-weight: 900;
   font-size: 18px;
@@ -327,23 +327,23 @@
   letter-spacing: -0.01em;
 }
 
-.mp-from {
+.pln-from {
   color: var(--mute);
 }
 
-.mp-shape.on .mp-to {
+.pln-shape.on .pln-to {
   color: var(--green);
-  animation: mp-stamp 420ms var(--e-slap) 1380ms both;
+  animation: pln-stamp 420ms var(--e-slap) 1380ms both;
 }
 
-@keyframes mp-stamp {
+@keyframes pln-stamp {
   from {
     opacity: 0;
     transform: scale(1.6) rotate(-6deg);
   }
 }
 
-.mp-shape figcaption small {
+.pln-shape figcaption small {
   grid-column: 1 / -1;
   font-size: 11.5px;
   line-height: 1.35;
@@ -351,7 +351,7 @@
 }
 
 /* Planned substitutions: a minute, who goes off, who comes on. */
-.mp-subs {
+.pln-subs {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -359,7 +359,7 @@
   width: 100%;
 }
 
-.mp-subs ol {
+.pln-subs ol {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -369,22 +369,28 @@
   list-style: none;
 }
 
-.mp-sub-row {
+.pln-sub-row {
   display: grid;
-  grid-template-columns: 104px auto minmax(0, 1fr) auto minmax(0, 1fr) 28px;
+  grid-template-columns: 104px auto minmax(0, 250px) auto minmax(0, 250px) 28px;
   align-items: center;
   gap: 8px;
   animation: tac-row-in 240ms var(--e-out) backwards;
 }
 
-.mp-sub-row .select,
-.mp-named .select,
-.mp-kicks .select {
+.pln-sub-row .select,
+.pln-named .select,
+.pln-kicks .select {
   width: 100%;
   min-width: 0;
 }
 
-.mp-arrow {
+/* The page's selects run in long lists, so their pills sit a little lower than a filter's. */
+.pln-named .select,
+.pln-kicks .select {
+  height: 29px;
+}
+
+.pln-arrow {
   font-stretch: var(--semi);
   font-weight: 900;
   font-size: 10px;
@@ -392,20 +398,20 @@
   text-transform: uppercase;
 }
 
-.mp-arrow.out {
+.pln-arrow.out {
   color: var(--red);
 }
 
-.mp-arrow.in {
+.pln-arrow.in {
   color: var(--green);
 }
 
-.mp-none {
+.pln-none {
   font-size: 12px;
   color: var(--mute);
 }
 
-.mp-x {
+.pln-x {
   width: 28px;
   height: 28px;
   display: grid;
@@ -420,38 +426,39 @@
     color var(--t-fast) var(--e-out);
 }
 
-.mp-x:hover {
+.pln-x:hover {
   background: var(--red-l);
   color: var(--red);
 }
 
-.mp-x:focus-visible,
-.mp-cap:focus-visible,
-.mp-keep:focus-visible {
+.pln-x:focus-visible,
+.pln-cap:focus-visible,
+.pln-keep:focus-visible {
   outline: 2px solid var(--yellow-d);
   outline-offset: 2px;
 }
 
 /* Each starter and who comes on for him, two columns where the page has room. */
-.mp-named {
+.pln-named {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 5px 18px;
+  gap: 3px 18px;
   width: 100%;
+  max-width: 760px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.mp-named li {
+.pln-named li {
   display: grid;
   grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1.25fr);
   align-items: center;
   gap: 8px;
-  min-height: 32px;
+  min-height: 30px;
 }
 
-.mp-named-nm {
+.pln-named-nm {
   overflow: hidden;
   font-weight: 700;
   font-size: 13px;
@@ -460,27 +467,27 @@
 }
 
 /* The stickers on the right fall in a beat after the page, one after another. */
-.mp-side > * {
+.pln-side > * {
   animation: tac-sticker-in 380ms cubic-bezier(0.34, 1.3, 0.5, 1) backwards;
 }
 
-.mp-side > :nth-child(1) {
+.pln-side > :nth-child(1) {
   animation-delay: 70ms;
 }
 
-.mp-side > :nth-child(2) {
+.pln-side > :nth-child(2) {
   animation-delay: 130ms;
 }
 
-.mp-side > :nth-child(3) {
+.pln-side > :nth-child(3) {
   animation-delay: 190ms;
 }
 
-.mp-card {
+.pln-card {
   padding: 13px 16px 14px;
 }
 
-.mp-card h3 {
+.pln-card h3 {
   display: flex;
   align-items: baseline;
   gap: 8px;
@@ -489,7 +496,7 @@
   font-size: 16px;
 }
 
-.mp-card h3 small {
+.pln-card h3 small {
   margin-left: auto;
   font-stretch: 100%;
   font-weight: 600;
@@ -497,13 +504,13 @@
   color: var(--mute);
 }
 
-.mp-card-sub {
+.pln-card-sub {
   margin: 2px 0 8px;
   font-size: 11.5px;
   color: var(--mute);
 }
 
-.mp kbd {
+.pln kbd {
   display: inline-grid;
   place-items: center;
   min-width: 18px;
@@ -522,7 +529,7 @@
 }
 
 /* A key on the shared keyboard, drawn as a key cap; listening for a press it glows yellow. */
-.mp-key {
+.pln-key {
   display: grid;
   grid-template-columns: 1fr 46px;
   grid-template-rows: auto auto;
@@ -532,24 +539,24 @@
   border-top: 1px dotted var(--line-2);
 }
 
-.mp-key-label {
+.pln-key-label {
   font-weight: 800;
   font-size: 13.5px;
 }
 
-.mp-key-note {
+.pln-key-note {
   grid-row: 2;
   font-size: 11.5px;
   color: var(--mute);
 }
 
-.mp-key-note.bad {
+.pln-key-note.bad {
   color: var(--red);
   font-weight: 700;
-  animation: mp-shake 320ms var(--e-out);
+  animation: pln-shake 320ms var(--e-out);
 }
 
-@keyframes mp-shake {
+@keyframes pln-shake {
   25% {
     transform: translateX(-3px);
   }
@@ -561,7 +568,7 @@
   }
 }
 
-.mp-cap {
+.pln-cap {
   grid-column: 2;
   grid-row: 1 / span 2;
   width: 46px;
@@ -585,27 +592,27 @@
     background var(--t-fast) var(--e-out);
 }
 
-.mp-cap:active {
+.pln-cap:active {
   transform: translateY(2px);
   box-shadow:
     inset 0 0 0 1.5px var(--ink),
     0 0 0 var(--ink);
 }
 
-.mp-cap.empty {
+.pln-cap.empty {
   color: var(--mute);
   box-shadow:
     inset 0 0 0 1.5px var(--line-2),
     0 4px 0 var(--line-2);
 }
 
-.mp-cap.listening {
+.pln-cap.listening {
   background: var(--yellow);
   color: var(--on-yellow);
-  animation: mp-listen 1100ms var(--e-in-out) infinite;
+  animation: pln-listen 1100ms var(--e-in-out) infinite;
 }
 
-@keyframes mp-listen {
+@keyframes pln-listen {
   50% {
     box-shadow:
       inset 0 0 0 1.5px var(--ink),
@@ -614,7 +621,7 @@
   }
 }
 
-.mp-taken {
+.pln-taken {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 10px;
@@ -624,7 +631,7 @@
 }
 
 /* Saved tactics: numbered stickers, each with its formation's dots, two to a row. */
-.mp-slots {
+.pln-slots {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
@@ -633,28 +640,28 @@
   list-style: none;
 }
 
-.mp-slots:empty {
+.pln-slots:empty {
   display: none;
 }
 
-.mp-slot {
+.pln-slot {
   display: grid;
   grid-template-columns: auto 30px minmax(0, 1fr);
   align-items: center;
   gap: 8px;
   padding: 8px 26px 8px 9px;
   transform: rotate(var(--tilt));
-  animation: mp-slot-in 420ms var(--e-slap) backwards;
+  animation: pln-slot-in 420ms var(--e-slap) backwards;
 }
 
-@keyframes mp-slot-in {
+@keyframes pln-slot-in {
   from {
     opacity: 0;
     transform: translateY(-10px) rotate(calc(var(--tilt) * -5)) scale(1.25);
   }
 }
 
-.mp-slot-no {
+.pln-slot-no {
   font-stretch: var(--wide);
   font-weight: 900;
   font-size: 22px;
@@ -662,7 +669,7 @@
   color: var(--blue);
 }
 
-.mp-slot-mini {
+.pln-slot-mini {
   position: relative;
   width: 30px;
   height: 40px;
@@ -670,7 +677,7 @@
   background: repeating-linear-gradient(180deg, #0e8442 0 8px, #0b7a3b 8px 16px);
 }
 
-.mp-slot-mini i {
+.pln-slot-mini i {
   position: absolute;
   width: 4px;
   height: 4px;
@@ -679,28 +686,25 @@
   background: #fff;
 }
 
-.mp-slot-txt {
+.pln-slot-txt {
   min-width: 0;
 }
 
-.mp-slot-txt b {
+.pln-slot-txt b {
   display: block;
   font-stretch: var(--semi);
   font-weight: 900;
   font-size: 14px;
 }
 
-.mp-slot-txt small {
+.pln-slot-txt small {
   display: block;
-  overflow: hidden;
   font-size: 10.5px;
   line-height: 1.3;
   color: var(--mute);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.mp-slot .mp-x {
+.pln-slot .pln-x {
   position: absolute;
   top: 3px;
   right: 2px;
@@ -710,7 +714,7 @@
 }
 
 /* An empty place for a tactics: dashed, the way the album marks a sticker still to come. */
-.mp-keep {
+.pln-keep {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -731,18 +735,18 @@
     background var(--t-fast) var(--e-out);
 }
 
-.mp-keep:hover:not(:disabled) {
+.pln-keep:hover:not(:disabled) {
   border-color: var(--ink-2);
   background: var(--paper-2);
 }
 
-.mp-keep:disabled {
+.pln-keep:disabled {
   color: var(--mute);
   cursor: default;
 }
 
 /* Penalty takers, first to fifth, and whether the round stops to ask. */
-.mp-kicks {
+.pln-kicks {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -751,21 +755,21 @@
   list-style: none;
 }
 
-.mp-kicks li {
+.pln-kicks li {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
   align-items: center;
   gap: 8px;
 }
 
-.mp-kick-no {
+.pln-kick-no {
   font-stretch: var(--wide);
   font-weight: 900;
   font-size: 14px;
   color: var(--ink-2);
 }
 
-.mp-ask {
+.pln-ask {
   position: relative;
   display: flex;
   align-items: center;
@@ -776,73 +780,89 @@
   cursor: pointer;
 }
 
-.mp-ask > span:first-child {
+.pln-ask > span:first-child {
   flex: 1;
 }
 
-.mp-ask b {
+.pln-ask b {
   display: block;
   font-weight: 800;
   font-size: 13px;
 }
 
-.mp-ask small {
+.pln-ask small {
   font-size: 11.5px;
   color: var(--mute);
 }
 
-.mp-ask input {
+.pln-ask input {
   position: absolute;
   inset: 0;
   opacity: 0;
   cursor: pointer;
 }
 
-.mp-ask input:focus-visible + .sw {
+.pln-ask input:focus-visible + .sw {
   outline: 3px solid var(--yellow);
   outline-offset: 2px;
 }
 
-.mp-side {
+.pln-side {
   overflow: auto;
 }
 
+/* Narrower windows put each rule's name over its control, so the starters still fit two to a row. */
 @media (max-width: 1180px) {
-  .mp-named {
+  .pln-rule {
     grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
   }
 
-  .mp-shape-rule {
-    grid-template-columns: 150px minmax(0, 1fr) 200px;
+  .pln-rule .nm {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
   }
 
-  .mp-sub-row {
+  .pln-rule .nm span {
+    margin-top: 0;
+  }
+
+  .pln-shape-rule {
+    grid-template-columns: minmax(0, 1fr) 200px;
+  }
+
+  .pln-shape-rule .nm {
+    grid-column: 1 / -1;
+  }
+
+  .pln-sub-row {
     grid-template-columns: 96px minmax(0, 1fr) minmax(0, 1fr) 28px;
   }
 
-  .mp-arrow {
+  .pln-arrow {
     display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mp-rules,
-  .mp-rule,
-  .mp-side > *,
-  .mp-house,
-  .mp-sub-row,
-  .mp-slot,
-  .mp-key-note.bad,
-  .mp-cap.listening {
+  .pln-rules,
+  .pln-rule,
+  .pln-side > *,
+  .pln-house,
+  .pln-sub-row,
+  .pln-slot,
+  .pln-key-note.bad,
+  .pln-cap.listening {
     animation: none;
   }
 
   /* The picture shows where the rule ends, without playing it. */
-  .mp-shape.on .mp-red,
-  .mp-shape.on .dot.off,
-  .mp-shape.on .dot.out,
-  .mp-shape.on .dot.in,
-  .mp-shape.on .mp-to {
+  .pln-shape.on .pln-red,
+  .pln-shape.on .dot.off,
+  .pln-shape.on .dot.out,
+  .pln-shape.on .dot.in,
+  .pln-shape.on .pln-to {
     animation-duration: 1ms;
     animation-delay: 0ms;
   }

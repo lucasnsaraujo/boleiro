@@ -37,6 +37,8 @@ const ROWS_OF_LINE: readonly PositionGroup[] = ["ATT", "MID", "DEF"];
 const LINE_WORD: Record<PositionGroup, string> = { GK: "goleiro", DEF: "defensor", MID: "meio-campista", ATT: "atacante" };
 
 const energyOf = (p: SquadPlayer) => Math.max(0, 100 - p.fatigue);
+// Above this much energy a starter counts as rested, as the lineup sheet's energy bars stay green.
+const RESTED = 85;
 const minuteLabel = (minute: number) => (minute === 45 ? "Intervalo" : `${minute}'`);
 
 /** The plan without its empty parts, as the game keeps it: a rule switched off is left out. */
@@ -63,7 +65,7 @@ function Position({ player }: { player: SquadPlayer }) {
 /** One rule of the plan: its name and what it is for, its control, what it does with the coach's side, and a picture of it. */
 function Rule({ name, hint, control, effect, figure, className }: { name: string; hint: string; control: ReactNode; effect?: ReactNode; figure?: ReactNode; className?: string }) {
   return (
-    <div className={className ? `mp-rule ${className}` : "mp-rule"}>
+    <div className={className ? `pln-rule ${className}` : "pln-rule"}>
       <div className="nm">
         <b>{name}</b>
         <span>{hint}</span>
@@ -98,28 +100,28 @@ function ShapeKeeping({ formation, isOn }: { formation: Formation; isOn: boolean
   const { before, after, payer } = redCardExample(formation);
   const victim = Math.floor((before.DEF - 1) / 2);
   return (
-    <figure className={isOn ? "mp-shape on" : "mp-shape"} aria-label={`${shapeName(before)} com um defensor expulso fica ${shapeName(after)}`}>
-      <div className="mp-pitch" key={`${formation}-${isOn}`} aria-hidden="true">
+    <figure className={isOn ? "pln-shape on" : "pln-shape"} aria-label={`${shapeName(before)} com um defensor expulso fica ${shapeName(after)}`}>
+      <div className="pln-pitch" key={`${formation}-${isOn}`} aria-hidden="true">
         {ROWS_OF_LINE.map((line) => (
-          <div key={line} className={`mp-line ${line}`}>
+          <div key={line} className={`pln-line ${line}`}>
             {Array.from({ length: before[line] }, (_, i) => {
               const isSentOff = line === "DEF" && i === victim;
               const isLeaving = line === payer && i === before[line] - 1;
               return (
                 <i key={i} className={isSentOff ? "dot off" : isLeaving ? "dot out" : "dot"}>
-                  {isSentOff && <b className="mp-red" />}
+                  {isSentOff && <b className="pln-red" />}
                 </i>
               );
             })}
           </div>
         ))}
-        {payer && <i className="dot in" style={{ ["--slot" as string]: `${((victim + 0.5) / before.DEF) * 100}%` }} />}
+        {payer && <i className="dot in" style={{ ["--slot" as string]: (victim + 0.5) / before.DEF }} />}
         <i className="dot gk" />
       </div>
       <figcaption>
-        <span className="mp-from">{shapeName(before)}</span>
+        <span className="pln-from">{shapeName(before)}</span>
         <i className="ph-bold ph-arrow-right" aria-hidden="true" />
-        <span className="mp-to">{shapeName(after)}</span>
+        <span className="pln-to">{shapeName(after)}</span>
         <small>
           {payer ? `Defensor expulso: sai um ${LINE_WORD[payer]}, entra um defensor.` : "Defensor expulso: ninguém pode sair, o time segue com dez."}
         </small>
@@ -157,10 +159,10 @@ function KeyCap({ label, value, problemOf, onSet }: { label: string; value: stri
   }, [isListening, problemOf, onSet]);
 
   return (
-    <div className="mp-key">
-      <span className="mp-key-label">{label}</span>
+    <div className="pln-key">
+      <span className="pln-key-label">{label}</span>
       <button
-        className={isListening ? "mp-cap listening" : value ? "mp-cap" : "mp-cap empty"}
+        className={isListening ? "pln-cap listening" : value ? "pln-cap" : "pln-cap empty"}
         aria-label={`${label}: ${isListening ? "aperte uma tecla" : value ? value.toUpperCase() : "nenhuma"}`}
         aria-pressed={isListening}
         onClick={() => {
@@ -171,7 +173,7 @@ function KeyCap({ label, value, problemOf, onSet }: { label: string; value: stri
       >
         {isListening ? "…" : value ? value.toUpperCase() : "—"}
       </button>
-      <span className={problem ? "mp-key-note bad" : "mp-key-note"} role={problem ? "alert" : undefined}>
+      <span className={problem ? "pln-key-note bad" : "pln-key-note"} role={problem ? "alert" : undefined}>
         {problem ?? (isListening ? "Aperte uma letra ou número. Esc desiste, ⌫ apaga." : value ? "Clique pra trocar" : "Sem tecla")}
       </span>
     </div>
@@ -181,20 +183,20 @@ function KeyCap({ label, value, problemOf, onSet }: { label: string; value: stri
 /** A saved tactics as a sticker: its place, formation dots, posture, marking and play. */
 function SavedSticker({ index, tactics, onRemove }: { index: number; tactics: Tactics; onRemove: () => void }) {
   return (
-    <li className="stk mp-slot" style={{ ["--tilt" as string]: `${index % 2 ? 1.2 : -1.2}deg` }}>
-      <span className="mp-slot-no">{index + 1}</span>
-      <span className="mp-slot-mini" aria-hidden="true">
+    <li className="stk pln-slot" style={{ ["--tilt" as string]: `${index % 2 ? 1.2 : -1.2}deg` }}>
+      <span className="pln-slot-no">{index + 1}</span>
+      <span className="pln-slot-mini" aria-hidden="true">
         {FORMATIONS[tactics.formation].map((slot, i) => (
           <i key={i} style={{ left: `${slot.x}%`, top: `${slot.y}%` }} />
         ))}
       </span>
-      <span className="mp-slot-txt">
+      <span className="pln-slot-txt">
         <b>{tactics.formation}</b>
         <small>
           {POSTURE_LABEL[tactics.posture]} · {MARKING_LABEL[tactics.marking ?? "heavy"]} · {tactics.play ? PLAY_LABEL[tactics.play] : "Mista"}
         </small>
       </span>
-      <button className="mp-x" aria-label={`Tirar a tática ${index + 1}`} onClick={onRemove}>
+      <button className="pln-x" aria-label={`Tirar a tática ${index + 1}`} onClick={onRemove}>
         <i className="ph-bold ph-x" aria-hidden="true" />
       </button>
     </li>
@@ -246,8 +248,8 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
   };
   const starterOptions: SelectOption<string>[] = starters.map((p) => ({ value: p.id, label: `${ROLE_LETTER[mainRole(p)]} · ${p.name}` }));
 
-  // Energy: the starter who starts the match most tired.
-  const tiredest = [...starters].filter((p) => p.group !== "GK").sort((a, b) => energyOf(a) - energyOf(b))[0];
+  // Energy: the starter who starts the match most tired, if any of them is.
+  const tiredest = [...starters].filter((p) => p.group !== "GK" && energyOf(p) < RESTED).sort((a, b) => energyOf(a) - energyOf(b))[0];
   const floor = plan.energyFloor ?? 0;
 
   const minuteSubs = plan.minuteSubs ?? [];
@@ -266,7 +268,7 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
 
   const order = plan.kickerOrder ?? [];
   const kickerOptions: SelectOption<string>[] = [
-    { value: "", label: "O auxiliar escolhe" },
+    { value: "", label: "Automático" },
     ...starters.filter((p) => p.group !== "GK").map((p) => ({ value: p.id, label: p.name, group: "Titulares" })),
     ...bench.filter((p) => p.group !== "GK").map((p) => ({ value: p.id, label: p.name, group: "Banco" })),
     ...squad.filter((p) => p.group === "GK").map((p) => ({ value: p.id, label: p.name, group: "Goleiros" })),
@@ -280,25 +282,25 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
   };
 
   return (
-    <section className="tac mp" role="dialog" aria-modal="true" aria-labelledby="plan-title">
-      <div className="page mp-rules">
-        <header className="tac-hd mp-hd">
+    <section className="tac pln" role="dialog" aria-modal="true" aria-labelledby="plan-title">
+      <div className="page pln-rules">
+        <header className="tac-hd pln-hd">
           <Crest club={club} size={34} />
           <div>
             <h2 id="plan-title" ref={title} tabIndex={-1}>
               Plano de jogo
             </h2>
-            <p className="mp-sub">O que o {club.shortName} faz sozinho, sem parar a rodada.</p>
+            <p className="pln-sub">O que o {club.shortName} faz sozinho, sem parar a rodada.</p>
           </div>
           {failure && (
-            <p className="status error mp-fail" role="alert">
+            <p className="status error pln-fail" role="alert">
               {failure}
             </p>
           )}
         </header>
 
         {view.isFinalsOnly && (
-          <p className="mp-house">
+          <p className="pln-house">
             <i className="ph-bold ph-lock-simple" aria-hidden="true" />
             <span>
               <b>Regra da casa:</b> fora das finais ninguém mexe no time durante o jogo. Só este plano age.
@@ -309,7 +311,7 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
         <Rule
           name="Expulsão e lesão"
           hint="Repõe sem parar o jogo"
-          className="mp-shape-rule"
+          className="pln-shape-rule"
           control={
             <Seg label="Expulsão e lesão" options={["ask", "keep"] as const} value={plan.keepsShape ? "keep" : "ask"} labelOf={(o) => (o === "keep" ? "Manter o desenho" : "Me perguntar")} onPick={(o) => void change({ ...plan, keepsShape: o === "keep" || undefined })} />
           }
@@ -333,10 +335,12 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
             ) : (
               <>
                 <span className="k">Sai quem ficar abaixo de {floor}%; o goleiro fica.</span>
-                {tiredest && (
+                {tiredest ? (
                   <span>
                     Mais cansado hoje: <b>{tiredest.name}</b>, {energyOf(tiredest)}%
                   </span>
+                ) : (
+                  <span>Titulares descansados hoje.</span>
                 )}
               </>
             )
@@ -347,24 +351,24 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
           name="Trocas marcadas"
           hint="Num minuto certo"
           control={
-            <div className="mp-subs">
-              {minuteSubs.length === 0 && <span className="mp-none">Nenhuma troca marcada.</span>}
+            <div className="pln-subs">
+              {minuteSubs.length === 0 && <span className="pln-none">Nenhuma troca marcada.</span>}
               <ol aria-label="Trocas marcadas">
                 {minuteSubs.map((sub, index) => (
-                  <li key={index} className="mp-sub-row">
+                  <li key={index} className="pln-sub-row">
                     <Select label={`Minuto da troca ${index + 1}`} caption={null} value={String(sub.minute)} options={PLANNED_MINUTES.map((m) => ({ value: String(m), label: minuteLabel(m) }))} onChange={(value) => setMinuteSub(index, { ...sub, minute: Number(value) })} />
-                    <span className="mp-arrow out">Sai</span>
+                    <span className="pln-arrow out">Sai</span>
                     <Select label={`Quem sai na troca ${index + 1}`} caption={null} value={sub.offId} options={starterOptions} onChange={(offId) => setMinuteSub(index, { ...sub, offId })} />
-                    <span className="mp-arrow in">Entra</span>
+                    <span className="pln-arrow in">Entra</span>
                     <Select label={`Quem entra na troca ${index + 1}`} caption={null} value={sub.onId} options={benchOptions(byId.get(sub.offId))} onChange={(onId) => setMinuteSub(index, { ...sub, onId })} />
-                    <button className="mp-x" aria-label={`Tirar a troca ${index + 1}`} onClick={() => void change({ ...plan, minuteSubs: minuteSubs.filter((_, i) => i !== index) })}>
+                    <button className="pln-x" aria-label={`Tirar a troca ${index + 1}`} onClick={() => void change({ ...plan, minuteSubs: minuteSubs.filter((_, i) => i !== index) })}>
                       <i className="ph-bold ph-x" aria-hidden="true" />
                     </button>
                   </li>
                 ))}
               </ol>
               {minuteSubs.length < MOST_MINUTE_SUBS && bench.length > 0 && (
-                <button className="btn sm mp-add" onClick={addMinuteSub}>
+                <button className="btn sm pln-add" onClick={addMinuteSub}>
                   <i className="ph-bold ph-plus" aria-hidden="true" />
                   Marcar troca
                 </button>
@@ -376,18 +380,18 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
         <Rule
           name="Reserva de cada um"
           hint="Quem entra se ele machucar ou cansar"
-          className="mp-named-rule"
+          className="pln-named-rule"
           control={
-            <ul className="mp-named" aria-label="Reserva de cada titular">
+            <ul className="pln-named" aria-label="Reserva de cada titular">
               {starters.map((p) => (
                 <li key={p.id}>
                   <Position player={p} />
-                  <span className="mp-named-nm">{p.name}</span>
+                  <span className="pln-named-nm">{p.name}</span>
                   <Select
                     label={`Reserva de ${p.name}`}
                     caption={null}
                     value={plan.namedSubs?.[p.id] ?? ""}
-                    options={[{ value: "", label: "Melhor do banco" }, ...benchOptions(p)]}
+                    options={[{ value: "", label: "Automático" }, ...benchOptions(p)]}
                     onChange={(subId) => {
                       const others = Object.entries(plan.namedSubs ?? {}).filter(([starterId]) => starterId !== p.id);
                       void change({ ...plan, namedSubs: Object.fromEntries(subId ? [...others, [p.id, subId]] : others) });
@@ -408,14 +412,14 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
         </footer>
       </div>
 
-      <aside className="tac-side mp-side">
-        <div className="stk mp-card mp-keys">
+      <aside className="tac-side pln-side">
+        <div className="stk pln-card pln-keys">
           <h3>Teclas no jogo</h3>
-          <p className="mp-card-sub">{view.keysTaken.length ? "Um teclado pra todos: cada técnico com as suas." : "Funcionam com a rodada rodando."}</p>
+          <p className="pln-card-sub">{view.keysTaken.length ? "Um teclado pra todos: cada técnico com as suas." : "Funcionam com a rodada rodando."}</p>
           <KeyCap label="Trocar tática" value={plan.tacticsKey} problemOf={keyProblemOf("tacticsKey")} onSet={(key) => void change({ ...plan, tacticsKey: key })} />
           <KeyCap label="Tempo técnico" value={plan.timeOutKey} problemOf={keyProblemOf("timeOutKey")} onSet={(key) => void change({ ...plan, timeOutKey: key })} />
           {view.keysTaken.length > 0 && (
-            <p className="mp-taken">
+            <p className="pln-taken">
               Já usadas:{" "}
               {view.keysTaken.map(({ key, coachName }) => (
                 <span key={key}>
@@ -426,7 +430,7 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
           )}
         </div>
 
-        <div className="stk mp-card mp-saved">
+        <div className="stk pln-card pln-saved">
           <h3>
             Táticas salvas
             {plan.tacticsKey && (
@@ -435,30 +439,30 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
               </small>
             )}
           </h3>
-          <ol className="mp-slots" aria-label="Táticas salvas">
+          <ol className="pln-slots" aria-label="Táticas salvas">
             {saved.map((t, index) => (
               <SavedSticker key={`${index}-${t.formation}-${t.posture}`} index={index} tactics={t} onRemove={() => void change({ ...plan, savedTactics: saved.filter((_, i) => i !== index) })} />
             ))}
           </ol>
           {saved.length < MAX_SAVED_TACTICS && (
-            <button className="mp-keep" disabled={isSavedNow} onClick={() => void change({ ...plan, savedTactics: [...saved, { ...tactics, penaltyTakerId: null }] })}>
+            <button className="pln-keep" disabled={isSavedNow} onClick={() => void change({ ...plan, savedTactics: [...saved, { ...tactics, penaltyTakerId: null }] })}>
               <i className="ph-bold ph-push-pin" aria-hidden="true" />
               {isSavedNow ? "A tática de agora já está salva" : `Guardar a de agora: ${tactics.formation} · ${POSTURE_LABEL[tactics.posture].toLowerCase()}`}
             </button>
           )}
         </div>
 
-        <div className="stk mp-card mp-pens">
+        <div className="stk pln-card pln-pens">
           <h3>Pênaltis</h3>
-          <ol className="mp-kicks" aria-label="Ordem dos pênaltis">
+          <ol className="pln-kicks" aria-label="Ordem dos pênaltis">
             {Array.from({ length: KICKS }, (_, index) => (
               <li key={index}>
-                <span className="mp-kick-no">{index + 1}º</span>
+                <span className="pln-kick-no">{index + 1}º</span>
                 <Select label={`${index + 1}º batedor`} caption={null} value={order[index] ?? ""} options={kickerOptions} onChange={(playerId) => setKicker(index, playerId)} />
               </li>
             ))}
           </ol>
-          <label className="mp-ask">
+          <label className="pln-ask">
             <span>
               <b>Bater sem perguntar</b>
               <small>{plan.asksBeforeShootout ? "A rodada para e pergunta a ordem." : "Nessa ordem, sem parar a rodada."}</small>
