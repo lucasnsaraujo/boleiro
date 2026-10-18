@@ -47,8 +47,9 @@ export function proxyClubOf(state: Pick<GameState, "clubs" | "finances" | "world
 
 /** A club's opening books copied from its proxy's: its money lines and budget, none of its history. */
 function booksFrom(proxy: ClubFinance): ClubFinance {
-  const { stadiumWorks: _works, homeGates: _gates, bankLoan: _loan, ...lines } = proxy;
-  return { ...lines, loans: 0, wagesOwed: 0, lateWageMonths: 0, recentPoints: [], month: { ...emptyLedger(), points: 0, games: 0 }, season: emptyLedger(), lastSeason: null, lastClosing: null };
+  const books: ClubFinance = { ...proxy, loans: 0, wagesOwed: 0, lateWageMonths: 0, recentPoints: [], month: { ...emptyLedger(), points: 0, games: 0 }, season: emptyLedger(), lastSeason: null, lastClosing: null };
+  for (const key of ["stadiumWorks", "homeGates", "bankLoan"] as const) Reflect.deleteProperty(books, key);
+  return books;
 }
 
 /** The country's result-only leagues as the full tier plays them, the season so far with them: a round robin each, in the order and on the days it had. */

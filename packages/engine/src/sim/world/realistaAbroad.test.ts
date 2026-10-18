@@ -30,8 +30,8 @@ describe("a Realista career at an English club", () => {
   it("plays England's 2026/27 season on its own calendar, mid-August to late May", () => {
     const dates = premier?.stageDates.flat() ?? [];
     expect(dates).toHaveLength(38);
-    expect(dates[0]! >= "2026-08-15").toBe(true);
-    expect(dates.at(-1)! <= "2027-05-23").toBe(true);
+    expect((dates[0] ?? "") >= "2026-08-15").toBe(true);
+    expect((dates.at(-1) ?? "9999") <= "2027-05-23").toBe(true);
     expect(championship?.stageDates.flat()).toHaveLength(46);
     expect(start.fixtures.filter((f) => f.competitionId === premier?.id && (f.homeId === ARSENAL || f.awayId === ARSENAL))).toHaveLength(38);
   });
@@ -44,7 +44,7 @@ describe("a Realista career at an English club", () => {
   it("keeps Brazil on its own calendar year beside it", () => {
     const serieA = Object.values(start.competitions).find((c) => c.kind === "league" && c.division === "A");
     expect(serieA?.season).toBe(2026);
-    expect(serieA?.stageDates.flat()[0]! < "2026-03-01").toBe(true);
+    expect((serieA?.stageDates.flat()[0] ?? "9999") < "2026-03-01").toBe(true);
   });
 
   describe("across Brazil's new year", () => {
@@ -87,7 +87,7 @@ describe("a Realista career at an English club", () => {
         expect(nextPremier?.clubIds).toHaveLength(20);
         expect(nextChampionship?.clubIds).toHaveLength(24);
         for (const id of record?.promoted[1] ?? []) expect(nextPremier?.clubIds).toContain(id);
-        expect(nextPremier?.stageDates.flat()[0]! >= "2027-08-15").toBe(true);
+        expect((nextPremier?.stageDates.flat()[0] ?? "") >= "2027-08-15").toBe(true);
         expect(july.fixtures.filter((f) => f.competitionId === nextPremier?.id && f.result)).toEqual([]);
         expect(july.world?.["gb-eng"]?.leagues).toEqual([]);
         const promoted = record?.promoted[1]?.[0] ?? "";
@@ -117,7 +117,7 @@ describe("a Realista career at a club whose league plays the calendar year", () 
     const league = Object.values(river.competitions).find((c) => c.kind === "league" && c.abroad?.country === "ar" && c.abroad.level === 0);
     const dates = league?.stageDates.flat() ?? [];
     expect(dates.length).toBeGreaterThan(20);
-    expect(dates[0]! >= "2026-01-24").toBe(true);
-    expect(dates.at(-1)! <= "2026-12-06").toBe(true);
+    expect((dates[0] ?? "") >= "2026-01-24").toBe(true);
+    expect((dates.at(-1) ?? "9999") <= "2026-12-06").toBe(true);
   });
 });
