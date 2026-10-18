@@ -43,12 +43,17 @@ function emptyCopy(source: NationalCompetition, season: number): NationalFullTie
   };
 }
 
-const stageKeysOf = (copy: NationalFullTierCompetition): string[] => copy.stages.map((stage, i) => (stage.kind === "knockout" && stage.dates.length === 1 ? `${copy.rounds[i]}@${stage.dates[0]}` : (copy.rounds[i] ?? "")));
+/** The stage keys of a competition's full-tier copy so far, as stageKeyOf gives them. */
+const stageKeysOf = (copy: NationalFullTierCompetition, source: NationalCompetition): string[] =>
+  copy.stages.map((stage, i) => {
+    const round = copy.rounds[i] ?? "";
+    return source.knockout.find((r) => r.name === round)?.legs === 1 ? `${round}@${stage.dates[0] ?? ""}` : round;
+  });
 
 /** A competition's full-tier copy with `match` in it, and the match as its fixture. */
 function withMatch(copy: NationalFullTierCompetition, source: NationalCompetition, match: NationalMatch): { copy: NationalFullTierCompetition; fixture: Fixture } {
   const key = stageKeyOf(source, match);
-  let index = stageKeysOf(copy).indexOf(key);
+  let index = stageKeysOf(copy, source).indexOf(key);
   const stages = [...copy.stages];
   const rounds = [...copy.rounds];
   const groupNames = copy.groupNames.map((names) => [...names]);
@@ -95,17 +100,22 @@ function withMatch(copy: NationalFullTierCompetition, source: NationalCompetitio
 /**
  * The game with the national matches of the human coaches' teams among the full tier's fixtures, so they are
  * played live and open match pages: each match of theirs not played yet, and the other matches of its
- * competition on its day, under the competition's full-tier copy. A match already among the fixtures keeps what
+ * competition on its day (a friendly is a match of its own: the day's other friendlies stay result-only), under
+ * the competition's full-tier copy. A match already among the fixtures keeps what
  * the full tier recorded. The same game when no human coach runs a national team, or nothing is new.
  */
 export function syncNationalFixtures(state: GameState): GameState {
   const nations = state.nations;
   const teams = new Set(humanNationalTeamIds(state));
   if (!nations || !teams.size) return state;
-  const days = new Set(nations.matches.filter((m) => !m.result && m.date >= state.date && (teams.has(m.homeId) || teams.has(m.awayId))).map((m) => `${m.competitionId}|${m.date}`));
+  const isOurs = (m: NationalMatch) => teams.has(m.homeId) || teams.has(m.awayId);
+  const days = new Set(nations.matches.filter((m) => !m.result && m.date >= state.date && isOurs(m)).map((m) => `${m.competitionId}|${m.date}`));
   if (!days.size) return state;
   const known = new Set(state.fixtures.map((f) => f.id));
-  const due = nations.matches.filter((m) => !m.result && days.has(`${m.competitionId}|${m.date}`) && !known.has(nationalFixtureId(m.id))).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  const isFriendly = (m: NationalMatch) => nations.competitions[m.competitionId]?.kind === "friendlies";
+  const due = nations.matches
+    .filter((m) => !m.result && days.has(`${m.competitionId}|${m.date}`) && (isOurs(m) || !isFriendly(m)) && !known.has(nationalFixtureId(m.id)))
+    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
   if (!due.length) return state;
   const competitions = { ...state.competitions };
   const added: Fixture[] = [];
@@ -146,6 +156,12 @@ export function matchResultOf(result: NationalResult): MatchResult {
     ...(result.penaltyWinnerId ? { penaltyWinnerId: result.penaltyWinnerId } : {}),
     ...(result.isAfterExtraTime ? { isAfterExtraTime: true as const } : {}),
   };
+}
+
+/** Whether a national competition's full-tier copy still has its competition running, so it lives on past the turn of Brazil's season. */
+export function isNationalCopyCurrent(state: Pick<GameState, "nations">, copy: NationalFullTierCompetition): boolean {
+  const source = state.nations?.competitions[copy.nationalId];
+  return source !== undefined && !source.winnerId;
 }
 
 /** Today's national matches the full tier played, by national match id, as the national competitions keep a result. */
