@@ -2,8 +2,8 @@ import { humanClubIds } from "../coach/humanCoaches.js";
 import type { CupAbroad, CupAbroadCompetition, Fixture, GameState, IsoDate, KnockoutStage, MatchResult, Stage } from "../gameState.js";
 import { stageFixtures } from "../stageFixtures.js";
 import { hasNationalCupExtraTime } from "../tieBreaks.js";
-import { cupMatches, type ResultOnlyCup } from "../world/resultOnlyCup.js";
-import { knockoutTie, leaguePhaseMatches, type LeaguePhaseCup, type SuperCup, superCupScore, superCupWinner } from "./uefaCups.js";
+import { cupFinal, cupMatches, type ResultOnlyCup } from "../world/resultOnlyCup.js";
+import { cupChampion, knockoutTie, leaguePhaseMatches, type LeaguePhaseCup, type SuperCup, superCupScore, superCupWinner } from "./uefaCups.js";
 
 /** A human club's match the full tier played today, by `homeId|awayId|date`, which the result-only cup takes instead of its own draw. */
 export type PlayedAbroad = ReadonlyMap<string, MatchResult>;
@@ -136,4 +136,46 @@ export function syncCupsAbroad(state: GameState): GameState {
   }
   if (!isChanged && !added.length) return state;
   return { ...state, competitions, fixtures: added.length ? [...state.fixtures, ...added] : state.fixtures };
+}
+
+/** The cups abroad decided between the day's start (`before`) and its end, by key, whose champion plays in the full tier. */
+function titlesWon(before: GameState, after: GameState): [string, string][] {
+  const titles: [string, string][] = [];
+  const isOurs = (clubId: string | null): clubId is string => clubId !== null && clubId in after.clubs;
+  for (const cup of after.europe?.cups ?? []) {
+    const was = before.europe?.cups.find((c) => c.cup === cup.cup && c.season === cup.season);
+    const champion = cupChampion(cup);
+    if (isOurs(champion) && (!was || cupChampion(was) === null)) titles.push([cup.cup, champion]);
+  }
+  const superCup = after.europe?.superCup ?? null;
+  const superCupChampion = superCupWinner(superCup);
+  if (superCup && isOurs(superCupChampion) && superCupWinner(before.europe?.superCup ?? null) === null) titles.push(["uefa-super-cup", superCupChampion]);
+  for (const [id, country] of Object.entries(after.world ?? {})) {
+    const cup = country.isFullTier ? country.cup : undefined;
+    const was = before.world?.[id]?.cup;
+    const champion = cup ? (cupFinal(cup)?.championId ?? null) : null;
+    if (cup && isOurs(champion) && (was?.id !== cup.id || cupFinal(was) === null)) titles.push([`${id}-cup`, champion]);
+  }
+  return titles;
+}
+
+/**
+ * The cups abroad decided today whose champion plays in the full tier, filed as a cup at home is: the
+ * season's champion by its key, and the trophy of each human coach whose club won it.
+ */
+export function recordTitlesAbroad(before: GameState, after: GameState): GameState {
+  const titles = titlesWon(before, after);
+  if (!titles.length) return after;
+  const { history } = after;
+  const champions = { ...history.current.champions, ...Object.fromEntries(titles) };
+  const trophyOf = (clubId: string | null) => titles.flatMap(([competition, champion]) => (champion === clubId ? [{ season: after.season, competition, clubId: champion }] : []));
+  const waitingCoaches = after.waitingCoaches?.map((waiting) => {
+    const won = trophyOf(waiting.clubId);
+    return won.length ? { ...waiting, record: { ...waiting.record, trophies: [...waiting.record.trophies, ...won] } } : waiting;
+  });
+  return {
+    ...after,
+    ...(waitingCoaches ? { waitingCoaches } : {}),
+    history: { ...history, current: { ...history.current, champions }, coach: { ...history.coach, trophies: [...history.coach.trophies, ...trophyOf(after.coachClubId)] } },
+  };
 }

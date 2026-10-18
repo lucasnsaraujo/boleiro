@@ -90,3 +90,24 @@ describe("a human club abroad in UEFA's and its country's cups", () => {
     expect(Object.values(flamengo.competitions).some((c) => c.kind === "cupAbroad")).toBe(false);
   });
 });
+
+describe("a cup abroad decided in a country of the full tier", () => {
+  const start = loadNewGame(5, { coachClubId: ARSENAL, world, formats: RAPIDO });
+  /** The day the FA Cup's final was played, and the game after it. */
+  function finalDay(): { state: GameState; winnerId: string } {
+    let state = start;
+    for (let day = 0; day < 365; day++) {
+      state = advanceDay(state, {}).state;
+      const cup = state.world?.["gb-eng"]?.cup;
+      const winnerId = cup ? cupMatches(cup).at(-1)?.winnerId : null;
+      if (winnerId) return { state, winnerId };
+    }
+    throw new Error("no FA Cup final in the season");
+  }
+
+  it("files its champion as a cup at home does, and the trophy when it is the coach's club", () => {
+    const { state, winnerId } = finalDay();
+    expect(state.history.current.champions["gb-eng-cup"]).toBe(winnerId);
+    expect(state.history.coach.trophies.some((t) => t.competition === "gb-eng-cup")).toBe(winnerId === ARSENAL);
+  });
+});
