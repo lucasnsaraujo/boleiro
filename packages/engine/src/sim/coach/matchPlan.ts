@@ -32,11 +32,15 @@ export type MatchPlan = {
 };
 
 export const MAX_SAVED_TACTICS = 4;
-/** An energy floor below this would never take anyone off before the last minutes; above it, half the side at half-time. */
-export const ENERGY_FLOOR_RANGE = { min: 30, max: 80 } as const;
+/** As many planned substitutions as a side may make (Law 3). */
+export const MOST_MINUTE_SUBS = 5;
+// guess: a floor below 30 would never take anyone off before the last minutes; above 80, half the side at half-time.
+const ENERGY_FLOOR_RANGE = { min: 30, max: 80 } as const;
 const PLANNED_MINUTES = { first: 1, last: 89 } as const;
-const MOST_MINUTE_SUBS = 5;
 const PLAN_KEY = /^[a-z0-9]$/;
+
+/** Whether a key can be a plan key: one lowercase letter or digit. */
+export const isPlanKey = (key: string): boolean => PLAN_KEY.test(key);
 
 /** The match plan of the human coach who runs `clubId`, in the seat or waiting; none for an AI club or a coach who never set one. */
 export function planOfClub(state: Pick<GameState, "coachClubId" | "coach" | "waitingCoaches">, clubId: string): MatchPlan | undefined {
@@ -48,7 +52,7 @@ export function planOfClub(state: Pick<GameState, "coachClubId" | "coach" | "wai
 export const matchPlanOf = (state: Pick<GameState, "coach">): MatchPlan => state.coach.matchPlan ?? {};
 
 /** The keys a plan takes on the shared keyboard. */
-export const planKeysOf = (plan: MatchPlan): string[] => [plan.tacticsKey, plan.timeOutKey].filter((key): key is string => key !== undefined);
+const planKeysOf = (plan: MatchPlan): string[] => [plan.tacticsKey, plan.timeOutKey].filter((key): key is string => key !== undefined);
 
 /** Every key the other human coaches' plans take, with whose it is: in a hot-seat game they share one keyboard. */
 export function keysTakenByOthers(state: Pick<GameState, "waitingCoaches">): { key: string; coachName: string }[] {
@@ -57,7 +61,7 @@ export function keysTakenByOthers(state: Pick<GameState, "waitingCoaches">): { k
 
 /** Why a plan can't be kept, or null when it can: a key taken twice or by another coach, or a rule out of range. */
 export function matchPlanProblem(state: Pick<GameState, "waitingCoaches">, plan: MatchPlan): string | null {
-  for (const key of planKeysOf(plan)) if (!PLAN_KEY.test(key)) return `key "${key}" must be one lowercase letter or digit`;
+  for (const key of planKeysOf(plan)) if (!isPlanKey(key)) return `key "${key}" must be one lowercase letter or digit`;
   if (plan.tacticsKey !== undefined && plan.tacticsKey === plan.timeOutKey) return `key "${plan.tacticsKey}" can't both change tactics and call a time-out`;
   for (const { key, coachName } of keysTakenByOthers(state)) if (planKeysOf(plan).includes(key)) return `key "${key}" is ${coachName}'s`;
   const floor = plan.energyFloor;

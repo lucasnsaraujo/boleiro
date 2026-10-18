@@ -33,6 +33,13 @@ describe("the saved tactics of a coach's match plan", () => {
     expect(changed.coachMatch?.lastChangeMinute).toBe(30);
   });
 
+  it("put on whole, so a saved tactics with a mixed play and the usual marking takes off the play and marking on the pitch", () => {
+    const mixed: MatchPlan = { savedTactics: [{ formation: "4-4-2", posture: "balanced", penaltyTakerId: null }] };
+    const kickOff = { tactics: { formation: "4-3-3" as const, posture: "attacking" as const, penaltyTakerId: null, marking: "veryHeavy" as const, play: "flanks" as const } };
+    const changed = applyLiveChange(startMatchDay(withPlan(leagueDay, mixed), kickOff), 30, { savedTactics: 0 });
+    expect(changed.coachMatch?.tactics).toEqual({ formation: "4-4-2", posture: "balanced", penaltyTakerId: null });
+  });
+
   it("can't be picked when the plan keeps none in that place", () => {
     expect(() => applyLiveChange(startMatchDay(withPlan(leagueDay, saved), {}), 30, { savedTactics: 1 })).toThrow(/no saved tactics 2/);
   });
@@ -83,18 +90,29 @@ describe("a shootout order asked for when the coach's match ends level", () => {
     const before = kicks(level);
     const order = [...before.slice(0, 5)].reverse();
     const changed = applyLiveChange(level, 90, { kickerOrder: order });
-    expect(kicks(changed).slice(0, Math.min(5, kicks(changed).length))).toEqual(order.slice(0, Math.min(5, kicks(changed).length)));
+    const kicked = kicks(changed);
+    expect(kicked.length).toBeGreaterThanOrEqual(3);
+    expect(kicked.slice(0, Math.min(5, kicked.length))).toEqual(order.slice(0, Math.min(5, kicked.length)));
     const ninety = (live: LiveDay) => coachEvents(live).filter((e) => e.type !== "shootoutKick" && e.type !== "orderOverruled");
     expect(ninety(changed)).toEqual(ninety(level));
   });
 
-  it("can't come before the match ends", () => {
+  it("can't come before the match ends, nor twice", () => {
     expect(() => applyLiveChange(level, 60, { kickerOrder: kicks(level) })).toThrow(/ends level/);
+    const once = applyLiveChange(level, 90, { kickerOrder: kicks(level) });
+    expect(() => applyLiveChange(once, 90, { kickerOrder: kicks(level) })).toThrow(/once/);
+  });
+
+  it("is refused in a match the house rule leaves to the plans", () => {
+    const ruled = startMatchDay({ ...cupTie, rngState: level.state.rngState, manualChangesOnlyInFinals: true }, {});
+    expect(() => applyLiveChange(ruled, 90, { kickerOrder: kicks(level) })).toThrow(/only in finals/);
   });
 
   it("is the plan's order from kick-off when the plan sets one", () => {
     const order = [...kicks(level).slice(0, 5)].reverse();
     const planned = startMatchDay(withPlan({ ...cupTie, rngState: level.state.rngState }, { kickerOrder: order }), {});
-    expect(kicks(planned).slice(0, 5)).toEqual(order.slice(0, kicks(planned).slice(0, 5).length));
+    const kicked = kicks(planned);
+    expect(kicked.length).toBeGreaterThanOrEqual(3);
+    expect(kicked.slice(0, 5)).toEqual(order.slice(0, Math.min(5, kicked.length)));
   });
 });

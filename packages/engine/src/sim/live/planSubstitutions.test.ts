@@ -112,6 +112,18 @@ describe("a match plan's other rules", () => {
     expect(ownSubs(live)).toContainEqual({ type: "substitution", minute: 70, clubId: COACH_CLUB, playerId: reserve?.id, offId: starter?.id, byPlan: true });
   });
 
+  it("keeps to Law 3: planned substitutions at five different minutes stop at the third opportunity", () => {
+    const starters = (unplanned.coachMatch?.starters.home.concat(unplanned.coachMatch.starters.away) ?? []).filter((p) => p.clubId === COACH_CLUB && p.group !== "GK" && p.id !== hurtId);
+    const bench = unplanned.coachMatch?.bench.filter((p) => p.group !== "GK") ?? [];
+    const minuteSubs = [60, 65, 70, 75, 80].map((minute, i) => ({ minute, offId: starters[i]?.id ?? "", onId: bench[i]?.id ?? "" }));
+    const live = startMatchDay(withPlan({ ...coachOnly, rngState: seed }, { minuteSubs }), {});
+    // A planned player hurt or sent off in the redraw before his minute is skipped; the opportunities still run out at three.
+    const minutes = ownSubs(live).map((e) => e.minute);
+    expect(minutes).toHaveLength(3);
+    expect(new Set(minutes).size).toBe(3);
+    for (const minute of minutes) expect([60, 65, 70, 75, 80]).toContain(minute);
+  });
+
   it("takes a player off at the first minute his energy is below the floor, the most tired first", () => {
     const tiredId = unplanned.coachMatch?.starters.home.concat(unplanned.coachMatch.starters.away).find((p) => p.clubId === COACH_CLUB && p.group === "MID" && p.id !== hurtId)?.id ?? "";
     const tired = { ...coachOnly.players[tiredId], condition: { ...coachOnly.players[tiredId]?.condition, fatigue: 35, fatigueOn: coachOnly.date } } as SimPlayer;

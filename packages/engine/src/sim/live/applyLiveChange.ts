@@ -296,11 +296,22 @@ function openMatchOf(live: LiveDay, clubId: string): CoachMatch | undefined {
   return [live.coachMatch, ...(live.waitingMatches ?? [])].find((open): open is CoachMatch => open !== null && open !== undefined && plays(open));
 }
 
-/** The dials of a saved tactics the change picks, from the changing coach's match plan. */
-function savedDials(live: LiveDay, clubId: string, index: number): Pick<LiveChange, "formation" | "posture" | "marking" | "play"> {
+/**
+ * The side's tactics with a saved tactics of the changing coach's match plan put on whole: its formation,
+ * posture, marking and play, a marking or play it leaves out (the usual heavy marking, a mixed play)
+ * taking off the one on the pitch. The penalty taker and shootout order stay.
+ */
+function withSavedTactics(live: LiveDay, clubId: string, index: number, before: Tactics): Tactics {
   const saved = planOfClub(live.state, clubId)?.savedTactics?.[index];
   if (!saved) throw new Error(`${clubId}'s match plan has no saved tactics ${index + 1}`);
-  return { formation: saved.formation, posture: saved.posture, ...(saved.marking ? { marking: saved.marking } : {}), ...(saved.play ? { play: saved.play } : {}) };
+  return {
+    formation: saved.formation,
+    posture: saved.posture,
+    penaltyTakerId: before.penaltyTakerId,
+    ...(before.kickerOrder ? { kickerOrder: before.kickerOrder } : {}),
+    ...(saved.marking ? { marking: saved.marking } : {}),
+    ...(saved.play ? { play: saved.play } : {}),
+  };
 }
 
 // What the house rule "manual changes only in finals" still lets a coach do in other matches: talk at half-time, and pick a tactics his plan keeps ready.
@@ -317,20 +328,20 @@ function changeMatch(live: LiveDay, minute: number, change: LiveChange, clubId: 
   const match = live.matches.find((m) => m.fixtureId === coachMatch.fixtureId);
   if (!match) throw new Error(`coach's match ${coachMatch.fixtureId} has no timeline`);
   const end = matchEndOf(match.events);
+  const fixture = live.state.fixtures.find((f) => f.id === match.fixtureId);
+  const isManual = (Object.keys(change) as (keyof LiveChange)[]).some((key) => change[key] !== undefined && !PLAN_CHANGES.has(key));
+  if (by === "coach" && isManual && fixture && isLockedToPlans(live.state, fixture)) throw new Error("the house rule allows changes during a match only in finals");
   if (change.kickerOrder) return withKickerOrder(live, coachMatch, match, minute, clubId, change.kickerOrder);
   if (!Number.isInteger(minute) || minute < coachMatch.lastChangeMinute || minute >= end) {
     throw new Error(`a change must come between minute ${coachMatch.lastChangeMinute} and ${end - 1}`);
   }
-  const fixture = live.state.fixtures.find((f) => f.id === match.fixtureId);
-  const isManual = (Object.keys(change) as (keyof LiveChange)[]).some((key) => change[key] !== undefined && !PLAN_CHANGES.has(key));
-  if (by === "coach" && isManual && fixture && isLockedToPlans(live.state, fixture)) throw new Error("the house rule allows changes during a match only in finals");
   const ownerId = coachMatch.clubId ?? live.state.coachClubId;
   const ownerSide: Side = match.homeId === ownerId ? "home" : "away";
   const changingSide: Side = match.homeId === clubId ? "home" : "away";
   const isRival = changingSide !== ownerSide;
   const before = isRival ? coachMatch.rivalTactics : coachMatch.tactics;
   if (!before) throw new Error(`${clubId} has no coach in match ${coachMatch.fixtureId}`);
-  const dials = change.savedTactics === undefined ? change : { ...change, ...savedDials(live, clubId, change.savedTactics) };
+  const base = change.savedTactics === undefined ? before : withSavedTactics(live, clubId, change.savedTactics, before);
   // The referee's calls are told again over the whole new timeline; they never shape what is drawn.
   const kept = match.events.filter((e) => e.minute <= minute && isReplayed(e));
   const subs = change.substitutions ?? [];
@@ -338,12 +349,12 @@ function changeMatch(live: LiveDay, minute: number, change: LiveChange, clubId: 
   checkSubstitutions(coachMatch, kept, onPitch(coachMatch, kept, changingSide, clubId), bench, clubId, minute, subs);
   const substitutions: MatchEvent[] = subs.map(({ offId, onId }) => ({ type: "substitution", minute, clubId, playerId: onId, offId, ...(by === "plan" ? { byPlan: true as const } : {}) }));
   const tactics: Tactics = {
-    ...before,
-    formation: dials.formation ?? before.formation,
-    posture: dials.posture ?? before.posture,
-    ...(dials.marking ?? before.marking ? { marking: dials.marking ?? before.marking } : {}),
-    ...(dials.play ?? before.play ? { play: dials.play ?? before.play } : {}),
-    penaltyTakerId: change.penaltyTakerId === undefined ? before.penaltyTakerId : change.penaltyTakerId,
+    ...base,
+    formation: change.formation ?? base.formation,
+    posture: change.posture ?? base.posture,
+    ...(change.marking ?? base.marking ? { marking: change.marking ?? base.marking } : {}),
+    ...(change.play ?? base.play ? { play: change.play ?? base.play } : {}),
+    penaltyTakerId: change.penaltyTakerId === undefined ? base.penaltyTakerId : change.penaltyTakerId,
   };
   if (change.talk && minute !== HALF_TIME) throw new Error("a team talk comes at half-time");
   const random = randomStream(coachMatch.rngState);
@@ -379,6 +390,7 @@ function withOpenMatch(live: LiveDay, before: CoachMatch, after: CoachMatch, mat
 function withKickerOrder(live: LiveDay, coachMatch: CoachMatch, match: LiveMatch, minute: number, clubId: string, order: readonly string[]): LiveDay {
   const end = matchEndOf(match.events);
   if (minute !== end || !match.events.some((e) => e.type === "shootoutKick")) throw new Error("a shootout order comes when the match ends level, before its shootout");
+  if (coachMatch.lastChangeMinute === end) throw new Error("a shootout order is given once");
   const ownerId = coachMatch.clubId ?? live.state.coachClubId;
   const ownerSide: Side = match.homeId === ownerId ? "home" : "away";
   const isRival = (match.homeId === clubId ? "home" : "away") !== ownerSide;
