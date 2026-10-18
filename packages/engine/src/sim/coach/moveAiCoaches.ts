@@ -6,6 +6,7 @@ import type { Country, ResultOnlyLeague, World } from "../world/world.js";
 import { coachesByClub, fullTierClubs, fullTierStatures, inventCoach, squadLevel, staturesByStrength, type AiCoach, type Coaching } from "./aiCoaches.js";
 import { humanClubIds, waitingCoachesOf } from "./humanCoaches.js";
 import { OFFER_DAYS } from "./offerJobs.js";
+import { compareText } from "../compareText.js";
 
 /** An AI club named its new head coach. */
 export type CoachAppointed = { type: "coachAppointed"; clubId: string; coachId: string; name: string };
@@ -139,7 +140,7 @@ function sackings(country: Country, random: () => number): string[] {
     if (rounds < GRACE_ROUNDS || rounds >= league.dates.length) continue;
     const table = leagueTable(league);
     const level = (id: string) => squadLevel(country.clubs[id]?.strengths ?? []);
-    const expected = [...league.clubIds].sort((a, b) => level(b) - level(a) || a.localeCompare(b));
+    const expected = [...league.clubIds].sort((a, b) => level(b) - level(a) || compareText(a, b));
     for (const clubId of [...league.clubIds].sort()) {
       const gap = (table.indexOf(clubId) - expected.indexOf(clubId)) / league.clubIds.length;
       if (random() < MONTHLY_SACKING * Math.max(0, 1 + UNDERPERFORMANCE_WEIGHT * gap)) sacked.push(clubId);

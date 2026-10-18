@@ -26,6 +26,26 @@ describe("saveGame and loadGame", () => {
     expect(resumed.fixtures.filter((f) => f.result).length).toBeGreaterThan(midSeason.fixtures.filter((f) => f.result).length);
   });
 
+  it("writes each player's strength marks as one line: his first season, then his strength each season on", () => {
+    const [id, marks] = Object.entries(midSeason.history.strength)[0] ?? [];
+    if (!id || !marks?.[0]) throw new Error("no strength marks");
+    const twoSeasons = { ...midSeason, history: { ...midSeason.history, strength: { ...midSeason.history.strength, [id]: [{ season: 2025, strength: 70.5 }, { season: 2026, strength: 71 }] } } };
+    expect(JSON.parse(saveGame(twoSeasons)).history.strength[id]).toEqual([2025, 70.5, 71]);
+  });
+
+  it("leaves a gap in a line for a season without a mark, and reads every mark back", () => {
+    const [id] = Object.keys(midSeason.history.strength);
+    if (!id) throw new Error("no strength marks");
+    const marks = [{ season: 2024, strength: 66 }, { season: 2026, strength: 70.1 }];
+    const withGap = { ...midSeason, history: { ...midSeason.history, strength: { ...midSeason.history.strength, [id]: marks } } };
+    expect(JSON.parse(saveGame(withGap)).history.strength[id]).toEqual([2024, 66, null, 70.1]);
+    expect(loadGame(saveGame(withGap)).history.strength[id]).toStrictEqual(marks);
+  });
+
+  it("reads a save that wrote strength marks one by one, as saves did before lines", () => {
+    expect(loadGame(JSON.stringify(midSeason))).toStrictEqual(midSeason);
+  });
+
   it("keeps the data pack the career started with", () => {
     expect(loadGame(saveGame(midSeason)).packVersion).toBe(loadPack().packVersion);
   });

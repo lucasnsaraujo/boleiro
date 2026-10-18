@@ -12,6 +12,7 @@ import { POSITION_NAMES } from "../format/playerLabels.js";
 import { bidSheets, saleRows, type BidSheet, type SaleRow, type SellState } from "./bidSheets.js";
 import { MoneyStepper, roundStep } from "./MoneyStepper.js";
 import { clubArticle, withArticle, type Preposition } from "@boleiro/data/articles";
+import { leagueAbroadOf } from "../newGame/leaguesAbroad.js";
 
 type Props = {
   state: SellState;
@@ -138,7 +139,9 @@ function BidCard({ sheet, state, buyer, onAnswer }: { sheet: BidSheet; state: Se
           <p className="market-buyer">
             {buyerClub ? <Crest club={buyerClub} size={30} /> : <i className="ph-fill ph-airplane-takeoff market-abroad" aria-hidden="true" />}
             <b>{buyerClub?.shortName ?? "Clube europeu"}</b>
-            <span>{buyerClub?.division ? `Série ${buyerClub.division}` : buyerClub ? "Estadual" : "Europa"} · compra à vista</span>
+            <span>
+              {buyerClub?.division ? `Série ${buyerClub.division}` : buyerClub ? (leagueAbroadOf(buyerClub)?.label ?? "Estadual") : "Europa"} · {sheet.buyerCoach ? `proposta de ${sheet.buyerCoach}` : "compra à vista"}
+            </span>
           </p>
           <p className="market-fee">
             <span className="market-fee-main">{sheet.feeEur !== null ? formatEuros(sheet.feeEur) : formatMoney(sheet.fee)}</span>
@@ -187,7 +190,9 @@ function BidCard({ sheet, state, buyer, onAnswer }: { sheet: BidSheet; state: Se
           <i className="ph-bold ph-check" aria-hidden="true" />
           Aceitar {formatMoney(sheet.fee)}
         </button>
-        {sheet.isFinal ? (
+        {sheet.buyerCoach ? (
+          <p className="market-final">Proposta de {sheet.buyerCoach}: entre técnicos não há contraproposta.</p>
+        ) : sheet.isFinal ? (
           <p className="market-final">Última oferta {theBuyer("de")}: não aceita contraproposta.</p>
         ) : (
           <span className="market-counter-box">

@@ -22,6 +22,7 @@ import { competitionKeyName, competitionName, fixtureLabel } from "../format/com
 import type { RoundClub } from "../round/liveRoundOf.js";
 import { officialsOf, type Officials } from "../round/officialsOf.js";
 import { curiositiesOf } from "./curiositiesOf.js";
+import { compareText } from "@boleiro/engine/sim/compareText";
 
 /** A player as the match page shows him: enough to place him on the pitch in his side's formation. */
 export type PagePlayer = { id: string; name: string; group: PositionGroup; strength: number; positions?: readonly Role[] };
@@ -136,7 +137,7 @@ function meetingsOf(located: Located): Meeting[] {
   const pair = new Set([fixture.homeId, fixture.awayId]);
   return located.season
     .filter((f) => f.result && f.id !== fixture.id && f.date < fixture.date && pair.has(f.homeId) && pair.has(f.awayId))
-    .toSorted((a, b) => b.date.localeCompare(a.date))
+    .toSorted((a, b) => compareText(b.date, a.date))
     .slice(0, MEETINGS_SHOWN)
     .flatMap((f) => (f.result ? [{ date: f.date, homeId: f.homeId, awayId: f.awayId, homeGoals: f.result.homeGoals, awayGoals: f.result.awayGoals }] : []));
 }

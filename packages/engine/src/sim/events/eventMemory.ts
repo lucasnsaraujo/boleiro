@@ -100,29 +100,49 @@ export const rivalryKey = (a: string, b: string): string => (a < b ? `${a}|${b}`
 
 export type EventQuery = { typeId?: string; clubId?: string; playerId?: string; since?: IsoDate; until?: IsoDate };
 
-// A log is a new array whenever an event is added, so each one's records by type and club are gathered once:
-// the chemistry of every club asks for its fights on every match day.
-const logsByTypeAndClub = new WeakMap<readonly EventRecord[], Map<string, EventRecord[]>>();
+/** A log read by type and club: its records, each type's last day at each club and the players each type already had; `size` records read. */
+type LogIndex = { records: Map<string, EventRecord[]>; lastAt: Map<string, IsoDate>; players: Set<string>; size: number; first: EventRecord | undefined; last: EventRecord | undefined };
 
-function byTypeAndClub(log: readonly EventRecord[], typeId: string, clubId: string): readonly EventRecord[] {
-  let index = logsByTypeAndClub.get(log);
-  if (!index) {
-    index = new Map();
-    for (const record of log) {
-      const key = `${record.typeId}|${record.clubId}`;
-      const records = index.get(key);
-      if (records) records.push(record);
-      else index.set(key, [record]);
-    }
-    logsByTypeAndClub.set(log, index);
+const emptyIndex = (): LogIndex => ({ records: new Map(), lastAt: new Map(), players: new Set(), size: 0, first: undefined, last: undefined });
+
+// A log only grows, each event added into a new array, so the index of the last log read is extended with the
+// records added since instead of reading a career's whole log again every day: the events check every club's
+// cooldowns and the chemistry of every club asks for its fights on every match day. Another log (a save just
+// loaded, another game) starts it over.
+let lastIndex = emptyIndex();
+
+function indexOf(log: readonly EventRecord[]): LogIndex {
+  const known = lastIndex;
+  if (known.size === log.length && log[0] === known.first && log[known.size - 1] === known.last) return known;
+  const index = known.size <= log.length && log[0] === known.first && log[known.size - 1] === known.last ? known : emptyIndex();
+  for (let at = index.size; at < log.length; at++) {
+    const record = log[at];
+    if (!record) continue;
+    const key = `${record.typeId}|${record.clubId}`;
+    const records = index.records.get(key);
+    if (records) records.push(record);
+    else index.records.set(key, [record]);
+    const last = index.lastAt.get(key);
+    if (!last || last < record.date) index.lastAt.set(key, record.date);
+    if (record.playerId) index.players.add(`${record.typeId}|${record.playerId}`);
   }
-  return index.get(`${typeId}|${clubId}`) ?? [];
+  index.size = log.length;
+  index.first = log[0];
+  index.last = log[log.length - 1];
+  lastIndex = index;
+  return index;
 }
+
+/** The last day an event of type `typeId` happened at `clubId`, by the log; undefined when it never did. */
+export const lastEventDay = (log: readonly EventRecord[], typeId: string, clubId: string): IsoDate | undefined => indexOf(log).lastAt.get(`${typeId}|${clubId}`);
+
+/** Whether an event of type `typeId` already had `playerId` in it, by the log. */
+export const hasHadPlayer = (log: readonly EventRecord[], typeId: string, playerId: string): boolean => indexOf(log).players.has(`${typeId}|${playerId}`);
 
 /** The events that happened matching every field given, oldest first. */
 export function eventsOf(state: Pick<GameState, "eventMemory">, query: EventQuery): EventRecord[] {
   const { log } = eventMemoryOf(state);
-  const records = query.typeId !== undefined && query.clubId !== undefined ? byTypeAndClub(log, query.typeId, query.clubId) : log;
+  const records = query.typeId !== undefined && query.clubId !== undefined ? (indexOf(log).records.get(`${query.typeId}|${query.clubId}`) ?? []) : log;
   return records.filter(
     (record) =>
       (query.typeId === undefined || record.typeId === query.typeId) &&

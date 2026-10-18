@@ -22,3 +22,9 @@ test("an answer reads as a yes, or a no with the board's reason", () => {
   );
   expect(answerText({ date: "2026-01-05", request: { kind: "loanIn", playerId: own.id }, name: "Zé", approved: true, reason: null })).toBe("Empréstimo de Zé: aprovado");
 });
+
+test("an offer sent on to another human coach reads as approved and waiting for him", () => {
+  expect(answerText({ date: "2026-01-05", request: { kind: "sign", playerId: own.id }, name: "Zé", approved: true, reason: "sentToCoach" })).toBe(
+    "Contratação de Zé: aprovada, agora o técnico do clube dele responde",
+  );
+});

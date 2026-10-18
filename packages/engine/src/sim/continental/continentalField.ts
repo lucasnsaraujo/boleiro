@@ -10,6 +10,7 @@ import { continentalPlaces, type ContinentalSlot, type CupFinal, type LeaguePlac
 import { leagueTable } from "../world/resultOnlyLeague.js";
 import { SOUTH_AMERICA, type ContinentalEntry } from "../world/southAmerica.js";
 import type { World, WorldClub } from "../world/world.js";
+import { compareText } from "../compareText.js";
 
 /**
  * Who plays CONMEBOL's and FIFA's cups in a season: the clubs joining the Libertadores and the
@@ -123,7 +124,7 @@ export function openingField(state: GameState): ContinentalField | null {
   const foreign = Object.entries(world).flatMap(([id, country]) => {
     const [top] = country.leagues;
     const members = country.isFullTier ? Object.values(state.clubs).filter((club) => club.abroad?.country === id && club.abroad.level === 0).map((club) => club.id) : (top?.clubIds ?? []);
-    const table = [...members].sort((a, b) => elevenAverage(country.clubs[b]) - elevenAverage(country.clubs[a]) || a.localeCompare(b));
+    const table = [...members].sort((a, b) => elevenAverage(country.clubs[b]) - elevenAverage(country.clubs[a]) || compareText(a, b));
     return worldPlaces(id, world, table, held) ?? [];
   });
   return fieldOf([brazilPlaces(nationalRanking(Object.values(state.clubs)), null, held), ...foreign], holders, countryOf, openingClubWorldCupField(state), intercontinentalCupField(state, state.season));

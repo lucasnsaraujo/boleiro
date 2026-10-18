@@ -13,6 +13,7 @@ import type { RenewalSkipReason } from "@boleiro/engine/sim/transfers/transferEv
 import type { RenewalCounter } from "@boleiro/engine/sim/transfers/transferMarket";
 import { isInPreContractWindow, PRE_CONTRACT_DAYS } from "@boleiro/engine/sim/transfers/tradeBetweenClubs";
 import { wageBillsOf } from "@boleiro/engine/sim/transfers/wageBillsOf";
+import { compareText } from "@boleiro/engine/sim/compareText";
 
 export type ContractsState = Pick<GameState, "date" | "coachClubId" | "coach" | "clubs" | "players" | "finances" | "market" | "mood" | "eventMemory" | "hasMidSeasonWindow">;
 
@@ -100,7 +101,7 @@ export function contractsEnding(state: ContractsState): ContractRow[] {
     leavesForId: state.market.preContracts[p.id] ?? null,
     plan: state.market.preContracts[p.id] ? null : planOf(state, p, squad),
   }));
-  return rows.sort((a, b) => a.until.localeCompare(b.until) || b.strength - a.strength || a.playerId.localeCompare(b.playerId));
+  return rows.sort((a, b) => compareText(a.until, b.until) || b.strength - a.strength || compareText(a.playerId, b.playerId));
 }
 
 /** The renewal screen of one of the coach's players; null for anyone else, or one on loan. */

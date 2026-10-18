@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router";
 import type { Division } from "@boleiro/data/players";
 import type { Club } from "@boleiro/data/clubs";
 import type { Board } from "@boleiro/engine/sim/coach/boardExpectations";
+import { coachNameKey } from "@boleiro/engine/sim/coach/humanCoaches";
 import { RAPIDO, type Formats } from "@boleiro/engine/sim/formats";
 import { formatDayMonth, formatGameDate } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
@@ -125,9 +126,12 @@ export function NewGame() {
   const pickedCard: PickedClub | null = pickedChoice ?? (activeAbroad ? { club: activeAbroad, goal: null } : null);
   const isHotSeat = others.length > 0;
   const coachNames = [coachName.trim(), ...others.map((other) => other.name.trim())];
+  // A coach whose name another coach above him in the list already took, as the game tells names apart.
+  const nameKeys = coachNames.map(coachNameKey);
+  const repeatedAt = isHotSeat ? nameKeys.findIndex((key, index) => key !== "" && nameKeys.indexOf(key) < index) : -1;
   /** The coach who took each club, by club, so no two coaches share one. */
   const takenBy = new Map<string, number>([...(pickedClubId ? [[pickedClubId, 0] as const] : []), ...others.flatMap((other, index) => (other.clubId ? [[other.clubId, index + 1] as const] : []))]);
-  const isEveryoneReady = !isHotSeat || others.every((other) => other.name.trim() && other.clubId);
+  const isEveryoneReady = !isHotSeat || (others.every((other) => other.name.trim() && other.clubId) && repeatedAt < 0);
 
   function setCoachCount(count: number) {
     const next = Math.min(MAX_COACHES, Math.max(1, count));
@@ -246,11 +250,13 @@ export function NewGame() {
                   const clubId = index === 0 ? pickedClubId : (others[index - 1]?.clubId ?? null);
                   const club = clubId ? clubById(clubId) : undefined;
                   return (
-                    <li key={index} className={index === active ? "career-new-coach on" : "career-new-coach"}>
+                    <li key={index} className={["career-new-coach", index === active && "on", index === repeatedAt && "taken"].filter(Boolean).join(" ")}>
                       <span className="career-new-coach-no">{index + 1}</span>
                       <input
                         type="text"
                         aria-label={`Nome do técnico ${index + 1}`}
+                        aria-invalid={index === repeatedAt || undefined}
+                        aria-describedby={index === repeatedAt ? "coach-name-error" : undefined}
                         placeholder={`Técnico ${index + 1}`}
                         maxLength={COACH_NAME_MAX}
                         autoComplete="off"
@@ -270,6 +276,11 @@ export function NewGame() {
                   );
                 })}
               </ol>
+            )}
+            {repeatedAt >= 0 && (
+              <p id="coach-name-error" className="status error career-new-name-error" role="alert">
+                Cada técnico precisa de um nome só dele: “{coachNames[repeatedAt]}” já está na lista.
+              </p>
             )}
             <label className="career-new-name" hidden={isHotSeat}>
               <span className="lbl">Nome</span>

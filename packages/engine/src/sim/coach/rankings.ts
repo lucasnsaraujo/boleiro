@@ -1,6 +1,7 @@
 import type { GameState } from "../gameState.js";
 import { countriesCoaching, fullTierClubs, type Coaching, type PartStanding, type Ranked, type StandingRow } from "./aiCoaches.js";
 import { countryFactors, SEASON_WEIGHTS } from "./rankingPoints.js";
+import { compareText } from "../compareText.js";
 
 /** How many places of each ranking a closed season keeps for history. */
 export const STANDING_PLACES = 50;
@@ -14,7 +15,7 @@ export function rankedSeasons(state: Pick<GameState, "coaches">): number[] {
 /** The weight a filed season has in the ranking as of `season`: 5 for it, 4 for the one before, down to 1; 0 outside the five. */
 const weightOf = (filed: number, season: number): number => (filed > season ? 0 : (SEASON_WEIGHTS[season - filed] ?? 0));
 
-const sorted = (total: Map<string, number>): Ranked => [...total].map(([key, points]): [string, number] => [key, Math.round(points)]).sort(([a, x], [b, y]) => y - x || a.localeCompare(b));
+const sorted = (total: Map<string, number>): Ranked => [...total].map(([key, points]): [string, number] => [key, Math.round(points)]).sort(([a, x], [b, y]) => y - x || compareText(a, b));
 
 /** A part of the game: its coaching and the country each of its clubs plays in. */
 export type RankedPart = { coaching: Pick<Coaching, "seasons" | "standings">; countryOf: (clubId: string) => string };

@@ -2,6 +2,7 @@ import type { Fixture } from "../gameState.js";
 import type { MatchEvent } from "../live/matchTimeline.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
 import type { DayScene, EggHit, EggType, MatchTale } from "./eggType.js";
+import { compareText } from "../compareText.js";
 
 type Goal = Extract<MatchEvent, { type: "goal" }>;
 
@@ -84,7 +85,7 @@ function lastScores(scene: DayScene, games: number): [number, number][] {
   if (!playsToday(scene)) return [];
   return scene.state.fixtures
     .filter((f): f is Fixture & { result: NonNullable<Fixture["result"]> } => f.result !== null && f.date <= scene.date && (f.homeId === scene.clubId || f.awayId === scene.clubId))
-    .sort((a, b) => a.date.localeCompare(b.date))
+    .sort((a, b) => compareText(a.date, b.date))
     .slice(-games)
     .map((f) => (f.homeId === scene.clubId ? [f.result.homeGoals, f.result.awayGoals] : [f.result.awayGoals, f.result.homeGoals]));
 }

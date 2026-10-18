@@ -8,7 +8,7 @@ import { squadsOfGame } from "../players/squadsByClub.js";
 import type { Fixture, GameState, IsoDate, SimPlayer } from "../gameState.js";
 import { applyEffects } from "./applyEffects.js";
 import { EVENT_BANK } from "./eventBank.js";
-import { eventMemoryOf, type Cast, type EventMemory, type EventRecord, type NewsItem, type PendingEvent, type PendingQuestion } from "./eventMemory.js";
+import { eventMemoryOf, hasHadPlayer, lastEventDay, type Cast, type EventMemory, type EventRecord, type NewsItem, type PendingEvent, type PendingQuestion } from "./eventMemory.js";
 import { byCast, type EventScene, type EventType, type PressQuestionType } from "./eventType.js";
 import { fillSlots, type SlotArticles } from "./fillSlots.js";
 
@@ -188,26 +188,19 @@ export function answerEvent(state: GameState, clubId: string, choice: number | n
   return { state: settled.state, event: answered(settled.headline, 0) };
 }
 
-/** What the log says about one club, built once for the clubs that draw an event today. */
-type Recall = { lastAt: Map<string, IsoDate>; players: Set<string> };
+/** What the log and the events waiting for an answer say, read for the clubs that draw an event today. */
+type Recall = { log: readonly EventRecord[]; pending: readonly PendingEvent[] };
 
-function recallOf(memory: EventMemory): Recall {
-  const recall: Recall = { lastAt: new Map(), players: new Set() };
-  const pending = Object.values(memory.pending);
-  for (const record of [...memory.log, ...pending]) {
-    const key = `${record.typeId}:${record.clubId}`;
-    const last = recall.lastAt.get(key);
-    if (!last || last < record.date) recall.lastAt.set(key, record.date);
-    if (record.playerId) recall.players.add(`${record.typeId}:${record.playerId}`);
-  }
-  return recall;
-}
+const recallOf = (memory: EventMemory): Recall => ({ log: memory.log, pending: Object.values(memory.pending) });
 
 function isAllowed(type: EventType, clubId: string, cast: Cast, date: IsoDate, recall: Recall): boolean {
-  const last = recall.lastAt.get(`${type.id}:${clubId}`);
-  if (last && last > addDays(date, -type.cooldownDays)) return false;
-  if (type.once === "player" && cast.playerId && recall.players.has(`${type.id}:${cast.playerId}`)) return false;
-  return true;
+  const since = addDays(date, -type.cooldownDays);
+  const last = lastEventDay(recall.log, type.id, clubId);
+  if (last && last > since) return false;
+  if (recall.pending.some((record) => record.typeId === type.id && record.clubId === clubId && record.date > since)) return false;
+  if (type.once !== "player" || !cast.playerId) return true;
+  const { playerId } = cast;
+  return !hasHadPlayer(recall.log, type.id, playerId) && !recall.pending.some((record) => record.typeId === type.id && record.playerId === playerId);
 }
 
 /** One event drawn for `clubId` today among those its state allows, by weight; null when none is possible. */

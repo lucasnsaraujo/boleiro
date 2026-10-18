@@ -6,7 +6,7 @@ import { isInjured } from "../../players/isInjured.js";
 import { BLOCK_FROM_INTENSITY } from "../../rivalries/idols.js";
 import { isClassico, rivalryOf } from "../../rivalries/rivalryOf.js";
 import { isWindowOpen } from "../../transfers/transferWindows.js";
-import { eventMemoryOf, rivalryKey, type Cast } from "../eventMemory.js";
+import { eventMemoryOf, lastEventDay, rivalryKey, type Cast } from "../eventMemory.js";
 import type { EventScene } from "../eventType.js";
 
 // What the bank's preconditions read of the game. Every event size in the bank is a guess judged
@@ -164,5 +164,6 @@ export function rivalCast(scene: EventScene): Cast | null {
 /** Whether the event already happened at the club within `days` days, of any of `typeIds`. */
 export function happenedWithin(scene: EventScene, typeIds: readonly string[], days: number): boolean {
   const since = addDays(scene.date, -days);
-  return eventMemoryOf(scene.state).log.some((record) => record.clubId === scene.clubId && record.date >= since && typeIds.includes(record.typeId));
+  const { log } = eventMemoryOf(scene.state);
+  return typeIds.some((typeId) => (lastEventDay(log, typeId, scene.clubId) ?? "") >= since);
 }

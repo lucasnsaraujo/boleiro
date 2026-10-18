@@ -7,13 +7,14 @@ import { marketView } from "../transfers/marketView.js";
 import { openDraft } from "../transfers/movePlayer.js";
 import { REPLACEMENT_BAND, squadNeeds } from "../transfers/squadNeeds.js";
 import { forceSale } from "./forceSale.js";
+import { compareText } from "../compareText.js";
 
 const COACH = "flamengo-rj";
 const start = loadNewGame(5, { coachClubId: COACH });
 const sellerId = Object.values(start.clubs).find((c) => c.division === "D")?.id ?? "";
 const squad = Object.values(start.players).filter((p) => p.clubId === sellerId);
 const keyPlayers = new Set(pickLineup(squad));
-const [firstChoice] = squad.filter((p) => !keyPlayers.has(p)).sort((a, b) => b.wage - a.wage || a.id.localeCompare(b.id));
+const [firstChoice] = squad.filter((p) => !keyPlayers.has(p)).sort((a, b) => b.wage - a.wage || compareText(a.id, b.id));
 if (!firstChoice) throw new Error("no player to sell");
 const sell = (state: GameState) => {
   const draft = openDraft(state);

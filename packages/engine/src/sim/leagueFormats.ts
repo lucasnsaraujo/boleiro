@@ -5,6 +5,7 @@ import { groupStageAt, knockoutStageAt } from "./stageAt.js";
 import { standings, type StandingRow } from "./standings.js";
 import { tieResults } from "./tieResults.js";
 import { roundsOf } from "./world/resultOnlyLeague.js";
+import { compareText } from "./compareText.js";
 
 export type LeagueOutcome = {
   championId: string;
@@ -140,7 +141,7 @@ const serieD: LeagueFormat = {
     const index = competition.stages.length;
     if (index === 0) {
       const byRegion = [...competition.clubIds].sort(
-        (a, b) => REGION_ORDER.indexOf(clubStates[a] ?? "SP") - REGION_ORDER.indexOf(clubStates[b] ?? "SP") || a.localeCompare(b),
+        (a, b) => REGION_ORDER.indexOf(clubStates[a] ?? "SP") - REGION_ORDER.indexOf(clubStates[b] ?? "SP") || compareText(a, b),
       );
       const groups = Array.from({ length: byRegion.length / D_GROUP_SIZE }, (_, g) => byRegion.slice(g * D_GROUP_SIZE, (g + 1) * D_GROUP_SIZE));
       return { kind: "groups", groups, legs: 2 };

@@ -5,6 +5,7 @@ import { roundRobin } from "../roundRobin.js";
 import { shuffle } from "../shuffle.js";
 import { fifaWindowsOf, worldCupOf } from "./fifaCalendar.js";
 import type { KnockoutRound, NationalCompetition, NationalMatch, NationalTeam } from "./nations.js";
+import { compareText } from "../compareText.js";
 
 /** What a season's national football opens: its competitions and their group matches. */
 export type Opened = { competitions: NationalCompetition[]; matches: NationalMatch[] };
@@ -38,7 +39,7 @@ const REAL_ROUNDS: Record<string, string> = { "1/16": "round-of-32", "1/8": "rou
 /** The 4-year cycle a season sits in: 0 a World Cup year (2026, 2030…), 2 the Copa América and Euro's. */
 const phaseOf = (season: number) => (((season - 2026) % 4) + 4) % 4;
 
-const byPoints = (teams: Readonly<Record<string, NationalTeam>>) => (a: string, b: string) => (teams[b]?.points ?? 0) - (teams[a]?.points ?? 0) || a.localeCompare(b);
+const byPoints = (teams: Readonly<Record<string, NationalTeam>>) => (a: string, b: string) => (teams[b]?.points ?? 0) - (teams[a]?.points ?? 0) || compareText(a, b);
 
 /** The teams of a confederation, best first. */
 function confederationTeams(source: DrawSource, confederation: Confederation): string[] {
@@ -264,7 +265,7 @@ export function groupTable(teamIds: readonly string[], matches: readonly Nationa
     away.pts += a > h ? 3 : h === a ? 1 : 0;
   }
   const row = (id: string) => rows.get(id) ?? { pts: 0, gd: 0, gf: 0 };
-  return [...teamIds].sort((a, b) => row(b).pts - row(a).pts || row(b).gd - row(a).gd || row(b).gf - row(a).gf || points(b) - points(a) || a.localeCompare(b));
+  return [...teamIds].sort((a, b) => row(b).pts - row(a).pts || row(b).gd - row(a).gd || row(b).gf - row(a).gf || points(b) - points(a) || compareText(a, b));
 }
 
 /** The window match days of `seasons` picked by index: [season, window index, how many of its days]. */

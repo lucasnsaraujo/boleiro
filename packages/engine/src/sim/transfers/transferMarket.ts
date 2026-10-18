@@ -18,7 +18,8 @@ export type Listing = { mode: ListingMode; price: number };
 
 /**
  * A club's offer for one of the coach's players, waiting for his answer until the end of `until`.
- * `buyerId` null is a club abroad, whose offer is also kept in EUR.
+ * `buyerId` null is a club abroad, whose offer is also kept in EUR. In a hot-seat game it may be another
+ * human coach's offer, which is his last word.
  */
 export type Bid = {
   playerId: string;
@@ -32,10 +33,12 @@ export type Bid = {
   isFinal: boolean;
   madeOn: IsoDate;
   until: IsoDate;
+  /** The contract the player agreed with another human coach whose offer this is; a club's own offer sets it on the day of the sale. */
+  contract?: { wage: number; until: IsoDate };
 };
 
-/** A club's bid in one of the coach's auctions, in BRL. */
-export type AuctionBid = { clubId: string; fee: number; date: IsoDate };
+/** A club's bid in one of the coach's auctions, in BRL; another human coach's carries the contract the player agreed, as his offers do. */
+export type AuctionBid = { clubId: string; fee: number; date: IsoDate; contract?: Bid["contract"] };
 
 /** One of the coach's players at auction: clubs bid from `minBid` up, and the best bid takes him on `closesOn`. */
 export type Auction = { minBid: number; closesOn: IsoDate; bids: AuctionBid[] };

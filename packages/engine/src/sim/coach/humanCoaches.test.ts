@@ -4,7 +4,9 @@ import type { GameState, SimPlayer } from "../gameState.js";
 import { startMatchDay } from "../live/startMatchDay.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { isInjured } from "../players/isInjured.js";
+import { loadGame, saveGame } from "../saveGame.js";
 import { humanClubIds, isHumanClub, passTheSeat, waitingCoachesOf } from "./humanCoaches.js";
+import { compareText } from "../compareText.js";
 
 const FIRST = "flamengo-rj";
 const SECOND = "palmeiras-sp";
@@ -20,7 +22,7 @@ function advanceUntil(state: GameState, isDone: (state: GameState) => boolean): 
 function weakestEleven(state: GameState, clubId: string): string[] {
   const fit = Object.values(state.players)
     .filter((p) => p.clubId === clubId && !isInjured(p, state.date))
-    .sort((a, b) => a.strength - b.strength || a.id.localeCompare(b.id));
+    .sort((a, b) => a.strength - b.strength || compareText(a.id, b.id));
   const keeper = fit.find((p) => p.group === "GK");
   const outfield = fit.filter((p) => p.group !== "GK").slice(0, 10);
   return [keeper, ...outfield].filter((p): p is SimPlayer => !!p).map((p) => p.id);
@@ -41,6 +43,20 @@ describe("hot-seat coaches", () => {
     expect(waitingCoachesOf(twoCoaches)[0]?.coach.contract).not.toBeNull();
     expect(isHumanClub(twoCoaches, SECOND)).toBe(true);
     expect(isHumanClub(twoCoaches, "santos-sp")).toBe(false);
+  });
+
+  it("refuses two coaches whose names differ only in case, accents or spaces", () => {
+    expect(() => loadNewGame(6, { coachClubId: FIRST, hotSeat: { coachName: "Ana Lúcia", otherCoaches: [{ name: " ana  lucia ", clubId: SECOND }] } })).toThrow(/name/);
+    expect(() => loadNewGame(6, { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }, { name: "BRUNO", clubId: "santos-sp" }] } })).toThrow(/name/);
+  });
+
+  it("still loads a save from before that rule with two coaches of one name", () => {
+    const [bruno] = waitingCoachesOf(twoCoaches);
+    if (!bruno) throw new Error("no waiting coach");
+    const sameName = { ...twoCoaches, waitingCoaches: [{ ...bruno, name: "Ana" }] };
+    const loaded = loadGame(saveGame(sameName));
+    expect(waitingCoachesOf(loaded).map((c) => [c.name, c.clubId])).toEqual([["Ana", SECOND]]);
+    expect(passTheSeat(loaded).coachClubId).toBe(SECOND);
   });
 
   it("refuses two coaches at one club", () => {

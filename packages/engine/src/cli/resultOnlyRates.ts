@@ -9,6 +9,7 @@ import { openNextStage } from "../sim/openNextStage.js";
 import { leagueMatches } from "../sim/world/resultOnlyLeague.js";
 import { playWorldDay, startCountry } from "../sim/world/resultOnlyWorld.js";
 import type { World, WorldClub } from "../sim/world/world.js";
+import { compareText } from "../sim/compareText.js";
 
 const LEAGUE_SIZE = 20;
 const DIVISION_ORDER = ["A", "B", "C", "D"];
@@ -64,7 +65,7 @@ function gapsOf(full: Tally, resultOnly: Tally): RateGap[] {
 /** Clones of the real clubs, best divisions first, `leagueCount` leagues of twenty, each club with its source's squad. */
 function clonesOf(clubs: readonly Club[], players: readonly SquadPlayer[], leagueCount: number) {
   const rank = (club: Club) => (club.division ? DIVISION_ORDER.indexOf(club.division) : DIVISION_ORDER.length);
-  const ranked = [...clubs].sort((a, b) => rank(a) - rank(b) || a.id.localeCompare(b.id));
+  const ranked = [...clubs].sort((a, b) => rank(a) - rank(b) || compareText(a.id, b.id));
   const squads = new Map<string, SquadPlayer[]>();
   for (const player of players) squads.set(player.clubId, [...(squads.get(player.clubId) ?? []), player]);
   const leagues: string[][] = [];

@@ -6,10 +6,11 @@ import { typicalRating } from "../live/matchRatings.js";
 import type { World } from "../world/world.js";
 import type { SeasonMark } from "./history.js";
 import { roleOf, seasonAwards } from "./seasonAwards.js";
+import { compareText } from "../compareText.js";
 
 const start = loadNewGame(8, { coachClubId: null });
 const serieA = new Set(Object.values(start.clubs).filter((c) => c.division === "A").map((c) => c.id));
-const players = Object.values(start.players).filter((p) => serieA.has(p.clubId)).sort((a, b) => a.id.localeCompare(b.id));
+const players = Object.values(start.players).filter((p) => serieA.has(p.clubId)).sort((a, b) => compareText(a.id, b.id));
 // Every Série A player plays 30 of the 38 rounds, rated 6.0 to 7.9 by his place in the id order.
 const averageOf = (p: SimPlayer) => 6 + (players.indexOf(p) % 20) / 10;
 const marks: Record<string, SeasonMark> = Object.fromEntries(players.map((p) => [p.id, [30, Math.round(averageOf(p) * 10) * 30, 1]]));
@@ -19,7 +20,7 @@ function withSeason(ratings: Record<string, SeasonMark>, goals: Record<string, n
 }
 
 const best = (role: Role, among = players) =>
-  among.filter((p) => roleOf(p) === role).sort((a, b) => averageOf(b) - averageOf(a) || a.id.localeCompare(b.id));
+  among.filter((p) => roleOf(p) === role).sort((a, b) => averageOf(b) - averageOf(a) || compareText(a.id, b.id));
 
 describe("the Brasileirão's awards", () => {
   const awards = seasonAwards(withSeason(marks), {});

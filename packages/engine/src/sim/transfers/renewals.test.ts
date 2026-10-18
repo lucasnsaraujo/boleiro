@@ -12,6 +12,7 @@ import { renewalTermsOf, talkMoodOf } from "./renewalTerms.js";
 import { runTransferDay } from "./runTransferDay.js";
 import { wageBillsOf } from "./wageBillsOf.js";
 import { willingToJoin } from "./willingToJoin.js";
+import { compareText } from "../compareText.js";
 
 const COACH = "flamengo-rj";
 const start = loadNewGame(4, { coachClubId: COACH });
@@ -24,7 +25,7 @@ const withFinance = (state: GameState, patch: Partial<ClubFinance>): GameState =
 const rich = withFinance(start, { transferBudget: 1e10, wageCap: 1e10 });
 const [ours] = Object.values(start.players)
   .filter((p) => p.clubId === COACH)
-  .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+  .sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
 if (!ours) throw new Error("no Flamengo player");
 const withPlayer = (state: GameState, patch: Partial<SimPlayer>): GameState => ({ ...state, players: { ...state.players, [ours.id]: { ...ours, ...patch } } });
 const termOf = (state: GameState, months: number): ContractTerm => {
@@ -187,7 +188,7 @@ describe("talkMoodOf", () => {
 describe("a signing with a contract length", () => {
   const [best] = Object.values(start.players)
     .filter((p) => p.clubId === "santos-sp")
-    .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+    .sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
   if (!best) throw new Error("no Santos player");
   const freeAgent = (patch: Partial<SimPlayer>): GameState => {
     const players = { ...rich.players };

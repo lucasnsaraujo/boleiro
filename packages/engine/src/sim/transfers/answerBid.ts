@@ -1,5 +1,6 @@
 import type { GameState, SimPlayer } from "../gameState.js";
 import { recordDayEvents } from "../history/recordDayEvents.js";
+import { boardRefusal } from "./boardRefusal.js";
 import { coachMarketOf, unitHash, withCoachMarket, withoutPlayer } from "./coachMarket.js";
 import { contractEnd } from "./expireContracts.js";
 import { marketView } from "./marketView.js";
@@ -14,6 +15,8 @@ export type BidAnswer = { kind: "accept" } | { kind: "decline" } | { kind: "coun
 // guess: a counter more than a fifth over what the buyer would pay reads as a no, and it walks away;
 // nearer, it comes back once with its highest price.
 const OVERREACH = 0.2;
+// A signing's board pays the fee and three months of his wage up front, as decideCoachRequest asks it.
+const WAGE_MONTHS_UP_FRONT = 3;
 
 /** What came of it: he left, the offer was turned down, the buyer named its last price, or the buyer walked away. */
 export type BidOutcome = "sold" | "declined" | "finalOffer" | "walkedAway";
@@ -24,7 +27,11 @@ export type BidOutcome = "sold" | "declined" | "finalOffer" | "walkedAway";
  */
 export const buyerWage = (player: Pick<SimPlayer, "strength">, squad: readonly SimPlayer[]): number => Math.max(1, goingRate(player.strength, squad));
 
-/** Sells the player to the bidder for `fee`; null when the buyer can no longer register him. */
+/**
+ * Sells the player to the bidder for `fee`, on the contract the bid carries if any; null when the buyer can no
+ * longer register him, or, for another human coach's offer, when his board can no longer pay for it (his
+ * board said yes when he sent it, and other deals may have taken the money since).
+ */
 export function sellToBidder(state: GameState, bid: Bid, fee: number): { state: GameState; event: PlayerMoved } | null {
   const player = state.players[bid.playerId];
   if (!player) return null;
@@ -33,9 +40,11 @@ export function sellToBidder(state: GameState, bid: Bid, fee: number): { state: 
   if (bid.buyerId === null) return movePlayer(draft, { playerId: player.id, kind: "abroad", toClubId: null, fee }, view.squad);
   const squad = view.squad(bid.buyerId);
   if (isClubFull(state, bid.buyerId, squad.length)) return null;
+  const finance = state.finances[bid.buyerId];
+  if (bid.contract && (!finance || boardRefusal(finance, view.bill(bid.buyerId), { upFront: fee + WAGE_MONTHS_UP_FRONT * bid.contract.wage, wageChange: bid.contract.wage }))) return null;
   // A command has no random stream; the contract's length is hashed from the player and the day instead.
-  const until = contractEnd(Number(state.date.slice(0, 4)) + 1, () => unitHash(`${player.id}:${state.date}`));
-  return movePlayer(draft, { playerId: player.id, kind: "transfer", toClubId: bid.buyerId, fee, contract: { wage: buyerWage(player, squad), until } }, view.squad);
+  const contract = bid.contract ?? { wage: buyerWage(player, squad), until: contractEnd(Number(state.date.slice(0, 4)) + 1, () => unitHash(`${player.id}:${state.date}`)) };
+  return movePlayer(draft, { playerId: player.id, kind: "transfer", toClubId: bid.buyerId, fee, contract }, view.squad);
 }
 
 /**

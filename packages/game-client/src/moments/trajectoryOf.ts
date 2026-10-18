@@ -8,6 +8,7 @@ import { IDOL_LINE, idolStandingOf, meterOf } from "@boleiro/engine/sim/moments/
 import { competitionKeyName } from "../format/competitionName.js";
 import { formatGameDate, formatMonthYear } from "../format/formatGameDate.js";
 import type { ClubTag } from "./momentView.js";
+import { compareText } from "@boleiro/engine/sim/compareText";
 
 /** What a marker on the timeline stands for, which picks its colour and the filter it answers to. */
 export type MarkerKind = "title" | "idol" | "sacking" | "exit" | "tribute" | "award";
@@ -148,7 +149,7 @@ export function trajectoryOf(game: GameState, seat = 0): Trajectory {
     const look = MOMENT_MARKERS[moment.kind];
     if (look) markers.push({ id: moment.id, at: yearOf(moment.date), date: moment.date, ...look, count: 1, ...momentLine(state, moment), club: clubTagOf(state, moment.clubId), momentId: moment.id });
   }
-  markers.sort((a, b) => a.at - b.at || a.id.localeCompare(b.id));
+  markers.sort((a, b) => a.at - b.at || compareText(a.id, b.id));
   const clubIds = [...new Set(record.stints.map((s) => s.clubId))];
   const coach = { name, record };
   const idolClubs = clubIds.filter((id) => idolStandingOf(state, coach, id).points >= IDOL_LINE);

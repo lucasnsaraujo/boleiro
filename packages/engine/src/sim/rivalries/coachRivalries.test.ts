@@ -9,11 +9,12 @@ import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { coachRivalriesOf, coachRivalryScore, recordCoachMeetings, winnerOf } from "./coachRivalries.js";
 import { pairKeyOf, rivalryMemoryOf } from "./rivalryMemory.js";
+import { compareText } from "../compareText.js";
 
 const COACH = "flamengo-rj";
 const start = loadNewGame(4, { coachClubId: COACH, hotSeat: { coachName: "Ana", otherCoaches: [] } });
 const ANA = humanKey("Ana");
-const firstGame = start.fixtures.filter((f) => (f.homeId === COACH || f.awayId === COACH) && f.date >= start.date).sort((a, b) => a.date.localeCompare(b.date))[0];
+const firstGame = start.fixtures.filter((f) => (f.homeId === COACH || f.awayId === COACH) && f.date >= start.date).sort((a, b) => compareText(a.date, b.date))[0];
 if (!firstGame) throw new Error("no Flamengo game");
 let eve = start;
 while (eve.date < firstGame.date) eve = advanceDay(eve, {}).state;

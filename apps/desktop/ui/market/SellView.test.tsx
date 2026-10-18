@@ -6,6 +6,7 @@ import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import type { BidAnswer, BidOutcome } from "@boleiro/engine/sim/transfers/answerBid";
 import { coachMarketOf, withCoachMarket } from "@boleiro/engine/sim/transfers/coachMarket";
 import { listPlayer } from "@boleiro/engine/sim/transfers/listPlayer";
+import { RAPIDO } from "@boleiro/engine/sim/formats";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
 import { SellView } from "./SellView.js";
 import { pickOption } from "../controls/pickOption.js";
@@ -55,6 +56,24 @@ test("a buyer's last word can only be taken or turned down", () => {
   renderSell(withCoachMarket(offered, { ...coachMarketOf(offered), bids: { [sold.id]: { ...bid, isFinal: true } } }));
   expect(screen.queryByRole("button", { name: "Contraproposta" })).toBeNull();
   expect(screen.getByText("Última oferta do Vitória: não aceita contraproposta.")).toBeTruthy();
+});
+
+test("another human coach's offer names him and can only be taken or turned down", () => {
+  const hotSeat = { ...newGameFromFiles(5, { coachClubId: COACH, hotSeat: { coachName: "Bruno", otherCoaches: [{ name: "Ana", clubId: "vitoria-ba" }] } }, bundledGameFiles), date: "2026-01-10" };
+  const bid = { playerId: sold.id, buyerId: "vitoria-ba", fee: 10_000_000, feeEur: null, ceiling: 10_000_000, isFinal: true, madeOn: game.date, until: "2026-01-12", contract: { wage: 90_000, until: "2028-12-31" } };
+  renderSell(withCoachMarket(hotSeat, { ...coachMarketOf(hotSeat), bids: { [sold.id]: bid } }));
+  const card = screen.getByRole("article", { name: `Proposta por ${sold.name}` });
+  expect(within(card).getByText(/Série \w · proposta de Ana/)).toBeTruthy();
+  expect(within(card).getByText("Proposta de Ana: entre técnicos não há contraproposta.")).toBeTruthy();
+  expect(within(card).queryByRole("button", { name: "Contraproposta" })).toBeNull();
+});
+
+test("an offer from a human coach's club abroad names its league", () => {
+  const abroad = { ...newGameFromFiles(5, { coachClubId: COACH, formats: RAPIDO, hotSeat: { coachName: "Bruno", otherCoaches: [{ name: "Ana", clubId: "tm-11" }] } }, bundledGameFiles), date: "2026-01-10" };
+  const bid = { playerId: sold.id, buyerId: "tm-11", fee: 10_000_000, feeEur: null, ceiling: 10_000_000, isFinal: true, madeOn: game.date, until: "2026-01-12", contract: { wage: 90_000, until: "2028-12-31" } };
+  renderSell(withCoachMarket(abroad, { ...coachMarketOf(abroad), bids: { [sold.id]: bid } }));
+  const card = screen.getByRole("article", { name: `Proposta por ${sold.name}` });
+  expect(within(card).getByText("Premier League · Inglaterra · proposta de Ana")).toBeTruthy();
 });
 
 test("a listed player's price mode switches, and another player goes up for sale from the list", async () => {

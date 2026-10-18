@@ -19,7 +19,7 @@ import "./finances.css";
 import { clubArticle, withArticle } from "@boleiro/data/articles";
 
 const FINANCE_KEYS = [
-  "date", "season", "seed", "coachClubId", "clubs", "finances", "boards", "players", "market", "mood", "fixtures", "competitions", "friendlies", "hasMidSeasonWindow", "coach",
+  "date", "season", "seed", "coachClubId", "clubs", "finances", "boards", "players", "market", "mood", "fixtures", "competitions", "friendlies", "hasMidSeasonWindow", "coach", "waitingCoaches",
 ] as const;
 type FinanceState = Pick<GameState, (typeof FINANCE_KEYS)[number]>;
 

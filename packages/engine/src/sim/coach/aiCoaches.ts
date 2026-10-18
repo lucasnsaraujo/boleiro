@@ -8,6 +8,7 @@ import type { CompetitionKey } from "../history/history.js";
 import type { Country, WorldClub } from "../world/world.js";
 import { clubStatures } from "./clubStatures.js";
 import { inventCoachName } from "./inventCoachName.js";
+import { compareText } from "../compareText.js";
 
 /** A spell of an AI coach at a club; `left` says how it ended, null while it runs. */
 export type AiCoachStint = { clubId: string; from: IsoDate; until: IsoDate | null; left: "fired" | "replaced" | "retired" | null };
@@ -112,7 +113,7 @@ export function squadLevel(strengths: readonly number[]): number {
 
 /** Each club's percentile (0 smallest, 100 biggest) by squad level, among `clubs`. */
 export function staturesByStrength(clubs: readonly WorldClub[]): Map<string, number> {
-  const sorted = clubs.map((club) => ({ id: club.id, level: squadLevel(club.strengths) })).sort((a, b) => a.level - b.level || a.id.localeCompare(b.id));
+  const sorted = clubs.map((club) => ({ id: club.id, level: squadLevel(club.strengths) })).sort((a, b) => a.level - b.level || compareText(a.id, b.id));
   const last = Math.max(1, sorted.length - 1);
   return new Map(sorted.map(({ id }, index) => [id, Math.round((100 * index) / last)]));
 }
@@ -180,7 +181,7 @@ function openCoaching(clubs: readonly [string, string][], statures: ReadonlyMap<
     coaching.nextId += 1;
   };
   const rosterYear = Number(COACH_ROSTER_SEEN_ON.slice(0, 4));
-  const sorted = [...clubs].sort(([a], [b]) => a.localeCompare(b));
+  const sorted = [...clubs].sort(([a], [b]) => compareText(a, b));
   for (const [clubId, country] of sorted) {
     const stature = statures.get(clubId) ?? 0;
     const real = COACH_ROSTER[clubId];

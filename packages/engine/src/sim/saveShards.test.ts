@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { advanceDay } from "./advanceDay.js";
 import type { GameState } from "./gameState.js";
 import { loadNewGame } from "./loadNewGame.js";
+import { unpackJson } from "./packedJson.js";
 import { saveGame } from "./saveGame.js";
 import { GAME_SHARD, loadShards, saveShards, WORLD_SHARD } from "./saveShards.js";
 import type { CountryStructure, WorldClub } from "./world/world.js";
@@ -33,6 +34,14 @@ describe("save shards", () => {
 
   it("keep a Brazil-only game in one shard written exactly as saveGame writes it", () => {
     expect(saveShards(brazil)).toEqual({ [GAME_SHARD]: saveGame(brazil) });
+  });
+
+  it("write the game shard of a game with countries with each player's strength marks as one line", () => {
+    const [id, marks] = Object.entries(world.history.strength)[0] ?? [];
+    if (!id || !marks?.[0]) throw new Error("no strength marks");
+    const game = unpackJson(saveShards(world)[GAME_SHARD] ?? "");
+    expect(game).toMatchObject({ history: { strength: { [id]: [marks[0].season, ...marks.map((mark) => mark.strength)] } } });
+    expect(loadShards(saveShards(world)).history.strength).toStrictEqual(world.history.strength);
   });
 
   it("give each result-only country a shard of its own, and load back the same game", () => {

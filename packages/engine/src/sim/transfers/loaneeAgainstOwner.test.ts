@@ -2,12 +2,13 @@ import { describe, expect, it } from "vitest";
 import { advanceDay } from "../advanceDay.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { compareText } from "../compareText.js";
 
 const COACH = "sport-pe";
 const opening = loadNewGame(4, { coachClubId: COACH });
 const fixture = opening.fixtures
   .filter((f): f is Fixture => !f.result && f.homeId !== COACH && f.awayId !== COACH && !!opening.clubs[f.homeId] && !!opening.clubs[f.awayId])
-  .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id))[0];
+  .sort((a, b) => compareText(a.date, b.date) || compareText(a.id, b.id))[0];
 if (!fixture) throw new Error("no fixture between two clubs of the game");
 const { homeId: ownerId, awayId: borrowerId, date: matchDate } = fixture;
 

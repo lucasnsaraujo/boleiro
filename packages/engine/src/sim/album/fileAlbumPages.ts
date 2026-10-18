@@ -6,6 +6,7 @@ import type { CoachRecord, SeasonRecord } from "../history/history.js";
 import { roleOf } from "../history/seasonAwards.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
 import { SHINE, type AlbumPage, type AlbumSticker, type SquadMark } from "./album.js";
+import { compareText } from "../compareText.js";
 
 // guess: a club's top scorer earns his shine with five goals; fewer make him the best of a dry season, not a scorer.
 const CLUB_TOP_SCORER_GOALS = 5;
@@ -43,7 +44,7 @@ function pageOf(state: GameState, record: SeasonRecord, clubId: string, isRunnin
     const shine = (isIdol ? SHINE.idol : 0) | (isTopScorer ? SHINE.topScorer : 0) | (awarded.has(id) ? SHINE.award : 0);
     return [id, state.players[id]?.name ?? total?.name ?? id, role, apps, goals, shine];
   });
-  stickers.sort((a, b) => ROLE_ORDER.indexOf(a[2]) - ROLE_ORDER.indexOf(b[2]) || b[3] - a[3] || b[4] - a[4] || a[1].localeCompare(b[1]));
+  stickers.sort((a, b) => ROLE_ORDER.indexOf(a[2]) - ROLE_ORDER.indexOf(b[2]) || b[3] - a[3] || b[4] - a[4] || compareText(a[1], b[1]));
   const { squadsSince } = history.current;
   // A count that began after the season did leaves out the games the club played before it.
   const isPartial = !!squadsSince && state.fixtures.some((f) => f.result && f.date < squadsSince && (f.homeId === clubId || f.awayId === clubId));
