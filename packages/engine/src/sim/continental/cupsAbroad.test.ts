@@ -85,6 +85,15 @@ describe("a human club abroad in UEFA's and its country's cups", () => {
     });
   });
 
+  it("brings the cups of a game saved before cups abroad into the full tier on its next day", () => {
+    const isAbroad = (id: string) => start.competitions[id]?.kind === "cupAbroad";
+    const competitions = Object.fromEntries(Object.entries(start.competitions).filter(([id]) => !isAbroad(id)));
+    const old = { ...start, competitions, fixtures: start.fixtures.filter((f) => !isAbroad(f.competitionId)) };
+    const next = advanceDay(loadGame(saveGame(old)), {}).state;
+    expect(next.competitions["champions-league-2026"]?.kind).toBe("cupAbroad");
+    expect(ownFixtures(next, "champions-league-2026")).toEqual(ownFixtures(start, "champions-league-2026"));
+  });
+
   it("leaves a game without a human club abroad as it was", () => {
     const flamengo = loadNewGame(5, { coachClubId: "flamengo-rj", world, formats: REALISTA });
     expect(Object.values(flamengo.competitions).some((c) => c.kind === "cupAbroad")).toBe(false);
