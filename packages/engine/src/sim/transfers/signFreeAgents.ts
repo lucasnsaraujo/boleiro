@@ -11,6 +11,7 @@ import type { PlayerMoved } from "./transferEvents.js";
 import { wageRateOf } from "./wageDemand.js";
 import { willingToJoin } from "./willingToJoin.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
+import { compareText } from "../compareText.js";
 
 // guess: a club tries up to fifteen free agents a market day.
 const TRIES = 15;
@@ -28,9 +29,9 @@ export function signFreeAgents(state: GameState, random: () => number): { state:
   const signed = new Set<string>();
   const byGroup = new Map<PositionGroup, SimPlayer[]>(GROUPS.map((g) => [g, []]));
   for (const p of Object.values(state.market.freeAgents)) byGroup.get(p.group)?.push(p);
-  for (const list of byGroup.values()) list.sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+  for (const list of byGroup.values()) list.sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
   const shortBy = (clubId: string) => SQUAD_TARGET[view.tier(clubId)] - view.squad(clubId).length;
-  for (const clubId of Object.keys(state.finances).sort((a, b) => shortBy(b) - shortBy(a) || a.localeCompare(b))) {
+  for (const clubId of Object.keys(state.finances).sort((a, b) => shortBy(b) - shortBy(a) || compareText(a, b))) {
     if (isHumanClub(state, clubId)) continue;
     const club = next.clubs[clubId];
     const finance = next.finances[clubId];

@@ -41,6 +41,13 @@ describe("the offers on the coach's desk", () => {
     expect(sheets.map((s) => s.playerId)).toEqual([starter.id, reserve.id]);
   });
 
+  test("name the human coach behind an offer, with the wage he agreed with a player who wants to go", () => {
+    const hotSeat = { ...newGameFromFiles(5, { coachClubId: COACH, hotSeat: { coachName: "Bruno", otherCoaches: [{ name: "Ana", clubId: "vitoria-ba" }] } }, bundledGameFiles), date: "2026-01-10" };
+    const [sheet] = bidSheets(withBids(hotSeat, { playerId: reserve.id, ceiling: 5_000_000, isFinal: true, contract: { wage: 123_456, until: "2028-12-31" } }));
+    expect(sheet).toMatchObject({ buyerId: "vitoria-ba", buyerCoach: "Ana", newWage: 123_456, wantsToGo: true, isFinal: true });
+    expect(bidSheets(withBids(game, { playerId: reserve.id }))[0]?.buyerCoach).toBeNull();
+  });
+
   test("say a player always wants a move abroad", () => {
     expect(bidSheets(withBids(game, { playerId: reserve.id, buyerId: null }))[0]).toMatchObject({ buyerId: null, wantsToGo: true, newWage: null });
   });

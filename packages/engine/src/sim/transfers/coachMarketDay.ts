@@ -12,6 +12,7 @@ import { valuePlayer } from "./valuePlayer.js";
 import { willingToJoin } from "./willingToJoin.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
 import { idolRefusesMove } from "../rivalries/idols.js";
+import { compareText } from "../compareText.js";
 
 type CoachMarketEvent = BidReceived | AuctionClosed | PlayerMoved;
 
@@ -99,12 +100,12 @@ export function coachMarketDay(state: GameState, random: () => number): { state:
   const events: CoachMarketEvent[] = [];
   let next = before ? withCoachMarket(state, prune(state, before)) : state;
 
-  for (const [playerId, auction] of Object.entries(coachMarketOf(next).auctions).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [playerId, auction] of Object.entries(coachMarketOf(next).auctions).sort(([a], [b]) => compareText(a, b))) {
     if (auction.closesOn >= state.date) continue;
-    const ranked = [...auction.bids].sort((a, b) => b.fee - a.fee || a.date.localeCompare(b.date));
+    const ranked = [...auction.bids].sort((a, b) => b.fee - a.fee || compareText(a.date, b.date));
     let sold = false;
     for (const best of ranked) {
-      const bid: Bid = { playerId, buyerId: best.clubId, fee: best.fee, feeEur: null, ceiling: best.fee, isFinal: true, madeOn: best.date, until: state.date };
+      const bid: Bid = { playerId, buyerId: best.clubId, fee: best.fee, feeEur: null, ceiling: best.fee, isFinal: true, madeOn: best.date, until: state.date, ...(best.contract ? { contract: best.contract } : {}) };
       const moved = sellToBidder(next, bid, best.fee);
       if (!moved) continue;
       next = moved.state;
@@ -124,7 +125,7 @@ export function coachMarketDay(state: GameState, random: () => number): { state:
   const valueOf = (player: SimPlayer) => valuePlayer(player, tier, state.date) * next.market.eurBrl;
   let coach = coachMarketOf(next);
 
-  for (const [playerId, auction] of Object.entries(coach.auctions).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [playerId, auction] of Object.entries(coach.auctions).sort(([a], [b]) => compareText(a, b))) {
     const player = next.players[playerId];
     if (!player) continue;
     const bids = [...auction.bids];
@@ -146,7 +147,7 @@ export function coachMarketDay(state: GameState, random: () => number): { state:
     events.push({ type: "bidReceived", playerId: bid.playerId, buyerId: bid.buyerId, fee: bid.fee });
   };
   const until = answerBy(state, state.date);
-  for (const [playerId, listing] of Object.entries(coach.listings).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [playerId, listing] of Object.entries(coach.listings).sort(([a], [b]) => compareText(a, b))) {
     const player = next.players[playerId];
     if (!player || coach.bids[playerId] || random() >= LISTING_DAILY_CHANCE[listing.mode]) continue;
     // A buyer must be able to pay all it would go to if pushed.
@@ -158,7 +159,7 @@ export function coachMarketDay(state: GameState, random: () => number): { state:
 
   if (isMarketDay(state, state.date)) {
     const squad = view.squad(next.coachClubId).filter((p) => !coach.listings[p.id] && !coach.auctions[p.id] && !coach.bids[p.id] && !next.market.loans[p.id]);
-    for (const player of squad.sort((a, b) => a.id.localeCompare(b.id))) {
+    for (const player of squad.sort((a, b) => compareText(a.id, b.id))) {
       if (random() >= UNASKED_BID_CHANCE) continue;
       const fee = Math.round(valueOf(player) * (UNASKED_FEE.min + UNASKED_FEE.spread * random()));
       const ceiling = Math.round(fee * (UNASKED_CEILING.min + UNASKED_CEILING.spread * random()));

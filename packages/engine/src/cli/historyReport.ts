@@ -1,6 +1,7 @@
 import type { GameState } from "../sim/gameState.js";
 import { clubHistory } from "../sim/history/clubHistory.js";
 import type { CompetitionKey, MatchMark, TransferMark } from "../sim/history/history.js";
+import { compareText } from "../sim/compareText.js";
 
 const ordinal = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : (["th", "st", "nd", "rd"][n % 10] ?? "th")}`;
 const money = (brl: number) => `R$ ${brl.toLocaleString("pt-BR")}`;
@@ -16,7 +17,7 @@ function competitionName(key: CompetitionKey): string {
 const NATIONAL_ORDER: readonly CompetitionKey[] = ["serie-a", "serie-b", "serie-c", "serie-d", "copa-do-brasil"];
 const rankOf = (key: CompetitionKey) => (NATIONAL_ORDER.includes(key) ? NATIONAL_ORDER.indexOf(key) : NATIONAL_ORDER.length);
 /** Série A to D, the cup, then the estaduais in alphabetical order. */
-const byPrestige = (a: CompetitionKey, b: CompetitionKey) => rankOf(a) - rankOf(b) || a.localeCompare(b);
+const byPrestige = (a: CompetitionKey, b: CompetitionKey) => rankOf(a) - rankOf(b) || compareText(a, b);
 
 /** Prints a club's history and the player's coach career as plain text lines. */
 export function historyReport(state: GameState, clubId: string): string[] {

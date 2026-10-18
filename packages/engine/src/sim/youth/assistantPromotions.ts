@@ -4,6 +4,7 @@ import type { GameState } from "../gameState.js";
 import { isWorthPromoting, type YouthPromoted } from "../players/developPlayers.js";
 import { isMarketDay } from "../transfers/transferWindows.js";
 import { promoteProspect } from "./moveProspect.js";
+import { compareText } from "../compareText.js";
 
 /** On a market day, the seated coach's assistant promotes each kid of his academy the club would keep, if he runs the youth. */
 function promoteReady(state: GameState): { state: GameState; events: YouthPromoted[] } {
@@ -11,7 +12,7 @@ function promoteReady(state: GameState): { state: GameState; events: YouthPromot
   if (!clubId || !state.youth || !doesAssistantHandle(state.coach, "youth")) return { state, events: [] };
   let next = state;
   const events: YouthPromoted[] = [];
-  const kids = Object.values(state.youth.prospects).filter((p) => p.clubId === clubId).sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+  const kids = Object.values(state.youth.prospects).filter((p) => p.clubId === clubId).sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
   for (const kid of kids) {
     const squad = Object.values(next.players).filter((p) => p.clubId === clubId);
     if (!isWorthPromoting(next, kid, squad)) continue;

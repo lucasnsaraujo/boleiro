@@ -1,6 +1,7 @@
 import type { Fixture, GameState } from "@boleiro/engine/sim/gameState";
 import { competitionKey } from "@boleiro/engine/sim/history/history";
 import { formatDayMonth } from "../format/formatGameDate.js";
+import { compareText } from "@boleiro/engine/sim/compareText";
 
 type Score = { home: number; away: number };
 
@@ -31,7 +32,7 @@ const NOTABLE_TALLY = 3;
 function gamesBefore(match: CuriosityMatch, clubId: string): ("win" | "draw" | "loss")[] {
   return match.state.fixtures
     .filter((f) => f.result && f.id !== match.fixture.id && f.date < match.fixture.date && (f.homeId === clubId || f.awayId === clubId))
-    .toSorted((a, b) => b.date.localeCompare(a.date))
+    .toSorted((a, b) => compareText(b.date, a.date))
     .flatMap((f) => {
       if (!f.result) return [];
       const [own, other] = f.homeId === clubId ? [f.result.homeGoals, f.result.awayGoals] : [f.result.awayGoals, f.result.homeGoals];
@@ -102,7 +103,7 @@ const lastMeeting: CuriosityRule = (match) => {
   const pair = new Set([fixture.homeId, fixture.awayId]);
   const last = match.state.fixtures
     .filter((f) => f.result && f.id !== fixture.id && f.date < fixture.date && pair.has(f.homeId) && pair.has(f.awayId))
-    .toSorted((a, b) => b.date.localeCompare(a.date))[0];
+    .toSorted((a, b) => compareText(b.date, a.date))[0];
   if (!last?.result) return null;
   return `Na última vez, em ${formatDayMonth(last.date)}, deu ${match.clubName(last.homeId)} ${last.result.homeGoals} × ${last.result.awayGoals} ${match.clubName(last.awayId)}.`;
 };

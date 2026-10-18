@@ -6,6 +6,7 @@ import type { GameState } from "../gameState.js";
 import { CLUB_LEVEL, normal, SQUAD_SHAPE } from "../players/developPlayers.js";
 import { inventName } from "../players/inventName.js";
 import { inventHometown } from "./hometowns.js";
+import { compareText } from "../compareText.js";
 
 /** A kid in a club's academy. He plays only youth football until the club promotes, sells or releases him. */
 export type Prospect = {
@@ -155,5 +156,5 @@ export function openAcademies(state: Pick<GameState, "clubs" | "finances" | "sea
 export function academySquad(youth: Youth | undefined, clubId: string): Prospect[] {
   return Object.values(youth?.prospects ?? {})
     .filter((p) => p.clubId === clubId)
-    .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+    .sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
 }

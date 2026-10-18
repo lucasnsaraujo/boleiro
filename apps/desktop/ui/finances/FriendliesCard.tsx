@@ -24,6 +24,7 @@ const REFUSALS: Record<FriendlyRefusal, string> = {
   opponent: "esse clube não marca amistoso",
   cash: "o mandante não tem caixa para o cachê",
   refused: "um clube tão maior não viaja para esse estádio",
+  coach: "esse clube é de outro técnico",
 };
 
 const DIVISIONS = ["A", "B", "C", "D"] as const;

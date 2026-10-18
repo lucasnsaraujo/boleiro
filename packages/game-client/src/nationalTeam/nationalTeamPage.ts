@@ -9,6 +9,7 @@ import { CONFEDERATIONS_WITH_QUALIFIERS, groupTable, throughNow } from "@boleiro
 import type { NationalCompetition, NationalMatch, Nations } from "@boleiro/engine/sim/nations/nations";
 import { poolOf } from "@boleiro/engine/sim/nations/nationalJobs";
 import { nationalTeamName } from "../format/nationalTeamName.js";
+import { compareText } from "@boleiro/engine/sim/compareText";
 
 /** A player of a call-up as the album shows him: the game's own (`clubId` set) or one of the pool's from abroad; `crestId` names his club's crest. */
 export type NationalPlayerCard = { ref: string; name: string; role: Role; strength: number; club: string; clubId: string | null; crestId: string | null; age: number | null; isCoachClub: boolean };
@@ -126,7 +127,7 @@ function competitionView(nations: Nations, competition: NationalCompetition, tea
     const matches = own.filter((m) => m.round === round).map((m) => fixtureRow(nations, m));
     return matches.length ? [{ round, matches }] : [];
   });
-  const matches = own.filter((m) => m.homeId === teamId || m.awayId === teamId).sort((a, b) => a.date.localeCompare(b.date)).map((m) => fixtureRow(nations, m));
+  const matches = own.filter((m) => m.homeId === teamId || m.awayId === teamId).sort((a, b) => compareText(a.date, b.date)).map((m) => fixtureRow(nations, m));
   return { id: competition.id, name: competition.name, kind: competition.kind, groups, knockout, matches, winnerId: competition.winnerId || null };
 }
 
@@ -164,7 +165,7 @@ export function nationalTeamPage(state: GameState, teamId?: string): NationalTea
   const ranked = [
     ...Object.values(nations.teams).map((t) => ({ teamId: t.id, name: teamName(nations, t.id), code: t.code, points: t.points })),
     ...nations.ranked.map((r) => ({ teamId: null, name: r.name, code: null, points: r.points })),
-  ].sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+  ].sort((a, b) => b.points - a.points || compareText(a.name, b.name));
   const rows = ranked.map((row, i): RankingRowView => ({ rank: i + 1, ...row, points: Math.round(row.points) }));
   const rank = rows.find((row) => row.teamId === id)?.rank ?? rows.length;
 
@@ -182,7 +183,7 @@ export function nationalTeamPage(state: GameState, teamId?: string): NationalTea
   const tournament = window ? tournamentAfter(id, window) : undefined;
   const until = isAway ? running.until : tournament && window && tournament.until > window.until ? tournament.until : (window?.until ?? state.date);
   const fixtures = window
-    ? nations.matches.filter((m) => (m.homeId === id || m.awayId === id) && m.date >= window.from && m.date <= until).sort((a, b) => a.date.localeCompare(b.date)).map((m) => fixtureRow(nations, m))
+    ? nations.matches.filter((m) => (m.homeId === id || m.awayId === id) && m.date >= window.from && m.date <= until).sort((a, b) => compareText(a.date, b.date)).map((m) => fixtureRow(nations, m))
     : [];
 
   const { refs, isProvisional } = callUpRefs(state, nations, id);

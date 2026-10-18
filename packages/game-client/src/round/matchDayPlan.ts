@@ -20,6 +20,7 @@ import { formationOf, usualStartersOf } from "@boleiro/engine/sim/players/usualL
 import { withLoaneesFacingOwner } from "@boleiro/engine/sim/transfers/loans";
 import { onDutyOn } from "@boleiro/engine/sim/nations/nationsDay";
 import { fixtureLabel } from "../format/competitionName.js";
+import { compareText } from "@boleiro/engine/sim/compareText";
 
 /** Why a player can't play today: hurt, banned, on loan from today's opponent (`facesOwner`), or away with his national team (`onDuty`). */
 export type PlayerStatus = "injured" | "suspended" | "facesOwner" | "onDuty" | null;
@@ -76,7 +77,7 @@ const FORM_LENGTH = 5;
 export function recentResultsOf(fixtures: readonly Fixture[], clubId: string): MatchResult[] {
   return fixtures
     .filter((f) => f.result && (f.homeId === clubId || f.awayId === clubId))
-    .toSorted((a, b) => a.date.localeCompare(b.date))
+    .toSorted((a, b) => compareText(a.date, b.date))
     .slice(-FORM_LENGTH)
     .flatMap((f): MatchResult[] => {
       if (!f.result) return [];

@@ -27,8 +27,9 @@ export function pendingText(state: Pick<GameState, "date" | "coachClubId" | "pla
   return `Fica na mesa até a janela abrir, em ${formatDayMonth(windowStatus(addDays(state.date, 1), state).date)}.`;
 }
 
-/** "Contratação de Zé: recusada, sem verba" */
+/** "Contratação de Zé: recusada, sem verba"; a yes that still waits on someone says on whom. */
 export function answerText({ request, name, approved, reason }: BoardAnswer): string {
   const ending = NOUNS[request.kind].feminine ? "a" : "o";
-  return `${requestTitle(request, name)}: ${approved ? `aprovad${ending}` : `recusad${ending}, ${refusalText(reason)}`}`;
+  const answer = approved ? `aprovad${ending}${reason ? `, ${refusalText(reason)}` : ""}` : `recusad${ending}, ${refusalText(reason)}`;
+  return `${requestTitle(request, name)}: ${answer}`;
 }

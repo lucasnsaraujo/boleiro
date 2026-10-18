@@ -6,6 +6,7 @@ import type { WorldClub } from "../world/world.js";
 import { CLUB_WORLD_CUP_PLACES, CONFEDERATIONS, confederationOf, isClubWorldCupSeason, type Confederation } from "./clubWorldCup.js";
 import { CONMEBOL_CUPS } from "./conmebolCups.js";
 import { CHAMPIONS_LEAGUE_BEFORE, cupChampion, leaguePhaseTable } from "./uefaCups.js";
+import { compareText } from "../compareText.js";
 
 /** The Club World Cup's clubs, best seed first, and each one's country. */
 export type ClubWorldCupField = { clubIds: string[]; countries: Record<string, string> };
@@ -53,7 +54,7 @@ export function byStrength(state: Pick<GameState, "clubs" | "players" | "world" 
   const squads = new Map<string, number[]>();
   for (const player of Object.values(state.players)) if (clubIds.includes(player.clubId)) squads.set(player.clubId, [...(squads.get(player.clubId) ?? []), player.strength]);
   const strength = new Map(clubIds.map((id) => [id, strengthOf(state, id, squads)]));
-  return [...clubIds].sort((a, b) => (strength.get(b) ?? 0) - (strength.get(a) ?? 0) || a.localeCompare(b));
+  return [...clubIds].sort((a, b) => (strength.get(b) ?? 0) - (strength.get(a) ?? 0) || compareText(a, b));
 }
 
 /** The field seeded by strength, strongest first; null unless every club of it is in the game. */

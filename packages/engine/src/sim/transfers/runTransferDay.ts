@@ -45,7 +45,7 @@ const isCoachNews = (event: TransferEvent) =>
  * and his own business (offers, listings, auctions), then on market days Europe's bids and the AI clubs'
  * business. Draws come from the market's own random stream. In a hot-seat game each waiting coach's
  * requests (`waitingRequests`, in waiting order) and business run as if he sat in the seat; his own news
- * comes back apart, in `waitingEvents`. Last, the assistants who run their coach's sales take the offers for players outside the plans.
+ * comes back apart, in `waitingEvents`, with the offers other human coaches made for his players. Last, the assistants who run their coach's sales take the offers for players outside the plans.
  */
 export function runTransferDay(
   state: GameState,
@@ -103,14 +103,19 @@ export function runTransferDay(
   let next = steps.length ? openDraft(state) : state;
   const events: TransferEvent[] = [];
   const waitingEvents: TransferEvent[][] = waiting.map(() => []);
+  // An offer is news for the coach whose player it is, who may not be the one whose step made it (another human coach's offer).
+  const newsOf = (event: TransferEvent, waitingIndex: number | undefined, after: GameState): number | undefined => {
+    if (event.type !== "bidReceived") return waitingIndex;
+    const sellerId = after.players[event.playerId]?.clubId;
+    const seller = waitingCoachesOf(after).findIndex((coach) => coach.clubId === sellerId);
+    return seller >= 0 ? seller : sellerId === after.coachClubId ? undefined : waitingIndex;
+  };
   for (const { step, waitingIndex } of steps) {
     const done = step(next, random.next);
     next = done.state;
-    const own = waitingIndex === undefined ? undefined : waitingEvents[waitingIndex];
-    if (!own) events.push(...done.events);
-    else {
-      own.push(...done.events.filter(isCoachNews));
-      events.push(...done.events.filter((event) => !isCoachNews(event)));
+    for (const event of done.events) {
+      const own = isCoachNews(event) ? newsOf(event, waitingIndex, next) : undefined;
+      (own === undefined ? events : (waitingEvents[own] ?? events)).push(event);
     }
   }
   const eurBrl = state.date.endsWith("-01") ? driftExchangeRate(next.market.eurBrl, random.next) : next.market.eurBrl;

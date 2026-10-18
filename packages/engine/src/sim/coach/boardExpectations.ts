@@ -3,6 +3,7 @@ import type { Club } from "@boleiro/data/clubs";
 import type { GameState } from "../gameState.js";
 import { clubStatures } from "./clubStatures.js";
 import { firstPhaseTables } from "./firstPhaseTables.js";
+import { compareText } from "../compareText.js";
 
 export type Expectation = "title" | "continental" | "promotion" | "topHalf" | "avoidRelegation";
 
@@ -83,7 +84,7 @@ export function boardExpectations(state: GameState): { boards: Record<string, Bo
   for (const { ladder, clubs } of leagues) {
     const members = clubs
       .map((club) => club.id)
-      .sort((a, b) => (statures.get(b) ?? 0) - (statures.get(a) ?? 0) || a.localeCompare(b));
+      .sort((a, b) => (statures.get(b) ?? 0) - (statures.get(a) ?? 0) || compareText(a, b));
     members.forEach((clubId, rank) => {
       const tableSize = tables.get(clubId)?.length;
       if (!tableSize) return;

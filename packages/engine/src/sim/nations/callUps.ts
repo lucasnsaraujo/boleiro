@@ -3,6 +3,7 @@ import { pickLineup, type Player, type Team } from "../../engine/match.js";
 import type { IsoDate, SimPlayer } from "../gameState.js";
 import { isInjured } from "../players/isInjured.js";
 import type { Nations, NationalTeam, Outsiders } from "./nations.js";
+import { compareText } from "../compareText.js";
 
 /** The places of a call-up by position, 26 in all: 3 goalkeepers, 4 full-backs, 4 centre-backs, 7 midfielders, 8 forwards (the mock's, after Brazil's lists). */
 export const CALL_UP_PLACES: Record<Role, number> = { goleiro: 3, lateral: 4, zagueiro: 4, meia: 7, atacante: 8 };
@@ -77,7 +78,7 @@ function outsiderCandidates(outsiders: Outsiders | undefined, date: IsoDate): Ca
  * those at least as strong as `bar` first, the rest only for places they would leave empty.
  */
 function bestByPlaces(candidates: readonly Candidate[], bar: number): string[] {
-  const sorted = [...candidates].sort((a, b) => Number(b.strength >= bar) - Number(a.strength >= bar) || b.strength - a.strength || a.ref.localeCompare(b.ref));
+  const sorted = [...candidates].sort((a, b) => Number(b.strength >= bar) - Number(a.strength >= bar) || b.strength - a.strength || compareText(a.ref, b.ref));
   const taken = new Set<string>();
   for (const [role, places] of Object.entries(CALL_UP_PLACES)) {
     for (const candidate of sorted.filter((c) => c.role === role).slice(0, places)) taken.add(candidate.ref);

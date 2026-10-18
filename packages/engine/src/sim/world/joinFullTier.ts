@@ -16,6 +16,7 @@ import { clubsAbroad } from "./clubsAbroad.js";
 import { leagueMatches, playLeagueDay } from "./resultOnlyLeague.js";
 import { squadLevel } from "../coach/aiCoaches.js";
 import type { Country, WorldClub } from "./world.js";
+import { compareText } from "../compareText.js";
 
 /** The result-only country a club plays in, with its id; null for a club of the full tier or of no country. */
 export function countryOfWorldClub(state: Pick<GameState, "world">, clubId: string): { id: string; country: Country } | null {
@@ -34,14 +35,14 @@ export function proxyClubOf(state: Pick<GameState, "clubs" | "finances" | "world
   if (!found || level < 0) return null;
   const members = found.country.leagues[level]?.clubIds ?? [];
   const strength = (id: string) => squadLevel(found.country.clubs[id]?.strengths ?? []);
-  const ranked = [...members].sort((a, b) => strength(a) - strength(b) || a.localeCompare(b));
+  const ranked = [...members].sort((a, b) => strength(a) - strength(b) || compareText(a, b));
   const position = ranked.indexOf(clubId) / Math.max(1, ranked.length - 1);
   const division = level === 0 ? "A" : "B";
   const revenue = (id: string) => {
     const finance = state.finances[id];
     return finance ? projectedRevenue(finance) : 0;
   };
-  const proxies = Object.values(state.clubs).filter((club) => club.division === division && !club.abroad).map((club) => club.id).sort((a, b) => revenue(a) - revenue(b) || a.localeCompare(b));
+  const proxies = Object.values(state.clubs).filter((club) => club.division === division && !club.abroad).map((club) => club.id).sort((a, b) => revenue(a) - revenue(b) || compareText(a, b));
   return proxies[Math.round(position * (proxies.length - 1))] ?? null;
 }
 

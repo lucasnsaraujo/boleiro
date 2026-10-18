@@ -5,6 +5,7 @@ import { clubStatures } from "./clubStatures.js";
 import { isHumanClub } from "./humanCoaches.js";
 import { isOnTheBrink } from "./judgeCoaches.js";
 import { rivalBlockOf } from "../rivalries/idols.js";
+import { compareText } from "../compareText.js";
 
 /**
  * A job the coach in the seat could go for: an open one since `openedOn`, or (`openedOn` null) a club
@@ -28,5 +29,5 @@ export function jobCentre(state: GameState): OpenJob[] {
     if (opened) jobs.push({ clubId, openedOn: opened, coachName: null, ...verdict });
     else if (isOnTheBrink(state, clubId)) jobs.push({ clubId, openedOn: null, coachName: byClub.get(clubId)?.name ?? null, ...verdict });
   }
-  return jobs.sort((a, b) => Number(a.openedOn === null) - Number(b.openedOn === null) || b.stature - a.stature || a.clubId.localeCompare(b.clubId));
+  return jobs.sort((a, b) => Number(a.openedOn === null) - Number(b.openedOn === null) || b.stature - a.stature || compareText(a.clubId, b.clubId));
 }

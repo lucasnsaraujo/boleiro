@@ -65,9 +65,14 @@ const REFUSALS: Record<string, string> = {
   wageTooLow: "ele quer bem mais do que o oferecido",
   playerCounter: "ele fez uma contraproposta",
   counterOffer: "o clube dele fez uma contraproposta",
+  otherCoachClub: "o clube dele é de outro técnico, que não empresta jogadores",
+  sellerHasOffer: "o técnico do clube dele já tem uma proposta por ele na mesa",
+  auctionBidTooLow: "ele está em leilão, e a oferta não passa do lance mínimo nem do maior lance",
+  auctionClosed: "o leilão dele já terminou",
+  sentToCoach: "agora o técnico do clube dele responde",
 };
 
-/** Why the board said no, in a few words. */
+/** Why the board said no, or what its yes still waits for, in a few words. */
 export const refusalText = (reason: string | null): string => (reason && REFUSALS[reason]) ?? "pedido negado";
 
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
@@ -349,6 +354,8 @@ export function inboxLines(before: NewsState, after: NewsState, events: readonly
         if (event.reason === "counterOffer" || event.reason === "playerCounter") return null;
         const noun = REQUEST_NOUNS[event.request.kind];
         const player = playerName(event.request.playerId);
+        const sellerId = after.players[event.request.playerId]?.clubId;
+        if (event.reason === "sentToCoach" && sellerId) return [`Diretoria aprova a proposta por ${player}; agora o técnico ${theClub(sellerId, "de")} responde`, "neutral"];
         if (event.approved) return [`Diretoria aprova ${noun} de ${player}`, "good"];
         return [`Diretoria recusa ${noun} de ${player}: ${refusalText(event.reason)}`, "bad"];
       }

@@ -2,12 +2,13 @@ import { pickLineup, type PositionGroup } from "@boleiro/engine/engine/match";
 import { tierOf } from "@boleiro/engine/sim/finances/tierOf";
 import type { GameState, IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { buyerWage } from "@boleiro/engine/sim/transfers/answerBid";
+import { waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
 import { coachMarketOf } from "@boleiro/engine/sim/transfers/coachMarket";
 import type { ListingMode } from "@boleiro/engine/sim/transfers/transferMarket";
 import { valuePlayer } from "@boleiro/engine/sim/transfers/valuePlayer";
 import { willingToJoin } from "@boleiro/engine/sim/transfers/willingToJoin";
 
-export type SellState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "market" | "finances" | "hasMidSeasonWindow" | "coach">;
+export type SellState = Pick<GameState, "date" | "coachClubId" | "clubs" | "players" | "market" | "finances" | "hasMidSeasonWindow" | "coach" | "waitingCoaches">;
 
 /** One club's offer for one of the coach's players, with what taking it means for him. */
 export type BidSheet = {
@@ -18,6 +19,8 @@ export type BidSheet = {
   strength: number;
   /** null for a club abroad. */
   buyerId: string | null;
+  /** The human coach whose offer it is, in a hot-seat game; null for a club the AI runs. */
+  buyerCoach: string | null;
   fee: number;
   feeEur: number | null;
   /** Market value in BRL, the yardstick for the offer. */
@@ -32,7 +35,7 @@ export type BidSheet = {
   contractUntil: IsoDate;
   /** The monthly wage he would earn at the buyer; null abroad. */
   newWage: number | null;
-  /** Whether he wants the move; a player always wants Europe, and one put up for sale goes. */
+  /** Whether he wants the move; a player always wants Europe, one put up for sale goes, and one a human coach agreed terms with does. */
   wantsToGo: boolean;
 };
 
@@ -73,9 +76,10 @@ export function bidSheets(state: SellState): BidSheet[] {
       const isStarter = lineup.some((p) => p.id === player.id);
       const successor = isStarter ? (without.find((p) => !lineup.some((q) => q.id === p.id)) ?? null) : null;
       const buyer = bid.buyerId ? state.clubs[bid.buyerId] : undefined;
-      const newWage = bid.buyerId ? buyerWage(player, squadOf(state, bid.buyerId)) : null;
+      const newWage = bid.contract?.wage ?? (bid.buyerId ? buyerWage(player, squadOf(state, bid.buyerId)) : null);
+      const buyerCoach = (bid.buyerId && waitingCoachesOf(state).find((other) => other.clubId === bid.buyerId)?.name) || null;
       // A player the coach put up for sale knows he isn't wanted and goes.
-      const wantsToGo = !buyer || newWage === null || !!coach.listings[player.id] || willingToJoin({ player, from: tier, to: { tier: tierOf(buyer), fanbase: buyer.fanbase }, wage: newWage }) >= 0.5;
+      const wantsToGo = !buyer || newWage === null || !!bid.contract || !!coach.listings[player.id] || willingToJoin({ player, from: tier, to: { tier: tierOf(buyer), fanbase: buyer.fanbase }, wage: newWage }) >= 0.5;
       return [
         {
           playerId: player.id,
@@ -84,6 +88,7 @@ export function bidSheets(state: SellState): BidSheet[] {
           age: player.age,
           strength: player.strength,
           buyerId: bid.buyerId,
+          buyerCoach,
           fee: bid.fee,
           feeEur: bid.feeEur,
           value: Math.round(valuePlayer(player, tier, state.date) * state.market.eurBrl),

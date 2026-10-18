@@ -1,11 +1,12 @@
 import { projectedRevenue } from "../finances/setBoardBudget.js";
 import type { GameState } from "../gameState.js";
+import { compareText } from "../compareText.js";
 
 /** Each national club's percentile (0 smallest, 100 biggest) by `values`. */
 function percentiles(ids: readonly string[], values: (id: string) => number): Map<string, number> {
   // Each value worked out once, not at every comparison of the sort.
   const valueOf = new Map(ids.map((id) => [id, values(id)]));
-  const sorted = [...ids].sort((a, b) => (valueOf.get(a) ?? 0) - (valueOf.get(b) ?? 0) || a.localeCompare(b));
+  const sorted = [...ids].sort((a, b) => (valueOf.get(a) ?? 0) - (valueOf.get(b) ?? 0) || compareText(a, b));
   const last = Math.max(1, sorted.length - 1);
   return new Map(sorted.map((id, index) => [id, (100 * index) / last]));
 }

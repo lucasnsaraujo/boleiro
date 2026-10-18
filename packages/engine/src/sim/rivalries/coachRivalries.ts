@@ -5,6 +5,7 @@ import type { Fixture, GameState } from "../gameState.js";
 import type { HumanCoach } from "./idols.js";
 import { pairKeyOf, rivalryMemoryOf, type CoachRivalry, type RivalryMemory } from "./rivalryMemory.js";
 import { rivalryOf } from "./rivalryOf.js";
+import { compareText } from "../compareText.js";
 
 // guess: a rivalry between coaches is a point a meeting, three a final and two a press clash; from six
 // points (six meetings, or two finals, or a few meetings and a clash) the papers treat it as one.
@@ -73,7 +74,7 @@ export function coachRivalriesOf(state: Pick<GameState, "rivalries">, coachKey: 
       const isA = r.a === coachKey;
       return { opponent: isA ? r.b : r.a, meetings: r.meetings, wins: isA ? r.aWins : r.bWins, losses: isA ? r.bWins : r.aWins, draws: r.draws, finals: r.finals, clashes: r.clashes, score: coachRivalryScore(r) };
     })
-    .sort((x, y) => y.score - x.score || x.opponent.localeCompare(y.opponent));
+    .sort((x, y) => y.score - x.score || compareText(x.opponent, y.opponent));
 }
 
 /** The coach (by key) who has never beaten the other in at least FREGUESIA_WINS meetings; null when neither is. */

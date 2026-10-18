@@ -38,6 +38,18 @@ export default tseslint.config(
     },
   },
   {
+    files: ["packages/engine/**", "packages/game-client/**"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "CallExpression[callee.property.name='localeCompare'][arguments.length<2]",
+          message: "A bare localeCompare sorts by the computer's language, so one seed plays differently in another locale; use compareText or pass a locale.",
+        },
+      ],
+    },
+  },
+  {
     files: ["packages/data/**"],
     rules: {
       "no-restricted-imports": [

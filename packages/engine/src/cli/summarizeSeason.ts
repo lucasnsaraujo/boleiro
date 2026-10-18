@@ -3,6 +3,7 @@ import type { Tier } from "../sim/gameState.js";
 import { standings } from "../sim/standings.js";
 import type { SeasonPlay } from "./playSeason.js";
 import { clubSeasonsOf } from "./seasonRevenues.js";
+import { compareText } from "../sim/compareText.js";
 
 export type TableRow = { name: string; points: number | null };
 export type MoneyBand = { tier: Tier; clubs: number; p10: number; median: number; p90: number };
@@ -48,7 +49,7 @@ export function summarizeSeason({ before, after, fixtures, transfers }: SeasonPl
   };
   const estaduais = Object.entries(record.champions)
     .flatMap(([key, id]) => (key.startsWith("state-") ? [{ state: key.slice(6).toUpperCase(), champion: nameOf(id) }] : []))
-    .sort((a, b) => a.state.localeCompare(b.state));
+    .sort((a, b) => compareText(a.state, b.state));
   const clubSeasons = clubSeasonsOf(before, after);
   const money = TIERS.map((tier) => {
     const values = clubSeasons.filter((c) => c.tier === tier).map((c) => c.revenue).sort((a, b) => a - b);

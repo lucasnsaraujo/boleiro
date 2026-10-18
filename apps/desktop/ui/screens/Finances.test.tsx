@@ -107,3 +107,15 @@ test("a friendly booked on the screen is listed with its date and fee", async ()
   expect(within(booked).getByText(/Náutico/)).toBeTruthy();
   expect(within(booked).getByText(/R\$/)).toBeTruthy();
 });
+
+test("a friendly against another human coach's club can't be booked, and the screen says why", async () => {
+  const { engine, close } = inMemoryEngine();
+  closers.push(close);
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "sport-pe", hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "nautico-pe" }] } } });
+  openFinances(engine);
+  const friendlies = await screen.findByRole("region", { name: "Amistosos" });
+  await userEvent.click(within(friendlies).getByRole("button", { name: "Marcar amistoso" }));
+  await pickOption(within(friendlies).getByRole("combobox", { name: "Adversário" }), "Náutico");
+  expect(within(friendlies).getByText("Não dá: esse clube é de outro técnico.")).toBeTruthy();
+  expect(within(friendlies).getByRole("button", { name: "Marcar" }).hasAttribute("disabled")).toBe(true);
+});

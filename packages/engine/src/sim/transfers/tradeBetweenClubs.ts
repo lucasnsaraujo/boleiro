@@ -13,6 +13,7 @@ import { wageDemandAt, wageRateOf, type WageRate } from "./wageDemand.js";
 import { willingToJoin } from "./willingToJoin.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
 import { idolRefusesMove } from "../rivalries/idols.js";
+import { compareText } from "../compareText.js";
 
 // guess: a selling club asks a tenth over market value.
 export const ASKING_PREMIUM = 1.1;
@@ -37,7 +38,7 @@ function poolsOf(state: GameState): Pools {
   const { loans, preContracts } = state.market;
   const tied = new Set([...Object.keys(loans).filter((id) => loans[id]), ...Object.keys(preContracts).filter((id) => preContracts[id])]);
   for (const p of Object.values(state.players)) if (!tied.has(p.id)) pools[p.group].push(p);
-  for (const pool of Object.values(pools)) pool.sort((a, b) => a.strength - b.strength || a.id.localeCompare(b.id));
+  for (const pool of Object.values(pools)) pool.sort((a, b) => a.strength - b.strength || compareText(a.id, b.id));
   return pools;
 }
 
@@ -90,7 +91,7 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
     return inGroup.length ? inGroup.reduce((a, b) => (b.strength < a.strength ? b : a)) : null;
   };
   const preContractFrom = addDays(state.date, PRE_CONTRACT_DAYS);
-  for (const player of [...scouted].sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id))) {
+  for (const player of [...scouted].sort((a, b) => b.strength - a.strength || compareText(a.id, b.id))) {
     // The pools are built once a market day, so skip anyone who has moved since.
     if (player.clubId === buyerId || state.players[player.id]?.clubId !== player.clubId || state.market.preContracts[player.id]) continue;
     const preContract = player.contractUntil <= preContractFrom;

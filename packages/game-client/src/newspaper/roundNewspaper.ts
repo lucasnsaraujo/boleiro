@@ -3,6 +3,7 @@ import { eventMemoryOf, type EventTopic, type NewsItem, type NewsKind } from "@b
 import type { Fixture, GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import { standings } from "@boleiro/engine/sim/standings";
 import { competitionName, fixtureLabel } from "../format/competitionName.js";
+import { compareText } from "@boleiro/engine/sim/compareText";
 
 export type NewspaperState = Pick<GameState, "coachClubId" | "clubs" | "fixtures" | "competitions" | "eventMemory" | "world">;
 
@@ -114,7 +115,7 @@ export function newspaperOf(state: NewspaperState, date?: IsoDate): Edition | nu
   const leadItem = window.find((item) => item.kind === "match" && item.date === day && isAbout(item, state.coachClubId)) ?? window.findLast((item) => item.kind !== "match") ?? null;
   const rest = window.filter((item) => item !== leadItem && !(item.kind === "match" && !isAbout(item, state.coachClubId)));
   const rank = (item: NewsItem) => (item.kind === "egg" ? -2 : isAbout(item, state.coachClubId) && item.kind !== "match" ? -1 : SIDE_ORDER.indexOf(item.kind));
-  const side = [...rest].sort((a, b) => rank(a) - rank(b) || b.date.localeCompare(a.date)).slice(0, SIDE_STORIES);
+  const side = [...rest].sort((a, b) => rank(a) - rank(b) || compareText(b.date, a.date)).slice(0, SIDE_STORIES);
   const competition = match ? state.competitions[match.competitionId] : undefined;
   const sameRound = match ? state.fixtures.filter((f) => f.competitionId === match.competitionId && f.date === day && f.result) : [];
   const lines = sameRound.flatMap((f) => (f.result ? [{ homeId: f.homeId, awayId: f.awayId, homeGoals: f.result.homeGoals, awayGoals: f.result.awayGoals }] : []));
@@ -122,7 +123,7 @@ export function newspaperOf(state: NewspaperState, date?: IsoDate): Edition | nu
   const table = match ? leagueTable(state, match) : [];
   const ownIndex = table.findIndex((row) => row.clubId === state.coachClubId);
   const own = table[ownIndex];
-  const next = state.fixtures.filter((f) => !f.result && f.date > day && (f.homeId === state.coachClubId || f.awayId === state.coachClubId)).sort((a, b) => a.date.localeCompare(b.date))[0] ?? null;
+  const next = state.fixtures.filter((f) => !f.result && f.date > day && (f.homeId === state.coachClubId || f.awayId === state.coachClubId)).sort((a, b) => compareText(a.date, b.date))[0] ?? null;
   const shownIds = [...(match ? [match.homeId, match.awayId] : []), ...lines.flatMap((l) => [l.homeId, l.awayId]), ...table.slice(0, 4).map((row) => row.clubId), ...(next ? [next.homeId, next.awayId] : [])];
   return {
     date: day,

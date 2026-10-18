@@ -7,6 +7,7 @@ import { clubMood, type ClubMood } from "./clubMood.js";
 import { DERBY_TROUBLE_CHANCE, escalateSupporters, type SupporterEvent } from "./escalateSupporters.js";
 import { rivalryOf, TOP_INTENSITY } from "../rivalries/rivalryOf.js";
 import { rivalsOf } from "./rivalsOf.js";
+import { compareText } from "../compareText.js";
 
 // guess: the league average points per game when a quarter of games are drawn, as in developPlayers.
 const AVERAGE_POINTS = 1.35;
@@ -123,7 +124,7 @@ export function reactToDay(
   const events: SupporterEvent[] = [];
   let next = state;
   const mood = { ...state.mood };
-  for (const [clubId, changed] of [...moods].sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [clubId, changed] of [...moods].sort(([a], [b]) => compareText(a, b))) {
     const escalated = escalateSupporters(clubId, changed, lost.has(clubId), random, troubled.get(clubId) ?? null);
     mood[clubId] = escalated.mood;
     events.push(...escalated.events);

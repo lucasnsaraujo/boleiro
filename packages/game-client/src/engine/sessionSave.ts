@@ -1,6 +1,6 @@
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
-import { toGameState } from "@boleiro/engine/sim/saveGame";
+import { toGameState, withStrengthLines } from "@boleiro/engine/sim/saveGame";
 import { COUNTRY_SHARD, loadShards, saveShards } from "@boleiro/engine/sim/saveShards";
 import type { InboxLine } from "../hub/inboxLines.js";
 import type { TurningPoint } from "../hub/turningPoints.js";
@@ -95,7 +95,7 @@ function withSeatScouting(seats: SeatsSave): SeatsSave {
 }
 
 export function writeSessionSave({ game, desk, turningPoints, live, ...rest }: SessionSave): string {
-  return JSON.stringify({ game, desk, turningPoints, live: savedLiveOf(live), ...seatParts(rest) });
+  return JSON.stringify({ game: withStrengthLines(game), desk, turningPoints, live: savedLiveOf(live), ...seatParts(rest) });
 }
 
 /** The game's shards; a country that is the same object as when `last` was split keeps its shard from then. */

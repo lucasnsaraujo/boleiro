@@ -10,6 +10,7 @@ import { SQUAD_TARGET } from "./squadNeeds.js";
 import type { PlayerContractRenewed, RenewalSkipped, RenewalSkipReason } from "./transferEvents.js";
 import { transferWindowsOf } from "./transferWindows.js";
 import { wageBillsOf } from "./wageBillsOf.js";
+import { compareText } from "../compareText.js";
 
 // guess: a club keeps the players inside its usual squad size (SQUAD_TARGET) who are under 34.
 const RENEWAL_MAX_AGE = 34;
@@ -53,7 +54,7 @@ export function assistantVerdict(state: TalkState, player: SimPlayer, squad: rea
 export function renewalCandidates(state: Pick<GameState, "date" | "market">, squad: readonly SimPlayer[]): SimPlayer[] {
   return squad
     .filter((p) => isInLastContractYear(p, state.date) && !state.market.loans[p.id] && !state.market.preContracts[p.id] && !p.retiring)
-    .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+    .sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
 }
 
 /**

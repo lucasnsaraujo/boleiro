@@ -10,6 +10,7 @@ import { serieATv } from "./serieATv.js";
 import { setBoardBudget, TRANSFER_SHARE_OF_REVENUE } from "./setBoardBudget.js";
 import { squadStrength } from "./squadStrength.js";
 import { tierOf } from "./tierOf.js";
+import { compareText } from "../compareText.js";
 
 export type FinanceData = { clubs: readonly ClubFinances[]; divisionEstimates: readonly DivisionFinances[] };
 
@@ -162,8 +163,8 @@ export function openingFinances(
   const byTier = new Map<string, Club[]>();
   for (const club of Object.values(clubs)) byTier.set(groupOf(club), [...(byTier.get(groupOf(club)) ?? []), club]);
   const ascending = (group: string) =>
-    (byTier.get(group) ?? []).map((c) => c.id).sort((a, b) => (strength.get(a) ?? 0) - (strength.get(b) ?? 0) || a.localeCompare(b));
-  const serieARows = serieARowsOf(data).sort((a, b) => operatingRevenue(moneyOf(a)) - operatingRevenue(moneyOf(b)) || a.clubId.localeCompare(b.clubId));
+    (byTier.get(group) ?? []).map((c) => c.id).sort((a, b) => (strength.get(a) ?? 0) - (strength.get(b) ?? 0) || compareText(a, b));
+  const serieARows = serieARowsOf(data).sort((a, b) => operatingRevenue(moneyOf(a)) - operatingRevenue(moneyOf(b)) || compareText(a.clubId, b.clubId));
   const serieA = serieATv(economy, ascending("A").reverse(), (id) => clubs[id]?.fanbase ?? 0);
   const smallestSerieA = serieARowsOf(data).sort((a, b) => a.revenue.total - b.revenue.total)[0];
   const homeGames = expectedHomeGames(Object.values(competitions), fixtures);

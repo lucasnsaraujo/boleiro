@@ -21,6 +21,7 @@ import { humanKey } from "../coach/closeCoachSeason.js";
 import { departureMomentId, type AwardKind, type CareerMoments, type Moment, type QuietHow, type Tally } from "./careerMoments.js";
 import { IDOL_LINE, idolStandingOf, meterOf, type HumanCoach } from "./idolStanding.js";
 import { celebrationSeconds, standingWithout, titleStoryOf } from "./titleStory.js";
+import { compareText } from "../compareText.js";
 
 // The moments draw their chances from a stream of their own per day and coach, so no match, event or market draw moves.
 const MOMENTS_SALT = 0x3a7e1d;
@@ -254,7 +255,7 @@ function homecoming(seat: Seat, coach: HumanCoach, moments: CareerMoments, found
 function farewellOpponent(state: GameState, playerId: string, clubId: string, date: IsoDate): string | null {
   const clubs = Object.entries(state.history.players)
     .flatMap(([id, players]) => (id !== clubId && players[playerId] ? [[id, players[playerId].apps] as const] : []))
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    .sort((a, b) => b[1] - a[1] || compareText(a[0], b[0]));
   return clubs.find(([id]) => state.clubs[id] && state.finances[id] && isFree(state, id, date))?.[0] ?? null;
 }
 
