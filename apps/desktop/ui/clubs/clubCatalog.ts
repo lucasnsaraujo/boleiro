@@ -46,7 +46,7 @@ import morocco from "@boleiro/data/pack/world/ma.pack.json.gz?gunzip&keys=format
 import newZealand from "@boleiro/data/pack/world/nz.pack.json.gz?gunzip&keys=format,clubs";
 import tunisia from "@boleiro/data/pack/world/tn.pack.json.gz?gunzip&keys=format,clubs";
 import southAfrica from "@boleiro/data/pack/world/za.pack.json.gz?gunzip&keys=format,clubs";
-import nationalLooksJson from "@boleiro/data/pack/national-football.pack.json.gz?gunzip&keys=format,teams";
+import nationalLooksJson from "@boleiro/data/pack/national-football.pack.json.gz?gunzip&keys=format,packVersion,teams";
 import { imageFileOf, parseAssetManifest } from "@boleiro/data/assetManifest";
 import { parseNationalLooks } from "@boleiro/data/nationalFootball";
 import { nationalTeamName } from "@boleiro/game-client/format/nationalTeamName";
