@@ -16,16 +16,12 @@ import { firstWage } from "./moveProspect.js";
 /** The kids a squad the market left short took up to have 18 players. */
 export type SquadToppedUp = { type: "squadToppedUp"; clubId: string; playerIds: string[] };
 
-// guess: a club this short re-signs a released player only when it can pay three months of his wage
-// up front, as the market's own fillers must (signFreeAgents).
-const UP_FRONT_MONTHS = 3;
-
 const inventedPlayer = (kid: Omit<SimPlayer, "wage">, squad: readonly SimPlayer[]): SimPlayer => ({ ...kid, wage: firstWage(kid, squad) });
 
 /**
  * Every squad the market left under 18 players (contracts that ran out at the turn of the year, sales)
  * fills each position it lacks: first, at an AI club, with the best free agent at or below its level
- * who it can pay and did not just let go itself, as clubs pick up released players; then with its academy's
+ * it did not just let go itself, as clubs pick up released players; then with its academy's
  * best teenager, at an AI club only one it would keep (isWorthPromoting); then with an invented Brazilian
  * teenager at the club's level. So every club can field a side. Draws from the
  * academies' own stream; a save from before academies waits for them to open.
@@ -53,10 +49,9 @@ export function fillShortSquads(state: GameState): { state: GameState; events: (
     const playerIds: string[] = [];
     const isHuman = isHumanClub(state, club.id);
     groupsToFill(squad, []).forEach((group, i) => {
-      const finance = next.finances[club.id];
-      const canPay = (wage: number) => !!finance && finance.wagesOwed === 0 && finance.cash >= UP_FRONT_MONTHS * wage;
-      // A human coach signs his own players; his club only takes up its kids.
-      const signing = isHuman ? undefined : (freeAgents.get(group) ?? []).find((p) => !taken.has(p.id) && p.clubId !== club.id && p.strength <= level + REPLACEMENT_BAND.above && canPay(Math.max(1, rate(p.strength))));
+      // A human coach signs his own players; his club only takes up its kids. An AI club this short signs
+      // even without cash in hand: a teenager taken up instead would earn the same going rate.
+      const signing = isHuman ? undefined : (freeAgents.get(group) ?? []).find((p) => !taken.has(p.id) && p.clubId !== club.id && p.strength <= level + REPLACEMENT_BAND.above);
       if (signing) {
         taken.add(signing.id);
         const moved = movePlayer(next, { playerId: signing.id, kind: "freeAgent", toClubId: club.id, fee: 0, contract: { wage: Math.max(1, rate(signing.strength)), until: contractEnd(year, random.next) } });

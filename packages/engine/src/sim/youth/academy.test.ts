@@ -169,6 +169,13 @@ describe("squads the market left short", () => {
     expect(squadOf(COACH).some((p) => p.id === cheap.id || p.id === great.id)).toBe(false);
   });
 
+  it("re-signs a released player near its level even when it is broke, as it would pay a teenager the same", () => {
+    const own = withFreeAgents.finances[stateOnly.id];
+    if (!own) throw new Error("no finances");
+    const broke: GameState = { ...withFreeAgents, finances: { ...withFreeAgents.finances, [stateOnly.id]: { ...own, cash: 0, wagesOwed: 100_000 } } };
+    expect(fillShortSquads(broke).state.players[cheap.id]?.clubId).toBe(stateOnly.id);
+  });
+
   it("tops a squad up with a teenager at its level rather than an academy kid far below its squad", () => {
     const clubId = smallestNational?.id ?? "";
     // One keeper, five defenders, two midfielders and four forwards: midfield is the thinnest and fills first.
