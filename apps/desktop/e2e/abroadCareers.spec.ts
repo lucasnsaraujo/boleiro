@@ -43,10 +43,15 @@ async function firstGameOf(page: Page, prefix: string, from = "0000"): Promise<s
 
 /** Leaves the screen Brazil's turn of the year opens on the hub: its review, the board's verdict, then the new year. */
 async function startNextYear(page: Page, year: number) {
-  // The hub reads the game again when it opens, after the worker played the days.
-  await bar(page).getByRole("link", { name: "Agenda" }).click();
-  await bar(page).getByRole("link", { name: "Times" }).click();
-  await expect(page.getByRole("heading", { name: `Fim da temporada ${year - 1}` })).toBeVisible({ timeout: 60_000 });
+  const seasonEnd = page.getByRole("heading", { name: `Fim da temporada ${year - 1}` });
+  const agenda = bar(page).getByRole("link", { name: "Agenda" });
+  // The hub shows the season's end once it reads the game again: by itself, or when it opens after another screen.
+  await expect(seasonEnd.or(agenda)).toBeVisible();
+  if (!(await seasonEnd.isVisible())) {
+    await agenda.click();
+    await bar(page).getByRole("link", { name: "Times" }).click();
+  }
+  await expect(seasonEnd).toBeVisible({ timeout: 60_000 });
   const board = page.getByRole("button", { name: "Ver a diretoria" });
   if (await board.isVisible()) await board.click();
   await page.getByRole("button", { name: `Começar ${year}` }).click();
