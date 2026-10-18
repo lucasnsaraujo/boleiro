@@ -41,7 +41,7 @@
   font-size: 13px;
   border-top: 1px dotted var(--line-2);
   animation: rep-in 420ms var(--e-out) both;
-  animation-delay: calc(var(--i, 0) * 28ms + 120ms);
+  animation-delay: calc(var(--i, 0) * 28ms + var(--rep-after) + 120ms);
 }
 
 .rep-side .pos {
@@ -124,7 +124,7 @@
   padding: 4px 0;
   border-top: 1px dotted var(--line-2);
   animation: rep-in 420ms var(--e-out) both;
-  animation-delay: calc(var(--i, 0) * 60ms + 80ms);
+  animation-delay: calc(var(--i, 0) * 60ms + var(--rep-after) + 80ms);
 }
 
 .rep-goals .mn {
@@ -195,7 +195,35 @@
   }
 }
 
+/*
+ * At the final whistle the rows below glide down to make room (Round.tsx), and once they have mostly passed
+ * the three panels are laid down left to right, their lines filling in after.
+ */
+.rep {
+  --rep-after: 140ms;
+}
+
+.rep > * {
+  animation: rep-lay var(--t-slow) var(--e-out) var(--rep-after) both;
+}
+
+.rep > :nth-child(2) {
+  animation-delay: calc(var(--rep-after) + 60ms);
+}
+
+.rep > :nth-child(3) {
+  animation-delay: calc(var(--rep-after) + 120ms);
+}
+
+@keyframes rep-lay {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) rotate(-0.6deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .rep > *,
   .rep-side li,
   .rep-goals li,
   .rep .star {

@@ -12,6 +12,8 @@ import { Crest } from "../clubs/Crest.js";
 import type { AdvanceResult } from "@boleiro/game-client/engine/createEngineSession";
 import type { HotSeatView } from "@boleiro/game-client/hub/hotSeat";
 import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
+import { DURATION, EASE } from "../motion/easing.js";
+import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { tintRow } from "../motion/rowSlides.js";
 import { useFlip } from "../motion/useFlip.js";
 import { hasOwnArrows } from "../round/hasOwnArrows.js";
@@ -657,6 +659,9 @@ export function Round() {
     tabelaAoVivo: isDrivable && round.table !== null && (() => openSheet(setTableOpen)),
   });
 
+  const board = useRef<HTMLDivElement>(null);
+  useFlip(board, !round ? "opening" : minute >= end ? "report" : "playing", makeRoomForReport);
+
   const crowd = round && result === null && minute < end ? crowdLevel(round, minute) * (isRunning ? 1 : PAUSED_CROWD) : null;
   useEffect(() => sound.setCrowd(crowd), [sound, crowd]);
   useEffect(() => () => sound.setCrowd(null), [sound]);
@@ -895,19 +900,21 @@ export function Round() {
         </div>
       )}
 
-      <div className="live-list">
+      <div ref={board} className="live-list">
         {minute >= end && <MatchReport round={round} />}
-        {openGroups.map((group) => groupSection(group, isOnlyMine && !group.rows.some((m) => m.isHuman)))}
-        {otherGroups.length > 0 && (
-          <div className="live-others" hidden={isOnlyMine}>
-            <button type="button" className="live-g live-others-toggle" aria-expanded={isOtherLeaguesOpen} aria-controls="live-other-leagues" onClick={() => setOtherLeaguesOpen(!isOtherLeaguesOpen)}>
-              <i className="ph-bold ph-caret-right" aria-hidden="true" />
-              Outras ligas
-              <small>{otherMatchCount === 1 ? "1 jogo" : `${otherMatchCount} jogos`}</small>
-            </button>
-            <div id="live-other-leagues">{otherGroups.map((group) => groupSection(group, !isOtherLeaguesOpen))}</div>
-          </div>
-        )}
+        <div data-flip="rows">
+          {openGroups.map((group) => groupSection(group, isOnlyMine && !group.rows.some((m) => m.isHuman)))}
+          {otherGroups.length > 0 && (
+            <div className="live-others" hidden={isOnlyMine}>
+              <button type="button" className="live-g live-others-toggle" aria-expanded={isOtherLeaguesOpen} aria-controls="live-other-leagues" onClick={() => setOtherLeaguesOpen(!isOtherLeaguesOpen)}>
+                <i className="ph-bold ph-caret-right" aria-hidden="true" />
+                Outras ligas
+                <small>{otherMatchCount === 1 ? "1 jogo" : `${otherMatchCount} jogos`}</small>
+              </button>
+              <div id="live-other-leagues">{otherGroups.map((group) => groupSection(group, !isOtherLeaguesOpen))}</div>
+            </div>
+          )}
+        </div>
       </div>
 
       {isTableOpen && table && (
@@ -1340,6 +1347,12 @@ function TableSheet({ note, onClose, children }: { note: string; onClose: () => 
     </div>,
     document.body,
   );
+}
+
+/** At the final whistle the súmula lands above the board, and the rows glide down from where they were to make room for it. */
+function makeRoomForReport(rows: HTMLElement, offset: number) {
+  if (typeof rows.animate !== "function" || prefersReducedMotion()) return;
+  rows.animate([{ transform: `translateY(${offset}px)` }, { transform: "none" }], { duration: DURATION.slow, easing: EASE.out });
 }
 
 /** A live table row slides to its new place once the goal that moved it has flashed, glowing green if it rose and red if it fell. */
