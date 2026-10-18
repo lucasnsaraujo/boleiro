@@ -4,6 +4,7 @@ import type { CompetitionMoney } from "@boleiro/data/competition-money";
 import type { ClubLineup } from "@boleiro/data/dataPack";
 import type { Role, SquadPlayer } from "@boleiro/data/players";
 import { randomStream } from "../engine/random.js";
+import { coachNameKey } from "./coach/humanCoaches.js";
 import { openingCoach, openingWaitingCoach } from "./coach/openingCoach.js";
 import { openingField } from "./continental/continentalField.js";
 import { openContinentalCups } from "./continental/openContinentalCups.js";
@@ -245,6 +246,9 @@ function withHotSeat(state: GameState, hotSeat: NewGameOptions["hotSeat"]): Game
   const clubIds = [state.coachClubId, ...hotSeat.otherCoaches.map((other) => other.clubId)];
   if (clubIds.length > MAX_HUMAN_COACHES) throw new Error(`a game takes at most ${MAX_HUMAN_COACHES} coaches`);
   if (new Set(clubIds).size !== clubIds.length) throw new Error("each coach needs a club of his own");
+  // Everything a human coach keeps across seasons is filed under his name (humanKey).
+  const names = [hotSeat.coachName, ...hotSeat.otherCoaches.map((other) => other.name)].map(coachNameKey);
+  if (new Set(names).size !== names.length) throw new Error("each coach needs a name of his own");
   for (const other of hotSeat.otherCoaches) if (!(other.clubId in state.boards)) throw new Error(`no club ${other.clubId} for ${other.name}`);
   const waitingCoaches = hotSeat.otherCoaches.map((other) => openingWaitingCoach(state, other.name, other.clubId));
   return { ...state, coachName: hotSeat.coachName, waitingCoaches };

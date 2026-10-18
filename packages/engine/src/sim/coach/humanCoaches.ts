@@ -15,6 +15,13 @@ export type WaitingCoach = {
   record: CoachRecord;
 };
 
+/**
+ * A coach's name as the game tells coaches apart: without case, accents or spaces, so "Ana Lúcia" and
+ * "analucia" are one coach. A new game refuses two such names; a save from before that rule still loads,
+ * and its namesakes share one humanKey, so the rankings, derbies and records count them as one coach.
+ */
+export const coachNameKey = (name: string): string => name.normalize("NFD").replace(/\p{M}|\s/gu, "").toLowerCase();
+
 /** The human coaches who are not in the seat, in turn order after him; a one-coach game has none. */
 export const waitingCoachesOf = (state: Pick<GameState, "waitingCoaches">): readonly WaitingCoach[] => state.waitingCoaches ?? [];
 

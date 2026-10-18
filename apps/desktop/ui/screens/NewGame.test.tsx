@@ -206,6 +206,23 @@ test("a club one coach took is closed to the others, and the game can't start un
   expect(screen.getByRole("button", { name: "Começar jogo" }).hasAttribute("disabled")).toBe(true);
 });
 
+test("two coaches can't share a name, even one written in other case, accents or spacing", async () => {
+  await openNewGame();
+  await userEvent.click(screen.getByRole("button", { name: "Mais um técnico" }));
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico 1" }), "Ana Lúcia");
+  await userEvent.click(clubList().getByRole("button", { name: "Flamengo" }));
+  await userEvent.type(screen.getByRole("textbox", { name: "Nome do técnico 2" }), "ana lucia");
+  await userEvent.click(clubList().getByRole("button", { name: "Palmeiras" }));
+  const second = screen.getByRole("textbox", { name: "Nome do técnico 2" });
+  expect(second.getAttribute("aria-invalid")).toBe("true");
+  expect(screen.getByRole("textbox", { name: "Nome do técnico 1" }).getAttribute("aria-invalid")).toBeNull();
+  expect(screen.getByText("Cada técnico precisa de um nome só dele: “ana lucia” já está na lista.")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Começar jogo" }).hasAttribute("disabled")).toBe(true);
+  await userEvent.type(second, " Souza");
+  expect(second.getAttribute("aria-invalid")).toBeNull();
+  expect(screen.getByRole("button", { name: "Começar jogo" }).hasAttribute("disabled")).toBe(false);
+});
+
 test("with the market clock off a game starts without one", async () => {
   const { engine } = await openNewGame();
   await userEvent.click(screen.getByRole("radio", { name: "Sem" }));
