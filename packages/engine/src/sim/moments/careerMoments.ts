@@ -96,6 +96,8 @@ export type CareerMoments = {
   milestones: string[];
   /** Per former club, the last season the papers compared his successor with him. */
   compared: Record<string, number>;
+  /** Per former club, the last season the papers said it was better with him, which makes it call him back sooner; a record from before has none. */
+  missed?: Record<string, number>;
   /** Per former club, the last season it paid him tribute as the visitor. */
   homecomings: Record<string, number>;
   /** The farewell matches booked for his idols, by player. */

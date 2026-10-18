@@ -38,8 +38,10 @@ const YEAR_DAYS = 365.25;
 const COMPARE_AFTER_GAMES = 10;
 const COMPARE_SEASONS = 2;
 const PPG_GAP = 0.25;
-// guess: an idol's old club in crisis almost always calls him back when its job opens; otherwise more often than not.
+// guess: an idol's old club in crisis almost always calls him back when its job opens; one whose fans have been
+// singing his name since he left, most times; otherwise more often than not.
 const COME_BACK_CHANCE = 0.6;
+const COME_BACK_CHANCE_MISSED = 0.8;
 const COME_BACK_CHANCE_IN_CRISIS = 0.9;
 // guess: a club in the bottom third of its table is in crisis.
 const CRISIS_SHARE = 2 / 3;
@@ -311,10 +313,11 @@ function compareSuccessors(seat: Seat, coach: HumanCoach, moments: CareerMoments
     const club = nameOf(after, clubId);
     const coachName = coachNameIn(after);
     const numbers = `${mine.toFixed(2).replace(".", ",")} pontos por jogo com ${coachName}, ${his.toFixed(2).replace(".", ",")} com ${successor.name}.`;
-    if (his < mine - PPG_GAP) found.news.push(story(today, [clubId], `“Com ${coachName} era diferente”`, `A torcida do ${club} canta o nome do ex-técnico. ${numbers}`));
+    const isMissed = his < mine - PPG_GAP;
+    if (isMissed) found.news.push(story(today, [clubId], `“Com ${coachName} era diferente”`, `A torcida do ${club} canta o nome do ex-técnico. ${numbers}`));
     else if (his > mine + PPG_GAP) found.news.push(story(today, [clubId], `${successor.name} faz o ${club} esquecer ${coachName}`, numbers));
     else continue;
-    next = { ...next, compared: { ...next.compared, [clubId]: after.season } };
+    next = { ...next, compared: { ...next.compared, [clubId]: after.season }, ...(isMissed ? { missed: { ...next.missed, [clubId]: after.season } } : {}) };
   }
   return next;
 }
@@ -332,8 +335,9 @@ function callBack(seat: Seat, coach: HumanCoach, moments: CareerMoments, found: 
     if (standing.points < IDOL_LINE) continue;
     const board = after.boards[clubId];
     const isInCrisis = !!board && board.position > CRISIS_SHARE * board.tableSize;
+    const isMissed = (moments.missed?.[clubId] ?? -Infinity) >= after.season - 1;
     const roll = keyedStream(after.seed ^ MOMENTS_SALT, `comeBack:${humanKey(coach.name)}:${clubId}:${today}`)();
-    if (roll >= (isInCrisis ? COME_BACK_CHANCE_IN_CRISIS : COME_BACK_CHANCE)) continue;
+    if (roll >= (isInCrisis ? COME_BACK_CHANCE_IN_CRISIS : isMissed ? COME_BACK_CHANCE_MISSED : COME_BACK_CHANCE)) continue;
     const yours = moments.games[clubId];
     const fired = before.coaches ? coachesByClub(before.coaches).get(clubId) : undefined;
     const since = fired?.stints.at(-1)?.from;

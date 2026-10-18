@@ -179,6 +179,11 @@ describe("tributes", () => {
     expect(kindsOf(runMoments(nextDay(withApps(20)), withApps(20), [retired]).state)).not.toContain("idolRetired");
   });
 
+  it("books no farewell match for a squad player who announces his last season", () => {
+    const announced: DayEvent = { type: "playerWantsToRetire", playerId: veteran.id, clubId: FLA, name: veteran.name, age: 36, afterSeason: 2026 };
+    expect(runMoments(nextDay(withApps(20)), withApps(20), [announced]).state.friendlies?.some((f) => f.farewellOf) ?? false).toBe(false);
+  });
+
   it("books a farewell match for an idol who announces his last season, and celebrates it when it is played", () => {
     const announced: DayEvent = { type: "playerWantsToRetire", playerId: veteran.id, clubId: FLA, name: veteran.name, age: 36, afterSeason: 2026 };
     const booked = runMoments(nextDay(withApps(160)), withApps(160), [announced]).state;
@@ -214,6 +219,14 @@ describe("the story at the clubs he left", () => {
     const before = withResults(left, 0);
     const news = runMoments(nextDay(before), before, [played(FLA, "vasco-rj", 0, 1)]).state.eventMemory?.news ?? [];
     expect(news.filter((item) => item.kind === "career").map((item) => item.headline)).toEqual(["“Com o técnico era diferente”"]);
+  });
+
+  it("remembers a club that misses him, and prints nothing when the successor does about as well", () => {
+    const worse = withResults(left, 0);
+    expect(runMoments(nextDay(worse), worse, [played(FLA, "vasco-rj", 0, 1)]).state.history.coach.moments?.missed).toEqual({ [FLA]: 2026 });
+    const even = withResults(watched(successorAt(withCoach(atBahia, BAHIA, longAtFlamengo("2025-12-31", "contractEnded")), today), () => ({ games: { [FLA]: [0, 10, 0] } })), 1);
+    const news = runMoments(nextDay(even), even, [played(FLA, "vasco-rj", 1, 1)]).state.eventMemory?.news ?? [];
+    expect(news.filter((item) => item.kind === "career")).toEqual([]);
   });
 
   it("says so when the successor does better", () => {
@@ -264,6 +277,22 @@ describe("the coach's players' achievements", () => {
 
   it("ignores another club's winners", () => {
     expect(kindsOf(runMoments(nextDay(coach), coach, [awards("palmeiras-sp")]).state)).toEqual([]);
+  });
+});
+
+describe("the World Cup squad", () => {
+  const calledUp = (playerId: string, clubId: string): DayEvent => ({ type: "calledUp", playerId, clubId, teamId: "brazil", until: "2026-07-19" });
+  const squad = Object.values(base.players).filter((p) => p.clubId === FLA).slice(0, 2);
+
+  it("celebrates the coach's players called up for the World Cup, all of them in one moment", () => {
+    const camp = watched({ ...withCoach(base, FLA, { stints: [{ clubId: FLA, from: today, until: null, left: null }] }), date: "2026-05-25" });
+    const moments = queueOf(runMoments(nextDay(camp), camp, squad.map((p) => calledUp(p.id, FLA))).state);
+    expect(moments).toMatchObject([{ kind: "playerAward", award: "worldCup", players: squad.map((p) => ({ playerId: p.id })) }]);
+  });
+
+  it("does not for a call-up outside the World Cup", () => {
+    const window = watched({ ...withCoach(base, FLA, { stints: [{ clubId: FLA, from: today, until: null, left: null }] }), date: "2026-09-01" });
+    expect(kindsOf(runMoments(nextDay(window), window, squad.map((p) => calledUp(p.id, FLA))).state)).toEqual([]);
   });
 });
 

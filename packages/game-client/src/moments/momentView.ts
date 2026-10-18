@@ -765,11 +765,17 @@ function retirementView(state: GameState, moment: Extract<Moment, { kind: "retir
     const titles = record.trophies.filter((t) => t.clubId === stint.clubId && t.season >= Number(stint.from.slice(0, 4)) && t.season <= Number((stint.until ?? moment.date).slice(0, 4)));
     const tally: Tally = moments?.games[stint.clubId] ?? [0, 0, 0];
     const page = (record.album ?? []).filter((p) => p.clubId === stint.clubId).at(-1);
-    const stickers = (page?.stickers ?? [])
-      .slice()
-      .sort((a, b) => b[3] - a[3])
-      .slice(0, 15)
-      .map(([id, name, , , , shine]) => stickerOfPlayer(state, id, name, stint.clubId, "", shine > 0));
+    // A spell the album never printed shows the club's most capped players in the game instead.
+    const stickers = page
+      ? page.stickers
+          .slice()
+          .sort((a, b) => b[3] - a[3])
+          .slice(0, 15)
+          .map(([id, name, , , , shine]) => stickerOfPlayer(state, id, name, stint.clubId, "", shine > 0))
+      : Object.entries(state.history.players[stint.clubId] ?? {})
+          .sort((a, b) => b[1].apps - a[1].apps)
+          .slice(0, 15)
+          .map(([id, mark]) => stickerOfPlayer(state, id, mark.name, stint.clubId, "", isIdolAt(state, id, stint.clubId)));
     const years = `${stint.from.slice(0, 4)}${stint.until && stint.until.slice(0, 4) !== stint.from.slice(0, 4) ? ` a ${stint.until.slice(0, 4)}` : ""}`;
     const how = stint.left === "fired" ? "Demitido" : stint.left === "resigned" ? "Pediu para sair" : stint.left === "retired" ? "A última parada" : "Saiu";
     return { club, name: club.name, years, line: `${plural(titles.length, "título", "títulos")}, ${tally[0] + tally[1] + tally[2]} jogos. ${how}.`, stickers };
