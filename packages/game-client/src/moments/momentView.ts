@@ -495,7 +495,7 @@ function titleView(state: GameState, moment: Extract<Moment, { kind: "title" }>)
     seconds: moment.seconds,
     competition: moment.competition,
     competitionName: name,
-    headline: moment.competition.startsWith("serie-a") ? "Campeão brasileiro" : `Campeão: ${name}`,
+    headline: championOf(moment.competition, name),
     subline: isLong ? `Depois de ${plural(story.seasonInSpell, "temporada", "temporadas")}` : firstWords,
     matchLine,
     eleven: elevenOf(state, moment.clubId, 12),
@@ -527,6 +527,25 @@ function nearMissList(runnerUps: number, lostFinals: number): string {
 function nearMissWords(runnerUps: number, lostFinals: number): string {
   const list = nearMissList(runnerUps, lostFinals);
   return list ? `, ${list} com você` : "";
+}
+
+const CHAMPION_OF: Partial<Record<CompetitionKey, string>> = {
+  "serie-a": "Campeão brasileiro",
+  "copa-do-brasil": "Campeão da Copa do Brasil",
+  libertadores: "Campeão da Libertadores",
+  "sul-americana": "Campeão da Sul-Americana",
+  recopa: "Campeão da Recopa",
+  "club-world-cup": "Campeão do Super Mundial",
+  "intercontinental-cup": "Campeão do Mundial de Clubes",
+};
+
+/** "Campeão brasileiro", "Campeão baiano", "Campeão da Libertadores": a title as the crowd sings it. */
+function championOf(key: CompetitionKey, name: string): string {
+  const known = CHAMPION_OF[key];
+  if (known) return known;
+  if (key.startsWith("state-")) return `Campeão ${name.toLowerCase()}`;
+  if (/^serie-[b-d]$/.test(key)) return `Campeão da ${name}`;
+  return `Campeão: ${name}`;
 }
 
 function tributeView(state: GameState, moment: Extract<Moment, { kind: "milestone" | "homecoming" | "idolRetired" }>): TributeView {

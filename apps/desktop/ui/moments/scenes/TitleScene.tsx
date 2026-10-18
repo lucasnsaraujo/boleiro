@@ -212,7 +212,7 @@ export function TitleScene({ view, actions }: Props) {
       durationMs={duration}
       backdrop={view.isLong ? `color-mix(in srgb, ${strongColour(view.club)} 40%, #050202)` : "var(--paper) var(--paper-tex) center / cover"}
       tone={view.isLong ? "dark" : "light"}
-      label={`${view.headline}: ${view.competitionName}`}
+      label={view.headline.toLowerCase().includes(view.competitionName.toLowerCase()) ? view.headline : `${view.headline}: ${view.competitionName}`}
       className={`mo-title ${view.isLong ? "is-long" : "is-short"}`}
       actions={actions}
     >
