@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState, type ReactNode } from "react";
+import { memo, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router";
 import type { Club } from "@boleiro/data/clubs";
@@ -659,8 +659,18 @@ export function Round() {
     tabelaAoVivo: isDrivable && round.table !== null && (() => openSheet(setTableOpen)),
   });
 
+  // Where the board's rows sat at the last render, so they can glide down from there when the súmula lands above them.
   const board = useRef<HTMLDivElement>(null);
-  useFlip(board, !round ? "opening" : minute >= end ? "report" : "playing", makeRoomForReport);
+  const rowsTop = useRef<number | null>(null);
+  const hasReport = round !== null && minute >= end;
+  const hadReport = useRef(hasReport);
+  useLayoutEffect(() => {
+    const rows = board.current?.querySelector<HTMLElement>("[data-board-rows]");
+    if (!rows) return;
+    if (hasReport && !hadReport.current && rowsTop.current !== null) makeRoomForReport(rows, rowsTop.current - rows.offsetTop);
+    hadReport.current = hasReport;
+    rowsTop.current = rows.offsetTop;
+  });
 
   const crowd = round && result === null && minute < end ? crowdLevel(round, minute) * (isRunning ? 1 : PAUSED_CROWD) : null;
   useEffect(() => sound.setCrowd(crowd), [sound, crowd]);
@@ -902,7 +912,7 @@ export function Round() {
 
       <div ref={board} className="live-list">
         {minute >= end && <MatchReport round={round} />}
-        <div data-flip="rows">
+        <div data-board-rows>
           {openGroups.map((group) => groupSection(group, isOnlyMine && !group.rows.some((m) => m.isHuman)))}
           {otherGroups.length > 0 && (
             <div className="live-others" hidden={isOnlyMine}>

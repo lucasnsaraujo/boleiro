@@ -544,10 +544,12 @@
 }
 
 /* The board: every match of the round, competition by competition. */
+/* No scroll anchoring: when the súmula lands above the rows, they move down and glide back (Round.tsx) the same in every engine. */
 .live-list {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  overflow-anchor: none;
   padding: 10px 0 16px;
 }
 
@@ -843,12 +845,11 @@
 }
 
 /*
- * The coach's goal: an outlined GOL rushes in from the left and lands on the stinger's brass hit
- * (--gol-beat, from the sound catalog), a filled shadow of it a beat behind for depth; it drifts while the
- * crowd roars, then is pulled away to the right.
+ * The coach's goal: an outlined GOL rushes in from the left, still speeding up when it slams into place on the
+ * stinger's brass hit (--gol-beat, set from the sound catalog), and the impact punches it a little larger; a
+ * filled shadow follows a beat behind for depth. It drifts while the crowd roars, then is pulled away.
  */
 .gol-sweep {
-  --gol-beat: 160ms;
   --gol-hold: 1000ms;
   position: absolute;
   inset: 0;
@@ -866,7 +867,8 @@
   -webkit-text-stroke: 2px rgba(255, 204, 0, 0.65);
   opacity: 0;
   animation:
-    gol-in var(--gol-beat) var(--e-out) both,
+    gol-in var(--gol-beat) var(--e-peel) both,
+    gol-impact var(--t-base) var(--e-out) var(--gol-beat) both,
     gol-drift calc(var(--gol-hold) + var(--t-slow)) linear var(--gol-beat) both,
     gol-out var(--t-slow) var(--e-peel) calc(var(--gol-beat) + var(--gol-hold)) forwards;
 }
@@ -893,6 +895,12 @@
   to {
     opacity: 1;
     transform: skewX(-12deg);
+  }
+}
+
+@keyframes gol-impact {
+  from {
+    scale: 1.07;
   }
 }
 
