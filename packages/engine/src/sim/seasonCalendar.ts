@@ -124,19 +124,18 @@ function spreadDates(candidates: readonly IsoDate[], count: number, start: IsoDa
 }
 
 /**
- * `count` league dates over `division`'s window, kept off `reserved`, the days it `isResting` and, for the
- * divisions that keep clear of them, the continental days, on the first of the LEEWAYS they fit in.
+ * `count` league dates from `start` to `end`, kept off `reserved`, the days it `isResting` and, when it
+ * `isClearOfContinental`, the continental days, on the first of the LEEWAYS they fit in; `name` labels the error.
  */
-function pickDates(
-  division: Division,
+export function pickLeagueDates(
+  name: string,
+  [start, end]: [IsoDate, IsoDate],
   count: number,
-  season: number,
   reserved: readonly IsoDate[],
   continental: readonly IsoDate[],
-  isClearOfContinental = CLEAR_OF_CONTINENTAL.has(division),
+  isClearOfContinental: boolean,
   isResting: (date: IsoDate) => boolean = () => false,
 ): IsoDate[] {
-  const [start, end] = LEAGUE_WINDOWS[division].map((date) => inSeason(date, season)) as [IsoDate, IsoDate];
   const span = daysBetween(start, end);
   const days = Array.from({ length: span + 1 }, (_, day) => addDays(start, day)).filter(
     (date) =>
@@ -153,7 +152,24 @@ function pickDates(
     const picked = spreadDates(candidates, count, start, span);
     if (picked) return picked;
   }
-  throw new Error(`Série ${division} ${season}: ${count} dates do not fit between ${start} and ${end}`);
+  throw new Error(`${name}: ${count} dates do not fit between ${start} and ${end}`);
+}
+
+/**
+ * `count` league dates over `division`'s window, kept off `reserved`, the days it `isResting` and, for the
+ * divisions that keep clear of them, the continental days, on the first of the LEEWAYS they fit in.
+ */
+function pickDates(
+  division: Division,
+  count: number,
+  season: number,
+  reserved: readonly IsoDate[],
+  continental: readonly IsoDate[],
+  isClearOfContinental = CLEAR_OF_CONTINENTAL.has(division),
+  isResting: (date: IsoDate) => boolean = () => false,
+): IsoDate[] {
+  const window = LEAGUE_WINDOWS[division].map((date) => inSeason(date, season)) as [IsoDate, IsoDate];
+  return pickLeagueDates(`Série ${division} ${season}`, window, count, reserved, continental, isClearOfContinental, isResting);
 }
 
 /** The Copa do Brasil's rounds with the dates `formats` plays of them. */

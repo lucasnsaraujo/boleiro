@@ -168,3 +168,15 @@ test("pages turn five weeks at a time and stop at the season's first and last we
   expect(calendarPage(game, last)).toMatchObject({ hasPrevious: true, hasNext: false });
   expect(turnPage(2026, "2026-11-02", 1)).toBe(last);
 });
+
+test("a game of another year, a league abroad's crossing the new year, stays out of this year's months", () => {
+  const fixture = own[0];
+  if (!fixture) throw new Error("no fixture");
+  const nextYear: Fixture = { ...fixture, id: "next-year", date: `${game.season + 1}-01-20` };
+  const lastYear: Fixture = { ...fixture, id: "last-year", date: `${game.season - 1}-12-20` };
+  const months = calendarMonths({ ...game, fixtures: [...game.fixtures, nextYear, lastYear] });
+  const ids = months.flatMap((m) => matches(m.entries)).map((e) => e.fixtureId);
+  expect(ids).not.toContain("next-year");
+  expect(ids).not.toContain("last-year");
+  expect(ids).toHaveLength(own.length);
+});

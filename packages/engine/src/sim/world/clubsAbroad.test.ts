@@ -36,6 +36,13 @@ describe("a career at a club abroad", () => {
     expect(Object.values(start.clubs).filter((club) => club.abroad?.country === "gb-eng")).toHaveLength(44);
   });
 
+  it("gives its players their ages from Transfermarkt, as Brazil's", () => {
+    const ageOf = (name: string) => Object.values(start.players).find((p) => p.clubId === ARSENAL && p.name === name)?.age;
+    expect(ageOf("David Raya")).toBe(31);
+    expect(ageOf("William Saliba")).toBe(25);
+    expect(ageOf("Cristhian Mosquera")).toBe(22);
+  });
+
   it("plays its leagues minute by minute on the unified grid, and no longer result-only", () => {
     const [premier, championship] = englishLeagues(start);
     expect(premier?.clubIds).toHaveLength(20);
@@ -47,12 +54,14 @@ describe("a career at a club abroad", () => {
   });
 
   it("keeps its clubs out of Brazil's competitions", () => {
-    const brazilian = Object.values(start.competitions).filter((c) => !(c.kind === "league" && c.abroad));
+    const brazilian = Object.values(start.competitions).filter((c) => !(c.kind === "league" && c.abroad) && c.kind !== "cupAbroad");
     for (const competition of brazilian) expect(competition.clubIds.some((id) => start.clubs[id]?.abroad)).toBe(false);
   });
 
-  it("needs the unified calendar", () => {
-    expect(() => loadNewGame(5, { coachClubId: ARSENAL, world, formats: REALISTA })).toThrow(/unified calendar/);
+  it("plays on Realista's calendars too, England's league in its own window", () => {
+    const realista = loadNewGame(5, { coachClubId: ARSENAL, world, formats: REALISTA });
+    expect(realista.calendar.leagueGrid).toBeUndefined();
+    expect(englishLeagues(realista)[0]?.stageDates[0]?.[0]?.slice(5)).not.toBe(realista.calendar.leagueDates.A[0]?.slice(5));
   });
 
   describe("over a whole season", () => {

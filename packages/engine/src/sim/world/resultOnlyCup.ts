@@ -1,3 +1,4 @@
+import { playedKey, type PlayedAbroad } from "../continental/cupsAbroad.js";
 import { addDays, daysBetween } from "../dates.js";
 import type { IsoDate, MatchResult } from "../gameState.js";
 import { shuffle } from "../shuffle.js";
@@ -108,8 +109,12 @@ export function cupMatches(cup: ResultOnlyCup): CupMatch[] {
 /** The country of a cup, from its id ("de-cup-2026"). */
 const countryOf = (cup: ResultOnlyCup) => cup.id.replace(/-cup-\d+$/, "");
 
-/** The cup with today's round played, or the same cup when today has none or its clubs are not known yet. */
-export function playCupDay(cup: ResultOnlyCup, date: IsoDate, clubOf: (id: string) => WorldClub, random: () => number): ResultOnlyCup {
+/**
+ * The cup with today's round played, or the same cup when today has none or its clubs are not known yet.
+ * A human club's match the full tier played today (`playedAbroad`) keeps its score there, after the draw
+ * that keeps the stream where it always was.
+ */
+export function playCupDay(cup: ResultOnlyCup, date: IsoDate, clubOf: (id: string) => WorldClub, random: () => number, playedAbroad?: PlayedAbroad): ResultOnlyCup {
   const round = cup.dates.indexOf(date);
   if (round < 0) return cup;
   const matches = cupMatches(cup);
@@ -131,6 +136,13 @@ export function playCupDay(cup: ResultOnlyCup, date: IsoDate, clubOf: (id: strin
       awayGoals += extraTime?.awayGoals ?? 0;
       const settledBy = homeGoals !== awayGoals ? WON_IN_EXTRA_TIME : extraTime ? WON_ON_PENALTIES_AFTER_EXTRA_TIME : 0;
       side = settledBy + Number(homeGoals === awayGoals ? isAwayShootoutWinner : awayGoals > homeGoals);
+    }
+    const own = playedAbroad?.get(playedKey(homeId, awayId, date));
+    if (own) {
+      ({ homeGoals, awayGoals } = own);
+      const isLevel = homeGoals === awayGoals;
+      const settledBy = own.isAfterExtraTime ? (isLevel ? WON_ON_PENALTIES_AFTER_EXTRA_TIME : WON_IN_EXTRA_TIME) : 0;
+      side = settledBy + Number(isLevel ? own.penaltyWinnerId === awayId : awayGoals > homeGoals);
     }
     played += String.fromCharCode(ZERO_GOALS + homeGoals, ZERO_GOALS + awayGoals) + String(side);
   }

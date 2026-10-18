@@ -1,30 +1,53 @@
 import { STATES, type Club, type State } from "@boleiro/data/clubs";
 import type { Division } from "@boleiro/data/players";
 import { copaDoBrasilEntrants, nationalRanking, type Qualification } from "./copaDoBrasilEntrants.js";
-import type { Competition, CupCompetition, Fixture, LeagueCompetition, SeasonCalendar, StateCompetition } from "./gameState.js";
+import type { Competition, CupCompetition, Fixture, IsoDate, LeagueCompetition, SeasonCalendar, StateCompetition } from "./gameState.js";
 import { LEAGUE_FORMATS } from "./leagueFormats.js";
 import { openNextStage } from "./openNextStage.js";
-import { copaDoBrasilGameScales, seasonCalendar } from "./seasonCalendar.js";
+import { copaDoBrasilGameScales, pickLeagueDates, seasonCalendar } from "./seasonCalendar.js";
 import { shuffle } from "./shuffle.js";
 import { STATE_CHAMPIONSHIP } from "./stateChampionship.js";
 import { BRAZIL } from "./world/brazil.js";
 import { isClubWorldCupSeason } from "./continental/clubWorldCup.js";
 import { continentalDates } from "./continental/continentalDays.js";
+import { uefaMatchDays } from "./continental/uefaCups.js";
+import { isInFifaWindow } from "./nations/fifaCalendar.js";
+import { windowDates } from "./world/resultOnlyLeague.js";
 import type { CountryStructure } from "./world/world.js";
 import { gameScales, REALISTA, type Formats } from "./formats.js";
 
+/** How a season lays out the leagues abroad in the full tier: the unified grid's days, or each country's own window clear of the continental days. */
+export type DaysAbroad = { grid?: readonly IsoDate[]; formats: Formats; restsInFifaWindows: boolean; playsClubWorldCup: boolean };
+
+/**
+ * `count` match days of a league abroad on its country's real calendar: spread over its window in
+ * `season`, clear of CONMEBOL's and UEFA's days over the years the window spans and, in a game with
+ * national football, resting in the FIFA windows as Europe's leagues do.
+ */
+function realDaysAbroad(country: CountryStructure, season: number, count: number, { formats, restsInFifaWindows, playsClubWorldCup }: DaysAbroad): IsoDate[] {
+  const window = windowDates(season, country.window);
+  const continental = [
+    ...continentalDates(season, formats, playsClubWorldCup && isClubWorldCupSeason(season)),
+    ...continentalDates(season + 1, formats, playsClubWorldCup && isClubWorldCupSeason(season + 1)),
+    ...uefaMatchDays(season - 1, formats),
+    ...uefaMatchDays(season, formats),
+  ].filter((date) => date >= window[0] && date <= window[1]);
+  return pickLeagueDates(`${country.id} ${season}`, window, count, [], continental, true, restsInFifaWindows ? isInFifaWindow : undefined);
+}
+
 /**
  * A country's leagues in the full tier, one per level of its pyramid in the level's real format (a
- * round robin when it has none), its stages on the unified grid's days from the first.
+ * round robin when it has none), its stages on the unified grid's days from the first or over its own window.
  */
-function leaguesAbroad(country: CountryStructure, clubs: Record<string, Club>, season: number, calendar: SeasonCalendar, random: () => number): LeagueCompetition[] {
-  const grid = calendar.leagueGrid;
-  if (!grid) throw new Error(`${country.id}: a league abroad needs the unified calendar`);
+export function leaguesAbroad(country: CountryStructure, clubs: Record<string, Club>, season: number, days: DaysAbroad, random: () => number): LeagueCompetition[] {
   return country.levels.map((level, index) => {
     const members = Object.values(clubs).filter((club) => club.abroad?.country === country.id && club.abroad.level === index).map((club) => club.id).sort();
     const format = level.format ?? "round-robin";
+    const counts = LEAGUE_FORMATS[format].stageDateCounts(members.length, level.legs);
+    const total = counts.reduce((sum, count) => sum + count, 0);
+    const dates = days.grid ? days.grid.slice(0, total) : realDaysAbroad(country, season, total, days);
     let offset = 0;
-    const stageDates = LEAGUE_FORMATS[format].stageDateCounts(members.length, level.legs).map((count) => grid.slice(offset, (offset += count)));
+    const stageDates = counts.map((count) => dates.slice(offset, (offset += count)));
     const clubIds = shuffle(members, random);
     return {
       id: `${country.id}-${index + 1}-${season}`,
@@ -136,6 +159,7 @@ export function startSeason(
   };
   const cupScales = copaDoBrasilGameScales(formats);
   open(cupScales ? { ...cup, gameScales: cupScales } : cup);
-  for (const country of abroad) for (const league of leaguesAbroad(country, clubs, season, calendar, random)) open(league);
+  const days: DaysAbroad = { ...(calendar.leagueGrid ? { grid: calendar.leagueGrid } : {}), formats, restsInFifaWindows, playsClubWorldCup: hasClubWorldCupGuests };
+  for (const country of abroad) for (const league of leaguesAbroad(country, clubs, season, days, random)) open(league);
   return { calendar, competitions, fixtures };
 }

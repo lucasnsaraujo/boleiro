@@ -4,7 +4,7 @@ import { freshCondition } from "../players/openingProfile.js";
 import type { World, WorldClub } from "../world/world.js";
 
 const GROUP_OF: Record<string, PositionGroup> = { G: "GK", D: "DEF", M: "MID", A: "ATT" };
-// guess: a result-only squad keeps no ages; 26 is the median age of Brazil's squads.
+// guess: a guest's players all play at 26, the median age of Brazil's squads, whatever their years of birth: age changes nothing in a match.
 const UNKNOWN_AGE = 26;
 const NEVER = "9999-12-31";
 const RESTED_SINCE = "2000-01-01";

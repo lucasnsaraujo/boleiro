@@ -417,3 +417,24 @@ describe("MLS and Liga MX", () => {
     expect(zones).toEqual([{ zone: "advance", label: "Quartas" }]);
   });
 });
+
+describe("a Realista career abroad across Brazil's new year", () => {
+  const arsenal = newGameFromFiles(5, { coachClubId: "tm-11" }, bundledGameFiles);
+  const premierId = Object.values(arsenal.competitions).find((c) => c.kind === "league" && c.abroad?.country === "gb-eng" && c.abroad.level === 0)?.id;
+  const january = { ...arsenal, season: arsenal.season + 1 };
+
+  test("keeps the Premier League, whose season runs on, among the coach's tables and tabs", () => {
+    expect(coachCompetitions(january).map((c) => c.id)).toContain(premierId);
+    expect(tableTabs(january).tabs[0]?.id).toBe(premierId);
+  });
+
+  test("shows only the newest season of a league abroad once its next one opens", () => {
+    const old = arsenal.competitions[premierId ?? ""];
+    if (!old) throw new Error("no Premier League");
+    const next = { ...old, id: `gb-eng-1-${old.season + 1}`, season: old.season + 1 };
+    const july = { ...january, competitions: { ...arsenal.competitions, [next.id]: next } };
+    const tabs = tableTabs(july).tabs.map((c) => c.id);
+    expect(tabs).toContain(next.id);
+    expect(tabs).not.toContain(premierId);
+  });
+});

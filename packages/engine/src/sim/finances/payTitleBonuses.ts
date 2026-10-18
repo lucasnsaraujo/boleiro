@@ -7,7 +7,7 @@ export type TitleBonusPaid = { type: "titleBonusPaid"; clubId: string; competiti
 
 // guess: Brazilian clubs pay squads a "bicho" for a title; a month of the wage bill for a national
 // league, the Copa do Brasil or a CONMEBOL cup, half for a state title. No club publishes its bonus table.
-const MONTHS_OF_WAGES: Record<Competition["kind"], number> = { league: 1, cup: 1, state: 0.5, continental: 1 };
+const MONTHS_OF_WAGES: Record<Competition["kind"], number> = { league: 1, cup: 1, state: 0.5, continental: 1, cupAbroad: 1 };
 
 /** Every club crowned between `before` and `after` pays its squad's title bonus, booked as bonuses. */
 export function payTitleBonuses(before: GameState, after: GameState): { state: GameState; events: TitleBonusPaid[] } {

@@ -1,6 +1,7 @@
 import type { GameState } from "../gameState.js";
 import { personalWindowEnd } from "../transfers/transferWindows.js";
 import type { Coach } from "./coach.js";
+import { countryOfWorldClub, joinFullTier } from "../world/joinFullTier.js";
 
 export type CoachHired = { type: "coachHired"; clubId: string; salary: number; untilSeason: number };
 
@@ -16,10 +17,14 @@ function withPersonalWindow(state: GameState, coach: Coach): Coach {
 /**
  * The player's coach takes an open offer: he moves to the club, which gives the new man a clean slate,
  * and outside the game's windows, or in a window's last days, a short window of his own to rebuild the squad.
+ * A club abroad played result-only brings its country into the full tier first (joinFullTier).
  */
-export function acceptOffer(state: GameState, clubId: string): { state: GameState; event: CoachHired } {
-  const offer = state.coach.offers.find((o) => o.clubId === clubId);
+export function acceptOffer(before: GameState, clubId: string): { state: GameState; event: CoachHired } {
+  const offer = before.coach.offers.find((o) => o.clubId === clubId);
   if (!offer) throw new Error(`no open offer from ${clubId}`);
+  // A club abroad played result-only brings its country into the full tier with the coach.
+  const abroad = countryOfWorldClub(before, clubId);
+  const state = abroad ? joinFullTier(before, abroad.id) : before;
   const board = state.boards[clubId];
   const boards = board ? { ...state.boards, [clubId]: { ...board, games: 0, pressure: 0 } } : state.boards;
   const contract = { salary: offer.salary, untilSeason: offer.untilSeason };

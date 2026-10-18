@@ -51,6 +51,9 @@ function rosterKeyOf(competition: Competition): string {
     case "continental":
       // guess: the Recopa is refereed by CONMEBOL's Libertadores referees.
       return competition.cup === "recopa" ? "libertadores" : competition.cup;
+    case "cupAbroad":
+      // guess: a national cup abroad is refereed from its top league's roster; UEFA's referees are not in the data.
+      return competition.country ? `${competition.country}-0` : "uefa";
   }
 }
 
@@ -74,6 +77,9 @@ function varStyleOf(competition: Competition, fixture: Fixture): VarStyle | null
       return fixture.stage >= COPA_DO_BRASIL_ENTRY_STAGES.serieA ? "brazil" : null;
     case "continental":
       return "brazil";
+    case "cupAbroad":
+      // UEFA's club cups play with VAR from their league phase; guess: a national cup abroad where its top league does.
+      return competition.country === null || EUROPE.has(competition.country) ? "europe" : null;
   }
 }
 

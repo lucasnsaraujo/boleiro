@@ -16,6 +16,8 @@ function nextStageShape(competition: Competition, fixtures: readonly Fixture[], 
       return COPA_DO_BRASIL.nextStage(competition, fixtures);
     case "continental":
       return CONMEBOL_CUPS.nextStage(competition, season);
+    case "cupAbroad":
+      throw new Error(`${competition.id}: a cup abroad's rounds are drawn result-only`);
   }
 }
 

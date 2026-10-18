@@ -7,6 +7,7 @@ import { GAP_SCALE } from "./judgeCoaches.js";
 import { offerJobs, type JobOffered } from "./offerJobs.js";
 import { asWaitingCoach, isHumanClub, waitingCoachesOf } from "./humanCoaches.js";
 import { recordCoachEvents } from "../history/recordDayEvents.js";
+import { turnsOnItsOwn } from "../world/turnSeasonsAbroad.js";
 
 export type CoachSeasonReviewed = {
   type: "coachSeasonReviewed";
@@ -33,12 +34,23 @@ const STATURE_PULL = 0.2;
 // (Jornal de Brasília, https://jornaldebrasilia.com.br/torcida/30-dos-clubes-da-serie-a-trocaram-de-tecnico-para-2025/).
 const PRESEASON_CHANGE_CHANCE = 0.3;
 
-/** Reviews the player's coach on the season just ended: reputation, then his contract. */
-function reviewCoach(state: GameState, outcomes: readonly LeagueOutcome[]): { state: GameState; events: CoachSeasonEvent[] } {
+/** Whether the club plays in a full-tier league abroad whose season runs on past Brazil's turn of the year. */
+function isMidSeasonAbroad(state: GameState, clubId: string): boolean {
+  const country = state.clubs[clubId]?.abroad?.country;
+  const found = country ? state.world?.[country] : undefined;
+  return found !== undefined && turnsOnItsOwn(found);
+}
+
+/**
+ * Reviews the player's coach on the season just ended: reputation, then his contract. A coach at a club
+ * abroad whose season runs on past Brazil's turn of the year is reviewed at his country's own turn
+ * (`isOwnTurn`, reviewCoachesAbroad) instead.
+ */
+function reviewCoach(state: GameState, outcomes: readonly LeagueOutcome[], isOwnTurn = false): { state: GameState; events: CoachSeasonEvent[] } {
   const clubId = state.coachClubId;
   const board = clubId ? state.boards[clubId] : undefined;
   const { contract } = state.coach;
-  if (!clubId || !contract) return { state, events: [] };
+  if (!clubId || !contract || (!isOwnTurn && isMidSeasonAbroad(state, clubId))) return { state, events: [] };
   const events: CoachSeasonEvent[] = [];
   let coach = state.coach;
   let coachClubId: string | null = clubId;
@@ -90,8 +102,11 @@ export function startCoachSeason(
     waitingEvents.push(own.events);
   }
   const set = boardExpectations(next);
-  const vacancies = Object.keys(set.boards).sort().filter((id) => !isHumanClub(next, id) && random() < PRESEASON_CHANGE_CHANCE);
-  const offered = offerJobs({ ...next, boards: set.boards }, vacancies, random);
+  // A league abroad whose season crosses the new year keeps its boards to its own turn (turnSeasonsAbroad).
+  const kept = Object.fromEntries(Object.entries(next.boards).filter(([id]) => isMidSeasonAbroad(next, id)));
+  const boards = { ...set.boards, ...kept };
+  const vacancies = Object.keys(boards).sort().filter((id) => !(id in kept) && !isHumanClub(next, id) && random() < PRESEASON_CHANGE_CHANCE);
+  const offered = offerJobs({ ...next, boards }, vacancies, random);
   next = offered.state;
   // ...and hears of the open jobs as he does.
   for (let index = 0; index < waitingCoachesOf(next).length; index++) {
@@ -102,5 +117,25 @@ export function startCoachSeason(
     next = own.state;
     waitingEvents[index]?.push(...own.events);
   }
-  return { state: next, events: [...reviewed.events, ...set.events, ...offered.events], waitingEvents, vacancies };
+  const setEvents = set.events.filter((event) => !(event.clubId in kept));
+  return { state: next, events: [...reviewed.events, ...setEvents, ...offered.events], waitingEvents, vacancies };
+}
+
+/**
+ * The human coaches at a full-tier country's clubs reviewed at its own turn of the season
+ * (turnSeasonsAbroad) on its leagues' `outcomes`, as Brazil's coaches are at the turn of the year; a
+ * waiting coach's events go into his own record.
+ */
+export function reviewCoachesAbroad(state: GameState, country: string, outcomes: readonly LeagueOutcome[]): { state: GameState; events: CoachSeasonEvent[] } {
+  const review = (seated: GameState) =>
+    seated.coachClubId !== null && seated.clubs[seated.coachClubId]?.abroad?.country === country ? reviewCoach(seated, outcomes, true) : { state: seated, events: [] };
+  const own = review(state);
+  let next = own.state;
+  for (let index = 0; index < waitingCoachesOf(next).length; index++) {
+    next = asWaitingCoach(next, index, (seated) => {
+      const reviewed = review(seated);
+      return { state: recordCoachEvents(reviewed.state, reviewed.events, addDays(seated.date, -1)), events: reviewed.events };
+    }).state;
+  }
+  return { state: next, events: own.events };
 }
