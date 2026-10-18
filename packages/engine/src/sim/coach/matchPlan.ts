@@ -45,7 +45,7 @@ export const isPlanKey = (key: string): boolean => PLAN_KEY.test(key);
 /** The match plan of the human coach who runs `clubId`, his club or his national team, in the seat or waiting; none for an AI club or a coach who never set one. */
 export function planOfClub(state: Pick<GameState, "coachClubId" | "coach" | "waitingCoaches" | "nations">, clubId: string): MatchPlan | undefined {
   if (clubId === state.coachClubId || clubId === state.nations?.job?.teamId) return state.coach.matchPlan;
-  return waitingCoachesOf(state).find((waiting) => waiting.clubId === clubId)?.coach.matchPlan;
+  return waitingCoachesOf(state).find((waiting) => waiting.clubId === clubId || waiting.nationalJob?.teamId === clubId)?.coach.matchPlan;
 }
 
 /** The coach's plan in the seat; an empty one when he never set it. */

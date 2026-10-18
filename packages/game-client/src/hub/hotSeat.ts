@@ -1,5 +1,6 @@
 import { humanClubIds, waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
 import type { GameState } from "@boleiro/engine/sim/gameState";
+import { humanNationalTeamIds, nationalTeamPlayingToday } from "@boleiro/engine/sim/nations/nationalFixtures";
 import type { DayEvent } from "./inboxLines.js";
 import { isCoachMatchDay } from "./playToMatchDay.js";
 
@@ -12,25 +13,27 @@ export type HotSeatView = {
   isLastTurn: boolean;
 };
 
-type SeatState = Pick<GameState, "date" | "fixtures" | "coachClubId" | "coachName" | "waitingCoaches">;
+type SeatState = Pick<GameState, "date" | "fixtures" | "coachClubId" | "coachName" | "waitingCoaches"> & Partial<Pick<GameState, "nations">>;
 
 /** The coaches in turn order, from the game with the coach at place `seated` in the seat. */
 export function hotSeatViewOf(state: SeatState, seated: number): HotSeatView | null {
   const waiting = waitingCoachesOf(state);
   if (!waiting.length) return null;
   const count = waiting.length + 1;
-  const plays = (clubId: string | null) => isCoachMatchDay({ date: state.date, fixtures: state.fixtures, coachClubId: clubId });
+  // A coach plays today when his club or his national team does.
+  const plays = (clubId: string | null, teamId: string | undefined) => isCoachMatchDay({ date: state.date, fixtures: state.fixtures, coachClubId: clubId }) || nationalTeamPlayingToday(state, teamId) !== null;
   const coaches = Array.from({ length: count }, (): HotSeatView["coaches"][number] => ({ name: "", clubId: null, playsToday: false }));
-  coaches[seated] = { name: state.coachName ?? "", clubId: state.coachClubId, playsToday: plays(state.coachClubId) };
+  coaches[seated] = { name: state.coachName ?? "", clubId: state.coachClubId, playsToday: plays(state.coachClubId, state.nations?.job?.teamId) };
   waiting.forEach((coach, index) => {
-    coaches[(seated + 1 + index) % count] = { name: coach.name, clubId: coach.clubId, playsToday: plays(coach.clubId) };
+    coaches[(seated + 1 + index) % count] = { name: coach.name, clubId: coach.clubId, playsToday: plays(coach.clubId, coach.nationalJob?.teamId) };
   });
   return { coaches, seated, isLastTurn: seated === count - 1 };
 }
 
-/** Whether any human coach's club plays today. */
-export function isHumanMatchDay(state: Pick<GameState, "date" | "fixtures" | "coachClubId" | "waitingCoaches">): boolean {
-  return humanClubIds(state).some((clubId) => isCoachMatchDay({ date: state.date, fixtures: state.fixtures, coachClubId: clubId }));
+/** Whether any human coach's club, or national team, plays today. */
+export function isHumanMatchDay(state: Pick<GameState, "date" | "fixtures" | "coachClubId" | "waitingCoaches"> & Partial<Pick<GameState, "nations">>): boolean {
+  const isClubDay = humanClubIds(state).some((clubId) => isCoachMatchDay({ date: state.date, fixtures: state.fixtures, coachClubId: clubId }));
+  return isClubDay || humanNationalTeamIds(state).some((teamId) => nationalTeamPlayingToday(state, teamId) !== null);
 }
 
 /** What a coach hears of his own: his board, his business and his career. A day's events carry these for the coach in the seat only. */

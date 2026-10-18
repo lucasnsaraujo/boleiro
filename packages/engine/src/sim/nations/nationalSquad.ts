@@ -5,6 +5,7 @@ import { freshCondition } from "../players/openingProfile.js";
 import { formationOf } from "../players/usualLineups.js";
 import { OUTSIDER_MARK, ROLE_OF_LETTER, splitRefs } from "./callUps.js";
 import { callUpRefsOf } from "./nationalJobs.js";
+import { humanNationalJobOf } from "./nationalFixtures.js";
 
 // guess: an outsider with no year of birth in the pack plays at 26, as a guest club's players do.
 const UNKNOWN_AGE = 26;
@@ -75,7 +76,7 @@ export function nationalClubOf(state: Pick<GameState, "nations">, teamId: string
 
 /** The tactics the human coach of a national team plays it with: his last ones, else his assistant's formation for its squad. */
 export function nationalTacticsOf(state: GameState, teamId: string): Tactics {
-  const job = state.nations?.job;
-  if (job?.teamId === teamId && job.tactics) return job.tactics;
+  const job = humanNationalJobOf(state, teamId);
+  if (job?.tactics) return job.tactics;
   return { ...DEFAULT_TACTICS, formation: formationOf(state, teamId, nationalSquadOf(state, teamId)) };
 }

@@ -1,11 +1,13 @@
 import type { GameState } from "../gameState.js";
 import type { CoachRecord } from "../history/history.js";
 import type { CoachMarket } from "../transfers/transferMarket.js";
+import type { NationalJob, NationalOffer } from "../nations/nations.js";
 import type { Coach } from "./coach.js";
 
 /**
  * A human coach of a hot-seat game waiting for his turn: everything the game keeps for the coach in
- * the seat (`coachClubId`, `coach`, `market.coach`, `history.coach`), kept aside until he sits down.
+ * the seat (`coachClubId`, `coach`, `market.coach`, `history.coach`, and his national team's job,
+ * offer and call-up in `nations`), kept aside until he sits down.
  */
 export type WaitingCoach = {
   name: string;
@@ -13,6 +15,9 @@ export type WaitingCoach = {
   coach: Coach;
   market?: CoachMarket;
   record: CoachRecord;
+  nationalJob?: NationalJob;
+  nationalOffer?: NationalOffer;
+  nationalPicks?: string[];
 };
 
 /**
@@ -37,14 +42,34 @@ export function humanClubIds(state: Pick<GameState, "coachClubId" | "waitingCoac
 }
 
 function seatedOf(state: GameState): WaitingCoach {
-  const { coachClubId: clubId, coach, market, history } = state;
-  return { name: state.coachName ?? "", clubId, coach, ...(market.coach ? { market: market.coach } : {}), record: history.coach };
+  const { coachClubId: clubId, coach, market, history, nations } = state;
+  return {
+    name: state.coachName ?? "",
+    clubId,
+    coach,
+    ...(market.coach ? { market: market.coach } : {}),
+    record: history.coach,
+    ...(nations?.job ? { nationalJob: nations.job } : {}),
+    ...(nations?.offer ? { nationalOffer: nations.offer } : {}),
+    ...(nations?.picks ? { nationalPicks: nations.picks } : {}),
+  };
+}
+
+/** National football with `coach`'s job, offer and call-up in the seat's place; the same object when neither he nor the one leaving has any. */
+function seatedNations(nations: GameState["nations"], coach: WaitingCoach): GameState["nations"] {
+  if (!nations || (!nations.job && !nations.offer && !nations.picks && !coach.nationalJob && !coach.nationalOffer && !coach.nationalPicks)) return nations;
+  const next = { ...nations };
+  delete next.job;
+  delete next.offer;
+  delete next.picks;
+  return { ...next, ...(coach.nationalJob ? { job: coach.nationalJob } : {}), ...(coach.nationalOffer ? { offer: coach.nationalOffer } : {}), ...(coach.nationalPicks ? { picks: coach.nationalPicks } : {}) };
 }
 
 function seat(state: GameState, coach: WaitingCoach, waitingCoaches: WaitingCoach[]): GameState {
   const market = { ...state.market };
   if (coach.market) market.coach = coach.market;
   else Reflect.deleteProperty(market, "coach");
+  const nations = seatedNations(state.nations, coach);
   return {
     ...state,
     coachName: coach.name,
@@ -53,6 +78,7 @@ function seat(state: GameState, coach: WaitingCoach, waitingCoaches: WaitingCoac
     market,
     history: { ...state.history, coach: coach.record },
     waitingCoaches,
+    ...(nations ? { nations } : {}),
   };
 }
 

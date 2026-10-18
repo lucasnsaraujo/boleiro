@@ -12,6 +12,7 @@ import { matchImportance, rankingPointsAfter } from "./fifaRanking.js";
 import { competitionsOf, groupQualifiers, groupTable } from "./nationalCompetitions.js";
 import type { CallUp, KnockoutRound, NationalCompetition, NationalMatch, NationalResult, Nations } from "./nations.js";
 import { compareText } from "../compareText.js";
+import type { WaitingCoach } from "../coach/humanCoaches.js";
 
 export type CalledUp = { type: "calledUp"; playerId: string; clubId: string; teamId: string; until: IsoDate };
 export type BackFromDuty = { type: "backFromDuty"; playerId: string; clubId: string; teamId: string };
@@ -244,8 +245,9 @@ function tournamentAfter(nations: Nations, teamId: string, window: FifaWindow): 
  * by match id: a human coach's national team's, or one of its day) keeps its score there, its players' load
  * already taken there, after the draws that keep the stream where it always was.
  */
-export function nationsDay(state: GameState, today: IsoDate, playedInFullTier: ReadonlyMap<string, NationalResult> = new Map()): { state: GameState; events: NationsEvent[] } {
+export function nationsDay(state: GameState, today: IsoDate, playedInFullTier: ReadonlyMap<string, NationalResult> = new Map()): { state: GameState; events: NationsEvent[]; waitingEvents?: NationsEvent[][] } {
   if (!state.nations) return { state, events: [] };
+  let waitingCoaches = state.waitingCoaches;
   const events: NationsEvent[] = [];
   const random = randomStream(state.nations.rngState);
   let nations: Nations = state.nations;
@@ -369,16 +371,37 @@ export function nationsDay(state: GameState, today: IsoDate, playedInFullTier: R
       nations = { ...nations };
       delete nations.picks;
     }
+    // A waiting hot-seat coach's own picks went into the window's call-up too.
+    const isCalled = (coach: WaitingCoach) => coach.nationalPicks !== undefined && coach.nationalJob !== undefined && callUps[coach.nationalJob.teamId]?.from === window.from;
+    if (waitingCoaches?.some(isCalled)) {
+      waitingCoaches = waitingCoaches.map((coach) => {
+        if (!isCalled(coach)) return coach;
+        const rest = { ...coach };
+        delete rest.nationalPicks;
+        return rest;
+      });
+    }
   }
 
   nations = { ...withLiveOffer(nations, state.date), rngState: random.state() };
-  let next: GameState = { ...state, players, nations };
+  // A waiting coach's offer lapses as the seated coach's does.
+  if (waitingCoaches?.some((coach) => coach.nationalOffer && coach.nationalOffer.expiresOn < state.date)) {
+    waitingCoaches = waitingCoaches.map((coach) => {
+      if (!coach.nationalOffer || coach.nationalOffer.expiresOn >= state.date) return coach;
+      const rest = { ...coach };
+      delete rest.nationalOffer;
+      return rest;
+    });
+  }
+  let next: GameState = { ...state, players, nations, ...(waitingCoaches ? { waitingCoaches } : {}) };
+  const waitingEvents: NationsEvent[][] = (waitingCoaches ?? []).map(() => []);
   for (const finished of events.flatMap((e) => (e.type === "nationalTitle" ? [e.competitionId] : []))) {
     const competition = next.nations?.competitions[finished];
     if (!competition) continue;
     const jobs = nationalJobsAfter(next, competition, today);
     next = jobs.state;
     events.push(...jobs.events);
+    jobs.waitingEvents.forEach((own, index) => waitingEvents[index]?.push(...own));
   }
-  return { state: next, events };
+  return waitingCoaches ? { state: next, events, waitingEvents } : { state: next, events };
 }

@@ -1,5 +1,5 @@
 import type { Fixture, GameState, MatchResult, NationalFullTierCompetition, Stage } from "../gameState.js";
-import type { NationalCompetition, NationalMatch, NationalResult } from "./nations.js";
+import type { NationalCompetition, NationalJob, NationalMatch, NationalResult } from "./nations.js";
 
 const NATIONAL = "national:";
 
@@ -10,10 +10,11 @@ const fullTierIdOf = (competitionId: string): string => `${NATIONAL}${competitio
 /** The national match a full-tier fixture plays, by its id; null for any other fixture. */
 export const nationalMatchIdOf = (fixtureId: string): string | null => (fixtureId.startsWith(NATIONAL) ? fixtureId.slice(NATIONAL.length) : null);
 
-/** The national teams the human coaches run. */
-export function humanNationalTeamIds(state: Pick<GameState, "nations">): string[] {
+/** The national teams the human coaches run: the seated coach's, then each waiting coach's in a hot-seat game. */
+export function humanNationalTeamIds(state: Pick<GameState, "nations" | "waitingCoaches">): string[] {
   const job = state.nations?.job;
-  return job ? [job.teamId] : [];
+  const waiting = (state.waitingCoaches ?? []).flatMap((coach) => (coach.nationalJob ? [coach.nationalJob.teamId] : []));
+  return job ? [job.teamId, ...waiting] : waiting;
 }
 
 /** A stage's key in a competition's full-tier copy: a one-match knockout round has a stage a day, so each tie's day is its stage's last; a round played over two legs or as a table has one. */
@@ -169,19 +170,33 @@ function nationalResultOf(result: MatchResult): NationalResult {
 
 const playsToday = (state: Pick<GameState, "fixtures" | "date">, id: string) => state.fixtures.some((f) => f.date === state.date && !f.result && (f.homeId === id || f.awayId === id));
 
-/** The national team of the coach in the seat when it plays in the full tier today; null otherwise. */
-export function nationalTeamToday(state: Pick<GameState, "nations" | "fixtures" | "date">): string | null {
-  const teamId = state.nations?.job?.teamId;
+/** A coach's national team (`teamId`) when it plays in the full tier today; null otherwise. */
+export function nationalTeamPlayingToday(state: Pick<GameState, "fixtures" | "date">, teamId: string | undefined): string | null {
   return teamId && playsToday(state, teamId) ? teamId : null;
 }
 
+/** The national team of the coach in the seat when it plays in the full tier today; null otherwise. */
+export function nationalTeamToday(state: Pick<GameState, "nations" | "fixtures" | "date">): string | null {
+  return nationalTeamPlayingToday(state, state.nations?.job?.teamId);
+}
+
 /**
- * The side the coach in the seat runs in today's matches, which the day's lineup, tactics and talk are for: his
- * club when it plays today, else his national team when it does (his assistant takes the national team on a day
- * both play), else his club.
+ * The side a coach runs in today's matches, which his lineup, tactics and talk of the day are for: his club when
+ * it plays today, else his national team when it does (his assistant takes the national team on a day both
+ * play), else his club.
  */
+export function sideToday(state: Pick<GameState, "fixtures" | "date">, clubId: string | null, nationalTeamId: string | undefined): string | null {
+  const teamId = nationalTeamPlayingToday(state, nationalTeamId);
+  return !teamId || (clubId !== null && playsToday(state, clubId)) ? clubId : teamId;
+}
+
+/** The side the coach in the seat runs in today's matches (sideToday). */
 export function seatedSideToday(state: Pick<GameState, "nations" | "fixtures" | "date" | "coachClubId">): string | null {
-  const teamId = nationalTeamToday(state);
-  if (!teamId || (state.coachClubId !== null && playsToday(state, state.coachClubId))) return state.coachClubId;
-  return teamId;
+  return sideToday(state, state.coachClubId, state.nations?.job?.teamId);
+}
+
+/** The job of the human coach who runs national team `teamId`, the seated coach's or a waiting one's. */
+export function humanNationalJobOf(state: Pick<GameState, "nations" | "waitingCoaches">, teamId: string): NationalJob | undefined {
+  if (state.nations?.job?.teamId === teamId) return state.nations.job;
+  return state.waitingCoaches?.find((coach) => coach.nationalJob?.teamId === teamId)?.nationalJob;
 }

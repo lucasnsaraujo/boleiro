@@ -64,7 +64,7 @@ import { tieBreakOf } from "../tieBreaks.js";
 import { FULL_TIME, hasExtraTimeIn, matchEndOf, scorersFor, type MatchEvent } from "./matchTimeline.js";
 import { recordCoachMeetings } from "../rivalries/coachRivalries.js";
 import { nationsDay } from "../nations/nationsDay.js";
-import { nationalTeamToday, playedNationalOf, syncNationalFixtures } from "../nations/nationalFixtures.js";
+import { nationalTeamPlayingToday, nationalTeamToday, playedNationalOf, seatedSideToday, sideToday, syncNationalFixtures } from "../nations/nationalFixtures.js";
 import { isNationalTeam } from "../nations/nationalSquad.js";
 import { runMoments } from "../moments/runMoments.js";
 
@@ -220,16 +220,17 @@ export function finishMatchDay(live: LiveDay): DayResult {
     return clubId === undefined ? [] : [player.clubId === clubId ? player : { ...player, clubId }];
   });
   const players = ownPlayers.length ? withReplacedPlayers(state.players, ownPlayers) : state.players;
+  // The day's tactics are the club's, or his national team's on its match day; each side keeps its own.
   const nationalId = nationalTeamToday(state);
-  const nationalMatch = nationalId ? open.find((m) => m.clubId === nationalId) : undefined;
+  const isNationalSeated = nationalId !== null && seatedSideToday(state) === nationalId;
   const clubMatch = live.coachMatch?.clubId === undefined ? live.coachMatch : null;
-  const tactics = clubMatch?.tactics ?? (nationalMatch && nationalMatch === live.coachMatch ? undefined : decisions.tactics) ?? state.coach.tactics;
+  const tactics = clubMatch?.tactics ?? (isNationalSeated ? undefined : decisions.tactics) ?? state.coach.tactics;
   const coach = tactics === state.coach.tactics ? state.coach : { ...state.coach, tactics };
-  const nationalTactics = nationalMatch && (nationalMatch.isChanged || nationalMatch === live.coachMatch) ? nationalMatch.tactics : undefined;
+  const nationalTactics = nationalId ? (liveTacticsOf(live, nationalId) ?? (isNationalSeated ? (live.coachMatch?.tactics ?? decisions.tactics) : undefined)) : undefined;
   const job = state.nations?.job;
   const nations = state.nations && job && nationalTactics ? { ...state.nations, job: { ...job, tactics: nationalTactics } } : state.nations;
   let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: day.discipline, coach, ...(nations ? { nations } : {}) };
-  if (state.waitingCoaches) next = { ...next, waitingCoaches: withWaitingTactics(state.waitingCoaches, decisions.waiting ?? [], (clubId) => liveTacticsOf(live, clubId)) };
+  if (state.waitingCoaches) next = { ...next, waitingCoaches: withWaitingTactics(state, decisions.waiting ?? [], (clubId) => liveTacticsOf(live, clubId)) };
   const allPlayed = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
   // National teams' matches go to their competitions only: the clubs' records, money, moods and news read the clubs' own.
   const isNationalMatch = (fixture: Fixture) => state.competitions[fixture.competitionId]?.kind === "national";
@@ -295,6 +296,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     const national = nationsDay(next, state.date, playedNationalOf(allPlayed));
     next = national.state;
     events.push(...national.events);
+    national.waitingEvents?.forEach((own, index) => waitingEvents[index]?.push(...own));
   }
   let seasonOutcomes: Record<string, LeagueOutcome> = {};
   if (next.date.slice(0, 4) !== String(state.season)) {
@@ -346,10 +348,15 @@ export function finishMatchDay(live: LiveDay): DayResult {
 }
 
 /** The waiting coaches with the tactics they last chose: in their match today, else on their turn. */
-function withWaitingTactics(coaches: readonly WaitingCoach[], decisions: readonly WaitingDecisions[], liveTactics: (clubId: string) => Tactics | undefined): WaitingCoach[] {
-  return coaches.map((waiting, index) => {
-    const tactics = (waiting.clubId && liveTactics(waiting.clubId)) || decisions[index]?.tactics;
-    return tactics ? { ...waiting, coach: { ...waiting.coach, tactics } } : waiting;
+function withWaitingTactics(state: GameState, decisions: readonly WaitingDecisions[], liveTactics: (clubId: string) => Tactics | undefined): WaitingCoach[] {
+  return waitingCoachesOf(state).map((waiting, index) => {
+    // A coach whose national team plays today keeps its tactics apart from his club's.
+    const nationalId = nationalTeamPlayingToday(state, waiting.nationalJob?.teamId);
+    const isNationalSide = nationalId !== null && sideToday(state, waiting.clubId, nationalId) === nationalId;
+    const tactics = (waiting.clubId && liveTactics(waiting.clubId)) || (isNationalSide ? undefined : decisions[index]?.tactics);
+    const nationalTactics = nationalId ? (liveTactics(nationalId) ?? (isNationalSide ? decisions[index]?.tactics : undefined)) : undefined;
+    const withClub = tactics ? { ...waiting, coach: { ...waiting.coach, tactics } } : waiting;
+    return nationalTactics && withClub.nationalJob ? { ...withClub, nationalJob: { ...withClub.nationalJob, tactics: nationalTactics } } : withClub;
   });
 }
 

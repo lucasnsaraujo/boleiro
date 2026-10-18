@@ -19,7 +19,7 @@ import { assistantTalk, isDerbyFor, type TalkEffect, type TalkMoment, type TalkT
 import { clubMood } from "@boleiro/engine/sim/morale/clubMood";
 import { shootoutKickers } from "@boleiro/engine/sim/settleShootout";
 import { fixtureLabel } from "../format/competitionName.js";
-import { nationalFixtureId, nationalTeamToday } from "@boleiro/engine/sim/nations/nationalFixtures";
+import { humanNationalTeamIds, nationalFixtureId, nationalTeamPlayingToday } from "@boleiro/engine/sim/nations/nationalFixtures";
 import { isNationalTeam, nationalSquadOf } from "@boleiro/engine/sim/nations/nationalSquad";
 import { roundClubOf } from "./roundClubOf.js";
 import { aiFormationOf, recentResultsOf, squadOf, type MatchResult, type SquadPlayer } from "./matchDayPlan.js";
@@ -216,8 +216,9 @@ function coachSideOf(live: LiveDay, fixture: Fixture | undefined, seenMinute: nu
 function humanSidesOf(live: LiveDay, today: ReadonlyMap<string, Fixture>, seenMinute: number): HumanSide[] {
   const { state } = live;
   const open = [live.coachMatch, ...(live.waitingMatches ?? [])].filter((m): m is CoachMatch => m !== null);
-  const national = nationalTeamToday(state);
-  const coaches = [{ name: state.coachName ?? "", clubId: state.coachClubId }, ...(national ? [{ name: state.coachName ?? "", clubId: national }] : []), ...waitingCoachesOf(state)];
+  const nationalOf = (teamId: string | undefined) => nationalTeamPlayingToday(state, teamId);
+  const sidesOf = (name: string, clubId: string | null, teamId: string | undefined) => [{ name, clubId }, ...(nationalOf(teamId) ? [{ name, clubId: nationalOf(teamId) }] : [])];
+  const coaches = [...sidesOf(state.coachName ?? "", state.coachClubId, state.nations?.job?.teamId), ...waitingCoachesOf(state).flatMap((w) => sidesOf(w.name, w.clubId, w.nationalJob?.teamId))];
   return coaches.flatMap(({ name, clubId }) => {
     if (!clubId) return [];
     const fixtureOf = (m: CoachMatch) => today.get(m.fixtureId);
@@ -274,8 +275,8 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
   const counts = new Map<string, number>();
   for (const m of matches) counts.set(m.competitionId, (counts.get(m.competitionId) ?? 0) + 1);
   const isCoachs = (id: string) => id === coachFixture?.competitionId;
-  const national = nationalTeamToday(state);
-  const humans = national ? [...humanClubIds(state), national] : humanClubIds(state);
+  const nationalToday = humanNationalTeamIds(state).filter((teamId) => nationalTeamPlayingToday(state, teamId) !== null);
+  const humans = [...humanClubIds(state), ...nationalToday];
   const competitions = [...counts.keys()]
     .sort((a, b) => Number(isCoachs(b)) - Number(isCoachs(a)) || (counts.get(b) ?? 0) - (counts.get(a) ?? 0))
     .flatMap((id) => {

@@ -4,7 +4,7 @@ import type { Fixture, GameState } from "../gameState.js";
 import { clubMood } from "../morale/clubMood.js";
 import { rivalsOf } from "../morale/rivalsOf.js";
 import { isClassico } from "../rivalries/rivalryOf.js";
-import { seatedSideToday } from "../nations/nationalFixtures.js";
+import { seatedSideToday, sideToday } from "../nations/nationalFixtures.js";
 import type { LiveDay } from "./liveDay.js";
 
 /** The tones of a dressing-room talk: ask for calm, show faith, demand more, praise. */
@@ -66,7 +66,8 @@ export function kickOffTalksOf(state: GameState, decisions: DayDecisions): Recor
   if (seated && decisions.talk) talks[seated] = decisions.talk;
   waitingCoachesOf(state).forEach((waiting, index) => {
     const talk = decisions.waiting?.[index]?.talk;
-    if (waiting.clubId && talk) talks[waiting.clubId] = talk;
+    const side = sideToday(state, waiting.clubId, waiting.nationalJob?.teamId);
+    if (side && talk) talks[side] = talk;
   });
   return talks;
 }

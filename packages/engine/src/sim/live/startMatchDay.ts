@@ -32,7 +32,7 @@ import { followMatchPlans } from "./applyLiveChange.js";
 import type { MatchPlan } from "../coach/matchPlan.js";
 import type { Tactics } from "../coach/tactics.js";
 import { onDutyOn } from "../nations/nationsDay.js";
-import { nationalTeamToday, seatedSideToday } from "../nations/nationalFixtures.js";
+import { nationalTeamPlayingToday, nationalTeamToday, seatedSideToday, sideToday } from "../nations/nationalFixtures.js";
 import { isNationalTeam, nationalSquadOf, nationalTacticsOf } from "../nations/nationalSquad.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
 import { drawMatchPlay } from "./matchPlay.js";
@@ -83,15 +83,26 @@ function coachLineupOf(state: GameState, decisions: DayDecisions, sideId: string
 /** The coach's tactics with his match plan's shootout order, when the plan sets one. */
 const withPlanOrder = (tactics: Tactics, plan: MatchPlan | undefined): Tactics => (plan?.kickerOrder ? { ...tactics, kickerOrder: plan.kickerOrder } : tactics);
 
-/** Each waiting hot-seat coach's plan for his club's match, by club: the eleven he picked on his turn and his tactics. */
+/**
+ * Each waiting hot-seat coach's plan for his match, by side: the eleven he picked on his turn and his tactics for
+ * the side he runs today (sideToday), his club or his national team; on a day both play, his assistant's eleven for
+ * the national team in its tactics.
+ */
 export function waitingPlansOf(state: GameState, decisions: DayDecisions): Record<string, CoachPlan> {
   const plans: Record<string, CoachPlan> = {};
   waitingCoachesOf(state).forEach((waiting, index) => {
-    if (!waiting.clubId) return;
     const own = decisions.waiting?.[index] ?? {};
-    const kept = startersKept(waiting.coach, state.chemistry?.[waiting.clubId]?.eleven);
+    const nationalId = waiting.nationalJob ? nationalTeamPlayingToday(state, waiting.nationalJob.teamId) : null;
+    const side = nationalId ? sideToday(state, waiting.clubId, nationalId) : waiting.clubId;
+    if (nationalId && side !== nationalId) plans[nationalId] = { lineup: null, tactics: withPlanOrder(nationalTacticsOf(state, nationalId), waiting.coach.matchPlan) };
+    if (!side) return;
+    if (side === nationalId) {
+      plans[side] = { lineup: coachLineupOf(state, own, side), tactics: withPlanOrder(own.tactics ?? nationalTacticsOf(state, side), waiting.coach.matchPlan) };
+      return;
+    }
+    const kept = startersKept(waiting.coach, state.chemistry?.[side]?.eleven);
     const tactics = withPlanOrder(own.tactics ?? waiting.coach.tactics, waiting.coach.matchPlan);
-    plans[waiting.clubId] = { lineup: coachLineupOf({ ...state, coachClubId: waiting.clubId }, own), tactics, ...(kept ? { kept } : {}) };
+    plans[side] = { lineup: coachLineupOf({ ...state, coachClubId: side }, own), tactics, ...(kept ? { kept } : {}) };
   });
   return plans;
 }
