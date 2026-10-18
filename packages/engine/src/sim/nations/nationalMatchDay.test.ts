@@ -90,3 +90,28 @@ describe("a national coach's match day", () => {
     expect(national.map((m) => `${m.homeId}-${m.awayId}`).sort()).toEqual(["brazil-morocco", "qatar-switzerland", "united-states-paraguay"]);
   });
 });
+
+describe("a club and national coach whose two teams play the same day", () => {
+  const plain = loadNewGame(5, { coachClubId: null, nationalFootball: football });
+  const clubId = plain.fixtures.find((f) => f.date === "2026-06-13" && f.competitionId.startsWith("serie-a"))?.homeId ?? "";
+  const game = onWorldCupDay(clubId);
+  const fixtureId = nationalFixtureId(BRAZIL_MOROCCO);
+
+  it("plays his club's match as his own and his national team's beside it, open to him too", () => {
+    const live = startMatchDay(game, {});
+    const club = game.fixtures.find((f) => f.date === "2026-06-13" && (f.homeId === clubId || f.awayId === clubId));
+    expect(live.coachMatch?.fixtureId).toBe(club?.id);
+    expect(live.coachMatch?.clubId).toBeUndefined();
+    expect(live.waitingMatches?.map((m) => [m.fixtureId, m.clubId])).toEqual([[fixtureId, "brazil"]]);
+  });
+
+  it("takes his changes in the national match as the national team's, leaving his club's tactics alone", () => {
+    const live = startMatchDay(game, {});
+    const changed = applyLiveChange(live, 20, { formation: "4-4-2" }, "brazil");
+    const done = finishMatchDay(changed);
+    expect(done.state.nations?.job?.tactics?.formation).toBe("4-4-2");
+    expect(done.state.coach.tactics).toEqual(game.coach.tactics);
+    expect(done.state.nations?.matches.find((m) => m.id === BRAZIL_MOROCCO)?.result).toEqual({ home: goalsOf(changed, fixtureId, "brazil"), away: goalsOf(changed, fixtureId, "morocco") });
+  });
+});
+
