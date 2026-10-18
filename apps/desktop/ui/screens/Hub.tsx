@@ -22,6 +22,7 @@ import { clubMeters, jobSecurity, leagueAbroadName, leagueStanding, nextMatch, t
 import { ConfidenceMeter } from "../finances/ConfidenceMeter.js";
 import { EventNote } from "../events/EventNote.js";
 import { EventPopUp } from "../events/EventPopUp.js";
+import { doMomentsInterrupt } from "../moments/momentsGate.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import { SQUAD_KEYS, squadRows } from "../squad/squadRows.js";
 import { ContractsEnding } from "../contracts/ContractsEnding.js";
@@ -64,7 +65,8 @@ export function Hub() {
   const load = useCallback(
     (isCurrent: () => boolean) =>
       Promise.all([engine.read(HUB_KEYS), engine.inbox(), engine.turningPoint(), engine.moment(), engine.hotSeat(), engine.pendingEvent(), engine.desk(), engine.betSticker()]).then(
-        ([state, inbox, turningPoint, moment, seats, event, desk, bet]) => isCurrent() && setLoaded({ state, inbox, turningPoint, hasMoment: moment !== null, seats, event, desk, bet }),
+        ([state, inbox, turningPoint, moment, seats, event, desk, bet]) =>
+          isCurrent() && setLoaded({ state, inbox, turningPoint, hasMoment: moment !== null && doMomentsInterrupt(localStorage, import.meta.env.VITE_E2E === "1"), seats, event, desk, bet }),
         () => isCurrent() && setMissing(true),
       ),
     [engine],
