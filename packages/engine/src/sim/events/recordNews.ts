@@ -195,25 +195,27 @@ export function recordNews(state: GameState, date: IsoDate, events: readonly Day
       const margin = result.homeGoals - result.awayGoals;
       const winner = margin > 0 || result.penaltyWinnerId === homeId ? homeId : margin < 0 || result.penaltyWinnerId === awayId ? awayId : null;
       const loser = winner === homeId ? awayId : winner === awayId ? homeId : null;
-      const names = { home: name(homeId), away: name(awayId), winner: name(winner), loser: name(loser), score: scoreLine(state, fixture), goals: goalsLine(state, sheets, fixture), where: "a tabela" };
+      // Most matches make no story: their lines are only written for one that does.
+      let lines: Record<string, string> | undefined;
+      const names = () => (lines ??= { home: name(homeId), away: name(awayId), winner: name(winner), loser: name(loser), score: scoreLine(state, fixture), goals: goalsLine(state, sheets, fixture), where: "a tabela" });
       if (humans.has(homeId) || humans.has(awayId)) {
         const variants = winner === null ? DRAWS : Math.abs(margin) >= 3 ? BIG_WINS : WINS;
-        add("match", [homeId, awayId], 0, pick(variants, fixture.id, names));
+        add("match", [homeId, awayId], 0, pick(variants, fixture.id, names()));
       }
-      if (humans.has(homeId) || humans.has(awayId)) addCoachStories(fixture, winner, names);
+      if (humans.has(homeId) || humans.has(awayId)) addCoachStories(fixture, winner, names());
       const isDerby = rivals.get(homeId)?.has(awayId) ?? false;
-      if (isDerby && (isMajor(homeId) || isMajor(awayId))) add("rivalry", winner && loser ? [winner, loser] : [homeId, awayId], 1, pick(winner ? DERBIES : DERBY_DRAWS, `derby:${fixture.id}`, names));
+      if (isDerby && (isMajor(homeId) || isMajor(awayId))) add("rivalry", winner && loser ? [winner, loser] : [homeId, awayId], 1, pick(winner ? DERBIES : DERBY_DRAWS, `derby:${fixture.id}`, names()));
       if (!winner || !loser) continue;
       const competition = state.competitions[fixture.competitionId];
       const winnerDivision = state.clubs[winner]?.division;
       const loserDivision = state.clubs[loser]?.division;
       if (competition?.kind === "cup" && loserDivision && (!winnerDivision || DIVISION_RANK[winnerDivision] - DIVISION_RANK[loserDivision] >= 2)) {
-        add("upset", [winner, loser], 3 + (winnerDivision ? DIVISION_RANK[winnerDivision] - DIVISION_RANK[loserDivision] : 4), pick(UPSETS, `upset:${fixture.id}`, { ...names, where: "a Copa do Brasil" }));
+        add("upset", [winner, loser], 3 + (winnerDivision ? DIVISION_RANK[winnerDivision] - DIVISION_RANK[loserDivision] : 4), pick(UPSETS, `upset:${fixture.id}`, { ...names(), where: "a Copa do Brasil" }));
       } else if (competition?.kind === "league" && fixture.stage === 0 && winnerDivision === "A") {
         const above = state.boards[winner];
         const below = state.boards[loser];
         const places = above && below ? above.position - below.position : 0;
-        if (places >= UPSET_PLACES && (below?.games ?? 0) >= UPSET_FROM_GAMES) add("upset", [winner, loser], places / 4, pick(UPSETS, `upset:${fixture.id}`, names));
+        if (places >= UPSET_PLACES && (below?.games ?? 0) >= UPSET_FROM_GAMES) add("upset", [winner, loser], places / 4, pick(UPSETS, `upset:${fixture.id}`, names()));
       }
     } else if (event.type === "refereeCall") {
       const { call } = event;
