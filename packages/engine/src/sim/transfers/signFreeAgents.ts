@@ -29,7 +29,6 @@ export function signFreeAgents(state: GameState, random: () => number): { state:
   const byGroup = new Map<PositionGroup, SimPlayer[]>(GROUPS.map((g) => [g, []]));
   for (const p of Object.values(state.market.freeAgents)) byGroup.get(p.group)?.push(p);
   for (const list of byGroup.values()) list.sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
-  // The clubs furthest below their usual squad size pick first.
   const shortBy = (clubId: string) => SQUAD_TARGET[view.tier(clubId)] - view.squad(clubId).length;
   for (const clubId of Object.keys(state.finances).sort((a, b) => shortBy(b) - shortBy(a) || a.localeCompare(b))) {
     if (isHumanClub(state, clubId)) continue;
@@ -42,7 +41,7 @@ export function signFreeAgents(state: GameState, random: () => number): { state:
       const { middle, thinnest } = view.needs(clubId);
       const rate = wageRateOf(squad);
       const medianWage = [...squad.map((p) => p.wage)].sort((a, b) => a - b)[squad.length >> 1] ?? 0;
-      // Only free agents near the club's level; below that it waits for its own youth.
+      // Only free agents near the middle of its squad; below that it waits for its own youth.
       const candidates = (byGroup.get(thinnest) ?? [])
         .filter((p) => !signed.has(p.id) && p.strength <= middle + REPLACEMENT_BAND.above && p.strength >= middle - REPLACEMENT_BAND.below)
         .slice(0, TRIES);

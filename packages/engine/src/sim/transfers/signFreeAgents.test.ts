@@ -55,6 +55,28 @@ describe("AI clubs signing free agents", () => {
     expect(signingsBy(short).length).toBeGreaterThan(0);
   });
 
+  it("let the shortest squad pick first when two clubs want the same free agent", () => {
+    const [first, second] = Object.values(start.clubs).filter((c) => c.division === "D").map((c) => c.id).sort();
+    if (!first || !second) throw new Error("no clubs");
+    // Both squads rated 50 with one midfielder, so both want a midfielder at 50: the first club by id keeps 19 players, the second 15.
+    const thinned = (clubId: string, size: number) =>
+      Object.values(start.players).filter((p) => p.clubId === clubId && p.group !== "MID").slice(0, size - 1)
+        .concat(Object.values(start.players).filter((p) => p.clubId === clubId && p.group === "MID").slice(0, 1))
+        .map((p) => ({ ...p, strength: 50 }));
+    const kept = [...thinned(first, 19), ...thinned(second, 15)];
+    const model = kept[0];
+    if (!model) throw new Error("no players");
+    const rich = (id: string) => ({ ...start.finances[id] ?? opening, cash: 1e9, wagesOwed: 0, transferBudget: 1e9, wageCap: 1e9 });
+    const contested: GameState = {
+      ...start,
+      players: { ...Object.fromEntries(Object.entries(start.players).filter(([, p]) => p.clubId !== first && p.clubId !== second)), ...Object.fromEntries(kept.map((p) => [p.id, p])) },
+      finances: { ...start.finances, [first]: rich(first), [second]: rich(second) },
+      market: { ...start.market, freeAgents: { only: { ...model, id: "only", clubId: "abroad", group: "MID", strength: 50, age: 26 } } },
+    };
+    const signing = signFreeAgents(contested, seededRandom(3)).events.find((e) => e.playerId === "only");
+    expect(signing?.toClubId).toBe(second);
+  });
+
   it("sign nobody, not even to fill the squad, while they owe wages or can't pay the signing costs", () => {
     expect(signingsBy(thin({ cash: 1e9, wagesOwed: 1 }))).toEqual([]);
     expect(signingsBy(thin({ cash: 0, wagesOwed: 0 }))).toEqual([]);
