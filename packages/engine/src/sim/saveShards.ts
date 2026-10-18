@@ -1,4 +1,5 @@
 import type { GameState } from "./gameState.js";
+import { packJson, unpackJson } from "./packedJson.js";
 import { saveGame, toGameState } from "./saveGame.js";
 import type { Country, World } from "./world/world.js";
 
@@ -33,7 +34,7 @@ function countryIdsOf(json: string): string[] {
 function countryOf(shards: Readonly<Record<string, string>>, id: string): Country {
   const json = shards[`${COUNTRY_SHARD}${id}`];
   if (json === undefined) throw new Error(`the save is missing the shard of country ${id}`);
-  const parsed: unknown = JSON.parse(json);
+  const parsed = unpackJson(json);
   if (!isCountry(parsed)) throw new Error(`the save's shard of country ${id} is not a Boleiro country`);
   return parsed;
 }
@@ -41,24 +42,26 @@ function countryOf(shards: Readonly<Record<string, string>>, id: string): Countr
 /**
  * The save split into shards written apart: the game, then with result-only countries their list
  * and one shard each. Given the game as last saved, a country that played no match since is the same
- * object and its shard is left out.
+ * object and its shard is left out. A Brazil-only game is one shard written as saveGame writes it; a
+ * game with result-only countries writes its game and countries as packed JSON (packJson), about a
+ * third smaller.
  */
 export function saveShards(state: GameState, saved?: GameState): Record<string, string> {
   const { world, ...game } = state;
-  const shards: Record<string, string> = { [GAME_SHARD]: saveGame(game) };
-  if (!world) return shards;
+  if (!world) return { [GAME_SHARD]: saveGame(game) };
+  const shards: Record<string, string> = { [GAME_SHARD]: packJson(game) };
   shards[WORLD_SHARD] = JSON.stringify(Object.keys(world));
   for (const [id, country] of Object.entries(world)) {
-    if (country !== saved?.world?.[id]) shards[`${COUNTRY_SHARD}${id}`] = JSON.stringify(country);
+    if (country !== saved?.world?.[id]) shards[`${COUNTRY_SHARD}${id}`] = packJson(country);
   }
   return shards;
 }
 
-/** The game from all its shards; a save written whole, before shards, is its game shard alone. */
+/** The game from all its shards, packed or not; a save written whole, before shards, is its game shard alone. */
 export function loadShards(shards: Readonly<Record<string, string>>): GameState {
   const whole = shards[GAME_SHARD];
   if (whole === undefined) throw new Error("the save has no game shard");
-  const game = toGameState(JSON.parse(whole));
+  const game = toGameState(unpackJson(whole));
   const countryIds = shards[WORLD_SHARD];
   if (countryIds === undefined) return game;
   const world: World = Object.fromEntries(countryIdsOf(countryIds).map((id) => [id, countryOf(shards, id)]));
