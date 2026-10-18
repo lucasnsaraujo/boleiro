@@ -46,6 +46,13 @@ describe("a season's album, played", () => {
         if (ranToTheEnd.has(clubId)) expect([id, apps, goals]).toEqual([id, total.apps, total.goals]);
         else expect(apps <= total.apps && goals <= total.goals).toBe(true);
       }
+      // Eleven starters and up to five substitutes a match, for the matches he ran and no others.
+      const stint = record.stints.find((s) => s.clubId === clubId);
+      const ran = last.fixtures.filter((f) => f.result && (f.homeId === clubId || f.awayId === clubId) && (!stint?.until || f.date <= stint.until)).length;
+      const games = [...stickers.values()].reduce((sum, [apps = 0]) => sum + apps, 0);
+      expect(ran).toBeGreaterThan(0);
+      expect(games).toBeGreaterThanOrEqual(11 * ran);
+      expect(games).toBeLessThanOrEqual(16 * ran);
     }
   });
 

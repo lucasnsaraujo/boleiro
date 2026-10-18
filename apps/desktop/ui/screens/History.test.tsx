@@ -114,7 +114,8 @@ test("the album turns to last season's page of stickers, foil among them, and it
   const nameOf = (id: string) => clubs[id]?.shortName ?? id;
   const score = `${nameOf(decider.homeId)} ${decider.homeGoals} x ${decider.awayGoals} ${nameOf(decider.awayId)}`;
   expect(within(page).getByLabelText(score)).toBeTruthy();
-  expect(within(page).getAllByRole("listitem").length).toBeGreaterThanOrEqual(decider.goals.length);
+  const goals = within(page).queryByRole("list", { name: "Gols" });
+  expect(goals ? within(goals).getAllByRole("listitem").length : 0).toBe(decider.goals.length);
   await userEvent.click(within(page).getByRole("button", { name: "Ver ficha da final" }));
   const ficha = await screen.findByRole("dialog", { name: "Ficha do jogo" });
   expect(within(ficha).getByText("Encerrado")).toBeTruthy();
