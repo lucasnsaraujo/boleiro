@@ -30,6 +30,14 @@ test("saving lists the slot with the coach's name and the game's date, club and 
   ]);
 });
 
+test("saving a game at a club abroad lists the level of its country's pyramid the club plays at", async () => {
+  const engine = startEngine();
+  const slots = indexedDbSlots(new IDBFactory());
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "tm-11" } });
+  await saveToSlot(engine, slots, "slot-1", { slotId: "slot-1", coachName: "Arteta" });
+  expect(await slots.list()).toEqual([expect.objectContaining({ coachClubId: "tm-11", division: null, abroad: { country: "gb-eng", level: 0 } })]);
+});
+
 test("writing the open game into its own slot clears its unsaved play; the autosave and other slots don't", async () => {
   const engine = startEngine();
   const slots = indexedDbSlots(new IDBFactory());

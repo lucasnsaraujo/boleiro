@@ -1,11 +1,13 @@
+import type { Club } from "@boleiro/data/clubs";
 import type { Division } from "@boleiro/data/players";
 import type { GameSummary } from "../engine/createEngineSession.js";
 
 /**
- * What the slot list shows without opening the save itself. `division` is the coach's club's when saved;
+ * What the slot list shows without opening the save itself. `division` is the coach's club's when saved, and
+ * `abroad` the country and level a club abroad played at (saves written before it was kept have none);
  * `gameSlotId` is the slot the game was started in, which differs from `id` in the autosave.
  */
-export type SlotMeta = GameSummary & { id: string; gameSlotId: string; savedAt: string; coachName: string; division: Division | null };
+export type SlotMeta = GameSummary & { id: string; gameSlotId: string; savedAt: string; coachName: string; division: Division | null; abroad?: NonNullable<Club["abroad"]> };
 
 export const AUTOSAVE_SLOT_ID = "autosave";
 
@@ -44,13 +46,14 @@ function isDivision(value: unknown): value is Division {
 /** Slot metadata read back from disk; anything malformed is dropped rather than shown. */
 export function toSlotMeta(value: unknown): SlotMeta | null {
   if (!isRecord(value)) return null;
-  const { id, gameSlotId, savedAt, coachName, date, season, coachClubId, division } = value;
+  const { id, gameSlotId, savedAt, coachName, date, season, coachClubId, division, abroad } = value;
   if (typeof id !== "string" || !SLOT_ID.test(id)) return null;
   if (typeof gameSlotId !== "string" || !SLOT_ID.test(gameSlotId)) return null;
   if (typeof coachName !== "string" || typeof savedAt !== "string" || typeof date !== "string") return null;
   if (typeof season !== "number" || (coachClubId !== null && typeof coachClubId !== "string")) return null;
   if (division !== null && !isDivision(division)) return null;
-  return { id, gameSlotId, savedAt, coachName, date, season, coachClubId, division };
+  const meta = { id, gameSlotId, savedAt, coachName, date, season, coachClubId, division };
+  return isRecord(abroad) && typeof abroad.country === "string" && typeof abroad.level === "number" ? { ...meta, abroad: { country: abroad.country, level: abroad.level } } : meta;
 }
 
 export function newestFirst(slots: SlotMeta[]): SlotMeta[] {
