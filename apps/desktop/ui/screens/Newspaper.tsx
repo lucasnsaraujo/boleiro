@@ -17,7 +17,7 @@ type Loaded = { state: PaperState; edition: Edition | null; editions: EditionTit
 const ARCHIVE = 7;
 // The side column fits four stories under the masthead; the rest run in the lead's columns.
 const SIDE_STORIES = 4;
-const KICKER_CLASSES: Record<Story["kind"], string> = { match: "", event: "v", signing: "m", sacking: "d", upset: "z", rivalry: "q", var: "var", controversy: "", award: "d", record: "z", egg: "egg" };
+const KICKER_CLASSES: Record<Story["kind"], string> = { match: "", event: "v", signing: "m", sacking: "d", upset: "z", rivalry: "q", var: "var", controversy: "", award: "d", record: "z", egg: "egg", career: "d" };
 // Each section of the round's events prints its own mark beside its name, as VAR's does.
 const SECTION_MARKS: Record<EventTopic, { icon: string; className: string }> = {
   players: { icon: "chat-circle-text", className: "v" },

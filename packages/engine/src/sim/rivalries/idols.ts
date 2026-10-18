@@ -1,35 +1,18 @@
-import { humanKey } from "../coach/closeCoachSeason.js";
-import { daysBetween } from "../dates.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { IDOL_APPS, IDOL_GOALS } from "../history/clubHistory.js";
-import type { CoachRecord } from "../history/history.js";
-import { derbyWinsOf } from "./rivalryMemory.js";
+import { IDOL_LINE, idolStandingOf, type HumanCoach } from "../moments/idolStanding.js";
 import { rivalryOf } from "./rivalryOf.js";
 
-/** A human coach as the rivalries read him: his name (none in a one-coach game) and career record. */
-export type HumanCoach = { name: string | undefined; record: CoachRecord };
+export type { HumanCoach };
 
 // guess: from a city's second derby up (intensity 3), an idol of one side is unwelcome at the other.
 export const BLOCK_FROM_INTENSITY = 3;
-// guess: a coach becomes one of the club's own at five points: a point a year in charge, one and a half
-// a title, a quarter a derby won. Five years do it alone; so do three years with a title and two derbies.
-const YEAR_POINTS = 1;
-const TITLE_POINTS = 1.5;
-const DERBY_WIN_POINTS = 0.25;
-const IDOL_POINTS = 5;
-const YEAR_DAYS = 365.25;
 
 export const seatedCoachOf = (state: Pick<GameState, "coachName" | "history">): HumanCoach => ({ name: state.coachName, record: state.history.coach });
 
-/**
- * Whether a human coach is a long-serving idol of a club, from his years in charge there, its titles
- * under him and the derbies he won for it. A proxy that the idol status of career moments replaces.
- */
+/** Whether a human coach is an idol of a club: his standing with its fans (idolStanding.ts) reached the idol line. */
 export function isIdolCoachAt(state: Pick<GameState, "date" | "rivalries">, coach: HumanCoach, clubId: string): boolean {
-  const days = coach.record.stints.filter((s) => s.clubId === clubId).reduce((sum, s) => sum + daysBetween(s.from, s.until ?? state.date), 0);
-  const titles = coach.record.trophies.filter((t) => t.clubId === clubId).length;
-  const points = YEAR_POINTS * (days / YEAR_DAYS) + TITLE_POINTS * titles + DERBY_WIN_POINTS * derbyWinsOf(state, humanKey(coach.name), clubId);
-  return points >= IDOL_POINTS;
+  return idolStandingOf(state, coach, clubId).points >= IDOL_LINE;
 }
 
 /** The clubs a human coach is an idol of, in the order he first ran them. */

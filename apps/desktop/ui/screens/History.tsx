@@ -458,6 +458,8 @@ function exitText(stint: CareerStint): string {
       return "trocou de clube";
     case "resigned":
       return "pediu demissão";
+    case "retired":
+      return "aposentou-se";
   }
 }
 

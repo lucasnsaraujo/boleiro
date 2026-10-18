@@ -31,9 +31,11 @@ export function jobOffer(state: GameState, clubId: string): JobOffer {
 /**
  * Drops expired offers, then offers the player's coach the clubs' open jobs that his reputation
  * reaches, but for the big derby rivals of a club he is an idol of. Clubs with an open job go to `vacancies`; an unemployed coach also hears from a club now and then.
+ * A retired coach hears from nobody.
  */
 export function offerJobs(state: GameState, vacancies: readonly string[], random: () => number): { state: GameState; events: JobOffered[] } {
   const { coach, coachClubId } = state;
+  if (coach.retiredOn) return { state, events: [] };
   // A club another hot-seat coach has taken is no longer hiring.
   let offers = coach.offers.filter((offer) => offer.expiresOn >= state.date && (offer.clubId === coachClubId || !isHumanClub(state, offer.clubId)));
   // Ranked only when a job is open or an idle coach hears from a club: most days need neither.
