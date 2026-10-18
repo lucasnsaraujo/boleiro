@@ -8,7 +8,7 @@ import { expectMedianRevenueNearTypical, expectNoCashHoarding, expectRevenueInDi
 import { runSeasons, type SeasonRun } from "./runSeasons.js";
 import { seasonReport } from "./seasonReport.js";
 import { expectDivisionsApart, expectMeanAgeSteady, expectMeanStrengthSteady, expectSerieDStrengthSteady, expectSpreadSettles } from "./strengthBandChecks.js";
-import { expectDomesticMoves, expectForeignersMostlyInSerieA, expectTalentToEurope } from "./transferFlowChecks.js";
+import { expectDomesticMoves, expectForeignersMostlyInSerieA, expectSerieAForeignShareNearReal, expectTalentToEurope } from "./transferFlowChecks.js";
 
 const playDays = (state: GameState, days: number) => {
   let current = state;
@@ -151,5 +151,9 @@ describe.skipIf(!process.env.LONG_RUN)("ten seasons from the season runner", () 
     expectTalentToEurope(flowsOf(run()));
     expectForeignersMostlyInSerieA(flowsOf(run()));
     expectDomesticMoves(flowsOf(run()));
+  });
+
+  it("keeps Série A's foreign share near the real 23% every season", () => {
+    expectSerieAForeignShareNearReal(flowsOf(run()));
   });
 });
