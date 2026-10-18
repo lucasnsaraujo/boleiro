@@ -1,4 +1,4 @@
-import { chemistryOf } from "../../chemistry/chemistryOf.js";
+import { chemistryValueOf } from "../../chemistry/chemistryOf.js";
 import type { EventType } from "../eventType.js";
 import {
   finance,
@@ -78,7 +78,7 @@ export const SQUAD_EVENTS: readonly EventType[] = [
     id: "squad-cliques",
     area: "squad",
     topic: "squad",
-    weight: (scene) => (chemistryOf(scene.state, scene.clubId).value < LOW_CHEMISTRY ? 2 : 0.4),
+    weight: (scene) => (chemistryValueOf(scene.state, scene.clubId) < LOW_CHEMISTRY ? 2 : 0.4),
     cooldownDays: 60,
     cast: (scene) => {
       const foreign = scene.squad.filter(isForeign);
