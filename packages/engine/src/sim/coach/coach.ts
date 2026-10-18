@@ -2,6 +2,7 @@ import type { IsoDate } from "../gameState.js";
 import type { EventArea } from "../events/eventMemory.js";
 import type { Assistant, FormerPlayer } from "./assistant.js";
 import type { AssistantDuty } from "./assistantDuties.js";
+import type { MatchPlan } from "./matchPlan.js";
 import type { Tactics } from "./tactics.js";
 
 /** `salary` is monthly, in BRL; the contract runs to the end of `untilSeason`. */
@@ -17,6 +18,8 @@ export type Coach = {
   offers: JobOffer[];
   /** Kept from match to match until the coach changes them. */
   tactics: Tactics;
+  /** What his matches do without stopping (matchPlan.ts); left out, nothing: every red card and injury asks him. */
+  matchPlan?: MatchPlan;
   /** The last day of the window the coach got for himself when he took a club outside the game's windows. */
   personalWindowUntil?: IsoDate;
   /** The areas whose events the assistant answers for him at once; left out, every event asks the coach. */
