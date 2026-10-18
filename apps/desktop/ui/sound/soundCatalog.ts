@@ -15,9 +15,17 @@ export type Cue =
   | "halfTime"
   | "fullTime"
   | "coachGoal"
+  | "coachGoalAway"
+  | "goalStinger"
   | "comeback"
   | "conceded"
+  | "concededAway"
   | "otherGoal"
+  | "penalty"
+  | "groan"
+  | "relief"
+  | "varCheck"
+  | "varDecision"
   | "card"
   | "redCard"
   | "injury"
@@ -30,7 +38,8 @@ export type Cue =
   | "sacked";
 
 export type MusicTrack = "menu" | "hub";
-export type Bus = "music" | "sfx";
+/** Where a cue plays: the music's bus, the match effects' or the interface's, each under its own volume. */
+export type Bus = "music" | "sfx" | "ui";
 
 export const SAMPLES = { boo, chant, goalDistant, goalRoar, oehh, whistleLong, whistleShort } as const;
 export type Sample = keyof typeof SAMPLES;
@@ -38,10 +47,13 @@ export type Sample = keyof typeof SAMPLES;
 export const MUSIC: Record<MusicTrack, string> = { menu: menuTheme, hub: hubTheme };
 export const CROWD_BED = crowdBed;
 
-/** A recorded sound in a cue, `at` seconds after it starts. */
-type Layer = { sample: Sample; at: number; gain: number };
-/** A synthesised note: a MIDI note number, when it starts and how long it rings, in seconds. */
-export type Tone = { note: number; at: number; length: number; wave: "sine" | "triangle" | "square" | "sawtooth"; gain: number };
+/** A recorded sound in a cue, `at` seconds after it starts; `length` cuts it short with a fade. */
+type Layer = { sample: Sample; at: number; gain: number; length?: number };
+/**
+ * A synthesised note: a MIDI note number (fractions detune it), when it starts and how long it rings, in
+ * seconds; `to` is the note it bends down or up to over its length, `cutoff` how bright a buzzy wave sounds.
+ */
+export type Tone = { note: number; at: number; length: number; wave: "sine" | "triangle" | "square" | "sawtooth"; gain: number; to?: number; cutoff?: number };
 
 export type CueSound = {
   bus: Bus;
@@ -53,13 +65,33 @@ export type CueSound = {
   tones: readonly Tone[];
 };
 
-const layer = (sample: Sample, at = 0, gain = 1): Layer => ({ sample, at, gain });
+const layer = (sample: Sample, at = 0, gain = 1, length?: number): Layer => ({ sample, at, gain, ...(length === undefined ? {} : { length }) });
 const chord = (notes: readonly number[], at: number, length: number, wave: Tone["wave"] = "triangle", gain = 0.12): Tone[] =>
   notes.map((note) => ({ note, at, length, wave, gain }));
 
-function sfx(priority: number, layers: Layer[], ducks = false): CueSound {
-  return { bus: "sfx", priority, ducks, layers, tones: [] };
+function sfx(priority: number, layers: Layer[], ducks = false, tones: Tone[] = []): CueSound {
+  return { bus: "sfx", priority, ducks, layers, tones };
 }
+
+/** A drum hit: a low sine that drops in pitch as it dies, like a surdo. */
+const thud = (at: number, note = 43, gain = 0.5): Tone => ({ note, to: note - 12, at, length: 0.32, wave: "sine", gain });
+
+/**
+ * The goal stinger: a short brass pickup over a surdo, then the full chord a fourth higher on a second, deeper
+ * beat. Each brass note is doubled a few cents sharp, so the pair beats like a section instead of one buzz.
+ */
+const brass = (notes: readonly number[], at: number, length: number, gain: number): Tone[] =>
+  notes.flatMap((note) => [
+    { note, at, length, wave: "sawtooth" as const, gain, cutoff: 2600 },
+    { note: note + 0.12, at, length, wave: "sawtooth" as const, gain: gain * 0.7, cutoff: 2600 },
+  ]);
+const GOAL_STINGER: Tone[] = [...brass([67, 72], 0, 0.09, 0.035), thud(0, 47, 0.3), ...brass([72, 76, 79, 84], 0.16, 1.1, 0.03), thud(0.16)];
+
+/** VAR under review: three quick monitor pips over a low drone that rises a semitone, unresolved. */
+const VAR_STING: Tone[] = [
+  ...[0, 0.16, 0.32].map((at): Tone => ({ note: 88, at, length: 0.05, wave: "square", gain: 0.04, cutoff: 3200 })),
+  { note: 45, to: 46, at: 0, length: 1.4, wave: "sine", gain: 0.14 },
+];
 
 function synth(bus: Bus, tones: Tone[]): CueSound {
   return { bus, priority: 0, ducks: false, layers: [], tones };
@@ -68,18 +100,29 @@ function synth(bus: Bus, tones: Tone[]): CueSound {
 export const CUES: Record<Cue, CueSound> = {
   comeback: sfx(9, [layer("goalRoar"), layer("chant", 1.5, 0.9)], true),
   coachGoal: sfx(8, [layer("goalRoar")], true),
-  conceded: sfx(8, [layer("boo")], true),
+  // Away, the roar comes from the visitors' end: fewer voices, and the home crowd's groan under it.
+  coachGoalAway: sfx(8, [layer("goalRoar", 0, 0.5), layer("oehh", 0.2, 0.35)], true),
+  goalStinger: sfx(8, [], false, GOAL_STINGER),
+  conceded: sfx(8, [layer("boo", 0, 0.85), layer("oehh", 0.5, 0.5)], true),
+  // Away, the home crowd erupts around the coach, and his own fans boo from their corner.
+  concededAway: sfx(8, [layer("goalDistant", 0, 0.9), layer("boo", 0.8, 0.4)], true),
+  varCheck: sfx(7, [], false, VAR_STING),
+  varDecision: sfx(7, [layer("whistleShort")], false, [thud(0, 38, 0.45)]),
   fullTime: sfx(7, [layer("whistleShort"), layer("whistleShort", 0.45), layer("whistleLong", 0.9)]),
   halfTime: sfx(6, [layer("whistleShort"), layer("whistleLong", 0.45)]),
   kickOff: sfx(6, [layer("whistleShort")]),
   redCard: sfx(6, [layer("whistleShort"), layer("oehh", 0.3, 0.8)]),
   injury: sfx(5, [layer("oehh")]),
+  penalty: sfx(5, [layer("whistleShort"), layer("whistleShort", 0.2, 0.7)]),
+  groan: sfx(5, [layer("oehh")]),
+  // A penalty missed against the coach, or a call against him taken back: a short roar of relief.
+  relief: sfx(5, [layer("goalDistant", 0, 0.8, 2.5)]),
   card: sfx(4, [layer("whistleShort", 0, 0.8)]),
   // The fourth official's two quick pips as the board goes up.
   substitution: sfx(3, [layer("whistleShort", 0, 0.5), layer("whistleShort", 0.16, 0.4)]),
   otherGoal: sfx(2, [layer("goalDistant", 0, 0.45)]),
-  click: synth("sfx", [{ note: 98, at: 0, length: 0.03, wave: "sine", gain: 0.08 }]),
-  confirm: synth("sfx", [
+  click: synth("ui", [{ note: 98, at: 0, length: 0.03, wave: "sine", gain: 0.08 }]),
+  confirm: synth("ui", [
     { note: 81, at: 0, length: 0.07, wave: "sine", gain: 0.1 },
     { note: 88, at: 0.07, length: 0.12, wave: "sine", gain: 0.1 },
   ]),

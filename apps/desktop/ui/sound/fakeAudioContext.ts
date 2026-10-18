@@ -126,6 +126,12 @@ export class FakeAudioContext implements AudioContextLike {
     const source = this.sources.findLast((s) => s.url === url && s.isPlayingAt(time));
     return source ? this.gainToSpeakers(source, time) : 0;
   }
+  /** The cutoff of the first filter the newest copy of `url` passes through on its way out, at `time`, or null for none. */
+  cutoff(url: string, time = this.currentTime): number | null {
+    let node: FakeNode | undefined = this.sources.findLast((s) => s.url === url);
+    while (node && !(node instanceof FakeFilter)) node = node.outputs[0];
+    return node instanceof FakeFilter ? node.frequency.at(time) : null;
+  }
   private gainToSpeakers(node: FakeNode, time: number): number {
     if (node === this.destination) return 1;
     const own = node instanceof FakeGain ? node.gain.at(time) : 1;
