@@ -30,6 +30,9 @@ import { hasOwnArrows } from "./hasOwnArrows.js";
 import { useBenchDrag, type BenchDrag } from "./useBenchDrag.js";
 import { MARKING_LABEL, PLAY_LABEL, POSTURE_LABEL, POSTURES } from "./tacticsLabels.js";
 import { TacticsPanel, type TacticsContext } from "./TacticsPanel.js";
+import { MatchPlanPanel } from "./MatchPlanPanel.js";
+import type { MatchPlan } from "@boleiro/engine/sim/coach/matchPlan";
+import type { MatchPlanView } from "@boleiro/game-client/engine/createEngineSession";
 import "./lineupSheet.css";
 
 const STATUS_LABEL = { injured: "Machucado", suspended: "Suspenso", facesOwner: "Não enfrenta o dono", onDuty: "Na seleção" } as const;
@@ -69,7 +72,12 @@ type Props = {
   chemistry?: Captaincy;
   /** Before kick-off, the coach's talk to his side, over the sheet's foot. */
   talk?: ReactNode;
+  /** Before kick-off, the way to the coach's match plan: his club, and how the plan is read and kept. */
+  matchPlan?: PlanAccess;
 };
+
+/** What the lineup sheet needs to open the coach's match plan over it. */
+export type PlanAccess = { club: Pick<Club, "id" | "shortName" | "colours">; load: () => Promise<MatchPlanView>; save: (plan: MatchPlan) => Promise<void> };
 
 /** The club's chemistry meter, its captain, the assistant's pick for the armband, and how the coach names another. */
 type Captaincy = { value: number; captainId: string | null; suggestedId: string | null; onName: (playerId: string) => Promise<number> };
@@ -127,7 +135,7 @@ function MiniPitch({ formation }: { formation: Formation }) {
 }
 
 /** The lineup: the eleven on the pitch where the formation puts them, tactics and the bench, before kick-off or during the coach's match. */
-export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, assistantLineup, opponent, coachStep, tacticsContext, chemistry, talk }: Props) {
+export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBusy, error, onDone, onLeave, onPickTeam, assistantLineup, opponent, coachStep, tacticsContext, chemistry, talk, matchPlan }: Props) {
   const [sheet, setSheet] = useState(() => openSheet(lineup, tactics));
   const [captainId, setCaptainId] = useState(chemistry?.captainId ?? null);
   const [captainFailure, setCaptainFailure] = useState<string | null>(null);
@@ -146,6 +154,10 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
   });
   const [isPicking, setPicking] = useState(false);
   const [isTacticsOpen, setTacticsOpen] = useState(false);
+  // The coach's match plan while its page is open over the sheet.
+  const [planView, setPlanView] = useState<MatchPlanView | null>(null);
+  const [planFailure, setPlanFailure] = useState<string | null>(null);
+  const isPageOpen = isTacticsOpen || planView !== null;
   const [pickFailure, setPickFailure] = useState<string | null>(null);
   // The assistant's latest eleven and its formation: the team strength is compared against it.
   const [assistantPick, setAssistantPick] = useState(() => ({ lineup: assistantLineup ?? lineup, formation: tactics.formation }));
@@ -175,7 +187,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
 
   // ← and → step through the human coaches' matches, taking this one's changes along.
   useEffect(() => {
-    if (!coachStep || isTacticsOpen) return;
+    if (!coachStep || isPageOpen) return;
     const onKey = (event: KeyboardEvent) => {
       const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
       if (!step || event.defaultPrevented || event.repeat || isBusy || hasOwnArrows(event.target)) return;
@@ -185,6 +197,18 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
+
+  /** Opens the match plan's page over the sheet, from the tactics page too. */
+  async function openPlan() {
+    if (!matchPlan) return;
+    setTacticsOpen(false);
+    setPlanFailure(null);
+    try {
+      setPlanView(await matchPlan.load());
+    } catch {
+      setPlanFailure("O plano de jogo não abriu. Tente de novo.");
+    }
+  }
 
   /** Hands the armband to `playerId` at once; the meter follows his standing. */
   async function nameCaptain(playerId: string) {
@@ -322,7 +346,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
 
   return createPortal(
     <div className="sheet-wrap">
-      <section className={isLive ? "lineup" : "lineup lineup-prematch"} role="dialog" aria-modal="true" aria-labelledby="lineup-title" inert={isTacticsOpen}>
+      <section className={isLive ? "lineup" : "lineup lineup-prematch"} role="dialog" aria-modal="true" aria-labelledby="lineup-title" inert={isPageOpen}>
         <div className={drag ? "pitch dragging" : "pitch"} role="group" aria-label="Titulares">
           <i className="mark out" />
           <i className="mark half" />
@@ -436,6 +460,13 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
                 </small>
               </button>
             )}
+            {matchPlan && (
+              <button className="btn sm lineup-tactics" onClick={() => void openPlan()}>
+                <i className="ph-bold ph-clipboard-text" aria-hidden="true" />
+                Plano de jogo
+                <small>trocas, teclas, pênaltis</small>
+              </button>
+            )}
           </div>
 
           <section className="page bench" aria-labelledby="bench-title">
@@ -460,7 +491,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
 
           <div className="lineup-hint-row">
             <p className="lineup-hint" role="status">
-              {error ?? pickFailure ?? captainFailure ?? hintOf(sheet, mode, squad, problem, drag)}
+              {error ?? pickFailure ?? captainFailure ?? planFailure ?? hintOf(sheet, mode, squad, problem, drag)}
             </p>
             {onLeave && (
               <button className="btn flat sm" onClick={onLeave}>
@@ -512,7 +543,11 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
           isLive={isLive}
           onChange={(next) => setSheet((s) => changeTactics(s, next))}
           onClose={() => setTacticsOpen(false)}
+          {...(matchPlan ? { onOpenPlan: () => void openPlan() } : {})}
         />
+      )}
+      {matchPlan && planView && (
+        <MatchPlanPanel club={matchPlan.club} squad={squad} lineup={sheet.lineup} tactics={sheet.tactics} view={planView} onSave={matchPlan.save} onClose={() => setPlanView(null)} />
       )}
       {drag && (
         <div className={drag.overId ? "lineup-ghost over" : "lineup-ghost"} style={{ left: drag.x, top: drag.y }} aria-hidden="true">

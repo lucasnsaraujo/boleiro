@@ -718,6 +718,17 @@ export function Round() {
         }}
         {...(opponent ? { opponent: { club: opponent, formation: plan.opponentFormation } } : {})}
         {...(own && opponent ? { tacticsContext: { club: own, opponentClub: opponent, opponent: plan.opponent, opponentForm: plan.opponentForm, moment: plan.moment } } : {})}
+        {...(own
+          ? {
+              matchPlan: {
+                club: own,
+                load: () => engine.matchPlan(),
+                save: async (matchPlan) => {
+                  await engine.apply({ type: "setMatchPlan", plan: matchPlan });
+                },
+              },
+            }
+          : {})}
       />
     );
   }

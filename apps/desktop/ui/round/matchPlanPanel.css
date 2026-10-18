@@ -1,0 +1,849 @@
+/*
+ * The match plan turns over the lineup like the tactics page does (.tac): the rules on a page on the
+ * left, the coach's keys, saved tactics and penalty takers as stickers on the right.
+ */
+.mp-rules {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 18px 24px 16px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  animation: tac-page-in 300ms var(--e-out) backwards;
+}
+
+.mp-hd {
+  align-items: center;
+}
+
+.mp-hd .crest {
+  flex: none;
+}
+
+.mp-sub {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.mp-hd .mp-fail {
+  margin: 0 0 0 auto;
+}
+
+/* The house rule, pinned over the rules as a yellow note: outside finals this page is all the coach has. */
+.mp-house {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border-radius: var(--r-s);
+  background: var(--note);
+  color: var(--note-ink);
+  font-size: 12.5px;
+  line-height: 1.35;
+  transform: rotate(-0.4deg);
+  animation: tac-note-in 280ms var(--e-slap) 120ms backwards;
+}
+
+.mp-house i {
+  font-size: 16px;
+  margin-top: 1px;
+}
+
+.mp-rule {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--rule);
+  animation: tac-row-in 260ms var(--e-out) backwards;
+}
+
+.mp-rule:nth-of-type(1) {
+  animation-delay: 40ms;
+}
+
+.mp-rule:nth-of-type(2) {
+  animation-delay: 75ms;
+}
+
+.mp-rule:nth-of-type(3) {
+  animation-delay: 110ms;
+}
+
+.mp-rule:nth-of-type(4) {
+  animation-delay: 145ms;
+  border-bottom: 0;
+}
+
+.mp-rule .nm b {
+  display: block;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.mp-rule .nm span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--mute);
+}
+
+.mp-rule .ctl {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+}
+
+.mp-rule .eff {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.mp-rule .eff .k {
+  color: var(--mute);
+}
+
+.mp-rule .eff b {
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.mp-shape-rule {
+  grid-template-columns: 150px minmax(0, 1fr) 232px;
+}
+
+.mp-named-rule {
+  align-items: start;
+}
+
+/*
+ * The shape-keeping picture: the coach's formation on a strip of lawn. Switched on, it plays the rule
+ * once: a red card spins down onto a centre-back, a man of the line in front walks off the bottom of
+ * the pitch, and a defender runs into the gap with a yellow ring. Switched off, the lawn goes quiet.
+ */
+.mp-shape {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.mp-pitch {
+  --dot: 11px;
+  position: relative;
+  height: 112px;
+  overflow: hidden;
+  border-radius: var(--r-s);
+  background: repeating-linear-gradient(180deg, #0e8442 0 14px, #0b7a3b 14px 28px);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.28),
+    var(--sh-sticker);
+  transition: filter var(--t-slow) var(--e-out);
+}
+
+.mp-pitch::before {
+  content: "";
+  position: absolute;
+  left: 32%;
+  right: 32%;
+  bottom: -2px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  border-bottom: 0;
+}
+
+.mp-shape:not(.on) .mp-pitch {
+  filter: saturate(0.25) brightness(0.92);
+}
+
+.mp-line {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.mp-line.ATT {
+  top: 14%;
+}
+
+.mp-line.MID {
+  top: 38%;
+}
+
+.mp-line.DEF {
+  top: 62%;
+}
+
+.mp-pitch .dot {
+  position: relative;
+  width: var(--dot);
+  height: var(--dot);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.22);
+}
+
+.mp-pitch .dot.gk {
+  position: absolute;
+  left: 50%;
+  bottom: 7%;
+  margin-left: calc(var(--dot) / -2);
+  background: var(--yellow);
+}
+
+.mp-pitch .dot.in {
+  position: absolute;
+  top: 62%;
+  left: calc(8% + 84% * var(--slot));
+  margin-left: calc(var(--dot) / -2);
+  background: #fff;
+  opacity: 0;
+}
+
+.mp-red {
+  position: absolute;
+  left: 50%;
+  top: -13px;
+  width: 9px;
+  height: 12px;
+  margin-left: -4px;
+  border-radius: 2px;
+  background: var(--red);
+  box-shadow: 0 0 0 1.5px #fff;
+  opacity: 0;
+}
+
+.mp-shape.on .mp-red {
+  animation: mp-card-drop 520ms var(--e-slap) 160ms both;
+}
+
+.mp-shape.on .dot.off {
+  animation: mp-sent-off 360ms var(--e-out) 560ms both;
+}
+
+.mp-shape.on .dot.out {
+  animation: mp-walk-off 520ms var(--e-in-out) 820ms both;
+}
+
+.mp-shape.on .dot.in {
+  animation:
+    mp-run-on 460ms var(--e-slap) 1220ms both,
+    mp-ring 900ms var(--e-out) 1560ms;
+}
+
+/* The red card spins down from above the pitch and sticks over the centre-back. */
+@keyframes mp-card-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-36px) rotate(-70deg) scale(1.7);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-12deg);
+  }
+}
+
+@keyframes mp-sent-off {
+  to {
+    background: var(--red);
+    opacity: 0.45;
+    transform: scale(0.7);
+  }
+}
+
+/* The man of the line that gives way walks off the bottom of the pitch, fading as he goes. */
+@keyframes mp-walk-off {
+  30% {
+    opacity: 1;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(96px) scale(0.85);
+  }
+}
+
+@keyframes mp-run-on {
+  from {
+    opacity: 0;
+    transform: translateY(42px) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes mp-ring {
+  from {
+    box-shadow:
+      0 2px 0 rgba(0, 0, 0, 0.22),
+      0 0 0 0 var(--yellow);
+  }
+  40% {
+    box-shadow:
+      0 2px 0 rgba(0, 0, 0, 0.22),
+      0 0 0 6px var(--yellow);
+  }
+  to {
+    box-shadow:
+      0 2px 0 rgba(0, 0, 0, 0.22),
+      0 0 0 12px transparent;
+  }
+}
+
+.mp-shape figcaption {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: baseline;
+  gap: 2px 7px;
+}
+
+.mp-shape figcaption i {
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.mp-from,
+.mp-to {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.mp-from {
+  color: var(--mute);
+}
+
+.mp-shape.on .mp-to {
+  color: var(--green);
+  animation: mp-stamp 420ms var(--e-slap) 1380ms both;
+}
+
+@keyframes mp-stamp {
+  from {
+    opacity: 0;
+    transform: scale(1.6) rotate(-6deg);
+  }
+}
+
+.mp-shape figcaption small {
+  grid-column: 1 / -1;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--mute);
+}
+
+/* Planned substitutions: a minute, who goes off, who comes on. */
+.mp-subs {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.mp-subs ol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mp-sub-row {
+  display: grid;
+  grid-template-columns: 104px auto minmax(0, 1fr) auto minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 8px;
+  animation: tac-row-in 240ms var(--e-out) backwards;
+}
+
+.mp-sub-row .select,
+.mp-named .select,
+.mp-kicks .select {
+  width: 100%;
+  min-width: 0;
+}
+
+.mp-arrow {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mp-arrow.out {
+  color: var(--red);
+}
+
+.mp-arrow.in {
+  color: var(--green);
+}
+
+.mp-none {
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.mp-x {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--r-s);
+  background: transparent;
+  color: var(--mute);
+  cursor: pointer;
+  transition:
+    background var(--t-fast) var(--e-out),
+    color var(--t-fast) var(--e-out);
+}
+
+.mp-x:hover {
+  background: var(--red-l);
+  color: var(--red);
+}
+
+.mp-x:focus-visible,
+.mp-cap:focus-visible,
+.mp-keep:focus-visible {
+  outline: 2px solid var(--yellow-d);
+  outline-offset: 2px;
+}
+
+/* Each starter and who comes on for him, two columns where the page has room. */
+.mp-named {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px 18px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mp-named li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1.25fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.mp-named-nm {
+  overflow: hidden;
+  font-weight: 700;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The stickers on the right fall in a beat after the page, one after another. */
+.mp-side > * {
+  animation: tac-sticker-in 380ms cubic-bezier(0.34, 1.3, 0.5, 1) backwards;
+}
+
+.mp-side > :nth-child(1) {
+  animation-delay: 70ms;
+}
+
+.mp-side > :nth-child(2) {
+  animation-delay: 130ms;
+}
+
+.mp-side > :nth-child(3) {
+  animation-delay: 190ms;
+}
+
+.mp-card {
+  padding: 13px 16px 14px;
+}
+
+.mp-card h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.mp-card h3 small {
+  margin-left: auto;
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.mp-card-sub {
+  margin: 2px 0 8px;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.mp kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--paper);
+  box-shadow:
+    inset 0 0 0 1px var(--line-2),
+    0 1.5px 0 var(--line-2);
+  font: inherit;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10.5px;
+  color: var(--ink);
+}
+
+/* A key on the shared keyboard, drawn as a key cap; listening for a press it glows yellow. */
+.mp-key {
+  display: grid;
+  grid-template-columns: 1fr 46px;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 12px;
+  padding: 7px 0;
+  border-top: 1px dotted var(--line-2);
+}
+
+.mp-key-label {
+  font-weight: 800;
+  font-size: 13.5px;
+}
+
+.mp-key-note {
+  grid-row: 2;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.mp-key-note.bad {
+  color: var(--red);
+  font-weight: 700;
+  animation: mp-shake 320ms var(--e-out);
+}
+
+@keyframes mp-shake {
+  25% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+.mp-cap {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 46px;
+  height: 44px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow:
+    inset 0 0 0 1.5px var(--ink),
+    0 4px 0 var(--ink);
+  font: inherit;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 19px;
+  cursor: pointer;
+  transform: translateY(-2px);
+  transition:
+    transform var(--t-fast) var(--e-out),
+    box-shadow var(--t-fast) var(--e-out),
+    background var(--t-fast) var(--e-out);
+}
+
+.mp-cap:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 0 0 1.5px var(--ink),
+    0 0 0 var(--ink);
+}
+
+.mp-cap.empty {
+  color: var(--mute);
+  box-shadow:
+    inset 0 0 0 1.5px var(--line-2),
+    0 4px 0 var(--line-2);
+}
+
+.mp-cap.listening {
+  background: var(--yellow);
+  color: var(--on-yellow);
+  animation: mp-listen 1100ms var(--e-in-out) infinite;
+}
+
+@keyframes mp-listen {
+  50% {
+    box-shadow:
+      inset 0 0 0 1.5px var(--ink),
+      0 4px 0 var(--ink),
+      0 0 0 7px color-mix(in srgb, var(--yellow) 40%, transparent);
+  }
+}
+
+.mp-taken {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+/* Saved tactics: numbered stickers, each with its formation's dots, two to a row. */
+.mp-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mp-slots:empty {
+  display: none;
+}
+
+.mp-slot {
+  display: grid;
+  grid-template-columns: auto 30px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px 26px 8px 9px;
+  transform: rotate(var(--tilt));
+  animation: mp-slot-in 420ms var(--e-slap) backwards;
+}
+
+@keyframes mp-slot-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) rotate(calc(var(--tilt) * -5)) scale(1.25);
+  }
+}
+
+.mp-slot-no {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--blue);
+}
+
+.mp-slot-mini {
+  position: relative;
+  width: 30px;
+  height: 40px;
+  border-radius: 4px;
+  background: repeating-linear-gradient(180deg, #0e8442 0 8px, #0b7a3b 8px 16px);
+}
+
+.mp-slot-mini i {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.mp-slot-txt {
+  min-width: 0;
+}
+
+.mp-slot-txt b {
+  display: block;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.mp-slot-txt small {
+  display: block;
+  overflow: hidden;
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: var(--mute);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mp-slot .mp-x {
+  position: absolute;
+  top: 3px;
+  right: 2px;
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+}
+
+/* An empty place for a tactics: dashed, the way the album marks a sticker still to come. */
+.mp-keep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 2px dashed var(--line-2);
+  border-radius: var(--r-m);
+  background: color-mix(in srgb, var(--paper-2) 45%, transparent);
+  color: var(--ink-2);
+  font: inherit;
+  font-weight: 700;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast) var(--e-out),
+    background var(--t-fast) var(--e-out);
+}
+
+.mp-keep:hover:not(:disabled) {
+  border-color: var(--ink-2);
+  background: var(--paper-2);
+}
+
+.mp-keep:disabled {
+  color: var(--mute);
+  cursor: default;
+}
+
+/* Penalty takers, first to fifth, and whether the round stops to ask. */
+.mp-kicks {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mp-kicks li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.mp-kick-no {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.mp-ask {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dotted var(--line-2);
+  cursor: pointer;
+}
+
+.mp-ask > span:first-child {
+  flex: 1;
+}
+
+.mp-ask b {
+  display: block;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.mp-ask small {
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.mp-ask input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.mp-ask input:focus-visible + .sw {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.mp-side {
+  overflow: auto;
+}
+
+@media (max-width: 1180px) {
+  .mp-named {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mp-shape-rule {
+    grid-template-columns: 150px minmax(0, 1fr) 200px;
+  }
+
+  .mp-sub-row {
+    grid-template-columns: 96px minmax(0, 1fr) minmax(0, 1fr) 28px;
+  }
+
+  .mp-arrow {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mp-rules,
+  .mp-rule,
+  .mp-side > *,
+  .mp-house,
+  .mp-sub-row,
+  .mp-slot,
+  .mp-key-note.bad,
+  .mp-cap.listening {
+    animation: none;
+  }
+
+  /* The picture shows where the rule ends, without playing it. */
+  .mp-shape.on .mp-red,
+  .mp-shape.on .dot.off,
+  .mp-shape.on .dot.out,
+  .mp-shape.on .dot.in,
+  .mp-shape.on .mp-to {
+    animation-duration: 1ms;
+    animation-delay: 0ms;
+  }
+}
