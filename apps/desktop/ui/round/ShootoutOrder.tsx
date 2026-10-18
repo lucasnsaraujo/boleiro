@@ -4,6 +4,7 @@ import type { RoundClub } from "@boleiro/game-client/round/liveRoundOf";
 import type { SquadPlayer } from "@boleiro/game-client/round/matchDayPlan";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { Crest } from "../clubs/Crest.js";
+import { EASE } from "../motion/easing.js";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { useFlip } from "../motion/useFlip.js";
 import { mainRole, ROLE_LETTER, ROLE_NAME } from "./lineupBoard.js";
@@ -37,7 +38,7 @@ function slideKicker(row: HTMLElement, offset: number) {
       { ...(moves ? { transform: `translateY(${offset}px)` } : {}), boxShadow: "inset 0 0 0 999px rgba(255, 204, 0, 0.32)" },
       { transform: "none", boxShadow: "inset 0 0 0 999px rgba(255, 204, 0, 0)" },
     ],
-    { duration: 380, easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
+    { duration: 380, easing: EASE.out },
   );
 }
 

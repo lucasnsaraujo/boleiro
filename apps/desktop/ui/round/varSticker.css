@@ -235,13 +235,13 @@
   .varstk p,
   .varstk-stamp,
   .varstk.is-decided .varstk-disc {
-    animation: round-fade-in 200ms ease-out both;
+    animation: round-fade-in 200ms var(--e-out) both;
   }
 
   .varstk.is-leaving {
     animation: none;
     opacity: 0;
-    transition: opacity 200ms ease-out;
+    transition: opacity var(--t-base) var(--e-out);
   }
 
   .varstk-scan,

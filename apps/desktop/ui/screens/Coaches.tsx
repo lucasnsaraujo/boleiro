@@ -14,7 +14,7 @@ import { answerText, countryName, exitWord, nationalityName, jobRefusalText, STY
 import { Select } from "../controls/Select.js";
 import { usePlayRound } from "../hub/usePlayRound.js";
 import { useFlip } from "../motion/useFlip.js";
-import { prefersReducedMotion } from "../motion/reducedMotion.js";
+import { tintRow } from "../motion/rowSlides.js";
 import "./coaches.css";
 import { clubArticle, withArticle } from "@boleiro/data/articles";
 
@@ -34,10 +34,6 @@ const isTabId = (value: string | null): value is TabId => TABS.some((tab) => tab
 
 // The rows that come in one after another when a tab opens; the rest arrive with the last.
 const STAGGERED_ROWS = 16;
-// FLIP tints for a coach who climbed or fell when the season steps (Round.tsx's table uses the same idea).
-const ROSE = "color-mix(in srgb, var(--green) 22%, transparent)";
-const FELL = "color-mix(in srgb, var(--red) 18%, transparent)";
-const EXPO_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 
 const points = (n: number) => n.toLocaleString("pt-BR");
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
@@ -51,20 +47,7 @@ export function personInitials(name: string): string {
   return `${first}${last}`.toUpperCase();
 }
 
-function slideRow(row: HTMLElement, offset: number) {
-  if (typeof row.animate !== "function") return;
-  const tint = offset > 0 ? ROSE : FELL;
-  const slides = !prefersReducedMotion();
-  const at = (y: number) => (slides ? { transform: `translateY(${y}px)` } : {});
-  row.animate(
-    [
-      { ...at(offset), boxShadow: `inset 0 0 0 999px ${tint}` },
-      { ...at(0), boxShadow: `inset 0 0 0 999px ${tint}`, offset: 0.55 },
-      { ...at(0), boxShadow: "inset 0 0 0 999px transparent" },
-    ],
-    { duration: 1100, easing: EXPO_OUT, fill: "backwards" },
-  );
-}
+const slideRow = tintRow({ duration: 1100 });
 
 /** Técnicos (F7): the coach and club rankings, the job centre and every coach's career. */
 export function Coaches() {

@@ -3,6 +3,7 @@ import type { Formation } from "@boleiro/engine/engine/formations";
 import { matchEndOf } from "@boleiro/engine/sim/live/matchTimeline";
 import type { RoundClub, RoundMatch, Side } from "@boleiro/game-client/round/liveRoundOf";
 import { plateColours } from "../clubs/clubCatalog.js";
+import { EASE } from "../motion/easing.js";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { springTiming } from "../motion/springEasing.js";
 import { pitchActionsOf } from "./pitchActions.js";
@@ -307,11 +308,11 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
               { opacity: 1, transform: "translate(-50%, 0) scale(1)", offset: 0.86 },
               { opacity: 0, transform: "translate(-50%, -4px) scale(0.96)" },
             ],
-        { duration: TAG_MS, easing: "cubic-bezier(.16,1,.3,1)", fill: "both" },
+        { duration: TAG_MS, easing: EASE.out, fill: "both" },
       );
       if (beat.kind === "substitution" && !reduced) {
         // The player going off turns over like a sticker into the one coming on.
-        tokenEls.current.get(id)?.lastElementChild?.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)", offset: 0.5 }, { transform: "scaleX(1)" }], { duration: 520, easing: "cubic-bezier(.65,0,.35,1)" });
+        tokenEls.current.get(id)?.lastElementChild?.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)", offset: 0.5 }, { transform: "scaleX(1)" }], { duration: 520, easing: EASE.inOut });
       }
     }
 
@@ -353,7 +354,7 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
             { transform: `translateX(${dir * 1}px) scale(1.01, 1)`, offset: 0.68 },
             { transform: "translateX(0) scale(1, 1)" },
           ],
-          { duration: 900, easing: "cubic-bezier(.16,1,.3,1)" },
+          { duration: 900, easing: EASE.out },
         );
         glowEls.current[end]?.querySelectorAll("i").forEach((ring, i) =>
           ring.animate(
@@ -361,10 +362,10 @@ export function LivePitch({ match, clubs, names, minute, isRunning, msPerMinute,
               { opacity: 0.95, transform: "scale(0.25)" },
               { opacity: 0, transform: `translateX(${-dir * 26}px) scale(${1.9 + i * 0.5})` },
             ],
-            { duration: 900 + i * 220, delay: i * 140, easing: "cubic-bezier(.16,1,.3,1)", fill: "backwards" },
+            { duration: 900 + i * 220, delay: i * 140, easing: EASE.out, fill: "backwards" },
           ),
         );
-        tilt.current?.animate([{ translate: "0 0" }, { translate: "0 3px", offset: 0.12 }, { translate: "0 0" }], { duration: 520, easing: "cubic-bezier(.34,1.56,.64,1)" });
+        tilt.current?.animate([{ translate: "0 0" }, { translate: "0 3px", offset: 0.12 }, { translate: "0 0" }], { duration: 520, easing: EASE.slap });
       }
       if ((beat.kind === "yellow" || beat.kind === "red" || beat.kind === "injury") && markEl.current) {
         // A red card's player has just left the board; his card shows where he stood.

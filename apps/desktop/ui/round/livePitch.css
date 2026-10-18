@@ -378,6 +378,6 @@
   }
 
   .round-kickoff .lp-tok-body {
-    animation: round-fade-in 240ms ease-out backwards;
+    animation: round-fade-in 240ms var(--e-out) backwards;
   }
 }

@@ -758,7 +758,7 @@
   font-weight: 800;
   font-size: 13px;
   cursor: pointer;
-  transition: color 260ms var(--e-out);
+  transition: color var(--t-base) var(--e-out);
 }
 
 .mf-tabs button[aria-selected="true"] {

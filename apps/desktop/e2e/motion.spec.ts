@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { startAtClub } from "./flows.js";
+import { playLiveRoundUntil, startAtClub } from "./flows.js";
 
 const MAX_PRESSES = 5;
 
@@ -7,6 +7,8 @@ declare global {
   interface Window {
     /** Every animation seen so far, by name, and whether any of its keyframes moves something. */
     seenMotion?: { name: string; moves: boolean }[];
+    /** How far the page has jumped by itself, as the browser's cumulative layout shift. */
+    shifted?: number;
   }
 }
 
@@ -94,3 +96,27 @@ for (const reducedMotion of ["no-preference", "reduce"] as const) {
     else expect(moving).toEqual(expect.arrayContaining(["shell-arrive", "sheet-rise", "round-kickoff-home", "lineup-shirt-in", "round-sheet-in", "script"]));
   });
 }
+
+test("at the final whistle the súmula lands above the board without the rows jumping", async ({ page }) => {
+  test.setTimeout(3 * 60_000);
+  await page.addInitScript(() => {
+    window.shifted = 0;
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) if ("value" in entry && typeof entry.value === "number" && !("hadRecentInput" in entry && entry.hadRecentInput)) window.shifted = (window.shifted ?? 0) + entry.value;
+    }).observe({ type: "layout-shift" });
+  });
+  await newGame(page);
+  await page.clock.install();
+  const lineup = page.getByRole("dialog", { name: "Escalação" });
+  const play = page.getByRole("button", { name: "Jogar rodada" });
+  for (let press = 0; press < MAX_PRESSES && !(await lineup.isVisible()); press++) {
+    await play.click({ timeout: 2000 }).catch(() => undefined);
+    await expect(play.or(lineup)).toBeVisible();
+  }
+  await lineup.getByRole("button", { name: "Começar a rodada" }).click();
+  const before = await page.evaluate(() => window.shifted ?? 0);
+  await playLiveRoundUntil(page, null);
+  await expect(page.getByRole("region", { name: "Súmula do jogo" })).toBeVisible();
+  await page.clock.runFor(1000);
+  expect(await page.evaluate(() => window.shifted ?? 0)).toBeLessThan(before + 0.05);
+});
