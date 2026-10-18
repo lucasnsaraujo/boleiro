@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import type { Club } from "@boleiro/data/clubs";
 import type { AlbumSeason } from "@boleiro/game-client/album/albumOf";
+import { formatDayMonth } from "@boleiro/game-client/format/formatGameDate";
 import { plateColours } from "../clubs/clubCatalog.js";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import { AlbumSticker } from "./AlbumSticker.js";
 
 type Clubs = Readonly<Record<string, Club>>;
 
-// A page turns in 760 ms; the page under the leaf changes once the leaf covers it, a little past half way.
-const TURN_MS = 760;
+// A leaf turns in 760 ms and fades out by 830 ms once it lies down. The page it uncovers as it lifts is
+// the new season's from the start; the page it lands on changes once the leaf covers it, a little past half way.
+const TURN_MS = 840;
 const SWAP_MS = 430;
 
 type Turn = { key: number; direction: "forward" | "back" };
@@ -46,13 +48,15 @@ type Props = {
  */
 export function SeasonBook({ clubId, seasons, clubs, coachName, children }: Props) {
   const [wanted, setWanted] = useState(0);
-  const [shown, setShown] = useState(0);
+  const [left, setLeft] = useState(0);
+  const [right, setRight] = useState(0);
   const [turn, setTurn] = useState<Turn | null>(null);
   const [isSettled, setSettled] = useState(false);
   const timers = useRef<number[]>([]);
   const turns = useRef(0);
   const club = clubs[clubId];
-  const page = seasons[Math.min(shown, seasons.length - 1)];
+  const page = seasons[Math.min(left, seasons.length - 1)];
+  const rightPage = seasons[Math.min(right, seasons.length - 1)];
 
   useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), []);
 
@@ -62,26 +66,22 @@ export function SeasonBook({ clubId, seasons, clubs, coachName, children }: Prop
     timers.current.forEach((timer) => window.clearTimeout(timer));
     timers.current = [];
     if (prefersReducedMotion()) {
-      setShown(index);
+      setLeft(index);
+      setRight(index);
       setSettled(true);
       return;
     }
-    // Older seasons lie further into the album: turning to one goes forward.
+    // Older seasons lie further into the album: turning to one lifts the right page over to the left.
     const direction = index > wanted ? "forward" : "back";
     setTurn({ key: ++turns.current, direction });
-    if (direction === "back") {
-      setShown(index);
-      setSettled(true);
-    } else {
-      timers.current.push(window.setTimeout(() => {
-        setShown(index);
-        setSettled(false);
-      }, SWAP_MS));
-    }
+    const [uncovered, covered] = direction === "forward" ? [setRight, setLeft] : [setLeft, setRight];
+    uncovered(index);
+    setSettled(direction === "back");
+    timers.current.push(window.setTimeout(() => covered(index), SWAP_MS));
     timers.current.push(window.setTimeout(() => setTurn(null), TURN_MS));
   }
 
-  if (!page || !club) return null;
+  if (!page || !rightPage || !club) return null;
   const colours = plateColours(club.colours);
   const shiny = page.stickers.filter((s) => s.shines.length).length;
   const hasNumbers = page.status !== "unprinted";
@@ -106,7 +106,7 @@ export function SeasonBook({ clubId, seasons, clubs, coachName, children }: Prop
               </p>
             </header>
             {page.status === "unprinted" && <p className="note ab-note">Temporada jogada antes do álbum: o jogo não guardou o elenco nem os jogos de cada um. Ficaram os premiados e os artilheiros.</p>}
-            {page.since && <p className="note ab-note">Jogos contados a partir de {Number(page.since.slice(8, 10))}/{page.since.slice(5, 7)}: o jogo salvo é de antes do álbum.</p>}
+            {page.since && <p className="note ab-note">Jogos contados a partir de {formatDayMonth(page.since)}: o jogo salvo é de antes do álbum.</p>}
             {page.stickers.length === 0 ? (
               <p className="ab-empty">Nenhuma figurinha nesta página.</p>
             ) : (
@@ -126,10 +126,10 @@ export function SeasonBook({ clubId, seasons, clubs, coachName, children }: Prop
             </footer>
           </div>
         </section>
-        <section className="ab-page is-right" aria-label={`O que ${page.season} deixou`}>
-          <div key={`${page.season}-${page.clubId}`} className="ab-rightpage">
-            {children(page)}
-            <span className="ab-pgno is-right">{page.season} · 2</span>
+        <section className="ab-page is-right" aria-label={`O que ${rightPage.season} deixou`}>
+          <div key={`${rightPage.season}-${rightPage.clubId}`} className="ab-rightpage">
+            {children(rightPage)}
+            <span className="ab-pgno is-right">{rightPage.season} · 2</span>
           </div>
         </section>
         {turn && (

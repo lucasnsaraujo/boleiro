@@ -17,7 +17,6 @@
   min-height: 560px;
   border-radius: 8px;
   box-shadow: var(--sh-page);
-  perspective: 2600px;
 }
 
 .ab-page {
@@ -461,6 +460,8 @@ a.ab-stk:hover::after {
   z-index: 5;
   pointer-events: none;
   overflow: visible;
+  perspective: 2400px;
+  perspective-origin: 50% 40%;
 }
 
 .ab-leaf {
@@ -1345,4 +1346,19 @@ li:nth-child(3n + 2) > .ab-plate {
 /* A season's rarities sit small on its page; the Raridades tab prints them full size. */
 .ab-eggs li {
   zoom: 0.6;
+}
+
+/* Less motion: every page, sticker and plate is already in place; nothing drops, sweeps or swings. */
+@media (prefers-reduced-motion: reduce) {
+  .ab-book *,
+  .ab-book *::before,
+  .ab-book *::after,
+  .ab-room *,
+  .ab-counters *,
+  .ab-veil,
+  .ab-veil *,
+  .ab-veil *::before,
+  .ab-veil *::after {
+    animation: none !important;
+  }
 }

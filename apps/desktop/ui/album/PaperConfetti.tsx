@@ -51,8 +51,9 @@ export function PaperConfetti({ colours, count = 120 }: { colours: readonly stri
 
   useEffect(() => {
     const element = canvas.current;
-    const context = element?.getContext("2d");
-    if (!element || !context || prefersReducedMotion()) return;
+    if (!element || prefersReducedMotion()) return;
+    const context = element.getContext("2d");
+    if (!context) return;
     const ratio = window.devicePixelRatio || 1;
     const { width, height } = element.getBoundingClientRect();
     element.width = Math.round(width * ratio);

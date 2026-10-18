@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { useMemo, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import type { Club } from "@boleiro/data/clubs";
 import type { Goal, TitlePage as Title } from "@boleiro/game-client/album/albumOf";
@@ -13,14 +13,17 @@ type Clubs = Readonly<Record<string, Club>>;
 const ordinal = (n: number) => `${n}º`;
 const GOAL_KINDS: Partial<Record<NonNullable<Goal["kind"]>, string>> = { penalty: "pênalti", ownGoal: "contra", freeKick: "falta", olympic: "olímpico", header: "de cabeça" };
 
+/** "2025", "2025 e 2026", "2024, 2025 e 2026" */
+const listed = (seasons: readonly number[]) => (seasons.length > 1 ? `${seasons.slice(0, -1).join(", ")} e ${seasons.at(-1)}` : String(seasons[0] ?? ""));
+
 /** The lines of a title's story, from what the career had recorded when he won it. */
-export function storyLines(title: Title): string[] {
+function storyLines(title: Title): string[] {
   const { story, season } = title;
   const lines = [story.careerTitle === 1 ? "Seu primeiro título na carreira." : `Seu ${ordinal(story.careerTitle)} título na carreira.`];
   lines.push(story.seasonAtClub === 1 ? "Na sua primeira temporada no clube." : `Na sua ${story.seasonAtClub}ª temporada no clube.`);
   if (story.clubLastWon !== null) lines.push(season - story.clubLastWon === 1 ? `Bicampeão: o clube também ganhou em ${story.clubLastWon}.` : `O último título do clube nesta competição tinha sido em ${story.clubLastWon}.`);
   else if (season > story.historyFrom) lines.push(`Primeira vez do clube desde ${story.historyFrom}, quando o jogo começou.`);
-  if (story.lostFinals.length) lines.push(`Depois de perder a final de ${story.lostFinals.join(" e de ")}.`);
+  if (story.lostFinals.length) lines.push(story.lostFinals.length === 1 ? `Depois de perder a final de ${listed(story.lostFinals)}.` : `Depois de perder as finais de ${listed(story.lostFinals)}.`);
   if (story.derby) lines.push(`Decidido no clássico: ${story.derby}.`);
   return lines;
 }
@@ -53,6 +56,10 @@ export function TitlePage({ title, clubs, onClose, onOpenMatch }: Props) {
   };
   const style = { "--c": colours.background, "--ic": colours.text } as CSSProperties;
   const lines = storyLines(title);
+  const primary = club?.colours.primary ?? "#0B7A3B";
+  const secondary = club?.colours.secondary ?? "#FFFFFF";
+  // The burst runs once per page opened: the same colours keep it from starting over on a re-render.
+  const paper = useMemo(() => [primary, secondary, "#FFCC00"], [primary, secondary]);
   const side = (id: string) => {
     const crest = crestOf(id);
     return (
@@ -81,7 +88,7 @@ export function TitlePage({ title, clubs, onClose, onOpenMatch }: Props) {
           onClose();
         }}
       >
-        <PaperConfetti colours={[club?.colours.primary ?? "#0B7A3B", club?.colours.secondary ?? "#FFFFFF", "#FFCC00"]} />
+        <PaperConfetti colours={paper} />
         <header className="ab-tp-band">
           <span className="ab-tp-trophy" aria-hidden="true">
             <i className="ph-fill ph-trophy" />
@@ -138,7 +145,7 @@ export function TitlePage({ title, clubs, onClose, onOpenMatch }: Props) {
             )}
           </div>
         ) : (
-          <p className="note ab-tp-missing">A final não ficou guardada: o título é de uma temporada jogada antes do álbum.</p>
+          <p className="note ab-tp-missing">O jogo que decidiu o título não ficou guardado: a temporada foi jogada antes do álbum.</p>
         )}
         <ul className="ab-tp-story" aria-label="A história do título">
           {lines.map((line, i) => (

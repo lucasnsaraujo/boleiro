@@ -22,7 +22,7 @@ const MAX_TILT = 9;
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
 /** "Pedro, atacante, 38 jogos e 21 gols, brilhante: artilheiro" */
-export function stickerLabel(sticker: Sticker, hasNumbers: boolean): string {
+function stickerLabel(sticker: Sticker, hasNumbers: boolean): string {
   const numbers = hasNumbers ? `, ${plural(sticker.apps, "jogo", "jogos")} e ${plural(sticker.goals, "gol", "gols")}` : "";
   const shine = sticker.shines.length ? `, brilhante: ${sticker.shines.map((s) => SHINE_WORDS[s]).join(" e ")}` : "";
   return `${sticker.name}, ${ROLE_NAME[sticker.role].toLowerCase()}${numbers}${shine}`;

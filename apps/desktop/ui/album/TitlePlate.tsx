@@ -8,7 +8,7 @@ type Clubs = Readonly<Record<string, Club>>;
 /** What a plate says under the competition: the deciding score, or why there is none. */
 function plateDetail(title: TitlePage, clubs: Clubs): string {
   const { decider } = title;
-  if (!decider) return "final não guardada";
+  if (!decider) return "jogo do título não guardado";
   const opponentId = decider.homeId === title.clubId ? decider.awayId : decider.homeId;
   const [own, other] = decider.homeId === title.clubId ? [decider.homeGoals, decider.awayGoals] : [decider.awayGoals, decider.homeGoals];
   const opponent = clubs[opponentId]?.shortName ?? decider.clubs[opponentId]?.name ?? opponentId;
