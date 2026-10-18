@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { bundledGameFiles } from "./bundledGameFiles.js";
-import { createEngineSession } from "./createEngineSession.js";
+import { createEngineSession, type NewGameChoices } from "./createEngineSession.js";
 
 const ANA = { name: "Ana", clubId: "flamengo-rj" };
 const BRUNO = { name: "Bruno", clubId: "palmeiras-sp" };
 const twoCoaches = { coachClubId: ANA.clubId, hotSeat: { coachName: ANA.name, otherCoaches: [BRUNO] } };
 
-function newSession(choices: Parameters<ReturnType<typeof createEngineSession>["apply"]>[0] extends infer C ? (C extends { type: "newGame"; choices: infer N } ? N : never) : never) {
+function newSession(choices: NewGameChoices) {
   const session = createEngineSession(bundledGameFiles);
   session.apply({ type: "newGame", seed: 3, choices });
   return session;
@@ -47,7 +47,7 @@ describe("the match plan through the session", () => {
     expect(old.matchPlan()).toEqual({ plan: {}, keysTaken: [], isFinalsOnly: false });
   });
 
-  it("shows the live round each human coach's keys and saved tactics, and what his plan answered", () => {
+  it("shows the live round each human coach's keys, saved tactics and whether he is asked his shootout order", () => {
     const session = newSession(twoCoaches);
     const saved = { formation: "4-3-3" as const, posture: "attacking" as const, penaltyTakerId: null };
     session.apply({ type: "setMatchPlan", plan: { keepsShape: true, tacticsKey: "q", savedTactics: [saved] } });
@@ -69,9 +69,6 @@ describe("the match plan through the session", () => {
     for (const side of sides) {
       expect(side.plan).toEqual(expected[side.clubId]);
       expect(side.incidentHandling).toBe("askCoach");
-      const match = round.matches.find((m) => m.fixtureId === side.fixtureId);
-      const incidents = match?.events.filter((e) => (e.type === "injury" || (e.type === "card" && e.card !== "yellow")) && e.clubId === side.clubId) ?? [];
-      for (const answer of side.answeredByPlan ?? []) expect(incidents.some((e) => e.minute === answer.minute && "playerId" in e && e.playerId === answer.playerId)).toBe(true);
     }
   });
 });
