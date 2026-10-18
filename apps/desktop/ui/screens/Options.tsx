@@ -14,6 +14,7 @@ import { useSound } from "../sound/SoundProvider.js";
 import { volumeOf, type Category, type SoundSettings } from "../sound/soundSettings.js";
 import { useTheme } from "../theme/ThemeProvider.js";
 import type { ThemeSetting } from "../theme/themeSetting.js";
+import { ExternalLink } from "../controls/ExternalLink.js";
 import "./options.css";
 
 const CREDITS = parseCredits(credits);
@@ -193,9 +194,9 @@ export function Options() {
           <ul className="credits-list" aria-label="Créditos">
             {CREDITS.map((row) => (
               <li key={row.file} className="credits-row">
-                <a className="credits-sound" href={row.source} title={row.sound} target="_blank" rel="noreferrer">
+                <ExternalLink className="credits-sound" href={row.source} title={row.sound}>
                   {row.sound}
-                </a>
+                </ExternalLink>
                 <span className="credits-who">
                   {row.author} · {row.licence}
                 </span>
