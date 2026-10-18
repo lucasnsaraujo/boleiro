@@ -109,7 +109,7 @@ The repo is a pnpm workspace. Packages hold TypeScript source with no build step
 | `packages/data/` | `@boleiro/data` | The data pack and asset manifest the game ships (`pack/`) and their loaders, plus parsers for the files in `data/` (clubs, players, finances, history) |
 | `packages/engine/` | `@boleiro/engine` | The sim: match engine (`src/engine/`), seasons and the club world (`src/sim/`), the CLI runs (`src/cli/`) |
 | `packages/game-client/` | `@boleiro/game-client` | The engine session and its Web Worker, saves, and the selectors screens read from game state; no React |
-| `packages/design-tokens/` | `@boleiro/design-tokens` | The Álbum design system that the app and the mocks share: light and dark tokens (`album.css`, `tokens.json`), the vendored Archivo font and Phosphor icons, and `tokens.css`, the older token names pointed at the Álbum ones |
+| `packages/design-tokens/` | `@boleiro/design-tokens` | The Álbum design system that the app and the mocks share: light and dark tokens (`album.css`, `tokens.json`), the vendored Archivo font and Phosphor icons (subset to the ones the screens use by `pipeline/subset_icons.py`), and `tokens.css`, the older token names pointed at the Álbum ones |
 | `apps/desktop/` | `@boleiro/desktop` | The app: screens in `ui/` (Vite + React), the desktop window and save files in `src-tauri/`, Playwright tests in `e2e/` |
 | `design/` | none | The Boleiro logo (`logo/`), and an HTML mock of every screen with renders (`mocks/`, open `mocks/index.html`) |
 
