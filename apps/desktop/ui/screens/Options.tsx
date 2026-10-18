@@ -21,7 +21,7 @@ const PLATFORM = platformOf(navigator.userAgent);
 
 const VOLUMES: readonly { key: Category; label: string; title: string; note: string | null }[] = [
   { key: "sfx", label: "Efeitos", title: "Efeitos", note: "Gol, apito e VAR" },
-  { key: "crowd", label: "Torcida", title: "Torcida", note: "O estádio durante a rodada" },
+  { key: "crowd", label: "Torcida", title: "Torcida", note: "Gritos de gol, vaias e o estádio" },
   { key: "music", label: "Música", title: "Música de fundo", note: null },
   { key: "ui", label: "Cliques", title: "Cliques", note: "Botões e abas" },
 ];
@@ -202,7 +202,7 @@ export function Options() {
               </li>
             ))}
           </ul>
-          <p className="credits-note">Cliques, a vinheta do gol, o VAR e as vinhetas de título, acesso, rebaixamento e demissão são sintetizados no próprio jogo.</p>
+          <p className="credits-note">Cliques, a vinheta do gol, a checagem do VAR e as vinhetas de título, acesso, rebaixamento e demissão são sintetizados no próprio jogo.</p>
         </section>
 
         <footer className="options-actions">

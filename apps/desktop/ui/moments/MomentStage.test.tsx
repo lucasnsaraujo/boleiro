@@ -56,3 +56,16 @@ test("a moment skipped before its sounds stays quiet", async () => {
   await new Promise((resolve) => setTimeout(resolve, 1000));
   expect(heard.filter((cue) => cue !== "click")).toEqual([]);
 });
+
+test("a moment closed before its sounds' beats leaves them unplayed", async () => {
+  vi.useFakeTimers();
+  const heard = openMoment(true);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(100);
+  });
+  cleanup();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(2000);
+  });
+  expect(heard).toEqual([]);
+});

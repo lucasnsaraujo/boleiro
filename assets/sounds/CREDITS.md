@@ -17,6 +17,6 @@ All files are the Freesound previews of the sounds below, cut and re-encoded as 
 | menu-theme.mp3 | Carnaval Loop 136BPM [DJ Zhegusov] | Zhegusov | CC0 1.0 | https://freesound.org/people/Zhegusov/sounds/824144/ | whole loop |
 | hub-theme.mp3 | Short Elevator Music Loop | BlondPanda | CC0 1.0 | https://freesound.org/people/BlondPanda/sounds/659889/ | whole loop |
 
-The clicks, the confirmation, the goal stinger, the VAR check and decision, and the title, promotion, relegation and sacking stingers are synthesised in the game with Web Audio (`apps/desktop/ui/sound/soundCatalog.ts`), so they have no file.
+The clicks, the confirmation, the goal stinger, the VAR check and the thud under its decision's whistle, and the title, promotion, relegation and sacking stingers are synthesised in the game with Web Audio (`apps/desktop/ui/sound/soundCatalog.ts`), so they have no file.
 
 The sounds have a budget of 2 MB together, apart from the 17.33 MB of images: two music loops and a crowd bed of under 40 s each at about 96–128 kbps, and short effects. Anything new is cut to the seconds the game plays and encoded the same way.
