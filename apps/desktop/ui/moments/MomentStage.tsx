@@ -15,7 +15,8 @@ type Clock = {
   /** The milliseconds since the scene started, frozen while it isn't playing. */
   now: () => number;
   scale: number;
-  isPlaying: boolean;
+  /** Whether the scene is playing now, not skipped or ended. */
+  isPlaying: () => boolean;
 };
 
 const ClockContext = createContext<Clock | null>(null);
@@ -63,7 +64,7 @@ export function useCueAt(cue: Cue, at: number) {
   const played = useRef(false);
   useTick((t) => {
     if (t < at) played.current = false;
-    else if (!played.current && clock?.isPlaying && t < at + 400) {
+    else if (!played.current && clock?.isPlaying() && t < at + 400) {
       played.current = true;
       engine.play(cue);
     }
@@ -98,7 +99,7 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
   const [scale, setScale] = useState(1);
   const [frameSize, setFrameSize] = useState({ width: ARTBOARD.width, height: ARTBOARD.height });
   const [isReady, setReady] = useState(false);
-  const [isPlaying, setPlaying] = useState(false);
+  const playing = useRef(false);
   const [isEnded, setEnded] = useState(false);
   const end = durationMs + HOLD_MS;
 
@@ -117,7 +118,7 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
       animation.currentTime = end;
     }
     draw(end);
-    setPlaying(false);
+    playing.current = false;
     setEnded(true);
   }, [animations, draw, end]);
 
@@ -128,7 +129,7 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
       animation.play();
     }
     time.current = { t0: performance.now(), frozen: 0, isRunning: true };
-    setPlaying(true);
+    playing.current = true;
     setEnded(false);
     const loop = () => {
       const t = now();
@@ -137,7 +138,7 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
       if (t < end) raf.current = requestAnimationFrame(loop);
       else {
         time.current = { t0: 0, frozen: end, isRunning: false };
-        setPlaying(false);
+        playing.current = false;
       }
     };
     raf.current = requestAnimationFrame(loop);
@@ -192,9 +193,9 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
       },
       now,
       scale,
-      isPlaying,
+      isPlaying: () => playing.current,
     }),
-    [now, scale, isPlaying],
+    [now, scale],
   );
 
   return (

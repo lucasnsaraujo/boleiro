@@ -26,7 +26,7 @@
 .mo-title .tt-clip b { display: block; font-stretch: 72%; font-weight: 900; font-size: 34px; line-height: .95; text-transform: uppercase; margin-top: 4px; }
 .mo-title .tt-stand { position: relative; flex: 1; min-height: 120px; border-radius: 8px; overflow: hidden; background: color-mix(in srgb, var(--strong) 22%, #0B0606); box-shadow: var(--sh-page); animation: mo-up 500ms var(--e-out) calc(var(--d) * 1ms) both; }
 .mo-title .tt-stand canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-.mo-title .tt-stand span { position: absolute; left: 12px; bottom: 10px; font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: rgba(251,247,236,.85); }
+.mo-title .tt-stand span { position: absolute; left: 10px; bottom: 10px; padding: 4px 8px; border-radius: var(--r-pill); background: rgba(10,3,4,.72); font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #FBF7EC; }
 .mo-title canvas.fill { z-index: 20; }
 
 /* ---------- Long ---------- */
