@@ -1,11 +1,11 @@
 .history {
-  max-width: 1180px;
+  max-width: 1440px;
 }
 
 .history-head {
   display: flex;
   align-items: flex-end;
-  gap: 40px;
+  gap: 32px;
   border-bottom: var(--hairline);
 }
 
@@ -14,20 +14,31 @@
 }
 
 .history-head .history-awards {
+  flex: none;
   margin: 0 0 10px auto;
 }
 
 .history-head .btn-main {
+  flex: none;
   margin: 0 0 10px;
 }
 
+/* Seven sections: at the narrowest window the row scrolls rather than push the buttons out. */
 .history-tabs {
   display: flex;
-  gap: 26px;
+  gap: 22px;
   align-self: stretch;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.history-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .history-tabs button {
+  flex: none;
   display: flex;
   align-items: center;
   font: 600 16px var(--cond);
@@ -340,11 +351,19 @@ button.history-cell:hover span {
 
 @media (max-width: 1100px) {
   .history-head {
-    gap: 28px;
+    gap: 20px;
   }
 
   .history-tabs {
-    gap: 18px;
+    gap: 16px;
+  }
+
+  .history-tabs button {
+    font-size: 15px;
+  }
+
+  .history-awards-text {
+    display: none;
   }
 
   .history-columns {

@@ -79,6 +79,7 @@ export function connectEngine(port: EngineWorker): EngineClient {
     scouting: () => send({ method: "scouting", args: [] }),
     pendingEvent: () => send({ method: "pendingEvent", args: [] }),
     eggAlbum: () => send({ method: "eggAlbum", args: [] }),
+    album: (...args) => send({ method: "album", args }),
     newspaper: (...args) => send({ method: "newspaper", args }),
     newspaperEditions: () => send({ method: "newspaperEditions", args: [] }),
     save: () => send({ method: "save", args: [] }),
