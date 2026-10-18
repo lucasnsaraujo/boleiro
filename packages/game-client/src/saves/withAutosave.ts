@@ -59,6 +59,9 @@ const OUTCOME_OF: { [T in CommandType]: (command: GameCommand<T>, result: Comman
   pickSponsors: () => "autosave",
   retirePlayer: () => "autosave",
   persuadeToStay: () => "autosave",
+  acceptNationalJob: () => "autosave",
+  declineNationalJob: () => "autosave",
+  setCallUp: () => "autosave",
   // A coach egg found before leaves the game as it was.
   findEgg: (_command, found) => (found ? "autosave" : "unchanged"),
 };

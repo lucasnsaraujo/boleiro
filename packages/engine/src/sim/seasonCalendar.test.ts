@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { isInFifaWindow } from "./nations/fifaCalendar.js";
 import { seasonCalendar } from "./seasonCalendar.js";
 
 const DAY = 86_400_000;
@@ -31,6 +32,14 @@ describe("seasonCalendar", () => {
         expect(calendar.stateChampionshipDates[0]?.slice(5, 7)).toBe("01");
         expect(calendar.copaDoBrasilRounds[0]?.dates[0]?.slice(5, 7)).toBe("02");
         expect(calendar.copaDoBrasilRounds.at(-1)?.dates.at(-1)?.slice(5, 7)).toBe("12");
+      });
+
+      it("with national football, rests Série A in the FIFA windows and plays the other series through them", () => {
+        const resting = seasonCalendar(season, counts, [], undefined, 0, true);
+        expect(resting.leagueDates.A).toHaveLength(counts.A);
+        expect(resting.leagueDates.A.filter(isInFifaWindow)).toEqual([]);
+        expect(resting.leagueDates.B.some(isInFifaWindow)).toBe(true);
+        expect(calendar.leagueDates.A.some(isInFifaWindow)).toBe(true);
       });
 
       it("plays league rounds on weekends and midweek", () => {

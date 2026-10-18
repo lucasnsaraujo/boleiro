@@ -86,7 +86,7 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
         : leagues.map((league) => ({ clubCount: league.clubIds.length, legs: league.legs })),
     ),
   );
-  const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false, state.economy.continentalStages !== undefined, formatsOf(state), gridRounds, abroad.map(({ country }) => country.structure), state.guests !== undefined);
+  const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false, state.economy.continentalStages !== undefined, formatsOf(state), gridRounds, abroad.map(({ country }) => country.structure), state.guests !== undefined, state.nations !== undefined);
   const outcomes = Object.fromEntries(
     Object.values(state.competitions).flatMap((competition) => {
       if (competition.kind !== "league") return [];
