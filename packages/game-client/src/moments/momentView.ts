@@ -143,6 +143,7 @@ export type ComeBackView = Common & {
   crisisNote: string;
   offer: { terms: [label: string, value: string, note: string][]; letter: string; until: string } | null;
   reunions: MomentSticker[];
+  reunionsLabel: string;
 };
 
 export type PlayerAwardView = Common & {
@@ -155,6 +156,8 @@ export type PlayerAwardView = Common & {
   sub: string;
   stats: { value: string; label: string; isFoil: boolean }[];
   season: { date: string; title: string; detail: string; isNow: boolean }[];
+  /** The player's clubs in this game, the most games first. */
+  career: { club: ClubTag; apps: number; goals: number }[];
 };
 
 export type RetirementView = Common & {
@@ -330,7 +333,7 @@ function sackingView(state: GameState, moment: Extract<Moment, { kind: "sacking"
   const derbyLoss = run.find((r) => r.isDerby && r.result === "D");
   const clippings: Clipping[] = [];
   if (moment.ultimatumOn) clippings.push({ kicker: dayOf(moment.ultimatumOn), headline: "Ultimato da diretoria", body: `A diretoria do ${club.name} cobra reação de ${coachName}. Sem vitória, a conversa muda.` });
-  if (moment.protestOn) clippings.push({ kicker: `${dayOf(moment.protestOn)} · ${stadium}`, headline: "Protesto na porta do CT", body: `Torcedores cobram elenco e diretoria depois de mais um tropeço.` });
+  if (moment.protestOn) clippings.push({ kicker: dayOf(moment.protestOn), headline: "Protesto na porta do CT", body: "Torcedores cobram elenco e diretoria depois de mais um tropeço." });
   if (last) clippings.push({ kicker: dayOf(moment.date), headline: last.isHome ? `${club.name} ${last.score} ${last.opponent.name}` : `${last.opponent.name} ${last.score} ${club.name}`, body: last.result === "D" ? "Vaias no fim. Na saída do campo, você não fala com a imprensa." : "Nem o resultado segurou a diretoria." });
   const gamesPlayed = moment.games[0] + moment.games[1] + moment.games[2];
   const titleWords = titles.length ? `Campeão ${titles.map((t) => `${competitionKeyName(t.competition)} ${t.season}`).slice(-2).join(" e ")}, ` : "";
@@ -401,7 +404,7 @@ function sendOffView(state: GameState, moment: Extract<Moment, { kind: "sendOff"
     cause: `${moment.toClubId ? `Você aceitou a proposta do ${clubTagOf(state, moment.toClubId).name}` : "Seu contrato acabou"}. ${plural(seasons, "temporada", "temporadas")}, ${plural(titleCount, "título", "títulos")}${moment.standing >= IDOL_LINE ? " e ídolo da torcida" : ""}: a despedida é das grandes.`,
     banner: `${coachName} · ${fromYear}–${toYear} · ${NUMBERS[titleCount] ?? titleCount} ${titleCount === 1 ? "taça" : "taças"} · eterno`,
     stadium,
-    headline: `A última volta no ${stadium}`,
+    headline: "A última volta no gramado",
     story: `Ninguém foi embora. O time fez o corredor, a arquibancada virou mosaico e você atravessou o campo até o meio, onde tudo começou em ${fromYear}.`,
     boards: [`OBRIGADO, ${coachName.toUpperCase()}`, `${club.name.toUpperCase()} ${fromYear}–${toYear}`],
     squad,
@@ -482,7 +485,7 @@ function titleView(state: GameState, moment: Extract<Moment, { kind: "title" }>)
     club,
     coachName,
     cause: isLong
-      ? `${plural(story.seasonInSpell, "temporada", "temporadas")} no clube${story.lostFinals.length + story.runnerUps.length ? `, ${plural(story.lostFinals.length + story.runnerUps.length, "quase", "quases")} com você` : ""}${story.rivalId ? `, o ${clubTagOf(state, story.rivalId).name} batido` : ""}: a festa longa. Ídolo do ${club.name}: ${standingNow}.`
+      ? `${plural(story.seasonInSpell, "temporada", "temporadas")} no clube${nearMissWords(story.runnerUps.length, story.lostFinals.length)}${story.rivalId ? `, o ${clubTagOf(state, story.rivalId).name} batido` : ""}: a festa longa. Ídolo do ${club.name}: ${standingNow}.`
       : `${story.seasonInSpell === 1 ? "Técnico recém-chegado" : "Pouca espera"} e nenhuma fila longa para quebrar: a festa é rápida e alegre.`,
     isLong,
     seconds: moment.seconds,
@@ -497,7 +500,7 @@ function titleView(state: GameState, moment: Extract<Moment, { kind: "title" }>)
       { value: String(story.careerTitles), label: story.careerTitles === 1 ? "título na carreira" : "títulos na carreira" },
     ],
     clipping: `${club.name} campeão${opponentId ? ` contra o ${clubTagOf(state, opponentId).name}` : ""}`,
-    drought: { from: story.droughtFrom, to: moment.season, label: story.lastWon === null ? "anos na fila no jogo" : `anos sem ${name}`, tag: story.lastWon === null ? drought : `${plural(droughtYears, "ano", "anos")} de fila` },
+    drought: { from: story.droughtFrom, to: moment.season, label: story.lastWon === null ? `anos de espera desde ${story.droughtFrom}` : `anos sem ${name}`, tag: story.lastWon === null ? drought : `${plural(droughtYears, "ano", "anos")} de fila` },
     nearMisses,
     veterans: story.veterans.flatMap((id) => {
       const player = state.players[id];
@@ -509,6 +512,12 @@ function titleView(state: GameState, moment: Extract<Moment, { kind: "title" }>)
       deck: `${story.lastWon === null ? "Pela primeira vez no jogo" : `${plural(droughtYears, "ano", "anos")} depois`}, o ${club.name} é campeão${moment.competition.startsWith("serie-a") ? " brasileiro" : ` da ${name}`}. ${coachName}${nearMisses.length ? ` perdeu ${plural(nearMisses.length, "decisão", "decisões")} aqui antes desta` : " esperou por isso"} e foi o último a sair do gramado.`,
     },
   };
+}
+
+/** ", dois vices e uma final perdida com você": the near misses as the cause line says them. */
+function nearMissWords(runnerUps: number, lostFinals: number): string {
+  const parts = [runnerUps ? plural(runnerUps, "vice", "vices") : "", lostFinals ? plural(lostFinals, "final perdida", "finais perdidas") : ""].filter(Boolean);
+  return parts.length ? `, ${parts.join(" e ")} com você` : "";
 }
 
 function tributeView(state: GameState, moment: Extract<Moment, { kind: "milestone" | "homecoming" | "idolRetired" }>): TributeView {
@@ -688,7 +697,8 @@ function comeBackView(state: GameState, moment: Extract<Moment, { kind: "comeBac
           until: `Responde até ${formatGameDate(offer.expiresOn)}. Sem resposta, o ${club.name} procura outro nome.`,
         }
       : null,
-    reunions,
+    reunions: reunions.length ? reunions : elevenOf(state, moment.clubId, 3),
+    reunionsLabel: reunions.length ? "Quem você reencontra" : "Quem te espera no elenco",
   };
 }
 
@@ -730,6 +740,13 @@ function playerAwardView(state: GameState, moment: Extract<Moment, { kind: "play
       { value: String(season.length), label: season.length === 1 ? "prêmio no ano" : "prêmios no ano", isFoil: true },
     ],
     season,
+    career: Object.entries(state.history.players)
+      .flatMap(([clubId, players]) => {
+        const at = first ? players[first.playerId] : undefined;
+        return at ? [{ club: clubTagOf(state, clubId), apps: at.apps, goals: at.goals }] : [];
+      })
+      .sort((a, b) => b.apps - a.apps)
+      .slice(0, 4),
   };
 }
 
@@ -766,11 +783,13 @@ function retirementView(state: GameState, moment: Extract<Moment, { kind: "retir
       .map(([id, mark]) => ({ id, mark, clubId: stint.clubId })),
   );
   const seen = new Set<string>();
-  const eleven = players
+  const fromAlbum = players
     .sort((a, b) => b.mark.apps - a.mark.apps)
     .filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true)))
     .slice(0, 9)
     .map((p) => stickerOfPlayer(state, p.id, p.mark.name, p.clubId, "", isIdolAt(state, p.id, p.clubId)));
+  // A career too short for the album, or saved before it, fields the last club's regulars.
+  const eleven = [...fromAlbum, ...elevenOf(state, moment.clubId, 9).filter((s) => !seen.has(s.id))].slice(0, 9);
   const random = keyedStream(state.seed, `farewell:${moment.id}`);
   const farewellScore: [number, number] = [2 + Math.floor(random() * 4), 2 + Math.floor(random() * 4)];
   const lastClub = clubTagOf(state, moment.clubId);
@@ -804,7 +823,7 @@ function retirementView(state: GameState, moment: Extract<Moment, { kind: "retir
       { value: games, label: "jogos", isFoil: false },
       { value: record.trophies.length, label: "títulos", isFoil: true },
       { value: idolClubs.length, label: idolClubs.length === 1 ? "clube onde você é ídolo" : "clubes onde você é ídolo", isFoil: true },
-      { value: longestDrought, label: "anos de fila quebrados, o maior", isFoil: false },
+      longestDrought > 0 ? { value: longestDrought, label: "anos de fila quebrados, o maior", isFoil: false } : { value: Number(last) - Number(first) + 1, label: "temporadas", isFoil: false },
       { value: record.firings.length, label: record.firings.length === 1 ? "demissão" : "demissões", isFoil: false },
       { value: (moments?.past ?? []).filter((m) => m.kind === "playerAward").length, label: "prêmios dos seus jogadores", isFoil: false },
     ],
@@ -813,7 +832,7 @@ function retirementView(state: GameState, moment: Extract<Moment, { kind: "retir
       from: Number(first),
       to: Number(last) + 1,
       bands: record.stints.map((stint) => ({ from: toYear(stint.from), to: toYear(stint.until ?? moment.date), club: clubTagOf(state, stint.clubId) })),
-      titles: titleMoments.map((m) => toYear(m.date)),
+      titles: record.trophies.map((trophy) => toYear(titleMoments.find((m) => m.season === trophy.season && m.competition === trophy.competition && m.clubId === trophy.clubId)?.date ?? `${trophy.season}-12-01`)),
       idols: (moments?.past ?? []).filter((m) => m.kind === "idol").map((m) => toYear(m.date)),
       sackings: record.firings.map((f) => toYear(f.date)),
     },

@@ -78,8 +78,7 @@ function halftone({ g, w, h }: Surface, banner: string): Tick {
   };
 }
 
-/** A former club calling its idol back: the fans' campaign on the front page, what the game knows of him and the crisis, and the written offer. */
-export function ComeBackScene({ view, actions }: Props) {
+function ComeBackBody({ view }: Pick<Props, "view">) {
   const photo = useCanvasTick((surface) => halftone(surface, view.banner));
   const posts = useRef<HTMLElement>(null);
   const crisis = useRef<HTMLSpanElement>(null);
@@ -93,7 +92,7 @@ export function ComeBackScene({ view, actions }: Props) {
   });
   useCueAt("comeback", 450);
   return (
-    <MomentStage durationMs={5600} backdrop="var(--paper)" tone="light" label={`O ${view.club.name} pede a sua volta`} className="mo-comeback" actions={actions}>
+    <>
       <article className="jb cb-paper">
         <div className="mast">
           <h4>
@@ -181,7 +180,7 @@ export function ComeBackScene({ view, actions }: Props) {
           )}
           {view.reunions.length > 0 && (
             <div className="cb-back">
-              <span className="lbl">Quem você reencontra</span>
+              <span className="lbl">{view.reunionsLabel}</span>
               <div className="who">
                 {view.reunions.map((sticker, index) => (
                   <MomentSticker key={sticker.id} sticker={sticker} className="mo-slap" style={ms(4300 + index * 120)} />
@@ -194,6 +193,15 @@ export function ComeBackScene({ view, actions }: Props) {
           </div>
         </div>
       </section>
+    </>
+  );
+}
+
+/** A former club calling its idol back: the fans' campaign on the front page, what the game knows of him and the crisis, and the written offer. */
+export function ComeBackScene({ view, actions }: Props) {
+  return (
+    <MomentStage durationMs={5600} backdrop="var(--paper) var(--paper-tex) center / cover" tone="light" label={`O ${view.club.name} pede a sua volta`} className="mo-comeback" actions={actions}>
+      <ComeBackBody view={view} />
     </MomentStage>
   );
 }

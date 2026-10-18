@@ -48,12 +48,7 @@ function corridor(count: number): { left: number; top: number; scale: number; z:
   });
 }
 
-/**
- * The send-off after a long, happy spell: the floodlights come on, the stand turns into a mosaic, the banner
- * unrolls, the squad forms a corridor and the coach walks it to the centre circle while the crowd stands up;
- * then the spell's numbers on the album page and the last sticker of the club's page.
- */
-export function SendOffScene({ view, actions }: Props) {
+function SendOffBody({ view }: Pick<Props, "view">) {
   const firstName = (view.coachName.split(" ")[0] ?? view.coachName).toUpperCase();
   const stand = useCanvasTick((surface) => mosaic(surface, { cell: 7, at: 500, wave: 1900, flip: 320, back: "#2A1214", draw: mosaicFace(view.club.colours, [`OBRIGADO, ${firstName}`], 16, 3) }));
   const fans = useCanvasTick((surface) =>
@@ -68,7 +63,7 @@ export function SendOffScene({ view, actions }: Props) {
   useCueAt("comeback", 3500);
   const spots = corridor(Math.min(12, view.squad.length));
   return (
-    <MomentStage durationMs={7800} backdrop="#0E1712" tone="dark" label={`Despedida do ${view.club.name}`} className="mo-sendoff" actions={actions}>
+    <>
       <div className="so-roof">
         {Array.from({ length: 36 }, (_, i) => (
           <i key={i} style={ms(40 + ((i * 7) % 36) * 22)} />
@@ -164,6 +159,19 @@ export function SendOffScene({ view, actions }: Props) {
         </div>
       </section>
       <div className="so-dim" />
+    </>
+  );
+}
+
+/**
+ * The send-off after a long, happy spell: the floodlights come on, the stand turns into a mosaic, the banner
+ * unrolls, the squad forms a corridor and the coach walks it to the centre circle while the crowd stands up;
+ * then the spell's numbers on the album page and the last sticker of the club's page.
+ */
+export function SendOffScene({ view, actions }: Props) {
+  return (
+    <MomentStage durationMs={7800} backdrop="linear-gradient(180deg, #0E1712 calc(var(--mo-top) + 282px * var(--mo-k)), #1E7C40 0)" tone="dark" label={`Despedida do ${view.club.name}`} className="mo-sendoff" actions={actions}>
+      <SendOffBody view={view} />
     </MomentStage>
   );
 }

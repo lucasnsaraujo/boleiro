@@ -92,12 +92,7 @@ function FarewellScore({ score }: { score: [number, number] }) {
   );
 }
 
-/**
- * The retirement: the career replayed as the album. The cover opens, one page per club turns faster and
- * faster, then the last spread fills with the numbers, every former club's tribute, the farewell match with
- * the coach's old players, and the last sticker flying into the last empty slot.
- */
-export function RetirementScene({ view, actions }: Props) {
+function RetirementBody({ view }: Pick<Props, "view">) {
   const times = leafTimes(view.eras.length);
   const caption = useRef<HTMLSpanElement>(null);
   const captions: [number, string][] = [[0, `Seu álbum, ${view.strip.from} a ${view.strip.to - 1}`], ...view.eras.map((era, index): [number, string] => [(times[index + 1] ?? 0) + 200, `${era.name} · ${era.years}`]), [4300, "A última página"]];
@@ -122,7 +117,7 @@ export function RetirementScene({ view, actions }: Props) {
   const stand = useCanvasTick((surface) => mosaic(surface, { cell: 4, at: 7100, wave: 1200, flip: 300, back: "#2A1214", draw: mosaicFace(view.lastClub.colours, ["OBRIGADO,", firstName], 11, 2) }));
   useCueAt("title", FINAL_AT + 550);
   return (
-    <MomentStage durationMs={12400} backdrop="#241C14" tone="dark" label={`Aposentadoria: ${view.coachName}`} className="mo-retire" actions={actions}>
+    <>
       <div className="rt-spread">
         <section className="rt-pg rt-pl">
           <div className="rt-kick mo-up" style={ms(4500)}>
@@ -285,6 +280,19 @@ export function RetirementScene({ view, actions }: Props) {
         <span ref={caption}>{captions[0]?.[1]}</span>
       </div>
       <canvas ref={paper} className="fill rt-conf" />
+    </>
+  );
+}
+
+/**
+ * The retirement: the career replayed as the album. The cover opens, one page per club turns faster and
+ * faster, then the last spread fills with the numbers, every former club's tribute, the farewell match with
+ * the coach's old players, and the last sticker flying into the last empty slot.
+ */
+export function RetirementScene({ view, actions }: Props) {
+  return (
+    <MomentStage durationMs={12400} backdrop="#241C14" tone="dark" label={`Aposentadoria: ${view.coachName}`} className="mo-retire" actions={actions}>
+      <RetirementBody view={view} />
     </MomentStage>
   );
 }

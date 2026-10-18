@@ -13,9 +13,9 @@
 
 .mo-title .tt-a { position: absolute; left: 56px; top: 54px; width: 660px; bottom: 76px; display: flex; flex-direction: column; }
 .mo-title .tt-a .tt-trophy b { color: var(--tt-ink, var(--ink)); }
-.mo-title .tt-xi { margin-top: 34px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px 10px; }
-.mo-title .tt-xs { --h: 62px; --fs: 26px; animation: tt-slap 360ms var(--e-slap) calc(var(--d) * 1ms) both; }
-.mo-title .tt-xs .nm { font-size: 11px; font-stretch: 85%; }
+.mo-title .tt-xi { margin-top: 34px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px 10px; }
+.mo-title .tt-xs { --h: 92px; --fs: 38px; animation: tt-slap 360ms var(--e-slap) calc(var(--d) * 1ms) both; }
+.mo-title .tt-xs .nm { font-size: 11.5px; font-stretch: 85%; padding-bottom: 6px; }
 .mo-title .tt-a .cause { margin-top: auto; padding-top: 12px; border-top: 2px dotted var(--line-2); }
 .mo-title .tt-a-side { position: absolute; left: 770px; right: 56px; top: 54px; bottom: 76px; display: flex; flex-direction: column; gap: 22px; }
 .mo-title .tt-seal { align-self: flex-start; padding: 14px; background: var(--card); border-radius: 50%; box-shadow: var(--sh-pop); transform: rotate(6deg); }
@@ -24,12 +24,15 @@
 .mo-title .tt-clip { padding: 14px 18px; background: #FBF7EC; color: #1A1A17; box-shadow: 0 0 0 1px rgba(20,35,26,.1), 0 10px 18px -12px rgba(20,35,26,.5); transform: rotate(-1deg); }
 .mo-title .tt-clip small { font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #C8102E; }
 .mo-title .tt-clip b { display: block; font-stretch: 72%; font-weight: 900; font-size: 34px; line-height: .95; text-transform: uppercase; margin-top: 4px; }
+.mo-title .tt-stand { position: relative; flex: 1; min-height: 120px; border-radius: 8px; overflow: hidden; background: color-mix(in srgb, var(--strong) 22%, #0B0606); box-shadow: var(--sh-page); animation: mo-up 500ms var(--e-out) calc(var(--d) * 1ms) both; }
+.mo-title .tt-stand canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mo-title .tt-stand span { position: absolute; left: 12px; bottom: 10px; font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: rgba(251,247,236,.85); }
 .mo-title canvas.fill { z-index: 20; }
 
 /* ---------- Long ---------- */
-.mo-title.is-long { background: color-mix(in srgb, var(--strong, #8E0B20) 14%, #0B0606); color: #FBF7EC; }
-.mo-title .tt-b { position: absolute; inset: 0; --strong: #A3121A; }
-.mo-title .tt-warm { position: absolute; inset: 0; background: radial-gradient(90% 80% at 45% 30%, var(--strong), color-mix(in srgb, var(--strong) 40%, #050202) 72%); opacity: 0; animation: tt-warm 1600ms var(--e-out) calc(var(--d) * 1ms) both; }
+.mo-title.is-long { background: #0B0606; color: #FBF7EC; }
+.mo-title .tt-b { position: absolute; inset: 0; background: color-mix(in srgb, var(--strong) 14%, #0B0606); }
+.mo-title .tt-warm { position: absolute; inset: 0; background: radial-gradient(90% 80% at 45% 30%, var(--strong), color-mix(in srgb, var(--strong) 40%, #050202) 62%, color-mix(in srgb, var(--strong) 14%, #0B0606) 100%); opacity: 0; animation: tt-warm 1600ms var(--e-out) calc(var(--d) * 1ms) both; }
 @keyframes tt-warm { to { opacity: 1; } }
 .mo-title .tt-crowd { position: absolute; left: 0; bottom: 0; width: 100%; height: 112px; z-index: 1; }
 .mo-title .tt-b::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 200px; background: linear-gradient(180deg, rgba(10,3,4,0), rgba(10,3,4,.72) 72%); pointer-events: none; z-index: 2; }

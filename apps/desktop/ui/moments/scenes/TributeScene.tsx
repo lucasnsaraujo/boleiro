@@ -43,26 +43,21 @@ function FramedShirt({ view }: { view: TributeView }) {
   );
 }
 
-/**
- * A tribute: a club's milestone for its coach, a former club applauding him as the visitor, or an idol of his
- * squad hanging up his boots. The framed shirt counts up, the stand flips its mosaic and stands for the minute
- * of applause, and the plaque is engraved.
- */
-export function TributeScene({ view, actions }: Props) {
+function TributeBody({ view }: Pick<Props, "view">) {
   const seconds = useRef<HTMLElement>(null);
   useTick((t) => {
     if (!seconds.current) return;
     const s = Math.round(span(t, 2700, 1800) * 60);
     seconds.current.textContent = s >= 60 ? "1:00" : `0:${String(s).padStart(2, "0")}`;
   });
-  const stand = useCanvasTick((surface) => mosaic(surface, { cell: 5, at: 1800, wave: 900, flip: 260, back: "#2A1214", direction: (x) => 1 - x, draw: mosaicFace(view.club.colours, [view.mosaic], 15, 2) }));
+  const stand = useCanvasTick((surface) => mosaic(surface, { cell: 5, at: 1800, wave: 900, flip: 260, back: "#2A1214", direction: (x) => 1 - x, draw: mosaicFace(view.club.colours, [view.mosaic], 15, 2, 0.4) }));
   const fans = useCanvasTick((surface) =>
     crowd(surface, { colours: [...clubPaper(view.club.colours), "#1A1A1A"], gap: 6, rise: 4, shade: 0.3, stand: (t, x) => Math.max(0, Math.min(1, (span(t, 2600, 900) * 1.4 - Math.abs(x - 0.4)) * 6)) }),
   );
   useCueAt("comeback", 2600);
   const words = KIND_WORDS[view.kind];
   return (
-    <MomentStage durationMs={6400} backdrop="var(--paper)" tone="light" label={view.headline} className="mo-tribute" actions={actions}>
+    <>
       <div className="tr-spread">
         <section className="tr-pl">
           <div className="tr-kind">
@@ -139,6 +134,19 @@ export function TributeScene({ view, actions }: Props) {
           </div>
         </section>
       </div>
+    </>
+  );
+}
+
+/**
+ * A tribute: a club's milestone for its coach, a former club applauding him as the visitor, or an idol of his
+ * squad hanging up his boots. The framed shirt counts up, the stand flips its mosaic and stands for the minute
+ * of applause, and the plaque is engraved.
+ */
+export function TributeScene({ view, actions }: Props) {
+  return (
+    <MomentStage durationMs={6400} backdrop="var(--paper) var(--paper-tex) center / cover" tone="light" label={view.headline} className="mo-tribute" actions={actions}>
+      <TributeBody view={view} />
     </MomentStage>
   );
 }

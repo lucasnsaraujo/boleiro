@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { prefersReducedMotion } from "../motion/reducedMotion.js";
 import type { Cue } from "../sound/soundCatalog.js";
 import { useSound } from "../sound/SoundProvider.js";
@@ -73,7 +73,7 @@ export function useCueAt(cue: Cue, at: number) {
 type Props = {
   /** The choreography's length; the actions arrive and the skip button leaves at its end. */
   durationMs: number;
-  /** The scene's own colour around the artboard, when the window is wider or taller than it. */
+  /** The scene's own colour around the artboard, when the window is wider or taller than it; it can line up with the artboard through --mo-k, --mo-left and --mo-top. */
   backdrop: string;
   /** "dark" scenes print the skip and replay in light ink. */
   tone: "light" | "dark";
@@ -96,6 +96,7 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
   const time = useRef({ t0: 0, frozen: 0, isRunning: false });
   const raf = useRef(0);
   const [scale, setScale] = useState(1);
+  const [frameSize, setFrameSize] = useState({ width: ARTBOARD.width, height: ARTBOARD.height });
   const [isReady, setReady] = useState(false);
   const [isPlaying, setPlaying] = useState(false);
   const [isEnded, setEnded] = useState(false);
@@ -145,7 +146,10 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
   useLayoutEffect(() => {
     const element = frame.current;
     if (!element) return;
-    const fit = () => setScale(Math.min(element.clientWidth / ARTBOARD.width, element.clientHeight / ARTBOARD.height) || 1);
+    const fit = () => {
+      setScale(Math.min(element.clientWidth / ARTBOARD.width, element.clientHeight / ARTBOARD.height) || 1);
+      setFrameSize({ width: element.clientWidth, height: element.clientHeight });
+    };
     fit();
     if (typeof ResizeObserver !== "function") return;
     const observer = new ResizeObserver(fit);
@@ -194,7 +198,12 @@ export function MomentStage({ durationMs, backdrop, tone, label, className, acti
   );
 
   return (
-    <div ref={frame} className={`mo-frame is-${tone}`} style={{ background: backdrop }}>
+    // Where the artboard sits in the window, so a scene's backdrop can line its colours up with it.
+    <div
+      ref={frame}
+      className={`mo-frame is-${tone}`}
+      style={{ background: backdrop, "--mo-k": scale, "--mo-left": `${(frameSize.width - ARTBOARD.width * scale) / 2}px`, "--mo-top": `${(frameSize.height - ARTBOARD.height * scale) / 2}px` } as CSSProperties}
+    >
       <ClockContext.Provider value={clock}>
         <div
           ref={stage}

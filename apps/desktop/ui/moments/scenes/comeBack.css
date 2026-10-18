@@ -32,7 +32,7 @@
 .mo-comeback .cb-offer .kind { font-size: 11.5px; font-weight: 700; color: var(--mute); display: flex; align-items: center; gap: 6px; }
 .mo-comeback .cb-offer h2 { font-stretch: var(--wide); font-weight: 900; font-size: 22px; line-height: 1; letter-spacing: -.01em; margin-top: 3px; }
 .mo-comeback .cb-offer blockquote { margin-top: 10px; font-size: 13px; line-height: 1.45; color: var(--ink-2); }
-.mo-comeback .cb-terms { margin-top: 10px; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 2px solid var(--ink); }
+.mo-comeback .cb-terms { margin-top: 10px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 2px solid var(--ink); }
 .mo-comeback .cb-terms div { padding: 8px 10px 0 0; }
 .mo-comeback .cb-terms div + div { padding-left: 12px; border-left: 1px solid var(--rule); }
 .mo-comeback .cb-terms .lbl { font-size: 10px; }
@@ -40,7 +40,7 @@
 .mo-comeback .cb-terms small { display: block; font-size: 11px; color: var(--mute); }
 .mo-comeback .cb-back { margin-top: 12px; }
 .mo-comeback .cb-back .lbl { font-size: 10px; }
-.mo-comeback .cb-back .who { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px; }
+.mo-comeback .cb-back .who { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
 .mo-comeback .cb-back .ps { --h: 84px; --fs: 38px; --hoop: 5px; }
 .mo-comeback .cb-foot { margin-top: auto; padding-top: 10px; border-top: 2px dotted var(--line-2); }
 .mo-comeback .cb-foot p { max-width: 300px; font-size: 11.5px; color: var(--mute); line-height: 1.35; }

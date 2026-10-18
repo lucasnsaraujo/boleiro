@@ -1,7 +1,8 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { PlayerAwardView } from "@boleiro/game-client/moments/momentView";
 import { MomentStage, useCanvasTick, useCueAt } from "../MomentStage.js";
-import { MomentSticker } from "../MomentSticker.js";
+import { Crest } from "../../clubs/Crest.js";
+import { crestClub, MomentSticker } from "../MomentSticker.js";
 import { clubPaper, confetti } from "../paperMotion.js";
 import "./playerAward.css";
 
@@ -9,16 +10,11 @@ type Props = { view: PlayerAwardView; actions: ReactNode };
 
 const ms = (value: number) => ({ "--d": Math.round(value) }) as CSSProperties;
 
-/**
- * A player's achievement: the yellow sticker pack drops in and tears open, the sticker rises out back first and
- * turns face up as the paper flies in his club's colours, then the trophy plate and the season page with each
- * award in the order it was shown.
- */
-export function PlayerAwardScene({ view, actions }: Props) {
+function PlayerAwardBody({ view }: Pick<Props, "view">) {
   const paper = useCanvasTick((surface) => confetti(surface, { at: 2750, colours: [...clubPaper(view.club.colours), "#FFCC00"], count: 150, origin: [0.2, 0.86], spread: 0.5, speed: 1550, seed: 5, life: 4800 }));
   useCueAt("promotion", 2150);
   return (
-    <MomentStage durationMs={5400} backdrop="#073A1E" tone="dark" label={`${view.award}: ${view.player.name}`} className="mo-award" actions={actions}>
+    <>
       <div className="pa-reveal">
         <div className="pa-kick">
           <i className="ph-fill ph-star" />
@@ -81,6 +77,20 @@ export function PlayerAwardScene({ view, actions }: Props) {
             </div>
           ))}
         </div>
+        {view.career.length > 0 && (
+          <div className="pa-career mo-up" style={ms(4400)}>
+            <span className="lbl">No jogo, por clube</span>
+            {view.career.map((row) => (
+              <div key={row.club.id} className="row">
+                <Crest club={crestClub(row.club)} size={20} />
+                <b>{row.club.name}</b>
+                <span>
+                  {row.apps} jogos · {row.goals} gols
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
         {view.others.length > 0 && (
           <div className="pa-others">
             <span className="lbl">Também na lista</span>
@@ -96,6 +106,19 @@ export function PlayerAwardScene({ view, actions }: Props) {
           <span>{view.cause}</span>
         </div>
       </section>
+    </>
+  );
+}
+
+/**
+ * A player's achievement: the yellow sticker pack drops in and tears open, the sticker rises out back first and
+ * turns face up as the paper flies in his club's colours, then the trophy plate and the season page with each
+ * award in the order it was shown.
+ */
+export function PlayerAwardScene({ view, actions }: Props) {
+  return (
+    <MomentStage durationMs={5400} backdrop="#073A1E" tone="dark" label={`${view.award}: ${view.player.name}`} className="mo-award" actions={actions}>
+      <PlayerAwardBody view={view} />
     </MomentStage>
   );
 }

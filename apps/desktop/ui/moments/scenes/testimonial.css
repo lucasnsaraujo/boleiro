@@ -24,7 +24,7 @@
 @keyframes ts-flipfoil { 0% { transform: rotate(-3deg) rotateY(0); } 50% { transform: rotate(-3deg) rotateY(90deg) scale(1.06); } 100% { transform: rotate(-3deg) rotateY(0); } }
 .mo-testimonial .ts-hero h1 { font-stretch: var(--wide); font-weight: 900; font-size: 30px; line-height: .98; letter-spacing: -.02em; }
 .mo-testimonial .ts-hero p { font-size: 13px; line-height: 1.45; color: var(--ink-2); margin-top: 8px; }
-.mo-testimonial .ts-stats { position: absolute; left: 26px; top: 452px; width: 410px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.mo-testimonial .ts-stats { position: absolute; left: 26px; top: 452px; width: 410px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .mo-testimonial .ts-stats .nst { padding: 8px 9px 7px; }
 .mo-testimonial .ts-stats .nst b { font-size: 26px; }
 .mo-testimonial .ts-cause { position: absolute; left: 26px; width: 410px; top: 560px; }
@@ -39,7 +39,7 @@
 .mo-testimonial .ts-sc .s em { font-style: normal; font-size: 22px; color: var(--yellow); }
 .mo-testimonial .ts-sc .clk { position: absolute; left: 50%; top: 5px; transform: translateX(-50%); font-stretch: var(--semi); font-weight: 900; font-size: 11px; letter-spacing: .08em; color: var(--yellow); white-space: nowrap; }
 .mo-testimonial .ts-xis { display: grid; grid-template-columns: 1fr 1fr; padding: 14px 16px 4px; }
-.mo-testimonial .ts-xi { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px 5px; padding: 0 6px; align-content: start; }
+.mo-testimonial .ts-xi { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px 5px; padding: 0 6px; align-content: start; }
 .mo-testimonial .ts-xi + .ts-xi { border-left: 2px dotted var(--line-2); }
 .mo-testimonial .ts-xi h4 { grid-column: 1 / -1; font-stretch: var(--semi); font-weight: 900; font-size: 12px; display: flex; justify-content: space-between; color: var(--ink-2); }
 .mo-testimonial .ts-xi h4 span { font-weight: 600; color: var(--mute); }

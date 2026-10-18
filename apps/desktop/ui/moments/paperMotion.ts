@@ -178,8 +178,8 @@ export function mosaic({ g, w, h }: Surface, { cell = 8, draw, back = "#2A0E10",
   };
 }
 
-/** A mosaic's face: the club's colours in hoops or a plain field, its words in the middle. */
-export function mosaicFace(colours: { primary: string; secondary: string }, words: readonly string[], fontSize: number, hoops: number): (g: CanvasRenderingContext2D, w: number, h: number) => void {
+/** A mosaic's face: the club's colours in hoops or a plain field, its words centred at `centreX` of its width. */
+export function mosaicFace(colours: { primary: string; secondary: string }, words: readonly string[], fontSize: number, hoops: number, centreX = 0.5): (g: CanvasRenderingContext2D, w: number, h: number) => void {
   return (g, w, h) => {
     for (let y = 0; y < h; y++) {
       g.fillStyle = Math.floor(y / hoops) % 2 ? shadeOf(colours.primary) : colours.primary;
@@ -192,7 +192,7 @@ export function mosaicFace(colours: { primary: string; secondary: string }, word
     g.textAlign = "center";
     g.textBaseline = "middle";
     const lineHeight = fontSize * 1.05;
-    words.forEach((line, index) => g.fillText(line, w / 2, h / 2 + 1 + (index - (words.length - 1) / 2) * lineHeight));
+    words.forEach((line, index) => g.fillText(line, w * centreX, h / 2 + 1 + (index - (words.length - 1) / 2) * lineHeight, w * 0.9));
   };
 }
 

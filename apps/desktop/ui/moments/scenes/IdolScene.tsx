@@ -12,11 +12,7 @@ const LEDGER_FROM = 500;
 const LEDGER_UNTIL = 2700;
 const IDOL_AT = 80;
 
-/**
- * "Você virou ídolo": the fans' ledger lands line by line and fills the meter past the idol line, the coach's
- * sticker turns over and comes back foil, and a copy of it flies into the club's idols row.
- */
-export function IdolScene({ view, actions }: Props) {
+function IdolBody({ view }: Pick<Props, "view">) {
   const gap = Math.min(360, (LEDGER_UNTIL - LEDGER_FROM) / Math.max(1, view.ledger.length));
   const steps = view.ledger.reduce<{ at: number; to: number }[]>((all, row, index) => [...all, { at: LEDGER_FROM + index * gap, to: (all.at(-1)?.to ?? 0) + row.points }], []);
   const value = useRef<HTMLElement>(null);
@@ -37,7 +33,7 @@ export function IdolScene({ view, actions }: Props) {
   useCueAt("promotion", 3000);
   const coach = view.idols.at(-1);
   return (
-    <MomentStage durationMs={5800} backdrop="var(--paper)" tone="light" label={`Você virou ídolo do ${view.club.name}`} className="mo-idol" actions={actions}>
+    <>
       <div className="id-page">
         <section className="id-lt">
           <div className="when">
@@ -139,6 +135,18 @@ export function IdolScene({ view, actions }: Props) {
           </div>
         </section>
       </div>
+    </>
+  );
+}
+
+/**
+ * "Você virou ídolo": the fans' ledger lands line by line and fills the meter past the idol line, the coach's
+ * sticker turns over and comes back foil, and a copy of it flies into the club's idols row.
+ */
+export function IdolScene({ view, actions }: Props) {
+  return (
+    <MomentStage durationMs={5800} backdrop="var(--paper) var(--paper-tex) center / cover" tone="light" label={`Você virou ídolo do ${view.club.name}`} className="mo-idol" actions={actions}>
+      <IdolBody view={view} />
     </MomentStage>
   );
 }

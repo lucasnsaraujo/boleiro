@@ -28,6 +28,9 @@ function Trophy({ view, size }: { view: TitleView; size: "short" | "long" }) {
 /** The quick party: the trophy slaps in, the paper flies, the eleven lands and the paper prints the line. */
 function ShortTitle({ view, k }: { view: TitleView; k: number }) {
   const paper = useCanvasTick((surface) => confetti(surface, { at: 250 * k, colours: [...clubPaper(view.club.colours), "#FFCC00"], count: 110, origin: [0.32, 0.36], spread: 0.95, speed: 900, seed: 3, life: 2600 * k + 600 }));
+  const fans = useCanvasTick((surface) =>
+    crowd(surface, { colours: [...clubPaper(view.club.colours), "#1A1A1A"], gap: 7, rise: 6, shade: 0.4, stand: (t, x) => Math.max(0, Math.min(1, (span(t, 500 * k, 700 * k) * 1.4 - Math.abs(x - 0.5)) * 4)) }),
+  );
   useCueAt("title", 100 * k);
   return (
     <>
@@ -64,6 +67,10 @@ function ShortTitle({ view, k }: { view: TitleView; k: number }) {
         <div className="tt-clip mo-up" style={ms(1200 * k)}>
           <small>Jornal do Boleiro · dia seguinte</small>
           <b>{view.clipping}</b>
+        </div>
+        <div className="tt-stand" style={{ ...ms(300 * k), "--strong": strongColour(view.club) } as CSSProperties}>
+          <canvas ref={fans} />
+          <span>A torcida do {view.club.name}</span>
         </div>
       </section>
       <canvas ref={paper} className="fill" />
@@ -203,7 +210,7 @@ export function TitleScene({ view, actions }: Props) {
   return (
     <MomentStage
       durationMs={duration}
-      backdrop={view.isLong ? "#120406" : "var(--paper)"}
+      backdrop={view.isLong ? `color-mix(in srgb, ${strongColour(view.club)} 40%, #050202)` : "var(--paper) var(--paper-tex) center / cover"}
       tone={view.isLong ? "dark" : "light"}
       label={`${view.headline}: ${view.competitionName}`}
       className={`mo-title ${view.isLong ? "is-long" : "is-short"}`}

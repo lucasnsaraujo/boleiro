@@ -51,12 +51,11 @@ function Scoreboard({ view }: { view: TestimonialView }) {
   );
 }
 
-/** An idol's farewell match: the ticket and its torn stub, the two line-ups, the match running to its result, the hero's sticker turning foil and the paper thrown from the stands. */
-export function TestimonialScene({ view, actions }: Props) {
+function TestimonialBody({ view }: Pick<Props, "view">) {
   const paper = useCanvasTick((surface) => confetti(surface, { at: 5300, colours: clubPaper(view.club.colours), count: 160, origin: [0.66, 1.04], spread: 0.55, speed: 1500, seed: 11, life: 6000 }));
   useCueAt("fullTime", at(90));
   return (
-    <MomentStage durationMs={6600} backdrop="var(--paper)" tone="light" label={`Despedida de ${view.playerName}`} className="mo-testimonial" actions={actions}>
+    <>
       <div className="ts-ticket">
         <div className="body" style={{ "--c1": view.club.colours.primary, "--c2": view.club.colours.secondary } as CSSProperties}>
           <div className="kick">Ingresso · jogo de despedida</div>
@@ -137,6 +136,15 @@ export function TestimonialScene({ view, actions }: Props) {
         </div>
       </section>
       <canvas ref={paper} className="fill ts-conf" />
+    </>
+  );
+}
+
+/** An idol's farewell match: the ticket and its torn stub, the two line-ups, the match running to its result, the hero's sticker turning foil and the paper thrown from the stands. */
+export function TestimonialScene({ view, actions }: Props) {
+  return (
+    <MomentStage durationMs={6600} backdrop="var(--paper) var(--paper-tex) center / cover" tone="light" label={`Despedida de ${view.playerName}`} className="mo-testimonial" actions={actions}>
+      <TestimonialBody view={view} />
     </MomentStage>
   );
 }

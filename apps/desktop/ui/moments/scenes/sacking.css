@@ -7,7 +7,7 @@
 /* ---------- Left: the pressure, match by match ---------- */
 .mo-sack .sk-pres { position: absolute; left: 26px; top: 22px; width: 344px; bottom: 22px; display: flex; flex-direction: column; }
 .mo-sack .sk-pres h2 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: 1; letter-spacing: -.01em; margin-top: 8px; }
-.mo-sack .sk-run { margin-top: 14px; display: grid; grid-template-columns: repeat(9, 1fr); gap: 5px; }
+.mo-sack .sk-run { margin-top: 14px; display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 5px; }
 .mo-sack .sk-r { text-align: center; transform-origin: 50% 0; animation: sk-flip 420ms var(--e-out) calc(var(--d) * 1ms) both; }
 .mo-sack .sk-r b { display: grid; place-items: center; height: 30px; border-radius: 6px; font-stretch: var(--semi); font-weight: 900; font-size: 14px; background: #3A4A40; color: #E8E4D8; }
 .mo-sack .sk-r.d b { background: var(--red); color: #fff; }

@@ -86,12 +86,7 @@ function Stadium({ name }: { name: string }) {
   );
 }
 
-/**
- * The night sacking, played out: the losing run flips in and the meters fall, the clippings pin on, the phone
- * wakes while the board meets at night, the note lands past midnight, and dawn turns into the next day's paper
- * and the fans' reaction.
- */
-export function SackingScene({ view, actions }: Props) {
+function SackingBody({ view }: Pick<Props, "view">) {
   const clock = useRef<HTMLElement>(null);
   const from = minutesOf(view.night[0]?.time ?? "21h40");
   const to = minutesOf(view.night.at(-1)?.time ?? "0h47");
@@ -106,7 +101,7 @@ export function SackingScene({ view, actions }: Props) {
     [8, 228, -1],
   ];
   return (
-    <MomentStage durationMs={7400} backdrop="#0A1610" tone="dark" label={`Demitido: ${view.club.name}`} className="mo-sack" actions={actions}>
+    <>
       <section className="sk-pres">
         <div className="when">
           <i className="ph-bold ph-trend-down" />
@@ -235,6 +230,19 @@ export function SackingScene({ view, actions }: Props) {
           <span>{view.cause}</span>
         </div>
       </section>
+    </>
+  );
+}
+
+/**
+ * The night sacking, played out: the losing run flips in and the meters fall, the clippings pin on, the phone
+ * wakes while the board meets at night, the note lands past midnight, and dawn turns into the next day's paper
+ * and the fans' reaction.
+ */
+export function SackingScene({ view, actions }: Props) {
+  return (
+    <MomentStage durationMs={7400} backdrop="linear-gradient(90deg, #0A1610 calc(var(--mo-left) + 808px * var(--mo-k)), #F2EAD9 0)" tone="dark" label={`Demitido: ${view.club.name}`} className="mo-sack" actions={actions}>
+      <SackingBody view={view} />
     </MomentStage>
   );
 }
