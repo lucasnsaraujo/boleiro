@@ -9,7 +9,7 @@ import { openDraft } from "./movePlayer.js";
 import type { Loan } from "./transferMarket.js";
 
 const COACH = "sport-pe";
-let windowEve = loadNewGame(4, { coachClubId: COACH });
+let windowEve = loadNewGame(1, { coachClubId: COACH });
 while (windowEve.date < "2026-01-05") windowEve = advanceDay(windowEve, {}).state;
 const finance = windowEve.finances[COACH];
 if (!finance) throw new Error("no finances for Sport");

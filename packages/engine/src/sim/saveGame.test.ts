@@ -12,7 +12,7 @@ const playDays = (state: GameState, days: number) => {
 };
 
 describe("saveGame and loadGame", () => {
-  const midSeason = playDays(loadNewGame(5, { coachClubId: "flamengo-rj" }), 200);
+  const midSeason = playDays(loadNewGame(1, { coachClubId: "flamengo-rj" }), 200);
 
   it("round-trips the state exactly", () => {
     expect(Object.values(midSeason.discipline).some((records) => Object.values(records).some((r) => r.bans > 0 || r.yellows > 0))).toBe(true);

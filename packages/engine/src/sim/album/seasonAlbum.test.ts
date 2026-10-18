@@ -8,7 +8,7 @@ import { fileAlbumPages } from "./fileAlbumPages.js";
 
 const FIRST = "flamengo-rj";
 const SECOND = "palmeiras-sp";
-const SEED = 6;
+const SEED = 1;
 
 /** A hot-seat season of two Série A coaches played to its end: the game on its last day and the day after. */
 function playSeason(): { last: GameState; next: GameState } {
