@@ -223,6 +223,21 @@ CREATE TABLE IF NOT EXISTS finances (
   PRIMARY KEY (snapshot_id, seq)
 );
 
+-- Where each figure of a club's finances row comes from (data/finance-sources.csv): the document,
+-- its address, the page of the PDF the figure is on, and the date the document carries.
+CREATE TABLE IF NOT EXISTS finance_sources (
+  snapshot_id INTEGER NOT NULL REFERENCES snapshots(id),
+  club_id TEXT NOT NULL,
+  field TEXT NOT NULL,                 -- a finances column, revenue_total to net_debt
+  value INTEGER NOT NULL,
+  document TEXT NOT NULL,
+  url TEXT NOT NULL,
+  page TEXT NOT NULL,
+  published TEXT NOT NULL,
+  note TEXT NOT NULL,
+  PRIMARY KEY (snapshot_id, club_id, field)
+);
+
 -- A country's prize money, TV deals and matchday averages for one season, kept as the JSON
 -- document the game reads: its shape changes per country more than it is queried.
 CREATE TABLE IF NOT EXISTS competition_money (

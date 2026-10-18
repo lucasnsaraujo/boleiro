@@ -5,7 +5,7 @@ import { loadNewGame } from "../loadNewGame.js";
 import { onPitchAt } from "./aiSubstitutions.js";
 import { regenerateMatch } from "./regenerateMatch.js";
 
-const start = loadNewGame(5, { coachClubId: "flamengo-rj" });
+const start = loadNewGame(2, { coachClubId: "flamengo-rj" });
 
 function firstPlayedDay(state: GameState): GameState {
   let current = state;

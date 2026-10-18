@@ -13,18 +13,32 @@ function median(values: number[]): number {
 describe("loadFinances", () => {
   const { clubs, divisionEstimates } = loadFinances();
   const rows: Finances[] = [...clubs, ...divisionEstimates];
+  const serieARows = clubs.filter((row) => row.division === "A");
 
   it("has one row per Série A club, each linked to a real club id", () => {
     const serieA = loadClubs()
       .filter((club) => club.division === "A")
       .map((club) => club.id)
       .sort();
-    expect(clubs.map((row) => row.clubId).sort()).toEqual(serieA);
+    expect(serieARows.map((row) => row.clubId).sort()).toEqual(serieA);
+  });
+
+  it("gives a row of its own only to a Série B club, once", () => {
+    const serieB = new Set(loadClubs().filter((club) => club.division === "B").map((club) => club.id));
+    const others = clubs.filter((row) => row.division !== "A");
+    expect(others.filter((row) => row.division !== "B" || !serieB.has(row.clubId))).toEqual([]);
+    expect(new Set(clubs.map((row) => row.clubId)).size).toBe(clubs.length);
   });
 
   // Flamengo passed R$2B in 2025, and Remo and Chapecoense earned under R$100M in Série B that year.
   it("keeps Série A revenue between R$40M and R$2.5B", () => {
-    const outside = clubs.filter((row) => row.revenue.total < 40 * MILLION || row.revenue.total > 2_500 * MILLION);
+    const outside = serieARows.filter((row) => row.revenue.total < 40 * MILLION || row.revenue.total > 2_500 * MILLION);
+    expect(outside).toEqual([]);
+  });
+
+  // Náutico earned about R$32M in Série C; Fortaleza R$444M in Série A before going down.
+  it("keeps the accounts of Série B clubs between R$20M and R$500M", () => {
+    const outside = clubs.filter((row) => row.division === "B" && (row.revenue.total < 20 * MILLION || row.revenue.total > 500 * MILLION));
     expect(outside).toEqual([]);
   });
 
@@ -61,7 +75,7 @@ describe("loadFinances", () => {
   it("makes the median club poorer in every lower division", () => {
     const medianOf = (division: string) =>
       division === "A"
-        ? median(clubs.map((row) => row.revenue.total))
+        ? median(serieARows.map((row) => row.revenue.total))
         : (divisionEstimates.find((row) => row.division === division && row.size === "median")?.revenue.total ?? 0);
     const medians = ["A", "B", "C", "D"].map(medianOf);
     expect(medians).toEqual([...medians].sort((a, b) => b - a));
