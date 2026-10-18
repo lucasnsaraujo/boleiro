@@ -4,6 +4,7 @@ import type { DayEvent, DayResult, WaitingDecisions } from "../advanceDay.js";
 import { isHumanClub, waitingCoachesOf, type WaitingCoach } from "../coach/humanCoaches.js";
 import { coachCareerDay } from "../coach/coachCareerDay.js";
 import { moveAiCoaches, moveWorldCoaches } from "../coach/moveAiCoaches.js";
+import { keepDecidingMatches } from "../album/keepDecidingMatches.js";
 import { recordFormerPlayers } from "../coach/assistant.js";
 import { assistantPromotions } from "../youth/assistantPromotions.js";
 import { closeCoachSeason, retiredPlayers } from "../coach/closeCoachSeason.js";
@@ -215,7 +216,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
   if (state.waitingCoaches) next = { ...next, waitingCoaches: withWaitingTactics(state.waitingCoaches, decisions.waiting ?? [], (clubId) => liveTacticsOf(live, clubId)) };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
   const elevens = recordElevens(next, played, day.sheets, state);
-  const feats = recordFeats(recordMatches(elevens, played, day.sheets), elevens, played, day.sheets);
+  const feats = recordFeats(keepDecidingMatches(recordMatches(elevens, played, day.sheets), played, day.sheets, live.matches), elevens, played, day.sheets);
   events.push(...feats.events);
   const bonuses = payTitleBonuses(next, recordRatings(feats.state, state, played, day.sheets, live.matches));
   next = bonuses.state;

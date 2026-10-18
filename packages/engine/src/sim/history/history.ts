@@ -1,4 +1,5 @@
 import type { Division, Role } from "@boleiro/data/players";
+import type { AlbumPage, KeptMatch, SquadMark } from "../album/album.js";
 import type { IsoDate } from "../gameState.js";
 
 /** Competition ids without the season, so titles line up across years: `serie-a`, `copa-do-brasil`, `state-sp`. */
@@ -107,6 +108,10 @@ export type CoachRecord = {
   seasons: { season: number; clubId: string; position: number; targetPosition: number }[];
   /** The clubs he walked out on; a record from before resigning existed has none. */
   resignations?: { clubId: string; date: IsoDate }[];
+  /** His album: one page per season and club he ran, printed at the season's close; a record from before the album has none. */
+  album?: AlbumPage[];
+  /** The finals his clubs played and the matches that won them a league, kept whole; a record from before the album has none. */
+  keptMatches?: KeptMatch[];
 };
 
 /** Everything a save remembers about its past. Sizes grow per season and per player-club pair, never per match. */
@@ -119,6 +124,10 @@ export type History = {
     goals: Record<CompetitionKey, Record<string, number>>;
     /** Per competition, then per player; a save from before ratings starts the season's with none. */
     ratings?: Record<CompetitionKey, Record<string, SeasonMark>>;
+    /** Per human coach's club, then per player: his games and goals for it this season while a human coach ran it. */
+    squads?: Record<string, Record<string, SquadMark>>;
+    /** The day the squads' count began, when it began after the season did: a save from before the album, loaded mid-season. */
+    squadsSince?: IsoDate;
   };
   clubs: Record<string, ClubRecords>;
   /** Per club, then per player. */
@@ -137,7 +146,7 @@ export const competitionKey = (competitionId: string): CompetitionKey => competi
 export function newHistory(season: number, date: IsoDate, coachClubId: string | null): History {
   return {
     seasons: [],
-    current: { season, champions: {}, goals: {} },
+    current: { season, champions: {}, goals: {}, squads: {} },
     clubs: {},
     players: {},
     strength: {},

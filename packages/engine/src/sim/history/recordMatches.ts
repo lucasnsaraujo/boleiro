@@ -1,9 +1,11 @@
-import { waitingCoachesOf } from "../coach/humanCoaches.js";
+import type { SquadMark } from "../album/album.js";
+import { humanClubIds, waitingCoachesOf } from "../coach/humanCoaches.js";
 import { copyRecord } from "../copyRecord.js";
 import { attendance } from "../finances/recordMatchFinances.js";
 import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import { championOf } from "./championOf.js";
 import { competitionKey, type CoachRecord, type CompetitionKey, type PlayerAtClub } from "./history.js";
+import { roleOf } from "./seasonAwards.js";
 import { updateClubRecords } from "./updateClubRecords.js";
 
 type Sides<T> = { home: T; away: T };
@@ -12,9 +14,10 @@ type Sides<T> = { home: T; away: T };
 export type MatchSheets = Record<string, Sides<readonly SimPlayer[]> & { scorers: Sides<readonly string[]> }>;
 
 /**
- * Writes today's matches into the history: appearances and goals per club, each club's match and
- * crowd records, and the champion of any competition that finished today. Run it before the gate is
- * booked, so the crowd is the one that came to the game.
+ * Writes today's matches into the history: appearances and goals per club, the season's games and
+ * goals of the human coaches' squads, each club's match and crowd records, and the champion of any
+ * competition that finished today. Run it before the gate is booked, so the crowd is the one that came
+ * to the game.
  */
 export function recordMatches(state: GameState, played: readonly Fixture[], sheets: MatchSheets): GameState {
   if (!played.length) return state;
@@ -24,6 +27,16 @@ export function recordMatches(state: GameState, played: readonly Fixture[], shee
   const goals = { ...history.current.goals };
   const ownPlayers = new Map<string, Record<string, PlayerAtClub>>();
   const ownGoals = new Map<CompetitionKey, Record<string, number>>();
+  const humans = new Set(humanClubIds(state));
+  // A save from before the album starts counting its squads the first day it plays.
+  const squads = { ...(history.current.squads ?? {}) };
+  const squadsSince = history.current.squads ? history.current.squadsSince : played[0]?.date;
+  const ownSquads = new Map<string, Record<string, SquadMark>>();
+  const squadOf = (clubId: string) => {
+    let own = ownSquads.get(clubId);
+    if (!own) ownSquads.set(clubId, (own = squads[clubId] = copyRecord(squads[clubId] ?? {})));
+    return own;
+  };
   const playersAt = (clubId: string) => {
     let own = ownPlayers.get(clubId);
     if (!own) ownPlayers.set(clubId, (own = players[clubId] = copyRecord(players[clubId] ?? {})));
@@ -55,6 +68,14 @@ export function recordMatches(state: GameState, played: readonly Fixture[], shee
         const scorer = atClub[id];
         if (scorer) atClub[id] = { ...scorer, goals: scorer.goals + 1 };
         scored[id] = (scored[id] ?? 0) + 1;
+      }
+      if (humans.has(clubId)) {
+        const squad = squadOf(clubId);
+        for (const player of eleven) squad[player.id] = [(squad[player.id]?.[0] ?? 0) + 1, squad[player.id]?.[1] ?? 0, roleOf(player)];
+        for (const id of scorers) {
+          const mark = squad[id];
+          if (mark) squad[id] = [mark[0], mark[1] + 1, mark[2]];
+        }
       }
       const mark = { season: state.season, date: fixture.date, competition, opponentId, home, goalsFor, goalsAgainst };
       const finance = state.finances[clubId];
@@ -91,7 +112,7 @@ export function recordMatches(state: GameState, played: readonly Fixture[], shee
       ...history,
       clubs,
       players,
-      current: { ...history.current, champions, goals },
+      current: { ...history.current, champions, goals, ...(ownSquads.size ? { squads, ...(squadsSince ? { squadsSince } : {}) } : {}) },
       coach: { ...history.coach, trophies },
     },
   };

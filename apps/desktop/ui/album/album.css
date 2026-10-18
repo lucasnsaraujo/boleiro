@@ -1,0 +1,1364 @@
+/* The career's album (mock design/mocks/history.html): a spread per season with the squad's stickers on
+   the left page and what the season left on the right, season tabs on the album's edge, title plates
+   that open their special page. Stickers are printed: white card and light foil on either theme. */
+
+.ab-book {
+  --light-foil: linear-gradient(135deg, #fff7d1 0%, #fffdf7 30%, #e2f3ea 55%, #fff4c2 80%, #fffdf7 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+/* ---------- The spread ---------- */
+.ab-spread {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: 560px;
+  border-radius: 8px;
+  box-shadow: var(--sh-page);
+}
+
+.ab-page {
+  position: relative;
+  min-width: 0;
+  background: var(--card);
+}
+
+.ab-page.is-left {
+  border-radius: 8px 0 0 8px;
+  padding: 22px 24px 18px 26px;
+  background:
+    linear-gradient(270deg, rgba(20, 35, 26, 0.09), rgba(20, 35, 26, 0) 28px),
+    var(--card);
+}
+
+.ab-page.is-right {
+  border-radius: 0 8px 8px 0;
+  padding: 22px 26px 34px 30px;
+  background:
+    linear-gradient(90deg, rgba(20, 35, 26, 0.09), rgba(20, 35, 26, 0) 28px),
+    var(--card);
+}
+
+.ab-leftpage {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ab-rightpage {
+  animation: ab-ink var(--t-slow) var(--e-out) both;
+}
+
+@keyframes ab-ink {
+  from {
+    opacity: 0;
+  }
+}
+
+.ab-pgno {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 11px;
+  color: var(--line-2);
+}
+
+.ab-pgno.is-right {
+  position: absolute;
+  right: 26px;
+  bottom: 12px;
+}
+
+/* Page head: the year in the club's colour, the club and what the season was. */
+.ab-ph {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.ab-year {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 44px;
+  line-height: 0.82;
+  letter-spacing: -0.03em;
+  color: var(--c);
+  text-shadow: 0 1px 0 rgba(20, 35, 26, 0.12);
+}
+
+[data-theme="dark"] .ab-year {
+  color: var(--ink);
+  -webkit-text-stroke: 0;
+  text-shadow: 0 2px 0 var(--c);
+}
+
+.ab-ph-text {
+  min-width: 0;
+}
+
+.ab-ph h2 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 19px;
+  line-height: 1.05;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ab-ph p {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.ab-count {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--mute);
+  white-space: nowrap;
+}
+
+.ab-count b {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.ab-count span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ab-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--light-foil);
+  box-shadow: 0 0 0 2px var(--yellow);
+  vertical-align: -1px;
+}
+
+.ab-note {
+  margin: 14px 4px 0;
+  font-size: 12px;
+}
+
+.ab-empty {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.ab-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 2px dotted var(--line-2);
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.ab-legend > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* ---------- Stickers ---------- */
+.ab-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 14px 8px;
+  margin: 18px 0 16px;
+}
+
+.ab-stk {
+  --rx: 0deg;
+  --ry: 0deg;
+  --lift: 0px;
+  --turn: 0deg;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 4px 4px 5px;
+  border-radius: 8px;
+  background: #fff;
+  color: #14231a;
+  text-align: center;
+  text-decoration: none;
+  box-shadow:
+    0 1px 0 rgba(20, 35, 26, 0.12),
+    0 0 0 1px rgba(20, 35, 26, 0.08),
+    0 6px 12px -7px rgba(20, 35, 26, 0.45);
+  transform: perspective(520px) translateY(var(--lift)) rotate(var(--turn)) rotateX(var(--rx)) rotateY(var(--ry));
+  transition:
+    transform 340ms var(--e-out),
+    box-shadow 340ms var(--e-out);
+}
+
+.ab-leftpage:not(.is-settled) .ab-stk {
+  animation: ab-stick 540ms var(--e-slap) calc(var(--i, 0) * 22ms + 280ms) both;
+}
+
+/* Each sticker drops from just above the page, a little turned, and is pressed flat with a small overshoot. */
+@keyframes ab-stick {
+  0% {
+    opacity: 0;
+    transform: perspective(520px) translateY(-18px) rotate(-7deg) scale(1.12);
+    box-shadow: 0 0 0 1px rgba(20, 35, 26, 0.06), 0 26px 26px -12px rgba(20, 35, 26, 0.3);
+  }
+  55% {
+    opacity: 1;
+  }
+}
+
+a.ab-stk:hover,
+.ab-stk.is-shiny:hover {
+  --lift: -4px;
+  --turn: -1.2deg;
+  box-shadow:
+    0 0 0 1px rgba(20, 35, 26, 0.1),
+    0 18px 20px -10px rgba(20, 35, 26, 0.5);
+}
+
+a.ab-stk:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 3px;
+}
+
+/* The corner lifts as the pointer comes over it: a sticker that could be peeled off the page. */
+a.ab-stk::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 18px;
+  height: 18px;
+  border-radius: 0 0 8px 0;
+  background: linear-gradient(135deg, transparent 50%, #e9dfc9 50%, #fffdf7 88%);
+  box-shadow: -2px -2px 4px -2px rgba(20, 35, 26, 0.35);
+  transform: scale(0);
+  transform-origin: 100% 100%;
+  transition: transform 300ms var(--e-slap);
+}
+
+a.ab-stk:hover::after {
+  transform: scale(1);
+}
+
+.ab-art {
+  position: relative;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--c);
+}
+
+.ab-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0 7px, rgba(0, 0, 0, 0.18) 7px 14px);
+}
+
+.ab-art b {
+  position: relative;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--ic);
+}
+
+.ab-art em {
+  position: absolute;
+  left: 4px;
+  top: 3px;
+  font-style: normal;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 9px;
+  color: var(--ic);
+  opacity: 0.85;
+}
+
+.ab-art .pos {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  width: 15px;
+  height: 15px;
+  font-size: 8.5px;
+  box-shadow: 0 0 0 1.5px #fff;
+}
+
+.ab-name {
+  display: -webkit-box;
+  height: 26px;
+  margin-top: 4px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-stretch: var(--tight);
+  font-weight: 800;
+  font-size: 11.5px;
+  line-height: 1.08;
+}
+
+.ab-nums {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 3px;
+  font-stretch: var(--narrow);
+  font-size: 9.5px;
+  color: #5c584b;
+  white-space: nowrap;
+}
+
+.ab-nums b {
+  font-weight: 900;
+  font-size: 10.5px;
+  color: #14231a;
+}
+
+/* Foil: idols, top scorers and award winners. A band of light follows the pointer across the art. */
+.ab-stk.is-shiny {
+  background: var(--light-foil);
+  box-shadow:
+    0 0 0 2.5px var(--yellow),
+    0 10px 16px -8px rgba(20, 35, 26, 0.5);
+}
+
+.ab-stk.is-shiny .ab-art {
+  box-shadow: inset 0 0 0 2px rgba(255, 204, 0, 0.9);
+}
+
+.ab-foil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at var(--mx, 30%) var(--my, 20%), rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 46%),
+    linear-gradient(115deg, rgba(255, 255, 255, 0) 30%, rgba(255, 246, 196, 0.45) 46%, rgba(196, 240, 222, 0.4) 54%, rgba(255, 255, 255, 0) 70%);
+  background-size:
+    100% 100%,
+    260% 100%;
+  background-position:
+    0 0,
+    var(--mx, 100%) 0;
+  mix-blend-mode: soft-light;
+  transition: background-position 200ms linear;
+}
+
+/* Once stuck, light sweeps across each foil sticker. */
+.ab-stk.is-shiny .ab-art::after {
+  content: "";
+  position: absolute;
+  inset: -20% -70%;
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0) 42%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 58%);
+  transform: translateX(-70%);
+  animation: ab-sheen 1100ms var(--e-in-out) calc(var(--i, 0) * 22ms + 820ms) both;
+}
+
+@keyframes ab-sheen {
+  to {
+    transform: translateX(70%);
+  }
+}
+
+.ab-stk.is-gone {
+  cursor: default;
+}
+
+/* ---------- Season tabs on the album's edge ---------- */
+.ab-years {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 70px;
+  padding-top: 30px;
+}
+
+.ab-years button {
+  position: relative;
+  height: 46px;
+  padding-left: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  border-radius: 0 10px 10px 0;
+  background: var(--paper-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 13px;
+  line-height: 1.05;
+  color: var(--ink-2);
+  transition:
+    transform var(--t-base) var(--e-out),
+    background-color var(--t-fast) ease-out;
+}
+
+.ab-years button small {
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 9.5px;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ab-years button:hover {
+  transform: translateX(3px);
+}
+
+.ab-years button[aria-current="page"] {
+  z-index: 1;
+  margin-left: -6px;
+  padding-left: 20px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow:
+    3px 3px 0 -1px var(--line),
+    inset 0 0 0 1px var(--line);
+  transform: none;
+}
+
+.ab-years button[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  border-radius: 2px;
+  background: var(--c);
+}
+
+/* ---------- The page turning over the spine ---------- */
+.ab-turn {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: visible;
+  perspective: 2400px;
+  perspective-origin: 50% 40%;
+}
+
+.ab-leaf {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 50%;
+  transform-origin: 0 50%;
+  transform-style: preserve-3d;
+}
+
+/* A blank album page: the faint outlines of its sticker slots. */
+.ab-leaf-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  background:
+    repeating-linear-gradient(90deg, rgba(20, 35, 26, 0) 0 26px, rgba(20, 35, 26, 0.06) 26px 27px, rgba(20, 35, 26, 0) 27px 72px),
+    repeating-linear-gradient(0deg, rgba(20, 35, 26, 0) 0 96px, rgba(20, 35, 26, 0.06) 96px 97px, rgba(20, 35, 26, 0) 97px 134px),
+    var(--card);
+  background-position:
+    0 0,
+    0 70px,
+    0 0;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.ab-leaf-face.is-front {
+  border-radius: 0 8px 8px 0;
+}
+
+.ab-leaf-face.is-back {
+  border-radius: 8px 0 0 8px;
+  transform: rotateY(180deg);
+}
+
+/* The light on the leaf: it darkens as it stands up from the page and brightens as it lies down. */
+.ab-leaf-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(20, 35, 26, 0.32), rgba(20, 35, 26, 0.04) 60%, rgba(255, 255, 255, 0.08));
+  animation: ab-leaf-light 760ms var(--e-in-out) both;
+}
+
+.ab-leaf-face.is-back::after {
+  background: linear-gradient(270deg, rgba(20, 35, 26, 0.32), rgba(20, 35, 26, 0.04) 60%, rgba(255, 255, 255, 0.08));
+}
+
+@keyframes ab-leaf-light {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.ab-turn.is-forward .ab-leaf {
+  animation:
+    ab-turn-forward 760ms var(--e-in-out) both,
+    ab-leaf-out 140ms ease-out 690ms both;
+}
+
+.ab-turn.is-back .ab-leaf {
+  animation:
+    ab-turn-back 760ms var(--e-in-out) both,
+    ab-leaf-out 140ms ease-out 690ms both;
+}
+
+@keyframes ab-turn-forward {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(-180deg);
+  }
+}
+
+@keyframes ab-turn-back {
+  from {
+    transform: rotateY(-180deg);
+  }
+  to {
+    transform: rotateY(0deg);
+  }
+}
+
+@keyframes ab-leaf-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* The leaf's shadow on the page it falls towards, deepest just before it lands. */
+.ab-cast {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  opacity: 0;
+}
+
+.ab-turn.is-forward .ab-cast {
+  left: 0;
+  border-radius: 8px 0 0 8px;
+  background: linear-gradient(270deg, rgba(20, 35, 26, 0.28), rgba(20, 35, 26, 0) 70%);
+  animation: ab-cast 760ms var(--e-in-out) both;
+}
+
+.ab-turn.is-back .ab-cast {
+  left: 50%;
+  border-radius: 0 8px 8px 0;
+  background: linear-gradient(90deg, rgba(20, 35, 26, 0.28), rgba(20, 35, 26, 0) 70%);
+  animation: ab-cast 760ms var(--e-in-out) both;
+}
+
+@keyframes ab-cast {
+  0% {
+    opacity: 0;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------- Right page ---------- */
+.ab-sec {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 18px 0 10px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.ab-page > .ab-sec:first-child,
+.ab-rightpage > section:first-child .ab-sec,
+.ab-page.is-right > section:first-child .ab-sec {
+  margin-top: 0;
+}
+
+.ab-sec span {
+  font-stretch: 100%;
+  font-weight: 500;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.ab-plates {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.ab-plate {
+  --tilt: 0deg;
+  position: relative;
+  width: 100%;
+  min-height: 86px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow: hidden;
+  border-radius: 7px;
+  background: var(--c);
+  color: var(--ic);
+  text-align: left;
+  box-shadow: var(--sh-sticker);
+  transform: translateY(0) rotate(var(--tilt));
+  transition:
+    transform 320ms var(--e-out),
+    box-shadow 320ms var(--e-out);
+  animation: ab-plate-in 520ms var(--e-slap) calc(var(--i, 0) * 70ms + 200ms) both;
+}
+
+li:nth-child(3n + 1) > .ab-plate {
+  --tilt: -0.8deg;
+}
+
+li:nth-child(3n + 2) > .ab-plate {
+  --tilt: 0.6deg;
+}
+
+.ab-plate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.07) 0 22px, rgba(255, 255, 255, 0) 22px 44px);
+}
+
+.ab-plate > * {
+  position: relative;
+}
+
+.ab-plate:hover {
+  transform: translateY(-3px) rotate(0deg);
+  box-shadow: var(--sh-lift);
+}
+
+@keyframes ab-plate-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) rotate(-4deg) scale(1.06);
+  }
+}
+
+.ab-plate-trophy {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--yellow);
+  color: var(--on-yellow);
+  font-size: 16px;
+  box-shadow: 0 2px 0 var(--yellow-d);
+}
+
+.ab-plate-year {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.ab-plate b {
+  margin-top: 5px;
+  font-weight: 800;
+  font-size: 12.5px;
+}
+
+.ab-plate small {
+  margin-top: 1px;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+/* Idols: foil for good, in the club's colours. */
+.ab-idols {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ab-idol {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 4px 7px;
+  border-radius: 8px;
+  background: var(--light-foil);
+  color: #14231a;
+  text-align: center;
+  box-shadow:
+    0 0 0 2.5px var(--yellow),
+    0 10px 16px -8px rgba(20, 35, 26, 0.5);
+  animation: ab-plate-in 560ms var(--e-slap) calc(var(--i, 0) * 80ms + 360ms) both;
+}
+
+.ab-idol:nth-child(1) {
+  transform: rotate(-2deg);
+}
+
+.ab-idol:nth-child(3) {
+  transform: rotate(1.5deg);
+}
+
+.ab-idol-art {
+  position: relative;
+  height: 84px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--c);
+  box-shadow: inset 0 0 0 2px rgba(255, 204, 0, 0.9);
+}
+
+.ab-idol-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0 7px, rgba(0, 0, 0, 0.2) 7px 14px);
+}
+
+.ab-idol-art b {
+  position: relative;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 40px;
+  color: var(--ic);
+}
+
+.ab-idol-name {
+  margin-top: 5px;
+  overflow: hidden;
+  font-stretch: var(--tight);
+  font-weight: 800;
+  font-size: 12.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ab-idol-sub {
+  font-size: 10.5px;
+  color: #5c584b;
+}
+
+.ab-page .history-records div,
+.ab-page .history-line {
+  min-height: 34px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.ab-page .history-records dt,
+.ab-page .history-records dd,
+.ab-page .history-line {
+  font-size: 13px;
+}
+
+/* ---------- A title's special page ---------- */
+.ab-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--veil);
+  perspective: 1800px;
+  animation: ab-ink var(--t-base) var(--e-out) both;
+}
+
+.ab-tp {
+  position: relative;
+  width: min(680px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding-bottom: 22px;
+  border-radius: 10px;
+  box-shadow: var(--sh-pop);
+  transform-origin: 0 50%;
+  animation: ab-tp-open 720ms var(--e-out) both;
+}
+
+/* The page swings open from its binding and settles. */
+@keyframes ab-tp-open {
+  from {
+    opacity: 0;
+    transform: rotateY(-62deg) translateX(-30px) translateY(16px) rotate(-1.5deg);
+  }
+  45% {
+    opacity: 1;
+  }
+}
+
+.ab-confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.ab-tp-band {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 18px;
+  padding: 24px 22px 22px 26px;
+  background: var(--c);
+  color: var(--ic);
+  overflow: hidden;
+  animation: ab-wipe 620ms var(--e-in-out) 120ms both;
+}
+
+.ab-tp-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.07) 0 26px, rgba(255, 255, 255, 0) 26px 52px);
+}
+
+.ab-tp-band > * {
+  position: relative;
+}
+
+@keyframes ab-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.ab-tp-trophy {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--yellow);
+  color: var(--on-yellow);
+  font-size: 34px;
+  box-shadow:
+    0 3px 0 var(--yellow-d),
+    0 0 0 4px rgba(255, 255, 255, 0.35);
+  animation: ab-slap 560ms var(--e-slap) 380ms both;
+}
+
+@keyframes ab-slap {
+  from {
+    opacity: 0;
+    transform: scale(1.7) rotate(-14deg);
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+.ab-tp-kicker {
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.ab-tp-head h2 {
+  margin-top: 4px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  outline: none;
+}
+
+.ab-tp-stamp {
+  padding: 4px 10px;
+  border: 3px solid currentColor;
+  border-radius: 6px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-8deg);
+  animation: ab-stamp 520ms var(--e-slap) 620ms both;
+}
+
+@keyframes ab-stamp {
+  from {
+    opacity: 0;
+    transform: rotate(-20deg) scale(2.2);
+  }
+  55% {
+    opacity: 1;
+  }
+}
+
+.ab-tp-x {
+  align-self: start;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.18);
+  color: inherit;
+  font-size: 16px;
+  transition: background-color var(--t-fast) ease-out;
+}
+
+.ab-tp-x:hover {
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.ab-tp-match {
+  padding: 20px 28px 4px;
+}
+
+.ab-tp-score {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  margin-top: 12px;
+}
+
+.ab-tp-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.ab-tp-side:last-child {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.ab-tp-side span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ab-tp-digits {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ab-tp-digits b {
+  min-width: 52px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--card);
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 44px;
+  animation: ab-slap 480ms var(--e-slap) 760ms both;
+}
+
+.ab-tp-digits b:last-child {
+  animation-delay: 900ms;
+}
+
+.ab-tp-digits i {
+  font-style: normal;
+  font-weight: 900;
+  font-size: 22px;
+  color: var(--mute);
+}
+
+.ab-tp-sub {
+  margin-top: 8px;
+  min-height: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.ab-tp-goals {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px 24px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 2px dotted var(--line-2);
+  font-size: 13px;
+}
+
+.ab-tp-goals li {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  animation: ab-rise 380ms var(--e-out) calc(var(--i, 0) * 70ms + 1000ms) both;
+}
+
+.ab-tp-goals li.is-home {
+  grid-column: 1;
+}
+
+.ab-tp-goals li.is-away {
+  grid-column: 2;
+  justify-content: flex-end;
+}
+
+.ab-tp-goals i {
+  font-size: 11px;
+  color: var(--mute);
+}
+
+.ab-tp-goals small {
+  color: var(--mute);
+}
+
+@keyframes ab-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.ab-tp-missing {
+  margin: 22px 28px 0;
+}
+
+.ab-tp-story {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 14px;
+  padding: 26px 28px 6px;
+}
+
+.ab-tp-story .note {
+  max-width: 290px;
+  font-size: 12.5px;
+  animation: ab-pin 520ms var(--e-slap) calc(var(--i, 0) * 130ms + 1150ms) both;
+}
+
+.ab-tp-story .note:nth-child(even) {
+  transform: rotate(0.8deg);
+}
+
+@keyframes ab-pin {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) rotate(-5deg) scale(1.08);
+  }
+}
+
+.ab-tp-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 28px 0;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+/* ---------- Trophy room ---------- */
+.ab-room-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.ab-room-count {
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.ab-room-count b {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 28px;
+  color: var(--ink);
+}
+
+.ab-room-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ab-room-filter button {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  background: var(--paper-2);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  transition:
+    background-color var(--t-fast) ease-out,
+    color var(--t-fast) ease-out;
+}
+
+.ab-room-filter button small {
+  font-weight: 800;
+  color: var(--mute);
+}
+
+.ab-room-filter button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--card);
+}
+
+.ab-room-filter button[aria-pressed="true"] small {
+  color: inherit;
+  opacity: 0.7;
+}
+
+.ab-room-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px;
+}
+
+.ab-room-grid .ab-plate {
+  min-height: 110px;
+  padding: 14px 16px;
+}
+
+.ab-room-grid .ab-plate-year {
+  font-size: 32px;
+}
+
+.ab-room.is-empty {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 24px 4px;
+  font-size: 14px;
+  color: var(--mute);
+}
+
+.ab-room-slot {
+  width: 96px;
+  height: 120px;
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  color: var(--line-2);
+}
+
+/* ---------- Records ---------- */
+.ab-counters {
+  list-style: none;
+  display: flex;
+  gap: 12px;
+  margin: 20px 0 8px;
+}
+
+.ab-counters li {
+  flex: 1;
+  display: grid;
+  justify-items: center;
+  padding: 14px 8px 10px;
+  border-radius: var(--r-m);
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--line);
+  animation: ab-plate-in 520ms var(--e-slap) calc(var(--i, 0) * 90ms + 120ms) both;
+}
+
+.ab-counters b {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 40px;
+  line-height: 1;
+}
+
+.ab-counters span {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.ab-records {
+  margin-top: 14px;
+}
+
+.ab-clubrec + .ab-clubrec {
+  margin-top: 22px;
+}
+
+.ab-clubrec h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.ab-clubrec-idols {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.ab-clubrec-idols .lbl {
+  margin-right: 6px;
+}
+
+.ab-spread.is-records {
+  min-height: 0;
+}
+
+/* ---------- Hot-seat: whose album ---------- */
+.history-seats {
+  align-self: center;
+  margin-bottom: 8px;
+}
+
+.history-seats button {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  transition:
+    background-color var(--t-base) var(--e-out),
+    color var(--t-base) var(--e-out);
+}
+
+.history-seats button.on {
+  background: var(--ink);
+  color: var(--card);
+}
+
+@media (max-width: 1180px) {
+  .ab-grid {
+    grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+    gap: 12px 6px;
+  }
+
+  .ab-idols {
+    gap: 10px;
+  }
+
+  .ab-idol-art {
+    height: 70px;
+  }
+
+  .ab-tp-side {
+    font-size: 15px;
+  }
+}
+
+/* The clubs the coach ran, when there were more than one: which club's seasons the album shows. */
+.ab-clubs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.ab-clubs button {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px 0 6px;
+  border-radius: var(--r-pill);
+  background: var(--paper-2);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.ab-clubs button[aria-current="page"] {
+  background: var(--ink);
+  color: var(--card);
+}
+
+.ab-eggs {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* A season's rarities sit small on its page; the Raridades tab prints them full size. */
+.ab-eggs li {
+  zoom: 0.6;
+}
+
+/* Less motion: every page, sticker and plate is already in place; nothing drops, sweeps or swings. */
+@media (prefers-reduced-motion: reduce) {
+  .ab-book *,
+  .ab-book *::before,
+  .ab-book *::after,
+  .ab-room *,
+  .ab-counters *,
+  .ab-veil,
+  .ab-veil *,
+  .ab-veil *::before,
+  .ab-veil *::after {
+    animation: none !important;
+  }
+}
