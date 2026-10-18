@@ -11,7 +11,10 @@ import type { Competition, Fixture, GameState, IsoDate } from "../gameState.js";
 import { matchSetup } from "../players/matchSetup.js";
 import { squadsByClub } from "../players/squadsByClub.js";
 
-/** A friendly the coach's club plays outside every competition; the host pays the visitor `fee`. */
+/**
+ * A friendly the coach's club plays outside every competition; the host pays the visitor `fee`. A farewell
+ * match for an idol (`farewellOf`) moves no money: the gate goes to the player.
+ */
 export type Friendly = {
   id: string;
   date: IsoDate;
@@ -19,6 +22,7 @@ export type Friendly = {
   awayId: string;
   fee: number;
   result: { homeGoals: number; awayGoals: number } | null;
+  farewellOf?: { playerId: string; name: string };
 };
 
 /** Why a friendly can't be booked: a date that isn't free for the coach, the other club busy, no such club, a host short of the fee, or a big club that won't travel to a small one. */
@@ -88,7 +92,7 @@ function datesWanted(state: BookingState, competition: Competition, clubId: stri
 }
 
 /** Whether a club has nothing on `date` or a day either side: no fixture, no stage its competitions may want it for, no friendly. */
-function isFree(state: BookingState, clubId: string, date: IsoDate): boolean {
+export function isFree(state: BookingState, clubId: string, date: IsoDate): boolean {
   const near = new Set([addDays(date, -REST_DAYS), date, addDays(date, REST_DAYS)]);
   if (state.fixtures.some((f) => near.has(f.date) && (f.homeId === clubId || f.awayId === clubId))) return false;
   if ((state.friendlies ?? []).some((f) => near.has(f.date) && (f.homeId === clubId || f.awayId === clubId))) return false;
@@ -187,13 +191,19 @@ export function playFriendlies(state: GameState, date: IsoDate): { state: GameSt
     const clash = state.fixtures.some((f) => f.date === date && [f.homeId, f.awayId].some((id) => id === friendly.homeId || id === friendly.awayId));
     const home = finances[friendly.homeId];
     const isGone = !home || !finances[friendly.awayId] || !state.clubs[friendly.homeId] || !state.clubs[friendly.awayId];
-    const reason: CallOffReason | null = isGone ? "club" : clash ? "fixture" : home.cash < friendly.fee ? "cash" : null;
+    // A farewell moves no money, so a club in the red still plays it.
+    const reason: CallOffReason | null = isGone ? "club" : clash ? "fixture" : !friendly.farewellOf && home.cash < friendly.fee ? "cash" : null;
     if (reason || !home) {
       events.push({ type: "friendlyCalledOff", friendly, reason: reason ?? "club" });
       done.set(friendly.id, null);
       continue;
     }
     const played = { ...friendly, result: playFriendly(state, friendly) };
+    if (friendly.farewellOf) {
+      events.push({ type: "friendlyPlayed", friendly: played, gate: 0 });
+      done.set(friendly.id, played);
+      continue;
+    }
     const crowd = Math.round(FRIENDLY_DEMAND * attendance(state, home, friendly.homeId, friendly.awayId));
     const gate = Math.round(crowd * home.ticketPrice);
     bookMoneyInDraft(finances, friendly.homeId, { revenue: "tickets", amount: gate });

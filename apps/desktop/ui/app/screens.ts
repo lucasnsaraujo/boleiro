@@ -24,6 +24,8 @@ export const SCREEN_PATHS = [
   "/awards",
   "/assistant",
   "/national-team",
+  "/moment",
+  "/trajectory",
 ] as const;
 
 export type ScreenPath = (typeof SCREEN_PATHS)[number];
@@ -40,7 +42,7 @@ export const NAV = [
   { id: "times", label: "Times", icon: "t-shirt", key: "F5", path: "/hub", paths: ["/finances", "/squad", "/newspaper", "/chemistry", "/assistant", "/sponsors", "/national-team"] },
   { id: "busca", label: "Busca", icon: "magnifying-glass", key: "F6", path: "/market", paths: ["/club"] },
   { id: "tecnicos", label: "Técnicos", icon: "chalkboard-teacher", key: "F7", path: "/coaches", paths: ["/offers"] },
-  { id: "historico", label: "Histórico", icon: "book-open-text", key: "F8", path: "/history", paths: ["/awards"] },
+  { id: "historico", label: "Histórico", icon: "book-open-text", key: "F8", path: "/history", paths: ["/awards", "/trajectory"] },
   { id: "opcoes", label: "Opções", icon: "gear-six", key: "F9", path: "/options", paths: ["/saves"] },
 ] as const satisfies readonly NavItem[];
 
@@ -53,8 +55,8 @@ export function navIndexOf(pathname: string): number {
   return NAV.findIndex(({ path, paths }) => path === pathname || paths.some((other) => pathname === other || pathname.startsWith(`${other}/`)));
 }
 
-// The start menu, a new game, the live round, the turning points and the hot-seat hand-off fill the window on their own.
-const WITHOUT_BAR: ReadonlySet<string> = new Set(["/", "/new-game", "/round", "/season-end", "/sacked", "/turn"]);
+// The start menu, a new game, the live round, the turning points, the career moments and the hot-seat hand-off fill the window on their own.
+const WITHOUT_BAR: ReadonlySet<string> = new Set(["/", "/new-game", "/round", "/season-end", "/sacked", "/turn", "/moment"]);
 
 /** Whether the green bar sits over the screen: only inside an open game, and never over a moment that fills the window. */
 export function showsBar(pathname: string, isGameOpen: boolean): boolean {

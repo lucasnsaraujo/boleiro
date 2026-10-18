@@ -1,0 +1,43 @@
+/* Tributes: an album spread that opens over its spine, the framed shirt, the stand and the plaque. */
+
+.mo-tribute { background: var(--paper) var(--paper-tex) center / cover; color: var(--ink); perspective: 1600px; }
+.mo-tribute .tr-spread { position: absolute; inset: 16px 16px 70px; display: grid; grid-template-columns: 1fr 1fr; }
+.mo-tribute .tr-pl, .mo-tribute .tr-pr { position: relative; overflow: hidden; padding: 22px 26px; display: flex; flex-direction: column; box-shadow: var(--sh-page); }
+.mo-tribute .tr-pl { border-radius: 8px 0 0 8px; background: linear-gradient(270deg, rgba(20,35,26,.09), rgba(20,35,26,0) 28px), var(--card); transform-origin: 100% 50%; animation: tr-open-l 700ms var(--e-out) 0ms both; }
+.mo-tribute .tr-pr { border-radius: 0 8px 8px 0; background: linear-gradient(90deg, rgba(20,35,26,.09), rgba(20,35,26,0) 28px), var(--card); padding-left: 32px; transform-origin: 0 50%; animation: tr-open-r 900ms var(--e-out) 120ms both; }
+@keyframes tr-open-l { from { transform: rotateY(30deg); opacity: 0; } }
+@keyframes tr-open-r { from { transform: rotateY(-100deg); } }
+.mo-tribute .tr-kind { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--mute); }
+.mo-tribute .tr-kind i { font-size: 16px; }
+.mo-tribute h2 { font-stretch: var(--wide); font-weight: 900; font-size: 28px; line-height: 1; letter-spacing: -.02em; margin-top: 8px; }
+.mo-tribute .tr-sub { font-size: 13px; line-height: 1.45; color: var(--ink-2); margin-top: 8px; max-width: 520px; }
+.mo-tribute .tr-body { margin-top: 18px; height: 340px; display: grid; grid-template-columns: 290px 1fr; gap: 24px; }
+.mo-tribute .tr-frame { position: relative; background: #2A1E14; padding: 14px; border-radius: 3px; box-shadow: inset 0 0 0 2px #4A3626, inset 0 0 0 4px #1A120C, 0 16px 26px -14px rgba(20,35,26,.7); animation: tr-hang 900ms var(--e-slap) 500ms both; transform-origin: 50% 0; }
+@keyframes tr-hang { from { opacity: 0; transform: translateY(-50px) rotate(-4deg); } 60% { opacity: 1; transform: rotate(1.5deg); } to { transform: rotate(0); } }
+.mo-tribute .tr-frame .mat { height: 100%; background: #F4EFE3; box-shadow: inset 0 2px 6px rgba(0,0,0,.35); display: grid; place-items: center; }
+.mo-tribute .tr-frame svg { width: 216px; }
+.mo-tribute .tr-facts { align-self: center; display: grid; gap: 10px; }
+.mo-tribute .tr-facts .nst b { font-size: 30px; }
+.mo-tribute .tr-cause { margin-top: auto; padding-top: 10px; border-top: 2px dotted var(--line-2); }
+
+.mo-tribute .tr-band { position: relative; margin: 16px -32px 0 -32px; height: 172px; background: #1A0B0C; overflow: hidden; }
+.mo-tribute .tr-mos { position: absolute; left: 0; top: 0; width: 100%; height: 102px; }
+.mo-tribute .tr-crowd { position: absolute; left: 0; top: 102px; width: 100%; height: 70px; }
+.mo-tribute .tr-ring { position: absolute; right: 26px; top: 26px; width: 118px; height: 118px; border-radius: 50%; background: rgba(251,247,236,.96); color: #14231A; display: grid; place-items: center; text-align: center; box-shadow: 0 10px 18px -8px rgba(0,0,0,.6); z-index: 2; animation: mo-up 500ms var(--e-out) 2300ms both; }
+.mo-tribute .tr-ring svg { position: absolute; inset: 6px; transform: rotate(-90deg); }
+.mo-tribute .tr-ring circle.f { stroke-dasharray: 315; stroke-dashoffset: 315; animation: tr-ring 1800ms linear 2700ms both; }
+@keyframes tr-ring { to { stroke-dashoffset: 0; } }
+.mo-tribute .tr-ring b { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: 1; font-variant-numeric: tabular-nums; }
+.mo-tribute .tr-ring small { display: block; font-size: 10px; font-weight: 700; color: #5C584B; margin-top: 2px; line-height: 1.15; }
+.mo-tribute .tr-plq { margin: 20px auto 0; width: 440px; padding: 18px 30px 16px; animation: tr-plaque 760ms var(--e-out) 4400ms both; }
+@keyframes tr-plaque { from { opacity: 0; transform: translateY(30px) rotate(-2deg); } }
+.mo-tribute .tr-plq .eng { clip-path: inset(0 100% 0 0); animation: tr-engrave 1100ms var(--e-in-out) 4800ms both; }
+@keyframes tr-engrave { to { clip-path: inset(0 0 0 0); } }
+.mo-tribute .tr-plq .crest { margin: 0 auto 6px; display: block; }
+.mo-tribute .tr-plq b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 15px; letter-spacing: .02em; text-transform: uppercase; }
+.mo-tribute .tr-plq span { display: block; font-size: 12.5px; line-height: 1.45; margin-top: 6px; }
+.mo-tribute .tr-plq small { display: block; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; margin-top: 8px; font-weight: 700; opacity: .8; }
+.mo-tribute .tr-res { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; animation: mo-up 520ms var(--e-out) 5600ms both; }
+.mo-tribute .tr-res > div { padding: 10px 12px; border-radius: var(--r-m); box-shadow: inset 0 0 0 1.5px var(--line); font-size: 12px; color: var(--mute); line-height: 1.4; }
+.mo-tribute .tr-res > div:only-child { grid-column: 1 / -1; }
+.mo-tribute .tr-res b { display: flex; align-items: center; gap: 7px; font-stretch: var(--semi); font-weight: 900; font-size: 15px; color: var(--ink); margin-bottom: 2px; }

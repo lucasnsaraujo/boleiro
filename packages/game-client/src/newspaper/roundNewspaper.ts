@@ -45,6 +45,7 @@ const KICKERS: Record<NewsKind, string> = {
   award: "Prêmios",
   record: "Recorde",
   egg: "Almanaque",
+  career: "Carreira",
 };
 // An event's story goes under its topic's section; a story saved before topics, under "Bastidores".
 const SECTIONS: Record<EventTopic, string> = {
@@ -66,7 +67,7 @@ const SIDE_STORIES = 8;
 // The results row holds the round's ten games of a 20-club league.
 const RESULTS = 10;
 // The almanac's rare finds first, then the coach's own news, then the beats in the mock's order.
-const SIDE_ORDER: readonly NewsKind[] = ["award", "record", "upset", "controversy", "var", "sacking", "signing", "rivalry", "event"];
+const SIDE_ORDER: readonly NewsKind[] = ["career", "award", "record", "upset", "controversy", "var", "sacking", "signing", "rivalry", "event"];
 
 const isAbout = (item: NewsItem, clubId: string | null) => clubId !== null && item.clubIds.includes(clubId);
 

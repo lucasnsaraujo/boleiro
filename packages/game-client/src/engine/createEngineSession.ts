@@ -33,6 +33,8 @@ import { bookFriendly, type FriendlyAnswer } from "@boleiro/engine/sim/friendlie
 import { requestStadiumWorks, type WorksAnswer } from "@boleiro/engine/sim/stadium/stadiumWorks";
 import { promoteProspect, releaseProspect, sellProspect, type ProspectRefusal, type ProspectSold } from "@boleiro/engine/sim/youth/moveProspect";
 import { seedGameSponsors, signSponsorOffer } from "@boleiro/engine/sim/sponsors/sponsorDeals";
+import { closeMoment, nextMoment } from "@boleiro/engine/sim/moments/careerMoments";
+import { retireCoach } from "@boleiro/engine/sim/moments/retireCoach";
 import { eventsOfWaitingCoach, hotSeatViewOf, isHumanMatchDay, type HotSeatView } from "../hub/hotSeat.js";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
 import { isCoachMatchDay, playToMatchDay, stopReason, type StopReason } from "../hub/playToMatchDay.js";
@@ -53,6 +55,8 @@ import { matchDayPlan, type MatchDayPlan } from "../round/matchDayPlan.js";
 import { newspaperEditions, newspaperOf, type Edition, type EditionTitle } from "../newspaper/roundNewspaper.js";
 import { betStickerOf, sponsorsPageOf, type BetSticker, type SponsorsPage } from "../sponsors/sponsorsPage.js";
 import { nationalTeamPage, type NationalTeamPage } from "../nationalTeam/nationalTeamPage.js";
+import { momentById, momentViewOf, type MomentView } from "../moments/momentView.js";
+import { trajectoryOf, type Trajectory } from "../moments/trajectoryOf.js";
 import { readStoredSave, splitGame, writeSessionSave, writeSessionShards, type SaveShards, type SeatParts, type SplitGame, type StoredSave } from "./sessionSave.js";
 
 /** What a new game is started with; the app's new-game screen leaves `season` out, for the first season. */
@@ -151,6 +155,10 @@ type CommandFields = {
   setCallUp: { refs: readonly string[] };
   /** The coach in the seat found an easter egg on the screen (a word typed). */
   findEgg: { eggId: string };
+  /** The coach in the seat saw a career moment through: the one by `id`, or the next one when left out. */
+  closeMoment: { id?: string };
+  /** The coach in the seat retires: he leaves his club for good and his farewell waits for him. */
+  retireCoach: Record<never, never>;
 };
 
 /** What a move on a kid of the academy answers: null when it went through, and the sale it made. */
@@ -210,6 +218,8 @@ export type CommandResults = {
   declineNationalJob: undefined;
   setCallUp: undefined;
   findEgg: EggFound | null;
+  closeMoment: undefined;
+  retireCoach: undefined;
 };
 
 // guess: a season's busiest stretch gives the coach a few dozen lines; older ones are no longer news.
@@ -663,6 +673,16 @@ export function createEngineSession(files: GameFiles) {
       addNews(inboxLines(before, found.state, [found.event]));
       return found.event;
     },
+    /** Refused during a round, whose final whistle rebuilds the game from the kick-off copy and would undo it. */
+    closeMoment({ id }) {
+      const game = betweenDays("a moment can't be closed");
+      state = { ...game, history: { ...game.history, coach: closeMoment(game.history.coach, game.date, id) } };
+    },
+    /** His requests were for the board he leaves, so they go with him. */
+    retireCoach() {
+      state = retireCoach(betweenDays("the coach can't retire"));
+      desk = { ...desk, pending: [] };
+    },
     answerEvent({ choice }) {
       const before = betweenDays("an event can't be answered");
       if (!before.coachClubId) throw new Error("a coach without a club has no events to answer");
@@ -820,6 +840,23 @@ export function createEngineSession(files: GameFiles) {
     /** The album of a human coach: `seat` 0 is the one in the seat, then the waiting ones in turn order. */
     album(seat?: number): Album {
       return albumOf(current(), seat);
+    },
+    /** The career moment the seated coach sees next, at most one a day; null when none is waiting or a round is under way. */
+    moment(): MomentView | null {
+      const game = current();
+      if (live) return null;
+      const next = nextMoment(game.history.coach, game.date);
+      return next && momentViewOf(game, next);
+    },
+    /** A moment of the seated coach's career by id, waiting or already shown, to play it again; null when there is none. */
+    momentView(id: string): MomentView | null {
+      const game = current();
+      const moment = momentById(game, id);
+      return moment && momentViewOf(game, moment);
+    },
+    /** The career timeline of a human coach: `seat` 0 is the one in the seat, then the waiting ones in turn order. */
+    trajectory(seat?: number): Trajectory {
+      return trajectoryOf(current(), seat);
     },
     /** The round's newspaper of `date` as the seated coach reads it, the latest when left out; null before the first edition. */
     newspaper(date?: IsoDate): Edition | null {

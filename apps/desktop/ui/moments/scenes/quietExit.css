@@ -1,0 +1,29 @@
+/* A quiet exit: few elements on purpose, slow and quiet motion. The letter stays paper white in either theme. */
+
+.mo-quiet { background: var(--paper-2); color: var(--ink); }
+.mo-quiet .qe-desk { position: absolute; inset: 0; background: var(--paper) var(--paper-tex) center / cover; opacity: 0; animation: qe-fade 900ms var(--e-in-out) 0ms both; }
+@keyframes qe-fade { to { opacity: 1; } }
+.mo-quiet .qe-letter { position: absolute; left: 196px; top: 62px; width: 470px; padding: 40px 46px 34px; background: #FFFEFA; color: #23251F; transform: rotate(-1.4deg); box-shadow: 0 0 0 1px rgba(20,35,26,.08), 0 24px 40px -24px rgba(20,35,26,.45); animation: qe-settle 1200ms var(--e-out) 200ms both; }
+.mo-quiet .qe-letter::before, .mo-quiet .qe-letter::after { content: ''; position: absolute; left: 0; right: 0; height: 1px; background: rgba(20,35,26,.045); box-shadow: 0 1px 0 rgba(255,255,255,.8); }
+.mo-quiet .qe-letter::before { top: 33%; }
+.mo-quiet .qe-letter::after { top: 66%; }
+@keyframes qe-settle { from { opacity: 0; transform: translateY(12px) rotate(-.4deg); } }
+.mo-quiet .qe-letter .hd { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #5C584B; }
+.mo-quiet .qe-letter p { font-size: 15px; line-height: 1.6; margin-top: 18px; }
+.mo-quiet .qe-letter .ln { animation: qe-ink 900ms var(--e-in-out) calc(var(--d) * 1ms) both; }
+@keyframes qe-ink { from { opacity: 0; } }
+.mo-quiet .qe-sig { display: block; margin-top: 18px; }
+.mo-quiet .qe-sig path { stroke-dasharray: 900; stroke-dashoffset: 900; animation: qe-sign 1300ms var(--e-in-out) 2900ms both; }
+@keyframes qe-sign { to { stroke-dashoffset: 0; } }
+.mo-quiet .qe-letter .nm { font-size: 12px; color: #5C584B; animation: qe-ink 600ms var(--e-in-out) 3900ms both; }
+.mo-quiet .qe-side { position: absolute; left: 740px; top: 86px; width: 340px; animation: qe-ink 900ms var(--e-in-out) 3600ms both; }
+.mo-quiet .qe-side .when { margin-bottom: 10px; }
+.mo-quiet .qe-side dl > div { display: grid; grid-template-columns: auto 1fr; font-size: 13px; border-bottom: 1px solid var(--rule); }
+.mo-quiet .qe-side dt { color: var(--mute); padding: 7px 0; }
+.mo-quiet .qe-side dd { font-weight: 700; padding: 7px 0 7px 14px; text-align: right; }
+.mo-quiet .qe-foot { position: absolute; left: 740px; top: 300px; width: 310px; padding: 12px 14px; background: #FBF7EC; color: #1A1A17; transform: rotate(.8deg); box-shadow: 0 0 0 1px rgba(20,35,26,.08), 0 10px 18px -12px rgba(20,35,26,.4); animation: qe-ink 900ms var(--e-in-out) 4200ms both; }
+.mo-quiet .qe-foot small { display: flex; justify-content: space-between; font-size: 9.5px; color: #6B675B; border-bottom: 1px solid #1A1A17; padding-bottom: 4px; }
+.mo-quiet .qe-foot .it { padding: 6px 0; border-bottom: 1px solid #DDD5BF; font-size: 11px; line-height: 1.35; color: #4A473E; }
+.mo-quiet .qe-foot .it:last-child { border-bottom: 0; }
+.mo-quiet .qe-foot .it b { display: block; font-stretch: 80%; font-weight: 900; font-size: 13px; color: #1A1A17; }
+.mo-quiet .qe-cause { position: absolute; left: 204px; top: 560px; width: 470px; animation: qe-ink 900ms var(--e-in-out) 4400ms both; }

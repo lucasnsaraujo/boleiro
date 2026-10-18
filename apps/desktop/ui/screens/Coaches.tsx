@@ -79,6 +79,7 @@ export function Coaches() {
   const [pickedKey, setPickedKey] = useState<string | null>(null);
   const [picked, setPicked] = useState<CoachProfile | null>(null);
   const [isResigning, setResigning] = useState(false);
+  const [isRetiring, setRetiring] = useState(false);
   const [note, setNote] = useState<{ id: number; text: string; isError: boolean } | null>(null);
   const [stamped, setStamped] = useState<string | null>(null);
   const [isBusy, setBusy] = useState(false);
@@ -170,6 +171,17 @@ export function Coaches() {
     }
   }
 
+  async function retire() {
+    setBusy(true);
+    try {
+      await engine.apply({ type: "retireCoach" });
+      navigate("/moment");
+    } catch {
+      say("A carta de despedida não saiu. Tente de novo.", true);
+      setBusy(false);
+    }
+  }
+
   const stepper = page.seasons.length > 1 && page.season !== null && (
     <div className="coaches-season" aria-label="Temporada do ranking">
       <button className="coaches-season-step" aria-label="Temporada anterior" disabled={page.seasons[0] === page.season} onClick={() => setSeason((page.season ?? 0) - 1)}>
@@ -215,7 +227,7 @@ export function Coaches() {
               state={state}
               face={face}
               stamped={stamped}
-              canApply={!isRoundUnderWay && !isBusy}
+              canApply={!isRoundUnderWay && !isBusy && !state.coach.retiredOn}
               onApply={(job) => void apply(job)}
               onWait={() => void wait.play()}
               isWaiting={wait.isPlaying}
@@ -230,13 +242,16 @@ export function Coaches() {
         isYou={profile.key === page.you.key}
         face={face}
         canResign={!isRoundUnderWay && !isBusy}
+        hasRetired={state.coach.retiredOn !== undefined}
         onResign={() => setResigning(true)}
+        onRetire={() => setRetiring(true)}
         onBackToYou={() => setPickedKey(null)}
         onJobs={() => show("vagas")}
       />
       {isResigning && state.coachClubId && (
         <ResignQuestion club={face(state.coachClubId)} reputation={state.coach.reputation} season={state.season} isBusy={isBusy} onResign={() => void resign()} onStay={() => setResigning(false)} />
       )}
+      {isRetiring && <RetireQuestion isBusy={isBusy} onRetire={() => void retire()} onStay={() => setRetiring(false)} />}
       {note && (
         <p key={note.id} className={note.isError ? "toast stk error" : "toast stk"} role="status">
           <i className={note.isError ? "ph-bold ph-warning" : "ph-bold ph-check-circle"} aria-hidden="true" />
@@ -547,7 +562,9 @@ function ProfileCard({
   isYou,
   face,
   canResign,
+  hasRetired,
   onResign,
+  onRetire,
   onBackToYou,
   onJobs,
 }: {
@@ -556,7 +573,10 @@ function ProfileCard({
   isYou: boolean;
   face: Face;
   canResign: boolean;
+  /** Whether the coach in the seat has ended his career, at a club or out of work. */
+  hasRetired: boolean;
   onResign: () => void;
+  onRetire: () => void;
   onBackToYou: () => void;
   onJobs: () => void;
 }) {
@@ -565,7 +585,7 @@ function ProfileCard({
   const stints = [...profile.stints].reverse();
   const titlesByKey = new Map<string, number[]>();
   for (const title of profile.titles) titlesByKey.set(title.competition, [...(titlesByKey.get(title.competition) ?? []), title.season]);
-  const isRetired = profile.stints.at(-1)?.left === "retired";
+  const isRetired = (isYou && hasRetired) || profile.stints.at(-1)?.left === "retired";
   const isInvented = !profile.isHuman && !profile.isReal && !profile.formerPlayer;
   const formerClub = profile.formerPlayer ? face(profile.formerPlayer.clubId) : null;
   const who = [profile.nationality && nationalityName(profile.nationality), profile.age !== null && `${profile.age} anos`].filter(Boolean).join(" · ");
@@ -712,16 +732,24 @@ function ProfileCard({
       </section>
       <div className="coaches-profile-acts">
         {isYou ? (
-          profile.clubId ? (
-            <button className="btn sm no" onClick={onResign} disabled={!canResign}>
-              <i className="ph-bold ph-door-open" aria-hidden="true" />
-              Pedir demissão
-            </button>
-          ) : (
-            <button className="btn sm go" onClick={onJobs}>
-              <i className="ph-bold ph-briefcase" aria-hidden="true" />
-              Ver vagas
-            </button>
+          isRetired ? null : (
+            <>
+              {profile.clubId ? (
+                <button className="btn sm no" onClick={onResign} disabled={!canResign}>
+                  <i className="ph-bold ph-door-open" aria-hidden="true" />
+                  Pedir demissão
+                </button>
+              ) : (
+                <button className="btn sm go" onClick={onJobs}>
+                  <i className="ph-bold ph-briefcase" aria-hidden="true" />
+                  Ver vagas
+                </button>
+              )}
+              <button className="btn sm flat" onClick={onRetire} disabled={!canResign}>
+                <i className="ph-bold ph-flag-banner" aria-hidden="true" />
+                Encerrar carreira
+              </button>
+            </>
           )
         ) : (
           <button className="btn sm flat" onClick={onBackToYou}>
@@ -731,6 +759,47 @@ function ProfileCard({
         )}
       </div>
     </aside>
+  );
+}
+
+function RetireQuestion({ isBusy, onRetire, onStay }: { isBusy: boolean; onRetire: () => void; onStay: () => void }) {
+  const title = useDialogFocus<HTMLHeadingElement>(true, { isModal: true });
+  return createPortal(
+    <div className="coaches-veil">
+      <section
+        className="page coaches-resign"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="coaches-retire-title"
+        aria-describedby="coaches-retire-what"
+        onKeyDown={(event) => {
+          if (event.key !== "Escape") return;
+          event.stopPropagation();
+          if (!isBusy) onStay();
+        }}
+      >
+        <div className="coaches-resign-letter" aria-hidden="true">
+          <i className="ph-bold ph-flag-banner" />
+        </div>
+        <h2 id="coaches-retire-title" ref={title} tabIndex={-1}>
+          Encerrar a carreira?
+        </h2>
+        <ul id="coaches-retire-what" className="coaches-resign-list">
+          <li>Você deixa o clube e não volta a treinar ninguém.</li>
+          <li>Nenhum clube faz proposta daqui pra frente.</li>
+          <li>A despedida passa a carreira inteira pelo álbum, com as homenagens dos ex-clubes.</li>
+        </ul>
+        <div className="coaches-resign-acts">
+          <button className="btn no" onClick={onRetire} disabled={isBusy}>
+            Encerrar carreira
+          </button>
+          <button className="btn flat" onClick={onStay} disabled={isBusy}>
+            Continuar treinando
+          </button>
+        </div>
+      </section>
+    </div>,
+    document.body,
   );
 }
 

@@ -59,7 +59,7 @@ export type PendingEvent = EventRecord & {
   questions?: PendingQuestion[];
 };
 
-export type NewsKind = "event" | "match" | "signing" | "sacking" | "upset" | "rivalry" | "var" | "controversy" | "award" | "record" | "egg";
+export type NewsKind = "event" | "match" | "signing" | "sacking" | "upset" | "rivalry" | "var" | "controversy" | "award" | "record" | "egg" | "career";
 
 /**
  * One story for the round's newspaper. `clubIds` are the clubs it is about, the main one first; an

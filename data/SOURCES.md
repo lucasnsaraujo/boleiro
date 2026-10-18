@@ -35,7 +35,7 @@ All files are recompressed losslessly with `oxipng`, which keeps the folder at a
 
 ## assets/competitions/
 
-The logos of FIFA's two club cups, which the app shows on their tables. Like the crests, they ship inside the app and are not licensed.
+The logos of FIFA's two club cups, which the app shows on their tables, and of the Brazilian and CONMEBOL competitions the title celebrations show on the trophy. Like the crests, they ship inside the app and are not licensed.
 
 | File | Source |
 |---|---|
@@ -43,6 +43,14 @@ The logos of FIFA's two club cups, which the app shows on their tables. Like the
 | `club-world-cup.webp` | The FIFA Club World Cup 2025 logo, [File:2025_FIFA_Club_World_Cup.svg](https://commons.wikimedia.org/wiki/File:2025_FIFA_Club_World_Cup.svg) on Wikimedia Commons (credited to FIFA), its 500 px render fetched on 2026-10-16. The game calls the cup Super Mundial. |
 
 Both were scaled to 160 px wide and saved as WebP with `cwebp -q 90`.
+
+| File | Source |
+|---|---|
+| `serie-a.svg` | [File:Campeonato_Brasileiro_Série_A_logo_(2024).svg](https://commons.wikimedia.org/wiki/File:Campeonato_Brasileiro_S%C3%A9rie_A_logo_(2024).svg) on Wikimedia Commons, as the approved mocks (`design/mocks/SOURCES.md`) fetched it. |
+| `serie-b.svg` | `Campeonato_Brasileiro_Série_B_logo_(2025).svg` on Wikimedia Commons, as above. |
+| `copa-do-brasil.svg` | `Copa_do_Brasil_logo_(2018).svg` on Wikimedia Commons, as above. |
+| `libertadores.svg` | `Conmebol-libertadores.svg` on Wikimedia Commons, as above. |
+| `sudamericana.svg` | `Conmebol-sudamericana.svg` on Wikimedia Commons, as above. |
 
 ## players.csv
 
