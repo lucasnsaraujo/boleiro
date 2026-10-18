@@ -42,9 +42,9 @@ const PLAN_KEY = /^[a-z0-9]$/;
 /** Whether a key can be a plan key: one lowercase letter or digit. */
 export const isPlanKey = (key: string): boolean => PLAN_KEY.test(key);
 
-/** The match plan of the human coach who runs `clubId`, in the seat or waiting; none for an AI club or a coach who never set one. */
-export function planOfClub(state: Pick<GameState, "coachClubId" | "coach" | "waitingCoaches">, clubId: string): MatchPlan | undefined {
-  if (clubId === state.coachClubId) return state.coach.matchPlan;
+/** The match plan of the human coach who runs `clubId`, his club or his national team, in the seat or waiting; none for an AI club or a coach who never set one. */
+export function planOfClub(state: Pick<GameState, "coachClubId" | "coach" | "waitingCoaches" | "nations">, clubId: string): MatchPlan | undefined {
+  if (clubId === state.coachClubId || clubId === state.nations?.job?.teamId) return state.coach.matchPlan;
   return waitingCoachesOf(state).find((waiting) => waiting.clubId === clubId)?.coach.matchPlan;
 }
 

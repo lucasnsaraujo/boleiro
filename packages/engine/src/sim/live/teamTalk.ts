@@ -4,6 +4,7 @@ import type { Fixture, GameState } from "../gameState.js";
 import { clubMood } from "../morale/clubMood.js";
 import { rivalsOf } from "../morale/rivalsOf.js";
 import { isClassico } from "../rivalries/rivalryOf.js";
+import { seatedSideToday } from "../nations/nationalFixtures.js";
 import type { LiveDay } from "./liveDay.js";
 
 /** The tones of a dressing-room talk: ask for calm, show faith, demand more, praise. */
@@ -58,10 +59,11 @@ export const kickOffMoment = (state: GameState, fixture: Pick<Fixture, "homeId" 
   isDerby: isDerbyFor(state, fixture, clubId),
 });
 
-/** The talk each human coach gives before kick-off today, by his club: the seated coach's and each waiting coach's. */
+/** The talk each human coach gives before kick-off today, by his side: the seated coach's to the side he runs today, and each waiting coach's. */
 export function kickOffTalksOf(state: GameState, decisions: DayDecisions): Record<string, TalkTone> {
   const talks: Record<string, TalkTone> = {};
-  if (state.coachClubId && decisions.talk) talks[state.coachClubId] = decisions.talk;
+  const seated = seatedSideToday(state);
+  if (seated && decisions.talk) talks[seated] = decisions.talk;
   waitingCoachesOf(state).forEach((waiting, index) => {
     const talk = decisions.waiting?.[index]?.talk;
     if (waiting.clubId && talk) talks[waiting.clubId] = talk;
@@ -83,7 +85,8 @@ export function withTalkMorale(state: GameState, live: LiveDay): GameState {
   for (const open of [live.coachMatch, ...(live.waitingMatches ?? [])]) for (const [clubId, talk] of Object.entries(open?.halfTimeTalks ?? {})) add(clubId, talk.morale);
   let next = state;
   for (const [clubId, morale] of moved) {
-    if (!morale) continue;
+    // A national team keeps no mood between its matches: a talk to it moves only that match.
+    if (!morale || !(clubId in next.clubs)) continue;
     const mood = clubMood(next, clubId);
     next = { ...next, mood: { ...next.mood, [clubId]: { ...mood, squad: Math.min(100, Math.max(0, mood.squad + morale)) } } };
   }

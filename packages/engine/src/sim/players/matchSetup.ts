@@ -1,6 +1,7 @@
 import type { Club, State } from "@boleiro/data/clubs";
 import { inFormation, type Formation } from "../../engine/formations.js";
 import { guestClubOf } from "../continental/guestClubs.js";
+import { nationalClubOf } from "../nations/nationalSquad.js";
 import type { Team } from "../../engine/match.js";
 import { chemistryStrength, chemistryValueOf } from "../chemistry/chemistryOf.js";
 import { DEFAULT_TACTICS, type Tactics } from "../coach/tactics.js";
@@ -28,12 +29,12 @@ const INTERNATIONAL_TRIP_KM = 1_700;
 
 type MatchClub = Pick<Club, "id" | "shortName" | "pitch"> & { state: State | null };
 
-/** A club as a match reads it; a guest from a result-only country plays on grass and has no Brazilian state. */
+/** A club as a match reads it; a guest from a result-only country, or a national team, plays on grass and has no Brazilian state. */
 export function matchClubOf(state: GameState, clubId: string): MatchClub | null {
   const club = state.clubs[clubId];
   if (club) return { ...club, state: club.state ?? null };
   const guest = guestClubOf(state, clubId);
-  return guest ? { id: guest.id, shortName: guest.name, pitch: "natural", state: null } : null;
+  return guest ? { id: guest.id, shortName: guest.name, pitch: "natural", state: null } : nationalClubOf(state, clubId);
 }
 
 /**

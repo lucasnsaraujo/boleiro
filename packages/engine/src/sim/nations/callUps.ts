@@ -8,7 +8,7 @@ import { compareText } from "../compareText.js";
 /** The places of a call-up by position, 26 in all: 3 goalkeepers, 4 full-backs, 4 centre-backs, 7 midfielders, 8 forwards (the mock's, after Brazil's lists). */
 export const CALL_UP_PLACES: Record<Role, number> = { goleiro: 3, lateral: 4, zagueiro: 4, meia: 7, atacante: 8 };
 export const CALL_UP_SIZE = Object.values(CALL_UP_PLACES).reduce((sum, places) => sum + places, 0);
-const ROLE_OF_LETTER: Record<string, Role> = { g: "goleiro", l: "lateral", z: "zagueiro", m: "meia", a: "atacante" };
+export const ROLE_OF_LETTER: Record<string, Role> = { g: "goleiro", l: "lateral", z: "zagueiro", m: "meia", a: "atacante" };
 const ROLE_OF_GROUP: Record<PositionGroup, Role> = { GK: "goleiro", DEF: "zagueiro", MID: "meia", ATT: "atacante" };
 // guess: a player the pack lists abroad leaves a national pool after his 36th birthday year.
 const OLDEST = 36;

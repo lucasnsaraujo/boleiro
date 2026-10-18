@@ -240,9 +240,11 @@ function tournamentAfter(nations: Nations, teamId: string, window: FifaWindow): 
  * game's players among each side's eleven take its fatigue and may get hurt, as in a club match), knockout
  * rounds drawn and titles won, teams knocked out of a tournament sending their players home, the ranking
  * moved; players whose duty ended back at their clubs; on 1 January the season's competitions; and on the eve
- * of a FIFA window its friendlies and every team's call-up.
+ * of a FIFA window its friendlies and every team's call-up. A match the full tier played today (`playedInFullTier`,
+ * by match id: a human coach's national team's, or one of its day) keeps its score there, its players' load
+ * already taken there, after the draws that keep the stream where it always was.
  */
-export function nationsDay(state: GameState, today: IsoDate): { state: GameState; events: NationsEvent[] } {
+export function nationsDay(state: GameState, today: IsoDate, playedInFullTier: ReadonlyMap<string, NationalResult> = new Map()): { state: GameState; events: NationsEvent[] } {
   if (!state.nations) return { state, events: [] };
   const events: NationsEvent[] = [];
   const random = randomStream(state.nations.rngState);
@@ -261,10 +263,12 @@ export function nationsDay(state: GameState, today: IsoDate): { state: GameState
     const played = new Map<string, NationalMatch>();
     const teams = { ...nations.teams };
     for (const match of todays) {
-      const { result, fielded } = playMatch({ ...nations, matches: nations.matches.map((m) => played.get(m.id) ?? m) }, match, players, random.next);
+      const drawn = playMatch({ ...nations, matches: nations.matches.map((m) => played.get(m.id) ?? m) }, match, players, random.next);
+      const ownResult = playedInFullTier.get(match.id);
+      const result = ownResult ?? drawn.result;
       played.set(match.id, { ...match, result });
-      const injuries = drawMatchInjuries(fielded, { date: today, pitch: "natural" }, random.next, (id) => keyedStream(state.seed ^ INJURY_STREAM_SALT, `${match.id}:${id}`));
-      for (const player of fielded) {
+      const injuries = drawMatchInjuries(drawn.fielded, { date: today, pitch: "natural" }, random.next, (id) => keyedStream(state.seed ^ INJURY_STREAM_SALT, `${match.id}:${id}`));
+      for (const player of ownResult ? [] : drawn.fielded) {
         const injury = injuries.get(player.id);
         const hurtUntil = injury ? addDays(today, injury.days) : undefined;
         const lastInjury = player.condition.injuredUntil;

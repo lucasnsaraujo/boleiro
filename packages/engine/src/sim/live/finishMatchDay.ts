@@ -64,6 +64,8 @@ import { tieBreakOf } from "../tieBreaks.js";
 import { FULL_TIME, hasExtraTimeIn, matchEndOf, scorersFor, type MatchEvent } from "./matchTimeline.js";
 import { recordCoachMeetings } from "../rivalries/coachRivalries.js";
 import { nationsDay } from "../nations/nationsDay.js";
+import { nationalTeamToday, playedNationalOf, syncNationalFixtures } from "../nations/nationalFixtures.js";
+import { isNationalTeam } from "../nations/nationalSquad.js";
 import { runMoments } from "../moments/runMoments.js";
 
 function fixturesByCompetition(fixtures: readonly Fixture[]): Map<string, Fixture[]> {
@@ -188,7 +190,8 @@ export function finishMatchDay(live: LiveDay): DayResult {
   const open = openMatchesOf(live);
   const day = open.length ? withCoachMatches(live, open) : live.rest;
   const random = randomStream(day.rngState);
-  const events: DayEvent[] = [...day.events, ...refereeCallsOf(live)];
+  // A player hurt playing for his national team is hurt at his club.
+  const events: DayEvent[] = [...day.events.map((e) => (e.type === "playerInjured" && isNationalTeam(state, e.clubId) ? { ...e, clubId: state.players[e.playerId]?.clubId ?? e.clubId } : e)), ...refereeCallsOf(live)];
   let { fixtures } = day;
 
   // Only a day that ends a stage needs the clubs' states.
@@ -210,12 +213,22 @@ export function finishMatchDay(live: LiveDay): DayResult {
     events.push({ type: "stageOpened", competitionId: competition.id, stage: current + 1 });
   }
 
-  // A continental guest's players belong to the result-only tier, so their match load is not kept.
-  const ownPlayers = day.players.filter((player) => player.id in state.players);
+  // A continental guest's players and a national team's from abroad belong to the result-only tier, so their match load is not kept;
+  // the game's players who played for their national team are back at their clubs.
+  const ownPlayers = day.players.flatMap((player) => {
+    const clubId = state.players[player.id]?.clubId;
+    return clubId === undefined ? [] : [player.clubId === clubId ? player : { ...player, clubId }];
+  });
   const players = ownPlayers.length ? withReplacedPlayers(state.players, ownPlayers) : state.players;
-  const tactics = live.coachMatch?.tactics ?? decisions.tactics ?? state.coach.tactics;
+  const nationalId = nationalTeamToday(state);
+  const nationalMatch = nationalId ? open.find((m) => m.clubId === nationalId) : undefined;
+  const clubMatch = live.coachMatch?.clubId === undefined ? live.coachMatch : null;
+  const tactics = clubMatch?.tactics ?? (nationalMatch && nationalMatch === live.coachMatch ? undefined : decisions.tactics) ?? state.coach.tactics;
   const coach = tactics === state.coach.tactics ? state.coach : { ...state.coach, tactics };
-  let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: day.discipline, coach };
+  const nationalTactics = nationalMatch && (nationalMatch.isChanged || nationalMatch === live.coachMatch) ? nationalMatch.tactics : undefined;
+  const job = state.nations?.job;
+  const nations = state.nations && job && nationalTactics ? { ...state.nations, job: { ...job, tactics: nationalTactics } } : state.nations;
+  let next: GameState = { ...state, date: addDays(state.date, 1), fixtures, competitions, players, discipline: day.discipline, coach, ...(nations ? { nations } : {}) };
   if (state.waitingCoaches) next = { ...next, waitingCoaches: withWaitingTactics(state.waitingCoaches, decisions.waiting ?? [], (clubId) => liveTacticsOf(live, clubId)) };
   const played = events.flatMap((event) => (event.type === "matchPlayed" ? [event.fixture] : []));
   const elevens = recordElevens(next, played, day.sheets, state);
@@ -274,7 +287,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     events.push(...abroadBonuses.events);
   }
   if (next.nations) {
-    const national = nationsDay(next, state.date);
+    const national = nationsDay(next, state.date, playedNationalOf(played));
     next = national.state;
     events.push(...national.events);
   }
@@ -303,7 +316,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     next = coolRivalries(recordFormerPlayers(next, academies.state, developed.events));
     seasonOutcomes = ended.outcomes;
   }
-  next = syncCupsAbroad(next);
+  next = syncNationalFixtures(syncCupsAbroad(next));
   const sponsorDay = runSponsorDay(state, next, seasonOutcomes);
   next = sponsorDay.state;
   events.push(...sponsorDay.events);

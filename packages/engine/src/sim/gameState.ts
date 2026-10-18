@@ -24,6 +24,8 @@ import type { EventMemory } from "./events/eventMemory.js";
 import type { ClubChemistry } from "./chemistry/chemistryOf.js";
 import type { ClubSponsors, PoolBrand } from "./sponsors/sponsors.js";
 import type { Nations } from "./nations/nations.js";
+import type { NationalCompetitionKind } from "./nations/fifaRanking.js";
+import type { Confederation } from "@boleiro/data/nationalFootball";
 
 export type IsoDate = string;
 
@@ -124,7 +126,24 @@ export type CupAbroad = (typeof CUPS_ABROAD)[number];
  */
 export type CupAbroadCompetition = CompetitionBase & { kind: "cupAbroad"; cup: CupAbroad; country: string | null; tieBreaks: ("extraTime" | "penalties")[] };
 
-export type Competition = LeagueCompetition | StateCompetition | CupCompetition | ContinentalCompetition | CupAbroadCompetition;
+/**
+ * A national competition (`nations.competitions`, played result-only) seen from a human coach's national team:
+ * the matches of the days his team plays in it, with the others of the competition on those days, played live in
+ * the full tier and written back to `nations.matches`. One stage a round, in the order the rounds open; `rounds`
+ * names each stage's round ("group", "friendly", "quarter-finals"…) and `neutral` says whether it is played on
+ * neutral grounds. `nationalId` is the national competition's id.
+ */
+export type NationalFullTierCompetition = CompetitionBase & {
+  kind: "national";
+  nationalId: string;
+  nationalKind: NationalCompetitionKind;
+  name: string;
+  confederation?: Confederation;
+  rounds: string[];
+  neutral: boolean[];
+};
+
+export type Competition = LeagueCompetition | StateCompetition | CupCompetition | ContinentalCompetition | CupAbroadCompetition | NationalFullTierCompetition;
 
 export type SeasonCalendar = {
   season: number;

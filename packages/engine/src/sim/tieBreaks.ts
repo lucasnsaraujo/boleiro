@@ -53,6 +53,9 @@ export function tieBreakOf(competition: Competition, stage: number): TieBreak {
       return "penalties";
     case "cupAbroad":
       return competition.tieBreaks[stage] ?? "extraTime";
+    case "national":
+      // A national knockout round level after ninety minutes plays extra time and then penalties, as the result-only draw does.
+      return "extraTime";
   }
 }
 

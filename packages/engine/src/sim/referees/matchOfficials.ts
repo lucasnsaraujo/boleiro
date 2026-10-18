@@ -2,7 +2,7 @@ import { REFEREE_ROSTER, type RefereeProfile } from "@boleiro/data/refereeRoster
 import { keyedStream } from "../../engine/random.js";
 import { COPA_DO_BRASIL_ENTRY_STAGES } from "../copaDoBrasil.js";
 import type { CardRates } from "../discipline/cardRates.js";
-import type { Competition, Fixture } from "../gameState.js";
+import type { Competition, Fixture, Stage } from "../gameState.js";
 
 /** Where a competition's video assistant referee works like Brazil's or like Europe's: how often it steps in and for how long. */
 export type VarStyle = "brazil" | "europe";
@@ -54,6 +54,9 @@ function rosterKeyOf(competition: Competition): string {
     case "cupAbroad":
       // guess: a national cup abroad is refereed from its top league's roster; UEFA's referees are not in the data.
       return competition.country ? `${competition.country}-0` : "uefa";
+    case "national":
+      // FIFA's and the confederations' referees are not in the data.
+      return "national";
   }
 }
 
@@ -80,6 +83,31 @@ function varStyleOf(competition: Competition, fixture: Fixture): VarStyle | null
     case "cupAbroad":
       // UEFA's club cups play with VAR from their league phase; guess: a national cup abroad where its top league does.
       return competition.country === null || EUROPE.has(competition.country) ? "europe" : null;
+    case "national":
+      return nationalVarStyle(competition, stage);
+  }
+}
+
+/**
+ * VAR in national teams' matches. CONMEBOL's World Cup qualifiers play with it in every match since the 2022
+ * cycle (El Tiempo, https://www.eltiempo.com/deportes/futbol-internacional/habra-var-en-la-eliminatoria-suramericana-a-catar-2022-462506).
+ * guess: the World Cup, the Euro and the Copa América in every match, the Nations League in its knockout rounds,
+ * as their finals use it; UEFA's qualifiers and friendlies without it. South America's referees step in as
+ * Brazil's do, everyone else's as Europe's.
+ */
+function nationalVarStyle(competition: Extract<Competition, { kind: "national" }>, stage: Stage | undefined): VarStyle | null {
+  const style: VarStyle = competition.confederation === "CONMEBOL" ? "brazil" : "europe";
+  switch (competition.nationalKind) {
+    case "world-cup":
+      return "europe";
+    case "continental-cup":
+      return style;
+    case "qualifiers":
+      return competition.confederation === "CONMEBOL" ? "brazil" : null;
+    case "nations-league":
+      return stage?.kind === "knockout" ? "europe" : null;
+    case "friendlies":
+      return null;
   }
 }
 
