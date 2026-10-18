@@ -8,7 +8,7 @@ import type { BoardPlayer, BoardSide, MatchMoment } from "@boleiro/engine/sim/co
 import { humanClubIds, waitingCoachesOf } from "@boleiro/engine/sim/coach/humanCoaches";
 import { planOfClub, type MatchPlan } from "@boleiro/engine/sim/coach/matchPlan";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
-import type { Fixture, IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
+import type { Competition, Fixture, GameState, IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
 import { onPitchAt } from "@boleiro/engine/sim/live/aiSubstitutions";
 import { incidentHandling, type IncidentHandling } from "@boleiro/engine/sim/live/incidentHandling";
 import type { CoachMatch, LiveDay } from "@boleiro/engine/sim/live/liveDay";
@@ -19,6 +19,9 @@ import { assistantTalk, isDerbyFor, type TalkEffect, type TalkMoment, type TalkT
 import { clubMood } from "@boleiro/engine/sim/morale/clubMood";
 import { shootoutKickers } from "@boleiro/engine/sim/settleShootout";
 import { fixtureLabel } from "../format/competitionName.js";
+import { nationalFixtureId, nationalTeamToday } from "@boleiro/engine/sim/nations/nationalFixtures";
+import { isNationalTeam, nationalSquadOf } from "@boleiro/engine/sim/nations/nationalSquad";
+import { roundClubOf } from "./roundClubOf.js";
 import { aiFormationOf, recentResultsOf, squadOf, type MatchResult, type SquadPlayer } from "./matchDayPlan.js";
 import { officialsOf, type Officials } from "./officialsOf.js";
 
@@ -26,8 +29,6 @@ export type Side = "home" | "away";
 export type RoundClub = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
 
 const ONCE_PLAYED = 0.5;
-// A continental guest whose pack gives no colours shows in plain white and black.
-const GUEST_COLOURS = { primary: "#FFFFFF", secondary: "#000000" };
 /** A match of the round: its timeline and, unless it kicked off before players had one, every player's form and play; `ground` names a neutral ground. */
 export type RoundMatch = { fixtureId: string; competitionId: string; homeId: string; awayId: string; ground?: string; events: MatchEvent[]; officials?: Officials; play?: MatchPlay };
 /** `hasHumanCoach`: a club of a human coach plays in it, so the round shows it open; the rest go under "Outras ligas". */
@@ -106,10 +107,25 @@ export type LiveRound = {
   humanSides?: HumanSide[];
 };
 
+/** A national team's group as the live table reads it: every match of the group, from the national competition, today's still unplayed. */
+function nationalGroupTable(state: GameState, competition: Extract<Competition, { kind: "national" }>, fixture: Fixture): RoundTable | null {
+  const nations = state.nations;
+  const own = nations?.matches.find((m) => nationalFixtureId(m.id) === fixture.id);
+  const clubIds = own?.group ? nations?.competitions[competition.nationalId]?.groups[own.group] : undefined;
+  if (!nations || !own?.group || !clubIds || own.round !== "group") return null;
+  const fixtures = nations.matches.flatMap((m): Fixture[] =>
+    m.competitionId === own.competitionId && m.round === "group" && m.group === own.group
+      ? [{ id: nationalFixtureId(m.id), competitionId: competition.id, stage: fixture.stage, date: m.date, homeId: m.homeId, awayId: m.awayId, result: m.result ? { homeGoals: m.result.home, awayGoals: m.result.away } : null }]
+      : [],
+  );
+  return { clubIds, fixtures, drawOrder: [] };
+}
+
 function tableOf(live: LiveDay, fixture: Fixture | undefined): RoundTable | null {
   if (!fixture) return null;
   const { state } = live;
   const competition = state.competitions[fixture.competitionId];
+  if (competition?.kind === "national") return competition.nationalKind === "friendlies" ? null : nationalGroupTable(state, competition, fixture);
   const stage = competition?.stages[fixture.stage];
   if (!competition || stage?.kind !== "groups") return null;
   const clubIds = stage.groups.find((group) => group.includes(fixture.homeId)) ?? [];
@@ -135,7 +151,7 @@ function sideOf(live: LiveDay, open: CoachMatch, clubId: string, fixture: Fixtur
   const boardPlayer = (p: SimPlayer): BoardPlayer => ({ id: p.id, name: p.name, group: p.group, ...(p.positions ? { positions: p.positions } : {}), strength: open.strengths[p.id] ?? p.strength });
   const opponent: OpponentRoster = {
     clubId: opponentId,
-    name: state.clubs[opponentId]?.shortName ?? guestClubOf(state, opponentId)?.name ?? opponentId,
+    name: roundClubOf(state, opponentId)?.shortName ?? opponentId,
     starters: open.starters[otherSide].map(boardPlayer),
     bench: ((isOwner ? open.opponentBench : open.bench) ?? []).map(boardPlayer),
     formation: match?.formations[otherSide] ?? DEFAULT_TACTICS.formation,
@@ -190,14 +206,18 @@ export function tacticsViewAt(round: Pick<LiveRound, "matches">, side: CoachSide
 function coachSideOf(live: LiveDay, fixture: Fixture | undefined, seenMinute: number): CoachSide | null {
   const { state, coachMatch } = live;
   if (!coachMatch || !fixture) return null;
-  return sideOf(live, coachMatch, state.coachClubId ?? "", fixture, seenMinute);
+  return sideOf(live, coachMatch, coachMatch.clubId ?? state.coachClubId ?? "", fixture, seenMinute);
 }
 
-/** Every human coach's side today in a hot-seat game, the seated coach's first, then the waiting coaches' in turn order. */
+/**
+ * Every human side today when there is more than one: a hot-seat game's coaches, the seated coach's first, then
+ * the waiting coaches' in turn order; and a coach's national team beside his club on a day both play.
+ */
 function humanSidesOf(live: LiveDay, today: ReadonlyMap<string, Fixture>, seenMinute: number): HumanSide[] {
   const { state } = live;
   const open = [live.coachMatch, ...(live.waitingMatches ?? [])].filter((m): m is CoachMatch => m !== null);
-  const coaches = [{ name: state.coachName ?? "", clubId: state.coachClubId }, ...waitingCoachesOf(state)];
+  const national = nationalTeamToday(state);
+  const coaches = [{ name: state.coachName ?? "", clubId: state.coachClubId }, ...(national ? [{ name: state.coachName ?? "", clubId: national }] : []), ...waitingCoachesOf(state)];
   return coaches.flatMap(({ name, clubId }) => {
     if (!clubId) return [];
     const fixtureOf = (m: CoachMatch) => today.get(m.fixtureId);
@@ -254,7 +274,8 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
   const counts = new Map<string, number>();
   for (const m of matches) counts.set(m.competitionId, (counts.get(m.competitionId) ?? 0) + 1);
   const isCoachs = (id: string) => id === coachFixture?.competitionId;
-  const humans = humanClubIds(state);
+  const national = nationalTeamToday(state);
+  const humans = national ? [...humanClubIds(state), national] : humanClubIds(state);
   const competitions = [...counts.keys()]
     .sort((a, b) => Number(isCoachs(b)) - Number(isCoachs(a)) || (counts.get(b) ?? 0) - (counts.get(a) ?? 0))
     .flatMap((id) => {
@@ -270,14 +291,14 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
   const table = tableOf(live, coachFixture);
   const clubs: Record<string, RoundClub> = {};
   for (const id of [...matches.flatMap((m) => [m.homeId, m.awayId]), ...(table?.clubIds ?? [])]) {
-    const club = state.clubs[id];
-    const guest = club ? null : guestClubOf(state, id);
-    if (club) clubs[id] = { id, shortName: club.shortName, colours: club.colours, stadium: club.stadium };
-    else if (guest) clubs[id] = { id, shortName: guest.name, colours: guest.colours ?? GUEST_COLOURS, stadium: "" };
+    const club = roundClubOf(state, id);
+    if (club) clubs[id] = club;
   }
+  // Players who are none of the game's: a continental guest's, and a national team's from abroad.
   const guestPlayers = new Map(matches.flatMap((m) => [m.homeId, m.awayId]).flatMap((id) => {
     const guest = guestClubOf(state, id);
-    return guest ? guestSquadOf(guest).map((p) => [p.id, p.name] as const) : [];
+    if (guest) return guestSquadOf(guest).map((p) => [p.id, p.name] as const);
+    return isNationalTeam(state, id) ? nationalSquadOf(state, id).map((p) => [p.id, p.name] as const) : [];
   }));
   const names: Record<string, string> = {};
   const nameOf = (id: string) => {
@@ -297,9 +318,11 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
   const ratings = ratingsOf(live, matches.find((m) => m.fixtureId === live.coachMatch?.fixtureId));
   for (const r of [...(ratings?.home ?? []), ...(ratings?.away ?? [])]) nameOf(r.playerId);
 
-  const others = humans.filter((id) => id !== state.coachClubId);
-  if (!others.length) return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach, ratings, seenMinute };
+  // The coach's side today is his national team on its match day when his club doesn't play.
+  const coachClubId = live.coachMatch?.clubId ?? state.coachClubId;
+  const others = humans.filter((id) => id !== coachClubId && id !== state.coachClubId);
+  if (!others.length) return { date: state.date, coachClubId, competitions, matches, clubs, names, table, coach, ratings, seenMinute };
   const humanSides = humanSidesOf(live, today, seenMinute);
   for (const p of humanSides.flatMap((side) => side.squad)) names[p.id] = p.name;
-  return { date: state.date, coachClubId: state.coachClubId, competitions, matches, clubs, names, table, coach, ratings, seenMinute, otherHumanClubIds: others, humanSides };
+  return { date: state.date, coachClubId, competitions, matches, clubs, names, table, coach, ratings, seenMinute, otherHumanClubIds: others, humanSides };
 }

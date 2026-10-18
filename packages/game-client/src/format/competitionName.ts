@@ -80,7 +80,28 @@ export function competitionName(competition: Competition): string {
       return CONTINENTAL_CUP_NAMES[competition.cup];
     case "cupAbroad":
       return competition.cup === "national-cup" ? (NATIONAL_CUP_NAMES[competition.country ?? ""] ?? "Copa nacional") : UEFA_CUP_NAMES[competition.cup];
+    case "national":
+      return competition.nationalKind === "friendlies" ? "Amistoso" : competition.name;
   }
+}
+
+/** A national knockout round as Brazil's papers name it. */
+export const NATIONAL_ROUND_NAMES: Readonly<Record<string, string>> = {
+  "round-of-32": "16 avos de final",
+  "round-of-16": "oitavas de final",
+  "quarter-finals": "quartas de final",
+  "semi-finals": "semifinal",
+  "third-place": "disputa do 3º lugar",
+  final: "final",
+};
+
+/** A national team's match: its competition with its group or knockout round ("Copa do Mundo 2026 · Grupo C"). */
+function nationalLabel(competition: Extract<Competition, { kind: "national" }>, fixture: Fixture): string {
+  const name = competitionName(competition);
+  const round = competition.rounds[fixture.stage] ?? "";
+  const group = fixture.group === undefined ? "" : (competition.groupNames[fixture.stage]?.[fixture.group] ?? "");
+  const part = round === "group" ? (group && competition.nationalKind !== "qualifiers" ? `Grupo ${group}` : "") : (NATIONAL_ROUND_NAMES[round] ?? "");
+  return part ? `${name} · ${part}` : name;
 }
 
 function isState(code: string): code is State {
@@ -102,6 +123,7 @@ export function competitionKeyName(key: CompetitionKey): string {
 
 /** The competition, plus the round when the game is part of a round robin. */
 export function fixtureLabel(competition: Competition, fixture: Fixture): string {
+  if (competition.kind === "national") return nationalLabel(competition, fixture);
   const stage = competition.stages[fixture.stage];
   const round = stage?.kind === "groups" ? stage.dates.indexOf(fixture.date) + 1 : 0;
   return round > 0 ? `${competitionName(competition)} · ${round}ª rodada` : competitionName(competition);

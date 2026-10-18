@@ -31,33 +31,40 @@ export function nationalSquadOf(state: GameState, teamId: string): SimPlayer[] {
   if (!nations?.teams[teamId]) return [];
   const callUp = nations.callUps[teamId] ?? splitRefs(callUpRefsOf(state, nations, teamId, state.date));
   const own = callUp.playerIds.flatMap((id) => (state.players[id] ? [{ ...state.players[id], clubId: teamId }] : []));
-  const pool = nations.outsiders[teamId];
-  const year = Number(state.date.slice(0, 4));
-  const others = callUp.outsiders.flatMap((row): SimPlayer[] => {
-    const name = pool?.names[row];
-    if (name === undefined) return [];
-    const role = ROLE_OF_LETTER[pool?.roles[row] ?? "m"] ?? "meia";
-    const born = pool?.born[row] ?? 0;
-    return [
-      {
-        id: `${teamId}${OUTSIDER_MARK}${row}`,
-        clubId: teamId,
-        name,
-        group: GROUP_OF_ROLE[role],
-        positions: [role],
-        strength: pool?.strengths[row] ?? 0,
-        wage: 0,
-        contractUntil: NEVER,
-        age: born ? year - born : UNKNOWN_AGE,
-        nationalities: [],
-        trait: null,
-        condition: freshCondition(RESTED_SINCE),
-      },
-    ];
-  });
+  const others = callUp.outsiders.flatMap((row) => outsiderPlayerOf(state, teamId, row) ?? []);
   const squad = [...own, ...others];
   byTeam.set(teamId, squad);
   return squad;
+}
+
+/** One of a national team's pool from abroad as a match fields him: `<team>~<row>`. */
+function outsiderPlayerOf(state: Pick<GameState, "nations" | "date">, teamId: string, row: number): SimPlayer | null {
+  const pool = state.nations?.outsiders[teamId];
+  const name = pool?.names[row];
+  if (!pool || name === undefined) return null;
+  const role = ROLE_OF_LETTER[pool.roles[row] ?? "m"] ?? "meia";
+  const born = pool.born[row] ?? 0;
+  return {
+    id: `${teamId}${OUTSIDER_MARK}${row}`,
+    clubId: teamId,
+    name,
+    group: GROUP_OF_ROLE[role],
+    positions: [role],
+    strength: pool.strengths[row] ?? 0,
+    wage: 0,
+    contractUntil: NEVER,
+    age: born ? Number(state.date.slice(0, 4)) - born : UNKNOWN_AGE,
+    nationalities: [],
+    trait: null,
+    condition: freshCondition(RESTED_SINCE),
+  };
+}
+
+/** A national team's player from abroad by his match id (`<team>~<row>`), called up or not; null for any other id. */
+export function nationalOutsiderOf(state: Pick<GameState, "nations" | "date">, playerId: string): SimPlayer | null {
+  const at = playerId.lastIndexOf(OUTSIDER_MARK);
+  if (at <= 0) return null;
+  return outsiderPlayerOf(state, playerId.slice(0, at), Number(playerId.slice(at + OUTSIDER_MARK.length)));
 }
 
 /** A national team as a match reads it: on grass, with no Brazilian state. */

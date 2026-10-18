@@ -130,8 +130,9 @@ export type CupAbroadCompetition = CompetitionBase & { kind: "cupAbroad"; cup: C
  * A national competition (`nations.competitions`, played result-only) seen from a human coach's national team:
  * the matches of the days his team plays in it, with the others of the competition on those days, played live in
  * the full tier and written back to `nations.matches`. One stage a round, in the order the rounds open; `rounds`
- * names each stage's round ("group", "friendly", "quarter-finals"…) and `neutral` says whether it is played on
- * neutral grounds. `nationalId` is the national competition's id.
+ * names each stage's round ("group", "friendly", "quarter-finals"…), `groupNames` a table stage's groups by their
+ * letters ("" for friendlies) and `neutral` says whether it is played on neutral grounds. `nationalId` is the
+ * national competition's id.
  */
 export type NationalFullTierCompetition = CompetitionBase & {
   kind: "national";
@@ -140,6 +141,7 @@ export type NationalFullTierCompetition = CompetitionBase & {
   name: string;
   confederation?: Confederation;
   rounds: string[];
+  groupNames: string[][];
   neutral: boolean[];
 };
 

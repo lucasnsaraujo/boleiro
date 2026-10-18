@@ -19,6 +19,8 @@ import { pickMatchLineup } from "@boleiro/engine/sim/players/pickMatchLineup";
 import { formationOf, usualStartersOf } from "@boleiro/engine/sim/players/usualLineups";
 import { withLoaneesFacingOwner } from "@boleiro/engine/sim/transfers/loans";
 import { onDutyOn } from "@boleiro/engine/sim/nations/nationsDay";
+import { seatedSideToday } from "@boleiro/engine/sim/nations/nationalFixtures";
+import { isNationalTeam, nationalSquadOf, nationalTacticsOf } from "@boleiro/engine/sim/nations/nationalSquad";
 import { fixtureLabel } from "../format/competitionName.js";
 import { compareText } from "@boleiro/engine/sim/compareText";
 
@@ -88,11 +90,12 @@ export function recentResultsOf(fixtures: readonly Fixture[], clubId: string): M
 
 const GROUP_ORDER: Record<PositionGroup, number> = { GK: 0, DEF: 1, MID: 2, ATT: 3 };
 
-function coachFixtureToday(state: Pick<GameState, "date" | "coachClubId" | "fixtures">): Fixture {
-  const { date, coachClubId } = state;
-  const fixture = state.fixtures.find((f) => f.date === date && !f.result && (f.homeId === coachClubId || f.awayId === coachClubId));
-  if (!coachClubId || !fixture) throw new Error("the coach has no match today");
-  return fixture;
+/** The match the coach in the seat runs today, and his side in it: his club's, or his national team's (seatedSideToday). */
+function coachFixtureToday(state: Pick<GameState, "date" | "coachClubId" | "fixtures" | "nations">): { fixture: Fixture; clubId: string } {
+  const clubId = seatedSideToday(state);
+  const fixture = clubId && state.fixtures.find((f) => f.date === state.date && !f.result && (f.homeId === clubId || f.awayId === clubId));
+  if (!clubId || !fixture) throw new Error("the coach has no match today");
+  return { fixture, clubId };
 }
 
 function matchContextOf(state: GameState, fixture: Fixture): MatchContext {
@@ -101,10 +104,16 @@ function matchContextOf(state: GameState, fixture: Fixture): MatchContext {
   return { date: fixture.date, pitch: home.pitch };
 }
 
-/** The formation a club's AI coach plays, a continental guest's included. */
+/** The formation a club's AI coach plays, a continental guest's and a national team's included. */
 export function aiFormationOf(state: GameState, clubId: string): Formation {
+  return formationOf(state, clubId, sideSquadOf(state, clubId));
+}
+
+/** Who a side fields: a club's players, a continental guest's squad, or a national team's call-up. */
+function sideSquadOf(state: GameState, clubId: string): readonly SimPlayer[] {
+  if (isNationalTeam(state, clubId)) return nationalSquadOf(state, clubId);
   const guest = guestClubOf(state, clubId);
-  return formationOf(state, clubId, guest ? guestSquadOf(guest) : playersOf(state, clubId));
+  return guest ? guestSquadOf(guest) : playersOf(state, clubId);
 }
 
 function playersOf(state: Pick<GameState, "players">, clubId: string): SimPlayer[] {
@@ -127,18 +136,14 @@ function isOneYellowFromBanIn(state: Pick<GameState, "discipline" | "competition
   };
 }
 
-/** The coach's squad for today's match, goalkeepers first and strongest first within each position. */
-export function squadOf(
-  state: Pick<GameState, "date" | "players" | "discipline" | "competitions" | "market" | "nations">,
-  clubId: string,
-  fixture: Fixture,
-  strengthOf: (player: SimPlayer) => number,
-): SquadPlayer[] {
+/** The coach's squad for today's match, goalkeepers first and strongest first within each position: his club's players, or his national team's call-up. */
+export function squadOf(state: GameState, clubId: string, fixture: Fixture, strengthOf: (player: SimPlayer) => number): SquadPlayer[] {
   const suspended = openDisciplineDay(state.discipline).suspended(fixture.competitionId);
-  const away = onDutyOn(state, state.date);
+  const isNational = isNationalTeam(state, clubId);
+  const away = isNational ? new Set<string>() : onDutyOn(state, state.date);
   const facingOwner = withLoaneesFacingOwner(new Set(), state, fixture);
   const isOneYellowFromBan = isOneYellowFromBanIn(state, fixture);
-  return playersOf(state, clubId)
+  return (isNational ? nationalSquadOf(state, clubId) : playersOf(state, clubId))
     .map((p) => ({
       id: p.id,
       name: p.name,
@@ -154,24 +159,25 @@ export function squadOf(
 
 /** The coach's match day before kick-off, for the lineup sheet: in his formation, or in `formation` when given. */
 export function matchDayPlan(state: GameState, formation?: Formation): MatchDayPlan {
-  const fixture = coachFixtureToday(state);
-  const clubId = state.coachClubId ?? "";
+  const { fixture, clubId } = coachFixtureToday(state);
+  const isNational = isNationalTeam(state, clubId);
   const context = matchContextOf(state, fixture);
   const banned = withLoaneesFacingOwner(openDisciplineDay(state.discipline).suspended(fixture.competitionId), state, fixture);
-  const away = onDutyOn(state, state.date);
+  // Players away with their national teams miss their clubs' matches; a national team's are those very players.
+  const away = isNational ? new Set<string>() : onDutyOn(state, state.date);
   const suspended = away.size ? new Set([...banned, ...away]) : banned;
-  const available = playersOf(state, clubId).filter((p) => !suspended.has(p.id));
-  const tactics = formation ? { ...state.coach.tactics, formation } : state.coach.tactics;
+  const available = sideSquadOf(state, clubId).filter((p) => !suspended.has(p.id));
+  const usualTactics = isNational ? nationalTacticsOf(state, clubId) : state.coach.tactics;
+  const tactics = formation ? { ...usualTactics, formation } : usualTactics;
   const usual = usualStartersOf(state, clubId);
   const assistantLineup = pickMatchLineup(available, context, tactics.formation, usual).map((p) => p.id);
-  const kept = startersKept(state.coach, state.chemistry?.[clubId]?.eleven);
+  const kept = isNational ? undefined : startersKept(state.coach, state.chemistry?.[clubId]?.eleven);
   const lineup = kept ? pickMatchLineup(available, context, tactics.formation, usual, kept).map((p) => p.id) : assistantLineup;
   const competition = state.competitions[fixture.competitionId];
   const label = competition ? fixtureLabel(competition, fixture) : "";
   const { homeId, awayId } = fixture;
   const opponentId = homeId === clubId ? awayId : homeId;
-  const guest = guestClubOf(state, opponentId);
-  const opponentSquad = (guest ? guestSquadOf(guest) : playersOf(state, opponentId)).filter((p) => !suspended.has(p.id));
+  const opponentSquad = sideSquadOf(state, opponentId).filter((p) => !suspended.has(p.id));
   const opponentFormation = aiFormationOf(state, opponentId);
   const squad = squadOf(state, clubId, fixture, playingStrength(state, clubId, context, available));
   const opponentStrength = playingStrength(state, opponentId, context, opponentSquad);

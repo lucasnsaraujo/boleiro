@@ -37,6 +37,7 @@ function emptyCopy(source: NationalCompetition, season: number): NationalFullTie
     stageDates: [],
     drawOrder: [],
     rounds: [],
+    groupNames: [],
     neutral: [],
   };
 }
@@ -49,12 +50,14 @@ function withMatch(copy: NationalFullTierCompetition, source: NationalCompetitio
   let index = stageKeysOf(copy).indexOf(key);
   const stages = [...copy.stages];
   const rounds = [...copy.rounds];
+  const groupNames = copy.groupNames.map((names) => [...names]);
   const neutral = [...copy.neutral];
   if (index < 0) {
     index = stages.length;
     const isTable = match.round === "group" || match.round === "friendly";
     stages.push(isTable ? { kind: "groups", groups: [], legs: 1, dates: [] } : { kind: "knockout", ties: [], dates: [] });
     rounds.push(match.round);
+    groupNames.push([]);
     neutral.push(match.isNeutral === true);
   }
   const stage = stages[index] as Stage;
@@ -68,6 +71,7 @@ function withMatch(copy: NationalFullTierCompetition, source: NationalCompetitio
     if (group < 0) {
       group = groups.length;
       groups.push([...(match.group ? (source.groups[match.group] ?? []) : [])]);
+      groupNames[index]?.push(match.group ?? "");
     }
     const own = groups[group] ?? [];
     for (const team of [match.homeId, match.awayId]) if (!own.includes(team)) own.push(team);
@@ -84,7 +88,7 @@ function withMatch(copy: NationalFullTierCompetition, source: NationalCompetitio
     fixture = { ...base, tie };
   }
   const clubIds = [...copy.clubIds, ...[match.homeId, match.awayId].filter((id) => !copy.clubIds.includes(id))];
-  return { copy: { ...copy, clubIds, stages, stageDates: stages.map((s) => s.dates), rounds, neutral }, fixture };
+  return { copy: { ...copy, clubIds, stages, stageDates: stages.map((s) => s.dates), rounds, groupNames, neutral }, fixture };
 }
 
 /**
@@ -114,6 +118,33 @@ export function syncNationalFixtures(state: GameState): GameState {
     added.push(next.fixture);
   }
   return { ...state, competitions, fixtures: [...state.fixtures, ...added] };
+}
+
+/**
+ * A national match as the full tier sees it: its fixture among the game's when it has one, else one under a copy of
+ * its competition made for it alone, with the score the national competition kept; null for a match the game no
+ * longer keeps.
+ */
+export function nationalFixtureOf(state: Pick<GameState, "fixtures" | "competitions" | "nations" | "season">, matchId: string): { fixture: Fixture; competition: NationalFullTierCompetition } | null {
+  const id = nationalFixtureId(matchId);
+  const known = state.fixtures.find((f) => f.id === id);
+  const competition = known && state.competitions[known.competitionId];
+  if (known && competition?.kind === "national") return { fixture: known, competition };
+  const match = state.nations?.matches.find((m) => m.id === matchId);
+  const source = match && state.nations?.competitions[match.competitionId];
+  if (!match || !source) return null;
+  const built = withMatch(emptyCopy(source, state.season), source, match);
+  return { fixture: { ...built.fixture, result: match.result && matchResultOf(match.result) }, competition: built.copy };
+}
+
+/** A national score as the full tier keeps it. */
+export function matchResultOf(result: NationalResult): MatchResult {
+  return {
+    homeGoals: result.home,
+    awayGoals: result.away,
+    ...(result.penaltyWinnerId ? { penaltyWinnerId: result.penaltyWinnerId } : {}),
+    ...(result.isAfterExtraTime ? { isAfterExtraTime: true as const } : {}),
+  };
 }
 
 /** Today's national matches the full tier played, by national match id, as the national competitions keep a result. */
