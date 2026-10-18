@@ -1,7 +1,8 @@
 import { expect, test } from "vitest";
 import type { MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
+import type { VarCheck, VarDecision } from "@boleiro/engine/sim/referees/refereeCalls";
 import type { LiveRound } from "@boleiro/game-client/round/liveRoundOf";
-import { crowdLevel, roundCues, thinCues } from "./roundCues.js";
+import { crowdLevel, heardCues, roundCues, thinCues, varDecisionCues } from "./roundCues.js";
 
 const colours = { primary: "#000000", secondary: "#ffffff" };
 const club = (id: string) => ({ id, shortName: id, colours, stadium: `Estádio ${id}` });
@@ -103,4 +104,58 @@ test("the crowd swells when the coach's side is about to score and just after, a
   expect(crowdLevel(round, 51)).toBe(1);
   expect(crowdLevel(round, 60)).toBe(0.6);
   expect(crowdLevel(roundWith([], [], false), 30)).toBe(0.5);
+});
+
+const penaltyGoal = (minute: number, clubId: string): MatchEvent => ({ type: "goal", minute, clubId, playerId: `${clubId}-9`, kind: "penalty" });
+const penaltyMiss = (minute: number, clubId: string): MatchEvent => ({ type: "penaltyMiss", minute, clubId, playerId: `${clubId}-9`, keeperId: "k", isSaved: true });
+const varCheck = (minute: number, clubId: string, decision: VarDecision): VarCheck => ({ type: "varCheck", minute, clubId, playerId: `${clubId}-9`, decision, seconds: 100 });
+
+test("the referee whistles a penalty before it is taken; the crowd groans when the coach's side misses and cheers when the other side does", () => {
+  const round = roundWith([penaltyGoal(10, "bahia"), penaltyMiss(20, "bahia"), penaltyMiss(30, "vit")]);
+  expect(roundCues(round, 9, 10)).toEqual(["penalty", "coachGoal"]);
+  expect(roundCues(round, 19, 20)).toEqual(["penalty", "groan"]);
+  expect(roundCues(round, 29, 30)).toEqual(["penalty", "relief"]);
+});
+
+test("away from home the coach hears his goals from the visitors' end and the home crowd's joy at the goals against; his goals bring the stinger", () => {
+  expect(heardCues(["otherGoal", "coachGoal"], "away")).toEqual(["otherGoal", "coachGoalAway", "goalStinger"]);
+  expect(heardCues(["conceded", "card"], "away")).toEqual(["concededAway", "card"]);
+  expect(heardCues(["comeback"], "home")).toEqual(["comeback", "goalStinger"]);
+  expect(heardCues(["coachGoal", "conceded"], "home")).toEqual(["coachGoal", "conceded", "goalStinger"]);
+  expect(heardCues(["otherGoal", "kickOff"], null)).toEqual(["otherGoal", "kickOff"]);
+});
+
+test("in a hot-seat round every human coach's match sounds as his own, and a goal between two humans celebrates its scorer", () => {
+  const round: LiveRound = { ...roundWith([goal(10, "vit")], [goal(10, "fla"), goal(20, "rem")]), otherHumanClubIds: ["fla", "vit"] };
+  expect(roundCues(round, 9, 10)).toEqual(["coachGoal", "coachGoal"]);
+  expect(roundCues(round, 19, 20)).toEqual(["conceded"]);
+});
+
+test("a VAR check holds back its match's sounds at its minute; its decision whistles and lets them go, or the crowd reacts to what it took back", () => {
+  const awarded = roundWith([goal(30, "bahia"), varCheck(30, "bahia", "goalAwarded")], [goal(30, "fla")]);
+  expect(roundCues(awarded, 29, 30, "ours")).toEqual(["otherGoal"]);
+  expect(varDecisionCues(awarded, { fixtureId: "ours", check: varCheck(30, "bahia", "goalAwarded") })).toEqual(["varDecision", "coachGoal"]);
+
+  const ruledOut = roundWith([varCheck(40, "bahia", "goalRuledOut"), varCheck(50, "vit", "goalRuledOut"), varCheck(60, "bahia", "redCardCancelled"), varCheck(70, "vit", "penaltyCancelled")]);
+  const decided = (minute: number, clubId: string, decision: VarDecision) => varDecisionCues(ruledOut, { fixtureId: "ours", check: varCheck(minute, clubId, decision) });
+  expect(decided(40, "bahia", "goalRuledOut")).toEqual(["varDecision", "groan"]);
+  expect(decided(50, "vit", "goalRuledOut")).toEqual(["varDecision", "relief"]);
+  expect(decided(60, "bahia", "redCardCancelled")).toEqual(["varDecision", "relief"]);
+  expect(decided(70, "vit", "penaltyCancelled")).toEqual(["varDecision", "relief"]);
+});
+
+test("late in a close match the crowd builds, leading or trailing by one; a two-goal margin calms it", () => {
+  const close = roundWith([goal(10, "vit")]);
+  expect(crowdLevel(close, 70)).toBe(0.4);
+  expect(crowdLevel(close, 80)).toBeGreaterThan(0.6);
+  expect(crowdLevel(close, 88)).toBeGreaterThan(crowdLevel(close, 80));
+  expect(crowdLevel(close, 90)).toBeCloseTo(0.95);
+  const settled = roundWith([goal(10, "bahia"), goal(20, "bahia")]);
+  expect(crowdLevel(settled, 88)).toBe(0.6);
+});
+
+test("in a hot-seat round the crowd follows the liveliest human coach's match", () => {
+  const round: LiveRound = { ...roundWith([goal(10, "vit")], [goal(60, "fla")]), otherHumanClubIds: ["fla"] };
+  expect(crowdLevel(round, 20)).toBe(0.6);
+  expect(crowdLevel(round, 59)).toBe(1);
 });

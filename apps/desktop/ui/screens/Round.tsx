@@ -38,7 +38,7 @@ import { useStickerLift } from "../round/useStickerLift.js";
 import type { Substitution } from "@boleiro/engine/sim/live/applyLiveChange";
 import type { Formation } from "@boleiro/engine/engine/formations";
 import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
-import { crowdLevel, roundCues, thinCues } from "../sound/roundCues.js";
+import { crowdLevel, heardCues, roundCues, thinCues, varDecisionCues } from "../sound/roundCues.js";
 import { useSound } from "../sound/SoundProvider.js";
 import copaDoBrasil from "../../../../design/mocks/img/competitions/copa-do-brasil.svg";
 import serieA from "../../../../design/mocks/img/competitions/serie-a.svg";
@@ -266,9 +266,10 @@ export function Round() {
     if (!live || minute <= from) return;
     shownMinute.current = minute;
     engine.apply({ type: "seeMinute", minute }).catch(() => undefined);
-    for (const cue of thinCues(roundCues(live, from, minute), resumeSpeed.current)) sound.play(cue);
-    // A VAR check holds back what it rules on: its match's goal or red card waits for the decision.
+    // A VAR check holds back what it rules on: its match's goal or red card, seen and heard, waits for the decision.
     const held = varCheckAt(live, minute);
+    const side = live.coach?.side ?? null;
+    for (const cue of heardCues(thinCues(roundCues(live, from, minute, held?.fixtureId ?? null), resumeSpeed.current), side)) sound.play(cue);
     const isHeldBack = (fixtureId: string) => held?.fixtureId === fixtureId;
     const goals = goalsBetween(live, from, minute);
     celebrate(live, goals.filter((goal) => !isHeldBack(goal.fixtureId)));
@@ -294,7 +295,9 @@ export function Round() {
       finishNow();
       return;
     }
+    sound.play("varCheck");
     holdForVar(held, () => {
+      for (const cue of heardCues(varDecisionCues(live, held), side)) sound.play(cue);
       celebrate(live, goals.filter((goal) => isHeldBack(goal.fixtureId)));
       stopNow();
     }, finishNow);
