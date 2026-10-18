@@ -83,7 +83,7 @@ describe("developPlayers at the end of a season", () => {
     expect(Math.max(...thinYouth.map((p) => p.wage))).toBeLessThanOrEqual(Math.max(...otherDYouth.map((p) => p.wage)));
   });
 
-  it("replaces a retiree with an academy kid only when the kid would make the squad", () => {
+  it("replaces a retiree with an academy kid only when the kid would make the squad, unless a human coach runs the club", () => {
     const fullSquads = Object.values(start.clubs)
       .filter((c) => c.division === "A" && Object.values(start.players).filter((p) => p.clubId === c.id).length >= 25)
       .map((c) => c.id);
@@ -105,6 +105,8 @@ describe("developPlayers at the end of a season", () => {
     expect(turned.players[ready.id]?.clubId).toBe(readyClub);
     expect(turned.players[far.id]).toBeUndefined();
     expect(turned.youth?.prospects[far.id]).toEqual(far);
+    const coached = developPlayers({ ...turning, coachClubId: farClub }).state;
+    expect(coached.players[far.id]?.clubId).toBe(farClub);
   });
 
   it("drops the pre-contracts and loans of players who retire", () => {

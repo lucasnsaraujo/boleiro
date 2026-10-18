@@ -3,7 +3,7 @@ import { randomStream } from "../../engine/random.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
 import { divisionOf, tierOf } from "../finances/tierOf.js";
 import type { GameState, SimPlayer } from "../gameState.js";
-import { academyPlayer, groupsToFill, isWorthPromoting, MIN_SQUAD, professionalOf, readyProspect } from "../players/developPlayers.js";
+import { academyPlayer, groupsToFill, isNearSquadMiddle, MIN_SQUAD, professionalOf, readyProspect } from "../players/developPlayers.js";
 import { forgetSquads, squadsOfGame } from "../players/squadsByClub.js";
 import { contractEnd } from "../transfers/expireContracts.js";
 import { movePlayer, openDraft } from "../transfers/movePlayer.js";
@@ -20,10 +20,10 @@ const inventedPlayer = (kid: Omit<SimPlayer, "wage">, squad: readonly SimPlayer[
 
 /**
  * Every squad the market left under 18 players (contracts that ran out at the turn of the year, sales)
- * fills each position it lacks: first, at an AI club, with the best free agent at or below its level
- * it did not just let go itself, as clubs pick up released players; then with its academy's
- * best teenager, at an AI club only one it would keep (isWorthPromoting); then with an invented Brazilian
- * teenager at the club's level. So every club can field a side. Draws from the
+ * fills each position it lacks: first, at an AI club, with the best free agent up to a little above the
+ * middle of its squad (REPLACEMENT_BAND) it did not just let go itself, as clubs pick up released players;
+ * then with its academy's best teenager, at an AI club only one who plays near the middle of its squad
+ * (isNearSquadMiddle); then with an invented Brazilian teenager at the club's level. So every club can field a side. Draws from the
  * academies' own stream; a save from before academies waits for them to open.
  */
 export function fillShortSquads(state: GameState): { state: GameState; events: (SquadToppedUp | PlayerMoved)[] } {
@@ -60,7 +60,7 @@ export function fillShortSquads(state: GameState): { state: GameState; events: (
         squad.push(next.players[signing.id] ?? signing);
         return;
       }
-      const prospect = readyProspect(academies.get(club.id) ?? [], group, taken, (kid) => isHuman || isWorthPromoting(next, kid, squad));
+      const prospect = readyProspect(academies.get(club.id) ?? [], group, taken, (kid) => isHuman || isNearSquadMiddle(kid, squad));
       if (prospect) taken.add(prospect.id);
       const player = prospect
         ? professionalOf(prospect, club.id, firstWage(prospect, squad), state.date, random.next)

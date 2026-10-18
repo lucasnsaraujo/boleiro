@@ -215,12 +215,16 @@ export function readyProspect(academy: readonly Prospect[], group: PositionGroup
 // guess: a club keeps a kid who plays within 4 points of the middle of its squad at his position.
 const FIT_MARGIN = 4;
 
-/** Whether the club with `squad` would keep the kid: there is room and he plays near the middle of its squad at his position. */
-export function isWorthPromoting(state: GameState, prospect: Prospect, squad: readonly SimPlayer[]): boolean {
-  if (isClubFull(state, prospect.clubId, squad.length)) return false;
+/** Whether the kid plays near the middle of `squad` at his position. */
+export function isNearSquadMiddle(prospect: Pick<Prospect, "group" | "strength">, squad: readonly SimPlayer[]): boolean {
   const rivals = squad.filter((p) => p.group === prospect.group).map((p) => p.strength).sort((a, b) => a - b);
   const middle = rivals[rivals.length >> 1];
   return middle === undefined || prospect.strength >= middle - FIT_MARGIN;
+}
+
+/** Whether the club with `squad` would keep the kid: there is room and he plays near the middle of its squad at his position. */
+export function isWorthPromoting(state: GameState, prospect: Prospect, squad: readonly SimPlayer[]): boolean {
+  return !isClubFull(state, prospect.clubId, squad.length) && isNearSquadMiddle(prospect, squad);
 }
 
 /** What each tier pays for a given strength, from the wages of everyone playing in it. */
@@ -242,9 +246,9 @@ function tierWageRates(clubs: GameState["clubs"], players: readonly SimPlayer[])
  * with age, minutes and form toward his club's level (an academy graduate toward his potential, when
  * higher); veterans retire, sooner when they barely played or fell below their club's level, and a
  * human coach's veterans announce their last season instead; the academy's best teenagers at each
- * position replace them and fill any squad below 18 when the club would keep them (isWorthPromoting),
- * and Brazilian teenagers with invented names at the club's level stand in where the academy has nobody
- * ready (or no academy at all). Runs on the first day of the new year,
+ * position replace them and fill any squad below 18, at an AI club only those who play near the middle
+ * of its squad (isNearSquadMiddle), and Brazilian teenagers with invented names at the club's level stand
+ * in where the academy has nobody ready (or no academy at all). Runs on the first day of the new year,
  * before promotions and relegations, so each academy produces players for the division it played in.
  */
 export function developPlayers(state: GameState): { state: GameState; events: (PlayerRetired | PlayerWantsToRetire | YouthPromoted)[] } {
@@ -302,8 +306,9 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
     const retiredGroups = squad.filter((p) => !players[p.id]).map((p) => p.group);
     const rate = wageRate(tierOf(club));
     const squadNow = staying.flatMap((p) => players[p.id] ?? []);
+    const isHuman = isHumanClub(state, club.id);
     groupsToFill(staying, retiredGroups).forEach((group, i) => {
-      const prospect = readyProspect(academies.get(club.id) ?? [], group, taken, (kid) => isWorthPromoting(state, kid, squadNow));
+      const prospect = readyProspect(academies.get(club.id) ?? [], group, taken, (kid) => isHuman || isNearSquadMiddle(kid, squadNow));
       if (prospect) taken.add(prospect.id);
       const youth = prospect
         ? professionalOf(prospect, club.id, 0, date, random.next)
