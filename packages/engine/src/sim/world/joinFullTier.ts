@@ -1,7 +1,7 @@
 import type { Club } from "@boleiro/data/clubs";
 import { keyedSeed, randomStream } from "../../engine/random.js";
 import { boardExpectations } from "../coach/boardExpectations.js";
-import type { ClubFinance, Fixture, GameState, LeagueCompetition, SimPlayer } from "../gameState.js";
+import type { ClubFinance, Fixture, GameState, IsoDate, LeagueCompetition, SimPlayer } from "../gameState.js";
 import { wagesForBill } from "../finances/openingFinances.js";
 import { projectedRevenue } from "../finances/setBoardBudget.js";
 import { emptyLedger } from "../finances/ledger.js";
@@ -13,9 +13,9 @@ import { openingLineups } from "../players/usualLineups.js";
 import { stageFixtures } from "../stageFixtures.js";
 import { openingContractUntil } from "../transfers/openingContractUntil.js";
 import { clubsAbroad } from "./clubsAbroad.js";
-import { leagueMatches } from "./resultOnlyLeague.js";
+import { leagueMatches, playLeagueDay } from "./resultOnlyLeague.js";
 import { squadLevel } from "../coach/aiCoaches.js";
-import type { Country } from "./world.js";
+import type { Country, WorldClub } from "./world.js";
 
 /** The result-only country a club plays in, with its id; null for a club of the full tier or of no country. */
 export function countryOfWorldClub(state: Pick<GameState, "world">, clubId: string): { id: string; country: Country } | null {
@@ -81,6 +81,21 @@ function leaguesJoined(id: string, country: Country): { competitions: LeagueComp
 }
 
 /**
+ * The country with its league rounds before `date` played result-only: a coach takes a job after the
+ * day's full-tier matches but before the world plays its own, so the day he moves on is still to play.
+ */
+function playedBefore(country: Country, date: IsoDate): Country {
+  const random = randomStream(country.rngState);
+  const clubOf = (id: string): WorldClub => {
+    const club = country.clubs[id];
+    if (!club) throw new Error(`${country.structure.id}: no club ${id}`);
+    return club;
+  };
+  const leagues = country.leagues.map((league) => league.dates.filter((day) => day < date).reduce((played, day) => playLeagueDay(played, day, clubOf, random.next), league));
+  return leagues.every((league, i) => league === country.leagues[i]) ? country : { ...country, leagues, rngState: random.state() };
+}
+
+/**
  * A result-only country brought into the full tier mid-season, when a human coach takes one of its
  * clubs: its clubs and squads (their ages from their years of birth), each club with the books and
  * wage bill of its Brazilian proxy (proxyClubOf), a board, a usual lineup and a neutral mood; its
@@ -88,8 +103,9 @@ function leaguesJoined(id: string, country: Country): { competitions: LeagueComp
  * next season); its coaches into the full tier's. Its cup stays result-only, as at a new game.
  */
 export function joinFullTier(state: GameState, id: string): GameState {
-  const country = state.world?.[id];
-  if (!country || country.isFullTier) return state;
+  const found = state.world?.[id];
+  if (!found || found.isFullTier) return state;
+  const country = playedBefore(found, state.date);
   const levels = country.leagues.map((league) => league.clubIds.flatMap((clubId) => country.clubs[clubId] ?? []));
   const { clubs, players } = clubsAbroad({ structure: country.structure, levels }, state.season);
   const random = randomStream(keyedSeed(state.seed, `join-${id}-${state.date}`)).next;

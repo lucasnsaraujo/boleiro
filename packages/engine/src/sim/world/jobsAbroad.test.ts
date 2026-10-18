@@ -104,3 +104,19 @@ describe("job offers from clubs abroad", () => {
     expect([...ages]).toContain(26);
   });
 });
+
+describe("a job abroad taken on its league's match day", () => {
+  it("leaves none of the league's games before the move unplayed", () => {
+    // Germany's leagues play result-only through the autumn; the coach takes Bayern on a league round's day.
+    let state = coachWith(start, 100);
+    const germany = () => state.world?.["de"]?.leagues[0];
+    for (let day = 0; day < 300 && !(germany()?.dates.includes(state.date)); day++) state = advanceDay(state, {}).state;
+    const roundDay = state.date;
+    const offer = { clubId: "tm-27", salary: 2_000_000, untilSeason: state.season, expiresOn: "2099-01-01" };
+    const hired = advanceDay({ ...state, coach: { ...state.coach, offers: [offer] } }, { acceptOffer: "tm-27" }).state;
+    const leagueIds = new Set(Object.values(hired.competitions).flatMap((c) => (c.kind === "league" && c.abroad?.country === "de" ? [c.id] : [])));
+    const unplayed = hired.fixtures.filter((f) => leagueIds.has(f.competitionId) && f.date <= roundDay && !f.result);
+    expect(hired.coachClubId).toBe("tm-27");
+    expect(unplayed).toEqual([]);
+  });
+});
