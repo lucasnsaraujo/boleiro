@@ -1,5 +1,6 @@
 import { useRef, type CSSProperties, type ReactNode } from "react";
 import type { RetirementView } from "@boleiro/game-client/moments/momentView";
+import { plateColours } from "../../clubs/clubCatalog.js";
 import { Crest } from "../../clubs/Crest.js";
 import { MomentStage, useCanvasTick, useCueAt, useTick } from "../MomentStage.js";
 import { artColours, crestClub, MomentSticker } from "../MomentSticker.js";
@@ -43,7 +44,7 @@ function Strip({ strip }: { strip: RetirementView["strip"] }) {
     <div className="rt-strip mo-up" style={ms(6850)}>
       <span className="lbl">Trajetória</span>
       {strip.bands.map((band, index) => (
-        <i key={index} className="bd" style={{ left: at(band.from), width: `calc(${((band.to - band.from) / years) * 100}% - 2px)`, background: band.club.colours.primary }} />
+        <i key={index} className="bd" style={{ left: at(band.from), width: `calc(${((band.to - band.from) / years) * 100}% - 2px)`, background: plateColours(band.club.colours).background }} />
       ))}
       {strip.titles.map((year, index) => (
         <i key={`t${index}`} className="tk" style={{ left: at(year) }} />
@@ -95,7 +96,7 @@ function FarewellScore({ score }: { score: [number, number] }) {
 function RetirementBody({ view }: Pick<Props, "view">) {
   const times = leafTimes(view.eras.length);
   const caption = useRef<HTMLSpanElement>(null);
-  const captions: [number, string][] = [[0, `Seu álbum, ${view.strip.from} a ${view.strip.to - 1}`], ...view.eras.map((era, index): [number, string] => [(times[index + 1] ?? 0) + 200, `${era.name} · ${era.years}`]), [4300, "A última página"]];
+  const captions: [number, string][] = [[0, `Seu álbum, ${view.years}`], ...view.eras.map((era, index): [number, string] => [(times[index + 1] ?? 0) + 200, `${era.name} · ${era.years}`]), [4300, "A última página"]];
   useTick((t) => {
     if (!caption.current) return;
     let text = captions[0]?.[1] ?? "";
@@ -191,9 +192,7 @@ function RetirementBody({ view }: Pick<Props, "view">) {
             <div className="sc">
               <div className="t">
                 Amigos de {view.coachName.split(" ")[0]}
-                <small>
-                  {view.strip.from} a {view.strip.to - 1}
-                </small>
+                <small>{view.years}</small>
               </div>
               <FarewellScore score={view.farewell.score} />
               <div className="t r">
@@ -222,7 +221,7 @@ function RetirementBody({ view }: Pick<Props, "view">) {
             <div className="rt-slot">
               <div className="rt-thud" />
               <MomentSticker
-                sticker={{ id: "coach", name: view.coachName, initial: view.coachName.charAt(0).toUpperCase(), number: view.games.toLocaleString("pt-BR"), caption: `técnico · ${view.strip.from} a ${view.strip.to - 1}`, isShiny: true, club: view.lastClub }}
+                sticker={{ id: "coach", name: view.coachName, initial: view.coachName.charAt(0).toUpperCase(), number: view.games.toLocaleString("pt-BR"), caption: `técnico · ${view.years}`, isShiny: true, club: view.lastClub }}
                 className="rt-final"
                 crest={20}
                 sheenAt={FINAL_AT + 700}
@@ -268,7 +267,7 @@ function RetirementBody({ view }: Pick<Props, "view">) {
             <div className="nm">
               {view.coachName}
               <small>
-                TÉCNICO · {view.strip.from} A {view.strip.to - 1}
+                TÉCNICO · {view.years.toUpperCase()}
               </small>
             </div>
           </div>

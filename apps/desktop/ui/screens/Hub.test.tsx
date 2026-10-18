@@ -49,6 +49,7 @@ function openHub(given: Services) {
     ["/offers", "Propostas abertas"],
     ["/sacked", "Demissão aberta"],
     ["/season-end", "Fim de temporada aberto"],
+    ["/moment", "Momento aberto"],
     ["/", "Início"],
   ];
   renderApp(
@@ -176,6 +177,17 @@ test.each<[TurningPoint["kind"], string]>([
       : { kind, review: { season: 2026, clubId: null, placing: null, titles: [], continental: null, prizeMoney: 0, verdict: null, champions: {}, hasLostJob: false } };
   openHub(await services("bahia-ba", (engine) => ({ ...engine, turningPoint: async () => point })));
   expect(await screen.findByText(opened)).toBeTruthy();
+});
+
+test("a career moment waiting sends the hub to its scene, but only after the turning points", async () => {
+  const given = await services("bahia-ba");
+  await given.engine.apply({ type: "retireCoach" });
+  openHub(given);
+  expect(await screen.findByText("Momento aberto")).toBeTruthy();
+  cleanup();
+  const firing: TurningPoint = { kind: "fired", firing: { type: "coachFired", clubId: "bahia-ba", date: "2026-06-10", isYou: true, position: 18, targetPosition: 10 } };
+  openHub({ ...given, engine: { ...given.engine, turningPoint: async () => firing } });
+  expect(await screen.findByText("Demissão aberta")).toBeTruthy();
 });
 
 const columnOf = (table: HTMLElement, title: string) => within(table).getAllByRole("columnheader").findIndex((header) => header.textContent === title);

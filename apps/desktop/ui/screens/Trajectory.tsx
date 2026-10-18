@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router";
 import type { MarkerKind, Trajectory as Career, TrajectoryMarker } from "@boleiro/game-client/moments/trajectoryOf";
 import { formatGameDate } from "@boleiro/game-client/format/formatGameDate";
 import { useServices } from "../app/ServicesContext.js";
+import { plateColours } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { crestClub } from "../moments/MomentSticker.js";
 import "./trajectory.css";
@@ -124,11 +125,19 @@ export function Trajectory() {
               />
             ))}
           </svg>
+          {career.idolLines.map((line) => {
+            const last = line.points.at(-1);
+            return last ? (
+              <span key={`label-${line.club.id}`} className="tj-idol-label" style={{ left: `${at(last[0])}%`, top: 196 + (72 * (100 - last[1])) / 100 } as CSSProperties}>
+                {line.club.name} · {last[1]}
+              </span>
+            ) : null;
+          })}
           {career.bands.map((band, index) => (
             <div
               key={`${band.club.id}-${index}`}
               className="tj-band"
-              style={{ left: `${at(band.from)}%`, width: `calc(${at(band.to) - at(band.from)}% - 3px)`, background: band.club.colours.primary, "--d": delay(band.from), "--len": Math.max(120, delay(band.to) - delay(band.from)) } as CSSProperties}
+              style={{ left: `${at(band.from)}%`, width: `calc(${at(band.to) - at(band.from)}% - 3px)`, background: plateColours(band.club.colours).background, color: plateColours(band.club.colours).text, "--d": delay(band.from), "--len": Math.max(120, delay(band.to) - delay(band.from)) } as CSSProperties}
               title={`${band.club.name} · ${band.label}`}
             >
               <Crest club={crestClub(band.club)} size={24} />

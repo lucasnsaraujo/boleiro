@@ -65,9 +65,9 @@
 .mo-retire .rt-tits { margin-top: 10px; font-size: 12px; line-height: 1.5; color: var(--ink-2); }
 .mo-retire .rt-strip { position: relative; margin-top: 12px; height: 92px; }
 .mo-retire .rt-strip .lbl { display: block; font-size: 10px; }
-.mo-retire .rt-strip .bd { position: absolute; top: 42px; height: 22px; border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+.mo-retire .rt-strip .bd { position: absolute; top: 42px; height: 22px; border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(20,35,26,.18); }
 .mo-retire .rt-strip .tk { position: absolute; top: 22px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--yellow); box-shadow: 0 0 0 1.5px var(--ink); }
-.mo-retire .rt-strip .tk.x { background: var(--red); top: 70px; }
+.mo-retire .rt-strip .tk.x { background: var(--red); }
 .mo-retire .rt-strip .tk.i { background: var(--foil); box-shadow: 0 0 0 1.5px var(--yellow-d); top: 8px; }
 .mo-retire .rt-strip .yr { position: absolute; top: 76px; font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; color: var(--mute); transform: translateX(-50%); }
 .mo-retire .rt-cause { margin-top: auto; padding-top: 10px; border-top: 2px dotted var(--line-2); }

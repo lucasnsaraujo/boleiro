@@ -162,6 +162,8 @@ export type PlayerAwardView = Common & {
 
 export type RetirementView = Common & {
   kind: "retirement";
+  /** "2019 a 2026" */
+  years: string;
   span: string;
   eras: { club: ClubTag; name: string; years: string; line: string; stickers: MomentSticker[] }[];
   clubs: { club: ClubTag; years: string; note: string; isIdol: boolean }[];
@@ -812,6 +814,7 @@ function retirementView(state: GameState, moment: Extract<Moment, { kind: "retir
     club: lastClub,
     coachName,
     cause: `Você escolheu parar. ${plural(Number(last) - Number(first) + 1, "temporada", "temporadas")} e ídolo de ${plural(idolClubs.length, "clube", "clubes")}: a despedida com todos os ex-clubes.`,
+    years: `${first} a ${last}`,
     span: `Técnico de ${first} a ${last}. ${plural(Number(last) - Number(first) + 1, "temporada", "temporadas")}, ${plural(clubIds.length, "clube", "clubes")}. Este é o álbum inteiro.`,
     eras,
     clubs: record.stints.map((stint) => {
@@ -830,7 +833,7 @@ function retirementView(state: GameState, moment: Extract<Moment, { kind: "retir
     titles: titlesLine(record.trophies) || "Nenhum título. O álbum guarda o resto.",
     strip: {
       from: Number(first),
-      to: Number(last) + 1,
+      to: toYear(moment.date) + 0.3,
       bands: record.stints.map((stint) => ({ from: toYear(stint.from), to: toYear(stint.until ?? moment.date), club: clubTagOf(state, stint.clubId) })),
       titles: record.trophies.map((trophy) => toYear(titleMoments.find((m) => m.season === trophy.season && m.competition === trophy.competition && m.clubId === trophy.clubId)?.date ?? `${trophy.season}-12-01`)),
       idols: (moments?.past ?? []).filter((m) => m.kind === "idol").map((m) => toYear(m.date)),
