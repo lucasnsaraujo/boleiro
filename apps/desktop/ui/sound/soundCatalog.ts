@@ -91,7 +91,7 @@ const brass = (notes: readonly number[], at: number, length: number, gain: numbe
     { note, at, length, wave: "sawtooth" as const, gain, cutoff: 2600 },
     { note: note + 0.12, at, length, wave: "sawtooth" as const, gain: gain * 0.7, cutoff: 2600 },
   ]);
-const GOAL_STINGER: Tone[] = [...brass([67, 72], 0, 0.09, 0.028), thud(0, 47, 0.18), ...brass([72, 76, 79, 84], 0.16, 1.1, 0.022), thud(0.16)];
+const GOAL_STINGER: Tone[] = [...brass([67, 72], 0, 0.09, 0.05), thud(0, 47, 0.18), ...brass([72, 76, 79, 84], 0.16, 1.1, 0.045), thud(0.16)];
 
 /** VAR under review: three quick monitor pips over a low drone that rises a semitone, unresolved. */
 const VAR_STING: Tone[] = [
