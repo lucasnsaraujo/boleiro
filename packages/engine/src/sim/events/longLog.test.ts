@@ -51,11 +51,16 @@ describe("the event log's index", () => {
     expect(eventMemoryOf(second)).toEqual(eventMemoryOf(afterDays(other, 40)));
   });
 
-  it("reads a fork of a game that went its own way as the fork, not as the game it left", () => {
+  it("reads two forks of one game, played a day each in turn, each as its own log", () => {
     const fork = afterDays(start, 20);
-    const ahead = afterDays(fork, 20, 20);
-    const behind = afterDays({ ...fork, seed: fork.seed + 1 }, 20, 20);
+    if (!eventMemoryOf(fork).log.length) throw new Error("the fork needs events to share");
+    let ahead = fork;
+    let behind: GameState = { ...fork, seed: fork.seed + 1 };
+    for (let day = 20; day < 40; day++) {
+      ahead = runEvents(ahead, addDays(start.date, day), [], EVENT_BANK).state;
+      behind = runEvents(behind, addDays(start.date, day), [], EVENT_BANK).state;
+    }
+    expect(eventMemoryOf(ahead)).toEqual(eventMemoryOf(afterDays(afterDays(start, 20), 20, 20)));
     expect(eventMemoryOf(behind)).toEqual(eventMemoryOf(afterDays({ ...afterDays(start, 20), seed: fork.seed + 1 }, 20, 20)));
-    expect(eventMemoryOf(ahead).log.length).toBeGreaterThan(eventMemoryOf(fork).log.length);
   });
 });
