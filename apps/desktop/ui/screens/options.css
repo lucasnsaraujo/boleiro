@@ -176,6 +176,15 @@
   outline-offset: 2px;
 }
 
+.credits-sub {
+  margin-top: 18px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--ink);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 13px;
+}
+
 .credits-list {
   list-style: none;
 }

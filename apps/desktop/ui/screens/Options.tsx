@@ -6,6 +6,7 @@ import { platformOf } from "../app/platform.js";
 import { NAV } from "../app/screens.js";
 import { ServicesContext } from "../app/ServicesContext.js";
 import { shortcutKeys, type CommandId } from "../app/shortcuts.js";
+import { LOGO_CREDITS } from "@boleiro/data/logoCredits";
 import { GAME_SLOT_IDS, slotLabel } from "@boleiro/game-client/saves/slotMeta";
 import type { SlotStore } from "@boleiro/game-client/saves/slotStore";
 import icon from "../../../../design/logo/boleiro-icon-small.svg";
@@ -18,6 +19,13 @@ import { ExternalLink } from "../controls/ExternalLink.js";
 import "./options.css";
 
 const CREDITS = parseCredits(credits);
+const SITE_NAMES: Readonly<Record<string, string>> = { "commons.wikimedia.org": "Wikimedia Commons" };
+
+/** The site a credited file's page is on, by the name it goes by. */
+function siteOf(source: string): string {
+  const { hostname } = new URL(source);
+  return SITE_NAMES[hostname] ?? hostname;
+}
 const PLATFORM = platformOf(navigator.userAgent);
 
 const VOLUMES: readonly { key: Category; label: string; title: string; note: string | null }[] = [
@@ -50,7 +58,7 @@ const MATCH_KEYS: readonly { commands: readonly CommandId[]; label: string }[] =
   { commands: ["tabelaAoVivo"], label: "Tabela ao vivo" },
 ];
 
-/** Paper, sound, saving and the keyboard; the credits of every sound file. */
+/** Paper, sound, saving and the keyboard; the credits of every sound file and of the sponsors' logos that ask for one. */
 export function Options() {
   const { settings, changeSettings } = useSound();
   const theme = useTheme();
@@ -204,6 +212,21 @@ export function Options() {
             ))}
           </ul>
           <p className="credits-note">Cliques, a vinheta do gol, a checagem do VAR e as vinhetas de título, acesso, rebaixamento e demissão são sintetizados no próprio jogo.</p>
+          <h3 className="credits-sub" id="logo-credits-title">
+            Logos dos patrocinadores
+          </h3>
+          <ul className="credits-list" aria-labelledby="logo-credits-title">
+            {LOGO_CREDITS.map((credit) => (
+              <li key={credit.brandId} className="credits-row">
+                <ExternalLink className="credits-sound" href={credit.source} title={credit.brand}>
+                  {credit.brand}
+                </ExternalLink>
+                <span className="credits-who">
+                  {siteOf(credit.source)} · {credit.licence}
+                </span>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <footer className="options-actions">
