@@ -2,10 +2,10 @@ import type { PositionGroup } from "../../engine/match.js";
 import { randomStream } from "../../engine/random.js";
 import { clubStatures } from "../coach/clubStatures.js";
 import type { GameState, SimPlayer } from "../gameState.js";
-import { normal, professionalOf, type YouthPromoted } from "../players/developPlayers.js";
+import { isWorthPromoting, normal, professionalOf, type YouthPromoted } from "../players/developPlayers.js";
 import { squadsByClub } from "../players/squadsByClub.js";
 import { academyClubs, academyOf, clampStrength, gapAt, inventProspect, LEAVING_AGE, openAcademies, thinnestGroup, YOUTH_AGES, type Prospect } from "./academy.js";
-import { firstWage, isWorthPromoting, type ProspectReleased } from "./moveProspect.js";
+import { firstWage, type ProspectReleased } from "./moveProspect.js";
 
 export type YouthTrialsHeld = { type: "youthTrialsHeld"; clubId: string; prospectIds: string[] };
 export type YouthEvent = YouthPromoted | ProspectReleased | YouthTrialsHeld;

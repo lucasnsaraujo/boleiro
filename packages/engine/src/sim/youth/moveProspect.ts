@@ -2,7 +2,7 @@ import { randomStream } from "../../engine/random.js";
 import { tierOf } from "../finances/tierOf.js";
 import { sellPlayer } from "../finances/sellPlayer.js";
 import type { GameState, SimPlayer } from "../gameState.js";
-import { NO_SQUAD_WAGE, professionalOf, YOUTH_CONTRACT_YEARS } from "../players/developPlayers.js";
+import { isWorthPromoting, NO_SQUAD_WAGE, professionalOf, YOUTH_CONTRACT_YEARS } from "../players/developPlayers.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
 import { recordTransfer } from "../history/recordTransfer.js";
 import { isWindowOpen } from "../transfers/transferWindows.js";
@@ -12,9 +12,6 @@ import { SQUAD_TARGET } from "../transfers/squadNeeds.js";
 import { valuePlayer } from "../transfers/valuePlayer.js";
 import { wageRateOf } from "../transfers/wageDemand.js";
 import type { Prospect, Youth } from "./academy.js";
-
-// guess: a club keeps a kid who plays within 4 points of the middle of its squad at his position.
-const FIT_MARGIN = 4;
 
 /** A kid who reached 21 and was let go at the season's turn. */
 export type ProspectReleased = { type: "prospectReleased"; prospectId: string; clubId: string; name: string };
@@ -29,14 +26,6 @@ const squadOf = (state: Pick<GameState, "players">, clubId: string) => Object.va
 export const firstWage = (prospect: Pick<Prospect, "strength">, squad: readonly SimPlayer[]) => Math.max(NO_SQUAD_WAGE, wageRateOf(squad)(prospect.strength));
 
 const withoutProspect = (youth: Youth, id: string): Youth => ({ ...youth, prospects: Object.fromEntries(Object.entries(youth.prospects).filter(([key]) => key !== id)) });
-
-/** Whether the club with `squad` would keep the kid: there is room and he plays near the middle of its squad at his position. */
-export function isWorthPromoting(state: GameState, prospect: Prospect, squad: readonly SimPlayer[]): boolean {
-  if (isClubFull(state, prospect.clubId, squad.length)) return false;
-  const rivals = squad.filter((p) => p.group === prospect.group).map((p) => p.strength).sort((a, b) => a - b);
-  const middle = rivals[rivals.length >> 1];
-  return middle === undefined || prospect.strength >= middle - FIT_MARGIN;
-}
 
 /** Lets the kid go; he leaves the game. */
 function release(state: GameState, prospect: Prospect): GameState {

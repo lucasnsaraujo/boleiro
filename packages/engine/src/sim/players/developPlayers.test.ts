@@ -83,6 +83,30 @@ describe("developPlayers at the end of a season", () => {
     expect(Math.max(...thinYouth.map((p) => p.wage))).toBeLessThanOrEqual(Math.max(...otherDYouth.map((p) => p.wage)));
   });
 
+  it("replaces a retiree with an academy kid only when the kid would make the squad", () => {
+    const fullSquads = Object.values(start.clubs)
+      .filter((c) => c.division === "A" && Object.values(start.players).filter((p) => p.clubId === c.id).length >= 25)
+      .map((c) => c.id);
+    const [farClub = "", readyClub = ""] = fullSquads;
+    const veteranOf = (clubId: string) => Object.values(playedSeason.players).filter((p) => p.clubId === clubId && p.group === "MID").sort((a, b) => b.strength - a.strength)[0];
+    const [farVeteran, readyVeteran] = [veteranOf(farClub), veteranOf(readyClub)];
+    const [model] = Object.values(playedSeason.youth?.prospects ?? {});
+    if (!farVeteran || !readyVeteran || !model || !playedSeason.youth) throw new Error("no squads to test with");
+    const kid = (id: string, clubId: string, strength: number) => ({ ...model, id, clubId, group: "MID" as const, age: 18, strength, potential: strength + 10 });
+    const far = kid("k-far", farClub, farVeteran.strength - 25);
+    const ready = kid("k-ready", readyClub, readyVeteran.strength);
+    const retiring = { afterSeason: playedSeason.season, hasBeenAsked: false };
+    const turning: GameState = {
+      ...playedSeason,
+      players: { ...playedSeason.players, [farVeteran.id]: { ...farVeteran, retiring }, [readyVeteran.id]: { ...readyVeteran, retiring } },
+      youth: { ...playedSeason.youth, prospects: { [far.id]: far, [ready.id]: ready } },
+    };
+    const turned = developPlayers(turning).state;
+    expect(turned.players[ready.id]?.clubId).toBe(readyClub);
+    expect(turned.players[far.id]).toBeUndefined();
+    expect(turned.youth?.prospects[far.id]).toEqual(far);
+  });
+
   it("drops the pre-contracts and loans of players who retire", () => {
     const veterans = Object.values(playedSeason.players).filter((p) => p.age >= 38);
     const loan = { fromClubId: "flamengo-rj", until: "2026-12-31", lenderWageShare: 0.5, buyOption: null };
