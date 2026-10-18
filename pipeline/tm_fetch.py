@@ -3,8 +3,8 @@
 Every page lands in a disk cache (git-ignored `data/tm_cache`, the same file names scrape_tm.py
 uses, so Brazil's pages are reused) and a re-run only asks Transfermarkt for pages missing from it
 or older than the caller's limit. The cache is the resume point: a run stopped halfway restarts
-from the first page it doesn't have. Live page requests name the scraper and its repository in the
-User-Agent and wait `delay` seconds (at least the 2 s robots.txt asks for) after each answer, images
+from the first page it doesn't have. Live page requests name the scraper, but no person or account, in a
+browser-style User-Agent and wait `delay` seconds (at least the 2 s robots.txt asks for) after each answer, images
 from the CDN `image_delay`. 429s, 5xxs and network errors are retried with a growing back-off, or
 after the Retry-After the site sends. A page that keeps failing, or a 404, raises `FetchError`,
 unless an older copy is in the cache: then that copy is used. After `BLOCKED_IN_A_ROW` refusals
@@ -25,7 +25,7 @@ from typing import Callable
 import requests
 from PIL import Image, UnidentifiedImageError
 
-UA = "Mozilla/5.0 (compatible; BoleiroBot/1.0; +https://github.com/lucasnsaraujo/boleiro)"
+UA = "Mozilla/5.0 (compatible; Boleiro/0.1; personal project)"
 BASE = "https://www.transfermarkt.com"
 IMAGE_BASE = "https://img.a.transfermarkt.technology"
 ATTEMPTS = 5
