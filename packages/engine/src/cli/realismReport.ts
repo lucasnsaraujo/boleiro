@@ -99,7 +99,7 @@ function revenueTable(stats: readonly SeasonStats[]): string[] {
   const data = loadFinances();
   const realOf = (tier: Tier): [string, string, string, string] => {
     if (tier === "A") {
-      const values = data.clubs.map(operating).sort((a, b) => a - b);
+      const values = data.clubs.filter((row) => row.division === "A").map(operating).sort((a, b) => a - b);
       return [millions(values[0] ?? 0), millions(quantile(values, 0.5)), millions(values.at(-1) ?? 0), "published accounts, min / median / max"];
     }
     if (tier === "state") return ["-", "-", "-", "no data"];

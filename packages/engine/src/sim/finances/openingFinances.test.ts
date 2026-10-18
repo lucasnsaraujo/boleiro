@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { loadFinances } from "@boleiro/data/finances";
+import { loadPack } from "@boleiro/data/dataPack";
+import { loadFinances, type ClubFinances } from "@boleiro/data/finances";
 import type { Division } from "@boleiro/data/players";
 import type { GameState } from "../gameState.js";
-import { loadNewGame } from "../loadNewGame.js";
+import { loadNewGame, newGameFromFiles } from "../loadNewGame.js";
 
 const yearlyWageBill = (state: GameState, clubId: string) =>
   12 * Object.values(state.players).filter((p) => p.clubId === clubId).reduce((sum, p) => sum + p.wage, 0);
@@ -76,5 +77,37 @@ describe("a new game's club finances", () => {
     const mirassol = state.finances["mirassol-sp"];
     expect(flamengo?.wageCap ?? 0).toBeGreaterThan(mirassol?.wageCap ?? 0);
     expect(flamengo?.transferBudget ?? 0).toBeGreaterThan(mirassol?.transferBudget ?? 0);
+  });
+
+  describe("a Série B club with its own accounts", () => {
+    const pack = loadPack();
+    const club = pack.clubs.find((c) => c.division === "B");
+    if (!club) throw new Error("no Série B club");
+    // A relegated club's books: Série A TV and crowds it no longer earns.
+    const row: ClubFinances = {
+      clubId: club.id, division: "B", season: 2025, basis: "published", guessedFields: [], source: "test accounts",
+      revenue: { total: 400_000_000, broadcasting: 150_000_000, matchday: 50_000_000, membership: 20_000_000, sponsorship: 60_000_000, playerSales: 70_000_000 },
+      wageBill: 180_000_000, netDebt: 250_000_000,
+    };
+    const game = newGameFromFiles(2026, { coachClubId: null }, { ...pack, finances: { ...pack.finances, clubs: [...pack.finances.clubs, row] } });
+    const finance = game.finances[club.id];
+
+    it("opens on its accounts' wage bill, debt, sponsorship and membership", () => {
+      expect(yearlyWageBill(game, club.id) / row.wageBill).toBeCloseTo(1, 2);
+      expect(finance?.legacyDebt).toBe(row.netDebt);
+      expect(finance?.sponsorship).toBe(row.revenue.sponsorship);
+      expect(finance?.membership).toBe(row.revenue.membership);
+    });
+
+    it("earns its division's TV and gates in place of the ones its accounts show", () => {
+      expect(finance?.tv).toBe(game.economy.tvPerClub.B);
+      const { total, playerSales, broadcasting, matchday, membership, sponsorship } = row.revenue;
+      expect((finance?.otherIncome ?? 0) + (finance?.prizesOutOfOtherIncome ?? 0)).toBe(total - playerSales - broadcasting - matchday - membership - sponsorship);
+    });
+
+    it("leaves Série A's typical and richest revenue to Série A's accounts", () => {
+      expect(game.economy.typicalRevenue).toEqual(state.economy.typicalRevenue);
+      expect(game.economy.revenueCeiling).toEqual(state.economy.revenueCeiling);
+    });
   });
 });

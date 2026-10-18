@@ -12,7 +12,7 @@ export function expectRevenueInDivisionBand(clubSeasons: readonly ClubSeason[], 
   const data = loadFinances();
   const smallest = (tier: Tier) =>
     tier === "A"
-      ? Math.min(...data.clubs.map(operating))
+      ? Math.min(...data.clubs.filter((row) => row.division === "A").map(operating))
       : tier === "state"
         ? ended.economy.typicalRevenue.state
         : Math.min(...data.divisionEstimates.filter((row) => row.division === tier).map(operating));
