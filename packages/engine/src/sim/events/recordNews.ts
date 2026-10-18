@@ -186,87 +186,104 @@ export function recordNews(state: GameState, date: IsoDate, events: readonly Day
     }
   };
 
-  for (const event of events) {
-    if (event.type === "matchPlayed") {
-      const fixture = event.fixture;
-      const result = fixture.result;
-      if (!result) continue;
-      const { homeId, awayId } = fixture;
-      const margin = result.homeGoals - result.awayGoals;
-      const winner = margin > 0 || result.penaltyWinnerId === homeId ? homeId : margin < 0 || result.penaltyWinnerId === awayId ? awayId : null;
-      const loser = winner === homeId ? awayId : winner === awayId ? homeId : null;
-      // Most matches make no story: their lines are only written for one that does.
-      let lines: Record<string, string> | undefined;
-      const names = () => (lines ??= { home: name(homeId), away: name(awayId), winner: name(winner), loser: name(loser), score: scoreLine(state, fixture), goals: goalsLine(state, sheets, fixture), where: "a tabela" });
-      if (humans.has(homeId) || humans.has(awayId)) {
-        const variants = winner === null ? DRAWS : Math.abs(margin) >= 3 ? BIG_WINS : WINS;
-        add("match", [homeId, awayId], 0, pick(variants, fixture.id, names()));
-      }
-      if (humans.has(homeId) || humans.has(awayId)) addCoachStories(fixture, winner, names());
-      const isDerby = rivals.get(homeId)?.has(awayId) ?? false;
-      if (isDerby && (isMajor(homeId) || isMajor(awayId))) add("rivalry", winner && loser ? [winner, loser] : [homeId, awayId], 1, pick(winner ? DERBIES : DERBY_DRAWS, `derby:${fixture.id}`, names()));
-      if (!winner || !loser) continue;
-      const competition = state.competitions[fixture.competitionId];
-      const winnerDivision = state.clubs[winner]?.division;
-      const loserDivision = state.clubs[loser]?.division;
-      if (competition?.kind === "cup" && loserDivision && (!winnerDivision || DIVISION_RANK[winnerDivision] - DIVISION_RANK[loserDivision] >= 2)) {
-        add("upset", [winner, loser], 3 + (winnerDivision ? DIVISION_RANK[winnerDivision] - DIVISION_RANK[loserDivision] : 4), pick(UPSETS, `upset:${fixture.id}`, { ...names(), where: "a Copa do Brasil" }));
-      } else if (competition?.kind === "league" && fixture.stage === 0 && winnerDivision === "A") {
-        const above = state.boards[winner];
-        const below = state.boards[loser];
-        const places = above && below ? above.position - below.position : 0;
-        if (places >= UPSET_PLACES && (below?.games ?? 0) >= UPSET_FROM_GAMES) add("upset", [winner, loser], places / 4, pick(UPSETS, `upset:${fixture.id}`, names()));
-      }
-    } else if (event.type === "refereeCall") {
-      const { call } = event;
-      const against = call.type === "wrongCall" ? call.againstId : call.clubId;
-      const isHumans = humans.has(call.clubId) || humans.has(against);
-      if (!isHumans && !isMajor(call.clubId) && !isMajor(against)) continue;
-      const names = {
-        player: state.players[call.playerId]?.name ?? "um jogador",
-        club: name(call.clubId),
-        against: name(against),
-        minute: String(call.minute),
-        by: event.referee ?? "a arbitragem",
-        referee: event.referee ? ` Árbitro: ${event.referee}.` : "",
-        blame: event.referee ? `O técnico do ${name(against)} culpou ${event.referee}.` : `O técnico do ${name(against)} culpou a arbitragem.`,
-      };
-      const key = `${event.fixtureId}:${call.minute}:${call.playerId}`;
-      if (call.type === "varCheck") {
-        if (call.decision === "goalStands") continue;
-        add("var", [call.clubId], isHumans ? 10 : 1, VAR_STORIES[call.decision]({ ...names, review: reviewLength(call.seconds) }));
-      } else {
-        add("controversy", [against, call.clubId], isHumans ? 10 : 1, pick(CONTROVERSIES, `referee:${key}`, { ...names, what: WRONG_CALLS[call.call](names) }));
-      }
-    } else if (event.type === "recordBroken") {
-      // A human coach's club's records always make the paper; the Série A's whoever breaks them.
-      if (!humans.has(event.clubId) && (event.scope === "club" || event.competition !== "serie-a")) continue;
-      const leagueName = event.competition && Object.values(state.competitions).find((c) => competitionKey(c.id) === event.competition && c.kind === "league");
-      const whose = event.scope === "league" ? `da ${leagueName && leagueName.kind === "league" && leagueName.division ? `Série ${leagueName.division}` : "liga"}` : `do ${name(event.clubId)}`;
-      const names = { player: event.name ?? "", club: name(event.clubId), whose, value: String(event.value), previous: String(event.previous) };
-      add("record", [event.clubId], humans.has(event.clubId) ? 10 : 1, RECORDS[event.kind](names));
-    } else if (event.type === "seasonAwarded") {
-      const { bolaDeOuro, ballonDor } = event.awards;
-      if (bolaDeOuro) {
-        const average = bolaDeOuro.average.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        add("award", [bolaDeOuro.clubId], 2, BOLA_DE_OURO({ player: bolaDeOuro.name, club: name(bolaDeOuro.clubId), average, apps: String(bolaDeOuro.apps) }));
-      }
-      const [best] = ballonDor;
-      if (best) add("award", [best.clubId], 1, BALLON_DOR({ player: best.name, club: best.clubName }));
-    } else if (event.type === "coachFired") {
-      if (!event.isYou && !(isMajor(event.clubId) || state.clubs[event.clubId]?.division === "B")) continue;
-      const names = { club: name(event.clubId), position: String(event.position), target: String(event.targetPosition), coach: state.coachName || "o técnico" };
-      add("sacking", [event.clubId], event.isYou ? 10 : 1, pick(event.isYou ? YOUR_SACKING : SACKINGS, `fired:${event.clubId}`, names));
-    } else if (event.type === "playerMoved") {
-      const fee = event.fee > 0 ? `, por ${millions(event.fee)}` : ", sem custo de transferência";
-      const names = { player: event.name, from: name(event.fromClubId), to: name(event.toClubId), fee };
-      const isHumans = (event.toClubId !== null && humans.has(event.toClubId)) || (event.fromClubId !== null && humans.has(event.fromClubId));
-      if (event.kind === "abroad" && (isHumans || (isMajor(event.fromClubId) && event.fee >= SALE_ABROAD_FEE))) {
-        add("signing", [event.fromClubId ?? ""], event.fee / SALE_ABROAD_FEE, pick(SALES_ABROAD, `sale:${event.playerId}`, { ...names, fee: millions(event.fee) }));
-      } else if (["transfer", "releaseClause", "fromAbroad", "freeAgent", "preContract", "loanBuy"].includes(event.kind) && event.toClubId && (isHumans || (isMajor(event.toClubId) && event.fee >= SIGNING_FEE))) {
-        add("signing", [event.toClubId, ...(event.fromClubId ? [event.fromClubId] : [])], isHumans ? 10 : event.fee / SIGNING_FEE, pick(SIGNINGS, `signing:${event.playerId}`, names));
-      }
+  const storiesOfMatch = (event: Extract<DayEvent, { type: "matchPlayed" }>) => {
+    const fixture = event.fixture;
+    const result = fixture.result;
+    if (!result) return;
+    const { homeId, awayId } = fixture;
+    const margin = result.homeGoals - result.awayGoals;
+    const winner = margin > 0 || result.penaltyWinnerId === homeId ? homeId : margin < 0 || result.penaltyWinnerId === awayId ? awayId : null;
+    const loser = winner === homeId ? awayId : winner === awayId ? homeId : null;
+    // Most matches make no story: their lines are only written for one that does.
+    let lines: Record<string, string> | undefined;
+    const names = () => (lines ??= { home: name(homeId), away: name(awayId), winner: name(winner), loser: name(loser), score: scoreLine(state, fixture), goals: goalsLine(state, sheets, fixture), where: "a tabela" });
+    if (humans.has(homeId) || humans.has(awayId)) {
+      const variants = winner === null ? DRAWS : Math.abs(margin) >= 3 ? BIG_WINS : WINS;
+      add("match", [homeId, awayId], 0, pick(variants, fixture.id, names()));
     }
+    if (humans.has(homeId) || humans.has(awayId)) addCoachStories(fixture, winner, names());
+    const isDerby = rivals.get(homeId)?.has(awayId) ?? false;
+    if (isDerby && (isMajor(homeId) || isMajor(awayId))) add("rivalry", winner && loser ? [winner, loser] : [homeId, awayId], 1, pick(winner ? DERBIES : DERBY_DRAWS, `derby:${fixture.id}`, names()));
+    if (!winner || !loser) return;
+    const competition = state.competitions[fixture.competitionId];
+    const winnerDivision = state.clubs[winner]?.division;
+    const loserDivision = state.clubs[loser]?.division;
+    if (competition?.kind === "cup" && loserDivision && (!winnerDivision || DIVISION_RANK[winnerDivision] - DIVISION_RANK[loserDivision] >= 2)) {
+      add("upset", [winner, loser], 3 + (winnerDivision ? DIVISION_RANK[winnerDivision] - DIVISION_RANK[loserDivision] : 4), pick(UPSETS, `upset:${fixture.id}`, { ...names(), where: "a Copa do Brasil" }));
+    } else if (competition?.kind === "league" && fixture.stage === 0 && winnerDivision === "A") {
+      const above = state.boards[winner];
+      const below = state.boards[loser];
+      const places = above && below ? above.position - below.position : 0;
+      if (places >= UPSET_PLACES && (below?.games ?? 0) >= UPSET_FROM_GAMES) add("upset", [winner, loser], places / 4, pick(UPSETS, `upset:${fixture.id}`, names()));
+    }
+  };
+
+  const storiesOfCall = (event: Extract<DayEvent, { type: "refereeCall" }>) => {
+    const { call } = event;
+    const against = call.type === "wrongCall" ? call.againstId : call.clubId;
+    const isHumans = humans.has(call.clubId) || humans.has(against);
+    if (!isHumans && !isMajor(call.clubId) && !isMajor(against)) return;
+    const names = {
+      player: state.players[call.playerId]?.name ?? "um jogador",
+      club: name(call.clubId),
+      against: name(against),
+      minute: String(call.minute),
+      by: event.referee ?? "a arbitragem",
+      referee: event.referee ? ` Árbitro: ${event.referee}.` : "",
+      blame: event.referee ? `O técnico do ${name(against)} culpou ${event.referee}.` : `O técnico do ${name(against)} culpou a arbitragem.`,
+    };
+    const key = `${event.fixtureId}:${call.minute}:${call.playerId}`;
+    if (call.type === "varCheck") {
+      if (call.decision === "goalStands") return;
+      add("var", [call.clubId], isHumans ? 10 : 1, VAR_STORIES[call.decision]({ ...names, review: reviewLength(call.seconds) }));
+    } else {
+      add("controversy", [against, call.clubId], isHumans ? 10 : 1, pick(CONTROVERSIES, `referee:${key}`, { ...names, what: WRONG_CALLS[call.call](names) }));
+    }
+  };
+
+  const storiesOfRecord = (event: Extract<DayEvent, { type: "recordBroken" }>) => {
+    // A human coach's club's records always make the paper; the Série A's whoever breaks them.
+    if (!humans.has(event.clubId) && (event.scope === "club" || event.competition !== "serie-a")) return;
+    const leagueName = event.competition && Object.values(state.competitions).find((c) => competitionKey(c.id) === event.competition && c.kind === "league");
+    const whose = event.scope === "league" ? `da ${leagueName && leagueName.kind === "league" && leagueName.division ? `Série ${leagueName.division}` : "liga"}` : `do ${name(event.clubId)}`;
+    const names = { player: event.name ?? "", club: name(event.clubId), whose, value: String(event.value), previous: String(event.previous) };
+    add("record", [event.clubId], humans.has(event.clubId) ? 10 : 1, RECORDS[event.kind](names));
+  };
+
+  const storiesOfAwards = (event: Extract<DayEvent, { type: "seasonAwarded" }>) => {
+    const { bolaDeOuro, ballonDor } = event.awards;
+    if (bolaDeOuro) {
+      const average = bolaDeOuro.average.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      add("award", [bolaDeOuro.clubId], 2, BOLA_DE_OURO({ player: bolaDeOuro.name, club: name(bolaDeOuro.clubId), average, apps: String(bolaDeOuro.apps) }));
+    }
+    const [best] = ballonDor;
+    if (best) add("award", [best.clubId], 1, BALLON_DOR({ player: best.name, club: best.clubName }));
+  };
+
+  const storiesOfSacking = (event: Extract<DayEvent, { type: "coachFired" }>) => {
+    if (!event.isYou && !(isMajor(event.clubId) || state.clubs[event.clubId]?.division === "B")) return;
+    const names = { club: name(event.clubId), position: String(event.position), target: String(event.targetPosition), coach: state.coachName || "o técnico" };
+    add("sacking", [event.clubId], event.isYou ? 10 : 1, pick(event.isYou ? YOUR_SACKING : SACKINGS, `fired:${event.clubId}`, names));
+  };
+
+  const storiesOfMove = (event: Extract<DayEvent, { type: "playerMoved" }>) => {
+    const fee = event.fee > 0 ? `, por ${millions(event.fee)}` : ", sem custo de transferência";
+    const names = { player: event.name, from: name(event.fromClubId), to: name(event.toClubId), fee };
+    const isHumans = (event.toClubId !== null && humans.has(event.toClubId)) || (event.fromClubId !== null && humans.has(event.fromClubId));
+    if (event.kind === "abroad" && (isHumans || (isMajor(event.fromClubId) && event.fee >= SALE_ABROAD_FEE))) {
+      add("signing", [event.fromClubId ?? ""], event.fee / SALE_ABROAD_FEE, pick(SALES_ABROAD, `sale:${event.playerId}`, { ...names, fee: millions(event.fee) }));
+    } else if (["transfer", "releaseClause", "fromAbroad", "freeAgent", "preContract", "loanBuy"].includes(event.kind) && event.toClubId && (isHumans || (isMajor(event.toClubId) && event.fee >= SIGNING_FEE))) {
+      add("signing", [event.toClubId, ...(event.fromClubId ? [event.fromClubId] : [])], isHumans ? 10 : event.fee / SIGNING_FEE, pick(SIGNINGS, `signing:${event.playerId}`, names));
+    }
+  };
+
+  for (const event of events) {
+    if (event.type === "matchPlayed") storiesOfMatch(event);
+    else if (event.type === "refereeCall") storiesOfCall(event);
+    else if (event.type === "recordBroken") storiesOfRecord(event);
+    else if (event.type === "seasonAwarded") storiesOfAwards(event);
+    else if (event.type === "coachFired") storiesOfSacking(event);
+    else if (event.type === "playerMoved") storiesOfMove(event);
   }
   if (!stories.length) return state;
   const kept: NewsItem[] = [];
