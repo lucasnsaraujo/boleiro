@@ -51,6 +51,8 @@ function pageOf(state: GameState, record: SeasonRecord, clubId: string, isRunnin
 }
 
 function withPages(state: GameState, record: SeasonRecord, coach: CoachRecord, runningClubId: string | null): CoachRecord {
+  // A save from before the album that played none of its matches after loading has nothing to print: its season stays unprinted.
+  if (!state.history.current.squads) return coach;
   const pages = clubsOf(coach, record.season).map((clubId) => pageOf(state, record, clubId, clubId === runningClubId));
   return pages.length ? { ...coach, album: [...(coach.album ?? []), ...pages] } : coach;
 }

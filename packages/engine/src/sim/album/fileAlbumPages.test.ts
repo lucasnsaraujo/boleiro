@@ -92,3 +92,13 @@ describe("what makes a sticker shine", () => {
     expect(closed.coach.album?.[0]?.stickers.find(([id]) => id === scorer.id)?.[5]).toBe(0);
   });
 });
+
+describe("a season closed without its count", () => {
+  it("prints no page when the save from before the album played no match of its own after loading", () => {
+    const current = { ...opening.history.current };
+    Reflect.deleteProperty(current, "squads");
+    const closed = close({ ...opening, history: { ...opening.history, current } });
+    expect(closed.coach.album ?? []).toEqual([]);
+    expect(closed.waitingCoaches?.[0]?.record.album ?? []).toEqual([]);
+  });
+});

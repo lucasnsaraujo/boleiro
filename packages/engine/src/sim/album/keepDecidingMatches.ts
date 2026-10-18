@@ -13,13 +13,16 @@ import type { KeptClub, KeptMatch, KeptPlayer, PlayedFixture } from "./album.js"
 
 const isPlayed = (fixture: Fixture): fixture is PlayedFixture => fixture.result !== null;
 
-/** Whether `clubId` has won a single table with `fixtures`' results: it leads, and nobody can reach its points with the games they have left. */
+/**
+ * Whether `clubId` has won a single table with `fixtures`' results: it leads with every game played,
+ * on the tie-breaks if it must, or nobody can reach its points with the games they have left.
+ */
 function hasWonTable(clubIds: readonly string[], fixtures: readonly Fixture[], drawOrder: readonly string[], clubId: string): boolean {
   const [leader, ...rest] = standings(clubIds, fixtures.filter(isPlayed), drawOrder);
   if (leader?.clubId !== clubId) return false;
   const left = new Map<string, number>();
   for (const f of fixtures) if (!f.result) for (const id of [f.homeId, f.awayId]) left.set(id, (left.get(id) ?? 0) + 1);
-  return rest.every((row) => row.points + 3 * (left.get(row.clubId) ?? 0) < leader.points);
+  return left.size === 0 || rest.every((row) => row.points + 3 * (left.get(row.clubId) ?? 0) < leader.points);
 }
 
 /** What today's match decided for a human coach's club in it: a final (won or lost), a league won, or nothing. */
