@@ -413,6 +413,43 @@ describe("contracts", () => {
   });
 });
 
+describe("national teams", () => {
+  test("a call-up of one of the coach's players says for whom and until when", () => {
+    expect(line({ type: "calledUp", playerId: own.id, clubId: "bahia-ba", teamId: "uruguay", until: "2026-03-31" })).toEqual({ date: game.date, text: `${own.name} convocado pela seleção: Uruguai, até 31 mar`, tone: "neutral" });
+  });
+
+  test("another club's call-up is not the coach's news", () => {
+    expect(lines({ type: "calledUp", playerId: other.id, clubId: "vitoria-ba", teamId: "uruguay", until: "2026-03-31" })).toEqual([]);
+  });
+
+  test("a player back from his national team is back for the coach", () => {
+    expect(line({ type: "backFromDuty", playerId: own.id, clubId: "bahia-ba", teamId: "brazil" })?.text).toBe(`${own.name} volta da seleção (Brasil)`);
+  });
+
+  test("a World Cup's champion makes the news", () => {
+    expect(line({ type: "nationalTitle", competitionId: "world-cup-2026", name: "Copa do Mundo 2026", winnerId: "spain", runnerUpId: "argentina" })?.text).toBe("Espanha campeã da Copa do Mundo 2026, sobre a Argentina");
+  });
+
+  test("a champion's title agrees with the team's gender and number", () => {
+    const champion = (winnerId: string) => line({ type: "nationalTitle", competitionId: "world-cup-2030", name: "Copa do Mundo 2030", winnerId })?.text;
+    expect(champion("brazil")).toBe("Brasil campeão da Copa do Mundo 2030");
+    expect(champion("morocco")).toBe("Marrocos campeão da Copa do Mundo 2030");
+    expect(champion("united-states")).toBe("Estados Unidos campeões da Copa do Mundo 2030");
+    expect(champion("portugal")).toBe("Portugal campeão da Copa do Mundo 2030");
+    expect(champion("malta")).toBe("Malta campeã da Copa do Mundo 2030");
+  });
+});
+
+describe("national-team jobs", () => {
+  test("a federation's offer names the team with its article and the day it expires", () => {
+    expect(line({ type: "nationalJobOffered", teamId: "brazil", expiresOn: "2026-08-03" })?.text).toBe("A federação oferece a você o comando do Brasil, até 3 ago");
+  });
+
+  test("losing the job is bad news", () => {
+    expect(line({ type: "nationalCoachFired", teamId: "portugal" })).toMatchObject({ text: "Você não é mais o técnico de Portugal", tone: "bad" });
+  });
+});
+
 describe("easter eggs", () => {
   const found = (clubId: string): DayEvent => ({ type: "eggFound", eggId: "sobrenatural", clubId, title: "Sobrenatural de Almeida", look: "sticker", headline: "Sobrenatural de Almeida baixou no jogo do Bahia", body: "corpo" });
 

@@ -128,6 +128,7 @@ const OUT_REASONS: Record<NonNullable<SquadPlayer["status"]>, string> = {
   injured: "está machucado",
   suspended: "está suspenso",
   facesOwner: "não pode enfrentar o clube dono do passe",
+  onDuty: "está na seleção",
 };
 
 /** What stops this eleven from kicking off, in the coach's words, or null when it can. */

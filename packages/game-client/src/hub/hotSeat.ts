@@ -47,6 +47,9 @@ function isOwnNews(event: DayEvent): boolean {
     case "coachSeasonReviewed":
     case "contractRenewed":
     case "contractEnded":
+    case "nationalJobOffered":
+    case "nationalJobTaken":
+    case "nationalCoachFired":
       return true;
     case "coachFired":
       return event.isYou;

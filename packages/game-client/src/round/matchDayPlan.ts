@@ -18,10 +18,11 @@ import { matchClubOf, playingStrength } from "@boleiro/engine/sim/players/matchS
 import { pickMatchLineup } from "@boleiro/engine/sim/players/pickMatchLineup";
 import { formationOf, usualStartersOf } from "@boleiro/engine/sim/players/usualLineups";
 import { withLoaneesFacingOwner } from "@boleiro/engine/sim/transfers/loans";
+import { onDutyOn } from "@boleiro/engine/sim/nations/nationsDay";
 import { fixtureLabel } from "../format/competitionName.js";
 
-/** Why a player can't play today: hurt, banned, or on loan from today's opponent (`facesOwner`). */
-export type PlayerStatus = "injured" | "suspended" | "facesOwner" | null;
+/** Why a player can't play today: hurt, banned, on loan from today's opponent (`facesOwner`), or away with his national team (`onDuty`). */
+export type PlayerStatus = "injured" | "suspended" | "facesOwner" | "onDuty" | null;
 
 /**
  * One of the coach's players as the lineup sheet shows him: his positions (main first; none when the
@@ -127,12 +128,13 @@ function isOneYellowFromBanIn(state: Pick<GameState, "discipline" | "competition
 
 /** The coach's squad for today's match, goalkeepers first and strongest first within each position. */
 export function squadOf(
-  state: Pick<GameState, "date" | "players" | "discipline" | "competitions" | "market">,
+  state: Pick<GameState, "date" | "players" | "discipline" | "competitions" | "market" | "nations">,
   clubId: string,
   fixture: Fixture,
   strengthOf: (player: SimPlayer) => number,
 ): SquadPlayer[] {
   const suspended = openDisciplineDay(state.discipline).suspended(fixture.competitionId);
+  const away = onDutyOn(state, state.date);
   const facingOwner = withLoaneesFacingOwner(new Set(), state, fixture);
   const isOneYellowFromBan = isOneYellowFromBanIn(state, fixture);
   return playersOf(state, clubId)
@@ -143,7 +145,7 @@ export function squadOf(
       ...(p.positions ? { positions: p.positions } : {}),
       strength: Math.round(strengthOf(p)),
       fatigue: Math.round(Math.min(100, fatigueOn(p, state.date))),
-      status: isInjured(p, state.date) ? ("injured" as const) : suspended.has(p.id) ? ("suspended" as const) : facingOwner.has(p.id) ? ("facesOwner" as const) : null,
+      status: isInjured(p, state.date) ? ("injured" as const) : suspended.has(p.id) ? ("suspended" as const) : facingOwner.has(p.id) ? ("facesOwner" as const) : away.has(p.id) ? ("onDuty" as const) : null,
       ...(isOneYellowFromBan(p.id) ? { isOneYellowFromBan: true } : {}),
     }))
     .sort((a, b) => GROUP_ORDER[a.group] - GROUP_ORDER[b.group] || b.strength - a.strength);
@@ -154,7 +156,9 @@ export function matchDayPlan(state: GameState, formation?: Formation): MatchDayP
   const fixture = coachFixtureToday(state);
   const clubId = state.coachClubId ?? "";
   const context = matchContextOf(state, fixture);
-  const suspended = withLoaneesFacingOwner(openDisciplineDay(state.discipline).suspended(fixture.competitionId), state, fixture);
+  const banned = withLoaneesFacingOwner(openDisciplineDay(state.discipline).suspended(fixture.competitionId), state, fixture);
+  const away = onDutyOn(state, state.date);
+  const suspended = away.size ? new Set([...banned, ...away]) : banned;
   const available = playersOf(state, clubId).filter((p) => !suspended.has(p.id));
   const tactics = formation ? { ...state.coach.tactics, formation } : state.coach.tactics;
   const usual = usualStartersOf(state, clubId);

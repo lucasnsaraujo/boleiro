@@ -66,6 +66,7 @@ export function startSeason(
   gridRounds = 0,
   abroad: readonly CountryStructure[] = [],
   hasClubWorldCupGuests = false,
+  restsInFifaWindows = false,
 ): SeasonStart {
   const clubStates: Record<string, State> = Object.fromEntries(Object.values(clubs).flatMap((club) => (club.state ? [[club.id, club.state]] : [])));
   const levels = BRAZIL.levels.map((level) => {
@@ -77,7 +78,7 @@ export function startSeason(
   const dateCounts = new Map(levels.map((level) => [level.division, level.stageCounts.reduce((sum, n) => sum + n, 0)]));
   const total = (division: Division) => dateCounts.get(division) ?? 0;
   const continental = playsContinentalCups || formats.calendar === "unified" ? continentalDates(season, formats, hasClubWorldCupGuests && isClubWorldCupSeason(season)) : [];
-  const calendar = seasonCalendar(season, { A: total("A"), B: total("B"), C: total("C"), D: total("D") }, continental, formats, gridRounds);
+  const calendar = seasonCalendar(season, { A: total("A"), B: total("B"), C: total("C"), D: total("D") }, continental, formats, gridRounds, restsInFifaWindows);
   const competitions: Record<string, Competition> = {};
   const fixtures: Fixture[] = [];
   const open = (competition: Competition) => {
