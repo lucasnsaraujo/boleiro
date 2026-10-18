@@ -10,8 +10,8 @@ import { tieResults } from "../tieResults.js";
 // the Libertadores' and the CONCACAF Champions Cup's winners meet in the Derby of the Americas; the
 // two winners in the Challenger Cup; its winner the Champions League's in the final. FIFA played the
 // first two in September and October, the last three in mid-December in Qatar. guess: the first two
-// on the Libertadores' quarter-final and semi-final first legs, Tuesdays every calendar and format
-// already keeps clear, the last three on the 2025 edition's weekdays after the Brazilian season.
+// on the Tuesdays of the Libertadores' quarter-final second legs and semi-final first legs, days the
+// Brazilian leagues do not play, the last three on the 2025 edition's weekdays after the Brazilian season.
 export const INTERCONTINENTAL_CUP_STAGES: { name: string; dates: IsoDate[] }[] = [
   { name: "play-off", dates: ["2026-09-15"] },
   { name: "african-asian-pacific-cup", dates: ["2026-10-13"] },
