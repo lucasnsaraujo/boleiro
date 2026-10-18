@@ -105,7 +105,7 @@ export function coachMarketDay(state: GameState, random: () => number): { state:
     const ranked = [...auction.bids].sort((a, b) => b.fee - a.fee || compareText(a.date, b.date));
     let sold = false;
     for (const best of ranked) {
-      const bid: Bid = { playerId, buyerId: best.clubId, fee: best.fee, feeEur: null, ceiling: best.fee, isFinal: true, madeOn: best.date, until: state.date };
+      const bid: Bid = { playerId, buyerId: best.clubId, fee: best.fee, feeEur: null, ceiling: best.fee, isFinal: true, madeOn: best.date, until: state.date, ...(best.contract ? { contract: best.contract } : {}) };
       const moved = sellToBidder(next, bid, best.fee);
       if (!moved) continue;
       next = moved.state;

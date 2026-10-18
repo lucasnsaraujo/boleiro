@@ -68,6 +68,7 @@ const REFUSALS: Record<string, string> = {
   otherCoachClub: "o clube dele é de outro técnico, que não empresta jogadores",
   sellerHasOffer: "o técnico do clube dele já tem uma proposta por ele na mesa",
   auctionBidTooLow: "ele está em leilão, e a oferta não passa do lance mínimo nem do maior lance",
+  auctionClosed: "o leilão dele já terminou",
   sentToCoach: "agora o técnico do clube dele responde",
 };
 

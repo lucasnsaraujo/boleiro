@@ -30,3 +30,32 @@ describe("a long career's event log", () => {
     expect(long).toBeLessThan(fresh * 3 + 0.2);
   }, 120_000);
 });
+
+describe("the event log's index", () => {
+  /** The game after the events of `days` days in a row from `first`. */
+  const afterDays = (first: GameState, days: number, from = 0): GameState => {
+    let state = first;
+    for (let day = from; day < from + days; day++) state = runEvents(state, addDays(start.date, day), [], EVENT_BANK).state;
+    return state;
+  };
+
+  it("gives two games played a day each in turn the same events as each played alone", () => {
+    const other = loadNewGame(6, { coachClubId: "palmeiras-sp" });
+    let first = start;
+    let second = other;
+    for (let day = 0; day < 40; day++) {
+      first = runEvents(first, addDays(start.date, day), [], EVENT_BANK).state;
+      second = runEvents(second, addDays(start.date, day), [], EVENT_BANK).state;
+    }
+    expect(eventMemoryOf(first)).toEqual(eventMemoryOf(afterDays(start, 40)));
+    expect(eventMemoryOf(second)).toEqual(eventMemoryOf(afterDays(other, 40)));
+  });
+
+  it("reads a fork of a game that went its own way as the fork, not as the game it left", () => {
+    const fork = afterDays(start, 20);
+    const ahead = afterDays(fork, 20, 20);
+    const behind = afterDays({ ...fork, seed: fork.seed + 1 }, 20, 20);
+    expect(eventMemoryOf(behind)).toEqual(eventMemoryOf(afterDays({ ...afterDays(start, 20), seed: fork.seed + 1 }, 20, 20)));
+    expect(eventMemoryOf(ahead).log.length).toBeGreaterThan(eventMemoryOf(fork).log.length);
+  });
+});

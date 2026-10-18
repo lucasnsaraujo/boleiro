@@ -37,8 +37,8 @@ export type Bid = {
   contract?: { wage: number; until: IsoDate };
 };
 
-/** A club's bid in one of the coach's auctions, in BRL. */
-export type AuctionBid = { clubId: string; fee: number; date: IsoDate };
+/** A club's bid in one of the coach's auctions, in BRL; another human coach's carries the contract the player agreed, as his offers do. */
+export type AuctionBid = { clubId: string; fee: number; date: IsoDate; contract?: Bid["contract"] };
 
 /** One of the coach's players at auction: clubs bid from `minBid` up, and the best bid takes him on `closesOn`. */
 export type Auction = { minBid: number; closesOn: IsoDate; bids: AuctionBid[] };

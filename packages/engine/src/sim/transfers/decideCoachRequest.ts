@@ -74,12 +74,16 @@ function deskOf(state: GameState, index: number): CoachMarket {
   return { listings: {}, auctions: {}, bids: {}, counters: {}, ...waitingCoachesOf(state)[index]?.market };
 }
 
-/** Why another human coach's desk can't take an offer of `fee` for his player: one already waits, or it doesn't beat his auction's best bid. */
-function deskRefusal(desk: CoachMarket, playerId: string, fee: number, date: IsoDate): string | null {
+/**
+ * Why another human coach's desk can't take an offer of `fee` for his player from `buyerId`: another club's
+ * offer already waits (the buyer's own he raises), his auction ended, or the offer doesn't beat its best bid.
+ */
+function deskRefusal(desk: CoachMarket, playerId: string, buyerId: string, fee: number, date: IsoDate): string | null {
   const auction = desk.auctions[playerId];
+  if (auction && auction.closesOn < date) return "auctionClosed";
   if (auction) return fee < auction.minBid || auction.bids.some((bid) => bid.fee >= fee) ? "auctionBidTooLow" : null;
   const standing = desk.bids[playerId];
-  return standing && standing.until >= date ? "sellerHasOffer" : null;
+  return standing && standing.until >= date && standing.buyerId !== buyerId ? "sellerHasOffer" : null;
 }
 
 /**
@@ -90,7 +94,7 @@ function offerToCoach(state: GameState, request: CoachRequest, index: number, bi
   const desk = deskOf(state, index);
   const auction = desk.auctions[bid.playerId];
   const offered: CoachMarket = auction
-    ? { ...desk, auctions: { ...desk.auctions, [bid.playerId]: { ...auction, bids: [...auction.bids, { clubId: bid.buyerId ?? "", fee: bid.fee, date: bid.madeOn }] } } }
+    ? { ...desk, auctions: { ...desk.auctions, [bid.playerId]: { ...auction, bids: [...auction.bids, { clubId: bid.buyerId ?? "", fee: bid.fee, date: bid.madeOn, ...(bid.contract ? { contract: bid.contract } : {}) }] } } }
     : { ...desk, bids: { ...desk.bids, [bid.playerId]: bid } };
   const waitingCoaches = waitingCoachesOf(state).map((coach, at) => (at === index ? { ...coach, market: offered } : coach));
   const decided: TransferEvent = { type: "requestDecided", request, approved: true, reason: "sentToCoach" };
@@ -160,7 +164,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       let fee = 0;
       if (sellerCoach >= 0) {
         fee = Math.round(request.fee ?? clubPrice(state, view, player));
-        const refusal = deskRefusal(deskOf(state, sellerCoach), player.id, fee, state.date);
+        const refusal = deskRefusal(deskOf(state, sellerCoach), player.id, coachClubId, fee, state.date);
         if (refusal) return refuse(state, request, refusal);
       } else if (!free && !preContract) {
         // An offer without a fee pays what the club asks.
@@ -180,7 +184,10 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       if (!isWilling(view, state, player, coachClubId, wage / length.premium, random)) return refuse(state, request, "playerUnwilling");
       const contract = { wage, until: length.months === null ? contractEnd(year + 1, random) : contractEndOn(state.date, length.months) };
       if (sellerCoach >= 0) {
-        const bid: Bid = { playerId: player.id, buyerId: coachClubId, fee, feeEur: null, ceiling: fee, isFinal: true, madeOn: state.date, until: answerBy(state, state.date), contract };
+        // He answers by his own windows' close, not the buyer's (a coach who just moved has a window of his own).
+        const seller = waitingCoachesOf(state)[sellerCoach];
+        const until = answerBy(seller ? { ...state, coach: seller.coach } : state, state.date);
+        const bid: Bid = { playerId: player.id, buyerId: coachClubId, fee, feeEur: null, ceiling: fee, isFinal: true, madeOn: state.date, until, contract };
         return offerToCoach(state, request, sellerCoach, bid);
       }
       if (preContract) {

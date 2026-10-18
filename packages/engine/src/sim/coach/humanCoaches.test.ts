@@ -50,7 +50,7 @@ describe("hot-seat coaches", () => {
     expect(() => loadNewGame(6, { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }, { name: "BRUNO", clubId: "santos-sp" }] } })).toThrow(/name/);
   });
 
-  it("still loads a save from before that rule with two coaches of one name, who share one name in the rankings", () => {
+  it("still loads a save from before that rule with two coaches of one name", () => {
     const [bruno] = waitingCoachesOf(twoCoaches);
     if (!bruno) throw new Error("no waiting coach");
     const sameName = { ...twoCoaches, waitingCoaches: [{ ...bruno, name: "Ana" }] };

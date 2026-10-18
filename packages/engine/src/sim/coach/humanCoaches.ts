@@ -16,9 +16,10 @@ export type WaitingCoach = {
 };
 
 /**
- * A coach's name as the game tells coaches apart: without case, accents or spaces, so "Ana Lúcia" and
- * "analucia" are one coach. A new game refuses two such names; a save from before that rule still loads,
- * and its namesakes share one humanKey, so the rankings, derbies and records count them as one coach.
+ * A coach's name as a new game tells coaches apart: without case, accents or spaces, so "Ana Lúcia" and
+ * "analucia" can't sit at one table, the second being too easy to take for the first. Everything a coach
+ * keeps is filed under his exact name (humanKey), so a save from before this rule still loads: coaches in it
+ * with exactly the same name share one key and count as one coach in the rankings, derbies and records.
  */
 export const coachNameKey = (name: string): string => name.normalize("NFD").replace(/\p{M}|\s/gu, "").toLowerCase();
 

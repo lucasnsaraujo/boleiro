@@ -12,6 +12,7 @@ import { POSITION_NAMES } from "../format/playerLabels.js";
 import { bidSheets, saleRows, type BidSheet, type SaleRow, type SellState } from "./bidSheets.js";
 import { MoneyStepper, roundStep } from "./MoneyStepper.js";
 import { clubArticle, withArticle, type Preposition } from "@boleiro/data/articles";
+import { leagueAbroadOf } from "../newGame/leaguesAbroad.js";
 
 type Props = {
   state: SellState;
@@ -139,7 +140,7 @@ function BidCard({ sheet, state, buyer, onAnswer }: { sheet: BidSheet; state: Se
             {buyerClub ? <Crest club={buyerClub} size={30} /> : <i className="ph-fill ph-airplane-takeoff market-abroad" aria-hidden="true" />}
             <b>{buyerClub?.shortName ?? "Clube europeu"}</b>
             <span>
-              {buyerClub?.division ? `Série ${buyerClub.division}` : buyerClub ? "Estadual" : "Europa"} · {sheet.buyerCoach ? `proposta de ${sheet.buyerCoach}` : "compra à vista"}
+              {buyerClub?.division ? `Série ${buyerClub.division}` : buyerClub ? (leagueAbroadOf(buyerClub)?.label ?? "Estadual") : "Europa"} · {sheet.buyerCoach ? `proposta de ${sheet.buyerCoach}` : "compra à vista"}
             </span>
           </p>
           <p className="market-fee">
