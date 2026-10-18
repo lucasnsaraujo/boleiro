@@ -179,3 +179,10 @@ export function recordTitlesAbroad(before: GameState, after: GameState): GameSta
     history: { ...history, current: { ...history.current, champions }, coach: { ...history.coach, trophies: [...history.coach.trophies, ...trophyOf(after.coachClubId)] } },
   };
 }
+
+/** Whether a cup abroad's result-only cup is still the one being played: its UEFA season, or its country's cup of the same id. */
+export function isCupAbroadCurrent(state: Pick<GameState, "europe" | "world">, competition: CupAbroadCompetition): boolean {
+  if (competition.cup === "national-cup") return state.world?.[competition.country ?? ""]?.cup?.id === competition.id;
+  if (competition.cup === "uefa-super-cup") return state.europe?.superCup?.season === competition.season;
+  return state.europe?.cups.some((cup) => cup.cup === competition.cup && cup.season === competition.season) ?? false;
+}

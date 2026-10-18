@@ -61,6 +61,14 @@ describe("a Realista career at an English club", () => {
       expect(englishLeagues(january, 2027)).toEqual([]);
     });
 
+    it("keeps the club's cup matches abroad as the full tier played them, cards and all", () => {
+      const isCupAbroad = (state: GameState, id: string) => state.competitions[id]?.kind === "cupAbroad";
+      const played = december.fixtures.filter((f) => isCupAbroad(december, f.competitionId) && f.result);
+      expect(played.length).toBeGreaterThan(3);
+      const kept = new Map(january.fixtures.map((f) => [f.id, f]));
+      for (const fixture of played) expect(kept.get(fixture.id)).toEqual(fixture);
+    });
+
     it("saves and loads the two seasons side by side", () => {
       expect(loadGame(saveGame(january))).toEqual(january);
     });
