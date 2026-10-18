@@ -127,7 +127,9 @@ function moveAt(side: PlanSide, events: readonly MatchEvent[], minute: number): 
     }
     if (e.type === "card" && e.card !== "yellow" && plan.keepsShape) {
       const left = onPitch();
-      const payer = player.group === "ATT" ? undefined : FRONT_TO_BACK.find((group) => group !== player.group && isInFront(group, player.group) && left.filter((p) => p.group === group).length >= 2);
+      const counts: Record<PositionGroup, number> = { GK: 0, DEF: 0, MID: 0, ATT: 0 };
+      for (const p of left) counts[p.group]++;
+      const payer = lineGivingWay(counts, player.group);
       if (!payer && player.group !== "GK") {
         answered.push({ minute, playerId: player.id });
         continue;
@@ -169,6 +171,16 @@ function moveAt(side: PlanSide, events: readonly MatchEvent[], minute: number): 
 function isInFront(line: PositionGroup, behind: PositionGroup): boolean {
   const order: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
   return order.indexOf(line) > order.indexOf(behind);
+}
+
+/**
+ * The line that gives up a man when a player of `line` is sent off and the shape is kept: the most
+ * advanced line in front of his that still has two or more players (`left`, the side's lines without
+ * him), or null when none can, and a forward's line never asks for one.
+ */
+export function lineGivingWay(left: Readonly<Record<PositionGroup, number>>, line: PositionGroup): PositionGroup | null {
+  if (line === "ATT") return null;
+  return FRONT_TO_BACK.find((group) => isInFront(group, line) && left[group] >= 2) ?? null;
 }
 
 function weakest(players: readonly SimPlayer[], strength: (p: SimPlayer) => number): SimPlayer | undefined {

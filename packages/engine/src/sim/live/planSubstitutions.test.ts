@@ -9,7 +9,7 @@ import { applyLiveChange } from "./applyLiveChange.js";
 import { finishMatchDay } from "./finishMatchDay.js";
 import type { LiveDay } from "./liveDay.js";
 import type { MatchEvent } from "./matchTimeline.js";
-import { energyAt } from "./planSubstitutions.js";
+import { energyAt, lineGivingWay } from "./planSubstitutions.js";
 import { startMatchDay } from "./startMatchDay.js";
 
 const COACH_CLUB = "flamengo-rj";
@@ -159,3 +159,25 @@ describe("a match plan's other rules", () => {
 function tiredIdOf(): string {
   return Object.values(coachOnly.players).find((p) => p.clubId === COACH_CLUB && p.group === "MID")?.id ?? "";
 }
+
+describe("the line that gives up a man for a red card when the shape is kept", () => {
+  const lines = (DEF: number, MID: number, ATT: number) => ({ GK: 1, DEF, MID, ATT });
+
+  it("is the attack when it has two or more, as 5-3-2 losing a centre-back becomes 5-3-1", () => {
+    expect(lineGivingWay(lines(4, 3, 2), "DEF")).toBe("ATT");
+  });
+
+  it("is the midfield when a lone striker can't be spared, as 4-5-1 becomes 4-4-1", () => {
+    expect(lineGivingWay(lines(3, 5, 1), "DEF")).toBe("MID");
+  });
+
+  it("is none for a midfielder in front of a lone striker, or for a forward: the line plays a man short", () => {
+    expect(lineGivingWay(lines(4, 4, 1), "MID")).toBeNull();
+    expect(lineGivingWay(lines(4, 4, 1), "ATT")).toBeNull();
+  });
+
+  it("is the most advanced line that can spare one for a keeper", () => {
+    expect(lineGivingWay(lines(4, 4, 2), "GK")).toBe("ATT");
+    expect(lineGivingWay(lines(4, 5, 1), "GK")).toBe("MID");
+  });
+});
