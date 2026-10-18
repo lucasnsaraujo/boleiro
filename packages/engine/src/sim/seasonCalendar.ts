@@ -47,10 +47,10 @@ const CLEAR_OF_CONTINENTAL = new Set<Division>(["A", "B"]);
 /** Which days a league may play on: the weekdays, and how many days a round keeps from a continental match day. */
 type Leeway = { weekdays: ReadonlySet<number>; daysFromContinental: number };
 
-// What a season that does not fit gives up, one step at a time, before it fails: CBF plays a midweek round
-// over Wednesday and Thursday when it must; then a round may sit the day next to a continental match day,
-// CBF moving the games of the clubs that play both; last, any day of the week. The rest from the estaduais'
-// and the Copa do Brasil's days and the FIFA windows' rest are never given up.
+// What a season that does not fit gives up, one step at a time and only for as many dates as it lacks, before
+// it fails: CBF plays a midweek round over Wednesday and Thursday when it must; then a round may sit the day
+// next to a continental match day, CBF moving the games of the clubs that play both; last, any day of the
+// week. The rest from the estaduais' and the Copa do Brasil's days and the FIFA windows' rest are never given up.
 const LEEWAYS: readonly Leeway[] = [
   { weekdays: LEAGUE_WEEKDAYS, daysFromContinental: MIN_DAYS_FROM_CONTINENTAL },
   { weekdays: new Set([...LEAGUE_WEEKDAYS, 4]), daysFromContinental: MIN_DAYS_FROM_CONTINENTAL },
@@ -66,19 +66,45 @@ export function inSeason(date2026: IsoDate, season: number): IsoDate {
 }
 
 /**
- * `count` of `candidates` spread over the `span` days from `start`, at least MIN_DAYS_BETWEEN_GAMES apart:
- * each the first candidate on or after its even share of the span, unless taking it, or passing it, would
- * leave too few candidates for the dates still to place; null when the candidates hold fewer than `count`.
+ * For each of the sorted `candidates`, the index of the first one far enough after it to follow it (`after`)
+ * and the most dates the candidates from it on can hold (`most`, one longer, its last 0).
  */
-function spreadDates(candidates: readonly IsoDate[], count: number, start: IsoDate, span: number): IsoDate[] | null {
+function fitOf(candidates: readonly IsoDate[]): { after: number[]; most: number[] } {
   const after: number[] = [];
   for (let i = 0, k = 0; i < candidates.length; i++) {
     while (k < candidates.length && daysBetween(candidates[i] as IsoDate, candidates[k] as IsoDate) < MIN_DAYS_BETWEEN_GAMES) k++;
     after.push(k);
   }
-  // most[i]: the most dates the candidates from the i-th on can hold.
   const most = new Array<number>(candidates.length + 1).fill(0);
   for (let i = candidates.length - 1; i >= 0; i--) most[i] = Math.max(most[i + 1] ?? 0, 1 + (most[after[i] ?? candidates.length] ?? 0));
+  return { after, most };
+}
+
+const mostDatesIn = (candidates: readonly IsoDate[]): number => fitOf(candidates).most[0] ?? 0;
+
+/**
+ * `candidates` with as few of `extras` added as hold `count` dates: one at a time, the first that adds a date;
+ * all of them when no single one does.
+ */
+function withFewestExtras(candidates: readonly IsoDate[], extras: readonly IsoDate[], count: number): IsoDate[] {
+  let kept = [...candidates];
+  const left = [...extras];
+  while (left.length > 0 && mostDatesIn(kept) < count) {
+    const most = mostDatesIn(kept);
+    const index = left.findIndex((extra) => mostDatesIn([...kept, extra].sort()) > most);
+    if (index < 0) return [...kept, ...left].sort();
+    kept = [...kept, ...left.splice(index, 1)].sort();
+  }
+  return kept;
+}
+
+/**
+ * `count` of `candidates` spread over the `span` days from `start`, at least MIN_DAYS_BETWEEN_GAMES apart:
+ * each the first candidate on or after its even share of the span, unless taking it, or passing it, would
+ * leave too few candidates for the dates still to place; null when the candidates hold fewer than `count`.
+ */
+function spreadDates(candidates: readonly IsoDate[], count: number, start: IsoDate, span: number): IsoDate[] | null {
+  const { after, most } = fitOf(candidates);
   if ((most[0] ?? 0) < count) return null;
   const picked: IsoDate[] = [];
   let next = 0;
@@ -116,12 +142,14 @@ function pickDates(
     (date) =>
       reserved.every((other) => Math.abs(daysBetween(date, other)) >= MIN_DAYS_BETWEEN_GAMES) && !isResting(date),
   );
-  for (const { weekdays, daysFromContinental } of LEEWAYS) {
-    const candidates = days.filter(
+  let candidates: IsoDate[] = [];
+  for (const [step, { weekdays, daysFromContinental }] of LEEWAYS.entries()) {
+    const allowed = days.filter(
       (date) =>
         weekdays.has(new Date(date).getUTCDay()) &&
         (!isClearOfContinental || continental.every((other) => Math.abs(daysBetween(date, other)) >= daysFromContinental)),
     );
+    candidates = step === 0 ? allowed : withFewestExtras(candidates, allowed.filter((date) => !candidates.includes(date)), count);
     const picked = spreadDates(candidates, count, start, span);
     if (picked) return picked;
   }

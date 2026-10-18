@@ -92,7 +92,7 @@ describe("every season's calendar, in every mode", () => {
               expect(isAscendingApart(dates), `${league} ${season}`).toBe(true);
               expect(dates.filter((date) => reserved.some((other) => days(date, other) < 3)), `${league} ${season}`).toEqual([]);
             }
-            for (const dates of [calendar.leagueDates.A, calendar.leagueDates.B]) expect(dates.filter((date) => continental.includes(date))).toEqual([]);
+            for (const dates of [calendar.leagueDates.A, calendar.leagueDates.B]) expect(dates.filter((date) => continental.some((other) => days(date, other) < 2)), `${season}`).toEqual([]);
             if (hasNationalFootball && formats.calendar === "real") expect(calendar.leagueDates.A.filter(isInFifaWindow), `${season}`).toEqual([]);
           }
     });
@@ -100,6 +100,18 @@ describe("every season's calendar, in every mode", () => {
 
   it("keeps a season that fits on its usual Sunday, Wednesday and Saturday rounds", () => {
     for (const season of SEASONS) for (const dates of Object.values(seasonCalendar(season, counts).leagueDates)) expect(dates.every((date) => [0, 3, 6].includes(new Date(date).getUTCDay()))).toBe(true);
+  });
+
+  it("gives up its usual rounds only for the date it lacks: one Thursday round in 2033 with national football and the Club World Cup", () => {
+    const calendar = seasonCalendar(2033, counts, continentalDates(2033, REALISTA, true), REALISTA, 0, true);
+    expect(calendar.leagueDates.A).toHaveLength(38);
+    expect(calendar.leagueDates.A.filter((date) => ![0, 3, 6].includes(new Date(date).getUTCDay()))).toHaveLength(1);
+  });
+
+  it("with the World Cup pause, rests Série A from 1 Jun to 21 Jul 2026 as the CBF did", () => {
+    const calendar = seasonCalendar(2026, counts, continentalDates(2026, REALISTA, false), REALISTA, 0, true, true);
+    expect(calendar.leagueDates.A).toHaveLength(38);
+    expect(calendar.leagueDates.A.filter((date) => date >= "2026-06-01" && date <= "2026-07-21")).toEqual([]);
   });
 
   it("with the World Cup pause, rests Série A through every World Cup and still places its 38 rounds", () => {
