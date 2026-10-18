@@ -11,7 +11,7 @@ import { chemistryOf, chemistryStrength, chemistryValueOf, type Chemistry } from
 import { nameCaptain } from "./nameCaptain.js";
 
 const CLUB = "flamengo-rj";
-const start = loadNewGame(5, { coachClubId: CLUB });
+const start = loadNewGame(1, { coachClubId: CLUB });
 const squadOf = (state: GameState, clubId = CLUB): SimPlayer[] => Object.values(state.players).filter((p) => p.clubId === clubId);
 
 /** The game on the day of the coach's next match, playing on with the assistant's eleven. */
