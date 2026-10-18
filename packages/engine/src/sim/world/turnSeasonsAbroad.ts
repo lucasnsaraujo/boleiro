@@ -4,7 +4,8 @@ import { boardExpectations } from "../coach/boardExpectations.js";
 import { uefaMatchDays } from "../continental/uefaCups.js";
 import { formatsOf, type Formats } from "../formats.js";
 import type { Competition, Fixture, GameState, IsoDate, LeagueCompetition } from "../gameState.js";
-import { finalOrderOf } from "../leagueFormats.js";
+import { finalOrderOf, LEAGUE_FORMATS } from "../leagueFormats.js";
+import { reviewCoachesAbroad, type CoachSeasonEvent } from "../coach/startCoachSeason.js";
 import { openNextStage } from "../openNextStage.js";
 import { leaguesAbroad } from "../startSeason.js";
 import { fileFullTierSeason, seasonMoves, type FullTierDays } from "./resultOnlyWorld.js";
@@ -36,10 +37,13 @@ function leaguesOf(state: Pick<GameState, "competitions">, country: string, seas
  * here, and its boards' targets set for the new season. The finished leagues stay until Brazil's turn of
  * the year, whose review of the coaches reads them.
  */
-function turnCountry(state: GameState, id: string, country: Country, season: number): GameState {
-  const finished = leaguesOf(state, id, season - 1);
-  const fixturesOf = (league: LeagueCompetition) => state.fixtures.filter((f) => f.competitionId === league.id);
-  if (!finished.length || !finished.every((league) => isFinished(league, fixturesOf(league)))) return state;
+function turnCountry(before: GameState, id: string, country: Country, season: number): { state: GameState; events: CoachSeasonEvent[] } {
+  const finished = leaguesOf(before, id, season - 1);
+  const fixturesOf = (league: LeagueCompetition) => before.fixtures.filter((f) => f.competitionId === league.id);
+  if (!finished.length || !finished.every((league) => isFinished(league, fixturesOf(league)))) return { state: before, events: [] };
+  // Its coaches are reviewed on the season just played, before the boards set the next one's targets.
+  const reviewed = reviewCoachesAbroad(before, id, finished.map((league) => LEAGUE_FORMATS[league.format].outcome(league, fixturesOf(league))));
+  const state = reviewed.state;
   const tables = finished.map((league) => finalOrderOf(league, fixturesOf(league)));
   const { moves } = seasonMoves(country.structure, tables);
   const clubs: Record<string, Club> = { ...state.clubs };
@@ -61,17 +65,22 @@ function turnCountry(state: GameState, id: string, country: Country, season: num
   const turned: GameState = { ...state, clubs, competitions, fixtures, world: { ...state.world, [id]: filed } };
   const { boards } = boardExpectations(turned);
   const ownBoards = Object.fromEntries(Object.entries(boards).filter(([clubId]) => clubs[clubId]?.abroad?.country === id));
-  return { ...turned, boards: { ...state.boards, ...ownBoards } };
+  return { state: { ...turned, boards: { ...state.boards, ...ownBoards } }, events: reviewed.events };
 }
 
 /**
  * The full-tier countries whose season crosses the new year, turned on their rollover day (`date`, a
- * real calendar's 1 July) once their leagues are played; the same game on any other day.
+ * real calendar's 1 July) once their leagues are played, with the reviews of the coach in the seat;
+ * the same game on any other day.
  */
-export function turnSeasonsAbroad(state: GameState, date: IsoDate): GameState {
+export function turnSeasonsAbroad(state: GameState, date: IsoDate): { state: GameState; events: CoachSeasonEvent[] } {
   let next = state;
+  const events: CoachSeasonEvent[] = [];
   for (const [id, country] of Object.entries(state.world ?? {})) {
-    if (turnsOnItsOwn(country) && country.structure.rollover === date.slice(5)) next = turnCountry(next, id, country, Number(date.slice(0, 4)));
+    if (!turnsOnItsOwn(country) || country.structure.rollover !== date.slice(5)) continue;
+    const turned = turnCountry(next, id, country, Number(date.slice(0, 4)));
+    next = turned.state;
+    events.push(...turned.events);
   }
-  return next;
+  return { state: next, events };
 }

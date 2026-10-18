@@ -6,13 +6,14 @@ import type { GameState, LeagueCompetition } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { uefaMatchDays } from "../continental/uefaCups.js";
+import { finalOrderOf } from "../leagueFormats.js";
 import { loadEurope } from "./loadEurope.js";
 import { loadSouthAmerica } from "./loadSouthAmerica.js";
 
 const ARSENAL = "tm-11";
 const RIVER = "tm-209";
 const world = [...loadSouthAmerica(2026), ...loadEurope(2026)];
-const start = loadNewGame(5, { coachClubId: ARSENAL, world, formats: REALISTA });
+const start = loadNewGame(8, { coachClubId: ARSENAL, world, formats: REALISTA });
 
 const englishLeagues = (state: GameState, season: number): LeagueCompetition[] =>
   Object.values(state.competitions).flatMap((c) => (c.kind === "league" && c.abroad?.country === "gb-eng" && c.season === season ? [c] : []));
@@ -108,6 +109,14 @@ describe("a Realista career at an English club", () => {
         expect(englishLeagues(next, 2026)).toEqual([]);
         expect(next.fixtures.some((f) => f.competitionId === premier?.id)).toBe(false);
         expect(englishLeagues(next, 2027).map((league) => league.id)).toEqual([nextPremier?.id, nextChampionship?.id]);
+      });
+
+      it("reviews the coach on England's finished season at its turn, not at Brazil's", () => {
+        expect(january.history.coach.seasons.filter((s) => s.clubId === ARSENAL)).toEqual([]);
+        const premierTable = finalOrderOf(june.competitions[premier?.id ?? ""] as LeagueCompetition, june.fixtures.filter((f) => f.competitionId === premier?.id));
+        expect(july.history.coach.seasons.filter((s) => s.clubId === ARSENAL)).toEqual([
+          { season: 2026, clubId: ARSENAL, position: premierTable.indexOf(ARSENAL) + 1, targetPosition: june.boards[ARSENAL]?.targetPosition },
+        ]);
       });
 
       it("sends the clubs its tables qualified to UEFA's next season", () => {
