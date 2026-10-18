@@ -148,3 +148,53 @@ describe("a national knockout match", () => {
     expect(isFinal(withKnockouts, roundOf32)).toBe(false);
   });
 });
+
+describe("a ban in a national competition", () => {
+  it("is served in the national team's next match, a player of the game's and one from abroad alike", () => {
+    const game = onWorldCupDay(null);
+    const squad = nationalSquadOf(game, "brazil");
+    const own = squad.find((p) => p.id in game.players && p.group !== "GK");
+    const outsider = squad.find((p) => !(p.id in game.players) && p.group !== "GK");
+    if (!own || !outsider) throw new Error("Brazil calls up players of the game's and from abroad");
+    const ban = { yellows: 0, phase: 0, bans: 1 };
+    const banned = { ...game, discipline: { ...game.discipline, "national:world-cup-2026": { [own.id]: ban, [outsider.id]: ban } } };
+    const live = startMatchDay(banned, {});
+    const fielded = [...(live.coachMatch?.starters.home ?? []), ...(live.coachMatch?.bench ?? [])].map((p) => p.id);
+    expect(fielded).not.toContain(own.id);
+    expect(fielded).not.toContain(outsider.id);
+    const after = finishMatchDay(live).state.discipline["national:world-cup-2026"];
+    expect(after?.[own.id]?.bans).toBe(0);
+    expect(after?.[outsider.id]?.bans).toBe(0);
+  });
+});
+
+describe("a two-legged national tie", () => {
+  it("is one stage of the full tier, its first leg no decider and its second settled on aggregate", () => {
+    const game = coaching(loadNewGame(5, { coachClubId: null, nationalFootball: football }), "spain");
+    const nations = game.nations;
+    if (!nations) throw new Error("the game has no national football");
+    const leg = (id: string, date: string, homeId: string, awayId: string, second?: true) => ({ id, competitionId: "nations-league-2026", round: "quarter-finals", date, homeId, awayId, ...(second ? { leg: 2 as const } : {}), result: null });
+    const ties = [leg("nl-qf-1", "2027-03-26", "spain", "france"), leg("nl-qf-1-2", "2027-03-29", "france", "spain", true)];
+    const synced = syncNationalFixtures({ ...game, nations: { ...nations, matches: [...nations.matches, ...ties] } });
+    const [first, second] = ties.map((t) => synced.fixtures.find((f) => f.id === nationalFixtureId(t.id)));
+    if (!first || !second) throw new Error("both legs joined the full tier");
+    expect(second.stage).toBe(first.stage);
+    expect(second.tie).toBe(first.tie);
+    const played = { ...synced, fixtures: synced.fixtures.map((f) => (f.id === first.id ? { ...f, result: { homeGoals: 2, awayGoals: 0 } } : f)) };
+    expect(isShootoutDue(played, { ...first, result: { homeGoals: 2, awayGoals: 0 } })).toBe(false);
+    expect(isShootoutDue(played, { ...second, result: { homeGoals: 2, awayGoals: 0 } })).toBe(true);
+    expect(isShootoutDue(played, { ...second, result: { homeGoals: 1, awayGoals: 0 } })).toBe(false);
+  });
+});
+
+describe("a national coach's half-time talk", () => {
+  it("lifts his national side's players for the second half, not the opponent's", () => {
+    const live = startMatchDay(onWorldCupDay(null), {});
+    const talked = applyLiveChange(live, 45, { talk: "faith" });
+    const brazil = live.coachMatch?.starters.home[1];
+    const morocco = live.coachMatch?.starters.away[1];
+    if (!brazil || !morocco) throw new Error("both sides start eleven");
+    expect(talked.coachMatch?.strengths[brazil.id]).toBeGreaterThan(live.coachMatch?.strengths[brazil.id] ?? Infinity);
+    expect(talked.coachMatch?.strengths[morocco.id]).toBe(live.coachMatch?.strengths[morocco.id]);
+  });
+});

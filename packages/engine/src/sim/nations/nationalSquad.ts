@@ -1,9 +1,9 @@
 import { GROUP_OF_ROLE } from "@boleiro/data/players";
 import { DEFAULT_TACTICS, type Tactics } from "../coach/tactics.js";
-import type { GameState, SimPlayer } from "../gameState.js";
+import type { Competition, GameState, SimPlayer } from "../gameState.js";
 import { freshCondition } from "../players/openingProfile.js";
 import { formationOf } from "../players/usualLineups.js";
-import { OUTSIDER_MARK, ROLE_OF_LETTER, splitRefs } from "./callUps.js";
+import { OUTSIDER_MARK, ROLE_OF_LETTER, splitRefs, teamOfNationality } from "./callUps.js";
 import { callUpRefsOf } from "./nationalJobs.js";
 import { humanNationalJobOf } from "./nationalFixtures.js";
 
@@ -66,6 +66,21 @@ export function nationalOutsiderOf(state: Pick<GameState, "nations" | "date">, p
   const at = playerId.lastIndexOf(OUTSIDER_MARK);
   if (at <= 0) return null;
   return outsiderPlayerOf(state, playerId.slice(0, at), Number(playerId.slice(at + OUTSIDER_MARK.length)));
+}
+
+/**
+ * The side a booked player serves his bans with in a competition's matches: in a national competition his national
+ * team (the pool a player from abroad is of, else his first citizenship's), else his club.
+ */
+export function sideOfPlayerIn(state: Pick<GameState, "players" | "nations">, competition: Pick<Competition, "kind">): (playerId: string) => string | undefined {
+  if (competition.kind !== "national") return (id) => state.players[id]?.clubId;
+  const teams = state.nations?.teams ?? {};
+  return (id) => {
+    const at = id.lastIndexOf(OUTSIDER_MARK);
+    if (at > 0) return id.slice(0, at);
+    const nationality = state.players[id]?.nationalities[0];
+    return (nationality && teamOfNationality(nationality, teams)) || undefined;
+  };
 }
 
 /** A national team as a match reads it: on grass, with no Brazilian state. */

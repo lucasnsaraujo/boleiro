@@ -33,7 +33,7 @@ import type { MatchPlan } from "../coach/matchPlan.js";
 import type { Tactics } from "../coach/tactics.js";
 import { onDutyOn } from "../nations/nationsDay.js";
 import { nationalTeamPlayingToday, nationalTeamToday, seatedSideToday, sideToday } from "../nations/nationalFixtures.js";
-import { isNationalTeam, nationalSquadOf, nationalTacticsOf } from "../nations/nationalSquad.js";
+import { isNationalTeam, nationalSquadOf, nationalTacticsOf, sideOfPlayerIn } from "../nations/nationalSquad.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
 import { drawMatchPlay } from "./matchPlay.js";
 import { detailStream, EXTRA_TIME_END, FULL_TIME, inMatchOrder, kickOffTimeline, scorerStream } from "./matchTimeline.js";
@@ -332,7 +332,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const load = recordMatchLoad({ ...setup, homeLineup: lineups.home, awayLineup: lineups.away, result: score }, injuries, timeline.minutes);
     playedToday.push(...load.players);
     events.push(...load.events);
-    events.push(...cards.record(competition, played, allBookings, (id) => state.players[id]?.clubId, cardRandom));
+    events.push(...cards.record(competition, played, allBookings, sideOfPlayerIn(state, competition), cardRandom));
     sheets[played.id] = { ...lineups, scorers: timeline.scorers };
     return played;
   };

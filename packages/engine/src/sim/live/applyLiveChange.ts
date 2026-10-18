@@ -285,7 +285,9 @@ function withHalfTimeTalk(live: LiveDay, coachMatch: CoachMatch, match: LiveMatc
   const goals = (own: boolean) => kept.filter((e) => e.type === "goal" && (e.clubId === clubId) === own).length;
   const effect = talkEffect(talk, { lead: goals(true) - goals(false), morale: clubMood(live.state, clubId).squad, isDerby: isDerbyFor(live.state, match, clubId) });
   const lift = formStrength(effect.form);
-  const strengths = Object.fromEntries(Object.entries(coachMatch.strengths).map(([id, strength]) => [id, live.state.players[id]?.clubId === clubId ? strength + lift : strength]));
+  // The side's own players as the match fields them: a national team's are the game's players called up, its for the day.
+  const own = new Set([...coachMatch.starters.home, ...coachMatch.starters.away, ...coachMatch.bench, ...(coachMatch.opponentBench ?? [])].filter((p) => p.clubId === clubId).map((p) => p.id));
+  const strengths = Object.fromEntries(Object.entries(coachMatch.strengths).map(([id, strength]) => [id, own.has(id) ? strength + lift : strength]));
   return { ...coachMatch, strengths, halfTimeTalks: { ...coachMatch.halfTimeTalks, [clubId]: { tone: talk, ...effect } } };
 }
 
