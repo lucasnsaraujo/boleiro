@@ -1,7 +1,7 @@
 import type { Fixture, GameState } from "../gameState.js";
 import type { MatchSheets } from "../history/recordMatches.js";
 import { usualStartersOf } from "../players/usualLineups.js";
-import { chemistryOf, SETTLED_LIMIT, type ClubChemistry } from "./chemistryOf.js";
+import { chemistryValueOf, SETTLED_LIMIT, type ClubChemistry } from "./chemistryOf.js";
 
 const ELEVEN = 11;
 // guess: keeping this many starters from one match to the next leaves `settled` where it is; each
@@ -35,7 +35,7 @@ export function recordElevens(state: GameState, played: readonly Fixture[], shee
     const kept = last.size ? eleven.filter((id) => last.has(id)).length : NEUTRAL_KEPT;
     const step = kept >= NEUTRAL_KEPT ? kept - NEUTRAL_KEPT : CHANGE_WEIGHT * (kept - NEUTRAL_KEPT);
     const settled = Math.min(SETTLED_LIMIT, Math.max(-SETTLED_LIMIT, (before?.settled ?? 0) + step));
-    const was = chemistryOf(kickOff, clubId).value;
+    const was = chemistryValueOf(kickOff, clubId);
     const record: ClubChemistry = { eleven, settled, steadyGames: kept >= STEADY_KEPT ? (before?.steadyGames ?? 0) + 1 : 0, kept, was };
     // A named captain who left the club gives the armband back to the assistant's pick.
     const captainId = before?.captainId;

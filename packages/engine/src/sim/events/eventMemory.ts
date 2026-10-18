@@ -100,9 +100,30 @@ export const rivalryKey = (a: string, b: string): string => (a < b ? `${a}|${b}`
 
 export type EventQuery = { typeId?: string; clubId?: string; playerId?: string; since?: IsoDate; until?: IsoDate };
 
+// A log is a new array whenever an event is added, so each one's records by type and club are gathered once:
+// the chemistry of every club asks for its fights on every match day.
+const logsByTypeAndClub = new WeakMap<readonly EventRecord[], Map<string, EventRecord[]>>();
+
+function byTypeAndClub(log: readonly EventRecord[], typeId: string, clubId: string): readonly EventRecord[] {
+  let index = logsByTypeAndClub.get(log);
+  if (!index) {
+    index = new Map();
+    for (const record of log) {
+      const key = `${record.typeId}|${record.clubId}`;
+      const records = index.get(key);
+      if (records) records.push(record);
+      else index.set(key, [record]);
+    }
+    logsByTypeAndClub.set(log, index);
+  }
+  return index.get(`${typeId}|${clubId}`) ?? [];
+}
+
 /** The events that happened matching every field given, oldest first. */
 export function eventsOf(state: Pick<GameState, "eventMemory">, query: EventQuery): EventRecord[] {
-  return eventMemoryOf(state).log.filter(
+  const { log } = eventMemoryOf(state);
+  const records = query.typeId !== undefined && query.clubId !== undefined ? byTypeAndClub(log, query.typeId, query.clubId) : log;
+  return records.filter(
     (record) =>
       (query.typeId === undefined || record.typeId === query.typeId) &&
       (query.clubId === undefined || record.clubId === query.clubId) &&

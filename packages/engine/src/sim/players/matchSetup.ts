@@ -2,7 +2,7 @@ import type { Club, State } from "@boleiro/data/clubs";
 import { inFormation, type Formation } from "../../engine/formations.js";
 import { guestClubOf } from "../continental/guestClubs.js";
 import type { Team } from "../../engine/match.js";
-import { chemistryOf, chemistryStrength } from "../chemistry/chemistryOf.js";
+import { chemistryStrength, chemistryValueOf } from "../chemistry/chemistryOf.js";
 import { DEFAULT_TACTICS, type Tactics } from "../coach/tactics.js";
 import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import { clubMood } from "../morale/clubMood.js";
@@ -46,7 +46,7 @@ export type CoachPlan = { lineup: readonly SimPlayer[] | null; tactics: Tactics;
 export function playingStrength(state: GameState, clubId: string, context: MatchContext, squad: readonly SimPlayer[]): (player: SimPlayer) => number {
   const morale = clubMood(state, clubId).squad;
   const mostMinutes = Math.max(0, ...squad.map((p) => p.condition.seasonMinutes));
-  const chemistry = chemistryStrength(chemistryOf(state, clubId).value);
+  const chemistry = chemistryStrength(chemistryValueOf(state, clubId));
   return (p) => Math.max(1, (effectiveStrength(p, context) + moraleStrength(p, morale, mostMinutes, context.date)) * chemistry);
 }
 

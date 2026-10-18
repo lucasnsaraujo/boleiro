@@ -26,9 +26,9 @@ function adaptationCost(player: SimPlayer, date: IsoDate): number {
   return ADAPTATION_COST * Math.max(0, 1 - settled);
 }
 
-/** The strength a player plays at in this match: his strength less fatigue, pitch and adaptation. */
-export function effectiveStrength(player: SimPlayer, { date, pitch }: MatchContext): number {
+/** The strength a player plays at in this match: his strength less fatigue (his fatigueOn, if the caller has it), pitch and adaptation. */
+export function effectiveStrength(player: SimPlayer, { date, pitch }: MatchContext, fatigue: number = fatigueOn(player, date)): number {
   const turf = pitch === "artificial" && player.trait === "poorOnArtificialTurf" ? ARTIFICIAL_TURF_COST : 0;
-  const tired = (FATIGUE_COST * fatigueOn(player, date)) / 100;
+  const tired = (FATIGUE_COST * fatigue) / 100;
   return Math.max(1, player.strength - tired - turf - adaptationCost(player, date));
 }

@@ -35,8 +35,8 @@ export function pickMatchLineup(
   const score = new Map<SimPlayer, number>();
   for (const p of squad) {
     if (isInjured(p, context.date)) continue;
-    const value =
-      effectiveStrength(p, context) - (ROTATION_COST * fatigueOn(p, context.date)) / 100 + (usual.has(p.id) ? USUAL_STARTER_BONUS : 0) + (kept.has(p.id) ? KEPT_STARTER_BONUS : 0);
+    const fatigue = fatigueOn(p, context.date);
+    const value = effectiveStrength(p, context, fatigue) - (ROTATION_COST * fatigue) / 100 + (usual.has(p.id) ? USUAL_STARTER_BONUS : 0) + (kept.has(p.id) ? KEPT_STARTER_BONUS : 0);
     fit.push(p);
     scores.push(value);
     score.set(p, value);
