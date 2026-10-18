@@ -6,7 +6,7 @@ Each `moment-*.html` plays its own animation when opened. The keyframe stills in
 
 - `moments.js` starts every CSS animation at once when fonts and images are in, and runs the canvas parts (mosaics, crowds, confetti, counters) as functions of the elapsed milliseconds. Any frame can be computed directly, so a render at `?t=4600` is the frame a player sees at 4.6 s.
 - Skip: the "Pular" button or Esc jumps to the last frame. "Ver de novo" replays.
-- `prefers-reduced-motion`: no playback, the last frame shows at once.
+- `prefers-reduced-motion`: no playback, the last frame shows at once. In the game the scene's sounds still play, each on its beat (`MomentStage`).
 - Easing tokens from `tokens/album.css`: `out` = `cubic-bezier(.16, 1, .3, 1)` for arrivals, `in-out` = `cubic-bezier(.65, 0, .35, 1)` for walks, flips and page turns, `slap` = `cubic-bezier(.34, 1.56, .64, 1)` for stickers landing with a small overshoot, `peel` = `cubic-bezier(.5, 0, .75, 0)` for things falling away.
 - Confetti is paper, not sparkle: each strip leaves its origin with its own speed, falls under gravity with air drag, sways once it reaches terminal speed and flips in 3D (its back side prints darker). Colours are always the clubs'.
 - Mosaics are cards: each cell flips (scale on X through zero) from the stand's dark back to its face when a diagonal wave reaches it. The face comes from text and stripes drawn off-screen at one pixel per card.

@@ -4,6 +4,10 @@ import { IDBFactory } from "fake-indexeddb";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
+import type { EngineClient } from "@boleiro/game-client/engine/connectEngine";
+import type { CommandResults, CommandType, GameCommand } from "@boleiro/game-client/engine/createEngineSession";
+import type { LiveRound } from "@boleiro/game-client/round/liveRoundOf";
+import type { MatchEvent } from "@boleiro/engine/sim/live/matchTimeline";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
 import { FakeAudioContext, fetchUrlBytes } from "../sound/fakeAudioContext.js";
@@ -24,12 +28,34 @@ afterEach(() => {
   for (const close of closers.splice(0)) close();
 });
 
-async function onMatchDay(): Promise<Services> {
+async function onMatchDay(change: (engine: EngineClient) => EngineClient = (engine) => engine): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
   await engine.apply({ type: "newGame", seed: 15, choices: { coachClubId: "bahia-ba" } });
   await engine.apply({ type: "playToMatchDay" });
-  return { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
+  return { engine: change(engine), slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
+}
+
+/** A session whose coach's match has only a goal of the coach's side at `minute` that VAR awards after the flag went up. */
+function withVarGoalAt(minute: number) {
+  return (engine: EngineClient): EngineClient => {
+    const rewrite = <R extends LiveRound | null>(round: R): R => {
+      const fixtureId = round?.coach?.fixtureId;
+      if (!round || !fixtureId) return round;
+      const awarded: MatchEvent[] = [
+        { type: "varCheck", minute, clubId: "bahia-ba", playerId: "p9", decision: "goalAwarded", seconds: 60 },
+        { type: "goal", minute, clubId: "bahia-ba", playerId: "p9" },
+      ];
+      const isWhistle = (e: MatchEvent) => !("clubId" in e);
+      return { ...round, matches: round.matches.map((m) => (m.fixtureId === fixtureId ? { ...m, events: [...awarded, ...m.events.filter(isWhistle)] } : m)) };
+    };
+    function apply<T extends CommandType>(command: GameCommand<T>): Promise<CommandResults[T]>;
+    async function apply(command: GameCommand): Promise<unknown> {
+      const result = await engine.apply(command);
+      return command.type === "startRound" ? rewrite(result as CommandResults["startRound"]) : result;
+    }
+    return { ...engine, apply, liveRound: async () => rewrite(await engine.liveRound()) };
+  };
 }
 
 function openRoundWithSound(given: Services) {
@@ -62,8 +88,8 @@ const user = () => userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTi
 const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 0)));
 
 /** Opens the round with sound, kicks off, and returns a way to play match minutes at 1x with the audio clock keeping time. */
-async function kickOffWithSound() {
-  const given = await onMatchDay();
+async function kickOffWithSound(given: Services | Promise<Services> = onMatchDay()) {
+  given = await given;
   const ctx = openRoundWithSound(given);
   const sheet = await screen.findByRole("dialog", { name: "Escalação" });
   await userEvent.click(within(sheet).getByRole("button", { name: "Começar a rodada" }));
@@ -109,3 +135,17 @@ test("the crowd fills the round and goes when the coach leaves the screen", asyn
   ctx().currentTime += 5;
   expect(ctx().playing()).not.toContain(CROWD_BED);
 });
+
+test("a goal VAR awards sounds only with the decision: first the check's sting, then the whistle, the roar and the stinger", async () => {
+  const MINUTE = 6;
+  const { ctx, play } = await kickOffWithSound(onMatchDay(withVarGoalAt(MINUTE)));
+  play(MINUTE);
+  await screen.findByText("VAR checando o gol");
+  const sting = ctx().notes();
+  expect(ctx().started()).not.toContain(SAMPLES.goalRoar);
+
+  await screen.findByText("Gol validado", undefined, { timeout: 5_000 });
+  expect(ctx().started()).toContain(SAMPLES.goalRoar);
+  expect(ctx().started().filter((url) => url === SAMPLES.whistleShort).length).toBeGreaterThan(1);
+  expect(ctx().notes()).toBeGreaterThan(sting + 8);
+}, 30_000);

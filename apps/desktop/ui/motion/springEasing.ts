@@ -1,3 +1,5 @@
+import { EASE } from "./easing.js";
+
 /** A unit mass on a spring: `stiffness` pulls it to the target, `damping` slows it down. */
 export type Spring = { stiffness: number; damping: number };
 
@@ -46,5 +48,5 @@ export function springEasing(spring: Spring): { easing: string; duration: number
 export function springTiming(spring: Spring): { easing: string; duration: number } {
   const timing = springEasing(spring);
   const hasLinear = typeof CSS !== "undefined" && CSS.supports("animation-timing-function", "linear(0, 1)");
-  return hasLinear ? timing : { easing: "cubic-bezier(0.16, 1, 0.3, 1)", duration: timing.duration };
+  return hasLinear ? timing : { easing: EASE.out, duration: timing.duration };
 }

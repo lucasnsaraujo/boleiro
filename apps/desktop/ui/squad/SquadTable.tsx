@@ -3,8 +3,7 @@ import { Link } from "react-router";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import { formatMonthYear } from "@boleiro/game-client/format/formatGameDate";
 import { POSITION_BADGES, POSITION_GROUP_NAMES, TRAIT_SHORT } from "../format/playerLabels.js";
-import { prefersReducedMotion } from "../motion/reducedMotion.js";
-import { springTiming } from "../motion/springEasing.js";
+import { liftRow } from "../motion/rowSlides.js";
 import { useFlip } from "../motion/useFlip.js";
 import { nextSort, sortedSquad, statusText, type SquadRow, type SquadSort, type SquadSortKey } from "./squadRows.js";
 import { clubArticle, withArticle } from "@boleiro/data/articles";
@@ -24,33 +23,10 @@ const COLUMNS: readonly Column[] = [
 ];
 
 const BY_STRENGTH: SquadSort = { key: "strength", descending: true };
-// Damping ratio 0.94: the rows settle with weight and no visible overshoot.
-const ROW_SLIDE = springTiming({ stiffness: 500, damping: 42 });
-// A moving row rides one layer higher for each row it travels, up to 9: the sticky header (hub.css) sits at 10.
-const ROW_HEIGHT = 24;
-const ROW_LAYERS = 9;
 const OLD = 33;
 const YOUNG = 21;
 
-/**
- * A re-sorted row slides from where it was on a spring, lifted with a shadow; the farther it travels the
- * higher it rides over the others. With reduced motion it only fades back in.
- */
-function slideSquadRow(row: HTMLElement, offset: number) {
-  if (typeof row.animate !== "function") return;
-  if (prefersReducedMotion()) {
-    row.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
-    return;
-  }
-  const zIndex = String(Math.min(ROW_LAYERS, 1 + Math.round(Math.abs(offset) / ROW_HEIGHT)));
-  row.animate(
-    [
-      { transform: `translateY(${offset}px)`, boxShadow: "0 10px 22px rgba(20, 35, 26, 0.28)", zIndex },
-      { transform: "none", boxShadow: "0 0 0 rgba(20, 35, 26, 0)", zIndex },
-    ],
-    ROW_SLIDE,
-  );
-}
+const slideSquadRow = liftRow(24);
 
 function energyClass(energy: number): string {
   if (energy < 70) return "en low";
