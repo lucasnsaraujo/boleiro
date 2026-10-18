@@ -154,6 +154,7 @@ export function Hub() {
   const board = club ? state.boards[club.id] : undefined;
   const standing = leagueStanding(state);
   const offers = state.coach.offers.length;
+  const hasRetired = state.coach.retiredOn !== undefined;
   const security = jobSecurity(board);
   const meters = club ? clubMeters(state, club.id) : null;
   const news = inbox.slice(-INBOX_LINES).toReversed();
@@ -180,7 +181,7 @@ export function Hub() {
                 </span>
               )}
               <br />
-              {club?.division ? `Série ${club.division}` : club?.abroad ? leagueAbroadName(state) : club ? "Fora das séries" : offers === 0 ? "Nenhuma proposta na mesa." : `${offersText(offers)} na mesa.`}
+              {club?.division ? `Série ${club.division}` : club?.abroad ? leagueAbroadName(state) : club ? "Fora das séries" : hasRetired ? "Carreira encerrada." : offers === 0 ? "Nenhuma proposta na mesa." : `${offersText(offers)} na mesa.`}
               {standing && ` · ${standing.position}º lugar · ${standing.points} pts`}
             </p>
           </div>
@@ -225,8 +226,14 @@ export function Hub() {
         ) : (
           <button className="btn y hub-play" onClick={act} disabled={round.isPlaying} title="E">
             <i className={passes ? (seated?.playsToday ? "ph-bold ph-strategy" : "ph-bold ph-arrow-bend-up-right") : club ? "ph-bold ph-soccer-ball" : "ph-bold ph-hourglass-medium"} aria-hidden="true" />
-            {passes ? (seated?.playsToday ? "Escalar e passar a vez" : "Passar a vez") : playRoundLabel(round.isPlaying, club !== undefined)}
+            {passes ? (seated?.playsToday ? "Escalar e passar a vez" : "Passar a vez") : hasRetired && !round.isPlaying ? "Seguir o campeonato" : playRoundLabel(round.isPlaying, club !== undefined)}
           </button>
+        )}
+        {hasRetired && (
+          <Link className="btn hub-trajectory" to="/trajectory">
+            <i className="ph-bold ph-path" aria-hidden="true" />
+            Ver a trajetória
+          </Link>
         )}
         {round.hasFailed && <p className="status error">A rodada não andou. Tente de novo.</p>}
 

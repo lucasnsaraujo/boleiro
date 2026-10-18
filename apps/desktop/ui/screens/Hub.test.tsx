@@ -297,3 +297,13 @@ test("a coach without a club has no squad", async () => {
   openHub(await services(null));
   expect(await screen.findByText("Sem clube, sem elenco.")).toBeTruthy();
 });
+
+test("a retired coach's hub says the career is over, plays on and links his trajectory", async () => {
+  const given = await services("bahia-ba");
+  await given.engine.apply({ type: "retireCoach" });
+  await given.engine.apply({ type: "closeMoment" });
+  openHub(given);
+  expect(await screen.findByText(/Carreira encerrada\./)).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Seguir o campeonato" })).toBeTruthy();
+  expect(screen.getByRole("link", { name: "Ver a trajetória" })).toBeTruthy();
+});
