@@ -98,6 +98,18 @@ describe("team chemistry", () => {
     for (const link of good) for (const id of link.playerIds) expect(chemistry.eleven).toContain(id);
   });
 
+  it("places the eleven again when its players' positions change", () => {
+    const chemistry = chemistryOf(steady, CLUB);
+    const starters = chemistry.eleven.map((id) => steady.players[id]).filter((p): p is SimPlayer => p !== undefined);
+    const defender = starters.find((p) => p.group === "DEF");
+    const forward = starters.find((p) => p.group === "ATT");
+    if (!defender || !forward) throw new Error("no defender or forward");
+    const swapped = { [defender.id]: { ...defender, group: forward.group, positions: forward.positions }, [forward.id]: { ...forward, group: defender.group, positions: defender.positions } };
+    const moved = { ...steady, players: { ...steady.players, ...swapped } };
+    const goodOf = (c: Chemistry) => c.links.filter((link) => link.kind === "good").map((link) => link.playerIds.join("|"));
+    expect(goodOf(chemistryOf(moved, CLUB))).not.toEqual(goodOf(chemistry));
+  });
+
   it("falls with a captain without standing in the squad", () => {
     const chemistry = chemistryOf(steady, CLUB);
     const squad = squadOf(steady);
