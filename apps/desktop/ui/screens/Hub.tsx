@@ -82,7 +82,7 @@ export function Hub() {
   // A day that stops the coach early (a board answer, an offer) opens the paper on the news that stopped it.
   const seats = loaded?.seats ?? null;
   const round = usePlayRound(() =>
-    void load(() => true).then(() => {
+    load(() => true).then(() => {
       clock.refresh();
       setPaperOpen(true);
     }),
