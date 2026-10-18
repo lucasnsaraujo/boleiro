@@ -20,7 +20,8 @@ export type MatchEvent =
   | { type: "card"; minute: number; clubId: string; playerId: string; card: Booking["card"] }
   /** `kind` is missing in a match saved before injury kinds; `isRecurrence` marks his last injury coming back. */
   | { type: "injury"; minute: number; clubId: string; playerId: string; days: number; kind?: InjuryKind; isRecurrence?: true }
-  | { type: "substitution"; minute: number; clubId: string; playerId: string; offId: string }
+  /** `byPlan` marks one the coach's match plan made. */
+  | { type: "substitution"; minute: number; clubId: string; playerId: string; offId: string; byPlan?: true }
   | { type: "halfTime"; minute: typeof HALF_TIME }
   | { type: "fullTime"; minute: typeof FULL_TIME }
   | { type: "extraHalfTime"; minute: typeof EXTRA_HALF_TIME }
