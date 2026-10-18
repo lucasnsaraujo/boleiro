@@ -697,8 +697,9 @@ export function Round() {
   });
 
   // On the board ← and → step the focus; inside a window the arrows are the window's own.
+  // A layout effect, so the listener comes and goes in the same commit as the window it yields to.
   const canStepBoards = boardCoaches.length > 1 && !isLineupOpen && !isTableOpen && incident === null;
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!canStepBoards) return;
     const onKey = (event: KeyboardEvent) => {
       const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
