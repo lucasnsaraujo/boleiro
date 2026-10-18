@@ -42,6 +42,14 @@ class FakeGain extends FakeNode {
   gain = new FakeParam(1);
 }
 
+class FakeCompressor extends FakeNode {
+  threshold = new FakeParam(-24);
+  knee = new FakeParam(30);
+  ratio = new FakeParam(12);
+  attack = new FakeParam(0.003);
+  release = new FakeParam(0.25);
+}
+
 class FakeFilter extends FakeNode {
   type: BiquadFilterType = "lowpass";
   frequency = new FakeParam(350);
@@ -103,6 +111,9 @@ export class FakeAudioContext implements AudioContextLike {
   createOscillator() {
     return this.createBufferSource();
   }
+  createDynamicsCompressor() {
+    return new FakeCompressor();
+  }
   decodeAudioData(data: ArrayBuffer): Promise<AudioBufferLike> {
     const url = new TextDecoder().decode(data);
     const buffer: FakeBuffer = { url, duration: this.durations[url] ?? 2 };
@@ -131,6 +142,11 @@ export class FakeAudioContext implements AudioContextLike {
     let node: FakeNode | undefined = this.sources.findLast((s) => s.url === url);
     while (node && !(node instanceof FakeFilter)) node = node.outputs[0];
     return node instanceof FakeFilter ? node.frequency.at(time) : null;
+  }
+  /** Whether every way out of `node` to the speakers passes through a limiter set to hold peaks under 0 dB. */
+  reachesSpeakersThroughLimiter(node: FakeNode): boolean {
+    if (node instanceof FakeCompressor) return node.threshold.at(this.currentTime) < 0 && node.ratio.at(this.currentTime) >= 12 && node.outputs.includes(this.destination);
+    return node.outputs.length > 0 && node.outputs.every((next) => next !== this.destination && this.reachesSpeakersThroughLimiter(next));
   }
   private gainToSpeakers(node: FakeNode, time: number): number {
     if (node === this.destination) return 1;

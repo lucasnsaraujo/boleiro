@@ -31,6 +31,13 @@ interface BufferSourceLike extends ScheduledLike {
   buffer: AudioBufferLike | null;
   loop: boolean;
 }
+interface CompressorLike extends AudioNodeLike {
+  readonly threshold: AudioParamLike;
+  readonly knee: AudioParamLike;
+  readonly ratio: AudioParamLike;
+  readonly attack: AudioParamLike;
+  readonly release: AudioParamLike;
+}
 interface OscillatorLike extends ScheduledLike {
   type: OscillatorType;
   readonly frequency: AudioParamLike;
@@ -44,6 +51,7 @@ export interface AudioContextLike {
   createBiquadFilter(): FilterLike;
   createBufferSource(): BufferSourceLike;
   createOscillator(): OscillatorLike;
+  createDynamicsCompressor(): CompressorLike;
   decodeAudioData(data: ArrayBuffer): Promise<AudioBufferLike>;
 }
 
@@ -104,7 +112,7 @@ const loudnessOf = (volume: number) => volume * volume;
 const hertz = (note: number) => 440 * 2 ** ((note - 69) / 12);
 /** The crowd's lowpass for its level: about 700 Hz when it barely murmurs, near 8 kHz in full voice. */
 const crowdCutoff = (level: number) => 700 * 2 ** (level * 3.5);
-const CATEGORY_OF: Record<Bus, Category> = { music: "music", sfx: "sfx", ui: "ui" };
+const CATEGORY_OF: Record<Bus, Category> = { music: "music", sfx: "sfx", crowd: "crowd", ui: "ui" };
 
 export function createSoundEngine({ createContext, fetchBytes }: Deps): SoundEngine {
   let graph: Graph | null = null;
@@ -293,7 +301,7 @@ export function createSoundEngine({ createContext, fetchBytes }: Deps): SoundEng
     voices.push(...sound.tones.map((tone) => playTone(g, tone, bus)));
     ringing.set(cue, { until: now + length, voices });
     if (sound.ducks) duck(g, [g.musicDuck, g.crowdDuck], DUCKED, length);
-    else if (sound.bus === "sfx") duck(g, [g.musicDuck], UNDER_EFFECTS, length);
+    else if (sound.bus !== "music" && sound.bus !== "ui") duck(g, [g.musicDuck], UNDER_EFFECTS, length);
   }
 
   function open(): Graph | null {
@@ -303,7 +311,15 @@ export function createSoundEngine({ createContext, fetchBytes }: Deps): SoundEng
     } catch {
       return null;
     }
-    const master = gainNode(ctx, 1, ctx.destination);
+    // A brick-wall limiter at -1 dB: a roar, the stinger and the crowd landing together never clip.
+    const limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.setValueAtTime(-1, ctx.currentTime);
+    limiter.knee.setValueAtTime(0, ctx.currentTime);
+    limiter.ratio.setValueAtTime(20, ctx.currentTime);
+    limiter.attack.setValueAtTime(0.003, ctx.currentTime);
+    limiter.release.setValueAtTime(0.25, ctx.currentTime);
+    limiter.connect(ctx.destination);
+    const master = gainNode(ctx, 1, limiter);
     const buses: Record<Category, GainLike> = { music: gainNode(ctx, 1, master), sfx: gainNode(ctx, 1, master), crowd: gainNode(ctx, 1, master), ui: gainNode(ctx, 1, master) };
     const crowdDuck = gainNode(ctx, 1, buses.crowd);
     const crowdTone = ctx.createBiquadFilter();

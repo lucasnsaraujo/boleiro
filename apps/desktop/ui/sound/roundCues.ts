@@ -52,7 +52,9 @@ export function roundCues(round: LiveRound, from: number, to: number, heldFixtur
   const end = roundEndOf(round);
   const breaks = end > FULL_TIME ? [HALF_TIME, FULL_TIME, EXTRA_HALF_TIME] : [HALF_TIME];
   if (from === 0 || breaks.includes(from)) cues.push("kickOff");
-  if (breaks.some(isNew)) cues.push("halfTime");
+  // A VAR check at a break or at the end is decided before the referee blows for it.
+  const isWhistleHeld = heldFixtureId !== null;
+  if (breaks.some(isNew) && !(isWhistleHeld && breaks.includes(to))) cues.push("halfTime");
 
   const humanClubIds = humanClubIdsOf(round);
   for (const match of round.matches) {
@@ -62,7 +64,7 @@ export function roundCues(round: LiveRound, from: number, to: number, heldFixtur
     else for (const event of match.events) if (event.type === "goal" && isNew(event.minute) && event.minute <= until) cues.push("otherGoal");
   }
 
-  if (isNew(end)) cues.push("fullTime");
+  if (isNew(end) && !(isWhistleHeld && to === end)) cues.push("fullTime");
   return cues;
 }
 
@@ -73,22 +75,30 @@ function reactionTo(check: VarCheck, isHuman: boolean): Cue | null {
   return null;
 }
 
-/** The sounds of a VAR decision: the referee's whistle, then the goal, penalty or card it let stand, or the crowd taking it in. */
+/**
+ * The sounds of a VAR decision: the referee's whistle, then the goal, penalty or card it let stand, or the
+ * crowd taking it in, and the break or final whistle the check held back.
+ */
 export function varDecisionCues(round: LiveRound, held: { fixtureId: string; check: VarCheck }): Cue[] {
   const match = round.matches.find((m) => m.fixtureId === held.fixtureId);
   const humanClubIds = humanClubIdsOf(round);
   const humans = new Set(match ? [match.homeId, match.awayId].filter((clubId) => humanClubIds.has(clubId)) : []);
   const minute = held.check.minute;
   const reaction = reactionTo(held.check, humans.has(held.check.clubId));
-  return ["varDecision", ...(match ? humanMatchCues(match, humans, minute - 1, minute) : []), ...(reaction ? [reaction] : [])];
+  const end = roundEndOf(round);
+  const breaks = end > FULL_TIME ? [HALF_TIME, FULL_TIME, EXTRA_HALF_TIME] : [HALF_TIME];
+  const whistle: Cue[] = minute === end ? ["fullTime"] : breaks.includes(minute) ? ["halfTime"] : [];
+  return ["varDecision", ...(match ? humanMatchCues(match, humans, minute - 1, minute) : []), ...(reaction ? [reaction] : []), ...whistle];
 }
 
-const AWAY: Partial<Record<Cue, Cue>> = { coachGoal: "coachGoalAway", conceded: "concededAway" };
-const STUNG: ReadonlySet<Cue> = new Set(["coachGoal", "coachGoalAway", "comeback"]);
+const AWAY: Partial<Record<Cue, Cue>> = { coachGoal: "coachGoalAway", conceded: "concededAway", comeback: "comebackAway" };
+const STUNG: ReadonlySet<Cue> = new Set(["coachGoal", "coachGoalAway", "comeback", "comebackAway"]);
 
-/** What the speakers play for a minute's cues, heard from the coach's `side`: the away end's goals away from home, and the stinger over his goals. */
+/**
+ * What the speakers play for a minute's cues, heard from the seated coach's `side` (none when he has no match
+ * today): the away end's goals away from home, and the stinger over a human coach's goals.
+ */
 export function heardCues(cues: readonly Cue[], side: Side | null): Cue[] {
-  if (side === null) return [...cues];
   const heard = cues.map((cue) => (side === "away" ? (AWAY[cue] ?? cue) : cue));
   return heard.some((cue) => STUNG.has(cue)) ? [...heard, "goalStinger"] : heard;
 }

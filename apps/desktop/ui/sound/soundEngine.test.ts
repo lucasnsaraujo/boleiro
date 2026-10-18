@@ -278,3 +278,27 @@ test("a relieved cheer is the crowd's cheer cut short, faded out", async () => {
   engine.play("groan");
   expect(ctx().playing()).toContain(SAMPLES.oehh);
 });
+
+test("the crowd's own volume covers its roars, boos and groans too; at zero they go quiet while the whistles still sound", async () => {
+  const { engine, ctx } = setUp({ music: 1, sfx: 1, crowd: 0, isMuted: false });
+  engine.unlock();
+  await settle();
+  engine.play("coachGoal");
+  engine.play("conceded");
+  engine.play("groan");
+  engine.play("kickOff");
+  expect(ctx().started()).toEqual([SAMPLES.whistleShort]);
+});
+
+test("everything reaches the speakers through one limiter, so a roar, the stinger and the crowd together can't clip", async () => {
+  const { engine, ctx } = setUp();
+  engine.setCrowd(1);
+  engine.playMusic("hub");
+  engine.unlock();
+  await settle();
+  engine.play("comeback");
+  engine.play("goalStinger");
+  engine.play("click");
+  expect(ctx().playing().length).toBeGreaterThan(2);
+  expect(ctx().sources.every((source) => ctx().reachesSpeakersThroughLimiter(source))).toBe(true);
+});

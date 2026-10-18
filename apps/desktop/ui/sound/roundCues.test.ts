@@ -159,3 +159,21 @@ test("in a hot-seat round the crowd follows the liveliest human coach's match", 
   expect(crowdLevel(round, 20)).toBe(0.6);
   expect(crowdLevel(round, 59)).toBe(1);
 });
+
+test("at 4x, when the coach scores and concedes in the same minute, his goal is the one heard", () => {
+  expect(thinCues(["conceded", "coachGoal"], 4)).toEqual(["coachGoal"]);
+  expect(thinCues(["conceded", "comeback", "coachGoal"], 4)).toEqual(["comeback"]);
+});
+
+test("an away comeback comes from the visitors' end too, and a human's goal brings the stinger even when the seated coach has no match", () => {
+  expect(heardCues(["comeback"], "away")).toEqual(["comebackAway", "goalStinger"]);
+  expect(heardCues(["coachGoal"], null)).toEqual(["coachGoal", "goalStinger"]);
+});
+
+test("a VAR check at a break holds the whistle back too: the decision comes first, then half-time or full time", () => {
+  const atBreak = roundWith([goal(45, "bahia"), varCheck(45, "bahia", "goalAwarded"), goal(90, "vit"), varCheck(90, "vit", "goalAwarded")]);
+  expect(roundCues(atBreak, 44, 45, "ours")).toEqual([]);
+  expect(varDecisionCues(atBreak, { fixtureId: "ours", check: varCheck(45, "bahia", "goalAwarded") })).toEqual(["varDecision", "coachGoal", "halfTime"]);
+  expect(roundCues(atBreak, 89, 90, "ours")).toEqual([]);
+  expect(varDecisionCues(atBreak, { fixtureId: "ours", check: varCheck(90, "vit", "goalAwarded") })).toEqual(["varDecision", "conceded", "fullTime"]);
+});
