@@ -190,3 +190,18 @@ test("under the full sheet the coach's time-out key waits: the sheet stays and h
   expect(screen.getByRole("dialog", { name: "Ficha completa" })).toBeTruthy();
   expect(screen.queryByRole("dialog", { name: "Escalação" })).toBeNull();
 });
+
+test("with a match's panel opened from the keyboard, Space still stops the clock", async () => {
+  const given = await kickOff({ isInShell: true });
+  const round = await given.engine.liveRound();
+  const match = round?.matches.find((m) => isOnBoard(round, m) && m.fixtureId !== round.coach?.fixtureId);
+  if (!round || !match) return expect.fail("the round has another match");
+  const name = (clubId: string) => round.clubs[clubId]?.shortName ?? "";
+
+  await user().tab();
+  screen.getByRole("button", { name: `Ficha do jogo: ${name(match.homeId)} x ${name(match.awayId)}` }).focus();
+  await user().keyboard("{Enter}");
+  await panel();
+  await user().keyboard(" ");
+  expect(screen.getByRole("button", { name: "Pausar" })).toHaveProperty("ariaPressed", "true");
+});

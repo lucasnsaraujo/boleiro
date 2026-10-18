@@ -187,10 +187,11 @@ export function Shell() {
   useEffect(() => {
     // A control the coach reached with Tab, where Space presses it as keyboard users expect. A click focuses a control too,
     // and Chromium then calls it :focus-visible on the next key, so that test alone would let Space re-press the last click.
+    // A title a dialog focuses by itself (tabIndex -1) is no control Tab reaches, so Space there is still the game's.
     let isTabbing = false;
     let tabbedTo: EventTarget | null = null;
     const onFocus = (event: FocusEvent) => {
-      tabbedTo = isTabbing ? event.target : null;
+      tabbedTo = isTabbing && event.target instanceof HTMLElement && event.target.tabIndex >= 0 ? event.target : null;
     };
     const onPointer = () => {
       isTabbing = false;
