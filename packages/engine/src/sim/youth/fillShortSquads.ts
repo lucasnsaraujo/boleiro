@@ -44,14 +44,14 @@ export function fillShortSquads(state: GameState): { state: GameState; events: (
   let next = openDraft(state);
   for (const club of short) {
     const squad = [...(squads.get(club.id) ?? [])];
-    const { level } = squadNeeds(squad, tierOf(club));
+    const { middle } = squadNeeds(squad, tierOf(club));
     const rate = wageRateOf(squad);
     const playerIds: string[] = [];
     const isHuman = isHumanClub(state, club.id);
     groupsToFill(squad, []).forEach((group, i) => {
       // A human coach signs his own players; his club only takes up its kids. An AI club this short signs
       // even without cash in hand: a teenager taken up instead would earn the same going rate.
-      const signing = isHuman ? undefined : (freeAgents.get(group) ?? []).find((p) => !taken.has(p.id) && p.clubId !== club.id && p.strength <= level + REPLACEMENT_BAND.above);
+      const signing = isHuman ? undefined : (freeAgents.get(group) ?? []).find((p) => !taken.has(p.id) && p.clubId !== club.id && p.strength <= middle + REPLACEMENT_BAND.above);
       if (signing) {
         taken.add(signing.id);
         const moved = movePlayer(next, { playerId: signing.id, kind: "freeAgent", toClubId: club.id, fee: 0, contract: { wage: Math.max(1, rate(signing.strength)), until: contractEnd(year, random.next) } });

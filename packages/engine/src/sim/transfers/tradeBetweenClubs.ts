@@ -69,7 +69,7 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
   const replacing = needs.short > 0;
   const group = replacing ? needs.thinnest : needs.weakest.group;
   const band = replacing
-    ? { min: needs.level - REPLACEMENT_BAND.below, max: needs.level + REPLACEMENT_BAND.above }
+    ? { min: needs.middle - REPLACEMENT_BAND.below, max: needs.middle + REPLACEMENT_BAND.above }
     : { min: needs.weakest.strength + UPGRADE.min, max: needs.weakest.strength + UPGRADE.max };
   const pool = pools[group];
   const lo = firstAbove(pool, band.min);

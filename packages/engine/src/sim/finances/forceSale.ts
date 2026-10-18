@@ -18,7 +18,7 @@ const TIER_RANK: Record<Tier, number> = { A: 0, B: 1, C: 2, D: 3, state: 4 };
 
 /**
  * The board sells the club's best-paid player it owns outside the automatic best eleven to a richer
- * AI club that can pay and would sign him as a replacement (no further below its best eleven's level
+ * AI club that can pay and would sign him as a replacement (no further below the middle of its squad
  * than its replacements, REPLACEMENT_BAND), or abroad when none can. Returns null when the squad is
  * too thin to sell.
  * `state` must be a draft (openDraft) and `view` built from it; the sale is recorded in both.
@@ -41,7 +41,7 @@ export function forceSale(state: GameState, clubId: string, random: () => number
       if (!finance || club.id === clubId || isHumanClub(state, club.id) || finance.cash < fee) return false;
       const gap = TIER_RANK[tierOf(club)] - TIER_RANK[tierOf(seller)];
       const isRicher = gap < 0 || (gap === 0 && projectedRevenue(finance) > sellerRevenue);
-      return isRicher && player.strength >= view.needs(club.id).level - REPLACEMENT_BAND.below;
+      return isRicher && player.strength >= view.needs(club.id).middle - REPLACEMENT_BAND.below;
     })
     .map((club) => club.id)
     .sort();

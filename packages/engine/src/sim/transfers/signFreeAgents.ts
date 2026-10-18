@@ -17,8 +17,8 @@ const TRIES = 15;
 const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
 
 /**
- * One market day of AI clubs below their usual squad size, the shortest first, signing free agents near their level at the
- * club's going rate, no fee, within board limits.
+ * One market day of AI clubs below their usual squad size, the shortest first, signing free agents near the middle of
+ * their squad at the club's going rate, no fee, within board limits.
  */
 export function signFreeAgents(state: GameState, random: () => number): { state: GameState; events: PlayerMoved[] } {
   const events: PlayerMoved[] = [];
@@ -39,12 +39,12 @@ export function signFreeAgents(state: GameState, random: () => number): { state:
     for (let size = view.squad(clubId).length; size < SQUAD_TARGET[view.tier(clubId)]; size++) {
       const squad = view.squad(clubId);
       if (isClubFull(next, clubId, squad.length)) break;
-      const { level, thinnest } = view.needs(clubId);
+      const { middle, thinnest } = view.needs(clubId);
       const rate = wageRateOf(squad);
       const medianWage = [...squad.map((p) => p.wage)].sort((a, b) => a - b)[squad.length >> 1] ?? 0;
       // Only free agents near the club's level; below that it waits for its own youth.
       const candidates = (byGroup.get(thinnest) ?? [])
-        .filter((p) => !signed.has(p.id) && p.strength <= level + REPLACEMENT_BAND.above && p.strength >= level - REPLACEMENT_BAND.below)
+        .filter((p) => !signed.has(p.id) && p.strength <= middle + REPLACEMENT_BAND.above && p.strength >= middle - REPLACEMENT_BAND.below)
         .slice(0, TRIES);
       const signing = candidates.find((p: SimPlayer) => {
         const wage = Math.max(1, rate(p.strength));

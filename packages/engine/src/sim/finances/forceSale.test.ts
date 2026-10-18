@@ -30,12 +30,12 @@ describe("the board's forced sale", () => {
     expect(sold?.state.market.loans[firstChoice.id]).toEqual(loan);
   });
 
-  it("sells only to a club he would be a replacement for, never far below its level", () => {
+  it("sells only to a club he would be a replacement for, never far below the middle of its squad", () => {
     const sales = Array.from({ length: 40 }, (_, seed) => {
       const draft = openDraft(start);
       const view = marketView(draft);
       const sold = forceSale(draft, sellerId, seededRandom(seed + 1), view);
-      return sold?.sale.buyerId ? { buyerLevel: squadNeeds(marketView(start).squad(sold.sale.buyerId), view.tier(sold.sale.buyerId)).level, strength: start.players[sold.sale.playerId]?.strength ?? 0 } : null;
+      return sold?.sale.buyerId ? { buyerLevel: squadNeeds(marketView(start).squad(sold.sale.buyerId), view.tier(sold.sale.buyerId)).middle, strength: start.players[sold.sale.playerId]?.strength ?? 0 } : null;
     }).filter((sale) => sale !== null);
     expect(sales.length).toBeGreaterThan(0);
     for (const { buyerLevel, strength } of sales) expect(strength).toBeGreaterThanOrEqual(buyerLevel - REPLACEMENT_BAND.below);
