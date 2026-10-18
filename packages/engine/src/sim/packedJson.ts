@@ -65,7 +65,8 @@ export function packJson(value: unknown): string {
     for (const key of keys) list.push(item[key]);
     return list;
   };
-  return JSON.stringify({ packed: 1, shapes, value }, (key, item: unknown) => (key === "shapes" ? item : packed(key, item)));
+  // The key lists are written as they are, apart from the value the marks stand in.
+  return `{"packed":1,"shapes":${JSON.stringify(shapes)},"value":${JSON.stringify(value, packed) ?? "null"}}`;
 }
 
 function isPacked(value: unknown): value is Packed {
@@ -80,7 +81,13 @@ function unpacked(value: unknown, shapes: readonly string[][]): unknown {
     const keys = shapes[Number(head.slice(1))];
     if (!keys) throw new Error(`packed JSON has no key list ${head.slice(1)}`);
     const object: Record<string, unknown> = {};
-    for (let i = 0; i < keys.length; i++) object[keys[i] ?? ""] = unpacked(value[i + 1], shapes);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i] ?? "";
+      const item = unpacked(value[i + 1], shapes);
+      // An own key, as JSON.parse makes it, where assigning would set the object's prototype.
+      if (key === "__proto__") Object.defineProperty(object, key, { value: item, enumerable: true, writable: true, configurable: true });
+      else object[key] = item;
+    }
     return object;
   }
   if (isObject(value)) {

@@ -20,6 +20,16 @@ describe("packed JSON", () => {
     expect(roundTrip(value)).toBe(JSON.stringify(value));
   });
 
+  it("keeps keys that look like its marks or its own fields", () => {
+    const value = { list: [{ "~1": 1, a: 2 }, { "~1": 3, a: 4 }], shapes: { once: true }, packed: 1, value: [{ shapes: 1 }, { shapes: 2 }] };
+    expect(roundTrip(value)).toBe(JSON.stringify(value));
+  });
+
+  it("keeps a key named __proto__ as JSON.parse reads it", () => {
+    const text = '{"list":[{"__proto__":1,"a":2},{"__proto__":3,"a":4}],"one":{"__proto__":{"x":1}}}';
+    expect(JSON.stringify(unpackJson(packJson(JSON.parse(text))))).toBe(text);
+  });
+
   it("writes objects that share their keys smaller than JSON", () => {
     const marks = Array.from({ length: 200 }, (_, i) => ({ season: 2026 + i, strength: 40 + (i % 7) }));
     expect(packJson({ marks }).length).toBeLessThan(0.6 * JSON.stringify({ marks }).length);
