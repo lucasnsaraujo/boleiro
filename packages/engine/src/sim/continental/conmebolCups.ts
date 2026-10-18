@@ -18,7 +18,9 @@ type CupStage = { name: string; dates: IsoDate[] };
 // guess: dates on the usual CONMEBOL weeks, the Libertadores on Tuesdays and the Sul-Americana and
 // Recopa on Thursdays, days the Brazilian calendar never uses, and clear of the weeks of the Copa do
 // Brasil's fixed Wednesdays; the finals on a weekday too, though CONMEBOL plays them on a Saturday at
-// a neutral ground, because a Saturday may hold a Série A round.
+// a neutral ground, because a Saturday may hold a Série A round. Both cups' 2026 quarter-finals are
+// real weeks, 8–10 and 15–17 Sep (Band, https://www.band.com.br/esportes/libertadores-2026-veja-datas-e-horarios-dos-jogos-das-quartas-de-final
+// and https://www.band.com.br/esportes/sul-americana-2026-veja-datas-e-horarios-dos-jogos-das-quartas-de-final).
 export const CUP_STAGES: Record<ContinentalCup, readonly CupStage[]> = {
   libertadores: [
     { name: "stage-1", dates: ["2026-02-03", "2026-02-10"] },
@@ -26,7 +28,7 @@ export const CUP_STAGES: Record<ContinentalCup, readonly CupStage[]> = {
     { name: "stage-3", dates: ["2026-03-03", "2026-03-10"] },
     { name: "groups", dates: ["2026-04-07", "2026-04-14", "2026-04-28", "2026-05-05", "2026-05-19", "2026-05-26"] },
     { name: "round-of-16", dates: ["2026-08-11", "2026-08-18"] },
-    { name: "quarter-finals", dates: ["2026-09-15", "2026-09-22"] },
+    { name: "quarter-finals", dates: ["2026-09-08", "2026-09-15"] },
     { name: "semi-finals", dates: ["2026-10-13", "2026-10-20"] },
     { name: "final", dates: ["2026-11-24"] },
   ],
@@ -36,7 +38,7 @@ export const CUP_STAGES: Record<ContinentalCup, readonly CupStage[]> = {
     { name: "groups", dates: ["2026-04-09", "2026-04-16", "2026-04-30", "2026-05-07", "2026-05-21", "2026-05-28"] },
     { name: "playoffs", dates: ["2026-07-16", "2026-07-23"] },
     { name: "round-of-16", dates: ["2026-08-13", "2026-08-20"] },
-    { name: "quarter-finals", dates: ["2026-09-17", "2026-09-24"] },
+    { name: "quarter-finals", dates: ["2026-09-10", "2026-09-17"] },
     { name: "semi-finals", dates: ["2026-10-15", "2026-10-22"] },
     { name: "final", dates: ["2026-11-19"] },
   ],
