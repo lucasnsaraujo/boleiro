@@ -56,6 +56,23 @@ test("the music slider changes how loud the music plays, and the mute silences i
   expect(sound.ctx.loudness(MUSIC.menu)).toBe(0);
 });
 
+test("the crowd and the clicks follow the effects until moved on their own, and their own volumes are kept", () => {
+  const sound = openOptions();
+  sound.engine.setCrowd(1);
+  fireEvent.change(screen.getByRole("slider", { name: "Efeitos" }), { target: { value: "40" } });
+  expect(screen.getByRole("slider", { name: "Torcida" })).toHaveProperty("value", "40");
+  expect(screen.getByRole("slider", { name: "Cliques" })).toHaveProperty("value", "40");
+  fireEvent.change(screen.getByRole("slider", { name: "Torcida" }), { target: { value: "90" } });
+  fireEvent.change(screen.getByRole("slider", { name: "Cliques" }), { target: { value: "0" } });
+  fireEvent.change(screen.getByRole("slider", { name: "Efeitos" }), { target: { value: "70" } });
+  cleanup();
+
+  openOptions();
+  expect(screen.getByRole("slider", { name: "Efeitos" })).toHaveProperty("value", "70");
+  expect(screen.getByRole("slider", { name: "Torcida" })).toHaveProperty("value", "90");
+  expect(screen.getByRole("slider", { name: "Cliques" })).toHaveProperty("value", "0");
+});
+
 test("the paper follows the system until the coach picks one, and his pick is kept", async () => {
   const theme = () => (
     <ThemeProvider store={localStorage}>

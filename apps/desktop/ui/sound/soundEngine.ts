@@ -59,6 +59,17 @@ export type SoundEngine = {
 
 export const SILENT_SOUND: SoundEngine = { unlock() {}, apply() {}, playMusic() {}, play() {}, setCrowd() {} };
 
+/** `engine`, also writing down every cue the game asks it to play in `log`. */
+export function withCueLog(engine: SoundEngine, log: Cue[]): SoundEngine {
+  return {
+    ...engine,
+    play(cue) {
+      log.push(cue);
+      engine.play(cue);
+    },
+  };
+}
+
 type Deps = {
   createContext: () => AudioContextLike;
   fetchBytes: (url: string) => Promise<ArrayBuffer>;

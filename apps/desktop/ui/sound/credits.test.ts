@@ -42,3 +42,8 @@ test("a credits table is read row by row, skipping its header", () => {
   ].join("\n");
   expect(parseCredits(md)).toEqual([{ file: "a.mp3", sound: "Crowd", author: "felix.blume", licence: "CC0 1.0", source: "https://freesound.org/s/1/", edit: "cut" }]);
 });
+
+test("the sounds keep to their 2 MB budget, apart from the images'", () => {
+  const bytes = files.reduce((sum, file) => sum + statSync(join(SOUNDS, file)).size, 0);
+  expect(bytes).toBeLessThan(2 * 1024 * 1024);
+});

@@ -11,7 +11,7 @@ import type { SlotStore } from "@boleiro/game-client/saves/slotStore";
 import icon from "../../../../design/logo/boleiro-icon-small.svg";
 import { parseCredits } from "../sound/credits.js";
 import { useSound } from "../sound/SoundProvider.js";
-import type { SoundSettings } from "../sound/soundSettings.js";
+import { volumeOf, type Category, type SoundSettings } from "../sound/soundSettings.js";
 import { useTheme } from "../theme/ThemeProvider.js";
 import type { ThemeSetting } from "../theme/themeSetting.js";
 import "./options.css";
@@ -19,10 +19,11 @@ import "./options.css";
 const CREDITS = parseCredits(credits);
 const PLATFORM = platformOf(navigator.userAgent);
 
-type Volume = "music" | "sfx";
-const VOLUMES: readonly { key: Volume; label: string; title: string; note: string | null }[] = [
-  { key: "sfx", label: "Efeitos", title: "Efeitos", note: "Gol, torcida e apito" },
+const VOLUMES: readonly { key: Category; label: string; title: string; note: string | null }[] = [
+  { key: "sfx", label: "Efeitos", title: "Efeitos", note: "Gol, apito e VAR" },
+  { key: "crowd", label: "Torcida", title: "Torcida", note: "O estádio durante a rodada" },
   { key: "music", label: "Música", title: "Música de fundo", note: null },
+  { key: "ui", label: "Cliques", title: "Cliques", note: "Botões e abas" },
 ];
 
 // The game slots plus the autosave.
@@ -89,7 +90,7 @@ export function Options() {
             Som
           </h2>
           {VOLUMES.map(({ key, label, title, note }) => {
-            const percent = Math.round(settings[key] * 100);
+            const percent = Math.round(volumeOf(settings, key) * 100);
             return (
               <div key={key} className="options-row">
                 <div className="options-row-text">
@@ -201,7 +202,7 @@ export function Options() {
               </li>
             ))}
           </ul>
-          <p className="credits-note">Cliques e vinhetas de título, acesso, rebaixamento e demissão são sintetizados no próprio jogo.</p>
+          <p className="credits-note">Cliques, a vinheta do gol, o VAR e as vinhetas de título, acesso, rebaixamento e demissão são sintetizados no próprio jogo.</p>
         </section>
 
         <footer className="options-actions">
