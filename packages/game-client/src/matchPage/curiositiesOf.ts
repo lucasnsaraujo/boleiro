@@ -1,4 +1,5 @@
 import type { Fixture, GameState } from "@boleiro/engine/sim/gameState";
+import { nationalMatchIdOf } from "@boleiro/engine/sim/nations/nationalFixtures";
 import { competitionKey } from "@boleiro/engine/sim/history/history";
 import { formatDayMonth } from "../format/formatGameDate.js";
 import { compareText } from "@boleiro/engine/sim/compareText";
@@ -66,9 +67,9 @@ const runs: CuriosityRule = (match) => {
   return null;
 };
 
-/** The day's best scorer with his tally in the competition so far, from the season's real goals. */
+/** The day's best scorer with his tally in the competition so far, from the season's real goals; the history keeps none of a national team's. */
 const scorerTally: CuriosityRule = (match) => {
-  if (!match.scorers?.length) return null;
+  if (!match.scorers?.length || nationalMatchIdOf(match.fixture.id) !== null) return null;
   const today = new Map<string, number>();
   for (const { playerId } of match.scorers) today.set(playerId, (today.get(playerId) ?? 0) + 1);
   const goals = match.state.history.current.goals[competitionKey(match.fixture.competitionId)] ?? {};
