@@ -1,4 +1,5 @@
 import { REFEREE_ROSTER } from "@boleiro/data/refereeRoster";
+import { RAPIDO } from "@boleiro/engine/sim/formats";
 import { beforeAll, describe, expect, it } from "vitest";
 import { rivalryOf } from "@boleiro/engine/sim/rivalries/rivalryOf";
 import { leagueMatches } from "@boleiro/engine/sim/world/resultOnlyLeague";
@@ -187,4 +188,19 @@ describe("the match page of a played match", () => {
     const next = session.read(["fixtures"]).fixtures.find((f) => !f.result);
     expect(session.matchPage(next?.id ?? "")).toBeNull();
   });
+});
+
+describe("a Champions League match of a human club abroad", () => {
+  it("opens its page, with no table: the full tier keeps only the club's own games of the league phase", () => {
+    const arsenal = createEngineSession(bundledGameFiles);
+    arsenal.apply({ type: "newGame", seed: 5, choices: { coachClubId: "tm-11", formats: RAPIDO } });
+    const first = () => arsenal.read(["fixtures"]).fixtures.find((f) => f.competitionId.startsWith("champions-league") && f.result);
+    for (let day = 0; day < 200 && !first(); day++) arsenal.apply({ type: "advance", days: [{}] });
+    const fixture = first();
+    if (!fixture) return expect.fail("Arsenal has played a Champions League match");
+    const page = openPage(arsenal, fixture.id);
+    expect(page.competition).toBe("Champions League");
+    expect(page.home.place).toBeNull();
+    expect(page.away.place).toBeNull();
+  }, 300_000);
 });

@@ -102,7 +102,8 @@ function locate(state: GameState, ref: string): Located | null {
   const competition = fixture && state.competitions[fixture.competitionId];
   if (!fixture || !competition) return null;
   const stage = competition.stages[fixture.stage];
-  const group = stage?.kind === "groups" ? stage.groups.find((clubs) => clubs.includes(fixture.homeId)) : undefined;
+  // A cup abroad keeps only a human club's games of its first phase, too few for a table.
+  const group = stage?.kind === "groups" && competition.kind !== "cupAbroad" ? stage.groups.find((clubs) => clubs.includes(fixture.homeId)) : undefined;
   const inGroup = new Set(group ?? []);
   const table = group
     ? { clubIds: group, fixtures: state.fixtures.filter((f) => f.competitionId === competition.id && f.stage === fixture.stage && inGroup.has(f.homeId) && inGroup.has(f.awayId)), drawOrder: competition.drawOrder }
