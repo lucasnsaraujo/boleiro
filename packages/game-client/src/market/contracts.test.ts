@@ -5,12 +5,13 @@ import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { releaseClauseOf } from "@boleiro/engine/sim/transfers/releaseClause";
 import { bundledGameFiles } from "../engine/bundledGameFiles.js";
 import { contractsEnding, renewalSheet, signingTerms } from "./contracts.js";
+import { compareText } from "@boleiro/engine/sim/compareText";
 
 const COACH = "bahia-ba";
 const game = newGameFromFiles(5, { coachClubId: COACH }, bundledGameFiles);
 const squad = Object.values(game.players)
   .filter((p) => p.clubId === COACH)
-  .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+  .sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
 const [star] = squad;
 if (!star) throw new Error("Bahia has no players");
 const withPlayers = (state: GameState, ...players: SimPlayer[]): GameState => ({ ...state, players: { ...state.players, ...Object.fromEntries(players.map((p) => [p.id, p])) } });

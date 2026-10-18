@@ -22,6 +22,7 @@ import { idolRefusesMove, rivalBlockOf } from "../rivalries/idols.js";
 import { isHumanClub, waitingCoachesOf } from "../coach/humanCoaches.js";
 import { goingRate, wageDemand } from "./wageDemand.js";
 import { willingToJoin } from "./willingToJoin.js";
+import { compareText } from "../compareText.js";
 
 type Outcome = { state: GameState; events: TransferEvent[] };
 const RANK = { A: 4, B: 3, C: 2, D: 1, state: 0 } as const;
@@ -213,7 +214,7 @@ export function decideCoachRequest(state: GameState, request: CoachRequest, rand
       const fee = Math.round(valuePlayer(player, view.tier(coachClubId), state.date) * state.market.eurBrl);
       const buyerId = Object.keys(state.finances)
         .filter((id) => !isHumanClub(state, id) && !isClubFull(state, id, view.squad(id).length))
-        .sort((a, b) => (state.clubs[b]?.fanbase ?? 0) - (state.clubs[a]?.fanbase ?? 0) || a.localeCompare(b))
+        .sort((a, b) => (state.clubs[b]?.fanbase ?? 0) - (state.clubs[a]?.fanbase ?? 0) || compareText(a, b))
         .find((id) => {
           if (idolRefusesMove(state, player, id)) return false;
           const buyerFinance = state.finances[id];

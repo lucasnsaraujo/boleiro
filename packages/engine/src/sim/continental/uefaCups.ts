@@ -12,6 +12,7 @@ import { unifiedUefaCalendar, type UefaCalendar } from "./continentalDays.js";
 import { elevenAverage } from "./continentalField.js";
 import { drawGroupMatches } from "./groupStageDraw.js";
 import { drawLeaguePhase, LEAGUE_PHASE_CLUBS } from "./leaguePhaseDraw.js";
+import { compareText } from "../compareText.js";
 
 export const KNOCKOUT_ROUNDS = ["playoffs", "round-of-16", "quarter-finals", "semi-finals", "final"] as const;
 export type KnockoutRoundName = (typeof KNOCKOUT_ROUNDS)[number];
@@ -289,7 +290,7 @@ function playCupDay(cup: LeaguePhaseCup, date: IsoDate, clubOf: ClubOf, random: 
  */
 function openCup(cup: UefaCup, season: number, field: readonly string[], clubs: ReturnType<typeof clubsOf>, random: () => number, formats: Formats): LeaguePhaseCup {
   const strength = (id: string) => elevenAverage(clubs.get(id)?.club);
-  const seeded = [...field].sort((a, b) => strength(b) - strength(a) || a.localeCompare(b));
+  const seeded = [...field].sort((a, b) => strength(b) - strength(a) || compareText(a, b));
   const countryOf = (id: string) => clubs.get(id)?.country ?? id;
   const { leaguePhase } = calendarOf(cup, formats);
   const days = formats.continentalGroups === "league-phase" ? drawLeaguePhase(seeded, countryOf, random) : drawGroupMatches(seeded, countryOf, formats.continentalGroups === "groups-3" ? 1 : 2, random);

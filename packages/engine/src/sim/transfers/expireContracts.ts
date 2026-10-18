@@ -11,6 +11,7 @@ import type { PlayerContractRenewed, PlayerMoved } from "./transferEvents.js";
 import { wageDemand } from "./wageDemand.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
 import { retiresAtSeasonTurn } from "../players/developPlayers.js";
+import { compareText } from "../compareText.js";
 
 // guess: an AI club offers a new deal to the players it wants to keep (isWorthKeeping), and four in five of
 // them talk; those sign for the length they agree to nearest the one they want (wishPick), at their ask.
@@ -87,7 +88,7 @@ export function renewAiContracts(state: GameState): { state: GameState; events: 
     if (squadEnd(squad) > state.date || isHumanClub(state, clubId)) continue;
     for (const player of squad) if (!state.market.loans[player.id]) talk(player, clubId, squad);
   }
-  for (const [playerId, loan] of Object.entries(state.market.loans).sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [playerId, loan] of Object.entries(state.market.loans).sort(([a], [b]) => compareText(a, b))) {
     const player = state.players[playerId];
     if (player) talk(player, loan.fromClubId, squads.get(loan.fromClubId) ?? []);
   }
@@ -120,7 +121,7 @@ export function expireContracts(state: GameState, random: () => number): { state
   const year = Number(state.date.slice(0, 4));
 
   const staying: SimPlayer[] = [];
-  for (const player of expired.sort((a, b) => a.id.localeCompare(b.id))) {
+  for (const player of expired.sort((a, b) => compareText(a.id, b.id))) {
     if (state.market.loans[player.id]) continue;
     const joining = state.market.preContracts[player.id];
     if (!joining || !next.clubs[joining]) {

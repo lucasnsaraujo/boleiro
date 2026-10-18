@@ -1,5 +1,6 @@
 import { STATES, type State } from "@boleiro/data/clubs";
 import { COPA_STATE_PLACES } from "./copaDoBrasilEntrants.js";
+import { compareText } from "./compareText.js";
 
 // Série D places come from the estaduais: most federations get two or three direct places (Alagoas:
 // champion and runner-up; Bahia, Goiás and Paraná: three), and 14 more go nationally by CBF ranking
@@ -11,7 +12,7 @@ import { COPA_STATE_PLACES } from "./copaDoBrasilEntrants.js";
 // outside the national leagues can only come back through its estadual.
 const PLACES_PER_STATE = 2;
 
-const STATE_ORDER = [...STATES].sort((a, b) => COPA_STATE_PLACES[b] - COPA_STATE_PLACES[a] || a.localeCompare(b));
+const STATE_ORDER = [...STATES].sort((a, b) => COPA_STATE_PLACES[b] - COPA_STATE_PLACES[a] || compareText(a, b));
 
 /** The clubs that fill `places` Série D places, from each state's final placings; `isEligible` rules out clubs with a national division. */
 export function serieDQualifiers(

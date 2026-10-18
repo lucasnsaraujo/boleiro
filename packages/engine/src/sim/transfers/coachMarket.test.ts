@@ -14,13 +14,14 @@ import { listPlayer } from "./listPlayer.js";
 import { SQUAD_CAP } from "./squadCap.js";
 import type { Bid } from "./transferMarket.js";
 import { valuePlayer } from "./valuePlayer.js";
+import { compareText } from "../compareText.js";
 
 const COACH = "flamengo-rj";
 const BUYER = "bahia-ba";
 let windowOpen = loadNewGame(4, { coachClubId: COACH });
 while (windowOpen.date < "2026-01-06") windowOpen = advanceDay(windowOpen, {}).state;
 
-const squadOf = (state: GameState, clubId: string) => Object.values(state.players).filter((p) => p.clubId === clubId).sort((a, b) => a.id.localeCompare(b.id));
+const squadOf = (state: GameState, clubId: string) => Object.values(state.players).filter((p) => p.clubId === clubId).sort((a, b) => compareText(a.id, b.id));
 const financeOf = (state: GameState, clubId: string): ClubFinance => {
   const finance = state.finances[clubId];
   if (!finance) throw new Error(`no finances for ${clubId}`);
@@ -33,7 +34,7 @@ const withFinance = (state: GameState, clubId: string, patch: Partial<ClubFinanc
 const withPlayer = (state: GameState, player: SimPlayer): GameState => ({ ...state, players: { ...state.players, [player.id]: player } });
 const rich = (state: GameState, clubId = COACH) => withFinance(state, clubId, { transferBudget: 1e10, wageCap: 1e10 });
 const ours = squadOf(windowOpen, COACH);
-const weakestFirst = [...ours].sort((a, b) => a.strength - b.strength || a.id.localeCompare(b.id));
+const weakestFirst = [...ours].sort((a, b) => a.strength - b.strength || compareText(a.id, b.id));
 const median = weakestFirst[ours.length >> 1];
 if (!median) throw new Error("no Flamengo player");
 

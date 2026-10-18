@@ -11,12 +11,13 @@ import { nextAssistantReview } from "./assistantRenewals.js";
 import { renewalTermsOf, renewedUntil } from "./renewalTerms.js";
 import { runTransferDay } from "./runTransferDay.js";
 import type { TransferEvent } from "./transferEvents.js";
+import { compareText } from "../compareText.js";
 
 const COACH = "flamengo-rj";
 const start = loadNewGame(4, { coachClubId: COACH });
 const ranked = Object.values(start.players)
   .filter((p) => p.clubId === COACH)
-  .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+  .sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
 const [star] = ranked;
 const weakest = ranked.at(-1);
 if (!star || !weakest) throw new Error("no Flamengo players");
@@ -107,10 +108,10 @@ describe("the assistant's renewals", () => {
     const twoCoaches = loadNewGame(12, { coachClubId: COACH, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }] } });
     const [theirs] = Object.values(twoCoaches.players)
       .filter((p) => p.clubId === SECOND)
-      .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+      .sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
     const [ours] = Object.values(twoCoaches.players)
       .filter((p) => p.clubId === COACH)
-      .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+      .sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
     if (!theirs || !ours) throw new Error("no players");
     const finances = Object.fromEntries(Object.entries(twoCoaches.finances).map(([id, f]) => [id, { ...f, wageCap: 1e10 }]));
     const state = on({ ...twoCoaches, finances, coach: withAssistantDuty(twoCoaches.coach, "contracts", false) }, "2026-03-03", { ...ours, age: 27, contractUntil: "2026-12-31" }, { ...theirs, age: 27, contractUntil: "2026-12-31" });
@@ -154,7 +155,7 @@ describe("AI clubs' renewals", () => {
     const LENDER = "palmeiras-sp";
     const ending = Object.values(start.players)
       .filter((p) => p.clubId === LENDER && p.age < 30)
-      .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id))
+      .sort((a, b) => b.strength - a.strength || compareText(a.id, b.id))
       .slice(0, 10)
       .map((p) => ({ ...p, contractUntil: "2026-12-31" }));
     const atHome = on(lastDay, lastDay.date, ...ending);

@@ -7,6 +7,7 @@ import { valuePlayer } from "../transfers/valuePlayer.js";
 import { projectedRevenue } from "./setBoardBudget.js";
 import { tierOf } from "./tierOf.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
+import { compareText } from "../compareText.js";
 
 export type ForcedSale = { type: "forcedSale"; clubId: string; playerId: string; buyerId: string | null; fee: number };
 
@@ -31,7 +32,7 @@ export function forceSale(state: GameState, clubId: string, random: () => number
   const key = new Set(pickLineup(squad));
   // Players on loan here belong to another club, so the board can't sell them.
   const owned = squad.filter((p) => !key.has(p) && !state.market.loans[p.id]);
-  const player = owned.sort((a, b) => b.wage - a.wage || a.id.localeCompare(b.id))[0];
+  const player = owned.sort((a, b) => b.wage - a.wage || compareText(a.id, b.id))[0];
   if (!player) return null;
   const fee = Math.round(FIRE_SALE_SHARE_OF_VALUE * valuePlayer(player, tierOf(seller), state.date) * state.market.eurBrl);
   const sellerRevenue = projectedRevenue(sellerFinance);

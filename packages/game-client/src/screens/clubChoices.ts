@@ -1,6 +1,7 @@
 import type { Club, State } from "@boleiro/data/clubs";
 import type { Division } from "@boleiro/data/players";
 import type { Board } from "@boleiro/engine/sim/coach/boardExpectations";
+import { compareText } from "@boleiro/engine/sim/compareText";
 
 export type NationalClub = Club & { division: Division };
 export type ClubChoice = { club: NationalClub; goal: string | null };
@@ -32,7 +33,7 @@ function isNational(club: Club): club is NationalClub {
 export function clubChoices(clubs: readonly Club[], boards: Readonly<Record<string, Board>> | null): ClubChoice[] {
   return clubs
     .filter(isNational)
-    .toSorted((a, b) => a.division.localeCompare(b.division) || a.shortName.localeCompare(b.shortName, "pt-BR"))
+    .toSorted((a, b) => compareText(a.division, b.division) || a.shortName.localeCompare(b.shortName, "pt-BR"))
     .map((club) => {
       const board = boards?.[club.id];
       return { club, goal: board ? boardGoal(board, club.division) : null };

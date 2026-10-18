@@ -3,6 +3,7 @@ import { randomStream } from "../../engine/random.js";
 import type { GameState, IsoDate } from "../gameState.js";
 import { shuffle } from "../shuffle.js";
 import type { Copinha, Prospect } from "./academy.js";
+import { compareText } from "../compareText.js";
 
 export type CopinhaPlayed = { type: "copinhaPlayed"; season: number; championId: string };
 
@@ -36,7 +37,7 @@ export function playCopinha(state: GameState): { state: GameState; events: Copin
     if (team) teams.set(clubId, team);
   }
   const strengths = new Map([...teams].map(([clubId, team]) => [clubId, strengthOf(team)]));
-  const ranked = [...teams.keys()].sort((a, b) => (strengths.get(b) ?? 0) - (strengths.get(a) ?? 0) || a.localeCompare(b));
+  const ranked = [...teams.keys()].sort((a, b) => (strengths.get(b) ?? 0) - (strengths.get(a) ?? 0) || compareText(a, b));
   let size = 1;
   while (size * 2 <= Math.min(FIELD, ranked.length)) size *= 2;
   if (size < 2) return { state, events: [] };

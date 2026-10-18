@@ -9,6 +9,7 @@ import { isWorthKeeping } from "./assistantRenewals.js";
 import { coachMarketOf, withCoachMarket, withoutPlayer } from "./coachMarket.js";
 import { sellToBidder } from "./answerBid.js";
 import type { PlayerMoved } from "./transferEvents.js";
+import { compareText } from "../compareText.js";
 
 /** The players the seated coach's assistant never sells: his own eleven, the club's usual starters and the captain. */
 function keyPlayersOf(state: GameState, clubId: string): ReadonlySet<string> {
@@ -31,7 +32,7 @@ export function assistantSales(state: GameState): { state: GameState; events: Pl
   const keyPlayers = keyPlayersOf(state, clubId);
   let next = state;
   const events: PlayerMoved[] = [];
-  for (const bid of bids.sort((a, b) => a.playerId.localeCompare(b.playerId))) {
+  for (const bid of bids.sort((a, b) => compareText(a.playerId, b.playerId))) {
     const squad = squadsOfGame(next).get(clubId) ?? [];
     const player = next.players[bid.playerId];
     if (!player || player.clubId !== clubId || bid.until < next.date || keyPlayers.has(player.id) || isWorthKeeping(player, squad, tier)) continue;

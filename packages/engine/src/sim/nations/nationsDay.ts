@@ -11,6 +11,7 @@ import { fifaWindowsOf, type FifaWindow } from "./fifaCalendar.js";
 import { matchImportance, rankingPointsAfter } from "./fifaRanking.js";
 import { competitionsOf, groupQualifiers, groupTable } from "./nationalCompetitions.js";
 import type { CallUp, KnockoutRound, NationalCompetition, NationalMatch, NationalResult, Nations } from "./nations.js";
+import { compareText } from "../compareText.js";
 
 export type CalledUp = { type: "calledUp"; playerId: string; clubId: string; teamId: string; until: IsoDate };
 export type BackFromDuty = { type: "backFromDuty"; playerId: string; clubId: string; teamId: string };
@@ -199,7 +200,7 @@ function playMatch(nations: Nations, match: NationalMatch, players: Readonly<Rec
  */
 function windowFriendlies(nations: Nations, window: FifaWindow, random: () => number): NationalMatch[] {
   const season = Number(window.from.slice(0, 4));
-  const order = Object.values(nations.teams).sort((a, b) => a.confederation.localeCompare(b.confederation) || b.points - a.points || a.id.localeCompare(b.id));
+  const order = Object.values(nations.teams).sort((a, b) => compareText(a.confederation, b.confederation) || b.points - a.points || compareText(a.id, b.id));
   const met = new Set<string>();
   const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
   return window.matchDays.flatMap((date) => {

@@ -6,6 +6,7 @@ import { loadNewGame } from "../loadNewGame.js";
 import { isInjured } from "../players/isInjured.js";
 import { loadGame, saveGame } from "../saveGame.js";
 import { humanClubIds, isHumanClub, passTheSeat, waitingCoachesOf } from "./humanCoaches.js";
+import { compareText } from "../compareText.js";
 
 const FIRST = "flamengo-rj";
 const SECOND = "palmeiras-sp";
@@ -21,7 +22,7 @@ function advanceUntil(state: GameState, isDone: (state: GameState) => boolean): 
 function weakestEleven(state: GameState, clubId: string): string[] {
   const fit = Object.values(state.players)
     .filter((p) => p.clubId === clubId && !isInjured(p, state.date))
-    .sort((a, b) => a.strength - b.strength || a.id.localeCompare(b.id));
+    .sort((a, b) => a.strength - b.strength || compareText(a.id, b.id));
   const keeper = fit.find((p) => p.group === "GK");
   const outfield = fit.filter((p) => p.group !== "GK").slice(0, 10);
   return [keeper, ...outfield].filter((p): p is SimPlayer => !!p).map((p) => p.id);

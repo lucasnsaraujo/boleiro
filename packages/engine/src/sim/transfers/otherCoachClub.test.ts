@@ -7,6 +7,7 @@ import { loadNewGame } from "../loadNewGame.js";
 import { answerBid } from "./answerBid.js";
 import { coachMarketOf } from "./coachMarket.js";
 import type { CoachRequest } from "./coachRequest.js";
+import { compareText } from "../compareText.js";
 
 const ANA = "flamengo-rj";
 const BRUNO = "palmeiras-sp";
@@ -23,7 +24,7 @@ const rich = (state: GameState, clubId: string): GameState => ({
   finances: { ...state.finances, [clubId]: { ...financeOf(state, clubId), transferBudget: 1e10, wageCap: 1e10 } },
 });
 const bestOf = (state: GameState, clubId: string): SimPlayer => {
-  const best = Object.values(state.players).filter((p) => p.clubId === clubId).sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id))[0];
+  const best = Object.values(state.players).filter((p) => p.clubId === clubId).sort((a, b) => b.strength - a.strength || compareText(a.id, b.id))[0];
   if (!best) throw new Error(`no players at ${clubId}`);
   return best;
 };
@@ -88,7 +89,7 @@ describe("a small club's coach in a hot-seat game with Flamengo's", () => {
   while (world.date < "2026-01-05") world = advanceDay(world, {}).state;
 
   it("can't borrow a Flamengo reserve: a loan offer has no desk of its own", () => {
-    const reserve = Object.values(world.players).filter((p) => p.clubId === ANA).sort((a, b) => a.strength - b.strength || a.id.localeCompare(b.id))[0];
+    const reserve = Object.values(world.players).filter((p) => p.clubId === ANA).sort((a, b) => a.strength - b.strength || compareText(a.id, b.id))[0];
     if (!reserve) throw new Error("no Flamengo player");
     const day = anaAsks(rich(world, small), { kind: "loanIn", playerId: reserve.id });
     expect(decisionOf(day.events)).toMatchObject({ approved: false, reason: "otherCoachClub" });

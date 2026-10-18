@@ -13,6 +13,7 @@ import { eventMemoryOf } from "@boleiro/engine/sim/events/eventMemory";
 import { competitionKeyName } from "../format/competitionName.js";
 import { formatBarDate, formatGameDate, formatMonthYear } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
+import { compareText } from "@boleiro/engine/sim/compareText";
 
 /** A club as a moment shows it: its id (for the crest), short name and kit colours. */
 export type ClubTag = { id: string; name: string; colours: { primary: string; secondary: string } };
@@ -211,7 +212,7 @@ function squadOf(state: GameState, clubId: string, count: number): SimPlayer[] {
   const used = state.history.current.squads?.[clubId] ?? {};
   return Object.values(state.players)
     .filter((player) => player.clubId === clubId)
-    .sort((a, b) => (used[b.id]?.[0] ?? 0) - (used[a.id]?.[0] ?? 0) || b.strength - a.strength || a.id.localeCompare(b.id))
+    .sort((a, b) => (used[b.id]?.[0] ?? 0) - (used[a.id]?.[0] ?? 0) || b.strength - a.strength || compareText(a.id, b.id))
     .slice(0, count);
 }
 

@@ -4,6 +4,7 @@ import { latestChampionsLeagueWinner } from "../continental/uefaCups.js";
 import { typicalRating } from "../live/matchRatings.js";
 import { topScorerOf } from "./topScorerOf.js";
 import { competitionKey, type AwardedPlayer, type BallonDorVote, type CompetitionKey, type SeasonAwards, type SeasonMark } from "./history.js";
+import { compareText } from "../compareText.js";
 
 // The Bola de Prata (Placar 1970–2015, ESPN since 2016) averages the 0–10 marks each player gets per
 // Brasileirão match; the best average at each position takes it and the best overall the Bola de Ouro
@@ -56,7 +57,7 @@ export function roleOf(player: Pick<SimPlayer, "group" | "positions">): Role {
 
 /** A player's average above the typical one at his position. */
 const aboveTypical = (p: AwardedPlayer) => p.average - typicalRating(GROUP_OF_ROLE[p.role]);
-const byAverage = (a: AwardedPlayer, b: AwardedPlayer) => aboveTypical(b) - aboveTypical(a) || b.apps - a.apps || a.playerId.localeCompare(b.playerId);
+const byAverage = (a: AwardedPlayer, b: AwardedPlayer) => aboveTypical(b) - aboveTypical(a) || b.apps - a.apps || compareText(a.playerId, b.playerId);
 
 /** The Bola de Prata team, best averages first at each step, in field order. */
 function silverTeam(eligible: readonly AwardedPlayer[]): AwardedPlayer[] {
@@ -158,7 +159,7 @@ function ballonDor(state: AwardsState, champions: Readonly<Record<CompetitionKey
     }
   }
   return votes
-    .sort((a, b) => b.score - a.score || a.playerId.localeCompare(b.playerId))
+    .sort((a, b) => b.score - a.score || compareText(a.playerId, b.playerId))
     .slice(0, BALLON_PLACES)
     .map((vote) => ({ ...vote, score: Math.round(vote.score * 10) / 10 }));
 }

@@ -6,6 +6,7 @@ import type { Country } from "../world/world.js";
 import { fullTierClubs, fullTierStatures, inventCoach, type AiCoach, type AiCoachStint, type Coaching, type CoachWorld, type PartStanding, type Rookie, type SeasonPoints, type StandingRow } from "./aiCoaches.js";
 import { countryPoints, fullTierPoints, nationalPoints, SEASON_WEIGHTS, type ClubSeasonPoints, type SeasonRuns, type UefaWinner } from "./rankingPoints.js";
 import { coachRanking, nationalRanking, partsOf, partStanding, STANDING_PLACES, worldRanking } from "./rankings.js";
+import { compareText } from "../compareText.js";
 
 /** A retired player of the full tier: his name, his first nationality, the club he retired at, his best strength and his age. */
 export type RetiredPlayer = { name: string; nationality: string; clubId: string; peak: number; age: number };
@@ -112,7 +113,7 @@ const isHuman = (key: string) => key.startsWith(humanKey(""));
 function topByCountry(rows: readonly StandingRow[]): StandingRow[] {
   const byCountry = new Map<string, StandingRow[]>();
   for (const row of rows) if (row[2] > 0 || isHuman(row[0])) byCountry.set(row[1], [...(byCountry.get(row[1]) ?? []), row]);
-  return [...byCountry.values()].flatMap((group) => group.sort((a, b) => b[2] - a[2] || a[0].localeCompare(b[0])).filter((row, index) => index < STANDING_PLACES || isHuman(row[0])));
+  return [...byCountry.values()].flatMap((group) => group.sort((a, b) => b[2] - a[2] || compareText(a[0], b[0])).filter((row, index) => index < STANDING_PLACES || isHuman(row[0])));
 }
 
 const rounded = (rows: readonly StandingRow[]): StandingRow[] => rows.map(([key, country, points]) => [key, country, Math.round(points)]);

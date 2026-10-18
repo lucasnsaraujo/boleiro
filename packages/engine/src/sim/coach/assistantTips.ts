@@ -5,6 +5,7 @@ import { isInjured } from "../players/isInjured.js";
 import { matchClubOf } from "../players/matchSetup.js";
 import { pickMatchLineup } from "../players/pickMatchLineup.js";
 import { usualStartersOf } from "../players/usualLineups.js";
+import { compareText } from "../compareText.js";
 
 /** A player as the assistant rates him: his strength as the assistant reads it. */
 export type ReadPlayer = { playerId: string; name: string; age: number; read: number };
@@ -49,6 +50,6 @@ export function weakestSpot(state: GameState, clubId: string, formation: Formati
   const backup = Object.values(state.players)
     .filter((p) => p.clubId === clubId && !starters.has(p.id) && !isInjured(p, state.date) && positionFit(p, spot.role) >= SECONDARY_POSITION)
     .map(rated(read))
-    .sort((a, b) => b.read - a.read || a.playerId.localeCompare(b.playerId))[0];
+    .sort((a, b) => b.read - a.read || compareText(a.playerId, b.playerId))[0];
   return { ...spot, backup: backup ?? null };
 }

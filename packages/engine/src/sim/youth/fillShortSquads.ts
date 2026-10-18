@@ -12,6 +12,7 @@ import type { PlayerMoved } from "../transfers/transferEvents.js";
 import { wageRateOf } from "../transfers/wageDemand.js";
 import type { Prospect } from "./academy.js";
 import { firstWage } from "./moveProspect.js";
+import { compareText } from "../compareText.js";
 
 /** The kids a squad the market left short took up to have 18 players. */
 export type SquadToppedUp = { type: "squadToppedUp"; clubId: string; playerIds: string[] };
@@ -35,7 +36,7 @@ export function fillShortSquads(state: GameState): { state: GameState; events: (
   for (const p of Object.values(state.youth.prospects)) academies.set(p.clubId, [...(academies.get(p.clubId) ?? []), p]);
   const freeAgents = new Map<PositionGroup, SimPlayer[]>();
   for (const p of Object.values(state.market.freeAgents)) freeAgents.set(p.group, [...(freeAgents.get(p.group) ?? []), p]);
-  for (const list of freeAgents.values()) list.sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+  for (const list of freeAgents.values()) list.sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
 
   const random = randomStream(state.youth.rngState);
   const year = Number(state.date.slice(0, 4));

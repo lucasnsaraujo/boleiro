@@ -1,5 +1,6 @@
 import type { Division } from "@boleiro/data/players";
 import type { GameSummary } from "../engine/createEngineSession.js";
+import { compareText } from "@boleiro/engine/sim/compareText";
 
 /**
  * What the slot list shows without opening the save itself. `division` is the coach's club's when saved;
@@ -54,5 +55,5 @@ export function toSlotMeta(value: unknown): SlotMeta | null {
 }
 
 export function newestFirst(slots: SlotMeta[]): SlotMeta[] {
-  return slots.toSorted((a, b) => b.savedAt.localeCompare(a.savedAt));
+  return slots.toSorted((a, b) => compareText(b.savedAt, a.savedAt));
 }

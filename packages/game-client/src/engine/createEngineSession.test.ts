@@ -11,6 +11,7 @@ import { NO_FILTERS } from "../market/marketFilters.js";
 import type { LiveRound } from "../round/liveRoundOf.js";
 import { bundledGameFiles } from "./bundledGameFiles.js";
 import { createEngineSession, type CommandResults, type CommandType, type GameCommand } from "./createEngineSession.js";
+import { compareText } from "@boleiro/engine/sim/compareText";
 
 const CLUB = "flamengo-rj";
 // Botafogo's 2026 kit, before the betting ban, had nothing on its front, back or shorts (Wikipedia, data/sponsors.csv).
@@ -64,7 +65,7 @@ type Season = {
 function ownPlayers(players: Record<string, SimPlayer>): SimPlayer[] {
   return Object.values(players)
     .filter((p) => p.clubId === CLUB)
-    .sort((a, b) => a.strength - b.strength || a.id.localeCompare(b.id));
+    .sort((a, b) => a.strength - b.strength || compareText(a.id, b.id));
 }
 
 /** Plays the first season from a new game to the rollover, sending only commands. */
@@ -76,7 +77,7 @@ function playSeason(): Season {
   const { players, clubs, market } = session.read(["players", "clubs", "market"]);
   const signing = Object.values(players)
     .filter((p) => p.clubId !== CLUB && clubs[p.clubId]?.division === "C" && p.contractUntil > "2026-12-31" && !market.loans[p.id])
-    .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id))[0];
+    .sort((a, b) => b.strength - a.strength || compareText(a.id, b.id))[0];
   if (!signing) throw new Error("a Série C club has a player to sign");
   apply({ type: "ask", request: { kind: "sign", playerId: signing.id } });
 
@@ -238,7 +239,7 @@ function playMarketWindow() {
 
   const target = Object.values(players)
     .filter((p) => clubs[p.clubId]?.division === "B" && p.contractUntil > "2026-12-31" && !market.loans[p.id])
-    .sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id))[0];
+    .sort((a, b) => b.strength - a.strength || compareText(a.id, b.id))[0];
   if (!target) throw new Error("a Série B club has a player to buy");
   const sellerSquad = Object.values(players).filter((p) => p.clubId === target.clubId);
   const price = sellerPrice(target, sellerSquad, "B", addDays(date, 1), market.eurBrl);
@@ -285,7 +286,7 @@ function playAcademy() {
   apply({ type: "advance", days: Array.from({ length: 4 }, () => ({})) });
   const { youth } = session.read(["youth"]);
   const kids = Object.values(youth?.prospects ?? {});
-  const [promoted, released, sold] = kids.filter((p) => p.clubId === CLUB).sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
+  const [promoted, released, sold] = kids.filter((p) => p.clubId === CLUB).sort((a, b) => b.strength - a.strength || compareText(a.id, b.id));
   const otherClubs = kids.find((p) => p.clubId !== CLUB);
   if (!promoted || !released || !sold || !otherClubs) throw new Error("the academies have kids");
   const answers = {

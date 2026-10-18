@@ -7,6 +7,7 @@ import { isClubFull } from "./squadCap.js";
 import type { PlayerMoved } from "./transferEvents.js";
 import type { Loan } from "./transferMarket.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
+import { compareText } from "../compareText.js";
 
 // guess: clubs lend players up to 21 who are outside their 18 strongest, so they get minutes.
 export const LOAN_MAX_AGE = 21;
@@ -95,7 +96,7 @@ export function returnLoans(state: GameState): { state: GameState; events: Playe
   const ended = Object.entries(state.market.loans).filter(([, loan]) => loan.until < state.date);
   if (!ended.length) return { state, events };
   const view = marketView(state);
-  for (const [playerId, loan] of ended.sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [playerId, loan] of ended.sort(([a], [b]) => compareText(a, b))) {
     const player = next.players[playerId];
     if (!player) continue;
     const borrower = player.clubId;

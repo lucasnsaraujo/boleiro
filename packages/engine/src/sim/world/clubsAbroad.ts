@@ -2,6 +2,7 @@ import type { Club } from "@boleiro/data/clubs";
 import type { PositionGroup, SquadPlayer } from "@boleiro/data/players";
 import { elevenAverage } from "../continental/continentalField.js";
 import type { CountryStart } from "../newGame.js";
+import { compareText } from "../compareText.js";
 
 const GROUP_OF: Record<string, PositionGroup> = { G: "GK", D: "DEF", M: "MID", A: "ATT" };
 
@@ -23,7 +24,7 @@ export function clubsAbroad({ structure, levels }: CountryStart): { clubs: Club[
   const players: SquadPlayer[] = [];
   levels.forEach((members, level) => {
     const share = level === 0 ? 1 : LOWER_LEVEL_SHARE;
-    const ranked = [...members].sort((a, b) => elevenAverage(b) - elevenAverage(a) || a.id.localeCompare(b.id));
+    const ranked = [...members].sort((a, b) => elevenAverage(b) - elevenAverage(a) || compareText(a.id, b.id));
     ranked.forEach((club, rank) => {
       const position = ranked.length > 1 ? rank / (ranked.length - 1) : 0;
       clubs.push({
