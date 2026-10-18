@@ -3,7 +3,7 @@ import type { IsoDate, SeasonCalendar } from "./gameState.js";
 import type { UnifiedDates } from "./world/world.js";
 import { addDays, daysBetween } from "./dates.js";
 import { gameScales, knockoutDates, REALISTA, type Formats } from "./formats.js";
-import { isInFifaWindow } from "./nations/fifaCalendar.js";
+import { isInFifaWindow, worldCupOf } from "./nations/fifaCalendar.js";
 
 // Date-bases of the CBF 2026 calendar (Trivela, https://trivela.com.br/brasil/calendario-do-futebol-brasileiro-2026/):
 // state championships 11 Jan–8 Mar with 11 dates, Série A 28 Jan–2 Dec, B 21 Mar–28 Nov,
@@ -44,6 +44,20 @@ const MIN_DAYS_BETWEEN_GAMES = 3; // guess: two full rest days, the shortest gap
 const MIN_DAYS_FROM_CONTINENTAL = 2;
 const CLEAR_OF_CONTINENTAL = new Set<Division>(["A", "B"]);
 
+/** Which days a league may play on: the weekdays, and how many days a round keeps from a continental match day. */
+type Leeway = { weekdays: ReadonlySet<number>; daysFromContinental: number };
+
+// What a season that does not fit gives up, one step at a time and only for as many dates as it lacks, before
+// it fails: CBF plays a midweek round over Wednesday and Thursday when it must; then a round may sit the day
+// next to a continental match day, CBF moving the games of the clubs that play both; last, any day of the
+// week. The rest from the estaduais' and the Copa do Brasil's days and the FIFA windows' rest are never given up.
+const LEEWAYS: readonly Leeway[] = [
+  { weekdays: LEAGUE_WEEKDAYS, daysFromContinental: MIN_DAYS_FROM_CONTINENTAL },
+  { weekdays: new Set([...LEAGUE_WEEKDAYS, 4]), daysFromContinental: MIN_DAYS_FROM_CONTINENTAL },
+  { weekdays: new Set([...LEAGUE_WEEKDAYS, 4]), daysFromContinental: 1 },
+  { weekdays: new Set([0, 1, 2, 3, 4, 5, 6]), daysFromContinental: 1 },
+];
+
 /** A 2026 date moved to `season`, on the same weekday within three days. */
 export function inSeason(date2026: IsoDate, season: number): IsoDate {
   const shifted = `${season}${date2026.slice(4)}`;
@@ -52,8 +66,66 @@ export function inSeason(date2026: IsoDate, season: number): IsoDate {
 }
 
 /**
- * `count` league dates over `division`'s window, kept off `reserved` and, for the divisions that keep clear of
- * them, the continental days; `restsInFifaWindows` keeps them off the FIFA windows too.
+ * For each of the sorted `candidates`, the index of the first one far enough after it to follow it (`after`)
+ * and the most dates the candidates from it on can hold (`most`, one longer, its last 0).
+ */
+function fitOf(candidates: readonly IsoDate[]): { after: number[]; most: number[] } {
+  const after: number[] = [];
+  for (let i = 0, k = 0; i < candidates.length; i++) {
+    while (k < candidates.length && daysBetween(candidates[i] as IsoDate, candidates[k] as IsoDate) < MIN_DAYS_BETWEEN_GAMES) k++;
+    after.push(k);
+  }
+  const most = new Array<number>(candidates.length + 1).fill(0);
+  for (let i = candidates.length - 1; i >= 0; i--) most[i] = Math.max(most[i + 1] ?? 0, 1 + (most[after[i] ?? candidates.length] ?? 0));
+  return { after, most };
+}
+
+const mostDatesIn = (candidates: readonly IsoDate[]): number => fitOf(candidates).most[0] ?? 0;
+
+/**
+ * `candidates` with as few of `extras` added as hold `count` dates: one at a time, the first that adds a date;
+ * all of them when no single one does.
+ */
+function withFewestExtras(candidates: readonly IsoDate[], extras: readonly IsoDate[], count: number): IsoDate[] {
+  let kept = [...candidates];
+  const left = [...extras];
+  while (left.length > 0 && mostDatesIn(kept) < count) {
+    const most = mostDatesIn(kept);
+    const index = left.findIndex((extra) => mostDatesIn([...kept, extra].sort()) > most);
+    if (index < 0) return [...kept, ...left].sort();
+    kept = [...kept, ...left.splice(index, 1)].sort();
+  }
+  return kept;
+}
+
+/**
+ * `count` of `candidates` spread over the `span` days from `start`, at least MIN_DAYS_BETWEEN_GAMES apart:
+ * each the first candidate on or after its even share of the span, unless taking it, or passing it, would
+ * leave too few candidates for the dates still to place; null when the candidates hold fewer than `count`.
+ */
+function spreadDates(candidates: readonly IsoDate[], count: number, start: IsoDate, span: number): IsoDate[] | null {
+  const { after, most } = fitOf(candidates);
+  if ((most[0] ?? 0) < count) return null;
+  const picked: IsoDate[] = [];
+  let next = 0;
+  for (let i = 0; i < count; i++) {
+    const target = count > 1 ? Math.floor((i * span) / (count - 1)) : 0;
+    const left = count - i;
+    for (;;) {
+      const isDue = daysBetween(start, candidates[next] as IsoDate) >= target;
+      const isTaken = isDue ? 1 + (most[after[next] ?? candidates.length] ?? 0) >= left : (most[next + 1] ?? 0) < left;
+      if (isTaken) break;
+      next++;
+    }
+    picked.push(candidates[next] as IsoDate);
+    next = after[next] ?? candidates.length;
+  }
+  return picked;
+}
+
+/**
+ * `count` league dates over `division`'s window, kept off `reserved`, the days it `isResting` and, for the
+ * divisions that keep clear of them, the continental days, on the first of the LEEWAYS they fit in.
  */
 function pickDates(
   division: Division,
@@ -62,36 +134,26 @@ function pickDates(
   reserved: readonly IsoDate[],
   continental: readonly IsoDate[],
   isClearOfContinental = CLEAR_OF_CONTINENTAL.has(division),
-  restsInFifaWindows = false,
+  isResting: (date: IsoDate) => boolean = () => false,
 ): IsoDate[] {
   const [start, end] = LEAGUE_WINDOWS[division].map((date) => inSeason(date, season)) as [IsoDate, IsoDate];
   const span = daysBetween(start, end);
-  const candidates: IsoDate[] = [];
-  for (let day = 0; day <= span; day++) {
-    const date = addDays(start, day);
-    const restsFromReserved =
-      reserved.every((other) => Math.abs(daysBetween(date, other)) >= MIN_DAYS_BETWEEN_GAMES) &&
-      (!isClearOfContinental || continental.every((other) => Math.abs(daysBetween(date, other)) >= MIN_DAYS_FROM_CONTINENTAL));
-    if (LEAGUE_WEEKDAYS.has(new Date(date).getUTCDay()) && restsFromReserved && !(restsInFifaWindows && isInFifaWindow(date))) candidates.push(date);
+  const days = Array.from({ length: span + 1 }, (_, day) => addDays(start, day)).filter(
+    (date) =>
+      reserved.every((other) => Math.abs(daysBetween(date, other)) >= MIN_DAYS_BETWEEN_GAMES) && !isResting(date),
+  );
+  let candidates: IsoDate[] = [];
+  for (const [step, { weekdays, daysFromContinental }] of LEEWAYS.entries()) {
+    const allowed = days.filter(
+      (date) =>
+        weekdays.has(new Date(date).getUTCDay()) &&
+        (!isClearOfContinental || continental.every((other) => Math.abs(daysBetween(date, other)) >= daysFromContinental)),
+    );
+    candidates = step === 0 ? allowed : withFewestExtras(candidates, allowed.filter((date) => !candidates.includes(date)), count);
+    const picked = spreadDates(candidates, count, start, span);
+    if (picked) return picked;
   }
-  const picked: IsoDate[] = [];
-  let next = 0;
-  for (let i = 0; i < count; i++) {
-    const target = count > 1 ? Math.floor((i * span) / (count - 1)) : 0;
-    const last = picked.at(-1);
-    while (next < candidates.length) {
-      const date = candidates[next] as IsoDate;
-      const offset = daysBetween(start, date);
-      if (offset >= target || candidates.length - next <= count - i) {
-        if (!last || daysBetween(last, date) >= MIN_DAYS_BETWEEN_GAMES) break;
-      }
-      next++;
-    }
-    const date = candidates[next++];
-    if (!date) throw new Error(`Série ${division} ${season}: ${count} dates do not fit between ${start} and ${end}`);
-    picked.push(date);
-  }
-  return picked;
+  throw new Error(`Série ${division} ${season}: ${count} dates do not fit between ${start} and ${end}`);
 }
 
 /** The Copa do Brasil's rounds with the dates `formats` plays of them. */
@@ -102,6 +164,19 @@ const copaDoBrasilRounds = (season: number, formats: Formats) =>
 export const copaDoBrasilGameScales = (formats: Formats): number[] | undefined =>
   gameScales(COPA_DO_BRASIL_ROUNDS.map((round) => round.dates.length), COPA_DO_BRASIL_ROUNDS.map(({ name, dates }) => knockoutDates(name, dates, formats).length));
 
+// Owner's call still open: whether Série A pauses for the World Cup in a game with national football. The CBF's
+// 2026 table rests it from 1 Jun to 21 Jul around the 11 Jun–19 Jul World Cup (Portal Tela, below); the game
+// plays through it, the called-up missing those rounds.
+const SERIE_A_PAUSES_FOR_WORLD_CUP = false;
+const WORLD_CUP_PAUSE = { daysBefore: 10, daysAfter: 2 };
+
+/** Whether Série A rests on a day in a game with national football: in a FIFA window or, when it pauses for it, around the season's World Cup. */
+function isSerieAResting(season: number, pausesForWorldCup: boolean): (date: IsoDate) => boolean {
+  const worldCup = pausesForWorldCup ? worldCupOf(season) : null;
+  const pause = worldCup && { from: addDays(worldCup.from, -WORLD_CUP_PAUSE.daysBefore), until: addDays(worldCup.until, WORLD_CUP_PAUSE.daysAfter) };
+  return (date) => isInFifaWindow(date) || (pause !== null && date >= pause.from && date <= pause.until);
+}
+
 /**
  * The season's dates; `continental` are the continental cups' match days, in a game that plays them.
  * On the unified calendar every division's rounds follow one grid of `gridRounds` match days (at least
@@ -109,9 +184,18 @@ export const copaDoBrasilGameScales = (formats: Formats): number[] | undefined =
  * continental days, so round k of every league falls on the same day. In a game with national football
  * (`restsInFifaWindows`) Série A rests in the FIFA windows on the real calendar, as the CBF's 2026 table does
  * (Portal Tela, https://www.portaltela.com/esporte/futebol/2026/01/27/paralisacoes-do-brasileirao-2026-coincidem-com-a-copa-do-mundo-confira/);
- * guess: Séries B to D and the unified grid play through them, without their called-up players.
+ * guess: Séries B to D and the unified grid play through them, without their called-up players. With
+ * `pausesForWorldCup` Série A also rests through a World Cup, as that table does.
  */
-export function seasonCalendar(season: number, dateCounts: Record<Division, number>, continental: readonly IsoDate[] = [], formats: Formats = REALISTA, gridRounds = 0, restsInFifaWindows = false): SeasonCalendar {
+export function seasonCalendar(
+  season: number,
+  dateCounts: Record<Division, number>,
+  continental: readonly IsoDate[] = [],
+  formats: Formats = REALISTA,
+  gridRounds = 0,
+  restsInFifaWindows = false,
+  pausesForWorldCup = SERIE_A_PAUSES_FOR_WORLD_CUP,
+): SeasonCalendar {
   const stateChampionshipDates = STATE_CHAMPIONSHIP_DATES.map((date) => inSeason(date, season));
   const copaDoBrasil = copaDoBrasilRounds(season, formats);
   const reserved = [...stateChampionshipDates, ...copaDoBrasil.flatMap((round) => round.dates)];
@@ -121,7 +205,7 @@ export function seasonCalendar(season: number, dateCounts: Record<Division, numb
     return { season, stateChampionshipDates, copaDoBrasilRounds: copaDoBrasil, leagueDates, leagueGrid };
   }
   const leagueDates = {
-    A: pickDates("A", dateCounts.A, season, reserved, continental, undefined, restsInFifaWindows),
+    A: pickDates("A", dateCounts.A, season, reserved, continental, undefined, restsInFifaWindows ? isSerieAResting(season, pausesForWorldCup) : undefined),
     B: pickDates("B", dateCounts.B, season, reserved, continental),
     C: pickDates("C", dateCounts.C, season, reserved, continental),
     D: pickDates("D", dateCounts.D, season, reserved, continental),
