@@ -11,10 +11,10 @@ const LETTER = { GK: "G", DEF: "D", MID: "M", ATT: "A" } as const;
 function worldClubOf({ id, shortName, colours }: WorldPackClub, squad: readonly WorldPackPlayer[], season: number, random: () => number): WorldClub {
   const listed = squad.flatMap((p) => (p.marketValueEur ? [p.marketValueEur] : []));
   const lowest = listed.length ? Math.min(...listed) : 0;
-  const rated = squad.map((p) => ({ group: p.group, name: p.name, strength: strengthFromValue(p.marketValueEur ?? lowest) }));
+  const rated = squad.map((p) => ({ group: p.group, name: p.name, strength: strengthFromValue(p.marketValueEur ?? lowest), age: p.age }));
   // Transfermarkt lists a few clubs short or empty; their academy fills them, as at Brazil's clubs.
   const academy = groupsToFill(rated, []).map((group, i) => academyPlayer(`${id}-a${i}`, id, null, group, `${season}-01-01`, random));
-  const players = [...rated, ...academy.map((p) => ({ group: p.group, name: p.name, strength: Math.round(p.strength) }))];
+  const players = [...rated, ...academy.map((p) => ({ group: p.group, name: p.name, strength: Math.round(p.strength), age: p.age }))];
   return {
     id,
     name: shortName,
@@ -22,6 +22,7 @@ function worldClubOf({ id, shortName, colours }: WorldPackClub, squad: readonly 
     positions: players.map((p) => LETTER[p.group]).join(""),
     strengths: players.map((p) => p.strength),
     names: players.map((p) => p.name),
+    born: players.map((p) => (p.age === null ? null : season - p.age)),
   };
 }
 

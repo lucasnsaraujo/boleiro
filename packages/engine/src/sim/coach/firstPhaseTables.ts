@@ -1,3 +1,4 @@
+import { isCurrentOf } from "../currentCompetitions.js";
 import type { GameState } from "../gameState.js";
 import { standings } from "../standings.js";
 
@@ -7,8 +8,9 @@ import { standings } from "../standings.js";
  */
 export function firstPhaseTables(state: Pick<GameState, "competitions" | "fixtures" | "season">, competitionIds?: ReadonlySet<string>): Map<string, string[]> {
   const tables = new Map<string, string[]>();
+  const isCurrent = isCurrentOf(state);
   for (const competition of Object.values(state.competitions)) {
-    if (competition.kind !== "league" || competition.season !== state.season) continue;
+    if (competition.kind !== "league" || !isCurrent(competition)) continue;
     if (competitionIds && !competitionIds.has(competition.id)) continue;
     const stage = competition.stages[0];
     if (stage?.kind !== "groups") continue;

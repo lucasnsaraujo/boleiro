@@ -13,6 +13,7 @@ import { elevenAverage } from "./continentalField.js";
 import { drawGroupMatches } from "./groupStageDraw.js";
 import { drawLeaguePhase, LEAGUE_PHASE_CLUBS } from "./leaguePhaseDraw.js";
 import { compareText } from "../compareText.js";
+import { playedKey, type PlayedAbroad } from "./cupsAbroad.js";
 
 export const KNOCKOUT_ROUNDS = ["playoffs", "round-of-16", "quarter-finals", "semi-finals", "final"] as const;
 export type KnockoutRoundName = (typeof KNOCKOUT_ROUNDS)[number];
@@ -131,6 +132,14 @@ function calendarOf(cup: UefaCup, formats: Formats): UefaCalendar {
   };
 }
 
+/** Every match day of UEFA's cups in the season starting in `season`'s summer, under `formats`: the leagues abroad keep clear of them. */
+export function uefaMatchDays(season: number, formats: Formats): IsoDate[] {
+  return UEFA_CUPS.flatMap((cup) => {
+    const { leaguePhase, knockout, superCup } = calendarOf(cup, formats);
+    return [...leaguePhase, ...Object.values(knockout).flat(), superCup].map((date) => shifted(date, season));
+  });
+}
+
 function clubsOf(world: World): Map<string, { club: WorldClub; country: string }> {
   return new Map(Object.entries(world).flatMap(([country, { clubs }]) => Object.values(clubs).map((club) => [club.id, { club, country }] as const)));
 }
@@ -226,8 +235,28 @@ type ClubOf = (id: string) => WorldClub;
 
 const score = (homeGoals: number, awayGoals: number) => String.fromCharCode(ZERO_GOALS + homeGoals, ZERO_GOALS + awayGoals);
 
-/** Today's leg of each tie of the round, and the ties it decides; the same round on a day it doesn't play. */
-function playRoundDay(round: KnockoutRound, date: IsoDate, clubOf: ClubOf, random: () => number): KnockoutRound {
+/**
+ * A tie's code with its leg `leg` as the full tier played it (`own`): its score, and on the last leg the
+ * winner's side, after extra time or on the full tier's shootout.
+ */
+function withOwnLeg(code: string, tie: ReturnType<typeof knockoutTie>, leg: number, own: MatchResult): string {
+  const length = code.length;
+  let next = code.slice(0, 2 * leg) + score(own.homeGoals, own.awayGoals) + code.slice(2 * leg + 2);
+  if (leg === tie.legs.length - 1) {
+    const [first, second] = aggregateOf(tie.clubIds, tie.legs.map((l, i) => (i === leg ? { ...l, result: own } : l)));
+    const isSecondWinner = first === second ? own.penaltyWinnerId === tie.clubIds[1] : second > first;
+    const settledBy = first === second ? WON_ON_PENALTIES_AFTER_EXTRA_TIME : own.isAfterExtraTime ? WON_IN_EXTRA_TIME : 0;
+    next = next.slice(0, length - 1) + String(settledBy + Number(isSecondWinner));
+  }
+  return next;
+}
+
+/**
+ * Today's leg of each tie of the round, and the ties it decides; the same round on a day it doesn't play.
+ * A human club's leg the full tier played (`playedAbroad`) takes its score there, after the draw that
+ * keeps the stream where it always was.
+ */
+function playRoundDay(round: KnockoutRound, date: IsoDate, clubOf: ClubOf, random: () => number, playedAbroad?: PlayedAbroad): KnockoutRound {
   const leg = round.dates.indexOf(date);
   if (leg < 0) return round;
   const length = tieLength(round);
@@ -255,27 +284,30 @@ function playRoundDay(round: KnockoutRound, date: IsoDate, clubOf: ClubOf, rando
         code = code.slice(0, length - 1) + String(side);
       }
       code = code.slice(0, 2 * leg) + score(homeGoals, awayGoals) + code.slice(2 * leg + 2);
+      const own = playedAbroad?.get(playedKey(today.homeId, today.awayId, date));
+      if (own) code = withOwnLeg(code, tie, leg, own);
     }
     results += code;
   });
   return results === round.results ? round : { ...round, results };
 }
 
-function playCupDay(cup: LeaguePhaseCup, date: IsoDate, clubOf: ClubOf, random: () => number, formats: Formats): LeaguePhaseCup {
+function playCupDay(cup: LeaguePhaseCup, date: IsoDate, clubOf: ClubOf, random: () => number, formats: Formats, playedAbroad?: PlayedAbroad): LeaguePhaseCup {
   let next = cup;
   const matchday = cup.dates.indexOf(date);
   const from = matchday * MATCHDAY_SIZE;
   if (matchday >= 0 && cup.results[2 * from] === UNPLAYED) {
     let played = "";
     for (const [homeId, awayId] of cup.matches.slice(from, from + MATCHDAY_SIZE)) {
-      const { homeGoals, awayGoals } = scoreDraw(clubOf(homeId), clubOf(awayId), random);
+      const drawn = scoreDraw(clubOf(homeId), clubOf(awayId), random);
+      const { homeGoals, awayGoals } = playedAbroad?.get(playedKey(homeId, awayId, date)) ?? drawn;
       played += score(homeGoals, awayGoals);
     }
     next = { ...cup, results: cup.results.slice(0, 2 * from) + played + cup.results.slice(2 * (from + MATCHDAY_SIZE)) };
   }
   const last = next.knockout.at(-1);
   if (last) {
-    const played = playRoundDay(last, date, clubOf, random);
+    const played = playRoundDay(last, date, clubOf, random, playedAbroad);
     if (played !== last) next = { ...next, knockout: [...next.knockout.slice(0, -1), played] };
   }
   const isPhaseDone = !next.results.includes(UNPLAYED);
@@ -348,12 +380,15 @@ function fieldFromTables(world: World, season: number): Record<UefaCup, string[]
   return { "champions-league": placesIn("champions-league"), "europa-league": placesIn("europa-league") };
 }
 
-function playSuperCup(superCup: SuperCup | null, date: IsoDate, clubOf: ClubOf, random: () => number): SuperCup | null {
+function playSuperCup(superCup: SuperCup | null, date: IsoDate, clubOf: ClubOf, random: () => number, playedAbroad?: PlayedAbroad): SuperCup | null {
   if (!superCup || superCup.date !== date || superCup.result[0] !== UNPLAYED) return superCup;
   const [homeId, awayId] = superCup.clubIds;
-  const { homeGoals, awayGoals } = scoreDraw(clubOf(homeId), clubOf(awayId), random);
+  const drawn = scoreDraw(clubOf(homeId), clubOf(awayId), random);
   // guess: a draw goes straight to penalties, an even draw.
-  const isAwayWinner = awayGoals > homeGoals || (awayGoals === homeGoals && random() < 0.5);
+  const isDrawnAwayWinner = drawn.awayGoals > drawn.homeGoals || (drawn.awayGoals === drawn.homeGoals && random() < 0.5);
+  const own = playedAbroad?.get(playedKey(homeId, awayId, date));
+  const { homeGoals, awayGoals } = own ?? drawn;
+  const isAwayWinner = own ? awayGoals > homeGoals || (awayGoals === homeGoals && own.penaltyWinnerId === awayId) : isDrawnAwayWinner;
   return { ...superCup, result: score(homeGoals, awayGoals) + (isAwayWinner ? "1" : "0") };
 }
 
@@ -372,9 +407,10 @@ export function superCupWinner(superCup: SuperCup | null): string | null {
  * Today's matches of UEFA's cups, played by the score draw on the result-only clubs of `world`; on 1
  * July (1 January on the unified calendar) after both finals (or after a season it could not field),
  * the season's winners filed and the next season opened on the places the countries filed last. The
- * same object on a day with nothing to do.
+ * same object on a day with nothing to do. A human club's match the full tier played today (`playedAbroad`)
+ * keeps its score there.
  */
-export function playEuropeDay(europe: EuropeanCups, world: World, date: IsoDate, formats: Formats = REALISTA): EuropeanCups {
+export function playEuropeDay(europe: EuropeanCups, world: World, date: IsoDate, formats: Formats = REALISTA, playedAbroad?: PlayedAbroad): EuropeanCups {
   const rollover = formats.calendar === "unified" ? UNIFIED_ROLLOVER : ROLLOVER;
   const isRollover = date.slice(5) === rollover && Number(date.slice(0, 4)) > europe.season;
   const isMatchDay = europe.superCup?.date === date || europe.cups.some((cup) => cup.dates.includes(date) || cup.knockout.at(-1)?.dates.includes(date));
@@ -386,8 +422,8 @@ export function playEuropeDay(europe: EuropeanCups, world: World, date: IsoDate,
     return found.club;
   };
   const random = randomStream(europe.rngState);
-  const cups = europe.cups.map((cup) => playCupDay(cup, date, clubOf, random.next, formats));
-  const superCup = playSuperCup(europe.superCup, date, clubOf, random.next);
+  const cups = europe.cups.map((cup) => playCupDay(cup, date, clubOf, random.next, formats, playedAbroad));
+  const superCup = playSuperCup(europe.superCup, date, clubOf, random.next, playedAbroad);
   let next: EuropeanCups = { ...europe, cups, superCup, rngState: random.state() };
   const [championsLeague, europaLeague] = cups.map(cupChampion);
   const champions: [string, string] | null = championsLeague && europaLeague ? [championsLeague, europaLeague] : null;

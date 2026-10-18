@@ -112,7 +112,19 @@ export type ContinentalCup = (typeof CONTINENTAL_CUPS)[number];
  */
 export type ContinentalCompetition = CompetitionBase & { kind: "continental"; cup: ContinentalCup; entries: string[][]; countries: Record<string, string> };
 
-export type Competition = LeagueCompetition | StateCompetition | CupCompetition | ContinentalCompetition;
+/** The cups played result-only abroad whose matches of a human coach's club the full tier plays: UEFA's three and a country's own cup. */
+export const CUPS_ABROAD = ["champions-league", "europa-league", "uefa-super-cup", "national-cup"] as const;
+export type CupAbroad = (typeof CUPS_ABROAD)[number];
+
+/**
+ * A cup played result-only (UEFA's in `europe`, a country's cup in the world) seen from a human coach's club
+ * abroad: its matches, played live in the full tier and written back to the cup. Its stages are the
+ * rounds the club plays, a league phase as one group of its matchdays, each knockout round its tie;
+ * `tieBreaks` says how each settles a tie level after its last leg; `country` names a national cup's country.
+ */
+export type CupAbroadCompetition = CompetitionBase & { kind: "cupAbroad"; cup: CupAbroad; country: string | null; tieBreaks: ("extraTime" | "penalties")[] };
+
+export type Competition = LeagueCompetition | StateCompetition | CupCompetition | ContinentalCompetition | CupAbroadCompetition;
 
 export type SeasonCalendar = {
   season: number;

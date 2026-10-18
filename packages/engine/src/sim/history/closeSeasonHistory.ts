@@ -7,6 +7,7 @@ import { championOf } from "./championOf.js";
 import { competitionKey, type History, type PlayerAtClub, type SeasonRecord } from "./history.js";
 import { seasonAwards } from "./seasonAwards.js";
 import { topScorerOf } from "./topScorerOf.js";
+import { keysTurningOnTheirOwn } from "../world/turnSeasonsAbroad.js";
 
 // guess: a player who left a club after fewer games than this is not worth remembering there; it keeps
 // the per-club tallies from growing with every loanee and youth player who passed through.
@@ -62,10 +63,13 @@ export function closeSeasonHistory(state: GameState): GameState {
     record.relegated[competition.division] = outcome.relegatedIds;
     record.tables[competition.division] = finalOrder(competition, fixtures, championId);
   }
+  // A competition whose season runs on past the new year keeps its tally, filed at its own turn.
+  const running = keysTurningOnTheirOwn(state);
   for (const [key, goals] of Object.entries(history.current.goals)) {
-    const top = topScorerOf(goals, state);
+    const top = running.has(key) ? null : topScorerOf(goals, state);
     if (top) record.topScorers[key] = top;
   }
+  const carried = Object.fromEntries(Object.entries(history.current.goals).filter(([key]) => running.has(key)));
   record.awards = seasonAwards(state, record.champions);
   const { coach, waitingCoaches } = fileAlbumPages(state, record);
   return {
@@ -74,7 +78,7 @@ export function closeSeasonHistory(state: GameState): GameState {
     history: {
       ...history,
       seasons: [...history.seasons, record],
-      current: { season: state.season + 1, champions: {}, goals: {}, ratings: {}, squads: {} },
+      current: { season: state.season + 1, champions: {}, goals: carried, ratings: {}, squads: {} },
       players: forgetPassersBy(state),
       coach,
     },

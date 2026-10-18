@@ -1,3 +1,4 @@
+import { isCurrentOf } from "../currentCompetitions.js";
 import type { GameState } from "../gameState.js";
 import { finalOrderOf } from "../leagueFormats.js";
 import { leagueMatches, leagueTable } from "../world/resultOnlyLeague.js";
@@ -73,7 +74,8 @@ export function openingClubWorldCupField(state: Pick<GameState, "season" | "club
 export function latestChampion(state: GameState, country: string): string | null {
   const found = state.world?.[country];
   if (!found) return null;
-  const league = Object.values(state.competitions).find((c) => c.kind === "league" && c.season === state.season && c.abroad?.country === country && c.abroad.level === 0);
+  const isCurrent = isCurrentOf(state);
+  const league = Object.values(state.competitions).find((c) => c.kind === "league" && isCurrent(c) && c.abroad?.country === country && c.abroad.level === 0);
   if (league?.kind === "league" && state.fixtures.some((f) => f.competitionId === league.id) && state.fixtures.every((f) => f.competitionId !== league.id || f.result)) {
     return finalOrderOf(league, state.fixtures.filter((f) => f.competitionId === league.id))[0] ?? null;
   }

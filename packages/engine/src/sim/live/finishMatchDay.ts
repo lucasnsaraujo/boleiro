@@ -53,6 +53,8 @@ import { turnOverAcademies } from "../youth/turnOverAcademies.js";
 import { isShootoutDue, settleShootout, shootoutSeed, shootoutWinnerOf } from "../settleShootout.js";
 import { runTransferDay } from "../transfers/runTransferDay.js";
 import { endWorldSeason, playWorldDay } from "../world/resultOnlyWorld.js";
+import { turnSeasonsAbroad } from "../world/turnSeasonsAbroad.js";
+import { playedAbroadOf, recordTitlesAbroad, syncCupsAbroad } from "../continental/cupsAbroad.js";
 import { formatsOf } from "../formats.js";
 import { unifiedDatesOf } from "../seasonCalendar.js";
 import { coachOutcome } from "./coachOutcome.js";
@@ -254,8 +256,23 @@ export function finishMatchDay(live: LiveDay): DayResult {
     next = copinha.state;
     events.push(...copinha.events);
   }
-  if (state.world) next = { ...next, world: moveWorldCoaches(playWorldDay(state.world, state.date), state.date) };
-  if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state)) };
+  // The world as the coaches' day left it: a coach who took a club abroad brought its country into the full tier.
+  // A human club's cup matches abroad were played in the full tier today: the result-only cups take their scores.
+  const playedAbroad = playedAbroadOf(state, played);
+  if (next.world) {
+    const beforeTurn: GameState = { ...next, world: moveWorldCoaches(playWorldDay(next.world, state.date, playedAbroad), state.date) };
+    const turned = turnSeasonsAbroad(beforeTurn, state.date);
+    // A coach whose contract ended at his country's turn leaves a job the AI coaches fill.
+    next = turned.events.length ? moveAiCoaches(turned.state, beforeTurn, [], state.date).state : turned.state;
+    events.push(...turned.events);
+  }
+  if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state), playedAbroad) };
+  const titled = recordTitlesAbroad(state, next);
+  if (titled !== next) {
+    const abroadBonuses = payTitleBonuses(next, titled);
+    next = abroadBonuses.state;
+    events.push(...abroadBonuses.events);
+  }
   if (next.nations) {
     const national = nationsDay(next, state.date);
     next = national.state;
@@ -286,6 +303,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     next = coolRivalries(recordFormerPlayers(next, academies.state, developed.events));
     seasonOutcomes = ended.outcomes;
   }
+  next = syncCupsAbroad(next);
   const sponsorDay = runSponsorDay(state, next, seasonOutcomes);
   next = sponsorDay.state;
   events.push(...sponsorDay.events);
