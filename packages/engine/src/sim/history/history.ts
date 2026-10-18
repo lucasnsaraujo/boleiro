@@ -135,7 +135,7 @@ export type History = {
   clubs: Record<string, ClubRecords>;
   /** Per club, then per player. */
   players: Record<string, Record<string, PlayerAtClub>>;
-  /** Per player, one mark per season since the save began or he arrived, oldest first. */
+  /** Per player, one mark per season since the save began or he arrived, oldest first; a save writes each player's as one line (saveGame). */
   strength: Record<string, StrengthMark[]>;
   coach: CoachRecord;
   /** Each full-tier league's records, by competition; a save from before them has none. */

@@ -1,6 +1,6 @@
 import type { GameState } from "./gameState.js";
 import { packJson, unpackJson } from "./packedJson.js";
-import { saveGame, toGameState } from "./saveGame.js";
+import { saveGame, toGameState, withStrengthLines } from "./saveGame.js";
 import type { Country, World } from "./world/world.js";
 
 /** The game without its result-only countries: the whole save of a Brazil-only game. */
@@ -49,7 +49,7 @@ function countryOf(shards: Readonly<Record<string, string>>, id: string): Countr
 export function saveShards(state: GameState, saved?: GameState): Record<string, string> {
   const { world, ...game } = state;
   if (!world) return { [GAME_SHARD]: saveGame(game) };
-  const shards: Record<string, string> = { [GAME_SHARD]: packJson(game) };
+  const shards: Record<string, string> = { [GAME_SHARD]: packJson(withStrengthLines(game)) };
   shards[WORLD_SHARD] = JSON.stringify(Object.keys(world));
   for (const [id, country] of Object.entries(world)) {
     if (country !== saved?.world?.[id]) shards[`${COUNTRY_SHARD}${id}`] = packJson(country);
