@@ -7,6 +7,10 @@ import type { JobOffer } from "@boleiro/engine/sim/coach/coach";
 import { ServicesContext, type Services } from "../app/ServicesContext.js";
 import { inMemoryEngine } from "@boleiro/game-client/engine/inMemoryEngine";
 import { indexedDbSlots } from "@boleiro/game-client/saves/indexedDbSlots";
+import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
+import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
+import { writeSessionSave } from "@boleiro/game-client/engine/sessionSave";
+import { EMPTY_DESK } from "@boleiro/game-client/market/boardDesk";
 import { Offers } from "./Offers.js";
 
 const closers: (() => void)[] = [];
@@ -105,3 +109,22 @@ test("with every offer turned down the coach can only wait for new ones", async 
   expect(screen.getByRole("button", { name: "Esperar propostas" })).toBeTruthy();
   expect(screen.queryByRole("button", { name: /^Assinar/ })).toBeNull();
 });
+
+test("an offer from a club abroad shows its league, and signing takes the coach there", async () => {
+  const { engine, close } = inMemoryEngine();
+  closers.push(close);
+  const game = newGameFromFiles(5, { coachClubId: "flamengo-rj" }, bundledGameFiles);
+  const offer: JobOffer = { clubId: "tm-11", salary: 900_000, untilSeason: 2026, expiresOn: "2026-01-14" };
+  await engine.apply({ type: "load", save: writeSessionSave({ game: { ...game, coach: { ...game.coach, offers: [offer] } }, desk: EMPTY_DESK, turningPoints: [], live: null }) });
+  const given = { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
+  openOffers(given);
+  const list = await screen.findByRole("list", { name: "Propostas" });
+  const line = within(list).getByRole("button", { name: /Arsenal/ });
+  expect(line.textContent).toContain("Premier League");
+  await userEvent.click(line);
+  await userEvent.click(screen.getByRole("button", { name: /^Assinar com Arsenal/ }));
+  await screen.findByText("Clube aberto", {}, { timeout: 30_000 });
+  const { coachClubId, clubs } = await engine.read(["coachClubId", "clubs"]);
+  expect(coachClubId).toBe("tm-11");
+  expect(clubs["tm-11"]?.abroad).toEqual({ country: "gb-eng", level: 0 });
+}, 60_000);

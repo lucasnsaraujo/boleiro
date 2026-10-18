@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
+import type { Club } from "@boleiro/data/clubs";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import { useServices } from "../app/ServicesContext.js";
 import { offerRows, type OfferRow } from "../career/offerRows.js";
 import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
+import { clubById } from "../clubs/clubCatalog.js";
+import { leagueAbroadOf } from "../newGame/leaguesAbroad.js";
 import { formatGameDate } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import { isCoachMatchDay } from "@boleiro/game-client/hub/playToMatchDay";
@@ -57,7 +60,7 @@ export function Offers() {
   const club = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
   const rows = offerRows(state);
   const picked = rows.find((row) => row.clubId === pickedId) ?? rows[0];
-  const pickedClub = picked && state.clubs[picked.clubId];
+  const pickedClub = picked && clubOf(state, picked.clubId);
 
   async function answer(run: () => Promise<unknown>, after: () => void) {
     setAnswering(true);
@@ -143,8 +146,17 @@ export function Offers() {
   );
 }
 
+/** The club of an offer: the game's own, or one abroad still played result-only, from the packs. */
+const clubOf = (state: OffersState, clubId: string) => state.clubs[clubId] ?? clubById(clubId);
+
+/** Where the offering club plays: its Série, its league abroad, or only its state championship. */
+function divisionText(row: OfferRow, club: Club): string {
+  if (club.abroad) return leagueAbroadOf(club)?.label ?? "Exterior";
+  return row.division ? `Série ${row.division}` : "Estadual";
+}
+
 function OfferLine({ row, state, isPicked, onPick }: { row: OfferRow; state: OffersState; isPicked: boolean; onPick: () => void }) {
-  const club = state.clubs[row.clubId];
+  const club = clubOf(state, row.clubId);
   if (!club) return null;
   return (
     <li>
@@ -152,7 +164,7 @@ function OfferLine({ row, state, isPicked, onPick }: { row: OfferRow; state: Off
         <Crest club={club} size={40} />
         <span className="career-offer-club">
           <ClubPlate club={club} size="row" />
-          <span className="career-offer-division">{row.division ? `Série ${row.division}` : "Estadual"}</span>
+          <span className="career-offer-division">{divisionText(row, club)}</span>
         </span>
         <span className="career-offer-salary">
           {formatMoney(row.salary)}
