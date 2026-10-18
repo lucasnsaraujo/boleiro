@@ -889,7 +889,8 @@ button.nt-sl[aria-expanded="true"] {
 
 /* A played match opens its ficha: a button over the whole row, under its text. */
 .nt-fx:has(> .nt-open),
-.nt-round li:has(> .nt-open) {
+.nt-round li:has(> .nt-open),
+.nt-games li:has(> .nt-open) {
   position: relative;
 }
 
@@ -911,7 +912,8 @@ button.nt-sl[aria-expanded="true"] {
   outline-offset: -2px;
 }
 
-.nt-open ~ * {
+:has(> .nt-open) > :not(.nt-open) {
   position: relative;
+  z-index: 1;
   pointer-events: none;
 }

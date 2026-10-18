@@ -165,6 +165,7 @@ function CompetitionTables({ competition, page, onOpen }: { competition: Nationa
               <span className={match.homeId === page.team.id ? "own" : undefined}>{match.home}</span>
               <b>{scoreOf(match) ?? "×"}</b>
               <span className={match.awayId === page.team.id ? "own" : undefined}>{match.away}</span>
+              <OpenMatch row={match} onOpen={onOpen} className="nt-open" />
             </li>
           ))}
         </ul>

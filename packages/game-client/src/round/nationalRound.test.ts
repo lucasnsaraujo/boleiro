@@ -43,6 +43,7 @@ describe("a national coach's round", () => {
     expect(plan.squad.length).toBe(callUp.length);
     expect(plan.squad.map((p) => p.name).sort()).toEqual([...callUp].sort());
     expect(plan.squad.every((p) => p.status !== "onDuty")).toBe(true);
+    expect(plan.chemistry).toBeNull();
   });
 
   it("plays the round with Brazil as his side, every name and team on the board known", () => {
@@ -87,5 +88,18 @@ describe("a national match played result-only", () => {
     expect(page?.home.starters).toHaveLength(11);
     expect(page?.officials.hasVar).toBe(true);
     expect(session.matchPage(ref)).toEqual(page);
+  });
+});
+
+describe("a save from before national matches were played live", () => {
+  it("gets its national coach's matches among the fixtures when it loads", () => {
+    const session = createEngineSession(bundledGameFiles);
+    session.apply({ type: "newGame", seed: 4, choices: { coachClubId: null } });
+    const save: { game: { date: string; fixtures: { id: string }[]; nations: { job?: { teamId: string; since: string } } } } = JSON.parse(session.save());
+    save.game.nations.job = { teamId: "brazil", since: save.game.date };
+    expect(save.game.fixtures.some((f) => f.id.startsWith("national:"))).toBe(false);
+    session.apply({ type: "load", save: JSON.stringify(save) });
+    const { fixtures } = session.read(["fixtures"]);
+    expect(fixtures.filter((f) => f.homeId === "brazil" || f.awayId === "brazil").map((f) => f.date)).toEqual(["2026-06-13", "2026-06-20", "2026-06-24"]);
   });
 });

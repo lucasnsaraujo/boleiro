@@ -733,6 +733,7 @@ export function Round() {
 
   if (preMatch) {
     const { plan, clubs } = preMatch;
+    const { chemistry } = plan;
     const vs = `${clubFaceOf(clubs, plan.homeId)?.shortName ?? ""} x ${clubFaceOf(clubs, plan.awayId)?.shortName ?? ""}`;
     const opponent = clubFaceOf(clubs, plan.homeId === plan.clubId ? plan.awayId : plan.homeId);
     const own = clubFaceOf(clubs, plan.clubId);
@@ -751,15 +752,19 @@ export function Round() {
         assistantLineup={plan.assistantLineup}
         onPickTeam={async (formation) => (await engine.matchDayPlan(formation)).assistantLineup}
         talk={<KickOffTalk moment={plan.talk.moment} suggested={plan.talk.suggested} picked={kickOffTalk} onPick={setKickOffTalk} />}
-        chemistry={{
-          value: plan.chemistry.value,
-          captainId: plan.chemistry.captainId,
-          suggestedId: plan.chemistry.suggestedCaptainId,
-          onName: async (playerId) => {
-            await engine.apply({ type: "nameCaptain", playerId });
-            return (await engine.chemistry())?.value ?? plan.chemistry.value;
-          },
-        }}
+        {...(chemistry
+          ? {
+              chemistry: {
+                value: chemistry.value,
+                captainId: chemistry.captainId,
+                suggestedId: chemistry.suggestedCaptainId,
+                onName: async (playerId: string) => {
+                  await engine.apply({ type: "nameCaptain", playerId });
+                  return (await engine.chemistry())?.value ?? chemistry.value;
+                },
+              },
+            }
+          : {})}
         {...(opponent ? { opponent: { club: opponent, formation: plan.opponentFormation } } : {})}
         {...(own && opponent ? { tacticsContext: { club: own, opponentClub: opponent, opponent: plan.opponent, opponentForm: plan.opponentForm, moment: plan.moment } } : {})}
         {...(own

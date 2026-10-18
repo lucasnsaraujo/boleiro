@@ -66,8 +66,8 @@ export type MatchDayPlan = {
   /** The opponent's last five results in any competition, oldest first. */
   opponentForm: MatchResult[];
   moment: MatchMoment;
-  /** The club's chemistry meter, its captain and the assistant's pick for the armband. */
-  chemistry: { value: number; captainId: string | null; suggestedCaptainId: string | null };
+  /** The club's chemistry meter, its captain and the assistant's pick for the armband; none for a national team, which keeps neither. */
+  chemistry: { value: number; captainId: string | null; suggestedCaptainId: string | null } | null;
   /** Where the club stands for a talk before kick-off, and the tone the assistant would take. */
   talk: { moment: TalkMoment; suggested: TalkTone };
 };
@@ -197,8 +197,8 @@ export function matchDayPlan(state: GameState, formation?: Formation): MatchDayP
   };
   const moment: MatchMoment = { isHome: homeId === clubId, minute: 0, lead: 0 };
   const opponentForm = recentResultsOf(state.fixtures, opponentId);
-  const own = chemistryOf(state, clubId);
-  const chemistry = { value: own.value, captainId: own.captain?.playerId ?? null, suggestedCaptainId: own.candidates[0]?.playerId ?? null };
+  const own = isNational ? null : chemistryOf(state, clubId);
+  const chemistry = own && { value: own.value, captainId: own.captain?.playerId ?? null, suggestedCaptainId: own.candidates[0]?.playerId ?? null };
   const talkMoment = kickOffMoment(state, fixture, clubId);
   const talk = { moment: talkMoment, suggested: assistantTalk(talkMoment) };
   return { fixtureId: fixture.id, clubId, homeId, awayId, label, squad, lineup, assistantLineup, tactics, opponentFormation, opponent, opponentForm, moment, chemistry, talk };

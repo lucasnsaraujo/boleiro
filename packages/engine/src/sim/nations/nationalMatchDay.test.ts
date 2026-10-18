@@ -9,6 +9,9 @@ import { loadNewGame } from "../loadNewGame.js";
 import { acceptNationalOffer } from "./nationalJobs.js";
 import { nationalFixtureId, syncNationalFixtures } from "./nationalFixtures.js";
 import { nationalSquadOf } from "./nationalSquad.js";
+import { isFinal } from "../rivalries/coachRivalries.js";
+import { isShootoutDue } from "../settleShootout.js";
+import { hasExtraTime, tieBreakOf } from "../tieBreaks.js";
 
 const football = loadNationalFootball();
 const BRAZIL_MOROCCO = "world-cup-2026-C-1-brazil";
@@ -115,3 +118,33 @@ describe("a club and national coach whose two teams play the same day", () => {
   });
 });
 
+
+describe("a national coach's match day, again", () => {
+  it("plays the same way from the same game, live and after the final whistle", () => {
+    const game = onWorldCupDay(null);
+    const once = startMatchDay(game, {});
+    const twice = startMatchDay(game, {});
+    expect(twice.matches).toEqual(once.matches);
+    expect(JSON.stringify(finishMatchDay(twice).state)).toBe(JSON.stringify(finishMatchDay(once).state));
+  });
+});
+
+describe("a national knockout match", () => {
+  it("goes to extra time and then penalties when level after ninety minutes, and its final is a final", () => {
+    const game = coaching(loadNewGame(5, { coachClubId: null, nationalFootball: football }), "brazil");
+    const nations = game.nations;
+    if (!nations) throw new Error("the game has no national football");
+    const knockout = (id: string, round: string, date: string) => ({ id, competitionId: "world-cup-2026", round, date, homeId: "brazil", awayId: "japan", isNeutral: true as const, result: null });
+    const withKnockouts = syncNationalFixtures({ ...game, nations: { ...nations, matches: [...nations.matches, knockout("wc-r32-brazil", "round-of-32", "2026-06-29"), knockout("wc-final-brazil", "final", "2026-07-19")] } });
+    const roundOf32 = withKnockouts.fixtures.find((f) => f.id === nationalFixtureId("wc-r32-brazil"));
+    const final = withKnockouts.fixtures.find((f) => f.id === nationalFixtureId("wc-final-brazil"));
+    const competition = withKnockouts.competitions[roundOf32?.competitionId ?? ""];
+    if (!roundOf32 || !final || !competition) throw new Error("the knockout matches joined the full tier");
+    expect(tieBreakOf(competition, roundOf32.stage)).toBe("extraTime");
+    expect(hasExtraTime(competition, roundOf32.stage, 0)).toBe(true);
+    expect(isShootoutDue(withKnockouts, { ...roundOf32, result: { homeGoals: 1, awayGoals: 1 } })).toBe(true);
+    expect(isShootoutDue(withKnockouts, { ...roundOf32, result: { homeGoals: 2, awayGoals: 1 } })).toBe(false);
+    expect(isFinal(withKnockouts, final)).toBe(true);
+    expect(isFinal(withKnockouts, roundOf32)).toBe(false);
+  });
+});

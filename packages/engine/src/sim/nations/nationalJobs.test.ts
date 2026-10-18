@@ -80,7 +80,7 @@ describe("national-team jobs", () => {
     expect(after?.events).toEqual([]);
   });
 
-  it("are not offered in a hot-seat game, whose coaches would share one national job", () => {
+  it("are offered to each coach of a hot-seat game on his own, never two of them the same team", () => {
     const twoCoaches = loadNewGame(5, { coachClubId: "flamengo-rj", hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "santos-sp" }] } });
     const worldCup = afterWorldCup.nations?.competitions["world-cup-2026"];
     const nations = afterWorldCup.nations && { ...afterWorldCup.nations };
@@ -88,7 +88,10 @@ describe("national-team jobs", () => {
     const hotSeat = { ...afterWorldCup, ...(nations ? { nations } : {}), ...(twoCoaches.waitingCoaches ? { waitingCoaches: twoCoaches.waitingCoaches } : {}) };
     const after = worldCup ? nationalJobsAfter(hotSeat, worldCup, "2026-07-19") : null;
     expect(hotSeat.waitingCoaches).toHaveLength(1);
-    expect(after?.events.filter((e) => e.type === "nationalJobOffered")).toEqual([]);
-    expect(after?.state.nations?.offer).toBeUndefined();
+    const seatedOffers = after?.events.filter((e) => e.type === "nationalJobOffered") ?? [];
+    expect(seatedOffers.map((e) => e.teamId)).toEqual([after?.state.nations?.offer?.teamId]);
+    const waitingOffer = after?.state.waitingCoaches?.[0]?.nationalOffer;
+    expect(after?.waitingEvents[0]?.filter((e) => e.type === "nationalJobOffered").map((e) => e.teamId)).toEqual(waitingOffer ? [waitingOffer.teamId] : []);
+    expect(waitingOffer?.teamId).not.toBe(after?.state.nations?.offer?.teamId);
   });
 });
