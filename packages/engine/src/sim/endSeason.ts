@@ -16,6 +16,7 @@ import { formatsOf } from "./formats.js";
 import { fileFullTierSeason, mostRounds, seasonMoves } from "./world/resultOnlyWorld.js";
 import { unifiedDatesOf } from "./seasonCalendar.js";
 import type { Country } from "./world/world.js";
+import { isFinished, turnsOnItsOwn } from "./world/turnSeasonsAbroad.js";
 
 function leagueOf(state: GameState, division: Division): LeagueCompetition {
   const competition = Object.values(state.competitions).find((c) => c.kind === "league" && c.division === division && c.season === state.season);
@@ -86,10 +87,16 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
         : leagues.map((league) => ({ clubCount: league.clubIds.length, legs: league.legs })),
     ),
   );
-  const { calendar, competitions, fixtures } = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false, state.economy.continentalStages !== undefined, formatsOf(state), gridRounds, abroad.map(({ country }) => country.structure), state.guests !== undefined, state.nations !== undefined);
+  const opened = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false, state.economy.continentalStages !== undefined, formatsOf(state), gridRounds, abroad.map(({ country }) => country.structure), state.guests !== undefined, state.nations !== undefined);
+  const { calendar } = opened;
+  // A league abroad whose season crosses the new year plays on into Brazil's next, its games and table with it.
+  const crossing = Object.values(state.competitions).filter((c) => c.kind === "league" && c.abroad && !isFinished(c, fixturesOf(state, c.id)));
+  const competitions = { ...opened.competitions, ...Object.fromEntries(crossing.map((c) => [c.id, c])) };
+  const crossingIds = new Set(crossing.map((c) => c.id));
+  const fixtures = crossing.length ? [...opened.fixtures, ...state.fixtures.filter((f) => crossingIds.has(f.competitionId))] : opened.fixtures;
   const outcomes = Object.fromEntries(
     Object.values(state.competitions).flatMap((competition) => {
-      if (competition.kind !== "league") return [];
+      if (competition.kind !== "league" || crossingIds.has(competition.id)) return [];
       return [[competition.id, competition.division ? outcomeAt(competition.division) : LEAGUE_FORMATS[competition.format].outcome(competition, fixturesOf(state, competition.id))]];
     }),
   );
@@ -103,10 +110,10 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
   };
 }
 
-/** Each full-tier country abroad with its leagues' final tables, top level first. */
+/** Each full-tier country abroad that turns its season with Brazil's, with its leagues' final tables, top level first. */
 function tablesAbroad(state: GameState): { country: Country; tables: string[][] }[] {
   return Object.values(state.world ?? {}).flatMap((country) => {
-    if (!country.isFullTier) return [];
+    if (!country.isFullTier || turnsOnItsOwn(country)) return [];
     const tables = country.structure.levels.map((_, level) => {
       const league = Object.values(state.competitions).find((c) => c.kind === "league" && c.season === state.season && c.abroad?.country === country.structure.id && c.abroad.level === level);
       return league?.kind === "league" ? finalOrderOf(league, fixturesOf(state, league.id)) : [];

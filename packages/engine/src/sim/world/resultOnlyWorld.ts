@@ -33,23 +33,30 @@ function openSeason(structure: CountryStructure, members: readonly string[][], s
   return { leagues, cup: openCup(`${structure.id}-cup-${season}`, season, levels, structure.window, leagues.flatMap((league) => league.dates), random, unified?.cup) };
 }
 
-/** The season of a country in the full tier: its leagues play there, so only its cup opens here, on the unified calendar's midweeks. */
-function openFullTierSeason(structure: CountryStructure, members: readonly string[][], season: number, random: () => number, unified?: UnifiedDates): Pick<Country, "leagues" | "cup"> {
-  if (!unified) throw new Error(`${structure.id}: a country in the full tier needs the unified calendar`);
+/** What a country in the full tier opens its cup around on a real calendar: the days its full-tier leagues and UEFA's cups play. */
+export type FullTierDays = { taken: readonly IsoDate[] };
+
+/**
+ * The season of a country in the full tier: its leagues play there, so only its cup opens here, on the
+ * unified calendar's midweeks or over its window off the `taken` days.
+ */
+function openFullTierSeason(structure: CountryStructure, members: readonly string[][], season: number, random: () => number, unified?: UnifiedDates, days?: FullTierDays): Pick<Country, "leagues" | "cup"> {
   if (!structure.hasCup) return { leagues: [] };
-  return { leagues: [], cup: openCup(`${structure.id}-cup-${season}`, season, members.map((ids) => [...ids].sort()), structure.window, [], random, unified.cup) };
+  return { leagues: [], cup: openCup(`${structure.id}-cup-${season}`, season, members.map((ids) => [...ids].sort()), structure.window, days?.taken ?? [], random, unified?.cup) };
 }
 
 /**
  * A result-only country at the start of `season`, `levels` holding its clubs level by level, top first;
- * on the unified calendar its season is the calendar year, filed on 1 January with Brazil's.
+ * on the unified calendar its season is the calendar year, filed on 1 January with Brazil's. A country
+ * a human coach brought into the full tier (`fullTier`) opens only its cup here.
  */
-export function startCountry(structure: CountryStructure, levels: readonly (readonly WorldClub[])[], season: number, seed: number, unified?: UnifiedDates, isFullTier = false): Country {
+export function startCountry(structure: CountryStructure, levels: readonly (readonly WorldClub[])[], season: number, seed: number, unified?: UnifiedDates, fullTier?: FullTierDays): Country {
   checkPyramid(structure, levels.map((clubs) => clubs.length));
   for (const club of levels.flat()) checkSquad(club);
   const random = randomStream(seed);
-  const open = isFullTier ? openFullTierSeason : openSeason;
-  const opened = open(structure, levels.map((clubs) => clubs.map((club) => club.id)), season, random.next, unified);
+  const members = levels.map((clubs) => clubs.map((club) => club.id));
+  const opened = fullTier ? openFullTierSeason(structure, members, season, random.next, unified, fullTier) : openSeason(structure, members, season, random.next, unified);
+  const isFullTier = fullTier !== undefined;
   const clubs = Object.fromEntries(levels.flat().map((club) => [club.id, club]));
   return { structure, clubs, ...opened, seasons: [], rngState: random.state(), ...(isFullTier ? { isFullTier: true as const } : {}) };
 }
@@ -70,9 +77,9 @@ function playCountryDay(country: Country, date: IsoDate): Country {
 const isFinished = (league: ResultOnlyLeague) => leagueMatches(league).every((match) => match.result !== null);
 const isCupFinished = (cup: ResultOnlyCup | undefined) => !cup || cupFinal(cup) !== null;
 
-/** Whether today files a season crossing the new year: its rollover day, with every league and its cup played. */
+/** Whether today files a season crossing the new year: its rollover day, with every league and its cup played; a country in the full tier turns with its leagues there (turnSeasonsAbroad). */
 function isRolloverDay(country: Country, date: IsoDate): boolean {
-  return country.structure.rollover === date.slice(5) && country.leagues.every(isFinished) && isCupFinished(country.cup);
+  return !country.isFullTier && country.structure.rollover === date.slice(5) && country.leagues.every(isFinished) && isCupFinished(country.cup);
 }
 
 /**
@@ -111,12 +118,12 @@ function finalsOf({ leagues, cup }: Pick<Country, "leagues" | "cup">): Pick<Coun
 }
 
 /** Files the season `filed` from its final tables, moves clubs through the pyramid and opens `season`. */
-function fileSeason(country: Country, tables: readonly (readonly string[])[], filed: number, season: number, unified?: UnifiedDates): Country {
+function fileSeason(country: Country, tables: readonly (readonly string[])[], filed: number, season: number, unified?: UnifiedDates, days?: FullTierDays): Country {
   const { structure } = country;
   const { exits, moves } = seasonMoves(structure, tables);
   const members = structure.levels.map((_, i) => tables.flatMap((table, from) => table.filter((id) => (moves.has(id) ? moves.get(id) : from) === i)));
   const random = randomStream(country.rngState);
-  const opened = (country.isFullTier ? openFullTierSeason : openSeason)(structure, members, season, random.next, unified);
+  const opened = country.isFullTier ? openFullTierSeason(structure, members, season, random.next, unified, days) : openSeason(structure, members, season, random.next, unified);
   const cup = country.cup ? cupFinal(country.cup) : null;
   const record = {
     season: filed,
@@ -140,9 +147,12 @@ function endCountrySeason(country: Country, season: number, unified?: UnifiedDat
   return fileSeason(country, country.leagues.map(leagueTable), top.season, season, unified);
 }
 
-/** A full-tier country's season filed on 1 January from its leagues' final `tables` (top level first), and its cup reopened for `season`. */
-export function fileFullTierSeason(country: Country, tables: readonly (readonly string[])[], season: number, unified: UnifiedDates | undefined): Country {
-  return fileSeason(country, tables, season - 1, season, unified);
+/**
+ * A full-tier country's season filed from its leagues' final `tables` (top level first), on 1 January or
+ * on its own rollover day, and its cup reopened for `season` off the `days` its leagues and UEFA's cups take.
+ */
+export function fileFullTierSeason(country: Country, tables: readonly (readonly string[])[], season: number, unified: UnifiedDates | undefined, days?: FullTierDays): Country {
+  return fileSeason(country, tables, season - 1, season, unified, days);
 }
 
 /**

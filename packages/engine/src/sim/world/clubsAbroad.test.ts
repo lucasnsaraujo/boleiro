@@ -58,8 +58,10 @@ describe("a career at a club abroad", () => {
     for (const competition of brazilian) expect(competition.clubIds.some((id) => start.clubs[id]?.abroad)).toBe(false);
   });
 
-  it("needs the unified calendar", () => {
-    expect(() => loadNewGame(5, { coachClubId: ARSENAL, world, formats: REALISTA })).toThrow(/unified calendar/);
+  it("plays on Realista's calendars too, England's league in its own window", () => {
+    const realista = loadNewGame(5, { coachClubId: ARSENAL, world, formats: REALISTA });
+    expect(realista.calendar.leagueGrid).toBeUndefined();
+    expect(englishLeagues(realista)[0]?.stageDates[0]?.[0]?.slice(5)).not.toBe(realista.calendar.leagueDates.A[0]?.slice(5));
   });
 
   describe("over a whole season", () => {

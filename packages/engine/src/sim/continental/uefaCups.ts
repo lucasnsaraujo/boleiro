@@ -130,6 +130,14 @@ function calendarOf(cup: UefaCup, formats: Formats): UefaCalendar {
   };
 }
 
+/** Every match day of UEFA's cups in the season starting in `season`'s summer, under `formats`: the leagues abroad keep clear of them. */
+export function uefaMatchDays(season: number, formats: Formats): IsoDate[] {
+  return UEFA_CUPS.flatMap((cup) => {
+    const { leaguePhase, knockout, superCup } = calendarOf(cup, formats);
+    return [...leaguePhase, ...Object.values(knockout).flat(), superCup].map((date) => shifted(date, season));
+  });
+}
+
 function clubsOf(world: World): Map<string, { club: WorldClub; country: string }> {
   return new Map(Object.entries(world).flatMap(([country, { clubs }]) => Object.values(clubs).map((club) => [club.id, { club, country }] as const)));
 }

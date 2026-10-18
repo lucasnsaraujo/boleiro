@@ -53,6 +53,7 @@ import { turnOverAcademies } from "../youth/turnOverAcademies.js";
 import { isShootoutDue, settleShootout, shootoutSeed, shootoutWinnerOf } from "../settleShootout.js";
 import { runTransferDay } from "../transfers/runTransferDay.js";
 import { endWorldSeason, playWorldDay } from "../world/resultOnlyWorld.js";
+import { turnSeasonsAbroad } from "../world/turnSeasonsAbroad.js";
 import { formatsOf } from "../formats.js";
 import { unifiedDatesOf } from "../seasonCalendar.js";
 import { coachOutcome } from "./coachOutcome.js";
@@ -254,7 +255,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     next = copinha.state;
     events.push(...copinha.events);
   }
-  if (state.world) next = { ...next, world: moveWorldCoaches(playWorldDay(state.world, state.date), state.date) };
+  if (state.world) next = turnSeasonsAbroad({ ...next, world: moveWorldCoaches(playWorldDay(state.world, state.date), state.date) }, state.date);
   if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state)) };
   if (next.nations) {
     const national = nationsDay(next, state.date);

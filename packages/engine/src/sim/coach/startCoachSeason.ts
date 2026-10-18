@@ -7,6 +7,7 @@ import { GAP_SCALE } from "./judgeCoaches.js";
 import { offerJobs, type JobOffered } from "./offerJobs.js";
 import { asWaitingCoach, isHumanClub, waitingCoachesOf } from "./humanCoaches.js";
 import { recordCoachEvents } from "../history/recordDayEvents.js";
+import { turnsOnItsOwn } from "../world/turnSeasonsAbroad.js";
 
 export type CoachSeasonReviewed = {
   type: "coachSeasonReviewed";
@@ -32,6 +33,13 @@ const STATURE_PULL = 0.2;
 // 30% of Série A clubs changed coach between the end of the 2024 season and the start of 2025
 // (Jornal de Brasília, https://jornaldebrasilia.com.br/torcida/30-dos-clubes-da-serie-a-trocaram-de-tecnico-para-2025/).
 const PRESEASON_CHANGE_CHANCE = 0.3;
+
+/** Whether the club plays in a full-tier league abroad whose season runs on past Brazil's turn of the year. */
+function isMidSeasonAbroad(state: GameState, clubId: string): boolean {
+  const country = state.clubs[clubId]?.abroad?.country;
+  const found = country ? state.world?.[country] : undefined;
+  return found !== undefined && turnsOnItsOwn(found);
+}
 
 /** Reviews the player's coach on the season just ended: reputation, then his contract. */
 function reviewCoach(state: GameState, outcomes: readonly LeagueOutcome[]): { state: GameState; events: CoachSeasonEvent[] } {
@@ -90,8 +98,11 @@ export function startCoachSeason(
     waitingEvents.push(own.events);
   }
   const set = boardExpectations(next);
-  const vacancies = Object.keys(set.boards).sort().filter((id) => !isHumanClub(next, id) && random() < PRESEASON_CHANGE_CHANCE);
-  const offered = offerJobs({ ...next, boards: set.boards }, vacancies, random);
+  // A league abroad whose season crosses the new year keeps its boards to its own turn (turnSeasonsAbroad).
+  const kept = Object.fromEntries(Object.entries(next.boards).filter(([id]) => isMidSeasonAbroad(next, id)));
+  const boards = { ...set.boards, ...kept };
+  const vacancies = Object.keys(boards).sort().filter((id) => !isHumanClub(next, id) && random() < PRESEASON_CHANGE_CHANCE);
+  const offered = offerJobs({ ...next, boards }, vacancies, random);
   next = offered.state;
   // ...and hears of the open jobs as he does.
   for (let index = 0; index < waitingCoachesOf(next).length; index++) {
@@ -102,5 +113,6 @@ export function startCoachSeason(
     next = own.state;
     waitingEvents[index]?.push(...own.events);
   }
-  return { state: next, events: [...reviewed.events, ...set.events, ...offered.events], waitingEvents, vacancies };
+  const setEvents = set.events.filter((event) => !(event.clubId in kept));
+  return { state: next, events: [...reviewed.events, ...setEvents, ...offered.events], waitingEvents, vacancies };
 }
