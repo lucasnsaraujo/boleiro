@@ -194,7 +194,9 @@ export function openingFinances(
       const prizesOutOfOtherIncome = Math.min(beforePrizes, Math.round(cupPrizes));
       const otherIncome = beforePrizes - prizesOutOfOtherIncome;
       const projected = tv + expectedTickets + base.membership + base.sponsorship + otherIncome + cupPrizes;
-      for (const [id, wage] of wagesOf(squads.get(club.id) ?? [], base.wageBill / 12)) wages[id] = wage;
+      // Accounts from a richer division paid a richer squad: the club keeps their wage share of revenue.
+      const wageBill = tier === "A" || !row || revenue <= 0 ? base.wageBill : Math.min(base.wageBill, (base.wageBill / revenue) * projected);
+      for (const [id, wage] of wagesOf(squads.get(club.id) ?? [], wageBill / 12)) wages[id] = wage;
       const opening: ClubFinance = {
         cash: Math.round(Math.max(-base.netDebt, (OPENING_CASH_MONTHS_OF_REVENUE * revenue) / 12)),
         loans: 0,
@@ -208,7 +210,7 @@ export function openingFinances(
         membership: Math.round(base.membership),
         membershipAnchor: Math.round(base.membership),
         otherIncome,
-        infrastructure: Math.round(Math.max(MIN_INFRASTRUCTURE_SHARE_OF_REVENUE * projected, (1 - TRANSFER_SHARE_OF_REVENUE) * projected - base.wageBill)),
+        infrastructure: Math.round(Math.max(MIN_INFRASTRUCTURE_SHARE_OF_REVENUE * projected, (1 - TRANSFER_SHARE_OF_REVENUE) * projected - wageBill)),
         expectedTickets,
         expectedPrizes: Math.round(cupPrizes),
         prizesOutOfOtherIncome,
@@ -220,7 +222,7 @@ export function openingFinances(
         lastSeason: null,
         lastClosing: null,
       };
-      finances[club.id] = setBoardBudget(opening, base.wageBill / 12);
+      finances[club.id] = setBoardBudget(opening, wageBill / 12);
     }
   }
   return { economy, finances, wages };

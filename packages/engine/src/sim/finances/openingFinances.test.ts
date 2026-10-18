@@ -4,6 +4,7 @@ import { loadFinances, type ClubFinances } from "@boleiro/data/finances";
 import type { Division } from "@boleiro/data/players";
 import type { GameState } from "../gameState.js";
 import { loadNewGame, newGameFromFiles } from "../loadNewGame.js";
+import { projectedRevenue } from "./setBoardBudget.js";
 
 const yearlyWageBill = (state: GameState, clubId: string) =>
   12 * Object.values(state.players).filter((p) => p.clubId === clubId).reduce((sum, p) => sum + p.wage, 0);
@@ -19,7 +20,7 @@ describe("a new game's club finances", () => {
   });
 
   it("matches each Série A club's wage bill to its 2025 accounts", () => {
-    for (const row of data.clubs) {
+    for (const row of serieARows) {
       expect(yearlyWageBill(state, row.clubId) / row.wageBill).toBeCloseTo(1, 2);
     }
   });
@@ -91,11 +92,13 @@ describe("a new game's club finances", () => {
       revenue: { total: 400_000_000, broadcasting: 150_000_000, matchday: 50_000_000, membership: 20_000_000, sponsorship: 60_000_000, playerSales: 70_000_000 },
       wageBill: 180_000_000, netDebt: 250_000_000,
     };
-    const game = newGameFromFiles(2026, { coachClubId: null }, { ...pack, finances: { ...pack.finances, clubs: [...pack.finances.clubs, row] } });
+    const withRow = (accounts: ClubFinances) =>
+      newGameFromFiles(2026, { coachClubId: null }, { ...pack, finances: { ...pack.finances, clubs: [...pack.finances.clubs, accounts] } });
+    const game = withRow(row);
     const finance = game.finances[club.id];
+    const projected = finance ? projectedRevenue(finance) : 0;
 
-    it("opens on its accounts' wage bill, debt, sponsorship and membership", () => {
-      expect(yearlyWageBill(game, club.id) / row.wageBill).toBeCloseTo(1, 2);
+    it("opens on its accounts' debt, sponsorship and membership", () => {
       expect(finance?.legacyDebt).toBe(row.netDebt);
       expect(finance?.sponsorship).toBe(row.revenue.sponsorship);
       expect(finance?.membership).toBe(row.revenue.membership);
@@ -105,6 +108,21 @@ describe("a new game's club finances", () => {
       expect(finance?.tv).toBe(game.economy.tvPerClub.B);
       const { total, playerSales, broadcasting, matchday, membership, sponsorship } = row.revenue;
       expect((finance?.otherIncome ?? 0) + (finance?.prizesOutOfOtherIncome ?? 0)).toBe(total - playerSales - broadcasting - matchday - membership - sponsorship);
+    });
+
+    it("pays its accounts' share of revenue in wages, on what it can earn in its division", () => {
+      const share = row.wageBill / (row.revenue.total - row.revenue.playerSales);
+      expect(projected).toBeLessThan(row.revenue.total - row.revenue.playerSales);
+      expect(yearlyWageBill(game, club.id) / (share * projected)).toBeCloseTo(1, 2);
+    });
+
+    it("keeps its accounts' wage bill when its division earns it more than its accounts show", () => {
+      const small: ClubFinances = {
+        ...row,
+        revenue: { total: 12_000_000, broadcasting: 2_000_000, matchday: 1_000_000, membership: 500_000, sponsorship: 1_500_000, playerSales: 1_000_000 },
+        wageBill: 9_000_000,
+      };
+      expect(yearlyWageBill(withRow(small), club.id) / small.wageBill).toBeCloseTo(1, 2);
     });
 
     it("leaves Série A's typical and richest revenue to Série A's accounts", () => {
