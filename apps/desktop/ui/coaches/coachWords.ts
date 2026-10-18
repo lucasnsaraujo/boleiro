@@ -147,5 +147,7 @@ export function answerText(answer: JobAnswer, club: string): string {
       return `${club} já fez uma proposta. Ela está em Propostas.`;
     case "noOpening":
       return `${club} não tem vaga agora.`;
+    case "retired":
+      return "Você encerrou a carreira.";
   }
 }

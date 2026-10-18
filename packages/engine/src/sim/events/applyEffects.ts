@@ -7,7 +7,7 @@ import { clubMood } from "../morale/clubMood.js";
 import { CLASH_HEAT, recordPressClash } from "../rivalries/coachRivalries.js";
 import { eventMemoryOf, rivalryKey, type Cast, type Effects } from "./eventMemory.js";
 
-// The board's meter is half full on target and empties as its pressure grows by 2 (hubSelectors' boardConfidence),
+// The board's meter is half full on target and empties as its pressure grows by 2 (judgeCoaches' boardConfidence),
 // so a meter point is a fiftieth of pressure.
 const BOARD_POINT = 1 / 50;
 // judgeCoaches keeps the pressure inside this range.

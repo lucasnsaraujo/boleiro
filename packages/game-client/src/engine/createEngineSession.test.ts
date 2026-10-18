@@ -194,6 +194,17 @@ function playCareerStart() {
   return { recorded, declined: declined.clubId, signed: signed.clubId };
 }
 
+/** A coach who plays two days, retires, sees his farewell through and plays on without a club. */
+function playRetirement() {
+  const recorded = recordedSession();
+  recorded.apply({ type: "newGame", seed: SEED, choices: { coachClubId: "bahia-ba" } });
+  recorded.apply({ type: "advance", days: [{}, {}] });
+  recorded.apply({ type: "retireCoach" });
+  recorded.apply({ type: "closeMoment" });
+  recorded.apply({ type: "advance", days: [{}, {}] });
+  return { recorded };
+}
+
 /** A coach who walks out of his club, applies for a job (his old club's, which won't have him back) and plays on unemployed. */
 function playCoachMoves() {
   const recorded = recordedSession();
@@ -686,7 +697,7 @@ test("the money commands survive JSON and replay alike from the same seed", () =
 });
 
 test("the season, career, market, money, academy and hot-seat logs between them send every kind of command", () => {
-  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, scouting, sponsors, playHotSeatTurn(), playPlayerLife(), playNationalJob()].flatMap(({ recorded }) => recorded.applied);
+  const logs = [season, career, marketWindow, money, academy, events, captain, coachMoves, scouting, sponsors, playHotSeatTurn(), playPlayerLife(), playNationalJob(), playRetirement()].flatMap(({ recorded }) => recorded.applied);
   const sent = new Set(logs.map(({ command }) => command.type));
   const every: Record<CommandType, true> = {
     newGame: true,
@@ -733,6 +744,8 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     acceptNationalJob: true,
     declineNationalJob: true,
     setCallUp: true,
+    closeMoment: true,
+    retireCoach: true,
   };
   expect([...sent].sort()).toEqual(Object.keys(every).sort());
 });

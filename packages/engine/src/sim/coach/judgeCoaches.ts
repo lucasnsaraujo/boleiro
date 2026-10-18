@@ -47,6 +47,14 @@ export function crowdPressure(state: Pick<GameState, "mood">, clubId: string): n
   return (UNHAPPY_FANS * Math.max(0, 50 - mood.fans)) / 50 + SUPPORTER_PRESSURE[mood.supporters];
 }
 
+/**
+ * How full the board's confidence meter is, 0 to 1: half on target, emptying as the pressure grows. `stands` is the
+ * pressure from the fans the board adds when it decides to fire.
+ */
+export function boardConfidence(board: Pick<Board, "pressure"> | undefined, stands = 0): number {
+  return Math.min(1, Math.max(0, (1 - (board?.pressure ?? 0) - stands) / 2));
+}
+
 /** The board's verdict after a league game: the new pressure and whether the coach goes. */
 function judge(state: GameState, board: Board, position: number, clubId: string, random: () => number): { board: Board; fired: boolean } {
   const gap = clamp((GAP_SCALE * (position - board.targetPosition)) / board.tableSize);

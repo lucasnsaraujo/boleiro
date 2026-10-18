@@ -11,7 +11,7 @@ import { rivalBlockOf } from "../rivalries/idols.js";
  * out on it lately, `rivalIdol` when he is an idol of its big derby rival, `alreadyOffered` when its offer
  * is already on the table.
  */
-export type JobAnswer = "offered" | "noOpening" | "tooBig" | "notWelcome" | "rivalIdol" | "alreadyOffered";
+export type JobAnswer = "offered" | "noOpening" | "tooBig" | "notWelcome" | "rivalIdol" | "alreadyOffered" | "retired";
 
 // guess: a coach who asks for the job reaches a little further than the clubs that call him.
 export const APPLY_REACH = OFFER_REACH + 5;
@@ -29,8 +29,9 @@ export function refusalOf(state: GameState, clubId: string, stature: number): Re
   return stature <= state.coach.reputation + APPLY_REACH ? null : "tooBig";
 }
 
-/** The coach in the seat applies for a club's open job; the club answers at once. */
+/** The coach in the seat applies for a club's open job; the club answers at once. A retired coach applies nowhere. */
 export function applyForJob(state: GameState, clubId: string): { state: GameState; answer: JobAnswer } {
+  if (state.coach.retiredOn) return { state, answer: "retired" };
   const isOpen = clubId in (state.coaches?.openJobs ?? {}) && clubId in state.boards && !isHumanClub(state, clubId);
   if (!isOpen) return { state, answer: "noOpening" };
   if (isCoolingDown(state.coach, clubId, state.season)) return { state, answer: "notWelcome" };

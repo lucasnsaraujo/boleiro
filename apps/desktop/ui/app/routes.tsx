@@ -10,6 +10,7 @@ import { Finances } from "../screens/Finances.js";
 import { History } from "../screens/History.js";
 import { Hub } from "../screens/Hub.js";
 import { Market } from "../screens/Market.js";
+import { Moment } from "../screens/Moment.js";
 import { NationalTeam } from "../screens/NationalTeam.js";
 import { NewGame } from "../screens/NewGame.js";
 import { Newspaper } from "../screens/Newspaper.js";
@@ -26,6 +27,7 @@ import { StartMenu } from "../screens/StartMenu.js";
 import { Tables } from "../screens/Tables.js";
 import { Youth } from "../screens/Youth.js";
 import { Turn } from "../screens/Turn.js";
+import { Trajectory } from "../screens/Trajectory.js";
 import { SCREEN_PATHS, type ScreenPath } from "./screens.js";
 import { Shell } from "./Shell.js";
 
@@ -54,6 +56,8 @@ const ELEMENTS: Record<ScreenPath, ReactElement> = {
   "/awards": <Awards />,
   "/assistant": <Assistant />,
   "/national-team": <NationalTeam />,
+  "/moment": <Moment />,
+  "/trajectory": <Trajectory />,
 };
 
 export const routes: RouteObject[] = [

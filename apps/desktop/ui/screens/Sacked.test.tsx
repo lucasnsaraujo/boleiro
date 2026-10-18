@@ -80,3 +80,35 @@ test("the sacking plays its stinger", async () => {
   await screen.findByRole("heading", { name: "Demitido" });
   expect(sound.ctx.notes()).toBe(CUES.sacked.tones.length);
 });
+
+test("a sacking the moments engine has waiting plays the night on this screen, dated the day before the board's morning, and seeing the offers closes both", async () => {
+  const { given, closed } = await services([firing]);
+  const save = JSON.parse(await given.engine.save());
+  const run = ["vitoria-ba", "sport-pe", "fortaleza-ce"].map((opponentId, index) => ({ date: "2026-06-0" + (index + 1), opponentId, isHome: true, goalsFor: 0, goalsAgainst: 2, board: 30 - index * 10, fans: 40 }));
+  save.game.history.coach.moments = {
+    queue: [{ id: "fired:bahia-ba:2026-06-09", kind: "sacking", date: "2026-06-09", clubId: "bahia-ba", position: 18, targetPosition: 10, run, ultimatumOn: "2026-06-01", protestOn: null, standing: 20, games: [5, 3, 12], months: 5, rivalId: "vitoria-ba" }],
+    shownOn: null,
+    past: [],
+    seen: { closedStints: 1, trophies: 0 },
+    idolOf: [],
+    games: {},
+    pressure: [],
+    ultimatumOn: null,
+    protestOn: null,
+    milestones: [],
+    compared: {},
+    homecomings: {},
+    farewells: {},
+  };
+  await given.engine.apply({ type: "load", save: JSON.stringify(save) });
+  openSacked(given);
+  const night = await screen.findByRole("region", { name: "Demitido: Bahia" });
+  // With less motion asked for (jsdom has no matchMedia), the night shows its last frame once the fonts are in.
+  await screen.findByRole("button", { name: "Ver propostas" });
+  expect(night.getAttribute("data-state")).toBe("ended");
+  expect(screen.getByRole("heading", { name: "Três jogos sem vencer" })).toBeTruthy();
+  await userEvent.click(screen.getByRole("button", { name: "Ver propostas" }));
+  expect(await screen.findByText("Propostas abertas")).toBeTruthy();
+  expect(closed()).toBe(1);
+  expect((await given.engine.read(["history"])).history.coach.moments?.queue).toEqual([]);
+});

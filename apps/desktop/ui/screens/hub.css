@@ -243,6 +243,12 @@
   font-size: 15px;
 }
 
+.hub-trajectory {
+  width: 100%;
+  flex: none;
+  justify-content: center;
+}
+
 .hub-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;

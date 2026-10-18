@@ -1,0 +1,53 @@
+import { expect, test } from "vitest";
+import { bundledGameFiles } from "../engine/bundledGameFiles.js";
+import { createEngineSession } from "../engine/createEngineSession.js";
+
+test("a coach who retires sees his farewell first, replayed as the album, then his trajectory keeps it", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba", coachName: "Rui Tavares" } });
+  session.apply({ type: "advance", days: [{}, {}, {}] });
+  expect(session.moment()).toBeNull();
+  session.apply({ type: "retireCoach" });
+  const farewell = session.moment();
+  expect(farewell).toMatchObject({ kind: "retirement", coachName: "Rui Tavares", club: { id: "bahia-ba", name: "Bahia" } });
+  if (farewell?.kind !== "retirement") return;
+  expect(farewell.eras.map((era) => era.club.id)).toEqual(["bahia-ba"]);
+  session.apply({ type: "closeMoment" });
+  expect(session.moment()).toBeNull();
+  expect(session.momentView(farewell.id)).toMatchObject({ kind: "retirement" });
+  const trajectory = session.trajectory();
+  expect(trajectory).toMatchObject({ coachName: "Rui Tavares", bands: [{ club: { id: "bahia-ba" } }] });
+  expect(session.read(["coachClubId"]).coachClubId).toBeNull();
+  expect(() => session.apply({ type: "retireCoach" })).toThrow("already retired");
+});
+
+test("an old save without moments loads and plays on without celebrating what it already held", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  session.apply({ type: "advance", days: [{}] });
+  const saved = JSON.parse(session.save());
+  delete saved.game.history.coach.moments;
+  // Already won and five years in: a record the engine would celebrate if it took them for news.
+  saved.game.history.coach.trophies.push({ season: 2025, competition: "state-ba", clubId: "bahia-ba" });
+  saved.game.history.coach.stints[0].from = "2020-01-01";
+  const loaded = createEngineSession(bundledGameFiles);
+  loaded.apply({ type: "load", save: JSON.stringify(saved) });
+  loaded.apply({ type: "advance", days: [{}, {}] });
+  expect(loaded.moment()).toBeNull();
+  expect(loaded.read(["history"]).history.coach.moments?.queue).toEqual([]);
+});
+
+test("no moment shows or closes while a round is under way, whose final whistle would undo it", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  session.apply({ type: "playToMatchDay" });
+  const saved = JSON.parse(session.save());
+  saved.game.history.coach.moments.queue = [{ id: "idol:bahia-ba", kind: "idol", date: saved.game.date, clubId: "bahia-ba", ledger: [], standing: 80 }];
+  session.apply({ type: "load", save: JSON.stringify(saved) });
+  expect(session.moment()).toMatchObject({ kind: "idol" });
+  session.apply({ type: "startRound" });
+  expect(session.moment()).toBeNull();
+  expect(() => session.apply({ type: "closeMoment" })).toThrow("while a match day is under way");
+  session.apply({ type: "finishRound" });
+  expect(session.moment()).toMatchObject({ kind: "idol" });
+});
