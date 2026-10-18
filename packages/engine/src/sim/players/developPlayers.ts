@@ -199,14 +199,17 @@ export function professionalOf(prospect: Prospect, clubId: string, wage: number,
   };
 }
 
-/** The academy's best teenager at `group` old enough for the squad, if any; its 20-year-olds finish their last youth year. */
-export function readyProspect(academy: readonly Prospect[], group: PositionGroup, taken: ReadonlySet<string>): Prospect | null {
+/**
+ * The academy's best teenager at `group` old enough for the squad, if the club would keep him (`isKept`);
+ * its 20-year-olds finish their last youth year.
+ */
+export function readyProspect(academy: readonly Prospect[], group: PositionGroup, taken: ReadonlySet<string>, isKept: (kid: Prospect) => boolean): Prospect | null {
   let best: Prospect | null = null;
   for (const p of academy) {
     if (taken.has(p.id) || p.group !== group || p.age < YOUTH_MIN_AGE || p.age >= YOUTH_MIN_AGE + YOUTH_AGES) continue;
     if (!best || p.strength > best.strength || (p.strength === best.strength && p.id < best.id)) best = p;
   }
-  return best;
+  return best && isKept(best) ? best : null;
 }
 
 // guess: a club keeps a kid who plays within 4 points of the middle of its squad at his position.
@@ -239,9 +242,9 @@ function tierWageRates(clubs: GameState["clubs"], players: readonly SimPlayer[])
  * with age, minutes and form toward his club's level (an academy graduate toward his potential, when
  * higher); veterans retire, sooner when they barely played or fell below their club's level, and a
  * human coach's veterans announce their last season instead; the academy's best teenagers at each
- * position fill any squad below 18 and replace the rest when the club would keep them (isWorthPromoting),
- * and Brazilian teenagers with invented names stand in where the academy has nobody ready (or no
- * academy at all). Runs on the first day of the new year,
+ * position replace them and fill any squad below 18 when the club would keep them (isWorthPromoting),
+ * and Brazilian teenagers with invented names at the club's level stand in where the academy has nobody
+ * ready (or no academy at all). Runs on the first day of the new year,
  * before promotions and relegations, so each academy produces players for the division it played in.
  */
 export function developPlayers(state: GameState): { state: GameState; events: (PlayerRetired | PlayerWantsToRetire | YouthPromoted)[] } {
@@ -300,9 +303,7 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
     const rate = wageRate(tierOf(club));
     const squadNow = staying.flatMap((p) => players[p.id] ?? []);
     groupsToFill(staying, retiredGroups).forEach((group, i) => {
-      // A squad under 18 takes its academy's best kid at the position; one with enough players only a kid it would keep.
-      const kid = readyProspect(academies.get(club.id) ?? [], group, taken);
-      const prospect = kid && (staying.length + i < MIN_SQUAD || isWorthPromoting(state, kid, squadNow)) ? kid : null;
+      const prospect = readyProspect(academies.get(club.id) ?? [], group, taken, (kid) => isWorthPromoting(state, kid, squadNow));
       if (prospect) taken.add(prospect.id);
       const youth = prospect
         ? professionalOf(prospect, club.id, 0, date, random.next)

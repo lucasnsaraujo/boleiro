@@ -169,6 +169,27 @@ describe("squads the market left short", () => {
     expect(squadOf(COACH).some((p) => p.id === cheap.id || p.id === great.id)).toBe(false);
   });
 
+  it("tops a squad up with a teenager at its level rather than an academy kid far below its squad", () => {
+    const clubId = smallestNational?.id ?? "";
+    // One keeper, five defenders, two midfielders and four forwards: midfield is the thinnest and fills first.
+    const shape = { GK: 1, DEF: 5, MID: 2, ATT: 4 } as const;
+    const squad = Object.values(start.players).filter((p) => p.clubId === clubId).sort((a, b) => b.strength - a.strength);
+    const kept12 = new Set((["GK", "DEF", "MID", "ATT"] as const).flatMap((group) => squad.filter((p) => p.group === group).slice(0, shape[group]).map((p) => p.id)));
+    const [model] = prospects;
+    if (!model || !start.youth || kept12.size < 12) throw new Error("no squad to thin");
+    const far = { ...model, id: "k-far", clubId, group: "MID" as const, age: 18, strength: 5, potential: 30 };
+    const short: GameState = {
+      ...start,
+      players: Object.fromEntries(Object.entries(start.players).filter(([id, p]) => p.clubId !== clubId || kept12.has(id))),
+      market: { ...start.market, freeAgents: {} },
+      youth: { ...start.youth, prospects: { [far.id]: far } },
+    };
+    const filled = fillShortSquads(short).state;
+    expect(Object.values(filled.players).filter((p) => p.clubId === clubId)).toHaveLength(18);
+    expect(filled.players[far.id]).toBeUndefined();
+    expect(filled.youth?.prospects[far.id]).toEqual(far);
+  });
+
   it("invents teenagers for a club without an academy, and leaves full squads alone", () => {
     expect(squadOf(stateOnly.id).filter((p) => !start.players[p.id]).every((p) => p.potential === undefined && p.wage > 0)).toBe(true);
     expect(fillShortSquads(start).state).toBe(start);
