@@ -98,10 +98,10 @@ test("a page is titled after the season's months on it, and days of another seas
 });
 
 test("a page lists the coach's games by month, each on its day's square", () => {
-  const start = pageStartOf("2026-06-01");
+  const start = pageStartOf("2026-08-03");
   const page = calendarPage(game, start);
   const end = page.days.at(-1)?.date ?? "";
-  expect(page.months.map((m) => m.month)).toEqual([6, 7]);
+  expect(page.months.map((m) => m.month)).toEqual([8, 9]);
   const shown = page.months.flatMap((m) => m.matches);
   expect(shown.map((m) => m.fixtureId)).toEqual(own.filter((f) => f.date >= start && f.date <= end).map((f) => f.id));
   expect(shown.length).toBeGreaterThan(0);

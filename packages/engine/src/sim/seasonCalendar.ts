@@ -180,10 +180,10 @@ const copaDoBrasilRounds = (season: number, formats: Formats) =>
 export const copaDoBrasilGameScales = (formats: Formats): number[] | undefined =>
   gameScales(COPA_DO_BRASIL_ROUNDS.map((round) => round.dates.length), COPA_DO_BRASIL_ROUNDS.map(({ name, dates }) => knockoutDates(name, dates, formats).length));
 
-// Owner's call still open: whether Série A pauses for the World Cup in a game with national football. The CBF's
-// 2026 table rests it from 1 Jun to 21 Jul around the 11 Jun–19 Jul World Cup (Portal Tela, below); the game
-// plays through it, the called-up missing those rounds.
-const SERIE_A_PAUSES_FOR_WORLD_CUP = false;
+// In a game with national football Série A pauses for the World Cup, as the CBF's 2026 table rests it from 1 Jun
+// to 21 Jul around the 11 Jun–19 Jul World Cup (Portal Tela, below); its 38 rounds still fit every World Cup year,
+// on a Thursday or next to a continental day where they must.
+const SERIE_A_PAUSES_FOR_WORLD_CUP = true;
 const WORLD_CUP_PAUSE = { daysBefore: 10, daysAfter: 2 };
 
 /** Whether Série A rests on a day in a game with national football: in a FIFA window or, when it pauses for it, around the season's World Cup. */
@@ -201,7 +201,7 @@ function isSerieAResting(season: number, pausesForWorldCup: boolean): (date: Iso
  * (`restsInFifaWindows`) Série A rests in the FIFA windows on the real calendar, as the CBF's 2026 table does
  * (Portal Tela, https://www.portaltela.com/esporte/futebol/2026/01/27/paralisacoes-do-brasileirao-2026-coincidem-com-a-copa-do-mundo-confira/);
  * guess: Séries B to D and the unified grid play through them, without their called-up players. With
- * `pausesForWorldCup` Série A also rests through a World Cup, as that table does.
+ * `pausesForWorldCup` (the default) Série A also rests through a World Cup, as that table does.
  */
 export function seasonCalendar(
   season: number,

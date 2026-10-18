@@ -73,6 +73,7 @@ const MODES: Record<string, Formats> = {
   "Personalizar, real calendar and short cups": { calendar: "real", leagueLegs: 1, continentalGroups: "groups-3", knockouts: "single" },
   "Personalizar, unified calendar and full cups": { calendar: "unified", leagueLegs: 2, continentalGroups: "league-phase", knockouts: "two-legs" },
 };
+const isPausedForWorldCup = (season: number, hasNationalFootball: boolean, formats: Formats) => hasNationalFootball && formats.calendar === "real" && worldCupOf(season) !== null;
 const isAscendingApart = (dates: readonly IsoDate[]) => dates.every((date, i) => i === 0 || days(dates[i - 1] ?? "", date) >= 3);
 
 describe("every season's calendar, in every mode", () => {
@@ -92,7 +93,12 @@ describe("every season's calendar, in every mode", () => {
               expect(isAscendingApart(dates), `${league} ${season}`).toBe(true);
               expect(dates.filter((date) => reserved.some((other) => days(date, other) < 3)), `${league} ${season}`).toEqual([]);
             }
-            for (const dates of [calendar.leagueDates.A, calendar.leagueDates.B]) expect(dates.filter((date) => continental.some((other) => days(date, other) < 2)), `${season}`).toEqual([]);
+            const nextToContinental = (dates: readonly IsoDate[]) => dates.filter((date) => continental.some((other) => days(date, other) < 2));
+            expect(nextToContinental(calendar.leagueDates.B), `${season}`).toEqual([]);
+            // A season with the World Cup pause can't hold 38 rounds clear of the continental days around it (2026
+            // with the world holds 35 at most), so it sits up to three rounds next to one, as CBF does.
+            if (isPausedForWorldCup(season, hasNationalFootball, formats)) expect(nextToContinental(calendar.leagueDates.A).length, `${season}`).toBeLessThanOrEqual(3);
+            else expect(nextToContinental(calendar.leagueDates.A), `${season}`).toEqual([]);
             if (hasNationalFootball && formats.calendar === "real") expect(calendar.leagueDates.A.filter(isInFifaWindow), `${season}`).toEqual([]);
           }
     });
@@ -131,6 +137,15 @@ describe("a new game in a later season", () => {
   const guests = loadGuests(2026);
   const nationalFootball = loadNationalFootball();
   const leaguesOf = (game: GameState) => Object.values(game.competitions).flatMap((c): LeagueCompetition[] => (c.kind === "league" ? [c] : []));
+
+  it("with national football, rests Série A through the World Cup in 2026 and 2030 and still plays its 38 rounds", () => {
+    for (const season of [2026, 2030]) {
+      const game = loadNewGame(1, { coachClubId: "flamengo-rj", world, guests, nationalFootball, season });
+      const worldCup = worldCupOf(season);
+      expect(game.calendar.leagueDates.A).toHaveLength(38);
+      expect(game.calendar.leagueDates.A.filter((date) => worldCup && date >= worldCup.from && date <= worldCup.until), `${season}`).toEqual([]);
+    }
+  });
 
   for (const seed of [3, 7]) {
     it(`with the world and national football, places all 38 Série A rounds off the FIFA windows in 2033, a Club World Cup season (seed ${seed})`, () => {

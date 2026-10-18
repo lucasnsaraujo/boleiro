@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { addDays } from "@boleiro/engine/sim/dates";
+import { addDays, daysBetween } from "@boleiro/engine/sim/dates";
 import { freeFriendlyDates, friendlyAnswer } from "@boleiro/engine/sim/friendlies/friendlies";
 import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import type { BidOutcome } from "@boleiro/engine/sim/transfers/answerBid";
@@ -270,7 +270,8 @@ function playMoney() {
   const date = freeFriendlyDates(booking).find((d) => friendlyAnswer(booking, opponentId, d, true).booked);
   if (!date) throw new Error("Flamengo has a free date for a friendly");
   const friendly = apply({ type: "bookFriendly", opponentId, date, isHome: true });
-  const days = apply({ type: "advance", days: Array.from({ length: 70 }, () => ({})) });
+  // To the day after the friendly, so the inbox's last 40 lines still hold its report.
+  const days = apply({ type: "advance", days: Array.from({ length: daysBetween(booking.date, date) + 2 }, () => ({})) });
   const played = days.events.find((event) => event.type === "friendlyPlayed");
   const cashBeforeRepay = session.read(["finances"]).finances[CLUB]?.cash ?? 0;
   apply({ type: "repayBankLoan" });
