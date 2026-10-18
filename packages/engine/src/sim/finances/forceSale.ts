@@ -2,6 +2,7 @@ import { pickLineup } from "../../engine/match.js";
 import type { GameState, Tier } from "../gameState.js";
 import type { MarketView } from "../transfers/marketView.js";
 import { movePlayer } from "../transfers/movePlayer.js";
+import { REPLACEMENT_BAND } from "../transfers/squadNeeds.js";
 import { valuePlayer } from "../transfers/valuePlayer.js";
 import { projectedRevenue } from "./setBoardBudget.js";
 import { tierOf } from "./tierOf.js";
@@ -17,7 +18,9 @@ const TIER_RANK: Record<Tier, number> = { A: 0, B: 1, C: 2, D: 3, state: 4 };
 
 /**
  * The board sells the club's best-paid player it owns outside the automatic best eleven to a richer
- * AI club that can pay, or abroad when none can. Returns null when the squad is too thin to sell.
+ * AI club that can pay and would sign him as a replacement (no further below its best eleven's level
+ * than its replacements, REPLACEMENT_BAND), or abroad when none can. Returns null when the squad is
+ * too thin to sell.
  * `state` must be a draft (openDraft) and `view` built from it; the sale is recorded in both.
  */
 export function forceSale(state: GameState, clubId: string, random: () => number, view: MarketView): { state: GameState; sale: ForcedSale } | null {
@@ -37,7 +40,8 @@ export function forceSale(state: GameState, clubId: string, random: () => number
       const finance = state.finances[club.id];
       if (!finance || club.id === clubId || isHumanClub(state, club.id) || finance.cash < fee) return false;
       const gap = TIER_RANK[tierOf(club)] - TIER_RANK[tierOf(seller)];
-      return gap < 0 || (gap === 0 && projectedRevenue(finance) > sellerRevenue);
+      const isRicher = gap < 0 || (gap === 0 && projectedRevenue(finance) > sellerRevenue);
+      return isRicher && player.strength >= view.needs(club.id).level - REPLACEMENT_BAND.below;
     })
     .map((club) => club.id)
     .sort();
