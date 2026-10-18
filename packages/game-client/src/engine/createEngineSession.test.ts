@@ -15,7 +15,7 @@ import { createEngineSession, type CommandResults, type CommandType, type GameCo
 const CLUB = "flamengo-rj";
 // Botafogo's 2026 kit, before the betting ban, had nothing on its front, back or shorts (Wikipedia, data/sponsors.csv).
 const SPONSORS_CLUB = "botafogo-rj";
-const SEED = 1;
+const SEED = 3;
 // The season test needs a coach the board keeps all year, and the events test an event that asks him within it: seed 14 gives both on today's engine.
 const SEASON_SEED = 3;
 // Enough steps for a season of play-ons and match days; a stuck loop fails instead of hanging.

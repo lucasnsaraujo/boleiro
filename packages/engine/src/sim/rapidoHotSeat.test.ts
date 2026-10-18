@@ -12,7 +12,7 @@ const SECOND = "goias-go";
 /** A Rápido hot-seat season of a Série A and a Série B coach, played to its last day. */
 function playSeason(): { last: GameState; leagueDays: Map<string, string[]> } {
   const world = [...loadSouthAmerica(2026), ...loadEurope(2026)];
-  let state = loadNewGame(14, { coachClubId: FIRST, world, formats: RAPIDO, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }] } });
+  let state = loadNewGame(1, { coachClubId: FIRST, world, formats: RAPIDO, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }] } });
   const leagueDays = new Map<string, string[]>([[FIRST, []], [SECOND, []]]);
   for (;;) {
     const day = advanceDay(state, {});
