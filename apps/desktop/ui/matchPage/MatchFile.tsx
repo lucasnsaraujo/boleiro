@@ -137,7 +137,7 @@ function MatchPanel({ page, view, isReturning, isLeaving, onFull, onClose, onSub
   const [egg] = page.eggs;
   const title = useDialogFocus<HTMLSpanElement>(true);
   return (
-    <aside className={`mf-panel${isReturning ? " entry-return" : ""}${isLeaving ? " leaving" : ""}`} role="dialog" aria-label="Ficha do jogo" style={clubColours(page)}>
+    <aside className={`mf-panel${isReturning ? " entry-return" : ""}${isLeaving ? " leaving" : ""}`} role="dialog" aria-modal="false" aria-label="Ficha do jogo" style={clubColours(page)}>
       <header className="mf-ph">
         <span ref={title} tabIndex={-1} className="lbl">
           Ficha do jogo · {page.label}

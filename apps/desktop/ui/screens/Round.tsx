@@ -5,6 +5,7 @@ import type { Club } from "@boleiro/data/clubs";
 import { EXTRA_HALF_TIME, FULL_TIME, HALF_TIME, matchEndOf } from "@boleiro/engine/sim/live/matchTimeline";
 import { useCommands } from "../app/AppCommands.js";
 import { useServices } from "../app/ServicesContext.js";
+import { isDialogOpen } from "../app/isDialogOpen.js";
 import { useDialogFocus } from "../app/useDialogFocus.js";
 import { plateColours } from "../clubs/clubCatalog.js";
 import { clubFaceOf } from "../clubs/clubCatalog.js";
@@ -677,10 +678,11 @@ export function Round() {
   useEffect(() => () => sound.setCrowd(null), [sound]);
 
   // Each human coach's own keys from his match plan: his tactics key changes his side without stopping the clock, his time-out key stops it on his match.
+  // Like the game's keys, they wait while a dialog is up.
   useEffect(() => {
     if (!isDrivable || !round) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || event.repeat || event.metaKey || event.ctrlKey || event.altKey || isTyping(event.target)) return;
+      if (event.defaultPrevented || event.repeat || event.metaKey || event.ctrlKey || event.altKey || isTyping(event.target) || isDialogOpen()) return;
       const press = planKeyOf(coachedSides(round, hotSeat), event.key);
       if (!press) return;
       event.preventDefault();

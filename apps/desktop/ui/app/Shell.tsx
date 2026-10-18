@@ -13,6 +13,7 @@ import { musicFor, useSound } from "../sound/SoundProvider.js";
 import { useTheme } from "../theme/ThemeProvider.js";
 import { useCommands, useIsCommandAnswered, useRunCommand } from "./AppCommands.js";
 import { GameClockContext } from "./gameClock.js";
+import { isDialogOpen } from "./isDialogOpen.js";
 import { installNativeMenu, MENU } from "./nativeMenu.js";
 import { hasMica, platformOf, windowChrome, windowsVersion } from "./platform.js";
 import { screenDirection } from "./screenDirection.js";
@@ -35,11 +36,6 @@ const CHROME = windowChrome(PLATFORM, isTauri(), import.meta.env.DEV ? location.
 const TOAST_MS = 2600;
 // The menu bar belongs to the app, not to a screen: it is built once, the first time the shell mounts.
 let hasNativeMenu = false;
-
-/** Whether a dialog (a confirm, a sheet, the newspaper) or a select's list is up: the game's shortcuts wait until it closes, Escape closes it. */
-function isDialogOpen(): boolean {
-  return document.querySelector('[role="dialog"], [role="alertdialog"], [role="combobox"][aria-expanded="true"]') !== null;
-}
 
 // On a Mac the menu's key equivalents take the F-keys and Command-S before the page sees them; clicked, entries without one still run under a dialog.
 const MENU_SHORTCUT_IDS: ReadonlySet<CommandId> = new Set(MENU.flatMap(({ entries }) => entries.flatMap((entry) => ("command" in entry && entry.accelerator ? [entry.command] : []))));
