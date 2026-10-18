@@ -10,6 +10,8 @@ import { openNextStage } from "../openNextStage.js";
 import { leaguesAbroad } from "../startSeason.js";
 import { fileFullTierSeason, seasonMoves, type FullTierDays } from "./resultOnlyWorld.js";
 import type { Country } from "./world.js";
+import type { TopScorer } from "../history/history.js";
+import { topScorerOf } from "../history/topScorerOf.js";
 
 /** Whether a full-tier country turns its season on its own day, apart from Brazil's 1 January: a season crossing the new year on a real calendar. */
 export const turnsOnItsOwn = (country: Pick<Country, "structure" | "isFullTier">): boolean => country.isFullTier === true && country.structure.rollover !== undefined;
@@ -17,6 +19,40 @@ export const turnsOnItsOwn = (country: Pick<Country, "structure" | "isFullTier">
 /** Whether every stage of the competition is drawn and every one of its `fixtures` played. */
 export const isFinished = (competition: Competition, fixtures: readonly Fixture[]): boolean =>
   competition.stages.length >= competition.stageDates.length && fixtures.every((f) => f.competitionId !== competition.id || f.result !== null);
+
+const UEFA_KEYS = ["champions-league", "europa-league", "uefa-super-cup"];
+const UEFA_TURN = "07-01";
+
+/** A country's competition keys: one per level of its pyramid ("gb-eng-1") and its cup's ("gb-eng-cup"). */
+const keysOf = (id: string, country: Pick<Country, "structure">) => [...country.structure.levels.map((_, level) => `${id}-${level + 1}`), `${id}-cup`];
+
+/**
+ * The competitions whose seasons run past Brazil's turn of the year, by key: the leagues and cup of each
+ * full-tier country turning on its own, and on a real calendar UEFA's cups. Their scorers' tallies carry
+ * over the new year (closeSeasonHistory) and are filed at their own turn.
+ */
+export function keysTurningOnTheirOwn(state: Pick<GameState, "world" | "formats">): Set<string> {
+  const keys = Object.entries(state.world ?? {}).flatMap(([id, country]) => (turnsOnItsOwn(country) ? keysOf(id, country) : []));
+  return new Set(formatsOf(state).calendar === "unified" ? keys : [...keys, ...UEFA_KEYS]);
+}
+
+/** The game with the scorers' tallies of `keys` filed as the top scorers of the season last filed, which they were played in, and started afresh. */
+function fileScorers(state: GameState, keys: readonly string[]): GameState {
+  const { history } = state;
+  const goals = { ...history.current.goals };
+  const filed: Record<string, TopScorer> = {};
+  for (const key of keys) {
+    const tally = goals[key];
+    if (!tally) continue;
+    const top = topScorerOf(tally, state);
+    if (top) filed[key] = top;
+    Reflect.deleteProperty(goals, key);
+  }
+  const last = history.seasons.at(-1);
+  if (Object.keys(goals).length === Object.keys(history.current.goals).length) return state;
+  const seasons = last ? [...history.seasons.slice(0, -1), { ...last, topScorers: { ...last.topScorers, ...filed } }] : history.seasons;
+  return { ...state, history: { ...history, seasons, current: { ...history.current, goals } } };
+}
 
 /** The days a full-tier country's cup keeps off on a real calendar: its leagues' of `season` and UEFA's cups'. */
 export function fullTierDaysOf(country: string, competitions: Record<string, Competition>, season: number, formats: Formats): FullTierDays {
@@ -43,7 +79,7 @@ function turnCountry(before: GameState, id: string, country: Country, season: nu
   if (!finished.length || !finished.every((league) => isFinished(league, fixturesOf(league)))) return { state: before, events: [] };
   // Its coaches are reviewed on the season just played, before the boards set the next one's targets.
   const reviewed = reviewCoachesAbroad(before, id, finished.map((league) => LEAGUE_FORMATS[league.format].outcome(league, fixturesOf(league))));
-  const state = reviewed.state;
+  const state = fileScorers(reviewed.state, keysOf(id, country));
   const tables = finished.map((league) => finalOrderOf(league, fixturesOf(league)));
   const { moves } = seasonMoves(country.structure, tables);
   const clubs: Record<string, Club> = { ...state.clubs };
@@ -74,7 +110,8 @@ function turnCountry(before: GameState, id: string, country: Country, season: nu
  * the same game on any other day.
  */
 export function turnSeasonsAbroad(state: GameState, date: IsoDate): { state: GameState; events: CoachSeasonEvent[] } {
-  let next = state;
+  // UEFA's season turns on a real calendar's 1 July, its scorers filed with the season they were played in.
+  let next = date.slice(5) === UEFA_TURN && formatsOf(state).calendar !== "unified" ? fileScorers(state, UEFA_KEYS) : state;
   const events: CoachSeasonEvent[] = [];
   for (const [id, country] of Object.entries(state.world ?? {})) {
     if (!turnsOnItsOwn(country) || country.structure.rollover !== date.slice(5)) continue;

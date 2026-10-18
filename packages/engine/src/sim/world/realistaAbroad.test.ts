@@ -70,6 +70,13 @@ describe("a Realista career at an English club", () => {
       for (const fixture of played) expect(kept.get(fixture.id)).toEqual(fixture);
     });
 
+    it("keeps the Premier League's goals of the autumn in its scorers' tally", () => {
+      const total = (state: GameState) => Object.values(state.history.current.goals["gb-eng-1"] ?? {}).reduce((sum, goals) => sum + goals, 0);
+      expect(total(december)).toBeGreaterThan(100);
+      expect(total(january)).toBe(total(december));
+      expect(january.history.seasons.at(-1)?.topScorers["gb-eng-1"]).toBeUndefined();
+    });
+
     it("saves and loads the two seasons side by side", () => {
       expect(loadGame(saveGame(january))).toEqual(january);
     });
@@ -117,6 +124,13 @@ describe("a Realista career at an English club", () => {
         expect(july.history.coach.seasons.filter((s) => s.clubId === ARSENAL)).toEqual([
           { season: 2026, clubId: ARSENAL, position: premierTable.indexOf(ARSENAL) + 1, targetPosition: june.boards[ARSENAL]?.targetPosition },
         ]);
+      });
+
+      it("files 2026/27's top scorer with the 2026 season and starts 2027/28's tally afresh", () => {
+        const tally = june.history.current.goals["gb-eng-1"] ?? {};
+        const most = Math.max(...Object.values(tally));
+        expect(july.history.seasons.find((record) => record.season === 2026)?.topScorers["gb-eng-1"]?.goals).toBe(most);
+        expect(july.history.current.goals["gb-eng-1"]).toBeUndefined();
       });
 
       it("sends the clubs its tables qualified to UEFA's next season", () => {
