@@ -10,7 +10,8 @@ import { startEngineWorker } from "@boleiro/game-client/engine/startEngineWorker
 import type { CurrentGameRef } from "@boleiro/game-client/saves/currentGame";
 import { slotStore } from "@boleiro/game-client/saves/slotStore";
 import { withAutosave } from "@boleiro/game-client/saves/withAutosave";
-import { createSoundEngine } from "./sound/soundEngine.js";
+import type { Cue } from "./sound/soundCatalog.js";
+import { createSoundEngine, withCueLog } from "./sound/soundEngine.js";
 import { SoundProvider } from "./sound/SoundProvider.js";
 import { ThemeProvider } from "./theme/ThemeProvider.js";
 
@@ -18,6 +19,8 @@ declare global {
   interface Window {
     /** Only in e2e builds (VITE_E2E=1): lets a test play days on without going through the screens. */
     boleiroEngine?: EngineClient;
+    /** Only in e2e builds: every cue the game asked the sound engine to play, in order, so a test can hear a goal without speakers. */
+    boleiroCues?: Cue[];
   }
 }
 
@@ -34,10 +37,11 @@ const services: Services = {
 
 if (import.meta.env.VITE_E2E === "1") window.boleiroEngine = services.engine;
 
-const sound = createSoundEngine({
+const speakers = createSoundEngine({
   createContext: () => new AudioContext(),
   fetchBytes: (url) => fetch(url).then((response) => response.arrayBuffer()),
 });
+const sound = import.meta.env.VITE_E2E === "1" ? withCueLog(speakers, (window.boleiroCues = [])) : speakers;
 
 createRoot(root).render(
   <StrictMode>

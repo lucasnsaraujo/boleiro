@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { FakeAudioContext, fetchUrlBytes } from "./fakeAudioContext.js";
 import { CROWD_BED, MUSIC, SAMPLES } from "./soundCatalog.js";
 import { createSoundEngine } from "./soundEngine.js";
+import { stingerBeat } from "./stingerBeat.js";
 import { DEFAULT_SOUND, type SoundSettings } from "./soundSettings.js";
 
 const ROAR_SECONDS = 9;
@@ -160,4 +161,144 @@ test("no more than three cues ring at once: a more important one cuts the least 
   expect(ctx().playing(0.4)).toHaveLength(3);
   engine.play("otherGoal");
   expect(ctx().playing(0.4)).toHaveLength(3);
+});
+
+test("the crowd has its own volume, and the interface at zero silences the clicks while the effects still sound", async () => {
+  const { engine, ctx } = setUp({ music: 1, sfx: 1, crowd: 1, ui: 1, isMuted: false });
+  engine.setCrowd(1);
+  engine.unlock();
+  await settle();
+  ctx().currentTime = 2;
+  const full = ctx().loudness(CROWD_BED);
+  engine.apply({ music: 1, sfx: 1, crowd: 0.5, ui: 0, isMuted: false });
+  ctx().currentTime = 3;
+  expect(ctx().loudness(CROWD_BED)).toBeCloseTo(full / 4);
+  engine.play("click");
+  engine.play("confirm");
+  expect(ctx().notes()).toBe(0);
+  engine.play("kickOff");
+  expect(ctx().playing()).toContain(SAMPLES.whistleShort);
+});
+
+test("muted, one-off sounds don't start at all, while the music and the crowd keep their place for the unmute", async () => {
+  const { engine, ctx } = setUp({ ...DEFAULT_SOUND, isMuted: true });
+  engine.unlock();
+  engine.playMusic("hub");
+  engine.setCrowd(0.6);
+  await settle();
+  ctx().currentTime = 1;
+  engine.play("coachGoal");
+  engine.play("click");
+  expect(ctx().started()).toEqual([MUSIC.hub, CROWD_BED]);
+  expect(ctx().notes()).toBe(0);
+  expect(ctx().loudness(MUSIC.hub)).toBe(0);
+  engine.apply(DEFAULT_SOUND);
+  ctx().currentTime = 2;
+  expect(ctx().loudness(MUSIC.hub)).toBeGreaterThan(0);
+  expect(ctx().loudness(CROWD_BED)).toBeGreaterThan(0);
+});
+
+test("any effect over the music pushes it down a little while it rings; a goal pushes it further", async () => {
+  const { engine, ctx } = setUp();
+  engine.unlock();
+  engine.playMusic("hub");
+  await settle();
+  ctx().currentTime = 1;
+  const music = ctx().loudness(MUSIC.hub);
+  engine.play("card");
+  const underWhistle = ctx().loudness(MUSIC.hub, 1.1);
+  expect(underWhistle).toBeLessThan(music);
+  expect(underWhistle).toBeGreaterThan(music / 2);
+  expect(ctx().loudness(MUSIC.hub, 4)).toBeCloseTo(music);
+  ctx().currentTime = 5;
+  engine.play("coachGoal");
+  expect(ctx().loudness(MUSIC.hub, 5.2)).toBeLessThan(underWhistle / 2);
+});
+
+test("the crowd is muffled when calm and opens up as it gets louder", async () => {
+  const { engine, ctx } = setUp();
+  engine.setCrowd(0.3);
+  engine.unlock();
+  await settle();
+  ctx().currentTime = 1;
+  const calm = ctx().cutoff(CROWD_BED, 1);
+  engine.setCrowd(1);
+  ctx().currentTime = 2;
+  expect(ctx().cutoff(CROWD_BED, 2)).toBeGreaterThan((calm ?? Infinity) * 2);
+});
+
+test("the goal stinger is synthesised brass and drums, and lands on its second hit", async () => {
+  const { engine, ctx } = setUp();
+  engine.unlock();
+  await settle();
+  engine.play("goalStinger");
+  expect(ctx().notes()).toBeGreaterThan(8);
+  expect(ctx().started()).toEqual([]);
+  expect(stingerBeat("goalStinger")).toBe(160);
+});
+
+test("away, the coach's goal comes from the small away end and the goal against from the home crowd", async () => {
+  const { engine, ctx } = setUp();
+  engine.unlock();
+  await settle();
+  engine.play("coachGoal");
+  const home = ctx().loudness(SAMPLES.goalRoar, 0.5);
+  ctx().currentTime = 20;
+  engine.play("coachGoalAway");
+  expect(ctx().loudness(SAMPLES.goalRoar, 20.5)).toBeLessThan(home);
+  ctx().currentTime = 40;
+  engine.play("conceded");
+  ctx().currentTime = 60;
+  engine.play("concededAway");
+  expect(ctx().playing(40.5)).toContain(SAMPLES.oehh);
+  expect(ctx().playing(60.5)).toContain(SAMPLES.goalDistant);
+});
+
+test("a VAR check sounds a sting, and its decision a whistle and a thud", async () => {
+  const { engine, ctx } = setUp();
+  engine.unlock();
+  await settle();
+  engine.play("varCheck");
+  expect(ctx().notes()).toBeGreaterThan(2);
+  expect(ctx().started()).toEqual([]);
+  ctx().currentTime = 5;
+  const before = ctx().notes();
+  engine.play("varDecision");
+  expect(ctx().notes()).toBeGreaterThan(before);
+  expect(ctx().playing()).toContain(SAMPLES.whistleShort);
+});
+
+test("a relieved cheer is the crowd's cheer cut short, faded out", async () => {
+  const { engine, ctx } = setUp();
+  engine.unlock();
+  await settle();
+  engine.play("relief");
+  expect(ctx().playing(0.5)).toEqual([SAMPLES.goalDistant]);
+  expect(ctx().playing(3.5)).toEqual([]);
+  engine.play("groan");
+  expect(ctx().playing()).toContain(SAMPLES.oehh);
+});
+
+test("the crowd's own volume covers its roars, boos and groans too; at zero they go quiet while the whistles still sound", async () => {
+  const { engine, ctx } = setUp({ music: 1, sfx: 1, crowd: 0, isMuted: false });
+  engine.unlock();
+  await settle();
+  engine.play("coachGoal");
+  engine.play("conceded");
+  engine.play("groan");
+  engine.play("kickOff");
+  expect(ctx().started()).toEqual([SAMPLES.whistleShort]);
+});
+
+test("everything reaches the speakers through one limiter, so a roar, the stinger and the crowd together can't clip", async () => {
+  const { engine, ctx } = setUp();
+  engine.setCrowd(1);
+  engine.playMusic("hub");
+  engine.unlock();
+  await settle();
+  engine.play("comeback");
+  engine.play("goalStinger");
+  engine.play("click");
+  expect(ctx().playing().length).toBeGreaterThan(2);
+  expect(ctx().sources.every((source) => ctx().reachesSpeakersThroughLimiter(source))).toBe(true);
 });

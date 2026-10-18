@@ -309,3 +309,28 @@
     width: 220px;
   }
 }
+
+/* Motion: the settings page slides in and the shortcuts sticker is laid down beside it, as on Tabelas. */
+@media (prefers-reduced-motion: no-preference) {
+  .options-page {
+    animation: options-page var(--t-slow) var(--e-out) both;
+  }
+
+  .options-keys {
+    animation: options-lay var(--t-slow) var(--e-out) 60ms both;
+  }
+}
+
+@keyframes options-page {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+
+@keyframes options-lay {
+  from {
+    opacity: 0;
+    transform: translateY(10px) rotate(-1deg);
+  }
+}
