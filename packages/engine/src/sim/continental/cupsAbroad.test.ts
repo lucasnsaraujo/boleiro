@@ -7,7 +7,9 @@ import { loadGame, saveGame } from "../saveGame.js";
 import { cupMatches } from "../world/resultOnlyCup.js";
 import { loadEurope } from "../world/loadEurope.js";
 import { loadSouthAmerica } from "../world/loadSouthAmerica.js";
-import { knockoutTie, leaguePhaseMatches } from "./uefaCups.js";
+import { knockoutTie, leaguePhaseMatches, playEuropeDay } from "./uefaCups.js";
+import { playedKey } from "./cupsAbroad.js";
+import { playWorldDay } from "../world/resultOnlyWorld.js";
 
 const ARSENAL = "tm-11";
 const world = [...loadSouthAmerica(2026), ...loadEurope(2026)];
@@ -118,5 +120,56 @@ describe("a cup abroad decided in a country of the full tier", () => {
     const { state, winnerId } = finalDay();
     expect(state.history.current.champions["gb-eng-cup"]).toBe(winnerId);
     expect(state.history.coach.trophies.some((t) => t.competition === "gb-eng-cup")).toBe(winnerId === ARSENAL);
+  });
+});
+
+describe("a human club's knockout match written back to its result-only cup", () => {
+  const start = loadNewGame(5, { coachClubId: ARSENAL, world, formats: RAPIDO });
+  /** The game on the first day a Champions League knockout round and an FA Cup round with two known clubs are both still to play. */
+  function onDay(isDue: (state: GameState) => boolean): GameState {
+    let state = start;
+    for (let day = 0; day < 365 && !isDue(state); day++) state = advanceDay(state, {}).state;
+    return state;
+  }
+
+  it("takes a UEFA tie's score, extra time and shootout winner from the full tier", () => {
+    const state = onDay((s) => {
+      const round = s.europe?.cups.find((cup) => cup.cup === "champions-league")?.knockout[0];
+      return round !== undefined && round.dates.length === 1 && round.dates[0] === s.date;
+    });
+    const round = state.europe?.cups.find((cup) => cup.cup === "champions-league")?.knockout[0];
+    if (!round || !state.europe || !state.world) throw new Error("no knockout round on its day");
+    const [first, second] = [knockoutTie(round, 0).legs[0], knockoutTie(round, 1).legs[0]];
+    if (!first || !second) throw new Error("no legs");
+    const played = new Map([
+      [playedKey(first.homeId, first.awayId, state.date), { homeGoals: 1, awayGoals: 1, isAfterExtraTime: true as const, penaltyWinnerId: first.awayId }],
+      [playedKey(second.homeId, second.awayId, state.date), { homeGoals: 2, awayGoals: 1, isAfterExtraTime: true as const }],
+    ]);
+    const europe = playEuropeDay(state.europe, state.world, state.date, RAPIDO, played);
+    const after = europe.cups.find((cup) => cup.cup === "champions-league")?.knockout[0];
+    if (!after) throw new Error("the round is gone");
+    expect(knockoutTie(after, 0)).toMatchObject({ winnerId: first.awayId, onPenalties: true, isAfterExtraTime: true });
+    expect(knockoutTie(after, 0).legs[0]?.result).toEqual({ homeGoals: 1, awayGoals: 1 });
+    expect(knockoutTie(after, 1)).toMatchObject({ winnerId: second.homeId, onPenalties: false, isAfterExtraTime: true });
+  });
+
+  it("takes a national cup match's score, extra time and shootout winner from the full tier", () => {
+    const today = (s: GameState) => {
+      const cup = s.world?.["gb-eng"]?.cup;
+      const round = cup?.dates.indexOf(s.date) ?? -1;
+      return cup && round >= 0 ? cupMatches(cup).filter((m) => m.round === round && m.homeId && m.awayId && !m.result) : [];
+    };
+    const state = onDay((s) => today(s).length >= 2);
+    const [first, second] = today(state);
+    if (!first || !second || !state.world) throw new Error("no cup round on its day");
+    const played = new Map([
+      [playedKey(first.homeId, first.awayId, state.date), { homeGoals: 1, awayGoals: 1, isAfterExtraTime: true as const, penaltyWinnerId: first.awayId }],
+      [playedKey(second.homeId, second.awayId, state.date), { homeGoals: 3, awayGoals: 2, isAfterExtraTime: true as const }],
+    ]);
+    const cup = playWorldDay(state.world, state.date, played)["gb-eng"]?.cup;
+    const matches = cup ? cupMatches(cup) : [];
+    const find = (homeId: string) => matches.find((m) => m.homeId === homeId && m.round === first.round);
+    expect(find(first.homeId)).toMatchObject({ winnerId: first.awayId, result: { homeGoals: 1, awayGoals: 1, isAfterExtraTime: true } });
+    expect(find(second.homeId)).toMatchObject({ winnerId: second.homeId, result: { homeGoals: 3, awayGoals: 2, isAfterExtraTime: true } });
   });
 });
