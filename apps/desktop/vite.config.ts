@@ -1,11 +1,12 @@
 import { gunzipImports } from "@boleiro/data/gunzipImports";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import { isPackImage } from "./ui/packImages.js";
 
 // Tauri loads the dev server on a fixed port and the built files from dist/.
 // The worker builds new games, so it needs the gunzipped data pack as much as the screens do.
 // The favicon lives in public/, outside ui/, and is served at the site root.
-// Pack images stay files: inlined as base64, hundreds of small crests would bloat the main script.
+// Pack images stay files (ui/packImages.ts).
 export default defineConfig({
   root: "ui",
   publicDir: "../public",
@@ -17,6 +18,6 @@ export default defineConfig({
     outDir: "../dist",
     emptyOutDir: true,
     target: "safari16",
-    assetsInlineLimit: (file) => (file.includes("/data/pack/assets/") ? false : undefined),
+    assetsInlineLimit: (file) => (isPackImage(file) ? false : undefined),
   },
 });
