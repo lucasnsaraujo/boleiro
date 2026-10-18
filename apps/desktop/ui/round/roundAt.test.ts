@@ -254,3 +254,22 @@ test("tells a wrong call that stood on the row's ticker", () => {
   };
   expect(roundAt(wronged, 70).find((m) => m.fixtureId === "ours")?.last).toMatchObject({ kind: "wrongCall", text: "Pênalti em Everaldo não marcado" });
 });
+
+test("a red card or injury the coach's match plan answered never stops the round, nor any in a match the house rule leaves to the plans", () => {
+  const answered: LiveRound = { ...round, coach: round.coach && { ...round.coach, answeredByPlan: [{ minute: 50, playerId: "b2" }] } };
+  expect(pauseReason(answered, 50)).toBeNull();
+  const answeredOther: LiveRound = { ...round, coach: round.coach && { ...round.coach, answeredByPlan: [{ minute: 50, playerId: "b9" }] } };
+  expect(pauseReason(answeredOther, 50)).toBe("coachMatch");
+  const planOnly: LiveRound = { ...round, coach: round.coach && { ...round.coach, incidentHandling: "matchPlan" } };
+  expect(pauseReason(planOnly, 50)).toBeNull();
+  expect(pauseReason(planOnly, 45)).toBe("halfTime");
+});
+
+test("a substitution the match plan made is called out on its row as the plan's", () => {
+  const planned: LiveRound = {
+    ...round,
+    matches: round.matches.map((m) => (m.fixtureId === "ours" ? { ...m, events: inMatchOrder([...m.events, { type: "substitution", minute: 50, clubId: "bahia", playerId: "b14", offId: "b2", byPlan: true }]) } : m)),
+  };
+  expect(calloutsBetween(planned, 49, 50)).toEqual([{ fixtureId: "ours", kind: "plan" }]);
+  expect(calloutsBetween(round, 49, 50)).toEqual([]);
+});

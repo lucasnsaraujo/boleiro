@@ -20,8 +20,8 @@ export type Incident = {
 
 
 /**
- * The red cards and injuries the coach's side took at the limits' minute, or null when none or when
- * his match has ended by then, with nothing left to change. The
+ * The red cards and injuries the coach's side took at the limits' minute that his match plan did not
+ * answer, or null when none or when his match has ended by then, with nothing left to change. The
  * assistant answers as the AI coaches do: a hurt player makes way for the strongest of his
  * position on the bench, and a keeper or defender sent off is replaced by one of his own for the
  * weakest forward; a midfielder or forward sent off leaves the side with ten. The man sent off
@@ -30,7 +30,9 @@ export type Incident = {
  */
 export function incidentAt(coach: CoachSide, events: readonly MatchEvent[], clubId: string, limits: LiveLimits): Incident | null {
   if (limits.minute >= matchEndOf(events)) return null;
-  const now = events.filter((e) => e.minute === limits.minute && "clubId" in e && e.clubId === clubId);
+  const answered = coach.answeredByPlan ?? [];
+  const isAnswered = (playerId: string) => answered.some((a) => a.minute === limits.minute && a.playerId === playerId);
+  const now = events.filter((e) => e.minute === limits.minute && "clubId" in e && e.clubId === clubId && !("playerId" in e && isAnswered(e.playerId)));
   const sentOff = now.flatMap((e) => (e.type === "card" && e.card !== "yellow" ? [{ playerId: e.playerId, card: e.card }] : []));
   const hurt = now.flatMap((e) => (e.type === "injury" ? [{ playerId: e.playerId, days: e.days }] : []));
   if (!sentOff.length && !hurt.length) return null;

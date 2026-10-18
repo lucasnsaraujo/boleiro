@@ -261,6 +261,8 @@ export type GameState = {
   waitingCoaches?: WaitingCoach[];
   /** Each coach's market time per transfer window, in seconds; a game without the market clock has none. */
   marketClockSeconds?: number;
+  /** The house rule "manual changes only in finals" (a new-game option): in every other match only the coaches' match plans act. Left out, coaches change their side whenever they like. */
+  manualChangesOnlyInFinals?: true;
   /** The calendar and formats chosen at new game; a game on Realista's, or saved before them, has none. */
   formats?: Formats;
   /** What the event engine remembers: past events, answers waiting, the newspaper's stories; a save from before events has none. */

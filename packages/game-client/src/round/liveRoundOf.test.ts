@@ -177,3 +177,14 @@ test("a round saved before players had a form of the day still rates everyone an
   expect(round.matches.every((m) => m.play === undefined)).toBe(true);
   expect(finishMatchDay(old)).toEqual(finishMatchDay(live));
 });
+
+test("the coach's side carries the red cards and injuries his match plan answered, and none of another club's", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 4, choices: { coachClubId: CLUB } });
+  for (let step = 0; step < MAX_STEPS && session.apply({ type: "playToMatchDay" }).stop !== "matchDay"; step++);
+  const live = startMatchDay(session.read(KEYS), {});
+  if (!live.coachMatch) throw new Error("the coach has a match");
+  const answered = { ...live, coachMatch: { ...live.coachMatch, answeredByPlan: [{ clubId: CLUB, minute: 30, playerId: "p1" }, { clubId: "palmeiras-sp", minute: 40, playerId: "p2" }] } };
+  expect(liveRoundOf(answered, 0).coach?.answeredByPlan).toEqual([{ minute: 30, playerId: "p1" }]);
+  expect(liveRoundOf(live, 0).coach?.answeredByPlan).toEqual([]);
+});

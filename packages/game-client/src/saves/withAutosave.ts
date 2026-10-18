@@ -52,6 +52,7 @@ const OUTCOME_OF: { [T in CommandType]: (command: GameCommand<T>, result: Comman
   hireAssistant: (_command, { refusal }) => (refusal ? "unchanged" : "autosave"),
   fireAssistant: () => "autosave",
   nameCaptain: () => "autosave",
+  setMatchPlan: () => "autosave",
   watchPlayer: () => "autosave",
   saveFilter: () => "autosave",
   deleteFilter: () => "autosave",
