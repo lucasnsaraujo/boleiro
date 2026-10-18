@@ -17,8 +17,8 @@ const TRIES = 15;
 const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
 
 /**
- * One market day of AI clubs below their usual squad size signing free agents near their level at the club's going rate,
- * no fee, within board limits.
+ * One market day of AI clubs below their usual squad size, the shortest first, signing free agents near their level at the
+ * club's going rate, no fee, within board limits.
  */
 export function signFreeAgents(state: GameState, random: () => number): { state: GameState; events: PlayerMoved[] } {
   const events: PlayerMoved[] = [];
@@ -29,7 +29,9 @@ export function signFreeAgents(state: GameState, random: () => number): { state:
   const byGroup = new Map<PositionGroup, SimPlayer[]>(GROUPS.map((g) => [g, []]));
   for (const p of Object.values(state.market.freeAgents)) byGroup.get(p.group)?.push(p);
   for (const list of byGroup.values()) list.sort((a, b) => b.strength - a.strength || a.id.localeCompare(b.id));
-  for (const clubId of Object.keys(state.finances).sort()) {
+  // The clubs furthest below their usual squad size pick first.
+  const shortBy = (clubId: string) => SQUAD_TARGET[view.tier(clubId)] - view.squad(clubId).length;
+  for (const clubId of Object.keys(state.finances).sort((a, b) => shortBy(b) - shortBy(a) || a.localeCompare(b))) {
     if (isHumanClub(state, clubId)) continue;
     const club = next.clubs[clubId];
     const finance = next.finances[clubId];
