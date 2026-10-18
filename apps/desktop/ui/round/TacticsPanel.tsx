@@ -364,7 +364,7 @@ export function TacticsPanel({ context, eleven, tactics, isLive, onChange, onClo
           <span className="n">{isLive ? "Vale a partir do próximo minuto." : "Dá pra mudar também durante o jogo."}</span>
           {onOpenPlan && (
             <button className="btn" onClick={onOpenPlan}>
-              <i className="ph-bold ph-clipboard-text" aria-hidden="true" />
+              <i className="ph-bold ph-chalkboard-teacher" aria-hidden="true" />
               Plano de jogo
             </button>
           )}

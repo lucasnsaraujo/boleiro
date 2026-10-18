@@ -577,7 +577,7 @@ export function Round() {
   const isLockedToPlan = (clubId: string) => (round ? sideOf(round, clubId)?.incidentHandling === "matchPlan" : false);
 
   function noteLocked(coachName?: string) {
-    noteOnBand({ title: "Regra da casa", text: `${coachName ? `${coachName}: ` : ""}mudanças só nas finais. Hoje o plano joga sozinho.`, tone: "lock" });
+    noteOnBand({ title: "Regra da casa", text: `${coachName ? `${coachName}: m` : "M"}udanças só nas finais. Hoje o plano joga sozinho.`, tone: "lock" });
   }
 
   /** A coach opens his own lineup over the round, unless the house rule leaves his match to his plan. */
@@ -835,7 +835,7 @@ export function Round() {
           ) : (
             round.coachClubId && isLockedToPlan(round.coachClubId) ? (
               <button className="btn live-act live-act-locked" onClick={() => noteLocked()}>
-                <i className="ph-bold ph-lock-simple" aria-hidden="true" />
+                <i className="ph-bold ph-gavel" aria-hidden="true" />
                 Só o plano <small>regra da casa</small>
               </button>
             ) : (
@@ -861,7 +861,7 @@ export function Round() {
       {error && !isLineupOpen && !incident && !shootoutAsk && <p className="status error live-error">{error}</p>}
       {planNote && (
         <div key={planNote.count} className={`live-plan-note ${planNote.tone}`} role="status">
-          <i className={planNote.tone === "plan" ? "ph-bold ph-swap" : "ph-bold ph-lock-simple"} aria-hidden="true" />
+          <i className={planNote.tone === "plan" ? "ph-bold ph-swap" : "ph-bold ph-gavel"} aria-hidden="true" />
           <span>
             <b>{planNote.title}</b>
             {planNote.text}

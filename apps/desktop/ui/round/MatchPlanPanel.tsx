@@ -301,7 +301,7 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
 
         {view.isFinalsOnly && (
           <p className="pln-house">
-            <i className="ph-bold ph-lock-simple" aria-hidden="true" />
+            <i className="ph-bold ph-gavel" aria-hidden="true" />
             <span>
               <b>Regra da casa:</b> fora das finais ninguém mexe no time durante o jogo. Só este plano age.
             </span>
@@ -446,7 +446,7 @@ export function MatchPlanPanel({ club, squad, lineup, tactics, view, onSave, onC
           </ol>
           {saved.length < MAX_SAVED_TACTICS && (
             <button className="pln-keep" disabled={isSavedNow} onClick={() => void change({ ...plan, savedTactics: [...saved, { ...tactics, penaltyTakerId: null }] })}>
-              <i className="ph-bold ph-push-pin" aria-hidden="true" />
+              <i className="ph-bold ph-bookmark-simple" aria-hidden="true" />
               {isSavedNow ? "A tática de agora já está salva" : `Guardar a de agora: ${tactics.formation} · ${POSTURE_LABEL[tactics.posture].toLowerCase()}`}
             </button>
           )}

@@ -483,13 +483,13 @@
 }
 
 /*
- * What a coach's plan key did, slapped onto the band under the clock for a moment: his saved tactics
+ * What a coach's plan key did, slapped onto the band under the stadium's name for a moment: his saved tactics
  * on a blue sticker, or the house rule's no on a plain one. It peels off on its own.
  */
 .live-plan-note {
   position: absolute;
-  top: 168px;
-  right: 24px;
+  top: 176px;
+  left: 24px;
   z-index: 6;
   display: flex;
   align-items: center;
@@ -502,7 +502,7 @@
   box-shadow: var(--sh-pop);
   font-size: 12.5px;
   line-height: 1.3;
-  transform-origin: 85% 0;
+  transform-origin: 15% 0;
   animation: plan-note 2600ms var(--e-slap) both;
   pointer-events: none;
 }

@@ -462,7 +462,7 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
             )}
             {matchPlan && (
               <button className="btn sm lineup-tactics" onClick={() => void openPlan()}>
-                <i className="ph-bold ph-clipboard-text" aria-hidden="true" />
+                <i className="ph-bold ph-chalkboard-teacher" aria-hidden="true" />
                 Plano de jogo
                 <small>trocas, teclas, pênaltis</small>
               </button>

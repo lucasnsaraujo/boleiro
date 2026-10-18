@@ -129,7 +129,7 @@ test("under the house rule a coach can't change his side in a match that isn't a
   await expect(page.getByRole("region", { name: "Seu jogo" })).toBeVisible();
   await expect(page.getByRole("button", { name: /^Escalação/ })).toHaveCount(0);
   await page.getByRole("button", { name: /Só o plano/ }).click();
-  await expect(page.getByRole("status").filter({ hasText: "Regra da casa" })).toContainText("mudanças só nas finais");
+  await expect(page.getByRole("status").filter({ hasText: "Regra da casa" })).toContainText(/mudanças só nas finais/i);
   await page.keyboard.press("p");
   await expect(page.getByRole("dialog", { name: "Escalação" })).toHaveCount(0);
 });
