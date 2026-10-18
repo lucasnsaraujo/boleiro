@@ -119,17 +119,17 @@
  * crest then drains of colour under the drone (--career-sacked-beat, from the cue itself).
  */
 .career-sacked-title {
-  animation: career-sacked-slam 220ms cubic-bezier(0.2, 0, 0, 1) backwards;
+  animation: career-sacked-slam 220ms var(--e-out) backwards;
 }
 
 .career-sacked-band {
-  animation: career-sacked-knock 260ms cubic-bezier(0.2, 0, 0, 1);
+  animation: career-sacked-knock 260ms var(--e-out);
 }
 
 .career-sacked-band .crest {
   filter: grayscale(1);
   opacity: 0.6;
-  animation: career-sacked-drain 1600ms cubic-bezier(0.4, 0, 0.2, 1) var(--career-sacked-beat, 0ms) backwards;
+  animation: career-sacked-drain 1600ms var(--e-in-out) var(--career-sacked-beat, 0ms) backwards;
 }
 
 @keyframes career-sacked-slam {

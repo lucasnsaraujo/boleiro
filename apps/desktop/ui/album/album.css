@@ -414,7 +414,7 @@ a.ab-stk:hover::after {
   color: var(--ink-2);
   transition:
     transform var(--t-base) var(--e-out),
-    background-color var(--t-fast) ease-out;
+    background-color var(--t-fast) var(--e-out);
 }
 
 .ab-years button small {
@@ -526,13 +526,13 @@ a.ab-stk:hover::after {
 .ab-turn.is-forward .ab-leaf {
   animation:
     ab-turn-forward 760ms var(--e-in-out) both,
-    ab-leaf-out 140ms ease-out 690ms both;
+    ab-leaf-out 140ms var(--e-out) 690ms both;
 }
 
 .ab-turn.is-back .ab-leaf {
   animation:
     ab-turn-back 760ms var(--e-in-out) both,
-    ab-leaf-out 140ms ease-out 690ms both;
+    ab-leaf-out 140ms var(--e-out) 690ms both;
 }
 
 @keyframes ab-turn-forward {
@@ -952,7 +952,7 @@ li:nth-child(3n + 2) > .ab-plate {
   background: rgba(0, 0, 0, 0.18);
   color: inherit;
   font-size: 16px;
-  transition: background-color var(--t-fast) ease-out;
+  transition: background-color var(--t-fast) var(--e-out);
 }
 
 .ab-tp-x:hover {
@@ -1150,8 +1150,8 @@ li:nth-child(3n + 2) > .ab-plate {
   font-size: 12.5px;
   color: var(--ink-2);
   transition:
-    background-color var(--t-fast) ease-out,
-    color var(--t-fast) ease-out;
+    background-color var(--t-fast) var(--e-out),
+    color var(--t-fast) var(--e-out);
 }
 
 .ab-room-filter button small {

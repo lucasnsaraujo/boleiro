@@ -35,8 +35,8 @@
   transform: translateY(3px);
   transition:
     transform var(--t-base) var(--e-out),
-    color var(--t-fast) ease-out,
-    background-color var(--t-fast) ease-out;
+    color var(--t-fast) var(--e-out),
+    background-color var(--t-fast) var(--e-out);
 }
 
 .awards-tab:hover {
@@ -86,7 +86,7 @@
   place-items: center;
   border-radius: 50%;
   color: var(--ink-2);
-  transition: background-color var(--t-fast) ease-out;
+  transition: background-color var(--t-fast) var(--e-out);
 }
 
 .awards-step-btn:hover:not(:disabled) {

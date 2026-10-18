@@ -199,7 +199,7 @@
   .rep-side li,
   .rep-goals li,
   .rep .star {
-    animation: rep-fade 200ms ease-out both;
+    animation: rep-fade 200ms var(--e-out) both;
   }
 }
 

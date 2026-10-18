@@ -542,15 +542,15 @@
   }
 
   .asst-pips i.on {
-    animation: asst-pip 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation: asst-pip 380ms var(--e-slap) both;
   }
 
   .asst-av-wrap .asst-av {
-    animation: asst-swap 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation: asst-swap 520ms var(--e-slap) both;
   }
 
   .asst-weak-fig .pos {
-    animation: asst-stamp 460ms cubic-bezier(0.34, 1.56, 0.64, 1) 260ms both;
+    animation: asst-stamp 460ms var(--e-slap) 260ms both;
   }
 
   .asst-eleven li {
