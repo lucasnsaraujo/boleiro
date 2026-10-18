@@ -36,6 +36,13 @@ describe("a career at a club abroad", () => {
     expect(Object.values(start.clubs).filter((club) => club.abroad?.country === "gb-eng")).toHaveLength(44);
   });
 
+  it("gives its players their ages from Transfermarkt, as Brazil's", () => {
+    const ageOf = (name: string) => Object.values(start.players).find((p) => p.clubId === ARSENAL && p.name === name)?.age;
+    expect(ageOf("David Raya")).toBe(31);
+    expect(ageOf("William Saliba")).toBe(25);
+    expect(ageOf("Cristhian Mosquera")).toBe(22);
+  });
+
   it("plays its leagues minute by minute on the unified grid, and no longer result-only", () => {
     const [premier, championship] = englishLeagues(start);
     expect(premier?.clubIds).toHaveLength(20);

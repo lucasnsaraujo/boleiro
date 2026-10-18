@@ -16,9 +16,10 @@ const between = ([top, bottom]: [number, number], position: number) => Math.roun
 /**
  * A result-only country's clubs and squads as the full tier keeps them, when a human coach takes one
  * of its clubs: each club with its level, a crowd and stadium by its squad's rank in the level, and
- * its players as the data gives them (no ages or nationalities: the world packs keep neither).
+ * its players as the data gives them, each his age in `season` from his year of birth (no nationalities:
+ * the world clubs keep none).
  */
-export function clubsAbroad({ structure, levels }: CountryStart): { clubs: Club[]; players: SquadPlayer[] } {
+export function clubsAbroad({ structure, levels }: CountryStart, season: number): { clubs: Club[]; players: SquadPlayer[] } {
   const clubs: Club[] = [];
   const players: SquadPlayer[] = [];
   levels.forEach((members, level) => {
@@ -43,7 +44,8 @@ export function clubsAbroad({ structure, levels }: CountryStart): { clubs: Club[
       club.strengths.forEach((strength, i) => {
         const group = GROUP_OF[club.positions[i] ?? ""];
         if (!group) throw new Error(`club ${club.id}: player ${i} has no position`);
-        players.push({ name: club.names?.[i] ?? `${club.name} ${i + 1}`, group, strength, clubId: club.id, club: club.name, division: null, age: null, nationalities: [] });
+        const born = club.born?.[i] ?? null;
+        players.push({ name: club.names?.[i] ?? `${club.name} ${i + 1}`, group, strength, clubId: club.id, club: club.name, division: null, age: born === null ? null : season - born, nationalities: [] });
       });
     });
   });

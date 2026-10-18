@@ -168,7 +168,7 @@ export function newGame(
 ): GameState {
   const countries = (world ?? []).map(({ structure, levels }) => ({ structure: inFormats(structure, formats), levels }));
   const fullTier = countriesOfHumans(countries, [coachClubId, ...(hotSeat?.otherCoaches ?? []).map((other) => other.clubId)], formats);
-  const abroad = fullTier.map(clubsAbroad);
+  const abroad = fullTier.map((country) => clubsAbroad(country, season));
   const clubs = abroad.length ? [...brazilClubs, ...abroad.flatMap((country) => country.clubs)] : brazilClubs;
   const players = abroad.length ? [...brazilPlayers, ...abroad.flatMap((country) => country.players)] : brazilPlayers;
   const isFullTier = (id: string) => fullTier.some((country) => country.structure.id === id);

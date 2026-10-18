@@ -36,9 +36,10 @@ export type CountryStructure = {
 
 /**
  * A result-only club: its name and its squad as columns, one position letter (G, D, M, A) and one
- * strength per player; its colours and the players' names when the club may meet the full tier (a continental cup).
+ * strength per player; its colours and the players' names when the club may meet the full tier (a continental cup);
+ * each player's year of birth, null when Transfermarkt gives no birth date (a club saved before ages keeps none).
  */
-export type WorldClub = { id: string; name: string; positions: string; strengths: number[]; names?: string[]; colours?: { primary: string; secondary: string } };
+export type WorldClub = { id: string; name: string; positions: string; strengths: number[]; names?: string[]; born?: (number | null)[]; colours?: { primary: string; secondary: string } };
 
 /**
  * One season of a result-only league. Its matches are the round robin of `clubIds`, one round per
