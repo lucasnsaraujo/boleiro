@@ -46,6 +46,24 @@ export function commandForKey(event: Key, platform: Platform): CommandId | null 
   return LETTERS.get(letter) ?? null;
 }
 
+// WebView2's browser keys (wry's browser_accelerator_keys, which Tauri 2.12 leaves on): Ctrl with these letters reloads,
+// prints or finds, Alt with an arrow goes back or forward in the page's history.
+const BROWSER_CTRL_LETTERS: ReadonlySet<string> = new Set(["r", "p", "f", "g"]);
+const BROWSER_KEYS: ReadonlySet<string> = new Set(["BrowserBack", "BrowserForward", "BrowserRefresh", "BrowserSearch", "BrowserHome", "BrowserStop", "BrowserFavorites"]);
+
+/**
+ * Whether a key press is one the Windows web view would take as a browser's (reload the app and lose unsaved play,
+ * print, find, step back through screens): the game isn't a browser, so these never reach it. The F-keys among
+ * them are the game's own, Ctrl+C, Ctrl+V, Ctrl+A and Ctrl+Z still edit, and the dev tools' keys open nothing
+ * outside dev builds. A Mac's web view has none.
+ */
+export function isBrowserChord(event: Key, platform: Platform): boolean {
+  if (platform === "mac") return false;
+  if (BROWSER_KEYS.has(event.key)) return true;
+  if (event.altKey && !event.ctrlKey && (event.key === "ArrowLeft" || event.key === "ArrowRight")) return true;
+  return event.ctrlKey && !event.altKey && !event.metaKey && BROWSER_CTRL_LETTERS.has(event.key.toLowerCase());
+}
+
 /** The keys of a command as the shortcut sheet prints them, or none when it has no key. */
 export function shortcutKeys(command: CommandId, platform: Platform): string[] {
   if (command === "salvar") return [platform === "mac" ? "⌘" : "Ctrl", "S"];

@@ -19,7 +19,7 @@ import { hasMica, platformOf, windowChrome, windowsVersion } from "./platform.js
 import { screenDirection } from "./screenDirection.js";
 import { NAV, navIndexOf, showsBar, type NavId } from "./screens.js";
 import { useServices } from "./ServicesContext.js";
-import { commandForKey, MATCH_COMMAND_IDS, type CommandId } from "./shortcuts.js";
+import { commandForKey, isBrowserChord, MATCH_COMMAND_IDS, type CommandId } from "./shortcuts.js";
 import { useAskBeforeDiscarding } from "./useAskBeforeDiscarding.js";
 import { useWin98Round } from "../eggs/useWin98Round.js";
 import { Win98TaskBar, Win98TitleBar } from "../eggs/Win98Chrome.js";
@@ -197,6 +197,7 @@ export function Shell() {
     };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Tab") isTabbing = true;
+      if (isBrowserChord(event, PLATFORM)) return event.preventDefault();
       const command = commandForKey(event, PLATFORM);
       if (!command || event.defaultPrevented || (event.key.length === 1 && !event.metaKey && !event.ctrlKey && isTyping(event.target))) return;
       if (event.key === " " && event.target === tabbedTo) return;

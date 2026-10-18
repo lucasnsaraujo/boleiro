@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { commandForKey, shortcutKeys } from "./shortcuts.js";
+import { commandForKey, isBrowserChord, shortcutKeys } from "./shortcuts.js";
 
 const press = (key: string, mods: Partial<Record<"metaKey" | "ctrlKey" | "altKey" | "shiftKey", boolean>> = {}) => ({
   key,
@@ -59,4 +59,41 @@ test("the shortcut sheet names each key the way the platform's keyboard prints i
   expect(shortcutKeys("salvar", "mac")).toEqual(["⌘", "S"]);
   expect(shortcutKeys("salvar", "windows")).toEqual(["Ctrl", "S"]);
   expect(shortcutKeys("tabelas", "windows")).toEqual(["F2"]);
+});
+
+test("on Windows the web view's browser chords (reload, print, find, back and forward) are the game's to drop", () => {
+  const browser = [
+    press("r", { ctrlKey: true }),
+    press("R", { ctrlKey: true, shiftKey: true }),
+    press("p", { ctrlKey: true }),
+    press("f", { ctrlKey: true }),
+    press("g", { ctrlKey: true }),
+    press("ArrowLeft", { altKey: true }),
+    press("ArrowRight", { altKey: true }),
+    press("BrowserBack"),
+    press("BrowserRefresh"),
+  ];
+  expect(browser.filter((key) => !isBrowserChord(key, "windows")).map(({ key }) => key)).toEqual([]);
+});
+
+test("the editing chords, Ctrl+Q, the game's own keys and a bare arrow stay out of the browser chords", () => {
+  const kept = [
+    press("c", { ctrlKey: true }),
+    press("v", { ctrlKey: true }),
+    press("x", { ctrlKey: true }),
+    press("a", { ctrlKey: true }),
+    press("z", { ctrlKey: true }),
+    press("q", { ctrlKey: true }),
+    press("s", { ctrlKey: true }),
+    press("F5"),
+    press("F3"),
+    press("r"),
+    press("ArrowLeft"),
+    press("F4", { altKey: true }),
+  ];
+  expect(kept.filter((key) => isBrowserChord(key, "windows")).map(({ key }) => key)).toEqual([]);
+});
+
+test("a Mac's web view has no browser chords, so Command-R, Command-P and Command-F are left alone", () => {
+  expect([press("r", { metaKey: true }), press("p", { metaKey: true }), press("f", { metaKey: true })].some((key) => isBrowserChord(key, "mac"))).toBe(false);
 });
