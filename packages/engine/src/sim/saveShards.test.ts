@@ -46,6 +46,20 @@ describe("save shards", () => {
     expect(loadShards({ [GAME_SHARD]: saveGame(world) })).toStrictEqual(world);
   });
 
+  it("pack the game and country shards of a game with result-only countries", () => {
+    const { world: countries = {}, ...game } = playUntil(world, "2026-03-03");
+    const shards = saveShards({ ...game, world: countries });
+    expect(shards[GAME_SHARD]?.length).toBeLessThan(0.8 * saveGame(game).length);
+    expect(shards["country-aa"]?.length).toBeLessThan(JSON.stringify(countries.aa).length);
+  });
+
+  it("load a save with result-only countries written before packing", () => {
+    const played = playUntil(world, "2026-03-03");
+    const { world: countries = {}, ...game } = played;
+    const plain = { [GAME_SHARD]: saveGame(game), [WORLD_SHARD]: JSON.stringify(Object.keys(countries)), ...Object.fromEntries(Object.entries(countries).map(([id, country]) => [`country-${id}`, JSON.stringify(country)])) };
+    expect(loadShards(plain)).toStrictEqual(played);
+  });
+
   it("write only the shards that changed since the last save", () => {
     const firstMatchDay = playUntil(world, "2026-03-03");
     expect(Object.keys(saveShards(firstMatchDay, world)).sort()).toEqual(["country-aa", GAME_SHARD, WORLD_SHARD].sort());

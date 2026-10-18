@@ -1,4 +1,4 @@
-import { chemistryOf } from "../../chemistry/chemistryOf.js";
+import { chemistryValueOf } from "../../chemistry/chemistryOf.js";
 import type { EventType } from "../eventType.js";
 import { byStrength, fit, isForeign, LOW_CHEMISTRY, marginToday, monthOf, pickFrom, playedToday, playerCast, playsWithin, regulars, round, wageBill, wageOf } from "./sceneReaders.js";
 
@@ -41,7 +41,7 @@ export const DISCIPLINE_EVENTS: readonly EventType[] = [
     id: "dressing-room-fight",
     area: "squad",
     topic: "discipline",
-    weight: (scene) => (chemistryOf(scene.state, scene.clubId).value < LOW_CHEMISTRY ? 4 : 2),
+    weight: (scene) => (chemistryValueOf(scene.state, scene.clubId) < LOW_CHEMISTRY ? 4 : 2),
     cooldownDays: 45,
     cast: (scene) => {
       if ((marginToday(scene) ?? 0) >= 0) return null;

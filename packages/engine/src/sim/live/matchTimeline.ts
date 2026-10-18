@@ -100,12 +100,14 @@ const ELEVEN_A_SIDE_WEIGHTS: readonly number[] = weightsAfter([], [], 0);
 
 /** A minute drawn by `weights`, no later than `latest`. */
 export function drawMinute(weights: readonly number[], random: () => number, latest: number = FULL_TIME): number {
-  const usable = weights.slice(0, Math.max(1, latest));
-  const total = usable.reduce((sum, w) => sum + w, 0);
+  // Plain loops over the first `usable` weights: a season draws thousands of goal minutes, and a sliced copy per draw cost more than the draw.
+  const usable = Math.min(weights.length, Math.trunc(Math.max(1, latest)));
+  let total = 0;
+  for (let i = 0; i < usable; i++) total += weights[i] ?? 0;
   if (total <= 0) return Math.max(1, Math.min(latest, FULL_TIME));
   let roll = random() * total;
-  const index = usable.findIndex((w) => (roll -= w) < 0);
-  return (index < 0 ? usable.length - 1 : index) + 1;
+  for (let i = 0; i < usable; i++) if ((roll -= weights[i] ?? 0) < 0) return i + 1;
+  return usable;
 }
 
 const RANK: Record<MatchEvent["type"], number> = {

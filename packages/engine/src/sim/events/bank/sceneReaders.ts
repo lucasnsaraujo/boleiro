@@ -49,13 +49,23 @@ export function marginToday(scene: EventScene): number | null {
 
 /** The club's next match after the scene's day, if one is booked. */
 export function nextMatch(scene: EventScene): Fixture | undefined {
-  let next: Fixture | undefined;
-  for (const fixture of scene.state.fixtures) {
-    if (fixture.result || fixture.date <= scene.date || (fixture.homeId !== scene.clubId && fixture.awayId !== scene.clubId)) continue;
-    if (!next || fixture.date < next.date) next = fixture;
+  // The day's scenes ask for many clubs: each fixtures list is read once per day for all of them.
+  let known = nextMatchesOf.get(scene.state.fixtures);
+  if (known?.date !== scene.date) {
+    const byClub = new Map<string, Fixture>();
+    for (const fixture of scene.state.fixtures) {
+      if (fixture.result || fixture.date <= scene.date) continue;
+      for (const clubId of [fixture.homeId, fixture.awayId]) {
+        const next = byClub.get(clubId);
+        if (!next || fixture.date < next.date) byClub.set(clubId, fixture);
+      }
+    }
+    nextMatchesOf.set(scene.state.fixtures, (known = { date: scene.date, byClub }));
   }
-  return next;
+  return known.byClub.get(scene.clubId);
 }
+
+const nextMatchesOf = new WeakMap<readonly Fixture[], { date: string; byClub: ReadonlyMap<string, Fixture> }>();
 
 /** Whether the club plays within `days` days. */
 export const playsWithin = (scene: EventScene, days: number) => {

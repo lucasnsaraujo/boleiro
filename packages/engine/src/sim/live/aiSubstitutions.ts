@@ -65,19 +65,27 @@ export function aiBench(squad: readonly SimPlayer[], lineup: readonly SimPlayer[
 
 /** Who is on the pitch for a side at `minute`: the starters swapped by the substitutions made by then, less anyone sent off or hurt before it. */
 export function onPitchAt(starters: readonly SimPlayer[], bench: readonly SimPlayer[], events: readonly MatchEvent[], clubId: string, minute: number): SimPlayer[] {
-  const byId = new Map(bench.map((p) => [p.id, p]));
-  let players = [...starters];
+  return onPitchAfter(starters, benchById(bench), [events], clubId, minute);
+}
+
+const benchById = (bench: readonly SimPlayer[]): ReadonlyMap<string, SimPlayer> => new Map(bench.map((p) => [p.id, p]));
+
+/** onPitchAt over several lists of events read one after the other, with the bench already by id. */
+function onPitchAfter(starters: readonly SimPlayer[], byId: ReadonlyMap<string, SimPlayer>, lists: readonly (readonly MatchEvent[])[], clubId: string, minute: number): SimPlayer[] {
+  const players = [...starters];
   const gone = new Set<string>();
-  for (const event of events) {
-    if (event.minute > minute || !("clubId" in event)) continue;
-    if (event.type === "substitution" && event.clubId === clubId) {
-      const on = byId.get(event.playerId);
-      if (on) players = players.map((p) => (p.id === event.offId ? on : p));
+  for (const events of lists) {
+    for (const event of events) {
+      if (event.minute > minute || !("clubId" in event)) continue;
+      if (event.type === "substitution" && event.clubId === clubId) {
+        const on = byId.get(event.playerId);
+        if (on) for (let i = 0; i < players.length; i++) if (players[i]?.id === event.offId) players[i] = on;
+      }
+      const isOut = (event.type === "card" && event.card !== "yellow") || event.type === "injury";
+      if (isOut && event.minute < minute) gone.add(event.playerId);
     }
-    const isOut = (event.type === "card" && event.card !== "yellow") || event.type === "injury";
-    if (isOut && event.minute < minute) gone.add(event.playerId);
   }
-  return players.filter((p) => !gone.has(p.id));
+  return gone.size ? players.filter((p) => !gone.has(p.id)) : players;
 }
 
 /** The last minute each player does something in the match: comes on, scores, assists, is booked, hurt or faces a penalty. */
@@ -132,7 +140,8 @@ export function aiSubstitutions(side: AiSide, events: readonly MatchEvent[], fro
     .sort((a, b) => a.minute - b.minute);
 
   const subs: MatchEvent[] = [];
-  const all = () => [...events, ...subs];
+  const bench = benchById(side.bench);
+  const onPitchNow = (minute: number) => onPitchAfter(side.starters, bench, [events, subs], clubId, minute);
   const last = lastInvolvements(events);
   const lastInvolvement = (p: SimPlayer) => last.get(p.id) ?? 0;
   const sentOff = new Set(events.flatMap((e) => (e.type === "card" && e.card !== "yellow" ? [e.playerId] : [])));
@@ -149,12 +158,17 @@ export function aiSubstitutions(side: AiSide, events: readonly MatchEvent[], fro
     if (minute !== HALF_TIME) windows.add(minute);
   };
   const freeBench = () => side.bench.filter((p) => !used.has(p.id));
-  const bestOf = (players: readonly SimPlayer[]) => [...players].sort((a, b) => b.strength - a.strength)[0];
+  // The strongest, the first of them on a tie, as a stable sort strongest first would put him.
+  const bestOf = (players: readonly SimPlayer[]) => {
+    let best: SimPlayer | undefined;
+    for (const p of players) if (!best || p.strength > best.strength) best = p;
+    return best;
+  };
 
   for (const moment of moments) {
     const { minute } = moment;
     if (made.length + subs.length >= MAX_SUBSTITUTIONS || !canUseWindow(minute)) continue;
-    const onPitch = onPitchAt(side.starters, side.bench, all(), clubId, minute);
+    const onPitch = onPitchNow(minute);
     const canLeave = (p: SimPlayer) => !sentOff.has(p.id) && lastInvolvement(p) <= minute && (moment.reason === "hurt" || p.id !== moment.playerId);
     if (moment.reason === "hurt") {
       const hurt = onPitch.find((p) => p.id === moment.playerId);
@@ -172,7 +186,7 @@ export function aiSubstitutions(side: AiSide, events: readonly MatchEvent[], fro
     }
     const isChasing = minute >= CHASE_FROM_MINUTE && goalDifferenceAt(minute) < 0;
     for (let i = 0; i < perWindow && made.length + subs.length < planned && canUseWindow(minute); i++) {
-      const leaving = onPitchAt(side.starters, side.bench, all(), clubId, minute).filter((p) => p.group !== "GK" && canLeave(p));
+      const leaving = onPitchNow(minute).filter((p) => p.group !== "GK" && canLeave(p));
       const tiredFirst = leaving.sort((a, b) => tirednessOf(b) - tirednessOf(a));
       const off = isChasing ? (tiredFirst.find((p) => p.group === "DEF") ?? tiredFirst.find((p) => p.group === "MID")) : tiredFirst[0];
       const on = off && (isChasing ? bestOf(freeBench().filter((p) => p.group === "ATT")) : bestOf(freeBench().filter((p) => p.group === off.group)));

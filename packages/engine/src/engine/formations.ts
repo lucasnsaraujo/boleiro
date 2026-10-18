@@ -127,14 +127,23 @@ export function arrange<P extends Player>(players: readonly P[], formation: Form
   }
   const filled = new Int32Array(m).fill(-1);
   const isPlaced = new Uint8Array(n);
-  // Each round takes the pair worth most, the first in player-then-slot order on a tie.
+  // Each round takes the pair worth most, the first in player-then-slot order on a tie. A player is
+  // worth the same in every slot of a role, so only each role's first empty slot can be that pair.
+  const open = new Int32Array(roles.length);
   for (let count = Math.min(n, m); count > 0; count--) {
+    let opened = 0;
+    for (let s = 0; s < m; s++) {
+      if (filled[s] !== -1) continue;
+      let isFirstOfRole = true;
+      for (let o = 0; o < opened; o++) if (roleOfSlot[open[o] ?? 0] === roleOfSlot[s]) isFirstOfRole = false;
+      if (isFirstOfRole) open[opened++] = s;
+    }
     let best = -1;
     let bestWorth = 0;
     for (let p = 0; p < n; p++) {
       if (isPlaced[p]) continue;
-      for (let s = 0; s < m; s++) {
-        if (filled[s] !== -1) continue;
+      for (let o = 0; o < opened; o++) {
+        const s = open[o] ?? 0;
         const pairWorth = worth[p * m + s] ?? 0;
         if (best < 0 || pairWorth > bestWorth) {
           best = p * m + s;
