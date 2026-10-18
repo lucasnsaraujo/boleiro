@@ -11,6 +11,7 @@ import {
   turnPage,
   upcomingMatches,
   type Absence,
+  type MatchEntry,
   type Outcome,
   type PageMatch,
   type UpcomingMatch,
@@ -39,7 +40,7 @@ const SHOWN_ABSENCES = 2;
 
 const capitalized = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
-const side = (isHome: boolean) => (isHome ? "casa" : "fora");
+const side = ({ isHome, isNeutral }: Pick<MatchEntry, "isHome" | "isNeutral">) => (isNeutral ? "campo neutro" : isHome ? "casa" : "fora");
 
 type Turn = { start: IsoDate; direction: "back" | "on" };
 
@@ -173,7 +174,7 @@ export function Calendar() {
                     <span>
                       <b>{opponent?.shortName ?? match.opponentId}</b>
                       <small>
-                        {match.label} · {side(match.isHome)}
+                        {match.label} · {side(match)}
                       </small>
                     </span>
                   </li>
@@ -195,10 +196,10 @@ function MatchChip({ match, clubId, opponent, isToday, onOpen }: { match: PageMa
     ? `${match.isHome ? result.homeGoals : result.awayGoals}×${match.isHome ? result.awayGoals : result.homeGoals}${result.isAfterExtraTime ? " (prorr.)" : ""}${result.onPenalties ? " pên." : ""} · `
     : "";
   return (
-    <li className={result ? `agenda-match played ${result.outcome}` : "agenda-match"} style={{ gridRow: match.row, gridColumn: match.column }}>
+    <li className={result ? `agenda-match played ${result.outcome}` : "agenda-match"} style={{ gridRow: match.row, gridColumn: match.column, ["--stack" as string]: match.stack }}>
       {result && <button type="button" className="agenda-open" aria-label={`Ficha do jogo contra ${opponent?.shortName ?? match.opponentId}`} onClick={() => onOpen(match.fixtureId)} />}
       <span className="sr-only">{isToday ? "Hoje" : formatRowDate(match.date)}, </span>
-      {clubId && <DerbyBadgeOf homeId={clubId} awayId={match.opponentId} />}
+      {clubId === match.sideId && <DerbyBadgeOf homeId={clubId} awayId={match.opponentId} />}
       <span className="agenda-match-crest" aria-hidden="true">
         {opponent && <Crest club={opponent} size={22} />}
       </span>
@@ -206,7 +207,7 @@ function MatchChip({ match, clubId, opponent, isToday, onOpen }: { match: PageMa
         <b>{opponent?.shortName ?? match.opponentId}</b>
         <small>
           {score}
-          {match.competition} · {side(match.isHome)}
+          {match.competition} · {side(match)}
         </small>
       </span>
       {result && (
@@ -249,17 +250,19 @@ function WindowMark({ ribbon }: { ribbon: WindowRibbon }) {
 }
 
 function NextMatch({ match, state }: { match: UpcomingMatch; state: CalendarState }) {
-  const coachClub = state.coachClubId ? state.clubs[state.coachClubId] : undefined;
+  // The coach's side in it: his club, or his national team.
+  const coachSide = clubFaceOf(state.clubs, match.sideId) ?? undefined;
   const opponent = clubFaceOf(state.clubs, match.opponentId) ?? undefined;
-  const [home, away] = match.isHome ? [coachClub, opponent] : [opponent, coachClub];
+  const [home, away] = match.isHome ? [coachSide, opponent] : [opponent, coachSide];
+  const ground = match.ground ?? (match.isNeutral ? "Campo neutro" : home?.stadium);
   const absences = matchAbsences(state, match);
   const isToday = match.date === state.date;
   return (
     <>
       <h3 id="agenda-next-title">{match.label}</h3>
-      {state.coachClubId && (
+      {state.coachClubId === match.sideId && (
         <div className="agenda-derby">
-          <DerbyBadgeOf homeId={state.coachClubId} awayId={match.opponentId} isNamed />
+          <DerbyBadgeOf homeId={match.sideId} awayId={match.opponentId} isNamed />
         </div>
       )}
       <div className="agenda-vs">
@@ -276,10 +279,10 @@ function NextMatch({ match, state }: { match: UpcomingMatch; state: CalendarStat
             <dd>{formatBarDate(match.date)}</dd>
           </>
         )}
-        {(match.ground ?? home?.stadium) && (
+        {ground && (
           <>
             <dt>Onde</dt>
-            <dd>{match.ground ?? home?.stadium}</dd>
+            <dd>{ground}</dd>
           </>
         )}
         <dt>Desfalques</dt>

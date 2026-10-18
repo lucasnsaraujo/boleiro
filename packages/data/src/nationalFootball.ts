@@ -76,7 +76,6 @@ function confederationOf(name: string): Confederation {
   return own;
 }
 
-/** Decodes the two national packs; throws on another format, a malformed column, or a player or fixture of a team they don't have. */
 /** Each national team's FIFA code and kit colours, from the national-football pack alone (its `teams` table is all a crest needs). */
 export function parseNationalLooks(footballJson: string): Pick<NationalTeamData, "id" | "code" | "colours">[] {
   const looks = tableOf(packOf(footballJson), "teams");
@@ -87,6 +86,7 @@ export function parseNationalLooks(footballJson: string): Pick<NationalTeamData,
   return ids.map((id, row) => ({ id, code: codes[row] ?? "", colours: { primary: primary[row] ?? "", secondary: secondary[row] ?? "" } }));
 }
 
+/** Decodes the two national packs; throws on another format, a malformed column, or a player or fixture of a team they don't have. */
 export function parseNationalFootball(teamsJson: string, footballJson: string): NationalFootball {
   const squadsPack = packOf(teamsJson);
   const football = packOf(footballJson);

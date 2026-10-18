@@ -85,13 +85,17 @@ describe("national-team jobs", () => {
     const worldCup = afterWorldCup.nations?.competitions["world-cup-2026"];
     const nations = afterWorldCup.nations && { ...afterWorldCup.nations };
     if (nations) delete nations.offer;
-    const hotSeat = { ...afterWorldCup, ...(nations ? { nations } : {}), ...(twoCoaches.waitingCoaches ? { waitingCoaches: twoCoaches.waitingCoaches } : {}) };
+    // Bruno is a big name too, so a federation calls him as well.
+    const waitingCoaches = twoCoaches.waitingCoaches?.map((w) => ({ ...w, coach: { ...w.coach, reputation: 100 } }));
+    const hotSeat = { ...afterWorldCup, ...(nations ? { nations } : {}), ...(waitingCoaches ? { waitingCoaches } : {}) };
     const after = worldCup ? nationalJobsAfter(hotSeat, worldCup, "2026-07-19") : null;
     expect(hotSeat.waitingCoaches).toHaveLength(1);
     const seatedOffers = after?.events.filter((e) => e.type === "nationalJobOffered") ?? [];
     expect(seatedOffers.map((e) => e.teamId)).toEqual([after?.state.nations?.offer?.teamId]);
     const waitingOffer = after?.state.waitingCoaches?.[0]?.nationalOffer;
-    expect(after?.waitingEvents[0]?.filter((e) => e.type === "nationalJobOffered").map((e) => e.teamId)).toEqual(waitingOffer ? [waitingOffer.teamId] : []);
+    expect(waitingOffer).toBeDefined();
+    expect(after?.waitingEvents[0]?.filter((e) => e.type === "nationalJobOffered").map((e) => e.teamId)).toEqual([waitingOffer?.teamId]);
     expect(waitingOffer?.teamId).not.toBe(after?.state.nations?.offer?.teamId);
+    expect(after?.state.nations?.offer).toBeDefined();
   });
 });

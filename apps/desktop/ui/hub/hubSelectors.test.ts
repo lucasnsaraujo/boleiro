@@ -36,7 +36,8 @@ describe("nextMatch", () => {
     const nations = game.nations;
     if (!nations) throw new Error("the game has no national football");
     const coaching = syncNationalFixtures({ ...game, coachClubId: null, date: "2026-06-01", nations: { ...nations, job: { teamId: "brazil", since: game.date } } });
-    expect(nextMatch(coaching)).toMatchObject({ opponentId: "morocco", isHome: true, label: "Copa do Mundo 2026 · Grupo C" });
+    expect(nextMatch(coaching)).toMatchObject({ opponentId: "morocco", isHome: true, isNeutral: true, label: "Copa do Mundo 2026 · Grupo C" });
+    expect(nextMatch(game)?.isNeutral).toBe(false);
   });
 });
 

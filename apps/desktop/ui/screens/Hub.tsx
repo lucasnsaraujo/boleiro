@@ -360,7 +360,7 @@ function NextMatchSticker({ next, state, bet }: { next: NextMatch; state: HubSta
         <div>
           <b>{opponent.shortName}</b>
           <p className={next.isToday ? "today" : undefined}>
-            {next.isToday ? "Hoje" : formatBarDate(next.fixture.date)} · {next.isHome ? "em casa" : "fora"}
+            {next.isToday ? "Hoje" : formatBarDate(next.fixture.date)} · {next.isNeutral ? "campo neutro" : next.isHome ? "em casa" : "fora"}
           </p>
           <p className="hub-next-what">{next.label}</p>
         </div>

@@ -1,4 +1,4 @@
-import { neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
+import { isOnNeutralGround, neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
 import { addDays } from "@boleiro/engine/sim/dates";
 import type { Fixture, GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import { isInjured } from "@boleiro/engine/sim/players/isInjured";
@@ -8,12 +8,15 @@ import { monthName } from "@boleiro/game-client/format/formatGameDate";
 
 export type Outcome = "win" | "draw" | "loss";
 
+/** One of the coach's games: `sideId` is his side in it, his club or his national team; `isNeutral` a national team's game on neutral ground. */
 export type MatchEntry = {
   kind: "match";
   date: IsoDate;
   fixtureId: string;
   competition: string;
   isHome: boolean;
+  isNeutral: boolean;
+  sideId: string;
   opponentId: string;
   result: { homeGoals: number; awayGoals: number; outcome: Outcome; onPenalties: boolean; isAfterExtraTime?: true } | null;
 };
@@ -44,6 +47,8 @@ function matchEntry(f: Fixture, coachClubId: string, competitions: GameState["co
     fixtureId: f.id,
     competition: competition ? competitionName(competition) : "",
     isHome,
+    isNeutral: competition?.kind === "national" && isOnNeutralGround(competition, f.stage),
+    sideId: coachClubId,
     opponentId: isHome ? f.awayId : f.homeId,
     result: result && {
       homeGoals: result.homeGoals,
@@ -123,8 +128,8 @@ const PAGE_DAYS = PAGE_WEEKS * 7;
 /** One square of a page: its place in the five-week grid, and whether it is today or already gone. */
 export type CalendarDay = { date: IsoDate; day: number; row: number; column: number; isInSeason: boolean; isToday: boolean; isPast: boolean };
 
-/** A game on a page, with the square of its day. */
-export type PageMatch = MatchEntry & { row: number; column: number };
+/** A game on a page, with the square of its day; `stack` 1 for the second game of a day (a club's and a national team's). */
+export type PageMatch = MatchEntry & { row: number; column: number; stack: number };
 
 /**
  * The transfer window on a page, drawn across one week: the week it opens or closes in, or the
@@ -180,9 +185,13 @@ export function calendarPage(state: Pick<GameState, "date" | "season" | "hasMidS
     };
   });
   const squares = new Map(days.map((d) => [d.date, d]));
+  const onDay = new Map<IsoDate, number>();
   const matches = coachMatches(state).flatMap((match) => {
     const square = squares.get(match.date);
-    return square ? [{ ...match, row: square.row, column: square.column }] : [];
+    if (!square) return [];
+    const stack = onDay.get(match.date) ?? 0;
+    onDay.set(match.date, stack + 1);
+    return [{ ...match, row: square.row, column: square.column, stack }];
   });
   const end = days.at(-1)?.date ?? start;
   const windows = transferWindowsOf(state).flatMap(({ opens, closes }): WindowRibbon[] => {

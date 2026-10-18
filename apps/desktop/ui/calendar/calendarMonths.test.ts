@@ -201,3 +201,16 @@ test("a national team's game misses none of the coach's club players", () => {
   expect(matchAbsences(coaching, { date: "2026-06-13", competitionId: "national:world-cup-2026" })).toEqual([]);
   expect(matchAbsences(coaching, { date: "2026-06-13", competitionId: "serie-a-2026" }).map((a) => a.name)).toContain(hurt.name);
 });
+
+test("a national team's game names the coach's side in it and its neutral ground, and shares its day's square with his club's", () => {
+  const nations = game.nations;
+  if (!nations) throw new Error("the game has no national football");
+  const coaching = syncNationalFixtures({ ...game, nations: { ...nations, job: { teamId: "brazil", since: game.date } } });
+  const worldCup = matches(calendarMonths(coaching).flatMap((m) => m.entries)).filter((m) => m.competition === "Copa do Mundo 2026");
+  expect(worldCup.map((m) => [m.sideId, m.isNeutral])).toEqual([["brazil", true], ["brazil", true], ["brazil", true]]);
+  expect(matches(calendarMonths(coaching).flatMap((m) => m.entries)).find((m) => m.competition !== "Copa do Mundo 2026")).toMatchObject({ sideId: "bahia-ba", isNeutral: false });
+  const clashDay = own.find((f) => worldCup.some((m) => m.date === f.date))?.date;
+  if (!clashDay) throw new Error("Bahia plays on a day Brazil does");
+  const page = calendarPage({ ...coaching, date: clashDay }, pageFor(coaching.season, clashDay));
+  expect(page.months.flatMap((m) => m.matches).filter((m) => m.date === clashDay).map((m) => m.stack).sort()).toEqual([0, 1]);
+});
