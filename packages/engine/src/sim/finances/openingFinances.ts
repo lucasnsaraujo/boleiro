@@ -133,7 +133,7 @@ function moneyByRank(data: FinanceData, tier: Tier, rank: number, count: number)
 }
 
 /** Monthly wages that add up to the club's wage bill, weighted towards its stronger players. */
-function wagesOf(squad: readonly Omit<SimPlayer, "wage">[], monthlyBill: number): [string, number][] {
+export function wagesForBill(squad: readonly Omit<SimPlayer, "wage">[], monthlyBill: number): [string, number][] {
   const weights = squad.map((p) => Math.exp(WAGE_GROWTH_PER_STRENGTH_POINT * p.strength));
   const total = weights.reduce((sum, w) => sum + w, 0);
   return squad.map((p, i) => [p.id, Math.max(1, Math.round((monthlyBill * (weights[i] ?? 0)) / total))]);
@@ -198,7 +198,7 @@ export function openingFinances(
       const projected = tv + expectedTickets + base.membership + base.sponsorship + otherIncome + cupPrizes;
       // Accounts from a richer division paid a richer squad: the club keeps their wage share of revenue.
       const wageBill = ownAccountsBelowA && revenue > 0 ? Math.min(base.wageBill, (base.wageBill / revenue) * projected) : base.wageBill;
-      for (const [id, wage] of wagesOf(squads.get(club.id) ?? [], wageBill / 12)) wages[id] = wage;
+      for (const [id, wage] of wagesForBill(squads.get(club.id) ?? [], wageBill / 12)) wages[id] = wage;
       const opening: ClubFinance = {
         cash: Math.round(Math.max(-base.netDebt, (OPENING_CASH_MONTHS_OF_REVENUE * (ownAccountsBelowA ? projected : revenue)) / 12)),
         loans: 0,

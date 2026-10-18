@@ -255,7 +255,8 @@ export function finishMatchDay(live: LiveDay): DayResult {
     next = copinha.state;
     events.push(...copinha.events);
   }
-  if (state.world) next = turnSeasonsAbroad({ ...next, world: moveWorldCoaches(playWorldDay(state.world, state.date), state.date) }, state.date);
+  // The world as the coaches' day left it: a coach who took a club abroad brought its country into the full tier.
+  if (next.world) next = turnSeasonsAbroad({ ...next, world: moveWorldCoaches(playWorldDay(next.world, state.date), state.date) }, state.date);
   if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state)) };
   if (next.nations) {
     const national = nationsDay(next, state.date);
