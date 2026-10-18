@@ -94,3 +94,16 @@ test("a side that lost a player hurt earlier and never replaced counts him out o
   ];
   expect(at(events, 50)?.playersLeft).toBe(9);
 });
+
+test("leaves out the red cards and injuries the coach's match plan answered, and has nothing to ask when it answered them all", () => {
+  const events: MatchEvent[] = [
+    { type: "injury", minute: 30, clubId: CLUB, playerId: "m1", days: 5 },
+    { type: "card", minute: 30, clubId: CLUB, playerId: "d1", card: "red" },
+  ];
+  const answeredInjury = { ...coach, answeredByPlan: [{ minute: 30, playerId: "m1" }] };
+  const partly = incidentAt(answeredInjury, events, CLUB, liveLimits(answeredInjury, events, CLUB, 30));
+  expect(partly?.hurt).toEqual([]);
+  expect(partly?.sentOff).toEqual([{ playerId: "d1", card: "red" }]);
+  const all = { ...coach, answeredByPlan: [{ minute: 30, playerId: "m1" }, { minute: 30, playerId: "d1" }] };
+  expect(incidentAt(all, events, CLUB, liveLimits(all, events, CLUB, 30))).toBeNull();
+});

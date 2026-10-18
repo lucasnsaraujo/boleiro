@@ -17,6 +17,9 @@ import { useFlip } from "../motion/useFlip.js";
 import { hasOwnArrows } from "../round/hasOwnArrows.js";
 import { HotSeatPitches, type Seat } from "../round/HotSeatPitches.js";
 import { incidentAt, type Incident } from "../round/incident.js";
+import { asksShootoutOrder, nextSavedTactics, planKeyOf, shootoutKickersOf } from "../round/livePlan.js";
+import { ShootoutOrder } from "../round/ShootoutOrder.js";
+import { POSTURE_LABEL } from "../round/tacticsLabels.js";
 import { IncidentWindow } from "../round/IncidentWindow.js";
 import { HalfTimeTalk, KickOffTalk } from "../round/TeamTalk.js";
 import { LineupSheet } from "../round/LineupSheet.js";
@@ -114,14 +117,16 @@ function incidentOf(round: LiveRound, minute: number, hotSeat: HotSeatView | nul
 /** A goal being celebrated on a row: the scoring club's colour, its side, and the round's goal count so each goal replays the animation. */
 type Flash = { colour: string; side: Side; count: number };
 /**
- * A missed penalty, a red card, a human coach's substitution or the assistant's word on a player
- * having a bad day (`who`), called out on its row with a chip, counted like goals so each replays.
+ * A missed penalty, a red card, a human coach's substitution, one his match plan made, or the
+ * assistant's word on a player having a bad day (`who`), called out on its row with a chip, counted
+ * like goals so each replays.
  */
 type Alert = { kind: Callout["kind"] | "substitution"; count: number; who?: string };
 const ALERT_CHIPS: Record<Alert["kind"], { label: string; className: string }> = {
   penaltyMiss: { label: "Pênalti", className: "pen" },
   red: { label: "Expulsão", className: "exp" },
   substitution: { label: "Troca", className: "sub" },
+  plan: { label: "Plano", className: "plan" },
   badDay: { label: "Dia ruim", className: "bad" },
   var: { label: "VAR", className: "var" },
 };
@@ -139,6 +144,21 @@ const AVERAGE_CHECK_SECONDS = 100;
 const TALK_REACTION_MS = 2400;
 // How the band notes a goal that did not come from open play.
 const GOAL_NOTES: Partial<Record<GoalKind, string>> = { penalty: "pên.", freeKick: "falta", olympic: "olímpico", ownGoal: "contra" };
+// How long the note a plan key leaves on the band stays, before it peels off.
+const PLAN_NOTE_MS = 2600;
+
+/** What a coach's plan key did, noted on the band for a moment: his saved tactics now on, the house rule's no, or why nothing happened. */
+type PlanNote = { title: string; text: string; tone: "plan" | "lock" | "warn"; count: number };
+const NOTE_ICONS: Record<PlanNote["tone"], string> = { plan: "ph-bold ph-swap", lock: "ph-bold ph-gavel", warn: "ph-bold ph-warning" };
+
+/** The first human coach whose match ended level at `minute` and whose plan asks him his shootout order before it, unless he gave it. */
+function shootoutAskOf(round: LiveRound, minute: number, hotSeat: HotSeatView | null, asked: ReadonlySet<string>): Coached | null {
+  for (const coached of coachedSides(round, hotSeat)) {
+    const match = round.matches.find((m) => m.fixtureId === coached.side.fixtureId);
+    if (match && !asked.has(coached.clubId) && asksShootoutOrder(coached.side, match.events, coached.clubId, minute)) return coached;
+  }
+  return null;
+}
 
 export function Round() {
   const { engine } = useServices();
@@ -172,6 +192,15 @@ export function Round() {
   const [flashes, setFlashes] = useState<Record<string, Flash>>({});
   const [alerts, setAlerts] = useState<Record<string, Alert>>({});
   const [incident, setIncident] = useState<OpenIncident | null>(null);
+  // The human coach the round stopped for to ask his shootout order, and those who gave theirs.
+  const [shootoutAsk, setShootoutAsk] = useState<Coached | null>(null);
+  const askedShootouts = useRef(new Set<string>());
+  // What a coach's plan key just did, on the band for a moment.
+  const [planNote, setPlanNote] = useState<PlanNote | null>(null);
+  const planNoteTimer = useRef<number | undefined>(undefined);
+  // Tactics keys pressed and not yet sent, by club, in order: they go one at a time, and the clock holds while one is on its way.
+  const tacticsPresses = useRef<string[]>([]);
+  const [isTacticsInFlight, setTacticsInFlight] = useState(false);
   const [varHold, setVarHold] = useState<VarHold | null>(null);
   const varTimers = useRef<number[]>([]);
   // The clubs whose incident window was left at the minute the round stands on, so the next coach's opens.
@@ -231,8 +260,15 @@ export function Round() {
 
   // The round runs to 120 when one of its matches goes to extra time.
   const end = round ? roundEndOf(round) : FULL_TIME;
-  const isRunning = round !== null && speed > 0 && !isLineupOpen && !isTableOpen && incident === null && varHold === null && minute < end;
-  useEffect(() => () => varTimers.current.forEach((timer) => clearTimeout(timer)), []);
+  const isRunning =
+    round !== null && speed > 0 && !isLineupOpen && !isTableOpen && incident === null && shootoutAsk === null && varHold === null && !isTacticsInFlight && minute < end;
+  useEffect(
+    () => () => {
+      varTimers.current.forEach((timer) => clearTimeout(timer));
+      window.clearTimeout(planNoteTimer.current);
+    },
+    [],
+  );
   useEffect(() => {
     if (!isRunning || speed === 0) return;
     const tick = setInterval(() => setMinute((m) => Math.min(end, m + 1)), MS_PER_MINUTE[speed]);
@@ -282,13 +318,17 @@ export function Round() {
     }
     const reason = pauseReason(live, minute);
     const incidentNow = incidentOf(live, minute, hotSeat);
+    const askNow = shootoutAskOf(live, minute, hotSeat, askedShootouts.current);
     // The round stops with the window it stops for, after a VAR check's decision: a speed picked in between would leave the window over a clock that looks running.
     const stopNow = () => {
-      if (reason === "halfTime" || reason === "extraTimeBreak" || reason === "coachMatch") pause();
+      if (reason === "halfTime" || reason === "extraTimeBreak" || reason === "coachMatch" || askNow) pause();
       setIncident(incidentNow);
+      // One window at a time: a shootout order waits for the red card or injury window of the minute to close.
+      setShootoutAsk(incidentNow ? null : askNow);
     };
+    // A shootout order asked for at the final whistle ends the round only once it is given.
     const finishNow = () => {
-      if (reason === "fullTime") void finish();
+      if (reason === "fullTime" && !askNow) void finish();
     };
     if (!held) {
       stopNow();
@@ -450,7 +490,8 @@ export function Round() {
       isStepping.current = false;
     });
     if (!sent) return;
-    const order = coachedSides(sent, hotSeat);
+    // A coach whose match the house rule leaves to his plan has no sheet to step to.
+    const order = coachedSides(sent, hotSeat).filter((coached) => coached.clubId === clubId || coached.side.incidentHandling !== "matchPlan");
     const place = order.findIndex((coached) => coached.clubId === clubId);
     const next = order[(place + step + order.length) % order.length];
     setError(null);
@@ -487,6 +528,8 @@ export function Round() {
     setIncident(next);
     if (next) return;
     callOutSubstitutions();
+    const ask = after && shootoutAskOf(after, minute, hotSeat, askedShootouts.current);
+    if (ask) return setShootoutAsk(ask);
     setSpeed(resumeSpeed.current);
   }
 
@@ -512,13 +555,88 @@ export function Round() {
     }
   }
 
+  /** A human coach's shootout order, given in its window: the next coach's window opens, or the round plays on, or ends. */
+  async function answerShootout(order: readonly string[]) {
+    if (!shootoutAsk) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const changed = await changeLive(shootoutAsk.clubId, { kickerOrder: order });
+      askedShootouts.current.add(shootoutAsk.clubId);
+      const next = shootoutAskOf(changed, minute, hotSeat, askedShootouts.current);
+      setShootoutAsk(next);
+      if (next) return;
+      const reason = pauseReason(changed, minute);
+      // Another coach's match may break here for its extra time: the round stays stopped for it.
+      if (reason === "fullTime") void finish();
+      else if (reason === null) setSpeed(resumeSpeed.current);
+    } catch {
+      setError("A ordem não valeu. Tente de novo.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /** Puts a note on the band for a moment: what a coach's plan key did, or why it did nothing. */
+  function noteOnBand(note: Omit<PlanNote, "count">) {
+    window.clearTimeout(planNoteTimer.current);
+    setPlanNote((current) => ({ ...note, count: (current?.count ?? 0) + 1 }));
+    planNoteTimer.current = window.setTimeout(() => setPlanNote(null), PLAN_NOTE_MS);
+  }
+
+  /** Whether the house rule leaves a human coach's match to the plans: he can't change his side in it by hand. */
+  const isLockedToPlan = (clubId: string) => (round ? sideOf(round, clubId)?.incidentHandling === "matchPlan" : false);
+
+  function noteLocked(coachName?: string) {
+    noteOnBand({ title: "Regra da casa", text: `${coachName ? `${coachName}: m` : "M"}udanças só nas finais. Hoje o plano joga sozinho.`, tone: "lock" });
+  }
+
+  /** A coach opens his own lineup over the round, unless the house rule leaves his match to his plan. */
+  function openOwnLineup(clubId: string, coachName?: string) {
+    if (isLockedToPlan(clubId)) return noteLocked(coachName);
+    openLineup(clubId);
+  }
+
+  /**
+   * A coach's tactics key: his side moves to the next tactics his plan keeps ready, at the minute on the
+   * clock. Presses go one at a time, each from the tactics the one before put on, and the clock holds while
+   * one is on its way, so the board never plays minutes of the match as it was before the change.
+   */
+  async function cycleTactics(clubId: string) {
+    tacticsPresses.current.push(clubId);
+    if (tacticsPresses.current.length > 1) return;
+    setTacticsInFlight(true);
+    try {
+      for (let pressed = tacticsPresses.current[0]; pressed !== undefined; pressed = tacticsPresses.current[0]) {
+        const latest = roundRef.current;
+        const side = latest && sideOf(latest, pressed);
+        const human = latest?.humanSides?.find((other) => other.clubId === pressed);
+        const who = human && (latest?.humanSides?.length ?? 0) > 1 ? `${human.coachName}: ` : "";
+        const next = side ? nextSavedTactics(side) : null;
+        const saved = next === null ? undefined : side?.plan?.savedTactics[next];
+        if (next === null || !saved) noteOnBand({ title: "Plano de jogo", text: `${who}nenhuma tática salva no plano.`, tone: "warn" });
+        else {
+          try {
+            await changeLive(pressed, { savedTactics: next });
+            noteOnBand({ title: `Tática ${next + 1}`, text: `${who}${saved.formation} · ${POSTURE_LABEL[saved.posture].toLowerCase()}`, tone: "plan" });
+          } catch {
+            noteOnBand({ title: "Plano de jogo", text: "A tática não entrou. Tente de novo.", tone: "warn" });
+          }
+        }
+        tacticsPresses.current.shift();
+      }
+    } finally {
+      setTacticsInFlight(false);
+    }
+  }
+
   function chooseSpeed(next: Speed) {
     if (next !== 0) resumeSpeed.current = next;
     setSpeed(next);
   }
 
   // The match keys work only while the match can still be driven: kicked off, before the final whistle, no sheet open.
-  const isDrivable = round !== null && result === null && minute < end && !isLineupOpen && !isTableOpen && incident === null;
+  const isDrivable = round !== null && result === null && minute < end && !isLineupOpen && !isTableOpen && incident === null && shootoutAsk === null;
   // In a hot-seat round every human coach has a board, in turn order; the arrows move the focus through them.
   const boardCoaches = round?.humanSides ? coachedSides(round, hotSeat) : [];
   const focus = Math.max(0, boardCoaches.findIndex((coached) => coached.clubId === focusClubId));
@@ -529,6 +647,7 @@ export function Round() {
       isDrivable &&
       (() => {
         if (!focused) return chooseSpeed(speed === 0 ? resumeSpeed.current : 0);
+        if (isLockedToPlan(focused.clubId)) return noteLocked(focused.coachName);
         openLineup(focused.clubId);
         wasRunning.current = true;
       }),
@@ -541,6 +660,24 @@ export function Round() {
   const crowd = round && result === null && minute < end ? crowdLevel(round, minute) * (isRunning ? 1 : PAUSED_CROWD) : null;
   useEffect(() => sound.setCrowd(crowd), [sound, crowd]);
   useEffect(() => () => sound.setCrowd(null), [sound]);
+
+  // Each human coach's own keys from his match plan: his tactics key changes his side without stopping the clock, his time-out key stops it on his match.
+  useEffect(() => {
+    if (!isDrivable || !round) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.repeat || event.metaKey || event.ctrlKey || event.altKey || isTyping(event.target)) return;
+      const press = planKeyOf(coachedSides(round, hotSeat), event.key);
+      if (!press) return;
+      event.preventDefault();
+      const { coached } = press;
+      if (press.command === "tactics") return void cycleTactics(coached.clubId);
+      if (isLockedToPlan(coached.clubId)) return noteLocked(coached.coachName);
+      openLineup(coached.clubId);
+      wasRunning.current = true;
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   // On the board ← and → step the focus; inside a window the arrows are the window's own.
   const canStepBoards = boardCoaches.length > 1 && !isLineupOpen && !isTableOpen && incident === null;
@@ -608,6 +745,17 @@ export function Round() {
         }}
         {...(opponent ? { opponent: { club: opponent, formation: plan.opponentFormation } } : {})}
         {...(own && opponent ? { tacticsContext: { club: own, opponentClub: opponent, opponent: plan.opponent, opponentForm: plan.opponentForm, moment: plan.moment } } : {})}
+        {...(own
+          ? {
+              matchPlan: {
+                club: own,
+                load: () => engine.matchPlan(),
+                save: async (matchPlan) => {
+                  await engine.apply({ type: "setMatchPlan", plan: matchPlan });
+                },
+              },
+            }
+          : {})}
       />
     );
   }
@@ -633,11 +781,12 @@ export function Round() {
   const lineupLimits = lineupSide ? limitsOf(lineupSide.side, lineupSide.clubId) : null;
   const incidentLimits = incident ? limitsOf(incident.side, incident.clubId) : null;
   const incidentMatch = incident && matches.find((m) => m.fixtureId === incident.side.fixtureId);
+  const shootoutMatch = shootoutAsk && matches.find((m) => m.fixtureId === shootoutAsk.side.fixtureId);
   // On a human coach's own match the ficha offers his substitutions through his lineup sheet.
   const fileCoach = result === null ? coached.find((c) => c.side.fixtureId === fileRef) : undefined;
   const substituteFromFile = (clubId: string) => {
     setFileRef(null);
-    openLineup(clubId);
+    openOwnLineup(clubId);
   };
   const seats: Seat[] = boardCoaches.flatMap(({ clubId, coachName, side }) => {
     const match = matches.find((m) => m.fixtureId === side.fixtureId);
@@ -710,10 +859,17 @@ export function Round() {
               </button>
             )
           ) : (
-            <button className="btn y live-act" onClick={() => round.coachClubId && openLineup(round.coachClubId)}>
-              <i className="ph-bold ph-strategy" aria-hidden="true" />
-              Escalação <small>{limits?.subsLeft === 1 ? "1 troca" : `${limits?.subsLeft ?? 0} trocas`}</small>
-            </button>
+            round.coachClubId && isLockedToPlan(round.coachClubId) ? (
+              <button className="btn live-act live-act-locked" onClick={() => noteLocked()}>
+                <i className="ph-bold ph-gavel" aria-hidden="true" />
+                Só o plano <small>regra da casa</small>
+              </button>
+            ) : (
+              <button className="btn y live-act" onClick={() => round.coachClubId && openLineup(round.coachClubId)}>
+                <i className="ph-bold ph-strategy" aria-hidden="true" />
+                Escalação <small>{limits?.subsLeft === 1 ? "1 troca" : `${limits?.subsLeft ?? 0} trocas`}</small>
+              </button>
+            )
           )}
         </Cover>
       ) : (
@@ -728,7 +884,16 @@ export function Round() {
           )}
         </header>
       )}
-      {error && !isLineupOpen && !incident && <p className="status error live-error">{error}</p>}
+      {error && !isLineupOpen && !incident && !shootoutAsk && <p className="status error live-error">{error}</p>}
+      {planNote && (
+        <div key={planNote.count} className={`live-plan-note ${planNote.tone}`} role="status">
+          <i className={NOTE_ICONS[planNote.tone]} aria-hidden="true" />
+          <span>
+            <b>{planNote.title}</b>
+            {planNote.text}
+          </span>
+        </div>
+      )}
 
       <div className="live-list">
         {minute >= end && <MatchReport round={round} />}
@@ -767,6 +932,21 @@ export function Round() {
           onLeave={() => leaveIncident()}
           onOpenLineup={openLineupFromIncident}
           onSubstitute={(substitutions) => void substituteFromIncident(substitutions)}
+        />
+      )}
+
+      {shootoutAsk && shootoutMatch && (
+        <ShootoutOrder
+          key={shootoutAsk.clubId}
+          club={round.clubs[shootoutAsk.clubId]}
+          opponent={round.clubs[shootoutMatch.homeId === shootoutAsk.clubId ? shootoutMatch.awayId : shootoutMatch.homeId]}
+          score={shootoutMatch.homeId === shootoutAsk.clubId ? `${shootoutMatch.score.home} × ${shootoutMatch.score.away}` : `${shootoutMatch.score.away} × ${shootoutMatch.score.home}`}
+          {...(shootoutAsk.coachName && coached.length > 1 ? { coachName: shootoutAsk.coachName } : {})}
+          kickers={shootoutKickersOf(shootoutAsk.side, shootoutMatch.events, shootoutAsk.clubId)}
+          squad={shootoutAsk.side.squad}
+          isBusy={isBusy}
+          error={error}
+          onConfirm={(order) => void answerShootout(order)}
         />
       )}
 
@@ -822,6 +1002,11 @@ function tacticsContextOf(round: LiveRound, clubId: string, side: CoachSide, min
 /** A human coach's side in the round, by his club: the seated coach's, or a hot-seat coach's waiting for his turn. */
 function sideOf(round: LiveRound, clubId: string): CoachSide | null {
   return round.humanSides?.find((side) => side.clubId === clubId) ?? (clubId === round.coachClubId ? round.coach : null);
+}
+
+/** Whether a key press lands in a field the coach types in, which keeps its keys. */
+function isTyping(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement && (target.isContentEditable || target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT");
 }
 
 /** The competition's real mark where the game has one: the Brasileirão's top two series and the Copa do Brasil. */

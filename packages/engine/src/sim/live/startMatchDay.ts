@@ -28,6 +28,9 @@ import { coachOutcome } from "./coachOutcome.js";
 import { formOfTheDay, formStrength } from "./formOfTheDay.js";
 import { kickOffMoment, kickOffTalksOf, talkEffect, type TalkTone } from "./teamTalk.js";
 import { incidentHandling } from "./incidentHandling.js";
+import { followMatchPlans } from "./applyLiveChange.js";
+import type { MatchPlan } from "../coach/matchPlan.js";
+import type { Tactics } from "../coach/tactics.js";
 import { onDutyOn } from "../nations/nationsDay.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
 import { drawMatchPlay } from "./matchPlay.js";
@@ -71,6 +74,9 @@ function coachLineupOf(state: GameState, decisions: DayDecisions): SimPlayer[] |
   return chosen;
 }
 
+/** The coach's tactics with his match plan's shootout order, when the plan sets one. */
+const withPlanOrder = (tactics: Tactics, plan: MatchPlan | undefined): Tactics => (plan?.kickerOrder ? { ...tactics, kickerOrder: plan.kickerOrder } : tactics);
+
 /** Each waiting hot-seat coach's plan for his club's match, by club: the eleven he picked on his turn and his tactics. */
 export function waitingPlansOf(state: GameState, decisions: DayDecisions): Record<string, CoachPlan> {
   const plans: Record<string, CoachPlan> = {};
@@ -78,7 +84,8 @@ export function waitingPlansOf(state: GameState, decisions: DayDecisions): Recor
     if (!waiting.clubId) return;
     const own = decisions.waiting?.[index] ?? {};
     const kept = startersKept(waiting.coach, state.chemistry?.[waiting.clubId]?.eleven);
-    plans[waiting.clubId] = { lineup: coachLineupOf({ ...state, coachClubId: waiting.clubId }, own), tactics: own.tactics ?? waiting.coach.tactics, ...(kept ? { kept } : {}) };
+    const tactics = withPlanOrder(own.tactics ?? waiting.coach.tactics, waiting.coach.matchPlan);
+    plans[waiting.clubId] = { lineup: coachLineupOf({ ...state, coachClubId: waiting.clubId }, own), tactics, ...(kept ? { kept } : {}) };
   });
   return plans;
 }
@@ -123,8 +130,8 @@ function waitingMatchStream(state: GameState, fixtureId: string): number {
 
 /**
  * Kicks off today's matches: every match is drawn as advanceDay always drew it and gets its
- * timeline. Each human coach's match stays open for applyLiveChange until finishMatchDay; the
- * others are recorded at once.
+ * timeline. Each human coach's match stays open for applyLiveChange until finishMatchDay, played on
+ * as his match plan says; the others are recorded at once.
  */
 export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDay {
   const random = randomStream(state.rngState);
@@ -132,7 +139,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
   const events: DayEvent[] = [];
   const squad = squadsOf(state);
   const kept = state.coachClubId ? startersKept(state.coach, state.chemistry?.[state.coachClubId]?.eleven) : undefined;
-  const coach: CoachPlan = { lineup: coachLineupOf(state, decisions), tactics: decisions.tactics ?? state.coach.tactics, ...(kept ? { kept } : {}) };
+  const coach: CoachPlan = { lineup: coachLineupOf(state, decisions), tactics: withPlanOrder(decisions.tactics ?? state.coach.tactics, state.coach.matchPlan), ...(kept ? { kept } : {}) };
   const waiting = waitingPlansOf(state, decisions);
   const talks = kickOffTalksOf(state, decisions);
   const playedToday: SimPlayer[] = [];
@@ -312,7 +319,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     if (fixture && fixture.date === state.date && !fixture.result) fixtures[i] = playFixture(fixture);
   }
 
-  return {
+  const day: LiveDay = {
     state,
     decisions,
     matches,
@@ -320,4 +327,5 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     ...(waitingMatches.length ? { waitingMatches } : {}),
     rest: { fixtures, events, players: playedToday, discipline: cards.discipline(), sheets, rngState: random.state() },
   };
+  return followMatchPlans(day, 0);
 }

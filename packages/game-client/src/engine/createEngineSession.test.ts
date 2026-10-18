@@ -298,7 +298,7 @@ function playAcademy() {
   return { recorded, ids: { promoted: promoted.id, released: released.id, sold: sold.id }, answers, copinha: days.events.find((event) => event.type === "copinhaPlayed") };
 }
 
-/** A hot-seat turn: the first coach spends time on the market and passes, the second plays on. */
+/** A hot-seat turn: the first coach spends time on the market, sets his match plan and passes, the second plays on. */
 function playHotSeatTurn() {
   const recorded = recordedSession();
   recorded.apply({
@@ -307,6 +307,7 @@ function playHotSeatTurn() {
     choices: { coachClubId: CLUB, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "palmeiras-sp" }] }, marketClockSeconds: 300 },
   });
   recorded.apply({ type: "spendMarketTime", seconds: 30 });
+  recorded.apply({ type: "setMatchPlan", plan: { keepsShape: true, timeOutKey: "q" } });
   recorded.apply({ type: "passTurn" });
   recorded.apply({ type: "playToMatchDay" });
   return { recorded };
@@ -733,6 +734,7 @@ test("the season, career, market, money, academy and hot-seat logs between them 
     hireAssistant: true,
     fireAssistant: true,
     nameCaptain: true,
+    setMatchPlan: true,
     watchPlayer: true,
     saveFilter: true,
     deleteFilter: true,
