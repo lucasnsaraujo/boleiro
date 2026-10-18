@@ -12,7 +12,7 @@ import { Crest } from "../clubs/Crest.js";
 import type { AdvanceResult } from "@boleiro/game-client/engine/createEngineSession";
 import type { HotSeatView } from "@boleiro/game-client/hub/hotSeat";
 import { formatBarDate } from "@boleiro/game-client/format/formatGameDate";
-import { prefersReducedMotion } from "../motion/reducedMotion.js";
+import { tintRow } from "../motion/rowSlides.js";
 import { useFlip } from "../motion/useFlip.js";
 import { hasOwnArrows } from "../round/hasOwnArrows.js";
 import { HotSeatPitches, type Seat } from "../round/HotSeatPitches.js";
@@ -43,6 +43,7 @@ import type { Formation } from "@boleiro/engine/engine/formations";
 import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
 import { crowdLevel, heardCues, roundCues, thinCues, varDecisionCues } from "../sound/roundCues.js";
 import { useSound } from "../sound/SoundProvider.js";
+import { stingerBeat } from "../sound/stingerBeat.js";
 import copaDoBrasil from "../../../../design/mocks/img/competitions/copa-do-brasil.svg";
 import serieA from "../../../../design/mocks/img/competitions/serie-a.svg";
 import serieB from "../../../../design/mocks/img/competitions/serie-b.svg";
@@ -65,7 +66,6 @@ const COMPETITION_LOGOS = [
 ] as const;
 // The slip of the table on the cover: the coach's club between its neighbours.
 const TABLE_CARD_ROWS = 3;
-const EXPO_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 const NO_COLOURS = { primary: "#eef3e8", secondary: "#0a1a10" };
 /** The crowd quietens while the clock stands still: half-time, a pause, a sheet open. */
 const PAUSED_CROWD = 0.6;
@@ -1122,7 +1122,7 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
   return (
     <section className={`live-cover has-pitch${hasSeats ? " has-seats" : ""}${isKickOff ? " round-kickoff" : ""}${varHold && varHold.phase !== "leaving" ? " is-var" : ""}`} aria-label="Seu jogo">
       {golCount > 0 && (
-        <div key={golCount} className="gol-sweep" aria-hidden="true">
+        <div key={golCount} className="gol-sweep" style={{ ["--gol-beat" as string]: `${stingerBeat("goalStinger")}ms` }} aria-hidden="true">
           GOL
         </div>
       )}
@@ -1342,24 +1342,8 @@ function TableSheet({ note, onClose, children }: { note: string; onClose: () => 
   );
 }
 
-const ROSE = "rgba(17, 132, 66, 0.2)";
-const FELL = "rgba(215, 50, 42, 0.16)";
-
-/** A table row slides to its new place, tinted green if it rose and red if it fell; with reduced motion only the tint fades. */
-function slideTableRow(row: HTMLElement, offset: number) {
-  if (typeof row.animate !== "function") return;
-  const tint = offset > 0 ? ROSE : FELL;
-  const slides = !prefersReducedMotion();
-  const at = (y: number) => (slides ? { transform: `translateY(${y}px)` } : {});
-  row.animate(
-    [
-      { ...at(offset), boxShadow: `inset 0 0 0 999px ${tint}` },
-      { ...at(0), boxShadow: `inset 0 0 0 999px ${tint}`, offset: 0.55 },
-      { ...at(0), boxShadow: "inset 0 0 0 999px transparent" },
-    ],
-    { duration: 1500, delay: 180, easing: EXPO_OUT, fill: "backwards" },
-  );
-}
+/** A live table row slides to its new place once the goal that moved it has flashed, glowing green if it rose and red if it fell. */
+const slideTableRow = tintRow({ duration: 1500, delay: 180 });
 
 /** Table rows that slide to their new places when the order changes (FLIP). */
 function TableRows({ rows, clubs, coachClubId, isFull = false }: { rows: readonly LiveTableRow[]; clubs: Readonly<Record<string, RoundClub>>; coachClubId: string | null; isFull?: boolean }) {
