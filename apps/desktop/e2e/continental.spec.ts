@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar as barOf, playLiveRound, startAtClub } from "./flows.js";
+import { bar as barOf, passMoments, playLiveRound, startAtClub } from "./flows.js";
 
 const MAX_PRESSES = 5;
 
@@ -42,6 +42,8 @@ test("a Libertadores club plays its first group match live and finds its group t
   await bar.getByRole("link", { name: "Agenda" }).click();
   await expect(page.getByRole("heading", { name: "Calendário 2026" })).toBeAttached();
   await bar.getByRole("link", { name: "Times" }).click();
+  // A title won in those months plays its scene first.
+  await passMoments(page, page.getByRole("button", { name: "Jogar rodada" }));
 
   const lineup = page.getByRole("dialog", { name: "Escalação" });
   for (let press = 0; press < MAX_PRESSES && !(await lineup.isVisible()); press++) {

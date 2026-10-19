@@ -1,6 +1,6 @@
 import { addDays } from "../dates.js";
 import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
-import { CALL_UP_PLACES, CALL_UP_SIZE, OUTSIDER_MARK, nationalsByTeam, outsiderRows, pickCallUp, roleOf } from "./callUps.js";
+import { CALL_UP_PLACES, CALL_UP_SIZE, OUTSIDER_MARK, callableRows, nationalsByTeam, pickCallUp, roleOf } from "./callUps.js";
 import type { NationalCompetition, NationalJob, NationalMatch, NationalOffer, Nations } from "./nations.js";
 import type { Coach } from "../coach/coach.js";
 import type { WaitingCoach } from "../coach/humanCoaches.js";
@@ -131,13 +131,13 @@ export function declineNationalOffer(state: GameState): GameState {
   return { ...state, nations };
 }
 
-/** The players a coach may call up for his national team: his pool, the game's own and the outsiders, as call-up refs. */
+/** The players a coach may call up for his national team: his pool, the game's own and the outsiders young enough, as call-up refs. */
 export function poolOf(state: GameState, teamId: string): string[] {
   const nations = state.nations;
   if (!nations) return [];
-  const nationals = nationalsByTeam(state.players, nations.teams).get(teamId) ?? [];
-  const outsiders = outsiderRows(nations.outsiders[teamId]).map((row) => `${OUTSIDER_MARK}${row}`);
-  return [...nationals.map((p) => p.id), ...outsiders];
+  const own = (nationalsByTeam(state.players, nations.teams).get(teamId) ?? []).map((p) => p.id);
+  const outsiders = callableRows(nations.outsiders[teamId], state.date).map((row) => `${OUTSIDER_MARK}${row}`);
+  return [...own, ...outsiders];
 }
 
 /** The coach's own call-up for his next window: at most 26 of his pool, a goalkeeper at least. It replaces his assistant's. */

@@ -8,8 +8,8 @@ import type { SessionSave } from "../engine/sessionSave.js";
 
 const FIRST = "flamengo-rj";
 const SECOND = "palmeiras-sp";
-// A season where the second coach keeps his club and wins the league and the Paulista's two-legged final.
-const SEED = 11;
+// A season where the second coach keeps his club and wins the league and a final.
+const SEED = 17;
 const MAX_STEPS = 1_200;
 
 type Season = Pick<GameState, "season" | "fixtures" | "competitions" | "history" | "date">;

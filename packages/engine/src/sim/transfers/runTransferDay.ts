@@ -87,7 +87,10 @@ export function runTransferDay(
     steps.push({ step: (s) => asWaitingCoach(s, waitingIndex, (seated) => coachMarketDay(seated, waitingRandom.next)), waitingIndex });
   });
   if (isMarketDay(state, state.date)) {
-    add(europeBids, tradeBetweenClubs, (s, r) => signFromAbroad(s, r, nextId), lendYoungPlayers, signFreeAgents);
+    // Clubs look abroad before they buy at home: a quarter of Série A's signings are foreigners (Gato Mestre's
+    // 2019–2026 count, Netvasco, 10 Feb 2026, https://www.netvasco.com.br/n/378723/), so departures aren't all
+    // replaced from the divisions below.
+    add(europeBids, (s, r) => signFromAbroad(s, r, nextId), tradeBetweenClubs, lendYoungPlayers, signFreeAgents);
     waiting.forEach((coach, waitingIndex) => {
       if (coach.clubId) steps.push({ step: (s, r) => asWaitingCoach(s, waitingIndex, (seated) => europeBids(seated, r, coach.clubId ?? undefined)), waitingIndex });
     });

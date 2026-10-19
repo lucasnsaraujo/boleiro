@@ -209,7 +209,7 @@ test("the round stepper shows the table as it stood after an earlier round", asy
 });
 
 test("a played cup tie opens its last game's ficha", async () => {
-  const given = await services("bahia-ba", undefined, 3);
+  const given = await services("bahia-ba", undefined, 1);
   const { date } = await given.engine.read(["date"]);
   const days = Math.round((Date.parse("2026-04-01") - Date.parse(date)) / 86_400_000);
   await given.engine.apply({ type: "advance", days: Array.from({ length: days }, () => ({})) });
@@ -291,7 +291,7 @@ test("the Mundial de Clubes heading names it once, its logo beside the name", as
 });
 
 test("a Super Mundial semi-final on the bracket is played at its host's final ground, not at the first club's ground", async () => {
-  const given = await services("flamengo-rj", CLUB_WORLD_CUP_SEASON, 2);
+  const given = await services("flamengo-rj", CLUB_WORLD_CUP_SEASON, 1);
   const { date, hosts } = await given.engine.read(["date", "hosts"]);
   const final = hosts?.[`club-world-cup-${CLUB_WORLD_CUP_SEASON}`]?.final.name;
   if (!final) return expect.fail("the Super Mundial has a host");

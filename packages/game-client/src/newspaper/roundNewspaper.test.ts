@@ -92,7 +92,7 @@ test("an edition before the coach's one-match final prints where its host plays 
   const libertadores = game.competitions["libertadores-2026"];
   const day = newspaperOf(game)?.date;
   if (libertadores?.kind !== "continental" || !libertadores.host || !day) throw new Error("a Libertadores with a host and an edition");
-  const final = { id: "final", competitionId: libertadores.id, stage: libertadores.stageDates.length - 1, date: "2026-11-24", homeId: CLUB, awayId: "palmeiras-sp" };
+  const final = { id: "final", competitionId: libertadores.id, stage: libertadores.stageDates.length - 1, date: "2026-11-24", homeId: CLUB, awayId: "palmeiras-sp", result: null };
   const fixtures = [...game.fixtures.filter((f) => f.result || (f.homeId !== CLUB && f.awayId !== CLUB)), final];
   expect(newspaperOf({ ...game, fixtures }, day)?.side[0]).toMatchObject({ kicker: "Libertadores", headline: "A final será em Montevidéu, no Estadio Centenario" });
   expect(newspaperOf(game, day)?.side.some((story) => story.headline.startsWith("A final será"))).toBe(false);

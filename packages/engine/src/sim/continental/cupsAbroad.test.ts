@@ -38,7 +38,8 @@ function resultOnlyScores(state: GameState): Map<string, string> {
 }
 
 describe("a human club abroad in UEFA's and its country's cups", () => {
-  const start = loadNewGame(5, { coachClubId: ARSENAL, world, formats: RAPIDO });
+  // The season needs the board to keep Arsenal's coach past December.
+  const start = loadNewGame(1, { coachClubId: ARSENAL, world, formats: RAPIDO });
   const championsLeague = start.competitions["champions-league-2026"];
 
   it("plays its Champions League first phase in the full tier, its matches fixtures from the start", () => {

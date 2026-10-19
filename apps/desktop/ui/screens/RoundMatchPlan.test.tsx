@@ -29,7 +29,7 @@ const CLUB = "bahia-ba";
 async function onMatchDay(plan: MatchPlan, choices: Partial<NewGameChoices> = {}, change: (engine: EngineClient) => EngineClient = (engine) => engine): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.apply({ type: "newGame", seed: 18, choices: { coachClubId: CLUB, ...choices } });
+  await engine.apply({ type: "newGame", seed: 6, choices: { coachClubId: CLUB, ...choices } });
   await engine.apply({ type: "playToMatchDay" });
   await engine.apply({ type: "setMatchPlan", plan });
   return { engine: change(engine), slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };

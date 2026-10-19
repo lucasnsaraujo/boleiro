@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { addDays } from "@boleiro/engine/sim/dates";
+import { addDays, daysBetween } from "@boleiro/engine/sim/dates";
 import { freeFriendlyDates, friendlyAnswer } from "@boleiro/engine/sim/friendlies/friendlies";
 import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
 import type { BidOutcome } from "@boleiro/engine/sim/transfers/answerBid";
@@ -16,7 +16,7 @@ import { compareText } from "@boleiro/engine/sim/compareText";
 const CLUB = "flamengo-rj";
 // Botafogo's 2026 kit, before the betting ban, had nothing on its front, back or shorts (Wikipedia, data/sponsors.csv).
 const SPONSORS_CLUB = "botafogo-rj";
-const SEED = 3;
+const SEED = 1;
 // The season test needs a coach the board keeps all year, and the events test an event that asks him within it: seed 14 gives both on today's engine.
 const SEASON_SEED = 3;
 // Enough steps for a season of play-ons and match days; a stuck loop fails instead of hanging.
@@ -270,7 +270,8 @@ function playMoney() {
   const date = freeFriendlyDates(booking).find((d) => friendlyAnswer(booking, opponentId, d, true).booked);
   if (!date) throw new Error("Flamengo has a free date for a friendly");
   const friendly = apply({ type: "bookFriendly", opponentId, date, isHome: true });
-  const days = apply({ type: "advance", days: Array.from({ length: 70 }, () => ({})) });
+  // To the day after the friendly, so the inbox's last 40 lines still hold its report.
+  const days = apply({ type: "advance", days: Array.from({ length: daysBetween(booking.date, date) + 2 }, () => ({})) });
   const played = days.events.find((event) => event.type === "friendlyPlayed");
   const cashBeforeRepay = session.read(["finances"]).finances[CLUB]?.cash ?? 0;
   apply({ type: "repayBankLoan" });
