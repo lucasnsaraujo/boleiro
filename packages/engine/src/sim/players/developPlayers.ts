@@ -93,8 +93,8 @@ const LEVEL_PER_LOG_REVENUE = 1.8;
 // 1.33 points a game, and clubs relegated to Série B and C 1.53 and 1.38 (ESPN's and Sofascore's results
 // and divisions.csv in data/history, Série A's from its odds file); squads that kept their old level took
 // 0.74, 0.84, 0.95, 1.93 and 1.95 in the game (six seeds' seasons 2–4). guess: a share of 0.85 takes them
-// to 1.07, 1.16, 1.18, 1.56 and 1.56; a full rebuild fits a little better (1.13, 1.18, 1.28, 1.46, 1.46)
-// but sends more poor clubs from the estaduais up to Série C, below its revenue band, in ten-season runs.
+// to 1.08, 1.11, 1.23, 1.50 and 1.52; a full rebuild fits promoted clubs a little better but sends more
+// poor clubs from the estaduais up to Série C, below its revenue band, in ten-season runs.
 const REBUILD_SHARE = 0.85;
 
 // The yearly revenue the board budgets with, its members at the level they settle back to: membership moves
