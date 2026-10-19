@@ -6,11 +6,11 @@ The short answer: **Brazil's cards and Série A and D results match; Série B is
 
 ## Findings
 
-1. **Série A passes** on home, draw, away and goals (2.46 goals a game against a real 2.49). **Série D passes** (2.40 against 2.24, inside its wide band, because the real sample is one season of 510 games).
-2. **Série B fails by a hair**: away wins are 25.5% against 23.4% real, a gap of 2.1 points inside a band of 2.1.
-3. **Série C scores too much**: 2.39 goals a game against 2.22. The league is right on day one (2.26 in `pnpm calibrate`, which fields every club's real squad) and in season 1 of a run (2.28), then settles at 2.42 from season 2. Série D drifts the same way (2.29 in season 1, 2.44 in season 4). A run of Brazil alone, with no world abroad (`runSeasons`, six seeds, four seasons), drifts alike (Série C 2.20, 2.39, 2.47, 2.42), so the world abroad and national football are not the cause. Something in the yearly squad turnover (transfers, youth, retirements) raises goals in the lower divisions. It needs its own investigation.
-4. **Cards pass** for the three competitions with a real sample: Série A 5.02 yellows and 0.295 reds a game against 5.04 and 0.296, Série B 5.09 and 0.311 against 5.16 and 0.316, and the Copa do Brasil row (which also holds the continental cups, see below) 4.45 and 0.261 against 4.70 and 0.277. Série C, Série D and the estaduais have no real card data; they borrow Série B's or the cup's rates, so their match with the borrowed rate proves only that the engine applies it.
-5. **The Copa do Brasil's upsets pass in 6 of 9 judged groups.** The known gap stays: a Série A club playing away at a Série B club wins 32% in the game against 53% real. The comment in `cupCalibration.test.ts` explains it: one symmetric home advantage cannot fit a Série A club at home to Série B (68% real, 68% in the game) and away (53% real).
+1. **Série A passes** on home, draw, away and goals (2.46 goals a game against a real 2.49). **Série D passes** (2.41 against 2.24, inside its wide band, because the real sample is one season of 510 games).
+2. **Série B fails by a hair**: away wins are 25.5% against 23.4% real and draws 26.4% against 28.7%, each a gap of 2.1 or 2.3 points inside a band of 2.1 or 2.2.
+3. **Série C scores too much**: 2.38 goals a game against 2.22. The league is right on day one (2.26 in `pnpm calibrate`, which fields every club's real squad) and in season 1 of a run (2.28), then climbs to 2.45 by season 4. Série D drifts the same way (2.29 in season 1, 2.44 to 2.48 after). A run of Brazil alone, with no world abroad (`runSeasons`, six seeds, four seasons, same commit), drifts alike (Série C 2.22, 2.36, 2.35, 2.37; Série D 2.29, 2.41, 2.44, 2.46), so the world abroad and national football are not the cause. Something in the yearly squad turnover (transfers, youth, retirements) raises goals in the lower divisions. It needs its own investigation.
+4. **Cards pass** for the three competitions with a real sample: Série A 5.04 yellows and 0.295 reds a game against 5.04 and 0.296, Série B 5.10 and 0.314 against 5.16 and 0.316, and the Copa do Brasil row (which also holds the continental cups, see below) 4.42 and 0.263 against 4.70 and 0.277. Série C, Série D and the estaduais have no real card data; they borrow Série B's or the cup's rates, so their match with the borrowed rate proves only that the engine applies it.
+5. **The Copa do Brasil's upsets pass in 8 of 9 judged groups.** The known gap stays: a Série A club playing away at a Série B club wins 31% in the game against 53% real. The comment in `cupCalibration.test.ts` explains it: one symmetric home advantage cannot fit a Série A club at home to Série B (69% real, 62% in the game, 68% in `pnpm calibrate`) and away (53% real).
 6. **Leagues abroad pass in 2 of the 23 that have a real reference** (LaLiga and Liga Portugal). Every league abroad plays with Série A's parameters, as a comment in `resultOnlyLeague.ts` says (`guess: until each league has its own fit`). The errors are systematic: the home side wins 46–48% of games everywhere, where the real figure runs from 39.8% (Austria) to 46.7% (Norway and Scotland); goals sit between 2.48 and 2.71 in every league with a reference, where the real figure runs from 2.11 (Argentina) to 3.19 (Germany's Bundesliga). The Premier League plays 2.52 goals a game against a real 2.95, the Eredivisie 2.69 against 3.12, the Bundesliga 2.63 against 3.19.
 7. **Cards abroad are Série A's.** A league abroad has no cards in the result-only tier, and a human coach who takes a club abroad plays with Série A's rates (5.04 yellows, 0.296 reds a game, `cardCompetitionOf` in `cardRates.ts`). The real leagues run from 3.00 yellows (Eredivisie) to 5.18 (Greece), and from 0.109 reds (Championship) to 0.285 (Liga Portugal).
 8. **Some small leagues play oddly.** Cyprus' second division has 18% draws and 3.11 goals a game, Venezuela 22.6% draws and 2.87 goals, the Saudi Pro League 22.4% draws and 2.84 goals. No real reference was fetched for them. Most likely their squads have wide strength gaps from sparse Transfermarkt data. Check them before trusting them.
@@ -20,6 +20,7 @@ What to do, in order of value: fit one parameter set per league abroad from foot
 ## How the numbers are made
 
 - **Simulation.** `worldCalibrationRun` plays the v1 world (Brazil in the full tier, 62 leagues abroad result-only, 1,344 clubs) with no human coach, for four seasons from 2026, on ten seeds (1 to 10). Four seasons give three finished seasons of every league that runs across the new year: the first of them starts in August 2026.
+- **Commit.** The tables carry the commit they were generated at. A change in the engine, the data or a seeded stream moves the seeds' games, so a later run can differ by a fraction of a point without the game having changed; the bands are wider than that.
 - **Reproduce.** `pnpm calibration:report --seeds 10 --seasons 4 --write docs/calibration-report.md` replaces the tables below. It takes about two minutes. The seeds make the numbers repeat exactly.
 - **Real data for Brazil.** The data the engine was calibrated on, read by `pnpm calibrate`: Série A results from 2022 on, with closing odds (`data/history/brasileirao-serie-a-odds.csv`, football-data.co.uk, 1,809 games); Série B, C and D results (Sofascore for 2024, ESPN for the other seasons: 1,840, 864 and 510 games); Copa do Brasil 2017–2025 between divisions; yellow and red cards of Série A, Série B and the Copa do Brasil 2024–2025 (ESPN match summaries: 760, 760 and 141 games). Rows and sources are in `data/SOURCES.md`.
 - **Real data for the leagues abroad.** New for this report: `data/history/football-data/league-rates.csv`, built by `pipeline/fetch_football_data_rates.py` from football-data.co.uk. The 17 European leagues are the finished seasons 2022/23 to 2025/26, with cards. Argentina, the USA, Mexico, Norway, Austria and Poland are the calendar years 2022–2025 (Mexico and Austria and Poland by season), goals only. The files list every finished game, so Argentina's, MLS' and Liga MX's counts include play-offs and cups that the result-only tier does not play. No engine parameter is fitted to this file.
@@ -32,7 +33,7 @@ What to do, in order of value: fit one parameter set per league abroad from foot
 
 <!-- tables:start -->
 
-Generated by `pnpm calibration:report --seeds 10 --seasons 4`: 10 seeds (1 to 10) × 4 seasons of the v1 world, no human coach, starting in 2026.
+Generated by `pnpm calibration:report --seeds 10 --seasons 4`: 10 seeds (1 to 10) × 4 seasons of the v1 world, no human coach, starting in 2026, at commit c8666f2f.
 
 ## Verdicts at a glance
 
@@ -40,17 +41,17 @@ Generated by `pnpm calibration:report --seeds 10 --seasons 4`: 10 seeds (1 to 10
 |---|---|
 | Brazil league results (home, draw, away and goals per division) | 2 of 4 divisions |
 | Brazil cards (Série A, B and the Copa do Brasil, the ones with a real sample) | 6 of 6 numbers |
-| Copa do Brasil results by division gap and venue | 6 of 9 groups |
+| Copa do Brasil results by division gap and venue | 8 of 9 groups |
 | Leagues abroad with real results | 2 of 23 leagues |
 
 ## Brazil's leagues
 
 | Division | Games B | Games real | Home % B / real | Draw % B / real | Away % B / real | Goals/game B / real | Goals/game per seed | Verdict |
 |---|---|---|---|---|---|---|---|---|
-| Série A | 15200 | 1809 | 45.3 / 47.2 | 27.4 / 26.9 | 27.4 / 25.9 | 2.46 / 2.49 | 2.42–2.51 | pass |
-| Série B | 15200 | 1840 | 47.3 / 47.9 | 27.2 / 28.7 | 25.5 / 23.4 | 2.24 / 2.17 | 2.19–2.30 | fail: away +2.1 (band 2.1) |
-| Série C | 11220 | 864 | 47.9 / 47.7 | 27.7 / 30.1 | 24.4 / 22.2 | 2.39 / 2.22 | 2.33–2.47 | fail: goals +0.17 (band 0.11) |
-| Série D | 24400 | 510 | 45.8 / 45.5 | 27.3 / 30.2 | 26.9 / 24.3 | 2.40 / 2.24 | 2.36–2.44 | pass |
+| Série A | 15200 | 1809 | 45.9 / 47.2 | 27.3 / 26.9 | 26.7 / 25.9 | 2.46 / 2.49 | 2.38–2.51 | pass |
+| Série B | 15200 | 1840 | 48.1 / 47.9 | 26.4 / 28.7 | 25.5 / 23.4 | 2.25 / 2.17 | 2.18–2.33 | fail: draw −2.3 (band 2.2); away +2.1 (band 2.1) |
+| Série C | 11220 | 864 | 48.5 / 47.7 | 27.3 / 30.1 | 24.2 / 22.2 | 2.38 / 2.22 | 2.28–2.52 | fail: goals +0.16 (band 0.11) |
+| Série D | 24400 | 510 | 45.6 / 45.5 | 27.5 / 30.2 | 26.9 / 24.3 | 2.41 / 2.24 | 2.31–2.49 | pass |
 
 ### Brazil's leagues by season
 
@@ -58,38 +59,38 @@ Goals per game, then home win % in brackets, over all seeds.
 
 | Division | Real | Season 1 | Season 2 | Season 3 | Season 4 |
 |---|---|---|---|---|---|
-| Série A | 2.49 (47.2) | 2.49 (44.4) | 2.50 (46.6) | 2.41 (45.1) | 2.45 (45.1) |
-| Série B | 2.17 (47.9) | 2.14 (46.9) | 2.39 (48.2) | 2.18 (47.3) | 2.24 (46.8) |
-| Série C | 2.22 (47.7) | 2.28 (49.2) | 2.42 (48.0) | 2.42 (47.7) | 2.42 (47.1) |
-| Série D | 2.24 (45.5) | 2.29 (44.9) | 2.42 (45.3) | 2.46 (46.6) | 2.44 (46.6) |
+| Série A | 2.49 (47.2) | 2.48 (43.6) | 2.52 (47.6) | 2.39 (46.7) | 2.46 (45.7) |
+| Série B | 2.17 (47.9) | 2.13 (47.4) | 2.38 (48.9) | 2.24 (49.4) | 2.25 (46.6) |
+| Série C | 2.22 (47.7) | 2.28 (49.1) | 2.35 (48.7) | 2.42 (46.9) | 2.45 (49.6) |
+| Série D | 2.24 (45.5) | 2.29 (44.9) | 2.43 (45.5) | 2.48 (46.1) | 2.44 (45.8) |
 
 ## Brazil's cards
 
 | Competition | Games B | Yellows/game B | Yellows/game real | Reds/game B | Reds/game real | Verdict |
 |---|---|---|---|---|---|---|
-| Série A | 15200 | 5.02 | 5.04 | 0.295 | 0.296 | pass |
-| Série B | 15200 | 5.09 | 5.16 | 0.311 | 0.316 | pass |
-| Série C | 11220 | 5.12 | 5.16 | 0.318 | 0.316 | no real sample, rates borrowed from Série B |
-| Série D | 24400 | 5.10 | 5.16 | 0.313 | 0.316 | no real sample, rates borrowed from Série B |
-| Copa do Brasil and the continental cups | 19590 | 4.45 | 4.70 | 0.261 | 0.277 | pass |
-| Estaduais | 30840 | 4.65 | 4.70 | 0.275 | 0.277 | no real sample, rates borrowed from the Copa do Brasil |
+| Série A | 15200 | 5.04 | 5.04 | 0.295 | 0.296 | pass |
+| Série B | 15200 | 5.10 | 5.16 | 0.314 | 0.316 | pass |
+| Série C | 11220 | 5.11 | 5.16 | 0.321 | 0.316 | no real sample, rates borrowed from Série B |
+| Série D | 24400 | 5.11 | 5.16 | 0.314 | 0.316 | no real sample, rates borrowed from Série B |
+| Copa do Brasil and the continental cups | 19590 | 4.42 | 4.70 | 0.263 | 0.277 | pass |
+| Estaduais | 30840 | 4.65 | 4.70 | 0.279 | 0.277 | no real sample, rates borrowed from the Copa do Brasil |
 
 ## Copa do Brasil upsets
 
 | Gap | Favourite plays | Games B | Games real | Favourite wins % B / real | Draws % B / real | Loses % B / real | Verdict |
 |---|---|---|---|---|---|---|---|
-| AvB | home | 362 | 74 | 66 / 69 | 20 / 19 | 14 / 12 | pass |
-| AvB | away | 364 | 75 | 32 / 53 | 30 / 27 | 37 / 20 | fail: win −21 (band 13); loss +17 (band 10) |
-| AvC | home | 157 | 43 | 68 / 79 | 19 / 16 | 13 / 5 | fail: loss +8 (band 7) |
-| AvC | away | 157 | 49 | 43 / 39 | 31 / 29 | 25 / 33 | pass |
-| AvD | home | 92 | 45 | 82 / 87 | 16 / 11 | 2 / 2 | pass |
-| AvD | away | 92 | 125 | 61 / 61 | 24 / 30 | 15 / 10 | pass |
+| AvB | home | 346 | 74 | 62 / 69 | 24 / 19 | 14 / 12 | pass |
+| AvB | away | 343 | 75 | 31 / 53 | 32 / 27 | 37 / 20 | fail: win −23 (band 13); loss +17 (band 10) |
+| AvC | home | 154 | 43 | 71 / 79 | 20 / 16 | 9 / 5 | pass |
+| AvC | away | 154 | 49 | 47 / 39 | 31 / 29 | 22 / 33 | pass |
+| AvD | home | 110 | 45 | 84 / 87 | 15 / 11 | 2 / 2 | pass |
+| AvD | away | 110 | 125 | 62 / 61 | 21 / 30 | 17 / 10 | pass |
 | BvC | home | 4 | 17 | - | - | - | too few simulated games, not judged |
-| BvC | away | 158 | 24 | 31 / 21 | 37 / 42 | 32 / 38 | pass |
-| BvD | home | 2 | 24 | - | - | - | too few simulated games, not judged |
-| BvD | away | 1378 | 155 | 48 / 43 | 29 / 32 | 22 / 26 | pass |
+| BvC | away | 166 | 24 | 32 / 21 | 31 / 42 | 37 / 38 | pass |
+| BvD | home | 0 | 24 | - | - | - | too few simulated games, not judged |
+| BvD | away | 1382 | 155 | 48 / 43 | 29 / 32 | 23 / 26 | pass |
 | CvD | home | 0 | 13 | - | - | - | too few simulated games, not judged |
-| CvD | away | 1036 | 91 | 36 / 42 | 34 / 23 | 30 / 35 | fail: draw +11 (band 9) |
+| CvD | away | 1066 | 91 | 38 / 42 | 29 / 23 | 32 / 35 | pass |
 
 ## Leagues abroad: results
 
@@ -189,13 +190,13 @@ Goals per game, then home win % in brackets, over all seeds.
 
 | Competition | Games | Home % | Draw % | Away % | Goals/game |
 |---|---|---|---|---|---|
-| club-world-cup | 630 | 41.7 | 26.3 | 31.9 | 1.83 |
-| cup | 6200 | 39.4 | 29.7 | 30.9 | 2.25 |
-| intercontinental-cup | 200 | 48.0 | 21.5 | 30.5 | 2.48 |
-| libertadores | 6200 | 50.0 | 28.2 | 21.8 | 2.31 |
-| recopa | 80 | 48.8 | 30.0 | 21.3 | 2.11 |
-| state | 30840 | 50.7 | 25.6 | 23.7 | 2.41 |
-| sul-americana | 6280 | 49.9 | 28.4 | 21.7 | 2.31 |
+| club-world-cup | 630 | 38.9 | 30.8 | 30.3 | 1.85 |
+| cup | 6200 | 39.8 | 28.4 | 31.8 | 2.26 |
+| intercontinental-cup | 200 | 51.5 | 18.5 | 30.0 | 2.54 |
+| libertadores | 6200 | 49.8 | 27.4 | 22.7 | 2.30 |
+| recopa | 80 | 46.3 | 31.3 | 22.5 | 2.33 |
+| state | 30840 | 50.3 | 25.8 | 23.9 | 2.40 |
+| sul-americana | 6280 | 49.5 | 28.7 | 21.8 | 2.27 |
 
 ## National cups abroad, result-only
 
