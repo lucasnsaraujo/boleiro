@@ -1,17 +1,19 @@
 import { expect, test, type Page } from "@playwright/test";
 import { leaveIncident, playLiveRound } from "./flows.js";
 
-// Seeds to try for a first match where VAR changes a call in the coach's match.
+// Seeds to try for a first match where VAR changes a call in the coach's match, from the first whose check
+// comes mid-match with no stop before it (14: a goal awarded at 40').
+const FIRST_SEED = 14;
 const MAX_SEEDS = 40;
 
 /** A one-coach game at Flamengo, kicked off on a match day where VAR changes a call in Flamengo's match; that check's minute and decision. */
 async function kickOffBeforeVarCheck(page: Page): Promise<{ minute: number; decision: string }> {
   await page.goto("/");
   await page.waitForFunction(() => window.boleiroEngine !== undefined);
-  const check = await page.evaluate(async (maxSeeds) => {
+  const check = await page.evaluate(async ([firstSeed, maxSeeds]) => {
     const engine = window.boleiroEngine;
     if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
-    for (let seed = 1; seed <= maxSeeds; seed++) {
+    for (let seed = firstSeed; seed < firstSeed + maxSeeds; seed++) {
       await engine.apply({ type: "newGame", seed, choices: { coachClubId: "flamengo-rj" } });
       await engine.apply({ type: "playToMatchDay" });
       const round = await engine.apply({ type: "startRound" });
@@ -20,7 +22,7 @@ async function kickOffBeforeVarCheck(page: Page): Promise<{ minute: number; deci
       if (found?.type === "varCheck") return { minute: found.minute, decision: found.decision };
     }
     throw new Error("no seed gives Flamengo's first match a VAR check");
-  }, MAX_SEEDS);
+  }, [FIRST_SEED, MAX_SEEDS] as const);
   await page.evaluate(() => (location.hash = "#/round"));
   return check;
 }
