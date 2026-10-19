@@ -27,6 +27,10 @@ async function startAtArsenal(page: Page) {
 
 // A game seed whose board keeps Arsenal's coach through 2026/27 and into the 2027/28 opener, with no decisions taken.
 const ARSENAL_KEEPS_ITS_COACH = 1;
+// A game seed whose Arsenal, its coach kept, reaches the Champions League round of 16, with no decisions taken (searched
+// in the e2e build: since floating-point fatigue differs in its last digit between Node and Chromium, a seed found in Node
+// can play out otherwise in the browser).
+const ARSENAL_IN_THE_LAST_16 = 3;
 
 /** Starts the coach's game over from `seed`'s world at his club, through the e2e build's engine hook. */
 async function startOverFrom(page: Page, seed: number) {
@@ -155,10 +159,10 @@ test("Arsenal plays its Champions League knockout tie live, and the tie's ficha 
   await page.clock.install();
   await page.goto("/");
   await startAtArsenal(page);
-  await startOverFrom(page, ARSENAL_KEEPS_ITS_COACH);
+  await startOverFrom(page, ARSENAL_IN_THE_LAST_16);
   await playDaysBefore(page, "2027-02-01");
   await startNextYear(page, 2027);
-  // Arsenal went straight to the round of 16, drawn once the play-offs end in late February; its first leg is away.
+  // The round of 16 is drawn once the play-offs end in late February; Arsenal hosts its first leg.
   await playDaysBefore(page, "2027-03-01");
   const firstLeg = await firstGameOf(page, "champions-league-2026", "2027-03-01");
   expect(firstLeg).toBe("2027-03-09");
