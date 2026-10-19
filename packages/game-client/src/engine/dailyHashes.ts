@@ -27,8 +27,10 @@ function substitute(session: EngineSession, side: CoachSide, clubId?: string) {
   if (!offId || !onId) return;
   try {
     session.apply({ type: "changeLive", minute: SUBSTITUTION_MINUTE, change: { substitutions: [{ offId, onId }] }, ...(clubId ? { clubId } : {}) });
-  } catch {
-    // The starter was sent off or hurt before the hour; the match plays on without the change on every engine alike.
+  } catch (error) {
+    // The starter was sent off or replaced before the hour, or the substitute came on already: the match plays on
+    // without the change, on every engine alike. Anything else means the script no longer plays a match as the app does.
+    if (!(error instanceof Error && / (is not on the pitch|cannot come on)$/.test(error.message))) throw error;
   }
 }
 

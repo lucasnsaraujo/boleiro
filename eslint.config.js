@@ -1,6 +1,11 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 
+const BARE_LOCALE_COMPARE = {
+  selector: "CallExpression[callee.property.name='localeCompare'][arguments.length<2]",
+  message: "A bare localeCompare sorts by the computer's language, so one seed plays differently in another locale; use compareText or pass a locale.",
+};
+
 export default tseslint.config(
   {
     ignores: [
@@ -40,13 +45,7 @@ export default tseslint.config(
   {
     files: ["packages/engine/**", "packages/game-client/**"],
     rules: {
-      "no-restricted-syntax": [
-        "error",
-        {
-          selector: "CallExpression[callee.property.name='localeCompare'][arguments.length<2]",
-          message: "A bare localeCompare sorts by the computer's language, so one seed plays differently in another locale; use compareText or pass a locale.",
-        },
-      ],
+      "no-restricted-syntax": ["error", BARE_LOCALE_COMPARE],
     },
   },
   {
@@ -63,13 +62,11 @@ export default tseslint.config(
       ],
       "no-restricted-syntax": [
         "error",
+        // This block's list replaces the one above for these files, so it repeats that one's selectors.
+        BARE_LOCALE_COMPARE,
         {
-          selector: "CallExpression[callee.property.name='localeCompare'][arguments.length<2]",
-          message: "A bare localeCompare sorts by the computer's language, so one seed plays differently in another locale; use compareText or pass a locale.",
-        },
-        {
-          selector: "BinaryExpression[operator='**']:not([right.raw='2']):not([left.raw=/^[0-9]+$/][right.raw=/^[0-9]+$/])",
-          message: "`**` differs in the last bit between JavaScript engines (only x ** 2 and whole-number literals are exact); use pow from sim/portableMath.",
+          selector: "BinaryExpression[operator='**']:not([right.raw='2']):not([left.raw='2'][right.raw=/^[0-9]+$/])",
+          message: "`**` differs in the last bit between JavaScript engines (only x ** 2 and 2 ** a whole number are exact everywhere); use pow from sim/portableMath.",
         },
         { selector: "AssignmentExpression[operator='**=']", message: "`**=` differs in the last bit between JavaScript engines; use pow from sim/portableMath." },
       ],

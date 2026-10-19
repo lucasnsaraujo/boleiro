@@ -16,15 +16,15 @@ const SCRIPTS: Record<string, DailyHashScript> = {
 
 type Played = { days: DayHash[]; dump: Record<string, string> | null };
 
-// Vite's module runner gives Node the data packs the way the app's build does (`?gunzip` imports).
-const nodeHashes = runnerImport<typeof import("@boleiro/game-client/engine/dailyHashes")>("@boleiro/game-client/engine/dailyHashes", {
-  configFile: false,
-  plugins: [gunzipImports()],
-  logLevel: "error",
-}).then(({ module }) => module.dailyHashes);
+type NodeHashes = typeof import("@boleiro/game-client/engine/dailyHashes");
+let nodeHashes: Promise<NodeHashes> | null = null;
 
 async function playInNode(script: DailyHashScript): Promise<Played> {
-  return (await nodeHashes)(script);
+  // Vite's module runner gives Node the data packs the way the app's build does (`?gunzip` imports); loaded once a test needs it.
+  nodeHashes ??= runnerImport<NodeHashes>("@boleiro/game-client/engine/dailyHashes", { configFile: false, plugins: [gunzipImports()], logLevel: "error" }).then(
+    ({ module }) => module,
+  );
+  return (await nodeHashes).dailyHashes(script);
 }
 
 async function playInBrowser(page: Page, script: DailyHashScript): Promise<Played> {

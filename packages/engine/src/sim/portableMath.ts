@@ -1,10 +1,11 @@
 /**
  * Math functions that give the same bits on every JavaScript engine. The language leaves Math.exp,
- * Math.log, Math.pow (and `**`), Math.sin and the rest to each engine, and V8, JavaScriptCore and
- * SpiderMonkey disagree in the last bit, so a seed played on WebKit or Chromium drifted from the
- * same seed in Node. These are fdlibm's algorithms as V8 12.4 (Node 22) runs them, ported line for
- * line: they use only + - * /, Math.sqrt and Math.abs, which IEEE 754 rounds exactly everywhere,
- * so they return what Node 22 always returned, now on every engine.
+ * Math.log, Math.pow (and `**`), Math.sin and the rest to each engine, and V8's versions,
+ * JavaScriptCore and arm64 builds of Node (which fuse multiply-adds) disagree in the last bit, so a
+ * seed played on WebKit or Chromium drifted from the same seed in Node. These are fdlibm's
+ * algorithms as V8 12.4 runs them, ported line for line: they use only arithmetic, Math.sqrt and
+ * operations that are exact (abs, floor, trunc, max, bit operations), which IEEE 754 and the
+ * language fix to the bit, so they return what x86-64 Node 22 returns, on every engine and CPU.
  *
  * Ported from V8's src/base/ieee754.cc and src/builtins/math.tq (hypot):
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
@@ -353,7 +354,7 @@ const IVLN2 = 1.442695040888963387;
 const IVLN2_H = 1.44269502162933349609;
 const IVLN2_L = 1.92596299112661746887e-8;
 
-/** x to the power y; use it for `**` too, which runs the same algorithm in each engine. */
+/** x to the power y: the portable `**`. */
 export function pow(x: number, y: number): number {
   const hx = highWord(x);
   const lx = lowWord(x);
