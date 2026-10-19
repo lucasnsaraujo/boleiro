@@ -8,11 +8,11 @@ import { HOSTED_CUPS, type EditionHost, type HostedCup, type Hosts, type Stadium
 type Confederation = "AFC" | "CAF" | "CONCACAF" | "CONMEBOL" | "OFC" | "UEFA";
 
 const CONMEBOL = ["argentina", "bolivia", "brazil", "chile", "colombia", "ecuador", "paraguay", "peru", "uruguay", "venezuela"];
-// UEFA's members among the big grounds' countries, Russia left out: suspended from UEFA's competitions since 28 Feb 2022.
+// UEFA's members among the big grounds' countries that can stage its matches: Russia is suspended from UEFA's
+// competitions since 28 Feb 2022, and UEFA has played no match in Ukraine since Russia's invasion that month.
 const UEFA = [
   "armenia", "austria", "azerbaijan", "belgium", "bulgaria", "england", "finland", "france", "georgia", "germany", "greece", "hungary", "italy",
-  "kazakhstan", "netherlands", "poland", "portugal", "republic-of-ireland", "romania", "scotland", "serbia", "spain", "sweden", "turkiye",
-  "ukraine", "wales",
+  "kazakhstan", "netherlands", "poland", "portugal", "republic-of-ireland", "romania", "scotland", "serbia", "spain", "sweden", "turkiye", "wales",
 ];
 const CONFEDERATIONS: Readonly<Record<string, Confederation>> = {
   ...Object.fromEntries(CONMEBOL.map((country) => [country, "CONMEBOL"])),
@@ -37,7 +37,7 @@ const WORLD_CUP_BIDS: readonly string[][] = [
 ];
 const EURO_BIDS: readonly string[][] = [
   ["england"], ["england", "scotland", "wales", "republic-of-ireland"], ["germany"], ["france"], ["italy"], ["turkiye"], ["italy", "turkiye"],
-  ["spain", "portugal"], ["netherlands", "belgium"], ["poland", "ukraine"], ["austria"],
+  ["spain", "portugal"], ["netherlands", "belgium"], ["austria"],
 ];
 const CLUB_WORLD_CUP_BIDS: readonly string[][] = [
   ["qatar"], ["morocco"], ["saudi-arabia"], ["brazil"], ["germany"], ["england"], ["spain"], ["spain", "portugal"], ["united-states"],
@@ -72,6 +72,8 @@ const FINALS = {
   "uefa-super-cup": { members: UEFA, minCapacity: 40_000, rest: 2 },
 } as const;
 type Final = keyof typeof FINALS;
+const isFinal = (cup: HostedCup): cup is Final => cup in FINALS;
+
 const SEASON_FINALS: readonly (readonly Final[])[] = [["libertadores", "sul-americana"], ["champions-league", "europa-league", "uefa-super-cup"]];
 
 // The Copa América's hosts since 1987, last year each member hosted: CONMEBOL's rotation (Wikipedia, "Copa América").
@@ -102,12 +104,25 @@ const confederationsOf = (countries: readonly string[]) => new Set(countries.map
 
 const byCapacity = (a: Stadium, b: Stadium) => b.capacity - a.capacity || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
 
-/** The big grounds of `countries`, the ones an announced edition names among them, largest first. */
-function groundsOf(countries: readonly string[]): Stadium[] {
-  const named = Object.values(ANNOUNCED_HOSTS).flatMap((host) => host.grounds ?? (host.final ? [host.final] : []));
-  const all = [...BIG_STADIUMS, ...named].filter((ground) => countries.includes(ground.country));
-  return all.filter((ground, i) => all.findIndex((other) => other.name === ground.name) === i).sort(byCapacity);
+const nameKey = (name: string) => name.normalize("NFD").replace(/[^a-z0-9]/gi, "").toLowerCase();
+
+/**
+ * Whether two entries are one ground: the same name but for accents and punctuation ("St James' Park"), or the same
+ * city and about the same seats under another name ("Estádio Metropolitano", "Riyadh Air Metropolitano").
+ */
+function isSameGround(a: Stadium, b: Stadium): boolean {
+  return nameKey(a.name) === nameKey(b.name) || (a.city === b.city && Math.abs(a.capacity - b.capacity) <= 0.05 * Math.max(a.capacity, b.capacity));
 }
+
+/** The grounds of `countries`: an announced tournament's first (its names and World Cup capacities), then the big ones, each once, largest first. */
+export function groundsOf(countries: readonly string[]): Stadium[] {
+  const named = Object.values(ANNOUNCED_HOSTS).flatMap((host) => host.grounds ?? []);
+  const all = [...named, ...BIG_STADIUMS].filter((ground) => countries.includes(ground.country));
+  return all.filter((ground, i) => all.findIndex((other) => isSameGround(other, ground)) === i).sort(byCapacity);
+}
+
+// The grounds that staged an announced tournament's final, which a drawn edition in their country goes back to.
+const TOURNAMENT_FINALS = new Set(Object.values(ANNOUNCED_HOSTS).flatMap((host) => (host.grounds && host.final ? [host.final.name] : [])));
 
 const pick = <T>(items: readonly T[], random: () => number): T | undefined => items[Math.floor(random() * items.length)];
 
@@ -122,15 +137,17 @@ function earlier(cup: HostedCup, season: number, known: (id: string) => Announce
 }
 
 /**
- * A tournament's grounds and final: the announced final, else the host's largest ground, as every World Cup and Euro final
- * since 2006 but Euro 2016's; an announced host that hasn't named one (2030, Euro 2032) gets it drawn among its grounds
- * that seat the rule's final.
+ * A tournament's grounds and final: the announced final; else, for a drawn host, a ground of an announced tournament's
+ * final in its countries (MetLife for the United States), or its largest, as every World Cup and Euro final since 2006
+ * but Euro 2016's; an announced host that hasn't named one (2030, Euro 2032) gets it drawn among its grounds that seat
+ * the rule's final.
  */
 function tournamentHost(cup: Tournament, countries: string[], random: () => number, announced?: AnnouncedHost): EditionHost {
   const rule = TOURNAMENTS[cup];
   const grounds = announced?.grounds ? [...announced.grounds].sort(byCapacity) : groundsOf(countries).slice(0, rule.grounds);
-  const undecided = announced ? pick(grounds.filter((ground) => ground.capacity >= rule.minFinal), random) : undefined;
-  const final = announced?.final ?? undecided ?? grounds[0];
+  const big = grounds.filter((ground) => ground.capacity >= rule.minFinal);
+  const undecided = announced ? pick(big, random) : undefined;
+  const final = announced?.final ?? undecided ?? big.find((ground) => TOURNAMENT_FINALS.has(ground.name)) ?? grounds[0];
   if (!final) throw new Error(`no ground for ${cup} in ${countries.join(", ")}`);
   return { countries, final, grounds: [final, ...grounds.filter((ground) => ground.name !== final.name)] };
 }
@@ -183,12 +200,12 @@ function hostOf(cup: HostedCup, season: number, seed: number, known: (id: string
   const id = `${cup}-${season}`;
   const random = keyedStream(seed, `host:${id}`);
   const announced = ANNOUNCED_HOSTS[id];
-  if (cup in FINALS) {
+  if (isFinal(cup)) {
     if (announced?.final) return { countries: announced.countries, final: announced.final, grounds: [announced.final] };
-    return drawnFinal(cup as Final, season, random, known);
+    return drawnFinal(cup, season, random, known);
   }
-  if (announced) return tournamentHost(cup as Tournament, announced.countries, random, announced);
-  return drawnTournament(cup as Tournament, season, random, known);
+  if (announced) return tournamentHost(cup, announced.countries, random, announced);
+  return drawnTournament(cup, season, random, known);
 }
 
 /**

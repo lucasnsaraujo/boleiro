@@ -50,10 +50,14 @@ describe("hosts of every edition", () => {
     expect(hosts["uefa-super-cup-2028"]?.final.city).toBe("Astana");
   });
 
-  it("draw an announced World Cup's or Euro's missing final among its hosts' grounds big enough for one", () => {
-    expect(["Camp Nou", "Estadio Santiago Bernabéu"]).toContain(hosts["world-cup-2030"]?.final.name);
-    expect(["italy", "turkiye"]).toContain(hosts["euro-2032"]?.final.country);
-    expect(hosts["euro-2032"]?.final.capacity).toBeGreaterThanOrEqual(60_000);
+  it("draw an announced World Cup's or Euro's missing final among its main hosts' grounds big enough for one, whatever the seed", () => {
+    for (const seed of SEEDS) {
+      const drawn = hostsOf(seed);
+      expect(["Camp Nou", "Estadio Santiago Bernabéu"]).toContain(drawn["world-cup-2030"]?.final.name);
+      expect(drawn["world-cup-2030"]?.grounds.every((ground) => ["spain", "portugal", "morocco"].includes(ground.country))).toBe(true);
+      expect(["italy", "turkiye"]).toContain(drawn["euro-2032"]?.final.country);
+      expect(drawn["euro-2032"]?.final.capacity).toBeGreaterThanOrEqual(60_000);
+    }
   });
 
   it("draw the same hosts from the same seed and other hosts from other seeds", () => {
@@ -143,6 +147,30 @@ describe("the real rules behind drawn hosts", () => {
         }
       }
     }
+  });
+
+  it("list each ground of an edition once, whatever name the list and an announcement give it", () => {
+    const key = (name: string) => name.normalize("NFD").replace(/[^a-z0-9]/gi, "").toLowerCase();
+    for (const hosts of all) {
+      for (const host of Object.values(hosts)) {
+        expect(new Set(host.grounds.map((ground) => key(ground.name))).size).toBe(host.grounds.length);
+        expect(new Set(host.grounds.map((ground) => `${ground.city}:${Math.round(ground.capacity / 5000)}`)).size).toBe(host.grounds.length);
+      }
+    }
+  });
+
+  it("never stage a UEFA final in Russia or Ukraine, and take a drawn tournament in the United States back to MetLife for its final", () => {
+    let american = 0;
+    for (const hosts of all) {
+      for (const [id, host] of Object.entries(hosts)) {
+        if (/^(champions-league|europa-league|uefa-super-cup)-/.test(id)) expect(["russia", "ukraine"]).not.toContain(host.final.country);
+        if (host.countries.includes("united-states") && id !== "world-cup-2026") {
+          american++;
+          expect(host.final.name).toBe("MetLife Stadium");
+        }
+      }
+    }
+    expect(american).toBeGreaterThan(0);
   });
 
   it("name only real grounds, from the list of big stadiums or an organiser's announcement", () => {

@@ -49,11 +49,11 @@ const EURO_2028: Stadium[] = [
  * Every edition its organiser has announced, by competition id, and the last ones played before 2026, whose hosts the
  * rotation rules read. An edition without a final (2030's World Cup, Euro 2032) gets one drawn from its hosts' grounds.
  *
- * - World Cups: 2026 above; 2030 Morocco, Portugal and Spain, with the centenary's opening matches in Uruguay, Argentina
- *   and Paraguay (FIFA Council, 4 Oct 2023; FIFA Congress, 11 Dec 2024), its final's ground undecided (FIFA; the
- *   Bernabéu the favourite, StadiumDB, Mar 2026); 2034 Saudi Arabia, its final at the new King Salman International
- *   Stadium (Wikipedia, "2034 FIFA World Cup", candidate stadiums: 92,760, and King Fahd Sports City's 70,200 after its
- *   renovation).
+ * - World Cups: 2026 above; 2030 Morocco, Portugal and Spain, with the centenary's three opening matches in Uruguay,
+ *   Argentina and Paraguay (FIFA Council, 4 Oct 2023; FIFA Congress, 11 Dec 2024), played at the main hosts' grounds in
+ *   the game, its final's ground undecided (FIFA; the Bernabéu the favourite, StadiumDB, Mar 2026); 2034 Saudi Arabia,
+ *   its final at the new King Salman International Stadium (Wikipedia, "2034 FIFA World Cup", candidate stadiums:
+ *   92,760).
  * - Euros: 2028 above; 2032 Italy and Turkey, the final's city undecided between Istanbul and Rome (UEFA, 10 Oct 2023;
  *   Calcio e Finanza, 2026).
  * - Club World Cup 2025 in the United States (FIFA). The 2029 host is not chosen (Wikipedia, "2029 FIFA Club World Cup").
@@ -72,18 +72,14 @@ export const ANNOUNCED_HOSTS: Readonly<Record<string, AnnouncedHost>> = {
   "world-cup-2026": { countries: ["united-states", "canada", "mexico"], final: WORLD_CUP_2026[0], grounds: WORLD_CUP_2026 },
   "world-cup-2030": {
     countries: ["spain", "portugal", "morocco", "argentina", "uruguay", "paraguay"],
-    grounds: [
-      ...BIG_STADIUMS.filter((ground) => ["spain", "portugal", "morocco"].includes(ground.country)),
-      stadium("Estadio Centenario"),
-      stadium("Estadio Mâs Monumental"),
-    ],
+    grounds: BIG_STADIUMS.filter((ground) => ["spain", "portugal", "morocco"].includes(ground.country)),
   },
   "world-cup-2034": {
     countries: ["saudi-arabia"],
     final: { name: "King Salman International Stadium", city: "Riad", country: "saudi-arabia", capacity: 92_760 },
     grounds: [
       { name: "King Salman International Stadium", city: "Riad", country: "saudi-arabia", capacity: 92_760 },
-      { name: "King Fahd Sports City Stadium", city: "Riad", country: "saudi-arabia", capacity: 70_200 },
+      stadium("King Fahd International Stadium"),
       stadium("King Abdullah Sports City Stadium"),
     ],
   },

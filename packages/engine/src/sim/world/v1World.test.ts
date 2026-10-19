@@ -55,6 +55,13 @@ describe("two seasons of the v1 world", () => {
     expect(clubs).toBeLessThan(1400);
   });
 
+  it("draws the hosts of the season after next's finals at the turn of the season and plays the new season's at theirs", () => {
+    expect(start.hosts?.["libertadores-2030"]).toBeUndefined();
+    expect(before.next.hosts?.["libertadores-2030"]).toBeDefined();
+    const libertadores = before.next.competitions["libertadores-2029"];
+    expect(libertadores?.kind === "continental" && libertadores.host).toEqual(start.hosts?.["libertadores-2029"]);
+  });
+
   it("plays a season with the Club World Cup within ten seconds", () => {
     expect(seconds).toBeLessThan(10);
   });
