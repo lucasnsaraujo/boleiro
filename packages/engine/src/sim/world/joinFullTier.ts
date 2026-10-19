@@ -14,6 +14,7 @@ import { stageFixtures } from "../stageFixtures.js";
 import { openingContractUntil } from "../transfers/openingContractUntil.js";
 import { clubsAbroad } from "./clubsAbroad.js";
 import { leagueMatches, playLeagueDay } from "./resultOnlyLeague.js";
+import { paramsForLeagueAbroad } from "../../engine/paramsForLeagueAbroad.js";
 import { squadLevel } from "../coach/aiCoaches.js";
 import type { Country, WorldClub } from "./world.js";
 import { compareText } from "../compareText.js";
@@ -93,7 +94,9 @@ function playedBefore(country: Country, date: IsoDate): Country {
     if (!club) throw new Error(`${country.structure.id}: no club ${id}`);
     return club;
   };
-  const leagues = country.leagues.map((league) => league.dates.filter((day) => day < date).reduce((played, day) => playLeagueDay(played, day, clubOf, random.next), league));
+  const leagues = country.leagues.map((league, level) =>
+    league.dates.filter((day) => day < date).reduce((played, day) => playLeagueDay(played, day, clubOf, random.next, paramsForLeagueAbroad(country.structure.id, level)), league),
+  );
   return leagues.every((league, i) => league === country.leagues[i]) ? country : { ...country, leagues, rngState: random.state() };
 }
 
