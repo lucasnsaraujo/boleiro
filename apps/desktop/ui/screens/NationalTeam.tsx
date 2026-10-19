@@ -47,9 +47,12 @@ function scoreOf(row: NationalFixtureRow): string | null {
   return `${row.result.home} × ${row.result.away}${pens}`;
 }
 
+// The number on a call-up's sticker is what the national coaches pick by (standingOf), the same for the game's players and the pool abroad.
+const STANDING_NOTE = "Nível de seleção: o valor de mercado do jogador na régua com que as seleções convocam.";
+
 function Sticker({ player, number, colours, index, onDrop }: { player: NationalPlayerCard; number: number; colours: NationalTeamPage["team"]["colours"]; index: number; onDrop?: () => void }) {
   const style = { "--nt-a": colours.primary, "--nt-b": colours.secondary, "--i": index } as CSSProperties;
-  const label = `${player.name}, ${player.club}, força ${player.strength}${player.isCoachClub ? ", seu clube" : ""}`;
+  const label = `${player.name}, ${player.club}, nível de seleção ${player.standing}${player.isCoachClub ? ", seu clube" : ""}`;
   return (
     <li className={player.isCoachClub ? "nt-ms mine" : "nt-ms"} style={style} aria-label={label}>
       {onDrop && (
@@ -59,7 +62,7 @@ function Sticker({ player, number, colours, index, onDrop }: { player: NationalP
       )}
       <div className="nt-art" aria-hidden="true">
         {player.crestId && <Crest club={{ id: player.crestId, shortName: player.club, colours }} size={16} />}
-        <em>{player.strength}</em>
+        <em title={STANDING_NOTE}>{player.standing}</em>
         <b>{player.name.charAt(0)}</b>
         <span className="nt-no">{String(number).padStart(2, "0")}</span>
       </div>
@@ -265,7 +268,7 @@ export function NationalTeam() {
   const isEditing = coaching !== null && callUp.isProvisional;
   const cards = new Map([...callUp.groups.flatMap((g) => g.players), ...(coaching?.pool ?? [])].map((card) => [card.ref, card]));
   const shown = draft ?? callUp.groups.flatMap((g) => g.players.map((p) => p.ref));
-  const groups = callUp.groups.map((group) => ({ ...group, players: shown.flatMap((ref) => cards.get(ref) ?? []).filter((p) => p.role === group.role).sort((a, b) => b.strength - a.strength) }));
+  const groups = callUp.groups.map((group) => ({ ...group, players: shown.flatMap((ref) => cards.get(ref) ?? []).filter((p) => p.role === group.role).sort((a, b) => b.standing - a.standing) }));
   const count = groups.reduce((sum, g) => sum + g.players.length, 0);
   // Open places by position, never more in all than the list has left: a position past its places takes from the others.
   let left = Math.max(0, callUp.size - count);
@@ -442,7 +445,7 @@ export function NationalTeam() {
                                 <button type="button" onClick={() => edit([...shown, p.ref])}>
                                   <b>{p.name}</b>
                                   <small>{p.club}</small>
-                                  <span>{p.strength}</span>
+                                  <span title={STANDING_NOTE}>{p.standing}</span>
                                 </button>
                               </li>
                             ))}
@@ -459,6 +462,7 @@ export function NationalTeam() {
                 </ul>
               </div>
             ))}
+            <p className="nt-nb">{STANDING_NOTE}</p>
           </div>
         )}
 
