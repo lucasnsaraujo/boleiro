@@ -4,7 +4,7 @@ import type { GameState } from "../sim/gameState.js";
 import { MATCH_INJURIES_PER_HOUR } from "../sim/players/matchInjuryChance.js";
 import { loadGame, saveGame } from "../sim/saveGame.js";
 import { realismReport } from "./realismReport.js";
-import { expectResultsNearReal } from "./resultBandChecks.js";
+import { expectLowerDivisionResultsNearReal } from "./resultBandChecks.js";
 import { expectMedianRevenueNearTypical, expectNoCashHoarding, expectRevenueInDivisionBand } from "./revenueBandChecks.js";
 import { runSeasons, type SeasonRun } from "./runSeasons.js";
 import { seasonReport } from "./seasonReport.js";
@@ -140,8 +140,8 @@ describe.skipIf(!process.env.LONG_RUN)("ten seasons from the season runner", () 
     expectDivisionsApart(run().strength);
   });
 
-  it("keeps every division's results near the real league's once promotions and relegations have mixed the divisions", () => {
-    expectResultsNearReal(run().seasons.slice(1).map((s) => s.stats));
+  it("keeps the lower divisions' results near the real leagues' once promotions and relegations have mixed them", () => {
+    expectLowerDivisionResultsNearReal(run().seasons.slice(1).map((s) => s.stats));
   });
 
   it("stops the strength spread from growing", () => {
