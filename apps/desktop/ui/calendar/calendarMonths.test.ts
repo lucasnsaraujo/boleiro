@@ -99,10 +99,10 @@ test("a page is titled after the season's months on it, and days of another seas
 });
 
 test("a page lists the coach's games by month, each on its day's square", () => {
-  const start = pageStartOf("2026-06-01");
+  const start = pageStartOf("2026-08-03");
   const page = calendarPage(game, start);
   const end = page.days.at(-1)?.date ?? "";
-  expect(page.months.map((m) => m.month)).toEqual([6, 7]);
+  expect(page.months.map((m) => m.month)).toEqual([8, 9]);
   const shown = page.months.flatMap((m) => m.matches);
   expect(shown.map((m) => m.fixtureId)).toEqual(own.filter((f) => f.date >= start && f.date <= end).map((f) => f.id));
   expect(shown.length).toBeGreaterThan(0);
@@ -209,8 +209,13 @@ test("a national team's game names the coach's side in it and its neutral ground
   const worldCup = matches(calendarMonths(coaching).flatMap((m) => m.entries)).filter((m) => m.competition === "Copa do Mundo 2026");
   expect(worldCup.map((m) => [m.sideId, m.isNeutral])).toEqual([["brazil", true], ["brazil", true], ["brazil", true]]);
   expect(matches(calendarMonths(coaching).flatMap((m) => m.entries)).find((m) => m.competition !== "Copa do Mundo 2026")).toMatchObject({ sideId: "bahia-ba", isNeutral: false });
-  const clashDay = own.find((f) => worldCup.some((m) => m.date === f.date))?.date;
-  if (!clashDay) throw new Error("Bahia plays on a day Brazil does");
-  const page = calendarPage({ ...coaching, date: clashDay }, pageFor(coaching.season, clashDay));
-  expect(page.months.flatMap((m) => m.matches).filter((m) => m.date === clashDay).map((m) => m.stack).sort()).toEqual([0, 1]);
+  // Série A rests through the World Cup, so the shared square is a coach's in a series below it, which play on.
+  const clash = game.fixtures.find((f) => f.competitionId.startsWith("serie-") && worldCup.some((m) => m.date === f.date));
+  if (!clash) throw new Error("a club plays on a day Brazil does");
+  const below = newGameFromFiles(5, { coachClubId: clash.homeId }, bundledGameFiles);
+  const belowNations = below.nations;
+  if (!belowNations) throw new Error("the game has no national football");
+  const both = syncNationalFixtures({ ...below, nations: { ...belowNations, job: { teamId: "brazil", since: below.date } } });
+  const page = calendarPage({ ...both, date: clash.date }, pageFor(both.season, clash.date));
+  expect(page.months.flatMap((m) => m.matches).filter((m) => m.date === clash.date).map((m) => m.stack).sort()).toEqual([0, 1]);
 });

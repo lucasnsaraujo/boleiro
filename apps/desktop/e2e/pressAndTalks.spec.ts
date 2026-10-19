@@ -123,6 +123,8 @@ test("the round's newspaper prints the events of the new bank under their own se
   expect(section, "an edition prints an event under one of the new sections").not.toBeNull();
   await page.getByRole("link", { name: "Tabelas" }).click();
   await page.getByRole("link", { name: "Times" }).click();
+  // A title won on the way plays its scene first.
+  await passMoments(page, hubLoaded(page));
   await (await news(page)).isVisible();
   await page.getByRole("link", { name: "Jornal da rodada" }).click();
   const sheet = page.getByRole("article", { name: /^Jornal do Boleiro/ });

@@ -21,6 +21,15 @@ export function expectForeignersMostlyInSerieA(flows: readonly SeasonFlow[]): vo
   }
 }
 
+// data/players.csv's 2026 Série A squads are 23.4% foreign (157 of 672 players).
+/** Série A's foreign share stays between 18% and 30% every season, near the real 23%. */
+export function expectSerieAForeignShareNearReal(flows: readonly SeasonFlow[]): void {
+  for (const { season, foreignShare } of flows) {
+    expect(foreignShare.A, `${season}`).toBeGreaterThan(0.18);
+    expect(foreignShare.A, `${season}`).toBeLessThan(0.3);
+  }
+}
+
 /** Players move between Brazilian clubs every season, for fees, as free agents and on loan. */
 export function expectDomesticMoves(flows: readonly SeasonFlow[]): void {
   for (const flow of flows) {
