@@ -13,7 +13,7 @@ import { loadSouthAmerica } from "./loadSouthAmerica.js";
 const ARSENAL = "tm-11";
 const RIVER = "tm-209";
 const world = [...loadSouthAmerica(2026), ...loadEurope(2026)];
-const start = loadNewGame(8, { coachClubId: ARSENAL, world, formats: REALISTA });
+const start = loadNewGame(2, { coachClubId: ARSENAL, world, formats: REALISTA });
 
 const englishLeagues = (state: GameState, season: number): LeagueCompetition[] =>
   Object.values(state.competitions).flatMap((c) => (c.kind === "league" && c.abroad?.country === "gb-eng" && c.season === season ? [c] : []));
