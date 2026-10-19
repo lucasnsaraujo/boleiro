@@ -98,6 +98,13 @@ function economyOf(data: FinanceData, competitionMoney: CompetitionMoney): Econo
       D: operatingRevenue(estimateOf(data, "D", "median")),
       state: operatingRevenue(stateOnly),
     },
+    revenueFloor: {
+      A: Math.min(...serieARows.map((row) => operatingRevenue(moneyOf(row)))),
+      B: operatingRevenue(estimateOf(data, "B", "small")),
+      C: operatingRevenue(estimateOf(data, "C", "small")),
+      D: operatingRevenue(estimateOf(data, "D", "small")),
+      state: operatingRevenue(stateOnly),
+    },
     revenueCeiling: {
       A: Math.max(...serieARows.map((row) => operatingRevenue(moneyOf(row)))),
       B: operatingRevenue(estimateOf(data, "B", "large")),
