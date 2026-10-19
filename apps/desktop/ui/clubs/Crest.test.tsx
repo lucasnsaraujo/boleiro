@@ -36,3 +36,10 @@ test("after one club's crest fails, the next club still shows its own crest imag
   rerender(<Crest club={{ id: "vitoria-ba", shortName: "Vitória", colours: { primary: "#CC1010", secondary: "#080808" } }} />);
   expect(screen.getByRole("img", { name: "Vitória" }).tagName).toBe("IMG");
 });
+
+test("a national team shows its federation's crest, as on the board of a national match", () => {
+  render(<Crest club={{ id: "brazil", shortName: "Brasil", colours: { primary: "#FFDC02", secondary: "#00913A" } }} />);
+  const crest = screen.getByRole("img", { name: "Brasil" });
+  expect(crest.tagName).toBe("IMG");
+  expect(crest.getAttribute("src")).toMatch(/\.webp$/);
+});

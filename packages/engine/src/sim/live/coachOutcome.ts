@@ -4,6 +4,7 @@ import type { Competition, Fixture, GameState, SimPlayer } from "../gameState.js
 import type { MatchContext } from "../players/effectiveStrength.js";
 import type { Injury } from "../players/matchInjuryChance.js";
 import { recordMatchLoad } from "../players/recordMatchLoad.js";
+import { sideOfPlayerIn } from "../nations/nationalSquad.js";
 import type { MatchOutcome } from "./liveDay.js";
 
 type PlayedCoachMatch = {
@@ -33,7 +34,7 @@ export function coachOutcome(state: GameState, competition: Competition, match: 
     match.minutes,
   );
   const cards = openDisciplineDay(state.discipline);
-  const cardEvents = cards.record(competition, played, match.bookings, (id) => state.players[id]?.clubId, random);
+  const cardEvents = cards.record(competition, played, match.bookings, sideOfPlayerIn(state, competition), random);
   const before = state.discipline[competition.id] ?? {};
   const after = cards.discipline()[competition.id] ?? {};
   return {

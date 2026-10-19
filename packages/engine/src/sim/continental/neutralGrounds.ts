@@ -27,15 +27,16 @@ const US_GROUNDS = [
 ];
 const CLUB_WORLD_CUP_SEMI_FINALS = 3;
 
-/** Whether a competition plays a stage on neutral grounds: the Intercontinental Cup from the Derby of the Americas on, and every Club World Cup match. */
+/** Whether a competition plays a stage on neutral grounds: the Intercontinental Cup from the Derby of the Americas on, every Club World Cup match, and a national round its draw puts there. */
 export function isOnNeutralGround(competition: Competition, stage: number): boolean {
+  if (competition.kind === "national") return competition.neutral[stage] === true;
   if (competition.kind !== "continental") return false;
   return competition.cup === "club-world-cup" || (competition.cup === "intercontinental-cup" && stage >= DERBY_OF_THE_AMERICAS);
 }
 
-/** The neutral ground a FIFA cup plays a fixture at, or null when it is at the first-listed club's. */
+/** The neutral ground a FIFA cup plays a fixture at, or null when it is at the first-listed club's or the game names no ground (a national team's). */
 export function neutralGround(competition: Competition, fixture: Pick<Fixture, "id" | "stage">): string | null {
-  if (!isOnNeutralGround(competition, fixture.stage)) return null;
+  if (competition.kind === "national" || !isOnNeutralGround(competition, fixture.stage)) return null;
   if (competition.kind === "continental" && competition.cup === "intercontinental-cup") return QATAR_GROUND;
   if (fixture.stage >= CLUB_WORLD_CUP_SEMI_FINALS) return US_FINALS_GROUND;
   return US_GROUNDS[Math.floor(keyedStream(0, fixture.id)() * US_GROUNDS.length)] ?? null;

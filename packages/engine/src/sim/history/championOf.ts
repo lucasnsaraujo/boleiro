@@ -19,5 +19,8 @@ export function championOf(competition: Competition, fixtures: readonly Fixture[
     case "cupAbroad":
       // Its champion is the result-only cup's: the full tier plays only one club's matches.
       return null;
+    case "national":
+      // Its champion is the national competition's, which plays every match.
+      return null;
   }
 }

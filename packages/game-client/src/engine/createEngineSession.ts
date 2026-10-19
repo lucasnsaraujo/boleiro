@@ -20,6 +20,7 @@ import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
 import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
 import { withPackPositions } from "@boleiro/engine/sim/players/withPackPositions";
 import { withNations } from "@boleiro/engine/sim/nations/withNations";
+import { syncNationalFixtures } from "@boleiro/engine/sim/nations/nationalFixtures";
 import { acceptNationalOffer, declineNationalOffer, setCallUp } from "@boleiro/engine/sim/nations/nationalJobs";
 import { persuadeToStay, retirePlayer, type PlayerPersuaded } from "@boleiro/engine/sim/players/retirement";
 import { newGameFromFiles, type GameFiles } from "@boleiro/engine/sim/loadNewGame";
@@ -451,12 +452,13 @@ export function createEngineSession(files: GameFiles) {
     /**
      * A save from before positions gets them from the shipped pack (withPackPositions), one from before AI coaches
      * gets them from its seed, one from before sponsors its clubs' kit deals, and one from before national football
-     * its national teams, played up to its day (withNations).
+     * its national teams, played up to its day (withNations); a national coach's matches join the full tier
+     * (syncNationalFixtures), which a save from before they were played live lacks.
      */
     load({ save }) {
       const loaded = readStoredSave(save);
       const positioned = withCoachWorld(withPackPositions(loaded.game, files));
-      const game = withNations(positioned.sponsors || !files.sponsors ? positioned : seedGameSponsors(positioned, files.sponsors), files.nationalFootball);
+      const game = syncNationalFixtures(withNations(positioned.sponsors || !files.sponsors ? positioned : seedGameSponsors(positioned, files.sponsors), files.nationalFootball));
       const summary = begin(game);
       desk = loaded.desk;
       turningPoints = loaded.turningPoints;
@@ -768,7 +770,7 @@ export function createEngineSession(files: GameFiles) {
     acceptNationalJob() {
       const before = betweenDays("a national job can't be taken");
       const taken = acceptNationalOffer(before);
-      state = taken.state;
+      state = syncNationalFixtures(taken.state);
       addNews(inboxLines(before, taken.state, [taken.event]));
     },
     declineNationalJob() {
