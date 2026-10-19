@@ -1,10 +1,142 @@
-<img src="assets/logo.svg" width="96" alt="Boleiro logo">
+<p align="center"><img src="assets/logo.svg" width="112" alt="Boleiro logo"></p>
 
-# Boleiro
+<h1 align="center">Boleiro</h1>
 
-A Brazilian football manager game in the spirit of Brasfoot: simple to pick up, with real players, realistic money and match odds that behave like real football. You play as the coach.
+<p align="center">A Brazilian football manager for macOS and Windows, in the spirit of Brasfoot.</p>
+
+You coach a real Brazilian club, with its real squad, through a season of state championship, league and cups, one round at a time, and watch every match of the round live on one board. The game has every club of Série A to D 2026 and of the 27 state championships, the leagues of South America and Europe your club meets in continental cups, and the national teams. Money and match odds are tuned against real figures, so a Série D club stays poor and a favourite still loses a cup tie now and then. It runs offline, with no account. The game is in Brazilian Portuguese.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screens/dark/90-live-round.webp">
+  <img src="docs/screens/light/90-live-round.webp" alt="A live round: Flamengo's match on the pitch at the top, the rest of the Carioca round below">
+</picture>
+
+## Download
+
+Get the latest version from the [releases page](https://github.com/lucasnsaraujo/boleiro/releases/latest):
+
+- **macOS** (Apple Silicon and Intel): `Boleiro_<version>_universal.dmg`. Open it and drag Boleiro to Applications.
+- **Windows** (10 and 11): `Boleiro_<version>_x64-setup.exe`, which installs for your user without admin rights, or the `.msi` package when the release has one.
+
+The builds are not code-signed yet, so each system warns the first time you open the game:
+
+- **macOS** says Apple could not verify Boleiro. Open System Settings → Privacy & Security and click Open Anyway, or run `xattr -dr com.apple.quarantine /Applications/Boleiro.app` in Terminal.
+- **Windows** SmartScreen says "Windows protected your PC". Click More info → Run anyway.
+
+Saved games live in a `saves` folder in the app's data folder: `~/Library/Application Support/com.lucasnsaraujo.boleiro/` on macOS, `%APPDATA%\com.lucasnsaraujo.boleiro\` on Windows. Uninstalling leaves them there.
+
+## What's in the game
+
+**The football world**
+
+- All 156 clubs of Série A to D 2026 and the 125 clubs that only play their state championship, with real squads (about 6,800 players), stadiums, colours, crests and coaches. Players are rated 1 to 99 from their Transfermarkt value, minutes and Sofascore ratings.
+- The 27 state championships, Séries A to D with promotion and relegation, and the Copa do Brasil.
+- The top division of the other nine CONMEBOL countries; first and second divisions and the national cup of 25 European countries; Saudi Arabia, MLS and Liga MX. They meet in the Libertadores, Sul-Americana, Recopa, Champions League, Europa League, UEFA Super Cup, FIFA's Club World Cup (every four years from 2029) and the yearly Intercontinental Cup.
+- National teams play the World Cup, its qualifiers, the Copa América, the Euro and the Nations League, and FIFA windows call up your players.
+- Derbies, referees and kit sponsors come from real sources too.
+
+**Your career**
+
+- Start at any club in Brazil or in the leagues abroad. The board and the fans judge your results; lose them and you are sacked and wait for offers in the job centre.
+- Clubs abroad and national federations can offer you their jobs, and the coaches' table ranks you among every other coach, next to the CBF and world club rankings.
+- Up to eight coaches can share one computer and take turns.
+- Pick how the seasons play: Realista follows each country's real calendar and today's formats, Rápido puts every league on the same days, with three-match cup groups and two legs only from the quarter-finals, and Personalizar lets you choose the calendar, one or two league legs, the continental group format and single or two-legged knockouts.
+
+**Match day**
+
+- Pick the eleven and the formation, then the posture (Retranca to Ofensiva), the marking and whether to play through the middle or the flanks.
+- A match plan answers a red card or an injury on its own, and you talk to the side before kick-off and at half-time.
+- The round plays live at 1×, 2× or 4×: your match on a pitch at the top, every other game of the round below. Make substitutions and change tactics mid-match; VAR checks, extra time and penalty shootouts happen on the board.
+- Every match has its own page: summary, lineups, stats and head to head.
+
+**Running the club**
+
+- The transfer market: buy and sell, auctions, loans, release clauses, pre-contracts and renewals, inside transfer windows.
+- Finances built from real club revenue, ticket prices and stadium expansion, the youth academy, sponsor offers, squad chemistry and a captain, and an assistant coach with his own reads and tips.
+- The newspaper, press conferences and club events that ask for your decision.
+- History that piles up: titles, records, champions, top scorers, your career, the season's awards (Bola de Prata and the Ballon d'Or) and an album page for every season.
+
+Light and dark themes, crowd sound and music, and F1–F9 to jump between screens.
+
+## Screens
+
+<table>
+  <tr>
+    <td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/screens/dark/10-hub.webp"><img src="docs/screens/light/10-hub.webp" alt="The club's hub: squad, cash, board and fans, next match"></picture><br>The club's hub: squad, cash, board and fans, next match</td>
+    <td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/screens/dark/80-lineup.webp"><img src="docs/screens/light/80-lineup.webp" alt="Lineup, formation and tactics"></picture><br>Lineup, formation and tactics</td>
+  </tr>
+  <tr>
+    <td><picture><source media="(prefers-color-scheme: dark)" srcset="docs/screens/dark/93-match-page-summary.webp"><img src="docs/screens/light/93-match-page-summary.webp" alt="A match's page"></picture><br>A match's page</td>
+    <td><picture><source media="(prefers-color-scheme: dark)" srcset="docs/screens/dark/21-market-buy.webp"><img src="docs/screens/light/21-market-buy.webp" alt="Transfer market"></picture><br>Transfer market</td>
+  </tr>
+  <tr>
+    <td><picture><source media="(prefers-color-scheme: dark)" srcset="docs/screens/dark/31-stadium.webp"><img src="docs/screens/light/31-stadium.webp" alt="Stadium: ticket prices and new seats"></picture><br>Stadium: ticket prices and new seats</td>
+    <td><picture><source media="(prefers-color-scheme: dark)" srcset="docs/screens/dark/33-sponsors.webp"><img src="docs/screens/light/33-sponsors.webp" alt="Sponsors on the shirt"></picture><br>Sponsors on the shirt</td>
+  </tr>
+  <tr>
+    <td><picture><source media="(prefers-color-scheme: dark)" srcset="docs/screens/dark/101-press-conference.webp"><img src="docs/screens/light/101-press-conference.webp" alt="Press conference"></picture><br>Press conference</td>
+    <td><picture><source media="(prefers-color-scheme: dark)" srcset="docs/screens/dark/36-national-team.webp"><img src="docs/screens/light/36-national-team.webp" alt="National team call-ups"></picture><br>National team call-ups</td>
+  </tr>
+  <tr>
+    <td><picture><source media="(prefers-color-scheme: dark)" srcset="docs/screens/dark/110-moment-title.webp"><img src="docs/screens/light/110-moment-title.webp" alt="A title won"></picture><br>A title won</td>
+    <td><picture><source media="(prefers-color-scheme: dark)" srcset="docs/screens/dark/122-awards.webp"><img src="docs/screens/light/122-awards.webp" alt="Season awards"></picture><br>Season awards</td>
+  </tr>
+</table>
+
+[All 66 screens, in both themes](docs/screens/README.md).
+
+## Credits and data sources
+
+The data comes from Transfermarkt, Sofascore, FotMob, ESPN, football-data.co.uk, Wikipedia and Wikidata, the clubs' published accounts and press reports. [`data/SOURCES.md`](data/SOURCES.md) names the source of every value, and which ones are guesses. The sounds come from Freesound ([`assets/sounds/CREDITS.md`](assets/sounds/CREDITS.md)); the game lists them, and every logo whose licence asks for credit, under Opções → Créditos.
+
+Boleiro is an unofficial fan project. It is not affiliated with or endorsed by any club, league, federation or data provider. Club names, crests, competition logos and brands belong to their owners.
+
+---
+
+The rest of this page is for working on the game: the code, the tools and the data pipeline behind it.
+
+## Development
+
+```sh
+pnpm install
+pnpm test && pnpm typecheck && pnpm lint
+pnpm dev         # the game in the browser at http://localhost:5173 (saves go to IndexedDB)
+pnpm tauri dev   # the desktop app (needs Rust); saves go to <app data dir>/saves
+pnpm tauri build # the macOS .app and .dmg (Windows: .exe and .msi); docs/release.md covers releases, signing and the Windows smoke test
+pnpm e2e         # Playwright tests on the web build at port 4173 (first run: pnpm --filter @boleiro/desktop exec playwright install chromium webkit)
+                 # it reuses a server already on that port; set E2E_PORT when another checkout has one running
+                 # the build runs with VITE_E2E=1, which exposes the engine on window so a test can skip days
+                 # and starts every new game from the world seed playwright.config.ts sets
+pnpm calibrate   # refits the engine, prints real-vs-Boleiro tables per division and for cup ties
+pnpm test:long   # plays ten seasons, saving and loading each one, and checks revenue, strength, transfers, Série B–D results and squad spread stay in their bands; CI skips it, so run it after changing player strength, money or the market
+pnpm finances:report [seasons] [seed]   # prints revenue bands per division from a long run
+pnpm strength:report [seasons] [seed]   # prints player strength bands and mean age per division each season
+pnpm career [--seasons N] [--seed S]    # career mode with an auto-coach: clubs, targets, results, firings per division
+pnpm history [--seasons N] [--seed S] [--club ID]   # same career run, then a club's titles, finishes, records, idols and the coach's record
+pnpm season [--seasons N] [--seed S] [--club ID] [--report]   # whole seasons with no coach, then the realism report
+pnpm world:rates [--leagues N] [--seed S]   # synthetic leagues played in full and result-only; fails if goals per match differ by 0.1 or a home, draw or away rate by 2 points, the engine's calibration tolerance
+```
+
+`pnpm calibration:report` and `pnpm perf:report` write [`docs/calibration-report.md`](docs/calibration-report.md) (does the game still play like the real leagues) and [`docs/performance.md`](docs/performance.md) (season time, save size, memory); each file says how to rerun it. [`docs/release.md`](docs/release.md) covers building the installers, the release workflow and signing, and [`docs/screens/`](docs/screens/README.md) how to regenerate the screenshots.
+
+The repo is a pnpm workspace. Packages hold TypeScript source with no build step: each `package.json` maps `@boleiro/<name>/<path>` to `src/<path>.ts`.
+
+| Folder | Package | What it holds |
+|---|---|---|
+| `packages/data/` | `@boleiro/data` | The data pack and asset manifest the game ships (`pack/`) and their loaders, plus parsers for the files in `data/` (clubs, players, finances, history) |
+| `packages/engine/` | `@boleiro/engine` | The sim: match engine (`src/engine/`), seasons and the club world (`src/sim/`), the CLI runs (`src/cli/`) |
+| `packages/game-client/` | `@boleiro/game-client` | The engine session and its Web Worker, saves, and the selectors screens read from game state; no React |
+| `packages/design-tokens/` | `@boleiro/design-tokens` | The Álbum design system that the app and the mocks share: light and dark tokens (`album.css`, `tokens.json`), the vendored Archivo font and Phosphor icons (subset to the ones the screens use by `pipeline/subset_icons.py`), and `tokens.css`, the older token names pointed at the Álbum ones |
+| `apps/desktop/` | `@boleiro/desktop` | The app: screens in `ui/` (Vite + React), the desktop window and save files in `src-tauri/`, Playwright tests in `e2e/` |
+| `design/` | none | The Boleiro logo (`logo/`), and an HTML mock of every screen with renders (`mocks/`, open `mocks/index.html`) |
+
+Dependencies point one way: `data` ← `engine` ← `game-client` ← `desktop`. The sim stays UI-free: it runs in a Web Worker (`packages/game-client/src/engine/engine.worker.ts`) and the screens talk to it through `EngineClient` in `packages/game-client/src/engine/connectEngine.ts`. Every player action is a `GameCommand` (`packages/game-client/src/engine/createEngineSession.ts`), a plain JSON object such as `{ type: "ask", request }`; `engine.apply(command)` is the only call that changes the game, and the rest of `EngineClient` only reads it. The same commands applied from the same seed rebuild the same game, in Node and in every browser engine, so online play can later send them over the network and a save moved to another machine plays on the same way. Engines round `Math.exp`, `Math.log`, `Math.pow` (and `**`) and the trig functions differently in the last bit, so the sim calls the copies in `packages/engine/src/sim/portableMath.ts` instead, which give x86-64 Node 22's bits everywhere; ESLint refuses the engine's own in `engine` and `game-client`, and `apps/desktop/e2e/crossEngine.spec.ts` checks that Node, Chromium and WebKit save the same game every day. ESLint stops `engine` and `data` from importing React, Tauri or the UI packages, stops `data` from importing any other Boleiro package, stops `game-client` from importing React, and stops everything outside the worker's session from importing `advanceDay`. In the browser the worker builds new games from the same data pack Node reads, bundled by Vite (`newGameFromFiles` in `packages/engine/src/sim/loadNewGame.ts`). The raw files stay at the repo root in `data/` and `assets/` as the pipeline's inputs.
+
+`pnpm season` prints, for each season, the final tables (Série A and B with points, the top of C and D), the Copa do Brasil and estadual winners, promotions and relegations, the five biggest transfer fees, revenue bands per division and the clubs with the most and least cash. Then it prints one club's history (`--club`, by default the last Série A champion) and a realism report: markdown tables that compare results, Copa do Brasil upsets by division gap, cards, revenue, foreign players and injuries with the real data the sim is built on. `--report` prints only the realism report. The default test suite plays two seasons of it, saving and loading the game at each season start.
 
 ## Data
+
+### Clubs, players and crests
 
 `data/clubs.csv` lists every club of Série A–D 2026 plus every club that only plays its 2026 state championship: stadium, capacity, pitch, colours and fanbase. `data/crests.csv` points each club to its crest images in `assets/crests/`. `data/players.csv` holds every squad with a computed 1–99 strength, linked to its club by `club_id`. `data/SOURCES.md` names the source of every derived value. To rebuild both:
 
@@ -20,15 +152,23 @@ pipeline/fetch_sofascore.sh data/sofascore-stats.json                     # seas
 .venv/bin/python pipeline/fetch_brand_logos.py   # data/brands.csv and the logos in assets/logos/ (Wikidata, Commons, favicons)
 ```
 
-Sponsors: `data/sponsors.csv` holds every brand on each club's 2026 kit as Wikipedia listed it before Brazil's betting ban (25 September 2026), `data/sponsor-values.csv` the yearly values and ends the press reported, `data/brand-pool.csv` the brands that bid for a place in the game, and `data/brands.csv` every brand with its logo. `data/SOURCES.md`, "Sponsors", says where each comes from and how the game fills what the sources lack.
+### Sponsors
+
+`data/sponsors.csv` holds every brand on each club's 2026 kit as Wikipedia listed it before Brazil's betting ban (25 September 2026), `data/sponsor-values.csv` the yearly values and ends the press reported, `data/brand-pool.csv` the brands that bid for a place in the game, and `data/brands.csv` every brand with its logo. `data/SOURCES.md`, "Sponsors", says where each comes from and how the game fills what the sources lack.
+
+### Positions, lineups and coaches
 
 Positions and last elevens come from FotMob: `.venv/bin/python pipeline/scrape_fotmob.py data` (cached in `data/fotmob_cache`, the same polite fetcher as the Transfermarkt scraper) writes `data/fotmob-players.csv` (each player's FotMob positions, matched to his Transfermarkt id by name within the club) and `data/fotmob-lineups.csv` (each club's last starting eleven, with its formation where FotMob gives one; Séries C and D matches list the starters only). A player's main position stays Transfermarkt's; FotMob adds his others. In the game a player keeps his whole strength in his main position, 97% in another of his and 85% anywhere else (50% for a keeper outfield or an outfielder in goal); each club plays its last real formation, or the one its real eleven, or else its squad, fits best.
 
 Every club's head coach comes from Transfermarkt's league manager lists: `python3 pipeline/fetch_coaches.py` (cached in `data/tm_cache`, `--offline` to rebuild from it) writes `data/coaches.csv` and the engine's roster `packages/data/src/coachRoster.ts`; clubs it doesn't cover get invented local coaches.
 
+### Hand-checked facts and strength
+
 `data/club-facts.csv` holds hand-checked values (artificial pitches, fanbase survey shares, short names) that override or fill the scraped ones.
 
 Strength starts from a division baseline and moves with each player's own evidence: market value, share of minutes, Sofascore rating and, for forwards, goals and assists per 90. Players with little data stay near the baseline.
+
+### Historical results
 
 `data/history/brasileirao-serie-a-odds.csv` has Série A results since 2012 with closing betting odds, from football-data.co.uk. The match engine is calibrated against it, against the Série B–D results below, and against Copa do Brasil matches between divisions.
 
@@ -78,41 +218,4 @@ python3 pipeline/roster_diff.py pipeline/boleiro.db                             
 
 The scraper names itself, but no person or account, in its User-Agent, waits `--delay` seconds after each page (never under the 2 Transfermarkt's robots.txt asks for), retries 429s and server errors with a growing back-off or the Retry-After the site sends, stops the run after 10 refusals (403 or 429) in a row, and keeps every page in the cache, so a stopped run resumes where it stopped and a rerun within `--max-age-days` downloads nothing. Each club costs a squad page, a facts page and a crest image. `--offline` rebuilds the snapshot from the cache alone and fails a page it doesn't have instead of downloading it. Brazil's clubs keep their ids from `data/clubs.csv`; other clubs are `tm-<Transfermarkt id>`, players `tm-<Transfermarkt id>`.
 
-A new game in the app loads the nine other CONMEBOL countries' packs (`packages/game-client/src/engine/bundledGameFiles.ts`, read by `packages/data/src/worldPack.ts`): their leagues play result-only (`packages/engine/src/sim/world/southAmerica.ts`) and their clubs meet Brazil's in the Libertadores, Sul-Americana and Recopa (`packages/engine/src/sim/continental/`). Players get their strength from their Transfermarkt value by the line Brazil's own ratings draw against the same players' values (`strengthYardstick.ts`). It also loads the 25 European countries' packs: first and second divisions and a national cup each, played result-only from August to May (`packages/engine/src/sim/world/europe.ts`, Norway on the calendar year), and the Champions League, Europa League and UEFA Super Cup (`packages/engine/src/sim/continental/uefaCups.ts`), which open on the real 2026/27 league phases and from 2027/28 take each country's places from its table and cup by the 2026/27 allocation. Europe's clubs stay result-only: a coach can't take a European job yet. Node runs (`loadNewGame`, the CLI and engine tests) stay Brazil alone unless they pass `world: [...loadSouthAmerica(2026), ...loadEurope(2026)]`. It also loads the Saudi, US and Mexican packs, whose top flights a coach can take (MLS and Liga MX in their real formats, `packages/engine/src/sim/leagueFormats.ts`), and the Club World Cup guests', for FIFA's Club World Cup, which the game plays in 2029 and every four years after (`packages/engine/src/sim/continental/clubWorldCup.ts`) and calls Super Mundial, and for FIFA's yearly Intercontinental Cup, the six confederations' champions in September, October and December (`packages/engine/src/sim/continental/intercontinentalCup.ts`), which it calls Mundial de Clubes. `packages/data/src/worldPacks.test.ts` checks the committed ones: every country in `tm_world.py` has a pack and each league holds the club count `tm_world.py` records for it (the count Transfermarkt's league page lists; `verified=False` marks the ones no second source confirms yet); every club has at least eleven players with a goalkeeper (except the few Transfermarkt lists short, named in the test), a crest in `assets.json` or `world/assets.json` and every world crest's files within budget, two colours and a source for every field; every country's league tiers run from the first down; every national team has a squad with a goalkeeper.
-
-## Development
-
-```sh
-pnpm install
-pnpm test && pnpm typecheck && pnpm lint
-pnpm dev         # the game in the browser at http://localhost:5173 (saves go to IndexedDB)
-pnpm tauri dev   # the desktop app (needs Rust); saves go to <app data dir>/saves
-pnpm tauri build # the macOS .app and .dmg (Windows: .exe and .msi); docs/release.md covers CI builds, signing and the Windows smoke test
-pnpm e2e         # Playwright tests on the web build at port 4173 (first run: pnpm --filter @boleiro/desktop exec playwright install chromium webkit)
-                 # it reuses a server already on that port; set E2E_PORT when another checkout has one running
-                 # the build runs with VITE_E2E=1, which exposes the engine on window so a test can skip days
-                 # and starts every new game from the world seed playwright.config.ts sets
-pnpm calibrate   # refits the engine, prints real-vs-Boleiro tables per division and for cup ties
-pnpm test:long   # plays ten seasons, saving and loading each one, and checks revenue, strength, transfers, Série B–D results and squad spread stay in their bands; CI skips it, so run it after changing player strength, money or the market
-pnpm finances:report [seasons] [seed]   # prints revenue bands per division from a long run
-pnpm strength:report [seasons] [seed]   # prints player strength bands and mean age per division each season
-pnpm career [--seasons N] [--seed S]    # career mode with an auto-coach: clubs, targets, results, firings per division
-pnpm history [--seasons N] [--seed S] [--club ID]   # same career run, then a club's titles, finishes, records, idols and the coach's record
-pnpm season [--seasons N] [--seed S] [--club ID] [--report]   # whole seasons with no coach, then the realism report
-pnpm world:rates [--leagues N] [--seed S]   # synthetic leagues played in full and result-only; fails if goals per match differ by 0.1 or a home, draw or away rate by 2 points, the engine's calibration tolerance
-```
-
-The repo is a pnpm workspace. Packages hold TypeScript source with no build step: each `package.json` maps `@boleiro/<name>/<path>` to `src/<path>.ts`.
-
-| Folder | Package | What it holds |
-|---|---|---|
-| `packages/data/` | `@boleiro/data` | The data pack and asset manifest the game ships (`pack/`) and their loaders, plus parsers for the files in `data/` (clubs, players, finances, history) |
-| `packages/engine/` | `@boleiro/engine` | The sim: match engine (`src/engine/`), seasons and the club world (`src/sim/`), the CLI runs (`src/cli/`) |
-| `packages/game-client/` | `@boleiro/game-client` | The engine session and its Web Worker, saves, and the selectors screens read from game state; no React |
-| `packages/design-tokens/` | `@boleiro/design-tokens` | The Álbum design system that the app and the mocks share: light and dark tokens (`album.css`, `tokens.json`), the vendored Archivo font and Phosphor icons (subset to the ones the screens use by `pipeline/subset_icons.py`), and `tokens.css`, the older token names pointed at the Álbum ones |
-| `apps/desktop/` | `@boleiro/desktop` | The app: screens in `ui/` (Vite + React), the desktop window and save files in `src-tauri/`, Playwright tests in `e2e/` |
-| `design/` | none | The Boleiro logo (`logo/`), and an HTML mock of every screen with renders (`mocks/`, open `mocks/index.html`) |
-
-Dependencies point one way: `data` ← `engine` ← `game-client` ← `desktop`. The sim stays UI-free: it runs in a Web Worker (`packages/game-client/src/engine/engine.worker.ts`) and the screens talk to it through `EngineClient` in `packages/game-client/src/engine/connectEngine.ts`. Every player action is a `GameCommand` (`packages/game-client/src/engine/createEngineSession.ts`), a plain JSON object such as `{ type: "ask", request }`; `engine.apply(command)` is the only call that changes the game, and the rest of `EngineClient` only reads it. The same commands applied from the same seed rebuild the same game, in Node and in every browser engine, so online play can later send them over the network and a save moved to another machine plays on the same way. Engines round `Math.exp`, `Math.log`, `Math.pow` (and `**`) and the trig functions differently in the last bit, so the sim calls the copies in `packages/engine/src/sim/portableMath.ts` instead, which give x86-64 Node 22's bits everywhere; ESLint refuses the engine's own in `engine` and `game-client`, and `apps/desktop/e2e/crossEngine.spec.ts` checks that Node, Chromium and WebKit save the same game every day. ESLint stops `engine` and `data` from importing React, Tauri or the UI packages, stops `data` from importing any other Boleiro package, stops `game-client` from importing React, and stops everything outside the worker's session from importing `advanceDay`. In the browser the worker builds new games from the same data pack Node reads, bundled by Vite (`newGameFromFiles` in `packages/engine/src/sim/loadNewGame.ts`). The raw files stay at the repo root in `data/` and `assets/` as the pipeline's inputs.
-
-`pnpm season` prints, for each season, the final tables (Série A and B with points, the top of C and D), the Copa do Brasil and estadual winners, promotions and relegations, the five biggest transfer fees, revenue bands per division and the clubs with the most and least cash. Then it prints one club's history (`--club`, by default the last Série A champion) and a realism report: markdown tables that compare results, Copa do Brasil upsets by division gap, cards, revenue, foreign players and injuries with the real data the sim is built on. `--report` prints only the realism report. The default test suite plays two seasons of it, saving and loading the game at each season start.
+A new game in the app loads the nine other CONMEBOL countries' packs (`packages/game-client/src/engine/bundledGameFiles.ts`, read by `packages/data/src/worldPack.ts`): their leagues play result-only (`packages/engine/src/sim/world/southAmerica.ts`) and their clubs meet Brazil's in the Libertadores, Sul-Americana and Recopa (`packages/engine/src/sim/continental/`). Players get their strength from their Transfermarkt value by the line Brazil's own ratings draw against the same players' values (`strengthYardstick.ts`). It also loads the 25 European countries' packs: first and second divisions and a national cup each, played result-only from August to May (`packages/engine/src/sim/world/europe.ts`, Norway on the calendar year), and the Champions League, Europa League and UEFA Super Cup (`packages/engine/src/sim/continental/uefaCups.ts`), which open on the real 2026/27 league phases and from 2027/28 take each country's places from its table and cup by the 2026/27 allocation. A result-only country joins the full tier when a human coach takes one of its clubs, at the start of a game or through a job offer: its clubs get wages, money and a board, and its leagues play minute by minute like Brazil's (`packages/engine/src/sim/world/joinFullTier.ts`). Node runs (`loadNewGame`, the CLI and engine tests) stay Brazil alone unless they pass `world: [...loadSouthAmerica(2026), ...loadEurope(2026)]`. It also loads the Saudi, US and Mexican packs, whose top flights a coach can take (MLS and Liga MX in their real formats, `packages/engine/src/sim/leagueFormats.ts`), and the Club World Cup guests', for FIFA's Club World Cup, which the game plays in 2029 and every four years after (`packages/engine/src/sim/continental/clubWorldCup.ts`) and calls Super Mundial, and for FIFA's yearly Intercontinental Cup, the six confederations' champions in September, October and December (`packages/engine/src/sim/continental/intercontinentalCup.ts`), which it calls Mundial de Clubes. `packages/data/src/worldPacks.test.ts` checks the committed ones: every country in `tm_world.py` has a pack and each league holds the club count `tm_world.py` records for it (the count Transfermarkt's league page lists; `verified=False` marks the ones no second source confirms yet); every club has at least eleven players with a goalkeeper (except the few Transfermarkt lists short, named in the test), a crest in `assets.json` or `world/assets.json` and every world crest's files within budget, two colours and a source for every field; every country's league tiers run from the first down; every national team has a squad with a goalkeeper.
