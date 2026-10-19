@@ -113,9 +113,10 @@ describe("UEFA's finals on neutral grounds", () => {
     expect(tickets(recordMatchFinances(synced, [played(leaguePhase.fixture)]))).toBeGreaterThan(tickets(synced));
   });
 
-  it("name later seasons' finals where UEFA has given them, the latest one after", () => {
+  it("name later seasons' finals where UEFA has announced them, none before it does, still on neutral ground", () => {
     const at = (season: number) => neutralGround({ ...championsLeague.competition, season }, championsLeague.fixture);
-    expect([2026, 2027, 2030].map(at)).toEqual(["Estádio Metropolitano", "Allianz Arena", "Allianz Arena"]);
+    expect([2026, 2027, 2030].map(at)).toEqual(["Estádio Metropolitano", "Allianz Arena", null]);
+    expect(isOnNeutralGround({ ...championsLeague.competition, season: 2030 }, championsLeague.fixture.stage)).toBe(true);
     const europaLeague = { ...championsLeague.competition, id: "europa-league-2027", cup: "europa-league" as const, season: 2027 };
     expect(isOnNeutralGround(europaLeague, championsLeague.fixture.stage)).toBe(true);
     expect(neutralGround(europaLeague, championsLeague.fixture)).toBe("Arena Națională");
