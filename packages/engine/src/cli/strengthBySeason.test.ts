@@ -6,7 +6,7 @@ import { strengthBySeason, type StrengthBand } from "./strengthBySeason.js";
 describe.skipIf(!process.env.LONG_RUN)("ten seasons of player strength", () => {
   let bands: StrengthBand[] = [];
   beforeAll(() => {
-    ({ bands } = strengthBySeason(1, 10));
+    ({ bands } = strengthBySeason(2, 10));
   }, 300_000);
 
   it("keeps each division's mean strength within 3 points of where it started", () => {
