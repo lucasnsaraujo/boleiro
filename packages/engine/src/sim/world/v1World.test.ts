@@ -43,7 +43,7 @@ function playSeason(first: GameState) {
 
 // The season before FIFA's 2029 edition, which the game's titles draw, then the edition's.
 describe("two seasons of the v1 world", () => {
-  const start = loadNewGame(3, { coachClubId: "flamengo-rj", world, guests, season: 2028 });
+  const start = loadNewGame(5, { coachClubId: "flamengo-rj", world, guests, season: 2028 });
   const before = playSeason(start);
   const { lastDay, next, paidUsd, seconds } = playSeason(before.next);
   const cup = clubWorldCupOf(lastDay);
@@ -53,6 +53,13 @@ describe("two seasons of the v1 world", () => {
     const clubs = Object.keys(start.clubs).length + Object.values(start.world ?? {}).reduce((sum, country) => sum + Object.keys(country.clubs).length, 0) + Object.values(start.guests ?? {}).flat().length;
     expect(clubs).toBeGreaterThan(1250);
     expect(clubs).toBeLessThan(1400);
+  });
+
+  it("draws the hosts of the season after next's finals at the turn of the season and plays the new season's at theirs", () => {
+    expect(start.hosts?.["libertadores-2030"]).toBeUndefined();
+    expect(before.next.hosts?.["libertadores-2030"]).toBeDefined();
+    const libertadores = before.next.competitions["libertadores-2029"];
+    expect(libertadores?.kind === "continental" && libertadores.host).toEqual(start.hosts?.["libertadores-2029"]);
   });
 
   it("plays a season with the Club World Cup within ten seconds", () => {

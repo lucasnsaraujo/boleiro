@@ -39,14 +39,14 @@ function outsidersOf(football: NationalFootball, nationals: ReadonlyMap<string, 
  * pool's outsiders, and the season's competitions drawn (2026's World Cup and Nations League as they really were).
  * guess: the ranking the pack carries (7 Oct 2026) stands in for the one of the day the career starts.
  */
-export function openNations(football: NationalFootball, { players, clubs }: Pick<GameState, "players" | "clubs">, season: number, seed: number): Nations {
+export function openNations(football: NationalFootball, { players, clubs, hosts }: Pick<GameState, "players" | "clubs" | "hosts">, season: number, seed: number): Nations {
   const points = new Map(football.ranking.rows.map((row) => [row.teamId, row.points]));
   const lowest = Math.min(...football.ranking.rows.map((row) => row.points));
   const teams: Record<string, NationalTeam> = Object.fromEntries(
     football.teams.map((team) => [team.id, { id: team.id, name: team.name, confederation: team.confederation, code: team.code, colours: team.colours, points: points.get(team.id) ?? lowest }]),
   );
   const random = randomStream((seed ^ NATIONS_STREAM_SALT) >>> 0);
-  const opened = competitionsOf(season, { teams, competitions: {}, matches: [] }, random.next, season === 2026 ? football.fixtures : []);
+  const opened = competitionsOf(season, { teams, competitions: {}, matches: [], hosts: hosts ?? {} }, random.next, season === 2026 ? football.fixtures : []);
   return {
     teams,
     outsiders: outsidersOf(football, nationalsByTeam(players, teams), clubs),

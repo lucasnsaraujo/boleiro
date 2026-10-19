@@ -2,8 +2,10 @@ import type { Pitch } from "@boleiro/data/clubs";
 import { daysBetween } from "../dates.js";
 import type { IsoDate, SimPlayer } from "../gameState.js";
 import { fatigueOn } from "./fatigueOn.js";
+import { isForeignTo } from "./homeNationality.js";
 
-export type MatchContext = { date: IsoDate; pitch: Pitch };
+/** A match's day and pitch; `home`, for one club's players, the citizenship of its country (homeNationalityOf), Brazil's when left out. */
+export type MatchContext = { date: IsoDate; pitch: Pitch; home?: string };
 
 // guess: strength points lost by a player carrying one full match of fatigue (played the day
 // before). Kept small: fixture congestion barely changes team results (Bengtsson, Ekstrand &
@@ -16,19 +18,15 @@ const ARTIFICIAL_TURF_COST = 3;
 const ADAPTATION_COST = 5;
 export const ADAPTATION_DAYS = 180;
 
-function isForeign(player: Pick<SimPlayer, "nationalities">): boolean {
-  return player.nationalities.length > 0 && !player.nationalities.includes("Brazil");
-}
-
-function adaptationCost(player: SimPlayer, date: IsoDate): number {
-  if (!isForeign(player) || player.condition.arrivedOn === null) return 0;
+function adaptationCost(player: SimPlayer, date: IsoDate, home: string | undefined): number {
+  if (!isForeignTo(player.nationalities, home) || player.condition.arrivedOn === null) return 0;
   const settled = daysBetween(player.condition.arrivedOn, date) / ADAPTATION_DAYS;
   return ADAPTATION_COST * Math.max(0, 1 - settled);
 }
 
 /** The strength a player plays at in this match: his strength less fatigue (his fatigueOn, if the caller has it), pitch and adaptation. */
-export function effectiveStrength(player: SimPlayer, { date, pitch }: MatchContext, fatigue: number = fatigueOn(player, date)): number {
+export function effectiveStrength(player: SimPlayer, { date, pitch, home }: MatchContext, fatigue: number = fatigueOn(player, date)): number {
   const turf = pitch === "artificial" && player.trait === "poorOnArtificialTurf" ? ARTIFICIAL_TURF_COST : 0;
   const tired = (FATIGUE_COST * fatigue) / 100;
-  return Math.max(1, player.strength - tired - turf - adaptationCost(player, date));
+  return Math.max(1, player.strength - tired - turf - adaptationCost(player, date, home));
 }

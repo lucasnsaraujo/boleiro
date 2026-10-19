@@ -337,7 +337,7 @@ export function nationsDay(state: GameState, today: IsoDate, playedInFullTier: R
 
   const season = Number(state.date.slice(0, 4));
   if (state.date.endsWith("-01-01")) {
-    const opened = competitionsOf(season, nations, random.next);
+    const opened = competitionsOf(season, { ...nations, hosts: state.hosts ?? {} }, random.next);
     const finished = new Set(Object.values(nations.competitions).filter((c) => c.winnerId || c.until < state.date).map((c) => c.id));
     const competitions = Object.fromEntries([...Object.entries(nations.competitions).filter(([id]) => !finished.has(id)), ...opened.competitions.map((c) => [c.id, c] as const)]);
     nations = { ...nations, competitions, matches: [...nations.matches.filter((m) => !finished.has(m.competitionId)), ...opened.matches] };

@@ -15,10 +15,11 @@ export function refereeLine(page: MatchPage): string | null {
   return `Árbitro ${referee}${hasVar ? " · VAR" : ""}`;
 }
 
-/** "Público 61.233 · Renda R$ 4,8 mi", for a match whose crowd is known. */
+/** "Maracanã · Público 61.233 · Renda R$ 4,8 mi", for a match whose crowd is known; a neutral ground with its city, "Estadio Centenario, Montevidéu". */
 export function venueLine(page: MatchPage): string[] {
-  const { stadium, crowd, gate } = page.venue;
-  return [stadium, crowd ? `Público ${THOUSANDS.format(crowd)}` : null, gate ? `Renda ${formatMoney(gate)}` : null].filter((part): part is string => !!part);
+  const { stadium, city, crowd, gate } = page.venue;
+  const ground = stadium && city ? `${stadium}, ${city}` : stadium;
+  return [ground, crowd ? `Público ${THOUSANDS.format(crowd)}` : null, gate ? `Renda ${formatMoney(gate)}` : null].filter((part): part is string => !!part);
 }
 
 /** The match's clock as its header shows it: the minute while it runs, else how it ended. */

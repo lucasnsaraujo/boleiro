@@ -14,6 +14,7 @@ import { MatchSheet } from "./MatchSheet.js";
 import { DerbyBadge } from "../rivalries/DerbyBadge.js";
 import { duelLine } from "../rivalries/duelLine.js";
 import "./matchFile.css";
+import { EditionLogo } from "../competitions/CompetitionLogo.js";
 
 // The panel and the sheet leave over this long before they unmount.
 const LEAVE_MS = 260;
@@ -139,6 +140,7 @@ function MatchPanel({ page, view, isReturning, isLeaving, onFull, onClose, onSub
   return (
     <aside className={`mf-panel${isReturning ? " entry-return" : ""}${isLeaving ? " leaving" : ""}`} role="dialog" aria-modal="false" aria-label="Ficha do jogo" style={clubColours(page)}>
       <header className="mf-ph">
+        {page.edition && <EditionLogo edition={page.edition} size={22} name={page.competition} className="mf-logo" />}
         <span ref={title} tabIndex={-1} className="lbl">
           Ficha do jogo · {page.label}
         </span>

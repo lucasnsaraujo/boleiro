@@ -96,6 +96,18 @@ const TRANSFERMARKT_NAMES: Record<string, string> = {
   "DR Congo": "RD Congo",
   "Sao Tome and Principe": "São Tomé e Príncipe",
   "St. Vincent & Grenadinen": "São Vicente e Granadinas",
+  "Antigua and Barbuda": "Antígua e Barbuda",
+  Bonaire: "Bonaire",
+  "Bosnia-Herzegovina": "Bósnia e Herzegovina",
+  Congo: "Congo",
+  Curacao: "Curaçao",
+  "Czech Republic": "Tchéquia",
+  Hongkong: "Hong Kong",
+  Palestine: "Palestina",
+  "Saint-Martin": "São Martinho",
+  "Southern Sudan": "Sudão do Sul",
+  "The Gambia": "Gâmbia",
+  "Trinidad and Tobago": "Trinidad e Tobago",
 };
 const REGION_CODES = Array.from({ length: 26 * 26 }, (_, i) => String.fromCharCode(65 + Math.floor(i / 26), 65 + (i % 26)));
 let portugueseNames: Map<string, string> | null = null;

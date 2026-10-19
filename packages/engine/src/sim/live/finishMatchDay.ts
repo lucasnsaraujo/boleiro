@@ -13,6 +13,7 @@ import { seasonEndField } from "../continental/continentalField.js";
 import { openContinentalCups } from "../continental/openContinentalCups.js";
 import { payContinentalPrizes } from "../continental/payContinentalPrizes.js";
 import { latestChampionsLeagueWinner, playEuropeDay } from "../continental/uefaCups.js";
+import { payUefaPrizes } from "../continental/payUefaPrizes.js";
 import { startCoachSeason } from "../coach/startCoachSeason.js";
 import { buildStadiums } from "../stadium/stadiumWorks.js";
 import { addDays } from "../dates.js";
@@ -67,6 +68,7 @@ import { nationsDay } from "../nations/nationsDay.js";
 import { nationalTeamPlayingToday, nationalTeamToday, playedNationalOf, seatedSideToday, sideToday, syncNationalFixtures } from "../nations/nationalFixtures.js";
 import { isNationalTeam } from "../nations/nationalSquad.js";
 import { runMoments } from "../moments/runMoments.js";
+import { withHosts } from "../hosts/drawHosts.js";
 
 function fixturesByCompetition(fixtures: readonly Fixture[]): Map<string, Fixture[]> {
   const byCompetition = new Map<string, Fixture[]>();
@@ -285,7 +287,13 @@ export function finishMatchDay(live: LiveDay): DayResult {
     next = turned.events.length ? moveAiCoaches(turned.state, beforeTurn, [], state.date).state : turned.state;
     events.push(...turned.events);
   }
-  if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state), playedAbroad) };
+  if (next.europe && next.world) {
+    const europeBefore = next.europe;
+    next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state), playedAbroad) };
+    const uefaPrizes = payUefaPrizes(next, europeBefore);
+    next = uefaPrizes.state;
+    events.push(...uefaPrizes.events);
+  }
   const titled = recordTitlesAbroad(state, next);
   if (titled !== next) {
     const abroadBonuses = payTitleBonuses(next, titled);
@@ -319,7 +327,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
     next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };
     if (next.world) next = { ...next, world: endWorldSeason(next.world, next.season, unifiedDatesOf(next.calendar)) };
-    next = closeCoachSeason(openContinentalCups(next, continentalField), state.season, runs, retired);
+    next = closeCoachSeason(openContinentalCups(withHosts(next), continentalField), state.season, runs, retired);
     next = coolRivalries(recordFormerPlayers(next, academies.state, developed.events));
     seasonOutcomes = ended.outcomes;
   }

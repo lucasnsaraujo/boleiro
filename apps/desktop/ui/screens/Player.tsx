@@ -9,6 +9,7 @@ import { ClubPlate } from "../clubs/ClubPlate.js";
 import { Crest } from "../clubs/Crest.js";
 import { formatGameDate } from "@boleiro/game-client/format/formatGameDate";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
+import { citizenshipText } from "../format/citizenshipText.js";
 import { POSITION_NAMES, TRAIT_LONG } from "../format/playerLabels.js";
 import type { BoardDesk } from "@boleiro/game-client/market/boardDesk";
 import { DEFAULT_RENEWAL_YEARS, requestOptions } from "@boleiro/game-client/market/coachRequests";
@@ -142,7 +143,8 @@ export function Player() {
         <div className="player-who">
           <h1 className="screen-title">{card.name}</h1>
           <p className="screen-sub">
-            {POSITION_NAMES[card.group]} · {card.age} anos{card.trait && ` · ${TRAIT_LONG[card.trait]}`}
+            {POSITION_NAMES[card.group]} · {card.age} anos{citizenshipText(card.nationalities)}
+            {card.trait && ` · ${TRAIT_LONG[card.trait]}`}
           </p>
           {status && <p className={`player-status ${card.status?.kind ?? ""}`}>{status}</p>}
         </div>

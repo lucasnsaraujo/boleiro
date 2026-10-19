@@ -18,7 +18,8 @@ const COLUMN_GAP = 14;
 const CAPTION_SPREAD = 80;
 
 /** With `onOpenMatch`, a tie with a game played opens its latest game's ficha; `mark` is the cup's logo, on the final's medallion. */
-type Props = { name: string; rounds: BracketRound[]; clubs: Clubs; coachClubId: string | null; mark?: string | null; onOpenMatch?: (matchRef: string) => void };
+/** `finalGround` names the ground a one-match final is played at by its host, when the cup has one. */
+type Props = { name: string; rounds: BracketRound[]; clubs: Clubs; coachClubId: string | null; mark?: string | null; finalGround?: string | null; onOpenMatch?: (matchRef: string) => void };
 
 /** Where each card sits: the left half's rounds run in from the left edge, the right half's from the right, the final in the middle. */
 function layoutOf(width: number, height: number) {
@@ -111,15 +112,15 @@ function TieCard({ tie, feeders, clubs, coachClubId, isSemi, style, onOpenMatch 
   );
 }
 
-/** The final's card: the cup's logo, or a trophy, on its medallion, its day, and its two clubs or the places still open. */
-function FinalCard({ tie, date, pending, clubs, coachClubId, mark, style, onOpenMatch }: { tie: TieView | null; date: string | undefined; pending: [string, string]; clubs: Clubs; coachClubId: string | null; mark: string | null | undefined; style: React.CSSProperties; onOpenMatch: Props["onOpenMatch"] }) {
+/** The final's card: the cup's logo, or a trophy, on its medallion, its day and its host's ground, and its two clubs or the places still open. */
+function FinalCard({ tie, date, ground = null, pending, clubs, coachClubId, mark, style, onOpenMatch }: { tie: TieView | null; date: string | undefined; ground?: string | null; pending: [string, string]; clubs: Clubs; coachClubId: string | null; mark: string | null | undefined; style: React.CSSProperties; onOpenMatch: Props["onOpenMatch"] }) {
   return (
     <div className="stk bk-final" style={style}>
       <div className={mark ? "bk-trophy bk-mark" : "bk-trophy"} aria-hidden="true">
         {mark ? <img src={mark} alt="" /> : <i className="ph-fill ph-trophy" />}
       </div>
       <h3>Final</h3>
-      <p>{date ? `${formatBarDate(date)} · jogo único` : "Jogo único"}</p>
+      <p>{[date ? `${formatBarDate(date)} · jogo único` : "Jogo único", ground].filter(Boolean).join(" · ")}</p>
       {tie && <TieOpener tie={tie} clubs={clubs} onOpenMatch={onOpenMatch} />}
       {tie ? (
         <TieRows tie={tie} clubs={clubs} coachClubId={coachClubId} crest={20} />
@@ -156,7 +157,7 @@ function useBoxSize() {
  * The knockout bracket as the album pastes it: the round of 16 at both edges, the halves meeting at
  * the final in the middle, the coach's tie lifted in yellow.
  */
-export function Bracket({ name, rounds, clubs, coachClubId, mark, onOpenMatch }: Props) {
+export function Bracket({ name, rounds, clubs, coachClubId, mark, finalGround, onOpenMatch }: Props) {
   const { box, size } = useBoxSize();
 
   const [sixteen, quarters, semis, final] = rounds;
@@ -215,6 +216,7 @@ export function Bracket({ name, rounds, clubs, coachClubId, mark, onOpenMatch }:
         key="final"
         tie={final.ties[0] ?? null}
         date={final.dates[0]}
+        ground={finalGround ?? null}
         pending={[pendingName(clubs, semis.ties[0]), pendingName(clubs, semis.ties[1])]}
         clubs={clubs}
         coachClubId={coachClubId}

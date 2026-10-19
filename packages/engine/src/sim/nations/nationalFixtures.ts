@@ -1,5 +1,6 @@
 import type { Fixture, GameState, MatchResult, NationalFullTierCompetition, Stage } from "../gameState.js";
 import type { NationalCompetition, NationalJob, NationalMatch, NationalResult } from "./nations.js";
+import type { Hosts } from "../hosts/venue.js";
 
 const NATIONAL = "national:";
 
@@ -23,8 +24,9 @@ function stageKeyOf(source: NationalCompetition, match: NationalMatch): string {
   return legs === 1 ? `${match.round}@${match.date}` : match.round;
 }
 
-/** A national competition's full-tier copy with no match in it yet. */
-function emptyCopy(source: NationalCompetition, season: number): NationalFullTierCompetition {
+/** A national competition's full-tier copy with no match in it yet; a final tournament's carries its hosts and grounds. */
+function emptyCopy(source: NationalCompetition, season: number, hosts: Hosts = {}): NationalFullTierCompetition {
+  const host = source.kind === "world-cup" || source.kind === "continental-cup" ? hosts[source.id] : undefined;
   return {
     id: fullTierIdOf(source.id),
     kind: "national",
@@ -40,6 +42,7 @@ function emptyCopy(source: NationalCompetition, season: number): NationalFullTie
     rounds: [],
     groupNames: [],
     neutral: [],
+    ...(host ? { host } : {}),
   };
 }
 
@@ -123,7 +126,7 @@ export function syncNationalFixtures(state: GameState): GameState {
     const source = nations.competitions[match.competitionId];
     if (!source) continue;
     const existing = competitions[fullTierIdOf(source.id)];
-    const copy = existing?.kind === "national" ? existing : emptyCopy(source, state.season);
+    const copy = existing?.kind === "national" ? existing : emptyCopy(source, state.season, state.hosts);
     const next = withMatch(copy, source, match);
     competitions[copy.id] = next.copy;
     added.push(next.fixture);
@@ -136,7 +139,7 @@ export function syncNationalFixtures(state: GameState): GameState {
  * its competition made for it alone, with the score the national competition kept; null for a match the game no
  * longer keeps.
  */
-export function nationalFixtureOf(state: Pick<GameState, "fixtures" | "competitions" | "nations" | "season">, matchId: string): { fixture: Fixture; competition: NationalFullTierCompetition } | null {
+export function nationalFixtureOf(state: Pick<GameState, "fixtures" | "competitions" | "nations" | "season" | "hosts">, matchId: string): { fixture: Fixture; competition: NationalFullTierCompetition } | null {
   const id = nationalFixtureId(matchId);
   const known = state.fixtures.find((f) => f.id === id);
   const competition = known && state.competitions[known.competitionId];
@@ -144,7 +147,7 @@ export function nationalFixtureOf(state: Pick<GameState, "fixtures" | "competiti
   const match = state.nations?.matches.find((m) => m.id === matchId);
   const source = match && state.nations?.competitions[match.competitionId];
   if (!match || !source) return null;
-  const built = withMatch(emptyCopy(source, state.season), source, match);
+  const built = withMatch(emptyCopy(source, state.season, state.hosts), source, match);
   return { fixture: { ...built.fixture, result: match.result && matchResultOf(match.result) }, competition: built.copy };
 }
 

@@ -2,7 +2,7 @@ import { useRef, type CSSProperties, type ReactNode } from "react";
 import type { TitleView } from "@boleiro/game-client/moments/momentView";
 import { Crest } from "../../clubs/Crest.js";
 import { strongColour } from "../clubTone.js";
-import { competitionLogoOf } from "../competitionLogo.js";
+import { competitionLogoOf } from "../../competitions/competitionLogos.js";
 import { MomentStage, useCanvasTick, useCueAt, useTick } from "../MomentStage.js";
 import { crestClub, MomentSticker } from "../MomentSticker.js";
 import { clubPaper, confetti, crowd, ease, span } from "../paperMotion.js";
@@ -10,13 +10,17 @@ import "./title.css";
 
 type Props = { view: TitleView; actions: ReactNode };
 
+// The trophy card's logo slot, in CSS pixels: the card is 120 x 150.
+const TROPHY_LOGO = 120;
 const ms = (value: number) => ({ "--d": Math.round(value) }) as CSSProperties;
 
 function Trophy({ view, size }: { view: TitleView; size: "short" | "long" }) {
-  const logo = competitionLogoOf(view.competition);
+  const logo = competitionLogoOf(view.competition, view.season, TROPHY_LOGO, view.host);
   return (
     <div className={`tt-trophy is-${size}`}>
-      <div className="tt-cup">{logo ? <img src={logo} alt={view.competitionName} /> : <i className="ph-fill ph-trophy" aria-label={view.competitionName} />}</div>
+      <div className="tt-cup">
+        <img src={logo.url} alt={view.competitionName} />
+      </div>
       <div>
         <b>{view.headline}</b>
         <small>{view.subline}</small>

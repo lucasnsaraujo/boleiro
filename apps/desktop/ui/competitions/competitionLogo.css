@@ -1,0 +1,3 @@
+/* A competition's logo: the crest's die-cut sticker (.crest), its cut thinner at the small sizes of tabs and labels. */
+.comp-logo { object-fit: contain; }
+.comp-logo.is-small { --cut: 1px; }

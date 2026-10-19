@@ -173,7 +173,7 @@ export const PLAYER_EVENTS: readonly EventType[] = [
     weight: 0.8,
     cooldownDays: 90,
     once: "player",
-    cast: (scene) => playerCast(pickFrom(scene, byStrength(scene.squad).slice(0, 5).filter((p) => p.age <= 24 && !isForeign(p)))),
+    cast: (scene) => playerCast(pickFrom(scene, byStrength(scene.squad).slice(0, 5).filter((p) => p.age <= 24 && !isForeign(scene, p)))),
     setting: "Numa entrevista ao canal do clube",
     texts: [
       { headline: "{player} fala em jogar na Europa", body: "“Todo menino sonha com a Champions. Meu foco é o {club}, mas um dia quero ir.”" },
@@ -216,7 +216,7 @@ export const PLAYER_EVENTS: readonly EventType[] = [
     once: "player",
     cast: (scene) => {
       const best = byStrength(fit(scene))[0];
-      return best && best.strength >= 78 && !isForeign(best) && best.age <= 31 ? playerCast(best) : null;
+      return best && best.strength >= 78 && !isForeign(scene, best) && best.age <= 31 ? playerCast(best) : null;
     },
     texts: [
       { headline: "{player} entra na lista de observação da Seleção", body: "A comissão técnica da CBF pediu os números do {position} do {club}. Ele soube pelo celular, no ônibus." },

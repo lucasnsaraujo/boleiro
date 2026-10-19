@@ -17,6 +17,7 @@ import { leagueMatches, playLeagueDay } from "./resultOnlyLeague.js";
 import { squadLevel } from "../coach/aiCoaches.js";
 import type { Country, WorldClub } from "./world.js";
 import { compareText } from "../compareText.js";
+import { takeInOutsiders } from "../nations/callUps.js";
 
 /** The result-only country a club plays in, with its id; null for a club of the full tier or of no country. */
 export function countryOfWorldClub(state: Pick<GameState, "world">, clubId: string): { id: string; country: Country } | null {
@@ -145,6 +146,7 @@ export function joinFullTier(state: GameState, id: string): GameState {
     fixtures: [...state.fixtures, ...fixtures],
     world: { ...state.world, [id]: { ...rest, leagues: [], isFullTier: true } },
     ...(coaches ? { coaches } : {}),
+    ...(state.nations ? { nations: takeInOutsiders(state.nations, Object.values(joined)) } : {}),
   };
   const { boards } = boardExpectations(next);
   return { ...next, boards: { ...state.boards, ...Object.fromEntries(clubIds.flatMap((clubId) => (boards[clubId] ? [[clubId, boards[clubId]]] : []))) } };

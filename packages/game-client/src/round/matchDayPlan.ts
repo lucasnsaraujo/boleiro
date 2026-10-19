@@ -15,6 +15,7 @@ import type { MatchContext } from "@boleiro/engine/sim/players/effectiveStrength
 import { fatigueOn } from "@boleiro/engine/sim/players/fatigueOn";
 import { isInjured } from "@boleiro/engine/sim/players/isInjured";
 import { matchClubOf, playingStrength } from "@boleiro/engine/sim/players/matchSetup";
+import { homeNationalityOf } from "@boleiro/engine/sim/players/homeNationality";
 import { pickMatchLineup } from "@boleiro/engine/sim/players/pickMatchLineup";
 import { formationOf, usualStartersOf } from "@boleiro/engine/sim/players/usualLineups";
 import { withLoaneesFacingOwner } from "@boleiro/engine/sim/transfers/loans";
@@ -170,9 +171,11 @@ export function matchDayPlan(state: GameState, formation?: Formation): MatchDayP
   const usualTactics = isNational ? nationalTacticsOf(state, clubId) : state.coach.tactics;
   const tactics = formation ? { ...usualTactics, formation } : usualTactics;
   const usual = usualStartersOf(state, clubId);
-  const assistantLineup = pickMatchLineup(available, context, tactics.formation, usual).map((p) => p.id);
+  // A club's newcomers foreign to its country still adapt; a national team's play as they always did.
+  const ownContext = isNational ? context : { ...context, home: homeNationalityOf(state.clubs[clubId]) };
+  const assistantLineup = pickMatchLineup(available, ownContext, tactics.formation, usual).map((p) => p.id);
   const kept = isNational ? undefined : startersKept(state.coach, state.chemistry?.[clubId]?.eleven);
-  const lineup = kept ? pickMatchLineup(available, context, tactics.formation, usual, kept).map((p) => p.id) : assistantLineup;
+  const lineup = kept ? pickMatchLineup(available, ownContext, tactics.formation, usual, kept).map((p) => p.id) : assistantLineup;
   const competition = state.competitions[fixture.competitionId];
   const label = competition ? fixtureLabel(competition, fixture) : "";
   const { homeId, awayId } = fixture;
@@ -181,7 +184,7 @@ export function matchDayPlan(state: GameState, formation?: Formation): MatchDayP
   const opponentFormation = aiFormationOf(state, opponentId);
   const squad = squadOf(state, clubId, fixture, playingStrength(state, clubId, context, available));
   const opponentStrength = playingStrength(state, opponentId, context, opponentSquad);
-  const opponentEleven = pickMatchLineup(opponentSquad, context, opponentFormation, usualStartersOf(state, opponentId)).map((p) => ({
+  const opponentEleven = pickMatchLineup(opponentSquad, { ...context, home: homeNationalityOf(state.clubs[opponentId]) }, opponentFormation, usualStartersOf(state, opponentId)).map((p) => ({
     id: p.id,
     name: p.name,
     group: p.group,

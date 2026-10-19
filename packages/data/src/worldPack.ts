@@ -4,8 +4,8 @@ export type WorldPackLeague = { id: string; name: string; tier: number };
 
 export type WorldPackClub = { id: string; name: string; shortName: string; league: string | null; stadium: string; colours: { primary: string; secondary: string } };
 
-/** A squad player as Transfermarkt lists him; the market value is null when it gives none. */
-export type WorldPackPlayer = { clubId: string; name: string; group: PositionGroup; age: number | null; marketValueEur: number | null };
+/** A squad player as Transfermarkt lists him, his own citizenship first; the market value is null when it gives none. */
+export type WorldPackPlayer = { clubId: string; name: string; group: PositionGroup; age: number | null; marketValueEur: number | null; nationalities: string[] };
 
 /** One country of the world scrape, decoded from the pack `pipeline/build_world_packs.py` writes. */
 export type WorldPack = {
@@ -107,10 +107,13 @@ export function parseWorldPack(json: string): WorldPack {
   const groups = columnOf(playerTable, "players", "group", playerRows, isGroup);
   const ages = columnOf(playerTable, "players", "age", playerRows, isNumberOrNull);
   const values = columnOf(playerTable, "players", "marketValueEur", playerRows, isNumberOrNull);
+  // Transfermarkt's citizenships, slash-separated; a pack built before they were kept has none.
+  const citizenships = "nationalities" in playerTable ? columnOf(playerTable, "players", "nationalities", playerRows, isStringOrNull) : [];
   const players = playerClubs.map((clubRow, row): WorldPackPlayer => {
     const clubId = clubIds[clubRow];
     if (clubId === undefined) fail(`players.club[${row}]`, `a club row below ${clubRows}`);
-    return { clubId, name: playerNames[row] ?? "", group: groups[row] ?? "MID", age: ages[row] ?? null, marketValueEur: values[row] || null };
+    const nationalities = (citizenships[row] ?? "").split("/").filter(Boolean);
+    return { clubId, name: playerNames[row] ?? "", group: groups[row] ?? "MID", age: ages[row] ?? null, marketValueEur: values[row] || null, nationalities };
   });
 
   return { packVersion: pack.packVersion, country: { id: country.id, name: country.name }, leagues, clubs, players };

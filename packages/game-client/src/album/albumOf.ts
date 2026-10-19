@@ -9,6 +9,7 @@ import { competitionKey, NO_RECORDS, type ClubRecords, type CoachRecord, type Co
 import { rivalryOf } from "@boleiro/engine/sim/rivalries/rivalryOf";
 import { eggAlbumOf, type EggAlbum, type EggSticker } from "../eggs/eggAlbum.js";
 import { competitionKeyName } from "../format/competitionName.js";
+import type { EditionHost } from "@boleiro/engine/sim/hosts/venue";
 
 export type StickerShine = keyof typeof SHINE;
 
@@ -85,7 +86,8 @@ export type TitleStory = {
 };
 
 /** A title's special page; `decider` is null for a title won before the album kept its finals. */
-export type TitlePage = { id: string; season: number; competition: CompetitionKey; name: string; clubId: string; decider: TitleDecider | null; story: TitleStory };
+/** A title's special page: `host` is where its edition was played, which a tournament's logo is drawn for. */
+export type TitlePage = { id: string; season: number; competition: CompetitionKey; name: string; host: EditionHost | null; clubId: string; decider: TitleDecider | null; story: TitleStory };
 
 export type PlayerMark = { playerId: string; name: string; clubId: string; count: number; season?: number };
 
@@ -227,6 +229,7 @@ function titlePages(state: GameState, record: CoachRecord): TitlePage[] {
       season: trophy.season,
       competition: key,
       name: competitionKeyName(key),
+      host: state.hosts?.[`${key}-${trophy.season}`] ?? null,
       clubId: trophy.clubId,
       decider: decider ? deciderOf(decider) : null,
       story: {

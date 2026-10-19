@@ -66,11 +66,37 @@ export function nationalsByTeam(players: Readonly<Record<string, SimPlayer>>, te
 /** A pick for a call-up: the game's player or an outsider's row, his position and strength. */
 type Candidate = { ref: string; role: Role; strength: number };
 
-/** The rows of a pool's outsiders still young enough to be called on `date`. */
+/** The rows of a pool's outsiders still outside the game: each but those its `joined` players now stand for. */
+export function outsiderRows(outsiders: Outsiders | undefined): number[] {
+  if (!outsiders) return [];
+  const joined = new Set(outsiders.joined ?? []);
+  return outsiders.names.flatMap((_, row) => (joined.has(row) ? [] : [row]));
+}
+
+/**
+ * National football with the outsiders the game's `players` now stand for marked as joined, each pool's row of a
+ * player of its citizenship with the same name at the same club, as when his league abroad joins the full tier:
+ * he is called up as the game's own from then on, wherever he moves. The same object when no row is taken in.
+ */
+export function takeInOutsiders(nations: Nations, players: readonly SimPlayer[]): Nations {
+  const nationals = nationalsByTeam(Object.fromEntries(players.map((p) => [p.id, p])), nations.teams);
+  let outsiders = nations.outsiders;
+  for (const [teamId, own] of nationals) {
+    const pool = outsiders[teamId];
+    if (!pool) continue;
+    const inGame = new Set(own.map((p) => `${p.name}@${p.clubId}`));
+    const taken = new Set(pool.joined ?? []);
+    pool.names.forEach((name, row) => inGame.has(`${name}@${pool.clubIds[row] ?? ""}`) && taken.add(row));
+    if (taken.size !== (pool.joined?.length ?? 0)) outsiders = { ...outsiders, [teamId]: { ...pool, joined: [...taken].sort((a, b) => a - b) } };
+  }
+  return outsiders === nations.outsiders ? nations : { ...nations, outsiders };
+}
+
+/** The rows of a pool's outsiders still outside the game (outsiderRows) and young enough to be called on `date`. */
 export function callableRows(outsiders: Outsiders | undefined, date: IsoDate): number[] {
   if (!outsiders) return [];
   const year = Number(date.slice(0, 4));
-  return outsiders.names.flatMap((_, row) => {
+  return outsiderRows(outsiders).flatMap((row) => {
     const born = outsiders.born[row] ?? 0;
     return born && year - born > OLDEST ? [] : [row];
   });

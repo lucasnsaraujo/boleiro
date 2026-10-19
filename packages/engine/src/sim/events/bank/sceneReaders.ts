@@ -2,6 +2,7 @@ import { addDays } from "../../dates.js";
 import type { Fixture, SimPlayer } from "../../gameState.js";
 import { clubMood } from "../../morale/clubMood.js";
 import { rivalsOf } from "../../morale/rivalsOf.js";
+import { homeNationalityOf, isForeignTo } from "../../players/homeNationality.js";
 import { isInjured } from "../../players/isInjured.js";
 import { BLOCK_FROM_INTENSITY } from "../../rivalries/idols.js";
 import { isClassico, rivalryOf } from "../../rivalries/rivalryOf.js";
@@ -28,7 +29,8 @@ export const mood = (scene: EventScene) => clubMood(scene.state, scene.clubId);
 /** The month of the scene's day, 1 to 12. */
 export const monthOf = (scene: EventScene) => Number(scene.date.slice(5, 7));
 export const isWindow = (scene: EventScene) => isWindowOpen(scene.state, scene.date);
-export const isForeign = (player: SimPlayer) => player.nationalities.length > 0 && !player.nationalities.includes("Brazil");
+/** Whether the player holds no citizenship of the country the scene's club plays in. */
+export const isForeign = (scene: EventScene, player: SimPlayer) => isForeignTo(player.nationalities, homeNationalityOf(scene.state.clubs[scene.clubId]));
 /** The squad's eleven strongest, fit or not: the regulars. */
 export const regulars = (scene: EventScene) => byStrength(scene.squad).slice(0, 11);
 /** The squad beyond its sixteen strongest: the ones who barely play. */
