@@ -258,7 +258,7 @@ The first calibration (commit `f5b53020`, 9 October 2026) fitted the match engin
 | Extra time at the world cups' goal rate | Ties after 90 minutes play 30 more | `42e73a3c` |
 | National football (call-ups, absences, live national matches) | National squads take players from clubs during windows | `0e3ac861` and `30941c8c` |
 
-`calibration.test.ts` and `paramsForLeagueAbroad.test.ts` hold every fitted league to its real rates on day one, and `expectLowerDivisionResultsNearReal` in `runSeasons.test.ts` holds Série B–D to theirs over ten seasons of promotions and relegations.
+`calibration.test.ts` and `paramsForLeagueAbroad.test.ts` hold every fitted league to its real rates on day one, and `expectLowerDivisionResultsNearReal` in `runSeasons.test.ts` holds Série B–D to theirs over ten seasons of promotions and relegations; it and `expectSpreadSettles` run only under `pnpm test:long`, which CI skips.
 
 ## Limits
 
