@@ -10,7 +10,7 @@ type Props = {
   season: number | null;
   /** The slot's height in CSS pixels; a wide logo fills up to 1.3 times as much width. */
   size: number;
-  /** The competition's name: the logo's title, and its alternative text unless the name is printed beside it. */
+  /** The competition's name: the logo's alternative text and title, unless the name is printed beside it (a title would join the name of the heading or tab around it). */
   name: string;
   host?: EditionHost | null;
   isNamedBeside?: boolean;
@@ -28,7 +28,7 @@ export function CompetitionLogo({ competitionKey, season, size, name, host = nul
       className={`crest comp-logo${size < SMALL ? " is-small" : ""} ${className ?? ""}`}
       src={logo.url}
       alt={isNamedBeside ? "" : name}
-      title={name}
+      title={isNamedBeside ? undefined : name}
       width={logo.width}
       height={logo.height}
       data-logo={logo.isReal ? "real" : "drawn"}
