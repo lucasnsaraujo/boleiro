@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
-import { developPlayers, rebuildMovedSquads, retiresAtSeasonTurn } from "./developPlayers.js";
+import { developPlayers, groupsToFill, rebuildMovedSquads, retiresAtSeasonTurn } from "./developPlayers.js";
 
 const start = loadNewGame(9, { coachClubId: null });
 const regular = (p: SimPlayer) => Number(p.id.slice(1)) % 2 === 0;
@@ -140,6 +140,12 @@ describe("developPlayers at the end of a season", () => {
   });
 });
 
+describe("groupsToFill", () => {
+  it("tops a squad up in the 2026 squads' shape, which holds more forwards than the old guess: a fifth forward before a sixth midfielder", () => {
+    const staying = (["GK", "GK", ...Array<"DEF">(6).fill("DEF"), ...Array<"MID">(5).fill("MID"), ...Array<"ATT">(4).fill("ATT")] as const).map((group) => ({ group }));
+    expect(groupsToFill(staying, [])).toEqual(["ATT"]);
+  });
+});
 
 describe("rebuildMovedSquads", () => {
   const squadMean = (players: GameState["players"], clubId: string) => mean(Object.values(players).filter((p) => p.clubId === clubId).map((p) => p.strength));

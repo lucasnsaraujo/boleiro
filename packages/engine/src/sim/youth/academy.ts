@@ -145,7 +145,7 @@ export function academyOf(level: number, stature: number): { size: number; poten
   };
 }
 
-/** The group a squad or academy of `groups` is thinnest in, against a 24-man squad's shape. */
+/** The group a squad or academy of `groups` is thinnest in, against the 2026 squads' shape (SQUAD_SHAPE). */
 export function thinnestGroup(groups: readonly PositionGroup[]): PositionGroup {
   const count = (group: PositionGroup) => groups.filter((g) => g === group).length / SQUAD_SHAPE[group];
   const order: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
