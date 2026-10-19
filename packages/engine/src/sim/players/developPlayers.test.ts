@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
-import { developPlayers, retiresAtSeasonTurn } from "./developPlayers.js";
+import { developPlayers, groupsToFill, rebuildMovedSquads, retiresAtSeasonTurn } from "./developPlayers.js";
 
 const start = loadNewGame(9, { coachClubId: null });
 const regular = (p: SimPlayer) => Number(p.id.slice(1)) % 2 === 0;
@@ -52,6 +52,12 @@ describe("developPlayers at the end of a season", () => {
   it("retires exactly the players foreseen to retire at the season's turn", () => {
     const retired = events.filter((e) => e.type === "playerRetired").map((e) => e.playerId).sort();
     expect(retired).toEqual(Object.values(playedSeason.players).filter((p) => retiresAtSeasonTurn(playedSeason, p)).map((p) => p.id).sort());
+  });
+
+  it("foresees the same retirements on the season's eve whatever the members did in its last month", () => {
+    const swung: GameState = { ...playedSeason, finances: Object.fromEntries(Object.entries(playedSeason.finances).map(([id, f]) => [id, { ...f, membership: f.membership * 50 }])) };
+    const foreseen = (state: GameState) => Object.values(state.players).filter((p) => retiresAtSeasonTurn(state, p)).map((p) => p.id).sort();
+    expect(foreseen(swung)).toEqual(foreseen(playedSeason));
   });
 
   it("replaces retirees with Brazilian teenagers, stronger at bigger clubs", () => {
@@ -109,6 +115,19 @@ describe("developPlayers at the end of a season", () => {
     expect(coached.players[far.id]?.clubId).toBe(farClub);
   });
 
+  it("grows an academy graduate toward his potential at a human coach's club, and toward his club's level at an AI club", () => {
+    const clubId = "flamengo-rj";
+    const graduates = Object.values(playedSeason.players).filter((p) => p.clubId === clubId && p.age >= 21 && p.age <= 25).map((p) => ({ ...p, potential: p.strength + 12 }));
+    const withGraduates: GameState = { ...playedSeason, players: { ...playedSeason.players, ...Object.fromEntries(graduates.map((p) => [p.id, p])) } };
+    const growth = (state: GameState) => {
+      const after = developPlayers(state).state.players;
+      return mean(graduates.map((p) => (after[p.id]?.strength ?? p.strength) - p.strength));
+    };
+    expect(graduates.length).toBeGreaterThan(3);
+    expect(growth(withGraduates)).toBeCloseTo(growth(playedSeason), 6);
+    expect(growth({ ...withGraduates, coachClubId: clubId }) - growth(withGraduates)).toBeGreaterThan(1);
+  });
+
   it("drops the pre-contracts and loans of players who retire", () => {
     const veterans = Object.values(playedSeason.players).filter((p) => p.age >= 38);
     const loan = { fromClubId: "flamengo-rj", until: "2026-12-31", lenderWageShare: 0.5, buyOption: null };
@@ -131,5 +150,130 @@ describe("developPlayers at the end of a season", () => {
   it("draws from the game's random stream", () => {
     expect(next.rngState).not.toBe(playedSeason.rngState);
     expect(developPlayers(playedSeason).state).toEqual(next);
+  });
+});
+
+describe("groupsToFill", () => {
+  it("tops a squad up in the 2026 squads' shape, which holds more forwards than the old guess: a fifth forward before a sixth midfielder", () => {
+    const staying = (["GK", "GK", ...Array<"DEF">(6).fill("DEF"), ...Array<"MID">(5).fill("MID"), ...Array<"ATT">(4).fill("ATT")] as const).map((group) => ({ group }));
+    expect(groupsToFill(staying, [])).toEqual(["ATT"]);
+  });
+});
+
+describe("rebuildMovedSquads", () => {
+  const squadMean = (players: GameState["players"], clubId: string) => mean(Object.values(players).filter((p) => p.clubId === clubId).map((p) => p.strength));
+  const firstIn = (division: "A" | "B") => Object.values(start.clubs).filter((c) => c.division === division).map((c) => c.id).sort()[0] ?? "";
+  const promotedClub = firstIn("B");
+  const relegatedClub = firstIn("A");
+  const moved = (clubId: string, division: "A" | "B"): GameState["clubs"] => {
+    const club = start.clubs[clubId];
+    if (!club) throw new Error(`no club ${clubId}`);
+    return { ...start.clubs, [clubId]: { ...club, division } };
+  };
+  const scaled = (clubId: string, factor: number): GameState["finances"] => {
+    const finance = start.finances[clubId];
+    if (!finance) throw new Error(`no finances for ${clubId}`);
+    const { tv, sponsorship, membership, otherIncome, expectedTickets, expectedPrizes } = finance;
+    return { ...start.finances, [clubId]: { ...finance, tv: tv * factor, sponsorship: sponsorship * factor, membership: membership * factor, otherIncome: otherIncome * factor, expectedTickets: expectedTickets * factor, expectedPrizes: expectedPrizes * factor } };
+  };
+  const lift = (state: GameState, clubs: GameState["clubs"], finances: GameState["finances"], clubId: string) => squadMean(rebuildMovedSquads(state, clubs, finances), clubId) - squadMean(state.players, clubId);
+
+  it("lifts a promoted club's squad most of the way to Série A and leaves the other clubs' players as they were", () => {
+    const players = rebuildMovedSquads(start, moved(promotedClub, "A"), start.finances);
+    expect(squadMean(players, promotedClub) - squadMean(start.players, promotedClub)).toBeGreaterThan(3);
+    const others = Object.values(start.players).filter((p) => p.clubId !== promotedClub);
+    expect(others.every((p) => players[p.id] === p)).toBe(true);
+  });
+
+  it("lowers a relegated club's squad toward Série B", () => {
+    expect(lift(start, moved(relegatedClub, "B"), start.finances, relegatedClub)).toBeLessThan(-2);
+  });
+
+  it("rebuilds a richer promoted club further than a poorer one", () => {
+    const poorer = lift(start, moved(promotedClub, "A"), start.finances, promotedClub);
+    expect(lift(start, moved(promotedClub, "A"), scaled(promotedClub, 10), promotedClub)).toBeGreaterThan(poorer + 2);
+  });
+
+  it("barely rebuilds a relegated club richer than any club of its new division", () => {
+    const flamengo = "flamengo-rj";
+    expect(lift(start, moved(flamengo, "B"), start.finances, flamengo)).toBeGreaterThan(-1);
+  });
+
+  it("moves a squad only the way its club went: a relegated squad already below its new division keeps its players", () => {
+    const weak: GameState = { ...start, players: Object.fromEntries(Object.entries(start.players).map(([id, p]) => [id, p.clubId === relegatedClub ? { ...p, strength: 40 } : p])) };
+    expect(lift(weak, moved(relegatedClub, "B"), start.finances, relegatedClub)).toBe(0);
+  });
+
+  it("rebuilds a moved club's players out on loan with it, and leaves the players it borrowed to their own clubs", () => {
+    const lender = firstIn("A");
+    const lent = Object.values(start.players).find((p) => p.clubId === promotedClub);
+    const borrowed = Object.values(start.players).find((p) => p.clubId === lender);
+    if (!lent || !borrowed) throw new Error("no players to loan");
+    const loan = { until: "2026-12-31", lenderWageShare: 0, buyOption: null };
+    const loaned: GameState = {
+      ...start,
+      players: { ...start.players, [lent.id]: { ...lent, clubId: lender }, [borrowed.id]: { ...borrowed, clubId: promotedClub } },
+      market: { ...start.market, loans: { ...start.market.loans, [lent.id]: { ...loan, fromClubId: promotedClub }, [borrowed.id]: { ...loan, fromClubId: lender } } },
+    };
+    const players = rebuildMovedSquads(loaned, moved(promotedClub, "A"), start.finances);
+    expect(players[lent.id]?.strength).toBeGreaterThan(lent.strength);
+    expect(players[borrowed.id]).toBe(loaned.players[borrowed.id]);
+  });
+
+  it("rebuilds a moved squad as if the players leaving it at the turn of the year had gone, and leaves them as they are", () => {
+    const squad = Object.values(start.players).filter((p) => p.clubId === promotedClub);
+    const leavers = squad.slice(0, 6);
+    const staying = squad.slice(6);
+    const isLeaver = (id: string) => leavers.some((p) => p.id === id);
+    const contracts = squad.map((p, i) => ({ ...p, strength: isLeaver(p.id) ? 95 : p.strength, contractUntil: i < 3 ? `${start.season}-12-31` : `${start.season + 2}-12-31` }));
+    const leaving: GameState = {
+      ...start,
+      players: { ...start.players, ...Object.fromEntries(contracts.map((p) => [p.id, p])) },
+      market: { ...start.market, preContracts: { ...start.market.preContracts, ...Object.fromEntries(leavers.slice(3).map((p) => [p.id, relegatedClub])) } },
+    };
+    const gone: GameState = { ...leaving, players: Object.fromEntries(Object.entries(leaving.players).filter(([id]) => !isLeaver(id))), market: start.market };
+    const rebuilt = rebuildMovedSquads(leaving, moved(promotedClub, "A"), start.finances);
+    const rebuiltWithoutLeavers = rebuildMovedSquads(gone, moved(promotedClub, "A"), start.finances);
+    expect(leavers.map((p) => rebuilt[p.id])).toEqual(leavers.map((p) => leaving.players[p.id]));
+    expect(staying.map((p) => rebuilt[p.id]?.strength)).toEqual(staying.map((p) => rebuiltWithoutLeavers[p.id]?.strength));
+    expect(lift(gone, moved(promotedClub, "A"), start.finances, promotedClub)).toBeGreaterThan(3);
+  });
+
+  describe("a giant in Série B", () => {
+    const flamengo = "flamengo-rj";
+    const [model] = Object.values(start.players).filter((p) => p.clubId === flamengo);
+    if (!model) throw new Error("Flamengo has no players");
+    // Many players at 28, where the age curve is flat, so a season's drift is the pull to the club's level and the noise averages out.
+    const squadAt = (strength: number) => Array.from({ length: 300 }, (_, i): SimPlayer => ({ ...model, id: `giant-${i}`, age: 28, strength, contractUntil: `${start.season + 3}-12-31` }));
+    const cameFrom = (division: "A" | "C", strength: number): GameState => {
+      const club = start.clubs[flamengo];
+      if (!club) throw new Error("no Flamengo");
+      const others = Object.entries(start.players).filter(([, p]) => p.clubId !== flamengo);
+      return { ...start, clubs: { ...start.clubs, [flamengo]: { ...club, division } }, players: Object.fromEntries([...others, ...squadAt(strength).map((p) => [p.id, p] as const)]) };
+    };
+    const inB = moved(flamengo, "B");
+    // The squad once the rebuild stops moving it: it stands at the level the rebuild aims for.
+    const settled = (state: GameState): GameState => {
+      let players = state.players;
+      for (let i = 0; i < 30; i++) players = rebuildMovedSquads({ ...state, players }, inB, start.finances);
+      return { ...state, players };
+    };
+    const squadOf = (state: GameState) => Object.values(state.players).filter((p) => p.clubId === flamengo);
+
+    it("rebuilds it toward one level whether it came down from Série A or up from Série C", () => {
+      expect(squadMean(settled(cameFrom("C", 40)).players, flamengo)).toBeCloseTo(squadMean(settled(cameFrom("A", 95)).players, flamengo), 0);
+    });
+
+    it("pulls its players each season toward the level its squad was rebuilt to", () => {
+      const relegated = settled(cameFrom("A", 95));
+      const season: GameState = { ...relegated, clubs: inB };
+      const after = developPlayers(season).state.players;
+      expect(mean(squadOf(season).map((p) => (after[p.id]?.strength ?? p.strength) - p.strength))).toBeCloseTo(0, 0);
+    });
+  });
+
+  it("leaves a human coach's squad for him to rebuild", () => {
+    const coached: GameState = { ...start, coachClubId: promotedClub };
+    expect(lift(coached, moved(promotedClub, "A"), start.finances, promotedClub)).toBe(0);
   });
 });

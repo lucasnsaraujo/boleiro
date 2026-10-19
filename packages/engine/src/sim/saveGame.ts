@@ -1,6 +1,8 @@
 import { FIRST_PACK_VERSION } from "@boleiro/data/dataPack";
 import { withEveryLine } from "./finances/ledger.js";
-import type { ClubFinance, GameState } from "./gameState.js";
+import { projectedRevenue } from "./finances/setBoardBudget.js";
+import { tierOf } from "./finances/tierOf.js";
+import type { ClubFinance, Economy, GameState } from "./gameState.js";
 import type { History, StrengthMark } from "./history/history.js";
 
 const SAVE_VERSION: GameState["version"] = 4;
@@ -88,13 +90,25 @@ function withEveryClubLedgerLine(state: GameState): GameState {
   return Object.keys(finances).some((id) => finances[id] !== state.finances[id]) ? { ...state, finances } : state;
 }
 
+/** The economy with each tier's revenue floor; a save from before floors takes the least a club of the tier earns in it, at most the tier's typical revenue. */
+function withRevenueFloor(state: GameState): GameState {
+  const economy: Partial<Pick<Economy, "revenueFloor">> & Omit<Economy, "revenueFloor"> = state.economy;
+  if (economy.revenueFloor) return state;
+  const revenueFloor = { ...economy.typicalRevenue };
+  for (const club of Object.values(state.clubs)) {
+    const finance = state.finances[club.id];
+    if (finance && !club.abroad) revenueFloor[tierOf(club)] = Math.min(revenueFloor[tierOf(club)], projectedRevenue(finance));
+  }
+  return { ...state, economy: { ...economy, revenueFloor } };
+}
+
 /**
  * A parsed save checked as a game of this version; throws otherwise. A save from before data
  * packs has no `packVersion` and started from the first Brazil pack.
  */
 export function toGameState(parsed: unknown): GameState {
   if (!isGameState(parsed)) throw new Error(`not a version ${SAVE_VERSION} Boleiro save`);
-  const game = withEveryClubLedgerLine(withStrengthMarks(parsed));
+  const game = withRevenueFloor(withEveryClubLedgerLine(withStrengthMarks(parsed)));
   if (typeof game.packVersion === "string") return game;
   // Assigned onto the leading keys, so the save re-serialises in a new game's key order, then over
   // any packVersion that isn't text.

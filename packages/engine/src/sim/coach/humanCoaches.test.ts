@@ -10,7 +10,7 @@ import { compareText } from "../compareText.js";
 
 const FIRST = "flamengo-rj";
 const SECOND = "palmeiras-sp";
-const twoCoaches = loadNewGame(3, { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }] } });
+const twoCoaches = loadNewGame(7, { coachClubId: FIRST, hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: SECOND }] } });
 
 function advanceUntil(state: GameState, isDone: (state: GameState) => boolean): GameState {
   let current = state;

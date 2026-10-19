@@ -3,6 +3,18 @@ import { bar as barOf, startAtClub } from "./flows.js";
 
 // A few days into the second season: the first one is filed and its pages printed.
 const INTO_SECOND_SEASON = "2027-01-05";
+// A game seed whose Flamengo, its coach kept, wins a 2026 title with a final or a title match, with no decisions taken.
+const TITLE_WON = 12;
+
+/** Starts the coach's game over from `seed`'s world, through the e2e build's engine hook. */
+async function startOverFrom(page: Page, seed: number) {
+  await page.evaluate(async (from) => {
+    const engine = window.boleiroEngine;
+    if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
+    const { coachClubId } = await engine.read(["coachClubId"]);
+    await engine.apply({ type: "newGame", seed: from, choices: { coachClubId } });
+  }, seed);
+}
 
 /** Plays every day up to `date` in the worker with no decisions, through the e2e build's engine hook. */
 async function fastForward(page: Page, date: string) {
@@ -19,6 +31,7 @@ test("a season played prints its page in the album, foil among the stickers, and
   test.setTimeout(120_000);
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Tite" });
+  await startOverFrom(page, TITLE_WON);
   await fastForward(page, INTO_SECOND_SEASON);
 
   const bar = barOf(page);

@@ -20,7 +20,7 @@ afterEach(() => {
 async function services(until: string | null): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "bahia-ba" } });
+  await engine.apply({ type: "newGame", seed: 1, choices: { coachClubId: "bahia-ba" } });
   if (until) {
     const { date } = await engine.read(["date"]);
     const days = Math.round((Date.parse(until) - Date.parse(date)) / 86_400_000);

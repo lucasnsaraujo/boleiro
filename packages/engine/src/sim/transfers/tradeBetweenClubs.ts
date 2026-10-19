@@ -6,7 +6,7 @@ import { contractEnd } from "./expireContracts.js";
 import { marketView, type MarketView } from "./marketView.js";
 import { movePlayer } from "./movePlayer.js";
 import { isClubFull } from "./squadCap.js";
-import { REPLACEMENT_BAND, SQUAD_TARGET } from "./squadNeeds.js";
+import { REPLACEMENT_BAND } from "./squadNeeds.js";
 import type { PlayerMoved, PreContractSigned } from "./transferEvents.js";
 import { valuePlayer } from "./valuePlayer.js";
 import { wageDemandAt, wageRateOf, type WageRate } from "./wageDemand.js";
@@ -14,13 +14,17 @@ import { willingToJoin } from "./willingToJoin.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
 import { idolRefusesMove } from "../rivalries/idols.js";
 import { compareText } from "../compareText.js";
+import { isWorthKeeping } from "./assistantRenewals.js";
 
 // guess: a selling club asks a tenth over market value.
 export const ASKING_PREMIUM = 1.1;
 // guess: a buyer scouts about 30 players a market day.
 const SCOUTED = 30;
-// guess: a full squad looks for players 1 to 10 strength points better than its weakest starter.
-const UPGRADE = { min: 1, max: 10 };
+// guess: a full squad looks for players 1 to 5 strength points better than its weakest starter. The players
+// who joined a 2026 Série B squad in the year before (their club in mid-2025 in Transfermarkt's market-value
+// history, data/SOURCES.md) stand 0.3 points above its mean strength net of age, 3% of them more than 6 above;
+// reaching 10 points, the game's arrivals stood 1.3 above and 16% more than 6 (seed 2, 2028–2036); at 5, 1.1 and 7.5%.
+const UPGRADE = { min: 1, max: 5 };
 // guess: a short squad makes at most three replacement signings a market day.
 const REPLACEMENTS_PER_DAY = 3;
 // guess: a club below 18 players will not sell.
@@ -64,7 +68,8 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
   const squad = view.squad(buyerId);
   if (!finance || !club || squad.length < 11 || isClubFull(state, buyerId, squad.length)) return null;
   const buyerTier = view.tier(buyerId);
-  const needs = view.needs(buyerId);
+  // A club plans with the players joining it on pre-contracts: they fill the places they were signed for.
+  const needs = view.plannedNeeds(buyerId);
   if (!needs.weakest) return null;
   // A short squad replaces departures near the middle of its squad; a full one upgrades its weakest starter.
   const replacing = needs.short > 0;
@@ -97,6 +102,10 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
     const preContract = player.contractUntil <= preContractFrom;
     if (isHumanClub(state, player.clubId) && !preContract) continue;
     const sellerTier = view.tier(player.clubId);
+    // guess: an AI club talks to the players it wants to keep (isWorthKeeping) before rivals may, so a pre-contract
+    // takes only one it doesn't. Taking its keepers sent Série A players into Série B squads 6.3 points above their
+    // new squad's mean net of age (seed 2, 2026–2035); the 2026 squads' arrivals from Série A stand 1.4 above theirs.
+    if (preContract && !isHumanClub(state, player.clubId) && isWorthKeeping(player, view.squad(player.clubId), sellerTier)) continue;
     if (replacing && RANK[sellerTier] > RANK[buyerTier]) continue;
     if (!preContract && view.squad(player.clubId).length <= MIN_SQUAD) continue;
     if (!preContract && RANK[sellerTier] >= RANK[buyerTier] && starters(player.clubId).has(player.id)) continue;
@@ -104,12 +113,12 @@ function bestDeal({ state, view, pools, starters }: Market, buyerId: string, ran
     const fee = preContract ? 0 : Math.round(valuePlayer(player, sellerTier, state.date) * state.market.eurBrl * ASKING_PREMIUM);
     const wage = wageDemandAt(player, (rate ??= wageRateOf(squad)));
     let released: SimPlayer | null = null;
-    if (squad.length >= SQUAD_TARGET[buyerTier]) {
+    if (!replacing) {
       if (releasable === undefined) releasable = releasableOf();
       released = releasable;
     }
     const cost = { upFront: fee + 2 * wage, wageChange: wage - (released?.wage ?? 0) };
-    if (boardRefusal(finance, view.bill(buyerId), cost)) continue;
+    if (boardRefusal(finance, view.plannedBill(buyerId), cost)) continue;
     if (random() >= willingToJoin({ player, from: sellerTier, to: { tier: buyerTier, fanbase: club.fanbase }, wage })) continue;
     return { player, fee, wage, preContract, released };
   }
@@ -145,6 +154,7 @@ export function tradeBetweenClubs(state: GameState, random: () => number): { sta
       if (!deal) break;
       if (deal.preContract) {
         market.state.market.preContracts[deal.player.id] = buyerId;
+        view.recordPreContract(deal.player, buyerId, deal.wage);
         events.push({ type: "preContractSigned", playerId: deal.player.id, fromClubId: deal.player.clubId, toClubId: buyerId });
       } else {
         const contract = { wage: deal.wage, until: contractEnd(year + 1, random) };
@@ -160,7 +170,7 @@ export function tradeBetweenClubs(state: GameState, random: () => number): { sta
           view.record(deal.released, null);
         }
       }
-      if (view.needs(buyerId).short === 0) break;
+      if (view.plannedNeeds(buyerId).short === 0) break;
     }
   }
   return { state: market.state, events };

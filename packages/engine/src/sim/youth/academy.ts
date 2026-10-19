@@ -19,7 +19,7 @@ export type Prospect = {
   group: PositionGroup;
   age: number;
   strength: number;
-  /** Hidden: the strength he grows toward, reached in his mid-twenties. The screens show only scouted stars. */
+  /** Hidden: the strength he grows toward, reached in his mid-twenties while he plays for a human coach's club. The screens show only scouted stars. */
   potential: number;
   /** Fixes where the scouts' star range sits around his true stars; drawn once, when he joins. */
   scoutDraw: number;
@@ -145,7 +145,7 @@ export function academyOf(level: number, stature: number): { size: number; poten
   };
 }
 
-/** The group a squad or academy of `groups` is thinnest in, against a 24-man squad's shape. */
+/** The group a squad or academy of `groups` is thinnest in, against the 2026 squads' shape (SQUAD_SHAPE). */
 export function thinnestGroup(groups: readonly PositionGroup[]): PositionGroup {
   const count = (group: PositionGroup) => groups.filter((g) => g === group).length / SQUAD_SHAPE[group];
   const order: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];

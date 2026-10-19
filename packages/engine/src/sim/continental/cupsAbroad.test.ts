@@ -39,7 +39,7 @@ function resultOnlyScores(state: GameState): Map<string, string> {
 
 describe("a human club abroad in UEFA's and its country's cups", () => {
   // The season needs the board to keep Arsenal's coach past December.
-  const start = loadNewGame(1, { coachClubId: ARSENAL, world, formats: RAPIDO });
+  const start = loadNewGame(2, { coachClubId: ARSENAL, world, formats: RAPIDO });
   const championsLeague = start.competitions["champions-league-2026"];
 
   it("plays its Champions League first phase in the full tier, its matches fixtures from the start", () => {
@@ -130,7 +130,7 @@ describe("a human club abroad's cup matches, knockouts included, while its coach
   }
   // Seeds whose coach lasts into the Champions League knockouts, together reaching a two-legged tie, extra time and a
   // shootout; with others he is sacked in April and the club's later ties are rightly result-only.
-  const runs = [1, 7, 10].map((seed) => ({ seed, run: (() => { let run: CupMatch[] | undefined; return () => (run ??= cupRun(seed)); })() }));
+  const runs = [2, 6, 15].map((seed) => ({ seed, run: (() => { let run: CupMatch[] | undefined; return () => (run ??= cupRun(seed)); })() }));
 
   for (const { seed, run } of runs) {
     it(`plays every one of them live with the full tier's score, the league phase and each knockout leg (seed ${seed})`, () => {

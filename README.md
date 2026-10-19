@@ -93,7 +93,7 @@ pnpm e2e         # Playwright tests on the web build at port 4173 (first run: pn
                  # the build runs with VITE_E2E=1, which exposes the engine on window so a test can skip days
                  # and starts every new game from the world seed playwright.config.ts sets
 pnpm calibrate   # refits the engine, prints real-vs-Boleiro tables per division and for cup ties
-pnpm test:long   # plays ten seasons, saving and loading each one, and checks revenue, strength and transfers stay in their bands
+pnpm test:long   # plays ten seasons, saving and loading each one, and checks revenue, strength, transfers, Série B–D results and squad spread stay in their bands; CI skips it, so run it after changing player strength, money or the market
 pnpm finances:report [seasons] [seed]   # prints revenue bands per division from a long run
 pnpm strength:report [seasons] [seed]   # prints player strength bands and mean age per division each season
 pnpm career [--seasons N] [--seed S]    # career mode with an auto-coach: clubs, targets, results, firings per division

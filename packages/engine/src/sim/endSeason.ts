@@ -2,6 +2,7 @@ import { STATES, type Club, type State } from "@boleiro/data/clubs";
 import type { Division } from "@boleiro/data/players";
 import { randomStream } from "../engine/random.js";
 import { driftWagesToCap } from "./finances/driftWagesToCap.js";
+import { rebuildMovedSquads } from "./players/developPlayers.js";
 import { renewFinances } from "./finances/renewFinances.js";
 import { nationalRanking, type Qualification } from "./copaDoBrasilEntrants.js";
 import type { GameState, LeagueCompetition } from "./gameState.js";
@@ -106,7 +107,7 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
     }),
   );
   const finances = renewFinances(state, clubs, competitions, fixtures, [...byDivision.values()]);
-  const players = driftWagesToCap(state.players, finances);
+  const players = driftWagesToCap(rebuildMovedSquads(state, clubs, finances), finances);
   const unified = unifiedDatesOf(calendar);
   const world = abroad.length && state.world ? { ...state.world, ...Object.fromEntries(abroad.map(({ country, tables }) => [country.structure.id, fileFullTierSeason(country, tables, season, unified, fullTierDaysOf(country.structure.id, competitions, season, formatsOf(state)))])) } : state.world;
   return {

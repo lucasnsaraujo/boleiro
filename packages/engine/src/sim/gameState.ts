@@ -35,7 +35,8 @@ export type UsualLineup = { formation: Formation; starters: string[] };
 
 /**
  * `wage` is the monthly wage in BRL; the contract runs to the end of `contractUntil`. A player who came
- * up through an academy keeps his hidden `potential`, the strength he grows toward by his late twenties.
+ * up through an academy keeps his hidden `potential`, the strength he grows toward by his late twenties while
+ * he plays for a human coach's club.
  * A human coach's veteran who announced his last season is `retiring`.
  */
 export type SimPlayer = Player & { id: string; clubId: string; wage: number; contractUntil: IsoDate; potential?: number; retiring?: Retiring } & PlayerProfile;
@@ -248,6 +249,8 @@ export type Economy = {
   typicalRevenue: Record<Tier, number>;
   /** Highest yearly revenue without player sales in the division's data; richer clubs drift back. */
   revenueCeiling: Record<Tier, number>;
+  /** Lowest yearly revenue without player sales in the division's data, a promoted club's least; a save from before floors takes the least its clubs earn. */
+  revenueFloor: Record<Tier, number>;
   /** Copa do Brasil prize per club for playing each stage before the final, then the final's two prizes. */
   copaDoBrasil: { stagePrizes: { prize: number; prizeLowerDivisions: number | null }[]; runnerUp: number; champion: number };
   /**

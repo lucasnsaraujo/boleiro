@@ -23,7 +23,7 @@ afterEach(() => {
 async function careerGame(): Promise<Services> {
   const { engine, close } = inMemoryEngine();
   closers.push(close);
-  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: null, careerMode: true } });
+  await engine.apply({ type: "newGame", seed: 1, choices: { coachClubId: null, careerMode: true } });
   return { engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } };
 }
 

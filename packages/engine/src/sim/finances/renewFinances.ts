@@ -10,7 +10,7 @@ import { expectedCopaPrize } from "./expectedCopaPrize.js";
 import { expectedHomeGames } from "./expectedHomeGames.js";
 import { emptyLedger } from "./ledger.js";
 import { serieATv } from "./serieATv.js";
-import { setBoardBudget } from "./setBoardBudget.js";
+import { projectedRevenue, setBoardBudget } from "./setBoardBudget.js";
 import { wageBillsOf } from "../transfers/wageBillsOf.js";
 import { tierOf } from "./tierOf.js";
 import { pow } from "../portableMath.js";
@@ -35,6 +35,7 @@ const LOYALTY_EXPONENT = 0.13;
 // guess: further down, where the money is the divisions' estimates, they move by the square root of that gap.
 const LOWER_EXPONENT = 0.5;
 const TOP_TIERS: ReadonlySet<Tier> = new Set(["A", "B"]);
+const TIERS_UP: readonly Tier[] = ["state", "D", "C", "B", "A"];
 
 /**
  * CONMEBOL's money for next season's continental entrants, in BRL at today's rate (the dollar moves
@@ -58,7 +59,8 @@ function continentalPrizes(ended: GameState, serieATable: readonly string[]): Ma
 
 /**
  * Season-start money: clubs that changed division get that division's TV money and ticket price
- * (scaled by how far the coach set his club's price from the old division's average).
+ * (scaled by how far the coach set his club's price from the old division's average), and a promoted
+ * club at least the least revenue a club of its new division earns (Economy.revenueFloor).
  * Crowds move by the square root of the gap between the divisions' typical crowds (guess); sponsorship,
  * membership, other income and running costs move far less between Série A and B (LOYALTY_EXPONENT):
  * sponsors and members stay mostly loyal, and a stadium does not shrink with the division.
@@ -135,6 +137,10 @@ export function renewFinances(
       season: emptyLedger(),
       lastSeason: finance.season,
     };
-    return [id, setBoardBudget(renewed, wages.get(id) ?? 0)];
+    // A promoted club takes at least the least any club of its new division earns, as it gets the division's TV and gate money:
+    // the income the game does not simulate (its estadual, its commercial deals) makes up the rest.
+    const floor = TIERS_UP.indexOf(to) > TIERS_UP.indexOf(from) ? economy.revenueFloor[to] : 0;
+    const shortfall = Math.max(0, Math.round(floor - projectedRevenue(renewed)));
+    return [id, setBoardBudget(shortfall ? { ...renewed, otherIncome: renewed.otherIncome + shortfall } : renewed, wages.get(id) ?? 0)];
   }));
 }

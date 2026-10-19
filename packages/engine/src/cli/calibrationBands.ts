@@ -1,3 +1,5 @@
+import type { Division } from "@boleiro/data/players";
+
 /** One simulated number against its real one, the band that counts as agreeing, and the verdict. */
 export type Comparison = { real: number; simulated: number; band: number; pass: boolean };
 
@@ -23,3 +25,11 @@ export function compareMean(real: number, simulated: number, variance: number, r
   const standardError = Math.sqrt(variance * (1 / realGames + 1 / simulatedGames));
   return verdict(real, simulated, standardError, floor);
 }
+
+/** The tolerances of the engine's calibration tests (engine/calibration.test.ts), the narrowest band each division's numbers get. */
+export const DIVISION_FLOORS: Record<Division, { share: number; goals: number }> = {
+  A: { share: 0.02, goals: 0.1 },
+  B: { share: 0.02, goals: 0.1 },
+  C: { share: 0.025, goals: 0.1 },
+  D: { share: 0.04, goals: 0.2 },
+};

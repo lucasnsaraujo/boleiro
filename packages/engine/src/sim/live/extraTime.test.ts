@@ -13,7 +13,7 @@ import { EXTRA_HALF_TIME, EXTRA_TIME_END, FULL_TIME, type MatchEvent } from "./m
 import { startMatchDay } from "./startMatchDay.js";
 
 const COACH_CLUB = "flamengo-rj";
-const start = loadNewGame(8, { coachClubId: COACH_CLUB });
+const start = loadNewGame(2, { coachClubId: COACH_CLUB });
 
 function advanceTo(state: GameState, date: string): GameState {
   let current = state;
@@ -146,7 +146,7 @@ describe("extra time", () => {
 });
 
 // The day's stream salted so the coach's match ends level after ninety minutes (searched once).
-const LEVEL_COACH_MATCH_SALT = 10;
+const LEVEL_COACH_MATCH_SALT = 12;
 const levelDay = startMatchDay({ ...extraTimeDay, rngState: (extraTimeDay.rngState ^ LEVEL_COACH_MATCH_SALT) >>> 0 }, {});
 const coachMatchOf = (live: typeof levelDay) => {
   const match = live.matches.find((m) => m.fixtureId === live.coachMatch?.fixtureId);
