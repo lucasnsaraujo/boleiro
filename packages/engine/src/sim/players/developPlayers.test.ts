@@ -239,6 +239,39 @@ describe("rebuildMovedSquads", () => {
     expect(lift(gone, moved(promotedClub, "A"), start.finances, promotedClub)).toBeGreaterThan(3);
   });
 
+  describe("a giant in Série B", () => {
+    const flamengo = "flamengo-rj";
+    const [model] = Object.values(start.players).filter((p) => p.clubId === flamengo);
+    if (!model) throw new Error("Flamengo has no players");
+    // Many players at 28, where the age curve is flat, so a season's drift is the pull to the club's level and the noise averages out.
+    const squadAt = (strength: number) => Array.from({ length: 300 }, (_, i): SimPlayer => ({ ...model, id: `giant-${i}`, age: 28, strength, contractUntil: `${start.season + 3}-12-31` }));
+    const cameFrom = (division: "A" | "C", strength: number): GameState => {
+      const club = start.clubs[flamengo];
+      if (!club) throw new Error("no Flamengo");
+      const others = Object.entries(start.players).filter(([, p]) => p.clubId !== flamengo);
+      return { ...start, clubs: { ...start.clubs, [flamengo]: { ...club, division } }, players: Object.fromEntries([...others, ...squadAt(strength).map((p) => [p.id, p] as const)]) };
+    };
+    const inB = moved(flamengo, "B");
+    // The squad once the rebuild stops moving it: it stands at the level the rebuild aims for.
+    const settled = (state: GameState): GameState => {
+      let players = state.players;
+      for (let i = 0; i < 30; i++) players = rebuildMovedSquads({ ...state, players }, inB, start.finances);
+      return { ...state, players };
+    };
+    const squadOf = (state: GameState) => Object.values(state.players).filter((p) => p.clubId === flamengo);
+
+    it("rebuilds it toward one level whether it came down from Série A or up from Série C", () => {
+      expect(squadMean(settled(cameFrom("C", 40)).players, flamengo)).toBeCloseTo(squadMean(settled(cameFrom("A", 95)).players, flamengo), 0);
+    });
+
+    it("pulls its players each season toward the level its squad was rebuilt to", () => {
+      const relegated = settled(cameFrom("A", 95));
+      const season: GameState = { ...relegated, clubs: inB };
+      const after = developPlayers(season).state.players;
+      expect(mean(squadOf(season).map((p) => (after[p.id]?.strength ?? p.strength) - p.strength))).toBeCloseTo(0, 0);
+    });
+  });
+
   it("leaves a human coach's squad for him to rebuild", () => {
     const coached: GameState = { ...start, coachClubId: promotedClub };
     expect(lift(coached, moved(promotedClub, "A"), start.finances, promotedClub)).toBe(0);
