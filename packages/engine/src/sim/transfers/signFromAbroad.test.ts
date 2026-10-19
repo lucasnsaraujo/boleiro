@@ -5,6 +5,9 @@ import { openDraft } from "./movePlayer.js";
 import { signFromAbroad } from "./signFromAbroad.js";
 import { squadNeeds, REPLACEMENT_BAND } from "./squadNeeds.js";
 import { isBrazilian } from "./willingToJoin.js";
+import { REALISTA } from "../formats.js";
+import { loadEurope } from "../world/loadEurope.js";
+import { loadSouthAmerica } from "../world/loadSouthAmerica.js";
 
 const start = loadNewGame(5, { coachClubId: null });
 const BUYER = "bahia-ba";
@@ -44,6 +47,19 @@ describe("signing from abroad", () => {
   it("brings a Série A club with nine foreigners, the most it can name for a match, a Brazilian coming home", () => {
     const [player] = signed(marketDay(withForeigners(9)));
     expect(player?.nationalities).toEqual(["Brazil"]);
+  });
+
+  it("keeps the nine-foreigner rule to Série A: a top club abroad still brings home Brazilians", () => {
+    const english = loadNewGame(1, { coachClubId: "tm-11", world: [...loadSouthAmerica(2026), ...loadEurope(2026)], formats: REALISTA });
+    const club = Object.values(english.clubs).find((c) => c.abroad?.level === 0 && c.id !== "tm-11" && english.finances[c.id]);
+    const finance = club && english.finances[club.id];
+    if (!club || !finance) throw new Error("no AI club in England's top flight");
+    const day: GameState = { ...english, date: "2026-07-20", finances: { [club.id]: { ...finance, cash: 1e12, transferBudget: 1e12, wageCap: 1e12 } } };
+    let serial = 0;
+    const done = signFromAbroad(openDraft(day), () => 0, () => `abroad-${serial++}`);
+    const [moved] = done.events;
+    expect(moved?.toClubId).toBe(club.id);
+    expect(done.state.players[moved?.playerId ?? ""]?.nationalities).toEqual(["Brazil"]);
   });
 
   it("brings a short squad a replacement for its thinnest group near the middle of its squad, as a signing at home would be", () => {

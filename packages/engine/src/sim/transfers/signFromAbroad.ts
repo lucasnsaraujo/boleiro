@@ -17,7 +17,7 @@ import { isHumanClub } from "../coach/humanCoaches.js";
 // guess: chance a club looks abroad on a market day; Série A clubs sign a few foreigners and
 // returning Brazilians a year, lower divisions almost never.
 const LOOKS_ABROAD: Record<Tier, number> = { A: 0.8, B: 0.25, C: 0.03, D: 0.02, state: 0.01 };
-// guess: half of a lower-division club's signings from abroad are Brazilians coming home.
+// guess: half of a lower-division club's signings from abroad are Brazilians coming home, as are half of a club's abroad.
 const RETURNING_SHARE = 0.5;
 // Série A's foreigners by first citizenship in data/players.csv (2026): 157 of its 672 players, here those
 // of every country with two or more. A foreigner signed from abroad comes from these, in these proportions.
@@ -40,9 +40,9 @@ const ABROAD_WAGE_PREMIUM = 1.5;
 const FREE_FROM_AGE = 30;
 const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
 
-/** Where a club's signing from abroad comes from: a foreigner for a Série A club below FOREIGNERS_PER_MATCH, a Brazilian for one at it, half and half below Série A. */
-function nationalityOf(tier: Tier, foreigners: number, random: () => number): string {
-  const isForeign = tier === "A" ? foreigners < FOREIGNERS_PER_MATCH : random() >= RETURNING_SHARE;
+/** Where a club's signing from abroad comes from: a foreigner for a Série A club below FOREIGNERS_PER_MATCH, a Brazilian for one at it, half and half anywhere else. */
+function nationalityOf(isSerieA: boolean, foreigners: number, random: () => number): string {
+  const isForeign = isSerieA ? foreigners < FOREIGNERS_PER_MATCH : random() >= RETURNING_SHARE;
   if (!isForeign) return "Brazil";
   let roll = random() * FOREIGN_TOTAL;
   for (const [nationality, players] of FOREIGN_ORIGINS) {
@@ -65,7 +65,7 @@ export function signFromAbroad(state: GameState, random: () => number, serial: (
     const squad = view.squad(clubId);
     if (squad.length < 11 || isClubFull(next, clubId, squad.length)) continue;
     const tier = view.tier(clubId);
-    const nationality = nationalityOf(tier, squad.filter((p) => !isBrazilian(p.nationalities)).length, random);
+    const nationality = nationalityOf(tier === "A" && !club.abroad, squad.filter((p) => !isBrazilian(p.nationalities)).length, random);
     const age = AGES.min + Math.floor(random() * AGES.spread);
     // A short squad brings in a replacement for its thinnest group near the middle of the squad, as it would at home
     // (tradeBetweenClubs); a full one an upgrade on its average starter.
