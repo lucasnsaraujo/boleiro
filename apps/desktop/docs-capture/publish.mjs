@@ -3,12 +3,13 @@
 //
 // Usage: node docs-capture/publish.mjs [shotsDir=/tmp/boleiro-shots] [videoDir=/tmp/boleiro-video]
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { argv, stdout } from "node:process";
 import { join, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "../../..");
-const shotsDir = process.argv[2] ?? "/tmp/boleiro-shots";
-const videoDir = process.argv[3] ?? "/tmp/boleiro-video";
+const shotsDir = argv[2] ?? "/tmp/boleiro-shots";
+const videoDir = argv[3] ?? "/tmp/boleiro-video";
 const screensOut = join(root, "docs/screens");
 const videoOut = join(root, "docs/video");
 const QUALITY = "55";
@@ -126,12 +127,12 @@ for (const group of groups) {
 }
 writeFileSync(join(screensOut, "README.md"), `${lines.join("\n")}\n`);
 const total = THEMES.flatMap((theme) => (existsSync(join(screensOut, theme)) ? readdirSync(join(screensOut, theme)).map((f) => sizeKb(join(screensOut, theme, f))) : [])).reduce((a, b) => a + b, 0);
-console.log(`${slugs.length} screens, ${total} KB of WebP`);
+stdout.write(`${slugs.length} screens, ${total} KB of WebP\n`);
 
 const webm = existsSync(videoDir) ? readdirSync(videoDir).find((name) => name.endsWith(".webm")) : undefined;
 if (webm) {
   mkdirSync(videoOut, { recursive: true });
   const target = join(videoOut, "boleiro-live-round.mp4");
   run("ffmpeg", ["-v", "error", "-y", "-i", join(videoDir, webm), "-c:v", "libx264", "-crf", "30", "-preset", "slow", "-pix_fmt", "yuv420p", "-r", "25", "-movflags", "+faststart", target]);
-  console.log(`video ${sizeKb(target)} KB`);
+  stdout.write(`video ${sizeKb(target)} KB\n`);
 }
