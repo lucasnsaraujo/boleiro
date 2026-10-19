@@ -199,7 +199,7 @@ function MatchChip({ match, clubId, opponent, isToday, onOpen }: { match: PageMa
     <li
       className={result ? `agenda-match played ${result.outcome}` : "agenda-match"}
       style={{ gridRow: match.row, gridColumn: match.column, ["--stack" as string]: match.stack }}
-      title={match.postponedFrom && `Adiado de ${formatDayMonth(match.postponedFrom)} · ${side(match)}`}
+      title={match.postponedFrom && `${match.competition} · adiado de ${formatDayMonth(match.postponedFrom)}`}
     >
       {result && <button type="button" className="agenda-open" aria-label={`Ficha do jogo contra ${opponent?.shortName ?? match.opponentId}`} onClick={() => onOpen(match.fixtureId)} />}
       <span className="sr-only">{isToday ? "Hoje" : formatRowDate(match.date)}, </span>
@@ -211,17 +211,17 @@ function MatchChip({ match, clubId, opponent, isToday, onOpen }: { match: PageMa
         <b>{opponent?.shortName ?? match.opponentId}</b>
         <small>
           {score}
-          {match.competition} ·{" "}
           {match.postponedFrom ? (
             <>
-              <span aria-hidden="true">adiado</span>
               <span className="sr-only">
-                adiado de {formatDayMonth(match.postponedFrom)}, {side(match)}
+                {match.competition}, adiado de {formatDayMonth(match.postponedFrom)},{" "}
               </span>
+              <span aria-hidden="true">adiado · </span>
             </>
           ) : (
-            side(match)
+            `${match.competition} · `
           )}
+          {side(match)}
         </small>
       </span>
       {result && (
