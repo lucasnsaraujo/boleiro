@@ -16,15 +16,14 @@ What fills the app: the web build is about 27 MB, half of it club crests (1,750 
 
 ## Build in GitHub Actions
 
-`.github/workflows/release.yml` builds the universal `.dmg` on `macos-latest` and the NSIS `.exe` and `.msi` on `windows-latest`. It runs only when started by hand: it has no push, pull request or tag trigger, it creates no GitHub release and no tag, and it needs no secrets.
+`.github/workflows/release.yml` builds the universal `.dmg` on `macos-latest` and the NSIS `.exe` and `.msi` on `windows-latest`. It needs no secrets. It runs in two ways:
 
-1. The workflow has to be on the default branch (`main`) before GitHub offers it: a `workflow_dispatch` workflow can't be started from a file that only exists on another branch.
-2. On GitHub, open Actions → Release → Run workflow, pick the branch to build, and run it. From a terminal: `gh workflow run release.yml --ref <branch>`.
-3. When both jobs finish (about 15–25 minutes; the macOS job compiles the Rust side twice, once per architecture), download the `boleiro-macos` and `boleiro-windows` artifacts from the run's summary page. GitHub keeps them for 90 days by default.
+- **A version tag** publishes a release. Set the version in `apps/desktop/src-tauri/tauri.conf.json`, commit, then push a tag with the same number: `git tag v0.1.0 && git push origin v0.1.0`. When both installers have built, the `publish` job creates the GitHub release for that tag with the `.dmg`, the `-setup.exe` and the `.msi` attached, the first-launch steps for unsigned builds as its notes, followed by GitHub's generated list of changes. A tag with a hyphen (`v0.2.0-beta.1`) makes a prerelease, which the README's `releases/latest` link skips. Rerunning the workflow for a tag whose release exists replaces its files.
+- **By hand** (Actions → Release → Run workflow, or `gh workflow run release.yml --ref <branch>`) it only builds: download the `boleiro-macos` and `boleiro-windows` artifacts from the run's summary page (GitHub keeps them for 90 days by default). Started on a tag, it publishes as a pushed tag does. GitHub offers the button only once the workflow is on the default branch (`main`).
 
-Each run spends Actions minutes from the private repository's allowance: a macOS minute costs about ten times a Linux one and a Windows minute about 1.7 times.
+Both jobs take about 15–25 minutes; the macOS job compiles the Rust side twice, once per architecture. Standard GitHub-hosted runners are free for a public repository.
 
-Not yet proven on a runner: the `.msi` step runs WiX, which needs Windows' optional VBScript feature (Tauri issue #13752). If the Windows job fails there, drop `msi` from its `--bundles` in `release.yml` and ship the NSIS `.exe`.
+The release is never published without both systems: if the macOS or the Windows build fails, the `publish` job is skipped, and it also stops if the downloaded artifacts lack a `.dmg` or a `-setup.exe`. The `.msi` is optional. WiX, which builds it, needs Windows' optional VBScript feature (Tauri issue #13752), so the Windows job packs it with `pnpm tauri bundle --bundles msi` in a step of its own that may fail; the `.exe` and the release go ahead without it.
 
 ## Unsigned builds
 
@@ -50,7 +49,7 @@ Tauri's guides: <https://v2.tauri.app/distribute/sign/macos/> and <https://v2.ta
 
 ## Smoke test on Windows
 
-Run on a Windows 10 or 11 PC with the `boleiro-windows` artifact. Each step names what to look at.
+Run on a Windows 10 or 11 PC with the release's installers or the `boleiro-windows` artifact. Each step names what to look at.
 
 1. Install with `Boleiro_<version>_x64-setup.exe` (per user, no admin). SmartScreen warns (unsigned); click More info → Run anyway. If WebView2 is missing (old Windows 10), the installer downloads it.
 2. Launch Boleiro from the Start menu. The window has the game's own header instead of Windows' title bar: drag it by the header, and check minimise, maximise and close. On Windows 11 the paper is slightly translucent (Mica); on Windows 10 the desktop must not show through.
