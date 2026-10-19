@@ -18,13 +18,13 @@ if (!championsLeague) throw new Error("no Champions League");
 const firstMatchday = championsLeague.dates[0] ?? "";
 const brl = (eur: number, state: GameState = start) => Math.round(eur * state.market.eurBrl);
 
-/** The game played day by day through `date`, with every prize UEFA paid on the way. */
-function playThrough(date: string): { state: GameState; prizes: Extract<DayEvent, { type: "prizePaid" }>[] } {
+/** The game played day by day through `date`, with every Champions League prize UEFA paid on the way and its amount in euros at that day's rate. */
+function playThrough(date: string): { state: GameState; prizes: (Extract<DayEvent, { type: "prizePaid" }> & { eur: number })[] } {
   let state = start;
-  const prizes: Extract<DayEvent, { type: "prizePaid" }>[] = [];
+  const prizes: (Extract<DayEvent, { type: "prizePaid" }> & { eur: number })[] = [];
   while (state.date <= date) {
     const day = advanceDay(state, {});
-    for (const event of day.events) if (event.type === "prizePaid" && event.competitionId.startsWith("champions-league")) prizes.push(event);
+    for (const event of day.events) if (event.type === "prizePaid" && event.competitionId.startsWith("champions-league")) prizes.push({ ...event, eur: event.amount / day.state.market.eurBrl });
     state = day.state;
   }
   return { state, prizes };
@@ -33,13 +33,15 @@ function playThrough(date: string): { state: GameState; prizes: Extract<DayEvent
 describe("UEFA's prize money", () => {
   const opening = playThrough(firstMatchday);
   const paidTo = (clubId: string) => opening.prizes.filter((p) => p.clubId === clubId).reduce((sum, p) => sum + p.amount, 0);
+  // Each payment is rounded to the real; a euro of slack per payment covers it.
+  const eurTo = (clubId: string) => opening.prizes.filter((p) => p.clubId === clubId).reduce((sum, p) => sum + p.eur, 0);
   const seedOf = (clubId: string) => championsLeague.clubIds.indexOf(clubId);
 
   it("pays a Champions League club of the full tier its starting fee and value share as the league phase opens, the human coach's and the AI's", () => {
     for (const clubId of [ARSENAL, LIVERPOOL]) {
       const fee = 18_620_000 + (935_000 + 346_000) * (36 - seedOf(clubId));
-      expect(paidTo(clubId)).toBeGreaterThanOrEqual(brl(fee));
-      expect(paidTo(clubId)).toBeLessThanOrEqual(brl(fee + (2_100_000 * 8) / championsLeague.dates.length));
+      expect(eurTo(clubId)).toBeGreaterThanOrEqual(fee - 2);
+      expect(eurTo(clubId)).toBeLessThanOrEqual(fee + (2_100_000 * 8) / championsLeague.dates.length + 2);
     }
     expect(opening.state.finances[ARSENAL]?.month.revenue.prizes).toBeGreaterThanOrEqual(paidTo(ARSENAL));
   });
