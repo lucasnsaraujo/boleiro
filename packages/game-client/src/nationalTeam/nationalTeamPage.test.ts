@@ -40,6 +40,9 @@ describe("the national-team screen", () => {
     for (const card of own) expect(card.standing).toBe(Math.round(standingOf(inWindow.players[card.ref] ?? (() => { throw new Error(card.ref); })())));
     expect(own.some((card) => card.standing !== Math.round(inWindow.players[card.ref]?.strength ?? 0))).toBe(true);
     for (const group of page?.callUp.groups ?? []) expect(group.players.map((p) => p.standing)).toEqual(group.players.map((p) => p.standing).toSorted((a, b) => b - a));
+    const leaving = page?.leaving?.players ?? [];
+    expect(leaving.length).toBeGreaterThan(0);
+    for (const player of leaving) expect(player.standing).toBe(own.find((card) => card.ref === player.id)?.standing ?? Math.round(standingOf(inWindow.players[player.id] ?? (() => { throw new Error(player.id); })())));
   });
 
   test("marks the coach's club's players in the call-up and lists those the window takes from it", () => {

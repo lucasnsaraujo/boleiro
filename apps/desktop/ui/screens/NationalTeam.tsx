@@ -368,7 +368,9 @@ export function NationalTeam() {
                         {ROLE_ONE[p.role]} · {p.age} anos · {p.team}
                       </small>
                     </div>
-                    <span className="nt-f">{p.strength}</span>
+                    <span className="nt-f" title={STANDING_NOTE}>
+                      {p.standing}
+                    </span>
                   </li>
                 ))}
               </ul>

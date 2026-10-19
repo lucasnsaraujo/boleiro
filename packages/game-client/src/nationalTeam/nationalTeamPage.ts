@@ -53,7 +53,8 @@ export type NationalCompetitionView = {
 export type RankingRowView = { rank: number; teamId: string | null; name: string; code: string | null; points: number };
 
 /** The coach's club's players a call-up takes: who, for which team and until when. */
-export type LeavingPlayer = { id: string; name: string; role: Role; age: number; strength: number; teamId: string; team: string; until: IsoDate };
+/** A player of the coach's club a national team takes, rated by his `standing` as a call-up card is. */
+export type LeavingPlayer = { id: string; name: string; role: Role; age: number; standing: number; teamId: string; team: string; until: IsoDate };
 
 export type NationalTeamPage = {
   /** `qualifiesByRanking` when the game leaves its confederation's World Cup qualifiers out: its places go by the ranking. */
@@ -203,7 +204,7 @@ export function nationalTeamPage(state: GameState, teamId?: string): NationalTea
   if (clubId) {
     const leaver = (playerId: string, teamId: string, until: IsoDate): LeavingPlayer[] => {
       const p = state.players[playerId];
-      return p?.clubId === clubId ? [{ id: p.id, name: p.name, role: roleOf(p), age: p.age, strength: Math.round(p.strength), teamId, team: teamName(nations, teamId), until }] : [];
+      return p?.clubId === clubId ? [{ id: p.id, name: p.name, role: roleOf(p), age: p.age, standing: Math.round(standingOf(p)), teamId, team: teamName(nations, teamId), until }] : [];
     };
     let players = Object.entries(nations.duty).flatMap(([playerId, own]) => leaver(playerId, own.teamId, own.until));
     let days = window;
@@ -222,7 +223,7 @@ export function nationalTeamPage(state: GameState, teamId?: string): NationalTea
     const lastAway = players.reduce((last, p) => (p.until > last ? p.until : last), days?.until ?? state.date);
     const from = days && state.date > days.from ? state.date : (days?.from ?? state.date);
     const clubMatches = days ? state.fixtures.filter((f) => (f.homeId === clubId || f.awayId === clubId) && f.date >= from && f.date <= lastAway).length : 0;
-    leaving = { clubId, players: players.sort((a, b) => b.strength - a.strength), clubMatches, isProvisional };
+    leaving = { clubId, players: players.sort((a, b) => b.standing - a.standing), clubMatches, isProvisional };
   }
 
   const competitions = Object.values(nations.competitions)
