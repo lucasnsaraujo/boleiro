@@ -1,5 +1,8 @@
-/** The CPU seconds `referenceWorkload` takes on the machine the game's speed budgets were set on, an Apple M4 Pro. */
-const REFERENCE_MACHINE_SECONDS = 0.075;
+/**
+ * The CPU seconds `referenceWorkload` takes on the machine the game's speed budgets were set on, an Apple M4 Pro, with
+ * little else running: its median of five ran 0.063 to 0.113 s as the machine got busier.
+ */
+const REFERENCE_MACHINE_SECONDS = 0.065;
 const RUNS = 5;
 const PLAYERS = 50_000;
 const CLUBS = 400;
