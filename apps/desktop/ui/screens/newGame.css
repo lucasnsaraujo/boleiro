@@ -543,9 +543,15 @@
 }
 
 
+/* The search keeps its width; a long league name in the division filter shortens instead. */
 .career-new-search {
   width: 168px;
+  flex: none;
   color: var(--mute);
+}
+
+.career-new-head .select {
+  min-width: 0;
 }
 
 .career-new-search input {

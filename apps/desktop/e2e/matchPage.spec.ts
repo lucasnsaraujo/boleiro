@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar, pickOption, playLiveRound, startAtClub } from "./flows.js";
+import { bar, pauseClock, pickOption, playLiveRound, startAtClub } from "./flows.js";
 
 /** Plays every day before `date` in the worker with no decisions, through the e2e build's engine hook. */
 async function playDaysBefore(page: Page, date: string) {
@@ -32,6 +32,8 @@ test("a match on the live board opens in the panel, Ver ficha completa opens its
   await startAtClub(page, { division: "Série A", search: "flamengo", club: "Flamengo", coach: "Tite" });
   await toKickOff(page);
   await expect(page.getByRole("region", { name: "Seu jogo" })).toBeVisible();
+  // The round stands still while the match file is open, so a slow machine can't play on into a window that shuts it.
+  await pauseClock(page);
 
   const rows = page.getByRole("button", { name: /^Ficha do jogo: / });
   const other = rows.nth(1);
@@ -50,6 +52,8 @@ test("a match on the live board opens in the panel, Ver ficha completa opens its
   }
   await expect(sheet.getByRole("region", { name: "Na tabela" })).toBeVisible();
   await sheet.getByRole("button", { name: "Fechar a ficha" }).click();
+  // The file's way out runs on the paused page clock, so the test steps it a second forward.
+  await page.clock.runFor(1000);
   await expect(sheet).toBeHidden();
   await expect(panel).toBeHidden();
 

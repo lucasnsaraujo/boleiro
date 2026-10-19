@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { Club } from "@boleiro/data/clubs";
 import { FORMATION_NAMES, FORMATIONS, type Formation } from "@boleiro/engine/engine/formations";
@@ -186,7 +186,8 @@ export function LineupSheet({ sub, squad, lineup, tactics, mode, doneLabel, isBu
   }
 
   // ← and → step through the human coaches' matches, taking this one's changes along.
-  useEffect(() => {
+  // A layout effect, so a key pressed the moment the sheet turns to the next match never reaches the last match's listener.
+  useLayoutEffect(() => {
     if (!coachStep || isPageOpen) return;
     const onKey = (event: KeyboardEvent) => {
       const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;

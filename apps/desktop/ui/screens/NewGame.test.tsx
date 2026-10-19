@@ -261,6 +261,14 @@ test("Personalizar opens more options and starts the game with the coach's own m
   expect(calendar.leagueDates.A).toHaveLength(19);
 });
 
+test("a league abroad leaves out the state filter, which only Brazil's clubs answer, and back in Brazil it returns", async () => {
+  await openNewGame();
+  await pickOption(screen.getByRole("combobox", { name: "Divisão" }), "Premier League · Inglaterra");
+  expect(screen.queryByRole("combobox", { name: "Estado" })).toBeNull();
+  await pickOption(screen.getByRole("combobox", { name: "Divisão" }), "Série A");
+  expect(screen.getByRole("combobox", { name: "Estado" })).toBeTruthy();
+});
+
 test("a club abroad is picked from its league in the division filter and starts on the calendar the coach picks", async () => {
   const { engine } = await openNewGame();
   await pickOption(screen.getByRole("combobox", { name: "Divisão" }), "Premier League · Inglaterra");

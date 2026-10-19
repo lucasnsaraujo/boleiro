@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar, hubLoaded, passMoments, playLiveRound, startAtClub } from "./flows.js";
+import { bar, hubLoaded, passMoments, pauseClock, playLiveRound, startAtClub } from "./flows.js";
 
 /** Plays every day up to `date` in the worker with no decisions, through the e2e build's engine hook. */
 async function fastForward(page: Page, date: string) {
@@ -64,6 +64,8 @@ test("a CBF coach plays a South American qualifier live from Brazil's call-up an
   // The round shows Brazil as the coach's side, with the round's other qualifiers on the board.
   const band = page.getByRole("region", { name: "Seu jogo" });
   await expect(band).toBeVisible();
+  // The round stands still while the board is read, so a slow machine can't play on into a window that stops it.
+  await pauseClock(page);
   await expect(band).toContainText("Brasil");
   expect(await page.getByRole("button", { name: /^Ficha do jogo: / }).count()).toBeGreaterThanOrEqual(5);
   await playLiveRound(page);

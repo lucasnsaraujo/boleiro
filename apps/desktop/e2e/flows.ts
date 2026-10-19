@@ -108,7 +108,7 @@ export async function passMoments(page: Page, then: Locator): Promise<number> {
  * Stops the page clock a moment ahead. pauseAt only moves forward and the page's time keeps flowing until it
  * lands, so on a loaded machine the moment can pass before the call arrives; then it aims again.
  */
-async function pauseClock(page: Page) {
+export async function pauseClock(page: Page) {
   for (;;) {
     try {
       await page.clock.pauseAt((await page.evaluate(() => Date.now())) + PAUSE_LEAD_MS);
