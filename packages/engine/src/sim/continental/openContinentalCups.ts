@@ -9,6 +9,12 @@ import type { ContinentalField } from "./continentalField.js";
 // The draws come from a stream of their own, so opening the cups leaves the game's main stream as it was.
 const DRAW_STREAM_SALT = 0xc0b1e;
 
+/** Where a cup with a one-match final or the Club World Cup plays this season, from the game's hosts; the Recopa and Intercontinental Cup have none. */
+function hostOf(state: GameState, cup: ContinentalCup): Pick<ContinentalCompetition, "host"> {
+  const host = cup === "recopa" || cup === "intercontinental-cup" ? undefined : state.hosts?.[`${cup}-${state.season}`];
+  return host ? { host } : {};
+}
+
 /** The game with the season's CONMEBOL and FIFA cups opened on the field: competitions, first-stage fixtures and their draws. */
 export function openContinentalCups(state: GameState, field: ContinentalField | null): GameState {
   if (!field) return state;
@@ -42,6 +48,7 @@ export function openContinentalCups(state: GameState, field: ContinentalField | 
       stageDates,
       drawOrder: shuffle(drawn, random),
       ...(scales ? { gameScales: scales } : {}),
+      ...hostOf(state, cup),
     };
     const opened = openNextStage(competition, [], {});
     competitions[competition.id] = opened.competition;

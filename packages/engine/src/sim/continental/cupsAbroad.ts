@@ -117,6 +117,7 @@ export function syncCupsAbroad(state: GameState): GameState {
   let isChanged = false;
   for (const view of cupViews(state, humans)) {
     const stages = view.rounds.map((round) => round.stage);
+    const host = view.cup === "national-cup" ? undefined : state.hosts?.[view.id];
     const competition: CupAbroadCompetition = {
       id: view.id,
       kind: "cupAbroad",
@@ -129,6 +130,7 @@ export function syncCupsAbroad(state: GameState): GameState {
       drawOrder: [],
       tieBreaks: view.rounds.map((round) => round.tieBreak),
       ...(view.cup === "national-cup" ? {} : { stageNames: view.rounds.map((round) => round.name ?? "") }),
+      ...(host ? { host } : {}),
     };
     const before = state.competitions[view.id];
     if (!before || JSON.stringify(before) !== JSON.stringify(competition)) {

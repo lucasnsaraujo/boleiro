@@ -68,6 +68,7 @@ import { nationsDay } from "../nations/nationsDay.js";
 import { nationalTeamPlayingToday, nationalTeamToday, playedNationalOf, seatedSideToday, sideToday, syncNationalFixtures } from "../nations/nationalFixtures.js";
 import { isNationalTeam } from "../nations/nationalSquad.js";
 import { runMoments } from "../moments/runMoments.js";
+import { withHosts } from "../hosts/drawHosts.js";
 
 function fixturesByCompetition(fixtures: readonly Fixture[]): Map<string, Fixture[]> {
   const byCompetition = new Map<string, Fixture[]>();
@@ -326,7 +327,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     const liveDiscipline = Object.fromEntries(Object.entries(started.state.discipline).filter(([id]) => id in started.state.competitions));
     next = { ...started.state, discipline: liveDiscipline, rngState: coachRandom.state() };
     if (next.world) next = { ...next, world: endWorldSeason(next.world, next.season, unifiedDatesOf(next.calendar)) };
-    next = closeCoachSeason(openContinentalCups(next, continentalField), state.season, runs, retired);
+    next = closeCoachSeason(openContinentalCups(withHosts(next), continentalField), state.season, runs, retired);
     next = coolRivalries(recordFormerPlayers(next, academies.state, developed.events));
     seasonOutcomes = ended.outcomes;
   }

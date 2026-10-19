@@ -4,6 +4,7 @@ import { fireAssistant, hireAssistant, type AssistantRefusal } from "@boleiro/en
 import { withAssistantDuty, type AssistantDuty } from "@boleiro/engine/sim/coach/assistantDuties";
 import { declineOffer } from "@boleiro/engine/sim/coach/declineOffer";
 import { withCoachWorld } from "@boleiro/engine/sim/coach/aiCoaches";
+import { withHosts } from "@boleiro/engine/sim/hosts/drawHosts";
 import { applyForJob, type JobAnswer } from "@boleiro/engine/sim/coach/applyForJob";
 import { resign } from "@boleiro/engine/sim/coach/resign";
 import { nameCaptain } from "@boleiro/engine/sim/chemistry/nameCaptain";
@@ -457,11 +458,12 @@ export function createEngineSession(files: GameFiles) {
      * gets them from its seed, one from before sponsors its clubs' kit deals, one from before the world's
      * citizenships gets them from the world packs (withWorldNationalities), and one from before national football
      * its national teams, played up to its day (withNations); a national coach's matches join the full tier
-     * (syncNationalFixtures), which a save from before they were played live lacks.
+     * (syncNationalFixtures), which a save from before they were played live lacks. One from before hosts gets every
+     * edition's through its season (withHosts); the cups it already opened keep playing as they were.
      */
     load({ save }) {
       const loaded = readStoredSave(save);
-      const positioned = withCoachWorld(withPackPositions(withWorldNationalities(loaded.game, files), files));
+      const positioned = withHosts(withCoachWorld(withPackPositions(withWorldNationalities(loaded.game, files), files)));
       const game = syncNationalFixtures(withNations(positioned.sponsors || !files.sponsors ? positioned : seedGameSponsors(positioned, files.sponsors), files.nationalFootball));
       const summary = begin(game);
       desk = loaded.desk;

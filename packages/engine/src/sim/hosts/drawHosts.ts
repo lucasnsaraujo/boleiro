@@ -1,5 +1,6 @@
 import { keyedStream } from "../../engine/random.js";
 import { isClubWorldCupSeason } from "../continental/clubWorldCup.js";
+import type { GameState } from "../gameState.js";
 import { ANNOUNCED_HOSTS, type AnnouncedHost } from "./announcedHosts.js";
 import { BIG_STADIUMS } from "./bigStadiums.js";
 import { HOSTED_CUPS, type EditionHost, type HostedCup, type Hosts, type Stadium } from "./venue.js";
@@ -207,4 +208,10 @@ export function hostsThrough(hosts: Hosts, seed: number, season: number): Hosts 
     }
   }
   return Object.keys(added).length === 0 ? hosts : { ...hosts, ...added };
+}
+
+/** The game with the hosts of every edition through its season and as far ahead as organisers choose them; the same game when it has them all. */
+export function withHosts(state: GameState): GameState {
+  const hosts = hostsThrough(state.hosts ?? {}, state.seed, state.season);
+  return hosts === state.hosts ? state : { ...state, hosts };
 }

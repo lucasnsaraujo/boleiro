@@ -103,9 +103,10 @@ describe("the real rules behind drawn hosts", () => {
 
   it("never give a Club World Cup to the confederation of the one before", () => {
     for (const hosts of all) {
-      const cups = [[2025, { countries: ["united-states"] }] as const, ...editions(hosts, "club-world-cup")];
-      cups.slice(1).forEach(([, host], i) => {
-        const before = new Set(cups[i]?.[1].countries.map(confederationOf));
+      const cups = editions(hosts, "club-world-cup");
+      const countriesBefore = [["united-states"], ...cups.map(([, host]) => host.countries)];
+      cups.forEach(([, host], i) => {
+        const before = new Set(countriesBefore[i]?.map(confederationOf));
         expect(host.countries.map(confederationOf).filter((confederation) => before.has(confederation))).toEqual([]);
         expect(host.final.capacity).toBeGreaterThanOrEqual(60_000);
       });

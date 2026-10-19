@@ -6,21 +6,31 @@ import { shuffle } from "../shuffle.js";
 import { fifaWindowsOf, worldCupOf } from "./fifaCalendar.js";
 import type { KnockoutRound, NationalCompetition, NationalMatch, NationalTeam } from "./nations.js";
 import { compareText } from "../compareText.js";
+import type { Hosts } from "../hosts/venue.js";
 
 /** What a season's national football opens: its competitions and their group matches. */
 export type Opened = { competitions: NationalCompetition[]; matches: NationalMatch[] };
 
-/** What the draws read: the teams with their points, and the competitions so far (a World Cup's field comes from its qualifiers). */
-export type DrawSource = { teams: Readonly<Record<string, NationalTeam>>; competitions: Readonly<Record<string, NationalCompetition>>; matches: readonly NationalMatch[] };
+/**
+ * What the draws read: the teams with their points, the competitions so far (a World Cup's field comes from its
+ * qualifiers) and the game's hosts (hosts/drawHosts.ts), which name a World Cup's, Copa América's or Euro's hosts.
+ */
+export type DrawSource = {
+  teams: Readonly<Record<string, NationalTeam>>;
+  competitions: Readonly<Record<string, NationalCompetition>>;
+  matches: readonly NationalMatch[];
+  hosts?: Hosts;
+};
 
 // guess: the 2030 World Cup keeps 48 teams; CONMEBOL's 64-team proposal (20 Jul 2026) is not confirmed by FIFA
 // (immersion-sources.md §3). A config value: 64 plays 16 groups.
 export const WORLD_CUP_2030_SIZE: 48 | 64 = 48;
 // guess: the 2028 Copa América host is not announced; Ecuador is next in CONMEBOL's rotation (immersion-sources.md §3).
+// The game's hosts (hosts/drawHosts.ts) agree; these stand in for a draw that reads none.
 export const COPA_AMERICA_2028_HOST = "ecuador";
 // The 2030 hosts: Morocco, Spain and Portugal, and the centenary hosts Argentina, Uruguay and Paraguay, all qualified (FIFA Council, 4 Oct 2023).
 const WORLD_CUP_2030_HOSTS = ["spain", "portugal", "morocco", "argentina", "uruguay", "paraguay"];
-// guess: a later World Cup is hosted by the best-ranked team of a confederation in turn.
+// guess: without the game's hosts, a later World Cup is hosted by the best-ranked team of a confederation in turn.
 const HOST_TURNS: Confederation[] = ["CONCACAF", "AFC", "UEFA", "CAF", "CONMEBOL"];
 // guess: places at a 48-team World Cup after its hosts, by confederation, from 2026's allocation (UEFA 16, CAF 9,
 // AFC 8, CONMEBOL 6, CONCACAF 6, OFC 1, two play-offs), CONMEBOL and UEFA's through their qualifiers.
@@ -151,8 +161,10 @@ function tournamentOf(
 
 const worldCupSizeOf = (season: number): 48 | 64 => (season === 2030 ? WORLD_CUP_2030_SIZE : 48);
 
-/** A World Cup's hosts: 2030's six, a later one's the best-ranked team of the confederation whose turn it is. */
+/** A World Cup's hosts: the game's for it, else 2030's six, else the best-ranked team of the confederation whose turn it is. */
 function worldCupHostsOf(season: number, source: DrawSource): string[] {
+  const hosts = source.hosts?.[`world-cup-${season}`]?.countries;
+  if (hosts) return hosts;
   return season === 2030 ? WORLD_CUP_2030_HOSTS : [confederationTeams(source, HOST_TURNS[((season - 2034) / 4) % HOST_TURNS.length] ?? "UEFA")[0] ?? ""];
 }
 
@@ -293,17 +305,18 @@ export function competitionsOf(season: number, source: DrawSource, random: () =>
     opened.push({ competitions: [{ id, name: `Eliminatórias Sul-Americanas ${season + 3}`, kind: "qualifiers", confederation: "CONMEBOL", groups, places: ids.length, knockout: [], opened: 0, until: days.at(-1) ?? "" }], matches: groupMatches(id, groups, 2, days, false) });
   }
   if (phase === 2) {
-    const host = season === 2028 ? COPA_AMERICA_2028_HOST : (confederationTeams(source, "CONMEBOL")[(season - 2028) / 4 % 10] ?? "");
+    const host = source.hosts?.[`copa-america-${season}`]?.countries[0] ?? (season === 2028 ? COPA_AMERICA_2028_HOST : (confederationTeams(source, "CONMEBOL")[(season - 2028) / 4 % 10] ?? ""));
     const copa = [...confederationTeams(source, "CONMEBOL"), ...confederationTeams(source, "CONCACAF").slice(0, COPA_AMERICA_GUESTS)];
     const june = (date: string) => `${season}-${date}`;
     // guess: the 2028 Copa América's days, like 2024's (20 Jun–14 Jul) within FIFA's June-July slot.
     opened.push(tournamentOf({ id: `copa-america-${season}`, name: `Copa América ${season}`, kind: "continental-cup", confederation: "CONMEBOL", host }, drawGroups(copa, 4, source, random, [host]), [june("06-16"), june("06-20"), june("06-24")], [{ name: "quarter-finals", date: june("06-28") }, { name: "semi-finals", date: june("07-02") }, { name: "third-place", date: june("07-08") }, { name: "final", date: june("07-09") }]));
-    const euro = [...EURO_HOSTS.filter((id) => id in source.teams), ...confederationTeams(source, "UEFA").filter((id) => !EURO_HOSTS.includes(id))].slice(0, EURO_SIZE);
+    const euroHosts = source.hosts?.[`euro-${season}`]?.countries ?? EURO_HOSTS;
+    const euro = [...euroHosts.filter((id) => id in source.teams), ...confederationTeams(source, "UEFA").filter((id) => !euroHosts.includes(id))].slice(0, EURO_SIZE);
     // UEFA Euro 2028: 9 Jun–9 Jul 2028 (UEFA); guess: matchdays and rounds spread over it as at Euro 2024.
-    opened.push(tournamentOf({ id: `euro-${season}`, name: `Eurocopa ${season}`, kind: "continental-cup", confederation: "UEFA", host: EURO_HOSTS[0] ?? "" }, drawGroups(euro, 4, source, random, EURO_HOSTS.slice(0, 1)), [june("06-10"), june("06-15"), june("06-20")], [{ name: "round-of-16", date: june("06-25") }, { name: "quarter-finals", date: june("06-30") }, { name: "semi-finals", date: june("07-04") }, { name: "final", date: june("07-09") }], { position: 3, count: 4 }));
+    opened.push(tournamentOf({ id: `euro-${season}`, name: `Eurocopa ${season}`, kind: "continental-cup", confederation: "UEFA", host: euroHosts[0] ?? "" }, drawGroups(euro, 4, source, random, euroHosts.slice(0, 1)), [june("06-10"), june("06-15"), june("06-20")], [{ name: "round-of-16", date: june("06-25") }, { name: "quarter-finals", date: june("06-30") }, { name: "semi-finals", date: june("07-04") }, { name: "final", date: june("07-09") }], { position: 3, count: 4 }));
   }
   if (phase === 3) {
-    const hosts = season + 1 === 2030 ? WORLD_CUP_2030_HOSTS : [];
+    const hosts = season + 1 === 2030 || source.hosts?.[`world-cup-${season + 1}`] ? worldCupHostsOf(season + 1, source) : [];
     const ids = confederationTeams(source, "UEFA").filter((id) => !hosts.includes(id));
     const days = windowDays([[season, 0, 2], [season, 2, 4]]);
     const id = `qualifiers-uefa-${season + 1}`;
