@@ -19,7 +19,7 @@ export type Prospect = {
   group: PositionGroup;
   age: number;
   strength: number;
-  /** Hidden: the strength he grows toward, reached in his mid-twenties. The screens show only scouted stars. */
+  /** Hidden: the strength he grows toward, reached in his mid-twenties while he plays for a human coach's club. The screens show only scouted stars. */
   potential: number;
   /** Fixes where the scouts' star range sits around his true stars; drawn once, when he joins. */
   scoutDraw: number;

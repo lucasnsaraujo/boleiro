@@ -115,6 +115,19 @@ describe("developPlayers at the end of a season", () => {
     expect(coached.players[far.id]?.clubId).toBe(farClub);
   });
 
+  it("grows an academy graduate toward his potential at a human coach's club, and toward his club's level at an AI club", () => {
+    const clubId = "flamengo-rj";
+    const graduates = Object.values(playedSeason.players).filter((p) => p.clubId === clubId && p.age >= 21 && p.age <= 25).map((p) => ({ ...p, potential: p.strength + 12 }));
+    const withGraduates: GameState = { ...playedSeason, players: { ...playedSeason.players, ...Object.fromEntries(graduates.map((p) => [p.id, p])) } };
+    const growth = (state: GameState) => {
+      const after = developPlayers(state).state.players;
+      return mean(graduates.map((p) => (after[p.id]?.strength ?? p.strength) - p.strength));
+    };
+    expect(graduates.length).toBeGreaterThan(3);
+    expect(growth(withGraduates)).toBeCloseTo(growth(playedSeason), 6);
+    expect(growth({ ...withGraduates, coachClubId: clubId }) - growth(withGraduates)).toBeGreaterThan(1);
+  });
+
   it("drops the pre-contracts and loans of players who retire", () => {
     const veterans = Object.values(playedSeason.players).filter((p) => p.age >= 38);
     const loan = { fromClubId: "flamengo-rj", until: "2026-12-31", lenderWageShare: 0.5, buyOption: null };

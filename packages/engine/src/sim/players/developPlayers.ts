@@ -179,14 +179,20 @@ export function rebuildMovedSquads(state: GameState, clubs: GameState["clubs"], 
   );
 }
 
+// The 2026 squads' players aged 20 to 23 stand at their club's mean strength net of age (−0.1 to +0.1 in Série A
+// to C, data/players.csv). AI clubs' graduates growing toward potentials spread 5 points (academy.ts) stood 0.8 to
+// 2.0 above theirs after ten seasons in Série B to D, 4.3 to 4.7 points apart (one standard deviation), and widened
+// every squad; drifting toward the club's level, −0.4 to +0.9 and 3.3 to 3.8 apart (seed 2).
 /**
  * The strength a player drifts toward. A loaned player goes for minutes, not to settle at the
- * borrower's level: he drifts toward his own club's. An academy graduate grows toward his own
- * potential, reached at the peak age, when it beats his club's level.
+ * borrower's level: he drifts toward his own club's. An academy graduate at (or lent by) a human coach's
+ * club grows toward his own potential, reached at the peak age, when it beats the club's level.
  */
 function targetOf(state: GameState, p: SimPlayer): number {
-  const clubTarget = levelOf(state, state.market.loans[p.id]?.fromClubId ?? p.clubId) + ageOffset(p.age);
-  return p.potential === undefined ? clubTarget : Math.max(clubTarget, p.potential + ageOffset(p.age) - ageOffset(PEAK_AGE));
+  const clubId = state.market.loans[p.id]?.fromClubId ?? p.clubId;
+  const clubTarget = levelOf(state, clubId) + ageOffset(p.age);
+  if (p.potential === undefined || !isHumanClub(state, clubId)) return clubTarget;
+  return Math.max(clubTarget, p.potential + ageOffset(p.age) - ageOffset(PEAK_AGE));
 }
 
 /**
@@ -337,9 +343,9 @@ function tierWageRates(clubs: GameState["clubs"], players: readonly SimPlayer[])
 
 /**
  * The end-of-season turnover of every squad: each player ages a year and his strength drifts
- * with age, minutes and form toward his club's level (an academy graduate toward his potential, when
- * higher); veterans retire, sooner when they barely played or fell below their club's level, and a
- * human coach's veterans announce their last season instead; the academy's best teenagers at each
+ * with age, minutes and form toward his club's level (an academy graduate at a human coach's club toward
+ * his potential, when higher); veterans retire, sooner when they barely played or fell below their club's
+ * level, and a human coach's veterans announce their last season instead; the academy's best teenagers at each
  * position replace them and fill any squad below 18, at an AI club only those who play near the middle
  * of its squad (isNearSquadMiddle), and Brazilian teenagers with invented names at the club's level stand
  * in where the academy has nobody ready (or no academy at all). Runs on the first day of the new year,

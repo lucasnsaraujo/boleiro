@@ -35,7 +35,8 @@ export type UsualLineup = { formation: Formation; starters: string[] };
 
 /**
  * `wage` is the monthly wage in BRL; the contract runs to the end of `contractUntil`. A player who came
- * up through an academy keeps his hidden `potential`, the strength he grows toward by his late twenties.
+ * up through an academy keeps his hidden `potential`, the strength he grows toward by his late twenties while
+ * he plays for a human coach's club.
  * A human coach's veteran who announced his last season is `retiring`.
  */
 export type SimPlayer = Player & { id: string; clubId: string; wage: number; contractUntil: IsoDate; potential?: number; retiring?: Retiring } & PlayerProfile;
