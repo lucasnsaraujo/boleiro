@@ -103,7 +103,7 @@ describe("a human club abroad in UEFA's and its country's cups", () => {
 });
 
 describe("a human club abroad's cup matches, knockouts included, while its coach runs it", () => {
-  type CupMatch = { key: string; isLive: boolean; isKnockout: boolean; legs: number; isAfterExtraTime: boolean; isShootout: boolean };
+  type CupMatch = { key: string; isLive: boolean; isScoreKept: boolean; isKnockout: boolean; legs: number; isAfterExtraTime: boolean; isShootout: boolean };
   /**
    * A Rápido season of Arsenal's from `seed`, while a human coach runs it: each of its matches the result-only cups
    * recorded, and whether the full tier played it live that day, with the stage it was in.
@@ -115,12 +115,14 @@ describe("a human club abroad's cup matches, knockouts included, while its coach
       const today = state.date;
       const recorded = new Set(resultOnlyScores(state).keys());
       state = advanceDay(state, {}).state;
-      for (const key of resultOnlyScores(state).keys()) {
+      for (const [key, score] of resultOnlyScores(state)) {
         if (recorded.has(key)) continue;
         const fixture = state.fixtures.find((f) => f.result && f.date === today && `${f.homeId}|${f.awayId}|${f.date}` === key);
         const stage = fixture && state.competitions[fixture.competitionId]?.stages[fixture.stage];
         const isKnockout = stage?.kind === "knockout";
-        matches.push({ key, isLive: fixture !== undefined, isKnockout, legs: stage?.dates.length ?? 0, isAfterExtraTime: fixture?.result?.isAfterExtraTime === true, isShootout: fixture?.result?.penaltyWinnerId !== undefined });
+        const result = fixture?.result;
+        const isScoreKept = result ? score === `${result.homeGoals}-${result.awayGoals}` : false;
+        matches.push({ key, isLive: fixture !== undefined, isScoreKept, isKnockout, legs: stage?.dates.length ?? 0, isAfterExtraTime: fixture?.result?.isAfterExtraTime === true, isShootout: fixture?.result?.penaltyWinnerId !== undefined });
       }
     }
     return matches;
@@ -132,6 +134,7 @@ describe("a human club abroad's cup matches, knockouts included, while its coach
   for (const { seed, run } of runs) {
     it(`plays every one of them live with the full tier's score, the league phase and each knockout leg (seed ${seed})`, () => {
       expect(run().filter((m) => !m.isLive).map((m) => m.key)).toEqual([]);
+      expect(run().filter((m) => !m.isScoreKept).map((m) => m.key)).toEqual([]);
       expect(run().some((m) => m.isKnockout)).toBe(true);
     }, 120_000);
   }
