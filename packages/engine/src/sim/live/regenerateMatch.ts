@@ -9,6 +9,7 @@ import type { Fixture, GameState, MatchResult, SimPlayer } from "../gameState.js
 import { clubMood } from "../morale/clubMood.js";
 import { isInjured } from "../players/isInjured.js";
 import { matchSetup } from "../players/matchSetup.js";
+import { isNationalTeam, nationalSquadOf } from "../nations/nationalSquad.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
 import { matchOfficials } from "../referees/matchOfficials.js";
 import { withRefereeCalls } from "../referees/refereeCalls.js";
@@ -71,7 +72,7 @@ function bookingsOf(lineup: readonly SimPlayer[], count: CardCount, secondYellow
 
 /**
  * A played match told again from its fixture's seed, for a match whose events the save does not
- * keep: a past match, or one of a league played result-only. Both sides line up as their AI coach
+ * keep: a past match, or one of a league or a national competition played result-only. Both sides line up as their AI coach
  * would pick from today's squads; the real score and, when known, each side's real cards are spread
  * over the match as a live one spreads them. Scorers, goal details and substitutions draw from the
  * same streams as the live match did, so a side that lines up the same names the same scorers. A match
@@ -79,6 +80,7 @@ function bookingsOf(lineup: readonly SimPlayer[], count: CardCount, secondYellow
  */
 export function regenerateMatch(state: GameState, fixture: Fixture & { result: MatchResult }): RegeneratedMatch {
   const squadOf = (clubId: string): readonly SimPlayer[] => {
+    if (!state.clubs[clubId] && isNationalTeam(state, clubId)) return nationalSquadOf(state, clubId);
     const guest = state.clubs[clubId] ? null : guestClubOf(state, clubId);
     return guest ? guestSquadOf(guest) : (squadsOfGame(state).get(clubId) ?? []);
   };

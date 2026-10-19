@@ -1,14 +1,15 @@
 import { useState } from "react";
 import type { Club } from "@boleiro/data/clubs";
 import { crestUrlOf, initialsOf, plateColours } from "./clubCatalog.js";
+import { nationalCrestUrlOf } from "../nationalTeam/nationalCrests.js";
 import "./crest.css";
 
 type Props = { club: Pick<Club, "id" | "shortName" | "colours">; size?: number };
 
-/** The club's real crest, or a shield in its colours with its initials when there is none. */
+/** The club's real crest (a national team's federation crest), or a shield in its colours with its initials when there is none. */
 export function Crest({ club, size = 32 }: Props) {
-  const url = crestUrlOf(club.id, size);
-  const retinaUrl = crestUrlOf(club.id, size * 2);
+  const url = crestUrlOf(club.id, size) ?? nationalCrestUrlOf(club.id, size);
+  const retinaUrl = crestUrlOf(club.id, size * 2) ?? nationalCrestUrlOf(club.id, size * 2);
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   if (url && url !== failedUrl) {
     return (

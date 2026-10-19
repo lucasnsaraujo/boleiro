@@ -1,6 +1,7 @@
 import { addDays } from "@boleiro/engine/sim/dates";
 import type { GameState } from "@boleiro/engine/sim/gameState";
 import { isWindowOpen } from "@boleiro/engine/sim/transfers/transferWindows";
+import { nationalTeamToday } from "@boleiro/engine/sim/nations/nationalFixtures";
 import { inboxLines, type DayEvent, type InboxLine } from "./inboxLines.js";
 
 /** Why the days stopped: the coach's match, something he must see, or the day limit. */
@@ -16,8 +17,10 @@ const WINDOW_WARNING = "Último dia para pedir reforços: a janela fecha amanhã
 // coach without a club waiting for offers reaches it.
 const MAX_DAYS = 120;
 
-export function isCoachMatchDay({ date, coachClubId, fixtures }: Pick<GameState, "date" | "coachClubId" | "fixtures">): boolean {
-  return coachClubId !== null && fixtures.some((f) => f.date === date && !f.result && (f.homeId === coachClubId || f.awayId === coachClubId));
+/** Whether the coach's club plays today, or his national team when `nations` is given and he runs one. */
+export function isCoachMatchDay({ date, coachClubId, fixtures, nations }: Pick<GameState, "date" | "coachClubId" | "fixtures"> & Partial<Pick<GameState, "nations">>): boolean {
+  const isClubDay = coachClubId !== null && fixtures.some((f) => f.date === date && !f.result && (f.homeId === coachClubId || f.awayId === coachClubId));
+  return isClubDay || nationalTeamToday({ date, fixtures, ...(nations ? { nations } : {}) }) !== null;
 }
 
 /**

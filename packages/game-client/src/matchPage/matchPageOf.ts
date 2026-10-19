@@ -19,6 +19,10 @@ import { standings } from "@boleiro/engine/sim/standings";
 import { leagueMatches } from "@boleiro/engine/sim/world/resultOnlyLeague";
 import { competitionKey } from "@boleiro/engine/sim/history/history";
 import { competitionKeyName, competitionName, fixtureLabel } from "../format/competitionName.js";
+import { matchResultOf, nationalFixtureId, nationalFixtureOf, nationalMatchIdOf } from "@boleiro/engine/sim/nations/nationalFixtures";
+import { nationalOutsiderOf } from "@boleiro/engine/sim/nations/nationalSquad";
+import type { NationalMatch } from "@boleiro/engine/sim/nations/nations";
+import { roundClubOf } from "../round/roundClubOf.js";
 import type { RoundClub } from "../round/liveRoundOf.js";
 import { officialsOf, type Officials } from "../round/officialsOf.js";
 import { curiositiesOf } from "./curiositiesOf.js";
@@ -82,10 +86,36 @@ export function worldMatchRef(countryId: string, level: number, index: number): 
   return `${WORLD_REF}${countryId}:${level}:${index}`;
 }
 
-/** A match to tell: its fixture, its competition's name and label, and the fixtures its table and meetings read. */
-type Located = { fixture: Fixture; competition: string; label: string; table: { clubIds: string[]; fixtures: Fixture[]; drawOrder: string[] } | null; season: Fixture[] };
+/**
+ * A match to tell: its fixture, its competition's name and label, and the fixtures its table and meetings read;
+ * `game` the game to tell it in when its competition is none of the game's (a national match played result-only).
+ */
+type Located = { fixture: Fixture; competition: string; label: string; table: { clubIds: string[]; fixtures: Fixture[]; drawOrder: string[] } | null; season: Fixture[]; game?: GameState };
+
+/** A national match: its fixture, its group's table from the national competition, and every national match the game keeps, for the two teams' meetings. */
+function locateNational(state: GameState, matchId: string): Located | null {
+  const found = nationalFixtureOf(state, matchId);
+  if (!found) return null;
+  const { fixture, competition } = found;
+  const asFixture = (m: NationalMatch): Fixture => ({ id: nationalFixtureId(m.id), competitionId: competition.id, stage: fixture.stage, date: m.date, homeId: m.homeId, awayId: m.awayId, result: m.result && matchResultOf(m.result) });
+  const matches = state.nations?.matches ?? [];
+  const own = matches.find((m) => m.id === matchId);
+  const group = own?.round === "group" && own.group && competition.nationalKind !== "friendlies" ? state.nations?.competitions[own.competitionId]?.groups[own.group] : undefined;
+  const table = group && own ? { clubIds: group, fixtures: matches.filter((m) => m.competitionId === own.competitionId && m.round === "group" && m.group === own.group).map(asFixture), drawOrder: [] } : null;
+  const isKnown = state.competitions[competition.id] === competition;
+  return {
+    fixture,
+    competition: competitionName(competition),
+    label: fixtureLabel(competition, fixture),
+    table,
+    season: matches.map(asFixture),
+    ...(isKnown ? {} : { game: { ...state, competitions: { ...state.competitions, [competition.id]: competition } } }),
+  };
+}
 
 function locate(state: GameState, ref: string): Located | null {
+  const nationalId = nationalMatchIdOf(ref);
+  if (nationalId) return locateNational(state, nationalId);
   if (ref.startsWith(WORLD_REF)) {
     const [countryId = "", level = "", index = ""] = ref.slice(WORLD_REF.length).split(":");
     const country = state.world?.[countryId];
@@ -113,10 +143,7 @@ function locate(state: GameState, ref: string): Located | null {
 }
 
 function clubOf(state: GameState, clubId: string): RoundClub {
-  const club = state.clubs[clubId];
-  if (club) return { id: clubId, shortName: club.shortName, colours: club.colours, stadium: club.stadium };
-  const guest = guestClubOf(state, clubId);
-  return { id: clubId, shortName: guest?.name ?? clubId, colours: guest?.colours ?? GUEST_COLOURS, stadium: "" };
+  return roundClubOf(state, clubId) ?? { id: clubId, shortName: clubId, colours: GUEST_COLOURS, stadium: "" };
 }
 
 const pagePlayer = (p: SimPlayer): PagePlayer => ({ id: p.id, name: p.name, group: p.group, strength: p.strength, ...(p.positions ? { positions: p.positions } : {}) });
@@ -178,6 +205,8 @@ function sidesFromPlay(state: GameState, play: MatchPlay, homeId: string, awayId
 }
 
 function guestPlayer(state: GameState, playerId: string): SimPlayer | undefined {
+  const outsider = nationalOutsiderOf(state, playerId);
+  if (outsider) return outsider;
   const clubId = playerId.slice(0, playerId.lastIndexOf("#"));
   const guest = clubId ? guestClubOf(state, clubId) : null;
   return guest ? guestSquadOf(guest).find((p) => p.id === playerId) : undefined;
@@ -270,9 +299,10 @@ export function matchPageOf(state: GameState, ref: string, live: { day: LiveDay;
   }
   const { fixture } = located;
   const { result } = fixture;
+  const game = located.game ?? state;
   // A real timeline is read against the game as it kicked off: its history and gate are the ones before the match.
   const before = real && live ? live.day.state : state;
-  const story: Story | null = real ?? (result ? regenerateMatch(state, { ...fixture, result }) : null);
+  const story: Story | null = real ?? (result ? regenerateMatch(game, { ...fixture, result }) : null);
   if (!story) return null;
   const isLive = !!real && !!live?.isUnderWay;
   const home = clubOf(state, fixture.homeId);
@@ -324,7 +354,7 @@ export function matchPageOf(state: GameState, ref: string, live: { day: LiveDay;
     ratings,
     names,
     venue,
-    officials: officialsOf(state, fixture),
+    officials: officialsOf(game, fixture),
     meetings: meetingsOf(located),
     curiosities,
     eggs: isLive || !result ? [] : matchEggNotes(state, before.history, { ...fixture, result }, real ? story : null),

@@ -18,6 +18,7 @@ import { unifiedDatesOf } from "./seasonCalendar.js";
 import type { Country } from "./world/world.js";
 import { fullTierDaysOf, isFinished, turnsOnItsOwn } from "./world/turnSeasonsAbroad.js";
 import { isCupAbroadCurrent } from "./continental/cupsAbroad.js";
+import { isNationalCopyCurrent } from "./nations/nationalFixtures.js";
 
 function leagueOf(state: GameState, division: Division): LeagueCompetition {
   const competition = Object.values(state.competitions).find((c) => c.kind === "league" && c.division === division && c.season === state.season);
@@ -90,8 +91,11 @@ export function endSeason(state: GameState): { state: GameState; outcomes: Recor
   );
   const opened = startSeason(season, clubs, random.next, qualification, state.playsStateChampionships !== false, state.economy.continentalStages !== undefined, formatsOf(state), gridRounds, abroad.map(({ country }) => country.structure), state.guests !== undefined, state.nations !== undefined);
   const { calendar } = opened;
-  // A league abroad whose season crosses the new year plays on into Brazil's next, its games and table with it, and so do a human club's cups abroad still played.
-  const crossing = Object.values(state.competitions).filter((c) => (c.kind === "league" && c.abroad && !isFinished(c, fixturesOf(state, c.id))) || (c.kind === "cupAbroad" && isCupAbroadCurrent(state, c)));
+  // A league abroad whose season crosses the new year plays on into Brazil's next, its games and table with it, and so do a human club's cups abroad
+  // still played and a national coach's competitions still running (a qualifiers' cycle, a Nations League), their bans with them.
+  const crossing = Object.values(state.competitions).filter(
+    (c) => (c.kind === "league" && c.abroad && !isFinished(c, fixturesOf(state, c.id))) || (c.kind === "cupAbroad" && isCupAbroadCurrent(state, c)) || (c.kind === "national" && isNationalCopyCurrent(state, c)),
+  );
   const competitions = { ...opened.competitions, ...Object.fromEntries(crossing.map((c) => [c.id, c])) };
   const crossingIds = new Set(crossing.map((c) => c.id));
   const fixtures = crossing.length ? [...opened.fixtures, ...state.fixtures.filter((f) => crossingIds.has(f.competitionId))] : opened.fixtures;

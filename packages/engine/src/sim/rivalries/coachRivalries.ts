@@ -49,6 +49,7 @@ const isHumanKey = (key: string) => key.startsWith(humanKey(""));
 export function isFinal(state: Pick<GameState, "competitions">, fixture: Pick<Fixture, "competitionId" | "stage">): boolean {
   const competition = state.competitions[fixture.competitionId];
   if (!competition) return false;
+  if (competition.kind === "national") return competition.rounds[fixture.stage] === "final";
   const isKnockout = competition.kind === "cup" || competition.stages[fixture.stage]?.kind === "knockout";
   return isKnockout && fixture.stage === competition.stageDates.length - 1;
 }

@@ -526,8 +526,8 @@ test("the coach names a captain: the chemistry screen and the lineup sheet show 
   expect(before.captain?.isNamed).toBe(false);
   expect(named?.captain).toMatchObject({ playerId: kid.playerId, isNamed: true });
   expect(named?.value ?? 100).toBeLessThan(before.value);
-  expect(plan.chemistry.captainId).toBe(kid.playerId);
-  expect(plan.chemistry.suggestedCaptainId).toBe(before.candidates[0]?.playerId);
+  expect(plan.chemistry?.captainId).toBe(kid.playerId);
+  expect(plan.chemistry?.suggestedCaptainId).toBe(before.candidates[0]?.playerId);
   const reloaded = createEngineSession(bundledGameFiles);
   reloaded.apply({ type: "load", save });
   expect(reloaded.chemistry()?.captain?.playerId).toBe(kid.playerId);

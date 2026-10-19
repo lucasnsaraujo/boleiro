@@ -1,4 +1,5 @@
 import { isHumanClub } from "../coach/humanCoaches.js";
+import { humanNationalTeamIds } from "../nations/nationalFixtures.js";
 import type { Fixture, GameState } from "../gameState.js";
 import { isFinal } from "../rivalries/coachRivalries.js";
 
@@ -22,13 +23,14 @@ export function isLockedToPlans(state: Pick<GameState, "manualChangesOnlyInFinal
  * Who answers a club's red cards and injuries in a match. Every substitution path routes through
  * here: the live round opens its window only on "askCoach", and kick-off plays AI substitutions
  * for "aiSubstitutions". Every human coach is asked, the one in the seat and those of a hot-seat
- * game waiting for their turn, except in a match (`fixture`) the house rule leaves to their plans.
+ * game waiting for their turn, for his club and his national team, except in a match (`fixture`) the
+ * house rule leaves to their plans.
  */
 export function incidentHandling(
-  state: Pick<GameState, "coachClubId" | "waitingCoaches" | "manualChangesOnlyInFinals" | "competitions">,
+  state: Pick<GameState, "coachClubId" | "waitingCoaches" | "manualChangesOnlyInFinals" | "competitions" | "nations">,
   clubId: string,
   fixture?: Pick<Fixture, "competitionId" | "stage">,
 ): IncidentHandling {
-  if (!isHumanClub(state, clubId)) return "aiSubstitutions";
+  if (!isHumanClub(state, clubId) && !humanNationalTeamIds(state).includes(clubId)) return "aiSubstitutions";
   return fixture && isLockedToPlans(state, fixture) ? "matchPlan" : "askCoach";
 }
