@@ -8,6 +8,7 @@ import { loadNewGame } from "../sim/loadNewGame.js";
 import { loadShards, saveShards } from "../sim/saveShards.js";
 import { type AbroadLeagueTallies, tallyFinishedAbroad } from "./abroadSeasons.js";
 import type { ScoreTally } from "./scoreTally.js";
+import { gitCommit } from "./gitCommit.js";
 import { syntheticWorldStart, v1WorldStart } from "./v1World.js";
 
 const TABLES_START = "<!-- tables:start -->";
@@ -120,6 +121,7 @@ function saveGrowth(seasons: number): string[] {
 function machine(): string[] {
   const factor = cpuBudgetSeconds(1);
   return [
+    `Commit: ${gitCommit()}.`,
     `Machine: ${cpus()[0]?.model ?? "unknown"}, ${cpus().length} cores, node ${process.version}. Load average at start (1, 5, 15 min): ${loadavg().map((n) => n.toFixed(1)).join(", ")}.`,
     `Reference workload (\`cpuBudgetSeconds\`): this machine ran it ${factor.toFixed(2)} times the ${REFERENCE_MACHINE_SECONDS} s of the machine the budgets were set on (1.00 means as fast or faster).`,
   ];
