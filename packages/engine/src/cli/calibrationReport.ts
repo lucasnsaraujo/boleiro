@@ -124,6 +124,26 @@ function cupUpsetsTable(runs: readonly WorldCalibrationRun[]): { lines: string[]
   };
 }
 
+/** Goals per game and home share of each Brazilian division in each season of the runs, next to the real figure, to show whether the leagues drift away from it. */
+function driftTable(runs: readonly WorldCalibrationRun[], seasons: number): string[] {
+  const divisions = ["A", "B", "C", "D"] as const;
+  const real = { A: realSerieARates(), B: realDivisionRates("B"), C: realDivisionRates("C"), D: realDivisionRates("D") };
+  const header = `| Division | Real | ${Array.from({ length: seasons }, (_, i) => `Season ${i + 1}`).join(" | ")} |`;
+  return [
+    "Goals per game, then home win % in brackets, over all seeds.",
+    "",
+    header,
+    `|---|---|${"---|".repeat(seasons)}`,
+    ...divisions.map((division) => {
+      const cells = Array.from({ length: seasons }, (_, i) => {
+        const tally = mergeScoreTallies(runs.map((run) => run.leaguesBySeason[i]?.[division]).filter((t): t is ScoreTally => t !== undefined));
+        return `${goalsPerMatch(tally).toFixed(2)} (${pct(share(tally, "home"))})`;
+      });
+      return `| Série ${division} | ${real[division].goalsPerGame.toFixed(2)} (${pct(real[division].home)}) | ${cells.join(" | ")} |`;
+    }),
+  ];
+}
+
 const LEAGUE_NAMES = new Map<string, string>();
 function nameLeagues(): void {
   const start = v1WorldStart(1);
@@ -234,6 +254,10 @@ function tables(runs: readonly WorldCalibrationRun[], seasons: number): string[]
     "## Brazil's leagues",
     "",
     ...brazil.lines,
+    "",
+    "### Brazil's leagues by season",
+    "",
+    ...driftTable(runs, seasons),
     "",
     "## Brazil's cards",
     "",

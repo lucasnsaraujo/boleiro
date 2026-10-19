@@ -22,6 +22,7 @@
     "world:rates": "tsx packages/engine/src/cli/worldRates.ts",
     "calibrate": "tsx packages/engine/src/engine/calibrate.ts",
     "calibration:report": "tsx packages/engine/src/cli/calibrationReport.ts",
+    "perf:report": "tsx --expose-gc packages/engine/src/cli/perfReport.ts",
     "formats:money": "tsx packages/engine/src/cli/formatsMoney.ts"
   },
   "devDependencies": {

@@ -8,12 +8,14 @@ import { seasonStats, type SeasonStats, type UpsetKey, type UpsetTally } from ".
 import { v1WorldStart } from "./v1World.js";
 
 const DIVISIONS: readonly Division[] = ["A", "B", "C", "D"];
+const emptyLeagues = (): Record<Division, ScoreTally> => ({ A: emptyScoreTally(), B: emptyScoreTally(), C: emptyScoreTally(), D: emptyScoreTally() });
 
 /** What `seasons` seasons of the v1 world with no coach produced, for the calibration report. */
 export type WorldCalibrationRun = {
   seed: number;
-  /** Brazil's league matches per division. */
+  /** Brazil's league matches per division, and the same per season of the run, first first. */
   leagues: Record<Division, ScoreTally>;
+  leaguesBySeason: Record<Division, ScoreTally>[];
   /** Matches of every other competition that has a full-tier match engine, by what the competition is (Copa do Brasil, a continental cup, the states, the national teams). */
   others: Map<string, ScoreTally>;
   /** Cards per card competition, as totals, and the Copa do Brasil's matches between divisions. */
@@ -48,7 +50,8 @@ function addTotals(into: WorldCalibrationRun, stats: SeasonStats): void {
 export function worldCalibrationRun(seed: number, seasons: number): WorldCalibrationRun {
   const run: WorldCalibrationRun = {
     seed,
-    leagues: { A: emptyScoreTally(), B: emptyScoreTally(), C: emptyScoreTally(), D: emptyScoreTally() },
+    leagues: emptyLeagues(),
+    leaguesBySeason: [],
     others: new Map(),
     cards: {},
     cupUpsets: {},
@@ -58,12 +61,15 @@ export function worldCalibrationRun(seed: number, seasons: number): WorldCalibra
   let state = v1WorldStart(seed);
   for (let i = 0; i < seasons; i++) {
     const play = playSeason(state, (before, after) => tallyFinishedAbroad(before, after, run.abroadLeagues, run.abroadCups));
+    const thisSeason = emptyLeagues();
+    run.leaguesBySeason.push(thisSeason);
     for (const fixture of play.fixtures) {
       const { result } = fixture;
       const competition = play.before.competitions[fixture.competitionId];
       if (!result || !competition) continue;
       if (competition.kind === "league" && competition.division && DIVISIONS.includes(competition.division) && !competition.abroad) {
         addScore(run.leagues[competition.division], result.homeGoals, result.awayGoals);
+        addScore(thisSeason[competition.division], result.homeGoals, result.awayGoals);
         continue;
       }
       const label = competitionLabel(play.before, fixture);

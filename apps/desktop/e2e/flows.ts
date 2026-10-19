@@ -193,3 +193,70 @@ export async function playLiveRoundUntil(page: Page, stop: string | null): Promi
   }
 }
 
+
+const PLAY_TIMEOUT = 60_000;
+const MAX_SEASON_STEPS = 400;
+
+/**
+ * Plays the whole season a career is in, through the screens, until its end screen ("Fim da temporada") is up:
+ * every round's live match, the moments between them, a sacking's offers and the days between matches. The test
+ * must install the page clock first (see playLiveRound). Returns how many live rounds it played and whether the
+ * coach was sacked on the way.
+ */
+export async function playSeasonThroughScreens(page: Page, season: number): Promise<{ rounds: number; wasSacked: boolean }> {
+  const hubDate = barDate(page);
+  const seeOffers = page.getByRole("link", { name: "Ver propostas" });
+  const playRound = page.getByRole("button", { name: "Jogar rodada" });
+  const waitForOffers = page.getByRole("button", { name: "Esperar propostas" });
+  const canPlay = page.getByRole("button", { name: /^(Jogar rodada|Esperar propostas)$/, disabled: false });
+  const kickOff = page.getByRole("button", { name: "Começar a rodada" });
+  const band = page.getByRole("region", { name: "Seu jogo" });
+  const seasonEnd = page.getByRole("heading", { name: `Fim da temporada ${season}` });
+  const sacked = page.getByRole("heading", { name: "Demitido" });
+  const offers = page.getByRole("heading", { name: "Propostas" });
+  const moment = momentScene(page);
+  const elsewhere = kickOff.or(band).or(seasonEnd).or(sacked).or(offers).or(moment);
+  let rounds = 0;
+  let wasSacked = false;
+
+  for (let step = 0; step < MAX_SEASON_STEPS && !(await seasonEnd.isVisible()); step++) {
+    await expect(canPlay.or(elsewhere).first()).toBeVisible();
+    if (await seasonEnd.isVisible()) break;
+    if (await moment.isVisible()) {
+      if (/#\/sacked$/.test(page.url())) wasSacked = true;
+      await passMoments(page, canPlay.or(kickOff).or(band).or(seasonEnd).or(sacked).or(offers));
+      continue;
+    }
+    if (await kickOff.isVisible()) {
+      await kickOff.click();
+      await playLiveRound(page);
+      rounds++;
+      continue;
+    }
+    if (await sacked.isVisible()) {
+      wasSacked = true;
+      await page.getByRole("button", { name: "Ver propostas" }).click();
+      await expect(offers).toBeVisible();
+      continue;
+    }
+    if (await offers.isVisible()) {
+      const sign = page.getByRole("button", { name: /^Assinar com / });
+      await ((await sign.isVisible()) ? sign : waitForOffers).click();
+      await expect(offers).toBeHidden({ timeout: PLAY_TIMEOUT });
+      continue;
+    }
+    if (await seeOffers.isVisible()) {
+      await seeOffers.click();
+      await expect(offers).toBeVisible();
+      continue;
+    }
+    await expect(playRound.or(waitForOffers)).toBeVisible();
+    const before = (await hubDate.allTextContents()).join();
+    await ((await playRound.isVisible()) ? playRound : waitForOffers).click();
+    await expect
+      .poll(async () => (await elsewhere.count()) > 0 || ((await canPlay.count()) > 0 && (await hubDate.allTextContents()).join() !== before), { timeout: PLAY_TIMEOUT })
+      .toBe(true);
+  }
+  await expect(seasonEnd).toBeVisible();
+  return { rounds, wasSacked };
+}
