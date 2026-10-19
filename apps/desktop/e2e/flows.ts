@@ -150,7 +150,8 @@ export async function playLiveRound(page: Page): Promise<number> {
   const varCheck = band.getByRole("status").filter({ hasText: "VAR checando" });
   await expect(band).toBeVisible();
   await pauseClock(page);
-  await fourX.click();
+  // The round may already be going at 4x, when the test started it there itself.
+  await resumeAtFourX(page);
   let stops = 0;
   // One tick per step, so the screen has stopped the clock by itself before the next tick is due.
   while (!(await finishing.or(back).first().isVisible())) {
