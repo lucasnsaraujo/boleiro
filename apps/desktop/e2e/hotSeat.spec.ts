@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar, pickOption } from "./flows.js";
+import { bar, pickOption, resumeAtFourX } from "./flows.js";
 
 // Turns until both coaches have set an eleven on a match day: a round or two of the estaduais.
 const MAX_TURNS = 20;
@@ -39,8 +39,7 @@ async function playRound(page: Page) {
       await leave.click();
       continue;
     }
-    const fourX = page.getByRole("button", { name: "4x" });
-    if (await fourX.isVisible()) await fourX.click();
+    await resumeAtFourX(page);
     await expect(page.getByRole("button", { name: "Pausar" }).and(page.locator("[aria-pressed=true]")).or(next).or(leave).first()).toBeVisible({ timeout: 30_000 });
   }
   await next.click();
