@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { FIRST_PACK_VERSION, loadPack } from "@boleiro/data/dataPack";
 import { advanceDay } from "./advanceDay.js";
+import { renewFinances } from "./finances/renewFinances.js";
+import { projectedRevenue } from "./finances/setBoardBudget.js";
 import type { GameState } from "./gameState.js";
 import { loadNewGame } from "./loadNewGame.js";
 import { loadGame, saveGame } from "./saveGame.js";
@@ -79,6 +81,23 @@ describe("saveGame and loadGame", () => {
     expect(loaded.finances["flamengo-rj"]?.month.revenue.friendlies).toBe(0);
     expect(loaded.finances["flamengo-rj"]?.month.costs.bonuses).toBe(0);
     expect(loaded).toStrictEqual(midSeason);
+  });
+
+  it("reads a save from before revenue floors with one, so a poor club promoted after loading earns what Série C's poorest does", () => {
+    const economy: Partial<GameState["economy"]> = { ...midSeason.economy };
+    delete economy.revenueFloor;
+    const loaded = loadGame(JSON.stringify({ ...midSeason, economy }));
+    const revenueOf = (finances: GameState["finances"], id: string) => {
+      const finance = finances[id];
+      if (!finance) throw new Error(`no finances for ${id}`);
+      return projectedRevenue(finance);
+    };
+    const idsIn = (division: "C" | "D") => Object.values(loaded.clubs).filter((c) => c.division === division && !c.abroad).map((c) => c.id);
+    const [poorest] = idsIn("D").sort((a, b) => revenueOf(loaded.finances, a) - revenueOf(loaded.finances, b));
+    const club = poorest ? loaded.clubs[poorest] : undefined;
+    if (!poorest || !club) throw new Error("no Série D club");
+    const renewed = renewFinances(loaded, { ...loaded.clubs, [poorest]: { ...club, division: "C" } }, loaded.competitions, loaded.fixtures, []);
+    expect(revenueOf(renewed, poorest)).toBeGreaterThanOrEqual(Math.min(...idsIn("C").map((id) => revenueOf(loaded.finances, id))));
   });
 
   it("rejects a save from another version", () => {

@@ -139,7 +139,7 @@ export function renewFinances(
     };
     // A promoted club takes at least the least any club of its new division earns, as it gets the division's TV and gate money:
     // the income the game does not simulate (its estadual, its commercial deals) makes up the rest.
-    const floor = TIERS_UP.indexOf(to) > TIERS_UP.indexOf(from) ? (economy.revenueFloor?.[to] ?? 0) : 0;
+    const floor = TIERS_UP.indexOf(to) > TIERS_UP.indexOf(from) ? economy.revenueFloor[to] : 0;
     const shortfall = Math.max(0, Math.round(floor - projectedRevenue(renewed)));
     return [id, setBoardBudget(shortfall ? { ...renewed, otherIncome: renewed.otherIncome + shortfall } : renewed, wages.get(id) ?? 0)];
   }));

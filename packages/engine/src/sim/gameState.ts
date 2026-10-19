@@ -249,8 +249,8 @@ export type Economy = {
   typicalRevenue: Record<Tier, number>;
   /** Highest yearly revenue without player sales in the division's data; richer clubs drift back. */
   revenueCeiling: Record<Tier, number>;
-  /** Lowest yearly revenue without player sales in the division's data, a promoted club's least; a save from before floors has none. */
-  revenueFloor?: Record<Tier, number>;
+  /** Lowest yearly revenue without player sales in the division's data, a promoted club's least; a save from before floors takes the least its clubs earn. */
+  revenueFloor: Record<Tier, number>;
   /** Copa do Brasil prize per club for playing each stage before the final, then the final's two prizes. */
   copaDoBrasil: { stagePrizes: { prize: number; prizeLowerDivisions: number | null }[]; runnerUp: number; champion: number };
   /**
