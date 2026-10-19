@@ -1,10 +1,9 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
-import type { Division } from "@boleiro/data/players";
 import { realDivisionRates, realSerieARates } from "../engine/calibration.js";
 import { DIVISION_GAPS, realCupUpsets } from "../engine/cupUpsets.js";
 import { CARD_RATES, LEAGUE_ABROAD_CARD_RATES, realCardsPerGame, type CardCompetition } from "../sim/discipline/cardRates.js";
-import { compareMean, compareShare, type Comparison } from "./calibrationBands.js";
+import { compareMean, compareShare, DIVISION_FLOORS, type Comparison } from "./calibrationBands.js";
 import { realAbroadRates } from "./realAbroadRates.js";
 import { gitCommit } from "./gitCommit.js";
 import { goalsPerMatch, goalsVariance, mergeScoreTallies, type ScoreTally } from "./scoreTally.js";
@@ -14,9 +13,8 @@ import { worldCalibrationRun, type WorldCalibrationRun } from "./worldCalibratio
 const TABLES_START = "<!-- tables:start -->";
 const TABLES_END = "<!-- tables:end -->";
 
-// The tolerances of the engine's calibration tests (engine/calibration.test.ts); abroad takes Série B's.
-const FLOORS: Record<Division, { share: number; goals: number }> = { A: { share: 0.02, goals: 0.1 }, B: { share: 0.02, goals: 0.1 }, C: { share: 0.025, goals: 0.1 }, D: { share: 0.04, goals: 0.2 } };
-const ABROAD_FLOOR = FLOORS.B;
+// Abroad takes Série B's tolerance.
+const ABROAD_FLOOR = DIVISION_FLOORS.B;
 const CUP_SHARE_FLOOR = 0.05;
 // A cup group the simulation filled with fewer matches than this says nothing about its rates.
 const MIN_CUP_GAMES = 30;
@@ -57,7 +55,7 @@ function brazilTable(runs: readonly WorldCalibrationRun[]): { lines: string[]; p
       division === "A"
         ? { ...realSerieARates(), goalsVariance: null }
         : { ...realDivisionRates(division), goalsVariance: null };
-    return leagueRow(`Série ${division}`, sim, real, FLOORS[division], seedGoals(runs, (run) => run.leagues[division]));
+    return leagueRow(`Série ${division}`, sim, real, DIVISION_FLOORS[division], seedGoals(runs, (run) => run.leagues[division]));
   });
   return {
     lines: [

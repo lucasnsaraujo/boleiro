@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
-import { developPlayers, groupsToFill, retiresAtSeasonTurn } from "./developPlayers.js";
+import { developPlayers, groupsToFill, rebuildMovedSquads, retiresAtSeasonTurn } from "./developPlayers.js";
 
 const start = loadNewGame(9, { coachClubId: null });
 const regular = (p: SimPlayer) => Number(p.id.slice(1)) % 2 === 0;
@@ -138,5 +138,50 @@ describe("groupsToFill", () => {
   it("tops a squad up in the 2026 squads' shape, which holds more forwards than the old guess: a fifth forward before a sixth midfielder", () => {
     const staying = (["GK", "GK", ...Array<"DEF">(6).fill("DEF"), ...Array<"MID">(5).fill("MID"), ...Array<"ATT">(4).fill("ATT")] as const).map((group) => ({ group }));
     expect(groupsToFill(staying, [])).toEqual(["ATT"]);
+  });
+});
+
+describe("rebuildMovedSquads", () => {
+  const squadMean = (players: GameState["players"], clubId: string) => mean(Object.values(players).filter((p) => p.clubId === clubId).map((p) => p.strength));
+  const firstIn = (division: "A" | "B") => Object.values(start.clubs).filter((c) => c.division === division).map((c) => c.id).sort()[0] ?? "";
+  const promotedClub = firstIn("B");
+  const relegatedClub = firstIn("A");
+  const moved = (clubId: string, division: "A" | "B"): GameState["clubs"] => {
+    const club = start.clubs[clubId];
+    if (!club) throw new Error(`no club ${clubId}`);
+    return { ...start.clubs, [clubId]: { ...club, division } };
+  };
+  const scaled = (clubId: string, factor: number): GameState["finances"] => {
+    const finance = start.finances[clubId];
+    if (!finance) throw new Error(`no finances for ${clubId}`);
+    const { tv, sponsorship, membership, otherIncome, expectedTickets, expectedPrizes } = finance;
+    return { ...start.finances, [clubId]: { ...finance, tv: tv * factor, sponsorship: sponsorship * factor, membership: membership * factor, otherIncome: otherIncome * factor, expectedTickets: expectedTickets * factor, expectedPrizes: expectedPrizes * factor } };
+  };
+  const lift = (state: GameState, clubs: GameState["clubs"], finances: GameState["finances"], clubId: string) => squadMean(rebuildMovedSquads(state, clubs, finances), clubId) - squadMean(state.players, clubId);
+
+  it("lifts a promoted club's squad most of the way to Série A and leaves the other clubs' players as they were", () => {
+    const players = rebuildMovedSquads(start, moved(promotedClub, "A"), start.finances);
+    expect(squadMean(players, promotedClub) - squadMean(start.players, promotedClub)).toBeGreaterThan(3);
+    const others = Object.values(start.players).filter((p) => p.clubId !== promotedClub);
+    expect(others.every((p) => players[p.id] === p)).toBe(true);
+  });
+
+  it("lowers a relegated club's squad toward Série B", () => {
+    expect(lift(start, moved(relegatedClub, "B"), start.finances, relegatedClub)).toBeLessThan(-2);
+  });
+
+  it("rebuilds a richer promoted club further than a poorer one", () => {
+    const poorer = lift(start, moved(promotedClub, "A"), start.finances, promotedClub);
+    expect(lift(start, moved(promotedClub, "A"), scaled(promotedClub, 10), promotedClub)).toBeGreaterThan(poorer + 2);
+  });
+
+  it("moves a squad only the way its club went: a relegated squad already below its new division keeps its players", () => {
+    const weak: GameState = { ...start, players: Object.fromEntries(Object.entries(start.players).map(([id, p]) => [id, p.clubId === relegatedClub ? { ...p, strength: 40 } : p])) };
+    expect(lift(weak, moved(relegatedClub, "B"), start.finances, relegatedClub)).toBe(0);
+  });
+
+  it("leaves a human coach's squad for him to rebuild", () => {
+    const coached: GameState = { ...start, coachClubId: promotedClub };
+    expect(lift(coached, moved(promotedClub, "A"), start.finances, promotedClub)).toBe(0);
   });
 });

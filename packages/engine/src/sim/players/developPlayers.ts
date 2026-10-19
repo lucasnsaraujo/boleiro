@@ -2,7 +2,7 @@ import type { Division } from "@boleiro/data/players";
 import type { PositionGroup } from "../../engine/match.js";
 import { keyedStream, randomStream } from "../../engine/random.js";
 import { divisionOf, tierOf } from "../finances/tierOf.js";
-import type { GameState, IsoDate, SimPlayer, Tier } from "../gameState.js";
+import type { ClubFinance, GameState, IsoDate, SimPlayer, Tier } from "../gameState.js";
 import { wageRateOf, type WageRate } from "../transfers/wageDemand.js";
 import type { Prospect } from "../youth/academy.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
@@ -12,6 +12,7 @@ import { freshCondition, rollTrait } from "./openingProfile.js";
 import { homeNationalityOf } from "./homeNationality.js";
 import { squadsOfGame } from "./squadsByClub.js";
 import { isClubFull } from "../transfers/squadCap.js";
+import { projectedRevenue } from "../finances/setBoardBudget.js";
 
 export type PlayerRetired = { type: "playerRetired"; playerId: string; clubId: string; name: string; age: number };
 /** A kid moved up into his club's squad; `byAssistant` when a human coach's assistant did it for him mid-season. */
@@ -42,8 +43,9 @@ function ageOffset(age: number): number {
   return lastOffset - (age - lastAge);
 }
 
-// guess: each season a player closes 15% of the gap to his club's level for his age, so promoted
-// clubs' players rise over a few seasons and the spread within a division stays put.
+// guess: each season a player closes 15% of the gap to his club's level for his age (clubLevels), so
+// the clubs of a division keep the spread their revenue buys; a club that changes division rebuilds at
+// once (rebuildMovedSquads).
 const PULL_TO_CLUB_LEVEL = 0.15;
 // guess: yearly ups and downs nobody can predict, in strength points (one standard deviation).
 // With the pull above it keeps a spread of about 1.5 / √(1 − 0.85²) ≈ 2.8 around the age curve,
@@ -82,10 +84,81 @@ export function normal(random: () => number): number {
 
 const clamp = (strength: number) => Math.min(99, Math.max(1, strength));
 
-// The level a player's strength drifts toward, by his club's division (see CLUB_LEVEL).
+// The 2026 squads' level (their players' mean strength net of age) rises 1.8 points for each e-fold of a
+// club's revenue over its division's geometric mean (least squares within Série A–D, data/players.csv and
+// data/finances.csv; 1.8, 1.8, 1.1 and 1.9 in each alone): money buys a better squad than the division's level.
+const LEVEL_PER_LOG_REVENUE = 1.8;
+// In their first season after the move, 2016–2026, clubs promoted to Série A, B and C took 1.14, 1.31 and
+// 1.33 points a game, and clubs relegated to Série B and C 1.53 and 1.38 (ESPN's and Sofascore's results
+// and divisions.csv in data/history, Série A's from its odds file); squads that kept their old level took
+// 0.74, 0.84, 0.95, 1.93 and 1.95 in the game (six seeds' seasons 2–4). guess: a share of 0.85 takes them
+// to 1.07, 1.16, 1.18, 1.56 and 1.56; a full rebuild fits a little better (1.13, 1.18, 1.28, 1.46, 1.46)
+// but sends more poor clubs from the estaduais up to Série C, below its revenue band, in ten-season runs.
+const REBUILD_SHARE = 0.85;
+
+const logRevenueOf = (finance: ClubFinance | undefined): number | null => (finance ? Math.log(Math.max(1, projectedRevenue(finance))) : null);
+
+/**
+ * The level each club's players drift toward: its division's CLUB_LEVEL, moved by how the Brazilian
+ * club's yearly revenue compares with its tier's geometric mean; a club abroad's is CLUB_LEVEL alone.
+ */
+function clubLevels(clubs: GameState["clubs"], finances: GameState["finances"]): (clubId: string) => number {
+  const logs = new Map<Tier, number[]>();
+  for (const club of Object.values(clubs)) {
+    const x = club.abroad ? null : logRevenueOf(finances[club.id]);
+    if (x !== null) logs.set(tierOf(club), [...(logs.get(tierOf(club)) ?? []), x]);
+  }
+  const means = new Map([...logs].map(([tier, xs]) => [tier, xs.reduce((sum, x) => sum + x, 0) / xs.length]));
+  return (clubId) => {
+    const club = clubs[clubId];
+    const level = CLUB_LEVEL[(club && divisionOf(club)) ?? "none"];
+    const x = club && !club.abroad ? logRevenueOf(finances[clubId]) : null;
+    const mean = club ? means.get(tierOf(club)) : undefined;
+    return x === null || mean === undefined ? level : level + LEVEL_PER_LOG_REVENUE * (x - mean);
+  };
+}
+
+const levelsByFinances = new WeakMap<GameState["finances"], { clubs: GameState["clubs"]; levelOf: (clubId: string) => number }>();
+
+// The level a player's strength drifts toward, by his club's division and revenue (see clubLevels).
 function levelOf(state: GameState, clubId: string): number {
-  const club = state.clubs[clubId];
-  return CLUB_LEVEL[(club && divisionOf(club)) ?? "none"];
+  let known = levelsByFinances.get(state.finances);
+  if (known?.clubs !== state.clubs) {
+    known = { clubs: state.clubs, levelOf: clubLevels(state.clubs, state.finances) };
+    levelsByFinances.set(state.finances, known);
+  }
+  return known.levelOf(clubId);
+}
+
+/** A squad's level as CLUB_LEVEL counts it: its players' mean strength net of age. */
+const standingOf = (squad: readonly SimPlayer[]): number => squad.reduce((sum, p) => sum + p.strength - ageOffset(p.age), 0) / Math.max(1, squad.length);
+
+/**
+ * The players of every AI club in Brazil that went up or down, moved `REBUILD_SHARE` of the way from where
+ * the squad stands (its players' mean strength net of age) to the level its new division and revenue call
+ * for (clubLevels): a real club rebuilds its squad over the summer when it changes division, far faster than
+ * the market and the yearly pull move the game's. A squad moves only the way its club did. A human coach
+ * rebuilds his own; clubs abroad keep theirs, as their result-only seasons do.
+ */
+export function rebuildMovedSquads(state: GameState, clubs: GameState["clubs"], finances: GameState["finances"]): GameState["players"] {
+  const levelAfter = clubLevels(clubs, finances);
+  const squads = squadsOfGame(state);
+  const shifts = new Map<string, number>();
+  for (const club of Object.values(clubs)) {
+    const before = state.clubs[club.id];
+    const squad = squads.get(club.id) ?? [];
+    if (!before || club.abroad || squad.length === 0 || isHumanClub(state, club.id)) continue;
+    const [from, to] = [CLUB_LEVEL[before.division ?? "none"], CLUB_LEVEL[club.division ?? "none"]];
+    const shift = REBUILD_SHARE * (levelAfter(club.id) - standingOf(squad));
+    if (from !== to && shift !== 0 && shift > 0 === to > from) shifts.set(club.id, shift);
+  }
+  if (shifts.size === 0) return state.players;
+  return Object.fromEntries(
+    Object.entries(state.players).map(([id, p]) => {
+      const shift = shifts.get(p.clubId);
+      return [id, shift === undefined ? p : { ...p, strength: Math.round(clamp(p.strength + shift) * 10) / 10 }];
+    }),
+  );
 }
 
 /**
