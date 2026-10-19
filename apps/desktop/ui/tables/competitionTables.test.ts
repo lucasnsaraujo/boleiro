@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
 import type { Competition, ContinentalCompetition, CupCompetition, Fixture, GameState, LeagueCompetition, MatchResult } from "@boleiro/engine/sim/gameState";
 import { RAPIDO } from "@boleiro/engine/sim/formats";
-import { advanceDay } from "@boleiro/engine/sim/advanceDay";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
+import { createEngineSession } from "@boleiro/game-client/engine/createEngineSession";
 import {
   intercontinentalLadder,
   coachCompetitions,
@@ -443,13 +443,12 @@ describe("a Realista career abroad across Brazil's new year", () => {
 
 describe("a league abroad in the full tier", () => {
   // Arsenal's first season, played to the last day before the year turns and files it.
-  let state = newGameFromFiles(7, { coachClubId: "tm-11", formats: RAPIDO }, bundledGameFiles);
-  let turned = advanceDay(state, {});
-  while (!turned.events.some((e) => e.type === "seasonEnded")) {
-    state = turned.state;
-    turned = advanceDay(state, {});
-  }
-  const filed = turned.state.world?.["gb-eng"]?.seasons.at(-1);
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "tm-11", formats: RAPIDO } });
+  const keys = ["competitions", "fixtures", "world"] as const;
+  let state = session.read(keys);
+  while (!session.apply({ type: "advance", days: [{}] }).events.some((e) => e.type === "seasonEnded")) state = session.read(keys);
+  const filed = session.read(["world"]).world?.["gb-eng"]?.seasons.at(-1);
   const premier = Object.values(state.competitions).find((c): c is LeagueCompetition => c.kind === "league" && c.abroad?.country === "gb-eng" && c.abroad.level === 0);
   if (!premier) throw new Error("no Premier League");
   const rows = groupTables(premier, 0, state.fixtures, nationalCupFinalists(state, premier)).groups[0]?.rows ?? [];
