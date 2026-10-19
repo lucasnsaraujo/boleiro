@@ -86,7 +86,7 @@ export type BookingState = Pick<GameState, "date" | "season" | "fixtures" | "com
 const clubsIn = (stage: Competition["stages"][number]) => (stage.kind === "groups" ? stage.groups.flat() : stage.ties.flat());
 
 /** Whether a club plays a competition: entered in it, or drawn into one of its stages, as a Libertadores club dropping into the Sul-Americana. */
-export const isInCompetition = (competition: Competition, clubId: string): boolean => competition.clubIds.includes(clubId) || competition.stages.some((stage) => clubsIn(stage).includes(clubId));
+const isInCompetition = (competition: Competition, clubId: string) => competition.clubIds.includes(clubId) || competition.stages.some((stage) => clubsIn(stage).includes(clubId));
 
 /** The days a competition may still want a club: all its stages' for a club in it, and the Intercontinental Cup's from the Derby of the Americas on for any club of the season's Libertadores, whose winner joins there. */
 function datesWanted(state: BookingState, competition: Competition, clubId: string): IsoDate[] {

@@ -1,9 +1,9 @@
 import { compareText } from "./compareText.js";
 import { addDays, daysBetween } from "./dates.js";
 import { formatsOf } from "./formats.js";
-import { isInCompetition } from "./friendlies/friendlies.js";
-import type { Competition, Fixture, GameState, IsoDate } from "./gameState.js";
+import type { Competition, ContinentalCompetition, CupCompetition, Fixture, GameState, IsoDate } from "./gameState.js";
 import { isLeagueResting, MIN_DAYS_BETWEEN_GAMES } from "./seasonCalendar.js";
+import { tieResults } from "./tieResults.js";
 
 // CBF keeps a round on its day and moves only the league game of a club with a cup match next to it, to a free
 // day later in the season: in 2025 it postponed the Série A games of the four Club World Cup clubs, played once
@@ -21,6 +21,19 @@ function pushTo<T>(map: Map<string, T[]>, key: string, value: T): void {
   const list = map.get(key);
   if (list) list.push(value);
   else map.set(key, [value]);
+}
+
+/** Whether a club may still play a cup's stages to come: it joins one of them, or it is in the latest drawn and not knocked out of it. */
+function isStillIn(cup: ContinentalCompetition | CupCompetition, clubId: string, fixtures: readonly Fixture[]): boolean {
+  if (cup.entries.slice(cup.stages.length).some((entries) => entries.includes(clubId))) return true;
+  const index = cup.stages.length - 1;
+  const latest = cup.stages[index];
+  if (!latest) return false;
+  if (latest.kind === "groups") return latest.groups.some((group) => group.includes(clubId));
+  const tie = latest.ties.findIndex((clubs) => clubs.includes(clubId));
+  if (tie < 0) return false;
+  const legs = fixtures.filter((f) => f.stage === index);
+  return legs.some((f) => f.tie === tie && !f.result) || tieResults(latest, legs)[tie]?.winnerId === clubId;
 }
 
 /** How far a postponed game may go: the rest it keeps from both clubs' other games, whether it keeps clear of the days their cups may still want them, and whether it may pass its stage's last round. */
@@ -79,11 +92,14 @@ export function postponeClashingGames(state: GameState): GameState {
 
   const games = new Map<string, Game[]>();
   for (const f of [...state.fixtures, ...(state.friendlies ?? [])]) for (const id of [f.homeId, f.awayId]) pushTo(games, id, f);
+  const cupFixtures = new Map<string, Fixture[]>();
+  for (const f of state.fixtures) if (isCup(competitions[f.competitionId])) pushTo(cupFixtures, f.competitionId, f);
+  const cupFixturesOf = (id: string) => cupFixtures.get(id) ?? [];
   const cupDays = new Map<string, IsoDate[]>();
   const cupDaysOf = (clubId: string): IsoDate[] => {
     const known = cupDays.get(clubId);
     if (known) return known;
-    const days = Object.values(competitions).flatMap((c) => (c.kind === "continental" || c.kind === "cup") && isInCompetition(c, clubId) ? c.stageDates.slice(c.stages.length).flat() : []);
+    const days = Object.values(competitions).flatMap((c) => ((c.kind === "continental" || c.kind === "cup") && isStillIn(c, clubId, cupFixturesOf(c.id)) ? c.stageDates.slice(c.stages.length).flat() : []));
     cupDays.set(clubId, days);
     return days;
   };
