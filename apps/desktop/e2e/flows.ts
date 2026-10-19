@@ -260,3 +260,13 @@ export async function playSeasonThroughScreens(page: Page, season: number): Prom
   await expect(seasonEnd).toBeVisible();
   return { rounds, wasSacked };
 }
+
+/** From a season's end screen to the next season's hub; a coach whose club has a board to meet looks at it first. */
+export async function startNextSeason(page: Page, season: number) {
+  const board = page.getByRole("button", { name: "Ver a diretoria" });
+  if (await board.isVisible()) await board.click();
+  await page.getByRole("button", { name: `Começar ${season}` }).click();
+  await passMoments(page, hubLoaded(page));
+  await expect(page).toHaveURL(/#\/hub$/);
+  await expect(bar(page)).toContainText(`Temporada ${season}`);
+}

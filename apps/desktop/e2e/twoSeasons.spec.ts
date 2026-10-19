@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar, hubLoaded, passMoments, pickOption, playSeasonThroughScreens } from "./flows.js";
+import { bar, pickOption, playSeasonThroughScreens, startNextSeason } from "./flows.js";
 
 const FIRST_SEASON = 2026;
 
@@ -20,16 +20,6 @@ async function startOnShortCalendar(page: Page) {
   await page.getByRole("button", { name: "Começar carreira" }).click();
   await expect(page).toHaveURL(/#\/hub$/);
   await expect(page.getByRole("heading", { name: "Brasiliense" })).toBeVisible();
-}
-
-/** From a season's end screen to the next season's hub; a coach whose club has a board to meet looks at it first. */
-async function startNextSeason(page: Page, season: number) {
-  const board = page.getByRole("button", { name: "Ver a diretoria" });
-  if (await board.isVisible()) await board.click();
-  await page.getByRole("button", { name: `Começar ${season}` }).click();
-  await passMoments(page, hubLoaded(page));
-  await expect(page).toHaveURL(/#\/hub$/);
-  await expect(bar(page)).toContainText(`Temporada ${season}`);
 }
 
 test("a Série D club plays two whole seasons through the screens, from the club pick to the end of season 2", async ({ page }) => {
