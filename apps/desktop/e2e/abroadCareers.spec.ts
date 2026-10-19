@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar, hubLoaded, momentScene, passMoments, pickOption, playLiveRound } from "./flows.js";
+import { bar, hubLoaded, momentScene, passMoments, pickOption, playLiveRound, playLiveRoundUntil } from "./flows.js";
 
 const MAX_PRESSES = 12;
 
@@ -146,6 +146,34 @@ test("Arsenal plays its Champions League match live, its result in the league ph
   await pickOption(page.getByRole("combobox", { name: "Liga" }), "Champions League");
   const phase = page.getByRole("tabpanel", { name: "Champions League" }).getByRole("table", { name: "Fase de liga" });
   await expect(phase.getByRole("row").filter({ hasText: "Arsenal" }).getByRole("cell").nth(3)).toHaveText("1");
+});
+
+test("Arsenal plays its Champions League knockout tie live, and the tie's ficha opens from the round", async ({ page }) => {
+  test.setTimeout(10 * 60_000);
+  await page.clock.install();
+  await page.goto("/");
+  await startAtArsenal(page);
+  await startOverFrom(page, ARSENAL_KEEPS_ITS_COACH);
+  await playDaysBefore(page, "2027-02-01");
+  await startNextYear(page, 2027);
+  // Arsenal went straight to the round of 16, drawn once the play-offs end in late February; its first leg is away.
+  await playDaysBefore(page, "2027-03-01");
+  const firstLeg = await firstGameOf(page, "champions-league-2026", "2027-03-01");
+  expect(firstLeg).toBe("2027-03-09");
+  await playDaysBefore(page, firstLeg);
+  await startRound(page);
+  const band = page.getByRole("region", { name: "Seu jogo" });
+  await expect(band).toContainText("Champions League");
+  const ownMatch = page.locator(".live-list").locator(".live-group", { has: page.getByRole("heading", { name: /Champions League/ }) }).locator(".live-r.human");
+  await expect(ownMatch).toBeVisible();
+  await playLiveRoundUntil(page, null);
+  await expect(band).toContainText("Fim de jogo");
+
+  await ownMatch.getByRole("button", { name: /^Ficha do jogo: / }).click();
+  const panel = page.getByRole("dialog", { name: "Ficha do jogo" });
+  await expect(panel).toContainText("Champions League");
+  await panel.getByRole("button", { name: /Ver ficha completa/ }).click();
+  await expect(page.getByRole("dialog", { name: "Ficha completa" }).getByRole("region", { name: "Lances" })).toBeVisible();
 });
 
 test("a Brazilian coach with a name hears from a club abroad and takes the job, its league joining the full tier", async ({ page }) => {
