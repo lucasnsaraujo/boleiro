@@ -98,8 +98,9 @@ export function logoSpecOf(key: string, season: number | null, host: EditionHost
   };
 }
 
-// Under this height a drawn logo shows its emblem alone: its lettering would be a smudge.
-const MARK_ONLY_BELOW = 44;
+// Under this height a drawn logo shows its emblem alone, as its lettering would read under 8 px; every screen but the
+// title celebration prints the competition's name beside it anyway.
+const MARK_ONLY_BELOW = 100;
 const drawn = new Map<string, string>();
 
 function drawnUrl(spec: LogoSpec, layout: "full" | "mark"): string {
