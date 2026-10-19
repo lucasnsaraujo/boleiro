@@ -25,7 +25,7 @@ import { persuadeToStay, retirePlayer, type PlayerPersuaded } from "@boleiro/eng
 import { newGameFromFiles, type GameFiles } from "@boleiro/engine/sim/loadNewGame";
 import type { NewGameOptions } from "@boleiro/engine/sim/newGame";
 import { answerBid, type BidAnswer, type BidOutcome } from "@boleiro/engine/sim/transfers/answerBid";
-import { declineCounter } from "@boleiro/engine/sim/transfers/coachMarket";
+import { coachMarketOf, declineCounter } from "@boleiro/engine/sim/transfers/coachMarket";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { listPlayer, type SaleWay } from "@boleiro/engine/sim/transfers/listPlayer";
 import { setTicketPrice, withAssistantPricing } from "@boleiro/engine/sim/finances/setTicketPrice";
@@ -38,6 +38,7 @@ import { closeMoment, nextMoment } from "@boleiro/engine/sim/moments/careerMomen
 import { retireCoach } from "@boleiro/engine/sim/moments/retireCoach";
 import { eventsOfWaitingCoach, hotSeatViewOf, isHumanMatchDay, type HotSeatView } from "../hub/hotSeat.js";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
+import { offerAnswerLine } from "../hub/offerAnswerLine.js";
 import { isCoachMatchDay, playToMatchDay, stopReason, type StopReason } from "../hub/playToMatchDay.js";
 import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
 import { boardNotes, dueRequests, EMPTY_DESK, withoutLeavers, withRequest, type BoardDesk } from "../market/boardDesk.js";
@@ -319,7 +320,8 @@ export function createEngineSession(files: GameFiles) {
     const [next, ...rest] = waiting;
     if (!next) return;
     waiting = [...rest, { news, desk, turningPoints, clock, ...scoutingToSave(scouting) }];
-    ({ news, desk, turningPoints, clock } = next);
+    ({ desk, turningPoints, clock } = next);
+    news = [...next.news, ...(next.notices ?? [])].slice(-INBOX_SIZE);
     scouting = next.scouting ?? EMPTY_SCOUTING;
     state = passTheSeat(current());
     seated = (seated + 1) % (waiting.length + 1);
@@ -615,12 +617,19 @@ export function createEngineSession(files: GameFiles) {
     listPlayer({ playerId, way }) {
       state = listPlayer(betweenDays("a player can't be listed"), playerId, way);
     },
-    /** The coach's answer to a club's offer for one of his players; a sale it makes goes to the inbox. */
+    /**
+     * The coach's answer to a club's offer for one of his players; a sale it makes goes to the inbox. When the
+     * offer is a waiting hot-seat coach's, the answer waits for him as a notice his next turn shows.
+     */
     answerBid({ playerId, answer }) {
       const before = betweenDays("an offer can't be answered");
+      const bid = coachMarketOf(before).bids[playerId];
       const answered = answerBid(before, playerId, answer);
       state = answered.state;
       addNews(inboxLines(before, answered.state, answered.events));
+      const buyer = bid?.buyerId ? waitingCoachesOf(before).findIndex((coach) => coach.clubId === bid.buyerId) : -1;
+      const notice = bid && before.coachClubId && buyer >= 0 ? offerAnswerLine(before, before.coachClubId, bid, answered.outcome) : null;
+      if (notice) waiting = waiting.map((parts, index) => (index === buyer ? { ...parts, notices: [...(parts.notices ?? []), notice] } : parts));
       return answered.outcome;
     },
     declineCounter({ playerId }) {

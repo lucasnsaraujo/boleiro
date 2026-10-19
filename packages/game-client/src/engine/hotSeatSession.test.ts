@@ -12,6 +12,7 @@ const BRUNO = { name: "Bruno", clubId: "palmeiras-sp" };
 const SEED = 3;
 const CLOCK_SECONDS = 300;
 const MAX_STEPS = 800;
+const MAX_WINDOW_DAYS = 30;
 
 const twoCoaches = { coachClubId: ANA.clubId, hotSeat: { coachName: ANA.name, otherCoaches: [BRUNO] }, marketClockSeconds: CLOCK_SECONDS };
 
@@ -267,4 +268,52 @@ test("each hot-seat coach meets his own club's events on his turn and answers th
     for (let point = session.turningPoint(); point; point = session.turningPoint()) session.apply({ type: "closeTurningPoint" });
   }
   expect([...answeredBy].sort()).toEqual([ANA.name, BRUNO.name]);
+}, 120_000);
+
+/** Ana offers for Bruno's cheapest player on her turn, Bruno plays the day it reaches his desk, and Bruno sits again with it waiting. */
+function brunoWithAnasOffer() {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: SEED, choices: twoCoaches });
+  const { players } = session.read(["players"]);
+  const target = Object.values(players)
+    .filter((p) => p.clubId === BRUNO.clubId)
+    .sort((a, b) => a.strength - b.strength || a.id.localeCompare(b.id, "en"))[0];
+  if (!target) throw new Error("Bruno's club has players");
+  session.apply({ type: "ask", request: { kind: "sign", playerId: target.id } });
+  // Her board sends it on once the transfer window opens.
+  for (let day = 0; day < MAX_WINDOW_DAYS; day++) {
+    session.apply({ type: "passTurn" });
+    if (session.read(["market"]).market.coach?.bids[target.id]?.buyerId === ANA.clubId) return { session, target };
+    session.apply({ type: "advance", days: [{}] });
+  }
+  throw new Error("Ana's offer never reached Bruno's desk");
+}
+
+/** Bruno plays on to his next stop, which clears the waiting coaches' inboxes before the days, and Ana takes the seat. */
+function anaAfterBrunoPlays(session: ReturnType<typeof createEngineSession>): InboxLine[] {
+  if (session.apply({ type: "playToMatchDay" }).daysPlayed === 0) {
+    session.apply({ type: "startRound" });
+    session.apply({ type: "finishRound" });
+  }
+  expect(seatedOf(session.hotSeat()).name).toBe(ANA.name);
+  return session.inbox();
+}
+
+test("the buyer hears on his next turn that the other coach turned his offer down, through a save", () => {
+  const { session, target } = brunoWithAnasOffer();
+  expect(session.apply({ type: "answerBid", playerId: target.id, answer: { kind: "decline" } })).toBe("declined");
+  const loaded = createEngineSession(bundledGameFiles);
+  loaded.apply({ type: "load", save: session.saveShards() });
+  const lines = anaAfterBrunoPlays(loaded);
+  expect(lines).toContainEqual(expect.objectContaining({ text: expect.stringContaining(`recusou a proposta por ${target.name}`), tone: "bad" }));
+  loaded.apply({ type: "passTurn" });
+  expect(anaAfterBrunoPlays(loaded).some((line) => line.text.includes(`recusou a proposta por ${target.name}`))).toBe(false);
+}, 120_000);
+
+test("the buyer hears on his next turn that the other coach sold him the player", () => {
+  const { session, target } = brunoWithAnasOffer();
+  expect(session.apply({ type: "answerBid", playerId: target.id, answer: { kind: "accept" } })).toBe("sold");
+  expect(session.inbox().some((line) => line.text.includes("aceitou a proposta"))).toBe(false);
+  const lines = anaAfterBrunoPlays(session);
+  expect(lines).toContainEqual(expect.objectContaining({ text: expect.stringContaining(`aceitou a proposta: ${target.name} contratado por`), tone: "good" }));
 }, 120_000);

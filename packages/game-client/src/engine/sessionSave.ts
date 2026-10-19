@@ -10,8 +10,11 @@ import { readScouting, type Scouting } from "../market/scouting.js";
 
 /** A match day under way and the furthest minute the screen has shown of it. */
 export type LiveRoundSave = { day: LiveDay; seenMinute: number };
-/** A waiting hot-seat coach's part of the session: his inbox, his board's desk, his turning points, his market clock and his scouting, if any. */
-export type SeatParts = { news: InboxLine[]; desk: BoardDesk; turningPoints: TurningPoint[]; clock: MarketClock | null; scouting?: Scouting };
+/**
+ * A waiting hot-seat coach's part of the session: his inbox, his board's desk, his turning points, his market clock,
+ * his scouting, if any, and the lines another coach's answers left him since his turn, which his next turn shows.
+ */
+export type SeatParts = { news: InboxLine[]; desk: BoardDesk; turningPoints: TurningPoint[]; clock: MarketClock | null; scouting?: Scouting; notices?: InboxLine[] };
 /** A hot-seat game's turn: the waiting coaches' parts in waiting order, the seated coach's place in turn order, and what those who passed left for the day. */
 export type SeatsSave = { waiting: SeatParts[]; seated: number; passed: Pick<LiveDay["decisions"], "lineup" | "tactics" | "acceptOffer">[] };
 /**
@@ -54,7 +57,7 @@ function isClock(value: unknown): value is MarketClock {
 function isSeats(value: unknown): value is SeatsSave {
   if (!isRecord(value) || typeof value.seated !== "number" || !Array.isArray(value.passed) || !Array.isArray(value.waiting)) return false;
   return value.waiting.every(
-    (parts) => isRecord(parts) && isDesk(parts.desk) && isTurningPoints(parts.turningPoints) && (parts.clock === null || isClock(parts.clock)) && (parts.scouting === undefined || readScouting(parts.scouting) !== null),
+    (parts) => isRecord(parts) && isDesk(parts.desk) && isTurningPoints(parts.turningPoints) && (parts.clock === null || isClock(parts.clock)) && (parts.scouting === undefined || readScouting(parts.scouting) !== null) && (parts.notices === undefined || Array.isArray(parts.notices)),
   );
 }
 
