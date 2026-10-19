@@ -165,11 +165,13 @@ function poisson(lambda: number, goals: number): number {
   return p;
 }
 
+// A strong low-score correlation pushes a factor below zero once a side expects more than 1/|rho| goals; that score
+// then gets no chance instead of a negative one, the bound Dixon and Coles put on the correlation.
 function lowScoreAdjustment(h: number, a: number, lh: number, la: number, rho: number): number {
-  if (h === 0 && a === 0) return 1 - lh * la * rho;
-  if (h === 0 && a === 1) return 1 + lh * rho;
-  if (h === 1 && a === 0) return 1 + la * rho;
-  if (h === 1 && a === 1) return 1 - rho;
+  if (h === 0 && a === 0) return Math.max(0, 1 - lh * la * rho);
+  if (h === 0 && a === 1) return Math.max(0, 1 + lh * rho);
+  if (h === 1 && a === 0) return Math.max(0, 1 + la * rho);
+  if (h === 1 && a === 1) return Math.max(0, 1 - rho);
   return 1;
 }
 
