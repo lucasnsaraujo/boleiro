@@ -138,6 +138,27 @@ test("an arrow pressed the moment the lineup turns to the next coach's match ste
   await showsMatchOf(ANA.name);
 });
 
+test("an arrow pressed the moment the lineup shuts moves the board's focus", async () => {
+  const { given } = await bothCoachesPlaying();
+  openRound(given);
+  const band = await screen.findByRole("region", { name: "Seu jogo" });
+  await pressSpace();
+  const sheet = await lineup();
+
+  const pressedOnShut = new Promise<void>((resolve) => {
+    const observer = new MutationObserver(() => {
+      if (screen.queryByRole("dialog", { name: "Escalação" })) return;
+      observer.disconnect();
+      fireEvent.keyDown(window, { key: "ArrowRight" });
+      resolve();
+    });
+    observer.observe(document.body, { subtree: true, childList: true });
+  });
+  await userEvent.click(within(sheet).getByRole("button", { name: "Voltar ao jogo" }));
+  await pressedOnShut;
+  expect(within(band).getByRole("region", { name: new RegExp(`^${BRUNO.name}: `) }).getAttribute("aria-current")).toBe("true");
+});
+
 test("a substitute dragged from the bench onto a starter comes on in that coach's match, with the substitution's sound, and the board calls it out", async () => {
   const { given, sides } = await bothCoachesPlaying();
   const anas = sides.find((side) => side.clubId === ANA.clubId);
