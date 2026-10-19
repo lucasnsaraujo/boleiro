@@ -62,8 +62,13 @@ describe("an academy's level", () => {
   };
   const potentialOf = (clubId: string) => mean(academyOf(start, clubId).map((p) => p.potential));
   /** Seasons the game filed with `clubId` in `division` each year from 2026 through `last`. */
-  const filedIn = (clubId: string, division: "A" | "B", last: number): Pick<SeasonRecord, "season" | "tables">[] =>
-    Array.from({ length: last - 2025 }, (_, i) => ({ season: 2026 + i, tables: { A: division === "A" ? [clubId] : [], B: division === "B" ? [clubId] : [], C: [], D: [] } }));
+  const filedIn = (clubId: string, division: "A" | "B", last: number): Pick<SeasonRecord, "season" | "tables" | "promoted" | "relegated">[] =>
+    Array.from({ length: last - 2025 }, (_, i) => ({
+      season: 2026 + i,
+      tables: { A: division === "A" ? [clubId] : [], B: division === "B" ? [clubId] : [], C: [], D: [] },
+      promoted: { A: [], B: [], C: [], D: [] },
+      relegated: { A: [], B: [], C: [], D: [] },
+    }));
 
   it("follows a newly promoted club's last ten seasons, not its new division: Remo's kids are far below a Série A stalwart's", () => {
     // Remo played Série C in seven of 2017–2025 and Série B in two before going up for 2026; Flamengo all of them in Série A.
@@ -81,6 +86,15 @@ describe("an academy's level", () => {
     expect((levels[1] ?? 0) - (levels[0] ?? 0)).toBeLessThan(3);
     expect(levels[2] ?? 0).toBeGreaterThan(levels[1] ?? 0);
     expect(levels[3]).toBe(CLUB_LEVEL.A);
+  });
+
+  it("counts a promotion from the turn of the year that brings it, as the new season's kids join", () => {
+    const remo = club("remo-pa");
+    const empty = { A: [], B: [], C: [], D: [] };
+    const filed2026 = { season: 2026, tables: { ...empty, B: [remo.id] }, promoted: empty, relegated: empty };
+    const promoted = academyLevel(remo, 2027, [{ ...filed2026, promoted: { ...empty, B: [remo.id] } }]);
+    const stayed = academyLevel(remo, 2027, [filed2026]);
+    expect(promoted - stayed).toBeCloseTo((CLUB_LEVEL.A - CLUB_LEVEL.B) / 10);
   });
 
   it("falls slowly with seasons in a lower division", () => {

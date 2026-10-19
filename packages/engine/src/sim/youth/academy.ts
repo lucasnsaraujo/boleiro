@@ -100,17 +100,36 @@ export function academyClubs(state: Pick<GameState, "clubs">): AcademyClub[] {
 // division's academy for a while and a relegated giant keeps its own, each moving a tenth of the way a season.
 const ACADEMY_SEASONS = 10;
 
-/** The division a club played in `season`: the game's table of it, else the real one before the game, else its current division. */
-function divisionIn(club: Pick<Club, "id" | "division">, season: number, filed: ReadonlyMap<number, Pick<SeasonRecord, "tables">>): Division | "none" {
-  const tables = filed.get(season)?.tables;
-  if (tables) return (["A", "B", "C", "D"] as const).find((division) => tables[division].includes(club.id)) ?? "none";
+type Filed = Pick<SeasonRecord, "season" | "tables" | "promoted" | "relegated">;
+
+const DIVISIONS = ["A", "B", "C", "D"] as const;
+
+const filedDivision = (record: Filed, clubId: string): Division | null => DIVISIONS.find((division) => record.tables[division].includes(clubId)) ?? null;
+
+/** The division a season the game filed sends a club to the next: up when it was promoted, down when relegated (below Série D, none). */
+function nextDivision(record: Filed, clubId: string): Division | "none" {
+  const division = filedDivision(record, clubId);
+  if (!division) return "none";
+  const step = record.promoted[division].includes(clubId) ? -1 : record.relegated[division].includes(clubId) ? 1 : 0;
+  return DIVISIONS[DIVISIONS.indexOf(division) + step] ?? "none";
+}
+
+/**
+ * The division a club plays in `season`: the game's table of it; for the season the game is turning to, where the
+ * one before sent it; else the real one before the game; else its current division.
+ */
+function divisionIn(club: Pick<Club, "id" | "division">, season: number, filed: ReadonlyMap<number, Filed>): Division | "none" {
+  const record = filed.get(season);
+  if (record) return filedDivision(record, club.id) ?? "none";
+  const before = filed.get(season - 1);
+  if (before) return nextDivision(before, club.id);
   if (season < REAL_DIVISIONS_FROM || season > REAL_DIVISIONS_UNTIL) return club.division ?? "none";
   const letter = REAL_DIVISIONS[club.id]?.[season - REAL_DIVISIONS_FROM];
   return letter === "A" || letter === "B" || letter === "C" ? letter : "D";
 }
 
-/** The level a club's academy works at: the mean level of the divisions it played in the ACADEMY_SEASONS seasons through `season`, as the game filed them (`seasons`) or as they were before it. */
-export function academyLevel(club: Pick<Club, "id" | "division">, season: number, seasons: readonly Pick<SeasonRecord, "season" | "tables">[]): number {
+/** The level a club's academy works at for the kids who join in `season`: the mean level of its divisions over the ACADEMY_SEASONS seasons through that one, as the game filed them (`seasons`) or as they were before it. */
+export function academyLevel(club: Pick<Club, "id" | "division">, season: number, seasons: readonly Filed[]): number {
   const filed = new Map(seasons.map((record) => [record.season, record]));
   let total = 0;
   for (let back = 0; back < ACADEMY_SEASONS; back++) total += CLUB_LEVEL[divisionIn(club, season - back, filed)];

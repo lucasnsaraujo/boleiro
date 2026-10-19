@@ -59,7 +59,7 @@ export function turnOverAcademies(state: GameState): { state: GameState; events:
   const groupsByClub = new Map<string, PositionGroup[]>();
   for (const p of Object.values(staying)) groupsByClub.set(p.clubId, [...(groupsByClub.get(p.clubId) ?? []), p.group]);
   for (const club of academyClubs(next)) {
-    const { size, potentialMean } = academyOf(academyLevel(club, state.season, next.history.seasons), statures.get(club.id) ?? 0);
+    const { size, potentialMean } = academyOf(academyLevel(club, season, next.history.seasons), statures.get(club.id) ?? 0);
     const groups = groupsByClub.get(club.id) ?? [];
     const count = Math.min(TRIALS.max, Math.max(TRIALS.min, size - groups.length));
     const prospectIds: string[] = [];
