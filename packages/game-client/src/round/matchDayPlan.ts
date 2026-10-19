@@ -109,7 +109,7 @@ export function aiFormationOf(state: GameState, clubId: string): Formation {
   return formationOf(state, clubId, sideSquadOf(state, clubId));
 }
 
-/** Who a side fields: a club's players, a continental guest's squad, or a national team's call-up. */
+/** Who the coach's opponent fields: a continental guest's squad, a national team's call-up, or a club's players. */
 function sideSquadOf(state: GameState, clubId: string): readonly SimPlayer[] {
   if (isNationalTeam(state, clubId)) return nationalSquadOf(state, clubId);
   const guest = guestClubOf(state, clubId);
@@ -166,7 +166,7 @@ export function matchDayPlan(state: GameState, formation?: Formation): MatchDayP
   // Players away with their national teams miss their clubs' matches; a national team's are those very players.
   const away = isNational ? new Set<string>() : onDutyOn(state, state.date);
   const suspended = away.size ? new Set([...banned, ...away]) : banned;
-  const available = sideSquadOf(state, clubId).filter((p) => !suspended.has(p.id));
+  const available = (isNational ? nationalSquadOf(state, clubId) : playersOf(state, clubId)).filter((p) => !suspended.has(p.id));
   const usualTactics = isNational ? nationalTacticsOf(state, clubId) : state.coach.tactics;
   const tactics = formation ? { ...usualTactics, formation } : usualTactics;
   const usual = usualStartersOf(state, clubId);
