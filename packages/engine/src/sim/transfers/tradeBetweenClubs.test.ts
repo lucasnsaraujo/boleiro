@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { seededRandom } from "../../engine/random.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { isWorthKeeping } from "./assistantRenewals.js";
 import { openDraft } from "./movePlayer.js";
 import { tradeBetweenClubs } from "./tradeBetweenClubs.js";
 
@@ -47,5 +48,16 @@ describe("AI clubs trading", () => {
         .filter((e) => e.fromClubId === "flamengo-rj" && rivals.includes(e.toClubId ?? "")).length;
     expect(signedByRivals(expiring)).toBeGreaterThan(0);
     expect(signedByRivals(idolised)).toBe(0);
+  });
+
+  it("sign pre-contracts only with the expiring players an AI club would not keep", () => {
+    const flamengo = squads.get("flamengo-rj") ?? [];
+    const players = Object.fromEntries(flamengo.map((p) => [p.id, { ...p, contractUntil: "2026-02-28" }]));
+    const expiring: GameState = { ...rich, market: { ...rich.market, preContracts: {} }, players: { ...rich.players, ...players } };
+    const signed = Array.from({ length: 6 }, (_, seed) => tradeBetweenClubs(openDraft(expiring), seededRandom(seed)).events)
+      .flat()
+      .flatMap((e) => (e.type === "preContractSigned" && e.fromClubId === "flamengo-rj" ? [players[e.playerId]] : []));
+    expect(signed.length).toBeGreaterThan(0);
+    expect(signed.filter((p) => p && isWorthKeeping(p, flamengo, "A")).map((p) => p?.id)).toEqual([]);
   });
 });
