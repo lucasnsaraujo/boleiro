@@ -4,14 +4,18 @@ import type { GameState } from "@boleiro/engine/sim/gameState";
 import { clubArticle, withArticle } from "@boleiro/data/articles";
 import { addDays } from "@boleiro/engine/sim/dates";
 import { formatDayMonth, formatMonthYear } from "@boleiro/game-client/format/formatGameDate";
-import { nationalTeamWithPreposition } from "@boleiro/game-client/format/nationalTeamName";
-import type { NationalCompetitionView, NationalFixtureRow, NationalPlayerCard, NationalTeamPage } from "@boleiro/game-client/nationalTeam/nationalTeamPage";
+import { nationalTeamName, nationalTeamWithPreposition } from "@boleiro/game-client/format/nationalTeamName";
+import type { HostedEditionView, NationalCompetitionView, NationalFixtureRow, NationalPlayerCard, NationalTeamPage } from "@boleiro/game-client/nationalTeam/nationalTeamPage";
 import { useServices } from "../app/ServicesContext.js";
 import { useMatchFile } from "../matchPage/MatchFile.js";
 import { Crest } from "../clubs/Crest.js";
 import { Select } from "../controls/Select.js";
 import { NationalCrest } from "../nationalTeam/NationalCrest.js";
 import "./nationalTeam.css";
+import type { Stadium } from "@boleiro/engine/sim/hosts/venue";
+import { editionKeyOf } from "@boleiro/game-client/format/competitionEdition";
+import { CompetitionLogo } from "../competitions/CompetitionLogo.js";
+import { atGround } from "@boleiro/game-client/format/atGround";
 
 const KEYS = ["clubs", "coachClubId", "date"] as const;
 type NationalState = Pick<GameState, (typeof KEYS)[number]>;
@@ -106,6 +110,35 @@ function FixtureLine({ row, page, onOpen }: { row: NationalFixtureRow; page: Nat
   );
 }
 
+/** Where a tournament is played: "Sedes: Espanha, Portugal e Marrocos · final no Camp Nou, em Barcelona". */
+function hostLine(names: readonly string[], final: Stadium): string {
+  const hosts = names.length > 1 ? `${names.slice(0, -1).join(", ")} e ${names.at(-1) ?? ""}` : (names[0] ?? "");
+  return `${names.length > 1 ? "Sedes" : "Sede"}: ${hosts} · final ${atGround(final.name)}, em ${final.city}`;
+}
+
+/** The coming World Cups and continental cup, each a sticker with its logo, its hosts and its final's ground. */
+function HostedEditions({ editions }: { editions: readonly HostedEditionView[] }) {
+  return (
+    <section className="nt-comp" aria-label="Próximas sedes">
+      <h3>Próximas sedes</h3>
+      <ul className="nt-hosted">
+        {editions.map((edition) => (
+          <li key={edition.id} className="stk nt-hosted-card" aria-label={edition.name}>
+            <CompetitionLogo competitionKey={edition.key} season={edition.season} host={edition.host} size={84} name={edition.name} />
+            <div>
+              <b>{edition.name}</b>
+              <span>{edition.hostNames.join(" · ")}</span>
+              <small>
+                Final: {edition.host.final.name}, {edition.host.final.city}
+              </small>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /** A group's heading: a competition of one table (CONMEBOL's qualifiers) has a standing, not a group. */
 const groupLabel = (competition: NationalCompetitionView, name: string) => (competition.groups.length === 1 ? "Classificação" : name.length <= 2 ? `Grupo ${name}` : name);
 
@@ -117,9 +150,11 @@ function CompetitionTables({ competition, page, onOpen }: { competition: Nationa
   return (
     <section className="nt-comp" aria-label={competition.name}>
       <h3>
+        <CompetitionLogo competitionKey={editionKeyOf(competition.id).key} season={editionKeyOf(competition.id).season} host={competition.host} size={28} name={competition.name} isNamedBeside />
         {competition.name}
         {champion && <span className="chip ok">Campeão: {champion}</span>}
       </h3>
+      {competition.host && <p className="nt-host">{hostLine(competition.host.countries.map((country) => nationalTeamName(country)), competition.host.final)}</p>}
       <div className="nt-groups">
         {shown.map((group) => (
           <table key={group.name} className="nt-table" aria-label={`${competition.name}, ${competition.groups.length === 1 ? "classificação" : group.name.length <= 2 ? `grupo ${group.name}` : group.name}`}>
@@ -465,6 +500,7 @@ export function NationalTeam() {
         {tab === "tables" && (
           <div className="nt-tables" role="tabpanel" aria-label="Jogos e tabelas">
             {page.competitions.length ? page.competitions.map((c) => <CompetitionTables key={c.id} competition={c} page={page} onOpen={matchFile.open} />) : <p className="nt-empty">{team.name} não está em nenhuma competição agora: joga amistosos nas datas Fifa.</p>}
+            {page.hosted.length > 0 && <HostedEditions editions={page.hosted} />}
             {team.qualifiesByRanking && <p className="nt-empty">As eliminatórias da {team.confederation} não estão no jogo: as vagas dela na Copa do Mundo vão para as seleções mais bem colocadas no ranking da Fifa.</p>}
             {page.titles.length > 0 && (
               <section className="nt-comp" aria-label="Campeões">

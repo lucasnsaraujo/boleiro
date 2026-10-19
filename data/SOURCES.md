@@ -33,24 +33,25 @@ One row per club, built by `pipeline/fetch_crests.py`. The images ship inside th
 
 All files are recompressed losslessly with `oxipng`, which keeps the folder at about 8.5 MB.
 
-## assets/competitions/
+## Competition logos (`competition-logos.csv`, `packages/data/pack/competitions/`)
 
-The logos of FIFA's two club cups, which the app shows on their tables, and of the Brazilian and CONMEBOL competitions the title celebrations show on the trophy. Like the crests, they ship inside the app and are not licensed.
+`competition-logos.csv` names the real logo of every competition the game has one for, one row a logo: its competition key (`serie-a`, `gb-eng-1`, `es-cup`) or, for a logo that prints its year, its edition's id (`state-sp-2026`, `world-cup-2026`), its source page and its licence as the source states it. `pipeline/fetch_competition_logos.py` downloads them (`--seed` adds a row for every league and European cup of `pipeline/tm_world.py` the file lacks) into `packages/data/pack/competitions/`, WebP in the 64, 128 and 256 px boxes, trimmed of their clear margin. Like the crests, they ship inside the app and are not licensed: every row's licence is public domain, CC0 or a trademark used as the crests are, and a row whose licence asks for credit stops the run.
 
-| File | Source |
+| Rows | Source |
 |---|---|
-| `intercontinental-cup.webp` | The FIFA Intercontinental Cup logo, [File:FIFA_Intercontinental_Cup_logo.svg](https://en.wikipedia.org/wiki/File:FIFA_Intercontinental_Cup_logo.svg) on the English Wikipedia, its 500 px render fetched on 2026-10-16. The game calls the cup Mundial de Clubes. |
-| `club-world-cup.webp` | The FIFA Club World Cup 2025 logo, [File:2025_FIFA_Club_World_Cup.svg](https://commons.wikimedia.org/wiki/File:2025_FIFA_Club_World_Cup.svg) on Wikimedia Commons (credited to FIFA), its 500 px render fetched on 2026-10-16. The game calls the cup Super Mundial. |
+| The 62 leagues abroad and 25 European cups, the Super Cup, Nations League, Libertadores, Sul-Americana, the Brasiliense 2027 and Mineiro 2026 | Transfermarkt's competition logo, `/logo/header/<code>.png` on its image host, by the competition codes of `pipeline/tm_world.py` and its pages (`BRDF`, `BRCM`, `CLI`, `CS`, `USC`, `UNLA`), fetched on 2026-10-19. At 181 px tall at most, they are soft on a sharp screen above 90 px (the title celebration's trophy card). |
+| Séries A–D, Copa do Brasil, Recopa, Intercontinental Cup, Champions League, Europa League, the 2026 World Cup, Euro 2028 | Their files on Wikimedia Commons or the English Wikipedia (the Recopa's and Intercontinental Cup's as non-free logos), rendered by the wiki to PNG 512 px tall, fetched on 2026-10-19. |
+| Ten state championships: Alagoano, Cearense, Carioca, Paulista, Sul-Mato-Grossense and Catarinense of 2026; Brasiliense of 2027; Maranhense, Paranaense and Gaúcho for any season | Their files on the Portuguese Wikipedia (non-free, "conteúdo restrito"), Commons (two a federation's logo its uploader marked CC0, recorded as non-free) or Transfermarkt, fetched on 2026-10-19. A logo that prints its year is that edition's only. An opaque logo loses the white ground around it. |
 
-Both were scaled to 160 px wide and saved as WebP with `cwebp -q 90`.
+Left out after checking: the Amazonense's (white lettering on a clear ground, lost on the album's paper), the Capixaba's (2025's), the Paraense's (a frame cut from a video), the 2024 Copa América's (the file found was another logo), and the qualifiers', whose Transfermarkt logo is the World Cup's. Every competition or edition without a real logo gets one the game draws (`apps/desktop/ui/competitions/generatedLogo.ts`): a state federation's shield showing its state's flag simplified to its main shapes (stripes, canton, triangle, band, star; hues approximated) under a chief with the state's letters, CONMEBOL's navy and gold medallion, UEFA's navy mosaic, FIFA's orbit, a future edition's in its hosts' flag colours with its year. Their lettering is Archivo (SIL OFL, `packages/design-tokens/fonts/`) outlined by `pipeline/build_logo_glyphs.py`.
 
-| File | Source |
+## Hosts and grounds (`packages/engine/src/sim/hosts/`)
+
+| What | Source |
 |---|---|
-| `serie-a.svg` | [File:Campeonato_Brasileiro_Série_A_logo_(2024).svg](https://commons.wikimedia.org/wiki/File:Campeonato_Brasileiro_S%C3%A9rie_A_logo_(2024).svg) on Wikimedia Commons, as the approved mocks (`design/mocks/SOURCES.md`) fetched it. |
-| `serie-b.svg` | `Campeonato_Brasileiro_Série_B_logo_(2025).svg` on Wikimedia Commons, as above. |
-| `copa-do-brasil.svg` | `Copa_do_Brasil_logo_(2018).svg` on Wikimedia Commons, as above. |
-| `libertadores.svg` | `Conmebol-libertadores.svg` on Wikimedia Commons, as above. |
-| `sudamericana.svg` | `Conmebol-sudamericana.svg` on Wikimedia Commons, as above. |
+| `bigStadiums.ts`: 355 football grounds of 40,000 seats or more, with city, country and seating capacity | The English Wikipedia's [List of association football stadiums by capacity](https://en.wikipedia.org/wiki/List_of_association_football_stadiums_by_capacity), read on 2026-10-18 by `pipeline/fetch_big_stadiums.py`; Croke Park left out as the Gaelic games' ground. |
+| `announcedHosts.ts`: every edition an organiser has announced, and the last ones before 2026 | FIFA (World Cups 2026–2034), UEFA (Euros 2028 and 2032, finals to 2028), CONMEBOL (2026 finals), the press for the 2027 Sul-Americana final; each cited in the file. |
+| `drawHosts.ts`: the rules a host is drawn by for an edition not announced | FIFA's rotation (no confederation of the two editions before) and its 2030/2034 stadium requirements (14 grounds of 40,000 seats, some built, 60,000 and 80,000 for key matches; The Stadium Business, 2023; the final's 80,000 per Football España, 2024); UEFA's 60,000 for a Euro final; CONMEBOL's Copa América rotation (each member's last edition, Wikipedia "Copa América"); the rest `guess`, marked in the file. |
 
 ## players.csv
 

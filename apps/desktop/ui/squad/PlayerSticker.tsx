@@ -4,6 +4,7 @@ import type { GameState } from "@boleiro/engine/sim/gameState";
 import { formatMoney } from "@boleiro/game-client/format/formatMoney";
 import { formatMonthYear } from "@boleiro/game-client/format/formatGameDate";
 import { Crest } from "../clubs/Crest.js";
+import { citizenshipText } from "../format/citizenshipText.js";
 import { POSITION_NAMES, TRAIT_LONG } from "../format/playerLabels.js";
 import { playerCard } from "./playerCard.js";
 import { statusText, type SQUAD_KEYS, type SquadRow } from "./squadRows.js";
@@ -24,7 +25,7 @@ export function PlayerSticker({ state, row, club }: Props) {
             <Link to={`/squad/${card.id}`}>{card.name}</Link>
           </b>
           <span>
-            {POSITION_NAMES[card.group]} · {card.age} anos
+            {POSITION_NAMES[card.group]} · {card.age} anos{citizenshipText(card.nationalities)}
           </span>
         </div>
         <span className="hub-card-strength" aria-label={`Força ${Math.round(card.strength)}`}>

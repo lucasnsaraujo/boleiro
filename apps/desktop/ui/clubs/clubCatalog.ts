@@ -63,7 +63,7 @@ export const CLUBS: readonly Club[] = parsePackClubs(packClubs);
 const BY_ID = new Map(CLUBS.map((club) => [club.id, club]));
 const ASSETS = parseAssetManifest(manifestJson);
 // Keys are the manifest's paths under `pack/assets/`, kept short since every one lands in the main script.
-// Only WebP ships: every desktop webview reads it, and the AVIF files stay in the pack for later clients.
+// The pack holds WebP only, which every desktop webview reads.
 const CREST_FILES = import.meta.glob<string>("./crest/*.webp", {
   base: "../../../../packages/data/pack/assets/",
   eager: true,

@@ -1,4 +1,4 @@
-import { CALIBRATED, pickLineup, simulateExtraTime, simulateMatch, type PositionGroup, type Team } from "../../engine/match.js";
+import { CALIBRATED, pickLineup, simulateExtraTime, simulateMatch, type EngineParams, type PositionGroup, type Team } from "../../engine/match.js";
 import { randomStream } from "../../engine/random.js";
 import { addDays, daysBetween } from "../dates.js";
 import type { IsoDate, MatchResult } from "../gameState.js";
@@ -58,20 +58,26 @@ const EXTRA_TIME_STREAM_SALT = 0xe7a1;
  * goals (none when the competition goes straight to penalties) and, should the tie still be level,
  * whether the away side wins the shootout. guess: a result-only shootout is an even draw.
  */
-export function settleLevelTie(home: WorldClub, away: WorldClub, hasExtraTime: boolean, random: () => number): { extraTime: { homeGoals: number; awayGoals: number } | null; isAwayShootoutWinner: boolean } {
+export function settleLevelTie(
+  home: WorldClub,
+  away: WorldClub,
+  hasExtraTime: boolean,
+  random: () => number,
+  params: EngineParams = CALIBRATED,
+): { extraTime: { homeGoals: number; awayGoals: number } | null; isAwayShootoutWinner: boolean } {
   const toss = random();
   if (!hasExtraTime) return { extraTime: null, isAwayShootoutWinner: toss < 0.5 };
   const stream = randomStream((Math.floor(toss * 2 ** 32) ^ EXTRA_TIME_STREAM_SALT) >>> 0);
-  const extraTime = simulateExtraTime(teamOf(home), teamOf(away), stream.next, CALIBRATED);
+  const extraTime = simulateExtraTime(teamOf(home), teamOf(away), stream.next, params);
   return { extraTime, isAwayShootoutWinner: stream.next() < 0.5 };
 }
 
 /**
  * A result-only match by the engine's score draw. guess: until each league has its own fit, every
- * result-only match plays at Série A's calibration, a neutral-ground final with its home advantage too.
+ * result-only match plays at Série A's calibration; a final on neutral ground passes it without the home advantage.
  */
-export function scoreDraw(home: WorldClub, away: WorldClub, random: () => number): { homeGoals: number; awayGoals: number } {
-  const { homeGoals, awayGoals } = simulateMatch(teamOf(home), teamOf(away), random, CALIBRATED);
+export function scoreDraw(home: WorldClub, away: WorldClub, random: () => number, params: EngineParams = CALIBRATED): { homeGoals: number; awayGoals: number } {
+  const { homeGoals, awayGoals } = simulateMatch(teamOf(home), teamOf(away), random, params);
   return { homeGoals, awayGoals };
 }
 

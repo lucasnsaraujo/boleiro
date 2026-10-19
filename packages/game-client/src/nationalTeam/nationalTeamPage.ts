@@ -11,6 +11,8 @@ import { poolOf } from "@boleiro/engine/sim/nations/nationalJobs";
 import { nationalFixtureId } from "@boleiro/engine/sim/nations/nationalFixtures";
 import { nationalTeamName } from "../format/nationalTeamName.js";
 import { compareText } from "@boleiro/engine/sim/compareText";
+import type { EditionHost, Hosts } from "@boleiro/engine/sim/hosts/venue";
+import { editionKeyOf } from "../format/competitionEdition.js";
 
 /** A player of a call-up as the album shows him: the game's own (`clubId` set) or one of the pool's from abroad; `crestId` names his club's crest. */
 export type NationalPlayerCard = { ref: string; name: string; role: Role; strength: number; club: string; clubId: string | null; crestId: string | null; age: number | null; isCoachClub: boolean };
@@ -40,11 +42,16 @@ export type NationalCompetitionView = {
   id: string;
   name: string;
   kind: NationalCompetition["kind"];
+  /** A final tournament's hosts and grounds (hosts/drawHosts.ts); none for qualifiers or a Nations League. */
+  host: EditionHost | null;
   groups: { name: string; rows: NationalTableRow[] }[];
   knockout: { round: string; matches: NationalFixtureRow[] }[];
   matches: NationalFixtureRow[];
   winnerId: string | null;
 };
+
+/** A coming World Cup, Copa América or Euro and where it is played: its edition's id, name and season, its hosts by name. */
+export type HostedEditionView = { id: string; key: "world-cup" | "copa-america" | "euro"; name: string; season: number; host: EditionHost; hostNames: string[] };
 
 export type RankingRowView = { rank: number; teamId: string | null; name: string; code: string | null; points: number };
 
@@ -67,6 +74,8 @@ export type NationalTeamPage = {
   /** The coach's club's players away with a national team, its matches without them; between windows (`isProvisional`) those the next window's likely call-ups take. Null without a club. */
   leaving: { clubId: string; players: LeavingPlayer[]; clubMatches: number; isProvisional: boolean } | null;
   competitions: NationalCompetitionView[];
+  /** The coming World Cups and the team's continental cup with their hosts, as chosen so far, soonest first. */
+  hosted: HostedEditionView[];
   ranking: { date: IsoDate; rows: RankingRowView[] };
   titles: { name: string; season: number; winner: string }[];
   /** A federation's offer of its job to the coach, whichever team it is. */
@@ -121,9 +130,9 @@ function tableRows(nations: Nations, ids: readonly string[], matches: readonly N
   });
 }
 
-function competitionView(nations: Nations, competition: NationalCompetition, teamId: string): NationalCompetitionView {
+function competitionView(nations: Nations, competition: NationalCompetition, teamId: string, hosts: Hosts): NationalCompetitionView {
   const own = nations.matches.filter((m) => m.competitionId === competition.id);
-  const through = throughNow(competition, nations);
+  const through = throughNow(competition, { ...nations, hosts });
   const groups = Object.entries(competition.groups)
     .sort(([, a], [, b]) => Number(b.includes(teamId)) - Number(a.includes(teamId)))
     .map(([name, ids]) => ({ name, rows: tableRows(nations, ids, own, through) }));
@@ -132,7 +141,23 @@ function competitionView(nations: Nations, competition: NationalCompetition, tea
     return matches.length ? [{ round, matches }] : [];
   });
   const matches = own.filter((m) => m.homeId === teamId || m.awayId === teamId).sort((a, b) => compareText(a.date, b.date)).map((m) => fixtureRow(nations, m));
-  return { id: competition.id, name: competition.name, kind: competition.kind, groups, knockout, matches, winnerId: competition.winnerId || null };
+  return { id: competition.id, name: competition.name, kind: competition.kind, host: hosts[competition.id] ?? null, groups, knockout, matches, winnerId: competition.winnerId || null };
+}
+
+// The tournaments a confederation's teams play besides the World Cup, and how the game names each.
+const CONTINENTAL_TOURNAMENT: Partial<Record<Confederation, "copa-america" | "euro">> = { CONMEBOL: "copa-america", UEFA: "euro" };
+const TOURNAMENT_NAMES = { "world-cup": "Copa do Mundo", "copa-america": "Copa América", euro: "Eurocopa" } as const;
+
+/** The World Cups and the confederation's own tournament from this season on whose hosts the game knows, soonest first. */
+function hostedEditions(state: GameState, confederation: Confederation): HostedEditionView[] {
+  const continental = CONTINENTAL_TOURNAMENT[confederation];
+  return Object.entries(state.hosts ?? {}).flatMap(([id, host]): HostedEditionView[] => {
+    const { key, season } = editionKeyOf(id);
+    if (season === null || season < state.season || !(key === "world-cup" || key === continental)) return [];
+    const tournament = key === "world-cup" ? "world-cup" : continental;
+    if (!tournament) return [];
+    return [{ id, key: tournament, name: `${TOURNAMENT_NAMES[tournament]} ${season}`, season, host, hostNames: host.countries.map((country) => nationalTeamName(country)) }];
+  }).sort((a, b) => a.season - b.season || compareText(a.key, b.key));
 }
 
 function callUpRefs(state: GameState, nations: Nations, teamId: string): { refs: string[]; isProvisional: boolean } {
@@ -223,7 +248,7 @@ export function nationalTeamPage(state: GameState, teamId?: string): NationalTea
 
   const competitions = Object.values(nations.competitions)
     .filter((c) => c.kind !== "friendlies" && Object.values(c.groups).some((ids) => ids.includes(id)))
-    .map((c) => competitionView(nations, c, id));
+    .map((c) => competitionView(nations, c, id, state.hosts ?? {}));
 
   const near = rows.filter((row) => row.rank <= TOP_OF_RANKING || Math.abs(row.rank - rank) <= 2);
   return {
@@ -235,6 +260,7 @@ export function nationalTeamPage(state: GameState, teamId?: string): NationalTea
     callUp: { isProvisional, size: Object.values(CALL_UP_PLACES).reduce((a, b) => a + b, 0), count: cards.length, groups },
     leaving,
     competitions,
+    hosted: hostedEditions(state, team.confederation),
     ranking: { date: nations.rankingSource.date, rows: near },
     titles: nations.titles.map((t) => ({ name: t.name, season: t.season, winner: teamName(nations, t.winnerId) })),
     offer: nations.offer ? { teamId: nations.offer.teamId, team: teamName(nations, nations.offer.teamId), expiresOn: nations.offer.expiresOn } : null,

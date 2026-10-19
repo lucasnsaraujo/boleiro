@@ -78,7 +78,10 @@
 
 .tables-tabs > button {
   height: 30px;
-  padding: 0 14px;
+  padding: 0 14px 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 13px;
 }
 
@@ -539,12 +542,16 @@
   gap: 10px;
 }
 
-/* Up to a 1366-wide screen the tabs close up, so a FIFA cup year's twelve fit beside the play button at 1280,
-   with room to spare where text sets wider than on a Mac, as Linux's whole-pixel glyphs do. */
+/* Up to a 1366-wide screen the tabs close up and drop their logos, so a FIFA cup year's twelve fit beside the play
+   button at 1280, with room to spare where text sets wider than on a Mac, as Linux's whole-pixel glyphs do. */
 @media (max-width: 1365px) {
   .tables-tabs > button {
     padding: 0 8px;
     font-size: 12.5px;
+  }
+
+  .tables-tabs .comp-logo {
+    display: none;
   }
 }
 

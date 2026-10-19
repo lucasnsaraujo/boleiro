@@ -43,6 +43,13 @@ describe("a career at a club abroad", () => {
     expect(ageOf("Cristhian Mosquera")).toBe(22);
   });
 
+  it("gives its players their citizenships from Transfermarkt, his own first", () => {
+    const citizenshipsOf = (name: string) => Object.values(start.players).find((p) => p.clubId === ARSENAL && p.name === name)?.nationalities;
+    expect(citizenshipsOf("David Raya")).toEqual(["Spain"]);
+    expect(citizenshipsOf("Bukayo Saka")).toEqual(["England", "Nigeria"]);
+    expect(citizenshipsOf("Gabriel")).toEqual(["Brazil"]);
+  });
+
   it("plays its leagues minute by minute on the unified grid, and no longer result-only", () => {
     const [premier, championship] = englishLeagues(start);
     expect(premier?.clubIds).toHaveLength(20);

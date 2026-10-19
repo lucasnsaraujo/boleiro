@@ -31,6 +31,7 @@ import { SquadTable } from "../squad/SquadTable.js";
 import { BrandLogo } from "../sponsors/BrandLogo.js";
 import { OddsSticker } from "../sponsors/OddsSticker.js";
 import "./hub.css";
+import { EditionLogo } from "../competitions/CompetitionLogo.js";
 
 const HUB_KEYS = [...SQUAD_KEYS, "boards", "coach", "mood", "finances", "eventMemory", "hasMidSeasonWindow", "nations"] as const;
 type HubState = Pick<GameState, (typeof HUB_KEYS)[number]>;
@@ -360,9 +361,12 @@ function NextMatchSticker({ next, state, bet }: { next: NextMatch; state: HubSta
         <div>
           <b>{opponent.shortName}</b>
           <p className={next.isToday ? "today" : undefined}>
-            {next.isToday ? "Hoje" : formatBarDate(next.fixture.date)} · {next.isNeutral ? "campo neutro" : next.isHome ? "em casa" : "fora"}
+            {next.isToday ? "Hoje" : formatBarDate(next.fixture.date)} · {next.venue ? `${next.venue.name}, ${next.venue.city}` : next.isNeutral ? "campo neutro" : next.isHome ? "em casa" : "fora"}
           </p>
-          <p className="hub-next-what">{next.label}</p>
+          <p className="hub-next-what">
+            {next.edition && <EditionLogo edition={next.edition} size={14} name={next.label} />}
+            {next.label}
+          </p>
         </div>
       </div>
       {bet?.fixtureId === next.fixture.id && <OddsSticker match={bet} brand={{ id: bet.brandId, name: bet.brandName }} className="hub-odds" />}

@@ -3,6 +3,7 @@ import { FORMATIONS, positionFit, SECONDARY_POSITION, type Formation } from "../
 import type { GameState, SimPlayer } from "../gameState.js";
 import { isInjured } from "../players/isInjured.js";
 import { matchClubOf } from "../players/matchSetup.js";
+import { homeNationalityOf } from "../players/homeNationality.js";
 import { pickMatchLineup } from "../players/pickMatchLineup.js";
 import { usualStartersOf } from "../players/usualLineups.js";
 import { compareText } from "../compareText.js";
@@ -28,7 +29,7 @@ export function assistantEleven(state: GameState, clubId: string, formation: For
   const club = matchClubOf(state, clubId);
   if (!club) return [];
   const squad = Object.values(state.players).filter((p) => p.clubId === clubId);
-  const eleven = pickMatchLineup(squad, { date: state.date, pitch: club.pitch }, formation, usualStartersOf(state, clubId));
+  const eleven = pickMatchLineup(squad, { date: state.date, pitch: club.pitch, home: homeNationalityOf(state.clubs[clubId]) }, formation, usualStartersOf(state, clubId));
   const slots = FORMATIONS[formation];
   if (eleven.length !== slots.length) return [];
   return eleven.flatMap((player, slot): ReadStarter[] => {

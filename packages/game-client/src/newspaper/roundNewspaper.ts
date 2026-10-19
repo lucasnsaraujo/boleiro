@@ -4,6 +4,8 @@ import type { Fixture, GameState, IsoDate } from "@boleiro/engine/sim/gameState"
 import { standings } from "@boleiro/engine/sim/standings";
 import { competitionName, fixtureLabel } from "../format/competitionName.js";
 import { compareText } from "@boleiro/engine/sim/compareText";
+import { isOneMatchFinal, neutralVenue } from "@boleiro/engine/sim/continental/neutralGrounds";
+import { atGround } from "../format/atGround.js";
 
 export type NewspaperState = Pick<GameState, "coachClubId" | "clubs" | "fixtures" | "competitions" | "eventMemory" | "world">;
 
@@ -70,6 +72,8 @@ const RESULTS = 10;
 // The almanac's rare finds first, then the coach's own news, then the beats in the mock's order.
 const SIDE_ORDER: readonly NewsKind[] = ["career", "award", "record", "upset", "controversy", "var", "sacking", "signing", "rivalry", "event"];
 
+const THOUSANDS = new Intl.NumberFormat("pt-BR");
+
 const isAbout = (item: NewsItem, clubId: string | null) => clubId !== null && item.clubIds.includes(clubId);
 
 function coachMatchOn(state: NewspaperState, date: IsoDate): Fixture | null {
@@ -125,17 +129,36 @@ export function newspaperOf(state: NewspaperState, date?: IsoDate): Edition | nu
   const own = table[ownIndex];
   const next = state.fixtures.filter((f) => !f.result && f.date > day && (f.homeId === state.coachClubId || f.awayId === state.coachClubId)).sort((a, b) => compareText(a.date, b.date))[0] ?? null;
   const shownIds = [...(match ? [match.homeId, match.awayId] : []), ...lines.flatMap((l) => [l.homeId, l.awayId]), ...table.slice(0, 4).map((row) => row.clubId), ...(next ? [next.homeId, next.awayId] : [])];
+  const names = Object.fromEntries(shownIds.map((id) => [id, state.clubs[id]?.shortName ?? guestClubOf(state, id)?.name ?? id]));
+  const finalNote = next ? finalVenueStory(state, next, day, names) : null;
   return {
     date: day,
     round: match && competition ? (fixtureLabel(competition, match).split(" · ")[1] ?? competitionName(competition)) : "",
     lead: leadItem && storyOf(state, leadItem),
     match,
-    side: side.map((item) => storyOf(state, item)),
+    side: [...(finalNote ? [finalNote] : []), ...side.map((item) => storyOf(state, item))].slice(0, SIDE_STORIES),
     results: { title: competition ? competitionName(competition) : "", lines: ownFirst.slice(0, RESULTS) },
     table: table.slice(0, 4),
     ownPlace: own ? { position: ownIndex + 1, points: own.points } : null,
     next,
-    names: Object.fromEntries(shownIds.map((id) => [id, state.clubs[id]?.shortName ?? guestClubOf(state, id)?.name ?? id])),
+    names,
+  };
+}
+
+/** The story of where the coach's coming final is played, when its host names the ground: "A final será em Montevidéu, no Estadio Centenario". */
+function finalVenueStory(state: NewspaperState, next: Fixture, day: IsoDate, names: Readonly<Record<string, string>>): Story | null {
+  const competition = state.competitions[next.competitionId];
+  const venue = competition && isOneMatchFinal(competition, next.stage) ? neutralVenue(competition, next) : null;
+  if (!competition || !venue) return null;
+  const home = names[next.homeId] ?? next.homeId;
+  const away = names[next.awayId] ?? next.awayId;
+  return {
+    date: day,
+    kind: "match",
+    clubIds: [next.homeId, next.awayId],
+    headline: `A final será em ${venue.city}, ${atGround(venue.name)}`,
+    body: `${home} e ${away} decidem o título ${atGround(venue.name)}, em ${venue.city}: ${THOUSANDS.format(venue.capacity)} lugares e nenhum dos dois com o mando.`,
+    kicker: competitionName(competition),
   };
 }
 

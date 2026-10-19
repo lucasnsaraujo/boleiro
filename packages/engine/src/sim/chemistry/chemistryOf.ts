@@ -6,6 +6,7 @@ import type { GameState, SimPlayer } from "../gameState.js";
 import { IDOL_APPS, IDOL_GOALS } from "../history/clubHistory.js";
 import { clubMood } from "../morale/clubMood.js";
 import { isInjured } from "../players/isInjured.js";
+import { homeNationalityOf } from "../players/homeNationality.js";
 import { pickMatchLineup } from "../players/pickMatchLineup.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
 import { formationOf, usualStartersOf } from "../players/usualLineups.js";
@@ -167,7 +168,7 @@ function elevenOf(state: GameState, clubId: string, squad: readonly SimPlayer[],
   const kept = (record?.eleven ?? []).flatMap((id) => inSquad.get(id) ?? []);
   if (kept.length >= 11 || squad.length <= kept.length) return kept.slice(0, 11);
   const usual = kept.length ? new Set(kept.map((p) => p.id)) : usualStartersOf(state, clubId);
-  return pickMatchLineup(squad, { date: state.date, pitch: "natural" }, formation, usual);
+  return pickMatchLineup(squad, { date: state.date, pitch: "natural", home: homeNationalityOf(state.clubs[clubId]) }, formation, usual);
 }
 
 const hasSettled = (player: SimPlayer, date: string) => player.condition.arrivedOn === null || daysBetween(player.condition.arrivedOn, date) >= SETTLED_AT_CLUB_DAYS;

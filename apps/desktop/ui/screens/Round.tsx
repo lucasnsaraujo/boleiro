@@ -47,11 +47,10 @@ import type { GoalKind } from "@boleiro/engine/sim/live/goalDetails";
 import { crowdLevel, heardCues, roundCues, thinCues, varDecisionCues } from "../sound/roundCues.js";
 import { useSound } from "../sound/SoundProvider.js";
 import { stingerBeat } from "../sound/stingerBeat.js";
-import copaDoBrasil from "../../../../design/mocks/img/competitions/copa-do-brasil.svg";
-import serieA from "../../../../design/mocks/img/competitions/serie-a.svg";
-import serieB from "../../../../design/mocks/img/competitions/serie-b.svg";
 import "./round.css";
 import { DerbyBadgeOf } from "../rivalries/DerbyBadge.js";
+import type { CompetitionEdition } from "@boleiro/game-client/format/competitionEdition";
+import { EditionLogo } from "../competitions/CompetitionLogo.js";
 
 type Speed = 0 | 1 | 2 | 4;
 type Running = Exclude<Speed, 0>;
@@ -62,11 +61,6 @@ const MS_PER_MINUTE: Record<Running, number> = { 1: 660, 2: 330, 4: 110 };
 const FLOOD_MS: Record<Running, number> = { 1: 1500, 2: 1150, 4: 800 };
 // How long the scoring side's score box flashes; at 2x and 4x it outlasts the row's flood.
 const BOX_FLASH_MS = 1300;
-const COMPETITION_LOGOS = [
-  { prefix: "Série A", src: serieA },
-  { prefix: "Série B", src: serieB },
-  { prefix: "Copa do Brasil", src: copaDoBrasil },
-] as const;
 // The slip of the table on the cover: the coach's club between its neighbours.
 const TABLE_CARD_ROWS = 3;
 const NO_COLOURS = { primary: "#eef3e8", secondary: "#0a1a10" };
@@ -830,7 +824,7 @@ export function Round() {
   const groupSection = (group: (typeof groups)[number], isHidden: boolean) => (
     <section key={group.id} className="live-group" aria-labelledby={`live-${group.id}`} hidden={isHidden}>
       <h2 id={`live-${group.id}`} className="live-g">
-        <CompetitionLogo label={group.label} size={20} />
+        <EditionLogo edition={group.edition} size={20} name={group.label} />
         {group.label}
       </h2>
       <ul className="live-rows" aria-labelledby={`live-${group.id}`}>
@@ -854,6 +848,7 @@ export function Round() {
           isRunning={isRunning}
           msPerMinute={MS_PER_MINUTE[resumeSpeed.current]}
           label={round.competitions.find((c) => c.id === mine.competitionId)?.label ?? ""}
+          edition={round.competitions.find((c) => c.id === mine.competitionId)?.edition ?? null}
           minute={minute}
           end={end}
           speed={speed}
@@ -1034,12 +1029,6 @@ function isTyping(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.isContentEditable || target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT");
 }
 
-/** The competition's real mark where the game has one: the Brasileirão's top two series and the Copa do Brasil. */
-function CompetitionLogo({ label, size }: { label: string; size: number }) {
-  const logo = COMPETITION_LOGOS.find(({ prefix }) => label.startsWith(prefix));
-  return logo ? <img className="crest" src={logo.src} height={size} alt="" /> : null;
-}
-
 function shootoutWinnerOf(result: AdvanceResult | null, fixtureId: string, clubs: Readonly<Record<string, RoundClub>>): string | null {
   const played = result?.events.find((e) => e.type === "matchPlayed" && e.fixture.id === fixtureId);
   const winnerId = played?.type === "matchPlayed" ? played.fixture.result?.penaltyWinnerId : undefined;
@@ -1089,6 +1078,7 @@ type CoverProps = {
   isRunning: boolean;
   msPerMinute: number;
   label: string;
+  edition: CompetitionEdition | null;
   minute: number;
   /** The minute the round ends: 90, or 120 when a match goes to extra time. */
   end: number;
@@ -1121,7 +1111,7 @@ function clockNote(minute: number, speed: Speed, isFinished: boolean, end: numbe
  * clubs' stickers, the clock and the controls. While the ball is in play the stickers give way to a slim
  * scoreboard above the board; a stop or a goal drops them back. In a hot-seat round every human coach gets a board.
  */
-function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msPerMinute, label, minute, end, speed, golCount, varHold, isOnlyMine, isFinished, shootoutWinner, table, onSpeed, onOnlyMine, children }: CoverProps) {
+function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msPerMinute, label, edition, minute, end, speed, golCount, varHold, isOnlyMine, isFinished, shootoutWinner, table, onSpeed, onOnlyMine, children }: CoverProps) {
   // The cover builds itself only at kick-off, not when the coach comes back to a match under way.
   const [isKickOff] = useState(minute === 0);
   const isStopped = isFinished || minute >= end;
@@ -1162,7 +1152,7 @@ function Cover({ round, match, formations, seats, focus, onFocus, isRunning, msP
       )}
       <div className="live-ttl" data-tauri-drag-region>
         <h1>
-          <CompetitionLogo label={label} size={30} />
+          {edition && <EditionLogo edition={edition} size={30} name={competition ?? label} />}
           {competition}
           <span>{[roundName, formatBarDate(round.date)].filter(Boolean).join(" · ")}</span>
         </h1>

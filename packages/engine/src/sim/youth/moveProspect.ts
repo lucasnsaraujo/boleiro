@@ -12,6 +12,7 @@ import { SQUAD_TARGET } from "../transfers/squadNeeds.js";
 import { valuePlayer } from "../transfers/valuePlayer.js";
 import { wageRateOf } from "../transfers/wageDemand.js";
 import type { Prospect, Youth } from "./academy.js";
+import { homeNationalityOf } from "../players/homeNationality.js";
 
 /** A kid who reached 21 and was let go at the season's turn. */
 export type ProspectReleased = { type: "prospectReleased"; prospectId: string; clubId: string; name: string };
@@ -46,7 +47,7 @@ export function promoteProspect(state: GameState, prospectId: string): { state: 
   const squad = squadOf(state, prospect.clubId);
   if (isClubFull(state, prospect.clubId, squad.length)) return { state, refusal: "squadFull" };
   return withYouthStream(state, (random) => {
-    const player = professionalOf(prospect, prospect.clubId, firstWage(prospect, squad), state.date, random);
+    const player = professionalOf(prospect, prospect.clubId, firstWage(prospect, squad), state.date, random, homeNationalityOf(state.clubs[prospect.clubId]));
     return { ...state, players: { ...state.players, [player.id]: player }, youth: withoutProspect(academies, prospect.id) };
   });
 }
@@ -88,7 +89,7 @@ export function sellProspect(state: GameState, prospectId: string): { state: Gam
   const buyer = buyerOf(state, prospect);
   if (!buyer) return { state, refusal: "noBuyer" };
   const sold = withYouthStream(state, (random) => {
-    const player = professionalOf(prospect, buyer.buyerId, firstWage(prospect, squadOf(state, buyer.buyerId)), state.date, random);
+    const player = professionalOf(prospect, buyer.buyerId, firstWage(prospect, squadOf(state, buyer.buyerId)), state.date, random, homeNationalityOf(state.clubs[prospect.clubId]));
     const youth = withoutProspect(academies, prospect.id);
     const atSeller = { ...state, youth, players: { ...state.players, [player.id]: { ...player, clubId: prospect.clubId } } };
     const moved = sellPlayer(atSeller, { playerId: player.id, buyerId: buyer.buyerId, fee: buyer.fee });

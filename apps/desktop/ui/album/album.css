@@ -678,19 +678,14 @@ li:nth-child(3n + 2) > .ab-plate {
   }
 }
 
+/* The competition's logo, a die-cut sticker in the plate's corner. */
 .ab-plate-trophy {
   position: absolute;
   right: 10px;
   top: 10px;
-  width: 30px;
   height: 30px;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  background: var(--yellow);
-  color: var(--on-yellow);
-  font-size: 16px;
-  box-shadow: 0 2px 0 var(--yellow-d);
 }
 
 .ab-plate-year {
@@ -875,18 +870,11 @@ li:nth-child(3n + 2) > .ab-plate {
   }
 }
 
+/* The competition's logo, slapped onto the band like a sticker. */
 .ab-tp-trophy {
-  width: 64px;
   height: 64px;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  background: var(--yellow);
-  color: var(--on-yellow);
-  font-size: 34px;
-  box-shadow:
-    0 3px 0 var(--yellow-d),
-    0 0 0 4px rgba(255, 255, 255, 0.35);
   animation: ab-slap var(--t-stamp) var(--e-slap) 380ms both;
 }
 

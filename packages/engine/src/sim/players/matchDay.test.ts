@@ -174,4 +174,11 @@ describe("pitch and adaptation", () => {
     const brazilian = { ...newcomer, nationalities: ["Brazil", "Italy"] };
     expect(effectiveStrength(brazilian, { date: firstDate, pitch: "natural" })).toBe(player.strength);
   });
+
+  it("hold back a newcomer foreign to his club's country abroad, and none of its own", () => {
+    const arrived = { ...player.condition, arrivedOn: firstDate };
+    const inEngland = { date: firstDate, pitch: "natural" as const, home: "England" };
+    expect(effectiveStrength({ ...player, nationalities: ["England", "Nigeria"], condition: arrived }, inEngland)).toBe(player.strength);
+    expect(effectiveStrength({ ...player, nationalities: ["Brazil"], condition: arrived }, inEngland)).toBeLessThan(player.strength - 3);
+  });
 });

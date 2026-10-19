@@ -11,7 +11,16 @@ export type NationalTeam = { id: string; name: string; confederation: Confederat
  * tier), as columns: name, position letter (g goleiro, l lateral, z zagueiro, m meia, a atacante), strength from
  * their market value, birth year (0 unknown), club and its world id ("tm-418", empty when unknown) for its crest.
  */
-export type Outsiders = { names: string[]; roles: string; strengths: number[]; born: number[]; clubs: string[]; clubIds: string[] };
+export type Outsiders = {
+  names: string[];
+  roles: string;
+  strengths: number[];
+  born: number[];
+  clubs: string[];
+  clubIds: string[];
+  /** Rows the game's own players stand for since their league abroad joined the full tier, which the pool no longer calls; none before one did. */
+  joined?: number[];
+};
 
 export type NationalResult = { home: number; away: number; penaltyWinnerId?: string; isAfterExtraTime?: true };
 

@@ -14,6 +14,7 @@ import { competitionKeyName } from "../format/competitionName.js";
 import { formatBarDate, formatGameDate, formatMonthYear } from "../format/formatGameDate.js";
 import { formatMoney } from "../format/formatMoney.js";
 import { compareText } from "@boleiro/engine/sim/compareText";
+import type { EditionHost } from "@boleiro/engine/sim/hosts/venue";
 
 /** A club as a moment shows it: its id (for the crest), short name and kit colours. */
 export type ClubTag = { id: string; name: string; colours: { primary: string; secondary: string } };
@@ -86,6 +87,9 @@ export type TitleView = Common & {
   isLong: boolean;
   seconds: number;
   competition: CompetitionKey;
+  /** The season of the title and where its edition was played, whose logo the trophy shows. */
+  season: number;
+  host: EditionHost | null;
   competitionName: string;
   headline: string;
   subline: string;
@@ -495,6 +499,8 @@ function titleView(state: GameState, moment: Extract<Moment, { kind: "title" }>)
     isLong,
     seconds: moment.seconds,
     competition: moment.competition,
+    season: moment.season,
+    host: state.hosts?.[`${moment.competition}-${moment.season}`] ?? null,
     competitionName: name,
     headline: championOf(moment.competition, name),
     subline: isLong ? `Depois de ${plural(story.seasonInSpell, "temporada", "temporadas")}` : firstWords,

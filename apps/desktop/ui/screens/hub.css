@@ -880,3 +880,10 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* The competition's logo before its name on the next game's sticker. */
+.hub-next-match .hub-next-what .comp-logo {
+  display: inline-block;
+  vertical-align: -3px;
+  margin-right: 5px;
+}

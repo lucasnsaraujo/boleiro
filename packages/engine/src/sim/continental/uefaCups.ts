@@ -1,3 +1,4 @@
+import { CALIBRATED } from "../../engine/match.js";
 import { randomStream } from "../../engine/random.js";
 import { knockoutDates, REALISTA, spreadPick, type Formats } from "../formats.js";
 import type { IsoDate, MatchResult } from "../gameState.js";
@@ -119,6 +120,8 @@ const BRACKET = [1, 8, 4, 5, 2, 7, 3, 6];
 const shifted = (date: IsoDate, season: number) => inSeason(date, Number(date.slice(0, 4)) + season - FIRST_SEASON);
 
 const FULL_GROUP_DAYS = 6;
+// UEFA's finals and the Super Cup are played on neutral ground (neutralGrounds.ts), where neither club plays at home.
+const NEUTRAL = { ...CALIBRATED, homeAdvantage: 0 };
 
 /** The cup's 2026 calendar under `formats`: the real one with the days and legs it plays, or the unified one. */
 function calendarOf(cup: UefaCup, formats: Formats): UefaCalendar {
@@ -259,6 +262,7 @@ function withOwnLeg(code: string, tie: ReturnType<typeof knockoutTie>, leg: numb
 function playRoundDay(round: KnockoutRound, date: IsoDate, clubOf: ClubOf, random: () => number, playedAbroad?: PlayedAbroad): KnockoutRound {
   const leg = round.dates.indexOf(date);
   if (leg < 0) return round;
+  const params = round.name === "final" ? NEUTRAL : CALIBRATED;
   const length = tieLength(round);
   let results = "";
   round.ties.forEach((_, index) => {
@@ -266,7 +270,7 @@ function playRoundDay(round: KnockoutRound, date: IsoDate, clubOf: ClubOf, rando
     let code = round.results.slice(index * length, (index + 1) * length);
     const today = tie.legs[leg];
     if (today && !today.result) {
-      let { homeGoals, awayGoals } = scoreDraw(clubOf(today.homeId), clubOf(today.awayId), random);
+      let { homeGoals, awayGoals } = scoreDraw(clubOf(today.homeId), clubOf(today.awayId), random, params);
       if (leg === tie.legs.length - 1) {
         const aggregate = (result: MatchResult) => aggregateOf(tie.clubIds, tie.legs.map((l, i) => (i === leg ? { ...l, result } : l)));
         const [first, second] = aggregate({ homeGoals, awayGoals });
@@ -274,7 +278,7 @@ function playRoundDay(round: KnockoutRound, date: IsoDate, clubOf: ClubOf, rando
         // UEFA plays extra time when a tie is level after the last leg, then penalties (UEFA, away goals rule
         // abolished in 2021, https://insideworldfootball.com/?p=127856); the one-match final too.
         if (first === second) {
-          const { extraTime, isAwayShootoutWinner } = settleLevelTie(clubOf(today.homeId), clubOf(today.awayId), true, random);
+          const { extraTime, isAwayShootoutWinner } = settleLevelTie(clubOf(today.homeId), clubOf(today.awayId), true, random, params);
           homeGoals += extraTime?.homeGoals ?? 0;
           awayGoals += extraTime?.awayGoals ?? 0;
           const [afterFirst, afterSecond] = aggregate({ homeGoals, awayGoals });
@@ -383,7 +387,7 @@ function fieldFromTables(world: World, season: number): Record<UefaCup, string[]
 function playSuperCup(superCup: SuperCup | null, date: IsoDate, clubOf: ClubOf, random: () => number, playedAbroad?: PlayedAbroad): SuperCup | null {
   if (!superCup || superCup.date !== date || superCup.result[0] !== UNPLAYED) return superCup;
   const [homeId, awayId] = superCup.clubIds;
-  const drawn = scoreDraw(clubOf(homeId), clubOf(awayId), random);
+  const drawn = scoreDraw(clubOf(homeId), clubOf(awayId), random, NEUTRAL);
   // guess: a draw goes straight to penalties, an even draw.
   const isDrawnAwayWinner = drawn.awayGoals > drawn.homeGoals || (drawn.awayGoals === drawn.homeGoals && random() < 0.5);
   const own = playedAbroad?.get(playedKey(homeId, awayId, date));

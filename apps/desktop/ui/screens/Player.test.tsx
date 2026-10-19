@@ -166,3 +166,19 @@ test("Negociar opens the renewal screen of the coach's player", async () => {
   await userEvent.click(await screen.findByRole("button", { name: "Negociar" }));
   expect(await screen.findByRole("heading", { name: `Renovar com ${players[playerId]?.name}` })).toBeTruthy();
 });
+
+test("a player abroad shows his citizenships in Portuguese, his own first", async () => {
+  const { engine, close } = inMemoryEngine();
+  closers.push(close);
+  await engine.apply({ type: "newGame", seed: 7, choices: { coachClubId: "tm-11" } });
+  const { players } = await engine.read(["players"]);
+  const saka = Object.values(players).find((p) => p.clubId === "tm-11" && p.name === "Bukayo Saka");
+  if (!saka) throw new Error("no Saka at Arsenal");
+  const router = createMemoryRouter([{ path: "/squad/:playerId", element: <Player /> }], { initialEntries: [`/squad/${saka.id}`] });
+  render(
+    <ServicesContext value={{ engine, slots: indexedDbSlots(new IDBFactory()), game: { current: { slotId: "slot-1", coachName: "Tite" } } }}>
+      <RouterProvider router={router} />
+    </ServicesContext>,
+  );
+  expect(await screen.findByText(/anos · Inglaterra \/ Nigéria/)).toBeTruthy();
+});
