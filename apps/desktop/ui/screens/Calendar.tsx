@@ -23,6 +23,7 @@ import { DerbyBadgeOf } from "../rivalries/DerbyBadge.js";
 import { playRoundLabel, usePlayRound } from "../hub/usePlayRound.js";
 import { useMatchFile } from "../matchPage/MatchFile.js";
 import "./calendar.css";
+import { EditionLogo } from "../competitions/CompetitionLogo.js";
 
 const CALENDAR_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions", "players", "discipline", "hasMidSeasonWindow", "nations"] as const;
 type CalendarState = Pick<GameState, (typeof CALENDAR_KEYS)[number]>;
@@ -174,6 +175,7 @@ export function Calendar() {
                     <span>
                       <b>{opponent?.shortName ?? match.opponentId}</b>
                       <small>
+                        {match.edition && <EditionLogo edition={match.edition} size={14} name={match.competition} />}
                         {match.label} · {side(match)}
                       </small>
                     </span>
@@ -273,7 +275,10 @@ function NextMatch({ match, state }: { match: UpcomingMatch; state: CalendarStat
   const isToday = match.date === state.date;
   return (
     <>
-      <h3 id="agenda-next-title">{match.label}</h3>
+      <h3 id="agenda-next-title">
+        {match.edition && <EditionLogo edition={match.edition} size={26} name={match.competition} />}
+        {match.label}
+      </h3>
       {state.coachClubId === match.sideId && (
         <div className="agenda-derby">
           <DerbyBadgeOf homeId={match.sideId} awayId={match.opponentId} isNamed />

@@ -2,19 +2,23 @@ import type { WorldPack, WorldPackClub, WorldPackPlayer } from "@boleiro/data/wo
 import { randomStream } from "../../engine/random.js";
 import type { CountryStart } from "../newGame.js";
 import { academyPlayer, groupsToFill } from "../players/developPlayers.js";
+import { homeNationalityOfCountry } from "../players/homeNationality.js";
 import { strengthFromValue } from "./strengthYardstick.js";
 import type { CountryStructure, WorldClub } from "./world.js";
 
 const LETTER = { GK: "G", DEF: "D", MID: "M", ATT: "A" } as const;
 
-/** The club's squad rated by the yardstick; a player with no market value gets the club's lowest one. */
-function worldClubOf({ id, shortName, colours }: WorldPackClub, squad: readonly WorldPackPlayer[], season: number, random: () => number): WorldClub {
+/**
+ * The club's squad rated by the yardstick; a player with no market value gets the club's lowest one.
+ * guess: the academy players filling a short squad hold the country's own citizenship (`home`), as Brazil's academies' do.
+ */
+function worldClubOf({ id, shortName, colours }: WorldPackClub, squad: readonly WorldPackPlayer[], season: number, home: string, random: () => number): WorldClub {
   const listed = squad.flatMap((p) => (p.marketValueEur ? [p.marketValueEur] : []));
   const lowest = listed.length ? Math.min(...listed) : 0;
-  const rated = squad.map((p) => ({ group: p.group, name: p.name, strength: strengthFromValue(p.marketValueEur ?? lowest), age: p.age }));
+  const rated = squad.map((p) => ({ group: p.group, name: p.name, strength: strengthFromValue(p.marketValueEur ?? lowest), age: p.age, nationalities: p.nationalities.join("/") }));
   // Transfermarkt lists a few clubs short or empty; their academy fills them, as at Brazil's clubs.
-  const academy = groupsToFill(rated, []).map((group, i) => academyPlayer(`${id}-a${i}`, id, null, group, `${season}-01-01`, random));
-  const players = [...rated, ...academy.map((p) => ({ group: p.group, name: p.name, strength: Math.round(p.strength), age: p.age }))];
+  const academy = groupsToFill(rated, []).map((group, i) => academyPlayer(`${id}-a${i}`, id, null, group, `${season}-01-01`, random, home));
+  const players = [...rated, ...academy.map((p) => ({ group: p.group, name: p.name, strength: Math.round(p.strength), age: p.age, nationalities: home }))];
   return {
     id,
     name: shortName,
@@ -23,6 +27,7 @@ function worldClubOf({ id, shortName, colours }: WorldPackClub, squad: readonly 
     strengths: players.map((p) => p.strength),
     names: players.map((p) => p.name),
     born: players.map((p) => (p.age === null ? null : season - p.age)),
+    nationalities: players.map((p) => p.nationalities),
   };
 }
 
@@ -43,5 +48,6 @@ export function countriesStart(structures: readonly CountryStructure[], packs: r
 
 /** The pack's `clubs` with their squads, a club's academy filling it from `random` (its own stream for the season unless given). */
 export function worldClubsOf(pack: WorldPack, clubs: readonly WorldPackClub[], season: number, random = randomStream((season ^ ACADEMY_STREAM_SALT) >>> 0).next): WorldClub[] {
-  return clubs.map((club) => worldClubOf(club, pack.players.filter((p) => p.clubId === club.id), season, random));
+  const home = homeNationalityOfCountry(pack.country.id) ?? "";
+  return clubs.map((club) => worldClubOf(club, pack.players.filter((p) => p.clubId === club.id), season, home, random));
 }

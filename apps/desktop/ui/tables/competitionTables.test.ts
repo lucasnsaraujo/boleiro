@@ -1,8 +1,9 @@
 import { describe, expect, test } from "vitest";
-import type { Competition, ContinentalCompetition, CupCompetition, Fixture, GameState, LeagueCompetition, MatchResult } from "@boleiro/engine/sim/gameState";
+import type { Competition, ContinentalCompetition, CupAbroadCompetition, CupCompetition, Fixture, GameState, LeagueCompetition, MatchResult } from "@boleiro/engine/sim/gameState";
 import { RAPIDO } from "@boleiro/engine/sim/formats";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
+import { createEngineSession } from "@boleiro/game-client/engine/createEngineSession";
 import {
   intercontinentalLadder,
   coachCompetitions,
@@ -12,6 +13,7 @@ import {
   knockoutBracket,
   knockoutTies,
   lastPlayedLeg,
+  nationalCupFinalists,
   openingCompetitionId,
   playedRounds,
   tableTabs,
@@ -451,5 +453,49 @@ describe("a Realista career abroad across Brazil's new year", () => {
     const tabs = tableTabs(july).tabs.map((c) => c.id);
     expect(tabs).toContain(next.id);
     expect(tabs).not.toContain(premierId);
+  });
+});
+
+describe("a league abroad in the full tier", () => {
+  // Arsenal's first season, played to the last day before the year turns and files it.
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 7, choices: { coachClubId: "tm-11", formats: RAPIDO } });
+  const keys = ["competitions", "fixtures", "world"] as const;
+  let state = session.read(keys);
+  while (!session.apply({ type: "advance", days: [{}] }).events.some((e) => e.type === "seasonEnded")) state = session.read(keys);
+  const filed = session.read(["world"]).world?.["gb-eng"]?.seasons.at(-1);
+  const premier = Object.values(state.competitions).find((c): c is LeagueCompetition => c.kind === "league" && c.abroad?.country === "gb-eng" && c.abroad.level === 0);
+  if (!premier) throw new Error("no Premier League");
+  const rows = groupTables(premier, 0, state.fixtures, nationalCupFinalists(state, premier)).groups[0]?.rows ?? [];
+  const inZone = (zone: string) => rows.filter((row) => row.zone === zone).map((row) => row.clubId);
+
+  test("stands on its last day with the UEFA places and the relegation its turn of the season files", () => {
+    expect(state.fixtures.filter((f) => f.competitionId === premier.id).every((f) => f.result)).toBe(true);
+    expect(filed?.season).toBe(premier.season);
+    expect(inZone("championsLeague")).toEqual(filed?.continental["champions-league"]);
+    expect(inZone("europaLeague").sort()).toEqual([...(filed?.continental["europa-league"] ?? [])].sort());
+    expect(inZone("relegation")).toEqual(filed?.relegated[0]);
+    expect(inZone("championsLeague")).toHaveLength(5);
+  });
+});
+
+describe("a human club's cups abroad", () => {
+  const cupAbroad = (cup: CupAbroadCompetition["cup"], stageNames: string[]): CupAbroadCompetition => ({
+    id: `${cup}-2026`,
+    kind: "cupAbroad",
+    cup,
+    country: null,
+    season: 2026,
+    clubIds: [],
+    stages: stageNames.map((name) => (name === "league-phase" ? { kind: "groups" as const, groups: [], legs: 1 as const, dates: [] } : { kind: "knockout" as const, ties: [], dates: [] })),
+    stageDates: stageNames.map(() => []),
+    drawOrder: [],
+    tieBreaks: stageNames.map(() => "extraTime" as const),
+    stageNames,
+  });
+
+  test("name their stages by UEFA's rounds, the Super Cup by its own", () => {
+    expect(competitionStages(cupAbroad("champions-league", ["league-phase", "playoffs", "round-of-16", "final"]), game.calendar).map((s) => s.name)).toEqual(["Fase de liga", "Playoffs", "Oitavas", "Final"]);
+    expect(competitionStages(cupAbroad("uefa-super-cup", ["super-cup"]), game.calendar).map((s) => s.name)).toEqual(["Supercopa"]);
   });
 });

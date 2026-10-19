@@ -219,7 +219,7 @@ export const DISCIPLINE_EVENTS: readonly EventType[] = [
     topic: "discipline",
     weight: 2,
     cooldownDays: 300,
-    cast: (scene) => (monthOf(scene) === 1 ? playerCast(pickFrom(scene, scene.squad.filter(isForeign))) : null),
+    cast: (scene) => (monthOf(scene) === 1 ? playerCast(pickFrom(scene, scene.squad.filter((p) => isForeign(scene, p)))) : null),
     setting: "Na reapresentação",
     texts: [
       { headline: "{player} não volta das férias na data", body: "O {position} avisou por mensagem que perdeu o voo. A reapresentação foi ontem." },

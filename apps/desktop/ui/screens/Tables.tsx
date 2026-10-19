@@ -1,6 +1,5 @@
 import { createContext, use, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
-import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
 import type { Competition, Fixture, GameState } from "@boleiro/engine/sim/gameState";
 import { neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
 import { superCupScore, superCupWinner, type LeaguePhaseCup, type SuperCup } from "@boleiro/engine/sim/continental/uefaCups";
@@ -16,13 +15,13 @@ import { useFlip } from "../motion/useFlip.js";
 import { Select } from "../controls/Select.js";
 import { useMatchFile } from "../matchPage/MatchFile.js";
 import { Bracket, LadderBracket } from "../tables/Bracket.js";
-import { competitionMarkOf } from "../tables/competitionMarks.js";
 import { GroupCard, NextTieCard, type NextTie } from "../tables/BracketCards.js";
 import { uefaBracket, uefaLeaguePhase, uefaPlayoffs } from "../tables/uefaTables.js";
 import {
   competitionStages,
   defaultStage,
   groupTables,
+  nationalCupFinalists,
   intercontinentalLadder,
   knockoutBracket,
   knockoutTies,
@@ -40,11 +39,7 @@ import {
 } from "../tables/competitionTables.js";
 import { tieBreakOf } from "@boleiro/engine/sim/tieBreaks";
 import "./tables.css";
-
-const copaFinalists = (competitions: readonly Competition[], fixtures: GameState["fixtures"]) => {
-  const copa = competitions.find((c) => c.kind === "cup");
-  return copa?.kind === "cup" ? COPA_DO_BRASIL.finalists(copa, fixtures) : null;
-};
+import { CompetitionMark, competitionLogoUrlOf } from "../competitions/CompetitionLogo.js";
 
 const TABLES_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions", "calendar", "history", "players", "world", "europe"] as const;
 type TablesState = Pick<GameState, (typeof TABLES_KEYS)[number]>;
@@ -197,6 +192,7 @@ export function Tables() {
         <div className="seg tables-seg tables-tabs" role="tablist" aria-label="Competições">
           {tabs.map((c) => (
             <button key={c.id} role="tab" aria-selected={c.id === shown?.id} onClick={() => setPickedId(c.id)}>
+              <CompetitionMark competition={c} size={18} name={competitionName(c)} />
               {competitionName(c)}
             </button>
           ))}
@@ -270,13 +266,12 @@ const NEXT_ROUND: Record<string, string> = {
   "Copa Challenger": "quem passar joga a Copa Challenger",
 };
 
-/** The panel's title over a bracket: the cup's logo when it has one, its name, season and "mata-mata". */
+/** The panel's title over a bracket: the cup's logo, its name, season and "mata-mata". */
 function BracketTitle({ competition }: { competition: Competition }) {
-  const mark = competitionMarkOf(competition);
   const name = competitionName(competition);
   return (
     <h2 className="bk-title">
-      {mark && <img className="bk-title-mark" src={mark} alt="" width={28} height={28} />}
+      <CompetitionMark competition={competition} size={28} name={name} className="bk-title-mark" />
       {name} {competition.season}
       <span>mata-mata</span>
     </h2>
@@ -323,7 +318,7 @@ function BracketPanel({ competition, state, clubs, stage, onStage, picker }: Omi
           <StagePicker stages={stages} stage={stage} onStage={onStage} />
           <BracketTitle competition={competition} />
         </div>
-        <Bracket name={name} rounds={knockoutBracket(competition, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} mark={competitionMarkOf(competition)} onOpenMatch={onOpenMatch} />
+        <Bracket name={name} rounds={knockoutBracket(competition, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} mark={competitionLogoUrlOf(competition, 40)} finalGround={competition.kind === "continental" ? (competition.host?.final.name ?? null) : null} onOpenMatch={onOpenMatch} />
         <div className="bk-low">
           {group && <GroupCard group={group} clubs={clubs} coachClubId={state.coachClubId} />}
           <NextTieCard next={nextTieOf(competition, state.fixtures, stages, clubs, state.coachClubId)} clubs={clubs} />
@@ -345,7 +340,7 @@ function LadderPanel({ competition, state, clubs, picker }: Omit<PanelProps, "ro
           {picker}
           <BracketTitle competition={competition} />
         </div>
-        <LadderBracket name={name} rounds={intercontinentalLadder(competition, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} mark={competitionMarkOf(competition)} onOpenMatch={onOpenMatch} />
+        <LadderBracket name={name} rounds={intercontinentalLadder(competition, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} mark={competitionLogoUrlOf(competition, 40)} onOpenMatch={onOpenMatch} />
         <div className="bk-low">
           <NextTieCard next={nextTieOf(competition, state.fixtures, stages, clubs, state.coachClubId)} clubs={clubs} />
         </div>
@@ -422,7 +417,7 @@ function CompetitionPanel({ competition, state, clubs, stage, round, onStage, pi
   const table =
     competition.stages[stage]?.kind === "knockout"
       ? null
-      : groupTables(competition, stage, state.fixtures, copaFinalists(Object.values(state.competitions), state.fixtures), round);
+      : groupTables(competition, stage, state.fixtures, nationalCupFinalists(state, competition), round);
   // A new competition or stage draws its page afresh.
   const pageKey = `${competition.id}-${stage}`;
 

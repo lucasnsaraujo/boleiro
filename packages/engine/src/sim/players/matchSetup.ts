@@ -9,6 +9,7 @@ import type { Fixture, GameState, SimPlayer } from "../gameState.js";
 import { clubMood } from "../morale/clubMood.js";
 import { moraleStrength } from "../morale/moraleStrength.js";
 import { effectiveStrength, type MatchContext } from "./effectiveStrength.js";
+import { homeNationalityOf } from "./homeNationality.js";
 import { pickMatchLineup } from "./pickMatchLineup.js";
 import { travelKm } from "./travelKm.js";
 import { formationOf, usualStartersOf } from "./usualLineups.js";
@@ -48,7 +49,8 @@ export function playingStrength(state: GameState, clubId: string, context: Match
   const morale = clubMood(state, clubId).squad;
   const mostMinutes = Math.max(0, ...squad.map((p) => p.condition.seasonMinutes));
   const chemistry = chemistryStrength(chemistryValueOf(state, clubId));
-  return (p) => Math.max(1, (effectiveStrength(p, context) + moraleStrength(p, morale, mostMinutes, context.date)) * chemistry);
+  const own: MatchContext = { ...context, home: homeNationalityOf(state.clubs[clubId]) };
+  return (p) => Math.max(1, (effectiveStrength(p, own) + moraleStrength(p, morale, mostMinutes, context.date)) * chemistry);
 }
 
 /** An eleven as the engine sees it; with tactics, placed in their formation by position, with their posture, marking, play and penalty taker. */
@@ -86,8 +88,9 @@ export function matchSetup(
   const context: MatchContext = { date: fixture.date, pitch: homeClub.pitch };
   const planOf = (clubId: string): CoachPlan | undefined => (clubId === state.coachClubId ? coach : waiting[clubId]);
   const tacticsOf = (clubId: string): Tactics => planOf(clubId)?.tactics ?? { ...DEFAULT_TACTICS, formation: formationOf(state, clubId, squadOf(clubId)) };
+  const contextOf = (clubId: string): MatchContext => ({ ...context, home: homeNationalityOf(state.clubs[clubId]) });
   const lineupOf = (clubId: string, tactics: Tactics, lineup = planOf(clubId)?.lineup) =>
-    lineup ? [...lineup] : pickMatchLineup(squadOf(clubId), context, tactics.formation, usualStartersOf(state, clubId), planOf(clubId)?.kept);
+    lineup ? [...lineup] : pickMatchLineup(squadOf(clubId), contextOf(clubId), tactics.formation, usualStartersOf(state, clubId), planOf(clubId)?.kept);
   const team = (clubId: string, name: string, lineup: readonly SimPlayer[], tactics: Tactics): Team => {
     const strength = playingStrength(state, clubId, context, squadOf(clubId));
     return engineTeam(name, lineup, (p) => strength(p) + formStrengthOf(p), tactics);

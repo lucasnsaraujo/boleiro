@@ -21,6 +21,14 @@ describe("a country's world pack", () => {
     expect(squad.every((player) => player.marketValueEur === null || player.marketValueEur > 0)).toBe(true);
   });
 
+  it("reads each player's citizenships as Transfermarkt lists them, the first his own", () => {
+    const england = loadWorldPack("gb-eng");
+    const citizenshipsOf = (name: string) => england.players.find((player) => player.name === name)?.nationalities;
+    expect(citizenshipsOf("David Raya")).toEqual(["Spain"]);
+    expect(citizenshipsOf("Bukayo Saka")).toEqual(["England", "Nigeria"]);
+    expect(england.players.filter((player) => player.nationalities.length === 0)).toEqual([]);
+  });
+
   it("rejects a pack whose players point at a club it does not have", () => {
     const pack = {
       format: 1,

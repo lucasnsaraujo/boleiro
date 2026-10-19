@@ -43,7 +43,7 @@ export function guestSquadOf(club: WorldClub): SimPlayer[] {
     wage: 0,
     contractUntil: NEVER,
     age: UNKNOWN_AGE,
-    nationalities: [],
+    nationalities: (club.nationalities?.[i] ?? "").split("/").filter(Boolean),
     trait: null,
     condition: freshCondition(RESTED_SINCE),
   }));

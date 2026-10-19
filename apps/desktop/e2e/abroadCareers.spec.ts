@@ -68,8 +68,10 @@ async function startNextYear(page: Page, year: number) {
   const board = page.getByRole("button", { name: "Ver a diretoria" });
   if (await board.isVisible()) await board.click();
   await page.getByRole("button", { name: `Começar ${year}` }).click();
-  await expect(page).toHaveURL(/#\/hub$/);
+  // A moment the worker's days left waiting (a player's World Cup call-up) plays before the hub, as it does for a player;
+  // the hub's URL shows for an instant while it loads and finds the moment, so it is checked once the moments are through.
   await passMoments(page, hubLoaded(page));
+  await expect(page).toHaveURL(/#\/hub$/);
 }
 
 /** Presses "Jogar rodada" until the lineup sheet opens, then starts the live round. */

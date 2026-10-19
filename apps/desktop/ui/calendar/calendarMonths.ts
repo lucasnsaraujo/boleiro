@@ -1,14 +1,15 @@
-import { isOnNeutralGround, neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
+import { isOnNeutralGround, neutralGround, neutralVenue } from "@boleiro/engine/sim/continental/neutralGrounds";
 import { addDays } from "@boleiro/engine/sim/dates";
 import type { Fixture, GameState, IsoDate } from "@boleiro/engine/sim/gameState";
 import { isInjured } from "@boleiro/engine/sim/players/isInjured";
 import { transferWindowsOf } from "@boleiro/engine/sim/transfers/transferWindows";
 import { competitionName, fixtureLabel } from "@boleiro/game-client/format/competitionName";
 import { monthName } from "@boleiro/game-client/format/formatGameDate";
+import { competitionEditionOf, type CompetitionEdition } from "@boleiro/game-client/format/competitionEdition";
 
 export type Outcome = "win" | "draw" | "loss";
 
-/** One of the coach's games: `sideId` is his side in it, his club or his national team; `isNeutral` a national team's game on neutral ground. */
+/** One of the coach's games: `sideId` is his side in it, his club or his national team; `isNeutral` a game on neutral ground (a national tournament's, a final at its host's). */
 export type MatchEntry = {
   kind: "match";
   date: IsoDate;
@@ -49,7 +50,7 @@ function matchEntry(f: Fixture, coachClubId: string, competitions: GameState["co
     fixtureId: f.id,
     competition: competition ? competitionName(competition) : "",
     isHome,
-    isNeutral: competition?.kind === "national" && isOnNeutralGround(competition, f.stage),
+    isNeutral: competition !== undefined && isOnNeutralGround(competition, f.stage),
     sideId: coachClubId,
     opponentId: isHome ? f.awayId : f.homeId,
     result: result && {
@@ -82,7 +83,8 @@ function coachMatches(state: MatchesState): MatchEntry[] {
 }
 
 /** A game still to play, with its competition and round: "Série A · 31ª rodada"; `ground` names a neutral ground. */
-export type UpcomingMatch = MatchEntry & { competitionId: string; label: string; ground: string | null };
+/** A coming game: `ground` names a neutral one, with its city when the edition's host gives it; `edition` its competition's logo. */
+export type UpcomingMatch = MatchEntry & { competitionId: string; label: string; ground: string | null; edition: CompetitionEdition | null };
 
 /** The coach's next `count` games from today on, the first of them the one the play button leads to. */
 export function upcomingMatches(state: Pick<GameState, "date"> & MatchesState, count: number): UpcomingMatch[] {
@@ -92,7 +94,9 @@ export function upcomingMatches(state: Pick<GameState, "date"> & MatchesState, c
     .slice(0, count)
     .map(({ fixture: f, sideId }) => {
       const competition = competitions[f.competitionId];
-      return { ...matchEntry(f, sideId, competitions), competitionId: f.competitionId, label: competition ? fixtureLabel(competition, f) : "", ground: competition ? neutralGround(competition, f) : null };
+      const venue = competition ? neutralVenue(competition, f) : null;
+      const ground = venue ? `${venue.name}, ${venue.city}` : competition ? neutralGround(competition, f) : null;
+      return { ...matchEntry(f, sideId, competitions), competitionId: f.competitionId, label: competition ? fixtureLabel(competition, f) : "", ground, edition: competition ? competitionEditionOf(competition) : null };
     });
 }
 

@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { Club } from "@boleiro/data/clubs";
 import type { TitlePage } from "@boleiro/game-client/album/albumOf";
 import { plateColours } from "../clubs/clubCatalog.js";
+import { CompetitionLogo } from "../competitions/CompetitionLogo.js";
 
 type Clubs = Readonly<Record<string, Club>>;
 
@@ -29,7 +30,7 @@ export function TitlePlate({ title, clubs, order = 0, onOpen }: { title: TitlePa
       onClick={() => onOpen(title)}
     >
       <span className="ab-plate-trophy" aria-hidden="true">
-        <i className="ph-fill ph-trophy" />
+        <CompetitionLogo competitionKey={title.competition} season={title.season} host={title.host} size={30} name={title.name} isNamedBeside />
       </span>
       <span className="ab-plate-year" aria-hidden="true">
         {title.season}

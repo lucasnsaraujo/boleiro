@@ -4,6 +4,7 @@ import { fireAssistant, hireAssistant, type AssistantRefusal } from "@boleiro/en
 import { withAssistantDuty, type AssistantDuty } from "@boleiro/engine/sim/coach/assistantDuties";
 import { declineOffer } from "@boleiro/engine/sim/coach/declineOffer";
 import { withCoachWorld } from "@boleiro/engine/sim/coach/aiCoaches";
+import { withHosts } from "@boleiro/engine/sim/hosts/drawHosts";
 import { applyForJob, type JobAnswer } from "@boleiro/engine/sim/coach/applyForJob";
 import { resign } from "@boleiro/engine/sim/coach/resign";
 import { nameCaptain } from "@boleiro/engine/sim/chemistry/nameCaptain";
@@ -19,6 +20,7 @@ import { finishMatchDay } from "@boleiro/engine/sim/live/finishMatchDay";
 import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
 import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
 import { withPackPositions } from "@boleiro/engine/sim/players/withPackPositions";
+import { withWorldNationalities } from "@boleiro/engine/sim/world/withWorldNationalities";
 import { withNations } from "@boleiro/engine/sim/nations/withNations";
 import { syncNationalFixtures } from "@boleiro/engine/sim/nations/nationalFixtures";
 import { acceptNationalOffer, declineNationalOffer, setCallUp } from "@boleiro/engine/sim/nations/nationalJobs";
@@ -26,7 +28,7 @@ import { persuadeToStay, retirePlayer, type PlayerPersuaded } from "@boleiro/eng
 import { newGameFromFiles, type GameFiles } from "@boleiro/engine/sim/loadNewGame";
 import type { NewGameOptions } from "@boleiro/engine/sim/newGame";
 import { answerBid, type BidAnswer, type BidOutcome } from "@boleiro/engine/sim/transfers/answerBid";
-import { declineCounter } from "@boleiro/engine/sim/transfers/coachMarket";
+import { coachMarketOf, declineCounter } from "@boleiro/engine/sim/transfers/coachMarket";
 import type { CoachRequest } from "@boleiro/engine/sim/transfers/coachRequest";
 import { listPlayer, type SaleWay } from "@boleiro/engine/sim/transfers/listPlayer";
 import { setTicketPrice, withAssistantPricing } from "@boleiro/engine/sim/finances/setTicketPrice";
@@ -39,6 +41,7 @@ import { closeMoment, nextMoment } from "@boleiro/engine/sim/moments/careerMomen
 import { retireCoach } from "@boleiro/engine/sim/moments/retireCoach";
 import { eventsOfWaitingCoach, hotSeatViewOf, isHumanMatchDay, type HotSeatView } from "../hub/hotSeat.js";
 import { inboxLines, type InboxLine } from "../hub/inboxLines.js";
+import { offerAnswerLine } from "../hub/offerAnswerLine.js";
 import { isCoachMatchDay, playToMatchDay, stopReason, type StopReason } from "../hub/playToMatchDay.js";
 import { turningPointsOf, type TurningPoint } from "../hub/turningPoints.js";
 import { boardNotes, dueRequests, EMPTY_DESK, withoutLeavers, withRequest, type BoardDesk } from "../market/boardDesk.js";
@@ -320,7 +323,8 @@ export function createEngineSession(files: GameFiles) {
     const [next, ...rest] = waiting;
     if (!next) return;
     waiting = [...rest, { news, desk, turningPoints, clock, ...scoutingToSave(scouting) }];
-    ({ news, desk, turningPoints, clock } = next);
+    ({ desk, turningPoints, clock } = next);
+    news = [...next.news, ...(next.notices ?? [])].slice(-INBOX_SIZE);
     scouting = next.scouting ?? EMPTY_SCOUTING;
     state = passTheSeat(current());
     seated = (seated + 1) % (waiting.length + 1);
@@ -451,13 +455,15 @@ export function createEngineSession(files: GameFiles) {
     },
     /**
      * A save from before positions gets them from the shipped pack (withPackPositions), one from before AI coaches
-     * gets them from its seed, one from before sponsors its clubs' kit deals, and one from before national football
+     * gets them from its seed, one from before sponsors its clubs' kit deals, one from before the world's
+     * citizenships gets them from the world packs (withWorldNationalities), and one from before national football
      * its national teams, played up to its day (withNations); a national coach's matches join the full tier
-     * (syncNationalFixtures), which a save from before they were played live lacks.
+     * (syncNationalFixtures), which a save from before they were played live lacks. One from before hosts gets every
+     * edition's through its season (withHosts); the cups it already opened keep playing as they were.
      */
     load({ save }) {
       const loaded = readStoredSave(save);
-      const positioned = withCoachWorld(withPackPositions(loaded.game, files));
+      const positioned = withHosts(withCoachWorld(withPackPositions(withWorldNationalities(loaded.game, files), files)));
       const game = syncNationalFixtures(withNations(positioned.sponsors || !files.sponsors ? positioned : seedGameSponsors(positioned, files.sponsors), files.nationalFootball));
       const summary = begin(game);
       desk = loaded.desk;
@@ -617,12 +623,19 @@ export function createEngineSession(files: GameFiles) {
     listPlayer({ playerId, way }) {
       state = listPlayer(betweenDays("a player can't be listed"), playerId, way);
     },
-    /** The coach's answer to a club's offer for one of his players; a sale it makes goes to the inbox. */
+    /**
+     * The coach's answer to a club's offer for one of his players; a sale it makes goes to the inbox. When the
+     * offer is a waiting hot-seat coach's, the answer waits for him as a notice his next turn shows.
+     */
     answerBid({ playerId, answer }) {
       const before = betweenDays("an offer can't be answered");
+      const bid = coachMarketOf(before).bids[playerId];
       const answered = answerBid(before, playerId, answer);
       state = answered.state;
       addNews(inboxLines(before, answered.state, answered.events));
+      const buyer = bid?.buyerId ? waitingCoachesOf(before).findIndex((coach) => coach.clubId === bid.buyerId) : -1;
+      const notice = bid && before.coachClubId && buyer >= 0 ? offerAnswerLine(before, before.coachClubId, bid, answered.outcome) : null;
+      if (notice) waiting = waiting.map((parts, index) => (index === buyer ? { ...parts, notices: [...(parts.notices ?? []), notice] } : parts));
       return answered.outcome;
     },
     declineCounter({ playerId }) {

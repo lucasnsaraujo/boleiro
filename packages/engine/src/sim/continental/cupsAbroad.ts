@@ -17,7 +17,7 @@ export function playedAbroadOf(state: Pick<GameState, "competitions">, played: r
 }
 
 type TieBreak = CupAbroadCompetition["tieBreaks"][number];
-type Round = { stage: Stage; tieBreak: TieBreak; fixtures: (stageIndex: number) => Fixture[] };
+type Round = { stage: Stage; tieBreak: TieBreak; fixtures: (stageIndex: number) => Fixture[]; name?: string };
 type CupView = { id: string; cup: CupAbroad; country: string | null; season: number; rounds: Round[] };
 
 const isAmong = (humans: ReadonlySet<string>, ...ids: string[]) => ids.some((id) => humans.has(id));
@@ -44,6 +44,7 @@ function uefaView(cup: LeaguePhaseCup, humans: ReadonlySet<string>): CupView | n
     {
       stage: { kind: "groups", groups: playing.map((clubId) => [clubId, ...opponents(clubId)]), legs: 1, dates: [...cup.dates] },
       tieBreak: "extraTime",
+      name: "league-phase",
       fixtures: (index) =>
         phase.flatMap((m): Fixture[] => {
           if (!isAmong(humans, m.homeId, m.awayId)) return [];
@@ -59,6 +60,7 @@ function uefaView(cup: LeaguePhaseCup, humans: ReadonlySet<string>): CupView | n
     rounds.push({
       stage,
       tieBreak: "extraTime",
+      name: round.name,
       fixtures: knockoutFixtures(id, stage, (tie, fixture) => {
         const decoded = knockoutTie(round, indexes[tie] ?? 0);
         const leg = decoded.legs.findIndex((l) => l.date === fixture.date);
@@ -77,7 +79,7 @@ function superCupView(superCup: SuperCup | null, humans: ReadonlySet<string>): C
   const score = superCupScore(superCup);
   const winnerId = superCupWinner(superCup);
   const result = score && (score.homeGoals === score.awayGoals && winnerId ? { ...score, penaltyWinnerId: winnerId } : score);
-  return { id, cup: "uefa-super-cup", country: null, season: superCup.season, rounds: [{ stage, tieBreak: "penalties", fixtures: knockoutFixtures(id, stage, () => result) }] };
+  return { id, cup: "uefa-super-cup", country: null, season: superCup.season, rounds: [{ stage, tieBreak: "penalties", fixtures: knockoutFixtures(id, stage, () => result), name: "super-cup" }] };
 }
 
 /** A country's cup's rounds a human club plays, one match each, once both clubs are known. */
@@ -115,6 +117,7 @@ export function syncCupsAbroad(state: GameState): GameState {
   let isChanged = false;
   for (const view of cupViews(state, humans)) {
     const stages = view.rounds.map((round) => round.stage);
+    const host = view.cup === "national-cup" ? undefined : state.hosts?.[view.id];
     const competition: CupAbroadCompetition = {
       id: view.id,
       kind: "cupAbroad",
@@ -126,6 +129,8 @@ export function syncCupsAbroad(state: GameState): GameState {
       stageDates: stages.map((stage) => stage.dates),
       drawOrder: [],
       tieBreaks: view.rounds.map((round) => round.tieBreak),
+      ...(view.cup === "national-cup" ? {} : { stageNames: view.rounds.map((round) => round.name ?? "") }),
+      ...(host ? { host } : {}),
     };
     const before = state.competitions[view.id];
     if (!before || JSON.stringify(before) !== JSON.stringify(competition)) {

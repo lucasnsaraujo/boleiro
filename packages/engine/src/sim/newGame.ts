@@ -39,6 +39,8 @@ import type { NationalFootball } from "@boleiro/data/nationalFootball";
 import { openNations } from "./nations/openNations.js";
 import { syncCupsAbroad } from "./continental/cupsAbroad.js";
 import { postponeClashingGames } from "./postponeClashingGames.js";
+import { homeNationalityOf } from "./players/homeNationality.js";
+import { hostsThrough } from "./hosts/drawHosts.js";
 
 /** A result-only country to start: its structure and its clubs level by level, top first. */
 export type CountryStart = { structure: CountryStructure; levels: readonly (readonly WorldClub[])[] };
@@ -146,7 +148,7 @@ function academyTopUp(clubs: readonly Club[], players: readonly Omit<SimPlayer, 
   const squads = new Map<string, Omit<SimPlayer, "wage">[]>();
   for (const p of players) squads.set(p.clubId, [...(squads.get(p.clubId) ?? []), p]);
   return clubs.flatMap((club) =>
-    groupsToFill(squads.get(club.id) ?? [], []).map((group, i) => academyPlayer(`a${date.slice(0, 4)}-${club.id}-${i}`, club.id, divisionOf(club), group, date, random)),
+    groupsToFill(squads.get(club.id) ?? [], []).map((group, i) => academyPlayer(`a${date.slice(0, 4)}-${club.id}-${i}`, club.id, divisionOf(club), group, date, random, homeNationalityOf(club))),
   );
 }
 
@@ -229,6 +231,7 @@ export function newGame(
     ...(midSeasonWindow ? {} : { hasMidSeasonWindow: false as const }),
     ...(manualChangesOnlyInFinals ? { manualChangesOnlyInFinals: true as const } : {}),
     ...(isRealista(formats) ? {} : { formats }),
+    hosts: hostsThrough({}, seed, season),
   }, careerMode, randomStream(seed ^ COACH_STREAM_SALT).next);
   const withClock = marketClockSeconds === undefined ? game : { ...game, marketClockSeconds };
   const withAcademies = { ...withClock, youth: openAcademies(withClock) };

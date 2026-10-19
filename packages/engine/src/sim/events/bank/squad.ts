@@ -81,7 +81,7 @@ export const SQUAD_EVENTS: readonly EventType[] = [
     weight: (scene) => (chemistryValueOf(scene.state, scene.clubId) < LOW_CHEMISTRY ? 2 : 0.4),
     cooldownDays: 60,
     cast: (scene) => {
-      const foreign = scene.squad.filter(isForeign);
+      const foreign = scene.squad.filter((p) => isForeign(scene, p));
       return foreign.length >= 4 ? playerCast(pickFrom(scene, foreign)) : null;
     },
     setting: "No refeitório do CT",

@@ -1,14 +1,16 @@
 import type { Board } from "@boleiro/engine/sim/coach/boardExpectations";
-import { isOnNeutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
+import { isOnNeutralGround, neutralVenue } from "@boleiro/engine/sim/continental/neutralGrounds";
 import { boardConfidence, crowdPressure } from "@boleiro/engine/sim/coach/judgeCoaches";
 import { clubMood } from "@boleiro/engine/sim/morale/clubMood";
 import type { Fixture, GameState } from "@boleiro/engine/sim/gameState";
 import type { Division } from "@boleiro/data/players";
 import { fixtureLabel } from "@boleiro/game-client/format/competitionName";
 import { groupTables } from "../tables/competitionTables.js";
+import type { Stadium } from "@boleiro/engine/sim/hosts/venue";
+import { competitionEditionOf, type CompetitionEdition } from "@boleiro/game-client/format/competitionEdition";
 
-/** The coach's next game; `isNeutral` a national team's game on neutral ground. */
-export type NextMatch = { fixture: Fixture; opponentId: string; isHome: boolean; isNeutral: boolean; isToday: boolean; label: string };
+/** The coach's next game; `isNeutral` a game on neutral ground (a national tournament's, a final at its host's), `venue` that ground when its host names it. */
+export type NextMatch = { fixture: Fixture; opponentId: string; isHome: boolean; isNeutral: boolean; isToday: boolean; label: string; venue: Stadium | null; edition: CompetitionEdition | null };
 
 /** The coach's next unplayed fixture from today on, his club's or his national team's, or null when he has none. */
 export function nextMatch({ date, coachClubId, fixtures, competitions, nations }: Pick<GameState, "date" | "coachClubId" | "fixtures" | "competitions"> & Partial<Pick<GameState, "nations">>): NextMatch | null {
@@ -26,9 +28,11 @@ export function nextMatch({ date, coachClubId, fixtures, competitions, nations }
     fixture: next,
     opponentId: isHome ? next.awayId : next.homeId,
     isHome,
-    isNeutral: competition?.kind === "national" && isOnNeutralGround(competition, next.stage),
+    isNeutral: competition !== undefined && isOnNeutralGround(competition, next.stage),
     isToday: next.date === date,
     label: competition ? fixtureLabel(competition, next) : "",
+    venue: competition ? neutralVenue(competition, next) : null,
+    edition: competition ? competitionEditionOf(competition) : null,
   };
 }
 

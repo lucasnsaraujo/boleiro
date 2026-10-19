@@ -178,7 +178,7 @@ export const LIFE_EVENTS: readonly EventType[] = [
     weight: 0.4,
     cooldownDays: 180,
     once: "player",
-    cast: (scene) => playerCast(byStrength(scene.squad.filter((p) => !isForeign(p)))[0]),
+    cast: (scene) => playerCast(byStrength(scene.squad.filter((p) => !isForeign(scene, p)))[0]),
     texts: [
       { headline: "Cidade natal homenageia {player} com mural", body: "Um grafite de cinco metros com o rosto do {position} foi pintado no campinho onde ele começou." },
       { headline: "{player} vira nome de rua na terra natal", body: "A câmara de vereadores aprovou por unanimidade. Ele mandou um vídeo agradecendo." },
@@ -209,7 +209,7 @@ export const LIFE_EVENTS: readonly EventType[] = [
     once: "player",
     cast: (scene) => {
       const since = scene.date.slice(0, 4);
-      return playerCast(pickFrom(scene, scene.squad.filter((p) => isForeign(p) && (p.condition.arrivedOn ?? "") >= `${since}-01-01`)));
+      return playerCast(pickFrom(scene, scene.squad.filter((p) => isForeign(scene, p) && (p.condition.arrivedOn ?? "") >= `${since}-01-01`)));
     },
     setting: "No CT, depois do treino",
     texts: [

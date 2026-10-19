@@ -26,6 +26,7 @@ import type { ClubSponsors, PoolBrand } from "./sponsors/sponsors.js";
 import type { Nations } from "./nations/nations.js";
 import type { NationalCompetitionKind } from "./nations/fifaRanking.js";
 import type { Confederation } from "@boleiro/data/nationalFootball";
+import type { EditionHost, Hosts } from "./hosts/venue.js";
 
 export type IsoDate = string;
 
@@ -112,9 +113,10 @@ export type ContinentalCup = (typeof CONTINENTAL_CUPS)[number];
 
 /**
  * A CONMEBOL cup or one of FIFA's: `entries[stage]` are the clubs that join at that stage, best seed first, and
- * `countries` names each club's country ("br", "ar", ...), which the draws keep apart.
+ * `countries` names each club's country ("br", "ar", ...), which the draws keep apart. `host` is where a cup with a
+ * one-match final plays it, or the Club World Cup its matches; a cup opened before hosts, or without one, has none.
  */
-export type ContinentalCompetition = CompetitionBase & { kind: "continental"; cup: ContinentalCup; entries: string[][]; countries: Record<string, string> };
+export type ContinentalCompetition = CompetitionBase & { kind: "continental"; cup: ContinentalCup; entries: string[][]; countries: Record<string, string>; host?: EditionHost };
 
 /** The cups played result-only abroad whose matches of a human coach's club the full tier plays: UEFA's three and a country's own cup. */
 export const CUPS_ABROAD = ["champions-league", "europa-league", "uefa-super-cup", "national-cup"] as const;
@@ -126,7 +128,19 @@ export type CupAbroad = (typeof CUPS_ABROAD)[number];
  * rounds the club plays, a league phase as one group of its matchdays, each knockout round its tie;
  * `tieBreaks` says how each settles a tie level after its last leg; `country` names a national cup's country.
  */
-export type CupAbroadCompetition = CompetitionBase & { kind: "cupAbroad"; cup: CupAbroad; country: string | null; tieBreaks: ("extraTime" | "penalties")[] };
+/**
+ * A cup abroad a human club plays in the full tier; `stageNames` the round each stage plays at UEFA's cups
+ * ("league-phase", "playoffs" … "final", "super-cup"), which a national cup's and a game's synced before them lack.
+ */
+export type CupAbroadCompetition = CompetitionBase & {
+  kind: "cupAbroad";
+  cup: CupAbroad;
+  country: string | null;
+  tieBreaks: ("extraTime" | "penalties")[];
+  stageNames?: string[];
+  /** Where a UEFA cup plays its final (the Super Cup its match); none for a national cup or a game saved before hosts. */
+  host?: EditionHost;
+};
 
 /**
  * A national competition (`nations.competitions`, played result-only) seen from a human coach's national team:
@@ -145,6 +159,8 @@ export type NationalFullTierCompetition = CompetitionBase & {
   rounds: string[];
   groupNames: string[][];
   neutral: boolean[];
+  /** A final tournament's hosts and grounds, where its neutral matches are played; none for qualifiers, friendlies or a Nations League. */
+  host?: EditionHost;
 };
 
 export type Competition = LeagueCompetition | StateCompetition | CupCompetition | ContinentalCompetition | CupAbroadCompetition | NationalFullTierCompetition;
@@ -316,4 +332,6 @@ export type GameState = {
   nations?: Nations;
   /** The easter eggs the human coaches found; a save from before eggs, or a game where none was found, has none. */
   eggs?: EggBook;
+  /** Each edition's host, as announced or drawn on the game's seed and kept from then on (hosts/drawHosts.ts); a save from before hosts gets them when loaded. */
+  hosts?: Hosts;
 };

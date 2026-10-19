@@ -538,3 +538,16 @@
 .agenda-derby:empty {
   display: none;
 }
+
+/* The competition's logo before its name: on the next game's heading, and inline in the coming games' lines. */
+.agenda-next h3 .comp-logo {
+  display: inline-block;
+  vertical-align: middle;
+  margin: -4px 8px 0 0;
+}
+
+.agenda-coming small .comp-logo {
+  display: inline-block;
+  vertical-align: -3px;
+  margin-right: 5px;
+}
