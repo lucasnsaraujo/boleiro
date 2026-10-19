@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { seededRandom } from "../../engine/random.js";
 import type { ClubFinance, GameState, SimPlayer } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
+import { openDraft } from "./movePlayer.js";
 import { signFreeAgents } from "./signFreeAgents.js";
 import { REPLACEMENT_BAND, squadNeeds } from "./squadNeeds.js";
 
@@ -25,7 +26,8 @@ const thin = (finance: Partial<ClubFinance>): GameState => ({
   finances: { ...start.finances, [clubId]: { ...opening, ...finance } },
   market: { ...start.market, freeAgents },
 });
-const signingsBy = (state: GameState) => signFreeAgents(state, seededRandom(3)).events.filter((e) => e.toClubId === clubId);
+// signFreeAgents moves players in place, so each call gets a draft of its state (openDraft) and the shared free agents stay as they are.
+const signingsBy = (state: GameState) => signFreeAgents(openDraft(state), seededRandom(3)).events.filter((e) => e.toClubId === clubId);
 
 describe("AI clubs signing free agents", () => {
   it("fill a squad too thin to name a matchday squad when the money is there", () => {
@@ -73,7 +75,7 @@ describe("AI clubs signing free agents", () => {
       finances: { ...start.finances, [first]: rich(first), [second]: rich(second) },
       market: { ...start.market, freeAgents: { only: { ...model, id: "only", clubId: "abroad", group: "MID", strength: 50, age: 26 } } },
     };
-    const signing = signFreeAgents(contested, seededRandom(3)).events.find((e) => e.playerId === "only");
+    const signing = signFreeAgents(openDraft(contested), seededRandom(3)).events.find((e) => e.playerId === "only");
     expect(signing?.toClubId).toBe(second);
   });
 
