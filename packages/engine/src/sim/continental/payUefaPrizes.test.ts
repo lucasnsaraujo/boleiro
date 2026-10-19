@@ -5,7 +5,7 @@ import type { GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { loadEurope } from "../world/loadEurope.js";
 import { payUefaPrizes } from "./payUefaPrizes.js";
-import { knockoutTie, playEuropeDay, type EuropeanCups, type KnockoutRound } from "./uefaCups.js";
+import { knockoutTie, leaguePhaseMatches, leaguePhaseTable, playEuropeDay, type EuropeanCups, type KnockoutRound, type LeaguePhaseCup } from "./uefaCups.js";
 
 const ARSENAL = "tm-11";
 const LIVERPOOL = "tm-31";
@@ -47,6 +47,22 @@ describe("UEFA's prize money", () => {
   it("pays no club of a result-only league, which keeps no books", () => {
     expect(paidTo(REAL_MADRID)).toBe(0);
     expect(opening.state.finances[REAL_MADRID]).toBeUndefined();
+  });
+
+  it("pays the last matchday's results and, once, the ranking shares and top-16 bonuses, never the starting fee again", () => {
+    // Every league-phase match drawn 1–1; the last matchday played today.
+    const matchdays = championsLeague.dates.length;
+    const lastDay = championsLeague.matches.length - championsLeague.matches.length / matchdays;
+    const drawn = (upTo: number): LeaguePhaseCup => ({ ...championsLeague, results: championsLeague.matches.map((_, i) => (i < upTo ? "11" : "--")).join("") });
+    const [before, after] = [drawn(lastDay), drawn(championsLeague.matches.length)];
+    const cupsWith = (cup: LeaguePhaseCup): EuropeanCups => ({ ...europe, cups: europe.cups.map((c) => (c.cup === "champions-league" ? cup : c)) });
+    const events = payUefaPrizes({ ...start, europe: cupsWith(after) }, cupsWith(before)).events.filter((e) => e.clubId === ARSENAL);
+    const place = leaguePhaseTable(after).indexOf(ARSENAL) + 1;
+    const playsToday = leaguePhaseMatches(after).slice(lastDay).some((m) => m.homeId === ARSENAL || m.awayId === ARSENAL);
+    const bonus = place <= 8 ? 2_000_000 : place <= 16 ? 1_000_000 : 0;
+    expect(events.map((e) => e.amount).sort((a, b) => a - b)).toEqual(
+      [...(playsToday ? [brl((700_000 * 8) / matchdays)] : []), brl(275_000 * (37 - place) + bonus)].sort((a, b) => a - b),
+    );
   });
 
   it("pays both finalists for reaching the final and its winner his bonus, and both Super Cup clubs with a bonus to its winner", () => {

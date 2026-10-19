@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { Competition, ContinentalCompetition, CupCompetition, Fixture, GameState, LeagueCompetition, MatchResult } from "@boleiro/engine/sim/gameState";
+import type { Competition, ContinentalCompetition, CupAbroadCompetition, CupCompetition, Fixture, GameState, LeagueCompetition, MatchResult } from "@boleiro/engine/sim/gameState";
 import { RAPIDO } from "@boleiro/engine/sim/formats";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
@@ -461,5 +461,26 @@ describe("a league abroad in the full tier", () => {
     expect(inZone("europaLeague").sort()).toEqual([...(filed?.continental["europa-league"] ?? [])].sort());
     expect(inZone("relegation")).toEqual(filed?.relegated[0]);
     expect(inZone("championsLeague")).toHaveLength(5);
+  });
+});
+
+describe("a human club's cups abroad", () => {
+  const cupAbroad = (cup: CupAbroadCompetition["cup"], stageNames: string[]): CupAbroadCompetition => ({
+    id: `${cup}-2026`,
+    kind: "cupAbroad",
+    cup,
+    country: null,
+    season: 2026,
+    clubIds: [],
+    stages: stageNames.map((name) => (name === "league-phase" ? { kind: "groups" as const, groups: [], legs: 1 as const, dates: [] } : { kind: "knockout" as const, ties: [], dates: [] })),
+    stageDates: stageNames.map(() => []),
+    drawOrder: [],
+    tieBreaks: stageNames.map(() => "extraTime" as const),
+    stageNames,
+  });
+
+  test("name their stages by UEFA's rounds, the Super Cup by its own", () => {
+    expect(competitionStages(cupAbroad("champions-league", ["league-phase", "playoffs", "round-of-16", "final"]), game.calendar).map((s) => s.name)).toEqual(["Fase de liga", "Playoffs", "Oitavas", "Final"]);
+    expect(competitionStages(cupAbroad("uefa-super-cup", ["super-cup"]), game.calendar).map((s) => s.name)).toEqual(["Supercopa"]);
   });
 });

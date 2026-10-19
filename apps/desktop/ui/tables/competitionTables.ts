@@ -105,11 +105,11 @@ const CUP_ROUND_NAMES: Record<string, string> = {
   "quarter-finals": "Quartas",
   "semi-finals": "Semifinal",
   final: "Final",
-  "league-phase": "Fase de liga",
-  "super-cup": "Supercopa",
 };
 const KNOCKOUT_BY_CLUBS: Record<number, string> = { 16: "Oitavas", 8: "Quartas", 4: "Semifinal", 2: "Final" };
 const CONTINENTAL_STAGE_NAMES: Record<string, string> = {
+  "league-phase": "Fase de liga",
+  "super-cup": "Supercopa",
   "stage-1": "1ª fase",
   "stage-2": "2ª fase",
   "stage-3": "3ª fase",
