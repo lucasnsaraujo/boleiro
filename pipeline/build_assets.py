@@ -1,6 +1,6 @@
 """Converts the images of the master database's latest CSV-import snapshot into the pack's small variants.
 
-Each distinct source image of a kind (by content hash) becomes WebP and AVIF files fitted into
+Each distinct source image of a kind (by content hash) becomes WebP files fitted into
 64, 128 and 256 px boxes, never upscaled: a 139x181 crest's 256 variant stays 139x181. An image is
 named by its kind and hash, `<kind>/<hash>`, and its files `assets/<kind>/<hash>-<box>.<format>`;
 a PNG used both as a crest and a scoreboard crest gets files in both folders. `assets.json` lists
@@ -41,6 +41,9 @@ HASH_LENGTH = 16
 # q80 WebP and q60 AVIF looked the same as the PNGs on six Série A crests side by side, at under
 # half the size of lossless WebP.
 FORMATS = {"webp": ("WEBP", {"quality": 80, "method": 6}), "avif": ("AVIF", {"quality": 60})}
+# Only WebP: every desktop webview reads it, and the 3.46 MB of AVIF crests the app never loaded held the image budget a
+# competition logo needed. A client that wants AVIF asks for it here.
+CREST_FORMATS = ("webp",)
 WORLD_FORMATS = ("webp",)
 WORLD_BOXES = (64, 128)
 LOGO_FORMATS = ("webp",)
@@ -139,7 +142,7 @@ def main() -> None:
     with sqlite3.connect(db_path) as db:
         db.row_factory = sqlite3.Row
         snapshot = int(sys.argv[3]) if len(sys.argv) > 3 else latest_snapshot(db)
-        manifest = build(import_rows(db, snapshot), out, tuple(FORMATS))
+        manifest = build(import_rows(db, snapshot), out, CREST_FORMATS)
         write(manifest, out)
         write(build(logo_rows(db, snapshot), out / "sponsors", LOGO_FORMATS, LOGO_BOXES, are_logos=True), out / "sponsors")
         if db.execute("SELECT 1 FROM snapshots WHERE kind = 'transfermarkt'").fetchone():

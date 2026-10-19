@@ -11,10 +11,10 @@ const manifest = parseAssetManifest(readFileSync(join(PACK, "assets.json"), "utf
 // Bytes per asset class: the Brazil-only sizes of 2026-10 plus about 25% headroom (README, "Data
 // pack"). Raise one on purpose, with the new size in the commit, when more of the world lands.
 const IMAGE_BUDGETS: Record<string, { largestFile: number; total: number }> = {
-  // today 16,186 and 6,822,086 (281 crests, 3 boxes, WebP + AVIF)
-  crest: { largestFile: 20_000, total: 8_500_000 },
-  // today 30,508 and 1,372,720 (40 ESPN logos)
-  scoreboard_crest: { largestFile: 38_000, total: 1_700_000 },
+  // today 16,186 and 3,938,266 (281 crests, 3 boxes, WebP)
+  crest: { largestFile: 20_000, total: 4_900_000 },
+  // today 30,508 and 794,936 (40 ESPN logos)
+  scoreboard_crest: { largestFile: 38_000, total: 1_000_000 },
 };
 // The sponsors' logos (pack/sponsors/), WebP in three boxes, mostly in a lossless palette: marks on a clear
 // ground and badges (opaque tiles).
@@ -35,7 +35,8 @@ const NATIONAL_CREST_BUDGET = { largestFile: 13_500, total: 590_000 };
 // Every image of the v1 world, Brazil's, the world scrape's (pack/world/), the sponsors' and the national teams',
 // against SPEC §4.3's ~25 MB: 16,832,668 bytes before the national crests, 1,280,328 of them the sponsors' logos.
 // That is 832,668 over the 16,000,000 held before the logos came, which they can't fit without dropping a box the
-// screens show; the cap is that size and half a megabyte until the owner decides.
+// screens show; the cap is that size and half a megabyte until the owner decides. Brazil's crests then lost the AVIF
+// copies the app never loaded (3,461,604 bytes), which made room for the competitions' logos.
 const ALL_IMAGES_BUDGET = 17_330_000;
 const WORLD_PACK = join(PACK, "world");
 const worldManifest = parseAssetManifest(readFileSync(join(WORLD_PACK, "assets.json"), "utf8"));
