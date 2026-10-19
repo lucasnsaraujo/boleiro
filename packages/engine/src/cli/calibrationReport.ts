@@ -3,7 +3,7 @@ import { parseArgs } from "node:util";
 import type { Division } from "@boleiro/data/players";
 import { realDivisionRates, realSerieARates } from "../engine/calibration.js";
 import { DIVISION_GAPS, realCupUpsets } from "../engine/cupUpsets.js";
-import { CARD_RATES, realCardsPerGame, type CardCompetition } from "../sim/discipline/cardRates.js";
+import { CARD_RATES, LEAGUE_ABROAD_CARD_RATES, realCardsPerGame, type CardCompetition } from "../sim/discipline/cardRates.js";
 import { compareMean, compareShare, type Comparison } from "./calibrationBands.js";
 import { realAbroadRates } from "./realAbroadRates.js";
 import { gitCommit } from "./gitCommit.js";
@@ -190,7 +190,7 @@ function abroadTables(runs: readonly WorldCalibrationRun[]) {
   const cards = [...real.entries()]
     .filter(([, r]) => r.cardMatches > 0)
     .map(([key, r]) => {
-      const rates = CARD_RATES.A;
+      const rates = LEAGUE_ABROAD_CARD_RATES[key] ?? CARD_RATES.A;
       const gameYellows = rates.home.yellows + rates.away.yellows;
       const gameReds = rates.home.reds + rates.away.reds;
       return `| ${LEAGUE_NAMES.get(key) ?? key} | ${r.cardMatches} | ${(r.yellows / r.cardMatches).toFixed(2)} | ${gameYellows.toFixed(2)} | ${(r.reds / r.cardMatches).toFixed(3)} | ${gameReds.toFixed(3)} |`;

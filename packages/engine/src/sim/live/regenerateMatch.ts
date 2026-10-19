@@ -2,7 +2,7 @@ import type { Formation } from "../../engine/formations.js";
 import type { Score } from "../../engine/match.js";
 import { keyedStream } from "../../engine/random.js";
 import { guestClubOf, guestSquadOf } from "../continental/guestClubs.js";
-import { CARD_RATES, cardCompetitionOf, type CardRates } from "../discipline/cardRates.js";
+import { CARD_RATES, cardRatesOf, type CardRates } from "../discipline/cardRates.js";
 import type { CardCount } from "../discipline/discipline.js";
 import { drawCards, type Booking } from "../discipline/drawCards.js";
 import type { Fixture, GameState, MatchResult, SimPlayer } from "../gameState.js";
@@ -89,7 +89,7 @@ export function regenerateMatch(state: GameState, fixture: Fixture & { result: M
   const benches = { home: aiBench(squadOf(fixture.homeId), setup.homeLineup, isFit), away: aiBench(squadOf(fixture.awayId), setup.awayLineup, isFit) };
   const starters = new Set([...setup.homeLineup, ...setup.awayLineup].map((p) => p.id));
   const competition = state.competitions[fixture.competitionId];
-  const rates: CardRates = competition ? CARD_RATES[cardCompetitionOf(competition)] : CARD_RATES.A;
+  const rates: CardRates = competition ? cardRatesOf(competition) : CARD_RATES.A;
   const cardsRandom = keyedStream(state.seed ^ CARDS_STREAM_SALT, fixture.id);
   const { cards } = fixture.result;
   const bookings = cards
