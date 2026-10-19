@@ -12,6 +12,7 @@ import { freshCondition, rollTrait } from "./openingProfile.js";
 import { homeNationalityOf } from "./homeNationality.js";
 import { squadsOfGame } from "./squadsByClub.js";
 import { isClubFull } from "../transfers/squadCap.js";
+import { log, cos } from "../portableMath.js";
 
 export type PlayerRetired = { type: "playerRetired"; playerId: string; clubId: string; name: string; age: number };
 /** A kid moved up into his club's squad; `byAssistant` when a human coach's assistant did it for him mid-season. */
@@ -76,7 +77,7 @@ export const SQUAD_SHAPE: Record<PositionGroup, number> = { GK: 3, DEF: 8, MID: 
 const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
 
 export function normal(random: () => number): number {
-  return Math.sqrt(-2 * Math.log(1 - random())) * Math.cos(2 * Math.PI * random());
+  return Math.sqrt(-2 * log(1 - random())) * cos(2 * Math.PI * random());
 }
 
 const clamp = (strength: number) => Math.min(99, Math.max(1, strength));

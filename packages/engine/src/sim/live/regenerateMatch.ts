@@ -20,6 +20,7 @@ import { drawMatchPlay, type MatchPlay } from "./matchPlay.js";
 import { scorersOf } from "../history/scorersOf.js";
 import { describeGoals, type GoalEvent } from "./goalDetails.js";
 import { detailStream, EXTRA_TIME_END, FULL_TIME, inMatchOrder, kickOffTimeline, scorerStream, whistlesTo, type KickOffTimeline, type MatchEvent } from "./matchTimeline.js";
+import { pow } from "../portableMath.js";
 
 type Sides<T> = { home: T; away: T };
 
@@ -65,7 +66,7 @@ function bookingsOf(lineup: readonly SimPlayer[], count: CardCount, secondYellow
       continue;
     }
     const player = take();
-    if (player) bookings.push({ playerId: player.id, clubId: player.clubId, card: "red", minute: Math.round(FULL_TIME * random() ** 0.32) || 1 });
+    if (player) bookings.push({ playerId: player.id, clubId: player.clubId, card: "red", minute: Math.round(FULL_TIME * pow(random(), 0.32)) || 1 });
   }
   return bookings;
 }

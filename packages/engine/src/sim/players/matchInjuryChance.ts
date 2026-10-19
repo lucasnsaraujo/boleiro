@@ -2,6 +2,7 @@ import { addDays } from "../dates.js";
 import type { IsoDate, SimPlayer } from "../gameState.js";
 import type { MatchContext } from "./effectiveStrength.js";
 import { fatigueOn } from "./fatigueOn.js";
+import { exp, log, pow, cos } from "../portableMath.js";
 
 // 27.5 time-loss injuries per 1000 match hours in 23 top European clubs, 2001–2008
 // (Ekstrand, Hägglund & Waldén 2011, "Injury incidence and injury patterns in professional
@@ -60,9 +61,9 @@ export function matchInjuryChance(player: SimPlayer, context: MatchContext): num
   const prone = player.trait === "injuryProne" ? INJURY_PRONE_RISK : 1;
   const pitch = context.pitch === "artificial" ? ARTIFICIAL_PITCH_RISK : 1;
   const tired = 1 + (FATIGUE_RISK_PER_MATCH * fatigueOn(player, context.date)) / 100;
-  const age = AGE_RISK_PER_YEAR ** (player.age - MEDIAN_AGE) / AGE_RISK_MEAN;
+  const age = pow(AGE_RISK_PER_YEAR, player.age - MEDIAN_AGE) / AGE_RISK_MEAN;
   const recurrence = isRecurrenceWindow(player, context.date) ? RECURRENCE_RISK : 1;
-  return 1 - Math.exp((-MATCH_INJURIES_PER_HOUR * MATCH_HOURS * prone * pitch * tired * age * recurrence) / SEASON_RISK_MEAN);
+  return 1 - exp((-MATCH_INJURIES_PER_HOUR * MATCH_HOURS * prone * pitch * tired * age * recurrence) / SEASON_RISK_MEAN);
 }
 
 // Match injuries in the UEFA Elite Club Injury Study, 2000/01–2018/19 (Ekstrand et al. 2021, BJSM
@@ -86,8 +87,8 @@ const LONGEST_LAYOFF = 300;
 
 /** A day count drawn from a log-normal with this median and log spread, at least one day. */
 function logNormalDays(median: number, sigma: number, random: () => number): number {
-  const z = Math.sqrt(-2 * Math.log(1 - random())) * Math.cos(2 * Math.PI * random());
-  return Math.min(LONGEST_LAYOFF, Math.max(1, Math.round(median * Math.exp(sigma * z))));
+  const z = Math.sqrt(-2 * log(1 - random())) * cos(2 * Math.PI * random());
+  return Math.min(LONGEST_LAYOFF, Math.max(1, Math.round(median * exp(sigma * z))));
 }
 
 /**

@@ -1,5 +1,6 @@
 import { PENALTIES_PER_SIDE, PENALTY_CONVERSION, type PositionGroup } from "../../engine/match.js";
 import type { SimPlayer } from "../gameState.js";
+import { exp } from "../portableMath.js";
 
 /** How a goal went in. An own goal counts for `clubId`; its `playerId` is the opponent who put it in. */
 export type GoalKind = "openPlay" | "header" | "penalty" | "freeKick" | "ownGoal" | "olympic";
@@ -110,7 +111,7 @@ export function drawPenaltyMisses(sides: Sides, strength: (p: SimPlayer) => numb
     const keeper = keeperOf(other.onPitch(minute));
     if (!taker || !keeper) return null;
     const mean = PENALTIES_PER_SIDE * (1 - penaltyConversion(strength(taker), strength(keeper))) * share;
-    if (random() >= 1 - Math.exp(-mean)) return null;
+    if (random() >= 1 - exp(-mean)) return null;
     return { type: "penaltyMiss", minute, clubId: own.clubId, playerId: taker.id, keeperId: keeper.id, isSaved: random() < SAVED_SHARE };
   }
 }

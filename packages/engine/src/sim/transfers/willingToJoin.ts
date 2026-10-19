@@ -1,4 +1,5 @@
 import type { SimPlayer, Tier } from "../gameState.js";
+import { exp, log, log10 } from "../portableMath.js";
 
 /** Where a player comes from: a Brazilian tier, or a club abroad. */
 export type Origin = Tier | "abroad";
@@ -56,13 +57,13 @@ export function willingToJoin({ player, from, to, wage, unemployed = false, loan
   const rungs = RANK[to.tier] - RANK[from];
   // guess: a reserve going on loan for minutes does not weigh the step down; it is temporary.
   const step = rungs >= 0 || loan ? Math.max(0, rungs) * PER_RUNG : rungs * (PER_RUNG + ambition) * (veteran ? VETERAN_DROP_DISCOUNT : 1);
-  const money = PER_LOG_WAGE * (unemployed ? UNEMPLOYED_WAGE_WEIGHT : 1) * Math.log(Math.max(1, wage) / Math.max(1, player.wage));
-  const fame = PER_LOG10_FANBASE * Math.log10(Math.max(1, to.fanbase) / MEDIAN_FANBASE);
+  const money = PER_LOG_WAGE * (unemployed ? UNEMPLOYED_WAGE_WEIGHT : 1) * log(Math.max(1, wage) / Math.max(1, player.wage));
+  const fame = PER_LOG10_FANBASE * log10(Math.max(1, to.fanbase) / MEDIAN_FANBASE);
   const brazilian = isBrazilian(player.nationalities);
   const european = !brazilian && !player.nationalities.some((n) => SOUTH_AMERICA.has(n));
   const home = from === "abroad" && brazilian ? HOMECOMING : 0;
   const prime = from === "abroad" && european && !veteran ? EUROPEAN_IN_PRIME : 0;
   const lower = !brazilian && to.tier !== "A" && to.tier !== "B" ? FOREIGNER_IN_LOWER_DIVISION : 0;
   const jobless = unemployed ? UNEMPLOYED : 0;
-  return 1 / (1 + Math.exp(-(BASE + step + money + fame + home + prime + lower + jobless)));
+  return 1 / (1 + exp(-(BASE + step + money + fame + home + prime + lower + jobless)));
 }

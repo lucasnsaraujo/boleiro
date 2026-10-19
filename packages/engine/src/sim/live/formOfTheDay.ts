@@ -1,4 +1,5 @@
 import { keyedStream } from "../../engine/random.js";
+import { log, cos } from "../portableMath.js";
 
 /** What pulls a player's form going into a match: his morale (0 to 100) and his fatigue (100 is one full match's load). */
 type FormPull = { morale: number; fatigue: number };
@@ -22,7 +23,7 @@ const FORM_STREAM_SALT = 0xf0a3;
 /** A player's form of the day in a match, from −1 to 1: drawn from the save's seed and the fixture, pulled by morale and fatigue. */
 export function formOfTheDay(seed: number, fixtureId: string, playerId: string, pull: FormPull): number {
   const random = keyedStream(seed ^ FORM_STREAM_SALT, `${fixtureId}/${playerId}`);
-  const normal = Math.sqrt(-2 * Math.log(1 - random())) * Math.cos(2 * Math.PI * random());
+  const normal = Math.sqrt(-2 * log(1 - random())) * cos(2 * Math.PI * random());
   const mean = (MORALE_PULL * (pull.morale - 50)) / 50 - (FATIGUE_PULL * (pull.fatigue - USUAL_FATIGUE)) / 100;
   return Math.max(-1, Math.min(1, mean + FORM_SD * normal));
 }

@@ -4,6 +4,7 @@ import type { GameState, IsoDate } from "../gameState.js";
 import { shuffle } from "../shuffle.js";
 import type { Copinha, Prospect } from "./academy.js";
 import { compareText } from "../compareText.js";
+import { pow } from "../portableMath.js";
 
 export type CopinhaPlayed = { type: "copinhaPlayed"; season: number; championId: string };
 
@@ -77,5 +78,5 @@ export function copinhaRun(copinha: Copinha, clubId: string): { lastRoundSize: n
   const last = matches.at(-1);
   if (!last) return null;
   const firstRoundSize = 2 * copinha.matches.filter((m) => m.round === 0).length;
-  return { lastRoundSize: firstRoundSize / 2 ** last.round, isChampion: copinha.championId === clubId, matches };
+  return { lastRoundSize: firstRoundSize / pow(2, last.round), isChampion: copinha.championId === clubId, matches };
 }

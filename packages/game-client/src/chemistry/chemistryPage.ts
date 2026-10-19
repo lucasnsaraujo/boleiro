@@ -2,6 +2,7 @@ import type { Role } from "@boleiro/data/players";
 import { arrange, FORMATIONS, type Formation } from "@boleiro/engine/engine/formations";
 import { chemistryOf, chemistryStrength, type ChemistryLink, type ChemistryReason } from "@boleiro/engine/sim/chemistry/chemistryOf";
 import type { GameState, SimPlayer } from "@boleiro/engine/sim/gameState";
+import { hypot } from "@boleiro/engine/sim/portableMath";
 
 /** A sticker on the relationship map, at `x`/`y` percent of the pitch attacking upwards; reserves sit beside the starter they are linked to. */
 export type MapPlayer = { id: string; name: string; strength: number; x: number; y: number; isReserve: boolean; isCaptain: boolean };
@@ -100,7 +101,7 @@ const clamp = (value: number) => Math.min(100 - EDGE, Math.max(EDGE, value));
 /** Where a reserve stands beside his starter: of the spots around him, the one furthest from every sticker already on the map. */
 function freeSpotNear(spot: { x: number; y: number }, taken: readonly { x: number; y: number }[]): { x: number; y: number } {
   const around = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].flatMap((dy) => (dx || dy ? [{ x: clamp(spot.x + dx * RESERVE_OFFSET_X), y: clamp(spot.y + dy * RESERVE_OFFSET_Y) }] : [])));
-  const room = (at: { x: number; y: number }) => Math.min(...taken.map((other) => Math.hypot((at.x - other.x) * ASPECT, at.y - other.y)));
+  const room = (at: { x: number; y: number }) => Math.min(...taken.map((other) => hypot((at.x - other.x) * ASPECT, at.y - other.y)));
   return around.reduce((best, at) => (room(at) > room(best) ? at : best));
 }
 

@@ -1,3 +1,5 @@
+import { pow } from "../portableMath.js";
+
 /**
  * FIFA's men's ranking, "SUM" since 2018: P = P_before + I × (W − W_e), W_e = 1 / (10^(−dr/600) + 1), where W is
  * 1 for a win, 0.5 for a draw, 0 for a loss, a shootout winner 0.75 and its loser 0.5; I is the match's
@@ -22,7 +24,7 @@ type Sides<T> = { home: T; away: T };
 
 /** Both sides' points after a match of `importance`; `isKnockout` for a final tournament's knockout stage, where the loser keeps his. */
 export function rankingPointsAfter(points: Sides<number>, score: Sides<number> & { penaltyWinner?: "home" | "away" }, importance: number, isKnockout: boolean): Sides<number> {
-  const expectedHome = 1 / (10 ** (-(points.home - points.away) / 600) + 1);
+  const expectedHome = 1 / (pow(10, -(points.home - points.away) / 600) + 1);
   const resultHome = score.home > score.away ? 1 : score.home < score.away ? 0 : score.penaltyWinner === "home" ? 0.75 : score.penaltyWinner === "away" ? 0.5 : 0.5;
   const resultAway = score.penaltyWinner ? (score.penaltyWinner === "away" ? 0.75 : 0.5) : 1 - resultHome;
   let home = importance * (resultHome - expectedHome);

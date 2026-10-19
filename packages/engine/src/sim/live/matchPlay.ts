@@ -3,6 +3,7 @@ import { keyedStream } from "../../engine/random.js";
 import { CARD_RATES } from "../discipline/cardRates.js";
 import type { SimPlayer } from "../gameState.js";
 import { EXTRA_TIME_END, FULL_TIME, matchEndOf, type MatchEvent } from "./matchTimeline.js";
+import { exp, log, cos } from "../portableMath.js";
 
 type Shot = { minute: number; isOnTarget: boolean };
 
@@ -95,11 +96,11 @@ const SMALL_MEAN = 12;
 
 function count(mean: number, random: () => number): number {
   if (mean > SMALL_MEAN) {
-    const normal = Math.sqrt(-2 * Math.log(1 - random())) * Math.cos(2 * Math.PI * random());
+    const normal = Math.sqrt(-2 * log(1 - random())) * cos(2 * Math.PI * random());
     return Math.max(0, Math.round(mean + Math.sqrt(mean) * normal));
   }
   let roll = random();
-  let p = Math.exp(-mean);
+  let p = exp(-mean);
   let n = 0;
   while (roll > p) {
     roll -= p;
