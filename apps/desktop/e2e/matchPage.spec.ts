@@ -52,7 +52,7 @@ test("a match on the live board opens in the panel, Ver ficha completa opens its
   }
   await expect(sheet.getByRole("region", { name: "Na tabela" })).toBeVisible();
   await sheet.getByRole("button", { name: "Fechar a ficha" }).click();
-  // The file slides out on the page's clock: a second of it, which the round plays on through.
+  // The file's way out runs on the paused page clock, so the test steps it a second forward.
   await page.clock.runFor(1000);
   await expect(sheet).toBeHidden();
   await expect(panel).toBeHidden();
