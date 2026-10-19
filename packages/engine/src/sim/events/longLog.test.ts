@@ -21,7 +21,8 @@ function eventDaysSeconds(first: GameState, days: number): number {
 }
 
 describe("a long career's event log", () => {
-  it("doesn't make each day's events read it all again", () => {
+  // Two CPU timings on a shared 2-core runner swing past the margin; the Linux CI shards set BOLEIRO_SPEED_ELSEWHERE and a separate Apple Silicon job times it.
+  it.skipIf(process.env.BOLEIRO_SPEED_ELSEWHERE === "1")("doesn't make each day's events read it all again", () => {
     const memory = eventMemoryOf(start);
     const longCareer: GameState = { ...start, eventMemory: { ...memory, log: [...oldLog, ...memory.log] } };
     const fresh = eventDaysSeconds(start, 30);

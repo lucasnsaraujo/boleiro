@@ -17,7 +17,7 @@ async function playRound(page: Page) {
     // A red card or an injury to a coach's side stops the round with its window over the board.
     await leaveIncident(page);
     await resumeAtFourX(page);
-    await expect(page.getByRole("button", { name: "Pausar" }).and(page.locator("[aria-pressed=true]")).or(next)).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("button", { name: "Pausar" }).and(page.locator("[aria-pressed=true]")).or(next).first()).toBeVisible({ timeout: 30_000 });
   }
   await next.click();
 }

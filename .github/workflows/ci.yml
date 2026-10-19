@@ -49,7 +49,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec vitest run packages/engine/src/sim/season.test.ts packages/engine/src/sim/world/v1World.test.ts -t "runs in a few seconds|within ten seconds"
+      - run: pnpm exec vitest run packages/engine/src/sim/season.test.ts packages/engine/src/sim/world/v1World.test.ts packages/engine/src/sim/events/longLog.test.ts -t "runs in a few seconds|within ten seconds|read it all again"
 
   pipeline:
     runs-on: ubuntu-latest
