@@ -12,7 +12,7 @@ const fitted = (baseGoals: number, homeAdvantage: number, lowScoreCorrelation: n
  * lowScoreCorrelation, on the clubs' result-only elevens at the game's start. Like Série B–D they keep
  * Série A's strengthImpact and gapSaturation.
  */
-export const LEAGUE_ABROAD_PARAMS: Readonly<Record<string, EngineParams>> = {
+const LEAGUE_ABROAD_PARAMS: Readonly<Record<string, EngineParams>> = {
   "ar-1": fitted(0.7932, 0.3595, -0.1807),
   "at-1": fitted(1.1398, 0.1297, -0.2396),
   "be-1": fitted(1.1723, 0.2166, -0.1262),
