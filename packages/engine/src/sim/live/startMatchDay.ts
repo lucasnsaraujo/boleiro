@@ -32,6 +32,8 @@ import { followMatchPlans } from "./applyLiveChange.js";
 import type { MatchPlan } from "../coach/matchPlan.js";
 import type { Tactics } from "../coach/tactics.js";
 import { onDutyOn } from "../nations/nationsDay.js";
+import { nationalTeamPlayingToday, nationalTeamToday, seatedSideToday, sideToday } from "../nations/nationalFixtures.js";
+import { isNationalTeam, nationalSquadOf, nationalTacticsOf, sideOfPlayerIn } from "../nations/nationalSquad.js";
 import type { CoachMatch, LiveDay, LiveMatch } from "./liveDay.js";
 import { drawMatchPlay } from "./matchPlay.js";
 import { detailStream, EXTRA_TIME_END, FULL_TIME, inMatchOrder, kickOffTimeline, scorerStream } from "./matchTimeline.js";
@@ -50,23 +52,27 @@ function firstDrawsFrom(first: () => number, count: number, then: () => number):
 const TIMELINE_STREAM_SALT = 0x71e11e;
 const COACH_MATCH_STREAM_SALT = 0xc0ac5;
 
-/** Club squads, the game's shared ones (squadsOfGame). A continental cup's guest from abroad brings its own. */
+/** Club squads, the game's shared ones (squadsOfGame). A continental cup's guest from abroad brings its own, and a national team its call-up. */
 export function squadsOf(state: GameState): (clubId: string) => readonly SimPlayer[] {
   return (clubId) => {
     const squads = squadsOfGame(state);
-    const guest = squads.has(clubId) ? null : guestClubOf(state, clubId);
-    return guest ? guestSquadOf(guest) : (squads.get(clubId) ?? []);
+    if (squads.has(clubId)) return squads.get(clubId) ?? [];
+    if (isNationalTeam(state, clubId)) return nationalSquadOf(state, clubId);
+    const guest = guestClubOf(state, clubId);
+    return guest ? guestSquadOf(guest) : [];
   };
 }
 
-function coachLineupOf(state: GameState, decisions: DayDecisions): SimPlayer[] | null {
-  if (!decisions.lineup || !state.coachClubId) return null;
-  const lineup = decisions.lineup.map((id) => state.players[id]);
-  const chosen = lineup.filter((player): player is SimPlayer => player?.clubId === state.coachClubId);
-  if (chosen.length !== lineup.length) throw new Error(`lineup has players who are not at ${state.coachClubId}`);
+/** The eleven a coach picked for `sideId`, his club or his national team, checked against its squad today. */
+function coachLineupOf(state: GameState, decisions: DayDecisions, sideId: string | null = state.coachClubId): SimPlayer[] | null {
+  if (!decisions.lineup || !sideId) return null;
+  const national = isNationalTeam(state, sideId) ? new Map(nationalSquadOf(state, sideId).map((p) => [p.id, p])) : null;
+  const lineup = decisions.lineup.map((id) => (national ? national.get(id) : state.players[id]));
+  const chosen = lineup.filter((player): player is SimPlayer => player?.clubId === sideId);
+  if (chosen.length !== lineup.length) throw new Error(`lineup has players who are not at ${sideId}`);
   const injured = chosen.filter((player) => isInjured(player, state.date));
   if (injured.length) throw new Error(`lineup has injured players: ${injured.map((p) => p.name).join(", ")}`);
-  const away = onDutyOn(state, state.date);
+  const away = national ? new Set<string>() : onDutyOn(state, state.date);
   const onDuty = chosen.filter((player) => away.has(player.id));
   if (onDuty.length) throw new Error(`lineup has players away with their national team: ${onDuty.map((p) => p.name).join(", ")}`);
   if (chosen.length !== LINEUP_SIZE || new Set(chosen).size !== LINEUP_SIZE) throw new Error(`lineup needs ${LINEUP_SIZE} different players`);
@@ -77,15 +83,26 @@ function coachLineupOf(state: GameState, decisions: DayDecisions): SimPlayer[] |
 /** The coach's tactics with his match plan's shootout order, when the plan sets one. */
 const withPlanOrder = (tactics: Tactics, plan: MatchPlan | undefined): Tactics => (plan?.kickerOrder ? { ...tactics, kickerOrder: plan.kickerOrder } : tactics);
 
-/** Each waiting hot-seat coach's plan for his club's match, by club: the eleven he picked on his turn and his tactics. */
+/**
+ * Each waiting hot-seat coach's plan for his match, by side: the eleven he picked on his turn and his tactics for
+ * the side he runs today (sideToday), his club or his national team; on a day both play, his assistant's eleven for
+ * the national team in its tactics.
+ */
 export function waitingPlansOf(state: GameState, decisions: DayDecisions): Record<string, CoachPlan> {
   const plans: Record<string, CoachPlan> = {};
   waitingCoachesOf(state).forEach((waiting, index) => {
-    if (!waiting.clubId) return;
     const own = decisions.waiting?.[index] ?? {};
-    const kept = startersKept(waiting.coach, state.chemistry?.[waiting.clubId]?.eleven);
+    const nationalId = waiting.nationalJob ? nationalTeamPlayingToday(state, waiting.nationalJob.teamId) : null;
+    const side = nationalId ? sideToday(state, waiting.clubId, nationalId) : waiting.clubId;
+    if (nationalId && side !== nationalId) plans[nationalId] = { lineup: null, tactics: withPlanOrder(nationalTacticsOf(state, nationalId), waiting.coach.matchPlan) };
+    if (!side) return;
+    if (side === nationalId) {
+      plans[side] = { lineup: coachLineupOf(state, own, side), tactics: withPlanOrder(own.tactics ?? nationalTacticsOf(state, side), waiting.coach.matchPlan) };
+      return;
+    }
+    const kept = startersKept(waiting.coach, state.chemistry?.[side]?.eleven);
     const tactics = withPlanOrder(own.tactics ?? waiting.coach.tactics, waiting.coach.matchPlan);
-    plans[waiting.clubId] = { lineup: coachLineupOf({ ...state, coachClubId: waiting.clubId }, own), tactics, ...(kept ? { kept } : {}) };
+    plans[side] = { lineup: coachLineupOf({ ...state, coachClubId: side }, own), tactics, ...(kept ? { kept } : {}) };
   });
   return plans;
 }
@@ -138,9 +155,16 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
   const timelineRandom = randomStream(state.rngState ^ TIMELINE_STREAM_SALT).next;
   const events: DayEvent[] = [];
   const squad = squadsOf(state);
-  const kept = state.coachClubId ? startersKept(state.coach, state.chemistry?.[state.coachClubId]?.eleven) : undefined;
-  const coach: CoachPlan = { lineup: coachLineupOf(state, decisions), tactics: withPlanOrder(decisions.tactics ?? state.coach.tactics, state.coach.matchPlan), ...(kept ? { kept } : {}) };
-  const waiting = waitingPlansOf(state, decisions);
+  // The coach in the seat runs his club, or on its match day his national team; on a day both play his assistant picks the national eleven.
+  const seated = seatedSideToday(state);
+  const nationalId = nationalTeamToday(state);
+  const isNationalSeated = seated !== null && seated === nationalId;
+  const kept = state.coachClubId && !isNationalSeated ? startersKept(state.coach, state.chemistry?.[state.coachClubId]?.eleven) : undefined;
+  const seatedTactics = isNationalSeated ? nationalTacticsOf(state, seated) : state.coach.tactics;
+  const coach: CoachPlan = { lineup: coachLineupOf(state, decisions, seated), tactics: withPlanOrder(decisions.tactics ?? seatedTactics, state.coach.matchPlan), ...(kept ? { kept } : {}) };
+  const waiting = nationalId
+    ? { ...waitingPlansOf(state, decisions), [nationalId]: isNationalSeated ? coach : { lineup: null, tactics: withPlanOrder(nationalTacticsOf(state, nationalId), state.coach.matchPlan) } }
+    : waitingPlansOf(state, decisions);
   const talks = kickOffTalksOf(state, decisions);
   const playedToday: SimPlayer[] = [];
   const cards = openDisciplineDay(state.discipline);
@@ -156,8 +180,8 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const competition = state.competitions[fixture.competitionId];
     if (!competition) throw new Error(`fixture ${fixture.id} has no competition ${fixture.competitionId}`);
     const banned = withLoaneesFacingOwner(cards.suspended(fixture.competitionId), state, fixture);
-    const suspended = onDuty.size ? new Set([...banned, ...onDuty]) : banned;
-    const coachClubId = [fixture.homeId, fixture.awayId].find((id) => id === state.coachClubId);
+    const suspended = onDuty.size && competition.kind !== "national" ? new Set([...banned, ...onDuty]) : banned;
+    const coachClubId = [fixture.homeId, fixture.awayId].find((id) => id === seated);
     if (coachClubId) refuseSuspended(coach.lineup ?? [], suspended);
     for (const clubId of [fixture.homeId, fixture.awayId]) refuseSuspended(waiting[clubId]?.lineup ?? [], suspended);
     const { available, formOf, formStrengthOf, setup, params } = fixtureSides(state, fixture, competition, squad, { coach, waiting, suspended, talks });
@@ -281,7 +305,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
       const opponentBench = rivalPlan ? humanBench(opponentId, opponentLineup) : opponentId === homeId ? benches.home : benches.away;
       const isSeated = ownerId === coachClubId;
       const open: CoachMatch = {
-        ...(isSeated ? {} : { clubId: ownerId }),
+        ...(ownerId === state.coachClubId ? {} : { clubId: ownerId }),
         fixtureId: fixture.id,
         context: setup.context,
         awayTravelKm: setup.awayTravelKm,
@@ -308,7 +332,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     const load = recordMatchLoad({ ...setup, homeLineup: lineups.home, awayLineup: lineups.away, result: score }, injuries, timeline.minutes);
     playedToday.push(...load.players);
     events.push(...load.events);
-    events.push(...cards.record(competition, played, allBookings, (id) => state.players[id]?.clubId, cardRandom));
+    events.push(...cards.record(competition, played, allBookings, sideOfPlayerIn(state, competition), cardRandom));
     sheets[played.id] = { ...lineups, scorers: timeline.scorers };
     return played;
   };

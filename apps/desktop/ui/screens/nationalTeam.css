@@ -886,3 +886,34 @@ button.nt-sl[aria-expanded="true"] {
     transform: translateY(-6px) scale(0.97);
   }
 }
+
+/* A played match opens its ficha: a button over the whole row, under its text. */
+.nt-fx:has(> .nt-open),
+.nt-round li:has(> .nt-open),
+.nt-games li:has(> .nt-open) {
+  position: relative;
+}
+
+.nt-open {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--e-out);
+}
+
+.nt-open:hover {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.nt-open:focus-visible {
+  outline-offset: -2px;
+}
+
+:has(> .nt-open) > :not(.nt-open) {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}

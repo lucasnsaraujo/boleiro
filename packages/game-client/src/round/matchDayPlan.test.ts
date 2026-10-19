@@ -2,6 +2,9 @@ import { expect, test } from "vitest";
 import { withAssistantDuty } from "@boleiro/engine/sim/coach/assistantDuties";
 import { loadNewGame } from "@boleiro/engine/sim/loadNewGame";
 import { matchDayPlan } from "./matchDayPlan.js";
+import { RAPIDO } from "@boleiro/engine/sim/formats";
+import { bundledGameFiles } from "../engine/bundledGameFiles.js";
+import { createEngineSession } from "../engine/createEngineSession.js";
 
 const CLUB = "flamengo-rj";
 
@@ -58,3 +61,13 @@ test("with the lineup in the coach's hands the sheet opens on his last eleven, a
   expect([...coachs.lineup].sort()).toEqual([...own].sort());
   expect(coachs.assistantLineup).toEqual(assistants.assistantLineup);
 });
+
+test("a coach at a club abroad opens the lineup sheet on his own players, an eleven of them picked", () => {
+  const session = createEngineSession(bundledGameFiles);
+  session.apply({ type: "newGame", seed: 4, choices: { coachClubId: "tm-11", formats: RAPIDO } });
+  for (let step = 0; step < 50 && session.apply({ type: "playToMatchDay" }).stop !== "matchDay"; step++);
+  const plan = session.matchDayPlan();
+  const squad = new Set(plan.squad.map((p) => p.id));
+  expect(plan.lineup).toHaveLength(11);
+  for (const id of plan.lineup) expect(squad.has(id), id).toBe(true);
+}, 120_000);

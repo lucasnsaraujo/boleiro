@@ -1,7 +1,9 @@
 import { addDays } from "../dates.js";
 import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
 import { CALL_UP_PLACES, CALL_UP_SIZE, OUTSIDER_MARK, nationalsByTeam, outsiderRows, pickCallUp, roleOf } from "./callUps.js";
-import type { NationalCompetition, NationalMatch, Nations } from "./nations.js";
+import type { NationalCompetition, NationalJob, NationalMatch, NationalOffer, Nations } from "./nations.js";
+import type { Coach } from "../coach/coach.js";
+import type { WaitingCoach } from "../coach/humanCoaches.js";
 
 export type NationalJobOffered = { type: "nationalJobOffered"; teamId: string; expiresOn: IsoDate };
 export type NationalJobTaken = { type: "nationalJobTaken"; teamId: string };
@@ -38,42 +40,69 @@ function lastRoundOf(matches: readonly NationalMatch[], competitionId: string, t
   return matches.filter((m) => m.competitionId === competitionId && (m.homeId === teamId || m.awayId === teamId)).map((m) => m.round).at(-1) ?? "group";
 }
 
+/** A human coach's national side as the jobs read it: his job, offer and picks, and his reputation. */
+type NationalSeat = { job?: NationalJob; offer?: NationalOffer; picks?: string[]; coach: Coach; retiredOn: IsoDate | undefined };
+
 /**
- * National jobs after a competition ends today: the game's coach's reputation up for a title; and after a final
- * tournament (a World Cup or a continental cup) the coach fired when his team went out early, and the
- * federations whose teams went out early offering him their job when his reputation reaches it (the best-ranked
- * of them; one offer at a time; none in a hot-seat game).
+ * National jobs after a competition ends today, for each human coach (the seated one, then each waiting one in a
+ * hot-seat game): his reputation up for a title; and after a final tournament (a World Cup or a continental cup)
+ * the coach fired when his team went out early, and the federations whose teams went out early offering their
+ * jobs when a coach's reputation reaches them: to each coach without a national job or an offer, by reputation,
+ * the best-ranked team no other human coach runs or was offered. A retired coach hears from none. Each waiting
+ * coach's news comes apart, in waiting order.
  */
-export function nationalJobsAfter(state: GameState, competition: NationalCompetition, today: IsoDate): { state: GameState; events: NationalJobEvent[] } {
+export function nationalJobsAfter(state: GameState, competition: NationalCompetition, today: IsoDate): { state: GameState; events: NationalJobEvent[]; waitingEvents: NationalJobEvent[][] } {
   const nations = state.nations;
-  if (!nations) return { state, events: [] };
+  const waiting = state.waitingCoaches ?? [];
+  if (!nations) return { state, events: [], waitingEvents: waiting.map(() => []) };
   const decidesJobs = JOB_DECIDING_KINDS.has(competition.kind);
-  const events: NationalJobEvent[] = [];
-  let next = nations;
-  let coach = state.coach;
   const teams = Object.values(competition.groups).flat();
   const isEarlyOut = (teamId: string) => EARLY_EXIT_ROUNDS.has(lastRoundOf(nations.matches, competition.id, teamId));
-  const job = nations.job;
-  if (job && teams.includes(job.teamId)) {
-    if (competition.winnerId === job.teamId) coach = { ...coach, reputation: Math.min(100, coach.reputation + TITLE_REPUTATION[competition.kind]) };
+  const seats: NationalSeat[] = [
+    { ...(nations.job ? { job: nations.job } : {}), ...(nations.offer ? { offer: nations.offer } : {}), ...(nations.picks ? { picks: nations.picks } : {}), coach: state.coach, retiredOn: state.coach.retiredOn },
+    ...waiting.map((w): NationalSeat => ({ ...(w.nationalJob ? { job: w.nationalJob } : {}), ...(w.nationalOffer ? { offer: w.nationalOffer } : {}), ...(w.nationalPicks ? { picks: w.nationalPicks } : {}), coach: w.coach, retiredOn: w.coach.retiredOn })),
+  ];
+  const news: NationalJobEvent[][] = seats.map(() => []);
+  for (const [index, seat] of seats.entries()) {
+    const job = seat.job;
+    if (!job || !teams.includes(job.teamId)) continue;
+    if (competition.winnerId === job.teamId) seat.coach = { ...seat.coach, reputation: Math.min(100, seat.coach.reputation + TITLE_REPUTATION[competition.kind]) };
     else if (decidesJobs && isEarlyOut(job.teamId)) {
-      next = { ...next };
-      delete next.job;
-      delete next.picks;
-      events.push({ type: "nationalCoachFired", teamId: job.teamId });
+      delete seat.job;
+      delete seat.picks;
+      news[index]?.push({ type: "nationalCoachFired", teamId: job.teamId });
     }
   }
-  // A hot-seat game's coaches would share one national job: the federations leave them to their clubs. A retired coach hears from none.
-  if (decidesJobs && !next.offer && !state.waitingCoaches?.length && !state.coach.retiredOn) {
-    const open = teams.filter((id) => isEarlyOut(id) && id !== next.job?.teamId && reputationFor(nations, id) <= coach.reputation).sort((a, b) => rankOf(nations, a) - rankOf(nations, b));
-    const best = open[0];
-    if (best) {
-      const offer = { teamId: best, expiresOn: addDays(today, OFFER_DAYS) };
-      next = { ...next, offer };
-      events.push({ type: "nationalJobOffered", ...offer });
+  if (decidesJobs) {
+    const taken = new Set(seats.flatMap((seat) => [seat.job?.teamId, seat.offer?.teamId].filter((id): id is string => id !== undefined)));
+    const order = seats.map((seat, index) => ({ seat, index })).filter(({ seat }) => !seat.offer && !seat.retiredOn && (seats.length === 1 || !seat.job)).sort((a, b) => b.seat.coach.reputation - a.seat.coach.reputation || a.index - b.index);
+    for (const { seat, index } of order) {
+      const open = teams.filter((id) => isEarlyOut(id) && id !== seat.job?.teamId && !(seats.length > 1 && taken.has(id)) && reputationFor(nations, id) <= seat.coach.reputation).sort((a, b) => rankOf(nations, a) - rankOf(nations, b));
+      const best = open[0];
+      if (!best) continue;
+      seat.offer = { teamId: best, expiresOn: addDays(today, OFFER_DAYS) };
+      taken.add(best);
+      news[index]?.push({ type: "nationalJobOffered", ...seat.offer });
     }
   }
-  return { state: { ...state, coach, nations: next }, events };
+  const [seated, ...others] = seats;
+  if (!seated) return { state, events: [], waitingEvents: waiting.map(() => []) };
+  const next = { ...nations };
+  delete next.job;
+  delete next.offer;
+  delete next.picks;
+  const seatedNations = { ...next, ...(seated.job ? { job: seated.job } : {}), ...(seated.offer ? { offer: seated.offer } : {}), ...(seated.picks ? { picks: seated.picks } : {}) };
+  const waitingCoaches = waiting.map((w, index): WaitingCoach => {
+    const seat = others[index];
+    if (!seat) return w;
+    const rest = { ...w, coach: seat.coach };
+    delete rest.nationalJob;
+    delete rest.nationalOffer;
+    delete rest.nationalPicks;
+    return { ...rest, ...(seat.job ? { nationalJob: seat.job } : {}), ...(seat.offer ? { nationalOffer: seat.offer } : {}), ...(seat.picks ? { nationalPicks: seat.picks } : {}) };
+  });
+  const [own = [], ...waitingEvents] = news;
+  return { state: { ...state, coach: seated.coach, nations: seatedNations, ...(state.waitingCoaches ? { waitingCoaches } : {}) }, events: own, waitingEvents };
 }
 
 /** The offer left on the table after `date`: an expired one goes. */
@@ -126,19 +155,20 @@ export function setCallUp(state: GameState, refs: readonly string[]): GameState 
 }
 
 /**
- * The call-up the coach's team makes on `date`: his own picks, those fit, filled from his assistant's by position;
- * another team's coach picks his own. `nationals` are the game's players by national team, when already sorted.
+ * The call-up a human coach's team makes on `date` (the seated coach's, or a waiting one's in a hot-seat game): his
+ * own picks, those fit, filled from his assistant's by position; another team's coach picks his own. `nationals` are the game's players by national team, when already sorted.
  */
 export function callUpRefsOf(state: GameState, nations: Nations, teamId: string, date: IsoDate, nationals: ReadonlyMap<string, readonly SimPlayer[]> = nationalsByTeam(state.players, nations.teams)): string[] {
   const assistant = pickCallUp(nationals.get(teamId) ?? [], nations.outsiders[teamId], date);
-  if (nations.job?.teamId !== teamId || !nations.picks) return assistant;
+  const picks = nations.job?.teamId === teamId ? nations.picks : state.waitingCoaches?.find((coach) => coach.nationalJob?.teamId === teamId)?.nationalPicks;
+  if (!picks) return assistant;
   const isFit = (ref: string) => ref.startsWith(OUTSIDER_MARK) || (state.players[ref] && !(state.players[ref].condition.injuredUntil && date < state.players[ref].condition.injuredUntil));
-  const own = nations.picks.filter(isFit);
+  const own = picks.filter(isFit);
   const roleOfRef = (ref: string) => (ref.startsWith(OUTSIDER_MARK) ? nations.outsiders[teamId]?.roles[Number(ref.slice(1))] : state.players[ref] && roleOf(state.players[ref]).charAt(0));
   const places = Object.entries(CALL_UP_PLACES);
   const missing = places.flatMap(([role, count]) => {
     const letter = role.charAt(0);
-    const short = Math.max(0, Math.min(count, nations.picks?.filter((ref) => roleOfRef(ref) === letter).length ?? 0) - own.filter((ref) => roleOfRef(ref) === letter).length);
+    const short = Math.max(0, Math.min(count, picks.filter((ref) => roleOfRef(ref) === letter).length) - own.filter((ref) => roleOfRef(ref) === letter).length);
     return assistant.filter((ref) => roleOfRef(ref) === letter && !own.includes(ref)).slice(0, short);
   });
   return [...own, ...missing].slice(0, CALL_UP_SIZE);

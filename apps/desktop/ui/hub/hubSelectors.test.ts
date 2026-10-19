@@ -3,6 +3,7 @@ import type { Board } from "@boleiro/engine/sim/coach/boardExpectations";
 import type { Fixture } from "@boleiro/engine/sim/gameState";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
+import { syncNationalFixtures } from "@boleiro/engine/sim/nations/nationalFixtures";
 import { boardConfidence, clubMeters, jobSecurity, leagueStanding, nextMatch } from "./hubSelectors.js";
 
 const game = newGameFromFiles(5, { coachClubId: "bahia-ba" }, bundledGameFiles);
@@ -29,6 +30,14 @@ describe("nextMatch", () => {
 
   test("a coach without a club has no next match", () => {
     expect(nextMatch({ ...game, coachClubId: null })).toBeNull();
+  });
+
+  test("a national coach's next match is his national team's when it comes first", () => {
+    const nations = game.nations;
+    if (!nations) throw new Error("the game has no national football");
+    const coaching = syncNationalFixtures({ ...game, coachClubId: null, date: "2026-06-01", nations: { ...nations, job: { teamId: "brazil", since: game.date } } });
+    expect(nextMatch(coaching)).toMatchObject({ opponentId: "morocco", isHome: true, isNeutral: true, label: "Copa do Mundo 2026 · Grupo C" });
+    expect(nextMatch(game)?.isNeutral).toBe(false);
   });
 });
 

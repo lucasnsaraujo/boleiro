@@ -26,10 +26,10 @@ export const CARD_RATES: Record<CardCompetition, CardRates> = {
   state: CUP,
 };
 
-// guess: no CONMEBOL card data was fetched; the continental cups, and the cups abroad, take the Copa do Brasil's rates. A
-// league abroad, with no data fetched either, takes Série A's.
+// guess: no CONMEBOL card data was fetched; the continental cups, the cups abroad and national teams' matches take the
+// Copa do Brasil's rates. A league abroad, with no data fetched either, takes Série A's.
 export function cardCompetitionOf(competition: Competition): CardCompetition {
-  if (competition.kind === "continental" || competition.kind === "cupAbroad") return "cup";
+  if (competition.kind === "continental" || competition.kind === "cupAbroad" || competition.kind === "national") return "cup";
   return competition.kind === "league" ? (competition.division ?? "A") : competition.kind;
 }
 

@@ -69,3 +69,11 @@ describe("a match's curiosities", () => {
     expect(curiositiesOf(matchOf()).length).toBeLessThanOrEqual(3);
   });
 });
+
+describe("a national match's curiosities", () => {
+  it("tell no scorer's tally, which the history keeps only for clubs", () => {
+    const national = { ...match, id: "national:world-cup-2026-C-1-brazil", competitionId: "national:world-cup-2026" };
+    const told = curiositiesOf(matchOf({ fixture: national, scorers: [{ playerId: "p1", clubId: "fla" }, { playerId: "p1", clubId: "fla" }], competitionName: "Copa do Mundo 2026", playerName: () => "Vinicius Junior" }));
+    expect(told.join(" ")).not.toContain("Vinicius Junior fez");
+  });
+});

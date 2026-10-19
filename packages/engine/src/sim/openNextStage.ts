@@ -18,6 +18,8 @@ function nextStageShape(competition: Competition, fixtures: readonly Fixture[], 
       return CONMEBOL_CUPS.nextStage(competition, season);
     case "cupAbroad":
       throw new Error(`${competition.id}: a cup abroad's rounds are drawn result-only`);
+    case "national":
+      throw new Error(`${competition.id}: a national competition's rounds are drawn result-only`);
   }
 }
 
