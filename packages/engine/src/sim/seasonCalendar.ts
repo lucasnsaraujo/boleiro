@@ -49,8 +49,9 @@ type Leeway = { weekdays: ReadonlySet<number>; daysFromContinental: number };
 
 // What a season that does not fit gives up, one step at a time and only for as many dates as it lacks, before
 // it fails: CBF plays a midweek round over Wednesday and Thursday when it must; then a round may sit the day
-// next to a continental match day, CBF moving the games of the clubs that play both; last, any day of the
-// week. The rest from the estaduais' and the Copa do Brasil's days and the FIFA windows' rest are never given up.
+// next to a continental match day (CBF moves the games of the clubs that play both; the game plays them on
+// consecutive days); last, any day of the week. The rest from the estaduais' and the Copa do Brasil's days and
+// the FIFA windows' rest are never given up.
 const LEEWAYS: readonly Leeway[] = [
   { weekdays: LEAGUE_WEEKDAYS, daysFromContinental: MIN_DAYS_FROM_CONTINENTAL },
   { weekdays: new Set([...LEAGUE_WEEKDAYS, 4]), daysFromContinental: MIN_DAYS_FROM_CONTINENTAL },

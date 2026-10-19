@@ -61,8 +61,7 @@ function expectSeasonsPlayed(run: SeasonRun, seasons: number) {
 
 // The checks below are the ten-season band checks of seasonRevenues, strengthBySeason and transferFlow,
 // run on the same seasons that went through a save and load. The short run skips the ones that need a
-// long run: the spread and Série D drift compare a settled season with the last, and the cash cap fails
-// after two seasons (a club relegated from Série A keeps its Série A cash).
+// long run: the spread and Série D drift compare a settled season with the last.
 describe("two seasons from the season runner", () => {
   const run = seasonRun(2);
 
@@ -70,9 +69,10 @@ describe("two seasons from the season runner", () => {
     expectSeasonsPlayed(run(), 2);
   });
 
-  it("keeps club revenue inside each division's band", () => {
+  it("keeps club revenue inside each division's band, and no club hoarding three years of it in cash", () => {
     expectRevenueInDivisionBand(clubSeasonsOf(run()), run().final);
     expectMedianRevenueNearTypical(clubSeasonsOf(run()), run().final);
+    expectNoCashHoarding(clubSeasonsOf(run()), run().final);
   });
 
   it("keeps player strength and age steady and the divisions apart", () => {

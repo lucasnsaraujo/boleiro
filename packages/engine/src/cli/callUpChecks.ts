@@ -18,11 +18,11 @@ export function expectSerieACallUpsNearReal(windows: readonly WindowCallUps[]): 
 
 // 32 Série A players went to the 2026 World Cup, 7 of them Brazil's (Trivela,
 // https://trivela.com.br/copa-do-mundo/brasileirao-recorde-convocados-mundial-2026/).
-/** Final tournaments take 20 to 45 Série A players from the window before them. */
+/** A World Cup takes 20 to 45 Série A players from the window before it. */
 export function expectWorldCupSerieANearReal(windows: readonly WindowCallUps[]): void {
-  const tournaments = windows.filter((w) => w.serieAToTournament > 0 && w.from.slice(5, 7) <= "06");
-  expect(tournaments.length).toBeGreaterThan(0);
-  for (const w of tournaments) {
+  const worldCups = windows.filter((w) => w.isBeforeWorldCup);
+  expect(worldCups.length).toBeGreaterThan(0);
+  for (const w of worldCups) {
     expect(w.serieAToTournament, w.from).toBeGreaterThanOrEqual(20);
     expect(w.serieAToTournament, w.from).toBeLessThanOrEqual(45);
   }

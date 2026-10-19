@@ -51,6 +51,10 @@ describe("club finances across a season change", () => {
     }
   });
 
+  it("cuts a club relegated from Série B more, by the square root of the gap between the divisions' revenues", () => {
+    for (const id of outcome("b").relegatedIds) expect(financeOf(after, id).sponsorship).toBeLessThan(0.7 * financeOf(before, id).sponsorship);
+  });
+
   it("pays the Série A champion a sponsor bonus", () => {
     const champion = outcome("a").championId;
     expect(financeOf(after, champion).month.revenue.sponsorship).toBeGreaterThan(0);

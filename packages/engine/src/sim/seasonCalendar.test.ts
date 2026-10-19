@@ -97,7 +97,10 @@ describe("every season's calendar, in every mode", () => {
             expect(nextToContinental(calendar.leagueDates.B), `${season}`).toEqual([]);
             // A season with the World Cup pause can't hold 38 rounds clear of the continental days around it (2026
             // with the world holds 35 at most), so it sits up to three rounds next to one, as CBF does.
-            if (isPausedForWorldCup(season, hasNationalFootball, formats)) expect(nextToContinental(calendar.leagueDates.A).length, `${season}`).toBeLessThanOrEqual(3);
+            if (isPausedForWorldCup(season, hasNationalFootball, formats)) {
+              expect(nextToContinental(calendar.leagueDates.A).length, `${season}`).toBeLessThanOrEqual(3);
+              expect(calendar.leagueDates.A.filter((date) => continental.includes(date)), `${season}`).toEqual([]);
+            }
             else expect(nextToContinental(calendar.leagueDates.A), `${season}`).toEqual([]);
             if (hasNationalFootball && formats.calendar === "real") expect(calendar.leagueDates.A.filter(isInFifaWindow), `${season}`).toEqual([]);
           }
@@ -138,12 +141,12 @@ describe("a new game in a later season", () => {
   const nationalFootball = loadNationalFootball();
   const leaguesOf = (game: GameState) => Object.values(game.competitions).flatMap((c): LeagueCompetition[] => (c.kind === "league" ? [c] : []));
 
-  it("with national football, rests Série A through the World Cup in 2026 and 2030 and still plays its 38 rounds", () => {
-    for (const season of [2026, 2030]) {
-      const game = loadNewGame(1, { coachClubId: "flamengo-rj", world, guests, nationalFootball, season });
-      const worldCup = worldCupOf(season);
+  it("with national football, rests Série A from 1 Jun to 21 Jul 2026 as the CBF did, and through the 2030 World Cup, still playing its 38 rounds", () => {
+    const pauses = { 2026: { from: "2026-06-01", until: "2026-07-21" }, 2030: worldCupOf(2030) };
+    for (const [season, pause] of Object.entries(pauses)) {
+      const game = loadNewGame(1, { coachClubId: "flamengo-rj", world, guests, nationalFootball, season: Number(season) });
       expect(game.calendar.leagueDates.A).toHaveLength(38);
-      expect(game.calendar.leagueDates.A.filter((date) => worldCup && date >= worldCup.from && date <= worldCup.until), `${season}`).toEqual([]);
+      expect(game.calendar.leagueDates.A.filter((date) => pause && date >= pause.from && date <= pause.until), season).toEqual([]);
     }
   });
 
