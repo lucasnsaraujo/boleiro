@@ -13,7 +13,6 @@ import { matchOfficials } from "../referees/matchOfficials.js";
 import { withRefereeCalls } from "../referees/refereeCalls.js";
 import { isShootoutDue, settleShootout, shootoutSeed } from "../settleShootout.js";
 import { tieBreakOf } from "../tieBreaks.js";
-import { isHumanClub } from "../coach/humanCoaches.js";
 import { planOfClub } from "../coach/matchPlan.js";
 import { isLockedToPlans } from "./incidentHandling.js";
 import { isPlanActive, nextPlanMove, type PlanMove, type PlanSide } from "./planSubstitutions.js";
@@ -286,7 +285,9 @@ function withHalfTimeTalk(live: LiveDay, coachMatch: CoachMatch, match: LiveMatc
   const goals = (own: boolean) => kept.filter((e) => e.type === "goal" && (e.clubId === clubId) === own).length;
   const effect = talkEffect(talk, { lead: goals(true) - goals(false), morale: clubMood(live.state, clubId).squad, isDerby: isDerbyFor(live.state, match, clubId) });
   const lift = formStrength(effect.form);
-  const strengths = Object.fromEntries(Object.entries(coachMatch.strengths).map(([id, strength]) => [id, live.state.players[id]?.clubId === clubId ? strength + lift : strength]));
+  // The side's own players as the match fields them: a national team's are the game's players called up, its for the day.
+  const own = new Set([...coachMatch.starters.home, ...coachMatch.starters.away, ...coachMatch.bench, ...(coachMatch.opponentBench ?? [])].filter((p) => p.clubId === clubId).map((p) => p.id));
+  const strengths = Object.fromEntries(Object.entries(coachMatch.strengths).map(([id, strength]) => [id, own.has(id) ? strength + lift : strength]));
   return { ...coachMatch, strengths, halfTimeTalks: { ...coachMatch.halfTimeTalks, [clubId]: { tone: talk, ...effect } } };
 }
 
@@ -413,7 +414,7 @@ function planSidesOf(live: LiveDay, open: CoachMatch, match: LiveMatch): PlanSid
   const ownerId = open.clubId ?? live.state.coachClubId;
   return (["home", "away"] as const).flatMap((side): PlanSide[] => {
     const clubId = side === "home" ? match.homeId : match.awayId;
-    const plan = isHumanClub(live.state, clubId) ? planOfClub(live.state, clubId) : undefined;
+    const plan = planOfClub(live.state, clubId);
     if (!plan || !isPlanActive(plan)) return [];
     const bench = clubId === ownerId ? open.bench : (open.opponentBench ?? []);
     return [{ clubId, plan, starters: open.starters[side], bench, strength: (p) => open.strengths[p.id] ?? p.strength, date: open.context.date }];
@@ -455,11 +456,11 @@ export function followMatchPlans(live: LiveDay, from: number): LiveDay {
  * marking, play, penalty taker, one of his plan's saved tactics or, at half-time, his talk; when it
  * ends level before a shootout, his kickers' order. Everything up to that minute stays; the rest of
  * his match is drawn again, and the coaches' plans in it followed again. The day's other matches are
- * untouched. Changes come in minute order. The coach is the one in the seat unless `clubId` names a
- * hot-seat coach waiting for his turn. Under the house rule "manual changes only in finals", a match
- * that isn't a final takes only his talk and his saved tactics.
+ * untouched. Changes come in minute order. The coach is the one in the seat, for the side he runs today,
+ * unless `clubId` names another of his sides or a hot-seat coach waiting for his turn. Under the house
+ * rule "manual changes only in finals", a match that isn't a final takes only his talk and his saved tactics.
  */
-export function applyLiveChange(live: LiveDay, minute: number, change: LiveChange, clubId: string | null = live.state.coachClubId): LiveDay {
+export function applyLiveChange(live: LiveDay, minute: number, change: LiveChange, clubId: string | null = live.coachMatch?.clubId ?? live.state.coachClubId): LiveDay {
   const changed = changeMatch(live, minute, change, clubId, "coach");
   const fixtureId = clubId === null ? undefined : openMatchOf(changed, clubId)?.fixtureId;
   return fixtureId ? followPlansIn(changed, fixtureId, minute) : changed;

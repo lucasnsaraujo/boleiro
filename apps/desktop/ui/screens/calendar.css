@@ -178,12 +178,13 @@
   list-style: none;
 }
 
+/* A day's second game (a club's and a national team's) sits under the first in the same square. */
 .agenda-match {
   position: relative;
   z-index: 1;
   align-self: start;
   min-width: 0;
-  margin: 26px 6px 0;
+  margin: calc(26px + var(--stack, 0) * 44px) 6px 0;
   display: flex;
   align-items: center;
   gap: 7px;

@@ -1,5 +1,6 @@
 import type { Confederation } from "@boleiro/data/nationalFootball";
 import type { IsoDate } from "../gameState.js";
+import type { Tactics } from "../coach/tactics.js";
 import type { NationalCompetitionKind } from "./fifaRanking.js";
 
 /** A national team: its FIFA points (the ranking orders them) and how it looks. */
@@ -59,8 +60,8 @@ export type CallUp = { teamId: string; playerIds: string[]; outsiders: number[];
 /** A title won: the competition, its season and the champion. */
 export type NationalTitle = { competitionId: string; name: string; season: number; winnerId: string; runnerUpId?: string };
 
-/** The human coach's national team, since when, and a job a federation offers him. */
-export type NationalJob = { teamId: string; since: IsoDate };
+/** The human coach's national team, since when, and the tactics he last played it with; and a job a federation offers him. */
+export type NationalJob = { teamId: string; since: IsoDate; tactics?: Tactics };
 export type NationalOffer = { teamId: string; expiresOn: IsoDate };
 
 /** National football: the teams, their competitions and matches, who is away with them, and the human's job. */

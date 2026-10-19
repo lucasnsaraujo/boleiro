@@ -32,7 +32,7 @@ import { BrandLogo } from "../sponsors/BrandLogo.js";
 import { OddsSticker } from "../sponsors/OddsSticker.js";
 import "./hub.css";
 
-const HUB_KEYS = [...SQUAD_KEYS, "boards", "coach", "mood", "finances", "eventMemory", "hasMidSeasonWindow"] as const;
+const HUB_KEYS = [...SQUAD_KEYS, "boards", "coach", "mood", "finances", "eventMemory", "hasMidSeasonWindow", "nations"] as const;
 type HubState = Pick<GameState, (typeof HUB_KEYS)[number]>;
 type Loaded = { state: HubState; inbox: InboxLine[]; turningPoint: TurningPoint | null; hasMoment: boolean; seats: HotSeatView | null; event: PendingEvent | null; desk: BoardDesk; bet: BetSticker | null };
 type SquadTab = "squad" | "contracts";
@@ -360,7 +360,7 @@ function NextMatchSticker({ next, state, bet }: { next: NextMatch; state: HubSta
         <div>
           <b>{opponent.shortName}</b>
           <p className={next.isToday ? "today" : undefined}>
-            {next.isToday ? "Hoje" : formatBarDate(next.fixture.date)} · {next.isHome ? "em casa" : "fora"}
+            {next.isToday ? "Hoje" : formatBarDate(next.fixture.date)} · {next.isNeutral ? "campo neutro" : next.isHome ? "em casa" : "fora"}
           </p>
           <p className="hub-next-what">{next.label}</p>
         </div>
