@@ -74,9 +74,8 @@ export const YOUTH_CONTRACT_YEARS = 3;
 // guess: spread of a new youth player's strength around his club's level for his age, a little
 // above the 2026 squads' 18–19 year-olds (about 3 points within a division).
 const YOUTH_SD = 3;
-// The 2026 Série A–D squads by position group (data/players.csv): 479 keepers, 1,455 defenders, 1,285
-// midfielders and 1,093 forwards, the shape youth top-ups and the market keep a squad in.
-export const SQUAD_SHAPE: Record<PositionGroup, number> = { GK: 479, DEF: 1455, MID: 1285, ATT: 1093 };
+// guess: share of each position group in a squad when topping one up (3 keepers in 24).
+export const SQUAD_SHAPE: Record<PositionGroup, number> = { GK: 3, DEF: 8, MID: 8, ATT: 5 };
 const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
 
 export function normal(random: () => number): number {
@@ -224,7 +223,7 @@ export function retiresAtSeasonTurn(state: GameState, player: SimPlayer): boolea
 
 /**
  * The position groups a squad adds from its academy: `leaving` replaced one for one, then the
- * thinnest groups (against the 2026 squads' shape) until it has 18 players. A squad left without a
+ * thinnest groups (against a 24-man squad's shape) until it has 18 players. A squad left without a
  * keeper always promotes one, since nobody else may play in goal.
  */
 export function groupsToFill(staying: readonly Pick<SimPlayer, "group">[], leaving: readonly PositionGroup[]): PositionGroup[] {
