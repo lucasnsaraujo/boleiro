@@ -20,7 +20,7 @@ test("from a new game, Jogar rodada reaches the first match day", async ({ page 
   await expect(page).toHaveURL(/#\/round$/);
 
   await page.getByRole("button", { name: "Voltar ao clube" }).click();
-  await expect(page.getByRole("heading", { name: "Bahia" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Bahia", exact: true })).toBeVisible();
   await expect(next).toContainText("Hoje");
 
   await bar(page).getByRole("link", { name: "Agenda" }).click();
