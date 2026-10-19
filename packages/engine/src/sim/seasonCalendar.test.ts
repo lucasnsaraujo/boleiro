@@ -1,5 +1,7 @@
 import { loadNationalFootball } from "@boleiro/data/nationalFootball";
 import { describe, expect, it } from "vitest";
+import { advanceDay } from "./advanceDay.js";
+import { compareText } from "./compareText.js";
 import { isClubWorldCupSeason } from "./continental/clubWorldCup.js";
 import { continentalDates } from "./continental/continentalDays.js";
 import { RAPIDO, REALISTA, type Formats } from "./formats.js";
@@ -96,7 +98,8 @@ describe("every season's calendar, in every mode", () => {
             const nextToContinental = (dates: readonly IsoDate[]) => dates.filter((date) => continental.some((other) => days(date, other) < 2));
             expect(nextToContinental(calendar.leagueDates.B), `${season}`).toEqual([]);
             // A season with the World Cup pause can't hold 38 rounds clear of the continental days around it (2026
-            // with the world holds 35 at most), so it sits up to three rounds next to one, as CBF does.
+            // with the world holds 35 at most), so it sits up to three rounds next to one; the games of the clubs
+            // that play both move, so no club plays on consecutive days (below).
             if (isPausedForWorldCup(season, hasNationalFootball, formats)) {
               expect(nextToContinental(calendar.leagueDates.A).length, `${season}`).toBeLessThanOrEqual(3);
               expect(calendar.leagueDates.A.filter((date) => continental.includes(date)), `${season}`).toEqual([]);
@@ -133,6 +136,26 @@ describe("every season's calendar, in every mode", () => {
       expect(calendar.leagueDates.A.filter(isInFifaWindow)).toEqual([]);
     }
   });
+});
+
+/** Every club's two games on the same day or on consecutive days, as `club date/date`. */
+function consecutiveGames(state: GameState): string[] {
+  const games = new Map<string, IsoDate[]>();
+  for (const f of state.fixtures) for (const id of [f.homeId, f.awayId]) games.set(id, [...(games.get(id) ?? []), f.date]);
+  return [...games].flatMap(([clubId, dates]) => dates.toSorted(compareText).flatMap((date, i, sorted) => (i > 0 && days(sorted[i - 1] ?? "", date) < 2 ? [`${clubId} ${sorted[i - 1]}/${date}`] : [])));
+}
+
+describe("every club's games in a World Cup season with the world and national football", () => {
+  const world = [...loadSouthAmerica(2026), ...loadEurope(2026), ...loadMarketLeagues(2026)];
+  const guests = loadGuests(2026);
+  const nationalFootball = loadNationalFootball();
+  for (const season of [2026, 2030]) {
+    it(`never fall on consecutive days in ${season}, though Série A's rounds sit next to continental days`, () => {
+      let state = loadNewGame(2, { coachClubId: "flamengo-rj", world, guests, nationalFootball, season });
+      while (state.date < `${season}-12-31`) state = advanceDay(state, {}).state;
+      expect(consecutiveGames(state)).toEqual([]);
+    }, 180_000);
+  }
 });
 
 describe("a new game in a later season", () => {

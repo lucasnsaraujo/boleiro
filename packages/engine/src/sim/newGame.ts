@@ -38,6 +38,7 @@ import type { SponsorFiles } from "./sponsors/sponsors.js";
 import type { NationalFootball } from "@boleiro/data/nationalFootball";
 import { openNations } from "./nations/openNations.js";
 import { syncCupsAbroad } from "./continental/cupsAbroad.js";
+import { postponeClashingGames } from "./postponeClashingGames.js";
 import { homeNationalityOf } from "./players/homeNationality.js";
 import { hostsThrough } from "./hosts/drawHosts.js";
 
@@ -237,7 +238,8 @@ export function newGame(
   const started = withCoachWorld(withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat));
   const named = coachName && !hotSeat ? { ...started, eggs: { log: [], coachName } } : started;
   const sponsored = syncCupsAbroad(sponsors ? seedGameSponsors(named, sponsors) : named);
-  return nationalFootball ? { ...sponsored, nations: openNations(nationalFootball, sponsored, season, seed) } : sponsored;
+  // Postponing reads the national football the game has: Série A rests in the FIFA windows with it.
+  return postponeClashingGames(nationalFootball ? { ...sponsored, nations: openNations(nationalFootball, sponsored, season, seed) } : sponsored);
 }
 
 /** The game with its other human coaches waiting for their turns; a one-coach game stays as it is. */

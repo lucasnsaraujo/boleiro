@@ -20,6 +20,8 @@ export type MatchEntry = {
   sideId: string;
   opponentId: string;
   result: { homeGoals: number; awayGoals: number; outcome: Outcome; onPenalties: boolean; isAfterExtraTime?: true } | null;
+  /** The round's day a postponed league game was moved from. */
+  postponedFrom?: IsoDate;
 };
 
 export type CalendarEntry = MatchEntry | { kind: "window"; date: IsoDate; opens: boolean };
@@ -60,6 +62,7 @@ function matchEntry(f: Fixture, coachClubId: string, competitions: GameState["co
       onPenalties: result.penaltyWinnerId !== undefined,
       ...(result.isAfterExtraTime ? { isAfterExtraTime: true as const } : {}),
     },
+    ...(f.postponedFrom ? { postponedFrom: f.postponedFrom } : {}),
   };
 }
 

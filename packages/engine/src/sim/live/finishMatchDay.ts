@@ -56,6 +56,7 @@ import { runTransferDay } from "../transfers/runTransferDay.js";
 import { endWorldSeason, playWorldDay } from "../world/resultOnlyWorld.js";
 import { turnSeasonsAbroad } from "../world/turnSeasonsAbroad.js";
 import { playedAbroadOf, recordTitlesAbroad, syncCupsAbroad } from "../continental/cupsAbroad.js";
+import { postponeClashingGames } from "../postponeClashingGames.js";
 import { formatsOf } from "../formats.js";
 import { unifiedDatesOf } from "../seasonCalendar.js";
 import { coachOutcome } from "./coachOutcome.js";
@@ -331,7 +332,7 @@ export function finishMatchDay(live: LiveDay): DayResult {
     next = coolRivalries(recordFormerPlayers(next, academies.state, developed.events));
     seasonOutcomes = ended.outcomes;
   }
-  next = syncNationalFixtures(syncCupsAbroad(next));
+  next = postponeClashingGames(syncNationalFixtures(syncCupsAbroad(next)));
   const sponsorDay = runSponsorDay(state, next, seasonOutcomes);
   next = sponsorDay.state;
   events.push(...sponsorDay.events);

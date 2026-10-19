@@ -94,7 +94,7 @@ async function playUntil(given: Services, date: string) {
 
 test("the album turns to last season's page of stickers, foil among them, and its title's page opens the final's ficha", async () => {
   // Palmeiras keeps its coach through a season in which it wins a final.
-  const given = await services("palmeiras-sp", 9);
+  const given = await services("palmeiras-sp", 10);
   await playUntil(given, "2027-01-02");
   const album = await given.engine.album();
   const title = album.titles.find((t) => t.decider?.kind === "final");

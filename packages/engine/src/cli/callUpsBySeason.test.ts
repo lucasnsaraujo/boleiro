@@ -6,7 +6,7 @@ import { callUpsBySeason, type WindowCallUps } from "./callUpsBySeason.js";
 describe.skipIf(!process.env.LONG_RUN)("ten seasons of national call-ups", () => {
   let windows: WindowCallUps[] = [];
   beforeAll(() => {
-    windows = callUpsBySeason(1, 10);
+    windows = callUpsBySeason(2, 10);
   }, 600_000);
 
   it("covers four FIFA windows a season", () => {

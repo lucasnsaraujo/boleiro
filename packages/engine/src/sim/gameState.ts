@@ -58,6 +58,8 @@ export type Fixture = {
   awayId: string;
   group?: number;
   tie?: number;
+  /** The round's day a league game was moved from, when its club had a cup match next to it. */
+  postponedFrom?: IsoDate;
   result: MatchResult | null;
 };
 
