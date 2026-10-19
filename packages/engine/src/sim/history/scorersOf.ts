@@ -1,5 +1,6 @@
 import type { PositionGroup } from "../../engine/match.js";
 import type { SimPlayer } from "../gameState.js";
+import { pow } from "../portableMath.js";
 
 // guess: forwards score about 55% of goals, midfielders 30%, defenders 14% and keepers almost none, as is
 // typical in top leagues; per player in a 4-4-2 that is roughly these weights. Not checked against Brazilian data.
@@ -9,7 +10,7 @@ const STRENGTH_POWER = 2;
 
 /** Picks who scored each of a side's goals from its lineup. Returns one player id per goal. */
 export function scorersOf(lineup: readonly SimPlayer[], goals: number, random: () => number): string[] {
-  const weights = lineup.map((p) => GROUP_WEIGHT[p.group] * (p.strength / 50) ** STRENGTH_POWER);
+  const weights = lineup.map((p) => GROUP_WEIGHT[p.group] * pow(p.strength / 50, STRENGTH_POWER));
   const total = weights.reduce((sum, w) => sum + w, 0);
   if (!lineup.length || total <= 0) return [];
   return Array.from({ length: goals }, () => {

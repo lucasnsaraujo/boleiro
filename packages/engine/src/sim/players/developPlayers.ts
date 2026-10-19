@@ -13,6 +13,7 @@ import { homeNationalityOf } from "./homeNationality.js";
 import { squadsOfGame } from "./squadsByClub.js";
 import { isClubFull } from "../transfers/squadCap.js";
 import { projectedRevenue } from "../finances/setBoardBudget.js";
+import { log, cos } from "../portableMath.js";
 
 export type PlayerRetired = { type: "playerRetired"; playerId: string; clubId: string; name: string; age: number };
 /** A kid moved up into his club's squad; `byAssistant` when a human coach's assistant did it for him mid-season. */
@@ -80,7 +81,7 @@ export const SQUAD_SHAPE: Record<PositionGroup, number> = { GK: 479, DEF: 1455, 
 const GROUPS: readonly PositionGroup[] = ["GK", "DEF", "MID", "ATT"];
 
 export function normal(random: () => number): number {
-  return Math.sqrt(-2 * Math.log(1 - random())) * Math.cos(2 * Math.PI * random());
+  return Math.sqrt(-2 * log(1 - random())) * cos(2 * Math.PI * random());
 }
 
 const clamp = (strength: number) => Math.min(99, Math.max(1, strength));
@@ -103,7 +104,7 @@ const REBUILD_SHARE = 0.85;
 // The yearly revenue the board budgets with, its members at the level they settle back to: membership moves
 // with results at each monthly closing, so the turn of the year and the forecast on its eve read the same.
 const logRevenueOf = (finance: ClubFinance | undefined): number | null =>
-  finance ? Math.log(Math.max(1, projectedRevenue({ ...finance, membership: finance.membershipAnchor }))) : null;
+  finance ? log(Math.max(1, projectedRevenue({ ...finance, membership: finance.membershipAnchor }))) : null;
 
 /**
  * The level each club's players drift toward: its division's CLUB_LEVEL, moved by how the Brazilian
@@ -123,7 +124,7 @@ function clubLevels(clubs: GameState["clubs"], finances: GameState["finances"], 
     const x = club && !club.abroad ? logRevenueOf(finances[clubId]) : null;
     const mean = club ? means.get(tierOf(club)) : undefined;
     if (x === null || mean === undefined || !club) return level;
-    const beyond = ceiling ? Math.max(0, x - Math.log(ceiling[tierOf(club)])) : 0;
+    const beyond = ceiling ? Math.max(0, x - log(ceiling[tierOf(club)])) : 0;
     return level + LEVEL_PER_LOG_REVENUE * (x - mean) + (LEVEL_PER_LOG_REVENUE_ACROSS_DIVISIONS - LEVEL_PER_LOG_REVENUE) * beyond;
   };
 }

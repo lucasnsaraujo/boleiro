@@ -128,6 +128,12 @@ export async function leaveIncident(page: Page): Promise<boolean> {
   return true;
 }
 
+/** Puts a stopped round back on at 4x; an incident that opens just before the click takes it under its veil, for the next stop to leave. */
+export async function resumeAtFourX(page: Page): Promise<void> {
+  const fourX = page.getByRole("button", { name: "4x", pressed: false, disabled: false });
+  if (await fourX.isVisible()) await fourX.click({ timeout: 5_000 }).catch(() => undefined);
+}
+
 /**
  * Plays the live round at 4x until the result is in, stepping the paused page clock one match
  * minute at a time instead of waiting for it. Returns how many times the round stopped by itself

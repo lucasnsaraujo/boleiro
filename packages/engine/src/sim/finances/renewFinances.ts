@@ -13,6 +13,7 @@ import { serieATv } from "./serieATv.js";
 import { projectedRevenue, setBoardBudget } from "./setBoardBudget.js";
 import { wageBillsOf } from "../transfers/wageBillsOf.js";
 import { tierOf } from "./tierOf.js";
+import { pow } from "../portableMath.js";
 
 // guess: sponsors pay a tenth of the yearly deal as a bonus for a title or a promotion.
 const SPONSOR_BONUS_SHARE = 0.1;
@@ -93,7 +94,7 @@ export function renewFinances(
     const from = tierOf(before);
     const to = tierOf(club);
     const exponent = TOP_TIERS.has(from) && TOP_TIERS.has(to) ? LOYALTY_EXPONENT : LOWER_EXPONENT;
-    const loyalty = (economy.typicalRevenue[to] / economy.typicalRevenue[from]) ** exponent;
+    const loyalty = pow(economy.typicalRevenue[to] / economy.typicalRevenue[from], exponent);
     const crowdRatio = Math.sqrt(economy.matchday[to].attendance / economy.matchday[from].attendance);
     const bonus = rewarded.has(id) ? Math.round(SPONSOR_BONUS_SHARE * Math.max(0, finance.sponsorship - ownTermsYearly(ended, id))) : 0;
     // A price the coach set keeps its distance from the average; everyone else's stays on it.
@@ -111,7 +112,7 @@ export function renewFinances(
     const unsimulated = finance.otherIncome + finance.prizesOutOfOtherIncome;
     const commercial = (finance.sponsorship + finance.membership + unsimulated) * loyalty;
     const excess = (tv + expectedTickets + commercial) / economy.revenueCeiling[to];
-    const pull = loyalty * (excess > 1 && from === to ? excess ** -CEILING_PULL : 1);
+    const pull = loyalty * (excess > 1 && from === to ? pow(excess, -CEILING_PULL) : 1);
     // The season turns on 1 January after December's closing, so `month` already holds January's
     // first day (coach salary, forced-sale fees); it carries over with the bonus and continental money added.
     const { revenue } = finance.month;

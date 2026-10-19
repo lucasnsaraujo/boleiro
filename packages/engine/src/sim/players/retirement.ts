@@ -2,6 +2,7 @@ import { keyedStream } from "../../engine/random.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import type { TransferMarket } from "../transfers/transferMarket.js";
 import type { PlayerRetired } from "./developPlayers.js";
+import { pow } from "../portableMath.js";
 
 /** A human coach's player who has announced his last season: he retires at the turn of the year after `afterSeason`. */
 export type Retiring = { afterSeason: number; hasBeenAsked: boolean };
@@ -49,7 +50,7 @@ export function retirementChance(age: number): number {
  */
 export function retirementWeight(minutesShare: number, aboveLevel: number): number {
   const idle = IDLE_RISK - MINUTES_WEIGHT * Math.min(1, Math.max(0, minutesShare));
-  return idle * Math.min(HIGHEST_STRENGTH_RISK, Math.max(LOWEST_STRENGTH_RISK, STRENGTH_RISK_PER_POINT ** -aboveLevel));
+  return idle * Math.min(HIGHEST_STRENGTH_RISK, Math.max(LOWEST_STRENGTH_RISK, pow(STRENGTH_RISK_PER_POINT, -aboveLevel)));
 }
 
 function coachsPlayer(state: GameState, playerId: string): SimPlayer {

@@ -3,6 +3,7 @@ import { keyedStream } from "../../engine/random.js";
 import type { SimPlayer } from "../gameState.js";
 import { drawMinute, goalMinuteWeights, inMatchOrder, type MatchEvent } from "../live/matchTimeline.js";
 import type { MatchOfficials, VarStyle } from "./matchOfficials.js";
+import { exp } from "../portableMath.js";
 
 /** What VAR decided after a check: the call on the pitch stands, or is changed. */
 export type VarDecision = "goalStands" | "goalRuledOut" | "goalAwarded" | "penaltyAwarded" | "penaltyCancelled" | "redCardGiven" | "redCardCancelled";
@@ -111,7 +112,7 @@ const ELEVEN_A_SIDE = goalMinuteWeights([], [], 0);
 
 function poisson(mean: number, random: () => number): number {
   let roll = random();
-  let p = Math.exp(-mean);
+  let p = exp(-mean);
   let n = 0;
   while (roll > p && n < 10) {
     roll -= p;

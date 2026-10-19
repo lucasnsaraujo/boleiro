@@ -2,6 +2,7 @@ import type { Competition, Fixture } from "../gameState.js";
 import { LEAGUE_FORMATS } from "../leagueFormats.js";
 import { STATE_CHAMPIONSHIP } from "../stateChampionship.js";
 import { TIE_WIN_CHANCE } from "./expectedCopaPrize.js";
+import { pow } from "../portableMath.js";
 
 /** Clubs playing each stage of a league or state championship. */
 function stageSizes(competition: Competition): number[] {
@@ -37,7 +38,7 @@ export function expectedHomeGames(competitions: readonly Competition[], fixtures
       if (competition.kind === "cup") {
         competition.entries.forEach((entrants, entryStage) => {
           if (entryStage > stage) return;
-          const reach = TIE_WIN_CHANCE ** (stage - entryStage);
+          const reach = pow(TIE_WIN_CHANCE, stage - entryStage);
           for (const id of entrants) add(id, reach * homeGames);
         });
         return;

@@ -1,4 +1,5 @@
 import type { ClubFinance, SimPlayer } from "../gameState.js";
+import { pow } from "../portableMath.js";
 
 // guess: renewals and squad turnover close half of a gap below the board's cap each season (in log
 // terms), at most 50% up. Cuts go straight to the cap, at most halving the bill: lower-division
@@ -13,7 +14,7 @@ export function driftWagesToCap(players: Record<string, SimPlayer>, finances: Re
   for (const p of Object.values(players)) bills.set(p.clubId, (bills.get(p.clubId) ?? 0) + p.wage);
   const factors = new Map([...bills].map(([clubId, bill]) => {
     const cap = finances[clubId]?.wageCap ?? bill;
-    const factor = bill <= 0 ? 1 : cap > bill ? (cap / bill) ** DRIFT.riseExponent : cap / bill;
+    const factor = bill <= 0 ? 1 : cap > bill ? pow(cap / bill, DRIFT.riseExponent) : cap / bill;
     return [clubId, Math.min(DRIFT.maxRise, Math.max(DRIFT.maxCut, factor))];
   }));
   return Object.fromEntries(Object.entries(players).map(([id, p]) => [id, { ...p, wage: Math.max(1, Math.round(p.wage * (factors.get(p.clubId) ?? 1))) }]));

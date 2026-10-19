@@ -1,4 +1,5 @@
 import type { SimPlayer } from "../gameState.js";
+import { exp } from "../portableMath.js";
 
 // The opening wages' own rule (openingFinances.ts, guess): wages rise about 10% per strength point.
 const WAGE_GROWTH_PER_STRENGTH_POINT = 0.1;
@@ -17,7 +18,7 @@ export function wageRateOf(squad: Squad): WageRate {
   if (!squad.length) return () => 0;
   const medianStrength = median(squad.map((p) => p.strength));
   const medianWage = median(squad.map((p) => p.wage));
-  return (strength) => Math.round(medianWage * Math.exp(WAGE_GROWTH_PER_STRENGTH_POINT * (strength - medianStrength)));
+  return (strength) => Math.round(medianWage * exp(WAGE_GROWTH_PER_STRENGTH_POINT * (strength - medianStrength)));
 }
 
 export const goingRate = (strength: number, squad: Squad): number => wageRateOf(squad)(strength);

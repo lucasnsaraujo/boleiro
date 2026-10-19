@@ -3,6 +3,7 @@ import type { SimPlayer } from "../gameState.js";
 import { AGGRESSIVE_SHARE } from "../players/openingProfile.js";
 import type { CardCount, MatchCards } from "./discipline.js";
 import type { CardRates } from "./cardRates.js";
+import { pow } from "../portableMath.js";
 
 export type Booking = { playerId: string; clubId: string; card: "yellow" | "secondYellow" | "red"; minute: number };
 
@@ -19,8 +20,8 @@ const MATCH_MINUTES = 90;
 
 /** A red card's minute after `from`: the skewed draw, cut to the minutes left. */
 function redMinute(random: () => number, from: number): number {
-  const before = (from / MATCH_MINUTES) ** (1 / RED_MINUTE_SKEW);
-  return Math.round(MATCH_MINUTES * (before + (1 - before) * random()) ** RED_MINUTE_SKEW);
+  const before = pow(from / MATCH_MINUTES, 1 / RED_MINUTE_SKEW);
+  return Math.round(MATCH_MINUTES * pow(before + (1 - before) * random(), RED_MINUTE_SKEW));
 }
 
 /** Cards for the minutes after `from`; a player in `booked` already has a yellow, so another one sends him off. */

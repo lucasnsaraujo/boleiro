@@ -11,6 +11,7 @@ import { setBoardBudget, TRANSFER_SHARE_OF_REVENUE } from "./setBoardBudget.js";
 import { squadStrength } from "./squadStrength.js";
 import { tierOf } from "./tierOf.js";
 import { compareText } from "../compareText.js";
+import { exp } from "../portableMath.js";
 
 export type FinanceData = { clubs: readonly ClubFinances[]; divisionEstimates: readonly DivisionFinances[] };
 
@@ -142,7 +143,7 @@ function moneyByRank(data: FinanceData, tier: Tier, rank: number, count: number)
 
 /** Monthly wages that add up to the club's wage bill, weighted towards its stronger players. */
 export function wagesForBill(squad: readonly Omit<SimPlayer, "wage">[], monthlyBill: number): [string, number][] {
-  const weights = squad.map((p) => Math.exp(WAGE_GROWTH_PER_STRENGTH_POINT * p.strength));
+  const weights = squad.map((p) => exp(WAGE_GROWTH_PER_STRENGTH_POINT * p.strength));
   const total = weights.reduce((sum, w) => sum + w, 0);
   return squad.map((p, i) => [p.id, Math.max(1, Math.round((monthlyBill * (weights[i] ?? 0)) / total))]);
 }

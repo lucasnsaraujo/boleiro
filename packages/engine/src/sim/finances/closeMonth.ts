@@ -7,6 +7,7 @@ import { forceSale, type ForcedSale } from "./forceSale.js";
 import { bankInstalment } from "./bankLoan.js";
 import { addLedgers, emptyLedger } from "./ledger.js";
 import { CUSHION_MONTHS_OF_WAGES, projectedRevenue, setBoardBudget, TRANSFER_SHARE_OF_REVENUE } from "./setBoardBudget.js";
+import { pow } from "../portableMath.js";
 
 export type MonthClosed = {
   type: "monthClosed";
@@ -28,7 +29,7 @@ export type FinanceEvent = MonthClosed | WagesLate | ForcedSale;
 // guess: banks lend a club up to a quarter of a year's revenue.
 const LOAN_CAP_SHARE_OF_REVENUE = 0.25;
 // Selic at 15% a year (Copom, June 2025) plus a guessed 5-point spread for football clubs.
-const LOAN_RATE_PER_MONTH = 1.2 ** (1 / 12) - 1;
+const LOAN_RATE_PER_MONTH = pow(1.2, 1 / 12) - 1;
 // guess: the board sells without asking from the second month in a row of late wages.
 const FORCED_SALE_AFTER_LATE_MONTHS = 2;
 // guess: members join after a good month and leave after a bad one or when wages go unpaid.

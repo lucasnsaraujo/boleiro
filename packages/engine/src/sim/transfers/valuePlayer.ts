@@ -1,5 +1,6 @@
 import { daysBetween } from "../dates.js";
 import type { IsoDate, SimPlayer, Tier } from "../gameState.js";
+import { pow } from "../portableMath.js";
 
 // Least squares of log Transfermarkt value on strength over the 1,170 players with both a value and
 // an age in data/players.csv: value ≈ €1.26M at strength 70, ×1.20 per strength point. It lands on
@@ -19,8 +20,8 @@ const VALUE_AT_EXPIRY = 0.3;
 
 /** His value in EUR at a Série A club before his contract and division count. */
 function valueOfPlayerAlone(player: Pick<SimPlayer, "strength" | "age">): number {
-  const strength = VALUE_AT_70_EUR * GROWTH_PER_STRENGTH_POINT ** (player.strength - 70);
-  const age = player.age <= PEAK_VALUE_AGE ? PER_YEAR_YOUNGER ** (PEAK_VALUE_AGE - player.age) : PER_YEAR_OLDER ** (player.age - PEAK_VALUE_AGE);
+  const strength = VALUE_AT_70_EUR * pow(GROWTH_PER_STRENGTH_POINT, player.strength - 70);
+  const age = player.age <= PEAK_VALUE_AGE ? pow(PER_YEAR_YOUNGER, PEAK_VALUE_AGE - player.age) : pow(PER_YEAR_OLDER, player.age - PEAK_VALUE_AGE);
   return strength * age;
 }
 

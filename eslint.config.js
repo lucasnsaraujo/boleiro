@@ -1,6 +1,11 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 
+const BARE_LOCALE_COMPARE = {
+  selector: "CallExpression[callee.property.name='localeCompare'][arguments.length<2]",
+  message: "A bare localeCompare sorts by the computer's language, so one seed plays differently in another locale; use compareText or pass a locale.",
+};
+
 export default tseslint.config(
   {
     ignores: [
@@ -40,12 +45,30 @@ export default tseslint.config(
   {
     files: ["packages/engine/**", "packages/game-client/**"],
     rules: {
+      "no-restricted-syntax": ["error", BARE_LOCALE_COMPARE],
+    },
+  },
+  {
+    files: ["packages/engine/src/**/*.ts", "packages/game-client/src/**/*.ts"],
+    ignores: ["**/*.test.ts"],
+    rules: {
+      "no-restricted-properties": [
+        "error",
+        ...["exp", "expm1", "log", "log1p", "log2", "log10", "pow", "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh", "asinh", "acosh", "atanh", "hypot", "cbrt"].map((property) => ({
+          object: "Math",
+          property,
+          message: `Math.${property} differs in the last bit between JavaScript engines, so a seed would play differently in the app than in Node; use sim/portableMath.`,
+        })),
+      ],
       "no-restricted-syntax": [
         "error",
+        // This block's list replaces the one above for these files, so it repeats that one's selectors.
+        BARE_LOCALE_COMPARE,
         {
-          selector: "CallExpression[callee.property.name='localeCompare'][arguments.length<2]",
-          message: "A bare localeCompare sorts by the computer's language, so one seed plays differently in another locale; use compareText or pass a locale.",
+          selector: "BinaryExpression[operator='**']:not([right.raw='2']):not([left.raw='2'][right.raw=/^[0-9]+$/])",
+          message: "`**` differs in the last bit between JavaScript engines (only x ** 2 and 2 ** a whole number are exact everywhere); use pow from sim/portableMath.",
         },
+        { selector: "AssignmentExpression[operator='**=']", message: "`**=` differs in the last bit between JavaScript engines; use pow from sim/portableMath." },
       ],
     },
   },

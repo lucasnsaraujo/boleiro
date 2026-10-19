@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { leaveIncident } from "./flows.js";
+import { leaveIncident, resumeAtFourX } from "./flows.js";
 
 const MAX_TURNS = 12;
 const MAX_STOPS = 40;
@@ -16,8 +16,7 @@ async function playRound(page: Page) {
   for (let stop = 0; stop < MAX_STOPS && !(await next.isVisible()); stop++) {
     // A red card or an injury to a coach's side stops the round with its window over the board.
     await leaveIncident(page);
-    const fourX = page.getByRole("button", { name: "4x" });
-    if (await fourX.isVisible()) await fourX.click();
+    await resumeAtFourX(page);
     await expect(page.getByRole("button", { name: "Pausar" }).and(page.locator("[aria-pressed=true]")).or(next)).toBeVisible({ timeout: 30_000 });
   }
   await next.click();
