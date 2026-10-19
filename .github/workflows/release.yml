@@ -1,9 +1,12 @@
 name: Release
 
-# Builds the installers only when someone starts this workflow by hand (Actions tab → Release → Run workflow).
-# It never runs on push, pull request or tag, and it never creates a GitHub release: the installers are
-# workflow artifacts. Nothing is signed; docs/release.md says what signing needs.
+# Builds the installers when a version tag (v0.1.0) is pushed, or when someone starts it by hand
+# (Actions tab → Release → Run workflow). A tag run then publishes a GitHub release for that tag
+# with the installers attached; a run started from a branch only keeps them as workflow artifacts.
+# Nothing is signed; docs/release.md says what signing needs.
 on:
+  push:
+    tags: ["v*"]
   workflow_dispatch:
 
 permissions:
@@ -31,7 +34,10 @@ jobs:
           - name: Windows (NSIS .exe and .msi)
             os: windows-latest
             rust-targets: ""
-            args: --bundles nsis,msi
+            args: --bundles nsis
+            # WiX needs Windows' optional VBScript feature (Tauri issue #13752), so the .msi is packed
+            # in a step of its own that may fail without losing the .exe.
+            optional-bundle: msi
             bundle-dir: apps/desktop/src-tauri/target/release/bundle
             artifact: boleiro-windows
     steps:
@@ -49,6 +55,9 @@ jobs:
           workspaces: apps/desktop/src-tauri -> target
       - run: pnpm install --frozen-lockfile
       - run: pnpm tauri build ${{ matrix.args }}
+      - if: matrix.optional-bundle
+        continue-on-error: true
+        run: pnpm tauri bundle --bundles ${{ matrix.optional-bundle }}
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
@@ -57,3 +66,47 @@ jobs:
             ${{ matrix.bundle-dir }}/dmg/*.dmg
             ${{ matrix.bundle-dir }}/nsis/*.exe
             ${{ matrix.bundle-dir }}/msi/*.msi
+
+  # Runs only when both installers built, so a release never lacks the macOS or the Windows one.
+  publish:
+    name: GitHub release
+    needs: installer
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: installers
+          merge-multiple: true
+      # The Windows artifact keeps nsis/ and msi/ folders when both built; the release lists files flat.
+      - name: Check the installers are there
+        run: |
+          mkdir release
+          find installers -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.msi' \) -exec mv {} release/ \;
+          ls -l release
+          ls release/*.dmg release/*-setup.exe
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          cat > notes.md <<'EOF'
+          Download the `.dmg` for macOS (Apple Silicon and Intel) or the `-setup.exe` for Windows 10 and 11. When a `.msi` is attached, it installs the same Windows app.
+
+          These builds are not code-signed, so each system warns the first time:
+
+          - **macOS:** open the `.dmg` and drag Boleiro to Applications. The first open says Apple could not verify it. Open System Settings → Privacy & Security and click Open Anyway, or run `xattr -dr com.apple.quarantine /Applications/Boleiro.app`.
+          - **Windows:** SmartScreen says "Windows protected your PC". Click More info → Run anyway.
+          EOF
+          # A rerun after the release exists only replaces its files.
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$TAG" release/* --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            # A tag like v0.2.0-beta.1 is a prerelease, which releases/latest skips.
+            flags=()
+            if [[ "$TAG" == *-* ]]; then flags+=(--prerelease); fi
+            gh release create "$TAG" release/* --repo "$GITHUB_REPOSITORY" --verify-tag \
+              --title "Boleiro ${TAG#v}" --notes-file notes.md --generate-notes "${flags[@]}"
+          fi
