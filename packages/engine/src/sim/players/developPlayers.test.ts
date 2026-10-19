@@ -181,6 +181,11 @@ describe("rebuildMovedSquads", () => {
     expect(lift(start, moved(promotedClub, "A"), scaled(promotedClub, 10), promotedClub)).toBeGreaterThan(poorer + 2);
   });
 
+  it("barely rebuilds a relegated club richer than any club of its new division", () => {
+    const flamengo = "flamengo-rj";
+    expect(lift(start, moved(flamengo, "B"), start.finances, flamengo)).toBeGreaterThan(-1);
+  });
+
   it("moves a squad only the way its club went: a relegated squad already below its new division keeps its players", () => {
     const weak: GameState = { ...start, players: Object.fromEntries(Object.entries(start.players).map(([id, p]) => [id, p.clubId === relegatedClub ? { ...p, strength: 40 } : p])) };
     expect(lift(weak, moved(relegatedClub, "B"), start.finances, relegatedClub)).toBe(0);

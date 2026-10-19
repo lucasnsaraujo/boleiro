@@ -89,12 +89,15 @@ const clamp = (strength: number) => Math.min(99, Math.max(1, strength));
 // club's revenue over its division's geometric mean (least squares within Série A–D, data/players.csv and
 // data/finances.csv; 1.8, 1.8, 1.1 and 1.9 in each alone): money buys a better squad than the division's level.
 const LEVEL_PER_LOG_REVENUE = 1.8;
+// Across all 281 clubs of Série A to D and the estaduais it rises 5.19 points per e-fold (R² 0.97): a relegated
+// club richer than the richest club in its new division's data keeps the squad that money buys at that rate.
+const LEVEL_PER_LOG_REVENUE_ACROSS_DIVISIONS = 5.19;
 // In their first season after the move, 2016–2026, clubs promoted to Série A, B and C took 1.14, 1.31 and
 // 1.33 points a game, and clubs relegated to Série B and C 1.53 and 1.38 (ESPN's and Sofascore's results
 // and divisions.csv in data/history, Série A's from its odds file); squads that kept their old level took
 // 0.74, 0.84, 0.95, 1.93 and 1.95 in the game (six seeds' seasons 2–4). guess: a share of 0.85 takes them
-// to 1.08, 1.11, 1.23, 1.50 and 1.52; a full rebuild fits promoted clubs a little better but sends more
-// poor clubs from the estaduais up to Série C, below its revenue band, in ten-season runs.
+// to 1.10, 1.10, 1.19, 1.66 and 1.57 (a relegated giant keeps most of its squad, see clubLevels); a full rebuild
+// fits promoted clubs a little better but sends more poor clubs from the estaduais up to Série C.
 const REBUILD_SHARE = 0.85;
 
 // The yearly revenue the board budgets with, its members at the level they settle back to: membership moves
@@ -104,9 +107,10 @@ const logRevenueOf = (finance: ClubFinance | undefined): number | null =>
 
 /**
  * The level each club's players drift toward: its division's CLUB_LEVEL, moved by how the Brazilian
- * club's yearly revenue compares with its tier's geometric mean; a club abroad's is CLUB_LEVEL alone.
+ * club's yearly revenue compares with its tier's geometric mean, and, given a `ceiling`, further at the
+ * rate across divisions by how far it passes the richest club of its tier; a club abroad's is CLUB_LEVEL alone.
  */
-function clubLevels(clubs: GameState["clubs"], finances: GameState["finances"]): (clubId: string) => number {
+function clubLevels(clubs: GameState["clubs"], finances: GameState["finances"], ceiling?: Readonly<Record<Tier, number>>): (clubId: string) => number {
   const logs = new Map<Tier, number[]>();
   for (const club of Object.values(clubs)) {
     const x = club.abroad ? null : logRevenueOf(finances[club.id]);
@@ -118,7 +122,9 @@ function clubLevels(clubs: GameState["clubs"], finances: GameState["finances"]):
     const level = CLUB_LEVEL[(club && divisionOf(club)) ?? "none"];
     const x = club && !club.abroad ? logRevenueOf(finances[clubId]) : null;
     const mean = club ? means.get(tierOf(club)) : undefined;
-    return x === null || mean === undefined ? level : level + LEVEL_PER_LOG_REVENUE * (x - mean);
+    if (x === null || mean === undefined || !club) return level;
+    const beyond = ceiling ? Math.max(0, x - Math.log(ceiling[tierOf(club)])) : 0;
+    return level + LEVEL_PER_LOG_REVENUE * (x - mean) + (LEVEL_PER_LOG_REVENUE_ACROSS_DIVISIONS - LEVEL_PER_LOG_REVENUE) * beyond;
   };
 }
 
@@ -146,6 +152,7 @@ const standingOf = (squad: readonly SimPlayer[]): number => squad.reduce((sum, p
  */
 export function rebuildMovedSquads(state: GameState, clubs: GameState["clubs"], finances: GameState["finances"]): GameState["players"] {
   const levelAfter = clubLevels(clubs, finances);
+  const relegatedLevel = clubLevels(clubs, finances, state.economy.revenueCeiling);
   // A loaned player belongs to the club that lent him, as his yearly drift does (targetOf).
   const ownerOf = (p: SimPlayer) => state.market.loans[p.id]?.fromClubId ?? p.clubId;
   const squads = new Map<string, SimPlayer[]>();
@@ -160,7 +167,7 @@ export function rebuildMovedSquads(state: GameState, clubs: GameState["clubs"], 
     const squad = squads.get(club.id) ?? [];
     if (!before || club.abroad || squad.length === 0 || isHumanClub(state, club.id)) continue;
     const [from, to] = [CLUB_LEVEL[before.division ?? "none"], CLUB_LEVEL[club.division ?? "none"]];
-    const shift = REBUILD_SHARE * (levelAfter(club.id) - standingOf(squad));
+    const shift = REBUILD_SHARE * ((to < from ? relegatedLevel : levelAfter)(club.id) - standingOf(squad));
     if (from !== to && shift !== 0 && shift > 0 === to > from) shifts.set(club.id, shift);
   }
   if (shifts.size === 0) return state.players;
