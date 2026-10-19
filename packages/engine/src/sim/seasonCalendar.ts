@@ -1,5 +1,5 @@
 import type { Division } from "@boleiro/data/players";
-import type { IsoDate, SeasonCalendar } from "./gameState.js";
+import type { IsoDate, LeagueCompetition, SeasonCalendar } from "./gameState.js";
 import type { UnifiedDates } from "./world/world.js";
 import { addDays, daysBetween } from "./dates.js";
 import { gameScales, knockoutDates, REALISTA, type Formats } from "./formats.js";
@@ -230,9 +230,15 @@ export function seasonCalendar(
   return { season, stateChampionshipDates, copaDoBrasilRounds: copaDoBrasil, leagueDates };
 }
 
-/** Whether `division` rests on a day of `season`: Série A on the real calendar of a game with national football (`restsInFifaWindows`), as `seasonCalendar` places its rounds. */
-export function isLeagueResting(division: Division | null, season: number, formats: Formats, restsInFifaWindows: boolean): (date: IsoDate) => boolean {
-  return division === "A" && formats.calendar !== "unified" && restsInFifaWindows ? isSerieAResting(season, SERIE_A_PAUSES_FOR_WORLD_CUP) : () => false;
+/**
+ * Whether a league rests on a day, on the real calendar of a game with national football (`restsInFifaWindows`),
+ * as its rounds were placed: Série A through the FIFA windows and its World Cup pause (seasonCalendar), a league
+ * abroad through the FIFA windows (startSeason's realDaysAbroad).
+ */
+export function isLeagueResting(league: Pick<LeagueCompetition, "division" | "season" | "abroad">, formats: Formats, restsInFifaWindows: boolean): (date: IsoDate) => boolean {
+  if (formats.calendar === "unified" || !restsInFifaWindows) return () => false;
+  if (league.abroad) return isInFifaWindow;
+  return league.division === "A" ? isSerieAResting(league.season, SERIE_A_PAUSES_FOR_WORLD_CUP) : () => false;
 }
 
 /** The days a result-only country plays on in a season of the unified calendar: the leagues' grid and the Copa do Brasil's midweeks; none on a real calendar. */

@@ -92,7 +92,7 @@ export function postponeClashingGames(state: GameState): GameState {
   for (const game of clashing.toSorted((a, b) => compareText(a.date, b.date) || compareText(a.id, b.id))) {
     const competition = competitions[game.competitionId];
     if (competition?.kind !== "league") continue;
-    const isResting = isLeagueResting(competition.division, competition.season, formats, state.nations !== undefined);
+    const isResting = isLeagueResting(competition, formats, state.nations !== undefined);
     const isFinalStage = game.stage === competition.stageDates.length - 1;
     const date = postponedDate(game, lastDayOf(game) ?? "", isFinalStage, (id) => games.get(id) ?? [], cupDaysOf, isResting);
     if (!date) continue;

@@ -5,6 +5,7 @@ import { compareText } from "./compareText.js";
 import { daysBetween } from "./dates.js";
 import type { Fixture, GameState } from "./gameState.js";
 import { loadNewGame } from "./loadNewGame.js";
+import { isInFifaWindow, worldCupOf } from "./nations/fifaCalendar.js";
 import { loadGame, saveGame } from "./saveGame.js";
 import { loadEurope } from "./world/loadEurope.js";
 import { loadGuests } from "./world/loadGuests.js";
@@ -80,6 +81,12 @@ describe("a club's league game next to its continental match in a World Cup seas
     }
   });
 
+  it("never moves a Série A game into a FIFA window or the World Cup pause, when Série A rests", () => {
+    const worldCup = worldCupOf(2026);
+    const restDays = postponed.filter((f) => isInFifaWindow(f.date) || (worldCup !== null && f.date >= worldCup.from && f.date <= worldCup.until));
+    expect(restDays.map((f) => `${f.id}@${f.date}`)).toEqual([]);
+  });
+
   it("saves and loads with its postponed games", () => {
     expect(loadGame(saveGame(groupsDrawn))).toEqual(groupsDrawn);
   });
@@ -106,4 +113,14 @@ describe("a game without national football", () => {
     const state = playUntil(loadNewGame(1, { coachClubId: "flamengo-rj", world, guests }), "2026-05-01");
     expect(state.fixtures.filter((f) => f.postponedFrom !== undefined)).toEqual([]);
   });
+});
+
+describe("a league abroad's game next to its club's cup match", () => {
+  it("moves off the FIFA windows its rounds rest in", () => {
+    // Arsenal's FA Cup ties land the day before or after Premier League rounds, and the November window starts on a Monday.
+    const state = playUntil(loadNewGame(1, { coachClubId: "tm-11", world, guests, nationalFootball }), "2026-12-01");
+    const abroad = state.fixtures.filter((f) => f.postponedFrom !== undefined && state.competitions[f.competitionId]?.kind === "league" && !f.competitionId.startsWith("serie-"));
+    expect(abroad.length).toBeGreaterThan(0);
+    expect(abroad.filter((f) => isInFifaWindow(f.date)).map((f) => `${f.id}@${f.date}`)).toEqual([]);
+  }, 120_000);
 });
