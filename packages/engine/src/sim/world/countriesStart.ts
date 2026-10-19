@@ -17,7 +17,7 @@ function worldClubOf({ id, shortName, colours }: WorldPackClub, squad: readonly 
   const lowest = listed.length ? Math.min(...listed) : 0;
   const rated = squad.map((p) => ({ group: p.group, name: p.name, strength: strengthFromValue(p.marketValueEur ?? lowest), age: p.age, nationalities: p.nationalities.join("/") }));
   // Transfermarkt lists a few clubs short or empty; their academy fills them, as at Brazil's clubs.
-  const academy = groupsToFill(rated, []).map((group, i) => academyPlayer(`${id}-a${i}`, id, null, group, `${season}-01-01`, random));
+  const academy = groupsToFill(rated, []).map((group, i) => academyPlayer(`${id}-a${i}`, id, null, group, `${season}-01-01`, random, home));
   const players = [...rated, ...academy.map((p) => ({ group: p.group, name: p.name, strength: Math.round(p.strength), age: p.age, nationalities: home }))];
   return {
     id,

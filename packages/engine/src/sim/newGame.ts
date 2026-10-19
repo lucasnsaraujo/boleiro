@@ -38,6 +38,7 @@ import type { SponsorFiles } from "./sponsors/sponsors.js";
 import type { NationalFootball } from "@boleiro/data/nationalFootball";
 import { openNations } from "./nations/openNations.js";
 import { syncCupsAbroad } from "./continental/cupsAbroad.js";
+import { homeNationalityOf } from "./players/homeNationality.js";
 
 /** A result-only country to start: its structure and its clubs level by level, top first. */
 export type CountryStart = { structure: CountryStructure; levels: readonly (readonly WorldClub[])[] };
@@ -145,7 +146,7 @@ function academyTopUp(clubs: readonly Club[], players: readonly Omit<SimPlayer, 
   const squads = new Map<string, Omit<SimPlayer, "wage">[]>();
   for (const p of players) squads.set(p.clubId, [...(squads.get(p.clubId) ?? []), p]);
   return clubs.flatMap((club) =>
-    groupsToFill(squads.get(club.id) ?? [], []).map((group, i) => academyPlayer(`a${date.slice(0, 4)}-${club.id}-${i}`, club.id, divisionOf(club), group, date, random)),
+    groupsToFill(squads.get(club.id) ?? [], []).map((group, i) => academyPlayer(`a${date.slice(0, 4)}-${club.id}-${i}`, club.id, divisionOf(club), group, date, random, homeNationalityOf(club))),
   );
 }
 

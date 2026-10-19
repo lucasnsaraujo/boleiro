@@ -9,6 +9,7 @@ import { isHumanClub } from "../coach/humanCoaches.js";
 import { inventName } from "./inventName.js";
 import { marketOf, retirementChance, retirementWeight, type PlayerWantsToRetire } from "./retirement.js";
 import { freshCondition, rollTrait } from "./openingProfile.js";
+import { homeNationalityOf } from "./homeNationality.js";
 import { squadsOfGame } from "./squadsByClub.js";
 import { isClubFull } from "../transfers/squadCap.js";
 
@@ -160,7 +161,7 @@ export function groupsToFill(staying: readonly Pick<SimPlayer, "group">[], leavi
   return groups;
 }
 
-/** A Brazilian teenager with an invented name from the club's academy, rated for its division; the caller sets his wage. */
+/** A teenager with an invented name from the club's academy, of its country's `nationality`, rated for its division; the caller sets his wage. */
 export function academyPlayer(
   id: string,
   clubId: string,
@@ -168,21 +169,22 @@ export function academyPlayer(
   group: PositionGroup,
   date: IsoDate,
   random: () => number,
+  nationality: string,
 ): Omit<SimPlayer, "wage"> {
   const age = YOUTH_MIN_AGE + Math.floor(random() * YOUTH_AGES);
   const strength = clamp(CLUB_LEVEL[division ?? "none"] + ageOffset(age) + YOUTH_SD * normal(random));
   return {
     id, clubId, group, age, name: inventName(random),
     strength: Math.round(strength * 10) / 10,
-    nationalities: ["Brazil"],
+    nationalities: [nationality],
     trait: rollTrait(random),
     contractUntil: `${Number(date.slice(0, 4)) + YOUTH_CONTRACT_YEARS - 1}-12-31`,
     condition: freshCondition(date),
   };
 }
 
-/** An academy kid as a professional at `clubId` on a first contract at `wage`; he keeps his hidden potential. */
-export function professionalOf(prospect: Prospect, clubId: string, wage: number, date: IsoDate, random: () => number): SimPlayer {
+/** An academy kid as a professional at `clubId` on a first contract at `wage`, of his academy's country's `nationality`; he keeps his hidden potential. */
+export function professionalOf(prospect: Prospect, clubId: string, wage: number, date: IsoDate, random: () => number, nationality: string): SimPlayer {
   return {
     id: prospect.id,
     clubId,
@@ -191,7 +193,7 @@ export function professionalOf(prospect: Prospect, clubId: string, wage: number,
     strength: prospect.strength,
     potential: prospect.potential,
     age: prospect.age,
-    nationalities: ["Brazil"],
+    nationalities: [nationality],
     trait: rollTrait(random),
     contractUntil: `${Number(date.slice(0, 4)) + YOUTH_CONTRACT_YEARS - 1}-12-31`,
     condition: freshCondition(date),
@@ -311,8 +313,8 @@ export function developPlayers(state: GameState): { state: GameState; events: (P
       const prospect = readyProspect(academies.get(club.id) ?? [], group, taken, (kid) => isHuman || isNearSquadMiddle(kid, squadNow));
       if (prospect) taken.add(prospect.id);
       const youth = prospect
-        ? professionalOf(prospect, club.id, 0, date, random.next)
-        : academyPlayer(`y${intake}-${club.id}-${i}`, club.id, divisionOf(club), group, date, random.next);
+        ? professionalOf(prospect, club.id, 0, date, random.next, homeNationalityOf(club))
+        : academyPlayer(`y${intake}-${club.id}-${i}`, club.id, divisionOf(club), group, date, random.next, homeNationalityOf(club));
       const newcomer = { ...youth, wage: Math.max(1, rate(youth.strength)) };
       players[youth.id] = newcomer;
       squadNow.push(newcomer);

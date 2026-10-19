@@ -6,6 +6,7 @@ import { isWorthPromoting, normal, professionalOf, type YouthPromoted } from "..
 import { squadsByClub } from "../players/squadsByClub.js";
 import { academyClubs, academyOf, clampStrength, gapAt, inventProspect, LEAVING_AGE, openAcademies, thinnestGroup, YOUTH_AGES, type Prospect } from "./academy.js";
 import { firstWage, type ProspectReleased } from "./moveProspect.js";
+import { homeNationalityOf } from "../players/homeNationality.js";
 
 export type YouthTrialsHeld = { type: "youthTrialsHeld"; clubId: string; prospectIds: string[] };
 export type YouthEvent = YouthPromoted | ProspectReleased | YouthTrialsHeld;
@@ -44,7 +45,7 @@ export function turnOverAcademies(state: GameState): { state: GameState; events:
     // He joins the squad as he is; the squads' own turnover (developPlayers) ages and develops him with everyone.
     const squad = squads.get(prospect.clubId) ?? [];
     if (isWorthPromoting(state, prospect, squad)) {
-      const player = professionalOf(prospect, prospect.clubId, firstWage(prospect, squad), state.date, random.next);
+      const player = professionalOf(prospect, prospect.clubId, firstWage(prospect, squad), state.date, random.next, homeNationalityOf(state.clubs[prospect.clubId]));
       promoted[player.id] = player;
       squads.set(prospect.clubId, [...squad, player]);
       events.push({ type: "youthPromoted", playerId: prospect.id, clubId: prospect.clubId });
