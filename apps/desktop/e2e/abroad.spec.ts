@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { bar, leaveIncident, pickOption, startAtClub } from "./flows.js";
+import { bar, leaveIncident, momentScene, passMoments, pickOption, startAtClub } from "./flows.js";
 
 const MAX_TURNS = 12;
 const MAX_STOPS = 40;
@@ -96,7 +96,9 @@ test("a career at an English club plays a round live, then shows its league's ta
     // A day with news opens the hub's paper over the play button; the dock's paper button shuts it.
     if (await paper.isVisible()) await page.getByRole("button", { name: /^Jornal/ }).click();
     await play.click();
-    await expect(sheet.or(play)).toBeVisible({ timeout: 60_000 });
+    // A day that stops early can bring a career moment first: an English player called up for the World Cup.
+    await expect(sheet.or(play).or(momentScene(page)).first()).toBeVisible({ timeout: 60_000 });
+    await passMoments(page, sheet.or(play));
   }
   await sheet.getByRole("button", { name: "Começar a rodada" }).click();
   await expect(page.locator(".live-list").locator(".live-group", { has: page.getByRole("heading", { name: /Premier League/ }) }).locator(".live-r.human")).toBeVisible();
