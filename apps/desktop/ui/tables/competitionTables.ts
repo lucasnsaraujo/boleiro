@@ -16,6 +16,10 @@ import { leagueMatches } from "@boleiro/engine/sim/world/resultOnlyLeague";
 import { worldMatchRef } from "@boleiro/game-client/matchPage/matchPageOf";
 import { NATIONAL_ROUND_NAMES } from "@boleiro/game-client/format/competitionName";
 import { uefaPlaces } from "@boleiro/engine/sim/world/uefaPlaces";
+import { EUROPE } from "@boleiro/engine/sim/world/europe";
+import { MARKET_LEAGUES } from "@boleiro/engine/sim/world/marketLeagues";
+import { SOUTH_AMERICA } from "@boleiro/engine/sim/world/southAmerica";
+import type { CountryStructure } from "@boleiro/engine/sim/world/world";
 
 export type ZoneKind = "libertadores" | "preLibertadores" | "sulAmericana" | "championsLeague" | "europaLeague" | "promotion" | "advance" | "playoff" | "relegation";
 export type ZoneKey = { zone: ZoneKind; label: string };
@@ -212,6 +216,41 @@ const CONTINENTAL_GROUP_ZONES: Record<string, Zoning> = {
   "club-world-cup": { zoneOf: (_, position) => (position <= 2 ? "advance" : null), advanceLabel: "Oitavas" },
 };
 
+const PLACE_ZONES: Record<string, ZoneKind> = {
+  libertadoresGroups: "libertadores",
+  libertadoresStage2: "preLibertadores",
+  libertadoresStage1: "preLibertadores",
+  sulAmericanaGroups: "sulAmericana",
+  sulAmericanaStage1: "sulAmericana",
+  "champions-league": "championsLeague",
+  "europa-league": "europaLeague",
+};
+
+/**
+ * A country's continental places down its top table as zones, as its season's turn files them: its UEFA entries,
+ * the first Europa League place its cup winner's, or its CONMEBOL ones, from the table alone.
+ */
+function placeZonesOf(structure: CountryStructure | undefined, table: readonly string[], cup: CopaFinalists): [ZoneKind, string[]][] {
+  if (!structure) return [];
+  const places = structure.uefa ? Object.entries(uefaPlaces(structure.uefa, table, cup)) : [...continentalPlaces(structure.continental, table, null)];
+  return places.flatMap(([entry, clubIds]): [ZoneKind, string[]][] => (PLACE_ZONES[entry] ? [[PLACE_ZONES[entry], clubIds]] : []));
+}
+
+const STRUCTURES_ABROAD: readonly CountryStructure[] = [...EUROPE, ...SOUTH_AMERICA, ...MARKET_LEAGUES];
+
+/**
+ * The finalists of the cup whose winner a league's table zones count with: the Copa do Brasil's for Brazil's
+ * leagues, its own country's cup's for a league abroad; null before its final.
+ */
+export function nationalCupFinalists(state: Pick<GameState, "competitions" | "fixtures" | "world">, competition: Competition): CopaFinalists {
+  if (competition.kind === "league" && competition.abroad) {
+    const cup = state.world?.[competition.abroad.country]?.cup;
+    return cup ? cupFinal(cup) : null;
+  }
+  const copa = Object.values(state.competitions).find((c) => c.kind === "cup");
+  return copa?.kind === "cup" ? COPA_DO_BRASIL.finalists(copa, state.fixtures) : null;
+}
+
 function zoning(competition: Competition, stage: number, groups: readonly string[][], stageFixtures: readonly Fixture[], copa: CopaFinalists): Zoning {
   if (competition.kind === "cup" || competition.kind === "cupAbroad" || competition.kind === "national") return NO_ZONES;
   if (competition.kind === "continental") return CONTINENTAL_GROUP_ZONES[competition.cup] ?? NO_ZONES;
@@ -227,8 +266,10 @@ function zoning(competition: Competition, stage: number, groups: readonly string
     const { promotedIds, relegatedIds } = format.outcome(competition, stageFixtures);
     const order = standings(competition.clubIds, stageFixtures, competition.drawOrder).map((row) => row.clubId);
     const continental = competition.division === "A" ? continentalQualifiers(order, copa) : null;
+    const abroad = competition.abroad?.level === 0 ? placeZonesOf(STRUCTURES_ABROAD.find((s) => s.id === competition.abroad?.country), order, copa) : [];
     return {
       zoneOf: memberZones([
+        ...abroad,
         ["libertadores", continental?.libertadoresGroups ?? []],
         ["preLibertadores", continental?.libertadoresPreliminary ?? []],
         ["sulAmericana", continental?.sulAmericana ?? []],
@@ -401,16 +442,6 @@ export function topScorers(competition: Competition, { history, players }: Pick<
     .slice(0, limit);
 }
 
-const PLACE_ZONES: Record<string, ZoneKind> = {
-  libertadoresGroups: "libertadores",
-  libertadoresStage2: "preLibertadores",
-  libertadoresStage1: "preLibertadores",
-  sulAmericanaGroups: "sulAmericana",
-  sulAmericanaStage1: "sulAmericana",
-  "champions-league": "championsLeague",
-  "europa-league": "europaLeague",
-};
-
 /** A result-only country's league tables as they stand, top level first, each row in its CONMEBOL or UEFA place, promotion or relegation. */
 export function worldLeagueTables(state: Pick<GameState, "world">, countryId: string): GroupTable[] {
   const country = state.world?.[countryId];
@@ -420,17 +451,11 @@ export function worldLeagueTables(state: Pick<GameState, "world">, countryId: st
     const fixtures: Fixture[] = leagueMatches(league).map((match, i) => ({ ...match, id: worldMatchRef(countryId, level, i), competitionId: league.id, stage: 0 }));
     const order = standings(league.clubIds, fixtures, league.drawOrder);
     const ids = order.map((row) => row.clubId);
-    const { uefa } = country.structure;
-    const places =
-      level > 0
-        ? new Map<string, string[]>()
-        : uefa
-          ? new Map(Object.entries(uefaPlaces(uefa, ids, country.cup ? cupFinal(country.cup) : null)))
-          : continentalPlaces(country.structure.continental, ids, null);
+    const places = level > 0 ? [] : placeZonesOf(country.structure, ids, country.cup ? cupFinal(country.cup) : null);
     const promoted = level > 0 ? ids.slice(0, structure?.promoted ?? 0) : [];
     const relegated = ids.slice(ids.length - (structure?.relegated ?? 0));
     const zoneOf = (clubId: string): ZoneKind | null => {
-      for (const [entry, clubIds] of places) if (clubIds.includes(clubId)) return PLACE_ZONES[entry] ?? null;
+      for (const [zone, clubIds] of places) if (clubIds.includes(clubId)) return zone;
       return promoted.includes(clubId) ? "promotion" : relegated.includes(clubId) ? "relegation" : null;
     };
     return {

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { Competition, ContinentalCompetition, CupCompetition, Fixture, GameState, LeagueCompetition, MatchResult } from "@boleiro/engine/sim/gameState";
 import { RAPIDO } from "@boleiro/engine/sim/formats";
+import { advanceDay } from "@boleiro/engine/sim/advanceDay";
 import { newGameFromFiles } from "@boleiro/engine/sim/loadNewGame";
 import { bundledGameFiles } from "@boleiro/game-client/engine/bundledGameFiles";
 import {
@@ -12,6 +13,7 @@ import {
   knockoutBracket,
   knockoutTies,
   lastPlayedLeg,
+  nationalCupFinalists,
   openingCompetitionId,
   playedRounds,
   tableTabs,
@@ -436,5 +438,29 @@ describe("a Realista career abroad across Brazil's new year", () => {
     const tabs = tableTabs(july).tabs.map((c) => c.id);
     expect(tabs).toContain(next.id);
     expect(tabs).not.toContain(premierId);
+  });
+});
+
+describe("a league abroad in the full tier", () => {
+  // Arsenal's first season, played to the last day before the year turns and files it.
+  let state = newGameFromFiles(7, { coachClubId: "tm-11", formats: RAPIDO }, bundledGameFiles);
+  let turned = advanceDay(state, {});
+  while (!turned.events.some((e) => e.type === "seasonEnded")) {
+    state = turned.state;
+    turned = advanceDay(state, {});
+  }
+  const filed = turned.state.world?.["gb-eng"]?.seasons.at(-1);
+  const premier = Object.values(state.competitions).find((c): c is LeagueCompetition => c.kind === "league" && c.abroad?.country === "gb-eng" && c.abroad.level === 0);
+  if (!premier) throw new Error("no Premier League");
+  const rows = groupTables(premier, 0, state.fixtures, nationalCupFinalists(state, premier)).groups[0]?.rows ?? [];
+  const inZone = (zone: string) => rows.filter((row) => row.zone === zone).map((row) => row.clubId);
+
+  test("stands on its last day with the UEFA places and the relegation its turn of the season files", () => {
+    expect(state.fixtures.filter((f) => f.competitionId === premier.id).every((f) => f.result)).toBe(true);
+    expect(filed?.season).toBe(premier.season);
+    expect(inZone("championsLeague")).toEqual(filed?.continental["champions-league"]);
+    expect(inZone("europaLeague").sort()).toEqual([...(filed?.continental["europa-league"] ?? [])].sort());
+    expect(inZone("relegation")).toEqual(filed?.relegated[0]);
+    expect(inZone("championsLeague")).toHaveLength(5);
   });
 });

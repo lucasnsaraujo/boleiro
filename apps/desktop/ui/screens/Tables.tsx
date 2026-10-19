@@ -1,6 +1,5 @@
 import { createContext, use, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
-import { COPA_DO_BRASIL } from "@boleiro/engine/sim/copaDoBrasil";
 import type { Competition, Fixture, GameState } from "@boleiro/engine/sim/gameState";
 import { neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
 import { superCupScore, superCupWinner, type LeaguePhaseCup, type SuperCup } from "@boleiro/engine/sim/continental/uefaCups";
@@ -23,6 +22,7 @@ import {
   competitionStages,
   defaultStage,
   groupTables,
+  nationalCupFinalists,
   intercontinentalLadder,
   knockoutBracket,
   knockoutTies,
@@ -40,11 +40,6 @@ import {
 } from "../tables/competitionTables.js";
 import { tieBreakOf } from "@boleiro/engine/sim/tieBreaks";
 import "./tables.css";
-
-const copaFinalists = (competitions: readonly Competition[], fixtures: GameState["fixtures"]) => {
-  const copa = competitions.find((c) => c.kind === "cup");
-  return copa?.kind === "cup" ? COPA_DO_BRASIL.finalists(copa, fixtures) : null;
-};
 
 const TABLES_KEYS = ["date", "season", "coachClubId", "clubs", "fixtures", "competitions", "calendar", "history", "players", "world", "europe"] as const;
 type TablesState = Pick<GameState, (typeof TABLES_KEYS)[number]>;
@@ -422,7 +417,7 @@ function CompetitionPanel({ competition, state, clubs, stage, round, onStage, pi
   const table =
     competition.stages[stage]?.kind === "knockout"
       ? null
-      : groupTables(competition, stage, state.fixtures, copaFinalists(Object.values(state.competitions), state.fixtures), round);
+      : groupTables(competition, stage, state.fixtures, nationalCupFinalists(state, competition), round);
   // A new competition or stage draws its page afresh.
   const pageKey = `${competition.id}-${stage}`;
 
