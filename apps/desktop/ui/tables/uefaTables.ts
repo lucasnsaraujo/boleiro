@@ -17,6 +17,7 @@ export function uefaLeaguePhase(cup: LeaguePhaseCup): { groups: GroupTable[]; zo
     zone: zoneAt(i + 1),
     form: recentForm(row.clubId, matches),
     movement: 0,
+    postponed: 0,
   }));
   const groups = [{ label: null, rows }];
   return { groups, zones: zoneKeys(groups, "Oitavas") };

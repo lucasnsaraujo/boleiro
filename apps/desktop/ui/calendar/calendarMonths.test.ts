@@ -34,6 +34,16 @@ test("a fixture shows the competition, the side and the opponent", () => {
   expect(entry).toMatchObject({ competition: "Baiano", isHome, opponentId: isHome ? fixture.awayId : fixture.homeId, result: null });
 });
 
+test("a postponed game shows on its new day with the day it was postponed from, and its round", () => {
+  const fixture = own.find((f) => f.competitionId === "serie-a-2026");
+  if (!fixture) throw new Error("no Série A game");
+  const postponed = { ...game, fixtures: game.fixtures.map((f) => (f.id === fixture.id ? { ...f, date: "2026-08-19", postponedFrom: f.date } : f)) };
+  const entry = matches(calendarMonths(postponed).flatMap((m) => m.entries)).find((e) => e.fixtureId === fixture.id);
+  expect(entry).toMatchObject({ date: "2026-08-19", postponedFrom: fixture.date });
+  const coming = upcomingMatches({ ...postponed, date: "2026-08-18" }, 1)[0];
+  expect(coming?.label).toMatch(/^Série A · \d+ª rodada · adiado$/);
+});
+
 test("a played fixture gets its score and whether the coach's club won", () => {
   const fixture = own[0];
   if (!fixture) throw new Error("no fixture");

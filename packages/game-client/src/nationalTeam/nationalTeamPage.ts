@@ -1,7 +1,7 @@
 import type { Confederation } from "@boleiro/data/nationalFootball";
 import type { Role } from "@boleiro/data/players";
 import type { GameState, IsoDate } from "@boleiro/engine/sim/gameState";
-import { CALL_UP_PLACES, nationalsByTeam, OUTSIDER_MARK, pickCallUp, roleOf } from "@boleiro/engine/sim/nations/callUps";
+import { CALL_UP_PLACES, nationalsByTeam, OUTSIDER_MARK, pickCallUp, roleOf, standingOf } from "@boleiro/engine/sim/nations/callUps";
 import { fifaWindowsOf, type FifaWindow } from "@boleiro/engine/sim/nations/fifaCalendar";
 import { daysBetween } from "@boleiro/engine/sim/dates";
 import { TOURNAMENT_CAMP_DAYS } from "@boleiro/engine/sim/nations/nationsDay";
@@ -14,8 +14,12 @@ import { compareText } from "@boleiro/engine/sim/compareText";
 import type { EditionHost, Hosts } from "@boleiro/engine/sim/hosts/venue";
 import { editionKeyOf } from "../format/competitionEdition.js";
 
-/** A player of a call-up as the album shows him: the game's own (`clubId` set) or one of the pool's from abroad; `crestId` names his club's crest. */
-export type NationalPlayerCard = { ref: string; name: string; role: Role; strength: number; club: string; clubId: string | null; crestId: string | null; age: number | null; isCoachClub: boolean };
+/**
+ * A player of a call-up as the album shows him: the game's own (`clubId` set) or one of the pool's from abroad; `crestId`
+ * names his club's crest. `standing` is what the national coaches pick him by (standingOf): his market value on the
+ * strength scale that rates the pool abroad, the same for both, so the list reads in the order the call-up makes it.
+ */
+export type NationalPlayerCard = { ref: string; name: string; role: Role; standing: number; club: string; clubId: string | null; crestId: string | null; age: number | null; isCoachClub: boolean };
 
 /** A call-up's places of one position and who fills them. */
 export type CallUpGroup = { role: Role; places: number; players: NationalPlayerCard[] };
@@ -56,7 +60,8 @@ export type HostedEditionView = { id: string; key: "world-cup" | "copa-america" 
 export type RankingRowView = { rank: number; teamId: string | null; name: string; code: string | null; points: number };
 
 /** The coach's club's players a call-up takes: who, for which team and until when. */
-export type LeavingPlayer = { id: string; name: string; role: Role; age: number; strength: number; teamId: string; team: string; until: IsoDate };
+/** A player of the coach's club a national team takes, rated by his `standing` as a call-up card is. */
+export type LeavingPlayer = { id: string; name: string; role: Role; age: number; standing: number; teamId: string; team: string; until: IsoDate };
 
 export type NationalTeamPage = {
   /** `qualifiesByRanking` when the game leaves its confederation's World Cup qualifiers out: its places go by the ranking. */
@@ -175,12 +180,12 @@ function cardOf(state: GameState, nations: Nations, teamId: string, ref: string)
     const name = outsiders?.names[row];
     if (!outsiders || name === undefined) return null;
     const born = outsiders.born[row] ?? 0;
-    return { ref, name, role: ROLE_OF_LETTER[outsiders.roles[row] ?? "m"] ?? "meia", strength: outsiders.strengths[row] ?? 0, club: outsiders.clubs[row] ?? "", clubId: null, crestId: outsiders.clubIds[row] || null, age: born ? Number(state.date.slice(0, 4)) - born : null, isCoachClub: false };
+    return { ref, name, role: ROLE_OF_LETTER[outsiders.roles[row] ?? "m"] ?? "meia", standing: outsiders.strengths[row] ?? 0, club: outsiders.clubs[row] ?? "", clubId: null, crestId: outsiders.clubIds[row] || null, age: born ? Number(state.date.slice(0, 4)) - born : null, isCoachClub: false };
   }
   const player = state.players[ref];
   if (!player) return null;
   const club = state.clubs[player.clubId];
-  return { ref, name: player.name, role: roleOf(player), strength: Math.round(player.strength), club: club?.shortName ?? player.clubId, clubId: player.clubId, crestId: player.clubId, age: player.age, isCoachClub: player.clubId === state.coachClubId };
+  return { ref, name: player.name, role: roleOf(player), standing: Math.round(standingOf(player)), club: club?.shortName ?? player.clubId, clubId: player.clubId, crestId: player.clubId, age: player.age, isCoachClub: player.clubId === state.coachClubId };
 }
 
 /** The national-team screen of `teamId`: the coach's national team when he has one, else Brazil. Null in a game without national football. */
@@ -217,14 +222,14 @@ export function nationalTeamPage(state: GameState, teamId?: string): NationalTea
 
   const { refs, isProvisional } = callUpRefs(state, nations, id);
   const cards = refs.flatMap((ref) => cardOf(state, nations, id, ref) ?? []);
-  const groups = (Object.entries(CALL_UP_PLACES) as [Role, number][]).map(([role, places]) => ({ role, places, players: cards.filter((c) => c.role === role).sort((a, b) => b.strength - a.strength) }));
+  const groups = (Object.entries(CALL_UP_PLACES) as [Role, number][]).map(([role, places]) => ({ role, places, players: cards.filter((c) => c.role === role).sort((a, b) => b.standing - a.standing) }));
 
   let leaving: NationalTeamPage["leaving"] = null;
   const clubId = state.coachClubId;
   if (clubId) {
     const leaver = (playerId: string, teamId: string, until: IsoDate): LeavingPlayer[] => {
       const p = state.players[playerId];
-      return p?.clubId === clubId ? [{ id: p.id, name: p.name, role: roleOf(p), age: p.age, strength: Math.round(p.strength), teamId, team: teamName(nations, teamId), until }] : [];
+      return p?.clubId === clubId ? [{ id: p.id, name: p.name, role: roleOf(p), age: p.age, standing: Math.round(standingOf(p)), teamId, team: teamName(nations, teamId), until }] : [];
     };
     let players = Object.entries(nations.duty).flatMap(([playerId, own]) => leaver(playerId, own.teamId, own.until));
     let days = window;
@@ -243,7 +248,7 @@ export function nationalTeamPage(state: GameState, teamId?: string): NationalTea
     const lastAway = players.reduce((last, p) => (p.until > last ? p.until : last), days?.until ?? state.date);
     const from = days && state.date > days.from ? state.date : (days?.from ?? state.date);
     const clubMatches = days ? state.fixtures.filter((f) => (f.homeId === clubId || f.awayId === clubId) && f.date >= from && f.date <= lastAway).length : 0;
-    leaving = { clubId, players: players.sort((a, b) => b.strength - a.strength), clubMatches, isProvisional };
+    leaving = { clubId, players: players.sort((a, b) => b.standing - a.standing), clubMatches, isProvisional };
   }
 
   const competitions = Object.values(nations.competitions)
@@ -267,7 +272,7 @@ export function nationalTeamPage(state: GameState, teamId?: string): NationalTea
     coaching:
       nations.job?.teamId === id
         ? {
-            pool: poolOf(state, id).filter((ref) => !refs.includes(ref)).flatMap((ref) => cardOf(state, nations, id, ref) ?? []).sort((a, b) => b.strength - a.strength),
+            pool: poolOf(state, id).filter((ref) => !refs.includes(ref)).flatMap((ref) => cardOf(state, nations, id, ref) ?? []).sort((a, b) => b.standing - a.standing),
             isOwnPick: nations.picks !== undefined,
           }
         : null,

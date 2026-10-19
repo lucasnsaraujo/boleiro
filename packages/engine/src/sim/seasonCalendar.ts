@@ -1,5 +1,5 @@
 import type { Division } from "@boleiro/data/players";
-import type { IsoDate, SeasonCalendar } from "./gameState.js";
+import type { IsoDate, LeagueCompetition, SeasonCalendar } from "./gameState.js";
 import type { UnifiedDates } from "./world/world.js";
 import { addDays, daysBetween } from "./dates.js";
 import { gameScales, knockoutDates, REALISTA, type Formats } from "./formats.js";
@@ -38,7 +38,7 @@ const COPA_DO_BRASIL_ROUNDS: { name: string; dates: IsoDate[] }[] = [
 ];
 
 const LEAGUE_WEEKDAYS = new Set([0, 3, 6]); // guess: Sunday, Wednesday and Saturday, the usual Brasileirão match days
-const MIN_DAYS_BETWEEN_GAMES = 3; // guess: two full rest days, the shortest gap CBF schedules in practice
+export const MIN_DAYS_BETWEEN_GAMES = 3; // guess: two full rest days, the shortest gap CBF schedules in practice
 // guess: a Série A or B round keeps at least a day's rest from a continental match day, as CBF moves
 // the games of clubs in CONMEBOL's cups; only one or two clubs a round play both.
 const MIN_DAYS_FROM_CONTINENTAL = 2;
@@ -49,8 +49,8 @@ type Leeway = { weekdays: ReadonlySet<number>; daysFromContinental: number };
 
 // What a season that does not fit gives up, one step at a time and only for as many dates as it lacks, before
 // it fails: CBF plays a midweek round over Wednesday and Thursday when it must; then a round may sit the day
-// next to a continental match day (CBF moves the games of the clubs that play both; the game plays them on
-// consecutive days); last, any day of the week. The rest from the estaduais' and the Copa do Brasil's days and
+// next to a continental match day (CBF moves the games of the clubs that play both, as postponeClashingGames
+// does); last, any day of the week. The rest from the estaduais' and the Copa do Brasil's days and
 // the FIFA windows' rest are never given up.
 const LEEWAYS: readonly Leeway[] = [
   { weekdays: LEAGUE_WEEKDAYS, daysFromContinental: MIN_DAYS_FROM_CONTINENTAL },
@@ -228,6 +228,17 @@ export function seasonCalendar(
     D: pickDates("D", dateCounts.D, season, reserved, continental),
   };
   return { season, stateChampionshipDates, copaDoBrasilRounds: copaDoBrasil, leagueDates };
+}
+
+/**
+ * Whether a league rests on a day, on the real calendar of a game with national football (`restsInFifaWindows`),
+ * as its rounds were placed: Série A through the FIFA windows and its World Cup pause (seasonCalendar), a league
+ * abroad through the FIFA windows (startSeason's realDaysAbroad).
+ */
+export function isLeagueResting(league: Pick<LeagueCompetition, "division" | "season" | "abroad">, formats: Formats, restsInFifaWindows: boolean): (date: IsoDate) => boolean {
+  if (formats.calendar === "unified" || !restsInFifaWindows) return () => false;
+  if (league.abroad) return isInFifaWindow;
+  return league.division === "A" ? isSerieAResting(league.season, SERIE_A_PAUSES_FOR_WORLD_CUP) : () => false;
 }
 
 /** The days a result-only country plays on in a season of the unified calendar: the leagues' grid and the Copa do Brasil's midweeks; none on a real calendar. */
