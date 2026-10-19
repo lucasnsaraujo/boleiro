@@ -234,8 +234,9 @@ export function newGame(
   const withAcademies = { ...withClock, youth: openAcademies(withClock) };
   const started = withCoachWorld(withHotSeat(withContinentalCups(withAcademies, competitionMoney), hotSeat));
   const named = coachName && !hotSeat ? { ...started, eggs: { log: [], coachName } } : started;
-  const sponsored = postponeClashingGames(syncCupsAbroad(sponsors ? seedGameSponsors(named, sponsors) : named));
-  return nationalFootball ? { ...sponsored, nations: openNations(nationalFootball, sponsored, season, seed) } : sponsored;
+  const sponsored = syncCupsAbroad(sponsors ? seedGameSponsors(named, sponsors) : named);
+  // Postponing reads the national football the game has: Série A rests in the FIFA windows with it.
+  return postponeClashingGames(nationalFootball ? { ...sponsored, nations: openNations(nationalFootball, sponsored, season, seed) } : sponsored);
 }
 
 /** The game with its other human coaches waiting for their turns; a one-coach game stays as it is. */

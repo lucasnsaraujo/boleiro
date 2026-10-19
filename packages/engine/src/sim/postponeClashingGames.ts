@@ -71,8 +71,9 @@ function postponedDate(game: Fixture, last: IsoDate, isFinalStage: boolean, game
 
 /**
  * The game with every league game still to play whose club has a cup match (a continental cup, the Copa do
- * Brasil, a cup abroad) on its day or the day either side moved to a later day before its stage's last round;
- * the round keeps its day and the game keeps it as `postponedFrom`. The same game when no game clashes.
+ * Brasil, a cup abroad) on its day or the day either side moved to a later day before its stage's last round
+ * (past it only in a league's final stage, when no day before it takes the game); the round keeps its day and
+ * the game keeps it as `postponedFrom`. The same game when no game clashes.
  */
 export function postponeClashingGames(state: GameState): GameState {
   const { competitions, date: today } = state;
