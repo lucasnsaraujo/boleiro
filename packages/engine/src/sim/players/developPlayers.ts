@@ -18,8 +18,9 @@ export type PlayerRetired = { type: "playerRetired"; playerId: string; clubId: s
 /** A kid moved up into his club's squad; `byAssistant` when a human coach's assistant did it for him mid-season. */
 export type YouthPromoted = { type: "youthPromoted"; playerId: string; clubId: string; byAssistant?: true };
 
-// The level a club's players drift toward: the division baselines new players are rated from
-// (pipeline/rate_players.py DIVISION_PRIOR, data/SOURCES.md), 42 for clubs outside Série A–D.
+// Each division's level: the baselines new players are rated from (pipeline/rate_players.py DIVISION_PRIOR,
+// data/SOURCES.md), 42 for clubs outside Série A–D. A club's players drift toward it, moved by the club's
+// revenue (clubLevels).
 export const CLUB_LEVEL: Record<Division | "none", number> = { A: 72, B: 63, C: 56, D: 49, none: 42 };
 
 /**
@@ -96,7 +97,10 @@ const LEVEL_PER_LOG_REVENUE = 1.8;
 // but sends more poor clubs from the estaduais up to Série C, below its revenue band, in ten-season runs.
 const REBUILD_SHARE = 0.85;
 
-const logRevenueOf = (finance: ClubFinance | undefined): number | null => (finance ? Math.log(Math.max(1, projectedRevenue(finance))) : null);
+// The yearly revenue the board budgets with, its members at the level they settle back to: membership moves
+// with results at each monthly closing, so the turn of the year and the forecast on its eve read the same.
+const logRevenueOf = (finance: ClubFinance | undefined): number | null =>
+  finance ? Math.log(Math.max(1, projectedRevenue({ ...finance, membership: finance.membershipAnchor }))) : null;
 
 /**
  * The level each club's players drift toward: its division's CLUB_LEVEL, moved by how the Brazilian
@@ -142,7 +146,14 @@ const standingOf = (squad: readonly SimPlayer[]): number => squad.reduce((sum, p
  */
 export function rebuildMovedSquads(state: GameState, clubs: GameState["clubs"], finances: GameState["finances"]): GameState["players"] {
   const levelAfter = clubLevels(clubs, finances);
-  const squads = squadsOfGame(state);
+  // A loaned player belongs to the club that lent him, as his yearly drift does (targetOf).
+  const ownerOf = (p: SimPlayer) => state.market.loans[p.id]?.fromClubId ?? p.clubId;
+  const squads = new Map<string, SimPlayer[]>();
+  for (const p of Object.values(state.players)) {
+    const squad = squads.get(ownerOf(p));
+    if (squad) squad.push(p);
+    else squads.set(ownerOf(p), [p]);
+  }
   const shifts = new Map<string, number>();
   for (const club of Object.values(clubs)) {
     const before = state.clubs[club.id];
@@ -155,7 +166,7 @@ export function rebuildMovedSquads(state: GameState, clubs: GameState["clubs"], 
   if (shifts.size === 0) return state.players;
   return Object.fromEntries(
     Object.entries(state.players).map(([id, p]) => {
-      const shift = shifts.get(p.clubId);
+      const shift = shifts.get(ownerOf(p));
       return [id, shift === undefined ? p : { ...p, strength: Math.round(clamp(p.strength + shift) * 10) / 10 }];
     }),
   );

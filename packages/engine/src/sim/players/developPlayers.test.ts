@@ -54,6 +54,12 @@ describe("developPlayers at the end of a season", () => {
     expect(retired).toEqual(Object.values(playedSeason.players).filter((p) => retiresAtSeasonTurn(playedSeason, p)).map((p) => p.id).sort());
   });
 
+  it("foresees the same retirements on the season's eve whatever the members did in its last month", () => {
+    const swung: GameState = { ...playedSeason, finances: Object.fromEntries(Object.entries(playedSeason.finances).map(([id, f]) => [id, { ...f, membership: f.membership * 50 }])) };
+    const foreseen = (state: GameState) => Object.values(state.players).filter((p) => retiresAtSeasonTurn(state, p)).map((p) => p.id).sort();
+    expect(foreseen(swung)).toEqual(foreseen(playedSeason));
+  });
+
   it("replaces retirees with Brazilian teenagers, stronger at bigger clubs", () => {
     expect(youth.length).toBeGreaterThanOrEqual(events.filter((e) => e.type === "playerRetired").length);
     expect(youth.every((p) => p.age >= 17 && p.age <= 19 && p.nationalities.join() === "Brazil" && p.name.length > 2)).toBe(true);
@@ -178,6 +184,22 @@ describe("rebuildMovedSquads", () => {
   it("moves a squad only the way its club went: a relegated squad already below its new division keeps its players", () => {
     const weak: GameState = { ...start, players: Object.fromEntries(Object.entries(start.players).map(([id, p]) => [id, p.clubId === relegatedClub ? { ...p, strength: 40 } : p])) };
     expect(lift(weak, moved(relegatedClub, "B"), start.finances, relegatedClub)).toBe(0);
+  });
+
+  it("rebuilds a moved club's players out on loan with it, and leaves the players it borrowed to their own clubs", () => {
+    const lender = firstIn("A");
+    const lent = Object.values(start.players).find((p) => p.clubId === promotedClub);
+    const borrowed = Object.values(start.players).find((p) => p.clubId === lender);
+    if (!lent || !borrowed) throw new Error("no players to loan");
+    const loan = { until: "2026-12-31", lenderWageShare: 0, buyOption: null };
+    const loaned: GameState = {
+      ...start,
+      players: { ...start.players, [lent.id]: { ...lent, clubId: lender }, [borrowed.id]: { ...borrowed, clubId: promotedClub } },
+      market: { ...start.market, loans: { ...start.market.loans, [lent.id]: { ...loan, fromClubId: promotedClub }, [borrowed.id]: { ...loan, fromClubId: lender } } },
+    };
+    const players = rebuildMovedSquads(loaned, moved(promotedClub, "A"), start.finances);
+    expect(players[lent.id]?.strength).toBeGreaterThan(lent.strength);
+    expect(players[borrowed.id]).toBe(loaned.players[borrowed.id]);
   });
 
   it("leaves a human coach's squad for him to rebuild", () => {
