@@ -213,6 +213,8 @@ test("the clock holds while a tactics key's change is on its way, so the board n
   expect(shownMinute()).toBe(minute);
   release();
   expect(await screen.findByText("Tática 1")).toBeTruthy();
+  // The note can show before React runs the effect that puts the clock back on; let it run first.
+  await act(async () => {});
   play(3);
   expect(shownMinute()).toBeGreaterThan(minute);
 });
