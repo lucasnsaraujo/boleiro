@@ -51,7 +51,7 @@ Left out after checking: the Amazonense's (white lettering on a clear ground, lo
 |---|---|
 | `bigStadiums.ts`: 355 football grounds of 40,000 seats or more, with city, country and seating capacity | The English Wikipedia's [List of association football stadiums by capacity](https://en.wikipedia.org/wiki/List_of_association_football_stadiums_by_capacity), read on 2026-10-18 by `pipeline/fetch_big_stadiums.py`; Croke Park left out as the Gaelic games' ground. |
 | `announcedHosts.ts`: every edition an organiser has announced, and the last ones before 2026 | FIFA (World Cups 2026–2034), UEFA (Euros 2028 and 2032, finals to 2028), CONMEBOL (2026 finals), the press for the 2027 Sul-Americana final; each cited in the file. |
-| `drawHosts.ts`: the rules a host is drawn by for an edition not announced | FIFA's rotation (no confederation of the two editions before) and its 2030/2034 stadium requirements (14 grounds, four built, 40,000 seats, 80,000 for the final; The Stadium Business, 2023); UEFA's 60,000 for a Euro final; CONMEBOL's Copa América rotation (each member's last edition, Wikipedia "Copa América"); the rest `guess`, marked in the file. |
+| `drawHosts.ts`: the rules a host is drawn by for an edition not announced | FIFA's rotation (no confederation of the two editions before) and its 2030/2034 stadium requirements (14 grounds of 40,000 seats, some built, 60,000 and 80,000 for key matches; The Stadium Business, 2023; the final's 80,000 per Football España, 2024); UEFA's 60,000 for a Euro final; CONMEBOL's Copa América rotation (each member's last edition, Wikipedia "Copa América"); the rest `guess`, marked in the file. |
 
 ## players.csv
 

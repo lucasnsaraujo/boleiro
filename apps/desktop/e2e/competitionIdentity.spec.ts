@@ -61,6 +61,7 @@ test("the Libertadores final is played at its host's ground, which its match pag
   await page.getByRole("tab", { name: "Libertadores" }).click();
   await page.getByRole("group", { name: "Fases" }).getByRole("button", { name: "Final", exact: true }).click();
   const bracket = page.getByRole("group", { name: "Libertadores, mata-mata" });
+  await expect(bracket.locator(".bk-final")).toContainText("jogo único · Estadio Centenario");
   await bracket.getByRole("button", { name: /^Ficha do jogo: / }).last().click();
   const file = page.getByRole("dialog", { name: "Ficha do jogo" });
   await expect(file).toContainText("Estadio Centenario, Montevidéu");

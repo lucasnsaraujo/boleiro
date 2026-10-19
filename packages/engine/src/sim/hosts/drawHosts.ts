@@ -44,10 +44,10 @@ const CLUB_WORLD_CUP_BIDS: readonly string[][] = [
 ];
 
 /**
- * What a tournament's host needs. FIFA asks a World Cup's bidders for 14 grounds, four of them built, of at least
- * 40,000 seats, 60,000 for the semi-finals and 80,000 for the opening match and final (FIFA's 2030/2034 bidding
- * process, The Stadium Business, 2023): guess, a final ground within 5% of that, as the Bernabéu's 78,297 for 2030's
- * favourite is. UEFA asks a Euro final for 60,000 (Juventus Stadium ruled out, 2026): guess, four built grounds of
+ * What a tournament's host needs. FIFA asked the 2030 and 2034 bidders for 14 grounds of at least 40,000 seats, some
+ * already built (four or seven: reports differ), and grounds of 60,000 and 80,000 for its key matches (The Stadium
+ * Business, 2023), the final's 80,000 by Spanish reports on the 2030 final (Football España, Jul 2024): guess, four built
+ * grounds and a final ground within 5% of 80,000, as the Bernabéu's 78,297 for 2030's favourite is. UEFA asks a Euro final for 60,000 (Juventus Stadium ruled out, 2026): guess, four built grounds of
  * 40,000. guess: a Club World Cup the same. `grounds` is how many of the host's largest a tournament spreads over.
  */
 const TOURNAMENTS = {

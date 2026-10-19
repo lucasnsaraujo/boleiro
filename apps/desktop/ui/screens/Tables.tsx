@@ -318,7 +318,7 @@ function BracketPanel({ competition, state, clubs, stage, onStage, picker }: Omi
           <StagePicker stages={stages} stage={stage} onStage={onStage} />
           <BracketTitle competition={competition} />
         </div>
-        <Bracket name={name} rounds={knockoutBracket(competition, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} mark={competitionLogoUrlOf(competition, 40)} onOpenMatch={onOpenMatch} />
+        <Bracket name={name} rounds={knockoutBracket(competition, state.fixtures)} clubs={clubs} coachClubId={state.coachClubId} mark={competitionLogoUrlOf(competition, 40)} finalGround={competition.kind === "continental" ? (competition.host?.final.name ?? null) : null} onOpenMatch={onOpenMatch} />
         <div className="bk-low">
           {group && <GroupCard group={group} clubs={clubs} coachClubId={state.coachClubId} />}
           <NextTieCard next={nextTieOf(competition, state.fixtures, stages, clubs, state.coachClubId)} clubs={clubs} />
