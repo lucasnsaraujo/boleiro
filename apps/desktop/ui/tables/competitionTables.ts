@@ -105,6 +105,8 @@ const CUP_ROUND_NAMES: Record<string, string> = {
   "quarter-finals": "Quartas",
   "semi-finals": "Semifinal",
   final: "Final",
+  "league-phase": "Fase de liga",
+  "super-cup": "Supercopa",
 };
 const KNOCKOUT_BY_CLUBS: Record<number, string> = { 16: "Oitavas", 8: "Quartas", 4: "Semifinal", 2: "Final" };
 const CONTINENTAL_STAGE_NAMES: Record<string, string> = {
@@ -156,7 +158,7 @@ function stageNames(competition: Competition, calendar: SeasonCalendar): string[
     case "continental":
       return CUP_STAGES[competition.cup].map((stage, i) => CONTINENTAL_STAGE_NAMES[stage.name] ?? `${i + 1}ª fase`);
     case "cupAbroad":
-      return competition.stages.map((stage, i) => (stage.kind === "groups" ? "Fase de liga" : `${i + 1}ª fase`));
+      return competition.stages.map((stage, i) => CONTINENTAL_STAGE_NAMES[competition.stageNames?.[i] ?? ""] ?? (stage.kind === "groups" ? "Fase de liga" : `${i + 1}ª fase`));
     case "national":
       return competition.rounds.map((round, i) => (round === "group" ? "Grupos" : round === "friendly" ? "Amistosos" : (NATIONAL_ROUND_NAMES[round] ?? `${i + 1}ª fase`)));
   }

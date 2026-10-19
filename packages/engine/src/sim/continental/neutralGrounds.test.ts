@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { recordMatchFinances } from "../finances/recordMatchFinances.js";
-import type { ContinentalCompetition, ContinentalCup, Fixture, GameState } from "../gameState.js";
+import { RAPIDO } from "../formats.js";
+import type { Competition, ContinentalCompetition, ContinentalCup, CupAbroadCompetition, Fixture, GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { paramsForCompetition } from "../paramsForCompetition.js";
 import { loadEurope } from "../world/loadEurope.js";
 import { loadGuests } from "../world/loadGuests.js";
 import { loadMarketLeagues } from "../world/loadMarketLeagues.js";
 import { loadSouthAmerica } from "../world/loadSouthAmerica.js";
-import { neutralGround } from "./neutralGrounds.js";
+import { syncCupsAbroad } from "./cupsAbroad.js";
+import { isOnNeutralGround, neutralGround } from "./neutralGrounds.js";
+import { knockoutTie, playEuropeDay, type EuropeanCups } from "./uefaCups.js";
 
 const world = [...loadSouthAmerica(2026), ...loadEurope(2026), ...loadMarketLeagues(2026)];
 const guests = loadGuests(2026);
@@ -64,5 +67,75 @@ describe("FIFA's cups on neutral grounds", () => {
     const atHome = recordMatchFinances(edition, [fixtureAt(mundial, 1, "flamengo-rj", "tm-69261")]);
     expect(tickets(atQatar)).toBe(tickets(edition));
     expect(tickets(atHome)).toBeGreaterThan(tickets(edition));
+  });
+});
+
+describe("UEFA's finals on neutral grounds", () => {
+  const ARSENAL = "tm-11";
+  const REAL_MADRID = "tm-418";
+  const start = loadNewGame(5, { coachClubId: ARSENAL, world: loadEurope(2026), formats: RAPIDO });
+  const europe = start.europe;
+  if (!europe) throw new Error("no UEFA cups");
+  // Arsenal drawn into the season's Champions League final against Real Madrid, and into the Super Cup.
+  const final = { name: "final" as const, dates: ["2027-06-05"], ties: [[ARSENAL, REAL_MADRID] as [string, string]], results: "---" };
+  const withFinal: GameState = {
+    ...start,
+    europe: {
+      ...europe,
+      cups: europe.cups.map((cup) => (cup.cup === "champions-league" ? { ...cup, knockout: [final] } : cup)),
+      superCup: { season: europe.season, date: "2026-08-12", clubIds: [ARSENAL, REAL_MADRID], result: "---" },
+    },
+  };
+  const synced = syncCupsAbroad(withFinal);
+  const fixtureOf = (competition: Competition | undefined, name: string): { competition: CupAbroadCompetition; fixture: Fixture } => {
+    if (competition?.kind !== "cupAbroad") throw new Error(`no cup abroad for the ${name}`);
+    const stage = competition.stageNames?.indexOf(name) ?? -1;
+    const fixture = synced.fixtures.find((f) => f.competitionId === competition.id && f.stage === stage);
+    if (!fixture) throw new Error(`no ${name}`);
+    return { competition, fixture };
+  };
+  const championsLeague = fixtureOf(synced.competitions["champions-league-2026"], "final");
+  const superCup = fixtureOf(synced.competitions["uefa-super-cup-2026"], "super-cup");
+  const leaguePhase = fixtureOf(synced.competitions["champions-league-2026"], "league-phase");
+
+  it("play the human club's Champions League final and Super Cup at their real grounds, its league phase at a club's", () => {
+    expect(neutralGround(championsLeague.competition, championsLeague.fixture)).toBe("Estádio Metropolitano");
+    expect(neutralGround(superCup.competition, superCup.fixture)).toBe("Red Bull Arena");
+    expect(neutralGround(leaguePhase.competition, leaguePhase.fixture)).toBeNull();
+  });
+
+  it("give neither club a home advantage nor a gate there", () => {
+    expect(paramsForCompetition(championsLeague.competition, championsLeague.fixture.stage).homeAdvantage).toBe(0);
+    expect(paramsForCompetition(leaguePhase.competition, leaguePhase.fixture.stage).homeAdvantage).toBeGreaterThan(0);
+    const tickets = (state: GameState) => state.finances[ARSENAL]?.month.revenue.tickets ?? 0;
+    const played = (fixture: Fixture): Fixture => ({ ...fixture, homeId: ARSENAL, awayId: REAL_MADRID, result: { homeGoals: 1, awayGoals: 0 } });
+    expect(tickets(recordMatchFinances(synced, [played(championsLeague.fixture)]))).toBe(tickets(synced));
+    expect(tickets(recordMatchFinances(synced, [played(leaguePhase.fixture)]))).toBeGreaterThan(tickets(synced));
+  });
+
+  it("name later seasons' finals where UEFA has given them, the latest one after", () => {
+    const at = (season: number) => neutralGround({ ...championsLeague.competition, season }, championsLeague.fixture);
+    expect([2026, 2027, 2030].map(at)).toEqual(["Estádio Metropolitano", "Allianz Arena", "Allianz Arena"]);
+    const europaLeague = { ...championsLeague.competition, id: "europa-league-2027", cup: "europa-league" as const, season: 2027 };
+    expect(isOnNeutralGround(europaLeague, championsLeague.fixture.stage)).toBe(true);
+    expect(neutralGround(europaLeague, championsLeague.fixture)).toBe("Arena Națională");
+  });
+
+  it("draw a final played result-only with no home advantage: two even clubs score alike", () => {
+    // Real Madrid against its own squad under Arsenal's name, the final drawn on many streams.
+    const world = start.world;
+    const madrid = world?.es?.clubs[REAL_MADRID];
+    const england = world?.["gb-eng"];
+    if (!world || !madrid || !england) throw new Error("no Real Madrid");
+    const twinWorld = { ...world, "gb-eng": { ...england, clubs: { ...england.clubs, [ARSENAL]: { ...madrid, id: ARSENAL } } } };
+    let [home, away] = [0, 0];
+    for (let stream = 1; stream <= 600; stream++) {
+      const cups: EuropeanCups = { ...(withFinal.europe as EuropeanCups), rngState: stream * 7919 };
+      const played = playEuropeDay(cups, twinWorld, "2027-06-05", RAPIDO).cups.find((cup) => cup.cup === "champions-league")?.knockout[0];
+      const leg = played ? knockoutTie(played, 0).legs[0]?.result : null;
+      home += leg?.homeGoals ?? 0;
+      away += leg?.awayGoals ?? 0;
+    }
+    expect(Math.abs(home - away) / (home + away)).toBeLessThan(0.06);
   });
 });

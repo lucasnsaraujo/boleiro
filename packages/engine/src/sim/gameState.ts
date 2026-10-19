@@ -124,7 +124,11 @@ export type CupAbroad = (typeof CUPS_ABROAD)[number];
  * rounds the club plays, a league phase as one group of its matchdays, each knockout round its tie;
  * `tieBreaks` says how each settles a tie level after its last leg; `country` names a national cup's country.
  */
-export type CupAbroadCompetition = CompetitionBase & { kind: "cupAbroad"; cup: CupAbroad; country: string | null; tieBreaks: ("extraTime" | "penalties")[] };
+/**
+ * A cup abroad a human club plays in the full tier; `stageNames` the round each stage plays at UEFA's cups
+ * ("league-phase", "playoffs" … "final", "super-cup"), which a national cup's and a game's synced before them lack.
+ */
+export type CupAbroadCompetition = CompetitionBase & { kind: "cupAbroad"; cup: CupAbroad; country: string | null; tieBreaks: ("extraTime" | "penalties")[]; stageNames?: string[] };
 
 /**
  * A national competition (`nations.competitions`, played result-only) seen from a human coach's national team:
