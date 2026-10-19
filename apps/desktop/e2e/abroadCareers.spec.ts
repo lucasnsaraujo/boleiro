@@ -26,11 +26,11 @@ async function startAtArsenal(page: Page) {
 }
 
 // A game seed whose board keeps Arsenal's coach through 2026/27 and into the 2027/28 opener, with no decisions taken.
-const ARSENAL_KEEPS_ITS_COACH = 1;
+const ARSENAL_KEEPS_ITS_COACH = 6;
 // A game seed whose Arsenal, its coach kept, reaches the Champions League round of 16, with no decisions taken (searched
 // in the e2e build: since floating-point fatigue differs in its last digit between Node and Chromium, a seed found in Node
 // can play out otherwise in the browser).
-const ARSENAL_IN_THE_LAST_16 = 3;
+const ARSENAL_IN_THE_LAST_16 = 4;
 
 /** Starts the coach's game over from `seed`'s world at his club, through the e2e build's engine hook. */
 async function startOverFrom(page: Page, seed: number) {
