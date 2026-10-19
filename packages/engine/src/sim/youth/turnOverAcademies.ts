@@ -4,7 +4,7 @@ import { clubStatures } from "../coach/clubStatures.js";
 import type { GameState, SimPlayer } from "../gameState.js";
 import { isWorthPromoting, normal, professionalOf, type YouthPromoted } from "../players/developPlayers.js";
 import { squadsByClub } from "../players/squadsByClub.js";
-import { academyClubs, academyOf, clampStrength, gapAt, inventProspect, LEAVING_AGE, openAcademies, thinnestGroup, YOUTH_AGES, type Prospect } from "./academy.js";
+import { academyClubs, academyLevel, academyOf, clampStrength, gapAt, inventProspect, LEAVING_AGE, openAcademies, thinnestGroup, YOUTH_AGES, type Prospect } from "./academy.js";
 import { firstWage, type ProspectReleased } from "./moveProspect.js";
 import { homeNationalityOf } from "../players/homeNationality.js";
 
@@ -60,7 +60,7 @@ export function turnOverAcademies(state: GameState): { state: GameState; events:
   const groupsByClub = new Map<string, PositionGroup[]>();
   for (const p of Object.values(staying)) groupsByClub.set(p.clubId, [...(groupsByClub.get(p.clubId) ?? []), p.group]);
   for (const club of academyClubs(next)) {
-    const { size, potentialMean } = academyOf(club, statures.get(club.id) ?? 0);
+    const { size, potentialMean } = academyOf(academyLevel(club, season, next.history.seasons), statures.get(club.id) ?? 0);
     const groups = groupsByClub.get(club.id) ?? [];
     const count = Math.min(TRIALS.max, Math.max(TRIALS.min, size - groups.length));
     const prospectIds: string[] = [];

@@ -35,6 +35,21 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test --shard=${{ matrix.shard }}/2
+        env:
+          BOLEIRO_SPEED_ELSEWHERE: "1"
+
+  # The speed budgets were calibrated on Apple Silicon; a Linux x86 runner is slower than its reference-workload ratio predicts.
+  perf:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec vitest run packages/engine/src/sim/season.test.ts packages/engine/src/sim/world/v1World.test.ts -t "runs in a few seconds|within ten seconds"
 
   pipeline:
     runs-on: ubuntu-latest

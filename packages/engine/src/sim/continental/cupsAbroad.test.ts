@@ -103,6 +103,51 @@ describe("a human club abroad in UEFA's and its country's cups", () => {
   });
 });
 
+describe("a human club abroad's cup matches, knockouts included, while its coach runs it", () => {
+  type CupMatch = { key: string; isLive: boolean; isScoreKept: boolean; isKnockout: boolean; legs: number; isAfterExtraTime: boolean; isShootout: boolean };
+  /**
+   * A Rápido season of Arsenal's from `seed`, while a human coach runs it: each of its matches the result-only cups
+   * recorded, and whether the full tier played it live that day, with the stage it was in.
+   */
+  function cupRun(seed: number): CupMatch[] {
+    let state = loadNewGame(seed, { coachClubId: ARSENAL, world, formats: RAPIDO });
+    const matches: CupMatch[] = [];
+    while (state.date < "2027-01-01" && state.coachClubId === ARSENAL) {
+      const today = state.date;
+      const recorded = new Set(resultOnlyScores(state).keys());
+      state = advanceDay(state, {}).state;
+      for (const [key, score] of resultOnlyScores(state)) {
+        if (recorded.has(key)) continue;
+        const fixture = state.fixtures.find((f) => f.result && f.date === today && `${f.homeId}|${f.awayId}|${f.date}` === key);
+        const stage = fixture && state.competitions[fixture.competitionId]?.stages[fixture.stage];
+        const isKnockout = stage?.kind === "knockout";
+        const result = fixture?.result;
+        const isScoreKept = result ? score === `${result.homeGoals}-${result.awayGoals}` : false;
+        matches.push({ key, isLive: fixture !== undefined, isScoreKept, isKnockout, legs: stage?.dates.length ?? 0, isAfterExtraTime: fixture?.result?.isAfterExtraTime === true, isShootout: fixture?.result?.penaltyWinnerId !== undefined });
+      }
+    }
+    return matches;
+  }
+  // Seeds whose coach lasts into the Champions League knockouts; on the base realism r2 measured, he was sacked in
+  // April with these seeds, so the club's later ties were rightly result-only.
+  const runs = [1, 2, 7].map((seed) => ({ seed, run: (() => { let run: CupMatch[] | undefined; return () => (run ??= cupRun(seed)); })() }));
+
+  for (const { seed, run } of runs) {
+    it(`plays every one of them live with the full tier's score, the league phase and each knockout leg (seed ${seed})`, () => {
+      expect(run().filter((m) => !m.isLive).map((m) => m.key)).toEqual([]);
+      expect(run().filter((m) => !m.isScoreKept).map((m) => m.key)).toEqual([]);
+      expect(run().some((m) => m.isKnockout)).toBe(true);
+    }, 120_000);
+  }
+
+  it("among those seeds, plays two-legged ties and settles level ones by extra time and penalties live", () => {
+    const knockouts = runs.flatMap(({ run }) => run()).filter((m) => m.isKnockout);
+    expect(knockouts.some((m) => m.legs === 2)).toBe(true);
+    expect(knockouts.some((m) => m.isAfterExtraTime)).toBe(true);
+    expect(knockouts.some((m) => m.isShootout)).toBe(true);
+  }, 360_000);
+});
+
 describe("a cup abroad decided in a country of the full tier", () => {
   const start = loadNewGame(5, { coachClubId: ARSENAL, world, formats: RAPIDO });
   /** The day the FA Cup's final was played, and the game after it. */

@@ -609,6 +609,11 @@ function StandingsTable({ label, group, clubs, coachClubId }: { label: string; g
                 <span className="st-club-in">
                   {club && <Crest club={club} size={20} />}
                   <span>{club?.shortName ?? row.clubId}</span>
+                  {row.postponed > 0 && (
+                    <span className="st-postponed" title={`${row.postponed === 1 ? "1 jogo adiado" : `${row.postponed} jogos adiados`} a disputar`}>
+                      {row.postponed === 1 ? "adiado" : `${row.postponed} adiados`}
+                    </span>
+                  )}
                 </span>
               </td>
               <td className="st-pts">{row.points}</td>

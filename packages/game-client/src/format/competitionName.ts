@@ -128,10 +128,11 @@ export function competitionKeyName(key: CompetitionKey): string {
   return state && isState(state) ? STATE_CHAMPIONSHIPS[state] : key;
 }
 
-/** The competition, plus the round when the game is part of a round robin. */
+/** The competition, plus the round when the game is part of a round robin, a postponed game's the round it was postponed from. */
 export function fixtureLabel(competition: Competition, fixture: Fixture): string {
   if (competition.kind === "national") return nationalLabel(competition, fixture);
   const stage = competition.stages[fixture.stage];
-  const round = stage?.kind === "groups" ? stage.dates.indexOf(fixture.date) + 1 : 0;
-  return round > 0 ? `${competitionName(competition)} · ${round}ª rodada` : competitionName(competition);
+  const round = stage?.kind === "groups" ? stage.dates.indexOf(fixture.postponedFrom ?? fixture.date) + 1 : 0;
+  const label = round > 0 ? `${competitionName(competition)} · ${round}ª rodada` : competitionName(competition);
+  return fixture.postponedFrom ? `${label} · adiado` : label;
 }

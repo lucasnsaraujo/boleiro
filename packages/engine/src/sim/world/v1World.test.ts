@@ -65,7 +65,8 @@ describe("two seasons of the v1 world", () => {
     expect(libertadores?.kind === "continental" && libertadores.host).toEqual(start.hosts?.["libertadores-2029"]);
   });
 
-  it("plays a season with the Club World Cup within ten seconds", () => {
+  // The budget was calibrated on Apple Silicon; the Linux CI shards set BOLEIRO_SPEED_ELSEWHERE and a separate Apple Silicon job times it.
+  it.skipIf(process.env.BOLEIRO_SPEED_ELSEWHERE === "1")("plays a season with the Club World Cup within ten seconds", () => {
     expect(seconds, `budget ${budget.toFixed(2)} s on this machine`).toBeLessThan(budget);
   });
 

@@ -38,6 +38,10 @@ test("a round-robin game says which round it is", () => {
   expect(fixtureLabel(serieA, fixture(serieA, "2026-02-04"))).toBe("Série A · 3ª rodada");
 });
 
+test("a postponed game keeps the round it was postponed from and says it was postponed", () => {
+  expect(fixtureLabel(serieA, { ...fixture(serieA, "2026-02-10"), postponedFrom: "2026-02-01" })).toBe("Série A · 2ª rodada · adiado");
+});
+
 test("a knockout game only names the competition", () => {
   expect(fixtureLabel(copa, fixture(copa, "2026-02-18"))).toBe("Copa do Brasil");
 });

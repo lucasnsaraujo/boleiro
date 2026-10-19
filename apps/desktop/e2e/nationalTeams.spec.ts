@@ -45,7 +45,7 @@ test("the March FIFA window takes a called-up player from the coach's club and g
   await expect(page.getByRole("region", { name: "Data Fifa" })).toContainText("23 a 31 mar");
 
   // Brazil's call-up has its places by position, Flamengo's men marked as the coach's.
-  await expect(page.getByRole("group", { name: "Goleiros" }).getByRole("listitem", { name: /força/ })).toHaveCount(3);
+  await expect(page.getByRole("group", { name: "Goleiros" }).getByRole("listitem", { name: /nível de seleção/ })).toHaveCount(3);
   await expect(page.getByRole("tabpanel", { name: "Convocação" }).getByRole("listitem", { name: /, seu clube$/ }).first()).toBeVisible();
 
   await page.getByRole("tab", { name: "Jogos e tabelas" }).click();
