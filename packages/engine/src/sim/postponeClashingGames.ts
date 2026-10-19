@@ -27,8 +27,9 @@ function pushTo<T>(map: Map<string, T[]>, key: string, value: T): void {
 type Leeway = { rest: number; isClearOfCups: boolean; isPastLastRound: boolean };
 
 // A game takes the first day of the first leeway that has one. A club deep in its cups may have no such day
-// before the last round; guess: then the game keeps a day's rest only, and last goes up to four weeks past the
-// round, inside its year (CBF stretched 2025's Série A to 7 Dec for its postponed games, Soccerway above).
+// before the last round; guess: then the game keeps a day's rest only, and last, in a league's final stage, goes
+// up to four weeks past the round, inside its year (CBF stretched 2025's Série A to 7 Dec for its postponed games,
+// Soccerway above); a stage another follows must end on its own last round.
 const LEEWAYS: readonly Leeway[] = [
   { rest: MIN_DAYS_BETWEEN_GAMES, isClearOfCups: true, isPastLastRound: false },
   { rest: MIN_DAYS_BETWEEN_GAMES, isClearOfCups: false, isPastLastRound: false },
@@ -37,13 +38,16 @@ const LEEWAYS: readonly Leeway[] = [
 ];
 const DAYS_PAST_LAST_ROUND = 28;
 
-/** The day a league game moves to: the first after its round, on the first of the LEEWAYS with one, on which its league plays; null when none has. */
-function postponedDate(game: Fixture, last: IsoDate, gamesOf: (clubId: string) => readonly Game[], cupDaysOf: (clubId: string) => readonly IsoDate[], isResting: (date: IsoDate) => boolean): IsoDate | null {
+/**
+ * The day a league game moves to: the first after its round, on the first of the LEEWAYS with one (past the last
+ * round only when `isFinalStage`), on which its league plays; null when none has.
+ */
+function postponedDate(game: Fixture, last: IsoDate, isFinalStage: boolean, gamesOf: (clubId: string) => readonly Game[], cupDaysOf: (clubId: string) => readonly IsoDate[], isResting: (date: IsoDate) => boolean): IsoDate | null {
   const clubs = [game.homeId, game.awayId];
   const isRested = (date: IsoDate, rest: number) => clubs.every((id) => gamesOf(id).every((other) => other.id === game.id || !isWithin(rest, other.date, date)));
   const isClearOfCups = (date: IsoDate) => clubs.every((id) => cupDaysOf(id).every((day) => !isWithin(NEXT_TO_CUP_DAYS, day, date)));
   const yearEnd = `${last.slice(0, 4)}-12-31`;
-  for (const leeway of LEEWAYS) {
+  for (const leeway of LEEWAYS.filter((l) => isFinalStage || !l.isPastLastRound)) {
     const until = leeway.isPastLastRound ? [addDays(last, DAYS_PAST_LAST_ROUND), yearEnd].sort(compareText)[0] ?? last : addDays(last, -1);
     for (let date = addDays(game.date, 1); date <= until; date = addDays(date, 1)) {
       if (!isResting(date) && isRested(date, leeway.rest) && (!leeway.isClearOfCups || isClearOfCups(date))) return date;
@@ -89,7 +93,8 @@ export function postponeClashingGames(state: GameState): GameState {
     const competition = competitions[game.competitionId];
     if (competition?.kind !== "league") continue;
     const isResting = isLeagueResting(competition.division, competition.season, formats, state.nations !== undefined);
-    const date = postponedDate(game, lastDayOf(game) ?? "", (id) => games.get(id) ?? [], cupDaysOf, isResting);
+    const isFinalStage = game.stage === competition.stageDates.length - 1;
+    const date = postponedDate(game, lastDayOf(game) ?? "", isFinalStage, (id) => games.get(id) ?? [], cupDaysOf, isResting);
     if (!date) continue;
     moved.set(game.id, date);
     for (const id of [game.homeId, game.awayId]) games.set(id, (games.get(id) ?? []).map((f) => (f.id === game.id ? { id: f.id, date } : f)));
