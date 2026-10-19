@@ -4,6 +4,8 @@
 
 <p align="center">A Brazilian football manager for macOS and Windows, in the spirit of Brasfoot.</p>
 
+<p align="center"><b>English</b> · <a href="README.pt-BR.md">Português (Brasil)</a></p>
+
 You coach a real Brazilian club, with its real squad, through a season of state championship, league and cups, one round at a time, and watch every match of the round live on one board. The game has every club of Série A to D 2026 and of the 27 state championships, the leagues of South America and Europe your club meets in continental cups, and the national teams. Money and match odds are tuned against real figures, so a Série D club stays poor and a favourite still loses a cup tie now and then. It runs offline, with no account. The game is in Brazilian Portuguese.
 
 <picture>
