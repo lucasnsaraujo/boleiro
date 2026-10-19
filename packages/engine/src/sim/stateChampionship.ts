@@ -4,6 +4,7 @@ import { seededTies } from "./seededTies.js";
 import { groupStageAt, knockoutStageAt } from "./stageAt.js";
 import { standings } from "./standings.js";
 import { tieResults } from "./tieResults.js";
+import { log2, pow } from "./portableMath.js";
 
 // One format for every state, as the spec (#2) settles: groups, then knockout. Real estaduais differ
 // state by state; this one is a simplification that fits each state's 7 to 21 clubs into the 11
@@ -38,15 +39,15 @@ function snakeGroups(clubIds: readonly string[]): string[][] {
 
 export const STATE_CHAMPIONSHIP = {
   stageDates(clubCount: number, dates: readonly IsoDate[]): IsoDate[][] {
-    const rounds = Math.log2(knockoutSize(clubCount));
+    const rounds = log2(knockoutSize(clubCount));
     const knockout = dates.slice(-LEGS * rounds);
     return [dates.slice(0, GROUP_DATES), ...Array.from({ length: rounds }, (_, r) => knockout.slice(LEGS * r, LEGS * (r + 1)))];
   },
 
   /** Clubs playing each stage: everyone in the groups, then the knockout halving to the final. */
   stageSizes(clubCount: number): number[] {
-    const rounds = Math.log2(knockoutSize(clubCount));
-    return [clubCount, ...Array.from({ length: rounds }, (_, r) => knockoutSize(clubCount) / 2 ** r)];
+    const rounds = log2(knockoutSize(clubCount));
+    return [clubCount, ...Array.from({ length: rounds }, (_, r) => knockoutSize(clubCount) / pow(2, r))];
   },
 
   nextStage(competition: StateCompetition, fixtures: readonly Fixture[]): StageShape {

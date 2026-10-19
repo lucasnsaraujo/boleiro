@@ -23,6 +23,7 @@ import { drawMinute, EXTRA_TIME_END, FULL_TIME, goalMinuteWeights, HALF_TIME, in
 import { formStrength } from "./formOfTheDay.js";
 import { playExtraTime } from "./playExtraTime.js";
 import { isDerbyFor, talkEffect, type TalkTone } from "./teamTalk.js";
+import { exp, pow } from "../portableMath.js";
 
 export type Substitution = { offId: string; onId: string };
 
@@ -93,7 +94,7 @@ function checkSubstitutions(
 /** A Poisson count with mean `mean`, from one draw. */
 function poissonCount(mean: number, random: () => number): number {
   let roll = random();
-  let p = Math.exp(-mean);
+  let p = exp(-mean);
   let count = 0;
   while (roll > p && count < 10) {
     roll -= p;
@@ -132,7 +133,7 @@ function redraw(coachMatch: CoachMatch, match: LiveMatch, kept: readonly MatchEv
 
   const share = (FULL_TIME - minute) / FULL_TIME;
   const injuries: MatchEvent[] = [...playing("home"), ...playing("away")].flatMap((player): MatchEvent[] => {
-    if (random() >= 1 - (1 - matchInjuryChance(player, coachMatch.context)) ** share) return [];
+    if (random() >= 1 - pow(1 - matchInjuryChance(player, coachMatch.context), share)) return [];
     const { days, kind, isRecurrence } = drawInjury(player, coachMatch.context.date, injuryStreamOf(seed, match.fixtureId)(player.id));
     const earliest = Math.max(minute + 1, ...cards.flatMap((e) => (e.type === "card" && e.playerId === player.id ? [e.minute] : [])));
     const latest = sentOffMinute(sofar, player.id) ?? FULL_TIME;

@@ -10,6 +10,7 @@ import { homeNationalityOf } from "../players/homeNationality.js";
 import { pickMatchLineup } from "../players/pickMatchLineup.js";
 import { squadsOfGame } from "../players/squadsByClub.js";
 import { formationOf, usualStartersOf } from "../players/usualLineups.js";
+import { hypot } from "../portableMath.js";
 
 /**
  * What a club's chemistry remembers between matches: its last starting eleven, how settled the eleven
@@ -193,7 +194,7 @@ const REACH: Record<Formation, { slot: number; distance: number }[][]> = (() => 
     const slots = FORMATIONS[name];
     reach[name] = slots.map((a, s) =>
       slots
-        .flatMap((b, t) => (t === s ? [] : [{ slot: t, distance: Math.hypot(a.x - b.x, a.y - b.y) }]))
+        .flatMap((b, t) => (t === s ? [] : [{ slot: t, distance: hypot(a.x - b.x, a.y - b.y) }]))
         .filter(({ distance }) => distance <= NEIGHBOUR_DISTANCE)
         .sort((x, y) => x.distance - y.distance),
     );

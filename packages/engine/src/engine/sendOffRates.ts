@@ -1,3 +1,5 @@
+import { pow } from "../sim/portableMath.js";
+
 /** Minutes (0–90) at which each side had a player sent off. */
 export type SendOffs = { home: readonly number[]; away: readonly number[] };
 
@@ -14,7 +16,7 @@ const MATCH_MINUTES = 90;
 
 /** How much a side's scoring rate scales while it is `ownDown` men short and its opponent `opponentDown`. */
 export function scoringFactor(ownDown: number, opponentDown: number): number {
-  return TEN_MEN_SCORING ** ownDown * AGAINST_TEN_MEN_SCORING ** opponentDown;
+  return pow(TEN_MEN_SCORING, ownDown) * pow(AGAINST_TEN_MEN_SCORING, opponentDown);
 }
 
 /**
@@ -32,8 +34,8 @@ export function sendOffRates({ home, away }: SendOffs): { home: number; away: nu
   let awayDown = 0;
   for (const change of [...changes, { minute: MATCH_MINUTES, home: false }]) {
     const share = (change.minute - from) / MATCH_MINUTES;
-    rates.home += share * TEN_MEN_SCORING ** homeDown * AGAINST_TEN_MEN_SCORING ** awayDown;
-    rates.away += share * TEN_MEN_SCORING ** awayDown * AGAINST_TEN_MEN_SCORING ** homeDown;
+    rates.home += share * pow(TEN_MEN_SCORING, homeDown) * pow(AGAINST_TEN_MEN_SCORING, awayDown);
+    rates.away += share * pow(TEN_MEN_SCORING, awayDown) * pow(AGAINST_TEN_MEN_SCORING, homeDown);
     from = change.minute;
     if (change.minute < MATCH_MINUTES) {
       if (change.home) homeDown++;

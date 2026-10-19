@@ -8,6 +8,7 @@ import { MIN_SQUAD } from "./tradeBetweenClubs.js";
 import { valuePlayer } from "./valuePlayer.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
 import { compareText } from "../compareText.js";
+import { pow } from "../portableMath.js";
 
 // Europe is not simulated: it shows up as a buyer for young standouts. Brazil is the world's largest
 // exporter of players (FIFA Global Transfer Report 2023), but most leave for small leagues; these
@@ -51,7 +52,7 @@ export function europeBids(state: GameState, random: () => number, onlyClubId?: 
     .sort((a, b) => compareText(a.id, b.id));
   for (const player of targets) {
     const youth = 1 + YOUTH_BONUS.perYear * Math.max(0, YOUTH_BONUS.belowAge - player.age);
-    const windowChance = Math.min(MAX_BID_CHANCE, BID_CHANCE_AT_72 * PER_STRENGTH_POINT ** (player.strength - 72) * youth);
+    const windowChance = Math.min(MAX_BID_CHANCE, BID_CHANCE_AT_72 * pow(PER_STRENGTH_POINT, player.strength - 72) * youth);
     if (random() >= windowChance / MARKET_DAYS_PER_WINDOW) continue;
     const tier = view.tier(player.clubId);
     const value = valuePlayer(player, tier, state.date);

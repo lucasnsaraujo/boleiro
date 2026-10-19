@@ -22,6 +22,7 @@ import {
   type SponsorOffer,
   seedSponsors,
 } from "./sponsors.js";
+import { pow } from "../portableMath.js";
 
 export type SponsorEvent =
   | { type: "sponsorOffers"; clubId: string; count: number }
@@ -83,7 +84,7 @@ export function bettingFanCostLeft(state: Pick<GameState, "sponsors" | "fixtures
   const since = state.sponsors?.[clubId]?.bettingSince;
   if (!since || Number(since.slice(0, 4)) < state.season) return 0;
   const matches = state.fixtures.filter((f) => f.result && f.date >= since && (f.homeId === clubId || f.awayId === clubId)).length;
-  return BETTING_FAN_COST * MOOD_MEMORY ** matches;
+  return BETTING_FAN_COST * pow(MOOD_MEMORY, matches);
 }
 
 function withFans(state: GameState, clubId: string, change: number): GameState {

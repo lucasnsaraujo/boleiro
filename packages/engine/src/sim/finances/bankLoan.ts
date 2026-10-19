@@ -1,5 +1,6 @@
 import type { BankLoan, ClubFinance, GameState } from "../gameState.js";
 import { projectedRevenue } from "./setBoardBudget.js";
+import { pow } from "../portableMath.js";
 
 // guess: a fixed-term loan to a football club at 1.4% a month (about 18% a year), a little under the
 // automatic overdraft's 20% a year in closeMonth; the approved finances mock quotes the same rate.
@@ -25,7 +26,7 @@ export type BankLoanAnswer = { approved: true; loan: BankLoan } | { approved: fa
 /** The fixed monthly instalment that repays `amount` with interest over `months`. */
 export function bankLoanQuote(amount: number, months: number): BankLoanQuote {
   const rate = BANK_LOAN_RATE_PER_MONTH;
-  const instalment = Math.round((amount * rate) / (1 - (1 + rate) ** -months));
+  const instalment = Math.round((amount * rate) / (1 - pow(1 + rate, -months)));
   return { amount, months, monthlyRate: rate, instalment };
 }
 

@@ -10,6 +10,7 @@ import { drawInjury, matchInjuryChance } from "../players/matchInjuryChance.js";
 import { EXTRA_TIME_SUBSTITUTIONS, MAX_SUBSTITUTIONS, onPitchAt, whoPlayed } from "./aiSubstitutions.js";
 import { describeGoals, type GoalEvent, type GoalSide } from "./goalDetails.js";
 import { EXTRA_HALF_TIME, EXTRA_TIME_END, FULL_TIME, inMatchOrder, lastAction, scorersFor, sentOffMinute, whistlesTo, type KickOffTimeline, type MatchEvent } from "./matchTimeline.js";
+import { exp } from "../portableMath.js";
 
 type Side = "home" | "away";
 type Sides<T> = { home: T; away: T };
@@ -97,7 +98,7 @@ export function playExtraTime(match: ExtraTimeMatch, events: readonly MatchEvent
       const down = (s: Side) => reds(s).filter((red) => red < minute).length;
       const mean = (expectedGoals[side] / EXTRA_TIME_MINUTES) * scoringFactor(down(side), down(other));
       const scorers = start[side].filter((p) => (sentOffMinute(all(), p.id) ?? Infinity) >= minute && (injuredAt.get(p.id) ?? Infinity) >= minute);
-      const count = random() < 1 - Math.exp(-mean) ? 1 : 0;
+      const count = random() < 1 - exp(-mean) ? 1 : 0;
       for (const playerId of scorersOf(scorers, count, random)) drawn.push({ type: "goal", minute, clubId: match.clubIds[side], playerId });
     }
   }

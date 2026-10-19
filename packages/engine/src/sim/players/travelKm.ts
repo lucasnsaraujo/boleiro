@@ -1,4 +1,5 @@
 import type { State } from "@boleiro/data/clubs";
+import { sin, cos, asin } from "../portableMath.js";
 
 // Clubs are placed at their state's capital: clubs.csv has no city. Approximate coordinates of
 // each capital, rounded to 0.01° (IBGE municipal seats, https://www.ibge.gov.br/cidades-e-estados).
@@ -25,7 +26,7 @@ export function travelKm(from: State, to: State): number {
   const a = CAPITALS[from];
   const b = CAPITALS[to];
   const h =
-    Math.sin(radians(b.lat - a.lat) / 2) ** 2 +
-    Math.cos(radians(a.lat)) * Math.cos(radians(b.lat)) * Math.sin(radians(b.lon - a.lon) / 2) ** 2;
-  return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(h));
+    sin(radians(b.lat - a.lat) / 2) ** 2 +
+    cos(radians(a.lat)) * cos(radians(b.lat)) * sin(radians(b.lon - a.lon) / 2) ** 2;
+  return 2 * EARTH_RADIUS_KM * asin(Math.sqrt(h));
 }

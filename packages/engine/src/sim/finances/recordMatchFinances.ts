@@ -8,6 +8,7 @@ import { SELLABLE_SHARE_OF_CAPACITY } from "./openingFinances.js";
 import { tierOf } from "./tierOf.js";
 import { isHumanClub } from "../coach/humanCoaches.js";
 import { isOnNeutralGround } from "../continental/neutralGrounds.js";
+import { exp, pow } from "../portableMath.js";
 
 // guess: football ticket demand is usually reported as inelastic, around -0.3 to -0.6; not checked
 // against a Brazilian study.
@@ -41,8 +42,8 @@ function withResult(finance: ClubFinance, points: number): ClubFinance {
 
 /** Share of the usual crowd that pays `ratio` times the division's average price. */
 function priceDemand(ratio: number): number {
-  const steady = ratio ** PRICE_ELASTICITY;
-  return ratio <= 1 ? steady : steady * Math.exp(-PRICE_CHOKE * (ratio - 1) ** 2);
+  const steady = pow(ratio, PRICE_ELASTICITY);
+  return ratio <= 1 ? steady : steady * exp(-PRICE_CHOKE * (ratio - 1) ** 2);
 }
 
 /** How much the game's weight lifts the crowd: a knockout tie, more for a final; league and group games 1. */
@@ -71,7 +72,7 @@ export function attendance(state: GateState, home: ClubFinance, homeId: string, 
   const form = home.recentPoints.length
     ? 1 + FORM_SWING * (home.recentPoints.reduce((sum, p) => sum + p, 0) / (3 * home.recentPoints.length) * 2 - 1)
     : 1;
-  const pull = visitor && club.fanbase > 0 ? (visitor.fanbase / club.fanbase) ** OPPONENT_PULL.exponent : 1;
+  const pull = visitor && club.fanbase > 0 ? pow(visitor.fanbase / club.fanbase, OPPONENT_PULL.exponent) : 1;
   const opponent = Math.min(OPPONENT_PULL.max, Math.max(OPPONENT_PULL.min, pull));
   const price = priceDemand(home.ticketPrice / state.economy.matchday[tierOf(club)].price);
   const derby = 1 + DERBY_LIFT_PER_LEVEL * (rivalryOf(homeId, awayId)?.intensity ?? 0);

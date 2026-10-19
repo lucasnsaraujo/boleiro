@@ -1,3 +1,5 @@
+import { log } from "../portableMath.js";
+
 /**
  * Strength from a Transfermarkt market value, for leagues without Brazil's ratings: the
  * least-squares line of Brazil's ratings (pipeline/rate_players.py) on the log market value of the
@@ -10,6 +12,6 @@ const WEAKEST = 30;
 const STRONGEST = 95;
 
 export function strengthFromValue(valueEur: number): number {
-  const strength = Math.round(YARDSTICK.intercept + YARDSTICK.slope * Math.log(Math.max(1, valueEur)));
+  const strength = Math.round(YARDSTICK.intercept + YARDSTICK.slope * log(Math.max(1, valueEur)));
   return Math.min(STRONGEST, Math.max(WEAKEST, strength));
 }

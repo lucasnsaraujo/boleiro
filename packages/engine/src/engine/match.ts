@@ -1,5 +1,6 @@
 import type { Lane, Player, PositionGroup } from "@boleiro/data/players";
 import { NO_SEND_OFFS, sendOffRates, type SendOffs } from "./sendOffRates.js";
+import { exp, tanh } from "../sim/portableMath.js";
 
 export type { Lane, Player, PositionGroup };
 
@@ -156,11 +157,11 @@ export function playEdges(duels: readonly LaneDuel[]): Record<Play, number> {
 }
 
 function saturate(gap: number, limit: number): number {
-  return limit * Math.tanh(gap / limit);
+  return limit * tanh(gap / limit);
 }
 
 function poisson(lambda: number, goals: number): number {
-  let p = Math.exp(-lambda);
+  let p = exp(-lambda);
   for (let k = 1; k <= goals; k++) p *= lambda / k;
   return p;
 }
@@ -259,10 +260,10 @@ function scoreGrid(home: Team, away: Team, params: EngineParams, sendOffs: SendO
   const a = teamRatings(away);
   const rates = sendOffRates(withMissingPlayers(home, away, sendOffs));
   const lh =
-    withTactics(rates.home * params.baseGoals * Math.exp(params.homeAdvantage + params.strengthImpact * saturate(h.attack - a.defense, params.gapSaturation)), home, away) +
+    withTactics(rates.home * params.baseGoals * exp(params.homeAdvantage + params.strengthImpact * saturate(h.attack - a.defense, params.gapSaturation)), home, away) +
     rates.home * penaltyTakerGoals(home);
   const la =
-    withTactics(rates.away * params.baseGoals * Math.exp(params.strengthImpact * saturate(a.attack - h.defense, params.gapSaturation)), away, home) +
+    withTactics(rates.away * params.baseGoals * exp(params.strengthImpact * saturate(a.attack - h.defense, params.gapSaturation)), away, home) +
     rates.away * penaltyTakerGoals(away);
   // Every match of the game draws from a grid: each side's goal chances are worked out once, not per cell.
   const homeChances = Array.from({ length: MAX_GOALS + 1 }, (_, goals) => poisson(lh, goals));
@@ -337,7 +338,7 @@ export function extraTimeExpectedGoals(home: Team, away: Team, params: EnginePar
 
 function poissonDraw(mean: number, random: () => number): number {
   let roll = random();
-  let p = Math.exp(-mean);
+  let p = exp(-mean);
   let count = 0;
   while (roll > p && count < MAX_GOALS) {
     roll -= p;

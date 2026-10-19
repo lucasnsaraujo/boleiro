@@ -3,6 +3,7 @@ import { FORMATION_NAMES, type Formation } from "../../engine/formations.js";
 import { laneDuels, matchOdds, playEdges, type LaneDuel, type Marking, type Play, type Player, type Posture, type PositionGroup, type Team } from "../../engine/match.js";
 import { engineTeam } from "../players/matchSetup.js";
 import type { Tactics } from "./tactics.js";
+import { exp } from "../portableMath.js";
 
 /** A player on the board: today's strength, and whether one more yellow bans him from the next match. */
 export type BoardPlayer = { id: string; name: string; group: PositionGroup; positions?: readonly Role[]; strength: number; isOneYellowFromBan?: boolean };
@@ -69,7 +70,7 @@ function sectorsOf(team: Team): Sectors {
 }
 
 function poisson(lambda: number, goals: number): number {
-  let p = Math.exp(-lambda);
+  let p = exp(-lambda);
   for (let k = 1; k <= goals; k++) p *= lambda / k;
   return p;
 }
