@@ -7,7 +7,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "docs:screens": "playwright test -c playwright.docs.config.ts screens",
+    "docs:video": "playwright test -c playwright.docs.config.ts video"
   },
   "dependencies": {
     "@boleiro/data": "workspace:*",

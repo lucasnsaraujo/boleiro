@@ -15,8 +15,8 @@ export type SeasonPlay = {
   moves: PlayerMoved[];
 };
 
-/** Plays the current season to its end with no human decisions. */
-export function playSeason(start: GameState): SeasonPlay {
+/** Plays the current season to its end with no human decisions; `onDay` sees each day's state before and after it. */
+export function playSeason(start: GameState, onDay?: (before: GameState, after: GameState) => void): SeasonPlay {
   let state = start;
   const fixtures: Fixture[] = [];
   const injuries: PlayerInjured[] = [];
@@ -24,6 +24,7 @@ export function playSeason(start: GameState): SeasonPlay {
   const moves: PlayerMoved[] = [];
   for (;;) {
     const day = advanceDay(state, {});
+    onDay?.(state, day.state);
     for (const event of day.events) {
       if (event.type === "matchPlayed") fixtures.push(event.fixture);
       if (event.type === "playerInjured") injuries.push(event);

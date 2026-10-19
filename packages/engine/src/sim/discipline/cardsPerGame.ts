@@ -4,12 +4,12 @@ import type { CardCount } from "./discipline.js";
 
 export type CardsPerGame = CardCount & { games: number };
 
-/** Simulated yellows and reds per game (both sides) by division, cup and estaduais, over played fixtures. */
+/** Simulated yellows and reds per game (both sides) by division, cup and estaduais, over played fixtures; leagues abroad left out. */
 export function cardsPerGame(fixtures: readonly Fixture[], competitions: Record<string, Competition>): Partial<Record<CardCompetition, CardsPerGame>> {
   const sums = new Map<CardCompetition, CardsPerGame>();
   for (const { competitionId, result } of fixtures) {
     const competition = competitions[competitionId];
-    if (!competition || !result?.cards) continue;
+    if (!competition || !result?.cards || (competition.kind === "league" && competition.abroad)) continue;
     const key = cardCompetitionOf(competition);
     const sum = sums.get(key) ?? { games: 0, yellows: 0, reds: 0 };
     sums.set(key, {

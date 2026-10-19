@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { CALIBRATED } from "../../engine/match.js";
 import { seededRandom } from "../../engine/random.js";
 import { leagueMatches, leagueTable, openLeague, playLeagueDay } from "./resultOnlyLeague.js";
 import type { WorldClub } from "./world.js";
@@ -33,15 +34,15 @@ describe("a result-only league", () => {
 
   it("plays only the round dated today, and is left as it was on a day without one", () => {
     const league = open();
-    expect(playLeagueDay(league, "2026-01-01", clubOf, seededRandom(2))).toBe(league);
-    const played = playLeagueDay(league, league.dates[1] ?? "", clubOf, seededRandom(2));
+    expect(playLeagueDay(league, "2026-01-01", clubOf, seededRandom(2), CALIBRATED)).toBe(league);
+    const played = playLeagueDay(league, league.dates[1] ?? "", clubOf, seededRandom(2), CALIBRATED);
     const matches = leagueMatches(played);
     expect(matches.filter((m) => m.result).map((m) => m.date)).toEqual(Array.from({ length: 3 }, () => league.dates[1]));
   });
 
   it("ranks its clubs by the points of the results played", () => {
     let league = open();
-    for (const date of league.dates) league = playLeagueDay(league, date, clubOf, seededRandom(date.length + league.results.length));
+    for (const date of league.dates) league = playLeagueDay(league, date, clubOf, seededRandom(date.length + league.results.length), CALIBRATED);
     const matches = leagueMatches(league);
     const points = (id: string) =>
       matches.reduce((sum, { homeId, awayId, result }) => {
