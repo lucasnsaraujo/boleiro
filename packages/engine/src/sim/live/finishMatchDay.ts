@@ -13,6 +13,7 @@ import { seasonEndField } from "../continental/continentalField.js";
 import { openContinentalCups } from "../continental/openContinentalCups.js";
 import { payContinentalPrizes } from "../continental/payContinentalPrizes.js";
 import { latestChampionsLeagueWinner, playEuropeDay } from "../continental/uefaCups.js";
+import { payUefaPrizes } from "../continental/payUefaPrizes.js";
 import { startCoachSeason } from "../coach/startCoachSeason.js";
 import { buildStadiums } from "../stadium/stadiumWorks.js";
 import { addDays } from "../dates.js";
@@ -285,7 +286,13 @@ export function finishMatchDay(live: LiveDay): DayResult {
     next = turned.events.length ? moveAiCoaches(turned.state, beforeTurn, [], state.date).state : turned.state;
     events.push(...turned.events);
   }
-  if (next.europe && next.world) next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state), playedAbroad) };
+  if (next.europe && next.world) {
+    const europeBefore = next.europe;
+    next = { ...next, europe: playEuropeDay(next.europe, next.world, state.date, formatsOf(state), playedAbroad) };
+    const uefaPrizes = payUefaPrizes(next, europeBefore);
+    next = uefaPrizes.state;
+    events.push(...uefaPrizes.events);
+  }
   const titled = recordTitlesAbroad(state, next);
   if (titled !== next) {
     const abroadBonuses = payTitleBonuses(next, titled);
