@@ -27,7 +27,8 @@ export function callUpsBySeason(seed: number, seasons: number): WindowCallUps[] 
     const called = day.events.flatMap((e) => (e.type === "calledUp" ? [e] : []));
     const fromSerieA = called.filter((e) => before.clubs[e.clubId]?.division === "A");
     const worldCup = worldCupOf(state.season);
-    const isBeforeWorldCup = worldCup !== null && window.until < worldCup.from && daysBetween(window.until, worldCup.from) <= TOURNAMENT_CAMP_DAYS;
+    // As nationsDay keeps a team's players on for a tournament starting in or soon after the window (2030's starts inside it).
+    const isBeforeWorldCup = worldCup !== null && worldCup.from >= window.from && daysBetween(window.until, worldCup.from) <= TOURNAMENT_CAMP_DAYS;
     windows.push({ from: before.date, called: called.length, serieA: fromSerieA.length, serieAToTournament: fromSerieA.filter((e) => e.until > window.until).length, isBeforeWorldCup });
   }
   return windows;
