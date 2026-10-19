@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { parseCsv } from "@boleiro/data/csv";
 import type { LeagueCompetition } from "../gameState.js";
-import { CARD_RATES, cardRatesOf } from "./cardRates.js";
+import { loadNewGame } from "../loadNewGame.js";
+import { loadEurope } from "../world/loadEurope.js";
+import { CARD_RATES, cardRatesOf, cardRatesOfFixture, LEAGUE_ABROAD_CARD_RATES } from "./cardRates.js";
 
 const RATES_CSV = new URL("../../../../../data/history/football-data/league-rates.csv", import.meta.url);
 
@@ -39,5 +41,12 @@ describe("the cards of a league abroad in the full tier", () => {
 
   it("borrows Série A's where football-data.co.uk has no cards", () => {
     expect(cardRatesOf(leagueAbroad("ar-1"))).toEqual(CARD_RATES.A);
+  });
+
+  it("draws a result-only league match abroad, told again on its page, at its league's rates", () => {
+    const state = loadNewGame(1, { coachClubId: null, world: loadEurope(2026) });
+    const premierLeague = state.world?.["gb-eng"]?.leagues[0]?.id ?? "";
+    expect(cardRatesOfFixture(state, premierLeague)).toEqual(LEAGUE_ABROAD_CARD_RATES["gb-eng-1"]);
+    expect(cardRatesOfFixture(state, "no-such-competition")).toEqual(CARD_RATES.A);
   });
 });

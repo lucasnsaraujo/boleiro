@@ -12,7 +12,7 @@ const fitted = (baseGoals: number, homeAdvantage: number, lowScoreCorrelation: n
  * lowScoreCorrelation, on the clubs' result-only elevens at the game's start. Like Série B–D they keep
  * Série A's strengthImpact and gapSaturation.
  */
-export const LEAGUE_ABROAD_PARAMS: Readonly<Record<string, EngineParams>> = {
+const LEAGUE_ABROAD_PARAMS: Readonly<Record<string, EngineParams>> = {
   "ar-1": fitted(0.7932, 0.3595, -0.1807),
   "at-1": fitted(1.1398, 0.1297, -0.2396),
   "be-1": fitted(1.1723, 0.2166, -0.1262),
@@ -38,9 +38,9 @@ export const LEAGUE_ABROAD_PARAMS: Readonly<Record<string, EngineParams>> = {
   "us-1": fitted(1.0831, 0.3048, -0.1194),
 };
 
-// The CONMEBOL countries the world plays.
+// The countries of the world by where their unfitted leagues borrow params from: CONMEBOL's, and UEFA's with Saudi Arabia.
 const SOUTH_AMERICA: ReadonlySet<string> = new Set(["ar", "bo", "cl", "co", "ec", "pe", "py", "uy", "ve"]);
-const OUTSIDE_EUROPE: ReadonlySet<string> = new Set([...SOUTH_AMERICA, "us", "mx"]);
+const EUROPE: ReadonlySet<string> = new Set(["gb-eng", "es", "it", "de", "fr", "pt", "nl", "tr", "be", "gb-sct", "at", "gr", "cz", "hr", "ua", "pl", "no", "sk", "si", "hu", "bg", "cy", "am", "il", "az", "sa"]);
 
 function median(values: readonly number[]): number {
   const sorted = [...values].sort((a, b) => a - b);
@@ -51,7 +51,7 @@ function median(values: readonly number[]): number {
 /** Each param's median over the fitted European leagues of one level: top flights (0) or the levels below. */
 function europeanMedian(isTopFlight: boolean): EngineParams {
   const leagues = Object.entries(LEAGUE_ABROAD_PARAMS)
-    .filter(([key]) => !OUTSIDE_EUROPE.has(key.slice(0, key.lastIndexOf("-"))) && key.endsWith("-1") === isTopFlight)
+    .filter(([key]) => EUROPE.has(key.slice(0, key.lastIndexOf("-"))) && key.endsWith("-1") === isTopFlight)
     .map(([, params]) => params);
   const of = (param: keyof EngineParams) => median(leagues.map((p) => p[param]));
   return { baseGoals: of("baseGoals"), homeAdvantage: of("homeAdvantage"), strengthImpact: of("strengthImpact"), gapSaturation: of("gapSaturation"), lowScoreCorrelation: of("lowScoreCorrelation") };
@@ -62,12 +62,13 @@ const EUROPEAN_MEDIAN = { top: europeanMedian(true), below: europeanMedian(false
 /**
  * A league abroad's params, the same in the result-only tier and in the full tier: its own fit where
  * football-data.co.uk has its results. guess: a South American league without them plays like Brazil's
- * division of its level (Série A for a top flight, Série B below), and any other like the median fitted
- * European league of its level.
+ * division of its level (Série A for a top flight, Série B below), a European or Saudi one like the median
+ * fitted European league of its level, and a country outside the world's at Série A's calibration.
  */
 export function paramsForLeagueAbroad(country: string, level: number): EngineParams {
   const own = LEAGUE_ABROAD_PARAMS[leagueAbroadKey(country, level)];
   if (own) return own;
   if (SOUTH_AMERICA.has(country)) return DIVISION_PARAMS[level === 0 ? "A" : "B"];
-  return level === 0 ? EUROPEAN_MEDIAN.top : EUROPEAN_MEDIAN.below;
+  if (EUROPE.has(country)) return level === 0 ? EUROPEAN_MEDIAN.top : EUROPEAN_MEDIAN.below;
+  return CALIBRATED;
 }

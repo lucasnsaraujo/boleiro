@@ -1,6 +1,6 @@
 import type { Division } from "@boleiro/data/players";
 import { leagueAbroadKey } from "../../engine/paramsForLeagueAbroad.js";
-import type { Competition } from "../gameState.js";
+import type { Competition, GameState } from "../gameState.js";
 import type { CardCount } from "./discipline.js";
 
 export type CardCompetition = Division | "cup" | "state";
@@ -76,4 +76,15 @@ export const LEAGUE_ABROAD_CARD_RATES: Readonly<Record<string, CardRates>> = {
 export function cardRatesOf(competition: Competition): CardRates {
   if (competition.kind === "league" && competition.abroad) return LEAGUE_ABROAD_CARD_RATES[leagueAbroadKey(competition.abroad.country, competition.abroad.level)] ?? CARD_RATES.A;
   return CARD_RATES[cardCompetitionOf(competition)];
+}
+
+/** The rates a fixture's cards are drawn at: its competition's, a result-only league abroad's when the id is one of its seasons, else Série A's. */
+export function cardRatesOfFixture(state: Pick<GameState, "competitions" | "world">, competitionId: string): CardRates {
+  const competition = state.competitions[competitionId];
+  if (competition) return cardRatesOf(competition);
+  for (const [country, { leagues }] of Object.entries(state.world ?? {})) {
+    const level = leagues.findIndex((league) => league.id === competitionId);
+    if (level >= 0) return LEAGUE_ABROAD_CARD_RATES[leagueAbroadKey(country, level)] ?? CARD_RATES.A;
+  }
+  return CARD_RATES.A;
 }
