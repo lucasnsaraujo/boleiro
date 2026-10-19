@@ -7,6 +7,7 @@ import { ServicesContext, type Services } from "./app/ServicesContext.js";
 import { withScreenTransitions } from "./app/withScreenTransitions.js";
 import { connectEngine, type EngineClient } from "@boleiro/game-client/engine/connectEngine";
 import { startEngineWorker } from "@boleiro/game-client/engine/startEngineWorker";
+import type { dailyHashes } from "@boleiro/game-client/engine/dailyHashes";
 import type { CurrentGameRef } from "@boleiro/game-client/saves/currentGame";
 import { slotStore } from "@boleiro/game-client/saves/slotStore";
 import { withAutosave } from "@boleiro/game-client/saves/withAutosave";
@@ -21,6 +22,8 @@ declare global {
     boleiroEngine?: EngineClient;
     /** Only in e2e builds: every cue the game asked the sound engine to play, in order, so a test can hear a goal without speakers. */
     boleiroCues?: Cue[];
+    /** Only in e2e builds: plays a scripted game in this browser's JavaScript engine and hashes the save after each day. */
+    boleiroDailyHashes?: typeof dailyHashes;
   }
 }
 
@@ -35,7 +38,10 @@ const services: Services = {
   game,
 };
 
-if (import.meta.env.VITE_E2E === "1") window.boleiroEngine = services.engine;
+if (import.meta.env.VITE_E2E === "1") {
+  window.boleiroEngine = services.engine;
+  window.boleiroDailyHashes = (script) => import("@boleiro/game-client/engine/dailyHashes").then((hashes) => hashes.dailyHashes(script));
+}
 
 const speakers = createSoundEngine({
   createContext: () => new AudioContext(),
