@@ -2,13 +2,13 @@
 export type ImageAsset = { kind: string; width: number; height: number; boxes: number[]; formats: string[] };
 /** The images a club uses, by their id in `images`. */
 export type ClubImages = { crest?: string; scoreboardCrest?: string };
-/** A sponsor brand's logo, by its id in `images`. */
+/** A sponsor brand's or a competition's logo, by its id in `images`. */
 export type BrandImages = { logo: string };
 /**
  * `packages/data/pack/assets.json`, written by `pipeline/build_assets.py`. An image's id is its kind and
  * content hash, `crest/0036ad7407124464`, and its files are `<id>-<box>.<format>` under `pack/assets/`.
  */
-export type AssetManifest = { images: Record<string, ImageAsset>; clubs: Record<string, ClubImages>; brands: Record<string, BrandImages> };
+export type AssetManifest = { images: Record<string, ImageAsset>; clubs: Record<string, ClubImages>; brands: Record<string, BrandImages>; competitions: Record<string, BrandImages> };
 
 const MANIFEST_FORMAT = 1;
 const CLUB_IMAGES = ["crest", "scoreboardCrest"] as const;
@@ -54,15 +54,19 @@ export function parseAssetManifest(json: string): AssetManifest {
       return [clubId, found];
     }),
   );
-  if (manifest.brands !== undefined && !isRecord(manifest.brands)) fail("brands", "an object");
-  const brands = Object.fromEntries(
-    Object.entries(manifest.brands ?? {}).map(([brandId, uses]): [string, BrandImages] => {
-      const logo = isRecord(uses) ? uses.logo : undefined;
-      if (!isString(logo) || !(logo in images)) fail(`brands.${brandId}.logo`, `an image in the manifest, not ${String(logo)}`);
-      return [brandId, { logo }];
+  return { images, clubs, brands: logosOf(manifest.brands, "brands", images), competitions: logosOf(manifest.competitions, "competitions", images) };
+}
+
+/** A manifest's logos by owner (`brands`, `competitions`), each naming one of its images; none when the manifest has no such map. */
+function logosOf(uses: unknown, path: string, images: Record<string, ImageAsset>): Record<string, BrandImages> {
+  if (uses !== undefined && !isRecord(uses)) fail(path, "an object");
+  return Object.fromEntries(
+    Object.entries(uses ?? {}).map(([id, use]): [string, BrandImages] => {
+      const logo = isRecord(use) ? use.logo : undefined;
+      if (!isString(logo) || !(logo in images)) fail(`${path}.${id}.logo`, `an image in the manifest, not ${String(logo)}`);
+      return [id, { logo }];
     }),
   );
-  return { images, clubs, brands };
 }
 
 /** The file of an image in the smallest box that fills `size` device pixels, or its largest box. */
@@ -76,6 +80,11 @@ function fileOf(manifest: AssetManifest, id: string | undefined, size: number, f
 /** Path under the sponsors' `assets/` of a brand's logo whose longest side fills `size` device pixels; null without a logo. */
 export function logoFileOf(manifest: AssetManifest, brandId: string, size: number, format: string): string | null {
   return fileOf(manifest, manifest.brands[brandId]?.logo, size, format);
+}
+
+/** Path under the competitions' `assets/` of a competition's or an edition's logo whose longest side fills `size` device pixels; null without one. */
+export function competitionLogoFileOf(manifest: AssetManifest, id: string, size: number, format: string): string | null {
+  return fileOf(manifest, manifest.competitions[id]?.logo, size, format);
 }
 
 /**

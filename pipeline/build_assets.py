@@ -99,6 +99,7 @@ def build(rows: list[sqlite3.Row], out: Path, formats: tuple[str, ...], boxes: t
     images: dict[str, dict[str, object]] = {}
     clubs: dict[str, dict[str, str]] = {}
     brands: dict[str, dict[str, str]] = {}
+    competitions: dict[str, dict[str, str]] = {}
     written: set[Path] = set()
     for row in rows:
         key = f"{row['kind']}/{row['sha256'][:HASH_LENGTH]}"
@@ -106,6 +107,8 @@ def build(rows: list[sqlite3.Row], out: Path, formats: tuple[str, ...], boxes: t
             clubs.setdefault(row["entity_id"], {})[CLUB_KEYS[row["kind"]]] = key
         elif row["entity"] == "sponsor":
             brands[row["entity_id"]] = {"logo": key}
+        elif row["entity"] == "competition":
+            competitions[row["entity_id"]] = {"logo": key}
         if key in images:
             continue
         source = Image.open(ROOT / row["path"]).convert("RGBA")
@@ -128,6 +131,8 @@ def build(rows: list[sqlite3.Row], out: Path, formats: tuple[str, ...], boxes: t
     manifest: dict[str, object] = {"format": MANIFEST_FORMAT, "images": images, "clubs": dict(sorted(clubs.items()))}
     if brands:
         manifest["brands"] = dict(sorted(brands.items()))
+    if competitions:
+        manifest["competitions"] = dict(sorted(competitions.items()))
     return manifest
 
 
