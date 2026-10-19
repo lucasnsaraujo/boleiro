@@ -220,6 +220,25 @@ describe("rebuildMovedSquads", () => {
     expect(players[borrowed.id]).toBe(loaned.players[borrowed.id]);
   });
 
+  it("rebuilds a moved squad as if the players leaving it at the turn of the year had gone, and leaves them as they are", () => {
+    const squad = Object.values(start.players).filter((p) => p.clubId === promotedClub);
+    const leavers = squad.slice(0, 6);
+    const staying = squad.slice(6);
+    const isLeaver = (id: string) => leavers.some((p) => p.id === id);
+    const contracts = squad.map((p, i) => ({ ...p, strength: isLeaver(p.id) ? 95 : p.strength, contractUntil: i < 3 ? `${start.season}-12-31` : `${start.season + 2}-12-31` }));
+    const leaving: GameState = {
+      ...start,
+      players: { ...start.players, ...Object.fromEntries(contracts.map((p) => [p.id, p])) },
+      market: { ...start.market, preContracts: { ...start.market.preContracts, ...Object.fromEntries(leavers.slice(3).map((p) => [p.id, relegatedClub])) } },
+    };
+    const gone: GameState = { ...leaving, players: Object.fromEntries(Object.entries(leaving.players).filter(([id]) => !isLeaver(id))), market: start.market };
+    const rebuilt = rebuildMovedSquads(leaving, moved(promotedClub, "A"), start.finances);
+    const rebuiltWithoutLeavers = rebuildMovedSquads(gone, moved(promotedClub, "A"), start.finances);
+    expect(leavers.map((p) => rebuilt[p.id])).toEqual(leavers.map((p) => leaving.players[p.id]));
+    expect(staying.map((p) => rebuilt[p.id]?.strength)).toEqual(staying.map((p) => rebuiltWithoutLeavers[p.id]?.strength));
+    expect(lift(gone, moved(promotedClub, "A"), start.finances, promotedClub)).toBeGreaterThan(3);
+  });
+
   it("leaves a human coach's squad for him to rebuild", () => {
     const coached: GameState = { ...start, coachClubId: promotedClub };
     expect(lift(coached, moved(promotedClub, "A"), start.finances, promotedClub)).toBe(0);

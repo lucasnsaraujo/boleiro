@@ -148,16 +148,19 @@ const standingOf = (squad: readonly SimPlayer[]): number => squad.reduce((sum, p
  * The players of every AI club in Brazil that went up or down, moved `REBUILD_SHARE` of the way from where
  * the squad stands (its players' mean strength net of age) to the level its new division and revenue call
  * for (clubLevels): a real club rebuilds its squad over the summer when it changes division, far faster than
- * the market and the yearly pull move the game's. A squad moves only the way its club did. A human coach
- * rebuilds his own; clubs abroad keep theirs, as their result-only seasons do.
+ * the market and the yearly pull move the game's. A squad moves only the way its club did. The players leaving
+ * it on a free (a contract that ends with the season, a pre-contract signed elsewhere) neither count in it nor
+ * move with it. A human coach rebuilds his own; clubs abroad keep theirs, as their result-only seasons do.
  */
 export function rebuildMovedSquads(state: GameState, clubs: GameState["clubs"], finances: GameState["finances"]): GameState["players"] {
   const levelAfter = clubLevels(clubs, finances);
   const relegatedLevel = clubLevels(clubs, finances, state.economy.revenueCeiling);
   // A loaned player belongs to the club that lent him, as his yearly drift does (targetOf).
   const ownerOf = (p: SimPlayer) => state.market.loans[p.id]?.fromClubId ?? p.clubId;
+  const isLeaving = (p: SimPlayer) => p.contractUntil <= `${state.season}-12-31` || state.market.preContracts[p.id] !== undefined;
   const squads = new Map<string, SimPlayer[]>();
   for (const p of Object.values(state.players)) {
+    if (isLeaving(p)) continue;
     const squad = squads.get(ownerOf(p));
     if (squad) squad.push(p);
     else squads.set(ownerOf(p), [p]);
@@ -174,7 +177,7 @@ export function rebuildMovedSquads(state: GameState, clubs: GameState["clubs"], 
   if (shifts.size === 0) return state.players;
   return Object.fromEntries(
     Object.entries(state.players).map(([id, p]) => {
-      const shift = shifts.get(ownerOf(p));
+      const shift = isLeaving(p) ? undefined : shifts.get(ownerOf(p));
       return [id, shift === undefined ? p : { ...p, strength: Math.round(clamp(p.strength + shift) * 10) / 10 }];
     }),
   );
