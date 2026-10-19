@@ -3,7 +3,10 @@ import type { GameState } from "../gameState.js";
 import { loadNewGame } from "../loadNewGame.js";
 import { developPlayers } from "../players/developPlayers.js";
 import { SQUAD_CAP } from "../transfers/squadCap.js";
-import { academySquad, LEAVING_AGE, scoutedStars, starsOf, YOUTH_AGES } from "./academy.js";
+import { academyLevel, academyOf as academyOfLevel, academySquad, LEAVING_AGE, scoutedStars, starsOf, YOUTH_AGES } from "./academy.js";
+import { clubStatures } from "../coach/clubStatures.js";
+import type { SeasonRecord } from "../history/history.js";
+import { CLUB_LEVEL } from "../players/developPlayers.js";
 import { copinhaRun, playCopinha } from "./copinha.js";
 import { fillShortSquads } from "./fillShortSquads.js";
 import { citiesOf } from "./hometowns.js";
@@ -48,6 +51,56 @@ describe("a new game's academies", () => {
     const kids = prospects.filter((p) => start.clubs[p.clubId]?.state === "RJ");
     expect(kids.filter((p) => fromRio.has(p.hometown)).length / kids.length).toBeGreaterThan(0.65);
     expect(prospects.every((p) => p.name.length > 0)).toBe(true);
+  });
+});
+
+describe("an academy's level", () => {
+  const club = (id: string) => {
+    const found = start.clubs[id];
+    if (!found) throw new Error(`no club ${id}`);
+    return found;
+  };
+  const potentialOf = (clubId: string) => mean(academyOf(start, clubId).map((p) => p.potential));
+  /** Seasons the game filed with `clubId` in `division` each year from 2026 through `last`. */
+  const filedIn = (clubId: string, division: "A" | "B", last: number): Pick<SeasonRecord, "season" | "tables">[] =>
+    Array.from({ length: last - 2025 }, (_, i) => ({ season: 2026 + i, tables: { A: division === "A" ? [clubId] : [], B: division === "B" ? [clubId] : [], C: [], D: [] } }));
+
+  it("follows a newly promoted club's last ten seasons, not its new division: Remo's kids are far below a Série A stalwart's", () => {
+    // Remo played Série C in seven of 2017–2025 and Série B in two before going up for 2026; Flamengo all of them in Série A.
+    expect(club("remo-pa").division).toBe("A");
+    expect(potentialOf("flamengo-rj") - potentialOf("remo-pa")).toBeGreaterThan(10);
+    expect(academyLevel(club("remo-pa"), 2026, [])).toBeLessThan(CLUB_LEVEL.B);
+    expect(academyLevel(club("chapecoense-sc"), 2026, [])).toBeGreaterThan(CLUB_LEVEL.B);
+    expect(academyLevel(club("chapecoense-sc"), 2026, [])).toBeLessThan(CLUB_LEVEL.A);
+  });
+
+  it("climbs slowly with seasons in a higher division, reaching it after ten", () => {
+    const remo = club("remo-pa");
+    const levels = [2026, 2027, 2030, 2035].map((last) => academyLevel(remo, last, filedIn(remo.id, "A", last)));
+    expect(levels[1] ?? 0).toBeGreaterThan(levels[0] ?? 0);
+    expect((levels[1] ?? 0) - (levels[0] ?? 0)).toBeLessThan(3);
+    expect(levels[2] ?? 0).toBeGreaterThan(levels[1] ?? 0);
+    expect(levels[3]).toBe(CLUB_LEVEL.A);
+  });
+
+  it("falls slowly with seasons in a lower division", () => {
+    const flamengo = club("flamengo-rj");
+    const after = (last: number) => academyLevel(flamengo, last, filedIn(flamengo.id, "B", last));
+    expect(after(2026)).toBeLessThan(CLUB_LEVEL.A);
+    expect(after(2026)).toBeGreaterThan(CLUB_LEVEL.A - 3);
+    expect(after(2035)).toBe(CLUB_LEVEL.B);
+  });
+
+  it("puts Brazil's academies in CIES's 2025 world top 100 among the game's fifteen best", () => {
+    // CIES Football Observatory Weekly Post 518 (22 Oct 2025), "Best football academies": eleven Brazilian clubs in the
+    // top 100, https://www.cies.ch/cies/news/news-detail/article/best-football-academies-benfica-at-the-top (the
+    // Brazilian names: Diário de Pernambuco, https://www.diariodepernambuco.com.br/esportes-dp/nacional/2025/10/11698696-sao-paulo-corinthians-flamengo-e-palmeiras-estao-entre-as-20-melhores-bases-do-mundo.html).
+    const cies = ["sao-paulo-sp", "corinthians-sp", "flamengo-rj", "palmeiras-sp", "santos-sp", "gremio-rs", "cruzeiro-mg", "internacional-rs", "fluminense-rj", "athletico-pr-pr", "atletico-mg-mg"];
+    const statures = clubStatures(start);
+    const national = Object.values(start.clubs).filter((c) => c.division !== null);
+    const potential = (c: (typeof national)[number]) => academyOfLevel(academyLevel(c, 2026, []), statures.get(c.id) ?? 0).potentialMean;
+    const best = national.toSorted((a, b) => potential(b) - potential(a)).slice(0, 15).map((c) => c.id);
+    expect(cies.filter((id) => !best.includes(id))).toEqual([]);
   });
 });
 

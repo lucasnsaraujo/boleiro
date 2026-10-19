@@ -1,12 +1,15 @@
 import type { Club, State } from "@boleiro/data/clubs";
+import type { Division } from "@boleiro/data/players";
 import type { PositionGroup } from "../../engine/match.js";
 import { randomStream } from "../../engine/random.js";
 import { clubStatures } from "../coach/clubStatures.js";
 import type { GameState } from "../gameState.js";
+import type { SeasonRecord } from "../history/history.js";
 import { CLUB_LEVEL, normal, SQUAD_SHAPE } from "../players/developPlayers.js";
 import { inventName } from "../players/inventName.js";
 import { inventHometown } from "./hometowns.js";
 import { compareText } from "../compareText.js";
+import { REAL_DIVISIONS, REAL_DIVISIONS_FROM, REAL_DIVISIONS_UNTIL } from "./realDivisions.js";
 
 /** A kid in a club's academy. He plays only youth football until the club promotes, sells or releases him. */
 export type Prospect = {
@@ -46,8 +49,8 @@ export const LEAVING_AGE = 21;
 
 // guess: an academy keeps 8 to 14 kids in the game's eyes (the best of each age), the biggest clubs the most.
 const ACADEMY_SIZE = { min: 8, max: 14 };
-// guess: a kid's potential centres on his club's division level, 3 points more at the biggest club
-// than at an average one, and spreads 5 points either way (one standard deviation).
+// guess: a kid's potential centres on his academy's level, 3 points more at the biggest club than at an
+// average one, and spreads 5 points either way (one standard deviation).
 const POTENTIAL_ABOVE_LEVEL = 0;
 const STATURE_EFFECT = 3;
 const POTENTIAL_SD = 5;
@@ -92,12 +95,34 @@ export function academyClubs(state: Pick<GameState, "clubs">): AcademyClub[] {
   return Object.values(state.clubs).filter((club): club is AcademyClub => club.division !== null && club.state !== undefined);
 }
 
-/** How many kids the club keeps and how good they are, by its stature (0 to 100). */
-export function academyOf(club: Club, stature: number): { size: number; potentialMean: number } {
+// guess: an academy works at the level of the divisions its club played over its last ten seasons, not this
+// one's alone: its staff, grounds and scouting are built over years, so a newly promoted club keeps a lower
+// division's academy for a while and a relegated giant keeps its own, each moving a tenth of the way a season.
+const ACADEMY_SEASONS = 10;
+
+/** The division a club played in `season`: the game's table of it, else the real one before the game, else its current division. */
+function divisionIn(club: Pick<Club, "id" | "division">, season: number, filed: ReadonlyMap<number, Pick<SeasonRecord, "tables">>): Division | "none" {
+  const tables = filed.get(season)?.tables;
+  if (tables) return (["A", "B", "C", "D"] as const).find((division) => tables[division].includes(club.id)) ?? "none";
+  if (season < REAL_DIVISIONS_FROM || season > REAL_DIVISIONS_UNTIL) return club.division ?? "none";
+  const letter = REAL_DIVISIONS[club.id]?.[season - REAL_DIVISIONS_FROM];
+  return letter === "A" || letter === "B" || letter === "C" ? letter : "D";
+}
+
+/** The level a club's academy works at: the mean level of the divisions it played in the ACADEMY_SEASONS seasons through `season`, as the game filed them (`seasons`) or as they were before it. */
+export function academyLevel(club: Pick<Club, "id" | "division">, season: number, seasons: readonly Pick<SeasonRecord, "season" | "tables">[]): number {
+  const filed = new Map(seasons.map((record) => [record.season, record]));
+  let total = 0;
+  for (let back = 0; back < ACADEMY_SEASONS; back++) total += CLUB_LEVEL[divisionIn(club, season - back, filed)];
+  return total / ACADEMY_SEASONS;
+}
+
+/** How many kids the club keeps, by its stature (0 to 100), and how good they are, by its academy's level and its stature. */
+export function academyOf(level: number, stature: number): { size: number; potentialMean: number } {
   const share = stature / 100;
   return {
     size: Math.round(ACADEMY_SIZE.min + share * (ACADEMY_SIZE.max - ACADEMY_SIZE.min)),
-    potentialMean: CLUB_LEVEL[club.division ?? "none"] + POTENTIAL_ABOVE_LEVEL + STATURE_EFFECT * (2 * share - 1),
+    potentialMean: level + POTENTIAL_ABOVE_LEVEL + STATURE_EFFECT * (2 * share - 1),
   };
 }
 
@@ -134,12 +159,12 @@ export function inventProspect(
 }
 
 /** Every national club's academy at the start of a game, its kids spread over the youth ages. */
-export function openAcademies(state: Pick<GameState, "clubs" | "finances" | "season" | "seed">): Youth {
+export function openAcademies(state: Pick<GameState, "clubs" | "finances" | "season" | "seed" | "history">): Youth {
   const random = randomStream((state.seed ^ YOUTH_STREAM_SALT) >>> 0);
   const statures = clubStatures(state);
   const prospects: Record<string, Prospect> = {};
   for (const club of academyClubs(state)) {
-    const { size, potentialMean } = academyOf(club, statures.get(club.id) ?? 0);
+    const { size, potentialMean } = academyOf(academyLevel(club, state.season, state.history.seasons), statures.get(club.id) ?? 0);
     const groups: PositionGroup[] = [];
     for (let i = 0; i < size; i++) {
       const group = thinnestGroup(groups);
