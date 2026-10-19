@@ -11,7 +11,7 @@ import { startMatchDay } from "./startMatchDay.js";
 import { assistantTalk, talkEffect } from "./teamTalk.js";
 
 const COACH_CLUB = "flamengo-rj";
-const start = loadNewGame(5, { coachClubId: COACH_CLUB });
+const start = loadNewGame(1, { coachClubId: COACH_CLUB });
 let matchDay: GameState = start;
 const firstMatch = start.fixtures.find((f) => f.homeId === COACH_CLUB || f.awayId === COACH_CLUB)?.date ?? "";
 while (matchDay.date < firstMatch) matchDay = advanceDay(matchDay, {}).state;

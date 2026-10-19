@@ -13,7 +13,7 @@ import { EXTRA_HALF_TIME, EXTRA_TIME_END, FULL_TIME, type MatchEvent } from "./m
 import { startMatchDay } from "./startMatchDay.js";
 
 const COACH_CLUB = "flamengo-rj";
-const start = loadNewGame(8, { coachClubId: COACH_CLUB });
+const start = loadNewGame(2, { coachClubId: COACH_CLUB });
 
 function advanceTo(state: GameState, date: string): GameState {
   let current = state;

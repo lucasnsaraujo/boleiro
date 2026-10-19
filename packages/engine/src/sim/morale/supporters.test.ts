@@ -8,7 +8,7 @@ import { reactToDay } from "./reactToDay.js";
 import { rivalryOf } from "../rivalries/rivalryOf.js";
 import { rivalsOf } from "./rivalsOf.js";
 
-const start = loadNewGame(7, { coachClubId: null });
+const start = loadNewGame(1, { coachClubId: null });
 
 function advanceTo(state: GameState, date: string): GameState {
   let current = state;
