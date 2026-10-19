@@ -1,0 +1,639 @@
+/* Finanças: the approved finances mock (design/mocks/finances.html). */
+.finances {
+  height: 100%;
+  min-height: 0;
+  padding: 18px 14px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 14px;
+}
+
+.fin {
+  min-height: 0;
+  padding: 20px 24px 18px;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.fin-hd {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fin-hd h1 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.fin-hd .seg {
+  margin-left: auto;
+}
+
+.seg > button {
+  height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--t-base) var(--e-out), color var(--t-base) var(--e-out);
+}
+
+.seg > button.on {
+  background: var(--ink);
+  color: var(--card);
+}
+
+.seg > span[role="radio"] {
+  cursor: pointer;
+}
+
+.fin-statement {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fin-cash {
+  margin-top: 18px;
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  padding-bottom: 18px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.fin-big span,
+.fin-k span {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--mute);
+}
+
+.fin-big b {
+  display: block;
+  margin-top: 4px;
+  white-space: nowrap;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: clamp(32px, 3.2vw, 50px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.fin-k {
+  padding-bottom: 6px;
+}
+
+.fin-k b {
+  white-space: nowrap;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: clamp(15px, 1.35vw, 20px);
+}
+
+.fin b.up,
+.fin-col h3 b.up {
+  color: var(--green);
+}
+
+.fin b.dn,
+.fin-col h3 b.dn {
+  color: var(--red);
+}
+
+.fin-alerts {
+  list-style: none;
+  padding-top: 12px;
+}
+
+.fin-alerts li {
+  padding: 3px 0;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--red);
+}
+
+.fin-flow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 16px;
+}
+
+.fin-col h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.fin-col h3 b {
+  margin-left: auto;
+}
+
+.fin-col ul {
+  list-style: none;
+}
+
+.fin-it {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  gap: 5px 10px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px dotted var(--line-2);
+  animation: fin-in 420ms var(--e-out) both;
+}
+
+.fin-it:nth-child(2) { animation-delay: 40ms; }
+.fin-it:nth-child(3) { animation-delay: 80ms; }
+.fin-it:nth-child(4) { animation-delay: 120ms; }
+.fin-it:nth-child(n + 5) { animation-delay: 160ms; }
+
+.fin-it .ic {
+  font-size: 17px;
+  color: var(--ink-2);
+}
+
+.fin-it b {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.fin-it .v {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 14px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.fin-it .fb {
+  grid-column: 2 / -1;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--paper-2);
+  overflow: hidden;
+}
+
+.fin-it .fb i {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--green);
+  transform-origin: left;
+  animation: fin-grow 640ms var(--e-out) both;
+}
+
+.fin-col.dn .fin-it .fb i {
+  background: var(--red);
+  opacity: 0.8;
+}
+
+.fin-none,
+.fin-first {
+  padding: 12px 0;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.fin-foot {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 24px;
+}
+
+.fin-budget {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.fin-budget b {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 20px;
+}
+
+.fin-budget small {
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.fin-market {
+  margin-top: 8px;
+}
+
+.fin-desk .lbl {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.fin-side {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: auto;
+}
+
+.fin-conf {
+  padding: 14px 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.fin-conf .conf-top .lbl {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+.fin-conf .conf-top > b {
+  font-size: 20px;
+}
+
+.fin-conf .meter {
+  margin-top: 5px;
+}
+
+.fin-conf .meter > i {
+  transform-origin: left;
+  animation: fin-grow 760ms var(--e-out) 120ms both;
+}
+
+.fin-obj {
+  padding-top: 10px;
+  border-top: 1px dotted var(--line-2);
+  display: grid;
+  gap: 2px;
+}
+
+.fin-obj .lbl {
+  margin-bottom: 3px;
+}
+
+.fin-obj div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.fin-obj div i {
+  font-size: 15px;
+  color: var(--mute);
+}
+
+.fin-obj div.ok i {
+  color: var(--green);
+}
+
+.fin-obj div span {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--mute);
+  white-space: nowrap;
+}
+
+.fin-offers {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fin-offers h2 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 17px;
+}
+
+.fin-friendlies {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.of {
+  border-radius: var(--r-m);
+  padding: 12px;
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+}
+
+.of.hi {
+  box-shadow: 0 0 0 2px var(--ink);
+  background: var(--yellow-l);
+  transform: rotate(-0.6deg);
+  animation: fin-stick 520ms var(--e-out) both;
+}
+
+.of .t {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.of .t b {
+  display: block;
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1.15;
+}
+
+.of .t small {
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.of .t .v {
+  margin-left: auto;
+  text-align: right;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 17px;
+  white-space: nowrap;
+}
+
+.of .t .v small {
+  display: block;
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.of .t .ic {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--card);
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  flex: none;
+}
+
+.of p,
+.fin-book-form p {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.of .bs,
+.fin-book-form .bs {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  align-items: center;
+}
+
+.fin-book {
+  align-self: flex-start;
+}
+
+.fin-book-form {
+  padding: 12px;
+  border-radius: var(--r-m);
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+  display: grid;
+  gap: 8px;
+}
+
+.fin-book-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.fin-field {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+}
+
+.fin-field .select {
+  height: 32px;
+  min-width: 0;
+}
+
+.fin-bank-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.fin-terms {
+  justify-self: start;
+}
+
+.fin-bank-note {
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.fin-refusal {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--red);
+}
+
+.fin-booked {
+  list-style: none;
+  border-top: 1px dotted var(--line-2);
+}
+
+.fin-booked li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px dotted var(--line-2);
+  font-size: 12.5px;
+}
+
+.fin-booked-date {
+  width: 44px;
+  flex: none;
+  font-weight: 700;
+  color: var(--mute);
+}
+
+.fin-booked-who {
+  font-weight: 600;
+}
+
+.fin-booked li.played .fin-booked-who {
+  font-weight: 800;
+}
+
+.fin-booked-fee {
+  margin-left: auto;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.fin-booked-fee.in {
+  color: var(--green);
+}
+
+.fin-booked-fee.out {
+  color: var(--red);
+}
+
+@keyframes fin-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes fin-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes fin-stick {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) rotate(3deg) scale(1.03);
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fin-it,
+  .fin-it .fb i,
+  .fin-conf .meter > i,
+  .of.hi {
+    animation: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  .finances {
+    grid-template-columns: minmax(0, 1fr) 330px;
+  }
+
+  .fin-cash {
+    gap: 18px;
+  }
+
+  .fin-big b {
+    font-size: 40px;
+  }
+
+  .fin-k b {
+    font-size: 17px;
+  }
+
+  .fin-flow {
+    gap: 20px;
+  }
+}
+
+/* The kit's sponsors: their yearly total, then each brand's logo on a white chip over its value. */
+.fin-spon {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fin-spon h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.fin-spon h2 a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.fin-spon > b {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.fin-spon > b small {
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.fin-spon ul {
+  list-style: none;
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+}
+
+.fin-spon li {
+  display: grid;
+  gap: 3px;
+  justify-items: center;
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 10.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.fin-spon-mk {
+  min-width: 64px;
+  height: 24px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.fin-spon-mk .logo-name {
+  max-width: 64px;
+}
+
+.fin-spon-rest .fin-spon-mk {
+  min-width: 36px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  color: var(--mute);
+}
+
+[data-theme="dark"] .fin-spon-mk {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}

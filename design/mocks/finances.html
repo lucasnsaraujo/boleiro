@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Finanças</title>
+<link rel="stylesheet" href="../../packages/design-tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 14px; }
+
+.fin { padding: 20px 24px 18px; display: flex; flex-direction: column; overflow: hidden; }
+.fin .hd { display: flex; align-items: center; gap: 12px; }
+.fin h1 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: 1; letter-spacing: -.01em; }
+.fin .hd .seg { margin-left: auto; }
+
+.cash { margin-top: 18px; display: flex; align-items: flex-end; gap: 28px; padding-bottom: 18px; border-bottom: 2px solid var(--ink); }
+.cash .big span { display: block; font-size: 12.5px; color: var(--mute); font-weight: 600; }
+.cash .big b { display: block; white-space: nowrap; font-stretch: var(--wide); font-weight: 900; font-size: 50px; line-height: 1; letter-spacing: -.02em; margin-top: 4px; }
+.cash .k { padding-bottom: 6px; }
+.cash .k span { display: block; font-size: 12px; color: var(--mute); }
+.cash .k b { white-space: nowrap; font-stretch: var(--semi); font-weight: 900; font-size: 20px; }
+.cash .k b.up { color: var(--green); }
+.cash .k b.dn { color: var(--red); }
+
+.flow { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 16px; }
+.flow h3 { display: flex; align-items: baseline; gap: 8px; font-stretch: var(--semi); font-weight: 900; font-size: 15px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.flow h3 b { margin-left: auto; font-stretch: var(--semi); font-size: 15px; }
+.flow h3 b.up { color: var(--green); } .flow h3 b.dn { color: var(--red); }
+.it { display: grid; grid-template-columns: 22px 1fr auto; gap: 5px 10px; align-items: center; padding: 11px 0; border-bottom: 1px dotted var(--line-2); }
+.it i.ic { font-size: 17px; color: var(--ink-2); }
+.it .t b { font-weight: 700; font-size: 13px; }
+.it .t small { display: block; font-size: 11.5px; color: var(--mute); }
+.it .v { font-stretch: var(--semi); font-weight: 900; font-size: 14px; text-align: right; }
+.it .v.z { color: var(--mute); font-weight: 700; }
+.it .fb { grid-column: 2 / -1; height: 6px; border-radius: 999px; background: var(--paper-2); overflow: hidden; }
+.it .fb i { display: block; height: 100%; border-radius: 999px; background: var(--green); }
+.out .it .fb i { background: var(--red); opacity: .8; }
+
+.prz { margin-top: 14px; display: flex; align-items: center; gap: 10px; }
+.prz .lbl { margin-right: 4px; }
+.pz { display: flex; align-items: center; gap: 8px; padding: 7px 12px 7px 8px; border-radius: 10px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); font-size: 12px; }
+.pz i { font-size: 18px; color: var(--yellow-d); }
+.pz b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 14px; line-height: 1.1; }
+.pz span { color: var(--mute); font-size: 11px; }
+.pz.foil { background: var(--foil); box-shadow: 0 0 0 1px var(--line-2); }
+
+.side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.conf { padding: 14px 16px; display: grid; gap: 12px; }
+.conf .m .tp { display: flex; align-items: baseline; gap: 8px; }
+.conf .m .tp b { font-weight: 800; font-size: 14px; }
+.conf .m .tp > span:last-child { margin-left: auto; font-stretch: var(--wide); font-weight: 900; font-size: 20px; }
+.conf .m .meter { margin-top: 5px; }
+.conf .m p { font-size: 11.5px; color: var(--mute); margin-top: 4px; }
+.conf .m p b { color: var(--ink-2); }
+.tr { font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 2px; }
+.tr.up { color: var(--green); } .tr.dn { color: var(--red); }
+
+.off { padding: 14px 16px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.off h3 { font-stretch: var(--wide); font-weight: 900; font-size: 17px; }
+.of { border-radius: var(--r-m); padding: 12px 12px 12px; box-shadow: inset 0 0 0 1.5px var(--line-2); }
+.of.hi { box-shadow: 0 0 0 2px var(--ink); background: var(--yellow-l); transform: rotate(-.6deg); }
+.of .t { display: flex; align-items: center; gap: 10px; }
+.of .t b { display: block; font-weight: 800; font-size: 14px; line-height: 1.15; }
+.of .t small { font-size: 11.5px; color: var(--mute); }
+.of .t .v { margin-left: auto; text-align: right; font-stretch: var(--semi); font-weight: 900; font-size: 17px; white-space: nowrap; }
+.of .t .v small { display: block; font-stretch: 100%; font-weight: 600; font-size: 11px; }
+.of .t .ic { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: var(--card); display: grid; place-items: center; font-size: 17px; flex: none; }
+.of p { font-size: 12px; color: var(--ink-2); margin-top: 8px; line-height: 1.4; }
+.of p b { font-weight: 800; }
+.of .bs { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+.of .bs .go { height: 40px; }
+.obj { padding-top: 10px; border-top: 1px dotted var(--line-2); display: grid; gap: 2px; }
+.obj .lbl { margin-bottom: 3px; }
+.obj div { display: flex; align-items: center; gap: 8px; height: 26px; font-size: 12.5px; font-weight: 600; }
+.obj div i { font-size: 15px; color: var(--mute); }
+.obj div.ok i { color: var(--green); }
+.obj div span { margin-left: auto; font-size: 11.5px; color: var(--mute); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="times"></div>
+  <main><div class="wrap">
+    <div class="page fin">
+      <div class="hd"><h1>Finanças</h1><div class="seg"><span>Setembro</span><span class="on">Outubro</span><span>Temporada 2026</span></div></div>
+      <div class="cash">
+        <div class="big"><span>Caixa hoje</span><b>R$ 212,4 mi</b></div>
+        <div class="k"><span>Saldo de outubro</span><b class="up">+R$ 36,6 mi</b></div>
+        <div class="k"><span>Folha mensal</span><b>R$ 52,3 mi</b></div>
+        <div class="k"><span>Dívida líquida</span><b>R$ 473 mi</b></div>
+      </div>
+      <div class="flow">
+        <div class="in"><h3>Entrou<b class="up">R$ 113,6 mi</b></h3>
+          <div class="it"><i class="ph-bold ph-ticket ic"></i><div class="t"><b>Bilheteria</b><small>Fla-Flu, 11 out</small></div><span class="v">R$ 8,7 mi</span><span class="fb"><i style="width:17%"></i></span></div>
+          <div class="it"><i class="ph-bold ph-handshake ic"></i><div class="t"><b>Patrocínio</b><small>Betano, adidas e mais 9</small></div><span class="v">R$ 45,1 mi</span><span class="fb"><i style="width:88%"></i></span></div>
+          <div class="it"><i class="ph-bold ph-television-simple ic"></i><div class="t"><b>TV</b><small>Série A e Libertadores</small></div><span class="v">R$ 51 mi</span><span class="fb"><i style="width:100%"></i></span></div>
+          <div class="it"><i class="ph-bold ph-identification-card ic"></i><div class="t"><b>Sócio-torcedor</b><small>Nação Rubro-Negra</small></div><span class="v">R$ 8,8 mi</span><span class="fb"><i style="width:17%"></i></span></div>
+          <div class="it"><i class="ph-bold ph-swap ic"></i><div class="t"><b>Venda de jogadores</b><small>De la Cruz em leilão</small></div><span class="v z">R$ 0</span><span class="fb"><i style="width:0"></i></span></div>
+        </div>
+        <div class="out"><h3>Saiu<b class="dn">R$ 77 mi</b></h3>
+          <div class="it"><i class="ph-bold ph-users-three ic"></i><div class="t"><b>Salários</b><small>Elenco e comissão</small></div><span class="v">R$ 52,3 mi</span><span class="fb"><i style="width:100%"></i></span></div>
+          <div class="it"><i class="ph-bold ph-buildings ic"></i><div class="t"><b>Clube e base</b><small>CT, viagens, categorias de base</small></div><span class="v">R$ 14,6 mi</span><span class="fb"><i style="width:28%"></i></span></div>
+          <div class="it"><i class="ph-bold ph-hammer ic"></i><div class="t"><b>Obras</b><small>Alojamento da base, 3ª de 5</small></div><span class="v">R$ 1,8 mi</span><span class="fb"><i style="width:3%"></i></span></div>
+          <div class="it"><i class="ph-bold ph-coins ic"></i><div class="t"><b>Bichos</b><small>Vitórias e classificação na Liberta</small></div><span class="v">R$ 3,2 mi</span><span class="fb"><i style="width:6%"></i></span></div>
+          <div class="it"><i class="ph-bold ph-bank ic"></i><div class="t"><b>Juros</b><small>Dívida bancária</small></div><span class="v">R$ 5,1 mi</span><span class="fb"><i style="width:10%"></i></span></div>
+        </div>
+      </div>
+      <div class="prz"><span class="lbl">Prêmios em jogo</span>
+        <div class="pz foil"><i class="ph-fill ph-trophy"></i><div><b>US$ 25 mi</b><span>Libertadores, campeão · R$ 125 mi</span></div></div>
+        <div class="pz"><i class="ph-fill ph-medal"></i><div><b>US$ 7 mi</b><span>Libertadores, vice · R$ 35 mi</span></div></div>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="stk conf">
+        <div class="m"><div class="tp"><b>Diretoria</b><span class="tr up"><i class="ph-fill ph-caret-up"></i>3</span><span>92%</span></div><div class="meter"><i style="width:92%"></i></div><p>Quer <b>o título da Série A</b>. Caixa no azul ajuda.</p></div>
+        <div class="m"><div class="tp"><b>Torcida</b><span class="tr dn"><i class="ph-fill ph-caret-down"></i>2</span><span>74%</span></div><div class="meter"><i style="width:74%"></i></div><p>Ingresso mais caro e o patrocínio de aposta tiram um pouco.</p></div>
+        <div class="obj"><span class="lbl">A diretoria cobra</span>
+          <div><i class="ph-bold ph-circle-dashed"></i>Título da Série A<span>1º, 1 pt à frente</span></div>
+          <div class="ok"><i class="ph-fill ph-check-circle"></i>Semifinal da Libertadores<span>feito</span></div>
+          <div class="ok"><i class="ph-fill ph-check-circle"></i>Folha abaixo de R$ 55 mi<span>R$ 52,3 mi</span></div></div>
+      </div>
+      <div class="stk off"><h3>Propostas</h3>
+        <div class="of hi">
+          <div class="t"><span data-crest="BEN" data-size="34"></span><div><b>Amistoso em Lisboa</b><small>Benfica · sáb, 14 nov · Data Fifa</small></div><span class="v">R$ 7,5 mi<small>cachê</small></span></div>
+          <p>Sem <b>Samuel Lino</b> e <b>Pedro</b>, convocados. Volta 3 dias antes do Athletico-PR.</p>
+          <div class="bs"><button class="btn go"><i class="ph-bold ph-airplane-takeoff"></i>Aceitar amistoso</button><button class="btn flat">Recusar</button></div>
+        </div>
+        <div class="of">
+          <div class="t"><span class="ic"><i class="ph-bold ph-bank"></i></span><div><b>Empréstimo do banco</b><small>24 parcelas de R$ 2,9 mi</small></div><span class="v">R$ 60 mi<small>1,4% ao mês</small></span></div>
+          <div class="bs"><button class="btn sm">Ver condições</button></div>
+        </div>
+      </div>
+    </div>
+  </div></main>
+</div>
+</body>
+</html>

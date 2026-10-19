@@ -1,0 +1,503 @@
+/* Team chemistry: the meter and its causes on the left, the relationship map on the right. */
+.chem {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 14px;
+  height: 100%;
+  min-height: 0;
+  padding: 18px 14px 14px;
+}
+
+.chem-none {
+  padding: 28px;
+}
+
+.chem-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.chem-gauge {
+  padding: 16px 18px 18px;
+}
+
+.chem-gauge h1 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 20px;
+}
+
+.chem-num {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.chem-num b {
+  min-width: 1.2em;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 64px;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--green);
+}
+
+.chem-num b.mid {
+  color: var(--yellow-d);
+}
+
+.chem-num b.low {
+  color: var(--red);
+}
+
+.chem-num span {
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.chem-num small {
+  display: block;
+  margin-top: 2px;
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.chem-scale {
+  margin-top: 14px;
+}
+
+.chem-scale .meter {
+  height: 14px;
+}
+
+.chem-scale .meter > i {
+  transform-origin: left;
+  animation: chem-fill 900ms var(--e-out) both;
+}
+
+.chem-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--mute);
+}
+
+.chem-effect {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 2px dotted var(--line-2);
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.chem-effect b {
+  flex: none;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 22px;
+  color: var(--green);
+}
+
+.chem-effect b.dn {
+  color: var(--red);
+}
+
+.chem-why {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 18px 8px;
+}
+
+.chem-why h2 {
+  margin-bottom: 2px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.chem-why ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chem-why li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 52px;
+  padding: 7px 0;
+  border-bottom: 1px dotted var(--line-2);
+  font-size: 12.5px;
+  animation: chem-rise 420ms var(--e-out) both;
+}
+
+.chem-why li:last-child {
+  border-bottom: 0;
+}
+
+.chem-why li b {
+  display: block;
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.chem-why li small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--mute);
+}
+
+.chem-why li > span {
+  min-width: 40px;
+  text-align: right;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.chem-why .up {
+  color: var(--green);
+}
+
+.chem-why .dn {
+  color: var(--red);
+}
+
+.chem-why-none {
+  padding: 10px 0;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.chem-map {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chem-map header {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  right: 22px;
+  z-index: 3;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.chem-map h2 {
+  flex: none;
+  white-space: nowrap;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 22px;
+}
+
+.chem-map header > span {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--mute);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.chem-legend {
+  flex: none;
+  display: flex;
+  white-space: nowrap;
+  gap: 16px;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.chem-legend span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.chem-legend i {
+  width: 22px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--green);
+}
+
+.chem-legend i.bad {
+  background: var(--red);
+}
+
+.chem-pitch {
+  position: absolute;
+  inset: 62px 22px 18px;
+}
+
+.chem-pitch > ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The pitch's lines, the centre circle at the far end and the near box, as the album prints them. */
+.chem-lines {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--rule);
+  border-radius: 6px;
+}
+
+.chem-lines::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  width: 180px;
+  height: 90px;
+  margin-left: -90px;
+  border: 2px solid var(--rule);
+  border-top: 0;
+  border-radius: 0 0 90px 90px;
+}
+
+.chem-lines::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 260px;
+  height: 86px;
+  margin-left: -130px;
+  border: 2px solid var(--rule);
+  border-bottom: 0;
+}
+
+.chem-pitch svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.chem-pitch line {
+  stroke-linecap: round;
+}
+
+.chem-pitch line.good {
+  stroke: var(--green);
+  opacity: 0.85;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: chem-draw 560ms var(--e-in-out) forwards;
+}
+
+.chem-pitch line.bad {
+  stroke: var(--red);
+  stroke-dasharray: 2 8;
+  animation: chem-fade 420ms var(--e-out) both;
+}
+
+.chem-tag {
+  position: absolute;
+  z-index: 2;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--red);
+  color: var(--on-red);
+  font-weight: 700;
+  font-size: 11px;
+  white-space: nowrap;
+  box-shadow: 0 0 0 2px var(--card);
+  transform: translate(-50%, -50%) rotate(-2deg);
+  animation: chem-stamp var(--t-stamp) var(--e-slap) 900ms both;
+}
+
+.chem-p {
+  position: absolute;
+  z-index: 2;
+  width: 104px;
+  margin: -36px 0 0 -52px;
+  padding: 4px 4px 5px;
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--ink);
+  text-align: center;
+  box-shadow: var(--sh-sticker);
+  animation: chem-slap var(--t-stamp) var(--e-slap) both;
+}
+
+.chem-face {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--mute);
+  color: var(--card);
+}
+
+/* The shirt's stripes, printed over the club's colour. */
+.chem-face::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0 8px, rgba(0, 0, 0, 0.22) 8px 16px);
+}
+
+.chem-face b {
+  position: relative;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 22px;
+}
+
+.chem-f {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10px;
+  opacity: 0.85;
+}
+
+.chem-cap {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--yellow);
+  color: var(--on-yellow);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 9px;
+}
+
+.chem-n {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  font-weight: 800;
+  font-size: 11px;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.chem-r {
+  display: block;
+  margin-top: 1px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--mute);
+}
+
+.chem-p.res {
+  scale: 0.88;
+}
+
+.chem-p.res .chem-n {
+  color: var(--mute);
+}
+
+/* For screen readers and the map's tests: every line, in words. */
+.chem-pairs {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The night page's red is too light for white type on a tag. */
+[data-theme="dark"] .chem-tag {
+  background: color-mix(in srgb, var(--red) 62%, #000);
+}
+
+@keyframes chem-slap {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) rotate(-4deg) scale(1.12);
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+@keyframes chem-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes chem-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes chem-stamp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-8deg) scale(1.3);
+  }
+}
+
+@keyframes chem-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes chem-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chem-p,
+  .chem-tag,
+  .chem-why li,
+  .chem-scale .meter > i,
+  .chem-pitch line.bad {
+    animation: none;
+  }
+
+  .chem-pitch line.good {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

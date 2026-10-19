@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+
+  # The unit suite takes about 25 minutes on one runner; two shards halve the wait.
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test --shard=${{ matrix.shard }}/2
+        env:
+          BOLEIRO_SPEED_ELSEWHERE: "1"
+
+  # The speed budgets were calibrated on Apple Silicon; a Linux x86 runner is slower than its reference-workload ratio predicts.
+  perf:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec vitest run packages/engine/src/sim/season.test.ts packages/engine/src/sim/world/v1World.test.ts packages/engine/src/sim/events/longLog.test.ts -t "runs in a few seconds|within ten seconds|read it all again"
+
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/requirements.txt
+      - run: pip install -r pipeline/requirements.txt
+      - run: python -m unittest discover -s tests -t .
+        working-directory: pipeline
+
+  # The e2e suite takes almost 40 minutes on one runner; four shards bring it near ten.
+  e2e:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @boleiro/desktop exec playwright install --with-deps chromium webkit
+      - run: pnpm e2e --shard=${{ matrix.shard }}/4
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-results-${{ matrix.shard }}
+          path: apps/desktop/test-results
+          retention-days: 7
+
+  tauri:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+      - run: cargo test
+        working-directory: apps/desktop/src-tauri

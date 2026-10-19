@@ -1,0 +1,615 @@
+/* The renewal screen (RenewalDialog.tsx), stuck over the hub as the approved mock draws it
+   (design/mocks/contract.html): the player's sticker and contract on the left, his terms on the right. */
+.ct-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: start center;
+  padding: clamp(56px, 13vh, 128px) 24px 24px;
+  overflow: auto;
+  background: var(--veil);
+  animation: ct-veil var(--t-base) var(--e-out) both;
+}
+
+.ct-veil.out {
+  animation: ct-veil-out 200ms var(--e-in-out) both;
+}
+
+@keyframes ct-veil {
+  from {
+    background-color: transparent;
+  }
+}
+
+@keyframes ct-veil-out {
+  to {
+    background-color: transparent;
+  }
+}
+
+.ct {
+  position: relative;
+  width: min(940px, calc(100vw - 48px));
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  border-radius: 18px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--sh-pop);
+  transform-origin: 30% 0;
+  animation: ct-stick var(--t-stamp) var(--e-slap) both;
+}
+
+.ct-veil.out .ct {
+  animation: ct-peel 200ms var(--e-peel) both;
+}
+
+/* Slapped onto the page: it lands a little rotated and settles flat. */
+@keyframes ct-stick {
+  from {
+    opacity: 0;
+    transform: translateY(16px) rotate(-1.5deg) scale(0.97);
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+@keyframes ct-peel {
+  to {
+    opacity: 0;
+    transform: translateY(-10px) rotate(1.2deg) scale(0.97);
+  }
+}
+
+.ct-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px 14px 20px;
+  font-size: 13px;
+}
+
+/* ---------- Left: the player's sticker and his contract ---------- */
+.ct-l {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 20px 22px;
+  border-radius: 18px 0 0 18px;
+  background: var(--paper-2);
+}
+
+.ct-stk {
+  position: relative;
+  width: 190px;
+  padding: 8px 8px 10px;
+  border-radius: 12px;
+  background: var(--foil);
+  text-align: center;
+  transform: rotate(-3deg);
+  box-shadow:
+    0 0 0 3px var(--yellow),
+    0 16px 24px -12px rgba(20, 35, 26, 0.55);
+  animation: ct-stk-in 640ms var(--e-slap) 120ms both;
+}
+
+/* A foil glint crosses the sticker once it has landed. */
+.ct-stk::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.55) 48%, transparent 58%);
+  background-size: 260% 100%;
+  background-position: 130% 0;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+  animation: ct-glint 1100ms var(--e-in-out) 700ms both;
+}
+
+@keyframes ct-stk-in {
+  from {
+    opacity: 0;
+    transform: translate(-16px, -24px) rotate(-14deg) scale(1.16);
+  }
+}
+
+@keyframes ct-glint {
+  to {
+    background-position: -130% 0;
+  }
+}
+
+.ct-art {
+  position: relative;
+  height: 200px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 7px;
+  background: repeating-linear-gradient(180deg, var(--c1) 0 25px, var(--c2) 25px 50px);
+}
+
+.ct-art b {
+  position: relative;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 96px;
+  line-height: 1;
+  color: #fff;
+  -webkit-text-stroke: 3px rgba(10, 18, 13, 0.38);
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.ct-crest {
+  position: absolute;
+  left: 7px;
+  top: 7px;
+}
+
+.ct-f {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 3px 8px;
+  border-radius: 7px;
+  background: var(--yellow);
+  color: var(--on-yellow);
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 19px;
+  transform: rotate(4deg);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.ct-nm {
+  margin-top: 8px;
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.ct-sb {
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+
+.ct-kv {
+  width: 100%;
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 10px;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.ct-kv dd {
+  text-align: right;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.ct-kv .ct-until {
+  color: var(--later);
+}
+
+/* ---------- Right: what he says and his terms ---------- */
+.ct-r {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 26px 20px;
+}
+
+.ct-x {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--mute);
+  font-size: 15px;
+  transition:
+    background-color var(--t-fast) var(--e-out),
+    color var(--t-fast) var(--e-out);
+}
+
+.ct-x:hover {
+  background: var(--paper-2);
+  color: var(--ink);
+}
+
+.ct-r h2 {
+  padding-right: 36px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.ct-r h2:focus {
+  outline: none;
+}
+
+.ct-sub {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.ct-sub b {
+  color: var(--ink);
+}
+
+.ct-say {
+  margin-top: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ct-av {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 900;
+  font-size: 13px;
+  box-shadow: 0 0 0 2px var(--card), 0 0 0 3px var(--line-2);
+}
+
+.ct-say p {
+  position: relative;
+  padding: 9px 12px;
+  border-radius: 4px 12px 12px 12px;
+  background: var(--paper);
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: inset 0 0 0 1px var(--line);
+  transform-origin: 0 0;
+  animation: ct-say 420ms var(--e-slap) 220ms both;
+}
+
+@keyframes ct-say {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(4px);
+  }
+}
+
+/* ---------- The lengths ---------- */
+.ct-opts {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ct-o {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 10px 9px 10px 10px;
+  border-radius: var(--r-m);
+  background: var(--card);
+  color: var(--ink);
+  text-align: left;
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+  transition:
+    transform var(--t-base) var(--e-out),
+    box-shadow var(--t-base) var(--e-out),
+    background-color var(--t-base) var(--e-out);
+  animation: ct-o-in 460ms var(--e-out) calc(260ms + var(--i) * 45ms) both;
+}
+
+@keyframes ct-o-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.ct-o:hover:not(:disabled):not(.on) {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 1.5px var(--ink-2),
+    0 6px 10px -8px rgba(20, 35, 26, 0.45);
+}
+
+.ct-o:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.ct-o.on {
+  background: var(--yellow-l);
+  transform: translateY(-3px);
+  box-shadow:
+    0 0 0 3px var(--ink),
+    0 6px 12px -6px rgba(20, 35, 26, 0.4);
+}
+
+/* The tick stamped on the chosen length. */
+.ct-o.on::before,
+.ct-o.on::after {
+  content: "";
+  position: absolute;
+  animation: ct-tickmark 380ms var(--e-slap) both;
+}
+
+.ct-o.on::before {
+  right: 8px;
+  top: 9px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.ct-o.on::after {
+  right: 14px;
+  top: 12px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--yellow);
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+  animation-name: ct-tickmark-check;
+}
+
+[data-theme="dark"] .ct-o.on::after {
+  border-color: var(--card);
+}
+
+@keyframes ct-tickmark {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes ct-tickmark-check {
+  from {
+    opacity: 0;
+    transform: rotate(45deg) scale(0);
+  }
+}
+
+.ct-o.no {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+.ct-o:disabled:not(.no):not(.on) {
+  cursor: default;
+}
+
+.ct-o-d {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.ct-o-w {
+  margin-top: 6px;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.ct-o-t {
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: var(--mute);
+  white-space: nowrap;
+}
+
+.ct-o .chip {
+  margin-top: auto;
+  max-width: 100%;
+  height: 20px;
+  padding: 0 7px;
+  overflow: hidden;
+  font-size: 9.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ct-o-t + .chip {
+  margin-top: 6px;
+}
+
+.ct-aux {
+  position: absolute;
+  left: 9px;
+  top: -10px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: var(--r-pill);
+  background: var(--green);
+  color: var(--on-green);
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 10px;
+  white-space: nowrap;
+  box-shadow: 0 0 0 2px var(--card);
+}
+
+/* ---------- His counter and the coach's own offer ---------- */
+.ct-counter {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 10px 9px 12px;
+  border-radius: var(--r-m);
+  background: var(--note);
+  color: var(--note-ink);
+  font-size: 12.5px;
+  animation: ct-o-in 320ms var(--e-out) both;
+}
+
+.ct-counter p {
+  flex: 1;
+}
+
+.ct-offer {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: ct-o-in 280ms var(--e-out) both;
+}
+
+.ct-offer .lbl {
+  white-space: nowrap;
+}
+
+.ct-offer .money {
+  max-width: 340px;
+}
+
+/* ---------- What the pick does ---------- */
+.ct-sum {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding-top: 12px;
+  border-top: 2px dotted var(--line-2);
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.ct-sum b {
+  display: block;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 15px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.ct-tick {
+  animation: ct-tick 320ms var(--e-out) both;
+}
+
+@keyframes ct-tick {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+}
+
+.ct-aut {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.3;
+  text-align: right;
+}
+
+.ct-aut b {
+  display: inline;
+  font-stretch: 100%;
+  font-weight: 700;
+  font-size: 12.5px;
+}
+
+.ct-aut .sw {
+  cursor: pointer;
+}
+
+.ct-aut .sw:disabled {
+  cursor: default;
+}
+
+.ct-warn,
+.ct-last {
+  margin-top: 10px;
+  font-size: 12.5px;
+}
+
+.ct-warn {
+  font-weight: 700;
+  color: var(--red);
+}
+
+.ct-last {
+  color: var(--mute);
+}
+
+/* ---------- Actions ---------- */
+.ct-acts {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ct-acts .btn[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--card);
+}
+
+.ct-go {
+  margin-left: auto;
+  height: 46px;
+  padding: 0 22px;
+  font-size: 16px;
+}
+
+.ct-note {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.ct-note i {
+  flex: none;
+  font-size: 18px;
+  color: var(--green);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ct-veil,
+  .ct,
+  .ct-stk,
+  .ct-stk::after,
+  .ct-say p,
+  .ct-o,
+  .ct-o.on::before,
+  .ct-o.on::after,
+  .ct-tick,
+  .ct-counter,
+  .ct-offer {
+    animation: none;
+  }
+
+  .ct-veil.out,
+  .ct-veil.out .ct {
+    animation: none;
+    opacity: 0;
+  }
+}

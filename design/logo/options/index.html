@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · logo nova · 3 caminhos</title>
+<link rel="stylesheet" href="../../tokens/album.css">
+<style>
+html, body { width: 1600px; }
+body { background: var(--paper); }
+.top { display: flex; align-items: baseline; gap: 18px; padding: 30px 40px 22px; border-bottom: 2px dotted var(--line-2); }
+.top h1 { font-stretch: var(--wide); font-weight: 900; font-size: 28px; letter-spacing: -.01em; }
+.top p { color: var(--mute); font-size: 14px; max-width: 900px; }
+.top .rec { margin-left: auto; background: var(--yellow); color: var(--ink); font-weight: 800; font-stretch: var(--semi); font-size: 13px; padding: 7px 12px; border-radius: 6px; box-shadow: var(--sh-press); transform: rotate(-2deg); white-space: nowrap; }
+.dir { padding: 26px 40px 34px; border-bottom: 2px dotted var(--line-2); }
+.dh { display: flex; align-items: baseline; gap: 14px; margin-bottom: 18px; }
+.dh .k { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: var(--paper); font-weight: 900; font-stretch: var(--wide); font-size: 16px; transform: translateY(6px); }
+.dh h2 { font-stretch: var(--wide); font-weight: 900; font-size: 30px; letter-spacing: -.01em; }
+.dh p { color: var(--ink-2); font-size: 14px; max-width: 820px; }
+.row1 { display: grid; grid-template-columns: 380px 1fr 1fr; gap: 16px; height: 400px; }
+.cell { position: relative; border-radius: 14px; overflow: hidden; }
+.cap { white-space: nowrap; position: absolute; left: 14px; top: 11px; font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
+.dk .cap { color: #A3AE9F; }
+.lt { background: var(--card); box-shadow: var(--sh-sticker); }
+.dk { background: #0D1F15; }
+.big { display: grid; place-items: center; background: #E4DAC3; }
+.locks { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: 1fr 1.6fr; gap: 0 28px; align-items: center; justify-items: center; padding: 40px 28px 28px; height: 100%; }
+.locks img { display: block; max-width: 100%; height: auto; min-width: 0; }
+.locks .h { grid-column: 1 / -1; justify-self: start; width: 380px; }
+.locks .st { grid-row: 2; grid-column: 1; width: 210px; }
+.locks .e { grid-row: 2; grid-column: 2; width: 230px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr 300px; gap: 16px; margin-top: 16px; height: 210px; }
+.ladder { display: flex; align-items: flex-end; justify-content: space-around; padding: 34px 16px 16px; height: 100%; }
+.sz { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.sz span { font-size: 11px; font-weight: 700; color: var(--mute); font-variant-numeric: tabular-nums; }
+.dk .sz span { color: #A3AE9F; }
+.px { image-rendering: pixelated; border-radius: 3px; }
+.win { display: flex; align-items: flex-end; justify-content: space-around; padding: 34px 12px 16px; height: 100%; background: repeating-conic-gradient(#EDE6D6 0 25%, #F7F2E7 0 50%) 0 0 / 16px 16px; }
+.row3 { display: grid; grid-template-columns: 280px 280px 1fr 1fr; gap: 16px; margin-top: 16px; height: 230px; }
+/* T3 Code-like sidebar */
+.t3 { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; font-size: 13px; padding: 34px 10px 10px; height: 100%; }
+.t3.d { background: #161616; color: #E6E6E6; }
+.t3.l { background: #FAFAFA; color: #1F1F1F; box-shadow: 0 0 0 1px #E5E5E5 inset; }
+.t3 .cap { color: #8A8A8A; }
+.t3 .h { font-size: 11px; color: #8A8A8A; padding: 0 8px 6px; font-weight: 600; }
+.t3 .r { display: flex; align-items: center; gap: 8px; height: 28px; padding: 0 8px; border-radius: 6px; }
+.t3 .r.on { background: rgba(127,127,127,.16); font-weight: 600; }
+.t3 .r.sub { padding-left: 32px; color: #8A8A8A; font-size: 12px; height: 24px; }
+.t3 .ava { width: 16px; height: 16px; border-radius: 4px; display: inline-grid; place-items: center; font-size: 10px; line-height: 1; font-weight: 700; color: #fff; flex: none; }
+/* Dock and taskbar */
+.desk { display: flex; align-items: flex-end; justify-content: center; padding-bottom: 16px; height: 100%; background: #3A4A43; }
+.desk.mac { background: #6E8B7E; }
+.dock { display: flex; align-items: flex-end; gap: 10px; padding: 8px 10px 6px; border-radius: 22px; background: rgba(240,240,240,.42); box-shadow: 0 0 0 1px rgba(255,255,255,.35) inset; }
+.dock .ic { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.dock .dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(0,0,0,.55); }
+.dock .dot.off { background: transparent; }
+.gen { width: 52px; height: 52px; border-radius: 12px; margin: 6px; }
+.tip { font-family: -apple-system, system-ui, sans-serif; font-size: 12px; background: rgba(240,240,240,.75); color: #1F1F1F; padding: 3px 8px; border-radius: 6px; margin-bottom: 6px; }
+.taskbar { position: absolute; left: 0; right: 0; bottom: 0; height: 48px; background: #202020; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.tb { width: 40px; height: 40px; border-radius: 4px; display: grid; place-items: center; position: relative; }
+.tb.on { background: rgba(255,255,255,.08); }
+.tb.on::after { content: ''; position: absolute; bottom: 2px; width: 16px; height: 3px; border-radius: 2px; background: #6CB8F6; }
+.tbg { width: 24px; height: 24px; border-radius: 5px; }
+.start { position: absolute; left: 50%; bottom: 60px; transform: translateX(-50%); width: 300px; background: #2B2B2B; border-radius: 8px; padding: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6E6E6; font-size: 11px; }
+.start div { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.start .g { width: 32px; height: 32px; border-radius: 6px; }
+.refs { padding: 22px 40px 30px; display: flex; gap: 18px; align-items: center; }
+.refs .t { width: 300px; }
+.refs .t b { font-stretch: var(--wide); font-weight: 900; font-size: 15px; display: block; margin-bottom: 4px; }
+.refs .t span { color: var(--mute); font-size: 12px; }
+.refs figure { display: flex; flex-direction: column; gap: 6px; }
+.refs img { width: 150px; height: 150px; border-radius: 8px; box-shadow: var(--sh-sticker); }
+.refs figcaption { font-size: 11px; color: var(--mute); font-weight: 600; }
+</style>
+</head>
+<body>
+<header class="top"><h1>Boleiro · logo nova</h1><p>Três caminhos no sistema Álbum. Letreiro em Archivo largo 900 convertido em curvas. O ano sai da marca principal: a etiqueta amarela “2026” fica só no letreiro de edição (abertura, lobby, loja).</p><span class="rec">Recomendo: A, Figurinha 001</span></header>
+
+<section class="dir" id="a">
+  <div class="dh"><span class="k">A</span><h2>Figurinha 001</h2><p>O Boleiro é a figurinha nº 1 do próprio álbum: a carta verde listrada com o B largo, colada meio torta no espaço dela, canto descolando.</p></div>
+  <div class="row1">
+    <div class="cell big"><span class="cap">Ícone macOS · 1024</span><img src="a/icon-macos.svg" width="340" height="340"></div>
+    <div class="cell lt"><span class="cap">Fundo claro · horizontal, edição, empilhada</span><div class="locks"><img class="h" src="a/lockup-horizontal-light.svg"><img class="st" src="a/lockup-stacked-light.svg"><img class="e" src="a/edition-light.svg"></div></div>
+    <div class="cell dk"><span class="cap">Fundo escuro</span><div class="locks"><img class="h" src="a/lockup-horizontal-dark.svg"><img class="st" src="a/lockup-stacked-dark.svg"><img class="e" src="a/edition-dark.svg"></div></div>
+  </div>
+  <div class="row2">
+    <div class="cell lt"><span class="cap">Tamanhos reais · claro</span><div class="ladder"><div class="sz"><img src="a/icon-macos.svg" width="128" height="128"><span>128</span></div><div class="sz"><img src="a/icon-macos.svg" width="64" height="64"><span>64</span></div><div class="sz"><img src="a/icon-32.svg" width="32" height="32"><span>32</span></div><div class="sz"><img src="a/icon-16.svg" width="16" height="16"><span>16</span></div><div class="sz"><img class="px" src="a/favicon-32.png" width="96" height="96"><span>32 ×3</span></div><div class="sz"><img class="px" src="a/favicon-16.png" width="64" height="64"><span>16 ×4</span></div></div></div>
+    <div class="cell dk"><span class="cap">Tamanhos reais · escuro</span><div class="ladder"><div class="sz"><img src="a/icon-macos.svg" width="128" height="128"><span>128</span></div><div class="sz"><img src="a/icon-macos.svg" width="64" height="64"><span>64</span></div><div class="sz"><img src="a/icon-32.svg" width="32" height="32"><span>32</span></div><div class="sz"><img src="a/icon-16.svg" width="16" height="16"><span>16</span></div><div class="sz"><img class="px" src="a/favicon-32.png" width="96" height="96"><span>32 ×3</span></div><div class="sz"><img class="px" src="a/favicon-16.png" width="64" height="64"><span>16 ×4</span></div></div></div>
+    <div class="cell"><span class="cap">Windows · sem placa, 256 / 48 / 32</span><div class="win">
+      <div class="sz"><img src="a/icon-windows.svg" width="128" height="128"><span>256 em 128</span></div>
+      <div class="sz"><img src="a/icon-windows.svg" width="48" height="48"><span>48</span></div>
+      <div class="sz"><img src="a/icon-32.svg" width="32" height="32"><span>32</span></div></div></div>
+  </div>
+  <div class="row3"><div class="cell t3 d"><span class="cap">T3 Code · escura · 16 px</span><div class="h">Projetos</div><div class="r"><span class="ava" style="background:#6B5BD6">e</span> evolui-app</div><div class="r on"><img src="a/icon-16.svg" width="16" height="16"> boleiro</div><div class="r sub">logo nova no álbum</div><div class="r sub">rodada ao vivo</div><div class="r"><span class="ava" style="background:#3A3A3A">t</span> t3code</div></div><div class="cell t3 l"><span class="cap">T3 Code · clara · 16 px</span><div class="h">Projetos</div><div class="r"><span class="ava" style="background:#6B5BD6">e</span> evolui-app</div><div class="r on"><img src="a/icon-16.svg" width="16" height="16"> boleiro</div><div class="r sub">logo nova no álbum</div><div class="r sub">rodada ao vivo</div><div class="r"><span class="ava" style="background:#3A3A3A">t</span> t3code</div></div><div class="cell desk mac"><span class="cap" style="color:#E6EFEA">Dock do macOS · 64 pt</span><div class="dock"><div class="ic"><div class="gen" style="background:#2F6FDE;box-shadow:0 .75px 1px rgba(0,0,0,.28)"></div><i class="dot"></i></div><div class="ic"><div class="gen" style="background:#F2F2F2;box-shadow:0 .75px 1px rgba(0,0,0,.28)"></div><i class="dot off"></i></div><div class="ic"><span class="tip">Boleiro</span><img src="a/icon-macos.svg" width="64" height="64"><i class="dot"></i></div><div class="ic"><div class="gen" style="background:#E8573A;box-shadow:0 .75px 1px rgba(0,0,0,.28)"></div><i class="dot off"></i></div><div class="ic"><div class="gen" style="background:#3C3C3C;box-shadow:0 .75px 1px rgba(0,0,0,.28)"></div><i class="dot off"></i></div></div></div><div class="cell desk"><span class="cap" style="color:#C9D6CF">Barra de tarefas do Windows · 24 px · Iniciar 32 px</span><div class="start"><div><div class="g" style="background:#3D7BD9"></div>Mail</div><div><img src="a/icon-windows.svg" width="32" height="32">Boleiro</div><div><div class="g" style="background:#7A7A7A"></div>Fotos</div><div><div class="g" style="background:#E8B93A"></div>Pastas</div></div><div class="taskbar"><div class="tb"><div class="tbg" style="background:#3D7BD9;border-radius:50%"></div></div><div class="tb"><div class="tbg" style="background:#E8B93A"></div></div><div class="tb on"><img src="a/icon-32.svg" width="24" height="24"></div><div class="tb"><div class="tbg" style="background:#5A5A5A"></div></div></div></div></div>
+</section>
+<section class="dir" id="b">
+  <div class="dh"><span class="k">B</span><h2>Bola colada</h2><p>Uma bola desenhada certo (icosaedro truncado: pentágonos pretos, hexágonos brancos, costura curva) virada figurinha redonda. No letreiro, ela é o O.</p></div>
+  <div class="row1">
+    <div class="cell big"><span class="cap">Ícone macOS · 1024</span><img src="b/icon-macos.svg" width="340" height="340"></div>
+    <div class="cell lt"><span class="cap">Fundo claro · horizontal, edição, empilhada</span><div class="locks"><img class="h" src="b/lockup-horizontal-light.svg"><img class="st" src="b/lockup-stacked-light.svg"><img class="e" src="b/edition-light.svg"></div></div>
+    <div class="cell dk"><span class="cap">Fundo escuro</span><div class="locks"><img class="h" src="b/lockup-horizontal-dark.svg"><img class="st" src="b/lockup-stacked-dark.svg"><img class="e" src="b/edition-dark.svg"></div></div>
+  </div>
+  <div class="row2">
+    <div class="cell lt"><span class="cap">Tamanhos reais · claro</span><div class="ladder"><div class="sz"><img src="b/icon-macos.svg" width="128" height="128"><span>128</span></div><div class="sz"><img src="b/icon-macos.svg" width="64" height="64"><span>64</span></div><div class="sz"><img src="b/icon-32.svg" width="32" height="32"><span>32</span></div><div class="sz"><img src="b/icon-16.svg" width="16" height="16"><span>16</span></div><div class="sz"><img class="px" src="b/favicon-32.png" width="96" height="96"><span>32 ×3</span></div><div class="sz"><img class="px" src="b/favicon-16.png" width="64" height="64"><span>16 ×4</span></div></div></div>
+    <div class="cell dk"><span class="cap">Tamanhos reais · escuro</span><div class="ladder"><div class="sz"><img src="b/icon-macos.svg" width="128" height="128"><span>128</span></div><div class="sz"><img src="b/icon-macos.svg" width="64" height="64"><span>64</span></div><div class="sz"><img src="b/icon-32.svg" width="32" height="32"><span>32</span></div><div class="sz"><img src="b/icon-16.svg" width="16" height="16"><span>16</span></div><div class="sz"><img class="px" src="b/favicon-32.png" width="96" height="96"><span>32 ×3</span></div><div class="sz"><img class="px" src="b/favicon-16.png" width="64" height="64"><span>16 ×4</span></div></div></div>
+    <div class="cell"><span class="cap">Windows · sem placa, 256 / 48 / 32</span><div class="win">
+      <div class="sz"><img src="b/icon-windows.svg" width="128" height="128"><span>256 em 128</span></div>
+      <div class="sz"><img src="b/icon-windows.svg" width="48" height="48"><span>48</span></div>
+      <div class="sz"><img src="b/icon-32.svg" width="32" height="32"><span>32</span></div></div></div>
+  </div>
+  <div class="row3"><div class="cell t3 d"><span class="cap">T3 Code · escura · 16 px</span><div class="h">Projetos</div><div class="r"><span class="ava" style="background:#6B5BD6">e</span> evolui-app</div><div class="r on"><img src="b/icon-16.svg" width="16" height="16"> boleiro</div><div class="r sub">logo nova no álbum</div><div class="r sub">rodada ao vivo</div><div class="r"><span class="ava" style="background:#3A3A3A">t</span> t3code</div></div><div class="cell t3 l"><span class="cap">T3 Code · clara · 16 px</span><div class="h">Projetos</div><div class="r"><span class="ava" style="background:#6B5BD6">e</span> evolui-app</div><div class="r on"><img src="b/icon-16.svg" width="16" height="16"> boleiro</div><div class="r sub">logo nova no álbum</div><div class="r sub">rodada ao vivo</div><div class="r"><span class="ava" style="background:#3A3A3A">t</span> t3code</div></div><div class="cell desk mac"><span class="cap" style="color:#E6EFEA">Dock do macOS · 64 pt</span><div class="dock"><div class="ic"><div class="gen" style="background:#2F6FDE;box-shadow:0 .75px 1px rgba(0,0,0,.28)"></div><i class="dot"></i></div><div class="ic"><div class="gen" style="background:#F2F2F2;box-shadow:0 .75px 1px rgba(0,0,0,.28)"></div><i class="dot off"></i></div><div class="ic"><span class="tip">Boleiro</span><img src="b/icon-macos.svg" width="64" height="64"><i class="dot"></i></div><div class="ic"><div class="gen" style="background:#E8573A;box-shadow:0 .75px 1px rgba(0,0,0,.28)"></div><i class="dot off"></i></div><div class="ic"><div class="gen" style="background:#3C3C3C;box-shadow:0 .75px 1px rgba(0,0,0,.28)"></div><i class="dot off"></i></div></div></div><div class="cell desk"><span class="cap" style="color:#C9D6CF">Barra de tarefas do Windows · 24 px · Iniciar 32 px</span><div class="start"><div><div class="g" style="background:#3D7BD9"></div>Mail</div><div><img src="b/icon-windows.svg" width="32" height="32">Boleiro</div><div><div class="g" style="background:#7A7A7A"></div>Fotos</div><div><div class="g" style="background:#E8B93A"></div>Pastas</div></div><div class="taskbar"><div class="tb"><div class="tbg" style="background:#3D7BD9;border-radius:50%"></div></div><div class="tb"><div class="tbg" style="background:#E8B93A"></div></div><div class="tb on"><img src="b/icon-32.svg" width="24" height="24"></div><div class="tb"><div class="tbg" style="background:#5A5A5A"></div></div></div></div></div>
+</section>
+<section class="dir" id="c">
+  <div class="dh"><span class="k">C</span><h2>Escudo</h2><p>Um escudo de clube que não existe: campo verde, faixa amarela subindo, B branco com sombra de impressão, uma estrela, recortado como figurinha.</p></div>
+  <div class="row1">
+    <div class="cell big"><span class="cap">Ícone macOS · 1024</span><img src="c/icon-macos.svg" width="340" height="340"></div>
+    <div class="cell lt"><span class="cap">Fundo claro · horizontal, edição, empilhada</span><div class="locks"><img class="h" src="c/lockup-horizontal-light.svg"><img class="st" src="c/lockup-stacked-light.svg"><img class="e" src="c/edition-light.svg"></div></div>
+    <div class="cell dk"><span class="cap">Fundo escuro</span><div class="locks"><img class="h" src="c/lockup-horizontal-dark.svg"><img class="st" src="c/lockup-stacked-dark.svg"><img class="e" src="c/edition-dark.svg"></div></div>
+  </div>
+  <div class="row2">
+    <div class="cell lt"><span class="cap">Tamanhos reais · claro</span><div class="ladder"><div class="sz"><img src="c/icon-macos.svg" width="128" height="128"><span>128</span></div><div class="sz"><img src="c/icon-macos.svg" width="64" height="64"><span>64</span></div><div class="sz"><img src="c/icon-32.svg" width="32" height="32"><span>32</span></div><div class="sz"><img src="c/icon-16.svg" width="16" height="16"><span>16</span></div><div class="sz"><img class="px" src="c/favicon-32.png" width="96" height="96"><span>32 ×3</span></div><div class="sz"><img class="px" src="c/favicon-16.png" width="64" height="64"><span>16 ×4</span></div></div></div>
+    <div class="cell dk"><span class="cap">Tamanhos reais · escuro</span><div class="ladder"><div class="sz"><img src="c/icon-macos.svg" width="128" height="128"><span>128</span></div><div class="sz"><img src="c/icon-macos.svg" width="64" height="64"><span>64</span></div><div class="sz"><img src="c/icon-32.svg" width="32" height="32"><span>32</span></div><div class="sz"><img src="c/icon-16.svg" width="16" height="16"><span>16</span></div><div class="sz"><img class="px" src="c/favicon-32.png" width="96" height="96"><span>32 ×3</span></div><div class="sz"><img class="px" src="c/favicon-16.png" width="64" height="64"><span>16 ×4</span></div></div></div>
+    <div class="cell"><span class="cap">Windows · sem placa, 256 / 48 / 32</span><div class="win">
+      <div class="sz"><img src="c/icon-windows.svg" width="128" height="128"><span>256 em 128</span></div>
+      <div class="sz"><img src="c/icon-windows.svg" width="48" height="48"><span>48</span></div>
+      <div class="sz"><img src="c/icon-32.svg" width="32" height="32"><span>32</span></div></div></div>
+  </div>
+  <div class="row3"><div class="cell t3 d"><span class="cap">T3 Code · escura · 16 px</span><div class="h">Projetos</div><div class="r"><span class="ava" style="background:#6B5BD6">e</span> evolui-app</div><div class="r on"><img src="c/icon-16.svg" width="16" height="16"> boleiro</div><div class="r sub">logo nova no álbum</div><div class="r sub">rodada ao vivo</div><div class="r"><span class="ava" style="background:#3A3A3A">t</span> t3code</div></div><div class="cell t3 l"><span class="cap">T3 Code · clara · 16 px</span><div class="h">Projetos</div><div class="r"><span class="ava" style="background:#6B5BD6">e</span> evolui-app</div><div class="r on"><img src="c/icon-16.svg" width="16" height="16"> boleiro</div><div class="r sub">logo nova no álbum</div><div class="r sub">rodada ao vivo</div><div class="r"><span class="ava" style="background:#3A3A3A">t</span> t3code</div></div><div class="cell desk mac"><span class="cap" style="color:#E6EFEA">Dock do macOS · 64 pt</span><div class="dock"><div class="ic"><div class="gen" style="background:#2F6FDE;box-shadow:0 .75px 1px rgba(0,0,0,.28)"></div><i class="dot"></i></div><div class="ic"><div class="gen" style="background:#F2F2F2;box-shadow:0 .75px 1px rgba(0,0,0,.28)"></div><i class="dot off"></i></div><div class="ic"><span class="tip">Boleiro</span><img src="c/icon-macos.svg" width="64" height="64"><i class="dot"></i></div><div class="ic"><div class="gen" style="background:#E8573A;box-shadow:0 .75px 1px rgba(0,0,0,.28)"></div><i class="dot off"></i></div><div class="ic"><div class="gen" style="background:#3C3C3C;box-shadow:0 .75px 1px rgba(0,0,0,.28)"></div><i class="dot off"></i></div></div></div><div class="cell desk"><span class="cap" style="color:#C9D6CF">Barra de tarefas do Windows · 24 px · Iniciar 32 px</span><div class="start"><div><div class="g" style="background:#3D7BD9"></div>Mail</div><div><img src="c/icon-windows.svg" width="32" height="32">Boleiro</div><div><div class="g" style="background:#7A7A7A"></div>Fotos</div><div><div class="g" style="background:#E8B93A"></div>Pastas</div></div><div class="taskbar"><div class="tb"><div class="tbg" style="background:#3D7BD9;border-radius:50%"></div></div><div class="tb"><div class="tbg" style="background:#E8B93A"></div></div><div class="tb on"><img src="c/icon-32.svg" width="24" height="24"></div><div class="tb"><div class="tbg" style="background:#5A5A5A"></div></div></div></div></div>
+</section>
+<section class="refs" id="refs"><div class="t"><b>Conceitos de IA explorados</b><span>Gerados no ChatGPT Image só como referência de clima. As marcas acima são SVG desenhado à mão no sistema Álbum, nada traçado dessas imagens.</span></div><figure><img src="refs/concept_sticker.jpg"><figcaption>figurinha → A</figcaption></figure><figure><img src="refs/concept_ball.jpg"><figcaption>bola → B</figcaption></figure><figure><img src="refs/concept_crest.jpg"><figcaption>escudo → C</figcaption></figure><figure><img src="refs/concept_wordmark.jpg"><figcaption>letreiro</figcaption></figure></section>
+<script>
+const d = new URLSearchParams(location.search).get('d');
+if (d) { document.querySelectorAll('section').forEach(s => { if (s.id !== d) s.remove(); }); document.querySelector('.top').remove(); }
+</script>
+</body>
+</html>

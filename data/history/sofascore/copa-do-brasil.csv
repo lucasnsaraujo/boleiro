@@ -1,0 +1,123 @@
+season,date,round,event_id,home_id,home,home_key,away_id,away,away_key,home_goals,away_goals,penalty_winner,odds_home,odds_draw,odds_away
+2024,2024-02-20,Round 1,12024204,339705,Gazin Porto Velho,gazin-porto-velho,2012,Remo,remo,1,0,,5.50,3.75,1.65
+2024,2024-02-20,Round 1,12024207,396645,Nova Venécia,nova-venecia,1979,Botafogo-SP,botafogo-sp,1,2,,9.00,5.25,1.33
+2024,2024-02-21,Round 1,12024193,308206,Real Brasília FC,real-brasilia,90278,São Raimundo-RR,sao-raimundo-rr,2,1,,2.05,3.50,3.00
+2024,2024-02-21,Round 1,12024215,188849,Ríver AC,river,32766,Ypiranga FC,ypiranga,1,1,,2.15,3.25,3.10
+2024,2024-02-21,Round 1,12024213,393104,Manauara EC,manauara,324839,Retrô,retro,1,2,,2.90,3.40,2.10
+2024,2024-02-21,Round 1,12024214,21864,Sousa EC,sousa,1954,Cruzeiro,cruzeiro,2,0,,7.00,3.60,1.50
+2024,2024-02-21,Round 1,12024199,21853,AO Itabaiana,ao-itabaiana,2024,Brasiliense,brasiliense,0,1,,2.10,3.30,3.10
+2024,2024-02-21,Round 1,12024206,21872,Anápolis FC,anapolis,87202,Tombense,tombense,1,0,,2.50,3.20,2.40
+2024,2024-02-21,Round 1,12024217,85341,Audax Rio,audax-rio,208067,Portuguesa-RJ,portuguesa-rj,0,0,,5.00,3.40,1.62
+2024,2024-02-21,Round 1,12024218,2018,Treze,treze,21838,ABC,abc,1,1,,2.25,3.40,2.88
+2024,2024-02-21,Round 1,12024194,2009,Moto Club,moto-club,1955,Bahia,bahia,0,4,,17.00,6.00,1.14
+2024,2024-02-21,Round 1,12024190,32768,São Luiz,sao-luiz,2025,Ituano,ituano,2,1,,2.10,3.30,3.10
+2024,2024-02-21,Round 1,12024191,308001,Costa Rica-MS,costa-rica-ms,2023,América-RN,america-rn,1,2,,2.87,3.10,2.40
+2024,2024-02-21,Round 1,12024197,339670,Capital FC,capital,215371,Tocantinópolis,tocantinopolis,2,1,,3.00,3.00,2.30
+2024,2024-02-21,Round 1,12024221,381778,Independente-AP,independente-ap,336664,Amazonas FC,amazonas,0,1,,6.00,4.20,1.41
+2024,2024-02-21,Round 1,12024184,21862,Rio Branco-AC,rio-branco,22032,CRB,crb,0,0,,6.00,4.00,1.44
+2024,2024-02-21,Round 1,12024192,34007,União Rondonópolis,uniao-rondonopolis,7314,Atlético Goianiense,atletico-goianiense,1,3,,4.33,3.25,1.75
+2024,2024-02-22,Round 1,12024216,65494,Real Noroeste,real-noroeste,49202,Cuiabá,cuiaba,1,4,,5.00,3.80,1.65
+2024,2024-02-22,Round 1,12024196,33998,Águia de Marabá FC,aguia-de-maraba,1982,Coritiba,coritiba,3,2,,4.50,3.50,1.83
+2024,2024-02-22,Round 1,12024208,21892,Cianorte,cianorte,1957,Corinthians,corinthians,0,3,,8.50,4.20,1.44
+2024,2024-02-27,Round 1,12024195,342775,Athletic Club,athletic-club,6982,Volta Redonda,volta-redonda,1,0,,1.87,3.10,3.75
+2024,2024-02-27,Round 1,12024202,274287,AD Iguatu,iguatu,1980,Juventude,juventude,0,0,,4.00,3.25,1.85
+2024,2024-02-27,Round 1,12024188,21978,CN Marcílio Dias,cn-marcilio-dias,1974,Vasco da Gama,vasco-da-gama,1,3,,6.00,3.80,1.50
+2024,2024-02-28,Round 1,12024209,39616,Olaria,olaria,47504,São Bernardo,sao-bernardo,0,1,,5.75,3.50,1.55
+2024,2024-02-28,Round 1,12024220,135324,Maringá FC,maringa,1973,América Mineiro,america-mineiro,2,0,,3.00,3.20,2.15
+2024,2024-02-28,Round 1,12024187,49195,Murici,murici,2017,Confiança,confianca,2,1,,2.50,3.10,2.50
+2024,2024-02-28,Round 1,12024201,21973,Itabuna EC,itabuna,6981,Nova Iguaçu,nova-iguacu,0,8,,3.75,3.40,1.80
+2024,2024-02-28,Round 1,12024205,21985,Petrolina SFC,petrolina-sfc,21891,Cascavel,cascavel,3,2,,2.90,3.20,2.20
+2024,2024-02-28,Round 1,12024211,21858,Maranhão AC,maranhao,32672,Ferroviário,ferroviario,1,2,,2.15,3.00,3.10
+2024,2024-02-28,Round 1,12024200,2019,ASA,asa,1966,Internacional,internacional,0,2,,7.00,4.50,1.33
+2024,2024-02-28,Round 1,12024185,225186,Portuguesa Santista,portuguesa-santista,2000,Caxias,caxias,0,1,,2.63,3.20,2.38
+2024,2024-02-28,Round 1,12024189,135510,Água Santa,agua-santa,87166,Jacuipense,jacuipense,2,1,,1.45,3.80,6.00
+2024,2024-02-28,Round 1,12024219,342308,GAS,gas,21884,Brusque,brusque,0,1,,6.00,3.80,1.45
+2024,2024-02-28,Round 1,12024223,7316,Villa Nova AC,villa-nova,32794,AA Aparecidense,aparecidense,1,0,,2.30,3.00,2.80
+2024,2024-02-28,Round 1,12024186,21865,Trem,trem,1959,Sport Recife,sport-recife,0,4,,10.00,4.50,1.25
+2024,2024-02-28,Round 1,12024198,189489,Operário-MT,operario-mt,1984,Criciúma,criciuma,0,0,,6.50,3.60,1.50
+2024,2024-02-28,Round 1,12024210,293460,Humaitá,humaita,2005,Sampaio Corrêa,sampaio-correa,1,1,,3.60,3.40,1.91
+2024,2024-02-28,Round 1,12024222,247089,Operário-MS,operario-ms,39634,Operário-PR,operario-pr,0,0,,4.33,3.60,1.65
+2024,2024-02-29,Round 1,12024203,2006,Ji-Paraná,ji-parana,1997,Paysandu SC,paysandu,0,0,,,,
+2024,2024-03-04,Round 1,12100790,375317,Fluminense-PI,fluminense-pi,2020,Fortaleza,fortaleza,0,3,,8.50,5.50,1.22
+2024,2024-03-06,Round 2,12123644,308206,Real Brasília FC,real-brasilia,7314,Atlético Goianiense,atletico-goianiense,1,3,,8.00,4.75,1.29
+2024,2024-03-07,Round 2,12123642,7316,Villa Nova AC,villa-nova,39634,Operário-PR,operario-pr,0,2,,3.30,3.10,2.10
+2024,2024-03-07,Round 2,12123635,1974,Vasco da Gama,vasco-da-gama,135510,Água Santa,agua-santa,3,3,home,1.22,4.50,12.00
+2024,2024-03-07,Round 2,12123636,21864,Sousa EC,sousa,21985,Petrolina SFC,petrolina-sfc,1,0,,1.62,3.20,5.50
+2024,2024-03-12,Round 2,12123638,22032,CRB,crb,342775,Athletic Club,athletic-club,2,0,,1.91,3.20,3.75
+2024,2024-03-12,Round 2,12123632,208067,Portuguesa-RJ,portuguesa-rj,49202,Cuiabá,cuiaba,0,0,away,4.50,3.50,1.62
+2024,2024-03-12,Round 2,12123643,2000,Caxias,caxias,1955,Bahia,bahia,2,2,away,6.00,3.50,1.53
+2024,2024-03-12,Round 2,12123649,21838,ABC,abc,21884,Brusque,brusque,1,1,away,2.40,3.00,2.75
+2024,2024-03-13,Round 2,12123639,32766,Ypiranga FC,ypiranga,339705,Gazin Porto Velho,gazin-porto-velho,2,0,,1.25,4.50,11.00
+2024,2024-03-13,Round 2,12123645,1959,Sport Recife,sport-recife,49195,Murici,murici,1,1,home,1.18,6.00,12.00
+2024,2024-03-13,Round 2,12123637,6981,Nova Iguaçu,nova-iguacu,1966,Internacional,internacional,0,2,,7.50,6.00,1.29
+2024,2024-03-13,Round 2,12123634,2005,Sampaio Corrêa,sampaio-correa,32672,Ferroviário,ferroviario,0,0,home,2.10,2.88,3.75
+2024,2024-03-13,Round 2,12123641,2023,América-RN,america-rn,32768,São Luiz,sao-luiz,3,0,,2.00,3.10,3.60
+2024,2024-03-13,Round 2,12123646,1980,Juventude,juventude,1997,Paysandu SC,paysandu,3,1,,1.65,3.60,4.75
+2024,2024-03-14,Round 2,12123648,2024,Brasiliense,brasiliense,1984,Criciúma,criciuma,1,1,away,4.50,3.30,1.75
+2024,2024-03-14,Round 2,12123640,47504,São Bernardo,sao-bernardo,1957,Corinthians,corinthians,0,2,,4.33,3.30,1.80
+2024,2024-03-14,Round 2,12123633,33998,Águia de Marabá FC,aguia-de-maraba,339670,Capital FC,capital,3,0,,1.33,4.75,10.00
+2024,2024-03-14,Round 2,12123647,1979,Botafogo-SP,botafogo-sp,21872,Anápolis FC,anapolis,2,1,,1.60,3.80,5.50
+2024,2024-03-14,Round 2,12123650,135324,Maringá FC,maringa,336664,Amazonas FC,amazonas,0,1,,2.10,3.10,3.80
+2024,2024-03-14,Round 2,12150257,2020,Fortaleza,fortaleza,324839,Retrô,retro,0,0,home,1.25,5.50,12.00
+2024,2024-04-30,Round 3,12266649,1955,Bahia,bahia,1984,Criciúma,criciuma,1,0,,1.44,4.50,7.50
+2024,2024-04-30,Round 3,12266687,39634,Operário-PR,operario-pr,5926,Grêmio,gremio,0,0,,4.00,3.10,2.05
+2024,2024-04-30,Round 3,12266653,1977,Atlético Mineiro,atletico-mineiro,1959,Sport Recife,sport-recife,2,0,,1.36,4.75,9.00
+2024,2024-05-01,Round 3,12266658,21884,Brusque,brusque,7314,Atlético Goianiense,atletico-goianiense,0,1,,3.75,3.00,2.20
+2024,2024-05-01,Round 3,12266689,2005,Sampaio Corrêa,sampaio-correa,1961,Fluminense,fluminense,0,2,,8.50,4.33,1.40
+2024,2024-05-01,Round 3,12266662,21864,Sousa EC,sousa,1999,Red Bull Bragantino,red-bull-bragantino,1,1,,6.00,3.80,1.57
+2024,2024-05-01,Round 3,12266670,32766,Ypiranga FC,ypiranga,1967,Athletico,athletico,2,1,,6.00,3.60,1.65
+2024,2024-05-01,Round 3,12266655,2020,Fortaleza,fortaleza,1974,Vasco da Gama,vasco-da-gama,0,0,,1.67,3.80,5.25
+2024,2024-05-01,Round 3,12266645,2023,América-RN,america-rn,1957,Corinthians,corinthians,1,2,,7.00,3.20,1.67
+2024,2024-05-01,Round 3,12266660,5981,Flamengo,flamengo,336664,Amazonas FC,amazonas,1,0,,1.14,9.00,15.00
+2024,2024-05-02,Round 3,12266668,1958,Botafogo,botafogo,1962,Vitória,vitoria,1,0,,1.65,3.60,5.75
+2024,2024-05-02,Round 3,12266651,33998,Águia de Marabá FC,aguia-de-maraba,1981,São Paulo,sao-paulo,1,3,,8.00,4.20,1.44
+2024,2024-05-02,Round 3,12266664,22032,CRB,crb,2001,Ceará,ceara,1,0,,2.05,3.10,4.00
+2024,2024-05-02,Round 3,12266647,1963,Palmeiras,palmeiras,1979,Botafogo-SP,botafogo-sp,2,1,,1.25,6.00,12.00
+2024,2024-05-02,Round 3,12266666,1960,Goiás,goias,49202,Cuiabá,cuiaba,1,0,,2.38,3.00,3.40
+2024,2024-05-21,Round 3,12266663,1999,Red Bull Bragantino,red-bull-bragantino,21864,Sousa EC,sousa,3,0,,1.13,8.50,19.00
+2024,2024-05-21,Round 3,12266656,1974,Vasco da Gama,vasco-da-gama,2020,Fortaleza,fortaleza,3,3,home,2.30,3.20,3.10
+2024,2024-05-22,Round 3,12266659,7314,Atlético Goianiense,atletico-goianiense,21884,Brusque,brusque,4,2,,1.42,4.33,8.00
+2024,2024-05-22,Round 3,12266669,1962,Vitória,vitoria,1958,Botafogo,botafogo,1,2,,2.50,3.30,2.80
+2024,2024-05-22,Round 3,12266690,1961,Fluminense,fluminense,2005,Sampaio Corrêa,sampaio-correa,2,0,,1.13,10.00,15.00
+2024,2024-05-22,Round 3,12266646,1957,Corinthians,corinthians,2023,América-RN,america-rn,2,1,,,,
+2024,2024-05-22,Round 3,12266654,1959,Sport Recife,sport-recife,1977,Atlético Mineiro,atletico-mineiro,1,0,,4.75,3.80,1.70
+2024,2024-05-22,Round 3,12266661,336664,Amazonas FC,amazonas,5981,Flamengo,flamengo,0,1,,8.50,5.25,1.33
+2024,2024-05-23,Round 3,12266648,1979,Botafogo-SP,botafogo-sp,1963,Palmeiras,palmeiras,0,0,,8.00,4.50,1.40
+2024,2024-05-23,Round 3,12266650,1984,Criciúma,criciuma,1955,Bahia,bahia,0,2,,2.70,3.20,2.62
+2024,2024-05-23,Round 3,12266667,49202,Cuiabá,cuiaba,1960,Goiás,goias,1,0,away,,,
+2024,2024-05-23,Round 3,12266652,1981,São Paulo,sao-paulo,33998,Águia de Marabá FC,aguia-de-maraba,2,0,,1.06,13.00,26.00
+2024,2024-05-23,Round 3,12266665,2001,Ceará,ceara,22032,CRB,crb,0,1,,1.85,3.25,4.50
+2024,2024-07-10,Round 3,12447547,1966,Internacional,internacional,1980,Juventude,juventude,1,2,,1.67,3.30,6.25
+2024,2024-07-13,Round 3,12447548,1980,Juventude,juventude,1966,Internacional,internacional,1,1,,3.60,3.30,2.15
+2024,2024-07-13,Round 3,12479401,1967,Athletico,athletico,32766,Ypiranga FC,ypiranga,3,0,,1.18,6.50,15.00
+2024,2024-07-14,Round 3,12455655,5926,Grêmio,gremio,39634,Operário-PR,operario-pr,3,1,,1.57,4.10,5.75
+2024,2024-07-30,Round of 16,12572441,1981,São Paulo,sao-paulo,1960,Goiás,goias,2,0,,1.38,4.33,10.00
+2024,2024-07-30,Round of 16,12572443,1958,Botafogo,botafogo,1955,Bahia,bahia,1,1,,1.73,3.40,5.00
+2024,2024-07-31,Round of 16,12572440,1967,Athletico,athletico,1999,Red Bull Bragantino,red-bull-bragantino,2,0,,1.70,3.40,5.75
+2024,2024-07-31,Round of 16,12572442,22032,CRB,crb,1977,Atlético Mineiro,atletico-mineiro,2,2,,5.25,3.50,1.70
+2024,2024-07-31,Round of 16,12572438,5981,Flamengo,flamengo,1963,Palmeiras,palmeiras,2,0,,1.91,3.30,4.10
+2024,2024-07-31,Round of 16,12572439,7314,Atlético Goianiense,atletico-goianiense,1974,Vasco da Gama,vasco-da-gama,1,1,,2.40,3.10,3.20
+2024,2024-07-31,Round of 16,12572444,1957,Corinthians,corinthians,5926,Grêmio,gremio,0,0,,2.20,2.75,3.80
+2024,2024-08-01,Round of 16,12572445,1980,Juventude,juventude,1961,Fluminense,fluminense,3,2,,2.70,2.70,3.20
+2024,2024-08-06,Round of 16,12572447,1974,Vasco da Gama,vasco-da-gama,7314,Atlético Goianiense,atletico-goianiense,1,0,,1.83,3.40,4.33
+2024,2024-08-07,Round of 16,12572448,1999,Red Bull Bragantino,red-bull-bragantino,1967,Athletico,athletico,2,3,,1.90,3.40,4.20
+2024,2024-08-07,Round of 16,12572450,1977,Atlético Mineiro,atletico-mineiro,22032,CRB,crb,3,0,,1.30,5.50,9.00
+2024,2024-08-07,Round of 16,12572451,1955,Bahia,bahia,1958,Botafogo,botafogo,1,0,,2.38,3.10,3.00
+2024,2024-08-07,Round of 16,12572446,1963,Palmeiras,palmeiras,5981,Flamengo,flamengo,1,0,,2.05,3.60,3.40
+2024,2024-08-07,Round of 16,12572452,5926,Grêmio,gremio,1957,Corinthians,corinthians,0,0,away,1.95,3.10,4.33
+2024,2024-08-07,Round of 16,12572453,1961,Fluminense,fluminense,1980,Juventude,juventude,2,2,,1.38,4.50,7.50
+2024,2024-08-08,Round of 16,12572449,1960,Goiás,goias,1981,São Paulo,sao-paulo,0,0,,4.10,3.20,1.95
+2024,2024-08-28,Quarterfinals,12721034,1955,Bahia,bahia,5981,Flamengo,flamengo,0,1,,2.45,3.10,3.10
+2024,2024-08-28,Quarterfinals,12721036,1981,São Paulo,sao-paulo,1977,Atlético Mineiro,atletico-mineiro,0,1,,2.40,2.80,3.50
+2024,2024-08-29,Quarterfinals,12721035,1974,Vasco da Gama,vasco-da-gama,1967,Athletico,athletico,2,1,,2.40,3.10,3.20
+2024,2024-08-29,Quarterfinals,12721037,1980,Juventude,juventude,1957,Corinthians,corinthians,2,1,,2.90,2.70,2.90
+2024,2024-09-11,Quarterfinals,12721041,1957,Corinthians,corinthians,1980,Juventude,juventude,3,1,,1.50,4.00,6.50
+2024,2024-09-11,Quarterfinals,12721038,1967,Athletico,athletico,1974,Vasco da Gama,vasco-da-gama,2,1,away,1.67,3.80,5.00
+2024,2024-09-12,Quarterfinals,12721039,5981,Flamengo,flamengo,1955,Bahia,bahia,1,0,,2.05,3.30,3.90
+2024,2024-09-12,Quarterfinals,12721042,1977,Atlético Mineiro,atletico-mineiro,1981,São Paulo,sao-paulo,0,0,,2.25,3.10,3.50
+2024,2024-10-02,Semifinals,12903983,1977,Atlético Mineiro,atletico-mineiro,1974,Vasco da Gama,vasco-da-gama,2,1,,1.60,3.60,7.00
+2024,2024-10-02,Semifinals,12903984,5981,Flamengo,flamengo,1957,Corinthians,corinthians,1,0,,1.65,3.60,6.00
+2024,2024-10-19,Semifinals,12903994,1974,Vasco da Gama,vasco-da-gama,1977,Atlético Mineiro,atletico-mineiro,1,1,,2.63,3.10,2.80
+2024,2024-10-20,Semifinals,12903989,1957,Corinthians,corinthians,5981,Flamengo,flamengo,0,0,,2.40,3.10,3.20
+2024,2024-11-03,Final,13014050,5981,Flamengo,flamengo,1977,Atlético Mineiro,atletico-mineiro,3,1,,1.80,3.40,5.00
+2024,2024-11-10,Final,13026742,1977,Atlético Mineiro,atletico-mineiro,5981,Flamengo,flamengo,0,1,,2.20,3.20,3.40

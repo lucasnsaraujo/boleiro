@@ -1,0 +1,32 @@
+import type { Pitch } from "@boleiro/data/clubs";
+import { daysBetween } from "../dates.js";
+import type { IsoDate, SimPlayer } from "../gameState.js";
+import { fatigueOn } from "./fatigueOn.js";
+import { isForeignTo } from "./homeNationality.js";
+
+/** A match's day and pitch; `home`, for one club's players, the citizenship of its country (homeNationalityOf), Brazil's when left out. */
+export type MatchContext = { date: IsoDate; pitch: Pitch; home?: string };
+
+// guess: strength points lost by a player carrying one full match of fatigue (played the day
+// before). Kept small: fixture congestion barely changes team results (Bengtsson, Ekstrand &
+// Hägglund 2013, BJSM 47(12):743–747; Dupont et al. 2010, Am J Sports Med 38(9):1752–1758).
+const FATIGUE_COST = 4;
+// guess: strength points a player with the poorOnArtificialTurf trait loses on a synthetic pitch.
+const ARTIFICIAL_TURF_COST = 3;
+// guess: a foreign player starts this many points below his strength and closes the gap in a
+// straight line over his first half-season at the club.
+const ADAPTATION_COST = 5;
+export const ADAPTATION_DAYS = 180;
+
+function adaptationCost(player: SimPlayer, date: IsoDate, home: string | undefined): number {
+  if (!isForeignTo(player.nationalities, home) || player.condition.arrivedOn === null) return 0;
+  const settled = daysBetween(player.condition.arrivedOn, date) / ADAPTATION_DAYS;
+  return ADAPTATION_COST * Math.max(0, 1 - settled);
+}
+
+/** The strength a player plays at in this match: his strength less fatigue (his fatigueOn, if the caller has it), pitch and adaptation. */
+export function effectiveStrength(player: SimPlayer, { date, pitch, home }: MatchContext, fatigue: number = fatigueOn(player, date)): number {
+  const turf = pitch === "artificial" && player.trait === "poorOnArtificialTurf" ? ARTIFICIAL_TURF_COST : 0;
+  const tired = (FATIGUE_COST * fatigue) / 100;
+  return Math.max(1, player.strength - tired - turf - adaptationCost(player, date, home));
+}

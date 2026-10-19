@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Ficha do jogador</title>
+<link rel="stylesheet" href="../../packages/design-tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 14px 14px 14px; display: grid; grid-template-columns: 372px minmax(0, 1fr); gap: 22px; }
+
+/* The sticker */
+.lft { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.nav { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--mute); }
+.nav .btn { height: 30px; }
+.nav .ar { margin-left: auto; display: flex; gap: 6px; }
+.icb { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line-2); font-size: 13px; color: var(--ink); }
+.big { margin: 4px 14px 0; padding: 10px 10px 14px; border-radius: 16px; background: var(--foil); box-shadow: 0 0 0 4px var(--yellow), var(--sh-lift); transform: rotate(-1.5deg); position: relative; }
+.big .ph { height: 372px; border-radius: 10px; position: relative; overflow: hidden; background: repeating-linear-gradient(180deg, #C8102E 0 37px, #111 37px 74px); display: grid; place-items: center; }
+.big .ph b { font-stretch: var(--wide); font-weight: 900; font-size: 150px; color: rgba(255,255,255,.95); text-shadow: 0 6px 0 rgba(0,0,0,.25); }
+.big .ph .cr { position: absolute; left: 10px; top: 10px; }
+.big .ph .nat { position: absolute; left: 10px; bottom: 10px; display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,.42); color: #fff; padding: 3px 9px 3px 3px; border-radius: 999px; font-weight: 700; font-size: 12px; }
+.big .ph .f { position: absolute; right: 10px; bottom: 10px; background: var(--yellow); color: var(--on-yellow); border-radius: 10px; padding: 6px 10px 5px; text-align: center; transform: rotate(4deg); box-shadow: 0 3px 0 rgba(0,0,0,.3); }
+.big .ph .f b { display: block; font-size: 34px; line-height: 1; color: var(--on-yellow); text-shadow: none; }
+.big .ph .f span { font-weight: 800; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+.big .idol { position: absolute; right: -12px; top: -12px; background: var(--ink); color: var(--yellow); font-stretch: var(--semi); font-weight: 900; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 6px 10px; border-radius: 7px; transform: rotate(7deg); display: flex; align-items: center; gap: 5px; box-shadow: 0 0 0 2.5px #fff; z-index: 1; }
+.big h1 { font-stretch: var(--wide); font-weight: 900; font-size: 27px; line-height: 1; letter-spacing: -.01em; margin-top: 12px; text-align: center; }
+.big .full { font-size: 12px; color: var(--ink-2); text-align: center; margin-top: 3px; }
+.big .ps { display: flex; justify-content: center; gap: 14px; margin-top: 10px; font-size: 12.5px; font-weight: 700; }
+.big .ps span { display: flex; align-items: center; gap: 6px; }
+.big .ps .sec { color: var(--mute); font-weight: 600; }
+.big .ps .sec .pos { opacity: .55; }
+.big .en2 { display: flex; align-items: center; gap: 8px; margin: 12px 8px 0; font-size: 12px; font-weight: 700; }
+.big .en2 .meter { flex: 1; height: 8px; }
+
+.acts { margin-top: auto; display: flex; gap: 8px; padding: 0 2px; }
+.acts .go { flex: 1; height: 46px; font-size: 15px; }
+
+/* The back of the sticker: details */
+.det { padding: 18px 22px 16px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto 1fr; gap: 16px 26px; overflow: hidden; }
+.sec h3 { font-stretch: var(--semi); font-weight: 900; font-size: 14px; padding-bottom: 6px; border-bottom: 2px solid var(--ink); display: flex; align-items: baseline; gap: 8px; }
+.sec h3 small { margin-left: auto; font-stretch: 100%; font-weight: 600; font-size: 11.5px; color: var(--mute); }
+.sec h3 a { margin-left: auto; font-stretch: 100%; font-weight: 700; font-size: 12px; color: var(--green); display: flex; align-items: center; gap: 4px; text-decoration: none; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 0; font-size: 12.5px; }
+.kv span { color: var(--mute); padding: 6px 0; border-bottom: 1px dotted var(--line-2); }
+.kv b { font-weight: 700; text-align: right; padding: 6px 0; border-bottom: 1px dotted var(--line-2); }
+.kv b.w { color: var(--later); }
+.tr2 { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.trt { height: 26px; padding: 0 10px; border-radius: 6px; display: flex; align-items: center; gap: 6px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line-2); font-weight: 700; font-size: 12px; }
+.trt i { font-size: 14px; color: var(--green); }
+
+.st { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.st th { font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); text-align: right; padding: 7px 0 5px; }
+.st td { text-align: right; padding: 6px 0; border-bottom: 1px dotted var(--line-2); font-weight: 600; }
+.st td:first-child, .st th:first-child { text-align: left; color: var(--mute); font-weight: 500; }
+.st td b { font-weight: 900; font-stretch: var(--semi); }
+
+.cl { display: grid; gap: 0; }
+.cr2 { display: grid; grid-template-columns: 24px 1fr auto auto; gap: 10px; align-items: center; height: 34px; border-bottom: 1px dotted var(--line-2); font-size: 12.5px; }
+.cr2 b { font-weight: 700; }
+.cr2 .y { color: var(--mute); font-size: 12px; }
+.cr2 .n { font-stretch: var(--semi); font-weight: 800; min-width: 74px; text-align: right; }
+.cr2.now b { color: var(--green); }
+
+.inj { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 9px 12px; border-radius: 10px; background: var(--green-l); font-size: 12.5px; }
+.inj i { font-size: 18px; color: var(--green); }
+.inj b { font-weight: 800; }
+.inj span { color: var(--ink-2); }
+.inj.out { background: var(--red-l); }
+.inj.out i { color: var(--red); }
+
+.rel { display: flex; flex-direction: column; }
+.map { position: relative; height: 236px; margin-top: 6px; }
+.map svg { position: absolute; inset: 0; }
+.nd { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+.nd .av { width: 34px; height: 34px; font-size: 13px; border-width: 2px; }
+.nd.me .av { width: 46px; height: 46px; font-size: 18px; border-width: 3px; box-shadow: 0 0 0 3px var(--yellow), 0 3px 6px -2px rgba(20,35,26,.35); }
+.nd small { font-size: 10.5px; color: var(--mute); font-weight: 600; margin-top: -3px; }
+.lg { display: flex; gap: 14px; font-size: 11.5px; color: var(--mute); margin-top: 6px; }
+.lg span { display: flex; align-items: center; gap: 5px; }
+.lg i { width: 16px; height: 3px; border-radius: 2px; display: inline-block; }
+.tro { display: flex; gap: 8px; margin-top: 14px; }
+.tro .t { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px 8px; border-radius: 10px; background: var(--foil); box-shadow: 0 0 0 1px var(--line-2); font-size: 11.5px; font-weight: 700; color: var(--ink-2); }
+.tro .t:nth-child(1) { transform: rotate(-2deg); } .tro .t:nth-child(3) { transform: rotate(1.5deg); }
+.tro .t i { font-size: 20px; color: var(--yellow-d); }
+.tro .t b { font-stretch: var(--wide); font-weight: 900; font-size: 20px; line-height: 1; color: var(--ink); }
+.sec.last { grid-column: 1 / -1; align-self: end; }
+.lj { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }
+.lj div { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border-radius: 10px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); font-size: 11.5px; color: var(--mute); }
+.lj div b { margin-left: auto; font-stretch: var(--wide); font-weight: 900; font-size: 16px; color: var(--ink); }
+.lj div b.hi { color: var(--green); }
+.lj div span { line-height: 1.15; white-space: nowrap; }
+.lj div span em { display: block; font-style: normal; font-weight: 700; color: var(--ink-2); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="times"></div>
+  <main><div class="wrap">
+    <div class="lft">
+      <div class="nav"><button class="btn sm flat"><i class="ph-bold ph-arrow-left"></i>Elenco</button><span>18 de 27</span><span class="ar"><span class="icb"><i class="ph-bold ph-caret-left"></i></span><span class="icb"><i class="ph-bold ph-caret-right"></i></span></span></div>
+      <div class="big">
+        <span class="idol"><i class="ph-fill ph-star"></i>Ídolo</span>
+        <div class="ph"><span class="cr" data-crest="FLA" data-size="34"></span><b>A</b>
+          <span class="nat"><span data-crest="URU" data-size="20"></span>Uruguai</span>
+          <span class="f"><b>78</b><span>força</span></span></div>
+        <h1>Arrascaeta</h1>
+        <div class="full">Giorgian de Arrascaeta · 32 anos · destro · camisa 10</div>
+        <div class="ps"><span><span class="pos M">M</span>Meia, esquerda</span><span class="sec"><span class="pos A">A</span>2ª: ponta</span></div>
+        <div class="en2"><span>Energia</span><span class="meter"><i style="width:100%"></i></span><span>100%</span></div>
+      </div>
+      <div class="acts"><button class="btn go"><i class="ph-bold ph-signature"></i>Renovar</button><button class="btn">Vender</button><button class="btn">Emprestar</button></div>
+    </div>
+
+    <div class="page det">
+      <div class="sec">
+        <h3>Contrato</h3>
+        <div class="kv"><span>Até</span><b>dez 2028</b><span>Salário</span><b>R$ 3,1 mi por mês</b><span>Passe</span><b>R$ 79 mi</b><span>Multa pra fora</span><b>€ 35 mi</b></div>
+        <div class="tr2"><span class="trt"><i class="ph-bold ph-path"></i>Passe</span><span class="trt"><i class="ph-bold ph-target"></i>Finalização</span></div>
+        <div class="inj out"><i class="ph-fill ph-first-aid"></i><span><b>Machucado.</b> Fraturou o punho pela seleção em 28 set. Volta em meados de novembro.</span></div>
+      </div>
+      <div class="sec">
+        <h3>Números</h3>
+        <table class="st"><tr><th></th><th>Série A 2026</th><th>Flamengo</th><th>Carreira</th></tr>
+          <tr><td>Jogos</td><td>21</td><td>389</td><td>640</td></tr>
+          <tr><td>Gols</td><td><b>3</b></td><td><b>107</b></td><td><b>174</b></td></tr>
+          <tr><td>Assistências</td><td>4</td><td>114</td><td>168</td></tr>
+          <tr><td>Títulos</td><td>—</td><td>18</td><td>22</td></tr></table>
+      </div>
+      <div class="sec">
+        <h3>Clubes</h3>
+        <div class="cl">
+          <div class="cr2"><span data-crest="DEF" data-size="20"></span><b>Defensor Sporting</b><span class="y">2012–15</span><span class="n">65 jogos</span></div>
+          <div class="cr2"><span data-crest="CRU" data-size="20"></span><b>Cruzeiro</b><span class="y">2015–18</span><span class="n">186 jogos</span></div>
+          <div class="cr2 now"><span data-crest="FLA" data-size="20"></span><b>Flamengo</b><span class="y">2019–</span><span class="n">389 jogos</span></div>
+          <div class="cr2"><span data-crest="URU" data-size="20"></span><b>Seleção do Uruguai</b><span class="y">2014–</span><span class="n">61 jogos</span></div>
+        </div>
+        <div class="tro"><span class="t"><i class="ph-fill ph-trophy"></i><b>3</b>Libertadores</span><span class="t"><i class="ph-fill ph-trophy"></i><b>3</b>Brasileiro</span><span class="t"><i class="ph-fill ph-trophy"></i><b>2</b>Copa do Brasil</span></div>
+      </div>
+      <div class="sec rel">
+        <h3>Se dá bem com<a>Entrosamento<i class="ph-bold ph-arrow-right"></i></a></h3>
+        <div class="map" id="map"></div>
+        <div class="lg"><span><i style="background:var(--green)"></i>Se dão bem</span><span><i style="background:var(--yellow-d)"></i>Disputam vaga</span></div>
+      </div>
+      <div class="sec last"><h3>Últimos jogos<small>nota de 0 a 10</small></h3><div class="lj" id="lj"></div></div>
+    </div>
+  </div></main>
+</div>
+<script>
+// Relationship map around Arrascaeta (percent positions inside .map)
+const me = [50, 42];
+const N = [
+  ['De la Cruz', 'D', 'uruguaio', 14, 24, 'g'], ['Varela', 'V', 'uruguaio', 14, 78, 'g'],
+  ['Pedro', 'P', 'dupla desde 2020', 86, 24, 'g'], ['Jorginho', 'J', 'capitão', 86, 78, 'g'], ['Carrascal', 'C', 'mesma posição', 50, 88, 'y'],
+];
+const col = { g: 'var(--green)', y: 'var(--yellow-d)' };
+const w = 300, h = 236;
+const lines = N.map(([, , , x, y, k]) => `<line x1="${me[0] * w / 100}" y1="${me[1] * h / 100}" x2="${x * w / 100}" y2="${y * h / 100}" stroke="${col[k]}" stroke-width="${k === 'g' ? 3 : 2.5}" ${k === 'y' ? 'stroke-dasharray="5 4"' : ''} stroke-linecap="round"/>`).join('');
+document.getElementById('map').innerHTML = `<svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${lines}</svg>`
+  + N.map(([n, ini, why, x, y]) => `<div class="nd" style="left:${x}%;top:${y}%"><span class="av" style="background:#C8102E">${ini}</span>${n}<small>${why}</small></div>`).join('')
+  + `<div class="nd me" style="left:${me[0]}%;top:${me[1]}%"><span class="av" style="background:#C8102E">A</span></div>`;
+// His last five Flamengo games before the injury (real dates and opponents; ratings are game state).
+const LJ = [['RBB', 'Bragantino', '20 set', '7,1'], ['IDV', 'Del Valle', '17 set', '7,6', 1], ['COR', 'Corinthians', '13 set', '6,8'], ['IDV', 'Del Valle', '10 set', '8,2', 1], ['REM', 'Remo', '6 set', '7,0']];
+document.getElementById('lj').innerHTML = LJ.map(([c, n, d, r, hi]) => `<div>${crest(c, 22)}<span><em>${n}</em>${d}</span><b class="${hi ? 'hi' : ''}">${r}</b></div>`).join('');
+</script>
+</body>
+</html>

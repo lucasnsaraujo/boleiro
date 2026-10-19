@@ -1,0 +1,257 @@
+.player {
+  max-width: 980px;
+}
+
+.player-back {
+  display: inline-block;
+  margin-bottom: 18px;
+}
+
+.player-band {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 26px;
+  padding-bottom: 24px;
+  border-bottom: var(--hairline);
+}
+
+.player-strength {
+  display: grid;
+  justify-items: center;
+  width: 104px;
+  padding: 12px 0 10px;
+  background: #030805;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.player-strength-n {
+  font: 900 64px/0.9 var(--num);
+}
+
+.player-strength-l {
+  margin-top: 4px;
+  font: 600 13px var(--cond);
+  color: var(--chalk-3);
+}
+
+.player-who {
+  min-width: 0;
+}
+
+.player-who .screen-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-status {
+  margin-top: 8px;
+  font: 700 15px var(--cond);
+}
+
+.player-status.injured {
+  color: var(--red);
+}
+
+.player-status.suspended {
+  color: var(--highlight);
+}
+
+.player-club {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.player-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 40px;
+  padding-top: 24px;
+}
+
+.player-facts-title {
+  font: 600 15px var(--cond);
+  color: var(--chalk-3);
+  padding-bottom: 8px;
+}
+
+.player-facts dl div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 38px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.player-facts dl div:last-child {
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.player-facts dt {
+  font: 500 15px var(--cond);
+  color: var(--chalk-2);
+}
+
+.player-facts dd {
+  font: 600 15px var(--cond);
+  text-align: right;
+}
+
+.player-facts dd small {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--chalk-3);
+}
+
+.player-history {
+  padding-top: 32px;
+}
+
+.player-history-row {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(42, 82, 54, 0.55);
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.player-spark {
+  flex: none;
+}
+
+.player-spark polyline {
+  fill: none;
+  stroke: var(--chalk-3);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.player-spark circle {
+  fill: var(--yellow);
+}
+
+.player-history ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  list-style: none;
+}
+
+.player-history li {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  column-gap: 6px;
+}
+
+.player-history-season {
+  grid-column: 1 / -1;
+  font: 500 13px var(--cond);
+  color: var(--chalk-3);
+}
+
+.player-history-n {
+  font: 800 28px/1 var(--num);
+}
+
+.player-history-change {
+  font: 600 13px var(--cond);
+}
+
+.player-history-change.up {
+  color: var(--promotion);
+}
+
+.player-history-change.down {
+  color: var(--red);
+}
+
+.player-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.player-renew {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-renew label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 500 15px var(--cond);
+  color: var(--chalk-2);
+}
+
+.player-renew .select {
+  height: 34px;
+}
+
+.player-pending {
+  margin-top: 32px;
+  font: 500 15px var(--cond);
+  color: var(--chalk-2);
+}
+
+/* The end of a career: a veteran's announcement, the ask for one more year, and retiring him now. */
+.player-retire {
+  margin-top: 22px;
+}
+
+.player-retire-line {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.player-retire-line.is-good {
+  color: var(--green);
+  font-weight: 700;
+}
+
+.player-retire-acts {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.player-retire-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  animation: player-retire-pin var(--t-stamp) var(--e-slap) both;
+}
+
+.player-retire-confirm p {
+  flex-basis: 100%;
+  font-weight: 700;
+}
+
+@keyframes player-retire-pin {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) rotate(-2deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-retire-confirm {
+    animation: none;
+  }
+}

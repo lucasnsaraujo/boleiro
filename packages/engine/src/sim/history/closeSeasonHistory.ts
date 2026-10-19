@@ -1,0 +1,86 @@
+import type { Division } from "@boleiro/data/players";
+import { fileAlbumPages } from "../album/fileAlbumPages.js";
+import type { Fixture, GameState, LeagueCompetition } from "../gameState.js";
+import { LEAGUE_FORMATS } from "../leagueFormats.js";
+import { standings } from "../standings.js";
+import { championOf } from "./championOf.js";
+import { competitionKey, type History, type PlayerAtClub, type SeasonRecord } from "./history.js";
+import { seasonAwards } from "./seasonAwards.js";
+import { topScorerOf } from "./topScorerOf.js";
+import { keysTurningOnTheirOwn } from "../world/turnSeasonsAbroad.js";
+
+// guess: a player who left a club after fewer games than this is not worth remembering there; it keeps
+// the per-club tallies from growing with every loanee and youth player who passed through.
+const FORGET_BELOW_APPS = 10;
+
+/**
+ * A league's final order: the champion, then clubs by the last stage they reached, then by points over
+ * the whole competition. For single-table leagues that is the table itself.
+ */
+function finalOrder(competition: LeagueCompetition, fixtures: readonly Fixture[], championId: string | null): string[] {
+  const reached = new Map<string, number>();
+  for (const f of fixtures) {
+    for (const id of [f.homeId, f.awayId]) reached.set(id, Math.max(reached.get(id) ?? 0, f.stage));
+  }
+  const overall = standings(competition.clubIds, fixtures, competition.drawOrder).map((row) => row.clubId);
+  return [...overall].sort(
+    (a, b) => Number(b === championId) - Number(a === championId) || (reached.get(b) ?? 0) - (reached.get(a) ?? 0) || overall.indexOf(a) - overall.indexOf(b),
+  );
+}
+
+function forgetPassersBy(state: GameState): History["players"] {
+  return Object.fromEntries(
+    Object.entries(state.history.players).map(([clubId, players]) => [
+      clubId,
+      Object.fromEntries(Object.entries(players).filter(([id, p]: [string, PlayerAtClub]) => p.apps >= FORGET_BELOW_APPS || state.players[id]?.clubId === clubId)),
+    ]),
+  );
+}
+
+/**
+ * Files the season that just finished, with its awards and the human coaches' album pages, before its
+ * competitions and fixtures are replaced by the next one's.
+ */
+export function closeSeasonHistory(state: GameState): GameState {
+  const { history } = state;
+  const empty = (): Record<Division, string[]> => ({ A: [], B: [], C: [], D: [] });
+  const record: SeasonRecord = { season: state.season, champions: { ...history.current.champions }, topScorers: {}, promoted: empty(), relegated: empty(), tables: empty() };
+  const fixturesOf = new Map<string, Fixture[]>();
+  for (const f of state.fixtures) {
+    const own = fixturesOf.get(f.competitionId) ?? [];
+    own.push(f);
+    fixturesOf.set(f.competitionId, own);
+  }
+  for (const competition of Object.values(state.competitions)) {
+    const fixtures = fixturesOf.get(competition.id) ?? [];
+    const key = competitionKey(competition.id);
+    const championId = record.champions[key] ?? championOf(competition, fixtures);
+    if (championId) record.champions[key] = championId;
+    // A league abroad files its season in its country's world record, not Brazil's division tables.
+    if (competition.kind !== "league" || competition.division === null) continue;
+    const outcome = LEAGUE_FORMATS[competition.format].outcome(competition, fixtures);
+    record.promoted[competition.division] = outcome.promotedIds;
+    record.relegated[competition.division] = outcome.relegatedIds;
+    record.tables[competition.division] = finalOrder(competition, fixtures, championId);
+  }
+  // A competition whose season runs on past the new year keeps its tally, filed at its own turn.
+  const running = keysTurningOnTheirOwn(state);
+  for (const [key, goals] of Object.entries(history.current.goals)) {
+    const top = running.has(key) ? null : topScorerOf(goals, state);
+    if (top) record.topScorers[key] = top;
+  }
+  const carried = Object.fromEntries(Object.entries(history.current.goals).filter(([key]) => running.has(key)));
+  record.awards = seasonAwards(state, record.champions);
+  const { coach, waitingCoaches } = fileAlbumPages(state, record);
+  return {
+    ...state,
+    ...(waitingCoaches ? { waitingCoaches } : {}),
+    history: {
+      ...history,
+      seasons: [...history.seasons, record],
+      current: { season: state.season + 1, champions: {}, goals: carried, ratings: {}, squads: {} },
+      players: forgetPassersBy(state),
+      coach,
+    },
+  };
+}

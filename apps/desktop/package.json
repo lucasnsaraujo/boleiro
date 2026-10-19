@@ -1,0 +1,37 @@
+{
+  "name": "@boleiro/desktop",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "e2e": "playwright test",
+    "docs:screens": "playwright test -c playwright.docs.config.ts screens",
+    "docs:video": "playwright test -c playwright.docs.config.ts video"
+  },
+  "dependencies": {
+    "@boleiro/data": "workspace:*",
+    "@boleiro/design-tokens": "workspace:*",
+    "@boleiro/engine": "workspace:*",
+    "@boleiro/game-client": "workspace:*",
+    "@tauri-apps/api": "^2.12.2",
+    "@tauri-apps/plugin-opener": "^2.7.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router": "^8.4.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@tauri-apps/cli": "^2.12.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "fake-indexeddb": "^6.2.5",
+    "vite": "^8.3.4"
+  }
+}

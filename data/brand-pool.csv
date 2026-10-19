@@ -1,0 +1,142 @@
+id,name,sector,size,wiki,website
+betano,Betano,betting,giant,en:Betano,betano.com
+bet365,bet365,betting,giant,en:Bet365,bet365.com
+superbet,Superbet,betting,giant,en:Superbet,superbet.com
+sportingbet,Sportingbet,betting,large,en:Sportingbet,sportingbet.com
+kto,KTO,betting,large,,kto.com
+esportes-da-sorte,Esportes da Sorte,betting,large,pt:Esportes da Sorte,esportesdasorte.com
+pixbet,Pixbet,betting,large,pt:Pixbet,pixbet.com
+betfair,Betfair,betting,large,en:Betfair,betfair.com
+stake,Stake,betting,large,en:Stake (online casino),stake.com
+novibet,Novibet,betting,medium,,novibet.com
+betnacional,Betnacional,betting,medium,pt:Betnacional,betnacional.com
+estrelabet,EstrelaBet,betting,medium,,estrelabet.com
+vbet,Vbet,betting,medium,,vbet.com
+parimatch,Parimatch,betting,medium,en:Parimatch,parimatch.com
+betsson,Betsson,betting,medium,en:Betsson,betsson.com
+rei-do-pitaco,Rei do Pitaco,betting,small,,reidopitaco.com.br
+vaidebet,Vaidebet,betting,medium,pt:VaideBet,vaidebet.com
+itau,Itaú,bank,giant,en:Itaú Unibanco,itau.com.br
+bradesco,Bradesco,bank,giant,en:Banco Bradesco,bradesco.com.br
+banco-do-brasil,Banco do Brasil,bank,giant,en:Banco do Brasil,bb.com.br
+caixa,Caixa,bank,giant,en:Caixa Econômica Federal,caixa.gov.br
+santander,Santander,bank,giant,en:Banco Santander,santander.com.br
+btg-pactual,BTG Pactual,bank,large,en:BTG Pactual,btgpactual.com
+banco-inter,Banco Inter,bank,large,en:Banco Inter,inter.co
+sicredi,Sicredi,bank,large,en:Sicredi,sicredi.com.br
+sicoob,Sicoob,bank,large,en:Sicoob,sicoob.com.br
+banrisul,Banrisul,bank,medium,en:Banrisul,banrisul.com.br
+brb,BRB,bank,medium,en:Banco de Brasília,brb.com.br
+banco-bmg,Banco BMG,bank,medium,en:Banco BMG,bancobmg.com.br
+nubank,Nubank,fintech,giant,en:Nubank,nubank.com.br
+picpay,PicPay,fintech,large,en:PicPay,picpay.com
+mercado-pago,Mercado Pago,fintech,large,en:Mercado Pago,mercadopago.com.br
+pagbank,PagBank,fintech,large,en:PagSeguro,pagbank.com.br
+stone,Stone,fintech,large,en:StoneCo,stone.com.br
+xp,XP Investimentos,fintech,large,en:XP Inc.,xpi.com.br
+c6-bank,C6 Bank,fintech,medium,en:C6 Bank,c6bank.com.br
+mercado-livre,Mercado Livre,ecommerce,giant,en:Mercado Libre,mercadolivre.com.br
+shopee,Shopee,ecommerce,giant,en:Shopee,shopee.com.br
+amazon,Amazon,ecommerce,giant,en:Amazon (company),amazon.com.br
+magalu,Magalu,retail,giant,en:Magazine Luiza,magazineluiza.com.br
+casas-bahia,Casas Bahia,retail,large,en:Casas Bahia,casasbahia.com.br
+americanas,Americanas,retail,large,en:Americanas,americanas.com.br
+assai,Assaí Atacadista,retail,large,en:Assaí Atacadista,assai.com.br
+atacadao,Atacadão,retail,large,en:Atacadão,atacadao.com.br
+carrefour,Carrefour,retail,giant,en:Carrefour,carrefour.com.br
+renner,Renner,retail,large,en:Lojas Renner,lojasrenner.com.br
+riachuelo,Riachuelo,retail,medium,en:Riachuelo (store),riachuelo.com.br
+centauro,Centauro,retail,medium,pt:Centauro (empresa),centauro.com.br
+tok-stok,Tok&Stok,retail,medium,en:Tok&Stok,tokstok.com.br
+havaianas,Havaianas,apparel,large,en:Havaianas,havaianas.com.br
+hering,Hering,apparel,medium,en:Cia. Hering,hering.com.br
+granado,Granado,cosmetics,medium,en:Granado (company),granado.com.br
+natura,Natura,cosmetics,giant,en:Natura &Co,natura.com.br
+o-boticario,O Boticário,cosmetics,large,en:O Boticário,boticario.com.br
+nivea,Nivea,cosmetics,large,en:Nivea,nivea.com.br
+coca-cola,Coca-Cola,beverage,giant,en:Coca-Cola,coca-cola.com
+guarana-antarctica,Guaraná Antarctica,beverage,large,en:Guaraná Antarctica,guaranaantarctica.com.br
+pepsi,Pepsi,beverage,large,en:Pepsi,pepsi.com
+gatorade,Gatorade,beverage,large,en:Gatorade,gatorade.com.br
+red-bull,Red Bull,beverage,large,en:Red Bull,redbull.com
+brahma,Brahma,beer,large,en:Brahma beer,brahma.com.br
+skol,Skol,beer,large,en:Skol,skol.com.br
+heineken,Heineken,beer,giant,en:Heineken,heineken.com
+budweiser,Budweiser,beer,large,en:Budweiser,budweiser.com
+ze-delivery,Zé Delivery,ecommerce,medium,,ze.delivery
+ifood,iFood,ecommerce,large,en:iFood,ifood.com.br
+sadia,Sadia,food,large,en:Sadia,sadia.com.br
+seara,Seara,food,large,en:Seara Alimentos,seara.com.br
+friboi,Friboi,food,large,,friboi.com.br
+nestle,Nestlé,food,giant,en:Nestlé,nestle.com.br
+cacau-show,Cacau Show,food,medium,en:Cacau Show,cacaushow.com.br
+piracanjuba,Piracanjuba,food,medium,pt:Piracanjuba (empresa),piracanjuba.com.br
+italac,Italac,food,medium,,italac.com.br
+mcdonalds,McDonald's,food,giant,en:McDonald's,mcdonalds.com.br
+burger-king,Burger King,food,large,en:Burger King,burgerking.com.br
+claro,Claro,telecom,giant,en:Claro (company),claro.com.br
+vivo,Vivo,telecom,giant,en:Vivo (telecommunications company),vivo.com.br
+tim,TIM,telecom,large,en:TIM Brasil,tim.com.br
+samsung,Samsung,tech,giant,en:Samsung,samsung.com
+motorola,Motorola,tech,large,en:Motorola Mobility,motorola.com.br
+lg,LG,tech,large,en:LG Electronics,lg.com
+positivo,Positivo,tech,medium,en:Positivo Tecnologia,positivotecnologia.com.br
+multilaser,Multi,tech,medium,en:Multilaser,multilaser.com.br
+kwai,Kwai,tech,large,en:Kwai (app),kwai.com
+tiktok,TikTok,tech,giant,en:TikTok,tiktok.com
+spotify,Spotify,tech,large,en:Spotify,spotify.com
+toyota,Toyota,auto,giant,en:Toyota,toyota.com.br
+volkswagen,Volkswagen,auto,giant,en:Volkswagen,vw.com.br
+fiat,Fiat,auto,giant,en:Fiat Automobiles,fiat.com.br
+chevrolet,Chevrolet,auto,giant,en:Chevrolet,chevrolet.com.br
+hyundai,Hyundai,auto,large,en:Hyundai Motor Company,hyundai.com.br
+byd,BYD,auto,large,en:BYD Auto,byd.com
+gwm,GWM,auto,large,en:Great Wall Motor,gwmmotors.com.br
+jeep,Jeep,auto,large,en:Jeep,jeep.com.br
+pirelli,Pirelli,auto,large,en:Pirelli,pirelli.com
+localiza,Localiza,auto,large,en:Localiza,localiza.com
+ipiranga,Ipiranga,energy,large,en:Ipiranga (company),ipiranga.com.br
+petrobras,Petrobras,energy,giant,en:Petrobras,petrobras.com.br
+shell,Shell,energy,giant,en:Shell plc,shell.com.br
+texaco,Texaco,energy,large,en:Texaco,texaco.com
+neoenergia,Neoenergia,energy,medium,en:Neoenergia,neoenergia.com
+latam,LATAM,airline,giant,en:LATAM Brasil,latamairlines.com
+azul,Azul,airline,large,en:Azul Brazilian Airlines,voeazul.com.br
+gol,Gol,airline,large,en:Gol Linhas Aéreas Inteligentes,voegol.com.br
+hapvida,Hapvida,health,large,en:Hapvida,hapvida.com.br
+unimed,Unimed,health,large,en:Unimed (organization),unimed.coop.br
+amil,Amil,health,large,en:Amil,amil.com.br
+raia-drogasil,Drogasil,health,large,en:Raia Drogasil,drogasil.com.br
+pague-menos,Pague Menos,health,medium,pt:Pague Menos,paguemenos.com.br
+porto,Porto Seguro,insurance,large,en:Porto Seguro S.A.,portoseguro.com.br
+sulamerica,SulAmérica,insurance,large,en:SulAmérica,sulamerica.com.br
+assist-card,Assist Card,insurance,medium,en:Assist Card,assistcard.com
+ademicon,Ademicon,finance,medium,,ademicon.com.br
+mrv,MRV,construction,large,en:MRV Engenharia,mrv.com.br
+tenda,Tenda,construction,medium,en:Construtora Tenda,tenda.com
+cyrela,Cyrela,construction,medium,en:Cyrela Brazil Realty,cyrela.com.br
+estacio,Estácio,education,medium,en:Estácio,estacio.br
+cogna,Kroton,education,medium,en:Cogna Educação,kroton.com.br
+unicesumar,UniCesumar,education,small,,unicesumar.edu.br
+cvc,CVC,travel,medium,en:CVC Brasil,cvc.com.br
+decolar,Decolar,travel,medium,en:Despegar.com,decolar.com
+correios,Correios,logistics,large,en:Correios,correios.com.br
+jbs,JBS,food,giant,en:JBS S.A.,jbs.com.br
+adidas,adidas,kit,giant,en:Adidas,adidas.com.br
+nike,Nike,kit,giant,en:Nike Inc.,nike.com.br
+puma,Puma,kit,giant,en:Puma (brand),puma.com
+new-balance,New Balance,kit,large,en:New Balance,newbalance.com.br
+umbro,Umbro,kit,large,en:Umbro,umbro.com.br
+kappa,Kappa,kit,large,en:Kappa (brand),kappa.com
+mizuno,Mizuno,kit,large,en:Mizuno,mizuno.com.br
+reebok,Reebok,kit,medium,en:Reebok,reebok.com.br
+le-coq-sportif,Le Coq Sportif,kit,medium,en:Le Coq Sportif,lecoqsportif.com
+diadora,Diadora,kit,medium,en:Diadora,diadora.com
+joma,Joma,kit,medium,en:Joma,joma-sport.com
+macron,Macron,kit,medium,en:Macron (sportswear),macron.com
+hummel,Hummel,kit,medium,en:Hummel International,hummel.net
+kelme,Kelme,kit,small,en:Kelme,kelme.com
+volt,Volt Sport,kit,small,pt:Volt Sport,voltsport.com.br
+penalty,Penalty,kit,small,en:Penalty (sports manufacturer),penalty.com.br
+topper,Topper,kit,small,en:Topper (sports brand),topper.com.br
+super-bolla,Super Bolla,kit,small,,superbolla.com.br

@@ -1,0 +1,1164 @@
+club_id,name,transfermarkt_id,nationality,age,in_charge_since,contract_until,former_player,league,source,seen_on
+abc-rn,João Burse,62338,Brazil,44,2026-09-03,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+agua-santa-sp,Jorge Castilho,100648,Brazil,44,2026-06-16,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+aguia-de-maraba-pa,Luiz Carlos Winck,54664,Brazil,63,2026-05-20,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+alagoinhas-ba,Gabriel Amadio,138220,Brazil,35,2026-05-08,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+altos-pi,Roberto Fonseca,11402,Brazil,64,2026-04-17,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+amazonas-am,Rodrigo Santana,69206,Brazil,44,2026-05-30,,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+america-mg-mg,João Bonfatti,162589,Brazil,29,2026-10-17,,0,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+america-rn-rn,Ranielle Ribeiro,55859,Brazil,47,2025-09-23,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+anapolis-go,Luan Carlos,89373,Brazil,34,2026-07-13,2026,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+aparecidense-go,Zé Carlos,95038,Brazil,46,2026-05-23,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+araguaina-to,Léo Goiano,91762,Brazil,52,2026-03-06,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+asa-al,Itamar Schulle,56068,Brazil,60,2026-03-02,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+athletic-mg,Alex,91297,Brazil,49,2026-02-19,,1,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+athletico-pr-pr,Odair Hellmann,41640,Brazil,49,2025-05-23,2027,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+atletico-cearense-ce,Jazón Vieira,101152,Brazil,58,2026-04-24,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+atletico-go-go,Roger Silva,92548,Brazil,41,2026-07-07,2026,1,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+atletico-mg-mg,Eduardo Domínguez,42453,Argentina,48,2026-02-25,2027,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+azuriz-pr,Everson Pereira,152232,Brazil,,2026-05-19,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+bahia-ba,Rogério Ceni,50290,Brazil,53,2023-09-09,2027,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+barra-sc,Evaristo Piza,85602,Brazil,54,2026-06-28,,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+betim-mg,Leandro Zago,96240,Brazil,45,2026-02-19,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+blumenau-sc,Corrêa,155496,Brazil,45,2026-04-02,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+botafogo-pb-pb,Victor Ferraz,162146,Brazil,38,2026-09-28,,1,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+botafogo-rj,Tite,6623,Brazil,65,2026-09-17,2028,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+botafogo-sp-sp,Claudio Tencati,38445,Brazil,52,2025-11-24,,0,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+bragantino-sp,Vagner Mancini,5667,Brazil,59,2025-10-31,,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+brasil-de-pelotas-rs,Júlio César Nunes,90770,Brazil,41,2026-07-28,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+brusque-sc,Higo Magalhães,93569,Brazil,44,2025-12-03,,1,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+capital-df,Edson Porto,100907,Brazil,69,2026-10-17,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+cascavel-pr,César Bueno,111721,Brazil,48,2025-08-11,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+caxias-rs,William de Mattia,90749,Brazil,43,2026-08-17,,1,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+ceara-ce,Daniel Paulista,41321,Brazil,44,2026-06-25,2026,1,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+cefat-tirol-ce,Aílton Silva,40539,Brazil,59,2026-01-27,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+ceilandia-df,Adelson de Almeida,100694,Brazil,56,2020-12-13,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+central-pe,Leandro Sena,31404,Brazil,50,2026-02-23,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+chapecoense-sc,Rafael Lacerda,83174,Brazil,42,2026-05-31,,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+cianorte-pr,Rafael Ferro,143542,Brazil,42,2025-06-05,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+confianca-se,Ricardo Resende,71678,Brazil,42,2026-07-25,,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+corinthians-sp,Clarence Seedorf,32998,Netherlands,50,2026-10-11,2027,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+coritiba-pr,Fernando Seabra,110764,Brazil,49,2025-12-08,,0,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+crac-go,Ângelo Luiz,129431,Brazil,54,2026-04-24,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+crb-al,Fábio Matias,100616,Brazil,47,2026-07-05,,0,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+criciuma-sc,Umberto Louzer,57012,Brazil,46,2026-09-24,2026,0,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+cruzeiro-mg,Artur Jorge,24055,Portugal,54,2026-03-24,2030,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+cs-sergipe-se,Flávio Araújo,13617,Brazil,63,2026-04-02,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+cse-al,Erivaldo Silva,100774,Brazil,45,2026-02-03,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+cuiaba-mt,Eduardo Barros,68225,Brazil,41,2025-08-13,,0,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+decisao-pe,Maurício Ramos,139660,Brazil,41,2026-05-22,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+democrata-mg,Cícero Júnior,90374,Brazil,46,2026-02-24,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+ferroviaria-sp,Rogério Corrêa,100197,Brazil,45,2025-12-05,2027,1,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+ferroviario-ce,Nuno Pereira,62464,Portugal,48,2025-12-01,2026,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+figueirense-sc,Raul Cabral,37674,Brazil,45,2026-04-16,,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+flamengo-rj,Leonardo Jardim,10682,Portugal,52,2026-03-04,2027,0,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+floresta-ce,Leston Júnior,56561,Brazil,47,2025-04-10,,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+fluminense-rj,Marcão,38610,Brazil,54,2026-08-14,,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+fortaleza-ce,Thiago Dantas,115678,Brazil,40,2026-10-17,,0,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+galvez-ac,Maurício Carneiro,118151,Brazil,32,2025-02-13,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+gama-df,Luiz Carlos Carioca,124027,Brazil,63,2025-03-05,2027,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+goias-go,Mozart,82979,Brazil,46,2026-06-25,,1,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+goiatuba-go,Glauber Ramos,82994,Brazil,51,2026-01-24,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+gremio-novorizontino-sp,Enderson Moreira,8226,Brazil,55,2025-08-27,,0,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+gremio-rs,Renato Gaúcho,4728,Brazil,64,2026-09-14,2026,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+guapore-ro,Márcio Parreiras,126137,Brazil,45,2026-01-16,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+guarani-sp,Anderson Gomes,115594,Brazil,54,2026-08-29,,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+humaita-ac,Chumbinho,124937,Brazil,33,2026-04-02,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+iape-ma,Eloir,156531,Brazil,39,2026-05-08,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+iguatu-ce,Michael Dias,159121,Brazil,28,2026-10-17,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+imperatriz-ma,Emerson Cris,56369,Brazil,48,2026-05-29,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+independencia-ac,Ivan Mazzuia,142517,Brazil,35,2025-05-09,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+inhumas-go,Otávio Augusto,156774,Brazil,48,2026-10-17,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+inter-de-limeira-sp,Matheus Costa,55752,Brazil,39,2026-03-12,,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+internacional-rs,Eduardo Baptista,34959,Brazil,56,2026-09-24,2026,0,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+itabaiana-se,Marcelo Chamusca,38345,Brazil,60,2026-05-08,,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+ivinhema-ms,Douglas Ricardo,123203,Brazil,51,2026-01-22,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+jacuipense-ba,Rodrigo Ribeiro,139833,Brazil,,2025-02-15,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+joinville-sc,Serginho Braga,141289,Brazil,42,2026-03-11,2026,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+juventude-rs,Maurício Barbieri,58565,Brazil,45,2025-12-11,,0,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+laguna-rn,Daniel Rocha,97309,Brazil,40,2026-04-24,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+londrina-pr,Hugo Chacon,99688,Brazil,33,2026-10-12,2026,0,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+luverdense-mt,Wagner Lopes,22027,Japan,57,2025-02-14,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+madureira-rj,João Carlos,90588,Brazil,60,2026-03-17,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+maguary-pe,Kleber Marques,156028,Brazil,,2026-10-17,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+manauara-am,Paulinho Kobayashi,75279,Brazil,56,2026-02-06,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+maracana-ce,Júnior Cearense,43648,Brazil,48,2024-01-20,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+maranhao-ma,Maurício Copertino,31581,Brazil,56,2026-09-14,,1,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+marica-rj,Marcus Alexandre,106210,Brazil,53,2026-01-29,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+maringa-pr,Ivan Campanari,130447,Brazil,34,2026-08-14,,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+mirassol-sp,Rafael Guanaes,65455,Brazil,45,2025-03-19,2026,0,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+mixto-mt,Lucas Isotton,125117,Brazil,41,2025-01-02,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+moto-ma,Cristiano Bassoli Souza,119189,Brazil,43,2026-05-08,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+nacional-am,Thiago Gomes,91642,Brazil,42,2026-07-24,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+nautico-marcilio-dias-sc,Lúcio Flávio,64230,Brazil,47,2026-04-16,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+nautico-pe,Bruno Pivetti,61015,Brazil,42,2026-09-25,,0,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+noroeste-sp,Henrique Barcellos,152240,Brazil,39,2026-04-24,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+nova-iguacu-rj,Felipe Conceição,58100,Brazil,47,2026-04-08,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+operario-ms,Diego Souza,148789,Brazil,42,2026-04-07,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+operario-pr-pr,Alberto Valentim,35052,Brazil,51,2026-10-08,,1,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+operario-varzea-grandense-mt,Jeferson Sabino,155848,Brazil,41,2026-10-17,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+oratorio-rc-ap,Thiago Eduardo,139370,Brazil,39,2026-04-08,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+palmeiras-sp,Abel Ferreira,23009,Portugal,47,2020-11-04,2027,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+parnahyba-pi,Zé Augusto,90579,Brazil,48,2026-02-22,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+paysandu-pa,Mazola Júnior,22037,Brazil,61,2026-09-14,,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+piaui-pi,Jonydei Matos,116065,Brazil,50,2026-01-23,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+ponte-preta-sp,Gilson Kleina,4981,Brazil,58,2026-08-29,,0,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+porto-ba,Sandro Duarte,138498,Brazil,45,2024-06-28,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+porto-velho-ro,Rodrigo Fonseca,96260,Brazil,54,2026-05-05,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+portuguesa-rj,Jefferson Muniz,153049,Brazil,37,2026-10-17,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+portuguesa-sp,Márcio Zanardi,100609,Brazil,48,2026-10-03,2028,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+pouso-alegre-mg,Gabriel Magalhães,112170,Brazil,43,2026-05-01,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+primavera-mt,Denis Alves,141183,Brazil,46,2026-02-11,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+real-noroeste-cfc-es,Duzinho,100764,Brazil,54,2025-07-19,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+remo-pa,Thiago Carpini,72121,Brazil,42,2026-09-16,,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+retro-fc-brasil-pe,Roberto Fernandes,4723,Brazil,55,2026-09-02,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+rio-branco-es,Rodrigo César,101852,Brazil,38,2026-02-04,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+sampaio-correa-ma,Arlindo Maracanã,40213,Brazil,48,2026-06-19,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+sampaio-correa-rj-rj,Reinaldo,138450,Brazil,47,2026-03-25,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+sampaio-rr,Madson Lima,156429,Brazil,46,2026-05-01,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+santa-catarina-sc,Jordã Guerreiro,155780,Brazil,43,2026-04-10,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+santa-cruz-pe,Cristian de Souza,54724,Brazil,49,2026-05-14,,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+santos-sp,Cuca,4732,Brazil,63,2026-03-20,2026,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+sao-bernardo-sp,Vinícius,82173,Brazil,46,2026-08-06,,1,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+sao-jose-rs,Argel Fuchs,10334,Brazil,52,2026-04-22,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+sao-luiz-rs,Paulo Henrique Marques,82603,Brazil,61,2026-01-13,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+sao-paulo-sp,Dorival Júnior,4724,Brazil,64,2026-05-15,2026,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+sao-raimundo-rr,Chiquinho Viana,103254,Brazil,69,2026-01-05,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+sousa-pb,Tardelly Abrantes,97562,Brazil,42,2025-05-30,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+sport-pe,Mariano Soso,38746,Argentina,45,2026-09-09,2026,0,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+tm-10,Oliver Kirch,59373,Germany,44,2026-07-01,2028,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-10004,Liam Rosenior,62134,England,42,2026-07-07,2028,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-100047,Marcelo Straccia,27626,Argentina,60,2026-09-18,,0,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-1005,Eusebio Di Francesco,12924,Italy,57,2025-06-26,2028,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-100827,Igor Picusceac,59887,Moldova,43,2026-07-01,,1,ARM1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM1,2026-10-17
+tm-10090,Diego Merino,47175,Spain,38,2026-10-12,,0,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-10093,Luis Amaranto Perea,64788,Colombia,47,2026-07-13,2028,1,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-1010,Alessio Dionisi,36126,Italy,46,2026-06-15,2028,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-1017,Elyaniv Barda,63359,Israel,44,2024-12-10,,1,ISR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR1,2026-10-17
+tm-1020,John Mousinho,112345,England,40,2023-01-21,,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-10217,Even Sel,63306,Norway,37,2026-01-02,2028,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-10233,Fernando Quiroz,4883,Argentina,58,2026-07-15,,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-1025,Raffaele Palladino,95674,Italy,42,2026-09-16,2029,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-1028,Alex Neil,24018,Scotland,45,2024-12-31,,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-102847,Maor Siso,137213,Israel,42,2024-02-05,,1,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-1029,Guillermo Barros Schelotto,24556,Argentina,53,2025-03-20,2026,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-1030,Nicolás Diez,34081,Argentina,49,2025-01-02,2027,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-10301,Dmitriy Gunko,30342,Russia,50,2026-10-01,,1,ARM1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM1,2026-10-17
+tm-10314,Igor Pamic,1836,Croatia,56,2021-10-08,2023,1,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-10330,Nélson Veríssimo,25143,Portugal,49,2023-07-06,2024,1,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-10331,João Brandão,20174,Portugal,44,2024-07-01,2028,0,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-103512,Ervins Perkons,93784,Latvia,36,2026-10-14,,0,AZ1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/AZ1,2026-10-17
+tm-1037,Fernando Gago,88413,Argentina,40,2026-03-22,2027,1,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-1038,Bernardo Corradi,55359,Italy,50,2026-06-25,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-1039,Julien Stéphan,61003,France,46,2025-07-01,,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-10403,Gustavo Coleoni,22281,Argentina,62,2026-06-25,,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-1041,Paulo Fonseca,19944,Portugal,53,2025-02-01,2027,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-1047,Cesc Fàbregas,117406,Spain,39,2024-07-20,2028,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-10484,Emre Belözoğlu,82796,Türkiye,46,2025-12-05,2027,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-1049,Javier Aguirre,1548,Mexico,67,2026-09-23,2027,1,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-105,Florian Kohfeldt,16013,Germany,44,2024-09-07,,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-1050,Iñigo Pérez,107085,Spain,38,2026-07-01,2029,1,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-10503,Luis Fernando Suárez,2782,Colombia,66,2026-09-29,,1,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-10511,Alejandro Schiapparelli,87189,Argentina,46,2026-04-14,,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-10534,Gastón Lotitto,133886,Argentina,52,2026-08-21,,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-1057,Ørjan Heiberg,49929,Norway,33,2026-01-02,,1,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-1058,Per Frandsen,10619,Denmark,56,2025-09-17,,1,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-10586,Artem Radkov,66565,Belarus,41,2026-07-01,2027,1,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-1061,Greg Vanney,17495,United States,51,2021-01-05,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-10625,Qurban Qurbanov,10554,Azerbaijan,54,2008-08-05,2025,1,AZ1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/AZ1,2026-10-17
+tm-10639,Hakob Mkryan,27987,Armenia,54,2025-07-01,,1,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-1064,Barak Bakhar,26280,Israel,47,2025-10-22,2027,1,ISR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR1,2026-10-17
+tm-10663,Jorge Fossati,2066,Uruguay,73,2026-04-26,,1,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-10690,Viktor Skrypnyk,2048,Ukraine,56,2025-06-16,,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-1070,Iván Delfino,27814,Argentina,55,2026-08-05,2027,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-10718,Carles Manso,132114,Spain,33,2025-11-23,2027,0,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-1075,Carlos Vicens,83288,Spain,43,2025-07-01,2028,0,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-1080,David Vignes,12663,France,53,2026-07-01,2029,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-10816,Panikos Kosma,116929,Cyprus,46,2026-07-16,2027,1,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-1082,Davide Ancelotti,47370,Italy,37,2026-07-08,2028,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-1084,Juan Funes,92247,Spain,43,2025-11-19,2029,0,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-10885,Hernán Pellerano,133761,Argentina,42,2025-11-18,2026,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-1090,Lee-Roy Echteld,39640,Netherlands,58,2026-01-19,2028,1,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-1091,Alessio Lisci,87289,Italy,40,2026-07-01,2028,0,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-109262,Renars Rode,103769,Latvia,37,2026-03-17,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-10949,Tiago Fernandes,56948,Portugal,45,2026-07-01,2027,0,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-1095,Stéphane Dumont,75226,France,44,2024-08-12,2028,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-1096,Marvin Compper,82895,Germany,41,2026-08-03,2028,1,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-10960,Antonio Pacheco,126962,Uruguay,50,2026-08-25,,1,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-11,Mikel Arteta,47620,Spain,44,2019-12-23,2030,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-1100,Eirik Horneland,23209,Norway,51,2026-07-02,2030,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-11004,Hernán Caputto,41404,Argentina,52,2026-01-02,2026,1,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-110302,Sérgio Fonseca,146311,Portugal,54,2026-07-01,2027,1,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-11033,Jura Arsic,82751,Slovenia,44,2024-06-17,,0,SL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL1,2026-10-17
+tm-110586,Mykola Tsymbal,81385,Ukraine,42,2026-09-23,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-1106,Ariel Pereyra,75985,Argentina,53,2026-05-20,2027,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-110709,Aram Voskanyan,25989,Armenia,51,2026-07-01,,1,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-110712,Tiran Ghazaryan,154533,Armenia,33,2026-07-01,,0,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-1108,Quique Sánchez Flores,1553,Spain,61,2026-03-03,2028,1,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-11083,Alen Peternac,85755,Croatia,54,2026-01-02,2027,1,KR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR1,2026-10-17
+tm-11107,Tamás Pető,25410,Hungary,52,2025-11-12,2028,1,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-111182,Yuriy Virt,29402,Ukraine,52,2026-09-09,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-1112,Phil Parkinson,3540,England,58,2021-07-01,,0,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-1114,Simone Inzaghi,21624,Italy,50,2025-06-05,,1,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-11141,Robin Fraser,17473,United States,59,2025-01-10,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-11148,Edi Rupic,126033,Croatia,63,2026-10-17,,0,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-11194,Nikica Jelavic,113747,Croatia,41,2025-07-01,2027,1,KR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR1,2026-10-17
+tm-112110,Sergiy Atlasyuk,79832,Ukraine,39,2025-05-23,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-1123,Philippe Clement,26691,Belgium,52,2025-11-18,2029,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-11255,Borislav Kyosev,92944,Bulgaria,46,2025-04-11,,0,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-11273,Didier Santini,47160,France,58,2022-11-28,2027,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-11282,João Pereira,93770,Portugal,42,2025-03-23,2027,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-1132,Nicky Hayen,32138,Belgium,46,2026-07-10,2029,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-11368,Frank Peereboom,36726,Netherlands,47,2026-02-02,2027,0,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-114,Vincenzo Italiano,47288,Italy,48,2026-06-06,2028,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-11411,Robert Arzumanyan,66178,Armenia,41,2025-06-19,,1,ARM1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM1,2026-10-17
+tm-11422,Ferran Costa,64915,Spain,32,2025-07-01,2028,0,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-1146,Juan Reynoso,9499,Peru,56,2026-09-14,2026,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-114625,José Soto,22884,Peru,56,2026-10-12,,1,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-11470,Lucas Bovaglio,55059,Argentina,46,2026-01-02,2026,1,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-1148,Keith Andrews,68347,Ireland,46,2025-07-01,2032,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-114977,Mikey Varas,75877,United States,43,2024-09-18,,0,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-1154,Damien Perrinelle,105744,France,43,2026-07-01,2028,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-1158,Alexandre Dujeux,24061,France,50,2026-07-01,2028,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-1159,Oswald Tanchot,24309,France,53,2026-07-01,2028,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-1164,Patrick Videira,89468,France,49,2024-07-01,2029,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-11648,Pablo Repetto,15809,Uruguay,52,2026-01-02,2026,0,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-11831,Diego Dabove,22168,Argentina,53,2025-01-02,2026,0,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-1184,Jess Thorup,2898,Denmark,56,2026-07-14,,1,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-11853,Christian Schaider,29480,Austria,49,2018-01-02,2028,1,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-11854,Sebastián Viera,118865,Uruguay,43,2026-09-02,,1,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-11855,Francisco Arce,22557,Paraguay,55,2026-09-01,,1,PR1C,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PR1C,2026-10-17
+tm-119,Kenny Miller,61436,Scotland,46,2026-07-01,2027,1,ISR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR1,2026-10-17
+tm-1191,John McGlynn,3049,Scotland,64,2022-05-04,2026,0,SC1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC1,2026-10-17
+tm-11912,Karen Barseghyan,26243,Armenia,51,2026-07-01,,1,ARM1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM1,2026-10-17
+tm-1192,Gary Naysmith,30678,Scotland,47,2026-07-01,2029,1,SC2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC2,2026-10-17
+tm-119780,Oleksandr Maksymov,117553,Ukraine,41,2025-07-01,2026,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-1198,Tom Shaw,56323,England,39,2026-06-09,,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-1199,Drazen Brncic,40318,Croatia,55,2026-07-01,2027,1,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-12,Gian Piero Gasperini,3436,Italy,68,2025-06-06,2028,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-120,Selçuk İnan,83535,Türkiye,41,2025-07-01,2028,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-12005,Peter Gazi,120201,Slovakia,34,2026-07-01,,0,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-120121,Alexandre Torres,88496,France,48,2025-07-04,,0,ARM1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM1,2026-10-17
+tm-120649,Giannis Kontoes,110151,Greece,40,2026-07-01,2027,1,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-120792,Celso Ayala,30226,Paraguay,56,2026-03-26,,1,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-120839,Artem Stargorodskyi,131161,Ukraine,44,2025-06-10,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-12100,Mauricio Giganti,32891,Argentina,50,2026-05-20,2027,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-1214,Gustavo Costas,4876,Argentina,63,2026-08-29,2026,1,PR1C,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PR1C,2026-10-17
+tm-12163,György Bognár,16054,Hungary,64,2023-02-14,2027,0,UNG1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UNG1,2026-10-17
+tm-12179,Alfredo Berti,29842,Argentina,55,2024-08-28,2027,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-122,Fabio Ingolitsch,54687,Austria,34,2026-01-02,,1,A1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A1,2026-10-17
+tm-12210,Andreas Gahleitner,37792,Austria,44,2026-07-01,,1,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-1228,Sjors Ultee,35586,Netherlands,39,2024-07-01,2027,0,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-12301,Javier Sanguinetti,21639,Argentina,55,2026-09-03,2027,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-12321,Quique Álvarez,40682,Spain,51,2026-07-01,2027,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-1234,Jádson Viera,58348,Brazil,45,2026-08-19,2027,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-1237,Fabian Hürzeler,48076,Germany,33,2024-07-01,2029,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-12382,Besnik Hasi,6408,Albania,54,2026-06-10,2028,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-12388,Osman Zeki Korkmaz,71084,Türkiye,44,2026-07-01,2027,0,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-124,Derek McInnes,5526,Scotland,55,2026-06-17,2029,1,SC1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC1,2026-10-17
+tm-12423,Krisztián Timár,55844,Hungary,47,2025-08-28,,1,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-1244,Rubén Albés,31068,Spain,41,2026-07-01,2027,0,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-1245,Felice Mazzù,7843,Belgium,60,2026-07-01,,0,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-12454,Facundo Sava,23781,Argentina,52,2025-08-06,,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-12458,Walter Otta,56292,Argentina,52,2024-11-14,2026,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-1247,Matt Wells,53314,England,38,2025-12-24,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-12504,Plamen Krumov,134956,Bulgaria,40,2023-08-27,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-12567,Javier Calleja,42706,Spain,48,2026-09-16,2028,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-12574,Pablo de Muner,57542,Argentina,45,2026-05-04,2026,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-126,Recep Uçar,22369,Türkiye,51,2025-12-03,2027,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-12621,David Díaz,160759,Uruguay,44,2026-08-29,,1,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-12672,Andrés Montenegro,94455,Argentina,48,2026-04-15,2026,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-12677,Tobías Kohan,102583,Argentina,30,2026-05-05,,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-1268,Robin Peter,94614,Germany,39,2025-07-14,2027,0,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-12681,Daniel Cravero,88083,Argentina,61,2026-06-18,2026,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-12694,Mirko Labrovic,20602,Croatia,58,2026-03-16,2026,0,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-127,Ralf Kettemann,44169,Germany,40,2025-07-01,,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-1270,Neil Lennon,6266,Northern Ireland,55,2025-03-22,2025,1,SC2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC2,2026-10-17
+tm-12709,Alejandro Orfila,58917,Uruguay,50,2026-06-14,2027,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-1274,Kjell André Thu,53298,Norway,42,2026-01-02,2027,1,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-1283,Menno van Dam,69478,Netherlands,43,2025-07-01,2027,1,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-1286,Frank Darío Kudelka,12865,Argentina,65,2026-02-24,2026,0,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-129,Thomas Stamm,18550,Switzerland,43,2024-07-01,2028,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-1290,Olivier Frapolli,24620,France,55,2026-07-01,2028,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-12908,Oskar Drobne,30505,Slovenia,51,2026-08-25,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-1293,Jørgen Vik,70838,Norway,36,2024-01-08,2028,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-13,Diego Simeone,2868,Argentina,56,2011-12-24,2027,1,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-130,Alberto Gilardino,64045,Italy,44,2026-09-29,2027,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-1301,Mitchell van der Gaag,11774,Netherlands,54,2026-07-01,2027,1,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-13025,Arturo Cleveland,50183,Norway,41,2025-01-02,2027,0,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-1304,Vincent Heilmann,92960,Netherlands,29,2026-07-01,2027,0,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-1306,Leonel Rocco,47294,Uruguay,60,2026-08-17,,1,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-131,Hansi Flick,67,Germany,61,2024-07-01,2028,1,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-131019,Epaminondas Koutromanos,109025,Greece,42,2025-07-05,2027,1,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-132,Rick Kruys,58257,Netherlands,41,2026-09-08,2028,1,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-132121,Artur Costa,111901,Brazil,46,2026-09-24,,0,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-1322,Lubos Kozel,14309,Czech Republic,55,2024-07-01,2026,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-132679,Armen Tonoyan,80924,Armenia,68,2026-02-27,2026,0,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-13299,David Strihavka,70127,Czech Republic,43,2026-01-02,,1,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-133,Johan Plat,50839,Netherlands,39,2026-07-01,2028,1,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-13339,Leonardo Fernández,57583,Argentina,54,2023-07-01,2024,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-13353,Sebastián Abreu,69287,Uruguay,50,2025-04-30,,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-13379,Nicolás Chiesa,57783,Argentina,46,2026-08-17,,1,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-13519,Christian Eggen Rismark,122745,Norway,35,2025-01-02,,1,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-13651,Aníbal Biggeri,22155,Argentina,61,2026-07-29,2026,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-13718,Bohuslav Pilny,37679,Czech Republic,53,2026-07-01,,1,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-13726,Roman West,49515,Czech Republic,45,2026-07-01,,0,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-13744,Anton Soltis,48034,Slovakia,50,2024-07-01,2028,1,SLO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SLO1,2026-10-17
+tm-1385,Daniele Galloppa,62640,Italy,41,2026-06-13,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-1390,Fabio Pisacane,106055,Italy,40,2025-06-11,2028,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-1391,Filipe Celikkaya,66278,Portugal,41,2026-07-01,,0,UNG1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UNG1,2026-10-17
+tm-14,Stephan Helm,58069,Austria,43,2024-07-01,2028,1,A1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A1,2026-10-17
+tm-1402,Georgios Kostis,46525,Greece,54,2026-07-01,2027,1,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-1403,Renato Paiva,63611,Portugal,56,2026-05-20,2027,0,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-141,Okan Buruk,23531,Türkiye,52,2022-07-01,2027,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-1418,Jorge Almirón,10227,Argentina,55,2026-01-02,2026,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-1420,Stéphane Gilli,5750,France,52,2026-07-01,2028,0,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-1421,Nicolas Usaï,10721,France,52,2026-07-01,2028,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-1426,Marinus Dijkhuizen,25155,Netherlands,54,2026-07-01,2028,1,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-1429,Alessandro Diamanti,125963,Italy,43,2026-07-01,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-14312,Alfredo Grelak,31966,Argentina,56,2026-03-25,2026,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-14318,Luis García,105413,Argentina,38,2026-06-09,,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-1434,Henk Brugge,49076,Netherlands,49,2026-07-01,2028,0,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-143475,Roman Simonyan,26585,Armenia,54,2026-07-01,,1,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-143480,Vigen Avetisyan,159766,Armenia,33,2026-07-01,,1,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-1435,Joseph Oosting,10694,Netherlands,54,2026-07-01,2028,1,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-144,Matjaz Kek,1519,Slovenia,65,2026-06-07,,1,KR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR1,2026-10-17
+tm-1443,Vladimir Vesely,27813,Slovakia,50,2026-08-12,,1,SLO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SLO1,2026-10-17
+tm-1444,Sebastián Romero,111794,Argentina,48,2026-09-29,,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-1450,Roberto Mosquera,9522,Peru,70,2026-06-08,,1,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-14542,Nicolás Domingo,151029,Argentina,41,2025-12-06,,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-14545,Jorge González,134674,Paraguay,51,2024-07-09,,0,PR1C,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PR1C,2026-10-17
+tm-1455,Paul Nuijten,98217,Netherlands,33,2026-07-01,2028,0,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-14554,Julio César Falcioni,5163,Argentina,70,2026-03-05,2026,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-14585,Gábor Korolovszky,151142,Hungary,47,2025-12-12,,1,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-14602,Rubén Forestello,23332,Argentina,55,2026-05-22,2027,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-14604,Fernando Díaz,7602,Chile,64,2026-05-26,2026,1,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-14649,Jhon Jaime Gómez,59286,Colombia,59,2026-02-18,,1,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-1465,Vasco Matos,60896,Portugal,46,2026-07-08,2028,1,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-1467,Stanimir Stoilov,2934,Bulgaria,59,2023-11-21,2028,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-14670,Alexis Matteo,102733,Argentina,48,2026-08-20,,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-14686,Joaquín Iturrería,110807,Argentina,37,2025-01-02,,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-14687,Darío Franco,5093,Argentina,57,2026-03-29,2027,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-14688,Juan Manuel Azconzábal,21642,Argentina,52,2026-04-07,2026,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-14723,Vicente Núñez,132197,Chile,50,2026-10-14,,0,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-14758,Cristian Chambian,139915,Uruguay,36,2025-02-17,2026,0,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-14761,Thomas Lyngbø,154462,Norway,38,2026-02-17,,1,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-148,Roberto De Zerbi,32157,Italy,47,2026-04-01,2031,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-14806,Alejandro Cappuccio,62784,Uruguay,50,2026-05-19,2026,0,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-1496,Jan Trousil,58115,Czech Republic,50,2025-10-14,,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-14977,Carlos Mayor,26799,Argentina,61,2026-04-29,2026,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-15,Carles Martínez,40683,Spain,42,2026-07-01,2028,0,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-150,Manuel Pellegrini,1558,Chile,73,2020-08-02,2027,1,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-1519,Jim Goodwin,35077,Ireland,44,2023-02-27,2025,1,SC1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC1,2026-10-17
+tm-152,Nenad Bjelica,5197,Croatia,55,2026-10-14,2027,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-1531,Martín Anselmi,99471,Argentina,41,2026-07-01,2027,0,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-1532,Joseba Etxeberria,36786,Spain,49,2026-10-04,,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-1533,Jokin Aranbarri,114424,Spain,41,2026-07-01,2027,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-1536,Sergio Francisco,29876,Spain,47,2026-07-01,2027,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-156,Julio Velázquez,17326,Spain,45,2025-01-05,2028,0,BU1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU1,2026-10-17
+tm-157,Rik De Mil,59108,Belgium,45,2025-12-10,2028,0,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-15906,Marcin Brosz,7120,Poland,53,2024-03-20,2027,1,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-16,Niko Kovac,10463,Croatia,55,2025-02-02,2029,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-16024,Giannis Okkas,40051,Cyprus,49,2026-07-01,2027,1,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-162,Filipe Luís,128436,Brazil,41,2026-07-06,2028,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-164,Tony Mowbray,1584,England,62,2026-07-01,,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-167,Manuel Baum,10070,Germany,47,2026-05-21,2028,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-16795,Pacheta,19446,Spain,58,2025-05-14,2027,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-168,Leszek Ojrzyński,14313,Poland,54,2025-03-13,2027,0,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-169,Juan Ferrando,35601,Spain,45,2026-07-01,2027,0,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-170,Johannes Hoff Thorup,93571,Denmark,37,2026-01-02,2027,0,A1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A1,2026-10-17
+tm-1701,Moreno,60631,Portugal,45,2026-07-01,2027,1,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-17136,Adnan Zildzovic,8974,Bosnia-Herzegovina,56,2025-10-15,2027,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-172,Mario Kohnen,101170,Belgium,40,2026-07-01,,0,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-17422,Leonardo Eguez,115315,Bolivia,36,2026-03-10,,0,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-17425,Ricardo Valiño,21925,Argentina,55,2025-12-22,,0,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-17426,Guillermo Sanguinetti,6285,Uruguay,60,2025-04-14,,1,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-17427,José Arrúa,108417,Paraguay,38,2021-05-01,,1,PR1C,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PR1C,2026-10-17
+tm-17428,Sergio Blanco,102348,Uruguay,44,2026-04-06,2026,1,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-17479,Federico Urciuoli,127647,Argentina,42,2026-01-02,2026,0,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-17482,Gustavo Huerta,11717,Chile,69,2017-10-03,2025,1,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-17484,Eduardo Ledesma,114351,Paraguay,41,2025-12-05,,1,PR1C,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PR1C,2026-10-17
+tm-175,Magnus Aadland,27798,Norway,44,2025-06-04,,0,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-17584,Diego Martínez,109590,Ecuador,39,2025-01-02,,0,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-17595,Tabaré Silva,17941,Uruguay,52,2026-04-14,,1,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-17596,Mark Otten,68334,Netherlands,41,2025-07-01,2027,1,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-17647,Svein Roger Pettersen,29127,Norway,50,2026-06-13,,0,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-17671,Miso Krsticevic,18018,Croatia,68,2022-07-10,,1,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-1771,José María Martínez,18065,Argentina,59,2024-04-30,2026,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-1775,Rubén Insúa,9293,Argentina,65,2026-09-07,2027,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-17836,Dejan Djuranovic,8078,Slovenia,58,2025-07-07,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-18,Alexander Blessin,26099,Germany,53,2026-09-22,2028,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-180,Tonda Eckert,85725,Germany,33,2025-12-05,2027,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-1804,Antonio Mohamed,4882,Argentina,56,2024-12-16,,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-18074,Jorge Cazulo,94241,Uruguay,44,2026-09-29,,1,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-18075,Gabriel Di Noia,93570,Argentina,44,2025-09-10,2027,0,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-18099,Raúl Duarte,28252,Paraguay,57,2026-08-11,,1,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-1826,Emanuel Tripodi,142914,Argentina,45,2026-07-29,,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-1829,Diego Flores,66206,Argentina,45,2026-02-12,2026,0,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-18303,Volodymyr Sharan,8558,Ukraine,55,2026-03-24,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-184,Pablo Guede,37179,Argentina,51,2026-01-02,2026,1,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-18487,Marino Pusic,28942,Netherlands,55,2026-08-06,,1,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-18544,Ange Postecoglou,11929,Australia,61,2026-07-03,2028,1,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-187,Petrik Sander,577,Germany,65,2025-11-03,,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-189,Rodolfo Arruabarrena,17428,Argentina,51,2026-07-01,2027,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-18945,Ángel López,38235,Spain,43,2025-07-01,2026,0,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-1897,David Horejs,29877,Czech Republic,49,2024-02-27,2029,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-19077,Stipe Matic,73291,Croatia,47,2026-10-15,,1,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-19104,Ismael Blanco,160317,Argentina,43,2026-08-17,,1,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-19124,Pablo Fornasari,143050,Argentina,42,2026-09-01,,0,PR1C,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PR1C,2026-10-17
+tm-19191,Savvas Damianou,53522,Cyprus,47,2026-07-01,2027,0,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-192,Rob Penders,36561,Netherlands,50,2026-07-01,2028,1,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-19304,Juan Carlos León,48312,Ecuador,51,2026-06-09,,0,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-19309,Joaquín Papa,112209,Uruguay,39,2025-12-24,2027,0,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-195,Freyr Alexandersson,62436,Iceland,43,2026-06-17,2029,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-19523,Mariano Echeverría,64112,Argentina,45,2026-04-07,2026,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-19634,Matías Módolo,121826,Argentina,39,2026-06-22,2027,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-197,Brian Priske,19874,Denmark,49,2025-07-01,,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-19775,Guillermo Duró,9215,Argentina,57,2026-04-05,2026,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-19780,Georgi Chilikov,20987,Bulgaria,48,2026-09-16,,1,BU1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU1,2026-10-17
+tm-19784,Zahari Sirakov,92451,Bulgaria,49,2026-06-02,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-19806,Marcelo Fuentes,10773,Argentina,66,2026-08-25,2026,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-1996,Sebastjan Cimirotic,158417,Slovenia,52,2026-07-04,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-2,Torsten Lieberknecht,5236,Germany,53,2025-04-23,,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-20,Mustafa Er,53723,Türkiye,46,2026-01-26,2027,1,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-200,Anthony Correia,56262,Netherlands,44,2026-07-01,2029,1,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-20063,Stefan Markulik,93811,Slovakia,35,2024-09-02,2027,1,SLO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SLO1,2026-10-17
+tm-20118,Simon Dvorsak,54501,Slovenia,52,2025-01-02,2027,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-20189,Bruno Silva,126198,Uruguay,46,2026-10-06,,1,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-202,Dick Lukkien,2208,Netherlands,54,2023-07-01,2028,1,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-20248,Almir Sulejmanovic,48154,Slovenia,48,2023-09-05,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-2036,Frank Schmidt,6416,Germany,52,2007-09-17,2027,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-2038,Eirik Bakke,37699,Norway,49,2026-06-26,2026,1,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-20514,John Armijo,89477,Chile,44,2026-09-16,,0,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-20519,Andrea Chiappella,42517,Italy,38,2025-07-03,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-20590,Flavio Robatto,64670,Argentina,52,2026-06-16,,0,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-20611,Marek Petrus,59720,Slovakia,51,2025-07-01,2027,1,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-2063,Diego Martínez,70683,Argentina,47,2026-01-02,2027,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-20634,Peter Tomko,92885,Slovakia,42,2026-07-01,,1,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-20635,Erik Grendel,116442,Slovakia,38,2026-07-01,,1,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-20656,Darijan Matic,88747,Slovenia,43,2025-10-14,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-20758,Daniel Valach,99071,Slovakia,48,2026-08-11,,0,SLO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SLO1,2026-10-17
+tm-20760,Ertuğrul Arslan,84994,Türkiye,46,2026-07-01,2028,1,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-208,Markus Gisdol,4849,Germany,57,2026-09-29,2027,1,BU1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU1,2026-10-17
+tm-20857,Adam Lamm,147566,Israel,39,2026-07-01,,1,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-209,Leonardo Ponzio,125977,Argentina,44,2026-09-18,2027,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-21101,Amund Skiri,27455,Norway,48,2023-08-27,2029,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-21170,Cristian Molins,101169,Argentina,50,2026-09-02,,0,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-2118,Adam Majewski,26166,Poland,52,2026-07-01,,1,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-21414,Alen Sculac,36800,Slovenia,55,2020-02-02,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-21448,Miran Srebrnic,9512,Slovenia,56,2025-06-11,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-21460,Radostin Aleksandrov,38052,Bulgaria,34,2026-10-05,,0,SL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL1,2026-10-17
+tm-2154,Sergio Rondina,22807,Argentina,55,2026-08-11,2027,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-2156,Rubén Sellés,58333,Spain,43,2026-08-26,2027,0,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-2157,Michael Köllner,31636,Germany,56,2026-01-02,2027,0,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-216,Vladimir Cifranic,52301,Slovakia,51,2026-07-01,,1,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-21655,Richard Pellejero,82393,Uruguay,50,2026-03-28,,1,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-21694,Stepan Harutyunyan,131846,Armenia,29,2026-07-01,,1,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-218,Bruce Arena,2544,United States,75,2025-01-02,2029,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-21903,Sergiy Shyshchenko,12652,Ukraine,50,2025-06-20,,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-21958,Makis Sergidis,74184,Cyprus,46,2025-07-01,2027,0,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-22,John Eustace,57225,England,46,2025-02-13,2028,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-22010,Jeton Bekjiri,25503,North Macedonia,44,2026-09-16,2029,0,AZ1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/AZ1,2026-10-17
+tm-2239,Fabio Pecchia,19635,Italy,53,2026-09-02,,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-22431,Damian Skiba,52504,Poland,37,2026-07-01,,1,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-22516,Ádám Kincses,120831,Hungary,39,2026-07-01,,1,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-22558,Marko Kartelo,108786,Croatia,45,2026-08-04,2027,1,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-22559,Davor Mladina,4338,Croatia,66,2024-09-25,2026,1,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-2259,Dusan Kosic,15783,Slovenia,55,2024-12-20,2028,1,BU1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU1,2026-10-17
+tm-22610,Ádám Weitner,75598,Hungary,44,2025-06-13,,1,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-22766,Dino Skender,62910,Croatia,42,2026-07-09,2027,0,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-2282,Ivan Leko,34157,Croatia,48,2025-12-08,2028,1,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-2288,Vítor Matos,75896,Portugal,38,2025-11-24,2030,0,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-22902,Leonardo Torres,161006,Colombia,,2026-10-17,,0,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-2293,İlhan Palut,41916,Türkiye,49,2026-02-06,2027,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-23,Lars Kornetka,29295,Germany,48,2026-03-11,2028,0,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-2300,Adrian Siemieniec,40054,Poland,34,2023-04-04,2027,0,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-2311,Pavel Hapal,2858,Czech Republic,57,2026-07-01,,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-23158,Markus Lackner,144341,Austria,35,2026-09-21,,1,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-23170,Javier Torrente,8621,Argentina,57,2026-08-13,,0,PR1C,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PR1C,2026-10-17
+tm-23171,Dailer Gutiérrez,147932,Bolivia,46,2026-09-24,,1,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-23184,Jørgen Isnes,50374,Norway,47,2026-05-19,2029,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-23246,Ajdin Redzic,154905,Slovenia,36,2026-03-21,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-2331,Alessandro Nesta,34187,Italy,50,2026-06-08,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-234,Giovanni van Bronckhorst,20014,Netherlands,51,2026-07-01,2028,1,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-235,Sander Duits,67686,Netherlands,43,2025-07-01,2027,1,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-2350,Omar Rodríguez,160965,Colombia,,2026-10-17,,0,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-2352,David González,105297,Colombia,44,2025-09-09,,1,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-2362,Silvijo Cabraja,39082,Croatia,58,2026-09-02,2027,0,KR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR1,2026-10-17
+tm-2364,Patrick Enengl,66997,Austria,32,2026-07-01,,1,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-237,Luis García,72702,Spain,45,2026-07-01,2027,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-2378,Yalçın Koşukavak,32976,Türkiye,54,2026-07-01,2027,1,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-238,Niels Frederiksen,9253,Denmark,55,2024-07-01,2028,0,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-2381,İsmet Taşdemir,18920,Türkiye,52,2026-02-11,2027,1,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-23826,Martín Demichelis,70585,Argentina,45,2026-07-01,2028,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-239,Morten Jensen,50533,Norway,45,2021-01-02,2029,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-23911,Armen Adamyan,14764,Armenia,59,2026-09-29,,1,ARM1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM1,2026-10-17
+tm-2394,Michael Liendl,95403,Austria,40,2026-08-17,,1,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-24,Adi Hütter,5018,Austria,56,2026-07-01,2029,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-24012,Bálint Gaál,140167,Hungary,35,2026-07-01,,1,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-2402,Julio Vaccari,102554,Argentina,46,2026-05-28,2027,0,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-24023,Gábor Márton,16030,Hungary,60,2026-08-27,,1,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-2403,Mathías Corujo,124245,Uruguay,40,2025-12-13,2026,1,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-24031,Attila Kuttor,17016,Hungary,56,2025-06-05,,1,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-24032,Péter Máté,114012,Hungary,41,2026-07-01,,1,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-2407,Matías Almeyda,19768,Argentina,52,2026-07-01,2028,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-24078,Atanas Atanasov,12518,Bulgaria,57,2026-10-01,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-2417,Ricardo Zielinski,11405,Argentina,67,2025-02-11,2026,0,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-2420,Tiago Margarido,75365,Portugal,37,2026-07-01,2027,0,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-2423,Petit,31291,Portugal,50,2026-02-03,2027,1,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-2424,Luís Pinto,51375,Portugal,37,2026-07-01,2029,0,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-2425,Vasco Seabra,50474,Portugal,43,2026-10-04,2029,0,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-2431,Pepa,17520,Portugal,45,2026-07-01,,1,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-2432,Luís Tralhão,69450,Portugal,48,2026-01-02,2028,0,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-24325,Roman Nadvornik,11986,Czech Republic,53,2026-03-24,,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-24326,Nikolas Martidis,47614,Cyprus,45,2026-07-01,2027,0,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-2433,Fernando Ortiz,53794,Argentina,48,2025-09-02,2026,1,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-244,Bruno Genesio,5036,France,60,2026-07-01,2028,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-2440,René Weiler,5311,Switzerland,53,2025-07-16,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-2441,Marko Nikolic,8142,Serbia,47,2025-07-01,2029,0,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-2444,Sebastian Siller,115088,Austria,37,2023-04-15,2028,1,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-24455,Richard Slezák,28447,Slovakia,53,2025-08-31,,1,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-2446,Philipp Semlic,47296,Austria,43,2024-07-01,,0,A1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A1,2026-10-17
+tm-2448,Nicolás Larcamón,44623,Argentina,42,2026-07-01,2027,0,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-2451,Scott Kellacher,19715,Scotland,45,2024-10-24,,1,SC2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC2,2026-10-17
+tm-24526,Mikulas Radvanyi,14078,Slovakia,57,2026-07-04,2026,1,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-24575,Mario Carevic,81333,Croatia,44,2024-10-15,2027,1,KR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR1,2026-10-17
+tm-2497,Julián Calero,35475,Spain,55,2026-07-01,2027,0,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-25,Claus-Dieter Wollitz,286,Germany,61,2021-07-01,,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-2502,Pablo Hernández,115605,Spain,41,2025-09-16,2029,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-25029,Mario Rac,146792,Croatia,39,2025-07-01,2026,0,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-25067,Eran Sasi,136480,Israel,44,2026-07-01,,0,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-25184,Damián Ayude,115313,Argentina,44,2026-07-01,2027,0,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-252,Daniele De Rossi,90748,Italy,43,2025-11-06,2027,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-2521,Sérgio Ferreira,104423,Portugal,39,2026-07-01,,0,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-2531,Stanislav Genchev,56528,Bulgaria,45,2026-05-28,,1,BU1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU1,2026-10-17
+tm-25467,Ryan Richter,100369,United States,36,2026-05-28,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-255,Marek Papszun,29618,Poland,52,2025-12-20,2028,0,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-2553,Neil McCann,29988,Scotland,52,2026-01-06,,1,SC1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC1,2026-10-17
+tm-25569,Pool Gavilánez,56591,Ecuador,45,2017-09-11,2027,1,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-25576,Paúl Vélez,23673,Ecuador,55,2025-08-08,,0,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-256,Grzegorz Szoka,72171,Poland,40,2025-11-11,2027,0,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-2578,Simo Valakari,13171,Finland,53,2024-10-01,2029,1,SC1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC1,2026-10-17
+tm-2581,Francesco Modesto,61640,Italy,44,2025-12-15,2029,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-25909,Roman Zolo,86655,Israel,38,2025-07-24,,0,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-2598,Jiri Kohout,97432,Czech Republic,48,2024-05-09,,0,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-26069,Brendan Rodgers,1366,Northern Ireland,53,2025-12-16,2028,1,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-2619,Andrés Rodríguez,126829,Uruguay,43,2026-10-11,,1,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-262,Omer Peretz,45535,Israel,40,2024-07-01,2028,1,ISR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR1,2026-10-17
+tm-26357,Zoran Bogolin,34539,Croatia,65,2024-10-26,2028,0,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-2639,Fábio Pereira,64821,Portugal,47,2025-07-01,2026,0,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-26459,Oleg Shandruk,91686,Ukraine,43,2024-12-17,2027,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-26462,Todor Simov,88454,Bulgaria,41,2025-09-24,,1,BU1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU1,2026-10-17
+tm-265,Jacob Neestrup,27714,Denmark,38,2026-07-01,2028,1,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-2655,Fabio Gallo,20941,Italy,56,2025-07-01,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-26563,Nikolay Mitov,21637,Bulgaria,54,2025-06-29,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-266,Mario Despotovic,67969,Croatia,41,2026-07-01,2028,0,A1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A1,2026-10-17
+tm-2662,Cem Sekerlioglu,5299,Austria,47,2025-07-01,2027,1,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-26697,Víctor Rivero,56195,Chile,46,2023-01-15,,0,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-267,Azar Karadas,109242,Norway,45,2024-02-08,2028,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-2672,Elias Charalambous,54008,Cyprus,46,2026-07-01,2028,1,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-2687,Albert Celades,34279,Spain,51,2026-08-11,2028,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-269,Tim Walter,30352,Germany,50,2026-02-23,2027,0,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-2692,Martin Falkeborn,135114,Sweden,33,2026-10-05,,1,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-26985,Ales Arnol,113894,Slovenia,42,2023-02-27,2028,0,SL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL1,2026-10-17
+tm-27,Vincent Kompany,69681,Belgium,40,2024-07-01,2029,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-2712,Ivan Fedyk,81032,Ukraine,39,2026-06-17,,0,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-2715,Arnauld Mercier,18962,France,54,2026-02-17,2027,0,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-27221,Jamal Sellami,25573,Morocco,56,2026-10-08,,1,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-27227,Sergiy Karpenko,78879,Ukraine,45,2025-06-27,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-2727,Timmy Simons,60821,Belgium,49,2026-07-01,2028,1,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-2729,Horacio Melgarejo,38624,Argentina,53,2026-01-02,2026,0,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-273,Franck Haise,27176,France,55,2026-02-16,2028,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-2730,Carlos Desio,92966,Argentina,53,2026-03-17,,0,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-2734,Miguel Rondelli,97916,Argentina,48,2026-03-29,2027,0,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-27399,Attila Varga,20666,Hungary,57,2023-09-12,,1,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-2745,Piotr Stokowiec,17590,Poland,54,2026-07-01,,1,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-276,Marco Baroni,12015,Italy,63,2026-07-01,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-2760,Mark Wilson,49861,Scotland,42,2025-05-31,,1,SC2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC2,2026-10-17
+tm-2761,Endre Eide,94022,Norway,32,2026-04-22,2029,0,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-27807,Robert Pevnik,6644,Slovenia,57,2024-06-14,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-2781,Rastislav Urgela,56492,Slovakia,50,2025-10-15,2028,1,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-2784,Nikolaos Papadopoulos,17575,Greece,55,2026-07-01,2028,1,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-2785,Messay Dego,52766,Israel,40,2025-10-27,2027,1,ISR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR1,2026-10-17
+tm-27861,Gerardo Ameli,51039,Argentina,56,2026-03-08,,0,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-279,Balázs Borbély,56555,Slovakia,47,2026-07-01,2027,1,UNG1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UNG1,2026-10-17
+tm-2795,Dougie Imrie,38505,Scotland,43,2025-11-25,,1,SC2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC2,2026-10-17
+tm-281,Enzo Maresca,53749,Italy,46,2026-07-01,2029,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-28107,Arno Van den Abbeel,59133,Belgium,41,2026-07-01,2029,0,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-2817,Magne Hoseth,66191,Norway,46,2026-02-06,,1,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-2828,Adham Hadia,52968,Israel,41,2026-10-02,,1,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-2832,Orhan Ak,62361,Türkiye,47,2026-09-04,2027,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-28596,Miloslav Brozek,52884,Czech Republic,51,2026-07-01,,1,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-28643,Tim Bakens,55458,Netherlands,43,2026-07-01,2027,1,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-288,Alexander Medina,47797,Uruguay,48,2026-02-21,2026,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-28844,Vuk Rasovic,5790,Serbia,53,2026-09-21,2027,1,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-28848,Giovanni Solinas,17509,Italy,58,2025-07-28,2027,1,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-28893,Tomasz Tulacz,28309,Poland,56,2015-08-13,2027,1,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-289,Régis Le Bris,40910,France,50,2024-07-01,2028,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-28990,Igor Budisa,119555,Croatia,49,2024-09-04,2025,1,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-28999,Javier Rabanal,63146,Spain,47,2026-06-09,2027,0,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-29,David Moyes,450,Scotland,63,2025-01-11,,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-290,Will Still,53316,England,34,2026-07-01,2028,0,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-2919,Ivan Jurić,16508,Croatia,51,2026-07-01,2028,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-29268,Emanuel Lukanov,56527,Bulgaria,51,2026-10-02,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-294,Marco Silva,19631,Portugal,49,2026-07-01,2028,1,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-2961,Geir Bakke,22844,Norway,56,2026-08-03,2026,1,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-2969,Baptiste Ridira,65452,France,43,2024-07-01,2028,0,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-2974,Yves Vanderhaeghe,6744,Belgium,56,2025-11-12,,1,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-2976,Ran Kozuch,96723,Israel,45,2024-07-01,2028,1,ISR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR1,2026-10-17
+tm-2990,António Barbosa,72282,Portugal,44,2024-10-02,2027,0,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-3,René Wagner,73659,Germany,38,2026-05-23,2028,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-30038,Christian Salandin,162162,Argentina,41,2026-10-17,,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-30072,Ermin Rakovic,159911,Slovenia,49,2025-07-09,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-3008,Sergej Jakirović,55762,Croatia,49,2025-07-01,2028,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-3012,Marvin Bartley,77248,England,40,2026-06-09,,1,SC2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC2,2026-10-17
+tm-30120,Sebastián Leto,70571,Argentina,40,2024-07-01,2027,1,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-30204,Laurent Guyot,10371,France,56,2021-05-20,2028,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-3021,David Gold,133530,Scotland,33,2024-09-12,,1,SC2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC2,2026-10-17
+tm-3031,Sean Crighton,72223,Scotland,36,2025-05-15,2028,1,SC2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC2,2026-10-17
+tm-3037,Antonio Nicola Calabro,42463,Italy,50,2026-06-13,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-3057,Vincent Euvrard,44033,Belgium,44,2025-08-28,2028,1,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-306,Robin Veldman,77172,Netherlands,40,2025-03-22,2027,0,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-3060,Dusan Kerkez,44273,Bosnia-Herzegovina,50,2025-11-15,2027,1,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-30613,Attila Supka,5029,Hungary,64,2026-07-01,,1,UNG1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UNG1,2026-10-17
+tm-3062,Vangelis Moras,94092,Greece,45,2026-07-01,2027,1,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-30624,Márk Nikházi,133303,Hungary,37,2026-06-19,,1,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-30641,Gyula Jeney,109664,Hungary,48,2026-07-01,,1,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-30660,Zsolt Laczkó,133172,Hungary,39,2026-02-09,,1,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-30753,Kamil Socha,57050,Poland,55,2023-07-01,2028,0,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-30854,Juan Pablo Grass,112303,Bolivia,46,2026-08-06,,0,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-30857,Karim Mokeddem,49507,France,52,2026-09-29,,0,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-30974,Zeljko Kopic,20637,Croatia,49,2026-08-27,2027,0,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-30998,Tomasz Kafarski,9738,Poland,51,2026-07-01,2027,0,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-31,Andoni Iraola,60677,Spain,44,2026-07-01,2028,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-31008,Maurício Dulac,122595,Brazil,46,2026-02-11,,0,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-31010,Jürgen Streppel,7032,Netherlands,57,2026-09-02,2027,1,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-31045,Tigran Yesayan,33391,Armenia,54,2025-08-02,,1,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-31193,Goran Markovic,105652,Slovenia,40,2021-07-01,,0,SL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL1,2026-10-17
+tm-31284,Sebastián Domínguez,127919,Argentina,46,2026-07-29,2027,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-314,Ivan Karaula,77132,Croatia,79,2023-07-01,2026,0,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-3159,Gaëtan Englebert,46855,Belgium,50,2022-03-14,2029,1,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-316,Gerald Scheiblehner,20205,Austria,49,2026-08-25,2028,1,A1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A1,2026-10-17
+tm-31614,Igor Jovicevic,35373,Croatia,52,2026-09-23,,1,BU1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU1,2026-10-17
+tm-3166,Thierry Debès,24699,France,52,2026-01-25,2028,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-317,John van den Brom,1886,Netherlands,60,2025-09-15,2027,1,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-3173,Mustafa Gürsel,42058,Türkiye,51,2026-10-09,2027,1,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-318,Waldemar Fornalik,2469,Poland,63,2025-08-06,2027,1,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-31804,Nuno Manta Santos,50859,Portugal,48,2026-01-02,2027,0,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-32041,Iván Velásquez,144223,Colombia,50,2026-10-17,,1,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-3205,Atila Gerin,19158,Türkiye,58,2026-07-01,2027,1,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-3207,Mustapha Yatabaré,139392,Mali,40,2026-10-09,,1,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-3211,Selçuk Şahin,87864,Türkiye,45,2026-07-08,2027,1,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-3225,Emilio Ferrera,1137,Belgium,59,2026-10-02,,1,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-32314,Norbert Czibor,106299,Slovakia,30,2026-07-01,2027,0,SLO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SLO1,2026-10-17
+tm-324,Óscar García,16362,Spain,53,2026-07-01,2029,1,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-3260,Philipp Zulechner,129538,Austria,36,2026-07-21,,1,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-3268,Filipe Coelho,120083,Portugal,41,2026-07-05,2028,0,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-327,Federico Bessone,96144,Argentina,42,2026-07-01,2027,1,KR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR1,2026-10-17
+tm-3277,Daniel Garnero,6802,Argentina,57,2025-06-16,2026,1,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-33,Miron Muslic,55100,Austria,44,2025-06-01,2028,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-3302,Xavier García Pimienta,23730,Spain,52,2026-07-01,2028,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-331,Jagoba Arrasate,29192,Spain,48,2026-10-12,2029,1,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-3325,Vítor Martins,66279,Portugal,40,2026-02-09,2026,0,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-3327,José Manuel Aira,29130,Spain,50,2025-09-25,2027,1,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-3329,Carlos Carvalhal,1588,Portugal,60,2026-07-12,2027,1,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-333,Mauricio Pellegrino,7827,Argentina,55,2025-01-02,2026,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-3345,Carlos Fangueiro,32347,Portugal,49,2025-11-26,2026,1,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-33481,Sanel Konjevic,55411,Slovenia,46,2026-06-30,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-3349,Rui Ferreira,27997,Portugal,53,2026-09-15,2027,1,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-33524,András Berndt,157505,Hungary,34,2026-06-11,,0,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-336,Rui Borges,56775,Portugal,45,2024-12-27,2028,1,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-3368,Luís Castro,69945,Portugal,46,2025-12-21,2028,0,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-337,Chris Davies,46951,Wales,41,2024-06-06,2028,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-338,Igor Kostyuk,56461,Ukraine,51,2025-12-17,,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-3385,Konstantinos Georgiadis,43808,Greece,46,2026-09-24,2027,1,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-3392,Giannis Tatsis,48018,Greece,54,2026-07-23,2027,1,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-3393,Apostolos Terzis,49297,Greece,55,2026-08-27,2027,1,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-34497,Robert Regvar,146415,Croatia,53,2026-03-21,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-347,Grégory Proment,29898,France,47,2026-09-28,,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-34775,Michal Kuruc,7993,Slovakia,45,2026-03-27,,0,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-34911,Christophe Galtier,5035,France,60,2025-07-05,2027,1,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-35,Marcel Rapp,24235,Germany,47,2026-07-01,,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-350,Chris Wilder,15289,England,59,2025-09-15,2028,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-3508,Michael Beale,36468,England,46,2026-07-01,2028,0,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-35110,Erez Benodis,22485,Israel,55,2026-07-01,,1,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-3523,Pablo Trobbiani,74353,Spain,49,2026-08-11,,1,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-35233,Nedim Tutic,28711,Bosnia-Herzegovina,62,2026-07-01,2027,1,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-3524,David Guion,5753,France,59,2026-07-01,2028,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-3527,Mariusz Misiura,74027,Poland,45,2026-07-01,,1,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-353,Hans Erik Ødegaard,29212,Norway,52,2025-01-02,,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-354,Frederik Vanderbiest,18053,Belgium,49,2025-07-01,,1,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-35488,Stanislav Macek,73132,Slovakia,48,2026-09-17,2028,0,SLO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SLO1,2026-10-17
+tm-355,Steven Schumacher,70039,England,42,2025-01-31,2028,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-3551,Ognjen Zaric,55331,Serbia,37,2026-01-09,,0,A1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A1,2026-10-17
+tm-35588,Víctor Rivera,9278,Peru,57,2026-09-02,,0,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-358,Nathan Jones,15622,Wales,53,2024-02-04,2030,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-3592,Patrick van Leeuwen,10027,Netherlands,57,2025-06-09,2028,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-36,İsmail Kartal,6366,Türkiye,65,2026-06-26,2027,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-36020,Juan Pablo Buch,107564,Colombia,39,2026-09-24,,0,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-36093,Dusan Toth,50498,Slovakia,55,2021-07-01,,1,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-36107,Martin Kuciak,81816,Slovakia,44,2026-03-20,,1,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-3631,Guillermo Almada,11452,Uruguay,57,2026-07-01,,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-365,Antonio Muñoz,61623,Spain,37,2026-01-05,2027,1,SLO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SLO1,2026-10-17
+tm-366,Fran Escribá,2562,Spain,61,2026-02-16,2027,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-367,Beñat San José,28835,Spain,47,2026-07-01,,0,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-368,Luis García,6444,Spain,53,2026-03-25,2027,0,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-36821,Nikolay Panayotov,119572,Bulgaria,32,2026-06-06,,0,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-3692,Ole Petter Berget,155353,Norway,31,2026-05-28,2026,1,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-36999,Filipe Cândido,48914,Portugal,47,2026-07-01,2027,1,AZ1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/AZ1,2026-10-17
+tm-370,Stephen Robinson,26488,Northern Ireland,51,2026-03-12,2029,1,SC1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC1,2026-10-17
+tm-37024,Danny Galm,44682,Germany,40,2026-02-16,2028,1,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-3709,José Bordalás,6440,Spain,62,2023-04-29,2028,0,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-371,Martin O'Neill,176,Northern Ireland,74,2026-01-05,2027,1,SC1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC1,2026-10-17
+tm-3711,Joel Huiqui,94917,Mexico,43,2026-04-23,2029,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-37169,Levente Babó,109318,Hungary,45,2026-07-01,,1,UNG1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UNG1,2026-10-17
+tm-37246,Zaur Hashimov,66039,Azerbaijan,45,2026-06-05,,0,AZ1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/AZ1,2026-10-17
+tm-37535,Marcelo Méndez,53066,Uruguay,45,2025-07-10,,1,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-37573,Panagiotis Spyrou,108181,Cyprus,50,2025-07-01,2027,1,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-377,Roman Skuhravy,28824,Czech Republic,51,2026-07-01,,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-3785,Ziv Arie,57079,Israel,55,2026-07-01,,0,ISR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR1,2026-10-17
+tm-3789,Jo Christiaens,77478,Belgium,38,2025-08-08,,1,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-379,Nuno Espírito Santo,16520,Portugal,52,2025-09-27,2028,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-37906,Ara Mkrtchyan,78513,Armenia,41,2023-08-23,,1,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-37914,Vahe Gevorgyan,56383,Armenia,39,2025-07-01,,0,ARM1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM1,2026-10-17
+tm-37918,Aras Özbiliz,144593,Armenia,36,2026-06-15,,1,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-3793,Almog Cohen,101195,Israel,38,2026-07-01,2029,1,ISR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR1,2026-10-17
+tm-3795,Jindrich Tichai,91166,Czech Republic,49,2026-09-03,,0,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-37951,Burak Yılmaz,117405,Türkiye,41,2026-09-25,2029,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-38269,Pavol Gregora,122589,Slovakia,37,2026-07-01,,0,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-383,Peter Bosz,1269,Netherlands,62,2023-07-01,2028,1,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-3837,Casper Røjkjær,91566,Denmark,34,2026-05-21,2028,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-384,Andries Jonker,1274,Netherlands,64,2026-07-01,2028,0,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-385,Danny Buijs,37630,Netherlands,44,2023-07-01,2027,1,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-38545,Gabriel Gómez,51281,Argentina,53,2026-06-22,,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-3892,Jan Poortvliet,1283,Netherlands,71,2025-10-28,2027,1,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-3899,Nestor El Maestro,3415,Serbia,43,2026-07-02,2028,0,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-39,Urs Fischer,5965,Switzerland,60,2025-12-07,2028,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-3901,Edward Still,54039,England,35,2026-07-01,2029,0,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-39097,Oleksandr Antonenko,78882,Ukraine,47,2025-06-06,,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-3911,Julien Lachuer,18856,France,49,2026-07-01,2028,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-3938,Omar De Felippe,11496,Argentina,64,2026-09-02,2027,0,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-3948,David Hubert,134366,Belgium,38,2025-10-13,,1,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-39722,Serkan Özbalta,59420,Türkiye,47,2025-08-05,2027,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-398,Gennaro Gattuso,27803,Italy,48,2026-06-23,2028,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-399,Daniel Farke,10939,Germany,49,2023-07-04,2027,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-4,Miroslav Klose,49850,Germany,48,2024-07-01,2028,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-4000,Vladyslav Lupashko,100266,Ukraine,39,2026-07-01,2029,1,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-4001,Soulis Papadopoulos,8809,Greece,59,2025-01-22,2027,1,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-40039,Damir Buric,1370,Croatia,62,2025-08-02,2027,1,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-40058,Pascal Jansen,18820,Netherlands,53,2025-01-06,2028,0,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-40173,Csaba Pintér,145973,Hungary,54,2025-07-01,,0,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-40188,Diego Mejía,105699,Mexico,43,2026-07-01,,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-403,John Stegeman,10972,Netherlands,50,2025-07-01,2027,1,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-4035,Benjamín Mora,51256,Mexico,47,2026-07-01,2027,0,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-404,Bart Schreuder,101054,Netherlands,43,2026-07-01,2027,0,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-40445,Sakis Papavasiliou,31611,Greece,50,2026-10-07,2027,1,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-405,Unai Emery,5075,Spain,54,2022-11-02,2029,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-4059,Mitja Mörec,88789,Slovenia,43,2026-07-01,,1,SL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL1,2026-10-17
+tm-40604,Aleksandar Tunchev,86312,Bulgaria,45,2024-06-07,2028,1,BU1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU1,2026-10-17
+tm-40678,Ivan Stoyanov,94561,Bulgaria,43,2026-09-03,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-4078,Philippe Eullaffroy,39618,France,58,2026-04-12,,0,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-408,Francesco Tomei,20748,Italy,54,2025-07-03,2029,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-409,Danny Röhl,31917,Germany,37,2026-07-01,2029,1,A1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A1,2026-10-17
+tm-4097,Giorgio Gorgone,21879,Italy,50,2026-07-11,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-41,Merlin Polzin,37595,Germany,35,2024-12-24,2029,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-410,Kosta Runjaić,1982,Germany,55,2024-07-01,2027,0,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-41274,Mohamed Messoudi,96688,Belgium,42,2025-07-01,,1,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-413,Dietmar Kühbauer,8364,Austria,55,2025-10-09,2029,1,A1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A1,2026-10-17
+tm-415,Jens Berthel Askou,38063,Denmark,44,2026-07-01,,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-4159,Guido Pagliuca,35535,Italy,50,2026-09-30,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-416,Ignazio Abate,107292,Italy,39,2026-06-12,2028,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-417,Olivier Pantaloni,5769,France,59,2026-07-01,2028,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-4171,Antonio Floro Flores,82947,Italy,43,2025-11-11,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-4172,Paolo Bianco,54264,Italy,49,2026-06-22,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-418,José Mourinho,781,Portugal,63,2026-07-01,2029,1,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-419,Mario Kovacevic,39469,Croatia,51,2025-06-04,2027,1,KR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR1,2026-10-17
+tm-42,Sandro Wagner,90969,Germany,38,2026-09-21,2028,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-421,Johan Vennberg,88306,Sweden,35,2024-01-02,2028,1,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-42109,Alexandros Garpozis,50343,Cyprus,46,2026-02-11,2027,1,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-42149,Diego Franco,104049,Uruguay,37,2026-09-30,,0,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-422,Mariusz Jop,49255,Poland,48,2024-09-24,2027,1,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-42208,Pablo Godoy,95067,Paraguay,42,2026-08-27,,0,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-4255,Cristian Bucchi,25228,Italy,49,2025-02-04,2029,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-428,Michal Gasparik,56956,Slovakia,44,2025-07-01,2027,1,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-4284,Raphael Wicky,23140,Switzerland,49,2026-01-05,2028,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-429,Hernán Losada,59692,Argentina,44,2025-12-19,2028,1,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-4291,Martí Cifuentes,34166,Spain,44,2026-07-22,2029,0,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-4294,José Faria,84344,Portugal,40,2026-02-05,2027,1,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-43,Wouter Vrancken,49546,Belgium,47,2026-07-01,2028,1,SC1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC1,2026-10-17
+tm-430,Paolo Vanoli,31876,Italy,54,2026-09-07,2028,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-4309,Thomas Myhre,87264,Norway,53,2025-06-24,,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-43119,Lior Zada,49759,Israel,47,2026-07-01,,0,ISR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR1,2026-10-17
+tm-432,Gregg Berhalter,22272,United States,53,2024-10-21,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-433,Milan Andjelkovic,111813,Slovenia,45,2026-09-15,,1,SL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL1,2026-10-17
+tm-43560,Piet Cremers,104355,Netherlands,31,2026-07-03,,0,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-43562,Thomas Matton,57835,Belgium,40,2024-07-25,2027,1,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-4362,Diyan Bozhilov,92722,Bulgaria,55,2026-06-09,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-4383,Maximilian Uhlig,94827,Austria,33,2024-07-01,,0,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-44,Stefan Leitl,28936,Germany,49,2025-02-17,2027,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-44006,Burhan Eşer,117564,Türkiye,41,2025-07-01,2028,1,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-44360,Yuriy Maksymov,8085,Ukraine,57,2026-09-23,2027,1,AZ1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/AZ1,2026-10-17
+tm-4441,Thomas Silberberger,4952,Austria,53,2026-04-07,2028,1,A1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A1,2026-10-17
+tm-4443,Christoph Wurm,102062,Austria,34,2025-01-07,,0,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-4467,Markus Schopp,9051,Austria,52,2026-07-01,,1,A1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A1,2026-10-17
+tm-447,Gonzalo García,54117,Spain,43,2025-07-01,,1,KR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR1,2026-10-17
+tm-44796,Jerko Leko,88584,Croatia,46,2025-07-01,,1,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-449,Thomas Reis,19735,Germany,53,2026-09-17,2028,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-4494,Angel Stoykov,21495,Bulgaria,49,2026-08-25,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-450,Pavel Sustr,63130,Czech Republic,52,2026-02-12,,1,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-4503,Krasimir Bislimov,36531,Bulgaria,55,2023-07-10,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-4507,Anton Zlogar,50405,Slovenia,48,2026-03-10,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-45269,Hikmet Karaman,801,Türkiye,66,2026-09-09,2027,0,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-4529,Robert Klauß,39194,Germany,41,2026-07-01,2028,1,SLO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SLO1,2026-10-17
+tm-4531,Roman Pivarník,2724,Czech Republic,59,2026-09-02,,1,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-45457,Ricardo Sá Pinto,12110,Portugal,54,2026-04-28,2027,1,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-4554,Davide Possanzini,38585,Italy,50,2026-06-24,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-4557,Juan Sara,94335,Argentina,50,2026-04-14,,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-456,Kristijan Polovanec,101133,Croatia,47,2026-07-01,2027,1,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-45604,Martín Perelman,94117,Argentina,40,2026-03-11,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-4561,Ezequiel Medrán,102454,Argentina,45,2026-08-28,,1,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-458,Filippo Inzaghi,25149,Italy,53,2025-06-17,2027,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-4582,Emilios Tekkis,104310,Cyprus,51,2026-07-03,2027,0,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-4585,Apostolos Charalabidis,16528,Greece,58,2026-08-11,2027,0,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-4590,Vesko Mihajlović,34494,Serbia,58,2026-03-11,2027,1,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-46,Cristian Chivu,56780,Romania,45,2025-06-09,2028,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-4603,Sokratis Ofrydopoulos,36823,Greece,52,2026-07-16,2027,1,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-465,Craig McLeish,150182,Scotland,36,2026-06-05,2029,1,SC1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC1,2026-10-17
+tm-46502,Zaur Aramyan,159765,Armenia,,2026-07-01,,0,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-46507,Armen Gyulbudaghyants,9068,Armenia,59,2023-12-09,,1,ARM1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM1,2026-10-17
+tm-466,Graham Alexander,15656,Scotland,55,2026-09-28,,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-467,Dick Schreuder,33196,Netherlands,55,2025-07-01,2028,1,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-46710,Rashad Sadyqov,56261,Azerbaijan,44,2020-07-17,2025,1,AZ1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/AZ1,2026-10-17
+tm-46736,Igor de Camargo,118414,Belgium,43,2026-01-03,,1,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-46771,Dor Elo,153750,Israel,33,2026-10-01,,1,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-468,Rogier Meijer,49162,Netherlands,45,2026-07-01,2028,1,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-46955,Patrik Maly,142684,Slovakia,33,2025-07-01,,1,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-47,Walter Mazzarri,1933,Italy,65,2026-07-01,2027,1,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-47107,José Eugenio Hernández,10790,Colombia,70,2026-06-21,,1,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-472,Juan Manuel Rodríguez,18096,Spain,67,2026-10-12,,0,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-475,Frédéric De Meyer,84680,Belgium,44,2026-07-01,,1,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-4772,Jugoslav Trenchovski,12108,North Macedonia,49,2026-07-29,,0,SL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL1,2026-10-17
+tm-479,Ondrej Smetana,64004,Czech Republic,44,2026-09-21,,1,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-48,Maximilian Senft,53318,Austria,37,2026-07-01,,0,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-4807,Vardan Bichakhchyan,24778,Armenia,49,2026-05-03,,1,ARM1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM1,2026-10-17
+tm-48332,Ruslan Kostyshyn,41038,Ukraine,49,2025-03-10,,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-4896,Adam Nocoń,36069,Poland,55,2024-10-01,2028,1,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-49283,Tomás Campos,70088,Mexico,51,2026-10-17,,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-49364,Valeriy Kutsenko,91659,Ukraine,39,2026-09-18,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-4941,Javier Gandolfi,100312,Argentina,45,2026-03-21,2026,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-4961,Esteban González,115049,Chile,44,2026-01-02,2027,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-499,Rüdiger Rehm,11289,Germany,47,2025-07-01,2027,1,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-5,Ruben Amorim,65202,Portugal,41,2026-07-01,2028,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-500,Frédéric Frans,129450,Belgium,37,2026-07-01,2028,1,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-501,Kjetil Knutsen,22987,Norway,58,2018-01-02,2029,0,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-5026,Lee Johnson,28097,England,45,2025-07-01,,1,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-503,Harald Suchard,12464,Austria,49,2026-03-24,,1,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-50531,Fábio Carille,47350,Brazil,53,2026-07-01,2027,1,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-506,Luciano Spalletti,517,Italy,67,2025-10-31,2028,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-51070,Alon Ziv,45523,Israel,49,2026-08-17,,1,ISR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR1,2026-10-17
+tm-511,Steven Pressley,5970,Scotland,53,2025-06-02,,1,SC1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC1,2026-10-17
+tm-512,Mark Robins,1569,England,56,2025-01-02,,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-51316,Peter Cernak,50397,Slovakia,50,2025-12-17,2027,1,SLO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SLO1,2026-10-17
+tm-51663,Tata Martino,5616,Argentina,63,2026-01-02,2027,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-51772,Pat Noonan,27429,United States,46,2021-12-14,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-518,Umut Eskiköy,115069,Türkiye,40,2026-10-15,,1,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-51820,Noam Shoham,68807,Israel,56,2026-07-01,2027,1,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-51828,Xavi Tamarit,25212,Spain,44,2026-10-01,,0,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-51930,Yaron Hochenboim,12729,Israel,55,2026-04-27,,0,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-520,Lars Friis,29945,Denmark,50,2026-03-24,2026,0,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-5208,César Monasterio,77451,Argentina,55,2026-09-03,,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-521,Petar Kosturkov,2948,Bulgaria,57,2026-08-27,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-5223,Ronny Levy,1561,Israel,59,2026-01-14,,1,ISR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR1,2026-10-17
+tm-5225,Martin Svedik,25048,Czech Republic,52,2025-04-12,2030,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-52358,Bruno Lage,61477,Portugal,50,2026-07-06,,0,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-5284,Anzhelo Kyuchukov,30551,Bulgaria,54,2026-03-02,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-533,Christian Ilzer,4855,Austria,48,2024-11-15,,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-53453,Tulipa,5696,Portugal,54,2025-07-01,2026,1,ARM1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM1,2026-10-17
+tm-53629,Oleksandr Chyzhevskyi,44705,Ukraine,55,2019-12-09,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-53645,Vasyl Yatsurak,90368,Ukraine,52,2026-04-09,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-53646,Ruslan Rotan,63932,Ukraine,44,2025-06-02,2028,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-5378,Gábor Erős,98452,Hungary,46,2025-06-05,,1,UNG1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UNG1,2026-10-17
+tm-540,Yaya Touré,89315,Cote d'Ivoire,43,2026-07-01,2029,1,SLO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SLO1,2026-10-17
+tm-541,Markus Mader,6421,Austria,58,2024-12-01,2028,1,A1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A1,2026-10-17
+tm-543,César Peixoto,63523,Portugal,46,2026-07-01,2028,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-54478,Juan Carlos Bazalar,27627,Peru,58,2026-09-14,,1,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-552,Damir Milinovic,8139,Croatia,54,2025-07-11,2027,1,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-554,Elad Braown,94307,Israel,46,2026-07-01,,0,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-5544,Jan Jelinek,67858,Czech Republic,44,2026-07-01,2029,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-5545,Pavel Hoftych,5693,Czech Republic,59,2026-09-07,,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-5546,Ales Majer,84660,Czech Republic,47,2025-07-01,2029,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-55686,Mladen Bartulovic,100265,Croatia,40,2025-06-20,2028,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-5570,Antônio Carlos Zago,10374,Brazil,57,2026-08-15,,1,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-5572,Alekos Vosniadis,20475,Greece,65,2026-09-24,2027,0,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-5587,Pietro De Giorgio,84647,Italy,43,2026-07-03,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-56089,Cameron Knowles,22827,New Zealand,44,2026-01-12,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-5619,Kjetil Rekdal,2100,Norway,57,2024-07-01,2026,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-5622,Cristián Muñoz,107837,Chile,43,2026-08-06,2026,1,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-5662,Rafael Fernández,116671,Mexico,48,2026-10-17,,0,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-5689,Bartosz Grzelak,24630,Sweden,47,2026-04-20,2028,0,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-5699,Lukasz Tomczyk,97999,Poland,37,2026-07-01,,0,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-5747,Felipe Gutiérrez,138584,Chile,36,2026-01-02,2026,1,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-57870,Guillermo Fernández Romo,51352,Spain,47,2026-10-02,2027,0,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-58,Vítor Bruno,36963,Portugal,43,2026-07-01,2028,0,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-58188,Mariano Munar,160077,Argentina,43,2026-10-17,,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-583,Luis Enrique,6499,Spain,56,2023-07-05,2030,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-589,Osman Özköylü,9284,Türkiye,55,2026-09-14,2027,1,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-599,Nikola Safaric,105944,Croatia,45,2023-12-08,2026,1,KR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR1,2026-10-17
+tm-60,Julian Schuster,61575,Germany,41,2024-07-01,,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-601,Daniel Beichler,88138,Austria,38,2026-10-07,2028,1,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-6025,Oded Kouter,120036,Israel,55,2026-08-31,,0,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-6028,Shai Barda,45521,Israel,57,2023-07-01,,0,ISR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR1,2026-10-17
+tm-603,Brian Barry-Murphy,68241,Ireland,48,2025-07-01,2029,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-60368,Pablo García,35639,Uruguay,49,2026-08-21,,1,ARM1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM1,2026-10-17
+tm-6043,Pavel Dreksa,139917,Czech Republic,37,2025-02-19,2028,1,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-605,Michalis Grigoriou,11768,Greece,52,2026-02-24,2028,1,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-6055,Efraín Juárez,77564,Mexico,38,2026-07-01,2027,1,UNG1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UNG1,2026-10-17
+tm-6058,Tamás Bódog,5045,Hungary,56,2025-10-30,2027,1,UNG1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UNG1,2026-10-17
+tm-6062,César Vigevani,30990,Argentina,52,2026-05-20,2027,0,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-607,Davide Nicola,14892,Italy,53,2026-10-14,2028,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-6070,José Gomes,2462,Portugal,56,2026-05-29,2028,0,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-60949,Konstantinos Bratsos,57453,Greece,49,2026-02-10,2027,0,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-610,Míchel Sánchez,33636,Spain,50,2026-07-01,2028,1,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-6105,Guy Weisinger,109544,Israel,35,2026-07-29,,0,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-6107,Tomasz Grzegorczyk,19257,Poland,45,2026-09-28,,1,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-6110,Jacek Zieliński,4585,Poland,65,2024-08-07,2027,1,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-6112,Daniel Myśliwiec,49405,Poland,40,2025-10-24,2028,0,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-618,Ian Cathro,10967,Scotland,40,2026-07-01,2028,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-61909,Patrik Durkac,71190,Slovakia,47,2026-09-07,,0,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-6195,Massimiliano Allegri,7671,Italy,59,2026-07-03,2029,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-61955,Ognyan Mladenov,124414,Bulgaria,33,2026-09-09,,0,BU1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU1,2026-10-17
+tm-62,Jindrich Trpisovsky,29521,Czech Republic,50,2018-01-02,2029,0,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-6201,Robert Pistek,85588,Czech Republic,35,2026-04-28,2028,0,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-621,Edin Terzic,14226,Germany,43,2026-07-01,2028,1,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-623,Michael Bradley,122177,United States,39,2025-12-15,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-626,Marko Mitrovic,24972,Serbia,48,2025-11-07,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-629,Pablo Sánchez,6729,Argentina,53,2026-01-02,2026,1,PR1C,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PR1C,2026-10-17
+tm-630,José Alberto López,54421,Spain,44,2022-12-13,2028,0,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-63007,Vitaliy Ponomaryov,108283,Ukraine,51,2025-06-05,2029,0,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-631,Xabi Alonso,63052,Spain,44,2026-07-01,2030,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-6321,Jesper Sørensen,10705,Denmark,53,2025-01-14,2028,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-634,Máté Pinezits,116659,Hungary,42,2026-01-02,,0,UNG1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UNG1,2026-10-17
+tm-6361,Marcin Włodarski,64222,Poland,44,2025-11-05,2028,0,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-6362,Norberto Araujo,108401,Ecuador,48,2026-01-09,,1,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-6363,Patricio Graff,55843,Argentina,50,2026-07-02,2027,1,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-6368,Jaime García,56197,Chile,49,2025-01-02,2026,1,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-6377,David Oulehla,60976,Czech Republic,43,2026-07-01,,0,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-6380,Zdenek Hasek,49514,Czech Republic,58,2023-11-29,,0,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-63966,B.J. Callaghan,116289,United States,45,2024-07-23,,0,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-6399,Andreas Tegström,64815,Sweden,47,2021-01-02,2029,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-63993,Valdas Dambrauskas,19743,Lithuania,49,2025-07-01,2028,0,AZ1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/AZ1,2026-10-17
+tm-64,Vincent Wagner,54392,Germany,40,2025-07-01,2028,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-641,Kim Hellberg,68946,Sweden,38,2025-11-26,,0,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-6418,Giannis Anastasiou,7073,Greece,53,2025-10-07,2027,1,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-642,Thomas Duivenvoorden,98925,Netherlands,40,2026-07-01,2027,0,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-64255,Stanislav Lojdl,76371,Slovakia,58,2021-07-01,,0,SK2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SK2,2026-10-17
+tm-6456,Rafał Górak,14199,Poland,53,2019-06-03,2028,1,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-648,Álvaro Cervera,15103,Spain,61,2024-12-24,2027,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-6495,Pablo Peirano,53258,Uruguay,51,2026-05-28,,1,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-65,Heiko Vogel,5973,Germany,50,2025-12-01,2027,0,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-653,Christos Kontis,44377,Greece,51,2025-10-30,2027,1,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-6536,Guillermo Farré,93327,Argentina,45,2026-04-27,2026,1,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-6541,Tomas Heidenreich,111516,Czech Republic,49,2026-07-01,,0,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-65423,Bogdan Blavatskyi,18928,Ukraine,63,2026-08-19,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-6574,Alberto Aquilani,72911,Italy,42,2026-06-12,2028,1,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-6593,Fabián Bustos,26897,Argentina,57,2026-09-30,,0,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-660,Arda Turan,115059,Türkiye,39,2025-07-01,2027,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-6643,Pablo Mastroeni,32926,United States,50,2021-12-13,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-667,Hugo Oliveira,19790,Portugal,47,2026-07-12,2029,0,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-6676,Georgios Antonopoulos,59285,Greece,45,2026-03-03,2027,1,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-6709,Miguel Herrera,5957,Mexico,58,2026-07-01,,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-6711,Gabriel Milito,39953,Argentina,46,2025-05-27,2027,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-675,Ratko Dostanic,2077,Serbia,66,2025-10-12,,1,BU1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU1,2026-10-17
+tm-67629,Tigran Petrosyants,56641,Armenia,52,2020-07-01,,1,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-6764,Ahmed Hikmet,95528,Bulgaria,42,2026-09-01,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-677,Gary O'Neil,82647,England,43,2026-07-01,2029,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-67939,Volodymyr Romanenko,91661,Ukraine,41,2026-07-01,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-681,Pellegrino Matarazzo,10906,United States,48,2025-12-22,2028,1,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-683,Imanol Alguacil,33333,Spain,55,2026-09-10,2028,1,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-68377,Ivaylo Petev,21500,Bulgaria,51,2026-09-28,,1,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-687,Sindre Tjelmeland,88330,Norway,37,2026-05-25,,1,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-6878,Alejandro Restrepo,69926,Colombia,44,2026-05-22,,0,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-6890,Nuri Şahin,96813,Türkiye,38,2025-09-15,2028,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-6912,Ronald Molina,109196,Venezuela,36,2026-02-17,2027,1,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-69261,Kily González,81288,Argentina,52,2026-09-15,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-697,Branislav Fodrek,52235,Slovakia,45,2026-07-01,,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-698,Michael Skubala,106421,England,43,2026-06-09,,0,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-6985,Gustavo Florentín,48531,Paraguay,48,2026-05-28,,1,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-6992,Roman Grygorchuk,1006,Ukraine,61,2026-01-14,2027,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-7001,Jürgen Kerber,68834,Austria,41,2023-11-20,,1,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-70178,Eldad Shavit,37092,Israel,44,2026-10-04,,1,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-7020,Walter Ribonetto,72692,Argentina,52,2026-03-10,2026,1,CLPD,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CLPD,2026-10-17
+tm-703,Oliver Glasner,22891,Austria,52,2026-07-06,2029,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-7042,Fabien Dagneaux,77358,France,53,2023-02-08,2026,0,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-70466,Matías Córdoba,136308,Argentina,42,2026-07-01,,1,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-7055,Víctor Manuel Vucetich,5106,Mexico,71,2026-10-17,,0,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-708,Zoltán Szélesi,47081,Hungary,44,2026-01-01,,1,UNG1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UNG1,2026-10-17
+tm-7087,Jaroslav Köstl,70124,Czech Republic,36,2026-01-13,,0,SLO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SLO1,2026-10-17
+tm-709,Maurizio Jacobacci,557,Italy,63,2026-07-01,,1,UNG1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UNG1,2026-10-17
+tm-7090,Azar Mammadov,27722,Azerbaijan,50,2026-07-03,,1,AZ1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/AZ1,2026-10-17
+tm-7097,Leonardo Madelón,7837,Argentina,63,2025-04-29,2026,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-7098,Víctor Bernay,22247,Argentina,56,2026-04-09,,0,PR1C,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PR1C,2026-10-17
+tm-710,Zoran Zeljkovic,71205,Slovenia,46,2026-09-15,,0,SL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL1,2026-10-17
+tm-712,Ivan Ivanov,91607,Bulgaria,38,2025-08-22,2028,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-714,Manolo González,6446,Spain,47,2024-03-12,2027,0,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-7146,Maciej Tokarczyk,95799,Poland,34,2025-07-01,2028,0,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-715,Jaroslav Vesely,35477,Czech Republic,49,2022-03-22,2028,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-7154,John Carver,3660,England,61,2026-09-29,2027,1,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-7160,Mustafa Dalcı,63323,Türkiye,53,2026-10-01,2027,0,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-7179,Ricardo Costa,84056,Portugal,45,2026-07-01,2028,1,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-7185,Giannis Apostolidis,110733,Greece,38,2026-09-25,2027,1,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-720,Francesco Farioli,73923,Italy,37,2025-07-06,2028,0,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-723,Anoush Dastgir,57898,Netherlands,36,2026-07-01,2028,1,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-72309,Davy Arnaud,50267,United States,46,2026-05-19,2026,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-724,Erwin van de Looi,12458,Netherlands,54,2026-07-01,2028,1,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-730,Lyuboslav Penev,9596,Bulgaria,60,2026-06-10,2027,1,BU1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU1,2026-10-17
+tm-7378,Alex,36070,Portugal,47,2026-07-17,2027,1,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-738,Didier Digard,92937,France,40,2024-07-01,2027,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-7443,Mario Sonnleitner,126666,Austria,40,2026-07-01,2028,1,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-74661,Armen Sanamyan,28646,Armenia,60,2026-09-10,,1,ARM1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM1,2026-10-17
+tm-74664,Kenan Kocak,17833,Germany,45,2026-06-03,2028,1,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-749,Matteo Andreoletti,46264,Italy,37,2026-09-30,2028,1,IT2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT2,2026-10-17
+tm-750,Vincent Hognon,27454,France,52,2025-07-01,2027,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-75558,Jorge Alfonso,37145,Argentina,55,2026-08-09,,0,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-759,Ante Simundza,20668,Slovenia,55,2024-12-25,2028,1,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-76,Johannes Moesgaard,111157,Norway,42,2026-05-13,2029,0,NO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO1,2026-10-17
+tm-762,Matthias Jaissle,45555,Germany,38,2026-08-05,2030,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-7633,Esteban Solari,100741,Argentina,46,2026-07-01,2028,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-7656,Lucas Barrios,148902,Paraguay,41,2026-09-15,,1,PR1C,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PR1C,2026-10-17
+tm-76945,Lisandro Greppo,95369,Argentina,49,2026-08-07,,0,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-7732,Arthur Papas,63229,Australia,46,2026-07-03,,0,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-7773,Stijn Vreven,24705,Belgium,53,2025-02-11,2027,1,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-7788,Bruno Pinheiro,64830,Portugal,49,2026-07-01,2027,0,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-78435,Dean Smith,15315,England,55,2023-12-12,2027,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-786,Marios Zachariou,156648,Cyprus,43,2026-07-01,2027,1,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-78776,Tasos Kyriakou,12618,Cyprus,56,2026-03-25,2027,0,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-789,Damjan Gajser,36719,Slovenia,56,2026-10-08,,1,SL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL2,2026-10-17
+tm-79,Sebastian Hoeneß,20940,Germany,44,2023-04-03,2028,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-790,Darko Milanic,3347,Slovenia,58,2026-06-22,,1,SL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL1,2026-10-17
+tm-79109,Kostas Tsikkas,123643,Cyprus,61,2011-07-01,2026,0,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-7918,Marek Danovsky,114357,Slovakia,35,2026-10-12,,1,SLO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SLO1,2026-10-17
+tm-7975,Marek Nikl,26501,Czech Republic,50,2026-03-27,,1,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-7976,Konrad Gerega,76079,Poland,36,2026-07-01,2028,1,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-798,Ruben den Uil,69015,Netherlands,35,2024-07-01,2027,0,NL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL1,2026-10-17
+tm-80,Uwe Rösler,1766,Germany,57,2025-10-06,2027,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-800,Maurizio Sarri,10073,Italy,67,2026-06-15,2029,0,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-8023,Jens Wissing,34760,Germany,38,2026-07-10,2028,1,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-8024,Vítor Severino,66277,Portugal,43,2026-10-04,2027,0,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-8031,Yuriy Vernydub,21983,Ukraine,60,2025-12-09,2028,1,AZ1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/AZ1,2026-10-17
+tm-804,Tomas Jakus,68915,Czech Republic,48,2026-09-22,,1,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-8056,Cristian Paulucci,89512,Argentina,53,2026-09-24,,0,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-8057,Cristian Pellerano,124595,Argentina,44,2025-11-19,,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-81,Timo Schultz,20161,Germany,49,2025-06-17,,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-810,Haim Silvas,38559,Israel,50,2026-01-27,2028,1,ISR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR1,2026-10-17
+tm-81169,Andriy Polyanytsya,107679,Ukraine,44,2026-08-26,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-813,Laurent Courtois,100654,France,48,2026-05-17,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-814,Zdenko Frtala,12023,Slovakia,56,2023-03-06,,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-81401,Igor Tymchenko,94975,Ukraine,40,2026-07-08,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-8172,Lucas González Vélez,111501,Colombia,45,2026-06-27,,0,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-8189,Ricardo Silva,64214,Portugal,44,2026-07-01,2027,0,PO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO2,2026-10-17
+tm-82,Tobias Strobl,30133,Germany,39,2026-07-01,2028,1,L2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L2,2026-10-17
+tm-820,Bernd Storck,694,Germany,63,2026-10-09,2027,1,TR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR1,2026-10-17
+tm-826,Yannick Cahuzac,105082,France,41,2026-09-15,,1,FR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR1,2026-10-17
+tm-82686,Yoann Damet,69476,France,36,2025-12-16,2028,0,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-829,Henning Berg,4431,Norway,57,2025-07-01,2027,1,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-830,Pedro Troglio,4885,Argentina,61,2025-04-29,2026,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-8321,Miroslav Kosev,44147,Bulgaria,52,2025-06-05,,1,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-83678,Andriy Anishchenko,116687,Ukraine,51,2023-06-24,,1,UKR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR2,2026-10-17
+tm-8377,Łukasz Becella,70031,Poland,47,2024-11-20,2028,0,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-84,Gert Remmel,20276,Estonia,50,2026-07-01,,0,UNG1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UNG1,2026-10-17
+tm-840,Konstantinos Makridis,109979,Cyprus,44,2026-07-08,2027,1,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-84122,Sergiy Nagornyak,35372,Ukraine,55,2022-09-02,,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-85465,Fran Fernández,60171,Spain,46,2026-01-08,,0,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-855,Sylvain Ripoll,3976,France,55,2024-07-01,2028,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-8568,José Juan Romero,45544,Spain,51,2022-09-20,2029,0,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-8590,Hernán Crespo,35676,Argentina,51,2026-07-16,,1,MEXA,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MEXA,2026-10-17
+tm-85955,Athanasios Staikos,48926,Greece,45,2026-07-01,2027,1,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-86,Daniel Thioune,15452,Germany,52,2026-02-04,2027,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-861,Diego Aguirre,11780,Uruguay,61,2023-11-21,,1,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-86209,Oleksandr Ryabokon,8081,Ukraine,62,2025-10-07,,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-866,Daniel Carreño,16111,Uruguay,63,2026-08-17,,1,URUC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/URUC,2026-10-17
+tm-87068,Jorge Célico,9105,Argentina,62,2026-09-25,,0,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-873,Pierre Sage,110443,France,47,2026-07-01,2029,0,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-8733,Fredi Álvarez,30819,Spain,50,2024-03-12,2027,0,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-8781,Andrés Yllana,22268,Argentina,52,2026-09-17,2027,1,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-87883,Yevgen Zadorozhniy,145574,Ukraine,43,2026-07-01,,1,UKR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UKR1,2026-10-17
+tm-88,Mateusz Stolarski,76254,Poland,33,2026-09-11,2028,0,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-8816,Eric Quill,66798,United States,48,2024-11-20,,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-8817,Carlos García,58232,Spain,42,2026-07-01,2027,1,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-89,Mauro Lustrinelli,22822,Switzerland,50,2026-07-01,,1,L1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/L1,2026-10-17
+tm-8907,Nitzan Damari,120294,Israel,39,2026-07-01,,1,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-892,Radek Krondak,29878,Czech Republic,55,2026-08-23,,1,TS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS2,2026-10-17
+tm-8936,Dawid Kroczek,70757,Poland,37,2026-09-23,2028,0,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-8956,Azar Bagirov,110352,Azerbaijan,42,2026-07-01,2029,0,AZ1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/AZ1,2026-10-17
+tm-897,Antonio Hidalgo,68884,Spain,47,2025-07-01,2028,1,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-8970,Massimiliano Alvini,35804,Italy,56,2025-07-02,2027,0,IT1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/IT1,2026-10-17
+tm-8995,Ivan Poulsen,85646,Denmark,39,2026-01-02,2027,0,NO2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NO2,2026-10-17
+tm-9,Panagiotis Christofileas,112805,Greece,41,2026-07-01,2028,1,GR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GR1,2026-10-17
+tm-9010,Jonathan Alves,126069,Portugal,43,2026-07-01,,0,BE2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE2,2026-10-17
+tm-903,Marink Reedijk,99580,Netherlands,35,2026-09-24,,0,SC1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC1,2026-10-17
+tm-9095,Eli Levi,76182,Israel,51,2025-10-26,,1,ISR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ISR2,2026-10-17
+tm-91288,Fangio Buyse,63434,Belgium,52,2025-12-10,2027,1,ZYP1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ZYP1,2026-10-17
+tm-9131,Jalel Kadri,22056,Tunisia,54,2025-04-14,2027,0,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-91422,Diego Funes,105962,Argentina,43,2025-01-15,,1,ARG2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARG2,2026-10-17
+tm-91427,Des Buckingham,51006,England,41,2025-08-14,,0,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-91561,Vahagn Minasyan,83168,Armenia,41,2022-07-01,,1,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-9168,Ben Olsen,15012,United States,49,2022-11-08,2026,1,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-91868,Álvaro Rubio,62317,Spain,47,2025-12-12,2027,1,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-91869,Dani Ponz,85258,Spain,52,2025-10-21,2026,0,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-9202,Albert Sánchez,68969,Spain,39,2025-07-31,2027,0,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-9233,Gonzalo Escudero,116024,Spain,37,2026-07-01,,0,SL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SL1,2026-10-17
+tm-924,Olcay Demir,100212,Türkiye,41,2026-09-09,2031,0,TR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TR2,2026-10-17
+tm-9241,Tamás Feczkó,16729,Hungary,49,2026-09-08,2027,0,UN2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/UN2,2026-10-17
+tm-928,Martín Palermo,26842,Argentina,52,2026-08-05,2028,1,ARGC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARGC,2026-10-17
+tm-92977,Adrián Barral,148871,Bolivia,,2026-09-16,,0,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-92979,Bolívia,141025,Bolivia,40,2026-06-29,,1,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-93043,Wálter Flores,55073,Bolivia,47,2026-08-25,,1,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-931,Álvaro Arbeloa,87908,Spain,43,2026-07-07,2029,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-936,Martin Brenner,70996,Uruguay,40,2026-07-01,2027,1,A2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/A2,2026-10-17
+tm-940,Claudio Giráldez,97955,Spain,38,2024-03-12,2028,1,ES1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES1,2026-10-17
+tm-941,Radoslav Kovac,51155,Czech Republic,46,2026-08-24,2027,1,TS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TS1,2026-10-17
+tm-9415,Ilias Fydanis,21492,Greece,64,2026-10-08,2027,0,GRS2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GRS2,2026-10-17
+tm-9510,Marek Zub,5127,Poland,62,2023-07-01,2027,1,PL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL2,2026-10-17
+tm-9524,Lyuben Lyubenov,25959,Bulgaria,41,2026-07-28,,0,BU2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU2,2026-10-17
+tm-9526,Kurban Berdyev,2754,Russia,74,2024-07-01,2026,1,AZ1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/AZ1,2026-10-17
+tm-9554,Dario Basic,26185,Croatia,41,2026-07-02,2027,0,KR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR2,2026-10-17
+tm-95571,Roberto Nanni,74348,Argentina,45,2025-09-30,2025,1,PR1C,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PR1C,2026-10-17
+tm-9599,Vasil Petrov,92942,Bulgaria,40,2026-08-26,,0,BU1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU1,2026-10-17
+tm-9636,Brian Schmetzer,8116,United States,64,2016-11-02,,0,MLS1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/MLS1,2026-10-17
+tm-9644,Tomasz Kaczmarek,10813,Poland,42,2026-09-08,2029,1,PL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PL1,2026-10-17
+tm-966,Giancarlo Umaña,143669,Colombia,44,2026-09-03,,0,BO1A,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BO1A,2026-10-17
+tm-967,Ilian Iliev,12476,Bulgaria,58,2017-12-29,2026,1,BU1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BU1,2026-10-17
+tm-968,Issame Charaï,47865,Belgium,44,2025-07-01,,1,BE1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BE1,2026-10-17
+tm-969,Zoumana Camara,61826,France,47,2025-04-08,2027,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-9715,Stijn Schaars,80512,Netherlands,42,2025-07-01,2029,1,NL2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/NL2,2026-10-17
+tm-979,Vasco Botelho da Costa,76522,Portugal,37,2025-07-01,2026,0,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-98051,Zorik Atanesyan,162453,Armenia,,2026-06-11,,0,ARM2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ARM2,2026-10-17
+tm-9811,Cristian Galíndez,141543,Colombia,,2026-10-17,,0,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-982,Alexandre Santos,7761,Portugal,49,2026-09-08,2027,0,PO1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PO1,2026-10-17
+tm-984,James Morrison,87875,Scotland,40,2026-04-30,2028,1,GB2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB2,2026-10-17
+tm-9840,Thomas Letsch,335,Germany,58,2026-07-10,,1,SA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SA1,2026-10-17
+tm-985,Michael Carrick,65647,England,45,2026-05-23,2028,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-9855,Gustavo Álvarez,50437,Argentina,53,2026-07-29,2027,0,EC1N,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/EC1N,2026-10-17
+tm-987,Alfred Johansson,79035,Sweden,36,2026-07-01,,0,SC1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/SC1,2026-10-17
+tm-9875,Nelson Valdez,104957,Paraguay,42,2026-07-01,,1,PR1C,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/PR1C,2026-10-17
+tm-989,Marco Rose,24197,Germany,50,2026-07-01,2029,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-9899,Ion Ansotegi,102782,Spain,44,2025-12-22,2027,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-990,Frank Lampard,60805,England,48,2024-11-28,2029,1,GB1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/GB1,2026-10-17
+tm-993,Iván Ania,47512,Spain,48,2023-07-01,2027,1,ES2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/ES2,2026-10-17
+tm-99482,Andreas Chatzimitsis,123645,Cyprus,61,2025-11-05,2027,0,CYP2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/CYP2,2026-10-17
+tm-995,Grégory Poirier,79622,France,44,2026-08-26,2028,1,FR2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/FR2,2026-10-17
+tm-99517,Jorge Araujo,65524,Peru,46,2026-05-19,,1,TDeC,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/TDeC,2026-10-17
+tm-9961,Rafael Dudamel,23984,Venezuela,53,2026-03-09,,1,COL1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/COL1,2026-10-17
+tm-999,Javi Cabello,36909,Spain,52,2026-06-09,2027,0,KR1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/KR1,2026-10-17
+trem-dc-ap,Thobias Barbosa,128988,Brazil,,2026-10-17,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+treze-pb,Adriano Souza,126421,Brazil,42,2026-02-24,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+tuna-luso-brasileira-pa,Robson Melo,96544,Brazil,49,2026-02-16,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+uberlandia-mg,Danilo,88566,Brazil,47,2026-06-10,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+uniao-rondonopolis-mt,Willian Heiler,155492,Brazil,26,2026-04-03,,0,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+vasco-rj,Pedro Emanuel,14217,Portugal,51,2026-07-10,2027,1,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+velo-clube-rioclarense-sp,Cléber Gaúcho,63132,Brazil,52,2026-04-03,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+vila-nova-go,Guto Ferreira,19584,Brazil,61,2026-03-28,,0,BRA2,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA2,2026-10-17
+vitoria-ba,Jair Ventura,22198,Brazil,47,2025-09-24,2026,0,BRA1,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA1,2026-10-17
+volta-redonda-rj,Breno Caetano,157541,Brazil,41,2026-10-17,,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17
+xv-de-piracicaba-sp,Fernando Marchiori,45861,Brazil,47,2026-02-02,,1,BRA4,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA4,2026-10-17
+ypiranga-rs,Gabardo Junior,90272,Brazil,43,2026-04-23,,0,BRA3,https://www.transfermarkt.com/x/trainer/pokalwettbewerb/BRA3,2026-10-17

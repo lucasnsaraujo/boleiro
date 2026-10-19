@@ -1,0 +1,17 @@
+{
+  "name": "@boleiro/game-client",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@boleiro/data": "workspace:*",
+    "@boleiro/engine": "workspace:*",
+    "@tauri-apps/api": "^2.12.2"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.2.5",
+    "vite": "^8.3.4"
+  }
+}

@@ -1,0 +1,128 @@
+import { realAbroadRates } from "../cli/realAbroadRates.js";
+import { loadNewGame } from "../sim/loadNewGame.js";
+import { fieldedTeams } from "../sim/players/fieldedTeams.js";
+import { loadEurope } from "../sim/world/loadEurope.js";
+import { loadMarketLeagues } from "../sim/world/loadMarketLeagues.js";
+import { loadSouthAmerica } from "../sim/world/loadSouthAmerica.js";
+import { resultOnlyTeam } from "../sim/world/resultOnlyLeague.js";
+import { FIRST_CURRENT_SEASON, realDivisionRates, realSerieARates, simulatedSeasonRates, type LeagueRates, type ResultRates } from "./calibration.js";
+import { CUP_SEASONS, realCupUpsets, simulatedCupUpsets, type CupUpsetGroup, type DivisionSquads } from "./cupUpsets.js";
+import { fitParams } from "./fitParams.js";
+import { CALIBRATED, type EngineParams } from "./match.js";
+import { CUP_PARAMS, DIVISION_PARAMS } from "./paramsForDivision.js";
+import { leagueAbroadKey, paramsForLeagueAbroad } from "./paramsForLeagueAbroad.js";
+import { realTwoLegTies, simulatedTwoLegTies } from "./twoLegTies.js";
+
+const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
+const rounded = (params: EngineParams) => JSON.stringify(Object.fromEntries(Object.entries(params).map(([k, v]) => [k, Number(v.toFixed(4))])));
+const fittedTriple = (params: EngineParams) => [params.baseGoals, params.homeAdvantage, params.lowScoreCorrelation].map((v) => v.toFixed(4)).join(" ");
+
+function resultError(simulated: ResultRates | LeagueRates, real: ResultRates | LeagueRates): number {
+  return (simulated.home - real.home) ** 2 + (simulated.draw - real.draw) ** 2 + (simulated.away - real.away) ** 2 + ((simulated.goalsPerGame - real.goalsPerGame) / 5) ** 2;
+}
+
+function marketError(simulated: LeagueRates, real: LeagueRates): number {
+  return resultError(simulated, real) + (simulated.homeWinP10 - real.homeWinP10) ** 2 + (simulated.homeWinP90 - real.homeWinP90) ** 2;
+}
+
+function cupError(simulated: CupUpsetGroup[], real: CupUpsetGroup[]): number {
+  let total = 0;
+  let matches = 0;
+  simulated.forEach((group, i) => {
+    const target = real[i];
+    if (!target) return;
+    total += target.matches * resultError({ ...group, home: group.win, away: group.loss }, { ...target, home: target.win, away: target.loss });
+    matches += target.matches;
+  });
+  return total / matches;
+}
+
+// Every club as its AI coach fields it on day one: its usual eleven in its formation, placed by position.
+const game = loadNewGame(1, { coachClubId: null });
+const squads: DivisionSquads = { A: fieldedTeams(game, "A"), B: fieldedTeams(game, "B"), C: fieldedTeams(game, "C"), D: fieldedTeams(game, "D") };
+
+const realA = realSerieARates();
+const fittedA = fitParams(CALIBRATED, ["baseGoals", "homeAdvantage", "strengthImpact", "lowScoreCorrelation"], (p) => marketError(simulatedSeasonRates(squads.A, p), realA));
+const simA = simulatedSeasonRates(squads.A, fittedA);
+console.log(`\nSérie A ${FIRST_CURRENT_SEASON}+ (real, closing odds)   vs   Boleiro (${squads.A.length} real squads)`);
+console.table({
+  "home win": { real: pct(realA.home), Boleiro: pct(simA.home) },
+  draw: { real: pct(realA.draw), Boleiro: pct(simA.draw) },
+  "away win": { real: pct(realA.away), Boleiro: pct(simA.away) },
+  "goals per game": { real: realA.goalsPerGame.toFixed(2), Boleiro: simA.goalsPerGame.toFixed(2) },
+  "home win chance p10": { real: pct(realA.homeWinP10), Boleiro: pct(simA.homeWinP10) },
+  "home win chance p90": { real: pct(realA.homeWinP90), Boleiro: pct(simA.homeWinP90) },
+});
+console.log("Fitted A:", rounded(fittedA), "\nIn use A:", rounded(DIVISION_PARAMS.A));
+
+for (const division of ["B", "C", "D"] as const) {
+  const real = realDivisionRates(division);
+  const fitted = fitParams(CALIBRATED, ["baseGoals", "homeAdvantage", "lowScoreCorrelation"], (p) => resultError(simulatedSeasonRates(squads[division], p), real));
+  const sim = simulatedSeasonRates(squads[division], DIVISION_PARAMS[division]);
+  console.log(`\nSérie ${division} ${division === "D" ? "2024" : `${FIRST_CURRENT_SEASON}+`} (real, ${real.matches} games)   vs   Boleiro (${squads[division].length} real squads, params in use)`);
+  console.table({
+    "home win": { real: pct(real.home), Boleiro: pct(sim.home) },
+    draw: { real: pct(real.draw), Boleiro: pct(sim.draw) },
+    "away win": { real: pct(real.away), Boleiro: pct(sim.away) },
+    "goals per game": { real: real.goalsPerGame.toFixed(2), Boleiro: sim.goalsPerGame.toFixed(2) },
+  });
+  console.log(`Fitted ${division}:`, rounded(fitted), `\nIn use ${division}:`, rounded(DIVISION_PARAMS[division]));
+}
+
+const realCup = realCupUpsets();
+const fittedCup = fitParams(CALIBRATED, ["baseGoals", "homeAdvantage", "strengthImpact", "gapSaturation"], (p) => cupError(simulatedCupUpsets(squads, p), realCup));
+const simCup = simulatedCupUpsets(squads, CUP_PARAMS);
+console.log(`\nCopa do Brasil ${CUP_SEASONS.first}–${CUP_SEASONS.last}: higher-division club's win / draw / loss (real vs Boleiro, params in use)`);
+console.table(
+  Object.fromEntries(
+    realCup.map((real, i) => {
+      const sim = simCup[i];
+      const cell = (r: number, s: number | undefined) => `${pct(r)} / ${pct(s ?? Number.NaN)}`;
+      return [
+        `${real.gap} fav ${real.venue}`,
+        {
+          games: real.matches,
+          win: cell(real.win, sim?.win),
+          draw: cell(real.draw, sim?.draw),
+          loss: cell(real.loss, sim?.loss),
+          goals: `${real.goalsPerGame.toFixed(2)} / ${sim?.goalsPerGame.toFixed(2)}`,
+        },
+      ];
+    }),
+  ),
+);
+console.log("Fitted cup:", rounded(fittedCup), "\nIn use cup:", rounded(CUP_PARAMS));
+
+const simTies = simulatedTwoLegTies(squads, CUP_PARAMS);
+console.log(`\nCopa do Brasil ${CUP_SEASONS.first}–${CUP_SEASONS.last} two-leg ties: higher-division club knocked out (real vs Boleiro, not a fit target)`);
+console.table(
+  Object.fromEntries(
+    realTwoLegTies().map((real, i) => [real.gap, { ties: real.ties, "favourite out": `${pct(real.favouriteOut)} / ${pct(simTies[i]?.favouriteOut ?? Number.NaN)}` }]),
+  ),
+);
+
+// Every league abroad football-data.co.uk has results for, on its clubs' result-only elevens at the game's start.
+const realAbroad = realAbroadRates();
+const abroadRows = [...loadSouthAmerica(2026), ...loadEurope(2026), ...loadMarketLeagues(2026)].flatMap(({ structure, levels }) =>
+  levels.flatMap((clubs, level) => {
+    const key = leagueAbroadKey(structure.id, level);
+    const counts = realAbroad.get(key);
+    if (!counts) return [];
+    const real: ResultRates = { matches: counts.matches, home: counts.home / counts.matches, draw: counts.draw / counts.matches, away: counts.away / counts.matches, goalsPerGame: counts.goals / counts.matches };
+    const teams = clubs.map(resultOnlyTeam);
+    const fitted = fitParams(CALIBRATED, ["baseGoals", "homeAdvantage", "lowScoreCorrelation"], (p) => resultError(simulatedSeasonRates(teams, p), real));
+    const inUse = paramsForLeagueAbroad(structure.id, level);
+    const sim = simulatedSeasonRates(teams, inUse);
+    return [[key, {
+      games: real.matches,
+      home: `${pct(real.home)} / ${pct(sim.home)}`,
+      draw: `${pct(real.draw)} / ${pct(sim.draw)}`,
+      away: `${pct(real.away)} / ${pct(sim.away)}`,
+      goals: `${real.goalsPerGame.toFixed(2)} / ${sim.goalsPerGame.toFixed(2)}`,
+      "fitted base, home, low-score": fittedTriple(fitted),
+      "in use": fittedTriple(inUse),
+    }] as const];
+  }),
+);
+console.log("\nLeagues abroad, football-data.co.uk 2022–2026 (real vs Boleiro, params in use); fitted baseGoals, homeAdvantage and lowScoreCorrelation next to the ones in use");
+console.table(Object.fromEntries(abroadRows));

@@ -1,0 +1,21 @@
+.conf-top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.conf-top > b {
+  margin-left: auto;
+  font-stretch: var(--wide);
+  font-weight: 900;
+}
+
+.conf-note {
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.conf-note b {
+  color: var(--ink-2);
+}

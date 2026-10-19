@@ -1,0 +1,238 @@
+/* The súmula after the final whistle: the home side's marks, the goals in the middle, the away side's marks. */
+.rep {
+  display: grid;
+  grid-template-columns: 1fr minmax(280px, 1.1fr) 1fr;
+  gap: 16px;
+  margin: 4px 24px 14px;
+}
+
+.rep h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.rep-side,
+.rep-goals {
+  padding: 8px 14px 12px;
+  border-radius: var(--r-m);
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--rule);
+}
+
+.rep ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rep-side li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 25px;
+  font-size: 13px;
+  border-top: 1px dotted var(--line-2);
+  animation: rep-in 420ms var(--e-out) both;
+  animation-delay: calc(var(--i, 0) * 28ms + var(--rep-after) + 120ms);
+}
+
+.rep-side .pos {
+  width: 18px;
+  height: 18px;
+  font-size: 9.5px;
+}
+
+.rep-side .nm {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+/* Shots and passes sit at the row's end in small figures, like a box score's columns. */
+.rep-side .play {
+  flex: none;
+  margin-left: auto;
+  color: var(--ink-2);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* A mark as a score box: green for a great match, red for a poor one. */
+.rep .mark {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--paper-2);
+  color: var(--ink);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rep .mark.great {
+  background: var(--green);
+  color: var(--on-green);
+}
+
+.rep .mark.poor {
+  background: var(--red-l);
+  color: var(--red);
+}
+
+.rep .star {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--yellow);
+  color: var(--on-yellow);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  animation: rep-star 640ms var(--e-slap) both;
+  animation-delay: 700ms;
+}
+
+.rep-goals h3 {
+  justify-content: center;
+}
+
+.rep-goals li {
+  display: grid;
+  grid-template-columns: 34px 16px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 4px 0;
+  border-top: 1px dotted var(--line-2);
+  animation: rep-in 420ms var(--e-out) both;
+  animation-delay: calc(var(--i, 0) * 60ms + var(--rep-after) + 80ms);
+}
+
+.rep-goals .mn {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 13px;
+  color: var(--mute);
+  text-align: right;
+}
+
+.rep-goals .who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rep-goals .who b {
+  font-weight: 800;
+  font-size: 13.5px;
+}
+
+.rep-goals .who small {
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.rep-goals .kind {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rep-goals .kind.penalty,
+.rep-goals .kind.freeKick,
+.rep-goals .kind.olympic {
+  background: var(--yellow);
+  color: var(--on-yellow);
+}
+
+.rep-goals .kind.ownGoal {
+  background: var(--red-l);
+  color: var(--red);
+}
+
+.rep-goals .rep-none {
+  padding: 18px 0;
+  text-align: center;
+  color: var(--mute);
+}
+
+@keyframes rep-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes rep-star {
+  from {
+    opacity: 0;
+    transform: scale(1.8) rotate(-12deg);
+  }
+}
+
+/*
+ * At the final whistle the rows below glide down to make room (Round.tsx), and once they have mostly passed
+ * the three panels are laid down left to right, their lines filling in after.
+ */
+.rep {
+  --rep-after: 140ms;
+}
+
+.rep > * {
+  animation: rep-lay var(--t-slow) var(--e-out) var(--rep-after) both;
+}
+
+.rep > :nth-child(2) {
+  animation-delay: calc(var(--rep-after) + 60ms);
+}
+
+.rep > :nth-child(3) {
+  animation-delay: calc(var(--rep-after) + 120ms);
+}
+
+@keyframes rep-lay {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) rotate(-0.6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rep > *,
+  .rep-side li,
+  .rep-goals li,
+  .rep .star {
+    animation: rep-fade 200ms var(--e-out) both;
+  }
+}
+
+@keyframes rep-fade {
+  from {
+    opacity: 0;
+  }
+}

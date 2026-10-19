@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Evento</title>
+<link rel="stylesheet" href="../../packages/design-tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="hub.css">
+<script src="mock.js"></script>
+<script src="hub.js"></script>
+<style>
+.veil { position: absolute; inset: 28px 0 0; background: var(--veil); z-index: 10; }
+.pop { position: absolute; left: 50%; top: 128px; width: 700px; margin-left: -330px; z-index: 11; background: var(--card); border-radius: 16px; box-shadow: var(--sh-pop); padding: 22px 24px 18px; }
+.pop .head { display: grid; grid-template-columns: 132px 1fr; gap: 22px; }
+.ps { width: 128px; padding: 5px 5px 0; background: #fff; border-radius: 10px; text-align: center; color: #14231A; box-shadow: 0 1px 0 rgba(20,35,26,.12), 0 0 0 1px rgba(20,35,26,.08), 0 14px 22px -10px rgba(20,35,26,.5); transform: rotate(-3deg); margin-top: -40px; }
+.ps .art { height: 120px; border-radius: 6px; background: #C8102E; position: relative; overflow: hidden; display: grid; place-items: center; }
+.ps .art::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 14px, rgba(0,0,0,.24) 14px 28px); }
+.ps .art b { position: relative; font-stretch: var(--wide); font-weight: 900; font-size: 64px; color: #fff; line-height: 1; }
+.ps .art .crest { position: absolute; left: 6px; top: 6px; }
+.ps .art em { position: absolute; right: 7px; top: 6px; font-style: normal; font-stretch: var(--semi); font-weight: 900; font-size: 10px; color: rgba(255,255,255,.85); }
+.ps .nm { font-weight: 800; font-size: 13px; margin-top: 6px; }
+.ps .cl { font-size: 11px; color: #5C584B; padding-bottom: 8px; }
+.kind { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--mute); font-weight: 600; }
+.kind i { font-size: 15px; color: var(--ink-2); }
+.kind .x { margin-left: auto; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 1.5px var(--line-2); color: var(--ink-2); }
+.pop h2 { font-stretch: var(--wide); font-weight: 900; font-size: 28px; line-height: 1.02; letter-spacing: -.01em; margin-top: 6px; }
+.pop blockquote { margin-top: 10px; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+.pop blockquote b { color: var(--ink); }
+.facts { display: flex; gap: 18px; margin-top: 10px; font-size: 12px; color: var(--mute); }
+.facts b { color: var(--ink); font-weight: 700; }
+
+.ch { margin-top: 14px; display: grid; gap: 8px; }
+.ch .fxh { margin-bottom: -2px; }
+.c { display: grid; grid-template-columns: 22px 1fr auto; gap: 12px; align-items: center; padding: 11px 14px; border-radius: var(--r-m); box-shadow: inset 0 0 0 1.5px var(--line); }
+.c .rd { width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--line-2); background: var(--card); }
+.c b { display: block; font-weight: 800; font-size: 14px; }
+.c small { display: block; font-size: 12px; color: var(--mute); margin-top: 2px; }
+.c.on { box-shadow: inset 0 0 0 2px var(--ink); background: var(--yellow-l); }
+.c.on .rd { box-shadow: inset 0 0 0 6px var(--ink); }
+.fx { display: flex; gap: 5px; }
+.fx span { width: 64px; justify-content: center; display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px; border-radius: 6px; background: var(--paper); font-stretch: var(--semi); font-weight: 900; font-size: 12px; white-space: nowrap; }
+.fx span i { font-size: 13px; color: var(--ink-2); }
+.fx span:last-child { width: 104px; }
+.fxh { display: flex; justify-content: flex-end; gap: 5px; padding: 0 14px 0 0; }
+.fxh span { width: 64px; text-align: center; font-size: 9.5px; letter-spacing: .05em; }
+.fxh span:last-child { width: 104px; }
+.fx .up { color: var(--green); } .fx .dn { color: var(--red); } .fx .eq { color: var(--mute); font-weight: 700; }
+.foot { margin-top: 16px; display: flex; align-items: center; gap: 12px; padding-top: 14px; border-top: 2px dotted var(--line-2); }
+.foot p { font-size: 12px; color: var(--mute); margin-right: auto; }
+</style>
+</head>
+<body>
+<script>
+renderHub('mac');
+document.querySelector('.app').insertAdjacentHTML('beforeend', `<div class="veil"></div>
+<div class="pop">
+  <div class="head">
+    <div class="ps"><div class="art">${crest('FLA', 22)}<em>FLA 13</em><b>D</b></div><div class="nm">Danilo</div><div class="cl">Zagueiro · 35 anos</div></div>
+    <div>
+      <div class="kind"><i class="ph-bold ph-chat-circle-text"></i>No CT, depois do treino · Dom, 18 out<span class="x"><i class="ph-bold ph-x"></i></span></div>
+      <h2>Danilo vai parar em dezembro</h2>
+      <blockquote>“Professor, o corpo já pediu. Quero terminar a carreira aqui e me despedir da torcida no Maracanã.”</blockquote>
+      <div class="facts"><span>No Flamengo desde <b>2025</b></span><span>Contrato até <b>dez 2026</b></span><span><b>11 jogos</b> na Série A 2026</span></div>
+    </div>
+  </div>
+  <div class="ch">
+    <div class="fxh"><span class="lbl">Moral</span><span class="lbl">Torcida</span><span class="lbl">Diretoria</span><span class="lbl">Caixa</span></div>
+    <div class="c on"><span class="rd"></span><div><b>Fazer a despedida no último jogo em casa</b><small>Contra a Chapecoense, no Maracanã, em 2 de dezembro</small></div>
+      <div class="fx"><span class="up"><i class="ph-bold ph-smiley"></i>+4</span><span class="up"><i class="ph-bold ph-megaphone"></i>+6</span><span class="eq"><i class="ph-bold ph-briefcase"></i>0</span><span class="up"><i class="ph-bold ph-coins"></i>+R$ 1,2 mi</span></div></div>
+    <div class="c"><span class="rd"></span><div><b>Pedir mais um ano</b><small>Renova até dez 2027, mesmo salário. Ele pensa até sexta</small></div>
+      <div class="fx"><span class="up"><i class="ph-bold ph-smiley"></i>+2</span><span class="up"><i class="ph-bold ph-megaphone"></i>+3</span><span class="dn"><i class="ph-bold ph-briefcase"></i>−5</span><span class="dn"><i class="ph-bold ph-coins"></i>−R$ 25,2 mi</span></div></div>
+    <div class="c"><span class="rd"></span><div><b>Chamar para ser seu auxiliar em 2027</b><small>Começa em janeiro, nível 4, R$ 300 mil por mês</small></div>
+      <div class="fx"><span class="up"><i class="ph-bold ph-smiley"></i>+3</span><span class="up"><i class="ph-bold ph-megaphone"></i>+4</span><span class="up"><i class="ph-bold ph-briefcase"></i>+1</span><span class="dn"><i class="ph-bold ph-coins"></i>−R$ 3,6 mi</span></div></div>
+  </div>
+  <div class="foot"><p>Sem resposta até quarta, o auxiliar decide.</p><button class="btn flat"><i class="ph-bold ph-user-switch"></i>Deixa com o auxiliar</button><button class="btn go"><i class="ph-bold ph-check"></i>Responder</button></div>
+</div>`);
+</script>
+</body>
+</html>

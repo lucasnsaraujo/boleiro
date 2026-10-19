@@ -1,0 +1,54 @@
+.hub { display: grid; grid-template-columns: 300px 1fr; gap: 14px; padding: 18px 14px 14px; height: 100%; }
+.side { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+
+.club { display: flex; gap: 12px; align-items: center; padding: 12px 12px 12px 12px; }
+.club h1 { font-stretch: var(--wide); font-weight: 900; font-size: 24px; line-height: 1; letter-spacing: -.01em; }
+.club p { font-size: 12px; color: var(--mute); margin-top: 4px; line-height: 1.35; }
+.club p b { color: var(--ink); font-weight: 700; }
+.spon { position: absolute; right: 12px; bottom: 12px; height: 19px; padding: 0 7px; border-radius: 4px; background: #fff; color: #14231A; font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .02em; display: grid; place-items: center; transform: rotate(3deg); box-shadow: 0 0 0 1px rgba(20,35,26,.14), 0 2px 4px -1px rgba(20,35,26,.4); }
+
+.money { padding: 10px 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 9px 12px; }
+.money .big { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; }
+.money .big b { font-stretch: var(--semi); font-weight: 900; font-size: 19px; }
+.money .lbl { font-size: 10px; }
+.money .meter { margin-top: 5px; }
+
+.next { padding: 10px 12px; }
+.next .m { display: flex; gap: 10px; align-items: center; margin-top: 6px; }
+.next b { font-weight: 800; font-size: 16px; display: block; }
+.next p { font-size: 12px; color: var(--mute); }
+.odds { position: absolute; right: 12px; top: 36px; transform: rotate(3deg); background: #fff; border-radius: 8px; padding: 13px 4px 4px; display: flex; color: #14231A; box-shadow: 0 0 0 1px rgba(20,35,26,.12), 0 6px 10px -4px rgba(20,35,26,.4); }
+.odds em { position: absolute; left: 6px; top: -6px; font-style: normal; font-stretch: var(--semi); font-weight: 900; font-size: 9px; letter-spacing: .02em; background: #fff; color: #14231A; padding: 3px 5px; border-radius: 3px; transform: rotate(-4deg); box-shadow: 0 0 0 1px rgba(20,35,26,.14); }
+.odds span { display: grid; text-align: center; font-size: 9px; color: #5C584B; font-weight: 700; line-height: 1.15; padding: 0 5px; }
+.odds span + span { border-left: 1px dotted #C4B796; }
+.odds span b { font-size: 12.5px; color: #14231A; font-weight: 900; font-stretch: var(--semi); }
+
+.esc { width: 100%; height: 46px; font-size: 15px; }
+
+.card { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.card .top { background: var(--foil); padding: 10px 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); border-radius: var(--r-m) var(--r-m) 0 0; }
+.card .top .num { margin-left: auto; font-stretch: var(--wide); font-weight: 900; font-size: 28px; color: var(--green); line-height: 1; }
+.card .top b { font-weight: 800; font-size: 15px; display: block; }
+.card .top span { font-size: 11.5px; color: var(--ink-2); }
+.card .body { padding: 10px 12px; font-size: 12px; }
+.card .kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; color: var(--mute); }
+.card .kv b { color: var(--ink); font-weight: 600; }
+.st { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.st th { font-stretch: var(--semi); font-weight: 800; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); text-align: right; padding: 3px 0; border-bottom: 2px solid var(--ink); }
+.st td { text-align: right; padding: 3px 0; border-bottom: 1px dotted var(--line-2); }
+.st td:first-child, .st th:first-child { text-align: left; }
+
+.dock { display: flex; align-items: center; gap: 4px; padding: 2px 2px 0; }
+.dock a { flex: 1; height: 50px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--ink-2); font-stretch: var(--tight); font-weight: 700; font-size: 11px; position: relative; }
+.dock a i { font-size: 21px; color: var(--ink); }
+.dock a:hover { background: var(--paper-2); }
+.dock a .badge { position: absolute; top: 3px; right: 9px; min-width: 16px; height: 16px; border-radius: 999px; background: var(--red); color: #fff; font-stretch: var(--semi); font-weight: 900; font-size: 10px; display: grid; place-items: center; padding: 0 4px; box-shadow: 0 0 0 2px var(--paper); }
+.dock .cnt { flex: none; padding: 0 6px 0 8px; text-align: right; line-height: 1.1; }
+.dock .cnt b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 15px; }
+.dock .cnt span { font-size: 10.5px; color: var(--mute); }
+
+.tbl { overflow: hidden; }
+.tb td { height: 23px; }
+.tb .flag { font-size: 13px; vertical-align: -2px; margin-left: 6px; }
+.tb .flag.inj { color: var(--red); }
+.tb .flag.ctr { color: var(--later); }

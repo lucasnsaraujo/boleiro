@@ -1,0 +1,285 @@
+.season-end {
+  max-width: 900px;
+}
+
+.season-end-band {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 26px;
+  margin-top: 22px;
+  padding: 26px 28px;
+  background: linear-gradient(180deg, var(--lawn-2), var(--lawn-1));
+  border: var(--hairline);
+}
+
+.season-end-who {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.season-end-line {
+  font: 600 18px var(--cond);
+  color: var(--chalk-2);
+}
+
+.season-end-place {
+  display: grid;
+  justify-items: end;
+}
+
+.season-end-place-n {
+  font: 900 112px/0.86 var(--num);
+}
+
+.season-end-place-l {
+  margin-top: 4px;
+  font: 600 15px var(--cond);
+  color: var(--chalk-3);
+}
+
+.season-end-stamp {
+  position: absolute;
+  top: -15px;
+  right: 24px;
+  z-index: 1;
+  padding: 6px 12px 5px;
+  font: 800 22px/1 var(--num);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.season-end-stamp.is-title {
+  background: var(--yellow);
+  color: var(--on-yellow);
+}
+
+.season-end-stamp.is-promoted {
+  background: var(--promotion);
+  color: var(--lawn-0);
+}
+
+.season-end-stamp.is-relegated {
+  background: var(--red);
+  color: #fff;
+}
+
+/*
+ * The stinger. The finishing place rises out of its slot while the chords climb; the stamp falls
+ * from above the page, accelerating, and hits on the stinger's last chord (--season-end-beat, from
+ * the cue itself); on impact the band takes the knock and a wash of the stamp's colour runs back
+ * from it across the band, behind the club. Relegation falls slower and lands heavier.
+ */
+.season-end-band[data-stamp] {
+  isolation: isolate;
+  --season-end-fall: 260ms;
+  /* The stamp touches down 70% into its fall (season-end-stamp-fall). */
+  --season-end-impact: calc(var(--season-end-fall) * 0.7);
+  animation: season-end-knock 220ms var(--e-out) var(--season-end-beat, 0ms);
+}
+
+.season-end-band[data-stamp="title"] {
+  --season-end-wash: rgba(242, 208, 59, 0.24);
+}
+
+.season-end-band[data-stamp="promoted"] {
+  --season-end-wash: rgba(79, 176, 106, 0.26);
+}
+
+.season-end-band[data-stamp="relegated"] {
+  --season-end-wash: rgba(224, 68, 47, 0.22);
+  --season-end-fall: 380ms;
+}
+
+/* The wash runs behind the crest, plate and place, over the band's own background. */
+.season-end-band[data-stamp]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--season-end-wash);
+  transform-origin: right center;
+  opacity: 0;
+  pointer-events: none;
+  animation: season-end-wash 1100ms var(--e-out) var(--season-end-beat, 0ms) backwards;
+}
+
+.season-end-band[data-stamp] .season-end-stamp {
+  animation: season-end-stamp-fall var(--season-end-fall) linear calc(var(--season-end-beat, 0ms) - var(--season-end-impact)) backwards;
+}
+
+.season-end-band[data-stamp] .season-end-place-n {
+  animation: season-end-place-rise 620ms var(--e-out) 60ms backwards;
+}
+
+@keyframes season-end-stamp-fall {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(1.9);
+    animation-timing-function: var(--e-peel);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.95);
+    animation-timing-function: var(--e-out);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes season-end-knock {
+  0%,
+  100% {
+    transform: none;
+  }
+  30% {
+    transform: translateY(3px);
+  }
+}
+
+@keyframes season-end-wash {
+  0% {
+    opacity: 1;
+    transform: scaleX(0);
+  }
+  30% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes season-end-place-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em);
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+@keyframes season-end-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The board's word wipes in from the left, the way a headline is set. */
+.season-end-verdict {
+  animation: season-end-wipe 520ms var(--e-out) 80ms backwards;
+}
+
+@keyframes season-end-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+    transform: translateX(-12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .season-end-band[data-stamp] {
+    animation: none;
+  }
+
+  .season-end-band[data-stamp]::after {
+    transform: none;
+    animation-name: season-end-wash-fade;
+  }
+
+  .season-end-band[data-stamp] .season-end-stamp {
+    animation: season-end-fade-in 200ms var(--e-out) var(--season-end-beat, 0ms) backwards;
+  }
+
+  .season-end-band[data-stamp] .season-end-place-n,
+  .season-end-verdict {
+    animation: season-end-fade-in 320ms var(--e-out) backwards;
+  }
+}
+
+@keyframes season-end-wash-fade {
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.season-end-verdict {
+  font: 800 44px/1 var(--num);
+  text-transform: uppercase;
+  color: var(--red);
+}
+
+.season-end-verdict.is-met {
+  color: var(--promotion);
+}
+
+.season-end-facts {
+  margin-top: 8px;
+}
+
+.season-end-facts div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 46px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.season-end-facts dt {
+  font: 500 15px var(--cond);
+  color: var(--chalk-2);
+}
+
+.season-end-facts dd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 700 17px var(--cond);
+}
+
+.season-end-titles span + span::before {
+  content: "·";
+  margin-right: 10px;
+  color: var(--chalk-3);
+}
+
+.season-end-up,
+.season-end-down {
+  font: 700 14px var(--cond);
+}
+
+.season-end-up {
+  color: var(--promotion);
+}
+
+.season-end-down {
+  color: var(--red);
+}
+
+.season-end-champions {
+  margin-top: 22px;
+  border-top: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.season-end-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 22px;
+}
+
+@media (max-width: 1100px) {
+  .season-end-place-n {
+    font-size: 88px;
+  }
+}

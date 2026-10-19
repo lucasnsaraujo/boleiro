@@ -1,0 +1,621 @@
+/* The tables screen: competition tabs and the round on top, the table as an album page, scorers and zones beside it. */
+.tables {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 14px 14px;
+}
+
+.tables .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.tables-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tables-head > .tables-tabs {
+  margin-right: auto;
+}
+
+.tables-play {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tables-play .status {
+  margin: 0;
+  font-size: 12px;
+}
+
+/* Segmented controls built of buttons: the album's .seg, with the pressed state from ARIA. */
+.tables-seg {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.tables-seg > button {
+  height: 28px;
+  padding: 0 12px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  transition:
+    background var(--t-fast) var(--e-out),
+    color var(--t-fast) var(--e-out);
+}
+
+.tables-seg > button:hover:not(:disabled, [aria-selected="true"], [aria-pressed="true"]) {
+  background: var(--paper-2);
+  color: var(--ink);
+}
+
+.tables-seg > button[aria-selected="true"],
+.tables-seg > button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--card);
+}
+
+.tables-seg > button:disabled {
+  color: var(--mute);
+  opacity: 0.45;
+  cursor: default;
+}
+
+.tables-tabs > button {
+  height: 30px;
+  padding: 0 14px 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.tables-round {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tables-round b {
+  min-width: 104px;
+  text-align: center;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.tables-step {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+  font-size: 14px;
+  transition:
+    transform var(--t-fast) var(--e-out),
+    background var(--t-fast) var(--e-out);
+}
+
+.tables-step:hover:not(:disabled) {
+  background: var(--paper-2);
+  transform: translateY(-1px);
+}
+
+.tables-step:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.tables-step:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.tables-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 318px;
+  gap: 14px;
+}
+
+.tables-main {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tables-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.tables-groups {
+  align-self: flex-start;
+}
+
+.tables-groups > button {
+  min-width: 30px;
+  padding: 0 8px;
+  font-stretch: var(--semi);
+  font-weight: 900;
+}
+
+/* The page scrolls under its own header when the table is taller than the window. */
+.tables-sheet {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* A collapsed border scrolls away from a sticky cell, so the header's rule is a shadow. */
+.standings thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 0;
+  box-shadow: inset 0 -2px 0 var(--ink);
+}
+
+.standings + .standings {
+  margin-top: 14px;
+}
+
+.standings caption {
+  padding: 10px 12px 6px;
+  text-align: left;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+/* Opaque cells, so a row sliding to its new place covers the rows it passes. */
+.standings td {
+  height: 28px;
+  background: var(--card);
+}
+
+.standings tbody tr {
+  position: relative;
+}
+
+.standings tbody tr:not(.me):hover td {
+  background: color-mix(in srgb, var(--paper-2) 50%, var(--card));
+}
+
+.standings tr.me td {
+  background: var(--yellow-l);
+}
+
+.standings .st-pos {
+  width: 44px;
+  text-align: center;
+}
+
+.standings td.st-club {
+  width: 100%;
+  font-stretch: 100%;
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.st-club-in {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* A club's postponed games still to play: why it has played fewer than the others. */
+.st-postponed {
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.standings td.st-pts {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.standings .st-form {
+  padding-left: 24px;
+}
+
+.standings .st-mv {
+  width: 44px;
+}
+
+/* Zone badge: the place number, coloured by where it leads. */
+.tables .zn {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 20px;
+  border-radius: var(--r-s);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 11.5px;
+  color: var(--ink);
+}
+
+.tables .zn.zone-libertadores,
+.tables .zn.zone-championsLeague,
+.tables .zn.zone-promotion,
+.tables .zn.zone-advance {
+  background: var(--green);
+  color: var(--on-green);
+}
+
+.tables .zn.zone-preLibertadores,
+.tables .zn.zone-playoff {
+  background: var(--green-l);
+  color: var(--green);
+  box-shadow: inset 0 0 0 1.5px var(--green);
+}
+
+.tables .zn.zone-sulAmericana,
+.tables .zn.zone-europaLeague {
+  background: #dce3f5;
+  color: var(--blue);
+}
+
+.tables .zn.zone-relegation {
+  background: var(--red);
+  color: var(--on-red);
+}
+
+[data-theme="dark"] .zn.zone-sulAmericana,
+[data-theme="dark"] .zn.zone-europaLeague {
+  background: #22305a;
+}
+
+.tables .form {
+  display: inline-flex;
+  gap: 3px;
+  vertical-align: middle;
+}
+
+.tables .form i,
+.tables .form button {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  font-family: inherit;
+  font-style: normal;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 9.5px;
+  color: #fff;
+}
+
+/* A form mark that opens its match lifts like a sticker under the pointer. */
+.tables .form button {
+  cursor: pointer;
+  transition:
+    transform var(--t-fast) var(--e-out),
+    box-shadow var(--t-fast) var(--e-out);
+}
+
+.tables .form button:hover {
+  transform: translateY(-2px) scale(1.12);
+  box-shadow: 0 3px 0 var(--edge);
+}
+
+.tables .form .win {
+  background: var(--green);
+}
+
+.tables .form .draw {
+  background: var(--line-2);
+  color: #14231a;
+}
+
+.tables .form .loss {
+  background: var(--red);
+}
+
+[data-theme="dark"] .form .draw {
+  color: var(--ink);
+}
+
+.tables .mv {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.tables .mv.up {
+  color: var(--green);
+}
+
+.tables .mv.dn {
+  color: var(--red);
+}
+
+/* Knockout ties: two plates and the aggregate on the Brasfoot score boxes. */
+.tables .ties {
+  list-style: none;
+}
+
+.tables .tie {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 200px;
+  align-items: center;
+  column-gap: 12px;
+  height: 40px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--rule);
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.tables .tie.mine {
+  background: var(--yellow-l);
+}
+
+/* A tie with a game played opens its latest game's ficha: a button over the whole row, under its text. */
+.tables .tie:has(.tie-open) {
+  position: relative;
+}
+
+.tables .tie-open {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--e-out);
+}
+
+.tables .tie-open:hover {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.tables .tie-open:focus-visible {
+  outline-offset: -2px;
+}
+
+.tables .tie-open ~ * {
+  position: relative;
+  pointer-events: none;
+}
+
+.tables .tie-side {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.tables .tie-side.home {
+  justify-content: flex-end;
+}
+
+.tables .tie-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tables .tie-side.lost {
+  color: var(--mute);
+  font-weight: 500;
+}
+
+.tables .tie-side.own .tie-name {
+  color: var(--green);
+}
+
+.tables .tie-score {
+  display: flex;
+  gap: 3px;
+}
+
+.tables .tie-legs {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--mute);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tables-side {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tables-side h2 {
+  margin-bottom: 8px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 17px;
+}
+
+.tables-scorers {
+  padding: 14px 16px 10px;
+}
+
+.tables-scorers ol {
+  list-style: none;
+}
+
+.tables-scorers li {
+  display: grid;
+  grid-template-columns: 22px 22px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  height: 38px;
+  border-bottom: 1px dotted var(--line-2);
+  font-size: 13px;
+}
+
+.tables-scorers li:last-child {
+  border-bottom: 0;
+}
+
+.tables-rank {
+  font-stretch: var(--semi);
+  font-weight: 900;
+  color: var(--mute);
+}
+
+.tables-who {
+  min-width: 0;
+}
+
+.tables-who a {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 800;
+  line-height: 1.1;
+  text-decoration: none;
+}
+
+.tables-who a:hover {
+  text-decoration: underline;
+}
+
+.tables-scorers li.mine a {
+  color: var(--green);
+}
+
+.tables-who small {
+  display: block;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.tables-goals {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 20px;
+}
+
+.tables-none {
+  padding: 4px 0 6px;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.tables-zones {
+  padding: 14px 16px;
+}
+
+.tables-zones ul {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.tables-zones li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Up to a 1366-wide screen the tabs close up and drop their logos, so a FIFA cup year's twelve fit beside the play
+   button at 1280, with room to spare where text sets wider than on a Mac, as Linux's whole-pixel glyphs do. */
+@media (max-width: 1365px) {
+  .tables-tabs > button {
+    padding: 0 8px;
+    font-size: 12.5px;
+  }
+
+  .tables-tabs .comp-logo {
+    display: none;
+  }
+}
+
+@media (max-width: 1179px) {
+  .tables-body {
+    grid-template-columns: minmax(0, 1fr) 250px;
+  }
+
+  .tables-round b {
+    min-width: 84px;
+  }
+
+  .standings th,
+  .standings td {
+    padding: 0 7px;
+  }
+
+  .standings .st-form {
+    padding-left: 12px;
+  }
+
+  .tables .tie {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 150px;
+  }
+}
+
+/* Motion: the page slides in from the right, the stickers are laid down top to bottom. */
+@media (prefers-reduced-motion: no-preference) {
+  .tables-sheet {
+    animation: tables-page var(--t-slow) var(--e-out) both;
+  }
+
+  .tables-side > * {
+    animation: tables-lay var(--t-slow) var(--e-out) 60ms both;
+  }
+
+  .tables-side > :nth-child(2) {
+    animation-delay: 120ms;
+  }
+}
+
+@keyframes tables-page {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+
+@keyframes tables-lay {
+  from {
+    opacity: 0;
+    transform: translateY(10px) rotate(-1deg);
+  }
+}

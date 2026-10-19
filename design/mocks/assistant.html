@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Auxiliar técnico</title>
+<link rel="stylesheet" href="../../packages/design-tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: 372px 1fr; gap: 14px; }
+.side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+
+.me { padding: 16px 18px 18px; }
+.me .who { display: flex; gap: 14px; align-items: center; }
+.me .av { width: 64px; height: 64px; font-size: 26px; border-width: 4px; background: #3C4A40; }
+.me h2 { font-stretch: var(--wide); font-weight: 900; font-size: 21px; line-height: 1.05; letter-spacing: -.01em; }
+.me .who p { font-size: 12px; color: var(--mute); margin-top: 4px; line-height: 1.35; }
+.lv { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding: 12px 0 0; border-top: 2px dotted var(--line-2); }
+.lv .pips { display: flex; gap: 4px; }
+.lv .pips i { width: 28px; height: 12px; border-radius: 3px; background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--line-2); }
+.lv .pips i.on { background: var(--green); box-shadow: inset 0 0 0 1px var(--green-d); }
+.lvr { display: flex; align-items: center; gap: 12px; }
+.acc { font-size: 12px; color: var(--ink-2); line-height: 1.4; margin-top: 10px; }
+.lv b { font-stretch: var(--wide); font-weight: 900; font-size: 22px; line-height: 1; }
+.lv b small { font-stretch: 100%; font-weight: 600; font-size: 12px; color: var(--mute); }
+.lv .w { margin-left: auto; text-align: right; font-size: 11.5px; color: var(--mute); line-height: 1.3; }
+.lv .w b { display: block; font-stretch: var(--semi); font-size: 14px; color: var(--ink); }
+.me .btn { width: 100%; height: 44px; font-size: 15px; margin-top: 16px; }
+.me .cap { font-size: 11.5px; color: var(--mute); margin-top: 8px; text-align: center; }
+
+.areas { padding: 12px 18px 4px; }
+.areas h3 { font-stretch: var(--wide); font-weight: 900; font-size: 16px; margin-bottom: 2px; }
+.ar { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; height: 56px; border-bottom: 1px dotted var(--line-2); }
+.ar:last-child { border-bottom: 0; }
+.ar > i { font-size: 18px; color: var(--ink-2); }
+.ar b { display: block; font-weight: 700; font-size: 13.5px; line-height: 1.15; }
+.ar small { font-size: 11.5px; color: var(--mute); }
+.ar.off > i, .ar.off b { color: var(--mute); }
+
+.tips { padding: 20px 24px 18px; display: flex; flex-direction: column; overflow: hidden; }
+.tips .hd { display: flex; align-items: baseline; gap: 12px; }
+.tips .hd h2 { font-stretch: var(--wide); font-weight: 900; font-size: 22px; }
+.tips .hd span { font-size: 12px; color: var(--mute); }
+.tips .hd .chip { margin-left: auto; align-self: center; }
+
+.weak { margin-top: 14px; display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; padding: 14px 18px; background: var(--red-l); border-radius: var(--r-m); }
+.weak .fig { display: flex; align-items: center; gap: 10px; }
+.weak .fig .big { font-stretch: var(--wide); font-weight: 900; font-size: 44px; line-height: 1; color: var(--red); }
+.weak .fig .pos { width: 30px; height: 30px; font-size: 14px; }
+.weak q { quotes: none; display: block; text-wrap: balance; font-stretch: var(--semi); font-weight: 900; font-size: 18px; line-height: 1.2; }
+.weak p { font-size: 12.5px; color: var(--ink-2); margin-top: 5px; line-height: 1.4; }
+
+.sg { margin-top: 18px; }
+.sg h3 { display: flex; align-items: baseline; gap: 10px; font-stretch: var(--semi); font-weight: 900; font-size: 14px; padding-bottom: 6px; border-bottom: 2px solid var(--ink); }
+.sg h3 span { font-stretch: 100%; font-weight: 500; font-size: 12px; color: var(--mute); }
+.sr { display: grid; grid-template-columns: 28px 1fr 48px 110px 120px 92px; gap: 12px; align-items: center; height: 56px; border-bottom: 1px solid var(--rule); font-size: 12.5px; }
+.sr b { display: block; font-weight: 800; font-size: 14px; line-height: 1.15; }
+.sr small { font-size: 11.5px; color: var(--mute); }
+.sr .f { font-stretch: var(--wide); font-weight: 900; font-size: 20px; text-align: center; color: var(--green); }
+.sr .m { text-align: right; line-height: 1.25; }
+.sr .m b { font-stretch: var(--semi); font-size: 13.5px; }
+.sr .y { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 12px; color: var(--green); }
+.sr .y.mid { color: var(--later); }
+.sr .btn { justify-self: end; }
+.sr.out { color: var(--mute); }
+.sr.out b, .sr.out .f { color: var(--mute); }
+.sr.out .f { font-size: 18px; }
+
+.more { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.mt { display: flex; gap: 10px; font-size: 12.5px; line-height: 1.4; color: var(--ink-2); }
+.mt i { font-size: 18px; color: var(--ink); flex: none; margin-top: 1px; }
+.mt b { color: var(--ink); }
+.hire { margin-top: auto; padding-top: 14px; }
+.hire h3 { font-stretch: var(--semi); font-weight: 900; font-size: 14px; padding-bottom: 6px; border-bottom: 2px solid var(--ink); }
+.hr { display: grid; grid-template-columns: 40px 1fr auto auto auto; gap: 12px; align-items: center; height: 54px; border-bottom: 1px solid var(--rule); font-size: 12.5px; }
+.hr:last-child { border-bottom: 0; }
+.hr .av { width: 36px; height: 36px; font-size: 14px; border-width: 2px; }
+.hr b { display: block; font-weight: 800; font-size: 13.5px; }
+.hr small { font-size: 11.5px; color: var(--mute); }
+.hr .lvl { display: flex; gap: 3px; align-items: center; margin-right: 6px; }
+.hr .lvl i { width: 14px; height: 8px; border-radius: 2px; background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--line-2); }
+.hr .lvl i.on { background: var(--green); box-shadow: none; }
+.hr .lvl span { font-stretch: var(--semi); font-weight: 900; font-size: 12px; margin-left: 5px; }
+.hr .pay { text-align: right; line-height: 1.25; min-width: 120px; }
+.hr .pay b { font-stretch: var(--semi); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="times"></div>
+  <main><div class="wrap">
+    <div class="side">
+      <div class="stk me">
+        <div class="who"><span class="av">G</span><div><h2>Gilberto Paixão</h2><p>Seu auxiliar · 54 anos, ex-volante<br>Com você desde jan · contrato até dez 2027</p></div></div>
+        <div class="lv"><div><div class="lbl" style="margin-bottom:6px">Nível</div><div class="lvr"><div class="pips"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><b>3<small> de 5</small></b></div></div>
+          <div class="w"><b>R$ 85 mil</b>por mês</div></div>
+        <p class="acc">No nível 3 ele erra às vezes: até 6 pontos no potencial dos juniores e 1 em cada 4 indicações.</p>
+        <button class="btn y"><i class="ph-bold ph-strategy"></i>Escalar time</button>
+        <div class="cap">Hoje ele escala o 4-2-3-1, Jorginho de capitão</div>
+      </div>
+      <div class="stk areas"><h3>Ele cuida de</h3>
+        <div class="ar"><i class="ph-bold ph-strategy"></i><div><b>Escalação</b><small>escala, troca no jogo e fala no intervalo</small></div><span class="sw on"></span></div>
+        <div class="ar"><i class="ph-bold ph-signature"></i><div><b>Contratos</b><small>renova e deixa sair quem não vale</small></div><span class="sw on"></span></div>
+        <div class="ar off"><i class="ph-bold ph-plant"></i><div><b>Base</b><small>promove e dispensa juniores</small></div><span class="sw"></span></div>
+        <div class="ar off"><i class="ph-bold ph-ticket"></i><div><b>Preço do ingresso</b><small>ajusta a cada jogo em casa</small></div><span class="sw"></span></div>
+        <div class="ar off"><i class="ph-bold ph-hand-coins"></i><div><b>Vender quem sobra</b><small>aceita propostas por quem não joga</small></div><span class="sw"></span></div>
+      </div>
+    </div>
+
+    <div class="page tips">
+      <div class="hd"><h2>Dicas</h2><span>Atualizadas hoje, Dom 18 out</span></div>
+      <div class="weak">
+        <div class="fig"><span class="pos L">L</span><span class="big">75</span></div>
+        <div><q>“Seu lateral esquerdo é o mais fraco do time: Ayrton Lucas, 75.”</q><p>O reserva, Alex Sandro, tem 70 e 35 anos. Para janeiro, vale um lateral esquerdo de 78 ou mais.</p></div>
+      </div>
+      <div class="sg"><h3>Laterais esquerdos que ele indica <span>topam vir e cabem no caixa de R$ 212,4 mi</span></h3>
+        <div class="sr"><span data-crest="RBB" data-size="28"></span><div><b>Juninho Capixaba</b><small>Bragantino · 29 anos · contrato até 2027</small></div><span class="f">79</span><div class="m"><b>R$ 42 mi</b><small>pedem pelo passe</small></div><span class="y"><i class="ph-fill ph-check-circle"></i>Topa vir</span><button class="btn sm"><i class="ph-bold ph-eye"></i>Observar</button></div>
+        <div class="sr"><span data-crest="CAP" data-size="28"></span><div><b>Lucas Esquivel</b><small>Athletico-PR · 24 anos · argentino</small></div><span class="f">79</span><div class="m"><b>R$ 50 mi</b><small>pedem pelo passe</small></div><span class="y"><i class="ph-fill ph-check-circle"></i>Topa vir</span><button class="btn sm"><i class="ph-bold ph-eye"></i>Observar</button></div>
+        <div class="sr"><span data-crest="INT" data-size="28"></span><div><b>Alexandro Bernabei</b><small>Internacional · 26 anos · argentino</small></div><span class="f">78</span><div class="m"><b>R$ 48 mi</b><small>pedem pelo passe</small></div><span class="y mid"><i class="ph-fill ph-question"></i>Talvez</span><button class="btn sm"><i class="ph-bold ph-eye"></i>Observar</button></div>
+        <div class="sr"><span data-crest="BAH" data-size="28"></span><div><b>Luciano Juba</b><small>Bahia · 27 anos · o melhor da posição</small></div><span class="f">80</span><div class="m"><b>R$ 85 mi</b><small>pedem pelo passe</small></div><span class="y"><i class="ph-fill ph-check-circle"></i>Topa vir</span><button class="btn sm"><i class="ph-fill ph-eye"></i>Observando</button></div>
+      </div>
+      <div class="more">
+        <div class="mt"><i class="ph-bold ph-signature"></i><span><b>Pedro</b> e <b>Léo Pereira</b> têm contrato até dez 2027. Ele renova os dois por 2 anos em janeiro. Você muda isso até 30 nov.</span></div>
+        <div class="mt"><i class="ph-bold ph-battery-low"></i><span><b>Carrascal</b> está com 64% de energia. Ele fica no banco hoje para estar inteiro contra o Estudiantes na quinta.</span></div>
+      </div>
+      <div class="hire"><h3>Auxiliares melhores</h3>
+        <div class="hr"><span class="av" style="background:#5C584B">M</span><div><b>Marcos Valadão</b><small>sem clube · 12 anos de auxiliar na Série A</small></div><span class="lvl"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><span>5</span></span><div class="pay"><b>R$ 240 mil</b><small>por mês</small></div><button class="btn sm">Chamar</button></div>
+        <div class="hr"><span class="av" style="background:#C8102E">D</span><div><b>Danilo</b><small>seu zagueiro, para em dezembro · topa começar em jan</small></div><span class="lvl"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><span>4</span></span><div class="pay"><b>R$ 300 mil</b><small>por mês</small></div><button class="btn sm">Chamar</button></div>
+      </div>
+    </div>
+  </div></main>
+</div>
+</body>
+</html>

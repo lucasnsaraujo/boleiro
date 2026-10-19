@@ -1,0 +1,383 @@
+/* The live pitch: a little board seen from the near touchline, a shade brighter than the band's grass it lies on. */
+.lp {
+  --pa: #1a9852;
+  --pb: #148a4a;
+  --run: #10793f;
+  --front: #07431f;
+  --bevel: rgba(255, 255, 255, 0.34);
+  --lines: rgba(255, 255, 255, 0.78);
+  --shade: rgba(3, 32, 14, 0.55);
+  --net: rgba(255, 255, 255, 0.16);
+  --mesh: rgba(255, 255, 255, 0.42);
+  position: relative;
+  isolation: isolate;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+[data-theme="dark"] .lp {
+  --pa: #10703b;
+  --pb: #0d6434;
+  --run: #0b5a2e;
+  --front: #032412;
+  --bevel: rgba(255, 255, 255, 0.2);
+  --lines: rgba(255, 255, 255, 0.62);
+  --shade: rgba(0, 0, 0, 0.62);
+  --net: rgba(255, 255, 255, 0.1);
+  --mesh: rgba(255, 255, 255, 0.32);
+}
+
+.lp-tilt {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 60%;
+  transition: transform 1400ms var(--e-in-out);
+}
+
+/* The board leans a touch toward the end the ball is at, the way a camera follows play. */
+.lp-tilt[data-lean="left"] {
+  transform: perspective(1400px) rotateY(1.4deg) translateX(5px);
+}
+
+.lp-tilt[data-lean="right"] {
+  transform: perspective(1400px) rotateY(-1.4deg) translateX(-5px);
+}
+
+.lp-board,
+.lp-front-goals {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.lp-shadow {
+  fill: var(--shade);
+}
+
+.lp-front {
+  fill: var(--front);
+}
+
+.lp-run {
+  fill: var(--run);
+}
+
+.lp-stripe.a {
+  fill: var(--pa);
+}
+
+.lp-stripe.b {
+  fill: var(--pb);
+}
+
+.lp-lines {
+  fill: none;
+  stroke: var(--lines);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+.lp-bevel {
+  fill: none;
+  stroke: var(--bevel);
+  stroke-width: 1;
+}
+
+.lp-net {
+  transform-box: view-box;
+}
+
+.lp-net-fill {
+  fill: var(--net);
+  stroke: var(--mesh);
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+}
+
+.lp-net-fill.near {
+  fill: rgba(255, 255, 255, 0.06);
+}
+
+.lp-mesh {
+  fill: none;
+  stroke: var(--mesh);
+  stroke-width: 0.6;
+}
+
+.lp-post {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35));
+}
+
+/* Players are buttons, futebol de botão: a disc in the club's colour with a rim, a ring and a soft contact shadow. */
+.lp-tok,
+.lp-ball,
+.lp-ball-shadow,
+.lp-chip,
+.lp-mark,
+.lp-tag,
+.lp-glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+
+.lp-tok {
+  width: 0;
+  height: 0;
+}
+
+.lp-tok-shadow {
+  position: absolute;
+  left: -10px;
+  top: -3.5px;
+  width: 20px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0));
+}
+
+.lp-tok-body {
+  position: absolute;
+  left: -7.5px;
+  top: -8px;
+  width: 15px;
+  height: 8.5px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 70% 80% at 38% 30%, color-mix(in srgb, var(--c1) 62%, #fff) 0%, var(--c1) 58%, color-mix(in srgb, var(--c1) 82%, #000) 100%);
+  box-shadow:
+    inset 0 0 0 1.4px var(--c2),
+    inset 0 0 0 2.1px color-mix(in srgb, var(--c1) 70%, #000),
+    0 2px 0 color-mix(in srgb, var(--c1) 50%, #000),
+    0 2.6px 0 rgba(0, 0, 0, 0.35);
+}
+
+.round-kickoff .lp-tok-body {
+  animation: lp-tok-drop 560ms var(--e-slap) backwards;
+}
+
+.round-kickoff .lp-tok:nth-child(4n + 1) .lp-tok-body {
+  animation-delay: 80ms;
+}
+
+.round-kickoff .lp-tok:nth-child(4n + 2) .lp-tok-body {
+  animation-delay: 160ms;
+}
+
+.round-kickoff .lp-tok:nth-child(4n + 3) .lp-tok-body {
+  animation-delay: 240ms;
+}
+
+@keyframes lp-tok-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-26px);
+  }
+}
+
+.lp-ball-shadow {
+  width: 0;
+  height: 0;
+}
+
+.lp-ball-shadow::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: -2px;
+  width: 10px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.75);
+  filter: blur(1px);
+}
+
+.lp-ball {
+  width: 0;
+  height: 0;
+}
+
+.lp-ball::before {
+  content: "";
+  position: absolute;
+  left: -4.5px;
+  top: -9px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 55%, #14231a 0 1.2px, transparent 1.6px),
+    radial-gradient(circle at 34% 30%, #fff 0, #f4f1e8 45%, #bdb6a4 100%);
+  box-shadow: 0 0 0 0.6px rgba(20, 35, 26, 0.55);
+}
+
+.lp-ball.ghost::before {
+  background: #fff;
+  box-shadow: none;
+  transform: scale(0.8);
+}
+
+.lp-ball.ghost {
+  opacity: 0;
+}
+
+/* What just happened at the goal: the round board's chip, in the scorer's colours for a goal. */
+.lp-chip {
+  z-index: 3000;
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+/* It hangs just under the goal, on the near side, where the score stickers never cover it. */
+.lp-chip b {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--chip-bg, rgba(10, 26, 16, 0.8));
+  color: var(--chip-ink, #fff);
+  box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.55);
+  white-space: nowrap;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.lp-chip[data-kind="goal"] b {
+  padding: 5px 12px;
+  font-size: 14px;
+  box-shadow:
+    0 0 0 2px var(--yellow),
+    0 6px 14px -4px rgba(0, 0, 0, 0.6);
+}
+
+.lp-chip[data-kind="save"] b {
+  background: var(--card);
+  color: var(--ink);
+}
+
+.lp-mark {
+  z-index: 3000;
+  width: 9px;
+  height: 12px;
+  margin: -14px 0 0 -4px;
+  border-radius: 2px;
+  opacity: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.lp-mark[data-kind="yellow"] {
+  background: #ffcc00;
+}
+
+.lp-mark[data-kind="red"] {
+  background: var(--red);
+}
+
+.lp-mark[data-kind="injury"] {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background:
+    linear-gradient(var(--red), var(--red)) center / 8px 2.6px no-repeat,
+    linear-gradient(var(--red), var(--red)) center / 2.6px 8px no-repeat,
+    #fff;
+}
+
+/* A real action's tag rides over its player: a paper slip with the side's end marked in the album's yellow. */
+.lp-tag {
+  z-index: 3001;
+  width: 0;
+  height: 0;
+}
+
+.lp-tag b {
+  position: absolute;
+  left: 0;
+  bottom: 14px;
+  padding: 4px 8px 4px 7px;
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow:
+    inset 3px 0 0 var(--yellow),
+    0 1px 0 rgba(0, 0, 0, 0.12),
+    0 6px 14px -6px rgba(0, 0, 0, 0.55);
+  white-space: nowrap;
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0;
+  transform-origin: 50% 100%;
+  transform: translate(-50%, 0);
+}
+
+/* The slip's pointer down to the player. */
+.lp-tag b::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  background: var(--card);
+  transform: rotate(45deg);
+  border-radius: 1px;
+}
+
+.lp-tag[data-kind="red"] b,
+.lp-tag[data-kind="injury"] b {
+  box-shadow:
+    inset 3px 0 0 var(--red),
+    0 1px 0 rgba(0, 0, 0, 0.12),
+    0 6px 14px -6px rgba(0, 0, 0, 0.55);
+}
+
+.lp-glow {
+  z-index: 5;
+  width: 0;
+  height: 0;
+}
+
+/* A goal sends a ring across the grass from the goal mouth, in yellow, the album's goal colour. */
+.lp-glow i {
+  position: absolute;
+  left: -40px;
+  top: -14px;
+  width: 80px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--yellow);
+  opacity: 0;
+}
+
+/* A coach's board in the hot seat that isn't in focus stays still and quiet. */
+.lp.is-quiet .lp-tilt {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-tilt,
+  .lp-tilt[data-lean] {
+    transform: none;
+    transition: none;
+  }
+
+  .round-kickoff .lp-tok-body {
+    animation: round-fade-in 240ms var(--e-out) backwards;
+  }
+}

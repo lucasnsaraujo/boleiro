@@ -1,0 +1,889 @@
+/* Brasfoot's team screen: the club panel on the left, the squad table on the right. */
+.hub {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 14px;
+  height: 100%;
+  min-height: 0;
+  padding: 18px 14px 14px;
+}
+
+.hub-missing {
+  padding: 28px;
+}
+
+.hub-side {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.hub-club {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+}
+
+.hub-club h1 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.hub-club p {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--mute);
+}
+
+.hub-club p b {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.hub-no-crest {
+  width: 58px;
+  height: 58px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px dashed var(--line-2);
+}
+
+/* An offer on the table is a slip taped to the club's sticker. */
+.hub-offers {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--note);
+  color: var(--note-ink);
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 11px;
+  text-decoration: none;
+  transform: rotate(3deg);
+  box-shadow:
+    0 0 0 1px rgba(20, 35, 26, 0.14),
+    0 2px 4px -1px rgba(20, 35, 26, 0.4);
+  transition: transform var(--t-base) var(--e-slap);
+}
+
+.hub-offers:hover {
+  transform: rotate(-2deg) scale(1.06);
+}
+
+/* The betting sponsor's mark stuck on the club's sticker (hub.html). */
+.hub-spon {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  height: 19px;
+  padding: 0 7px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  background: #fff;
+  transform: rotate(3deg);
+  box-shadow:
+    0 0 0 1px rgba(20, 35, 26, 0.14),
+    0 2px 4px -1px rgba(20, 35, 26, 0.4);
+  transition: transform var(--t-base) var(--e-out);
+}
+
+.hub-spon:hover {
+  transform: rotate(-2deg) scale(1.06);
+}
+
+.hub-spon:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.hub-money {
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+}
+
+/* The panel is a fixed 300 px: a big cash figure wraps under its label instead of spilling out. */
+.hub-cash {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0 8px;
+  min-width: 0;
+}
+
+.hub-cash b {
+  margin-left: auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 19px;
+}
+
+.hub-money .lbl {
+  min-width: 0;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+
+.hub-money .meter {
+  margin-top: 5px;
+}
+
+.hub-money .conf-top {
+  gap: 4px;
+}
+
+.hub-money .conf-top > b {
+  font-size: 12px;
+}
+
+.hub-money .meter > i {
+  transform-origin: left;
+}
+
+.hub-next {
+  position: relative;
+  padding: 10px 12px;
+}
+
+/* The betting sponsor's odds for the next match, stuck on at a slant under it (hub.html). */
+.hub-odds.odds-sticker {
+  width: max-content;
+  margin: 12px 4px 2px auto;
+  padding: 13px 4px 4px;
+  border-radius: 8px;
+  animation: hub-odds-in var(--t-slow) var(--e-slap) both;
+}
+
+.hub-odds.odds-sticker > span {
+  padding: 0 7px;
+  font-size: 9px;
+}
+
+.hub-odds.odds-sticker b {
+  font-size: 12.5px;
+}
+
+/* On a short window the sticker rides the card's top corner, over the label's free end, so the paper's
+   slot under Jogar rodada keeps room for a whole line of news. */
+@media (max-height: 760px) {
+  .hub-odds.odds-sticker {
+    position: absolute;
+    top: -12px;
+    right: 8px;
+    margin: 0;
+    padding-top: 11px;
+  }
+}
+
+@keyframes hub-odds-in {
+  from {
+    transform: rotate(-8deg) scale(1.3);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-odds.odds-sticker {
+    animation: none;
+  }
+}
+
+.hub-next-none {
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.hub-next-match {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.hub-next-match b {
+  display: block;
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.hub-next-match p {
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.hub-next-match .hub-next-what {
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.hub-next-match p.today {
+  font-weight: 800;
+  color: var(--green);
+}
+
+.hub-play {
+  width: 100%;
+  height: 46px;
+  flex: none;
+  font-size: 15px;
+}
+
+.hub-trajectory {
+  width: 100%;
+  flex: none;
+  justify-content: center;
+}
+
+.hub-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.hub-actions .btn {
+  text-decoration: none;
+}
+
+/* The slot under the play button: the picked player's sticker, with the paper pinned over it when open. */
+.hub-slot {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The picked player's sticker. */
+.hub-card,
+.hub-card-empty {
+  flex: 1;
+  min-height: 0;
+}
+
+.hub-card {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.hub-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--foil);
+  border-bottom: 1px solid var(--line);
+  border-radius: var(--r-m) var(--r-m) 0 0;
+}
+
+.hub-card-top b {
+  display: block;
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.hub-card-top a {
+  text-decoration: none;
+}
+
+.hub-card-top a:hover {
+  text-decoration: underline;
+}
+
+.hub-card-top span {
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+
+.hub-card-top .hub-card-strength {
+  margin-left: auto;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--green);
+}
+
+/*
+ * In a short window the numbers don't fit under the contract: wrapping the column moves the whole table
+ * into a second column out of sight, so the sticker never ends on a header with its rows cut off.
+ */
+.hub-card-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-flow: column wrap;
+  align-content: flex-start;
+  column-gap: 24px;
+  overflow: hidden;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.hub-card-body > * {
+  width: 100%;
+}
+
+.hub-card-kv {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 10px;
+  color: var(--mute);
+}
+
+.hub-card-kv dd {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.hub-card-kv .hub-card-out {
+  color: var(--red);
+}
+
+.hub-card-stats {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+}
+
+.hub-card-stats th,
+.hub-card-stats td {
+  padding: 3px 0;
+  text-align: right;
+}
+
+.hub-card-stats thead th {
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mute);
+  border-bottom: 2px solid var(--ink);
+}
+
+.hub-card-stats tbody th {
+  text-align: left;
+  font-weight: 400;
+}
+
+.hub-card-stats tbody th,
+.hub-card-stats td {
+  border-bottom: 1px dotted var(--line-2);
+}
+
+/* The dock: Finanças and the club's other desks; the ones still to come are greyed out. */
+/* The dock stays at the column's foot, under the paper, whatever sits above it. */
+.hub-dock {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding: 2px 2px 0;
+}
+
+.hub-dock-item {
+  position: relative;
+  flex: 1;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 10px;
+  color: var(--ink-2);
+  font-stretch: var(--tight);
+  font-weight: 700;
+  font-size: 11px;
+  text-decoration: none;
+  transition: background var(--t-fast) var(--e-out);
+}
+
+.hub-dock-item i {
+  font-size: 21px;
+  color: var(--ink);
+  transition: transform var(--t-base) var(--e-slap);
+}
+
+.hub-dock-item:not(.off):hover {
+  background: var(--paper-2);
+}
+
+.hub-dock-item:not(.off):hover i {
+  transform: translateY(-2px) rotate(-6deg);
+}
+
+.hub-dock-item[aria-expanded="true"] {
+  background: var(--paper-2);
+}
+
+.hub-dock-item.off {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.hub-badge {
+  position: absolute;
+  top: 3px;
+  right: 9px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  background: var(--red);
+  color: #fff;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10px;
+  box-shadow: 0 0 0 2px var(--paper);
+}
+
+.hub-count {
+  flex: none;
+  padding: 0 6px 0 8px;
+  text-align: right;
+  line-height: 1.1;
+}
+
+.hub-count b {
+  display: block;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.hub-count span {
+  font-size: 10.5px;
+  color: var(--mute);
+}
+
+/*
+ * The paper: the inbox on a slip pinned over the player's sticker. It stays inside the sticker's slot, so
+ * the play button above and the dock below are never covered; news longer than the slot scrolls under the
+ * slip's header, which keeps its close button in reach.
+ */
+.hub-paper {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 0;
+  z-index: 3;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 16px 16px 12px;
+  transform: rotate(-0.6deg);
+  transform-origin: 50% 100%;
+}
+
+.hub-paper header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.hub-paper h2 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.hub-paper h2:focus {
+  outline: none;
+}
+
+.hub-paper-close {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--note-ink);
+}
+
+.hub-paper-close:hover {
+  background: rgba(20, 35, 26, 0.08);
+}
+
+.hub-paper ul {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+}
+
+.hub-paper li {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 12px;
+  line-height: 1.35;
+  border-top: 1px dotted color-mix(in srgb, var(--note-ink) 30%, transparent);
+}
+
+.hub-paper li span {
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.hub-paper li.bad {
+  color: var(--red);
+}
+
+.hub-paper-empty {
+  font-size: 12px;
+}
+
+/* The squad page: its tabs (the squad, the contracts ending) over a list that scrolls under its own header. */
+.hub-squad {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.hub-squad-scroll {
+  min-height: 0;
+  overflow: auto;
+}
+
+.hub-squad-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 8px 10px 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  border-radius: var(--r-s) var(--r-s) 0 0;
+}
+
+.hub-squad-tab {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-radius: 8px 8px 0 0;
+  font-weight: 800;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  transition:
+    background-color var(--t-fast) var(--e-out),
+    color var(--t-fast) var(--e-out);
+}
+
+.hub-squad-tab:hover {
+  color: var(--ink);
+}
+
+.hub-squad-tab[aria-selected="true"] {
+  margin-bottom: -1px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow:
+    0 -1px 0 var(--line),
+    1px 0 0 var(--line),
+    -1px 0 0 var(--line);
+}
+
+.hub-squad-n {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  background: var(--paper-2);
+  font-stretch: var(--semi);
+  font-size: 10.5px;
+  color: var(--ink-2);
+}
+
+.hub-squad-n.urgent {
+  background: var(--yellow);
+  color: var(--on-yellow);
+}
+
+.hub-squad-none {
+  padding: 24px;
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.hub-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.hub-table td {
+  height: 23px;
+  cursor: default;
+}
+
+.hub-table tbody + tbody tr:first-child td {
+  border-top: 2px solid var(--line);
+}
+
+.hub-table tr {
+  position: relative;
+  transition: background var(--t-fast) var(--e-out);
+}
+
+.hub-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--paper-2) 50%, transparent);
+}
+
+.hub-table tr.sel td {
+  background: var(--yellow-l);
+}
+
+/* The album's yellow ring, drawn inside the row so the scrolling squad page doesn't cut it. */
+.hub-table tbody tr:focus-visible {
+  outline-offset: -3px;
+  border-radius: 0;
+}
+
+/* In a narrow window a long name gives way first, cut with an ellipsis, and keeps its flags in view. */
+.hub-table .sq-name {
+  display: flex;
+  align-items: center;
+}
+
+.hub-table .nm a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+}
+
+.hub-table .sq-name .flag {
+  flex: none;
+}
+
+@media (max-width: 1179px) {
+  .hub-table td.nm {
+    width: 100%;
+    max-width: 0;
+  }
+}
+
+.hub-table .nm a:hover {
+  text-decoration: underline;
+}
+
+.hub-table .sq-strength {
+  font-weight: 800;
+}
+
+.hub-table abbr {
+  text-decoration: none;
+}
+
+.hub-table .flag {
+  margin-left: 6px;
+  font-size: 13px;
+  vertical-align: -2px;
+}
+
+.hub-table .flag.inj {
+  color: var(--red);
+}
+
+.hub-table .flag.ctr {
+  color: var(--later);
+}
+
+.hub-table .flag.rc {
+  vertical-align: -1px;
+}
+
+.sq-sort {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  border-radius: 4px;
+  padding: 2px 3px;
+  margin: 0 -3px;
+}
+
+.sq-sort:hover {
+  background: var(--paper-2);
+}
+
+.sq-sort.on {
+  box-shadow: inset 0 -2px 0 var(--yellow-d);
+}
+
+/* Motion: the panel's stickers are laid down top to bottom; the table rises in with them. */
+@media (prefers-reduced-motion: no-preference) {
+  .hub-side > * {
+    animation: hub-lay var(--t-slow) var(--e-out) both;
+  }
+
+  .hub-side > :nth-child(2) {
+    animation-delay: 40ms;
+  }
+
+  .hub-side > :nth-child(3) {
+    animation-delay: 80ms;
+  }
+
+  .hub-side > :nth-child(4) {
+    animation-delay: 120ms;
+  }
+
+  .hub-side > :nth-child(n + 5) {
+    animation-delay: 160ms;
+  }
+
+  .hub-squad {
+    animation: hub-page var(--t-slow) var(--e-out) 60ms both;
+  }
+
+  .hub-money .meter > i {
+    animation: hub-fill 700ms var(--e-out) 260ms both;
+  }
+
+  .hub-card {
+    animation: hub-swap var(--t-stamp) var(--e-slap) both;
+  }
+
+  .hub-paper {
+    animation: hub-paper-in var(--t-slow) var(--e-slap) both;
+  }
+
+  .hub-offers {
+    animation: hub-tape 520ms var(--e-slap) 380ms both;
+  }
+}
+
+@keyframes hub-lay {
+  from {
+    opacity: 0;
+    transform: translateY(10px) rotate(-1deg);
+  }
+}
+
+@keyframes hub-page {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+
+@keyframes hub-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes hub-swap {
+  from {
+    opacity: 0.3;
+    transform: rotate(-2.5deg) scale(1.03);
+  }
+}
+
+@keyframes hub-paper-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) rotate(-4deg) scale(0.96);
+  }
+}
+
+@keyframes hub-tape {
+  from {
+    opacity: 0;
+    transform: rotate(14deg) scale(1.3);
+  }
+}
+
+/* An event waiting for the coach, pinned where the player's sticker goes until he answers it. */
+.hub-event {
+  display: grid;
+  gap: 6px;
+  padding: 16px 16px 14px;
+  animation: hub-event-pin var(--t-stamp) var(--e-slap) both;
+}
+
+@keyframes hub-event-pin {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) rotate(-5deg) scale(1.08);
+  }
+}
+
+.hub-event .lbl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  opacity: 0.75;
+}
+
+.hub-event h2 {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.hub-event p {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.hub-event .btn {
+  justify-self: start;
+  margin-top: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-event {
+    animation: none;
+  }
+}
+
+.hub-paper-round {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  margin-right: 6px;
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--note-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* The competition's logo before its name on the next game's sticker. */
+.hub-next-match .hub-next-what .comp-logo {
+  display: inline-block;
+  vertical-align: -3px;
+  margin-right: 5px;
+}

@@ -1,0 +1,661 @@
+season,team_id,team,team_key,division
+2015,874,Corinthians,corinthians,A
+2015,7632,Atlético-MG,atletico-mg,A
+2015,6273,Grêmio,gremio,A
+2015,2026,São Paulo,sao-paulo,A
+2015,1936,Internacional,internacional,A
+2015,7635,Sport,sport,A
+2015,2674,Santos,santos,A
+2015,2022,Cruzeiro,cruzeiro,A
+2015,2029,Palmeiras,palmeiras,A
+2015,3458,Athletico Paranaense,athletico-paranaense,A
+2015,3459,Ponte Preta,ponte-preta,A
+2015,819,Flamengo,flamengo,A
+2015,3445,Fluminense,fluminense,A
+2015,9318,Chapecoense,chapecoense,A
+2015,3456,Coritiba,coritiba,A
+2015,3461,Figueirense,figueirense,A
+2015,9966,Avaí,avai,A
+2015,3454,Vasco da Gama,vasco-da-gama,A
+2015,3395,Goiás,goias,A
+2015,13143,Joinville,joinville,A
+2015,6086,Botafogo,botafogo,B
+2015,4929,Santa Cruz,santa-cruz,B
+2015,3457,Vitória,vitoria,B
+2015,6154,América Mineiro,america-mineiro,B
+2015,7633,Náutico,nautico,B
+2015,6079,Red Bull Bragantino,red-bull-bragantino,B
+2015,15424,Paysandu,paysandu,B
+2015,4873,Sampaio Corrêa,sampaio-correa,B
+2015,9967,Bahia,bahia,B
+2015,15576,Luverdense,luverdense,B
+2015,9970,CRB,crb,B
+2015,9971,Criciúma,criciuma,B
+2015,3453,Paraná,parana,B
+2015,10357,Atlético Goianiense,atletico-goianiense,B
+2015,9969,Ceará,ceara,B
+2015,10263,Oeste,oeste,B
+2015,9176,Macaé,macae,B
+2015,9965,ABC,abc,B
+2015,15560,Boa Esporte,boa-esporte,B
+2015,4777,Mogi Mirim,mogi-mirim,B
+2016,2029,Palmeiras,palmeiras,A
+2016,2674,Santos,santos,A
+2016,819,Flamengo,flamengo,A
+2016,7632,Atlético-MG,atletico-mg,A
+2016,6086,Botafogo,botafogo,A
+2016,3458,Athletico Paranaense,athletico-paranaense,A
+2016,874,Corinthians,corinthians,A
+2016,3459,Ponte Preta,ponte-preta,A
+2016,6273,Grêmio,gremio,A
+2016,2026,São Paulo,sao-paulo,A
+2016,9318,Chapecoense,chapecoense,A
+2016,2022,Cruzeiro,cruzeiro,A
+2016,3445,Fluminense,fluminense,A
+2016,7635,Sport,sport,A
+2016,3456,Coritiba,coritiba,A
+2016,3457,Vitória,vitoria,A
+2016,1936,Internacional,internacional,A
+2016,3461,Figueirense,figueirense,A
+2016,4929,Santa Cruz,santa-cruz,A
+2016,6154,América Mineiro,america-mineiro,A
+2016,10357,Atlético Goianiense,atletico-goianiense,B
+2016,9966,Avaí,avai,B
+2016,3454,Vasco da Gama,vasco-da-gama,B
+2016,9967,Bahia,bahia,B
+2016,7633,Náutico,nautico,B
+2016,17333,Londrina,londrina,B
+2016,9970,CRB,crb,B
+2016,9971,Criciúma,criciuma,B
+2016,15576,Luverdense,luverdense,B
+2016,9969,Ceará,ceara,B
+2016,17134,Brasil de Pelotas,brasil-de-pelotas,B
+2016,9973,Vila Nova,vila-nova,B
+2016,3395,Goiás,goias,B
+2016,15424,Paysandu,paysandu,B
+2016,3453,Paraná,parana,B
+2016,10263,Oeste,oeste,B
+2016,13143,Joinville,joinville,B
+2016,15575,Tupi,tupi,B
+2016,6079,Red Bull Bragantino,red-bull-bragantino,B
+2016,4873,Sampaio Corrêa,sampaio-correa,B
+2017,874,Corinthians,corinthians,A
+2017,2029,Palmeiras,palmeiras,A
+2017,2674,Santos,santos,A
+2017,6273,Grêmio,gremio,A
+2017,2022,Cruzeiro,cruzeiro,A
+2017,819,Flamengo,flamengo,A
+2017,3454,Vasco da Gama,vasco-da-gama,A
+2017,9318,Chapecoense,chapecoense,A
+2017,7632,Atlético-MG,atletico-mg,A
+2017,6086,Botafogo,botafogo,A
+2017,3458,Athletico Paranaense,athletico-paranaense,A
+2017,9967,Bahia,bahia,A
+2017,2026,São Paulo,sao-paulo,A
+2017,3445,Fluminense,fluminense,A
+2017,7635,Sport,sport,A
+2017,3457,Vitória,vitoria,A
+2017,3456,Coritiba,coritiba,A
+2017,9966,Avaí,avai,A
+2017,3459,Ponte Preta,ponte-preta,A
+2017,10357,Atlético Goianiense,atletico-goianiense,A
+2017,6154,América Mineiro,america-mineiro,B
+2017,1936,Internacional,internacional,B
+2017,9969,Ceará,ceara,B
+2017,3453,Paraná,parana,B
+2017,17333,Londrina,londrina,B
+2017,10263,Oeste,oeste,B
+2017,9973,Vila Nova,vila-nova,B
+2017,17134,Brasil de Pelotas,brasil-de-pelotas,B
+2017,6270,Juventude,juventude,B
+2017,15560,Boa Esporte,boa-esporte,B
+2017,15424,Paysandu,paysandu,B
+2017,3461,Figueirense,figueirense,B
+2017,9971,Criciúma,criciuma,B
+2017,3395,Goiás,goias,B
+2017,9970,CRB,crb,B
+2017,3448,Guarani,guarani,B
+2017,15576,Luverdense,luverdense,B
+2017,4929,Santa Cruz,santa-cruz,B
+2017,9965,ABC,abc,B
+2017,7633,Náutico,nautico,B
+2017,1361,Salgueiro,salgueiro,C
+2017,4873,Sampaio Corrêa,sampaio-correa,C
+2017,4875,Confiança,confianca,C
+2017,4908,Moto Club,moto-club,C
+2017,4936,Remo,remo,C
+2017,6196,ASA,asa,C
+2017,6272,Fortaleza,fortaleza,C
+2017,7531,CSA,csa,C
+2017,17313,Cuiabá,cuiaba,C
+2017,17317,Botafogo PB,botafogo-pb,C
+2017,4777,Mogi Mirim,mogi-mirim,C
+2017,4806,Volta Redonda,volta-redonda,C
+2017,4935,Ypiranga,ypiranga,C
+2017,6079,Red Bull Bragantino,red-bull-bragantino,C
+2017,6083,São Bento,sao-bento,C
+2017,9176,Macaé,macae,C
+2017,10281,Botafogo-SP,botafogo-sp,C
+2017,13143,Joinville,joinville,C
+2017,15575,Tupi,tupi,C
+2017,17339,Tombense,tombense,C
+2018,2029,Palmeiras,palmeiras,A
+2018,819,Flamengo,flamengo,A
+2018,1936,Internacional,internacional,A
+2018,6273,Grêmio,gremio,A
+2018,2026,São Paulo,sao-paulo,A
+2018,7632,Atlético-MG,atletico-mg,A
+2018,3458,Athletico Paranaense,athletico-paranaense,A
+2018,2022,Cruzeiro,cruzeiro,A
+2018,6086,Botafogo,botafogo,A
+2018,2674,Santos,santos,A
+2018,9967,Bahia,bahia,A
+2018,3445,Fluminense,fluminense,A
+2018,874,Corinthians,corinthians,A
+2018,9318,Chapecoense,chapecoense,A
+2018,9969,Ceará,ceara,A
+2018,3454,Vasco da Gama,vasco-da-gama,A
+2018,7635,Sport,sport,A
+2018,6154,América Mineiro,america-mineiro,A
+2018,3457,Vitória,vitoria,A
+2018,3453,Paraná,parana,A
+2018,6272,Fortaleza,fortaleza,B
+2018,7531,CSA,csa,B
+2018,9966,Avaí,avai,B
+2018,3395,Goiás,goias,B
+2018,3459,Ponte Preta,ponte-preta,B
+2018,10357,Atlético Goianiense,atletico-goianiense,B
+2018,9973,Vila Nova,vila-nova,B
+2018,17333,Londrina,londrina,B
+2018,3448,Guarani,guarani,B
+2018,3456,Coritiba,coritiba,B
+2018,17134,Brasil de Pelotas,brasil-de-pelotas,B
+2018,9970,CRB,crb,B
+2018,6083,São Bento,sao-bento,B
+2018,9971,Criciúma,criciuma,B
+2018,3461,Figueirense,figueirense,B
+2018,10263,Oeste,oeste,B
+2018,15424,Paysandu,paysandu,B
+2018,4873,Sampaio Corrêa,sampaio-correa,B
+2018,6270,Juventude,juventude,B
+2018,15560,Boa Esporte,boa-esporte,B
+2018,1361,Salgueiro,salgueiro,C
+2018,4875,Confiança,confianca,C
+2018,4929,Santa Cruz,santa-cruz,C
+2018,4936,Remo,remo,C
+2018,7633,Náutico,nautico,C
+2018,9965,ABC,abc,C
+2018,17317,Botafogo PB,botafogo-pb,C
+2018,17712,Globo,globo,C
+2018,17817,Atlético Acreano,atletico-acreano,C
+2018,18191,Juazeirense,juazeirense,C
+2018,4806,Volta Redonda,volta-redonda,C
+2018,4935,Ypiranga,ypiranga,C
+2018,6079,Red Bull Bragantino,red-bull-bragantino,C
+2018,10281,Botafogo-SP,botafogo-sp,C
+2018,13143,Joinville,joinville,C
+2018,15575,Tupi,tupi,C
+2018,15576,Luverdense,luverdense,C
+2018,17313,Cuiabá,cuiaba,C
+2018,17339,Tombense,tombense,C
+2018,18187,Operário PR,operario-pr,C
+2019,819,Flamengo,flamengo,A
+2019,2674,Santos,santos,A
+2019,2029,Palmeiras,palmeiras,A
+2019,6273,Grêmio,gremio,A
+2019,3458,Athletico Paranaense,athletico-paranaense,A
+2019,2026,São Paulo,sao-paulo,A
+2019,1936,Internacional,internacional,A
+2019,874,Corinthians,corinthians,A
+2019,6272,Fortaleza,fortaleza,A
+2019,3395,Goiás,goias,A
+2019,9967,Bahia,bahia,A
+2019,3454,Vasco da Gama,vasco-da-gama,A
+2019,7632,Atlético-MG,atletico-mg,A
+2019,3445,Fluminense,fluminense,A
+2019,6086,Botafogo,botafogo,A
+2019,9969,Ceará,ceara,A
+2019,2022,Cruzeiro,cruzeiro,A
+2019,7531,CSA,csa,A
+2019,9318,Chapecoense,chapecoense,A
+2019,9966,Avaí,avai,A
+2019,6079,Red Bull Bragantino,red-bull-bragantino,B
+2019,7635,Sport,sport,B
+2019,3456,Coritiba,coritiba,B
+2019,10357,Atlético Goianiense,atletico-goianiense,B
+2019,6154,América Mineiro,america-mineiro,B
+2019,3453,Paraná,parana,B
+2019,9970,CRB,crb,B
+2019,17313,Cuiabá,cuiaba,B
+2019,10281,Botafogo-SP,botafogo-sp,B
+2019,18187,Operário PR,operario-pr,B
+2019,3459,Ponte Preta,ponte-preta,B
+2019,3457,Vitória,vitoria,B
+2019,3448,Guarani,guarani,B
+2019,17134,Brasil de Pelotas,brasil-de-pelotas,B
+2019,10263,Oeste,oeste,B
+2019,3461,Figueirense,figueirense,B
+2019,17333,Londrina,londrina,B
+2019,6083,São Bento,sao-bento,B
+2019,9971,Criciúma,criciuma,B
+2019,9973,Vila Nova,vila-nova,B
+2019,4873,Sampaio Corrêa,sampaio-correa,C
+2019,4875,Confiança,confianca,C
+2019,4902,Treze,treze,C
+2019,4929,Santa Cruz,santa-cruz,C
+2019,6195,Sociedade Imperatriz de Desportos,sociedade-imperatriz-de-desportos,C
+2019,7633,Náutico,nautico,C
+2019,9965,ABC,abc,C
+2019,17317,Botafogo PB,botafogo-pb,C
+2019,17712,Globo,globo,C
+2019,21901,Ferroviário,ferroviario,C
+2019,4806,Volta Redonda,volta-redonda,C
+2019,4935,Ypiranga,ypiranga,C
+2019,4936,Remo,remo,C
+2019,6270,Juventude,juventude,C
+2019,7389,São José-RS,sao-jose-rs,C
+2019,15424,Paysandu,paysandu,C
+2019,15560,Boa Esporte,boa-esporte,C
+2019,15576,Luverdense,luverdense,C
+2019,17339,Tombense,tombense,C
+2019,17817,Atlético Acreano,atletico-acreano,C
+2020,819,Flamengo,flamengo,A
+2020,1936,Internacional,internacional,A
+2020,7632,Atlético-MG,atletico-mg,A
+2020,2026,São Paulo,sao-paulo,A
+2020,3445,Fluminense,fluminense,A
+2020,6273,Grêmio,gremio,A
+2020,2029,Palmeiras,palmeiras,A
+2020,2674,Santos,santos,A
+2020,3458,Athletico Paranaense,athletico-paranaense,A
+2020,6079,Red Bull Bragantino,red-bull-bragantino,A
+2020,9969,Ceará,ceara,A
+2020,874,Corinthians,corinthians,A
+2020,10357,Atlético Goianiense,atletico-goianiense,A
+2020,9967,Bahia,bahia,A
+2020,7635,Sport,sport,A
+2020,6272,Fortaleza,fortaleza,A
+2020,3454,Vasco da Gama,vasco-da-gama,A
+2020,3395,Goiás,goias,A
+2020,3456,Coritiba,coritiba,A
+2020,6086,Botafogo,botafogo,A
+2020,9318,Chapecoense,chapecoense,B
+2020,6154,América Mineiro,america-mineiro,B
+2020,6270,Juventude,juventude,B
+2020,17313,Cuiabá,cuiaba,B
+2020,7531,CSA,csa,B
+2020,4873,Sampaio Corrêa,sampaio-correa,B
+2020,3459,Ponte Preta,ponte-preta,B
+2020,18187,Operário PR,operario-pr,B
+2020,9966,Avaí,avai,B
+2020,9970,CRB,crb,B
+2020,2022,Cruzeiro,cruzeiro,B
+2020,17134,Brasil de Pelotas,brasil-de-pelotas,B
+2020,3448,Guarani,guarani,B
+2020,3457,Vitória,vitoria,B
+2020,4875,Confiança,confianca,B
+2020,7633,Náutico,nautico,B
+2020,3461,Figueirense,figueirense,B
+2020,3453,Paraná,parana,B
+2020,10281,Botafogo-SP,botafogo-sp,B
+2020,10263,Oeste,oeste,B
+2020,4774,Ituano,ituano,C
+2020,4929,Santa Cruz,santa-cruz,C
+2020,9973,Vila Nova,vila-nova,C
+2020,18428,Brusque,brusque,C
+2020,4935,Ypiranga,ypiranga,C
+2020,4936,Remo,remo,C
+2020,15424,Paysandu,paysandu,C
+2020,17333,Londrina,londrina,C
+2020,7389,São José-RS,sao-jose-rs,C
+2020,6083,São Bento,sao-bento,C
+2020,17339,Tombense,tombense,C
+2020,18959,Manaus,manaus,C
+2020,21901,Ferroviário,ferroviario,C
+2020,17317,Botafogo PB,botafogo-pb,C
+2020,17713,Jacuipense,jacuipense,C
+2020,9971,Criciúma,criciuma,C
+2020,15560,Boa Esporte,boa-esporte,C
+2020,4806,Volta Redonda,volta-redonda,C
+2020,4902,Treze,treze,C
+2020,6195,Sociedade Imperatriz de Desportos,sociedade-imperatriz-de-desportos,C
+2021,7632,Atlético-MG,atletico-mg,A
+2021,819,Flamengo,flamengo,A
+2021,2029,Palmeiras,palmeiras,A
+2021,6272,Fortaleza,fortaleza,A
+2021,874,Corinthians,corinthians,A
+2021,6079,Red Bull Bragantino,red-bull-bragantino,A
+2021,3445,Fluminense,fluminense,A
+2021,6154,América Mineiro,america-mineiro,A
+2021,10357,Atlético Goianiense,atletico-goianiense,A
+2021,2674,Santos,santos,A
+2021,9969,Ceará,ceara,A
+2021,1936,Internacional,internacional,A
+2021,2026,São Paulo,sao-paulo,A
+2021,3458,Athletico Paranaense,athletico-paranaense,A
+2021,17313,Cuiabá,cuiaba,A
+2021,6270,Juventude,juventude,A
+2021,6273,Grêmio,gremio,A
+2021,9967,Bahia,bahia,A
+2021,7635,Sport,sport,A
+2021,9318,Chapecoense,chapecoense,A
+2021,6086,Botafogo,botafogo,B
+2021,3395,Goiás,goias,B
+2021,3456,Coritiba,coritiba,B
+2021,9966,Avaí,avai,B
+2021,7531,CSA,csa,B
+2021,3448,Guarani,guarani,B
+2021,9970,CRB,crb,B
+2021,7633,Náutico,nautico,B
+2021,9973,Vila Nova,vila-nova,B
+2021,3454,Vasco da Gama,vasco-da-gama,B
+2021,3459,Ponte Preta,ponte-preta,B
+2021,18187,Operário PR,operario-pr,B
+2021,18428,Brusque,brusque,B
+2021,2022,Cruzeiro,cruzeiro,B
+2021,4873,Sampaio Corrêa,sampaio-correa,B
+2021,17333,Londrina,londrina,B
+2021,4936,Remo,remo,B
+2021,3457,Vitória,vitoria,B
+2021,4875,Confiança,confianca,B
+2021,17134,Brasil de Pelotas,brasil-de-pelotas,B
+2021,4774,Ituano,ituano,C
+2021,9971,Criciúma,criciuma,C
+2021,15424,Paysandu,paysandu,C
+2021,17317,Botafogo PB,botafogo-pb,C
+2021,4935,Ypiranga,ypiranga,C
+2021,17339,Tombense,tombense,C
+2021,18127,Novorizontino,novorizontino,C
+2021,18959,Manaus,manaus,C
+2021,21901,Ferroviário,ferroviario,C
+2021,3461,Figueirense,figueirense,C
+2021,18958,Floresta,floresta,C
+2021,17713,Jacuipense,jacuipense,C
+2021,4929,Santa Cruz,santa-cruz,C
+2021,10281,Botafogo-SP,botafogo-sp,C
+2021,7389,São José-RS,sao-jose-rs,C
+2021,18433,Altos,altos,C
+2021,4806,Volta Redonda,volta-redonda,C
+2021,3453,Paraná,parana,C
+2021,10263,Oeste,oeste,C
+2021,9169,Mirassol,mirassol,C
+2022,2029,Palmeiras,palmeiras,A
+2022,1936,Internacional,internacional,A
+2022,3445,Fluminense,fluminense,A
+2022,874,Corinthians,corinthians,A
+2022,819,Flamengo,flamengo,A
+2022,3458,Athletico Paranaense,athletico-paranaense,A
+2022,7632,Atlético-MG,atletico-mg,A
+2022,6272,Fortaleza,fortaleza,A
+2022,2026,São Paulo,sao-paulo,A
+2022,6154,América Mineiro,america-mineiro,A
+2022,6086,Botafogo,botafogo,A
+2022,2674,Santos,santos,A
+2022,3395,Goiás,goias,A
+2022,6079,Red Bull Bragantino,red-bull-bragantino,A
+2022,3456,Coritiba,coritiba,A
+2022,17313,Cuiabá,cuiaba,A
+2022,9969,Ceará,ceara,A
+2022,10357,Atlético Goianiense,atletico-goianiense,A
+2022,9966,Avaí,avai,A
+2022,6270,Juventude,juventude,A
+2022,2022,Cruzeiro,cruzeiro,B
+2022,6273,Grêmio,gremio,B
+2022,3454,Vasco da Gama,vasco-da-gama,B
+2022,9967,Bahia,bahia,B
+2022,4873,Sampaio Corrêa,sampaio-correa,B
+2022,4774,Ituano,ituano,B
+2022,7635,Sport,sport,B
+2022,9971,Criciúma,criciuma,B
+2022,17333,Londrina,londrina,B
+2022,3448,Guarani,guarani,B
+2022,9970,CRB,crb,B
+2022,3459,Ponte Preta,ponte-preta,B
+2022,9973,Vila Nova,vila-nova,B
+2022,9318,Chapecoense,chapecoense,B
+2022,17339,Tombense,tombense,B
+2022,18127,Novorizontino,novorizontino,B
+2022,7531,CSA,csa,B
+2022,18428,Brusque,brusque,B
+2022,18187,Operário PR,operario-pr,B
+2022,7633,Náutico,nautico,B
+2022,4806,Volta Redonda,volta-redonda,C
+2022,9169,Mirassol,mirassol,C
+2022,10281,Botafogo-SP,botafogo-sp,C
+2022,18188,Aparecidense,aparecidense,C
+2022,3457,Vitória,vitoria,C
+2022,3461,Figueirense,figueirense,C
+2022,9965,ABC,abc,C
+2022,15424,Paysandu,paysandu,C
+2022,4935,Ypiranga,ypiranga,C
+2022,18427,Atlético Cearense,atletico-cearense,C
+2022,7509,Campinense PB,campinense-pb,C
+2022,17317,Botafogo PB,botafogo-pb,C
+2022,7389,São José-RS,sao-jose-rs,C
+2022,4936,Remo,remo,C
+2022,18433,Altos,altos,C
+2022,18958,Floresta,floresta,C
+2022,4875,Confiança,confianca,C
+2022,21901,Ferroviário,ferroviario,C
+2022,17134,Brasil de Pelotas,brasil-de-pelotas,C
+2022,18959,Manaus,manaus,C
+2023,2029,Palmeiras,palmeiras,A
+2023,6273,Grêmio,gremio,A
+2023,7632,Atlético-MG,atletico-mg,A
+2023,819,Flamengo,flamengo,A
+2023,6086,Botafogo,botafogo,A
+2023,6079,Red Bull Bragantino,red-bull-bragantino,A
+2023,3445,Fluminense,fluminense,A
+2023,3458,Athletico Paranaense,athletico-paranaense,A
+2023,1936,Internacional,internacional,A
+2023,6272,Fortaleza,fortaleza,A
+2023,2026,São Paulo,sao-paulo,A
+2023,17313,Cuiabá,cuiaba,A
+2023,874,Corinthians,corinthians,A
+2023,2022,Cruzeiro,cruzeiro,A
+2023,3454,Vasco da Gama,vasco-da-gama,A
+2023,9967,Bahia,bahia,A
+2023,2674,Santos,santos,A
+2023,3395,Goiás,goias,A
+2023,3456,Coritiba,coritiba,A
+2023,6154,América Mineiro,america-mineiro,A
+2023,3457,Vitória,vitoria,B
+2023,6270,Juventude,juventude,B
+2023,9971,Criciúma,criciuma,B
+2023,10357,Atlético Goianiense,atletico-goianiense,B
+2023,18127,Novorizontino,novorizontino,B
+2023,9169,Mirassol,mirassol,B
+2023,7635,Sport,sport,B
+2023,9973,Vila Nova,vila-nova,B
+2023,9970,CRB,crb,B
+2023,3448,Guarani,guarani,B
+2023,9969,Ceará,ceara,B
+2023,10281,Botafogo-SP,botafogo-sp,B
+2023,9966,Avaí,avai,B
+2023,4774,Ituano,ituano,B
+2023,3459,Ponte Preta,ponte-preta,B
+2023,9318,Chapecoense,chapecoense,B
+2023,4873,Sampaio Corrêa,sampaio-correa,B
+2023,17339,Tombense,tombense,B
+2023,17333,Londrina,londrina,B
+2023,9965,ABC,abc,B
+2023,7389,São José-RS,sao-jose-rs,C
+2023,11268,São Bernardo,sao-bernardo,C
+2023,18187,Operário PR,operario-pr,C
+2023,18428,Brusque,brusque,C
+2023,4806,Volta Redonda,volta-redonda,C
+2023,15424,Paysandu,paysandu,C
+2023,17317,Botafogo PB,botafogo-pb,C
+2023,21888,Amazonas,amazonas,C
+2023,18958,Floresta,floresta,C
+2023,20852,Pouso Alegre,pouso-alegre,C
+2023,18959,Manaus,manaus,C
+2023,7633,Náutico,nautico,C
+2023,18188,Aparecidense,aparecidense,C
+2023,7634,América-RN,america-rn,C
+2023,4935,Ypiranga,ypiranga,C
+2023,4936,Remo,remo,C
+2023,18433,Altos,altos,C
+2023,3461,Figueirense,figueirense,C
+2023,7531,CSA,csa,C
+2023,4875,Confiança,confianca,C
+2024,6086,Botafogo,botafogo,A
+2024,2029,Palmeiras,palmeiras,A
+2024,819,Flamengo,flamengo,A
+2024,6272,Fortaleza,fortaleza,A
+2024,1936,Internacional,internacional,A
+2024,2026,São Paulo,sao-paulo,A
+2024,874,Corinthians,corinthians,A
+2024,9967,Bahia,bahia,A
+2024,2022,Cruzeiro,cruzeiro,A
+2024,3454,Vasco da Gama,vasco-da-gama,A
+2024,3457,Vitória,vitoria,A
+2024,7632,Atlético-MG,atletico-mg,A
+2024,3445,Fluminense,fluminense,A
+2024,6273,Grêmio,gremio,A
+2024,6270,Juventude,juventude,A
+2024,6079,Red Bull Bragantino,red-bull-bragantino,A
+2024,3458,Athletico Paranaense,athletico-paranaense,A
+2024,9971,Criciúma,criciuma,A
+2024,10357,Atlético Goianiense,atletico-goianiense,A
+2024,17313,Cuiabá,cuiaba,A
+2024,2674,Santos,santos,B
+2024,9169,Mirassol,mirassol,B
+2024,7635,Sport,sport,B
+2024,9969,Ceará,ceara,B
+2024,18127,Novorizontino,novorizontino,B
+2024,3395,Goiás,goias,B
+2024,18187,Operário PR,operario-pr,B
+2024,6154,América Mineiro,america-mineiro,B
+2024,9973,Vila Nova,vila-nova,B
+2024,9966,Avaí,avai,B
+2024,21888,Amazonas,amazonas,B
+2024,3456,Coritiba,coritiba,B
+2024,15424,Paysandu,paysandu,B
+2024,10281,Botafogo-SP,botafogo-sp,B
+2024,9318,Chapecoense,chapecoense,B
+2024,9970,CRB,crb,B
+2024,3459,Ponte Preta,ponte-preta,B
+2024,4774,Ituano,ituano,B
+2024,18428,Brusque,brusque,B
+2024,3448,Guarani,guarani,B
+2024,4806,Volta Redonda,volta-redonda,C
+2024,4936,Remo,remo,C
+2024,11268,São Bernardo,sao-bernardo,C
+2024,17317,Botafogo PB,botafogo-pb,C
+2024,4935,Ypiranga,ypiranga,C
+2024,17333,Londrina,londrina,C
+2024,18126,Ferroviária,ferroviaria,C
+2024,20851,Athletic,athletic,C
+2024,17131,Caxias do Sul,caxias-do-sul,C
+2024,7531,CSA,csa,C
+2024,17339,Tombense,tombense,C
+2024,7389,São José-RS,sao-jose-rs,C
+2024,7633,Náutico,nautico,C
+2024,18958,Floresta,floresta,C
+2024,3461,Figueirense,figueirense,C
+2024,21901,Ferroviário,ferroviario,C
+2024,9965,ABC,abc,C
+2024,4875,Confiança,confianca,C
+2024,18188,Aparecidense,aparecidense,C
+2024,4873,Sampaio Corrêa,sampaio-correa,C
+2025,819,Flamengo,flamengo,A
+2025,2029,Palmeiras,palmeiras,A
+2025,2022,Cruzeiro,cruzeiro,A
+2025,9169,Mirassol,mirassol,A
+2025,3445,Fluminense,fluminense,A
+2025,6086,Botafogo,botafogo,A
+2025,9967,Bahia,bahia,A
+2025,2026,São Paulo,sao-paulo,A
+2025,6273,Grêmio,gremio,A
+2025,6079,Red Bull Bragantino,red-bull-bragantino,A
+2025,7632,Atlético-MG,atletico-mg,A
+2025,2674,Santos,santos,A
+2025,874,Corinthians,corinthians,A
+2025,3454,Vasco da Gama,vasco-da-gama,A
+2025,3457,Vitória,vitoria,A
+2025,1936,Internacional,internacional,A
+2025,9969,Ceará,ceara,A
+2025,6272,Fortaleza,fortaleza,A
+2025,6270,Juventude,juventude,A
+2025,7635,Sport,sport,A
+2025,3456,Coritiba,coritiba,B
+2025,3458,Athletico-PR,athletico-pr,B
+2025,9318,Chapecoense,chapecoense,B
+2025,4936,Remo,remo,B
+2025,9971,Criciúma,criciuma,B
+2025,3395,Goiás,goias,B
+2025,18127,Novorizontino,novorizontino,B
+2025,9970,CRB,crb,B
+2025,9966,Avaí,avai,B
+2025,17313,Cuiabá,cuiaba,B
+2025,10357,Atlético Goianiense,atletico-goianiense,B
+2025,18187,Operário PR,operario-pr,B
+2025,9973,Vila Nova,vila-nova,B
+2025,6154,América Mineiro,america-mineiro,B
+2025,20851,Athletic,athletic,B
+2025,10281,Botafogo-SP,botafogo-sp,B
+2025,18126,Ferroviária,ferroviaria,B
+2025,21888,Amazonas,amazonas,B
+2025,4806,Volta Redonda,volta-redonda,B
+2025,15424,Paysandu,paysandu,B
+2025,11268,São Bernardo,sao-bernardo,C
+2025,17131,Caxias do Sul,caxias-do-sul,C
+2025,17333,Londrina,londrina,C
+2025,18958,Floresta,floresta,C
+2025,3448,Guarani,guarani,C
+2025,3459,Ponte Preta,ponte-preta,C
+2025,7633,Náutico,nautico,C
+2025,18428,Brusque,brusque,C
+2025,3461,Figueirense,figueirense,C
+2025,7531,CSA,csa,C
+2025,18424,Anápolis,anapolis,C
+2025,17317,Botafogo PB,botafogo-pb,C
+2025,4875,Confiança,confianca,C
+2025,4774,Ituano,ituano,C
+2025,9965,ABC,abc,C
+2025,6214,Itabaiana,itabaiana,C
+2025,20896,Retró,retro,C
+2025,17339,Tombense,tombense,C
+2025,17715,Maringá,maringa,C
+2025,4935,Ypiranga,ypiranga,C
+2026,819,Flamengo,flamengo,A
+2026,2029,Palmeiras,palmeiras,A
+2026,3445,Fluminense,fluminense,A
+2026,3458,Athletico Paranaense,athletico-paranaense,A
+2026,2022,Cruzeiro,cruzeiro,A
+2026,9967,Bahia,bahia,A
+2026,7632,Atlético-MG,atletico-mg,A
+2026,2674,Santos,santos,A
+2026,3456,Coritiba,coritiba,A
+2026,6079,Red Bull Bragantino,red-bull-bragantino,A
+2026,2026,São Paulo,sao-paulo,A
+2026,3457,Vitória,vitoria,A
+2026,6086,Botafogo,botafogo,A
+2026,3454,Vasco da Gama,vasco-da-gama,A
+2026,9169,Mirassol,mirassol,A
+2026,874,Corinthians,corinthians,A
+2026,1936,Internacional,internacional,A
+2026,6273,Grêmio,gremio,A
+2026,4936,Remo,remo,A
+2026,9318,Chapecoense,chapecoense,A
+2026,6270,Juventude,juventude,B
+2026,9973,Vila Nova,vila-nova,B
+2026,18127,Novorizontino,novorizontino,B
+2026,6272,Fortaleza,fortaleza,B
+2026,9971,Criciúma,criciuma,B
+2026,10357,Atlético Goianiense,atletico-goianiense,B
+2026,9970,CRB,crb,B
+2026,7635,Sport,sport,B
+2026,18187,Operário PR,operario-pr,B
+2026,17313,Cuiabá,cuiaba,B
+2026,3395,Goiás,goias,B
+2026,11268,São Bernardo,sao-bernardo,B
+2026,7633,Náutico,nautico,B
+2026,9969,Ceará,ceara,B
+2026,20851,Athletic,athletic,B
+2026,10281,Botafogo-SP,botafogo-sp,B
+2026,9966,Avaí,avai,B
+2026,17333,Londrina,londrina,B
+2026,6154,América Mineiro,america-mineiro,B
+2026,3459,Ponte Preta,ponte-preta,B

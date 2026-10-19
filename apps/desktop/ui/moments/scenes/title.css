@@ -1,0 +1,83 @@
+/* Title celebrations. Short: the paper page, trophy, eleven and clipping, done in about two seconds. Long: the
+   night that warms to the club's colour once the drought counter has run. Delays come in --d (ms). */
+
+.mo-title.is-short { background: var(--paper) var(--paper-tex) center / cover; color: var(--ink); }
+.mo-title .tt-trophy { display: flex; align-items: center; gap: 18px; }
+.mo-title .tt-cup { width: 120px; height: 150px; flex: none; border-radius: 12px; background: #fff; display: grid; place-items: center; box-shadow: 0 0 0 3px var(--yellow), 0 14px 22px -10px rgba(20,35,26,.55); transform: rotate(-3deg); }
+.mo-title .tt-cup img { width: 92px; max-height: 120px; object-fit: contain; }
+.mo-title .tt-cup i { font-size: 72px; color: var(--yellow-d); }
+.mo-title .tt-trophy b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 44px; line-height: .95; letter-spacing: -.02em; }
+.mo-title .tt-trophy small { display: block; font-size: 14px; font-weight: 600; margin-top: 7px; color: var(--ink-2); }
+.mo-title .tt-slap { margin-top: 26px; animation: tt-slap 460ms var(--e-slap) calc(var(--d) * 1ms) both; }
+@keyframes tt-slap { from { opacity: 0; transform: scale(1.4) rotate(-6deg); } 60% { opacity: 1; } }
+
+.mo-title .tt-a { position: absolute; left: 56px; top: 54px; width: 660px; bottom: 76px; display: flex; flex-direction: column; }
+.mo-title .tt-a .tt-trophy b { color: var(--tt-ink, var(--ink)); }
+.mo-title .tt-xi { margin-top: 34px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px 10px; }
+.mo-title .tt-xs { --h: 92px; --fs: 38px; animation: tt-slap 360ms var(--e-slap) calc(var(--d) * 1ms) both; }
+.mo-title .tt-xs .nm { font-size: 11.5px; font-stretch: 85%; padding-bottom: 6px; }
+.mo-title .tt-a .cause { margin-top: auto; padding-top: 12px; border-top: 2px dotted var(--line-2); }
+.mo-title .tt-a-side { position: absolute; left: 770px; right: 56px; top: 54px; bottom: 76px; display: flex; flex-direction: column; gap: 22px; }
+.mo-title .tt-seal { align-self: flex-start; padding: 14px; background: var(--card); border-radius: 50%; box-shadow: var(--sh-pop); transform: rotate(6deg); }
+.mo-title .tt-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mo-title .tt-facts .nst b { font-size: 30px; }
+.mo-title .tt-clip { padding: 14px 18px; background: #FBF7EC; color: #1A1A17; box-shadow: 0 0 0 1px rgba(20,35,26,.1), 0 10px 18px -12px rgba(20,35,26,.5); transform: rotate(-1deg); }
+.mo-title .tt-clip small { font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #C8102E; }
+.mo-title .tt-clip b { display: block; font-stretch: 72%; font-weight: 900; font-size: 34px; line-height: .95; text-transform: uppercase; margin-top: 4px; }
+.mo-title .tt-stand { position: relative; flex: 1; min-height: 120px; border-radius: 8px; overflow: hidden; background: color-mix(in srgb, var(--strong) 22%, #0B0606); box-shadow: var(--sh-page); animation: mo-up 500ms var(--e-out) calc(var(--d) * 1ms) both; }
+.mo-title .tt-stand canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mo-title .tt-stand span { position: absolute; left: 10px; bottom: 10px; padding: 4px 8px; border-radius: var(--r-pill); background: rgba(10,3,4,.72); font-stretch: var(--semi); font-weight: 900; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #FBF7EC; }
+.mo-title canvas.fill { z-index: 20; }
+
+/* ---------- Long ---------- */
+.mo-title.is-long { background: #0B0606; color: #FBF7EC; }
+.mo-title .tt-b { position: absolute; inset: 0; background: color-mix(in srgb, var(--strong) 14%, #0B0606); }
+.mo-title .tt-warm { position: absolute; inset: 0; background: radial-gradient(90% 80% at 45% 30%, var(--strong), color-mix(in srgb, var(--strong) 40%, #050202) 62%, color-mix(in srgb, var(--strong) 14%, #0B0606) 100%); opacity: 0; animation: tt-warm 1600ms var(--e-out) calc(var(--d) * 1ms) both; }
+@keyframes tt-warm { to { opacity: 1; } }
+.mo-title .tt-crowd { position: absolute; left: 0; bottom: 0; width: 100%; height: 112px; z-index: 1; }
+.mo-title .tt-b::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 200px; background: linear-gradient(180deg, rgba(10,3,4,0), rgba(10,3,4,.72) 72%); pointer-events: none; z-index: 2; }
+.mo-title .tt-drought { position: absolute; left: 44px; top: 44px; width: 440px; z-index: 3; }
+.mo-title .tt-b .when { color: rgba(251,247,236,.72); }
+.mo-title .tt-b .when i { color: #FBF7EC; }
+.mo-title .tt-odo { margin-top: 14px; display: flex; align-items: flex-end; gap: 16px; }
+.mo-title .tt-yr { font-stretch: var(--wide); font-weight: 900; font-size: 104px; line-height: .8; letter-spacing: -.04em; font-variant-numeric: tabular-nums; transition: color var(--t-fast) var(--e-out); }
+.mo-title .tt-yr.miss { color: #FF8A80; }
+.mo-title .tt-n { padding-bottom: 6px; font-size: 13px; line-height: 1.3; color: rgba(251,247,236,.8); max-width: 140px; }
+.mo-title .tt-n b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 32px; color: #FBF7EC; line-height: 1; font-variant-numeric: tabular-nums; }
+.mo-title .tt-tag { position: relative; margin-top: 16px; height: 48px; width: 380px; }
+.mo-title .tt-tag > div { position: absolute; top: 0; height: 48px; width: 50%; overflow: hidden; }
+.mo-title .tt-tag > div span { position: absolute; top: 0; left: 0; width: 380px; height: 48px; display: grid; place-items: center; background: #FBF7EC; color: #1C0507; font-stretch: 72%; font-weight: 900; font-size: 26px; text-transform: uppercase; letter-spacing: .02em; white-space: nowrap; }
+.mo-title .tt-tag .l { left: 0; transform-origin: 0 100%; animation: tt-tear-l 900ms var(--e-peel) calc(var(--d) * 1ms) both; }
+.mo-title .tt-tag .r { right: 0; transform-origin: 100% 100%; animation: tt-tear-r 900ms var(--e-peel) calc(var(--d) * 1ms) both; }
+.mo-title .tt-tag .r span { left: -190px; }
+@keyframes tt-tear-l { 0% { transform: none; } 20% { transform: rotate(-4deg); } 100% { transform: translate(-40px, 420px) rotate(-38deg); opacity: 0; } }
+@keyframes tt-tear-r { 0% { transform: none; } 20% { transform: rotate(5deg); } 100% { transform: translate(60px, 440px) rotate(44deg); opacity: 0; } }
+.mo-title .tt-champ { position: absolute; left: 44px; top: 286px; z-index: 4; animation: tt-champ 700ms var(--e-slap) calc(var(--d) * 1ms) both; }
+@keyframes tt-champ { from { opacity: 0; transform: scale(1.6) rotate(-6deg); } 60% { opacity: 1; } }
+.mo-title .tt-trophy.is-long b { color: #FFFFFF; font-size: 34px; }
+.mo-title .tt-trophy.is-long small { color: rgba(251,247,236,.85); }
+.mo-title .tt-trophy.is-long .tt-cup { width: 104px; height: 130px; box-shadow: 0 0 0 3px var(--yellow), 0 18px 24px -8px rgba(0,0,0,.7); }
+.mo-title .tt-trophy.is-long .tt-cup img { width: 80px; }
+
+.mo-title .tt-photos { position: absolute; left: 560px; right: 40px; top: 52px; height: 330px; z-index: 3; }
+.mo-title .tt-ph { position: absolute; width: 138px; padding: 7px 7px 9px; background: #F4ECDA; color: #2A211A; box-shadow: 0 12px 18px -10px rgba(0,0,0,.8); animation: tt-pin 460ms var(--e-slap) calc(var(--d) * 1ms) both; transform: rotate(var(--r)); }
+.mo-title .tt-ph .img { height: 88px; background: radial-gradient(circle at 30% 40%, #8A7A66 0 1.3px, transparent 1.6px) 0 0 / 5px 5px, linear-gradient(180deg, #6E6252, #4A4036); position: relative; overflow: hidden; }
+.mo-title .tt-ph.you .img { background: radial-gradient(circle at 30% 40%, color-mix(in srgb, var(--strong) 60%, #fff) 0 1.3px, transparent 1.6px) 0 0 / 5px 5px, linear-gradient(180deg, color-mix(in srgb, var(--strong) 70%, #222), color-mix(in srgb, var(--strong) 40%, #111)); }
+.mo-title .tt-ph .img b { position: absolute; left: 7px; bottom: 5px; font-stretch: var(--wide); font-weight: 900; font-size: 28px; color: rgba(244,236,218,.92); line-height: 1; }
+.mo-title .tt-ph small { display: block; font-size: 11px; line-height: 1.3; margin-top: 6px; font-weight: 600; }
+.mo-title .tt-ph::before { content: ''; position: absolute; left: 50%; top: -7px; width: 46px; height: 14px; margin-left: -23px; background: rgba(255,255,255,.4); transform: rotate(-3deg); }
+@keyframes tt-pin { from { opacity: 0; transform: translateY(-30px) rotate(calc(var(--r) - 10deg)) scale(1.1); } to { opacity: 1; transform: rotate(var(--r)); } }
+
+.mo-title .tt-vets { position: absolute; left: 44px; top: 456px; width: 460px; z-index: 4; }
+.mo-title .tt-vets .lbl { color: rgba(251,247,236,.75); }
+.mo-title .tt-vets .row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.mo-title .tt-vets .ps { --h: 74px; --fs: 32px; }
+.mo-title .tt-vets .ps .cl { font-size: 9.5px; }
+
+.mo-title .tt-fin { position: absolute; left: 584px; right: 44px; top: 404px; padding: 14px 18px 16px; z-index: 5; transform: rotate(1.2deg); animation: tt-land 760ms var(--e-out) calc(var(--d) * 1ms) both; }
+@keyframes tt-land { from { opacity: 0; transform: translate(30px, 60px) rotate(6deg); } }
+.mo-title .tt-fin h3 { font-size: 64px; margin-top: 4px; }
+.mo-title .tt-fin .deck { font-size: 13px; font-weight: 600; margin-top: 6px; }
+.mo-title .tt-b-cause { position: absolute; left: 44px; width: 500px; top: 640px; color: rgba(251,247,236,.85); z-index: 4; }
+.mo-title .tt-b-cause > b { color: rgba(251,247,236,.6); }
+.mo-title .tt-conf { z-index: 20; }

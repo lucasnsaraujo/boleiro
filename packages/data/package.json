@@ -1,0 +1,9 @@
+{
+  "name": "@boleiro/data",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./pack/*": "./pack/*",
+    "./*": "./src/*.ts"
+  }
+}

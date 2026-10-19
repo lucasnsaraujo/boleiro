@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Patrocínio</title>
+<link rel="stylesheet" href="../../packages/design-tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: minmax(0, 1fr) 410px; gap: 14px; }
+
+.kit { padding: 20px 24px 18px; display: flex; flex-direction: column; overflow: hidden; }
+.kit .hd { display: flex; align-items: center; gap: 12px; }
+.kit h1 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: 1; letter-spacing: -.01em; }
+.kit .hd p { font-size: 12.5px; color: var(--mute); margin-top: 5px; }
+.kit .hd p b { color: var(--ink); }
+.brd { margin-left: auto; display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; border-radius: var(--r-pill); background: var(--paper); box-shadow: inset 0 0 0 1px var(--line-2); font-size: 12.5px; line-height: 1.25; }
+.brd b { font-weight: 800; display: block; }
+.brd span { color: var(--mute); font-size: 11.5px; }
+
+.body { flex: 1; display: grid; grid-template-columns: 370px 1fr; gap: 24px; align-items: center; margin-top: 10px; }
+.shirt { transform: scale(1.14); transform-origin: 50% 50%; }
+.shirt { position: relative; width: 330px; height: 360px; }
+.shirt svg { position: absolute; inset: 0; filter: drop-shadow(0 14px 16px rgba(20,35,26,.28)); }
+/* Sponsor marks printed in white on the shirt, like the real one */
+.pl { position: absolute; display: grid; place-items: center; }
+.pl img.logo { filter: brightness(0) invert(1) drop-shadow(0 1px 1px rgba(0,0,0,.35)); }
+.pl.master { left: 95px; top: 148px; width: 140px; height: 40px; }
+.pl.barra { left: 115px; top: 198px; width: 100px; height: 22px; }
+.pl.kitm { left: 196px; top: 84px; height: 24px; }
+.pl.club { left: 104px; top: 80px; }
+.pl.slv { left: 22px; top: 96px; height: 26px; transform: rotate(-28deg); }
+.lead { position: absolute; font-size: 11px; font-weight: 700; color: var(--mute); white-space: nowrap; display: flex; align-items: center; gap: 4px; }
+
+.cur h3 { font-stretch: var(--semi); font-weight: 900; font-size: 15px; padding-bottom: 6px; border-bottom: 2px solid var(--ink); display: flex; align-items: baseline; }
+.cur h3 small { margin-left: auto; font-stretch: 100%; font-weight: 600; font-size: 11.5px; color: var(--mute); }
+.sp { display: grid; grid-template-columns: 112px 1fr auto; gap: 2px 12px; align-items: center; padding: 10px 0; border-bottom: 1px dotted var(--line-2); }
+.sp .mk { height: 28px; border-radius: 5px; display: grid; place-items: center; background: #fff; box-shadow: inset 0 0 0 1px var(--line); grid-row: 1 / 3; }
+.sp .mk img { max-width: 92px; }
+.sp .mk.txt { background: transparent; box-shadow: inset 0 0 0 1px var(--line-2); font-weight: 800; font-size: 11px; color: var(--mute); }
+.sp b { font-weight: 800; font-size: 13px; }
+.sp small { font-size: 11.5px; color: var(--mute); grid-column: 2; }
+.sp small.w { color: var(--later); font-weight: 700; }
+.sp .v { grid-row: 1 / 3; grid-column: 3; text-align: right; font-stretch: var(--semi); font-weight: 900; font-size: 15px; }
+.sp .v small { display: block; font-stretch: 100%; font-weight: 600; font-size: 11px; color: var(--mute); }
+.tot { display: flex; justify-content: space-between; padding-top: 10px; font-size: 12.5px; color: var(--mute); }
+.tot b { font-stretch: var(--semi); font-weight: 900; font-size: 16px; color: var(--ink); }
+
+/* Right */
+.side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.off { padding: 14px 16px 10px; }
+.off h3, .bet h3 { font-stretch: var(--wide); font-weight: 900; font-size: 17px; display: flex; align-items: baseline; gap: 8px; }
+.off h3 small { margin-left: auto; font-stretch: 100%; font-weight: 600; font-size: 11.5px; color: var(--mute); }
+.or { display: grid; grid-template-columns: 96px 1fr auto; gap: 2px 10px; align-items: center; padding: 12px 8px; margin: 0 -8px; border-radius: 10px; }
+.or + .or { border-top: 1px dotted var(--line-2); }
+.or .mk { height: 30px; border-radius: 5px; display: grid; place-items: center; background: #fff; grid-row: 1 / 3; box-shadow: inset 0 0 0 1px var(--line); }
+.or .mk img { max-width: 80px; }
+.or b { font-weight: 800; font-size: 13px; }
+.or small { font-size: 11.5px; color: var(--mute); grid-column: 2; }
+.or .v { grid-row: 1 / 3; grid-column: 3; text-align: right; font-stretch: var(--semi); font-weight: 900; font-size: 14px; }
+.or .v small { display: block; font-stretch: 100%; font-weight: 600; font-size: 11px; }
+.or.sel { background: var(--yellow-l); box-shadow: 0 0 0 2px var(--ink); border-top-color: transparent; }
+.or.sel + .or { border-top-color: transparent; }
+
+.off { flex: 1; }
+.bet { padding: 14px 16px; display: flex; flex-direction: column; position: relative; }
+.bet .row { display: flex; gap: 14px; align-items: flex-start; margin-top: 8px; }
+.bet ul { list-style: none; display: grid; gap: 6px; font-size: 12.5px; flex: 1; }
+.bet li { display: flex; gap: 7px; align-items: flex-start; line-height: 1.35; }
+.bet li i { font-size: 15px; margin-top: 1px; }
+.bet li i.up { color: var(--green); } .bet li i.dn { color: var(--red); } .bet li i.nt { color: var(--ink-2); }
+.bet li b { font-weight: 800; }
+.odds { position: relative; transform: rotate(3deg); background: #fff; border-radius: 9px; padding: 15px 5px 5px; display: flex; color: #14231A; box-shadow: 0 0 0 1px rgba(20,35,26,.12), 0 8px 14px -6px rgba(20,35,26,.45); flex: none; margin-top: 8px; }
+.odds em { position: absolute; left: 7px; top: -7px; font-style: normal; font-stretch: var(--semi); font-weight: 900; font-size: 10px; background: #fff; color: #14231A; padding: 3px 6px; border-radius: 3px; transform: rotate(-4deg); box-shadow: 0 0 0 1px rgba(20,35,26,.14); }
+.odds span { display: grid; text-align: center; font-size: 10px; color: #5C584B; font-weight: 700; line-height: 1.15; padding: 0 7px; }
+.odds span + span { border-left: 1px dotted #C4B796; }
+.odds span b { font-size: 15px; color: #14231A; font-weight: 900; font-stretch: var(--semi); }
+.bet .cap { font-size: 11px; color: var(--mute); text-align: center; margin-top: 8px; transform: rotate(3deg); }
+.go { height: 50px; font-size: 16px; width: 100%; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="times"></div>
+  <main><div class="wrap">
+    <div class="page kit">
+      <div class="hd"><div><h1>Patrocínio</h1><p>Valores por ano, <b>estimados</b> pela imprensa · — fim não divulgado</p></div>
+        <label class="brd"><span class="sw"></span><div><b>A diretoria negocia</b><span>Desligado: você escolhe</span></div></label></div>
+      <div class="body">
+        <div class="shirt">
+          <svg width="330" height="360" viewBox="0 0 330 360">
+            <defs><clipPath id="sh"><path d="M112 22 C128 40 202 40 218 22 L286 50 L322 128 L270 154 L256 132 L256 340 C220 352 110 352 74 340 L74 132 L60 154 L8 128 L44 50 Z"/></clipPath></defs>
+            <g clip-path="url(#sh)"><rect width="330" height="360" fill="#C8102E"/><g id="hoops"></g></g>
+            <path d="M112 22 C128 40 202 40 218 22 L286 50 L322 128 L270 154 L256 132 L256 340 C220 352 110 352 74 340 L74 132 L60 154 L8 128 L44 50 Z" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2"/>
+            <path d="M112 22 C128 40 202 40 218 22 C206 48 124 48 112 22 Z" fill="#111"/>
+          </svg>
+          <span class="pl kitm"><span data-logo="logos/adidas.svg" data-h="22"></span></span>
+          <span class="pl club"><span data-crest="FLA" data-size="30"></span></span>
+          <span class="pl slv"><span data-logo="logos/shopee.svg" data-h="24"></span></span>
+          <span class="pl master"><span data-logo="logos/betano.svg" data-h="32"></span></span>
+          <span class="pl barra"><span data-logo="logos/ademicon.svg" data-h="17"></span></span>
+        </div>
+        <div class="cur"><h3>Na camisa hoje<small>até</small></h3>
+          <div class="sp"><span class="mk"><span data-logo="logos/betano.svg" data-h="16"></span></span><b>Master</b><small>Aposta · peito</small><span class="v">R$ 268,5 mi<small>dez 2028</small></span></div>
+          <div class="sp"><span class="mk"><span data-logo="logos/adidas.svg" data-h="20"></span></span><b>Fornecedor</b><small>Uniforme e royalties</small><span class="v">R$ 70 mi<small>dez 2029</small></span></div>
+          <div class="sp"><span class="mk"><span data-logo="logos/brb.svg" data-h="18"></span></span><b>Ombros</b><small>Banco de Brasília</small><span class="v">R$ 42,6 mi<small>—</small></span></div>
+          <div class="sp"><span class="mk"><span data-logo="logos/hapvida.svg" data-h="16"></span></span><b>Costas</b><small>Acima do número</small><span class="v">R$ 23,8 mi<small>—</small></span></div>
+          <div class="sp"><span class="mk"><span data-logo="logos/ademicon.svg" data-h="14"></span></span><b>Barra frontal</b><small>Abaixo do master</small><span class="v">R$ 14 mi<small>2029</small></span></div>
+          <div class="sp"><span class="mk"><span data-logo="logos/shopee.svg" data-h="22"></span></span><b>Mangas</b><small>As duas</small><span class="v">R$ 12 mi<small>—</small></span></div>
+          <div class="sp"><span class="mk txt">mais 5</span><b>Calção, meião, números</b><small>GAC, WAP, Assist Card, Zé Delivery, Texaco</small><span class="v">R$ 36,7 mi<small></small></span></div>
+          <div class="tot"><span>Total por ano</span><b>R$ 467,6 mi</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="stk off"><h3>Propostas<small>para jan 2027</small></h3>
+        <div class="or sel"><span class="mk"><span data-logo="logos/granado.svg" data-h="11"></span></span><b>Granado</b><small>Mangas, no lugar da Shopee · 3 anos</small><span class="v">R$ 15 mi<small>por ano</small></span></div>
+        <div class="or"><span class="mk"><span data-logo="logos/guarana-antarctica.svg" data-h="26"></span></span><b>Guaraná Antarctica</b><small>Costas, no lugar da Hapvida · 2 anos</small><span class="v">R$ 26 mi<small>por ano</small></span></div>
+        <div class="or"><span class="mk"><span data-logo="logos/assai.svg" data-h="24"></span></span><b>Assaí</b><small>Ombros, no lugar do BRB · 2 anos</small><span class="v">R$ 40 mi<small>por ano</small></span></div>
+        <div class="or"><span class="mk"><span data-logo="logos/havaianas.svg" data-h="13"></span></span><b>Havaianas</b><small>Meião · 2 anos</small><span class="v">R$ 6 mi<small>por ano</small></span></div>
+        <div class="or"><span class="mk"><span data-logo="logos/tok-stok.svg" data-h="11"></span></span><b>Tok&amp;Stok</b><small>Calção · 1 ano · bônus por título</small><span class="v">R$ 5 mi<small>+R$ 2 mi</small></span></div>
+      </div>
+      <div class="stk bet"><h3><span data-logo="logos/betano.svg" data-h="17"></span>é casa de aposta</h3>
+        <div class="row">
+          <ul>
+            <li><i class="ph-bold ph-arrow-up up"></i><span>Paga <b>R$ 150 mi a mais</b> que o melhor master fora das apostas</span></li>
+            <li><i class="ph-bold ph-arrow-down dn"></i><span>Torcida <b>−2%</b> enquanto durar</span></li>
+            <li><i class="ph-bold ph-ticket nt"></i><span>Antes de cada jogo, as odds aparecem no seu painel</span></li>
+          </ul>
+          <div><div class="odds"><em><span data-logo="logos/betano.svg" data-h="9"></span></em><span>BAH<b>3,10</b></span><span>X<b>3,25</b></span><span>FLA<b>2,30</b></span></div><div class="cap">hoje, 18h30</div></div>
+        </div>
+      </div>
+      <button class="btn go"><i class="ph-bold ph-handshake"></i>Fechar com Granado</button>
+    </div>
+  </div></main>
+</div>
+<script>
+document.getElementById('hoops').innerHTML = Array.from({ length: 9 }, (_, i) => `<rect y="${30 + i * 38}" width="330" height="19" fill="#111"/>`).join('');
+</script>
+</body>
+</html>

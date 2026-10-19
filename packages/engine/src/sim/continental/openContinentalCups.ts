@@ -1,0 +1,58 @@
+import { randomStream } from "../../engine/random.js";
+import type { ContinentalCompetition, ContinentalCup, GameState } from "../gameState.js";
+import { openNextStage } from "../openNextStage.js";
+import { shuffle } from "../shuffle.js";
+import { formatsOf, gameScales } from "../formats.js";
+import { CUP_STAGES, cupStageDates } from "./conmebolCups.js";
+import type { ContinentalField } from "./continentalField.js";
+
+// The draws come from a stream of their own, so opening the cups leaves the game's main stream as it was.
+const DRAW_STREAM_SALT = 0xc0b1e;
+
+/** Where a cup with a one-match final or the Club World Cup plays this season, from the game's hosts; the Recopa and Intercontinental Cup have none. */
+function hostOf(state: GameState, cup: ContinentalCup): Pick<ContinentalCompetition, "host"> {
+  const host = cup === "recopa" || cup === "intercontinental-cup" ? undefined : state.hosts?.[`${cup}-${state.season}`];
+  return host ? { host } : {};
+}
+
+/** The game with the season's CONMEBOL and FIFA cups opened on the field: competitions, first-stage fixtures and their draws. */
+export function openContinentalCups(state: GameState, field: ContinentalField | null): GameState {
+  if (!field) return state;
+  const random = randomStream((state.seed ^ DRAW_STREAM_SALT ^ state.season) >>> 0).next;
+  const libertadoresClubs = field.libertadores.flat();
+  const cups: { cup: ContinentalCup; entries: string[][]; drawn: string[] }[] = [
+    { cup: "libertadores", entries: field.libertadores, drawn: libertadoresClubs },
+    // Libertadores clubs drop into the Sul-Americana, so its draws know them too.
+    { cup: "sul-americana", entries: field.sulAmericana, drawn: [...field.sulAmericana.flat(), ...libertadoresClubs] },
+    { cup: "recopa", entries: [field.recopa], drawn: field.recopa },
+    { cup: "club-world-cup", entries: [field.clubWorldCup], drawn: field.clubWorldCup },
+    { cup: "intercontinental-cup", entries: field.intercontinentalCup, drawn: field.intercontinentalCup.flat() },
+  ];
+  const competitions = { ...state.competitions };
+  const fixtures = [...state.fixtures];
+  const formats = formatsOf(state);
+  for (const { cup, entries, drawn } of cups) {
+    const clubIds = entries.flat();
+    if (clubIds.length < 2) continue;
+    const stageDates = cupStageDates(cup, state.season, formats);
+    const scales = gameScales(CUP_STAGES[cup].map((stage) => stage.dates.length), stageDates.map((dates) => dates.length));
+    const competition: ContinentalCompetition = {
+      id: `${cup}-${state.season}`,
+      kind: "continental",
+      cup,
+      season: state.season,
+      clubIds,
+      entries,
+      countries: field.countries,
+      stages: [],
+      stageDates,
+      drawOrder: shuffle(drawn, random),
+      ...(scales ? { gameScales: scales } : {}),
+      ...hostOf(state, cup),
+    };
+    const opened = openNextStage(competition, [], {});
+    competitions[competition.id] = opened.competition;
+    fixtures.push(...opened.fixtures);
+  }
+  return { ...state, competitions, fixtures };
+}

@@ -1,0 +1,553 @@
+/* Agenda: five weeks of the season on an album page, today's game and the next ones as stickers beside it. */
+.agenda {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 318px;
+  gap: 14px;
+  height: 100%;
+  min-height: 0;
+  padding: 18px 14px 14px;
+}
+
+.agenda .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.agenda-cal {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.agenda-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 14px 16px 10px;
+}
+
+.agenda-head h2 {
+  margin-right: auto;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+/* The season's twelve months, a jump to any of them; the months on the page are pressed. */
+.agenda-months {
+  display: flex;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+
+.agenda-months button {
+  height: 26px;
+  padding: 0 7px;
+  border-radius: var(--r-pill);
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mute);
+  transition:
+    background-color var(--t-fast) var(--e-out),
+    color var(--t-fast) var(--e-out);
+}
+
+.agenda-months button:hover {
+  color: var(--ink);
+  background: var(--paper-2);
+}
+
+.agenda-months button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--card);
+}
+
+.agenda-turn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+  font-size: 14px;
+  transition:
+    transform var(--t-fast) var(--e-out),
+    box-shadow var(--t-fast) var(--e-out);
+}
+
+.agenda-turn:hover:not(:disabled) {
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.agenda-turn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.agenda-turn:disabled {
+  color: var(--line-2);
+  cursor: default;
+}
+
+.agenda-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  padding: 0 10px;
+}
+
+.agenda-weekdays span {
+  padding: 0 6px 6px;
+  border-bottom: 2px solid var(--ink);
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.agenda-days {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  padding: 0 10px 10px;
+}
+
+.agenda-day {
+  padding: 6px;
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.agenda-day:nth-child(7n) {
+  border-right: 0;
+}
+
+.agenda-day.today {
+  background: var(--yellow-l);
+}
+
+/* Days of another season: the page runs on, the album has no square for them. */
+.agenda-day.off {
+  background: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--paper-2) 70%, transparent) 6px 7px);
+}
+
+.agenda-n {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.agenda-day.past .agenda-n,
+.agenda-day.off .agenda-n {
+  color: var(--line-2);
+}
+
+.agenda-day.today .agenda-n {
+  color: var(--ink);
+}
+
+.agenda-today-tag {
+  font-stretch: 100%;
+  font-weight: 700;
+  font-size: 10.5px;
+  text-transform: lowercase;
+  color: var(--later);
+}
+
+/* Each month's games and window marks are one list, laid on the same grid as the days. */
+.agenda-entries {
+  display: contents;
+  list-style: none;
+}
+
+/* A day's second game (a club's and a national team's) sits under the first in the same square. */
+.agenda-match {
+  position: relative;
+  z-index: 1;
+  align-self: start;
+  min-width: 0;
+  margin: calc(26px + var(--stack, 0) * 44px) 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 7px;
+  border-radius: 9px;
+  background: var(--card);
+  box-shadow: var(--sh-sticker);
+  font-size: 11.5px;
+  line-height: 1.2;
+}
+
+.agenda-match-crest {
+  flex: none;
+}
+
+.agenda-match-text {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.agenda-match b {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 800;
+  font-size: 12.5px;
+}
+
+.agenda-match small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--mute);
+}
+
+.agenda-match.played {
+  background: color-mix(in srgb, var(--card) 72%, var(--paper));
+}
+
+.agenda-match.played .agenda-match-crest,
+.agenda-match.played b {
+  opacity: 0.78;
+}
+
+/* A played game keeps its result stamped on the corner: green won, red lost, paper drew. */
+.agenda-res {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  box-shadow: 0 0 0 2px var(--card);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-stretch: var(--semi);
+  font-weight: 900;
+  font-size: 10.5px;
+  background: var(--paper-2);
+  color: var(--ink-2);
+}
+
+.agenda-match.win .agenda-res {
+  background: var(--green);
+  color: var(--on-green);
+}
+
+.agenda-match.loss .agenda-res {
+  background: var(--red);
+  color: var(--on-red);
+}
+
+/* The transfer window: a strip of tape across the week it opens or closes. */
+.agenda-window {
+  position: relative;
+  z-index: 2;
+  grid-column: 1 / -1;
+  align-self: end;
+  min-width: 0;
+  height: 26px;
+  margin: 0 -4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  transform: rotate(-0.4deg);
+  background: repeating-linear-gradient(90deg, var(--yellow) 0 28px, #ffd83a 28px 56px);
+  color: var(--on-yellow);
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 12px;
+  box-shadow: 0 3px 8px -4px rgba(20, 35, 26, 0.45);
+}
+
+.agenda-window i {
+  font-size: 15px;
+}
+
+.agenda-window-when::before {
+  content: "· ";
+}
+
+.agenda-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.agenda-next {
+  padding: 16px;
+}
+
+.agenda-next h3 {
+  margin-top: 4px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 1.05;
+}
+
+.agenda-next-none {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.agenda-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 16px 0 12px;
+}
+
+.agenda-x {
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 20px;
+  color: var(--line-2);
+}
+
+.agenda-next dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  font-size: 12.5px;
+}
+
+.agenda-next dt {
+  color: var(--mute);
+}
+
+.agenda-next dd {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.agenda-play {
+  width: 100%;
+  height: 44px;
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+.agenda-coming {
+  padding: 14px 16px 6px;
+}
+
+.agenda-coming h3 {
+  margin-bottom: 4px;
+  font-stretch: var(--wide);
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.agenda-coming ul {
+  list-style: none;
+}
+
+.agenda-coming li {
+  display: grid;
+  grid-template-columns: 52px 22px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-height: 40px;
+  padding: 4px 0;
+  border-bottom: 1px dotted var(--line-2);
+  font-size: 12.5px;
+}
+
+.agenda-coming li:last-child {
+  border-bottom: 0;
+}
+
+.agenda-coming-date {
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+
+.agenda-coming-date::first-letter {
+  text-transform: uppercase;
+}
+
+.agenda-coming .agenda-coming-date small {
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.agenda-coming b {
+  display: block;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.agenda-coming small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--mute);
+}
+
+/* Narrow windows: the side column slims down and the chips drop the crest before the name. */
+@media (max-width: 1180px) {
+  .agenda {
+    grid-template-columns: minmax(0, 1fr) 280px;
+  }
+
+  .agenda-match-crest {
+    display: none;
+  }
+}
+
+/* Motion: the page turns the way the arrows point; the stickers are laid down top to bottom. */
+@media (prefers-reduced-motion: no-preference) {
+  .agenda-days[data-turn] {
+    animation: agenda-turn-on var(--t-base) var(--e-out) both;
+  }
+
+  .agenda-days[data-turn="back"] {
+    animation-name: agenda-turn-back;
+  }
+
+  .agenda-match {
+    animation: agenda-stick var(--t-slow) var(--e-slap) 60ms both;
+  }
+
+  .agenda-window {
+    animation: agenda-tape var(--t-slow) var(--e-out) 120ms both;
+  }
+
+  .agenda-side > * {
+    animation: agenda-lay var(--t-slow) var(--e-out) both;
+  }
+
+  .agenda-side > :nth-child(2) {
+    animation-delay: 60ms;
+  }
+}
+
+@keyframes agenda-turn-on {
+  from {
+    opacity: 0.2;
+    transform: translateX(18px);
+  }
+}
+
+@keyframes agenda-turn-back {
+  from {
+    opacity: 0.2;
+    transform: translateX(-18px);
+  }
+}
+
+@keyframes agenda-stick {
+  from {
+    opacity: 0;
+    transform: translateY(6px) rotate(-2deg) scale(1.04);
+  }
+}
+
+@keyframes agenda-tape {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+@keyframes agenda-lay {
+  from {
+    opacity: 0;
+    transform: translateY(10px) rotate(-1deg);
+  }
+}
+
+/* A played match opens its ficha: a button over the whole chip, under its text. */
+.agenda-open {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.agenda-match:has(> .agenda-open) {
+  transition:
+    transform var(--t-fast) var(--e-out),
+    box-shadow var(--t-fast) var(--e-out);
+}
+
+.agenda-match:has(> .agenda-open:hover) {
+  transform: translateY(-2px) rotate(-0.6deg);
+  box-shadow: var(--sh-lift);
+}
+
+.agenda-match:has(> .agenda-open) > :not(.agenda-open) {
+  pointer-events: none;
+}
+
+/* A derby on the agenda: a small sticker slapped on the chip's bottom edge, the named one under the next match's title. */
+.agenda-match > .derby-badge {
+  position: absolute;
+  z-index: 1;
+  right: -5px;
+  bottom: -12px;
+  height: 15px;
+  padding: 0 5px;
+  font-size: 8.5px;
+  transform: rotate(-3deg);
+}
+
+.agenda-derby {
+  display: flex;
+  justify-content: center;
+  margin: 2px 0 10px;
+}
+
+.agenda-derby:empty {
+  display: none;
+}
+
+/* The competition's logo before its name: on the next game's heading, and inline in the coming games' lines. */
+.agenda-next h3 .comp-logo {
+  display: inline-block;
+  vertical-align: middle;
+  margin: -4px 8px 0 0;
+}
+
+.agenda-coming small .comp-logo {
+  display: inline-block;
+  vertical-align: -3px;
+  margin-right: 5px;
+}

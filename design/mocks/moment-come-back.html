@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Volta</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="moments.css">
+<script src="mock.js"></script>
+<script src="moments.js"></script>
+<style>
+body { --end: 5600; }
+.stage { background: var(--paper) url('../tokens/paper.jpg') center / cover; }
+
+/* ---------- The paper: the fans' campaign ---------- */
+.jb.cv { position: absolute; left: 26px; top: 22px; width: 610px; bottom: 22px; padding: 16px 22px 18px; transform: rotate(-1deg); animation: land 760ms var(--e-out) 0ms both; display: flex; flex-direction: column; }
+@keyframes land { from { opacity: 0; transform: translate(-30px, -50px) rotate(-7deg) scale(1.05); } }
+.cv .mast h4 { font-size: 30px; }
+.cv .dl { display: flex; justify-content: space-between; font-stretch: var(--semi); font-weight: 800; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; padding: 5px 0; border-bottom: 1px solid #1A1A17; }
+.cv h3 { font-size: 104px; margin-top: 6px; animation: stamp 520ms var(--e-slap) 450ms both; transform-origin: 30% 60%; }
+@keyframes stamp { from { opacity: 0; transform: scale(1.25); } 50% { opacity: 1; } }
+.cv .deck { font-size: 14.5px; font-weight: 600; line-height: 1.38; margin-top: 8px; color: #2C2B26; }
+.photo { position: relative; margin-top: 12px; flex: 1; min-height: 0; background: #E9E2CF; overflow: hidden; }
+.photo canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.photo figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 6px 10px; background: #FBF7EC; font-size: 11px; color: #4A473E; border-top: 1px solid #1A1A17; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 10px; padding-top: 8px; border-top: 1px solid #1A1A17; }
+.cols h5 { font-stretch: 80%; font-weight: 900; font-size: 16px; line-height: 1.05; }
+.cols p { font-size: 11.5px; margin-top: 3px; }
+
+/* ---------- Right: what the game knows, and the offer ---------- */
+.rt { position: absolute; left: 668px; right: 24px; top: 24px; bottom: 22px; display: flex; flex-direction: column; gap: 14px; }
+.camp { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 10px; }
+.camp .nst { animation: slap 460ms var(--e-slap) calc(var(--d) * 1ms) both; }
+.camp .nst b { font-size: 28px; }
+.camp .nst:nth-child(2) { transform: rotate(1.4deg); }
+@keyframes slap { from { opacity: 0; transform: scale(1.4) rotate(-6deg); } 60% { opacity: 1; } }
+.why { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; animation: up 500ms var(--e-out) 2900ms both; }
+.why > div { padding: 10px 12px; border-radius: var(--r-m); box-shadow: inset 0 0 0 1.5px var(--line); }
+.why .lbl { font-size: 10px; }
+.why b { display: flex; align-items: baseline; justify-content: space-between; font-stretch: var(--semi); font-weight: 900; font-size: 15px; margin-top: 4px; }
+.why b span { font-size: 22px; font-stretch: var(--wide); }
+.why .meter { margin-top: 6px; }
+.why small { display: block; font-size: 11px; color: var(--mute); margin-top: 5px; line-height: 1.35; }
+@keyframes up { from { opacity: 0; transform: translateY(14px); } }
+
+.offer { position: relative; flex: 1; padding: 18px 20px 16px; background: var(--card); border-radius: 8px; box-shadow: var(--sh-pop); animation: offer 720ms var(--e-slap) 3500ms both; display: flex; flex-direction: column; }
+@keyframes offer { from { opacity: 0; transform: translateX(60px) rotate(4deg); } to { transform: rotate(-.5deg); } }
+.offer .hd { display: flex; align-items: center; gap: 12px; }
+.offer .hd .kind { font-size: 11.5px; font-weight: 700; color: var(--mute); display: flex; align-items: center; gap: 6px; }
+.offer h2 { font-stretch: var(--wide); font-weight: 900; font-size: 24px; line-height: 1; letter-spacing: -.01em; margin-top: 3px; }
+.offer blockquote { margin-top: 12px; font-size: 13.5px; line-height: 1.45; color: var(--ink-2); }
+.terms { margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 2px solid var(--ink); }
+.terms div { padding: 9px 10px 0 0; }
+.terms div + div { padding-left: 12px; border-left: 1px solid var(--rule); }
+.terms .lbl { font-size: 10px; }
+.terms b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 16px; margin-top: 3px; }
+.terms small { display: block; font-size: 11px; color: var(--mute); }
+.offer .foot { margin-top: auto; display: flex; align-items: center; gap: 10px; padding-top: 12px; border-top: 2px dotted var(--line-2); }
+.offer .foot p { max-width: 160px; font-size: 11.5px; color: var(--mute); line-height: 1.35; }
+.back { margin-top: 16px; }
+.back .lbl { font-size: 10px; }
+.who { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px; }
+.who .ps { --h: 104px; --fs: 44px; --hoop: 5px; animation: slap 460ms var(--e-slap) calc(var(--d) * 1ms) both; }
+.who .ps:nth-child(2) { transform: rotate(1.5deg); }
+.who .ps:nth-child(3) { --c: #0B7A3B; }
+.acts { right: 46px; bottom: 40px; }
+.acts .skip { bottom: -14px; right: -22px; }
+</style>
+</head>
+<body style="--top:transparent">
+<div class="app">
+  <div class="mbar"><span class="lights"><i></i><i></i><i></i></span></div>
+  <main><div class="stage">
+
+    <article class="jb cv">
+      <div class="mast"><h4><span>Jornal do</span>Boleiro</h4><small>Rio de Janeiro · quinta, 14 mar 2041<br>Ano 16 · nº 4.629</small></div>
+      <div class="dl"><span>Flamengo em crise</span><span>16º no Brasileirão · 3 técnicos em 14 meses</span></div>
+      <div class="kick" style="margin-top:10px">A torcida escolheu</div>
+      <h3>Volta, Lucas</h3>
+      <p class="deck">A faixa apareceu de madrugada no muro da Gávea. Às 10h já eram três. Sem clube desde que deixou o Benfica, o técnico dos onze títulos virou o pedido de quem foi ao treino.</p>
+      <figure class="photo"><canvas id="ph"></canvas><figcaption>Gávea, 7h40 de quarta. Foto: Jornal do Boleiro</figcaption></figure>
+      <div class="cols">
+        <div><h5>Diretoria liga às 15h</h5><p>Conversa durou 40 minutos. Proposta sai por escrito.</p></div>
+        <div><h5>Domingo tem mosaico</h5><p>Organizadas prometem o mesmo de 2033 contra o Vasco.</p></div>
+      </div>
+    </article>
+
+    <section class="rt">
+      <div class="camp">
+        <div class="nst" style="--d:1700"><b id="posts">0</b><span>posts com #VoltaLucas</span></div>
+        <div class="nst" style="--d:1900"><b>3</b><span>faixas na Gávea</span></div>
+        <div class="nst" style="--d:2100"><b>16º</b><span>no Brasileirão</span></div>
+      </div>
+      <div class="why">
+        <div><span class="lbl">Ídolo do Flamengo</span><b>Máximo<span>100</span></b><div class="meter thin"><i style="width:100%"></i></div><small>Onze títulos e uma despedida no Maracanã.</small></div>
+        <div><span class="lbl">Crise no clube</span><b>Alta<span id="crisis">0</span></b><div class="meter thin low"><i id="crisisbar" style="width:0%"></i></div><small>Zona de rebaixamento a 2 pontos.</small></div>
+      </div>
+      <div class="offer">
+        <div class="hd"><span data-crest="FLA" data-size="44"></span><div><div class="kind"><i class="ph-bold ph-handshake"></i>Proposta por escrito · 14 mar, 18h20</div><h2>O Flamengo quer você de volta</h2></div></div>
+        <blockquote>"A gente sabe como você saiu e sabe o que o time precisa. A torcida decidiu antes da diretoria. Queremos você no domingo, contra o Vasco."</blockquote>
+        <div class="terms">
+          <div><span class="lbl">Contrato</span><b>até dez 2043</b><small>2 anos e 9 meses</small></div>
+          <div><span class="lbl">Salário</span><b>R$ 2,4 mi</b><small>por mês</small></div>
+          <div><span class="lbl">Meta</span><b>sair da zona</b><small>Libertadores em 2042</small></div>
+        </div>
+        <div class="back"><span class="lbl">Quem você reencontra</span>
+          <div class="who">
+            <div class="ps hoops" style="--d:4300"><div class="art"><em>10</em><b>K</b></div><div class="nm">Kauã Pinheiro</div><div class="cl">capitão · voltou em 2040</div></div>
+            <div class="ps hoops" style="--d:4420"><div class="art"><em>4</em><b>J</b></div><div class="nm">João Souza</div><div class="cl">34 anos · 9 títulos</div></div>
+            <div class="ps hoops" style="--d:4540"><div class="art"><em>A</em><b>G</b></div><div class="nm">Gilberto Paixão</div><div class="cl">volta como auxiliar</div></div>
+          </div>
+        </div>
+        <div class="foot"><p>Responde até sábado. Sem resposta, o Flamengo procura outro nome.</p></div>
+      </div>
+    </section>
+
+    <div class="acts">
+      <button class="skip" data-skip>Pular <span class="kbd">Esc</span></button>
+      <div class="cta"><button class="btn">Agradecer e recusar</button><button class="btn go"><i class="ph-bold ph-handshake"></i>Aceitar e voltar</button></div>
+    </div>
+  </div></main>
+</div>
+<script>
+fill();
+Moment.count(document.getElementById('posts'), { from: 0, to: 318, at: 1900, len: 1600, fmt: (n) => `${Math.round(n)} mil` });
+const crisis = document.getElementById('crisis'), cbar = document.getElementById('crisisbar');
+Moment.tick((t) => { const v = 88 * Moment.ease.out(Moment.span(t, 3000, 900)); crisis.textContent = Math.round(v); cbar.style.width = v + '%'; });
+
+// The newspaper photo, printed as halftone: the Gávea wall with the banner, dots growing as the print develops.
+(() => {
+  const el = document.getElementById('ph');
+  const { g, w, h } = Moment.canvas(el);
+  const off = document.createElement('canvas');
+  const cell = 5, cols = Math.ceil(w / cell), rows = Math.ceil(h / cell);
+  let lum = null;
+  function scene() {
+    off.width = w; off.height = h;
+    const o = off.getContext('2d', { willReadFrequently: true });
+    const sky = o.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#D8D8D8'); sky.addColorStop(1, '#9A9A9A');
+    o.fillStyle = sky; o.fillRect(0, 0, w, h);
+    o.fillStyle = '#5A5A5A'; for (let i = 0; i < 9; i++) o.fillRect(i * w / 8 - 20, h * 0.12 + (i % 3) * 6, 46, h);
+    o.fillStyle = '#7A7A7A'; o.fillRect(0, h * 0.42, w, h * 0.58);
+    o.fillStyle = '#4A4A4A'; for (let x = 0; x < w; x += 34) o.fillRect(x, h * 0.42, 3, h);
+    o.save(); o.translate(w * 0.5, h * 0.52); o.rotate(-0.03);
+    o.fillStyle = '#F4F4F4'; o.fillRect(-w * 0.38, -32, w * 0.76, 64);
+    o.fillStyle = '#161616'; o.font = '900 condensed 46px Archivo'; o.textAlign = 'center'; o.textBaseline = 'middle';
+    o.fillText('VOLTA, LUCAS', 0, 3); o.restore();
+    o.fillStyle = '#2A2A2A';
+    for (let i = 0; i < 26; i++) { const x = 14 + i * (w / 26), y = h * 0.8 + (i % 4) * 5; o.beginPath(); o.arc(x, y, 9, 0, 6.28); o.fill(); o.fillRect(x - 11, y + 6, 22, h); }
+    const d = o.getImageData(0, 0, w, h).data;
+    lum = []; for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const i = (Math.min(h - 1, y * cell + 2) * w + Math.min(w - 1, x * cell + 2)) * 4; lum.push(1 - d[i] / 255); }
+  }
+  Moment.tick((t) => {
+    if (!lum) scene();
+    g.fillStyle = '#ECE5D2'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#1A1A17';
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+      const dev = Moment.ease.out(Moment.span(t, 700 + (y / rows) * 500, 1100));
+      const r = Math.sqrt(lum[y * cols + x]) * cell * 0.62 * dev;
+      if (r < 0.3) continue;
+      g.beginPath(); g.arc(x * cell + cell / 2 + (y % 2 ? cell / 2 : 0), y * cell + cell / 2, r, 0, 6.283); g.fill();
+    }
+  });
+})();
+Moment.run(5600);
+</script>
+</body>
+</html>

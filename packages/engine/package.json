@@ -1,0 +1,11 @@
+{
+  "name": "@boleiro/engine",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@boleiro/data": "workspace:*"
+  }
+}

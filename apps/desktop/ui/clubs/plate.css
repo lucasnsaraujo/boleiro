@@ -1,0 +1,17 @@
+.club-plate {
+  display: inline-block;
+  font: 700 30px/1 var(--cond);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  padding: 10px 18px 9px;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.club-plate-row {
+  font: 600 15px/1 var(--cond);
+  padding: 7px 10px 6px;
+  letter-spacing: 0;
+}

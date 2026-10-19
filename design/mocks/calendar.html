@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Agenda</title>
+<link rel="stylesheet" href="../../packages/design-tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: 1fr 318px; gap: 14px; }
+.cal { display: flex; flex-direction: column; overflow: hidden; }
+.cal .hd { display: flex; align-items: center; gap: 10px; padding: 14px 16px 10px; }
+.cal .hd h2 { font-stretch: var(--wide); font-weight: 900; font-size: 22px; margin-right: auto; }
+.icb { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line-2); font-size: 14px; }
+.wk { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); padding: 0 10px; }
+.wk span { font-stretch: var(--semi); font-weight: 800; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); padding: 0 6px 6px; border-bottom: 2px solid var(--ink); }
+.days { flex: 1; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: repeat(5, 1fr); padding: 0 10px 10px; position: relative; }
+.d { border-bottom: 1px solid var(--rule); border-right: 1px solid var(--rule); padding: 6px 6px; position: relative; display: flex; flex-direction: column; gap: 5px; }
+.d:nth-child(7n) { border-right: 0; }
+.d .n { font-stretch: var(--semi); font-weight: 800; font-size: 12px; color: var(--mute); }
+.d.past .n { color: var(--line-2); }
+.d.today { background: var(--yellow-l); }
+.d.today .n { color: var(--ink); }
+.d.today .n::after { content: 'hoje'; margin-left: 6px; font-stretch: 100%; font-weight: 700; font-size: 10.5px; color: var(--later); }
+.m { min-width: 0; overflow: hidden; display: flex; align-items: center; gap: 7px; padding: 6px 7px; border-radius: 9px; background: var(--card); box-shadow: var(--sh-sticker); font-size: 11.5px; line-height: 1.2; }
+.m b { display: block; font-weight: 800; font-size: 12.5px; white-space: nowrap; }
+.m small { white-space: nowrap; }
+.m small { color: var(--mute); font-size: 11px; }
+.m.lib { box-shadow: 0 0 0 2px var(--ink), var(--sh-sticker); }
+.m .res { margin-left: auto; font-stretch: var(--semi); font-weight: 900; font-size: 12px; }
+.m.past { opacity: .72; }
+.fifa { grid-row: 5; grid-column: 1 / 8; align-self: end; margin: 0 -4px 12px; height: 26px; display: flex; align-items: center; gap: 8px; padding: 0 12px; transform: rotate(-.4deg); background: repeating-linear-gradient(90deg, var(--yellow) 0 28px, #FFD83A 28px 56px); color: var(--on-yellow); font-stretch: var(--semi); font-weight: 800; font-size: 12px; box-shadow: 0 3px 8px -4px rgba(20,35,26,.45); z-index: 1; }
+.fifa i { font-size: 15px; }
+.side { display: flex; flex-direction: column; gap: 12px; }
+.day { padding: 16px; }
+.day h3 { font-stretch: var(--wide); font-weight: 900; font-size: 20px; line-height: 1.05; margin-top: 4px; }
+.day .vs { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 16px 0 12px; }
+.day .vs span.x { font-stretch: var(--wide); font-weight: 900; font-size: 20px; color: var(--line-2); }
+.day dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 12.5px; }
+.day dt { color: var(--mute); }
+.day dd { font-weight: 700; text-align: right; }
+.day .btn { width: 100%; margin-top: 14px; height: 44px; font-size: 14px; }
+.nx { padding: 14px 16px 6px; }
+.nx h3 { font-stretch: var(--wide); font-weight: 900; font-size: 16px; margin-bottom: 4px; }
+.nr { display: grid; grid-template-columns: 52px 22px 1fr; gap: 8px; align-items: center; height: 40px; border-bottom: 1px dotted var(--line-2); font-size: 12.5px; }
+.nr:last-child { border-bottom: 0; }
+.nr .dt { font-stretch: var(--semi); font-weight: 800; font-size: 11.5px; color: var(--mute); }
+.nr b { font-weight: 800; display: block; line-height: 1.1; }
+.nr small { color: var(--mute); font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="agenda"></div>
+  <main><div class="wrap">
+    <div class="page cal">
+      <div class="hd"><h2>Outubro e novembro</h2><span class="icb"><i class="ph-bold ph-caret-left"></i></span><span class="icb"><i class="ph-bold ph-caret-right"></i></span></div>
+      <div class="wk"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span></div>
+      <div class="days" id="days"><div class="fifa"><i class="ph-fill ph-flag-banner"></i>Data Fifa, 9 a 17 de novembro · Samuel Lino e Pedro convocados para a Seleção</div></div>
+    </div>
+    <div class="side">
+      <div class="stk day"><span class="lbl">Hoje · Dom, 18 out</span><h3>Série A, 31ª rodada</h3>
+        <div class="vs"><span data-crest="BAH" data-size="56"></span><span class="x">×</span><span data-crest="FLA" data-size="56"></span></div>
+        <dl><dt>Onde</dt><dd>Fonte Nova · 18h30</dd><dt>Árbitro</dt><dd>Wilton Pereira Sampaio</dd><dt>Público previsto</dt><dd>45 mil</dd><dt>Desfalques</dt><dd>Arrascaeta, fratura no punho</dd></dl>
+        <button class="btn y"><i class="ph-bold ph-strategy"></i>Escalar time</button>
+      </div>
+      <div class="stk nx"><h3>Em seguida</h3>
+        <div class="nr"><span class="dt">Qui 22</span><span data-crest="EST" data-size="22"></span><div><b>Estudiantes</b><small>Libertadores · semifinal, volta · casa</small></div></div>
+        <div class="nr"><span class="dt">Seg 26</span><span data-crest="CAM" data-size="22"></span><div><b>Atlético-MG</b><small>Série A · 32ª · Maracanã</small></div></div>
+        <div class="nr"><span class="dt">Qui 29</span><span data-crest="VAS" data-size="22"></span><div><b>Vasco</b><small>Série A · 33ª · fora</small></div></div>
+      </div>
+    </div>
+  </div></main>
+</div>
+<script>
+// Rolling five weeks, Mon 12 Oct to Sun 15 Nov 2026. Fixtures, dates and venues are Flamengo's real 2026 schedule (ESPN);
+// the 1 × 1 in La Plata is game state. Brazil's November friendly against Japan is the real one, in Singapore.
+const M = {
+  o15: ['EST', 'Estudiantes', '1×1 · Liberta · fora', 'lib past'],
+  o18: ['BAH', 'Bahia', 'Série A · 18h30'],
+  o22: ['EST', 'Estudiantes', 'Liberta · casa', 'lib'],
+  o26: ['CAM', 'Atlético-MG', 'Série A · casa'],
+  o29: ['VAS', 'Vasco', 'Série A · fora'],
+  n4: ['GRE', 'Grêmio', 'Série A · casa'],
+  n14: ['BRA', 'Japão', 'Seleção · 7h15'],
+};
+const out = [];
+for (let i = 0; i < 35; i++) {
+  const oct = i < 20, day = oct ? 12 + i : i - 19, m = M[(oct ? 'o' : 'n') + day];
+  const past = oct && day < 18, today = oct && day === 18;
+  out.push(`<div class="d ${past ? 'past' : ''} ${today ? 'today' : ''}" style="grid-row:${Math.floor(i / 7) + 1};grid-column:${(i % 7) + 1}"><span class="n">${day}${!oct && day === 1 ? ' nov' : ''}</span>${m ? `<div class="m ${m[3] || ''}">${crest(m[0], 22)}<div><b>${m[1]}</b><small>${m[2]}</small></div>${m[4] ? `<span class="res">${m[4]}</span>` : ''}</div>` : ''}</div>`);
+}
+document.getElementById('days').insertAdjacentHTML('afterbegin', out.join(''));
+</script>
+</body>
+</html>

@@ -1,0 +1,402 @@
+.history {
+  max-width: 1440px;
+}
+
+.history-head {
+  display: flex;
+  align-items: flex-end;
+  gap: 32px;
+  border-bottom: var(--hairline);
+}
+
+.history-head .screen-title {
+  padding-bottom: 12px;
+}
+
+.history-head .history-awards {
+  flex: none;
+  margin: 0 0 10px auto;
+}
+
+.history-head .history-awards + .history-awards {
+  margin-left: 0;
+}
+
+.history-head .btn-main {
+  flex: none;
+  margin: 0 0 10px;
+}
+
+/* Seven sections: at the narrowest window the row scrolls rather than push the buttons out. */
+.history-tabs {
+  display: flex;
+  gap: 22px;
+  align-self: stretch;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.history-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.history-tabs button {
+  flex: none;
+  display: flex;
+  align-items: center;
+  font: 600 16px var(--cond);
+  color: var(--chalk-3);
+  border-bottom: 3px solid transparent;
+  padding-top: 3px;
+}
+
+.history-tabs button:hover {
+  color: var(--chalk);
+}
+
+.history-tabs button[aria-selected="true"] {
+  color: var(--chalk);
+  border-bottom-color: var(--yellow);
+}
+
+.history-body {
+  padding-top: 24px;
+}
+
+.history-band {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 22px;
+  border-bottom: var(--hairline);
+}
+
+.history-band-name {
+  font: 800 38px/1 var(--num);
+  text-transform: uppercase;
+}
+
+.history-coach {
+  min-width: 0;
+}
+
+.history-count {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.history-count-n {
+  font: 900 72px/0.86 var(--num);
+  color: var(--highlight);
+}
+
+.history-count-l {
+  font: 600 16px var(--cond);
+  color: var(--chalk-2);
+}
+
+.history-stats {
+  display: flex;
+  margin-left: auto;
+  border: var(--hairline);
+}
+
+.history-stats div {
+  display: grid;
+  justify-items: center;
+  min-width: 104px;
+  padding: 10px 14px 8px;
+  background: #030805;
+}
+
+.history-stats div + div {
+  border-left: var(--hairline);
+}
+
+.history-stats dt {
+  order: 2;
+  margin-top: 4px;
+  font: 600 13px var(--cond);
+  color: var(--chalk-3);
+}
+
+.history-stats dd {
+  font: 900 44px/0.9 var(--num);
+}
+
+.history-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 48px;
+}
+
+.history-columns section {
+  padding-top: 22px;
+}
+
+.history-section-title {
+  font: 600 15px var(--cond);
+  color: var(--chalk-3);
+  padding-bottom: 8px;
+}
+
+.history-empty {
+  padding: 10px 0;
+  font: 500 15px var(--cond);
+  color: var(--chalk-2);
+}
+
+.history-list {
+  list-style: none;
+}
+
+.history-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 40px;
+  padding: 9px 0;
+  border-top: 1px solid rgba(42, 82, 54, 0.55);
+  font: 500 15px var(--cond);
+}
+
+.history-line:last-child {
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.history-line-main {
+  font-weight: 600;
+}
+
+.history-line-side {
+  color: var(--chalk-2);
+  white-space: nowrap;
+}
+
+.history-line-side b {
+  color: var(--chalk);
+}
+
+.history-times {
+  font: 800 18px var(--num);
+  color: var(--highlight);
+  margin-right: 4px;
+}
+
+.history-records div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 46px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.history-records div:last-child {
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.history-records dt {
+  font: 500 15px var(--cond);
+  color: var(--chalk-2);
+}
+
+.history-records dd {
+  font: 600 15px var(--cond);
+  text-align: right;
+}
+
+.history-records dd small {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--chalk-3);
+}
+
+.history-roll {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font: 500 15px var(--cond);
+}
+
+.history-roll th {
+  font: 600 14px var(--cond);
+  color: var(--chalk-3);
+  text-align: left;
+  padding: 0 8px 8px;
+}
+
+.history-roll thead th:first-child {
+  width: 92px;
+}
+
+.history-roll td,
+.history-roll tbody th {
+  height: 48px;
+  padding: 0 8px;
+  border-top: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.history-roll tbody tr:last-child td,
+.history-roll tbody tr:last-child th {
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.history-roll tbody th {
+  font: 800 22px var(--num);
+  color: var(--chalk-2);
+}
+
+.history-roll tbody th small {
+  display: block;
+  font: 500 12px var(--cond);
+  color: var(--highlight);
+}
+
+.history-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  font: 600 15px var(--cond);
+  white-space: nowrap;
+  text-align: left;
+}
+
+.history-cell span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+button.history-cell:hover span {
+  text-decoration: underline;
+}
+
+.history-cell.is-mine {
+  color: var(--highlight);
+}
+
+.history-goals {
+  font: 800 18px var(--num);
+  margin-left: 2px;
+}
+
+.history-none {
+  color: var(--chalk-3);
+}
+
+.history-offers {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 12px 16px;
+  background: var(--lawn-3);
+  font: 600 16px var(--cond);
+}
+
+.history-offers-link {
+  font: 700 15px var(--cond);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--highlight);
+  text-decoration: none;
+}
+
+.history-offers-link:hover {
+  color: var(--yellow-hover);
+}
+
+.history-body > section {
+  padding-top: 22px;
+}
+
+.history-stint {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) 150px 110px minmax(0, 1fr) minmax(0, 1.2fr);
+  align-items: center;
+  column-gap: 14px;
+  min-height: 46px;
+  border-top: 1px solid rgba(42, 82, 54, 0.55);
+  font: 500 15px var(--cond);
+}
+
+.history-stint:last-child {
+  border-bottom: 1px solid rgba(42, 82, 54, 0.55);
+}
+
+.history-stint-club {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.history-stint-titles {
+  color: var(--chalk-2);
+}
+
+.history-stint-exit {
+  justify-self: end;
+  color: var(--chalk-2);
+}
+
+.history-stint-exit.is-fired {
+  color: var(--red);
+}
+
+@media (max-width: 1100px) {
+  .history-head {
+    gap: 20px;
+  }
+
+  .history-tabs {
+    gap: 16px;
+  }
+
+  .history-tabs button {
+    font-size: 15px;
+  }
+
+  .history-awards-text {
+    display: none;
+  }
+
+  .history-columns {
+    gap: 32px;
+  }
+
+  .history-roll {
+    font-size: 14px;
+  }
+
+  .history-cell {
+    font-size: 14px;
+  }
+}
+
+/* A record match still on this season's calendar opens its ficha: the score reads as a chalk link. */
+.history-record-open {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--chalk-3);
+  text-underline-offset: 4px;
+  cursor: pointer;
+  transition: text-decoration-color var(--t-fast) var(--e-out);
+}
+
+.history-record-open:hover {
+  text-decoration-color: currentColor;
+}

@@ -1,0 +1,74 @@
+@import "@boleiro/design-tokens/album.css";
+@import "@boleiro/design-tokens/tokens.css";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* The page under the paper texture, so an area the window has just grown into is the theme's colour. */
+html {
+  background-color: var(--paper);
+}
+
+body {
+  line-height: 1.35;
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+/* With less motion asked for, hover and press still change colour and shade, but nothing slides or tilts. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-property: opacity, color, background-color, border-color, box-shadow, outline-color !important;
+  }
+}
+
+/* The album's pill switch (.seg) made of radio buttons: one label per choice, the picked one inked. */
+.seg-radio label {
+  position: relative;
+  height: 28px;
+  padding: 0 12px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--t-base) var(--e-out),
+    color var(--t-base) var(--e-out);
+}
+
+.seg-radio label.on {
+  background: var(--ink);
+  color: var(--card);
+}
+
+.seg-radio input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.seg-radio label:has(input:focus-visible) {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}

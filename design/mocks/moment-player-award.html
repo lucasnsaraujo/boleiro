@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Prêmio do jogador</title>
+<link rel="stylesheet" href="../tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<link rel="stylesheet" href="moments.css">
+<script src="mock.js"></script>
+<script src="moments.js"></script>
+<style>
+body { --end: 5400; }
+.stage { background: radial-gradient(80% 90% at 30% 45%, #0E5A30, #073A1E 70%); }
+.stage::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 60px, rgba(255,255,255,0) 60px 120px); }
+
+/* ---------- The pack and the reveal ---------- */
+.reveal { position: absolute; left: 70px; top: 30px; width: 520px; height: 700px; perspective: 1200px; }
+.pack { position: absolute; left: 110px; top: 150px; width: 300px; height: 390px; z-index: 4; animation: packin 620ms var(--e-slap) 0ms both, packout 600ms var(--e-peel) 1850ms both; }
+@keyframes packin { from { opacity: 0; transform: translateY(-120px) rotate(-12deg); } to { transform: rotate(-3deg); } }
+@keyframes packout { from { transform: rotate(-3deg); } to { transform: translateY(820px) rotate(10deg); opacity: 0; } }
+.pack .env { position: absolute; inset: 0; border-radius: 8px; background: linear-gradient(135deg, #FFCC00, #F2B600); box-shadow: 0 30px 40px -20px rgba(0,0,0,.6), inset 0 0 0 1px rgba(0,0,0,.12); display: grid; place-items: center; overflow: hidden; }
+.pack .env::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(-45deg, rgba(255,255,255,.12) 0 14px, rgba(255,255,255,0) 14px 28px); }
+.pack .env::after { content: ''; position: absolute; left: 0; right: 0; top: 34px; border-top: 2px dashed rgba(20,35,26,.35); }
+.pack .env .wm { position: relative; font-size: 46px; transform: rotate(-4deg); }
+.pack .env small { position: absolute; bottom: 18px; left: 0; right: 0; text-align: center; font-stretch: var(--semi); font-weight: 900; font-size: 11px; letter-spacing: .14em; color: rgba(20,35,26,.7); }
+.pack .lid { position: absolute; left: 0; right: 0; top: 0; height: 34px; border-radius: 8px 8px 0 0; background: #F7C200; box-shadow: inset 0 -2px 0 rgba(0,0,0,.08); animation: tearoff 700ms var(--e-out) 650ms both; transform-origin: 100% 100%; }
+@keyframes tearoff { to { transform: translate(140px, -90px) rotate(32deg); opacity: 0; } }
+
+.cardw { position: absolute; left: 130px; top: 120px; width: 260px; z-index: 3; animation: rise 760ms var(--e-out) 1150ms both; }
+.card { position: relative; transform-style: preserve-3d; animation: turn 820ms var(--e-in-out) 2150ms both; }
+@keyframes rise { from { transform: translateY(50px) rotate(-3deg); } to { transform: translateY(-70px) rotate(-3deg); } }
+.cardw { transform: translateY(-70px) rotate(-3deg); }
+@keyframes turn { 0% { transform: rotateY(180deg); } 100% { transform: translateY(70px) rotate(3deg) rotateY(360deg) scale(1.04); } }
+.card .back, .card .ps { backface-visibility: hidden; }
+.card .back { position: absolute; inset: 0; border-radius: 8px; background: #FFFDF7; transform: rotateY(180deg); display: grid; place-items: center; overflow: hidden; box-shadow: 0 0 0 1px rgba(20,35,26,.12); }
+.card .back::before { content: 'BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO BOLEIRO'; position: absolute; inset: -40px; transform: rotate(-30deg); font-stretch: var(--wide); font-weight: 900; font-size: 22px; line-height: 1.3; color: rgba(11,122,59,.14); word-spacing: 6px; }
+.card .back img { position: relative; width: 70px; }
+.card .ps { --h: 290px; --fs: 150px; --hoop: 18px; --sheen-at: 2950; }
+.card .ps .nm { font-size: 19px; padding-top: 9px; }
+.card .ps .cl { font-size: 12.5px; padding-bottom: 11px; }
+.card .ps .art .crest { left: 10px; top: 10px; }
+.card .ps .art em { left: auto; right: 10px; top: 10px; font-size: 14px; }
+.card .fifa { position: absolute; right: -22px; bottom: 72px; width: 82px; height: 82px; border-radius: 50%; background: #fff; display: grid; place-items: center; box-shadow: 0 0 0 4px var(--yellow), 0 10px 16px -6px rgba(0,0,0,.5); transform: rotate(10deg); animation: badge 520ms var(--e-slap) 3150ms both; z-index: 5; }
+.card .fifa img { width: 56px; }
+@keyframes badge { from { opacity: 0; transform: scale(2.2) rotate(-20deg); } }
+
+.plate-wrap { position: absolute; left: 20px; right: 20px; top: 566px; animation: plate 620ms var(--e-out) 2950ms both; }
+@keyframes plate { from { opacity: 0; transform: translateY(40px); } }
+.plate-wrap .plaque { padding: 12px 22px; }
+.plate-wrap .plaque b { display: block; font-stretch: var(--wide); font-weight: 900; font-size: 20px; letter-spacing: .01em; text-transform: uppercase; }
+.plate-wrap .plaque span { display: block; font-size: 12.5px; margin-top: 3px; font-weight: 600; }
+.reveal .kick { position: absolute; left: 0; top: 0; color: rgba(255,255,255,.86); display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; animation: fade 600ms var(--e-out) 300ms both; }
+.reveal .kick i { color: var(--yellow); font-size: 16px; }
+@keyframes fade { from { opacity: 0; } }
+canvas.conf { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; }
+
+/* ---------- Right: the season, in the order it was shown ---------- */
+.side { position: absolute; left: 650px; right: 24px; top: 24px; bottom: 76px; padding: 20px 24px; background: var(--card); border-radius: 8px; box-shadow: var(--sh-page); display: flex; flex-direction: column; animation: sidein 700ms var(--e-out) 3300ms both; }
+@keyframes sidein { from { opacity: 0; transform: translateX(40px); } }
+.side h2 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: 1; letter-spacing: -.01em; }
+.side .sub { font-size: 13px; color: var(--ink-2); margin-top: 6px; line-height: 1.4; }
+.seq { margin-top: 14px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.aw { position: relative; padding: 10px 12px 12px; border-radius: 10px; box-shadow: inset 0 0 0 1.5px var(--line); animation: up 460ms var(--e-out) calc(var(--d) * 1ms) both; }
+.aw .d { font-stretch: var(--semi); font-weight: 900; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.aw .ic { display: flex; align-items: center; height: 36px; margin-top: 6px; }
+.aw .ic i { font-size: 28px; color: var(--yellow-d); }
+.aw b { display: block; font-stretch: var(--semi); font-weight: 900; font-size: 15px; line-height: 1.1; margin-top: 6px; }
+.aw small { display: block; font-size: 11.5px; color: var(--mute); margin-top: 3px; line-height: 1.35; }
+.aw.now { background: var(--foil); box-shadow: 0 0 0 2.5px var(--yellow), var(--sh-sticker); }
+.aw .ck { position: absolute; right: 10px; top: 10px; width: 20px; height: 20px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; font-size: 11px; }
+@keyframes up { from { opacity: 0; transform: translateY(12px); } }
+.stats { margin-top: 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; animation: up 460ms var(--e-out) 4100ms both; }
+.stats .nst b { font-size: 28px; }
+.path { margin-top: 18px; padding-top: 12px; border-top: 2px dotted var(--line-2); animation: up 460ms var(--e-out) 4400ms both; }
+.path .lbl { font-size: 10px; }
+.steps { display: grid; grid-template-columns: 92px 1fr 92px 1fr 92px; align-items: center; gap: 8px; margin-top: 10px; }
+.steps .ps { --h: 84px; --fs: 34px; --hoop: 6px; }
+.steps .ps .nm { font-size: 10px; }
+.steps .ps .cl { font-size: 9.5px; padding-bottom: 5px; }
+.steps .ps.youth .art { --c: #0B7A3B; }
+.steps .arr { height: 2px; background: repeating-linear-gradient(90deg, var(--line-2) 0 6px, transparent 6px 10px); position: relative; }
+.steps .arr span { position: absolute; left: 0; right: 0; top: -20px; text-align: center; font-size: 10.5px; color: var(--mute); font-weight: 600; }
+.side .cause { margin-top: auto; padding-top: 10px; border-top: 2px dotted var(--line-2); }
+.acts .replay { color: rgba(255,255,255,.8); }
+</style>
+</head>
+<body style="--top:#0B4A27">
+<div class="app">
+  <div class="mbar"><span class="lights"><i></i><i></i><i></i></span></div>
+  <main><div class="stage">
+    <div class="reveal">
+      <div class="kick"><i class="ph-fill ph-star"></i>Ter, 16 dez 2031 · The Best FIFA</div>
+      <div class="pack"><div class="env"><span class="wm"><span class="b">BOLEIRO</span></span><small>FIGURINHA ESPECIAL</small></div><div class="lid"></div></div>
+      <div class="cardw"><div class="card">
+        <div class="back"><img src="../logo/boleiro-icon.svg" alt=""></div>
+        <div class="ps hoops shiny"><div class="art"><span data-crest="FLA" data-size="30"></span><em>11</em><b>K</b><span class="sheen"></span></div><div class="nm">Kauã Pinheiro</div><div class="cl">Flamengo · atacante · 22 anos</div></div>
+        <div class="fifa"><img src="img/competitions/fifa.svg" alt="FIFA"></div>
+      </div></div>
+      <div class="plate-wrap"><div class="plaque"><b>Melhor jogador do mundo</b><span>Kauã Pinheiro · Flamengo · The Best FIFA 2031</span></div></div>
+    </div>
+    <canvas class="conf" id="conf"></canvas>
+
+    <section class="side">
+      <h2>O ano do Kauã</h2>
+      <p class="sub">Três prêmios, em três dias diferentes. O jogo mostra um de cada vez, na hora em que ele acontece.</p>
+      <div class="seq">
+        <div class="aw" style="--d:3500"><span class="ck"><i class="ph-bold ph-check"></i></span><span class="d">Dom, 7 dez</span><div class="ic"><img src="img/competitions/serie-a.svg" height="34" alt=""></div><b>Campeão brasileiro</b><small>Mostrado no apito final, com o elenco.</small></div>
+        <div class="aw" style="--d:3650"><span class="ck"><i class="ph-bold ph-check"></i></span><span class="d">Seg, 8 dez</span><div class="ic"><i class="ph-fill ph-soccer-ball"></i></div><b>Bola de Ouro</b><small>Melhor do Brasileirão, na festa da Bola de Prata.</small></div>
+        <div class="aw now" style="--d:3800"><span class="d">Hoje, ter 16 dez</span><div class="ic"><img src="img/competitions/fifa.svg" height="30" alt=""></div><b>Melhor do mundo</b><small>The Best FIFA. Primeiro do Flamengo.</small></div>
+      </div>
+      <div class="stats">
+        <div class="nst"><b>61</b><span>jogos em 2031</span></div>
+        <div class="nst"><b>38</b><span>gols</span></div>
+        <div class="nst"><b>17</b><span>assistências</span></div>
+        <div class="nst foil"><b>2</b><span>títulos: Libertadores e Brasileirão</span></div>
+      </div>
+      <div class="path">
+        <span class="lbl">De onde ele veio</span>
+        <div class="steps">
+          <div class="ps youth"><div class="art"><b>K</b></div><div class="nm">Kauã</div><div class="cl">base · 2026</div></div>
+          <div class="arr"><span>você subiu aos 18</span></div>
+          <div class="ps hoops"><div class="art"><b>K</b></div><div class="nm">Kauã</div><div class="cl">estreia · 2027</div></div>
+          <div class="arr"><span>titular em 2028</span></div>
+          <div class="ps hoops shiny"><div class="art"><b>K</b></div><div class="nm">Kauã</div><div class="cl">2031</div></div>
+        </div>
+      </div>
+      <div class="cause"><b>Por quê</b><span>Prêmio de jogador vira cena quando ele é do seu elenco. Craque que você revelou: +4 no seu ídolo e ele recusa a Europa por mais um ano.</span></div>
+    </section>
+
+    <div class="acts">
+      <button class="skip" data-skip>Pular <span class="kbd">Esc</span></button>
+      <div class="cta"><button class="replay" data-replay><i class="ph-bold ph-arrows-clockwise"></i>Ver de novo</button><button class="btn"><i class="ph-bold ph-book-open-text"></i>Colar no álbum</button><button class="btn go">Continuar<i class="ph-bold ph-arrow-right"></i></button></div>
+    </div>
+  </div></main>
+</div>
+<script>
+fill();
+// Two bursts from below the sticker, Flamengo red and black with white and the album's yellow.
+const conf = document.getElementById('conf');
+Moment.confetti(conf, { at: 2750, colors: ['#C8102E', '#C8102E', '#141010', '#FFFFFF', '#FFCC00'], count: 150, origin: [0.2, 0.86], spread: 0.5, speed: 1550, seed: 5, life: 4800 });
+Moment.run(5400);
+</script>
+</body>
+</html>

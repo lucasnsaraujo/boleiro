@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Propostas e vendas</title>
+<link rel="stylesheet" href="../../packages/design-tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 14px; }
+
+.tabs { display: flex; align-items: center; gap: 6px; margin-bottom: -1px; }
+.tab { height: 30px; padding: 0 12px; display: flex; align-items: center; gap: 6px; border-radius: 8px 8px 0 0; font-weight: 800; font-size: 13px; color: var(--ink-2); }
+.tab.on { background: var(--card); color: var(--ink); box-shadow: 0 -1px 0 var(--line), 1px 0 0 var(--line), -1px 0 0 var(--line); }
+.tab .n { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--red); color: #fff; font-stretch: var(--semi); font-size: 10.5px; display: grid; place-items: center; }
+.lft { display: flex; flex-direction: column; min-height: 0; }
+
+.bid { flex: 1; min-height: 0; border-top-left-radius: 0; padding: 22px 26px 18px; display: flex; flex-direction: column; }
+.bid .hd { display: flex; align-items: center; gap: 12px; }
+.bid .hd h1 { font-stretch: var(--wide); font-weight: 900; font-size: 26px; line-height: 1; letter-spacing: -.01em; }
+.bid .hd .chip { margin-left: auto; height: 26px; font-size: 11px; }
+
+.deal { display: grid; grid-template-columns: 226px 1fr; gap: 34px; margin-top: 26px; align-items: start; }
+.lino { width: 218px; padding: 8px 8px 10px; background: #fff; border-radius: 12px; color: #14231A; transform: rotate(-3deg); box-shadow: 0 1px 0 rgba(0,0,0,.08), 0 16px 26px -12px rgba(20,35,26,.55); position: relative; margin-top: 4px; }
+.lino .ph { height: 250px; border-radius: 7px; position: relative; overflow: hidden; display: grid; place-items: center; background: repeating-linear-gradient(180deg, #C8102E 0 28px, #111 28px 56px); }
+.lino .ph b { font-stretch: var(--wide); font-weight: 900; font-size: 112px; color: rgba(255,255,255,.95); text-shadow: 0 4px 0 rgba(0,0,0,.25); }
+.lino .ph .cr { position: absolute; left: 7px; top: 7px; }
+.lino .ph .num { position: absolute; right: 9px; top: 8px; font-stretch: var(--semi); font-weight: 900; font-size: 12px; color: rgba(255,255,255,.8); }
+.lino .ph .f { position: absolute; right: 8px; bottom: 8px; background: var(--yellow); color: var(--on-yellow); font-stretch: var(--wide); font-weight: 900; font-size: 20px; padding: 3px 8px; border-radius: 7px; transform: rotate(4deg); box-shadow: 0 2px 0 rgba(0,0,0,.3); }
+.lino .nm { font-weight: 800; font-size: 16px; margin-top: 8px; text-align: center; }
+.lino .sub { font-size: 12px; color: #5C584B; text-align: center; }
+
+.offer .who { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.offer .who b { font-weight: 800; }
+.offer .who span { color: var(--mute); }
+.offer .val { display: flex; align-items: baseline; gap: 16px; margin-top: 10px; }
+.offer .val .eur { font-stretch: var(--wide); font-weight: 900; font-size: 58px; line-height: 1; letter-spacing: -.02em; }
+.offer .val .brl { font-stretch: var(--semi); font-weight: 900; font-size: 22px; }
+.offer .val .brl small { display: block; font-stretch: 100%; font-weight: 600; font-size: 12px; color: var(--mute); }
+.offer .mk { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12.5px; font-weight: 700; color: var(--green); }
+.chg { margin-top: 18px; border-top: 2px solid var(--ink); }
+.chg div { display: grid; grid-template-columns: 150px 1fr; gap: 10px; align-items: center; min-height: 40px; border-bottom: 1px dotted var(--line-2); font-size: 13px; }
+.chg dt { color: var(--mute); font-size: 12.5px; }
+.chg dd b { font-weight: 800; }
+.chg .ar { color: var(--mute); margin: 0 6px; font-size: 12px; }
+.chg .up { color: var(--green); font-weight: 800; } .chg .dn { color: var(--red); font-weight: 800; }
+.chg .pos { width: 18px; height: 18px; font-size: 9.5px; vertical-align: -3px; margin-right: 4px; }
+
+.acts { margin-top: auto; padding-top: 16px; border-top: 2px dotted var(--line-2); display: flex; align-items: center; gap: 10px; }
+.acts .cf { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.money { height: 44px; border-radius: 12px; background: var(--card); box-shadow: inset 0 0 0 2px var(--ink); display: flex; align-items: center; padding: 0 6px 0 14px; gap: 10px; }
+.money b { font-stretch: var(--semi); font-weight: 900; font-size: 18px; }
+.money small { font-size: 11.5px; color: var(--mute); font-weight: 600; }
+.money .pm { display: flex; gap: 2px; }
+.money .pm i { width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; background: var(--paper-2); font-size: 12px; }
+.acts .btn.y { height: 46px; font-size: 15px; padding: 0 20px; }
+
+/* Right */
+.side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.sale { padding: 14px 16px 6px; }
+.sale h3, .auc h3 { font-stretch: var(--wide); font-weight: 900; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+.sale h3 small, .auc h3 small { margin-left: auto; font-stretch: 100%; font-weight: 600; font-size: 12px; color: var(--mute); }
+.sr { display: grid; grid-template-columns: 22px 1fr auto; gap: 4px 10px; align-items: center; padding: 9px 0; border-bottom: 1px dotted var(--line-2); }
+.sr:last-child { border-bottom: 0; }
+.sr .pos { width: 22px; height: 22px; }
+.sr .nm b { font-weight: 800; font-size: 13.5px; }
+.sr .nm small { display: block; font-size: 11.5px; color: var(--mute); }
+.sr .nm small.w { color: var(--later); font-weight: 700; }
+.sr .pr { text-align: right; font-stretch: var(--semi); font-weight: 900; font-size: 14px; }
+.sr .pr small { display: block; font-stretch: 100%; font-weight: 600; font-size: 11px; color: var(--mute); }
+.sr .seg { grid-column: 2 / -1; padding: 2px; }
+.sr .seg > span { height: 24px; font-size: 11.5px; padding: 0 10px; }
+
+.auc { padding: 14px 16px; flex: 1; display: flex; flex-direction: column; background: var(--foil); }
+.auc .pl { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.auc .pl b { font-weight: 800; font-size: 15px; display: block; }
+.auc .pl > div > span { font-size: 12px; color: var(--mute); }
+.auc .tm { margin-left: auto; text-align: right; }
+.auc .tm b { font-stretch: var(--wide); font-weight: 900; font-size: 18px; display: flex; align-items: center; gap: 5px; justify-content: flex-end; }
+.auc .tm span { font-size: 11.5px; color: var(--mute); }
+.lances { margin-top: 10px; }
+.ln { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; height: 32px; border-bottom: 1px dotted var(--line-2); font-size: 13px; }
+.ln:last-child { border-bottom: 0; }
+.ln b { font-stretch: var(--semi); font-weight: 900; }
+.ln.top { font-weight: 800; }
+.ln.top b { color: var(--green); font-size: 15px; }
+.ln small { font-size: 11px; color: var(--mute); margin-left: 6px; font-weight: 600; }
+.auc .btn { margin-top: auto; align-self: flex-start; }
+.auc .if { margin-top: 12px; font-size: 12.5px; color: var(--ink-2); }
+.auc .if b { font-weight: 800; color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="busca"></div>
+  <main><div class="wrap">
+    <div class="lft">
+      <div class="tabs"><span class="tab">Buscar</span><span class="tab on">Propostas <span class="n">1</span></span><span class="tab">Observados</span></div>
+      <div class="page bid">
+        <div class="hd"><h1>Proposta por Samuel Lino</h1><span class="chip wait"><i class="ph-bold ph-hourglass-medium"></i>Responder até ter, 20 out</span></div>
+        <div class="deal">
+          <div class="lino"><div class="ph"><span class="cr" data-crest="FLA" data-size="24"></span><span class="num">012</span><b>L</b><span class="f">82</span></div><div class="nm">Samuel Lino</div><div class="sub">Atacante · esquerda · 26</div></div>
+          <div class="offer">
+            <div class="who"><span data-crest="AVL" data-size="30"></span><div><b>Aston Villa</b> <span>· Inglaterra · compra à vista</span></div></div>
+            <div class="val"><span class="eur">€ 30 mi</span><span class="brl">R$ 168 mi<small>câmbio de 13 out, R$ 5,61</small></span></div>
+            <span class="mk"><i class="ph-bold ph-trend-up"></i>50% acima do valor de mercado (R$ 112 mi)</span>
+            <dl class="chg">
+              <div><dt>Caixa</dt><dd>R$ 212,4 mi<span class="ar"><i class="ph-bold ph-arrow-right"></i></span><b class="up">R$ 380,7 mi</b></dd></div>
+              <div><dt>Força do time</dt><dd>78,1<span class="ar"><i class="ph-bold ph-arrow-right"></i></span><b class="dn">77,5</b></dd></div>
+              <div><dt>Ponta esquerda</dt><dd><span class="pos A">A</span><b>Bruno Henrique</b>, 69, vira o titular</dd></div>
+              <div><dt>Na temporada</dt><dd><b>9 gols, 7 assist.</b> na Série A · nota 7,6, a melhor do time</dd></div>
+              <div><dt>Contrato</dt><dd>Até dez 2029 · custou <b>€ 22 mi</b> em julho de 2025</dd></div>
+              <div><dt>O jogador</dt><dd>Quer ir. Salário de R$ 4,8 mi na Inglaterra</dd></div>
+            </dl>
+          </div>
+        </div>
+        <div class="acts">
+          <button class="btn flat"><i class="ph-bold ph-x"></i>Recusar</button>
+          <button class="btn"><i class="ph-bold ph-check"></i>Aceitar € 30 mi</button>
+          <div class="cf"><div class="money"><b>€ 36 mi</b><small>R$ 202 mi</small><span class="pm"><i class="ph-bold ph-minus"></i><i class="ph-bold ph-plus"></i></span></div>
+            <button class="btn y"><i class="ph-bold ph-arrows-clockwise"></i>Contraproposta</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="stk sale"><h3>À venda<small>Preço pedido por jogador</small></h3><div id="sale"></div></div>
+      <div class="stk auc"><h3><i class="ph-bold ph-gavel"></i>Leilão<small>lance mínimo R$ 25 mi</small></h3>
+        <div class="pl"><span class="pos M">M</span><div><b>De la Cruz</b><span>Meia · 29 · F 73 · salário R$ 2,4 mi</span></div><div class="tm"><b><i class="ph-bold ph-timer"></i>2 dias</b><span>fecha ter, 20 out</span></div></div>
+        <div class="lances">
+          <div class="ln top"><span data-crest="GRE" data-size="20"></span><span>Grêmio<small>agora há pouco</small></span><b>R$ 31 mi</b></div>
+          <div class="ln"><span data-crest="BOT" data-size="20"></span><span>Botafogo<small>ontem</small></span><b>R$ 29 mi</b></div>
+          <div class="ln"><span data-crest="INT" data-size="20"></span><span>Internacional<small>sex, 16 out</small></span><b>R$ 26 mi</b></div>
+          <div class="ln"><span data-crest="VAS" data-size="20"></span><span>Vasco<small>qui, 15 out</small></span><b>R$ 25 mi</b></div>
+        </div>
+        <p class="if">Se fechar agora: <b>+R$ 31 mi</b> no caixa e <b>−R$ 2,4 mi</b> na folha.</p>
+        <button class="btn sm"><i class="ph-bold ph-x"></i>Tirar do leilão</button>
+      </div>
+    </div>
+  </div></main>
+</div>
+<script>
+const S = Object.fromEntries(SQUAD.map((r) => [r[1], r]));
+// [name, price, note, mode(0 caro e lento, 1 barato e rápido), warn]
+const L = [
+  ['Luiz Araújo', 'R$ 48 mi', '1 clube olhando', 0],
+  ['Danilo', 'R$ 6 mi', 'Contrato acaba em dez', 1, true],
+  ['Bruno Henrique', 'R$ 3 mi', '35 anos, contrato até dez 2027', 1],
+];
+document.getElementById('sale').innerHTML = L.map(([n, pr, note, m, w]) => {
+  const [p, , , f, , , val] = S[n];
+  return `<div class="sr"><span class="pos ${p}">${p}</span><div class="nm"><b>${n}</b> <span class="mute" style="font-size:12px">F ${f}</span><small class="${w ? 'w' : ''}">${note}</small></div><div class="pr">${pr}<small>valor ${val}</small></div><span></span><div class="seg"><span class="${m ? '' : 'on'}">Caro e lento</span><span class="${m ? 'on' : ''}">Barato e rápido</span></div></div>`;
+}).join('');
+</script>
+</body>
+</html>

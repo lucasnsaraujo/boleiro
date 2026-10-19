@@ -1,0 +1,99 @@
+/* The contracts in their last year, on the hub's squad page (ContractsEnding.tsx). */
+.ce-table td {
+  height: 34px;
+}
+
+.ce-table tbody tr {
+  animation: ce-row 360ms var(--e-out) both;
+}
+
+@keyframes ce-row {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.ce-table .chip {
+  height: 20px;
+  font-size: 9.5px;
+}
+
+.ce-table .btn.sm {
+  height: 24px;
+  gap: 5px;
+  padding: 0 10px;
+  border-width: 1.5px;
+  font-size: 11.5px;
+  box-shadow: 0 2px 0 var(--edge);
+}
+
+.ce-table .btn.sm i {
+  font-size: 13px;
+}
+
+.ce-until {
+  font-weight: 700;
+}
+
+.ce-until.soon {
+  color: var(--later);
+}
+
+.ce-plan {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-stretch: 100%;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.ce-plan i {
+  color: var(--green);
+  font-size: 13px;
+}
+
+.ce-plan.skip {
+  color: var(--red);
+}
+
+.ce-plan.mute {
+  color: var(--mute);
+}
+
+.ce-desk {
+  font-stretch: var(--semi);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--green);
+}
+
+.ce-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.ce-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 24px;
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.ce-empty i {
+  font-size: 22px;
+  color: var(--green);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ce-table tbody tr {
+    animation: none;
+  }
+}

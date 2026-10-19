@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Boleiro · Técnicos</title>
+<link rel="stylesheet" href="../../packages/design-tokens/album.css">
+<link rel="stylesheet" href="mock.css">
+<script src="mock.js"></script>
+<style>
+.wrap { height: 100%; padding: 18px 14px 14px; display: grid; grid-template-columns: 384px 1fr; gap: 14px; }
+.side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+
+.offer { padding: 16px 18px 18px; background: var(--foil); box-shadow: 0 0 0 3px var(--yellow), var(--sh-lift); transform: rotate(-.8deg); margin: 4px 4px 2px; }
+.offer .tp { display: flex; align-items: center; justify-content: space-between; }
+.offer .tp span:first-child { font-stretch: var(--semi); font-weight: 800; font-size: 12px; color: var(--ink-2); }
+.offer .who { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+.offer h2 { font-stretch: var(--wide); font-weight: 900; font-size: 30px; line-height: 1; letter-spacing: -.01em; }
+.offer .who p { font-size: 12.5px; color: var(--ink-2); margin-top: 5px; }
+.offer dl { margin-top: 14px; display: grid; grid-template-columns: auto 1fr; gap: 7px 12px; font-size: 12.5px; padding-top: 12px; border-top: 2px dotted var(--line-2); }
+.offer dt { color: var(--mute); }
+.offer dd { text-align: right; font-weight: 700; }
+.offer dd s { color: var(--mute); font-weight: 500; text-decoration: none; margin-right: 6px; }
+.offer dd s::after { content: '→'; margin-left: 6px; }
+.offer .acts { display: flex; gap: 10px; margin-top: 16px; }
+.offer .acts .go { flex: 1; height: 44px; font-size: 15px; }
+
+.jobs { padding: 12px 16px 6px; }
+.jobs h3, .rep h3 { font-stretch: var(--wide); font-weight: 900; font-size: 16px; }
+.jobs h3 { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 2px; }
+.jobs h3 small { font-stretch: 100%; font-weight: 600; font-size: 11.5px; color: var(--mute); }
+.jr { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; height: 50px; border-bottom: 1px dotted var(--line-2); font-size: 12.5px; }
+.jr:last-child { border-bottom: 0; }
+.jr b { display: block; font-weight: 800; font-size: 13px; line-height: 1.15; }
+.jr small { color: var(--mute); font-size: 11.5px; }
+.jr .k { text-align: right; font-size: 11.5px; color: var(--mute); line-height: 1.2; }
+.jr .k b { font-stretch: var(--semi); font-weight: 900; font-size: 12.5px; color: var(--ink); }
+
+.foot { margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 4px 4px 0; }
+.foot .r { flex: 1; }
+.foot .r div:first-child { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--mute); margin-bottom: 5px; }
+.foot .r b { font-stretch: var(--semi); font-weight: 900; font-size: 13px; color: var(--ink); }
+.foot .ct { font-size: 11.5px; color: var(--mute); margin-top: 6px; }
+.btn.flat.quit { height: 32px; padding: 0 8px; font-size: 12.5px; color: var(--mute); }
+
+.rank { display: flex; flex-direction: column; overflow: hidden; }
+.rank .hd { display: flex; align-items: center; gap: 14px; padding: 14px 16px 12px; }
+.rank .hd h2 { font-stretch: var(--wide); font-weight: 900; font-size: 22px; }
+.rank .hd p { margin-left: auto; font-size: 12px; color: var(--mute); }
+.tb td { height: 46px; }
+.tb td.n { width: 40px; text-align: center; font-stretch: var(--semi); font-weight: 900; font-size: 13px; color: var(--mute); }
+.tb tr:nth-child(-n+3) td.n { color: var(--ink); }
+.co { display: flex; align-items: center; gap: 10px; }
+.co .av { width: 30px; height: 30px; font-size: 12px; border-width: 2px; }
+.co b { font-weight: 800; font-size: 13.5px; font-stretch: 100%; }
+.co small { display: block; font-size: 11px; color: var(--mute); font-weight: 500; margin-top: 1px; }
+.cl { display: flex; align-items: center; gap: 7px; font-weight: 600; font-stretch: 100%; }
+.cl.free { color: var(--mute); font-weight: 500; font-style: italic; }
+.ap { display: inline-flex; align-items: center; gap: 8px; }
+.ap .en { width: 56px; margin: 0; }
+.tb td.pts { font-stretch: var(--semi); font-weight: 900; font-size: 14px; }
+.tb tr.me td { background: var(--yellow-l); }
+.tb tr.me td:first-child { box-shadow: inset 4px 0 0 var(--yellow); }
+.tr { font-size: 13px; color: var(--later); }
+.mv { font-size: 11px; font-weight: 800; margin-left: 6px; }
+.mv.up { color: var(--green); } .mv.dn { color: var(--red); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div data-chrome="mac" data-title="Boleiro · Flamengo 2026"></div>
+  <div data-bar="tecnicos"></div>
+  <main><div class="wrap">
+    <div class="side">
+      <div class="stk offer">
+        <div class="tp"><span>Proposta para você</span><span class="chip wait"><i class="ph-bold ph-hourglass-medium"></i>Até 31 out</span></div>
+        <div class="who"><span data-crest="BEN" data-size="64"></span><div><h2>Benfica</h2><p>Liga Portugal · 2º lugar · começa em jul 2027</p></div></div>
+        <dl>
+          <dt>Salário</dt><dd><s>R$ 1,8 mi</s>R$ 2,6 mi por mês</dd>
+          <dt>Contrato</dt><dd>jul 2027 a jun 2030</dd>
+          <dt>Multa ao Flamengo</dt><dd>R$ 9 mi, paga pelo Benfica</dd>
+          <dt>Seleção Brasileira</dt><dd>segue com você</dd>
+        </dl>
+        <div class="acts"><button class="btn go"><i class="ph-bold ph-handshake"></i>Negociar</button><button class="btn">Recusar</button></div>
+      </div>
+
+      <div class="stk jobs"><h3>Vagas abertas <small>4 no Brasil</small></h3>
+        <div class="jr"><span data-crest="GRE" data-size="26"></span><div><b>Grêmio</b><small>Série A, 18º · demitiu em 17 out</small></div><div class="k"><b>9</b> candidatos</div></div>
+        <div class="jr"><span data-crest="INT" data-size="26"></span><div><b>Internacional</b><small>Série A, 17º · técnico só até dezembro</small></div><div class="k"><b>6</b> candidatos</div></div>
+        <div class="jr"><span data-crest="CEA" data-size="26"></span><div><b>Ceará</b><small>Série B, 15º · demitiu em 16 out</small></div><div class="k"><b>11</b> candidatos</div></div>
+        <div class="jr"><span data-crest="AME" data-size="26"></span><div><b>América-MG</b><small>Série B, 19º · interino desde 15 out</small></div><div class="k"><b>3</b> candidatos</div></div>
+      </div>
+
+      <div class="foot">
+        <div class="r"><div><span>Sua reputação</span><b>81 · internacional</b></div><div class="meter"><i style="width:81%"></i></div><div class="ct">Contrato com o Flamengo até dez 2027</div></div>
+        <button class="btn flat quit"><i class="ph-bold ph-door-open"></i>Pedir demissão</button>
+      </div>
+    </div>
+
+    <div class="page rank">
+      <div class="hd"><div class="seg"><span class="on">Técnicos</span><span>Clubes</span></div><p>Pontos de 2026 · Brasil, Séries A e B</p></div>
+      <table class="tb"><thead><tr><th>#</th><th class="l">Técnico</th><th class="l">Clube</th><th>Jogos</th><th class="l">Aproveitamento</th><th>Pontos</th></tr></thead><tbody id="t"></tbody></table>
+    </div>
+  </div></main>
+</div>
+<script>
+// Who coaches where, and since when, is real (14 Oct 2026); the user replaced Flamengo's coach at the start of the
+// career. Games, win rate, points and moves are the game's own 2026 ranking. [name, nationality, club or null, games, aprov, points, move, since]
+const R = [
+  ['Lucas Araujo', 'Brasil', 'FLA', 57, 71, '3.104', 1, 'desde jan 2026 · você'],
+  ['Abel Ferreira', 'Portugal', 'PAL', 56, 70, '3.051', -1, 'desde 2020'],
+  ['Odair Hellmann', 'Brasil', 'CAP', 44, 59, '2.214', 2, 'desde mai 2025'],
+  ['Rogério Ceni', 'Brasil', 'BAH', 47, 55, '2.120', 0, 'desde 2023'],
+  ['Artur Jorge', 'Portugal', 'CRU', 40, 54, '1.980', -2, 'desde mar 2026'],
+  ['Eduardo Domínguez', 'Argentina', 'CAM', 41, 52, '1.874', 0, 'desde fev 2026'],
+  ['Cuca', 'Brasil', 'SAN', 38, 48, '1.611', 1, 'desde mar 2026'],
+  ['Fernando Diniz', 'Brasil', null, 33, 48, '1.402', -1, 'saiu do Corinthians em out'],
+  ['Marcão', 'Brasil', 'FLU', 14, 57, '1.250', 3, 'desde ago 2026'],
+  ['Jair Ventura', 'Brasil', 'VIT', 42, 45, '1.180', 0, 'desde set 2025'],
+  ['Luís Castro', 'Portugal', null, 30, 41, '1.103', -2, 'saiu do Grêmio em set'],
+  ['Tite', 'Brasil', 'BOT', 6, 50, '702', 1, 'desde set 2026'],
+];
+document.getElementById('t').innerHTML = R.map(([n, nat, c, j, ap, pts, mv, since], i) => {
+  const k = c ? CLUBS[c] : null;
+  const avBg = k ? (k.bg === '#FFFFFF' ? '#2A2A2A' : k.bg) : 'var(--line-2)';
+  const en = ap >= 55 ? '' : ap >= 40 ? 'mid' : 'low';
+  return `<tr class="${c === 'FLA' ? 'me' : ''}"><td class="n">${i + 1}</td>
+    <td class="l"><div class="co"><span class="av" style="background:${avBg};color:${k && /^#FF[DE]/.test(k.bg) ? k.fg : '#fff'}">${n[0]}</span><div><b>${n}</b><small>${nat} · ${since}</small></div></div></td>
+    <td class="l">${k ? `<span class="cl">${crest(c, 20)}${k.n}</span>` : '<span class="cl free">sem clube</span>'}</td>
+    <td>${j}</td><td class="l"><span class="ap"><span class="en ${en}"><i style="width:${ap}%"></i></span>${ap}%</span></td>
+    <td class="pts">${pts}${mv > 0 ? `<span class="mv up"><i class="ph-fill ph-caret-up"></i>${mv}</span>` : mv < 0 ? `<span class="mv dn"><i class="ph-fill ph-caret-down"></i>${-mv}</span>` : '<span class="mv" style="visibility:hidden"><i class="ph-fill ph-caret-up"></i>0</span>'}</td></tr>`;
+}).join('');
+</script>
+</body>
+</html>
