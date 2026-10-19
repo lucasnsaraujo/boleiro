@@ -2,11 +2,11 @@
 
 Does the game still score goals, win, draw, lose and book players like the real leagues it was calibrated on, now that national football, referees with VAR, tactics, injuries and the world abroad play along?
 
-The short answer: **every league abroad with a real reference plays like itself, and every Brazilian division matches its real results season after season.** The lower divisions no longer drift up after the first season. One ten-season check, the spread of player strength, stays red: finding 4 says why the game, not the check, is off.
+The short answer: **every league abroad with a real reference plays like itself, and every Brazilian division matches its real results season after season.** The lower divisions no longer drift up after the first season, and their squads no longer spread wider season after season (finding 4). One cup group, a Série C club away at a Série D club, now draws a point more often than its band allows (finding 8).
 
 ## Findings
 
-1. **Every Brazilian division passes** over four seasons: Série A 2.42 goals a game against a real 2.49, Série B 2.20 against 2.17, Série C 2.32 against 2.22 (band 0.11) and Série D 2.33 against 2.24. Season by season, Série C plays 2.29, 2.24, 2.37 and 2.37 goals a game and Série D 2.31, 2.30, 2.35 and 2.36, where without the fix they climb to 2.45 and 2.50 by season 4.
+1. **Every Brazilian division passes** over four seasons: Série A 2.42 goals a game against a real 2.49, Série B 2.16 against 2.17, Série C 2.27 against 2.22 (band 0.11) and Série D 2.31 against 2.24. Season by season, Série C plays 2.23, 2.26, 2.30 and 2.28 goals a game and Série D 2.30, 2.30, 2.31 and 2.34, where without the fix they climb to 2.45 and 2.50 by season 4.
 2. **Why the lower divisions drifted: promotion and relegation.** Every season each player drifted 15% of the way toward his division's level (`CLUB_LEVEL`, 72, 63, 56 and 49 for Série A to D), and a club that changed division kept its squad. So a promoted club arrived 5 to 8 points below its new division and a relegated one as far above it: one seed's first rollover took the spread of club ratings inside Série C from 1.4 to 4.1 points (the clubs that stayed: 1.0). Wider gaps mean more lopsided games, so more goals and fewer draws. Real moved clubs are nothing like that. In their first season after the move, 2016–2026, clubs promoted to Série A, B and C took 1.14, 1.31 and 1.33 points a game and clubs relegated to Série B and C 1.53 and 1.38, against 1.43, 1.31 and 1.34 for the clubs that stayed (ESPN's and Sofascore's results with `divisions.csv`, Série A's from the odds file). In the game they took 0.74, 0.84, 0.95, 1.93 and 1.95 (six seeds, seasons 2–4).
 3. **The fix has five parts** (`sim/players/developPlayers.ts`, `sim/finances/renewFinances.ts`).
    - Players drift toward the level their club's revenue buys inside its division: across Brazil's 281 clubs on day one, squad level follows log revenue (R² 0.97), and inside a division it rises 1.8 points per e-fold of revenue. A club's level is its division's `CLUB_LEVEL` moved by that much, so a division keeps the spread its money makes instead of converging on one level.
@@ -14,16 +14,16 @@ The short answer: **every league abroad with a real reference plays like itself,
    - A relegated club richer than any club in its new division's data keeps the squad its money buys at the rate across divisions (5.19 points per e-fold over all 281 clubs, R² 0.97). Without it Internacional, relegated with R$ 292 million, arrived in Série B barely above the average and went down again to Série C.
    - A promoted club earns at least the least any club of its new division does (the data's small estimate; Série A's lowest accounts). Without it a club that climbed from its estadual to Série C opened on R$ 4.2 million, under half the smallest real Série C club's R$ 9 million.
    - Squads keep the 2026 squads' position shape (479 keepers, 1,455 defenders, 1,285 midfielders and 1,093 forwards in Série A to D) instead of a guessed 3, 8, 8 and 5 per 24. Under the guess, squads lost a quarter of their forwards: Série A clubs went from 9.2 to 6.1 in six seasons and fielded weaker attacks, and the lower divisions' defences spread apart.
-4. **One ten-season check fails with the fix, and it should not be moved.** `expectSpreadSettles` (in `runSeasons.test.ts` and `strengthBySeason.test.ts`) takes the season after the first rollover as settled; it was settled only because promotions blew the spread up at once (Série B's players' p90–p10 spread went from 8.0 to 15 in one season). With the fix the spread grows over the seasons instead, to 13.2 against 9.6 + 2. The real references say a settled Série B spans 8 to 9 points: 8.0 in the day-one ratings, which hold the 2026 Série B with its promoted and relegated clubs, and 9 for the 490 of its 651 players Transfermarkt values, through the game's own yardstick. So the game spreads too wide, and the band is right. The excess is inside clubs: their players' strength net of age spreads from 2.85 to about 4.2 points in Série B over ten seasons, 3.6 to 4.0 without the fix, and 3.15 even with the yearly noise, the minutes and form effects and the youth draws all off, so transfers and academies widen squads too. A faster pull toward the club's level (35% a year instead of 15%) or kids rated at the club's own level do not stop it. It is a drift of player development of its own, for its own change; the check stays red until then. The baseline fails this check on some seeds too.
+4. **The ten-season spread check passes again: newcomers now land where real ones do.** `expectSpreadSettles` (in `runSeasons.test.ts` and `strengthBySeason.test.ts`) failed because squads widened year after year: on seed 2, Série B's players' p90–p10 spread went from 9.6 in 2027 to 13.2 in 2036, and inside its clubs their strength net of age spread from 2.85 to 4.47 points (one standard deviation). Player development was not the cause. A player who stays at his club changes 1.55 points a year (net of age and of his club's change), and the 2026 Série B players who stayed at their clubs between their Transfermarkt values of mid-2025 and mid-2026 changed 1.43 on the game's scale (88 players; `data/SOURCES.md`). The newcomers were. A third of a Série B squad is new each season, and the newcomers arrived spread 4.3 points around their club's mean (root mean square), against the squad's own 2.85: Série A players signed on pre-contracts landed 6.3 points above their Série B squad (±4.4), and academy graduates 1.7 above (±4.1). The 2026 squads' arrivals of the year stand 0.3 above theirs (±2.8; from Série A 1.4), and their players aged 20 to 23 at their club's level. Three changes put the newcomers there (`sim/transfers/tradeBetweenClubs.ts`, `sim/transfers/marketView.ts`, `sim/players/developPlayers.ts`). An AI club signs a pre-contract only with a player his AI club would not keep, and counts the players joining it in its needs and wage bill while they wait. A full squad upgrades its weakest starter by 1 to 5 points instead of 10. An AI club's academy graduates drift toward its level instead of their potential; a human coach's still grow toward theirs. On seed 2 the spread now runs from 9.3 in 2027 to 9.8 in 2036 in Série B, 8.8 to 9.8 in Série C and 8.3 (2029) to 9.5 in Série D; over seeds 1 to 8 the check holds in 31 of the 32 division-seeds, against 13 before (Série C on seed 6 misses by 0.7). Squads still widen a little inside clubs (Série B 2.85 to 3.6 over ten seasons): minutes and form still feed a player's strength into his next season.
 5. **Série A's own ten-season sag.** Over seasons 2–10 Série A scores 2.37 to 2.45 goals a game on five seeds, against a real 2.49, one of the five outside its band: its squads thin from 33.6 players to about 29 and its best forwards fade. Over four seasons it passes. The ten-season results check leaves Série A out for that reason. Série B (2.17 to 2.20), Série C (2.27 to 2.33) and Série D (2.33 to 2.39) hold on all five.
-6. **The first season moves a little**: the position shape changes which positions the market signs from day one, so Série A plays 2.44 goals a game in season 1 of the runs against 2.48 before. `pnpm calibrate`, which fields every club's real squad on day one, is unchanged.
-7. **Cards pass** for the three competitions with a real sample: Série A 5.01 yellows and 0.296 reds a game against 5.04 and 0.296, Série B 5.09 and 0.317 against 5.16 and 0.316, and the Copa do Brasil row (which also holds the continental cups) 4.44 and 0.262 against 4.70 and 0.277. Série C, Série D and the estaduais have no real card data; they borrow Série B's or the cup's rates.
-8. **The Copa do Brasil's upsets pass in 8 of 9 judged groups.** The known gap stays: a Série A club playing away at a Série B club wins 32% in the game against 53% real. The comment in `cupCalibration.test.ts` explains it: one symmetric home advantage cannot fit a Série A club at home to Série B and away.
+6. **The first season moves a little**: the position shape changes which positions the market signs from day one, so Série A plays 2.47 goals a game in season 1 of the runs, against 2.48 before them. `pnpm calibrate`, which fields every club's real squad on day one, is unchanged.
+7. **Cards pass** for the three competitions with a real sample: Série A 5.01 yellows and 0.294 reds a game against 5.04 and 0.296, Série B 5.13 and 0.316 against 5.16 and 0.316, and the Copa do Brasil row (which also holds the continental cups) 4.43 and 0.263 against 4.70 and 0.277. Série C, Série D and the estaduais have no real card data; they borrow Série B's or the cup's rates.
+8. **The Copa do Brasil's upsets pass in 7 of 9 judged groups.** The known gap stays: a Série A club playing away at a Série B club wins 32% in the game against 53% real. The comment in `cupCalibration.test.ts` explains it: one symmetric home advantage cannot fit a Série A club at home to Série B and away. The new one is small: a Série C club away at a Série D club draws 33% against 23% real, 10 points over against a band of 9, where it drew 32% before finding 4's fix. With squads no longer widening, Série C's best players stay near their day-one level (its p90 60.5 in 2030 against 60.0 on day one and 62.3 before the fix, seeds 1 to 4), so its elevens beat Série D's a little less often. On seeds 11 to 30 the group passes both before and after the fix (30% and 31% draws), and the first season alone, on squads close to day one's, already draws 31% (seeds 1 to 20): the excess comes from the cup's own strength curve, which the drift had been hiding.
 9. **Leagues abroad pass in 23 of the 23 that have a real reference**, against 2 before. Each league plays at its own params, fitted by `pnpm calibrate` to football-data.co.uk's results the way Série B–D are fitted to theirs (baseGoals, homeAdvantage and lowScoreCorrelation, on the clubs' result-only elevens at the game's start), and the result-only tier and the full tier read the same table (`paramsForLeagueAbroad`). Over four seasons the Bundesliga plays 3.21 goals a game against 3.19, the Premier League 2.98 against 2.95, Argentina 2.13 against 2.11, and Austria's home side wins 39.5% against 39.8%.
 10. **Cards abroad are each league's own** where football-data.co.uk lists them: 17 European leagues, from 3.00 yellows a game (Eredivisie) to 5.18 (Greece), split by side as the real games are. The full tier draws a human coach's club abroad at its league's rates (`LEAGUE_ABROAD_CARD_RATES`), and so does a result-only match told again on its page; Argentina, the USA, Mexico, Norway, Austria, Poland and the leagues without a reference borrow Série A's.
 11. **Leagues without a real reference** (39 of the 62) play at a labelled guess: a South American league at Brazil's division of its level, a European one or the Saudi Pro League at the median fitted European league of its level. Some still play oddly: Cyprus' second division has 18.8% draws and 3.11 goals a game, the Saudi Pro League 22.4% and 3.06. Most likely their squads have wide strength gaps from sparse Transfermarkt data.
 
-What to do, in order of value: calibrate player development to the 2026 squads' spread inside clubs (finding 4), then merge; fetch real results for the 39 leagues without a reference; look at Série A's thinning squads (finding 5).
+What to do, in order of value: fetch real results for the 39 leagues without a reference; look at Série A's thinning squads (finding 5); look at the cup's draws between Série C and D (finding 8).
 
 ## How the numbers are made
 
@@ -41,7 +41,7 @@ What to do, in order of value: calibrate player development to the 2026 squads' 
 
 <!-- tables:start -->
 
-Generated by `pnpm calibration:report --seeds 10 --seasons 4`: 10 seeds (1 to 10) × 4 seasons of the v1 world, no human coach, starting in 2026, at commit c45d18e9.
+Generated by `pnpm calibration:report --seeds 10 --seasons 4`: 10 seeds (1 to 10) × 4 seasons of the v1 world, no human coach, starting in 2026, at commit ee00d0e0.
 
 ## Verdicts at a glance
 
@@ -49,17 +49,17 @@ Generated by `pnpm calibration:report --seeds 10 --seasons 4`: 10 seeds (1 to 10
 |---|---|
 | Brazil league results (home, draw, away and goals per division) | 4 of 4 divisions |
 | Brazil cards (Série A, B and the Copa do Brasil, the ones with a real sample) | 6 of 6 numbers |
-| Copa do Brasil results by division gap and venue | 8 of 9 groups |
+| Copa do Brasil results by division gap and venue | 7 of 9 groups |
 | Leagues abroad with real results | 23 of 23 leagues |
 
 ## Brazil's leagues
 
 | Division | Games B | Games real | Home % B / real | Draw % B / real | Away % B / real | Goals/game B / real | Goals/game per seed | Verdict |
 |---|---|---|---|---|---|---|---|---|
-| Série A | 15200 | 1809 | 45.7 / 47.2 | 27.5 / 26.9 | 26.8 / 25.9 | 2.42 / 2.49 | 2.36–2.45 | pass |
-| Série B | 15200 | 1840 | 47.7 / 47.9 | 27.5 / 28.7 | 24.7 / 23.4 | 2.20 / 2.17 | 2.11–2.25 | pass |
-| Série C | 11220 | 864 | 48.2 / 47.7 | 28.7 / 30.1 | 23.0 / 22.2 | 2.32 / 2.22 | 2.27–2.38 | pass |
-| Série D | 24400 | 510 | 46.1 / 45.5 | 28.9 / 30.2 | 25.1 / 24.3 | 2.33 / 2.24 | 2.29–2.37 | pass |
+| Série A | 15200 | 1809 | 45.5 / 47.2 | 28.2 / 26.9 | 26.3 / 25.9 | 2.42 / 2.49 | 2.34–2.46 | pass |
+| Série B | 15200 | 1840 | 47.3 / 47.9 | 28.9 / 28.7 | 23.8 / 23.4 | 2.16 / 2.17 | 2.11–2.23 | pass |
+| Série C | 11220 | 864 | 47.8 / 47.7 | 29.5 / 30.1 | 22.7 / 22.2 | 2.27 / 2.22 | 2.21–2.38 | pass |
+| Série D | 24400 | 510 | 45.7 / 45.5 | 29.1 / 30.2 | 25.1 / 24.3 | 2.31 / 2.24 | 2.25–2.37 | pass |
 
 ### Brazil's leagues by season
 
@@ -67,38 +67,38 @@ Goals per game, then home win % in brackets, over all seeds.
 
 | Division | Real | Season 1 | Season 2 | Season 3 | Season 4 |
 |---|---|---|---|---|---|
-| Série A | 2.49 (47.2) | 2.44 (45.4) | 2.41 (45.4) | 2.40 (45.9) | 2.43 (46.2) |
-| Série B | 2.17 (47.9) | 2.17 (47.5) | 2.19 (47.8) | 2.24 (47.4) | 2.20 (48.2) |
-| Série C | 2.22 (47.7) | 2.29 (48.8) | 2.24 (46.8) | 2.37 (49.1) | 2.37 (48.4) |
-| Série D | 2.24 (45.5) | 2.31 (45.7) | 2.30 (45.6) | 2.35 (46.5) | 2.36 (46.5) |
+| Série A | 2.49 (47.2) | 2.47 (46.0) | 2.42 (44.7) | 2.43 (45.9) | 2.36 (45.4) |
+| Série B | 2.17 (47.9) | 2.14 (47.3) | 2.19 (46.2) | 2.13 (48.1) | 2.16 (47.8) |
+| Série C | 2.22 (47.7) | 2.23 (49.0) | 2.26 (47.4) | 2.30 (47.5) | 2.28 (47.7) |
+| Série D | 2.24 (45.5) | 2.30 (45.0) | 2.30 (45.4) | 2.31 (45.3) | 2.34 (47.2) |
 
 ## Brazil's cards
 
 | Competition | Games B | Yellows/game B | Yellows/game real | Reds/game B | Reds/game real | Verdict |
 |---|---|---|---|---|---|---|
-| Série A | 15200 | 5.01 | 5.04 | 0.296 | 0.296 | pass |
-| Série B | 15200 | 5.09 | 5.16 | 0.317 | 0.316 | pass |
-| Série C | 11220 | 5.09 | 5.16 | 0.320 | 0.316 | no real sample, rates borrowed from Série B |
-| Série D | 24400 | 5.11 | 5.16 | 0.316 | 0.316 | no real sample, rates borrowed from Série B |
-| Copa do Brasil and the continental cups | 19590 | 4.44 | 4.70 | 0.262 | 0.277 | pass |
-| Estaduais | 30840 | 4.64 | 4.70 | 0.274 | 0.277 | no real sample, rates borrowed from the Copa do Brasil |
+| Série A | 15200 | 5.01 | 5.04 | 0.294 | 0.296 | pass |
+| Série B | 15200 | 5.13 | 5.16 | 0.316 | 0.316 | pass |
+| Série C | 11220 | 5.09 | 5.16 | 0.315 | 0.316 | no real sample, rates borrowed from Série B |
+| Série D | 24400 | 5.10 | 5.16 | 0.310 | 0.316 | no real sample, rates borrowed from Série B |
+| Copa do Brasil and the continental cups | 19590 | 4.43 | 4.70 | 0.263 | 0.277 | pass |
+| Estaduais | 30840 | 4.65 | 4.70 | 0.276 | 0.277 | no real sample, rates borrowed from the Copa do Brasil |
 
 ## Copa do Brasil upsets
 
 | Gap | Favourite plays | Games B | Games real | Favourite wins % B / real | Draws % B / real | Loses % B / real | Verdict |
 |---|---|---|---|---|---|---|---|
-| AvB | home | 345 | 74 | 64 / 69 | 25 / 19 | 11 / 12 | pass |
-| AvB | away | 345 | 75 | 32 / 53 | 32 / 27 | 35 / 20 | fail: win −21 (band 13); loss +15 (band 10) |
-| AvC | home | 122 | 43 | 85 / 79 | 11 / 16 | 3 / 5 | pass |
-| AvC | away | 122 | 49 | 42 / 39 | 34 / 29 | 24 / 33 | pass |
-| AvD | home | 119 | 45 | 83 / 87 | 13 / 11 | 4 / 2 | pass |
-| AvD | away | 119 | 125 | 55 / 61 | 29 / 30 | 16 / 10 | pass |
-| BvC | home | 1 | 17 | - | - | - | too few simulated games, not judged |
-| BvC | away | 137 | 24 | 34 / 21 | 30 / 42 | 36 / 38 | pass |
+| AvB | home | 348 | 74 | 67 / 69 | 21 / 19 | 13 / 12 | pass |
+| AvB | away | 347 | 75 | 32 / 53 | 34 / 27 | 34 / 20 | fail: win −21 (band 13); loss +14 (band 10) |
+| AvC | home | 117 | 43 | 73 / 79 | 22 / 16 | 5 / 5 | pass |
+| AvC | away | 117 | 49 | 49 / 39 | 31 / 29 | 21 / 33 | pass |
+| AvD | home | 124 | 45 | 84 / 87 | 10 / 11 | 6 / 2 | pass |
+| AvD | away | 124 | 125 | 59 / 61 | 30 / 30 | 11 / 10 | pass |
+| BvC | home | 2 | 17 | - | - | - | too few simulated games, not judged |
+| BvC | away | 153 | 24 | 35 / 21 | 41 / 42 | 25 / 38 | pass |
 | BvD | home | 0 | 24 | - | - | - | too few simulated games, not judged |
-| BvD | away | 1359 | 155 | 50 / 43 | 28 / 32 | 23 / 26 | pass |
+| BvD | away | 1414 | 155 | 50 / 43 | 28 / 32 | 22 / 26 | pass |
 | CvD | home | 0 | 13 | - | - | - | too few simulated games, not judged |
-| CvD | away | 1085 | 91 | 36 / 42 | 32 / 23 | 32 / 35 | pass |
+| CvD | away | 1029 | 91 | 33 / 42 | 33 / 23 | 34 / 35 | fail: draw +10 (band 9) |
 
 ## Leagues abroad: results
 
@@ -198,13 +198,13 @@ Goals per game, then home win % in brackets, over all seeds.
 
 | Competition | Games | Home % | Draw % | Away % | Goals/game |
 |---|---|---|---|---|---|
-| club-world-cup | 630 | 39.7 | 33.2 | 27.1 | 1.84 |
-| cup | 6200 | 38.8 | 30.0 | 31.2 | 2.24 |
-| intercontinental-cup | 200 | 58.0 | 18.5 | 23.5 | 2.28 |
-| libertadores | 6200 | 49.7 | 27.4 | 22.8 | 2.31 |
-| recopa | 80 | 60.0 | 23.8 | 16.3 | 2.54 |
-| state | 30840 | 50.2 | 26.2 | 23.6 | 2.38 |
-| sul-americana | 6280 | 49.8 | 28.6 | 21.6 | 2.28 |
+| club-world-cup | 630 | 41.6 | 29.4 | 29.0 | 1.85 |
+| cup | 6200 | 39.2 | 29.0 | 31.8 | 2.26 |
+| intercontinental-cup | 200 | 62.0 | 14.5 | 23.5 | 2.27 |
+| libertadores | 6200 | 49.5 | 27.8 | 22.6 | 2.26 |
+| recopa | 80 | 51.2 | 33.8 | 15.0 | 2.16 |
+| state | 30840 | 50.3 | 26.0 | 23.7 | 2.42 |
+| sul-americana | 6280 | 50.0 | 28.5 | 21.5 | 2.27 |
 
 ## National cups abroad, result-only
 
@@ -254,6 +254,7 @@ The first calibration (commit `f5b53020`, 9 October 2026) fitted the match engin
 | Result-only world abroad | 62 leagues play a plain score draw at Série A's parameters | `839258e0`, `9a3f54ce`, `c2ef1a7a` |
 | Each league abroad's own parameters and cards | A league abroad plays at its fitted (or guessed) params in both tiers, and the full tier books its players at its real card rates | `fix/calibration-world` |
 | Squad levels by revenue, rebuilt squads and the 2026 position shape | A moved club plays near the middle of its new division; squads keep their real share of forwards | `fix/calibration-drift` |
+| Newcomers at the real squads' level | Pre-contracts only for players their AI club lets go, upgrades of 1 to 5 points, AI graduates at their club's level: squads stop widening over ten seasons | `fix/calibration-drift` |
 | Extra time at the world cups' goal rate | Ties after 90 minutes play 30 more | `42e73a3c` |
 | National football (call-ups, absences, live national matches) | National squads take players from clubs during windows | `0e3ac861` and `30941c8c` |
 
