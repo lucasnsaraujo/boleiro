@@ -49,7 +49,8 @@ describe("a full season", () => {
     expect(eventMemoryOf(turned).rivalry["palmeiras-sp|santos-sp"]).toBeUndefined();
   });
 
-  it("runs in a few seconds", () => {
+  // The budget was calibrated on Apple Silicon; the Linux CI shards set BOLEIRO_SPEED_ELSEWHERE and a separate Apple Silicon job times it.
+  it.skipIf(process.env.BOLEIRO_SPEED_ELSEWHERE === "1")("runs in a few seconds", () => {
     expect(seconds, `budget ${budget.toFixed(2)} s on this machine`).toBeLessThan(budget);
   });
 
