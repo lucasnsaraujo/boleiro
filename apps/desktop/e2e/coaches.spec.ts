@@ -74,6 +74,8 @@ test("a coach resigns, applies for an open job from the job centre and is hired 
 });
 
 test("after a season the coaches screen ranks the coaches with the player among them, and the clubs the CBF's way and the world's", async ({ page }) => {
+  // A whole season played in the worker: about 16 s on a dev Mac, past Playwright's 30 s default on CI's 2-core runner.
+  test.setTimeout(3 * 60_000);
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "Bahia", club: "Bahia", coach: "Lucas" });
   await bar(page).getByRole("link", { name: "Técnicos" }).click();

@@ -556,10 +556,10 @@
 }
 
 /* Up to a 1366-wide screen the tabs close up and drop their logos, so a FIFA cup year's twelve fit beside the play
-   button at 1280. */
+   button at 1280, with room to spare where text sets wider than on a Mac, as Linux's whole-pixel glyphs do. */
 @media (max-width: 1365px) {
   .tables-tabs > button {
-    padding: 0 10px;
+    padding: 0 8px;
     font-size: 12.5px;
   }
 

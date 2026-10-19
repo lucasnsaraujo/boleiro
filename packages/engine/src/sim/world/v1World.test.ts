@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { advanceDay } from "../advanceDay.js";
+import { cpuBudgetSeconds } from "../cpuBudgetSeconds.js";
 import { CONMEBOL_CUPS } from "../continental/conmebolCups.js";
 import { latestChampionsLeagueWinner } from "../continental/uefaCups.js";
 import type { ContinentalCompetition, GameState } from "../gameState.js";
@@ -46,6 +47,8 @@ describe("two seasons of the v1 world", () => {
   const start = loadNewGame(5, { coachClubId: "flamengo-rj", world, guests, season: 2028 });
   const before = playSeason(start);
   const { lastDay, next, paidUsd, seconds } = playSeason(before.next);
+  // Ten seconds on the machine the budget was set on; a slower machine gets as much longer as it is slower.
+  const budget = cpuBudgetSeconds(10);
   const cup = clubWorldCupOf(lastDay);
   const played = lastDay.fixtures.filter((f) => f.competitionId === cup?.id);
 
@@ -63,7 +66,7 @@ describe("two seasons of the v1 world", () => {
   });
 
   it("plays a season with the Club World Cup within ten seconds", () => {
-    expect(seconds).toBeLessThan(10);
+    expect(seconds, `budget ${budget.toFixed(2)} s on this machine`).toBeLessThan(budget);
   });
 
   it("plays the Club World Cup's 63 matches, group winners meeting runners-up in the round of 16, and files its champion", () => {

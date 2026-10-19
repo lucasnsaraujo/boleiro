@@ -113,6 +113,52 @@ test("in a hot-seat round, Space stops the clock on the first coach's match and 
   expect(within(screen.getByRole("group", { name: "Velocidade" })).getByRole("button", { pressed: true }).getAttribute("aria-label")).not.toBe("Pausar");
 });
 
+/** Presses `key` on the window the moment the open lineup shows `coach`'s match, before anything else runs. */
+const pressOnceShowing = (coach: string, key: string) =>
+  new Promise<void>((resolve) => {
+    const observer = new MutationObserver(() => {
+      if (whoseMatch(screen.getByRole("dialog", { name: "Escalação" })) !== coach) return;
+      observer.disconnect();
+      fireEvent.keyDown(window, { key });
+      resolve();
+    });
+    observer.observe(document.body, { subtree: true, childList: true, characterData: true });
+  });
+
+test("an arrow pressed the moment the lineup turns to the next coach's match steps on from that match", async () => {
+  const { given } = await bothCoachesPlaying();
+  openRound(given);
+  await screen.findByRole("region", { name: "Seu jogo" });
+  await pressSpace();
+  expect(whoseMatch(await lineup())).toBe(ANA.name);
+
+  const pressedOnBruno = pressOnceShowing(BRUNO.name, "ArrowRight");
+  fireEvent.keyDown(window, { key: "ArrowRight" });
+  await pressedOnBruno;
+  await showsMatchOf(ANA.name);
+});
+
+test("an arrow pressed the moment the lineup shuts moves the board's focus", async () => {
+  const { given } = await bothCoachesPlaying();
+  openRound(given);
+  const band = await screen.findByRole("region", { name: "Seu jogo" });
+  await pressSpace();
+  const sheet = await lineup();
+
+  const pressedOnShut = new Promise<void>((resolve) => {
+    const observer = new MutationObserver(() => {
+      if (screen.queryByRole("dialog", { name: "Escalação" })) return;
+      observer.disconnect();
+      fireEvent.keyDown(window, { key: "ArrowRight" });
+      resolve();
+    });
+    observer.observe(document.body, { subtree: true, childList: true });
+  });
+  await userEvent.click(within(sheet).getByRole("button", { name: "Voltar ao jogo" }));
+  await pressedOnShut;
+  expect(within(band).getByRole("region", { name: new RegExp(`^${BRUNO.name}: `) }).getAttribute("aria-current")).toBe("true");
+});
+
 test("a substitute dragged from the bench onto a starter comes on in that coach's match, with the substitution's sound, and the board calls it out", async () => {
   const { given, sides } = await bothCoachesPlaying();
   const anas = sides.find((side) => side.clubId === ANA.clubId);
