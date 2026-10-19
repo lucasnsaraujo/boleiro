@@ -21,8 +21,10 @@ export type LogoSpec = {
   title: string;
   /** The line under the name: the year, or the host and the year. */
   subtitle: string;
-  /** Up to three characters the emblem carries: a state's letters, an edition's year. */
+  /** Up to three characters the emblem carries: a state's letters, an edition's year's last two figures. */
   monogram?: string;
+  /** A shield's field drawn by its owner, a state's flag (stateFlags.ts); left out, the shield shows a band across its colours. */
+  field?: string;
   /** What the emblem holds: a trophy (an edition, a cup) or a ball (a league, a qualifier). */
   holds: "cup" | "vase" | "globe" | "ball";
 };
@@ -199,10 +201,40 @@ function held(spec: LogoSpec, cx: number, top: number, h: number, metal: string,
   return ball(cx, top + h / 2, h / 2, ink, clip, turn);
 }
 
+/** An edition's year's last two figures on a navy pill centred on `x`, its baseline at `y`: what tells one edition's emblem from another. */
+function yearPill(spec: LogoSpec, x: number, y: number, size: number): string {
+  if (!spec.monogram) return "";
+  const house = HOUSE[spec.organiser];
+  const width = widthOf(lettersOf(spec.monogram, "heavy"), "heavy", size, 1) + size * 0.7;
+  const height = size * 0.98;
+  return (
+    `<rect x="${n(x - width / 2)}" y="${n(y - size * 0.82)}" width="${n(width)}" height="${n(height)}" rx="${n(height / 2)}" fill="${house.ink}" stroke="${house.metal}" stroke-width="1.6"/>` +
+    line(spec.monogram, "heavy", x, y, size * 0.72, "#FFFFFF", width, 1)
+  );
+}
+
 const colourAt = (spec: LogoSpec, i: number, fallback: string) => spec.colours[i % Math.max(1, spec.colours.length)] ?? fallback;
 
-/** A state federation's or a country's shield: the flag's colour, a band across it, the state's letters on its chief and a ball or trophy in a white roundel. */
+/** A state federation's shield: its flag under a dark chief with the state's letters, a ball sealed at its point. */
+function flagShield(spec: LogoSpec, field: string, random: () => number): string {
+  const house = HOUSE[spec.organiser];
+  const outline = "M20 12 H140 V76 C140 116 113 140 80 154 C47 140 20 116 20 76Z";
+  const inner = "M27 19 H133 V76 C133 111 109 132 80 145 C51 132 27 111 27 76Z";
+  return (
+    `<path d="${outline}" fill="${house.ink}"/>` +
+    `<clipPath id="${spec.id}-shield"><path d="${inner}"/></clipPath>` +
+    `<g clip-path="url(#${spec.id}-shield)"><rect x="20" y="12" width="120" height="142" fill="#FFFFFF"/>${field}</g>` +
+    `<path d="M27 19 H133 V46 H27Z" fill="${house.ink}"/>` +
+    `<path d="M27 46 H133" stroke="${house.metal}" stroke-width="2.4"/>` +
+    (spec.monogram ? line(spec.monogram, "heavy", 80, 41.5, 22, "#FFFFFF", 90, 1.5) : "") +
+    `<circle cx="80" cy="128" r="17" fill="#FFFFFF" stroke="${house.ink}" stroke-width="3"/>` +
+    ball(80, 128, 13, house.ink, `${spec.id}-held`, random() * 0.6)
+  );
+}
+
+/** A country's federation's shield: the flag's colour, a band across it, its letters or stars on its chief and a ball or trophy in a white roundel. */
 function shield(spec: LogoSpec, random: () => number): string {
+  if (spec.field) return flagShield(spec, spec.field, random);
   const house = HOUSE[spec.organiser];
   const field = colourAt(spec, 0, house.ink);
   const chief = colourAt(spec, 1, house.metal);
@@ -243,7 +275,8 @@ function medallion(spec: LogoSpec, random: () => number): string {
     `<clipPath id="${spec.id}-disc"><circle cx="80" cy="84" r="62"/></clipPath>` +
     `<g clip-path="url(#${spec.id}-disc)"><g transform="rotate(${tilt} 80 84)">${sashes}</g></g>` +
     `<circle cx="80" cy="84" r="62" fill="none" stroke="${house.metal}" stroke-width="1.6"/>` +
-    held(spec, 80, 34, 92, house.metal, house.ink, `${spec.id}-held`, random() * 0.6)
+    held(spec, 80, spec.monogram ? 30 : 34, spec.monogram ? 84 : 92, house.metal, house.ink, `${spec.id}-held`, random() * 0.6) +
+    yearPill(spec, 80, 144, 26)
   );
 }
 
@@ -268,7 +301,8 @@ function ellipse(spec: LogoSpec, random: () => number): string {
     `<clipPath id="${spec.id}-oval"><ellipse cx="80" cy="82" rx="53" ry="71"/></clipPath>` +
     `<g clip-path="url(#${spec.id}-oval)"><rect x="0" y="0" width="160" height="164" fill="${house.light}"/>${tiles.join("")}</g>` +
     `<ellipse cx="80" cy="82" rx="35" ry="53" fill="${house.ink}" stroke="#FFFFFF" stroke-width="3"/>` +
-    held(spec, 80, spec.holds === "ball" ? 58 : 34, spec.holds === "ball" ? 48 : 94, house.metal, house.ink, `${spec.id}-held`, random() * 0.6)
+    held(spec, 80, spec.holds === "ball" ? 58 : spec.monogram ? 32 : 34, spec.holds === "ball" ? 48 : spec.monogram ? 80 : 94, house.metal, house.ink, `${spec.id}-held`, random() * 0.6) +
+    yearPill(spec, 80, 140, 24)
   );
 }
 
@@ -291,7 +325,8 @@ function orbit(spec: LogoSpec, random: () => number): string {
     `<circle cx="80" cy="84" r="78" fill="${house.ink}"/>` +
     `<circle cx="80" cy="84" r="74" fill="none" stroke="${house.metal}" stroke-width="2"/>` +
     ribbons +
-    held(spec, 80, 34, 96, house.metal, house.ink, `${spec.id}-held`, 0)
+    held(spec, 80, spec.monogram ? 26 : 34, spec.monogram ? 86 : 96, house.metal, house.ink, `${spec.id}-held`, 0) +
+    yearPill(spec, 80, 146, 28)
   );
 }
 

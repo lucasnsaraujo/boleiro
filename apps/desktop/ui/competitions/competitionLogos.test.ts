@@ -57,6 +57,17 @@ describe("every competition's logo", () => {
     expect(spec.colours).toContain("#C8102E");
   });
 
+  it("draws each state's shield in its own flag, its letters aside", () => {
+    const drawn = STATES.map((state) => generatedLogoSvg({ ...logoSpecOf(`state-${state.toLowerCase()}`, 2027), id: "same", monogram: undefined }, "mark"));
+    expect(new Set(drawn).size).toBe(STATES.length);
+  });
+
+  it("prints a tournament edition's year on its emblem", () => {
+    expect(logoSpecOf("world-cup", 2038, hosts["world-cup-2038"]).monogram).toBe("38");
+    expect(logoSpecOf("copa-america", 2032, hosts["copa-america-2032"]).monogram).toBe("32");
+    expect(generatedLogoSvg(logoSpecOf("world-cup", 2038, hosts["world-cup-2038"]), "mark")).not.toBe(generatedLogoSvg({ ...logoSpecOf("world-cup", 2038, hosts["world-cup-2038"]), monogram: "42" }, "mark"));
+  });
+
   it("splits an id into its competition key and season", () => {
     expect(editionKeyOf("state-sp-2027")).toEqual({ key: "state-sp", season: 2027 });
     expect(editionKeyOf("gb-eng-1-2026")).toEqual({ key: "gb-eng-1", season: 2026 });

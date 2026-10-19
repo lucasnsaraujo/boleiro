@@ -5,6 +5,7 @@ import type { EditionHost } from "@boleiro/engine/sim/hosts/venue";
 import { competitionKeyName } from "@boleiro/game-client/format/competitionName";
 import { nationalTeamName } from "@boleiro/game-client/format/nationalTeamName";
 import { FLAG_COLOURS, STATE_FLAG_COLOURS } from "./flagColours.js";
+import { STATE_FLAG_FIELDS } from "./stateFlags.js";
 import { generatedLogoSvg, type LogoSpec } from "./generatedLogo.js";
 
 // Every competition's real logo the pipeline found, by competition key or, for a logo that names its year, by edition
@@ -49,19 +50,20 @@ export function logoSpecOf(key: string, season: number | null, host: EditionHost
   const year = season === null ? "" : String(season);
   const hosts = host?.countries ?? [];
   const withHost = [hostLine(hosts), year].filter(Boolean).join(" ");
+  const edition = season === null ? {} : { monogram: year.slice(-2) };
   const state = /^state-([a-z]{2})$/.exec(key)?.[1]?.toUpperCase() ?? "";
   if (isState(state)) {
-    return { id, organiser: "state", motif: "shield", colours: STATE_FLAG_COLOURS[state], kicker: "CAMPEONATO", title: competitionKeyName(key), subtitle: year, monogram: state, holds: "ball" };
+    return { id, organiser: "state", motif: "shield", colours: STATE_FLAG_COLOURS[state], field: STATE_FLAG_FIELDS[state], kicker: "CAMPEONATO", title: competitionKeyName(key), subtitle: year, monogram: state, holds: "ball" };
   }
   switch (key) {
     case "world-cup":
-      return { id, organiser: "fifa", motif: "orbit", colours: hostColours(hosts), kicker: "FIFA", title: "COPA DO MUNDO", subtitle: withHost, holds: "globe" };
+      return { id, organiser: "fifa", motif: "orbit", colours: hostColours(hosts), kicker: "FIFA", title: "COPA DO MUNDO", subtitle: withHost, holds: "globe", ...edition };
     case "club-world-cup":
-      return { id, organiser: "fifa", motif: "orbit", colours: ["#C9A04A", "#EED79B", ...hostColours(hosts).slice(0, 2)], kicker: "FIFA", title: "SUPER MUNDIAL", subtitle: withHost, holds: "globe" };
+      return { id, organiser: "fifa", motif: "orbit", colours: ["#C9A04A", "#EED79B", ...hostColours(hosts).slice(0, 2)], kicker: "FIFA", title: "SUPER MUNDIAL", subtitle: withHost, holds: "globe", ...edition };
     case "copa-america":
-      return { id, organiser: "conmebol", motif: "medallion", colours: hostColours(hosts), kicker: "CONMEBOL", title: "COPA AMÉRICA", subtitle: withHost, holds: "cup" };
+      return { id, organiser: "conmebol", motif: "medallion", colours: hostColours(hosts), kicker: "CONMEBOL", title: "COPA AMÉRICA", subtitle: withHost, holds: "cup", ...edition };
     case "euro":
-      return { id, organiser: "uefa", motif: "ellipse", colours: hostColours(hosts), kicker: "UEFA", title: `EURO ${year}`, subtitle: hostLine(hosts), holds: "vase" };
+      return { id, organiser: "uefa", motif: "ellipse", colours: hostColours(hosts), kicker: "UEFA", title: `EURO ${year}`, subtitle: hostLine(hosts), holds: "vase", ...edition };
     case "qualifiers-conmebol":
       return { id, organiser: "conmebol", motif: "medallion", colours: [], kicker: "CONMEBOL", title: "ELIMINATÓRIAS", subtitle: `COPA DO MUNDO ${year}`.trim(), holds: "ball" };
     case "qualifiers-uefa":
