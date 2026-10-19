@@ -86,6 +86,8 @@ export type TitleView = Common & {
   isLong: boolean;
   seconds: number;
   competition: CompetitionKey;
+  /** The season of the title, whose edition's logo the trophy shows. */
+  season: number;
   competitionName: string;
   headline: string;
   subline: string;
@@ -495,6 +497,7 @@ function titleView(state: GameState, moment: Extract<Moment, { kind: "title" }>)
     isLong,
     seconds: moment.seconds,
     competition: moment.competition,
+    season: moment.season,
     competitionName: name,
     headline: championOf(moment.competition, name),
     subline: isLong ? `Depois de ${plural(story.seasonInSpell, "temporada", "temporadas")}` : firstWords,

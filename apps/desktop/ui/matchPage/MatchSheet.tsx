@@ -12,6 +12,7 @@ import { clockLabel, clubColours, EventMark, GoalNote, LiveChip, RollingDigit, r
 import { formatMark, markClass } from "./matchMarks.js";
 import { MatchPitch } from "./MatchPitch.js";
 import { headlineOf, reportOf } from "./matchStory.js";
+import { EditionLogo } from "../competitions/CompetitionLogo.js";
 
 const TABS = [
   { id: "resumo", label: "Resumo" },
@@ -71,6 +72,7 @@ export function MatchSheet({ page, view, isLeaving, onBack, onClose }: Props) {
           </div>
         ))}
         <div className="mf-big" aria-label={`${page.home.club.shortName} ${view.score.home} x ${view.score.away} ${page.away.club.shortName}`}>
+          {page.edition && <EditionLogo edition={page.edition} size={40} name={page.competition} className="mf-big-logo" />}
           <div className="mf-digits">
             <RollingDigit value={view.score.home} />
             <span className="mf-times" aria-hidden="true">

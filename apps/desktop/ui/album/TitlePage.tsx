@@ -7,6 +7,7 @@ import { useDialogFocus } from "../app/useDialogFocus.js";
 import { plateColours } from "../clubs/clubCatalog.js";
 import { Crest } from "../clubs/Crest.js";
 import { PaperConfetti } from "./PaperConfetti.js";
+import { CompetitionLogo } from "../competitions/CompetitionLogo.js";
 
 type Clubs = Readonly<Record<string, Club>>;
 
@@ -91,7 +92,7 @@ export function TitlePage({ title, clubs, onClose, onOpenMatch }: Props) {
         <PaperConfetti colours={paper} />
         <header className="ab-tp-band">
           <span className="ab-tp-trophy" aria-hidden="true">
-            <i className="ph-fill ph-trophy" />
+            <CompetitionLogo competitionKey={title.competition} season={title.season} size={64} name={title.name} isNamedBeside />
           </span>
           <div className="ab-tp-head">
             <p className="ab-tp-kicker">

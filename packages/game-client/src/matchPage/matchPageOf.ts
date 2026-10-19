@@ -3,7 +3,7 @@ import type { KeptMatch } from "@boleiro/engine/sim/album/album";
 import type { Formation } from "@boleiro/engine/engine/formations";
 import type { PositionGroup } from "@boleiro/engine/engine/match";
 import { guestClubOf, guestSquadOf } from "@boleiro/engine/sim/continental/guestClubs";
-import { neutralGround } from "@boleiro/engine/sim/continental/neutralGrounds";
+import { neutralGround, neutralVenue } from "@boleiro/engine/sim/continental/neutralGrounds";
 import { matchEggNotes, type EggNote } from "@boleiro/engine/sim/eggs/findEggs";
 import { attendance } from "@boleiro/engine/sim/finances/recordMatchFinances";
 import type { Fixture, GameState, IsoDate, SimPlayer } from "@boleiro/engine/sim/gameState";
@@ -27,6 +27,7 @@ import type { RoundClub } from "../round/liveRoundOf.js";
 import { officialsOf, type Officials } from "../round/officialsOf.js";
 import { curiositiesOf } from "./curiositiesOf.js";
 import { compareText } from "@boleiro/engine/sim/compareText";
+import { competitionEditionOf, editionKeyOf, type CompetitionEdition } from "../format/competitionEdition.js";
 
 /** A player as the match page shows him: enough to place him on the pitch in his side's formation. */
 export type PagePlayer = { id: string; name: string; group: PositionGroup; strength: number; positions?: readonly Role[] };
@@ -54,6 +55,8 @@ export type MatchPage = {
   label: string;
   /** The competition as a fan names it. */
   competition: string;
+  /** The competition's edition, whose logo heads the page. */
+  edition?: CompetitionEdition;
   date: IsoDate;
   home: PageSide;
   away: PageSide;
@@ -64,7 +67,8 @@ export type MatchPage = {
   /** Every player's 0–10 mark over the whole timeline; the page shows them once the match is over. */
   ratings: Record<string, number>;
   names: Record<string, string>;
-  venue: { stadium: string | null; crowd: number | null; gate: number | null };
+  /** Where it is played: the home club's ground, or a neutral one with its city; the crowd and gate a home club draws. */
+  venue: { stadium: string | null; city?: string; crowd: number | null; gate: number | null };
   /** The referee, when the data names one for the competition, and whether VAR watches the match. */
   officials: Officials;
   meetings: Meeting[];
@@ -90,7 +94,7 @@ export function worldMatchRef(countryId: string, level: number, index: number): 
  * A match to tell: its fixture, its competition's name and label, and the fixtures its table and meetings read;
  * `game` the game to tell it in when its competition is none of the game's (a national match played result-only).
  */
-type Located = { fixture: Fixture; competition: string; label: string; table: { clubIds: string[]; fixtures: Fixture[]; drawOrder: string[] } | null; season: Fixture[]; game?: GameState };
+type Located = { fixture: Fixture; competition: string; edition: CompetitionEdition; label: string; table: { clubIds: string[]; fixtures: Fixture[]; drawOrder: string[] } | null; season: Fixture[]; game?: GameState };
 
 /** A national match: its fixture, its group's table from the national competition, and every national match the game keeps, for the two teams' meetings. */
 function locateNational(state: GameState, matchId: string): Located | null {
@@ -106,6 +110,7 @@ function locateNational(state: GameState, matchId: string): Located | null {
   return {
     fixture,
     competition: competitionName(competition),
+    edition: competitionEditionOf(competition),
     label: fixtureLabel(competition, fixture),
     table,
     season: matches.map(asFixture),
@@ -127,7 +132,8 @@ function locate(state: GameState, ref: string): Located | null {
     if (!fixture) return null;
     const name = country.structure.levels[Number(level)]?.name ?? league.id;
     const round = league.dates.indexOf(fixture.date) + 1;
-    return { fixture, competition: name, label: round > 0 ? `${name} · ${round}ª rodada` : name, table: { clubIds: league.clubIds, fixtures, drawOrder: league.drawOrder }, season: fixtures };
+    const edition = { key: `${countryId}-${Number(level) + 1}`, season: state.season, host: null };
+    return { fixture, competition: name, edition, label: round > 0 ? `${name} · ${round}ª rodada` : name, table: { clubIds: league.clubIds, fixtures, drawOrder: league.drawOrder }, season: fixtures };
   }
   const fixture = state.fixtures.find((f) => f.id === ref);
   const competition = fixture && state.competitions[fixture.competitionId];
@@ -139,7 +145,7 @@ function locate(state: GameState, ref: string): Located | null {
   const table = group
     ? { clubIds: group, fixtures: state.fixtures.filter((f) => f.competitionId === competition.id && f.stage === fixture.stage && inGroup.has(f.homeId) && inGroup.has(f.awayId)), drawOrder: competition.drawOrder }
     : null;
-  return { fixture, competition: competitionName(competition), label: fixtureLabel(competition, fixture), table, season: state.fixtures };
+  return { fixture, competition: competitionName(competition), edition: competitionEditionOf(competition), label: fixtureLabel(competition, fixture), table, season: state.fixtures };
 }
 
 function clubOf(state: GameState, clubId: string): RoundClub {
@@ -172,6 +178,8 @@ function meetingsOf(located: Located): Meeting[] {
 /** The crowd and the gate: as booked for a human coach's home game, else what the home club draws for this game today; none on a neutral ground. */
 function venueOf(state: GameState, fixture: Fixture, club: RoundClub): MatchPage["venue"] {
   const competition = state.competitions[fixture.competitionId];
+  const venue = competition ? neutralVenue(competition, fixture) : null;
+  if (venue) return { stadium: venue.name, city: venue.city, crowd: null, gate: null };
   const ground = competition ? neutralGround(competition, fixture) : null;
   if (ground) return { stadium: ground, crowd: null, gate: null };
   const stadium = club.stadium || null;
@@ -266,6 +274,7 @@ function keptPage(state: GameState, kept: KeptMatch): MatchPage {
     isRetold: false,
     label: `${name} · ${stage}`,
     competition: name,
+    edition: { ...editionKeyOf(fixture.competitionId), host: null },
     date: fixture.date,
     home: side(fixture.homeId, "home"),
     away: side(fixture.awayId, "away"),
@@ -344,6 +353,7 @@ export function matchPageOf(state: GameState, ref: string, live: { day: LiveDay;
     isRetold: !real,
     label: located.label,
     competition: located.competition,
+    edition: located.edition,
     date: fixture.date,
     home: side(home, "home"),
     away: side(away, "away"),

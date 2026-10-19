@@ -24,15 +24,16 @@ import { isNationalTeam, nationalSquadOf } from "@boleiro/engine/sim/nations/nat
 import { roundClubOf } from "./roundClubOf.js";
 import { aiFormationOf, recentResultsOf, squadOf, type MatchResult, type SquadPlayer } from "./matchDayPlan.js";
 import { officialsOf, type Officials } from "./officialsOf.js";
+import { competitionEditionOf, type CompetitionEdition } from "../format/competitionEdition.js";
 
 export type Side = "home" | "away";
 export type RoundClub = Pick<Club, "id" | "shortName" | "colours" | "stadium">;
 
 const ONCE_PLAYED = 0.5;
-/** A match of the round: its timeline and, unless it kicked off before players had one, every player's form and play; `ground` names a neutral ground, `isNeutral` marks one the game names no ground for (a national team's). */
+/** A match of the round: its timeline and, unless it kicked off before players had one, every player's form and play; `ground` names a neutral ground and `isNeutral` marks any match on one, named or not. */
 export type RoundMatch = { fixtureId: string; competitionId: string; homeId: string; awayId: string; ground?: string; isNeutral?: true; events: MatchEvent[]; officials?: Officials; play?: MatchPlay };
 /** `hasHumanCoach`: a club of a human coach plays in it, so the round shows it open; the rest go under "Outras ligas". */
-type RoundCompetition = { id: string; label: string; hasHumanCoach: boolean };
+type RoundCompetition = { id: string; label: string; hasHumanCoach: boolean; edition: CompetitionEdition };
 /** The coach's group of his competition: its clubs and every fixture of the stage, today's still unplayed. */
 export type RoundTable = { clubIds: string[]; fixtures: Fixture[]; drawOrder: string[] };
 
@@ -260,7 +261,7 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
     const fixture = today.get(m.fixtureId);
     const competition = fixture && state.competitions[fixture.competitionId];
     const ground = fixture && competition ? neutralGround(competition, fixture) : null;
-    const isNeutral = !ground && competition?.kind === "national" && fixture !== undefined && isOnNeutralGround(competition, fixture.stage);
+    const isNeutral = fixture !== undefined && competition !== undefined && isOnNeutralGround(competition, fixture.stage);
     return {
       fixtureId: m.fixtureId,
       competitionId: fixture?.competitionId ?? "",
@@ -290,7 +291,7 @@ export function liveRoundOf(live: LiveDay, seenMinute: number): LiveRound {
       const hasHumanCoach = isHumanToday || (competition?.clubIds.some((clubId) => humans.includes(clubId)) ?? false);
       // A national competition's day is headed by the coach's own match when he plays in it.
       const shown = coachFixture?.competitionId === id ? coachFixture : fixture;
-      return competition && shown ? [{ id, label: roundDayLabel(competition, shown), hasHumanCoach }] : [];
+      return competition && shown ? [{ id, label: roundDayLabel(competition, shown), hasHumanCoach, edition: competitionEditionOf(competition) }] : [];
     });
 
   const table = tableOf(live, coachFixture);
