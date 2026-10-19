@@ -1,4 +1,5 @@
 import type { GameState, SimPlayer } from "../gameState.js";
+import { takeInOutsiders } from "../nations/callUps.js";
 import type { CountryStart } from "../newGame.js";
 import type { Guests } from "./guests.js";
 import type { WorldClub } from "./world.js";
@@ -19,7 +20,7 @@ function withCitizenships(club: WorldClub, known: Citizenships | undefined): Wor
 /**
  * A game saved before the world kept its players' citizenships, with them from the shipped packs (`files`):
  * each result-only club's and Club World Cup guest's players by name, and the full tier's players at a club
- * abroad by club and name. A game that has them, or one with no world, stays the same object.
+ * abroad by club and name, who join their national pools. A game that has them, or one with no world, stays the same object.
  */
 export function withWorldNationalities(state: GameState, files: { world?: readonly CountryStart[]; guests?: Guests }): GameState {
   const countries = Object.values(state.world ?? {});
@@ -33,9 +34,13 @@ export function withWorldNationalities(state: GameState, files: { world?: readon
   );
   const guests = state.guests && Object.fromEntries(Object.entries(state.guests).map(([id, clubs]) => [id, clubs.map((club) => withCitizenships(club, packed.get(club.id)))]));
   const players: Record<string, SimPlayer> = {};
+  const given: SimPlayer[] = [];
   for (const [id, player] of Object.entries(state.players)) {
     const known = state.clubs[player.clubId]?.abroad && !player.nationalities.length ? packed.get(player.clubId)?.get(player.name) : undefined;
     players[id] = known ? { ...player, nationalities: known.split("/").filter(Boolean) } : player;
+    if (known) given.push(players[id]);
   }
-  return { ...state, world, players, ...(guests ? { guests } : {}) };
+  // Players abroad given their citizenships join their national pools as the game's own, no longer as outsiders.
+  const nations = state.nations && takeInOutsiders(state.nations, given);
+  return { ...state, world, players, ...(guests ? { guests } : {}), ...(nations ? { nations } : {}) };
 }

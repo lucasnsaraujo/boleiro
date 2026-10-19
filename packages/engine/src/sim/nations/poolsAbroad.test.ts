@@ -16,7 +16,7 @@ function sakaIn(state: GameState) {
   const pool = poolOf(state, "england");
   const outsiders = state.nations?.outsiders.england;
   return {
-    inGame: pool.filter((ref) => state.players[ref]?.name === "Bukayo Saka" && state.players[ref]?.clubId === ARSENAL).length,
+    inGame: pool.filter((ref) => state.players[ref]?.name === "Bukayo Saka").length,
     asOutsider: pool.filter((ref) => ref.startsWith(OUTSIDER_MARK) && outsiders?.names[Number(ref.slice(OUTSIDER_MARK.length))] === "Bukayo Saka").length,
   };
 }
@@ -29,6 +29,11 @@ describe("a national team's pool with a league abroad in the full tier", () => {
   it("takes in once the players of a country joining the full tier mid-season, no longer as outsiders", () => {
     const flamengo = loadNewGame(5, { coachClubId: "flamengo-rj", world: europe, nationalFootball: football });
     expect(sakaIn(flamengo)).toEqual({ inGame: 0, asOutsider: 1 });
-    expect(sakaIn(joinFullTier(flamengo, "gb-eng"))).toEqual({ inGame: 1, asOutsider: 0 });
+    const joined = joinFullTier(flamengo, "gb-eng");
+    expect(sakaIn(joined)).toEqual({ inGame: 1, asOutsider: 0 });
+    // Sold on to Flamengo, he stays the game's own and doesn't come back as an outsider.
+    const saka = Object.values(joined.players).find((p) => p.name === "Bukayo Saka" && p.clubId === ARSENAL);
+    if (!saka) throw new Error("no Saka");
+    expect(sakaIn({ ...joined, players: { ...joined.players, [saka.id]: { ...saka, clubId: "flamengo-rj" } } })).toEqual({ inGame: 1, asOutsider: 0 });
   });
 });

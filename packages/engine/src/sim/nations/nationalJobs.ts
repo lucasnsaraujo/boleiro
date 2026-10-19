@@ -136,7 +136,7 @@ export function poolOf(state: GameState, teamId: string): string[] {
   const nations = state.nations;
   if (!nations) return [];
   const nationals = nationalsByTeam(state.players, nations.teams).get(teamId) ?? [];
-  const outsiders = outsiderRows(nations.outsiders[teamId], nationals).map((row) => `${OUTSIDER_MARK}${row}`);
+  const outsiders = outsiderRows(nations.outsiders[teamId]).map((row) => `${OUTSIDER_MARK}${row}`);
   return [...nationals.map((p) => p.id), ...outsiders];
 }
 
