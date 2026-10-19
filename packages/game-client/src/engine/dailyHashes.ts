@@ -6,8 +6,11 @@ import type { CoachSide } from "../round/liveRoundOf.js";
 import { bundledGameFiles } from "./bundledGameFiles.js";
 import { createEngineSession, type EngineSession, type NewGameChoices } from "./createEngineSession.js";
 
-/** A game to play the same way on any JavaScript engine: its seed, its new-game choices and how many days to play. */
-export type DailyHashScript = { seed: number; choices: NewGameChoices; days: number; dumpOn?: IsoDate };
+/**
+ * A game to play the same way on any JavaScript engine: its seed, its new-game choices and how many days to hash,
+ * from `hashFrom` on when given (the days before it are played the same way, unhashed, which is cheaper).
+ */
+export type DailyHashScript = { seed: number; choices: NewGameChoices; days: number; hashFrom?: IsoDate; dumpOn?: IsoDate };
 /** The save's shards after a day, each as its SHA-256. */
 export type DayHash = { date: IsoDate; shards: Record<string, string> };
 
@@ -47,7 +50,7 @@ function playLiveRound(session: EngineSession) {
  * substitution, and hashes the save after each day. The same script must give the same hashes in
  * Node and in every browser engine the app runs on.
  */
-export async function dailyHashes({ seed, choices, days, dumpOn }: DailyHashScript): Promise<{ days: DayHash[]; dump: Record<string, string> | null }> {
+export async function dailyHashes({ seed, choices, days, hashFrom, dumpOn }: DailyHashScript): Promise<{ days: DayHash[]; dump: Record<string, string> | null }> {
   const session = createEngineSession(bundledGameFiles);
   session.apply({ type: "newGame", seed, choices });
   const isHotSeat = session.hotSeat() !== null;
@@ -62,8 +65,9 @@ export async function dailyHashes({ seed, choices, days, dumpOn }: DailyHashScri
     const today = session.read(["date", "coachClubId", "fixtures", "nations", "waitingCoaches"]);
     if (isHotSeat ? isHumanMatchDay(today) : isCoachMatchDay(today)) playLiveRound(session);
     else session.apply({ type: "advance", days: [{}] });
-    const shards = session.saveShards();
     const { date } = session.read(["date"]);
+    if (hashFrom && date < hashFrom) continue;
+    const shards = session.saveShards();
     if (date === dumpOn) dump = { ...shards };
     hashes.push({ date, shards: await hashShards(shards) });
   }

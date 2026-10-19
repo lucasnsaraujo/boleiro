@@ -4,9 +4,11 @@ import type { DailyHashScript, DayHash } from "@boleiro/game-client/engine/daily
 import { runnerImport } from "vite";
 
 // guess: four months of a solo career and two of a hot-seat game reach several live rounds with
-// substitutions, a transfer window and both coaches' turns, in under a minute per engine.
+// substitutions, a transfer window and both coaches' turns, in under a minute per engine. A career at Arsenal
+// hashes the Premier League's first six weeks, its live rounds at that league's own params and card rates.
 const SCRIPTS: Record<string, DailyHashScript> = {
   "a solo career": { seed: 53, choices: { coachClubId: "flamengo-rj" }, days: 120 },
+  "a career abroad": { seed: 53, choices: { coachClubId: "tm-11" }, days: 45, hashFrom: "2026-08-14" },
   "a hot-seat game": {
     seed: 3,
     choices: { coachClubId: "flamengo-rj", hotSeat: { coachName: "Ana", otherCoaches: [{ name: "Bruno", clubId: "palmeiras-sp" }] } },
