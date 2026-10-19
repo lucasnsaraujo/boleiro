@@ -61,10 +61,13 @@ async function openLineup(page: Page) {
 }
 
 async function stepMinute(page: Page) {
-  const minute = page.getByRole("region", { name: "Seu jogo" }).getByLabel("Minuto");
+  const band = page.getByRole("region", { name: "Seu jogo" });
+  const minute = band.getByLabel("Minuto");
   const before = await minute.textContent();
   await page.clock.runFor(FOUR_X_MINUTE_MS);
-  const stopped = page.getByRole("button", { name: "Pausar", pressed: true }).or(page.getByRole("button", { name: /Voltar ao clube|Encerrando/ }));
+  // A VAR check stands the clock still for a few seconds of its own; the steps run it down.
+  const varCheck = band.getByRole("status").filter({ hasText: "VAR checando" });
+  const stopped = page.getByRole("button", { name: "Pausar", pressed: true }).or(page.getByRole("button", { name: /Voltar ao clube|Encerrando/ })).or(varCheck);
   await expect.poll(async () => (await minute.textContent()) !== before || (await stopped.count()) > 0, { intervals: [0, 20, 50, 100] }).toBe(true);
 }
 
