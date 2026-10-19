@@ -149,8 +149,9 @@ describe("national football over 2026", () => {
     const outsiders = football.squads.filter((p) => p.teamId === "brazil" && brazil?.names.includes(p.name));
     expect(brazil?.names.length).toBeGreaterThan(0);
     expect(outsiders.filter((p) => own.has(samePerson(p.name, p.clubTransfermarktId))).map((p) => p.name)).toEqual([]);
+    // Players sold abroad join the pool after the opening day, so March's call-up names rows of March's pool.
     const called = march.nations?.callUps.brazil?.outsiders ?? [];
-    expect(called.every((row) => brazil?.names[row] !== undefined)).toBe(true);
+    expect(called.every((row) => march.nations?.outsiders.brazil?.names[row] !== undefined)).toBe(true);
   });
 });
 

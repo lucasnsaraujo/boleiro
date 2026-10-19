@@ -197,5 +197,5 @@ test("a Brazilian coach with a name hears from a club abroad and takes the job, 
   });
   expect(coachClubId).toBe(offered);
   expect(isFullTier).toBe(true);
-  await expect(page.getByRole("heading", { name })).toBeVisible();
+  await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
 });
