@@ -20,9 +20,9 @@ import { uefaPlaces } from "@boleiro/engine/sim/world/uefaPlaces";
 export type ZoneKind = "libertadores" | "preLibertadores" | "sulAmericana" | "championsLeague" | "europaLeague" | "promotion" | "advance" | "playoff" | "relegation";
 export type ZoneKey = { zone: ZoneKind; label: string };
 export type Outcome = "win" | "draw" | "loss";
-/** `form` is the club's last five results, oldest first; `movement` the places it gained (negative: lost) in the last round. */
+/** `form` is the club's last five results, oldest first; `movement` the places it gained (negative: lost) in the last round; `postponed` its postponed games of the rounds so far still to play. */
 /** `formRefs` are the match pages of `form`'s games, in its order; a table whose games have no page leaves them out. */
-export type TableRow = StandingRow & { position: number; zone: ZoneKind | null; form: Outcome[]; formRefs?: string[]; movement: number };
+export type TableRow = StandingRow & { position: number; zone: ZoneKind | null; form: Outcome[]; formRefs?: string[]; movement: number; postponed: number };
 export type GroupTable = { label: string | null; rows: TableRow[] };
 
 /** `ground` names a neutral ground; null when the home club hosts. */
@@ -262,8 +262,14 @@ function zoning(competition: Competition, stage: number, groups: readonly string
 const stageFixturesOf = (competition: Competition, stage: number, fixtures: readonly Fixture[]) =>
   fixtures.filter((f) => f.competitionId === competition.id && f.stage === stage);
 
-/** The round of a group-stage game, counted from 1; 0 when its date is not one of the stage's rounds. */
-const roundOf = (shape: GroupStage, fixture: Fixture) => shape.dates.indexOf(fixture.date) + 1;
+/** The rounds of a group stage on or before a day: a game's round, counted from 1, and a postponed game's the round it is played after. */
+const roundsBy = (shape: GroupStage, date: string) => shape.dates.filter((round) => round <= date).length;
+
+const roundOf = (shape: GroupStage, fixture: Fixture) => roundsBy(shape, fixture.date);
+
+/** Whether a postponed game of a round up to `round` was still to play after it. */
+const isPendingAfter = (shape: GroupStage, fixture: Fixture, round: number) =>
+  fixture.postponedFrom !== undefined && roundsBy(shape, fixture.postponedFrom) <= round && !(fixture.result && roundOf(shape, fixture) <= round);
 
 const latestRound = (shape: GroupStage, stageFixtures: readonly Fixture[]) => Math.max(0, ...stageFixtures.filter((f) => f.result).map((f) => roundOf(shape, f)));
 
@@ -310,9 +316,12 @@ export function groupTables(
 ): { groups: GroupTable[]; zones: ZoneKey[] } {
   const shape = competition.stages[stage];
   if (shape?.kind !== "groups") return { groups: [], zones: [] };
-  const stageFixtures = stageFixturesOf(competition, stage, fixtures).filter((f) => throughRound === null || roundOf(shape, f) <= throughRound);
+  const allStageFixtures = stageFixturesOf(competition, stage, fixtures);
+  const stageFixtures = allStageFixtures.filter((f) => throughRound === null || roundOf(shape, f) <= throughRound);
   const { zoneOf, advanceLabel } = zoning(competition, stage, shape.groups, stageFixtures, copa);
   const lastRound = latestRound(shape, stageFixtures);
+  const pending = allStageFixtures.filter((f) => isPendingAfter(shape, f, throughRound ?? lastRound));
+  const postponedOf = (clubId: string) => pending.filter((f) => f.homeId === clubId || f.awayId === clubId).length;
   const beforeLastRound = stageFixtures.filter((f) => roundOf(shape, f) < lastRound);
   const groups = shape.groups.map((group, g) => {
     // Before the first round every club is level, so the first round moves nobody.
@@ -326,6 +335,7 @@ export function groupTables(
         form: recentForm(row.clubId, stageFixtures),
         formRefs: recentRefs(row.clubId, stageFixtures),
         movement: lastRound > 1 ? placesBefore.indexOf(row.clubId) - i : 0,
+        postponed: postponedOf(row.clubId),
       })),
     };
   });
@@ -435,7 +445,7 @@ export function worldLeagueTables(state: Pick<GameState, "world">, countryId: st
     };
     return {
       label: structure?.name ?? league.id,
-      rows: order.map((row, i) => ({ ...row, position: i + 1, zone: zoneOf(row.clubId), form: recentForm(row.clubId, fixtures), formRefs: recentRefs(row.clubId, fixtures), movement: 0 })),
+      rows: order.map((row, i) => ({ ...row, position: i + 1, zone: zoneOf(row.clubId), form: recentForm(row.clubId, fixtures), formRefs: recentRefs(row.clubId, fixtures), movement: 0, postponed: 0 })),
     };
   });
 }

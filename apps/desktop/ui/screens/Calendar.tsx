@@ -196,7 +196,11 @@ function MatchChip({ match, clubId, opponent, isToday, onOpen }: { match: PageMa
     ? `${match.isHome ? result.homeGoals : result.awayGoals}×${match.isHome ? result.awayGoals : result.homeGoals}${result.isAfterExtraTime ? " (prorr.)" : ""}${result.onPenalties ? " pên." : ""} · `
     : "";
   return (
-    <li className={result ? `agenda-match played ${result.outcome}` : "agenda-match"} style={{ gridRow: match.row, gridColumn: match.column, ["--stack" as string]: match.stack }}>
+    <li
+      className={result ? `agenda-match played ${result.outcome}` : "agenda-match"}
+      style={{ gridRow: match.row, gridColumn: match.column, ["--stack" as string]: match.stack }}
+      title={match.postponedFrom && `Adiado de ${formatDayMonth(match.postponedFrom)}`}
+    >
       {result && <button type="button" className="agenda-open" aria-label={`Ficha do jogo contra ${opponent?.shortName ?? match.opponentId}`} onClick={() => onOpen(match.fixtureId)} />}
       <span className="sr-only">{isToday ? "Hoje" : formatRowDate(match.date)}, </span>
       {clubId === match.sideId && <DerbyBadgeOf homeId={clubId} awayId={match.opponentId} />}
@@ -207,7 +211,9 @@ function MatchChip({ match, clubId, opponent, isToday, onOpen }: { match: PageMa
         <b>{opponent?.shortName ?? match.opponentId}</b>
         <small>
           {score}
-          {match.competition} · {side(match)}
+          {match.competition}
+          {match.postponedFrom && <span className="sr-only"> · adiado de {formatDayMonth(match.postponedFrom)}</span>}
+          {match.postponedFrom && <span aria-hidden="true"> · adiado</span>} · {side(match)}
         </small>
       </span>
       {result && (

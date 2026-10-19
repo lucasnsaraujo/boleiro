@@ -166,6 +166,21 @@ describe("rounds of a group stage", () => {
     expect(bahia?.formRefs).toEqual(games.slice(-5).map((f) => f.id));
   });
 
+  test("a game postponed past later rounds counts in the table from the round it is played in, and its clubs show it pending until then", () => {
+    const postponed = game.fixtures.find((f) => f.competitionId === league.id && roundOf(f) === 1);
+    if (!postponed) throw new Error("no first-round game");
+    const later = roundDates[3] ?? "";
+    const moved = (result: MatchResult | null) => playedThrough(3).map((f) => (f.id === postponed.id ? { ...f, date: later, postponedFrom: f.date, result } : f));
+    const waiting = groupTables(league, 0, moved(null)).groups[0]?.rows ?? [];
+    const rowOf = (rows: readonly TableRow[], clubId: string) => rows.find((row) => row.clubId === clubId);
+    for (const id of [postponed.homeId, postponed.awayId]) expect(rowOf(waiting, id)).toMatchObject({ played: 2, postponed: 1 });
+    expect(waiting.filter((row) => row.postponed > 0)).toHaveLength(2);
+    const played = moved({ homeGoals: 2, awayGoals: 0 });
+    expect(rowOf(groupTables(league, 0, played, null, 3).groups[0]?.rows ?? [], postponed.homeId)).toMatchObject({ played: 2, postponed: 1 });
+    expect(rowOf(groupTables(league, 0, played).groups[0]?.rows ?? [], postponed.homeId)).toMatchObject({ played: 3, postponed: 0 });
+    expect(playedRounds(league, 0, played)).toBe(4);
+  });
+
   test("each row tells the places gained or lost in the last round played", () => {
     // Round 1 won by the home sides, round 2 by the away sides: the table turns over.
     const fixtures = playedThrough(2, (f) => (roundOf(f) === 1 ? { homeGoals: 1, awayGoals: 0 } : { homeGoals: 0, awayGoals: 3 }));

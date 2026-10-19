@@ -224,6 +224,19 @@
   gap: 8px;
 }
 
+/* A club's postponed games still to play: why it has played fewer than the others. */
+.st-postponed {
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--mute);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
 .standings td.st-pts {
   font-stretch: var(--semi);
   font-weight: 900;
