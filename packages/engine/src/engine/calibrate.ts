@@ -1,14 +1,21 @@
+import { realAbroadRates } from "../cli/realAbroadRates.js";
 import { loadNewGame } from "../sim/loadNewGame.js";
 import { fieldedTeams } from "../sim/players/fieldedTeams.js";
+import { loadEurope } from "../sim/world/loadEurope.js";
+import { loadMarketLeagues } from "../sim/world/loadMarketLeagues.js";
+import { loadSouthAmerica } from "../sim/world/loadSouthAmerica.js";
+import { resultOnlyTeam } from "../sim/world/resultOnlyLeague.js";
 import { FIRST_CURRENT_SEASON, realDivisionRates, realSerieARates, simulatedSeasonRates, type LeagueRates, type ResultRates } from "./calibration.js";
 import { CUP_SEASONS, realCupUpsets, simulatedCupUpsets, type CupUpsetGroup, type DivisionSquads } from "./cupUpsets.js";
 import { fitParams } from "./fitParams.js";
 import { CALIBRATED, type EngineParams } from "./match.js";
 import { CUP_PARAMS, DIVISION_PARAMS } from "./paramsForDivision.js";
+import { leagueAbroadKey, paramsForLeagueAbroad } from "./paramsForLeagueAbroad.js";
 import { realTwoLegTies, simulatedTwoLegTies } from "./twoLegTies.js";
 
 const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
 const rounded = (params: EngineParams) => JSON.stringify(Object.fromEntries(Object.entries(params).map(([k, v]) => [k, Number(v.toFixed(4))])));
+const fittedTriple = (params: EngineParams) => [params.baseGoals, params.homeAdvantage, params.lowScoreCorrelation].map((v) => v.toFixed(4)).join(" ");
 
 function resultError(simulated: ResultRates | LeagueRates, real: ResultRates | LeagueRates): number {
   return (simulated.home - real.home) ** 2 + (simulated.draw - real.draw) ** 2 + (simulated.away - real.away) ** 2 + ((simulated.goalsPerGame - real.goalsPerGame) / 5) ** 2;
@@ -93,3 +100,29 @@ console.table(
     realTwoLegTies().map((real, i) => [real.gap, { ties: real.ties, "favourite out": `${pct(real.favouriteOut)} / ${pct(simTies[i]?.favouriteOut ?? Number.NaN)}` }]),
   ),
 );
+
+// Every league abroad football-data.co.uk has results for, on its clubs' result-only elevens at the game's start.
+const realAbroad = realAbroadRates();
+const abroadRows = [...loadSouthAmerica(2026), ...loadEurope(2026), ...loadMarketLeagues(2026)].flatMap(({ structure, levels }) =>
+  levels.flatMap((clubs, level) => {
+    const key = leagueAbroadKey(structure.id, level);
+    const counts = realAbroad.get(key);
+    if (!counts) return [];
+    const real: ResultRates = { matches: counts.matches, home: counts.home / counts.matches, draw: counts.draw / counts.matches, away: counts.away / counts.matches, goalsPerGame: counts.goals / counts.matches };
+    const teams = clubs.map(resultOnlyTeam);
+    const fitted = fitParams(CALIBRATED, ["baseGoals", "homeAdvantage", "lowScoreCorrelation"], (p) => resultError(simulatedSeasonRates(teams, p), real));
+    const inUse = paramsForLeagueAbroad(structure.id, level);
+    const sim = simulatedSeasonRates(teams, inUse);
+    return [[key, {
+      games: real.matches,
+      home: `${pct(real.home)} / ${pct(sim.home)}`,
+      draw: `${pct(real.draw)} / ${pct(sim.draw)}`,
+      away: `${pct(real.away)} / ${pct(sim.away)}`,
+      goals: `${real.goalsPerGame.toFixed(2)} / ${sim.goalsPerGame.toFixed(2)}`,
+      "fitted base, home, low-score": fittedTriple(fitted),
+      "in use": fittedTriple(inUse),
+    }] as const];
+  }),
+);
+console.log("\nLeagues abroad, football-data.co.uk 2022–2026 (real vs Boleiro, params in use); fitted baseGoals, homeAdvantage and lowScoreCorrelation next to the ones in use");
+console.table(Object.fromEntries(abroadRows));

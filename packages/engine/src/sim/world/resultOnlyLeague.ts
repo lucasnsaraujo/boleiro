@@ -36,7 +36,7 @@ function scheduleOf(league: ResultOnlyLeague): Schedule {
 }
 
 /** The club's best eleven at full fitness, as the engine plays it; cached, since a result-only squad only changes between seasons. */
-function teamOf(club: WorldClub): Team {
+export function resultOnlyTeam(club: WorldClub): Team {
   const known = teams.get(club);
   if (known) return known;
   const players = club.strengths.map((strength, i) => {
@@ -68,16 +68,16 @@ export function settleLevelTie(
   const toss = random();
   if (!hasExtraTime) return { extraTime: null, isAwayShootoutWinner: toss < 0.5 };
   const stream = randomStream((Math.floor(toss * 2 ** 32) ^ EXTRA_TIME_STREAM_SALT) >>> 0);
-  const extraTime = simulateExtraTime(teamOf(home), teamOf(away), stream.next, params);
+  const extraTime = simulateExtraTime(resultOnlyTeam(home), resultOnlyTeam(away), stream.next, params);
   return { extraTime, isAwayShootoutWinner: stream.next() < 0.5 };
 }
 
 /**
- * A result-only match by the engine's score draw. guess: until each league has its own fit, every
- * result-only match plays at Série A's calibration; a final on neutral ground passes it without the home advantage.
+ * A result-only match by the engine's score draw at `params`: a league abroad's own (paramsForLeagueAbroad).
+ * guess: the cups abroad and UEFA's play at Série A's calibration, a final on neutral ground without the home advantage.
  */
 export function scoreDraw(home: WorldClub, away: WorldClub, random: () => number, params: EngineParams = CALIBRATED): { homeGoals: number; awayGoals: number } {
-  const { homeGoals, awayGoals } = simulateMatch(teamOf(home), teamOf(away), random, params);
+  const { homeGoals, awayGoals } = simulateMatch(resultOnlyTeam(home), resultOnlyTeam(away), random, params);
   return { homeGoals, awayGoals };
 }
 
@@ -127,8 +127,8 @@ export function openLeague(
   return { ...opened, dates: grid ? grid.slice(0, rounds) : leagueDates(season, window, rounds), results: UNPLAYED.repeat(2 * pairs.length) };
 }
 
-/** The league with today's round drawn by the engine's score draw, or the same league when it has no round today. */
-export function playLeagueDay(league: ResultOnlyLeague, date: IsoDate, clubOf: (id: string) => WorldClub, random: () => number): ResultOnlyLeague {
+/** The league with today's round drawn by the engine's score draw at the league's `params`, or the same league when it has no round today. */
+export function playLeagueDay(league: ResultOnlyLeague, date: IsoDate, clubOf: (id: string) => WorldClub, random: () => number, params: EngineParams): ResultOnlyLeague {
   const round = league.dates.indexOf(date);
   const { pairs, roundStarts } = scheduleOf(league);
   const from = roundStarts[round] ?? 0;
@@ -136,7 +136,7 @@ export function playLeagueDay(league: ResultOnlyLeague, date: IsoDate, clubOf: (
   if (round < 0 || league.results[2 * from] !== UNPLAYED) return league;
   let played = "";
   for (const [homeId, awayId] of pairs.slice(from, to)) {
-    const { homeGoals, awayGoals } = scoreDraw(clubOf(homeId), clubOf(awayId), random);
+    const { homeGoals, awayGoals } = scoreDraw(clubOf(homeId), clubOf(awayId), random, params);
     played += String.fromCharCode(ZERO_GOALS + homeGoals, ZERO_GOALS + awayGoals);
   }
   return { ...league, results: league.results.slice(0, 2 * from) + played + league.results.slice(2 * to) };

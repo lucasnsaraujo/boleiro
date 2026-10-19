@@ -164,3 +164,15 @@ describe("a result-only country whose season crosses the new year", () => {
     expect(finals?.cup ?? "").toMatch(/^2027-0[45]-/);
   });
 });
+
+describe("the result-only leagues of different countries", () => {
+  it("play at each league's own params: the same clubs score far more in Germany's top flight than in Argentina's", () => {
+    const levels = (prefix: string) => SIZES.map((size, level) => Array.from({ length: size }, (_, i) => squad(`${prefix}${level + 1}-${i}`, 80 - 10 * level - (i % 7))));
+    const played = playSeason({ de: startCountry({ ...STRUCTURE, id: "de" }, levels("de"), 2026, 7), ar: startCountry({ ...STRUCTURE, id: "ar" }, levels("ar"), 2026, 7) }, 2026);
+    const goalsPerMatch = (id: string) => {
+      const matches = leagueMatches(played[id]?.leagues[0] ?? { id, season: 2026, clubIds: [], legs: 2, drawOrder: [], dates: [], results: "" });
+      return matches.reduce((sum, m) => sum + (m.result ? m.result.homeGoals + m.result.awayGoals : 0), 0) / Math.max(1, matches.length);
+    };
+    expect(goalsPerMatch("de") / goalsPerMatch("ar")).toBeGreaterThan(1.3);
+  });
+});

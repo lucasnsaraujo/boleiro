@@ -2,7 +2,7 @@ import { simulateMatch } from "../../engine/match.js";
 import { keyedStream, randomStream } from "../../engine/random.js";
 import type { DayDecisions, DayEvent } from "../advanceDay.js";
 import { guestClubOf, guestSquadOf } from "../continental/guestClubs.js";
-import { CARD_RATES, cardCompetitionOf } from "../discipline/cardRates.js";
+import { cardRatesOf } from "../discipline/cardRates.js";
 import { countCards, drawCards, markedCardRates, sendOffMinutes } from "../discipline/drawCards.js";
 import { openDisciplineDay } from "../discipline/recordCards.js";
 import { refuseSuspended } from "../discipline/suspendedPlayers.js";
@@ -186,7 +186,7 @@ export function startMatchDay(state: GameState, decisions: DayDecisions): LiveDa
     for (const clubId of [fixture.homeId, fixture.awayId]) refuseSuspended(waiting[clubId]?.lineup ?? [], suspended);
     const { available, formOf, formStrengthOf, setup, params } = fixtureSides(state, fixture, competition, squad, { coach, waiting, suspended, talks });
     const officials = matchOfficials(state.seed, competition, fixture);
-    const cardRates = refereedCardRates(CARD_RATES[cardCompetitionOf(competition)], officials);
+    const cardRates = refereedCardRates(cardRatesOf(competition), officials);
     const markingOf = (clubId: string) => planOf(clubId)?.tactics.marking;
     const bookings = drawCards(setup.homeLineup, setup.awayLineup, markedCardRates(cardRates, { home: markingOf(fixture.homeId), away: markingOf(fixture.awayId) }), random.next);
     const goals = simulateMatch(setup.home, setup.away, random.next, params, sendOffMinutes(bookings, fixture.homeId));

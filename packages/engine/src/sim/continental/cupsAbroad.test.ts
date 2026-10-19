@@ -128,9 +128,9 @@ describe("a human club abroad's cup matches, knockouts included, while its coach
     }
     return matches;
   }
-  // Seeds whose coach lasts into the Champions League knockouts; on the base realism r2 measured, he was sacked in
-  // April with these seeds, so the club's later ties were rightly result-only.
-  const runs = [1, 2, 7].map((seed) => ({ seed, run: (() => { let run: CupMatch[] | undefined; return () => (run ??= cupRun(seed)); })() }));
+  // Seeds whose coach lasts into the Champions League knockouts, together reaching a two-legged tie, extra time and a
+  // shootout; with others he is sacked in April and the club's later ties are rightly result-only.
+  const runs = [1, 7, 10].map((seed) => ({ seed, run: (() => { let run: CupMatch[] | undefined; return () => (run ??= cupRun(seed)); })() }));
 
   for (const { seed, run } of runs) {
     it(`plays every one of them live with the full tier's score, the league phase and each knockout leg (seed ${seed})`, () => {

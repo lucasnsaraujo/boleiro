@@ -6,6 +6,7 @@ import { continentalPlaces } from "./continentalPlaces.js";
 import { pyramidMoves, type LevelExits } from "./pyramidMoves.js";
 import { cupFinal, openCup, playCupDay, type ResultOnlyCup } from "./resultOnlyCup.js";
 import { checkSquad, leagueMatches, leagueTable, openLeague, playLeagueDay, roundsOf } from "./resultOnlyLeague.js";
+import { paramsForLeagueAbroad } from "../../engine/paramsForLeagueAbroad.js";
 import { uefaPlaces } from "./uefaPlaces.js";
 import type { Country, CountryStructure, ResultOnlyLeague, UnifiedDates, World, WorldClub } from "./world.js";
 
@@ -69,7 +70,7 @@ function playCountryDay(country: Country, date: IsoDate, playedAbroad?: PlayedAb
     if (!club) throw new Error(`${country.structure.id}: no club ${id}`);
     return club;
   };
-  const leagues = country.leagues.map((league) => playLeagueDay(league, date, clubOf, random.next));
+  const leagues = country.leagues.map((league, level) => playLeagueDay(league, date, clubOf, random.next, paramsForLeagueAbroad(country.structure.id, level)));
   const cup = country.cup && playCupDay(country.cup, date, clubOf, random.next, playedAbroad);
   if (cup === country.cup && leagues.every((league, i) => league === country.leagues[i])) return country;
   return { ...country, leagues, ...(cup ? { cup } : {}), rngState: random.state() };

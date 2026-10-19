@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CALIBRATED, matchOdds, simulateMatch, type Team } from "./match.js";
+import { CALIBRATED, matchOdds, scoreDistribution, simulateMatch, type Team } from "./match.js";
 import { seededRandom } from "./random.js";
 import type { SendOffs } from "./sendOffRates.js";
 
@@ -18,6 +18,14 @@ describe("matchOdds", () => {
     const odds = matchOdds(squad("Home", 70), squad("Away", 70));
     expect(odds.home + odds.draw + odds.away).toBeCloseTo(1, 6);
     expect(odds.home).toBeGreaterThan(odds.away);
+  });
+});
+
+describe("scoreDistribution", () => {
+  it("never gives a score a negative chance, however lopsided the match and strong the low-score correlation", () => {
+    const grid = scoreDistribution(squad("Home", 95), squad("Away", 30), { ...CALIBRATED, baseGoals: 1.2, lowScoreCorrelation: -0.3 });
+    expect(Math.min(...grid.flat())).toBeGreaterThanOrEqual(0);
+    expect(grid.flat().reduce((sum, p) => sum + p, 0)).toBeCloseTo(1, 9);
   });
 });
 
