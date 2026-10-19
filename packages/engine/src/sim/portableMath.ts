@@ -14,35 +14,38 @@
  * this notice is preserved.
  */
 
-const bits = new DataView(new ArrayBuffer(8));
+const float = new Float64Array(1);
+const words = new Int32Array(float.buffer);
+// Which of the double's two 32-bit words holds its sign and exponent: the second on little-endian CPUs.
+const HIGH = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1 ? 1 : 0;
+const LOW = 1 - HIGH;
 
-// A DataView reads big-endian by default: bytes 0–3 are a double's sign, exponent and top of its mantissa.
 function highWord(x: number): number {
-  bits.setFloat64(0, x);
-  return bits.getInt32(0);
+  float[0] = x;
+  return words[HIGH] ?? 0;
 }
 
 function lowWord(x: number): number {
-  bits.setFloat64(0, x);
-  return bits.getUint32(4);
+  float[0] = x;
+  return (words[LOW] ?? 0) >>> 0;
 }
 
 function fromWords(high: number, low: number): number {
-  bits.setInt32(0, high);
-  bits.setUint32(4, low);
-  return bits.getFloat64(0);
+  words[HIGH] = high;
+  words[LOW] = low;
+  return float[0] ?? 0;
 }
 
 function withHighWord(x: number, high: number): number {
-  bits.setFloat64(0, x);
-  bits.setInt32(0, high);
-  return bits.getFloat64(0);
+  float[0] = x;
+  words[HIGH] = high;
+  return float[0] ?? 0;
 }
 
 function withLowWord(x: number, low: number): number {
-  bits.setFloat64(0, x);
-  bits.setUint32(4, low);
-  return bits.getFloat64(0);
+  float[0] = x;
+  words[LOW] = low;
+  return float[0] ?? 0;
 }
 
 /** 2^n for -1022 <= n <= 1023, built from its bits. */
