@@ -274,7 +274,7 @@ function keptPage(state: GameState, kept: KeptMatch): MatchPage {
     isRetold: false,
     label: `${name} · ${stage}`,
     competition: name,
-    edition: { ...editionKeyOf(fixture.competitionId), host: null },
+    edition: { ...editionKeyOf(fixture.competitionId), host: state.hosts?.[fixture.competitionId] ?? null },
     date: fixture.date,
     home: side(fixture.homeId, "home"),
     away: side(fixture.awayId, "away"),

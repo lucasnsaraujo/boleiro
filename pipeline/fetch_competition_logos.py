@@ -12,7 +12,7 @@ Every licence must ask for no credit (public domain, CC0, or a trademark used as
 the run, as the app credits no competition logo.
 
 Pages and images come through tm_fetch's cache (data/tm_cache) or data/wiki_cache, with a generic User-Agent; every
-logo loses its clear margin, so it fills the box a screen gives it.
+logo loses its clear margin, and an opaque one the white ground around it, so it fills the box a screen gives it.
 
 Usage: .venv/bin/python pipeline/fetch_competition_logos.py [--seed] [--offline]
 """
@@ -28,7 +28,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 import requests
-from PIL import Image
+from PIL import Image, ImageDraw
 
 import tm_world
 from build_assets import build, write
@@ -49,8 +49,12 @@ PALETTE_COLOURS = 128
 RENDER_HEIGHT = 512
 WIKI_PAUSE_SECONDS = 2.0
 ATTEMPTS = 5
-# Licences that ask for no credit: public domain, CC0, a trademark used as the crests are (a private game).
-CREDIT_FREE = re.compile(r"public domain|^pd|cc0|trademark|non-free|fair use", re.IGNORECASE)
+# Licences that ask for no credit, by a row's licence before its first ";": public domain, CC0, a non-free logo used as
+# the crests are (a private game), a site's image of unknown licence.
+CREDIT_FREE = re.compile(r"^\s*(public domain|pd|cc0|non-free|unknown licence)", re.IGNORECASE)
+# A logo on an opaque ground (a JPEG, a white box) loses the near-white ground around it, as a sticker would.
+GROUND_TOLERANCE = 40
+NEAR_WHITE = 235
 
 
 def transfermarkt_rows() -> list[dict[str, str]]:
@@ -113,11 +117,23 @@ def wiki_image(page: str, is_offline: bool) -> Path:
     return cached
 
 
+def cleared(image: Image.Image) -> Image.Image:
+    """An opaque image with the near-white ground that touches its edges made clear; one with a clear ground as it is."""
+    if image.getchannel("A").getextrema()[0] < 255:
+        return image
+    image = image.copy()
+    for corner in ((0, 0), (image.width - 1, 0), (0, image.height - 1), (image.width - 1, image.height - 1)):
+        pixel = image.getpixel(corner)
+        if isinstance(pixel, tuple) and min(pixel[:3]) >= NEAR_WHITE:
+            ImageDraw.floodfill(image, corner, (255, 255, 255, 0), thresh=GROUND_TOLERANCE)
+    return image
+
+
 def cropped(file: Path) -> Path:
-    """The image without its clear margin, so a logo fills the box a screen gives it; cached next to the wikis' files."""
-    image = Image.open(file).convert("RGBA")
+    """The image without its clear or white margin, so a logo fills the box a screen gives it; cached next to the wikis' files."""
+    image = cleared(Image.open(file).convert("RGBA"))
     bbox = image.getchannel("A").getbbox()
-    if not bbox or bbox == (0, 0, *image.size):
+    if not bbox or (bbox == (0, 0, *image.size) and image.getchannel("A").getextrema()[0] == 255):
         return file
     out = CACHE / f"{hashlib.sha256(file.read_bytes()).hexdigest()[:16]}-cropped.png"
     if not out.exists():
@@ -128,7 +144,7 @@ def cropped(file: Path) -> Path:
 
 def owed_credits(rows: list[dict[str, str]]) -> list[str]:
     """The keys of the rows whose licence asks for credit, which the app has nowhere to give for a competition's logo."""
-    return [row["key"] for row in rows if not CREDIT_FREE.search(row["licence"])]
+    return [row["key"] for row in rows if not CREDIT_FREE.search(row["licence"].split(";")[0])]
 
 
 def main() -> None:

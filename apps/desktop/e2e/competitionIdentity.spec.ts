@@ -19,13 +19,15 @@ async function backToHub(page: Page) {
   await passMoments(page, hubLoaded(page));
 }
 
-test("the tables' tabs show each competition's logo: the Série A's real one, the Baiano's drawn in Bahia's colours", async ({ page }) => {
+test("the tables' tabs show each competition's logo on a wide window: the Série A's real one, the Baiano's drawn in Bahia's colours", async ({ page }) => {
+  // Up to 1365 px the tabs drop their logos to fit a FIFA cup year's twelve on one line.
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await startAtClub(page, { division: "Série A", search: "bahia", club: "Bahia", coach: "Rogério" });
   await bar(page).getByRole("link", { name: "Tabelas" }).click();
   const tabs = page.getByRole("tablist", { name: "Competições" });
-  await expect(tabs.getByRole("tab", { name: "Série A" }).locator("img.comp-logo")).toHaveAttribute("data-logo", "real");
-  await expect(tabs.getByRole("tab", { name: "Baiano" }).locator("img.comp-logo")).toHaveAttribute("data-logo", "drawn");
+  await expect(tabs.getByRole("tab", { name: "Série A" }).locator("img.comp-logo[data-logo='real']")).toBeVisible();
+  await expect(tabs.getByRole("tab", { name: "Baiano" }).locator("img.comp-logo[data-logo='drawn']")).toBeVisible();
   await tabs.getByRole("tab", { name: "Baiano" }).click();
   await expect(tabs.getByRole("tab", { name: "Baiano" })).toHaveAttribute("aria-selected", "true");
 });

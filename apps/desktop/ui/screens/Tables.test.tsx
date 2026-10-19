@@ -258,7 +258,9 @@ test("a Super Mundial semi-final on the bracket is one match, not a first leg", 
 test("the Mundial de Clubes tab shows its logo and its ladder from the play-off, the Libertadores' and the Champions League's champions still to come", async () => {
   openTables(await services("flamengo-rj"));
   await userEvent.click(await screen.findByRole("tab", { name: "Mundial de Clubes" }));
-  expect(screen.getByRole("heading", { name: /^Mundial de Clubes 2026/ }).querySelector("img")?.getAttribute("src")).toBe(competitionLogoOf("intercontinental-cup", 2026, 28).url);
+  const logo = screen.getByRole("heading", { name: /^Mundial de Clubes 2026/ }).querySelector("img");
+  expect(logo?.getAttribute("src")).toBe(competitionLogoOf("intercontinental-cup", 2026, 28).url);
+  expect(logo?.getAttribute("data-logo")).toBe("real");
   const ladder = screen.getByRole("group", { name: "Mundial de Clubes, mata-mata" });
   expect(within(ladder).getAllByText(/^(Play-off|Copa África-Ásia-Pacífico|Dérbi das Américas|Copa Challenger|Final)$/).map((caption) => caption.textContent)).toEqual([
     "Play-off",
@@ -285,6 +287,7 @@ test("the Mundial de Clubes heading names it once, its logo beside the name", as
   await userEvent.click(await screen.findByRole("tab", { name: "Mundial de Clubes" }));
   const heading = screen.getByRole("heading", { name: /^Mundial de Clubes 2026/ });
   expect(heading.querySelector("img")?.getAttribute("src")).toBe(competitionLogoOf("intercontinental-cup", 2026, 28).url);
+  expect(heading.querySelector("img")?.getAttribute("data-logo")).toBe("real");
 });
 
 test("a Super Mundial semi-final on the bracket is played at its host's final ground, not at the first club's ground", async () => {

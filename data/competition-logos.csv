@@ -34,7 +34,7 @@ es-1,Spain 1,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb
 es-2,Spain 2,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb/ES2,unknown licence; trademark; via Transfermarkt
 es-cup,Spain cup,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb/CDR,unknown licence; trademark; via Transfermarkt
 euro-2028,UEFA Euro 2028,wikimedia,https://commons.wikimedia.org/wiki/File:UEFA_Euro_2028_Logo.svg,public domain (PD-textlogo); trademark
-europa-league,UEFA Europa League,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb/EL,unknown licence; trademark; via Transfermarkt
+europa-league,UEFA Europa League,wikimedia,https://commons.wikimedia.org/wiki/File:UEFA_Europa_League_logo_(2024_version).svg,public domain (PD-textlogo); trademark
 fr-1,France 1,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb/FR1,unknown licence; trademark; via Transfermarkt
 fr-2,France 2,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb/FR2,unknown licence; trademark; via Transfermarkt
 fr-cup,France cup,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb/FRC,unknown licence; trademark; via Transfermarkt
@@ -94,12 +94,11 @@ state-ce-2026,Campeonato Cearense 2026,wikimedia,https://pt.wikipedia.org/wiki/F
 state-df-2027,Campeonato Brasiliense 2027,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb/BRDF,unknown licence; trademark; via Transfermarkt
 state-ma,Campeonato Maranhense,wikimedia,https://pt.wikipedia.org/wiki/Ficheiro:Campeonato_Maranhense_2026.png,"non-free (pt.wikipedia, conteúdo restrito); trademark"
 state-mg-2026,Campeonato Mineiro 2026,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb/BRCM,unknown licence; trademark; via Transfermarkt
-state-ms-2026,Campeonato Sul-Mato-Grossense 2026,wikimedia,https://commons.wikimedia.org/wiki/File:Logomarca_S%C3%A9rie_A_2026.png,CC0
-state-pa-2026,Campeonato Paraense 2026,wikimedia,https://commons.wikimedia.org/wiki/File:Paraz%C3%A3o_2026_logo.jpg,CC0
+state-ms-2026,Campeonato Sul-Mato-Grossense 2026,wikimedia,https://commons.wikimedia.org/wiki/File:Logomarca_S%C3%A9rie_A_2026.png,"non-free (a state federation's logo, marked CC0 by its Commons uploader); trademark"
 state-pr,Campeonato Paranaense,wikimedia,https://pt.wikipedia.org/wiki/Ficheiro:ParanaenseFutebol.png,"non-free (pt.wikipedia, conteúdo restrito); trademark"
 state-rj-2026,Campeonato Carioca 2026,wikimedia,https://pt.wikipedia.org/wiki/Ficheiro:Carioca2026.jpg,"non-free (pt.wikipedia, conteúdo restrito); trademark"
 state-rs,Campeonato Gaúcho,wikimedia,https://pt.wikipedia.org/wiki/Ficheiro:Gauch%C3%A3o_2025.png,"non-free (pt.wikipedia, conteúdo restrito); trademark"
-state-sc-2026,Campeonato Catarinense 2026,wikimedia,https://commons.wikimedia.org/wiki/File:Campeonatocatarinense2026.jpg,CC0
+state-sc-2026,Campeonato Catarinense 2026,wikimedia,https://commons.wikimedia.org/wiki/File:Campeonatocatarinense2026.jpg,"non-free (a state federation's logo, marked CC0 by its Commons uploader); trademark"
 state-sp-2026,Campeonato Paulista 2026,wikimedia,https://pt.wikipedia.org/wiki/Ficheiro:Paulist%C3%A3o_2026.png,"non-free (pt.wikipedia, conteúdo restrito); trademark"
 sul-americana,CONMEBOL Sudamericana,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb/CS,unknown licence; trademark; via Transfermarkt
 tr-1,Türkiye 1,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb/TR1,unknown licence; trademark; via Transfermarkt
@@ -112,4 +111,4 @@ uefa-super-cup,UEFA Super Cup,transfermarkt,https://www.transfermarkt.com/x/star
 us-1,United States 1,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb/MLS1,unknown licence; trademark; via Transfermarkt
 uy-1,Uruguay 1,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb/URUC,unknown licence; trademark; via Transfermarkt
 ve-1,Venezuela 1,transfermarkt,https://www.transfermarkt.com/x/startseite/wettbewerb/VZ1L,unknown licence; trademark; via Transfermarkt
-world-cup-2026,2026 FIFA World Cup,wikimedia,https://commons.wikimedia.org/wiki/File:2026_FIFA_World_Cup_emblem.svg,public domain (PD-trademarked); trademark
+world-cup-2026,2026 FIFA World Cup,wikimedia,https://commons.wikimedia.org/wiki/File:2026_FIFA_World_Cup_emblem.svg,public domain (PD-textlogo); trademark

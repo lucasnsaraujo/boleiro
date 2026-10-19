@@ -15,6 +15,7 @@ import "./nationalTeam.css";
 import type { Stadium } from "@boleiro/engine/sim/hosts/venue";
 import { editionKeyOf } from "@boleiro/game-client/format/competitionEdition";
 import { CompetitionLogo } from "../competitions/CompetitionLogo.js";
+import { atGround } from "@boleiro/game-client/format/atGround";
 
 const KEYS = ["clubs", "coachClubId", "date"] as const;
 type NationalState = Pick<GameState, (typeof KEYS)[number]>;
@@ -109,10 +110,10 @@ function FixtureLine({ row, page, onOpen }: { row: NationalFixtureRow; page: Nat
   );
 }
 
-/** Where a tournament is played: "Sede: Espanha, Portugal e Marrocos · final no Camp Nou, Barcelona". */
+/** Where a tournament is played: "Sedes: Espanha, Portugal e Marrocos · final no Camp Nou, em Barcelona". */
 function hostLine(names: readonly string[], final: Stadium): string {
   const hosts = names.length > 1 ? `${names.slice(0, -1).join(", ")} e ${names.at(-1) ?? ""}` : (names[0] ?? "");
-  return `${names.length > 1 ? "Sedes" : "Sede"}: ${hosts} · final no ${final.name}, ${final.city}`;
+  return `${names.length > 1 ? "Sedes" : "Sede"}: ${hosts} · final ${atGround(final.name)}, em ${final.city}`;
 }
 
 /** The coming World Cups and continental cup, each a sticker with its logo, its hosts and its final's ground. */

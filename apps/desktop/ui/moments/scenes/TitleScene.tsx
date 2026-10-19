@@ -15,7 +15,7 @@ const TROPHY_LOGO = 120;
 const ms = (value: number) => ({ "--d": Math.round(value) }) as CSSProperties;
 
 function Trophy({ view, size }: { view: TitleView; size: "short" | "long" }) {
-  const logo = competitionLogoOf(view.competition, view.season, TROPHY_LOGO);
+  const logo = competitionLogoOf(view.competition, view.season, TROPHY_LOGO, view.host);
   return (
     <div className={`tt-trophy is-${size}`}>
       <div className="tt-cup">

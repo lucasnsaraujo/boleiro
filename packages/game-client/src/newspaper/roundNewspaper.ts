@@ -5,6 +5,7 @@ import { standings } from "@boleiro/engine/sim/standings";
 import { competitionName, fixtureLabel } from "../format/competitionName.js";
 import { compareText } from "@boleiro/engine/sim/compareText";
 import { isOneMatchFinal, neutralVenue } from "@boleiro/engine/sim/continental/neutralGrounds";
+import { atGround } from "../format/atGround.js";
 
 export type NewspaperState = Pick<GameState, "coachClubId" | "clubs" | "fixtures" | "competitions" | "eventMemory" | "world">;
 
@@ -144,7 +145,7 @@ export function newspaperOf(state: NewspaperState, date?: IsoDate): Edition | nu
   };
 }
 
-/** The story of where the coach's coming final is played, when its host names the ground: "A final será no Estadio Centenario". */
+/** The story of where the coach's coming final is played, when its host names the ground: "A final será em Montevidéu, no Estadio Centenario". */
 function finalVenueStory(state: NewspaperState, next: Fixture, day: IsoDate, names: Readonly<Record<string, string>>): Story | null {
   const competition = state.competitions[next.competitionId];
   const venue = competition && isOneMatchFinal(competition, next.stage) ? neutralVenue(competition, next) : null;
@@ -155,8 +156,8 @@ function finalVenueStory(state: NewspaperState, next: Fixture, day: IsoDate, nam
     date: day,
     kind: "match",
     clubIds: [next.homeId, next.awayId],
-    headline: `A final será no ${venue.name}`,
-    body: `${home} e ${away} decidem o título em ${venue.city}, num estádio de ${THOUSANDS.format(venue.capacity)} lugares escolhido antes da competição começar.`,
+    headline: `A final será em ${venue.city}, ${atGround(venue.name)}`,
+    body: `${home} e ${away} decidem o título ${atGround(venue.name)}, em ${venue.city}: ${THOUSANDS.format(venue.capacity)} lugares e nenhum dos dois com o mando.`,
     kicker: competitionName(competition),
   };
 }

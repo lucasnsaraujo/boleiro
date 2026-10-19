@@ -30,7 +30,7 @@ export function TitlePlate({ title, clubs, order = 0, onOpen }: { title: TitlePa
       onClick={() => onOpen(title)}
     >
       <span className="ab-plate-trophy" aria-hidden="true">
-        <CompetitionLogo competitionKey={title.competition} season={title.season} size={30} name={title.name} isNamedBeside />
+        <CompetitionLogo competitionKey={title.competition} season={title.season} host={title.host} size={30} name={title.name} isNamedBeside />
       </span>
       <span className="ab-plate-year" aria-hidden="true">
         {title.season}

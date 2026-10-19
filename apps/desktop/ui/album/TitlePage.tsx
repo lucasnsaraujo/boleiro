@@ -92,7 +92,7 @@ export function TitlePage({ title, clubs, onClose, onOpenMatch }: Props) {
         <PaperConfetti colours={paper} />
         <header className="ab-tp-band">
           <span className="ab-tp-trophy" aria-hidden="true">
-            <CompetitionLogo competitionKey={title.competition} season={title.season} size={64} name={title.name} isNamedBeside />
+            <CompetitionLogo competitionKey={title.competition} season={title.season} host={title.host} size={64} name={title.name} isNamedBeside />
           </span>
           <div className="ab-tp-head">
             <p className="ab-tp-kicker">
