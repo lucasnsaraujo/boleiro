@@ -10,6 +10,8 @@ export type PlayerCard = {
   name: string;
   group: PositionGroup;
   age: number;
+  /** His citizenships as the data names them, his own first; none when it gives none. */
+  nationalities: string[];
   trait: Trait | null;
   strength: number;
   /** One mark per season, oldest first, ending with this season's. */
@@ -55,6 +57,7 @@ export function playerCard(state: CardState, playerId: string): PlayerCard | nul
     name: player.name,
     group: player.group,
     age: player.age,
+    nationalities: player.nationalities,
     trait: player.trait,
     strength: player.strength,
     strengthBySeason: [...pastStrength, { season: state.season, strength: player.strength }],

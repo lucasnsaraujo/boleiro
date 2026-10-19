@@ -17,8 +17,7 @@ const between = ([top, bottom]: [number, number], position: number) => Math.roun
 /**
  * A result-only country's clubs and squads as the full tier keeps them, when a human coach takes one
  * of its clubs: each club with its level, a crowd and stadium by its squad's rank in the level, and
- * its players as the data gives them, each his age in `season` from his year of birth (no nationalities:
- * the world clubs keep none).
+ * its players as the data gives them, each his age in `season` from his year of birth and his citizenships.
  */
 export function clubsAbroad({ structure, levels }: CountryStart, season: number): { clubs: Club[]; players: SquadPlayer[] } {
   const clubs: Club[] = [];
@@ -46,7 +45,7 @@ export function clubsAbroad({ structure, levels }: CountryStart, season: number)
         const group = GROUP_OF[club.positions[i] ?? ""];
         if (!group) throw new Error(`club ${club.id}: player ${i} has no position`);
         const born = club.born?.[i] ?? null;
-        players.push({ name: club.names?.[i] ?? `${club.name} ${i + 1}`, group, strength, clubId: club.id, club: club.name, division: null, age: born === null ? null : season - born, nationalities: [] });
+        players.push({ name: club.names?.[i] ?? `${club.name} ${i + 1}`, group, strength, clubId: club.id, club: club.name, division: null, age: born === null ? null : season - born, nationalities: (club.nationalities?.[i] ?? "").split("/").filter(Boolean) });
       });
     });
   });

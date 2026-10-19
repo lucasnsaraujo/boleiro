@@ -62,11 +62,21 @@ export function nationalsByTeam(players: Readonly<Record<string, SimPlayer>>, te
 /** A pick for a call-up: the game's player or an outsider's row, his position and strength. */
 type Candidate = { ref: string; role: Role; strength: number };
 
-/** The outsiders of a pool still young enough on `date`, as candidates. */
-function outsiderCandidates(outsiders: Outsiders | undefined, date: IsoDate): Candidate[] {
+/**
+ * The rows of a pool's outsiders still outside the game: each but those the game's own `nationals` now stand for,
+ * a player of the same name at the same club, as when his league abroad joins the full tier mid-season.
+ */
+export function outsiderRows(outsiders: Outsiders | undefined, nationals: readonly SimPlayer[]): number[] {
+  if (!outsiders) return [];
+  const inGame = new Set(nationals.map((p) => `${p.name}@${p.clubId}`));
+  return outsiders.names.flatMap((name, row) => (inGame.has(`${name}@${outsiders.clubIds[row] ?? ""}`) ? [] : [row]));
+}
+
+/** The outsiders of a pool still outside the game and young enough on `date`, as candidates. */
+function outsiderCandidates(outsiders: Outsiders | undefined, nationals: readonly SimPlayer[], date: IsoDate): Candidate[] {
   if (!outsiders) return [];
   const year = Number(date.slice(0, 4));
-  return outsiders.names.flatMap((_, row) => {
+  return outsiderRows(outsiders, nationals).flatMap((row) => {
     const born = outsiders.born[row] ?? 0;
     if (born && year - born > OLDEST) return [];
     return [{ ref: `${OUTSIDER_MARK}${row}`, role: ROLE_OF_LETTER[outsiders.roles[row] ?? "m"] ?? "meia", strength: outsiders.strengths[row] ?? 0 }];
@@ -98,7 +108,7 @@ function bestByPlaces(candidates: readonly Candidate[], bar: number): string[] {
  * called them).
  */
 export function pickCallUp(nationals: readonly SimPlayer[], outsiders: Outsiders | undefined, date: IsoDate): string[] {
-  const others = outsiderCandidates(outsiders, date);
+  const others = outsiderCandidates(outsiders, nationals, date);
   const bar = others.length ? Math.min(...others.map((c) => c.strength)) : 0;
   const own = nationals.filter((p) => !isInjured(p, date)).map((p): Candidate => ({ ref: p.id, role: roleOf(p), strength: p.strength }));
   return bestByPlaces([...own, ...others], bar);

@@ -1,6 +1,6 @@
 import { addDays } from "../dates.js";
 import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
-import { CALL_UP_PLACES, CALL_UP_SIZE, OUTSIDER_MARK, nationalsByTeam, pickCallUp, roleOf } from "./callUps.js";
+import { CALL_UP_PLACES, CALL_UP_SIZE, OUTSIDER_MARK, nationalsByTeam, outsiderRows, pickCallUp, roleOf } from "./callUps.js";
 import type { NationalCompetition, NationalMatch, Nations } from "./nations.js";
 
 export type NationalJobOffered = { type: "nationalJobOffered"; teamId: string; expiresOn: IsoDate };
@@ -106,9 +106,9 @@ export function declineNationalOffer(state: GameState): GameState {
 export function poolOf(state: GameState, teamId: string): string[] {
   const nations = state.nations;
   if (!nations) return [];
-  const own = (nationalsByTeam(state.players, nations.teams).get(teamId) ?? []).map((p) => p.id);
-  const outsiders = (nations.outsiders[teamId]?.names ?? []).map((_, row) => `${OUTSIDER_MARK}${row}`);
-  return [...own, ...outsiders];
+  const nationals = nationalsByTeam(state.players, nations.teams).get(teamId) ?? [];
+  const outsiders = outsiderRows(nations.outsiders[teamId], nationals).map((row) => `${OUTSIDER_MARK}${row}`);
+  return [...nationals.map((p) => p.id), ...outsiders];
 }
 
 /** The coach's own call-up for his next window: at most 26 of his pool, a goalkeeper at least. It replaces his assistant's. */

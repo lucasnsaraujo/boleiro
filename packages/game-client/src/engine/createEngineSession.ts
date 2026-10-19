@@ -19,6 +19,7 @@ import { finishMatchDay } from "@boleiro/engine/sim/live/finishMatchDay";
 import type { LiveDay } from "@boleiro/engine/sim/live/liveDay";
 import { startMatchDay } from "@boleiro/engine/sim/live/startMatchDay";
 import { withPackPositions } from "@boleiro/engine/sim/players/withPackPositions";
+import { withWorldNationalities } from "@boleiro/engine/sim/world/withWorldNationalities";
 import { withNations } from "@boleiro/engine/sim/nations/withNations";
 import { acceptNationalOffer, declineNationalOffer, setCallUp } from "@boleiro/engine/sim/nations/nationalJobs";
 import { persuadeToStay, retirePlayer, type PlayerPersuaded } from "@boleiro/engine/sim/players/retirement";
@@ -452,12 +453,13 @@ export function createEngineSession(files: GameFiles) {
     },
     /**
      * A save from before positions gets them from the shipped pack (withPackPositions), one from before AI coaches
-     * gets them from its seed, one from before sponsors its clubs' kit deals, and one from before national football
+     * gets them from its seed, one from before sponsors its clubs' kit deals, one from before the world's
+     * citizenships gets them from the world packs (withWorldNationalities), and one from before national football
      * its national teams, played up to its day (withNations).
      */
     load({ save }) {
       const loaded = readStoredSave(save);
-      const positioned = withCoachWorld(withPackPositions(loaded.game, files));
+      const positioned = withCoachWorld(withPackPositions(withWorldNationalities(loaded.game, files), files));
       const game = withNations(positioned.sponsors || !files.sponsors ? positioned : seedGameSponsors(positioned, files.sponsors), files.nationalFootball);
       const summary = begin(game);
       desk = loaded.desk;
