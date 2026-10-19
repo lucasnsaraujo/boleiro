@@ -9,7 +9,7 @@ const CLUB = "flamengo-rj";
 /** A game played through its first Série A rounds. */
 function playedGame() {
   const session = createEngineSession(bundledGameFiles);
-  session.apply({ type: "newGame", seed: 11, choices: { coachClubId: CLUB, stateChampionships: false } });
+  session.apply({ type: "newGame", seed: 3, choices: { coachClubId: CLUB, stateChampionships: false } });
   let leagueGames = 0;
   for (let step = 0; step < 200 && leagueGames < 4; step++) {
     const { stop } = session.apply({ type: "playToMatchDay" });

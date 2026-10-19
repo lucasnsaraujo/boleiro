@@ -9,7 +9,7 @@ import type { SessionSave } from "../engine/sessionSave.js";
 const FIRST = "flamengo-rj";
 const SECOND = "palmeiras-sp";
 // A season where the second coach keeps his club and wins the league and a final.
-const SEED = 25;
+const SEED = 5;
 const MAX_STEPS = 1_200;
 
 type Season = Pick<GameState, "season" | "fixtures" | "competitions" | "history" | "date">;

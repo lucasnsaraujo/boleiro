@@ -5,7 +5,7 @@ import { awardsBook } from "./awardsBook.js";
 
 const CLUB = "flamengo-rj";
 const session = createEngineSession(bundledGameFiles);
-session.apply({ type: "newGame", seed: 4, choices: { coachClubId: CLUB } });
+session.apply({ type: "newGame", seed: 1, choices: { coachClubId: CLUB } });
 const { date } = session.read(["date"]);
 session.apply({ type: "advance", days: Array.from({ length: Math.round((Date.parse("2026-08-01") - Date.parse(date)) / 86_400_000) }, () => ({})) });
 const midSeason = session.read(["history", "players", "competitions", "fixtures", "season", "coachClubId", "clubs", "world", "europe"]);
