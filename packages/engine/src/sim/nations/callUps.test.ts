@@ -32,6 +32,12 @@ describe("a national coach's call-up", () => {
     expect(refs.filter((ref) => !ref.startsWith(OUTSIDER_MARK))).toEqual([]);
   });
 
+  it("counts no more than the three goalkeepers a call-up takes toward that full squad", () => {
+    const refs = pickCallUp(brazilians, poolOf("gggggglllllzzzzmmmmmaaaaa", 95), "2026-03-22");
+    expect(refs).toHaveLength(26);
+    expect(refs.some((ref) => !ref.startsWith(OUTSIDER_MARK))).toBe(true);
+  });
+
   it("calls only his pool abroad when it holds a full squad of 23, rather than add weaker players at home to reach 26", () => {
     const refs = pickCallUp(brazilians, poolOf("ggglllllzzzzmmmmmmaaaaa", 95), "2026-03-22");
     expect(refs).toHaveLength(23);

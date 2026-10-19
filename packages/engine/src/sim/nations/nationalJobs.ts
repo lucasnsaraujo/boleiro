@@ -1,6 +1,6 @@
 import { addDays } from "../dates.js";
 import type { GameState, IsoDate, SimPlayer } from "../gameState.js";
-import { CALL_UP_PLACES, CALL_UP_SIZE, OUTSIDER_MARK, nationalsByTeam, pickCallUp, roleOf } from "./callUps.js";
+import { CALL_UP_PLACES, CALL_UP_SIZE, OUTSIDER_MARK, callableRows, nationalsByTeam, pickCallUp, roleOf } from "./callUps.js";
 import type { NationalCompetition, NationalMatch, Nations } from "./nations.js";
 
 export type NationalJobOffered = { type: "nationalJobOffered"; teamId: string; expiresOn: IsoDate };
@@ -102,12 +102,12 @@ export function declineNationalOffer(state: GameState): GameState {
   return { ...state, nations };
 }
 
-/** The players a coach may call up for his national team: his pool, the game's own and the outsiders, as call-up refs. */
+/** The players a coach may call up for his national team: his pool, the game's own and the outsiders young enough, as call-up refs. */
 export function poolOf(state: GameState, teamId: string): string[] {
   const nations = state.nations;
   if (!nations) return [];
   const own = (nationalsByTeam(state.players, nations.teams).get(teamId) ?? []).map((p) => p.id);
-  const outsiders = (nations.outsiders[teamId]?.names ?? []).map((_, row) => `${OUTSIDER_MARK}${row}`);
+  const outsiders = callableRows(nations.outsiders[teamId], state.date).map((row) => `${OUTSIDER_MARK}${row}`);
   return [...own, ...outsiders];
 }
 
