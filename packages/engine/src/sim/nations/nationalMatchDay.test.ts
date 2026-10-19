@@ -96,7 +96,8 @@ describe("a national coach's match day", () => {
 
 describe("a club and national coach whose two teams play the same day", () => {
   const plain = loadNewGame(5, { coachClubId: null, nationalFootball: football });
-  const clubId = plain.fixtures.find((f) => f.date === "2026-06-13" && f.competitionId.startsWith("serie-a"))?.homeId ?? "";
+  // Série A rests through the World Cup, so his club plays in a series below it, which play on.
+  const clubId = plain.fixtures.find((f) => f.date === "2026-06-13" && f.competitionId.startsWith("serie-"))?.homeId ?? "";
   const game = onWorldCupDay(clubId);
   const fixtureId = nationalFixtureId(BRAZIL_MOROCCO);
 

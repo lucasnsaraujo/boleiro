@@ -7,7 +7,7 @@ import type { IsoDate, SimPlayer, Tier } from "../gameState.js";
 const VALUE_AT_70_EUR = 1_260_000;
 const GROWTH_PER_STRENGTH_POINT = 1.2;
 // Same data, age terms of a fit with strength and division: ×1.07 a year younger than 27, ×0.947 a year older.
-const PEAK_VALUE_AGE = 27;
+export const PEAK_VALUE_AGE = 27;
 const PER_YEAR_YOUNGER = 1.07;
 const PER_YEAR_OLDER = 0.947;
 // guess: a lower-division club is a weaker seller and its players are less seen, so they fetch less.

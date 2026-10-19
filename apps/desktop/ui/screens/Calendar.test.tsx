@@ -48,8 +48,8 @@ test("the calendar opens on the current month with the coach's games and the win
 test("picking another month shows that month's games", async () => {
   openCalendar(await services());
   await screen.findByRole("list", { name: "Janeiro" });
-  await userEvent.click(screen.getByRole("button", { name: /^Junho/ }));
-  const rows = within(screen.getByRole("list", { name: "Junho" })).getAllByRole("listitem");
+  await userEvent.click(screen.getByRole("button", { name: /^Outubro/ }));
+  const rows = within(screen.getByRole("list", { name: "Outubro" })).getAllByRole("listitem");
   expect(rows.length).toBeGreaterThan(0);
   expect(rows.every((row) => /Série A|Copa do Brasil/.test(row.textContent ?? ""))).toBe(true);
   expect(screen.queryByRole("list", { name: "Janeiro" })).toBeNull();

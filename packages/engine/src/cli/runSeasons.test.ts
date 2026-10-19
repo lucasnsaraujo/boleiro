@@ -8,7 +8,7 @@ import { expectMedianRevenueNearTypical, expectNoCashHoarding, expectRevenueInDi
 import { runSeasons, type SeasonRun } from "./runSeasons.js";
 import { seasonReport } from "./seasonReport.js";
 import { expectDivisionsApart, expectMeanAgeSteady, expectMeanStrengthSteady, expectSerieDStrengthSteady, expectSpreadSettles } from "./strengthBandChecks.js";
-import { expectDomesticMoves, expectForeignersMostlyInSerieA, expectTalentToEurope } from "./transferFlowChecks.js";
+import { expectDomesticMoves, expectForeignersMostlyInSerieA, expectSerieAForeignShareNearReal, expectTalentToEurope } from "./transferFlowChecks.js";
 
 const playDays = (state: GameState, days: number) => {
   let current = state;
@@ -28,7 +28,7 @@ function roundTrip(state: GameState): GameState {
 function seasonRun(seasons: number): () => SeasonRun {
   let run: SeasonRun | undefined;
   beforeAll(() => {
-    run = runSeasons(7, seasons, roundTrip);
+    run = runSeasons(4, seasons, roundTrip);
   }, 60_000 * seasons);
   return () => {
     if (!run) throw new Error(`the ${seasons} seasons did not run`);
@@ -61,8 +61,7 @@ function expectSeasonsPlayed(run: SeasonRun, seasons: number) {
 
 // The checks below are the ten-season band checks of seasonRevenues, strengthBySeason and transferFlow,
 // run on the same seasons that went through a save and load. The short run skips the ones that need a
-// long run: the spread and Série D drift compare a settled season with the last, and the cash cap fails
-// after two seasons (a club relegated from Série A keeps its Série A cash).
+// long run: the spread and Série D drift compare a settled season with the last.
 describe("two seasons from the season runner", () => {
   const run = seasonRun(2);
 
@@ -70,9 +69,10 @@ describe("two seasons from the season runner", () => {
     expectSeasonsPlayed(run(), 2);
   });
 
-  it("keeps club revenue inside each division's band", () => {
+  it("keeps club revenue inside each division's band, and no club hoarding three years of it in cash", () => {
     expectRevenueInDivisionBand(clubSeasonsOf(run()), run().final);
     expectMedianRevenueNearTypical(clubSeasonsOf(run()), run().final);
+    expectNoCashHoarding(clubSeasonsOf(run()), run().final);
   });
 
   it("keeps player strength and age steady and the divisions apart", () => {
@@ -151,5 +151,9 @@ describe.skipIf(!process.env.LONG_RUN)("ten seasons from the season runner", () 
     expectTalentToEurope(flowsOf(run()));
     expectForeignersMostlyInSerieA(flowsOf(run()));
     expectDomesticMoves(flowsOf(run()));
+  });
+
+  it("keeps Série A's foreign share near the real 23% every season", () => {
+    expectSerieAForeignShareNearReal(flowsOf(run()));
   });
 });
