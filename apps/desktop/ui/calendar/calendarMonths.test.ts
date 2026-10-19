@@ -209,8 +209,13 @@ test("a national team's game names the coach's side in it and its neutral ground
   const worldCup = matches(calendarMonths(coaching).flatMap((m) => m.entries)).filter((m) => m.competition === "Copa do Mundo 2026");
   expect(worldCup.map((m) => [m.sideId, m.isNeutral])).toEqual([["brazil", true], ["brazil", true], ["brazil", true]]);
   expect(matches(calendarMonths(coaching).flatMap((m) => m.entries)).find((m) => m.competition !== "Copa do Mundo 2026")).toMatchObject({ sideId: "bahia-ba", isNeutral: false });
-  const clashDay = own.find((f) => worldCup.some((m) => m.date === f.date))?.date;
-  if (!clashDay) throw new Error("Bahia plays on a day Brazil does");
-  const page = calendarPage({ ...coaching, date: clashDay }, pageFor(coaching.season, clashDay));
-  expect(page.months.flatMap((m) => m.matches).filter((m) => m.date === clashDay).map((m) => m.stack).sort()).toEqual([0, 1]);
+  // Série A rests through the World Cup, so the shared square is a coach's in a series below it, which play on.
+  const clash = game.fixtures.find((f) => f.competitionId.startsWith("serie-") && worldCup.some((m) => m.date === f.date));
+  if (!clash) throw new Error("a club plays on a day Brazil does");
+  const below = newGameFromFiles(5, { coachClubId: clash.homeId }, bundledGameFiles);
+  const belowNations = below.nations;
+  if (!belowNations) throw new Error("the game has no national football");
+  const both = syncNationalFixtures({ ...below, nations: { ...belowNations, job: { teamId: "brazil", since: below.date } } });
+  const page = calendarPage({ ...both, date: clash.date }, pageFor(both.season, clash.date));
+  expect(page.months.flatMap((m) => m.matches).filter((m) => m.date === clash.date).map((m) => m.stack).sort()).toEqual([0, 1]);
 });
