@@ -26,7 +26,7 @@ async function startAtArsenal(page: Page) {
 }
 
 // A game seed whose board keeps Arsenal's coach through 2026/27 and into the 2027/28 opener, with no decisions taken.
-const ARSENAL_KEEPS_ITS_COACH = 5;
+const ARSENAL_KEEPS_ITS_COACH = 1;
 
 /** Starts the coach's game over from `seed`'s world at his club, through the e2e build's engine hook. */
 async function startOverFrom(page: Page, seed: number) {

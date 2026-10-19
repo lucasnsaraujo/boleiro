@@ -52,18 +52,29 @@ test("in hot-seat the buyer reads on his next turn that the other coach turned h
   test.setTimeout(5 * 60_000);
   await page.goto("/");
   await startTwoCoaches(page);
-  // Through the e2e build's engine hook: Ana offers for Bruno's cheapest player, the days run until her board
-  // sends it to Bruno's desk, Bruno turns it down on his turn and plays on.
+  // Through the e2e build's engine hook: Ana offers for Bruno's cheapest player (the next one when hers won't come),
+  // the days run until her board sends it to Bruno's desk, Bruno turns it down on his turn and plays on.
   const player = await page.evaluate(async (maxDays) => {
     const engine = window.boleiroEngine;
     if (!engine) throw new Error("the build has no engine hook; build with VITE_E2E=1");
     const { players } = await engine.read(["players"]);
-    const target = Object.values(players)
+    const targets = Object.values(players)
       .filter((p) => p.clubId === "palmeiras-sp")
-      .sort((a, b) => a.strength - b.strength || a.id.localeCompare(b.id, "en"))[0];
-    if (!target) throw new Error("Palmeiras has players");
-    await engine.apply({ type: "ask", request: { kind: "sign", playerId: target.id } });
+      .sort((a, b) => a.strength - b.strength || a.id.localeCompare(b.id, "en"));
+    let at = 0;
+    const ask = async () => {
+      const target = targets[at];
+      if (!target) throw new Error("no Palmeiras player would come");
+      await engine.apply({ type: "ask", request: { kind: "sign", playerId: target.id } });
+      return target;
+    };
+    let target = await ask();
     for (let day = 0; day < maxDays; day++) {
+      // On Ana's turn: a player who won't come is refused, and she asks for the next one.
+      if ((await engine.desk()).answers.some((answer) => answer.request.playerId === target.id && !answer.approved)) {
+        at++;
+        target = await ask();
+      }
       await engine.apply({ type: "passTurn" });
       const { market } = await engine.read(["market"]);
       if (market.coach?.bids[target.id]?.buyerId === "flamengo-rj") {
