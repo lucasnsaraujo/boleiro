@@ -19,7 +19,7 @@ function quantile(sorted: number[], q: number): number {
   return sorted[Math.round(q * (sorted.length - 1))] ?? Number.NaN;
 }
 
-export function realSerieARates(): LeagueRates {
+export function realSerieARates(): LeagueRates & { matches: number } {
   const games = parseCsv(readFileSync(HISTORY_CSV, "utf8")).filter(
     (g) => Number(g.Season) >= FIRST_CURRENT_SEASON && g.HG !== "" && Number(g.AvgCH) > 0,
   );
@@ -31,6 +31,7 @@ export function realSerieARates(): LeagueRates {
     })
     .sort((x, y) => x - y);
   return {
+    matches: games.length,
     home: share("H"),
     draw: share("D"),
     away: share("A"),
