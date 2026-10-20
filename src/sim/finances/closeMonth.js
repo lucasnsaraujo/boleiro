@@ -1,0 +1,149 @@
+import { marketView } from "../transfers/marketView.js";
+import { openDraft } from "../transfers/movePlayer.js";
+import { wageBillsOf } from "../transfers/wageBillsOf.js";
+import { forceSale } from "./forceSale.js";
+import { addLedgers, emptyLedger } from "./ledger.js";
+import { CUSHION_MONTHS_OF_WAGES, projectedRevenue, setBoardBudget, TRANSFER_SHARE_OF_REVENUE } from "./setBoardBudget.js";
+// guess: banks lend a club up to a quarter of a year's revenue.
+const LOAN_CAP_SHARE_OF_REVENUE = 0.25;
+// Selic at 15% a year (Copom, June 2025) plus a guessed 5-point spread for football clubs.
+const LOAN_RATE_PER_MONTH = 1.2 ** (1 / 12) - 1;
+// guess: the board sells without asking from the second month in a row of late wages.
+const FORCED_SALE_AFTER_LATE_MONTHS = 2;
+// guess: members join after a good month and leave after a bad one or when wages go unpaid.
+const MEMBERSHIP_DRIFT = { goodMonth: 1.01, badMonth: 0.99, lateWages: 0.98, floor: 0.5, ceiling: 1.5 };
+// The mid-year window opens on 20 July (CBF 2026, transfers/transferWindows.ts); the board resets the
+// budget at the July closing, before it.
+const MID_YEAR_WINDOW_MONTH = "07";
+const previousMonth = (date) => {
+    const [year, month] = date.split("-").map(Number);
+    if (!year || !month)
+        throw new Error(`bad date ${date}`);
+    return month === 1 ? `${year - 1}-12` : `${year}-${String(month - 1).padStart(2, "0")}`;
+};
+function membershipAfter(finance, late) {
+    const { games, points } = finance.month;
+    const perGame = games ? points / games : 1.5;
+    const drift = (perGame >= 2 ? MEMBERSHIP_DRIFT.goodMonth : perGame < 1 ? MEMBERSHIP_DRIFT.badMonth : 1) * (late ? MEMBERSHIP_DRIFT.lateWages : 1);
+    const anchor = finance.membershipAnchor;
+    return Math.round(Math.min(MEMBERSHIP_DRIFT.ceiling * anchor, Math.max(MEMBERSHIP_DRIFT.floor * anchor, finance.membership * drift)));
+}
+/** Pays one club's recurring money for the month, borrowing or paying wages late if cash runs out. */
+function settle(finance, wages) {
+    const revenue = {
+        tv: Math.round(finance.tv / 12),
+        sponsorship: Math.round(finance.sponsorship / 12),
+        membership: Math.round(finance.membership / 12),
+        otherIncome: Math.round(finance.otherIncome / 12),
+    };
+    const costs = { wages, infrastructure: Math.round(finance.infrastructure / 12), interest: Math.round(finance.loans * LOAN_RATE_PER_MONTH) };
+    let cash = finance.cash + revenue.tv + revenue.sponsorship + revenue.membership + revenue.otherIncome - costs.wages - costs.infrastructure - costs.interest;
+    let { loans, wagesOwed } = finance;
+    const borrowed = cash < 0 ? Math.min(-cash, Math.max(0, LOAN_CAP_SHARE_OF_REVENUE * projectedRevenue(finance) - loans)) : 0;
+    loans += borrowed;
+    cash += borrowed;
+    if (cash < 0) {
+        wagesOwed += -cash;
+        cash = 0;
+    }
+    const { month } = finance;
+    return {
+        borrowed: Math.round(borrowed),
+        finance: {
+            ...finance,
+            cash,
+            loans: Math.round(loans),
+            wagesOwed: Math.round(wagesOwed),
+            month: {
+                ...month,
+                revenue: {
+                    ...month.revenue,
+                    tv: month.revenue.tv + revenue.tv,
+                    sponsorship: month.revenue.sponsorship + revenue.sponsorship,
+                    membership: month.revenue.membership + revenue.membership,
+                    otherIncome: month.revenue.otherIncome + revenue.otherIncome,
+                },
+                costs: {
+                    ...month.costs,
+                    wages: month.costs.wages + costs.wages,
+                    infrastructure: month.costs.infrastructure + costs.infrastructure,
+                    interest: month.costs.interest + costs.interest,
+                },
+            },
+        },
+    };
+}
+/**
+ * Uses spare cash to pay wage arrears first, then loans above a cushion of wages, then the old
+ * debt above that cushion plus the season's transfer reserve.
+ */
+function payDown(finance, wages) {
+    const arrears = Math.min(finance.cash, finance.wagesOwed);
+    let cash = finance.cash - arrears;
+    const cushion = CUSHION_MONTHS_OF_WAGES * wages;
+    const repaid = Math.max(0, Math.min(finance.loans, cash - cushion));
+    cash -= repaid;
+    const reserve = cushion + TRANSFER_SHARE_OF_REVENUE * projectedRevenue(finance);
+    const settled = Math.round(Math.max(0, Math.min(finance.legacyDebt, cash - reserve)));
+    return {
+        ...finance,
+        wagesOwed: finance.wagesOwed - arrears,
+        cash: cash - settled,
+        loans: finance.loans - repaid,
+        legacyDebt: finance.legacyDebt - settled,
+    };
+}
+/** The board's monthly closing for every club, run on the first day of a month for the month before. */
+export function closeMonth(state, random) {
+    const wagesOf = wageBillsOf(state);
+    const month = previousMonth(state.date);
+    const events = [];
+    let current = state;
+    // Opened at the first forced sale, then shared by the rest of the closing's sales.
+    let view = null;
+    for (const clubId of Object.keys(state.finances).sort()) {
+        const opening = current.finances[clubId];
+        if (!opening)
+            continue;
+        const wages = wagesOf.get(clubId) ?? 0;
+        const settled = settle(opening, wages);
+        let finance = payDown(settled.finance, wages);
+        const late = finance.wagesOwed > 0;
+        finance = { ...finance, lateWageMonths: late ? finance.lateWageMonths + 1 : 0, membership: membershipAfter(finance, late) };
+        current = { ...current, finances: { ...current.finances, [clubId]: finance } };
+        if (late)
+            events.push({ type: "wagesLate", clubId, owed: finance.wagesOwed, months: finance.lateWageMonths });
+        if (late && finance.lateWageMonths >= FORCED_SALE_AFTER_LATE_MONTHS) {
+            if (!view) {
+                current = openDraft(current);
+                view = marketView(current);
+            }
+            const sold = forceSale(current, clubId, random, view);
+            if (sold) {
+                events.push(sold.sale);
+                current = sold.state;
+            }
+        }
+        const closed = current.finances[clubId] ?? finance;
+        const paid = payDown(closed, wages);
+        const ledger = { revenue: paid.month.revenue, costs: paid.month.costs };
+        const budgeted = state.date.slice(5, 7) === MID_YEAR_WINDOW_MONTH ? setBoardBudget(paid, wages) : paid;
+        current = {
+            ...current,
+            finances: {
+                ...current.finances,
+                [clubId]: {
+                    ...budgeted,
+                    season: addLedgers(paid.season, ledger),
+                    month: { ...emptyLedger(), points: 0, games: 0 },
+                    lastClosing: { month, ledger, cash: paid.cash },
+                },
+            },
+        };
+        events.push({
+            type: "monthClosed", clubId, month, ledger, cash: paid.cash, loans: paid.loans, wagesOwed: paid.wagesOwed, borrowed: settled.borrowed,
+            debtRepaid: opening.loans + settled.borrowed - paid.loans + opening.legacyDebt - paid.legacyDebt,
+        });
+    }
+    return { state: current, events };
+}

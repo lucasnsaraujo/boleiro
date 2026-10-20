@@ -1,0 +1,44 @@
+import { describe, expect, it } from "vitest";
+import { advanceDay } from "./advanceDay.js";
+import { loadNewGame } from "./loadNewGame.js";
+import { loadGame, saveGame } from "./saveGame.js";
+const playDays = (state, days) => {
+    let current = state;
+    for (let i = 0; i < days; i++)
+        current = advanceDay(current, {}).state;
+    return current;
+};
+describe("saveGame and loadGame", () => {
+    const midSeason = playDays(loadNewGame(3, { coachClubId: "flamengo-rj" }), 200);
+    it("round-trips the state exactly", () => {
+        expect(Object.values(midSeason.discipline).some((records) => Object.values(records).some((r) => r.bans > 0 || r.yellows > 0))).toBe(true);
+        expect(loadGame(saveGame(midSeason))).toStrictEqual(midSeason);
+    });
+    it("continues a loaded save exactly like the original", () => {
+        const original = playDays(midSeason, 60);
+        const resumed = playDays(loadGame(saveGame(midSeason)), 60);
+        expect(resumed).toEqual(original);
+        expect(resumed.fixtures.filter((f) => f.result).length).toBeGreaterThan(midSeason.fixtures.filter((f) => f.result).length);
+    });
+    it("rejects a save from another version", () => {
+        expect(() => loadGame(JSON.stringify({ ...midSeason, version: 99 }))).toThrow();
+    });
+    it("rejects a save from before coach tactics existed", () => {
+        const coachWithoutTactics = { ...midSeason.coach };
+        delete coachWithoutTactics.tactics;
+        expect(() => loadGame(JSON.stringify({ ...midSeason, version: 1, coach: coachWithoutTactics }))).toThrow();
+    });
+    it("rejects a save from before strength history existed", () => {
+        const historyWithoutStrength = { ...midSeason.history };
+        delete historyWithoutStrength.strength;
+        expect(() => loadGame(JSON.stringify({ ...midSeason, version: 2, history: historyWithoutStrength }))).toThrow();
+    });
+    it("rejects a save from before clubs kept their last monthly closing", () => {
+        const finances = Object.fromEntries(Object.entries(midSeason.finances).map(([id, finance]) => {
+            const old = { ...finance };
+            delete old.lastClosing;
+            return [id, old];
+        }));
+        expect(() => loadGame(JSON.stringify({ ...midSeason, version: 3, finances }))).toThrow();
+    });
+});
